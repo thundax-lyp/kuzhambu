@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>com.github.thundax</groupId>
+    <groupId>com.thundax</groupId>
     <artifactId>kuzhambu-infra</artifactId>
     <version>0.0.1-dev</version>
     <relativePath>../pom.xml</relativePath>
@@ -16,22 +16,22 @@
 
   <dependencies>
     <dependency>
-      <groupId>com.github.thundax</groupId>
+      <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-biz-ai-refinement</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.github.thundax</groupId>
+      <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-common-mybatis</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.github.thundax</groupId>
+      <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-common-cache</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.github.thundax</groupId>
+      <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-common-mq</artifactId>
       <version>${project.version}</version>
     </dependency>

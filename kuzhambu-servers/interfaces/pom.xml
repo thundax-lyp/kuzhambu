@@ -4,20 +4,17 @@
 
   <parent>
     <groupId>com.thundax</groupId>
-    <artifactId>kuzhambu-common</artifactId>
+    <artifactId>kuzhambu</artifactId>
     <version>0.0.1-dev</version>
-    <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>kuzhambu-common-test</artifactId>
-  <packaging>jar</packaging>
+  <artifactId>kuzhambu-interfaces</artifactId>
+  <packaging>pom</packaging>
 
-  <name>kuzhambu-common-test</name>
+  <name>kuzhambu-interfaces</name>
 
-  <dependencies>
-    <dependency>
-      <groupId>com.tngtech.archunit</groupId>
-      <artifactId>archunit-junit5</artifactId>
-    </dependency>
-  </dependencies>
+  <modules>
+    <module>kuzhambu-admin-api</module>
+    <module>kuzhambu-portal-api</module>
+  </modules>
 </project>

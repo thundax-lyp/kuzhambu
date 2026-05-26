@@ -2,182 +2,182 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>com.github.thundax</groupId>
-    <artifactId>kuzhambu</artifactId>
+    <groupId>com.thundax</groupId>
+    <artifactId>kuzhambu-interfaces</artifactId>
     <version>0.0.1-dev</version>
-    <relativePath>../../pom.xml</relativePath>
+    <relativePath>../pom.xml</relativePath>
   </parent>
   <artifactId>kuzhambu-portal-api</artifactId>
   <packaging>jar</packaging>
   <name>kuzhambu-portal-api</name>
   <dependencies>
     <dependency>
-      <groupId>com.github.thundax</groupId>
+      <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-biz-core</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.github.thundax</groupId>
+      <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-biz-ai-config</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.github.thundax</groupId>
+      <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-biz-ai-refinement</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.github.thundax</groupId>
+      <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-biz-audit</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.github.thundax</groupId>
+      <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-biz-auth</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.github.thundax</groupId>
+      <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-biz-data-refinement</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.github.thundax</groupId>
+      <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-biz-knowledge-graph</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.github.thundax</groupId>
+      <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-biz-mingcustoms</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.github.thundax</groupId>
+      <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-biz-operations</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.github.thundax</groupId>
+      <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-biz-qa</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.github.thundax</groupId>
+      <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-biz-sancai</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.github.thundax</groupId>
+      <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-biz-search</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.github.thundax</groupId>
+      <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-biz-sharing</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.github.thundax</groupId>
+      <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-biz-storage</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.github.thundax</groupId>
+      <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-biz-taxonomy</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.github.thundax</groupId>
+      <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-biz-wangqi</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.github.thundax</groupId>
+      <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-common-web</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.github.thundax</groupId>
+      <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-common-openapi</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.github.thundax</groupId>
+      <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-infra-core</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.github.thundax</groupId>
+      <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-infra-auth</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.github.thundax</groupId>
+      <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-infra-storage</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.github.thundax</groupId>
+      <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-infra-audit</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.github.thundax</groupId>
+      <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-infra-sancai</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.github.thundax</groupId>
+      <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-infra-wangqi</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.github.thundax</groupId>
+      <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-infra-mingcustoms</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.github.thundax</groupId>
+      <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-infra-ai-config</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.github.thundax</groupId>
+      <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-infra-ai-refinement</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.github.thundax</groupId>
+      <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-infra-data-refinement</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.github.thundax</groupId>
+      <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-infra-search</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.github.thundax</groupId>
+      <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-infra-qa</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.github.thundax</groupId>
+      <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-infra-knowledge-graph</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.github.thundax</groupId>
+      <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-infra-taxonomy</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.github.thundax</groupId>
+      <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-infra-sharing</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.github.thundax</groupId>
+      <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-infra-operations</artifactId>
       <version>${project.version}</version>
     </dependency>
