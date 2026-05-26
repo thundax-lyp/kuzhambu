@@ -250,12 +250,24 @@ Sancai 表固定使用 `sancai_` 前缀。所有对外标识使用 ULID，数据
 | `object_id` | `objectId` | 是 | Storage HTML 产物对象 |
 | `entry_count` | `entryCount` | 是 | 条目数量 |
 | `contains_private` | `containsPrivate` | 是 | 是否包含私有内容 |
+| `private_risk_confirmed` | `privateRiskConfirmed` | 是 | 私有内容风险是否已确认 |
 | `status` | `status` | 是 | `PENDING` / `DONE` / `FAILED` |
 
 约束：
 - 默认只包含公开且未归档条目。
 - 包含私有条目时必须管理员确认。
 - 静态展示页面一旦生成即脱离平台权限、撤销和内容状态变更自动控制。
+
+### Static Showcase Risk Copy
+
+三才静态展示页面包含平台内私有条目时，生成前必须展示固定确认文案：
+
+`你正在将平台内私有内容写入三才图会静态展示页面。生成后的 HTML 文件将脱离平台登录、权限、撤销和搜索可见性控制；任何获得文件或访问地址的人都可能查看这些内容。此操作不会改变内容在平台内的私有状态。是否继续生成？`
+
+约束：
+- `contains_private = true` 时必须要求管理员完成确认，确认后才能创建生成记录。
+- `private_risk_confirmed` 只表达该静态展示页面生成请求已完成风险确认；确认人、确认时间和确认上下文进入 Audit。
+- `contains_private = false` 时无需展示风险确认文案，`private_risk_confirmed` 固定为 `false`。
 
 ## Application Layer
 

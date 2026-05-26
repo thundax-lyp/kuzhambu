@@ -158,6 +158,7 @@ CREATE TABLE IF NOT EXISTS `sancai_showcase_page` (
     `object_id` char(26) NOT NULL,
     `entry_count` int NOT NULL DEFAULT 0,
     `contains_private` tinyint(1) NOT NULL DEFAULT 0,
+    `private_risk_confirmed` tinyint(1) NOT NULL DEFAULT 0,
     `status` varchar(16) NOT NULL DEFAULT 'PENDING',
     `operator_user_id` char(26) NOT NULL,
     `operated_at` datetime(3) NOT NULL,
