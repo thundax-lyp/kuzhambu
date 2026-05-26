@@ -1,8 +1,6 @@
--- Generated from db/schema/*.sql and db/data/*.sql.
-
+SET NAMES utf8mb4;
 
 -- db/schema/sys.sql
-SET NAMES utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `sys_user` (
     `id` bigint NOT NULL AUTO_INCREMENT,
@@ -68,9 +66,7 @@ CREATE TABLE IF NOT EXISTS `sys_role_menu` (
     KEY `idx_sys_role_menu_menu` (`menu_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='角色菜单关系表';
 
-
 -- db/schema/auth.sql
-SET NAMES utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `auth_principal_identity` (
     `id` bigint NOT NULL AUTO_INCREMENT,
@@ -128,9 +124,7 @@ CREATE TABLE IF NOT EXISTS `auth_principal_login_event` (
     KEY `idx_auth_principal_login_event_type_time` (`event_type`, `occurred_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='认证事件表';
 
-
 -- db/schema/audit.sql
-SET NAMES utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `audit_meta` (
     `id` bigint NOT NULL AUTO_INCREMENT,
@@ -187,9 +181,7 @@ CREATE TABLE IF NOT EXISTS `audit_log` (
     KEY `idx_audit_log_trace` (`trace_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='业务对象审计日志表';
 
-
 -- db/schema/storage.sql
-SET NAMES utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `storage_object` (
     `id` bigint NOT NULL AUTO_INCREMENT,
@@ -259,9 +251,7 @@ CREATE TABLE IF NOT EXISTS `storage_multipart_upload_part` (
     KEY `idx_storage_multipart_upload_part_upload` (`upload_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='分片上传分片记录表';
 
-
 -- db/schema/aiconfig.sql
-SET NAMES utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `ai_service_config` (
     `id` bigint NOT NULL AUTO_INCREMENT,
@@ -327,7 +317,7 @@ CREATE TABLE IF NOT EXISTS `ai_capability_mapping` (
     `mapping_id` char(26) NOT NULL,
     `capability` varchar(32) NOT NULL,
     `model_id` char(26) NOT NULL,
-    `mapped_by` char(26) NOT NULL,
+    `operator_user_id` char(26) NOT NULL,
     `configured_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_ai_capability_mapping_id` (`mapping_id`),
@@ -345,7 +335,7 @@ CREATE TABLE IF NOT EXISTS `ai_prompt` (
     `variables_snapshot` text NOT NULL,
     `description` varchar(1024) DEFAULT NULL,
     `active` tinyint(1) NOT NULL DEFAULT 1,
-    `authored_by` char(26) NOT NULL,
+    `author_user_id` char(26) NOT NULL,
     `registered_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_ai_prompt_id` (`prompt_id`),
@@ -373,9 +363,7 @@ CREATE TABLE IF NOT EXISTS `ai_call_metric` (
     UNIQUE KEY `uk_ai_call_metric_id` (`metric_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='AI调用指标表';
 
-
 -- db/schema/airefinement.sql
-SET NAMES utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `ai_refinement_candidate` (
     `id` bigint NOT NULL AUTO_INCREMENT,
@@ -391,8 +379,8 @@ CREATE TABLE IF NOT EXISTS `ai_refinement_candidate` (
     `prompt_id` char(26) DEFAULT NULL,
     `model_name` varchar(255) DEFAULT NULL,
     `error_message` varchar(1024) DEFAULT NULL,
-    `requested_by` char(26) NOT NULL,
-    `applied_by` char(26) DEFAULT NULL,
+    `requester_user_id` char(26) NOT NULL,
+    `applier_user_id` char(26) DEFAULT NULL,
     `applied_at` datetime(3) DEFAULT NULL,
     `requested_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
@@ -411,7 +399,7 @@ CREATE TABLE IF NOT EXISTS `ai_refinement_batch` (
     `success_count` int NOT NULL DEFAULT 0,
     `failed_count` int NOT NULL DEFAULT 0,
     `cancelled_count` int NOT NULL DEFAULT 0,
-    `requested_by` char(26) NOT NULL,
+    `requester_user_id` char(26) NOT NULL,
     `requested_at` datetime(3) NOT NULL,
     `cancelled_at` datetime(3) DEFAULT NULL,
     PRIMARY KEY (`id`),
@@ -450,9 +438,7 @@ CREATE TABLE IF NOT EXISTS `image_analysis_cache` (
     KEY `idx_image_analysis_cache_hash` (`content_hash`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='图片理解分析缓存表';
 
-
 -- db/schema/datarefinement.sql
-SET NAMES utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `data_refinement_work_item` (
     `id` bigint NOT NULL AUTO_INCREMENT,
@@ -535,9 +521,7 @@ CREATE TABLE IF NOT EXISTS `data_refinement_operation_log` (
     UNIQUE KEY `uk_data_refinement_operation_log_id` (`operation_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='数据精修操作日志表';
 
-
 -- db/schema/taxonomy.sql
-SET NAMES utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `taxonomy_category` (
     `id` bigint NOT NULL AUTO_INCREMENT,
@@ -563,7 +547,7 @@ CREATE TABLE IF NOT EXISTS `taxonomy_tag` (
     `source` varchar(32) NOT NULL DEFAULT 'AI_EXTRACTED',
     `merge_target_tag_id` char(26) DEFAULT NULL,
     `operator_user_id` char(26) DEFAULT NULL,
-    `reviewed_by` char(26) DEFAULT NULL,
+    `reviewer_user_id` char(26) DEFAULT NULL,
     `reviewed_at` datetime(3) DEFAULT NULL,
     `operated_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
@@ -631,9 +615,7 @@ CREATE TABLE IF NOT EXISTS `taxonomy_operation_log` (
     UNIQUE KEY `uk_taxonomy_operation_log_id` (`operation_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='标签治理操作日志表';
 
-
 -- db/schema/sancai.sql
-SET NAMES utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `sancai_category` (
     `id` bigint NOT NULL AUTO_INCREMENT,
@@ -800,9 +782,7 @@ CREATE TABLE IF NOT EXISTS `sancai_showcase_page` (
     UNIQUE KEY `uk_sancai_showcase_page_id` (`showcase_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='三才图会静态展示页面表';
 
-
 -- db/schema/wangqi.sql
-SET NAMES utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `wangqi_document` (
     `id` bigint NOT NULL AUTO_INCREMENT,
@@ -871,9 +851,7 @@ CREATE TABLE IF NOT EXISTS `wangqi_export_job` (
     KEY `idx_wangqi_export_job_status` (`status`, `expires_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='王圻导出产物表';
 
-
 -- db/schema/mingcustoms.sql
-SET NAMES utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `ming_customs_entry` (
     `id` bigint NOT NULL AUTO_INCREMENT,
@@ -943,9 +921,7 @@ CREATE TABLE IF NOT EXISTS `ming_customs_export_job` (
     KEY `idx_ming_customs_export_job_status` (`status`, `expires_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='明代习俗导出产物表';
 
-
 -- db/schema/knowledgegraph.sql
-SET NAMES utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `knowledge_graph_entity` (
     `id` bigint NOT NULL AUTO_INCREMENT,
@@ -1012,7 +988,7 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_extraction_job` (
     `total_count` int NOT NULL DEFAULT 0,
     `success_count` int NOT NULL DEFAULT 0,
     `failed_count` int NOT NULL DEFAULT 0,
-    `requested_by` char(26) NOT NULL,
+    `requester_user_id` char(26) NOT NULL,
     `requested_at` datetime(3) NOT NULL,
     `started_at` datetime(3) DEFAULT NULL,
     `finished_at` datetime(3) DEFAULT NULL,
@@ -1080,9 +1056,7 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_lineage_relation` (
     UNIQUE KEY `uk_knowledge_graph_lineage_relation_pair` (`source_node_id`, `target_node_id`, `relation_type`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='世系图关系表';
 
-
 -- db/schema/search.sql
-SET NAMES utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `search_config` (
     `id` bigint NOT NULL AUTO_INCREMENT,
@@ -1132,9 +1106,101 @@ CREATE TABLE IF NOT EXISTS `search_click_log` (
     KEY `idx_search_click_log_content` (`content_type`, `content_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='搜索点击日志表';
 
+-- db/schema/qa.sql
+
+CREATE TABLE IF NOT EXISTS `qa_session` (
+    `id` bigint NOT NULL AUTO_INCREMENT,
+    `session_id` char(26) NOT NULL,
+    `owner_user_id` char(26) NOT NULL,
+    `title` varchar(256) NOT NULL,
+    `scope` varchar(32) NOT NULL,
+    `context_mode` varchar(32) NOT NULL,
+    `context_content_type` varchar(32) DEFAULT NULL,
+    `context_content_id` char(26) DEFAULT NULL,
+    `status` varchar(32) NOT NULL,
+    `opened_at` datetime(3) NOT NULL,
+    `last_message_at` datetime(3) DEFAULT NULL,
+    `removed_at` datetime(3) DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_qa_session_id` (`session_id`),
+    KEY `idx_qa_session_owner` (`owner_user_id`, `last_message_at`),
+    KEY `idx_qa_session_context` (`context_content_type`, `context_content_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='问答会话表';
+
+CREATE TABLE IF NOT EXISTS `qa_message` (
+    `id` bigint NOT NULL AUTO_INCREMENT,
+    `message_id` char(26) NOT NULL,
+    `session_id` char(26) NOT NULL,
+    `role` varchar(32) NOT NULL,
+    `content` mediumtext NOT NULL,
+    `message_status` varchar(32) NOT NULL,
+    `context_turn_count` int NOT NULL DEFAULT 0,
+    `failure_reason` varchar(1024) DEFAULT NULL,
+    `sent_at` datetime(3) NOT NULL,
+    `answered_at` datetime(3) DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_qa_message_id` (`message_id`),
+    KEY `idx_qa_message_session` (`session_id`, `sent_at`),
+    KEY `idx_qa_message_status` (`message_status`, `sent_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='问答消息表';
+
+CREATE TABLE IF NOT EXISTS `qa_message_source` (
+    `id` bigint NOT NULL AUTO_INCREMENT,
+    `source_id` char(26) NOT NULL,
+    `message_id` char(26) NOT NULL,
+    `content_type` varchar(32) NOT NULL,
+    `content_id` char(26) NOT NULL,
+    `knowledge_base` varchar(64) NOT NULL,
+    `title_snapshot` varchar(512) NOT NULL,
+    `location_label` varchar(256) DEFAULT NULL,
+    `snippet` text DEFAULT NULL,
+    `source_rank` int NOT NULL DEFAULT 0,
+    `score` decimal(10,6) DEFAULT NULL,
+    `source_status` varchar(32) NOT NULL,
+    `referenced_at` datetime(3) NOT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_qa_message_source_id` (`source_id`),
+    KEY `idx_qa_message_source_message` (`message_id`, `source_rank`),
+    KEY `idx_qa_message_source_content` (`content_type`, `content_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='问答来源引用表';
+
+CREATE TABLE IF NOT EXISTS `qa_retrieval_trace` (
+    `id` bigint NOT NULL AUTO_INCREMENT,
+    `trace_id` char(26) NOT NULL,
+    `message_id` char(26) NOT NULL,
+    `raw_question` varchar(1024) NOT NULL,
+    `rewritten_question` varchar(2048) DEFAULT NULL,
+    `scope` varchar(32) NOT NULL,
+    `filters_json` text DEFAULT NULL,
+    `expanded_terms_json` text DEFAULT NULL,
+    `linked_entities_json` text DEFAULT NULL,
+    `candidate_count` int NOT NULL DEFAULT 0,
+    `context_snapshot` mediumtext DEFAULT NULL,
+    `retrieved_at` datetime(3) NOT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_qa_retrieval_trace_id` (`trace_id`),
+    KEY `idx_qa_retrieval_trace_message` (`message_id`),
+    KEY `idx_qa_retrieval_trace_scope` (`scope`, `retrieved_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='问答检索追溯表';
+
+CREATE TABLE IF NOT EXISTS `qa_session_export` (
+    `id` bigint NOT NULL AUTO_INCREMENT,
+    `export_id` char(26) NOT NULL,
+    `session_id` char(26) NOT NULL,
+    `format` varchar(32) NOT NULL,
+    `storage_object_id` char(26) DEFAULT NULL,
+    `export_status` varchar(32) NOT NULL,
+    `failure_reason` varchar(1024) DEFAULT NULL,
+    `requester_user_id` char(26) NOT NULL,
+    `requested_at` datetime(3) NOT NULL,
+    `completed_at` datetime(3) DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_qa_session_export_id` (`export_id`),
+    KEY `idx_qa_session_export_session` (`session_id`, `requested_at`),
+    KEY `idx_qa_session_export_status` (`export_status`, `requested_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='问答会话导出表';
 
 -- db/data/sys.sql
-SET NAMES utf8mb4;
 
 INSERT INTO `sys_user` (
     `user_id`, `name`, `email`, `mobile`, `tel`, `avatar_object_id`, `rank`,
@@ -1217,9 +1283,7 @@ INSERT IGNORE INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES
     ('01KUZHAMBU00000000000002', '01KUZHAMBU00000000000005'),
     ('01KUZHAMBU00000000000002', '01KUZHAMBU00000000000006');
 
-
 -- db/data/auth.sql
-SET NAMES utf8mb4;
 
 -- Initial admin account:
 --   login name: admin
@@ -1265,21 +1329,15 @@ INSERT INTO `auth_principal_credential` (
     `failed_count` = VALUES(`failed_count`),
     `failed_limit` = VALUES(`failed_limit`);
 
-
 -- db/data/audit.sql
-SET NAMES utf8mb4;
 
 -- Audit has no required seed data.
 
-
 -- db/data/storage.sql
-SET NAMES utf8mb4;
 
 -- Storage has no required seed data.
 
-
 -- db/data/aiconfig.sql
-SET NAMES utf8mb4;
 
 INSERT INTO `ai_capability` (
     `capability`, `name`, `required_tags`, `enabled`, `sort_order`
@@ -1301,27 +1359,19 @@ ON DUPLICATE KEY UPDATE
     `enabled` = VALUES(`enabled`),
     `sort_order` = VALUES(`sort_order`);
 
-
 -- db/data/airefinement.sql
-SET NAMES utf8mb4;
 
 -- AI Refinement has no required seed data.
 
-
 -- db/data/datarefinement.sql
-SET NAMES utf8mb4;
 
 -- Data Refinement has no required seed data.
 
-
 -- db/data/taxonomy.sql
-SET NAMES utf8mb4;
 
 -- Taxonomy has no required seed data.
 
-
 -- db/data/sancai.sql
-SET NAMES utf8mb4;
 
 INSERT INTO `sancai_category` (
     `category_code`, `name`, `formal`, `sort_order`, `description`
@@ -1365,27 +1415,20 @@ INSERT INTO `sancai_volume` (
     `sort_order` = VALUES(`sort_order`),
     `entry_count` = VALUES(`entry_count`);
 
-
 -- db/data/wangqi.sql
-SET NAMES utf8mb4;
 
 -- Wangqi has no required seed data.
 
-
 -- db/data/mingcustoms.sql
-SET NAMES utf8mb4;
 
 -- Ming Customs has no required seed data.
 
-
 -- db/data/knowledgegraph.sql
-SET NAMES utf8mb4;
 
 -- Knowledge Graph has no required seed data.
 
-
 -- db/data/search.sql
-SET NAMES utf8mb4;
 
 -- Search has no required seed data.
 
+-- db/data/qa.sql

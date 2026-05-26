@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS `taxonomy_tag` (
     `source` varchar(32) NOT NULL DEFAULT 'AI_EXTRACTED',
     `merge_target_tag_id` char(26) DEFAULT NULL,
     `operator_user_id` char(26) DEFAULT NULL,
-    `reviewed_by` char(26) DEFAULT NULL,
+    `reviewer_user_id` char(26) DEFAULT NULL,
     `reviewed_at` datetime(3) DEFAULT NULL,
     `operated_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),

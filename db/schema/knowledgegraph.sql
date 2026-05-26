@@ -65,7 +65,7 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_extraction_job` (
     `total_count` int NOT NULL DEFAULT 0,
     `success_count` int NOT NULL DEFAULT 0,
     `failed_count` int NOT NULL DEFAULT 0,
-    `requested_by` char(26) NOT NULL,
+    `requester_user_id` char(26) NOT NULL,
     `requested_at` datetime(3) NOT NULL,
     `started_at` datetime(3) DEFAULT NULL,
     `finished_at` datetime(3) DEFAULT NULL,

@@ -73,7 +73,7 @@ AI Refinement 表固定使用 `ai_refinement_` 前缀；图片理解缓存使用
 | `prompt_id` | `promptId` | 否 | 调用时提示词版本 ULID |
 | `model_name` | `modelName` | 否 | 调用时模型名快照 |
 | `error_message` | `errorMessage` | 否 | 失败原因 |
-| `applied_by` | `appliedBy` | 否 | 确认应用人 |
+| `applier_user_id` | `applierUserId` | 否 | 确认应用人 |
 | `applied_at` | `appliedAt` | 否 | 确认应用时间 |
 
 约束：
