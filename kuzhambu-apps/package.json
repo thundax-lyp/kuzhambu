@@ -1,0 +1,15 @@
+{
+  "name": "kuzhambu-apps",
+  "version": "0.0.1-dev",
+  "private": true,
+  "workspaces": [
+    "admin-web",
+    "public-web"
+  ],
+  "scripts": {
+    "dev:admin": "npm --workspace admin-web run dev",
+    "dev:public": "npm --workspace public-web run dev",
+    "build": "npm --workspaces run build",
+    "test": "npm --workspaces run test"
+  }
+}

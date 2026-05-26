@@ -17,8 +17,14 @@
 
 ## Code Placement
 
-- 当前尚未建立代码目录。
-- Java 代码落地时优先使用 `src/main/java/`、`src/test/java/`、`src/main/resources/`。
+- Java 后端模块使用 `kuzhambu-*` 前缀。
+- Java 代码使用 `src/main/java/`、`src/test/java/`、`src/main/resources/`。
+- 后端通用能力放在 `kuzhambu-common/`。
+- 业务域规则和业务服务放在 `kuzhambu-biz/`。
+- 技术适配放在 `kuzhambu-infra/`。
+- Spring Boot 启动、后台 API 和前台 API 放在 `kuzhambu-server/`。
+- 前端应用统一放在 `kuzhambu-apps/`。
+- Python worker 能力支撑代码统一放在 `kuzhambu-workers/`。
 - 新增模块时，必须先说明模块职责、入口、测试位置和构建命令。
 - 模块拥有自己的规则时，在模块根目录新增 `AGENTS.md`。
 

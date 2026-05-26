@@ -1,0 +1,8 @@
+[project]
+name = "kuzhambu-workers"
+version = "0.0.1-dev"
+description = "Python worker capabilities for Kuzhambu"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

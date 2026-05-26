@@ -1,0 +1,10 @@
+{
+  "name": "@kuzhambu/admin-web",
+  "version": "0.0.1-dev",
+  "private": true,
+  "scripts": {
+    "dev": "echo \"admin-web scaffold\"",
+    "build": "echo \"admin-web scaffold\"",
+    "test": "echo \"admin-web scaffold\""
+  }
+}

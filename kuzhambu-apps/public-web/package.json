@@ -1,0 +1,10 @@
+{
+  "name": "@kuzhambu/public-web",
+  "version": "0.0.1-dev",
+  "private": true,
+  "scripts": {
+    "dev": "echo \"public-web scaffold\"",
+    "build": "echo \"public-web scaffold\"",
+    "test": "echo \"public-web scaffold\""
+  }
+}
