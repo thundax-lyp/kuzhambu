@@ -1,0 +1,23 @@
+package com.thundax.kuzhambu.biz.auth.service.query;
+
+import com.thundax.kuzhambu.biz.auth.entity.enums.PrincipalCredentialStatus;
+import com.thundax.kuzhambu.biz.auth.entity.enums.PrincipalCredentialType;
+import com.thundax.kuzhambu.biz.auth.entity.valueobject.PrincipalCredentialId;
+import com.thundax.kuzhambu.biz.auth.entity.valueobject.PrincipalIdentityId;
+import com.thundax.kuzhambu.biz.auth.entity.valueobject.PrincipalKey;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class PrincipalCredentialQuery {
+    private PrincipalCredentialId id;
+    private PrincipalIdentityId identityId;
+    private PrincipalCredentialType credentialType;
+    private PrincipalKey principalKey;
+    private PrincipalCredentialStatus status;
+}

@@ -13,7 +13,7 @@ final class ArchitectureSourceSupport {
     static Path repositoryRoot() {
         Path current = Paths.get("").toAbsolutePath();
         while (current != null) {
-            if (Files.exists(current.resolve("TODO.md"))) {
+            if (Files.exists(current.resolve(".git")) || Files.exists(current.resolve("kuzhambu-servers/pom.xml"))) {
                 return current;
             }
             current = current.getParent();
@@ -22,7 +22,9 @@ final class ArchitectureSourceSupport {
     }
 
     static String repositoryPath(Path root, Path path) {
-        return normalizePath(root.relativize(path));
+        return normalizePath(root.toAbsolutePath()
+                .normalize()
+                .relativize(path.toAbsolutePath().normalize()));
     }
 
     static String normalizePath(Path path) {

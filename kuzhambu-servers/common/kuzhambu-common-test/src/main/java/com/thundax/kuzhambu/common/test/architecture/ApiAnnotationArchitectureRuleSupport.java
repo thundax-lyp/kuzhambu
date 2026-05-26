@@ -23,7 +23,7 @@ public final class ApiAnnotationArchitectureRuleSupport {
             "((?:@[A-Za-z0-9_.]+(?:\\([^)]*\\))?\\s+)*)public\\s+class\\s+([A-Za-z0-9_]+Controller)\\b");
     private static final Pattern PUBLIC_METHOD_DECLARATION_PATTERN =
             Pattern.compile("public\\s+[^{;]+\\s+([A-Za-z0-9_]+)\\s*\\(");
-    private static final Pattern API_TAGS_PATTERN = Pattern.compile("\\s*\\([^)]*tags\\s*=\\s*\"([^\"]+)\"");
+    private static final Pattern API_TAGS_PATTERN = Pattern.compile("@Tag\\s*\\(\\s*(?:name\\s*=\\s*)?\"([^\"]+)\"");
     private static final Pattern API_TAG_NUMERIC_PREFIX_PATTERN = Pattern.compile("^\\d+(?:-\\d+)*\\.\\s*");
     private static final Pattern REQUEST_MAPPING_VALUE_PATTERN =
             Pattern.compile("@RequestMapping\\s*\\(\\s*(?:value\\s*=\\s*)?\"([^\"]+)\"");
@@ -40,11 +40,11 @@ public final class ApiAnnotationArchitectureRuleSupport {
         return ModelAnnotationArchitectureRuleSupport.responseClassAnnotationsRequired(basePackage);
     }
 
-    public static void assertApiOperationDeclaresAccessAnnotation(Path sourceRoot) throws IOException {
+    public static void assertOperationDeclaresAccessAnnotation(Path sourceRoot) throws IOException {
         Path root = ArchitectureSourceSupport.repositoryRoot();
         List<String> violations = new ArrayList<String>();
 
-        try (Stream<Path> paths = Files.walk(sourceRoot)) {
+        try (Stream<Path> paths = controllerSources(sourceRoot)) {
             paths.filter(path -> path.getFileName().toString().endsWith("Controller.java"))
                     .forEach(path -> collectAccessAnnotationViolations(root, path, violations));
         }
@@ -56,7 +56,7 @@ public final class ApiAnnotationArchitectureRuleSupport {
         Path root = ArchitectureSourceSupport.repositoryRoot();
         List<String> violations = new ArrayList<String>();
 
-        try (Stream<Path> paths = Files.walk(sourceRoot)) {
+        try (Stream<Path> paths = controllerSources(sourceRoot)) {
             paths.filter(path -> path.getFileName().toString().endsWith("Controller.java"))
                     .forEach(path -> collectRequestMappingViolations(root, path, violations));
         }
@@ -68,7 +68,7 @@ public final class ApiAnnotationArchitectureRuleSupport {
         Path root = ArchitectureSourceSupport.repositoryRoot();
         List<String> violations = new ArrayList<String>();
 
-        try (Stream<Path> paths = Files.walk(sourceRoot)) {
+        try (Stream<Path> paths = controllerSources(sourceRoot)) {
             paths.filter(path -> path.getFileName().toString().endsWith("Controller.java"))
                     .forEach(path -> collectRequestMappingPathViolations(root, path, violations));
         }
@@ -82,19 +82,19 @@ public final class ApiAnnotationArchitectureRuleSupport {
         Path root = ArchitectureSourceSupport.repositoryRoot();
         List<String> violations = new ArrayList<String>();
 
-        try (Stream<Path> paths = Files.walk(sourceRoot)) {
+        try (Stream<Path> paths = controllerSources(sourceRoot)) {
             paths.filter(path -> path.getFileName().toString().endsWith("Controller.java"))
                     .forEach(path -> collectApiClassViolations(root, path, violations));
         }
 
-        assertTrue("REST controllers must declare : " + violations, violations.isEmpty());
+        assertTrue("REST controllers must declare @Tag: " + violations, violations.isEmpty());
     }
 
     public static void assertApiTagsDoNotUseNumericPrefix(Path sourceRoot) throws IOException {
         Path root = ArchitectureSourceSupport.repositoryRoot();
         List<String> violations = new ArrayList<String>();
 
-        try (Stream<Path> paths = Files.walk(sourceRoot)) {
+        try (Stream<Path> paths = controllerSources(sourceRoot)) {
             paths.filter(path -> path.getFileName().toString().endsWith("Controller.java"))
                     .forEach(path -> collectApiTagNumericPrefixViolations(root, path, violations));
         }
@@ -102,23 +102,23 @@ public final class ApiAnnotationArchitectureRuleSupport {
         assertTrue("API tags must not use numeric prefixes: " + violations, violations.isEmpty());
     }
 
-    public static void assertMappedMethodsDeclareApiOperation(Path sourceRoot) throws IOException {
+    public static void assertMappedMethodsDeclareOperation(Path sourceRoot) throws IOException {
         Path root = ArchitectureSourceSupport.repositoryRoot();
         List<String> violations = new ArrayList<String>();
 
-        try (Stream<Path> paths = Files.walk(sourceRoot)) {
+        try (Stream<Path> paths = controllerSources(sourceRoot)) {
             paths.filter(path -> path.getFileName().toString().endsWith("Controller.java"))
-                    .forEach(path -> collectApiOperationViolations(root, path, violations));
+                    .forEach(path -> collectOperationViolations(root, path, violations));
         }
 
-        assertTrue("Mapped controller methods must declare : " + violations, violations.isEmpty());
+        assertTrue("Mapped controller methods must declare @Operation: " + violations, violations.isEmpty());
     }
 
     public static void assertMappedMethodsDeclareSingleHttpMapping(Path sourceRoot) throws IOException {
         Path root = ArchitectureSourceSupport.repositoryRoot();
         List<String> violations = new ArrayList<String>();
 
-        try (Stream<Path> paths = Files.walk(sourceRoot)) {
+        try (Stream<Path> paths = controllerSources(sourceRoot)) {
             paths.filter(path -> path.getFileName().toString().endsWith("Controller.java"))
                     .forEach(path -> collectSingleHttpMappingViolations(root, path, violations));
         }
@@ -131,7 +131,7 @@ public final class ApiAnnotationArchitectureRuleSupport {
         Path root = ArchitectureSourceSupport.repositoryRoot();
         List<String> violations = new ArrayList<String>();
 
-        try (Stream<Path> paths = Files.walk(sourceRoot)) {
+        try (Stream<Path> paths = controllerSources(sourceRoot)) {
             paths.filter(path -> path.getFileName().toString().endsWith("Controller.java"))
                     .forEach(path -> collectPostOrGetMappingViolations(root, path, violations));
         }
@@ -145,7 +145,7 @@ public final class ApiAnnotationArchitectureRuleSupport {
         Path root = ArchitectureSourceSupport.repositoryRoot();
         List<String> violations = new ArrayList<String>();
 
-        try (Stream<Path> paths = Files.walk(sourceRoot)) {
+        try (Stream<Path> paths = controllerSources(sourceRoot)) {
             paths.filter(path -> path.getFileName().toString().endsWith("Controller.java"))
                     .forEach(path -> collectJsonPostMappingViolations(root, path, violations));
         }
@@ -157,7 +157,7 @@ public final class ApiAnnotationArchitectureRuleSupport {
         Path root = ArchitectureSourceSupport.repositoryRoot();
         List<String> violations = new ArrayList<String>();
 
-        try (Stream<Path> paths = Files.walk(sourceRoot)) {
+        try (Stream<Path> paths = controllerSources(sourceRoot)) {
             paths.filter(path -> path.getFileName().toString().endsWith("Controller.java"))
                     .forEach(path -> collectGetMappingReturnViolations(root, path, violations));
         }
@@ -169,7 +169,7 @@ public final class ApiAnnotationArchitectureRuleSupport {
         Path root = ArchitectureSourceSupport.repositoryRoot();
         List<String> violations = new ArrayList<String>();
 
-        try (Stream<Path> paths = Files.walk(sourceRoot)) {
+        try (Stream<Path> paths = controllerSources(sourceRoot)) {
             paths.filter(path -> path.getFileName().toString().endsWith("Controller.java"))
                     .forEach(path -> collectRequestBodyValidViolations(root, path, violations));
         }
@@ -181,13 +181,20 @@ public final class ApiAnnotationArchitectureRuleSupport {
         Path root = ArchitectureSourceSupport.repositoryRoot();
         List<String> violations = new ArrayList<String>();
 
-        try (Stream<Path> paths = Files.walk(sourceRoot)) {
+        try (Stream<Path> paths = controllerSources(sourceRoot)) {
             paths.filter(path -> path.getFileName().toString().endsWith("Controller.java"))
                     .forEach(path -> collectResponseConstructorViolations(root, path, violations));
         }
 
         assertTrue(
                 "Controllers must create *Response through *InterfaceAssembler: " + violations, violations.isEmpty());
+    }
+
+    private static Stream<Path> controllerSources(Path sourceRoot) throws IOException {
+        if (sourceRoot == null || !Files.exists(sourceRoot)) {
+            return Stream.empty();
+        }
+        return Files.walk(sourceRoot);
     }
 
     private static void collectAccessAnnotationViolations(Path root, Path path, List<String> violations) {
@@ -203,7 +210,7 @@ public final class ApiAnnotationArchitectureRuleSupport {
         while (matcher.find()) {
             String annotations = content.substring(previousMethodEnd, matcher.start());
             String methodName = matcher.group(1);
-            if (annotations.contains("")
+            if (annotations.contains("@Operation")
                     && !accessAnnotatedClass
                     && !annotations.contains("@PublicApi")
                     && !annotations.contains("@HasPermission")) {
@@ -231,7 +238,7 @@ public final class ApiAnnotationArchitectureRuleSupport {
         while (matcher.find()) {
             String annotations = matcher.group(1);
             String className = matcher.group(2);
-            if (containsRestControllerAnnotation(annotations) && !annotations.contains("")) {
+            if (containsRestControllerAnnotation(annotations) && !annotations.contains("@Tag")) {
                 violations.add(ArchitectureSourceSupport.repositoryPath(root, path) + " class=" + className);
             }
         }
@@ -267,7 +274,7 @@ public final class ApiAnnotationArchitectureRuleSupport {
         }
     }
 
-    private static void collectApiOperationViolations(Path root, Path path, List<String> violations) {
+    private static void collectOperationViolations(Path root, Path path, List<String> violations) {
         String content = ArchitectureSourceSupport.readSource(path);
         if (restControllerClassAnnotations(content).length() == 0) {
             return;
@@ -277,7 +284,7 @@ public final class ApiAnnotationArchitectureRuleSupport {
         while (matcher.find()) {
             String annotations = content.substring(previousMethodEnd, matcher.start());
             String methodName = matcher.group(1);
-            if (httpMappingCount(annotations) > 0 && !annotations.contains("")) {
+            if (httpMappingCount(annotations) > 0 && !annotations.contains("@Operation")) {
                 violations.add(ArchitectureSourceSupport.repositoryPath(root, path) + " method=" + methodName);
             }
             previousMethodEnd = matcher.end();

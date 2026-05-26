@@ -1,0 +1,29 @@
+package com.thundax.kuzhambu.biz.auth.dao;
+
+import com.thundax.kuzhambu.biz.auth.entity.PreAuthSession;
+import com.thundax.kuzhambu.biz.auth.entity.valueobject.PreAuthSessionId;
+import com.thundax.kuzhambu.biz.auth.entity.valueobject.PreAuthSessionToken;
+
+public interface PreAuthSessionDao {
+
+    int count();
+
+    PreAuthSession getById(PreAuthSessionId id);
+
+    PreAuthSessionId getByToken(PreAuthSessionToken token);
+
+    PreAuthSessionId getByRefreshToken(PreAuthSessionToken refreshToken);
+
+    void insert(PreAuthSession session);
+
+    void update(PreAuthSession session);
+
+    void deleteById(PreAuthSessionId id);
+
+    default void deleteByToken(PreAuthSessionToken token) {
+        PreAuthSessionId id = getByToken(token);
+        if (id != null) {
+            deleteById(id);
+        }
+    }
+}

@@ -17,6 +17,16 @@
   <dependencies>
     <dependency>
       <groupId>com.thundax</groupId>
+      <artifactId>kuzhambu-biz-auth</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thundax</groupId>
+      <artifactId>kuzhambu-biz-storage</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-common-core</artifactId>
       <version>${project.version}</version>
     </dependency>
