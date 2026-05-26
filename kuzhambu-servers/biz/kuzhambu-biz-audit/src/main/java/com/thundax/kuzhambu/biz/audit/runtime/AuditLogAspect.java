@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class AuditLogAspect {
 
-    static final String SERVICE_METHOD_POINTCUT = "execution(public * com.github.thundax.modules..service..*.*(..))";
+    static final String SERVICE_METHOD_POINTCUT = "execution(public * com.thundax.kuzhambu..service..*.*(..))";
 
     private final AuditService auditService;
     private final AuditExpressionEvaluator expressionEvaluator;
