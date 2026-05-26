@@ -12,7 +12,6 @@ CREATE TABLE IF NOT EXISTS `data_refinement_work_item` (
     `relation_count` int NOT NULL DEFAULT 0,
     `verified_entity_count` int NOT NULL DEFAULT 0,
     `verified_relation_count` int NOT NULL DEFAULT 0,
-    `operated_at` datetime(3) NOT NULL,
     `completed_at` datetime(3) DEFAULT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_data_refinement_work_item_id` (`work_item_id`),
@@ -34,8 +33,6 @@ CREATE TABLE IF NOT EXISTS `data_refinement_entity_annotation` (
     `source` varchar(32) NOT NULL DEFAULT 'AI_EXTRACTED',
     `status` varchar(16) NOT NULL DEFAULT 'ACTIVE',
     `kg_entity_id` char(26) DEFAULT NULL,
-    `operator_user_id` char(26) NOT NULL,
-    `operated_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_data_refinement_entity_annotation_id` (`annotation_id`),
     KEY `idx_data_refinement_entity_work_item` (`work_item_id`, `status`),
@@ -57,8 +54,6 @@ CREATE TABLE IF NOT EXISTS `data_refinement_relation_annotation` (
     `source` varchar(32) NOT NULL DEFAULT 'AI_EXTRACTED',
     `status` varchar(16) NOT NULL DEFAULT 'ACTIVE',
     `kg_relation_id` char(26) DEFAULT NULL,
-    `operator_user_id` char(26) NOT NULL,
-    `operated_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_data_refinement_relation_annotation_id` (`annotation_id`),
     UNIQUE KEY `uk_data_refinement_relation_unique` (`work_item_id`, `source_entity_annotation_id`, `target_entity_annotation_id`, `relation_type`),
@@ -66,17 +61,3 @@ CREATE TABLE IF NOT EXISTS `data_refinement_relation_annotation` (
     KEY `idx_data_refinement_relation_content` (`content_id`, `relation_type`),
     KEY `idx_data_refinement_relation_kg` (`kg_relation_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='数据精修关系标注表';
-
-CREATE TABLE IF NOT EXISTS `data_refinement_operation_log` (
-    `id` bigint NOT NULL AUTO_INCREMENT,
-    `operation_id` char(26) NOT NULL,
-    `work_item_id` char(26) NOT NULL,
-    `operation_type` varchar(32) NOT NULL,
-    `target_annotation_id` char(26) DEFAULT NULL,
-    `before_json` longtext DEFAULT NULL,
-    `after_json` longtext DEFAULT NULL,
-    `operator_user_id` char(26) NOT NULL,
-    `operated_at` datetime(3) NOT NULL,
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_data_refinement_operation_log_id` (`operation_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='数据精修操作日志表';

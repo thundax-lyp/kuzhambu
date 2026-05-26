@@ -171,6 +171,7 @@ Sancai 表固定使用 `sancai_` 前缀。所有对外标识使用 ULID，数据
 | `snapshot_json` | `snapshotJson` | 是 | 条目快照 JSON |
 | `change_type` | `changeType` | 是 | `MANUAL_SAVE` / `AI_APPLY` / `RESTORE` |
 | `change_summary` | `changeSummary` | 否 | 变更摘要 |
+| `versioned_at` | `versionedAt` | 是 | 版本生成时间 |
 
 约束：
 - 手动保存、AI 结果应用和历史恢复产生正式版本。
@@ -232,6 +233,8 @@ Sancai 表固定使用 `sancai_` 前缀。所有对外标识使用 ULID，数据
 | `asset_count` | `assetCount` | 是 | 资产数量 |
 | `contains_private` | `containsPrivate` | 是 | 是否包含私有内容 |
 | `status` | `status` | 是 | `PENDING` / `DONE` / `FAILED` / `EXPIRED` |
+| `requester_user_id` | `requesterUserId` | 是 | 导出请求用户 |
+| `requested_at` | `requestedAt` | 是 | 导出请求时间 |
 | `expires_at` | `expiresAt` | 是 | 过期时间 |
 
 约束：
@@ -252,6 +255,8 @@ Sancai 表固定使用 `sancai_` 前缀。所有对外标识使用 ULID，数据
 | `contains_private` | `containsPrivate` | 是 | 是否包含私有内容 |
 | `private_risk_confirmed` | `privateRiskConfirmed` | 是 | 私有内容风险是否已确认 |
 | `status` | `status` | 是 | `PENDING` / `DONE` / `FAILED` |
+| `requester_user_id` | `requesterUserId` | 是 | 静态页面生成请求用户 |
+| `requested_at` | `requestedAt` | 是 | 静态页面生成请求时间 |
 
 约束：
 - 默认只包含公开且未归档条目。

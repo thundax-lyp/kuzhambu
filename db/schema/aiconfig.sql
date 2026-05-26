@@ -64,7 +64,6 @@ CREATE TABLE IF NOT EXISTS `ai_capability_mapping` (
     `mapping_id` char(26) NOT NULL,
     `capability` varchar(32) NOT NULL,
     `model_id` char(26) NOT NULL,
-    `operator_user_id` char(26) NOT NULL,
     `configured_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_ai_capability_mapping_id` (`mapping_id`),

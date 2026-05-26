@@ -2,6 +2,7 @@ SET NAMES utf8mb4;
 
 -- db/schema/sys.sql
 
+
 CREATE TABLE IF NOT EXISTS `sys_user` (
     `id` bigint NOT NULL AUTO_INCREMENT,
     `user_id` char(26) NOT NULL,
@@ -68,6 +69,7 @@ CREATE TABLE IF NOT EXISTS `sys_role_menu` (
 
 -- db/schema/auth.sql
 
+
 CREATE TABLE IF NOT EXISTS `auth_principal_identity` (
     `id` bigint NOT NULL AUTO_INCREMENT,
     `identity_id` char(26) NOT NULL,
@@ -126,6 +128,7 @@ CREATE TABLE IF NOT EXISTS `auth_principal_login_event` (
 
 -- db/schema/audit.sql
 
+
 CREATE TABLE IF NOT EXISTS `audit_meta` (
     `id` bigint NOT NULL AUTO_INCREMENT,
     `meta_id` char(26) NOT NULL,
@@ -182,6 +185,7 @@ CREATE TABLE IF NOT EXISTS `audit_log` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='业务对象审计日志表';
 
 -- db/schema/storage.sql
+
 
 CREATE TABLE IF NOT EXISTS `storage_object` (
     `id` bigint NOT NULL AUTO_INCREMENT,
@@ -253,6 +257,7 @@ CREATE TABLE IF NOT EXISTS `storage_multipart_upload_part` (
 
 -- db/schema/aiconfig.sql
 
+
 CREATE TABLE IF NOT EXISTS `ai_service_config` (
     `id` bigint NOT NULL AUTO_INCREMENT,
     `service_id` char(26) NOT NULL,
@@ -317,7 +322,6 @@ CREATE TABLE IF NOT EXISTS `ai_capability_mapping` (
     `mapping_id` char(26) NOT NULL,
     `capability` varchar(32) NOT NULL,
     `model_id` char(26) NOT NULL,
-    `operator_user_id` char(26) NOT NULL,
     `configured_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_ai_capability_mapping_id` (`mapping_id`),
@@ -364,6 +368,7 @@ CREATE TABLE IF NOT EXISTS `ai_call_metric` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='AI调用指标表';
 
 -- db/schema/airefinement.sql
+
 
 CREATE TABLE IF NOT EXISTS `ai_refinement_candidate` (
     `id` bigint NOT NULL AUTO_INCREMENT,
@@ -440,6 +445,7 @@ CREATE TABLE IF NOT EXISTS `image_analysis_cache` (
 
 -- db/schema/datarefinement.sql
 
+
 CREATE TABLE IF NOT EXISTS `data_refinement_work_item` (
     `id` bigint NOT NULL AUTO_INCREMENT,
     `work_item_id` char(26) NOT NULL,
@@ -452,7 +458,6 @@ CREATE TABLE IF NOT EXISTS `data_refinement_work_item` (
     `relation_count` int NOT NULL DEFAULT 0,
     `verified_entity_count` int NOT NULL DEFAULT 0,
     `verified_relation_count` int NOT NULL DEFAULT 0,
-    `operated_at` datetime(3) NOT NULL,
     `completed_at` datetime(3) DEFAULT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_data_refinement_work_item_id` (`work_item_id`),
@@ -474,8 +479,6 @@ CREATE TABLE IF NOT EXISTS `data_refinement_entity_annotation` (
     `source` varchar(32) NOT NULL DEFAULT 'AI_EXTRACTED',
     `status` varchar(16) NOT NULL DEFAULT 'ACTIVE',
     `kg_entity_id` char(26) DEFAULT NULL,
-    `operator_user_id` char(26) NOT NULL,
-    `operated_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_data_refinement_entity_annotation_id` (`annotation_id`),
     KEY `idx_data_refinement_entity_work_item` (`work_item_id`, `status`),
@@ -497,8 +500,6 @@ CREATE TABLE IF NOT EXISTS `data_refinement_relation_annotation` (
     `source` varchar(32) NOT NULL DEFAULT 'AI_EXTRACTED',
     `status` varchar(16) NOT NULL DEFAULT 'ACTIVE',
     `kg_relation_id` char(26) DEFAULT NULL,
-    `operator_user_id` char(26) NOT NULL,
-    `operated_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_data_refinement_relation_annotation_id` (`annotation_id`),
     UNIQUE KEY `uk_data_refinement_relation_unique` (`work_item_id`, `source_entity_annotation_id`, `target_entity_annotation_id`, `relation_type`),
@@ -507,21 +508,8 @@ CREATE TABLE IF NOT EXISTS `data_refinement_relation_annotation` (
     KEY `idx_data_refinement_relation_kg` (`kg_relation_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='数据精修关系标注表';
 
-CREATE TABLE IF NOT EXISTS `data_refinement_operation_log` (
-    `id` bigint NOT NULL AUTO_INCREMENT,
-    `operation_id` char(26) NOT NULL,
-    `work_item_id` char(26) NOT NULL,
-    `operation_type` varchar(32) NOT NULL,
-    `target_annotation_id` char(26) DEFAULT NULL,
-    `before_json` longtext DEFAULT NULL,
-    `after_json` longtext DEFAULT NULL,
-    `operator_user_id` char(26) NOT NULL,
-    `operated_at` datetime(3) NOT NULL,
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_data_refinement_operation_log_id` (`operation_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='数据精修操作日志表';
-
 -- db/schema/taxonomy.sql
+
 
 CREATE TABLE IF NOT EXISTS `taxonomy_category` (
     `id` bigint NOT NULL AUTO_INCREMENT,
@@ -530,7 +518,6 @@ CREATE TABLE IF NOT EXISTS `taxonomy_category` (
     `description` varchar(512) DEFAULT NULL,
     `sort_order` int NOT NULL DEFAULT 0,
     `enabled` tinyint(1) NOT NULL DEFAULT 1,
-    `operated_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_taxonomy_category_id` (`category_id`),
     UNIQUE KEY `uk_taxonomy_category_name` (`name`),
@@ -546,10 +533,7 @@ CREATE TABLE IF NOT EXISTS `taxonomy_tag` (
     `status` varchar(32) NOT NULL DEFAULT 'PENDING_REVIEW',
     `source` varchar(32) NOT NULL DEFAULT 'AI_EXTRACTED',
     `merge_target_tag_id` char(26) DEFAULT NULL,
-    `operator_user_id` char(26) DEFAULT NULL,
-    `reviewer_user_id` char(26) DEFAULT NULL,
-    `reviewed_at` datetime(3) DEFAULT NULL,
-    `operated_at` datetime(3) NOT NULL,
+    `extracted_at` datetime(3) DEFAULT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_taxonomy_tag_id` (`tag_id`),
     UNIQUE KEY `uk_taxonomy_tag_name` (`tag_name`),
@@ -563,8 +547,6 @@ CREATE TABLE IF NOT EXISTS `taxonomy_tag_alias` (
     `tag_id` char(26) NOT NULL,
     `alias_name` varchar(128) NOT NULL,
     `source` varchar(16) NOT NULL DEFAULT 'MANUAL',
-    `operator_user_id` char(26) NOT NULL,
-    `operated_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_taxonomy_tag_alias_id` (`alias_id`),
     UNIQUE KEY `uk_taxonomy_tag_alias_name` (`alias_name`),
@@ -578,8 +560,6 @@ CREATE TABLE IF NOT EXISTS `taxonomy_content_tag_relation` (
     `content_id` char(26) NOT NULL,
     `tag_id` char(26) NOT NULL,
     `source` varchar(32) NOT NULL DEFAULT 'MANUAL',
-    `operator_user_id` char(26) DEFAULT NULL,
-    `operated_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_taxonomy_content_tag_relation_id` (`relation_id`),
     UNIQUE KEY `uk_taxonomy_content_tag_relation` (`content_type`, `content_id`, `tag_id`),
@@ -593,8 +573,6 @@ CREATE TABLE IF NOT EXISTS `taxonomy_synonym` (
     `term` varchar(128) NOT NULL,
     `synonym` varchar(128) NOT NULL,
     `enabled` tinyint(1) NOT NULL DEFAULT 1,
-    `operator_user_id` char(26) NOT NULL,
-    `operated_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_taxonomy_synonym_id` (`synonym_id`),
     UNIQUE KEY `uk_taxonomy_synonym_pair` (`term`, `synonym`),
@@ -602,20 +580,8 @@ CREATE TABLE IF NOT EXISTS `taxonomy_synonym` (
     KEY `idx_taxonomy_synonym_reverse` (`synonym`, `enabled`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='同义词表';
 
-CREATE TABLE IF NOT EXISTS `taxonomy_operation_log` (
-    `id` bigint NOT NULL AUTO_INCREMENT,
-    `operation_id` char(26) NOT NULL,
-    `operation_type` varchar(32) NOT NULL,
-    `tag_id` char(26) NOT NULL,
-    `target_tag_id` char(26) DEFAULT NULL,
-    `detail_json` text DEFAULT NULL,
-    `operator_user_id` char(26) NOT NULL,
-    `operated_at` datetime(3) NOT NULL,
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_taxonomy_operation_log_id` (`operation_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='标签治理操作日志表';
-
 -- db/schema/sancai.sql
+
 
 CREATE TABLE IF NOT EXISTS `sancai_category` (
     `id` bigint NOT NULL AUTO_INCREMENT,
@@ -663,8 +629,6 @@ CREATE TABLE IF NOT EXISTS `sancai_entry` (
     `visual_asset_status` varchar(16) NOT NULL DEFAULT 'MISSING',
     `refinement_status` varchar(16) NOT NULL DEFAULT 'RAW',
     `current_version` int NOT NULL DEFAULT 0,
-    `operated_at` datetime(3) NOT NULL,
-    `autosaved_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_sancai_entry_id` (`entry_id`),
     KEY `idx_sancai_entry_volume` (`volume_id`, `entry_no`),
@@ -678,7 +642,6 @@ CREATE TABLE IF NOT EXISTS `sancai_entry_image` (
     `current_used` tinyint(1) NOT NULL DEFAULT 0,
     `sort_order` int NOT NULL DEFAULT 0,
     `caption` varchar(512) DEFAULT NULL,
-    `operated_at` datetime(3) NOT NULL,
     PRIMARY KEY (`entry_id`, `object_id`),
     KEY `idx_sancai_entry_image_object` (`object_id`),
     KEY `idx_sancai_entry_image_sort` (`entry_id`, `sort_order`)
@@ -692,8 +655,6 @@ CREATE TABLE IF NOT EXISTS `sancai_entry_qa` (
     `answer` longtext NOT NULL,
     `source` varchar(16) NOT NULL DEFAULT 'MANUAL',
     `sort_order` int NOT NULL DEFAULT 0,
-    `operated_at` datetime(3) NOT NULL,
-    `autosaved_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_sancai_entry_qa_id` (`qa_id`),
     KEY `idx_sancai_entry_qa_entry_sort` (`entry_id`, `sort_order`)
@@ -707,8 +668,7 @@ CREATE TABLE IF NOT EXISTS `sancai_entry_version` (
     `snapshot_json` longtext NOT NULL,
     `change_type` varchar(32) NOT NULL,
     `change_summary` varchar(512) DEFAULT NULL,
-    `operator_user_id` char(26) NOT NULL,
-    `operated_at` datetime(3) NOT NULL,
+    `versioned_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_sancai_entry_version_id` (`version_id`),
     UNIQUE KEY `uk_sancai_entry_version_no` (`entry_id`, `version_no`)
@@ -741,8 +701,6 @@ CREATE TABLE IF NOT EXISTS `sancai_visual_asset` (
     `generation_params` text DEFAULT NULL,
     `current_used` tinyint(1) NOT NULL DEFAULT 0,
     `status` varchar(16) NOT NULL DEFAULT 'DRAFT',
-    `operator_user_id` char(26) NOT NULL,
-    `operated_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_sancai_visual_asset_id` (`asset_id`),
     UNIQUE KEY `uk_sancai_visual_asset_version` (`entry_id`, `version_no`),
@@ -760,8 +718,8 @@ CREATE TABLE IF NOT EXISTS `sancai_export_job` (
     `asset_count` int NOT NULL DEFAULT 0,
     `contains_private` tinyint(1) NOT NULL DEFAULT 0,
     `status` varchar(16) NOT NULL DEFAULT 'PENDING',
-    `operator_user_id` char(26) NOT NULL,
-    `operated_at` datetime(3) NOT NULL,
+    `requester_user_id` char(26) NOT NULL,
+    `requested_at` datetime(3) NOT NULL,
     `expires_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_sancai_export_job_id` (`export_id`),
@@ -777,13 +735,14 @@ CREATE TABLE IF NOT EXISTS `sancai_showcase_page` (
     `contains_private` tinyint(1) NOT NULL DEFAULT 0,
     `private_risk_confirmed` tinyint(1) NOT NULL DEFAULT 0,
     `status` varchar(16) NOT NULL DEFAULT 'PENDING',
-    `operator_user_id` char(26) NOT NULL,
-    `operated_at` datetime(3) NOT NULL,
+    `requester_user_id` char(26) NOT NULL,
+    `requested_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_sancai_showcase_page_id` (`showcase_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='三才图会静态展示页面表';
 
 -- db/schema/wangqi.sql
+
 
 CREATE TABLE IF NOT EXISTS `wangqi_document` (
     `id` bigint NOT NULL AUTO_INCREMENT,
@@ -799,7 +758,6 @@ CREATE TABLE IF NOT EXISTS `wangqi_document` (
     `visibility` varchar(16) NOT NULL DEFAULT 'PUBLIC',
     `owner_user_id` char(26) NOT NULL,
     `current_version` int NOT NULL DEFAULT 0,
-    `operated_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_wangqi_document_id` (`document_id`),
     KEY `idx_wangqi_document_file` (`file_object_id`)
@@ -813,7 +771,6 @@ CREATE TABLE IF NOT EXISTS `wangqi_document_qa` (
     `answer` longtext NOT NULL,
     `source` varchar(16) NOT NULL DEFAULT 'MANUAL',
     `sort_order` int NOT NULL DEFAULT 0,
-    `operated_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_wangqi_document_qa_id` (`qa_id`),
     KEY `idx_wangqi_document_qa_document_sort` (`document_id`, `sort_order`)
@@ -827,8 +784,7 @@ CREATE TABLE IF NOT EXISTS `wangqi_document_version` (
     `snapshot_json` longtext NOT NULL,
     `change_type` varchar(32) NOT NULL,
     `change_summary` varchar(512) DEFAULT NULL,
-    `operator_user_id` char(26) NOT NULL,
-    `operated_at` datetime(3) NOT NULL,
+    `versioned_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_wangqi_document_version_id` (`version_id`),
     UNIQUE KEY `uk_wangqi_document_version_no` (`document_id`, `version_no`)
@@ -844,8 +800,8 @@ CREATE TABLE IF NOT EXISTS `wangqi_export_job` (
     `document_count` int NOT NULL DEFAULT 0,
     `contains_private` tinyint(1) NOT NULL DEFAULT 0,
     `status` varchar(16) NOT NULL DEFAULT 'PENDING',
-    `operator_user_id` char(26) NOT NULL,
-    `operated_at` datetime(3) NOT NULL,
+    `requester_user_id` char(26) NOT NULL,
+    `requested_at` datetime(3) NOT NULL,
     `expires_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_wangqi_export_job_id` (`export_id`),
@@ -853,6 +809,7 @@ CREATE TABLE IF NOT EXISTS `wangqi_export_job` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='王圻导出产物表';
 
 -- db/schema/mingcustoms.sql
+
 
 CREATE TABLE IF NOT EXISTS `ming_customs_entry` (
     `id` bigint NOT NULL AUTO_INCREMENT,
@@ -870,7 +827,6 @@ CREATE TABLE IF NOT EXISTS `ming_customs_entry` (
     `visibility` varchar(16) NOT NULL DEFAULT 'PUBLIC',
     `owner_user_id` char(26) NOT NULL,
     `current_version` int NOT NULL DEFAULT 0,
-    `operated_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_ming_customs_entry_id` (`custom_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='明代习俗条目表';
@@ -883,7 +839,6 @@ CREATE TABLE IF NOT EXISTS `ming_customs_qa` (
     `answer` longtext NOT NULL,
     `source` varchar(16) NOT NULL DEFAULT 'MANUAL',
     `sort_order` int NOT NULL DEFAULT 0,
-    `operated_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_ming_customs_qa_id` (`qa_id`),
     KEY `idx_ming_customs_qa_custom_sort` (`custom_id`, `sort_order`)
@@ -897,8 +852,7 @@ CREATE TABLE IF NOT EXISTS `ming_customs_version` (
     `snapshot_json` longtext NOT NULL,
     `change_type` varchar(32) NOT NULL,
     `change_summary` varchar(512) DEFAULT NULL,
-    `operator_user_id` char(26) NOT NULL,
-    `operated_at` datetime(3) NOT NULL,
+    `versioned_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_ming_customs_version_id` (`version_id`),
     UNIQUE KEY `uk_ming_customs_version_no` (`custom_id`, `version_no`)
@@ -914,8 +868,8 @@ CREATE TABLE IF NOT EXISTS `ming_customs_export_job` (
     `custom_count` int NOT NULL DEFAULT 0,
     `contains_private` tinyint(1) NOT NULL DEFAULT 0,
     `status` varchar(16) NOT NULL DEFAULT 'PENDING',
-    `operator_user_id` char(26) NOT NULL,
-    `operated_at` datetime(3) NOT NULL,
+    `requester_user_id` char(26) NOT NULL,
+    `requested_at` datetime(3) NOT NULL,
     `expires_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_ming_customs_export_job_id` (`export_id`),
@@ -923,6 +877,7 @@ CREATE TABLE IF NOT EXISTS `ming_customs_export_job` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='明代习俗导出产物表';
 
 -- db/schema/knowledgegraph.sql
+
 
 CREATE TABLE IF NOT EXISTS `knowledge_graph_entity` (
     `id` bigint NOT NULL AUTO_INCREMENT,
@@ -1059,6 +1014,7 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_lineage_relation` (
 
 -- db/schema/search.sql
 
+
 CREATE TABLE IF NOT EXISTS `search_config` (
     `id` bigint NOT NULL AUTO_INCREMENT,
     `config_id` char(26) NOT NULL,
@@ -1066,8 +1022,6 @@ CREATE TABLE IF NOT EXISTS `search_config` (
     `config_value` text NOT NULL,
     `description` varchar(512) DEFAULT NULL,
     `enabled` tinyint(1) NOT NULL DEFAULT 1,
-    `operator_user_id` char(26) NOT NULL,
-    `operated_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_search_config_id` (`config_id`),
     UNIQUE KEY `uk_search_config_key` (`config_key`)
@@ -1108,6 +1062,7 @@ CREATE TABLE IF NOT EXISTS `search_click_log` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='搜索点击日志表';
 
 -- db/schema/qa.sql
+
 
 CREATE TABLE IF NOT EXISTS `qa_session` (
     `id` bigint NOT NULL AUTO_INCREMENT,
@@ -1203,6 +1158,7 @@ CREATE TABLE IF NOT EXISTS `qa_session_export` (
 
 -- db/schema/sharing.sql
 
+
 CREATE TABLE IF NOT EXISTS `sharing_link` (
     `id` bigint NOT NULL AUTO_INCREMENT,
     `share_id` char(26) NOT NULL,
@@ -1213,13 +1169,8 @@ CREATE TABLE IF NOT EXISTS `sharing_link` (
     `status` varchar(16) NOT NULL DEFAULT 'ACTIVE',
     `contains_private` tinyint(1) NOT NULL DEFAULT 0,
     `risk_confirmed` tinyint(1) NOT NULL DEFAULT 0,
-    `risk_confirmer_user_id` char(26) DEFAULT NULL,
-    `risk_confirmed_at` datetime(3) DEFAULT NULL,
     `issued_at` datetime(3) NOT NULL,
     `expires_at` datetime(3) DEFAULT NULL,
-    `revoked_at` datetime(3) DEFAULT NULL,
-    `restored_at` datetime(3) DEFAULT NULL,
-    `last_accessed_at` datetime(3) DEFAULT NULL,
     `access_count` bigint NOT NULL DEFAULT 0,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_sharing_link_id` (`share_id`),
@@ -1246,6 +1197,7 @@ CREATE TABLE IF NOT EXISTS `sharing_target` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='分享目标表';
 
 -- db/schema/operations.sql
+
 
 CREATE TABLE IF NOT EXISTS `operations_report` (
     `id` bigint NOT NULL AUTO_INCREMENT,
@@ -1351,6 +1303,7 @@ CREATE TABLE IF NOT EXISTS `operations_health_check` (
 
 -- db/data/sys.sql
 
+
 INSERT INTO `sys_user` (
     `user_id`, `name`, `email`, `mobile`, `tel`, `avatar_object_id`, `rank`,
     `privilege`, `status`, `remarks`
@@ -1434,6 +1387,7 @@ INSERT IGNORE INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES
 
 -- db/data/auth.sql
 
+
 -- Initial admin account:
 --   login name: admin
 --   password credential value is a placeholder and must be rotated before production use.
@@ -1480,13 +1434,16 @@ INSERT INTO `auth_principal_credential` (
 
 -- db/data/audit.sql
 
+
 -- Audit has no required seed data.
 
 -- db/data/storage.sql
 
+
 -- Storage has no required seed data.
 
 -- db/data/aiconfig.sql
+
 
 INSERT INTO `ai_capability` (
     `capability`, `name`, `required_tags`, `enabled`, `sort_order`
@@ -1510,17 +1467,21 @@ ON DUPLICATE KEY UPDATE
 
 -- db/data/airefinement.sql
 
+
 -- AI Refinement has no required seed data.
 
 -- db/data/datarefinement.sql
+
 
 -- Data Refinement has no required seed data.
 
 -- db/data/taxonomy.sql
 
+
 -- Taxonomy has no required seed data.
 
 -- db/data/sancai.sql
+
 
 INSERT INTO `sancai_category` (
     `category_code`, `name`, `formal`, `sort_order`, `description`
@@ -1566,22 +1527,28 @@ INSERT INTO `sancai_volume` (
 
 -- db/data/wangqi.sql
 
+
 -- Wangqi has no required seed data.
 
 -- db/data/mingcustoms.sql
+
 
 -- Ming Customs has no required seed data.
 
 -- db/data/knowledgegraph.sql
 
+
 -- Knowledge Graph has no required seed data.
 
 -- db/data/search.sql
+
 
 -- Search has no required seed data.
 
 -- db/data/qa.sql
 
+
 -- db/data/sharing.sql
+
 
 -- db/data/operations.sql

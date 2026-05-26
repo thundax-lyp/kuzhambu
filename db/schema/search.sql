@@ -7,8 +7,6 @@ CREATE TABLE IF NOT EXISTS `search_config` (
     `config_value` text NOT NULL,
     `description` varchar(512) DEFAULT NULL,
     `enabled` tinyint(1) NOT NULL DEFAULT 1,
-    `operator_user_id` char(26) NOT NULL,
-    `operated_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_search_config_id` (`config_id`),
     UNIQUE KEY `uk_search_config_key` (`config_key`)

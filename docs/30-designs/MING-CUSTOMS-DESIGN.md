@@ -117,6 +117,7 @@ Ming Customs 表固定使用 `ming_customs_` 前缀。所有对外标识使用 U
 | `snapshot_json` | `snapshotJson` | 是 | 习俗快照 JSON |
 | `change_type` | `changeType` | 是 | `MANUAL_SAVE` / `AI_APPLY` / `RESTORE` |
 | `change_summary` | `changeSummary` | 否 | 变更摘要 |
+| `versioned_at` | `versionedAt` | 是 | 版本生成时间 |
 
 约束：
 - 手动保存、AI 结果应用和历史恢复产生正式版本。
@@ -137,6 +138,8 @@ Ming Customs 表固定使用 `ming_customs_` 前缀。所有对外标识使用 U
 | `custom_count` | `customCount` | 是 | 习俗条目数量 |
 | `contains_private` | `containsPrivate` | 是 | 是否包含私有习俗 |
 | `status` | `status` | 是 | `PENDING` / `DONE` / `FAILED` / `EXPIRED` |
+| `requester_user_id` | `requesterUserId` | 是 | 导出请求用户 |
+| `requested_at` | `requestedAt` | 是 | 导出请求时间 |
 | `expires_at` | `expiresAt` | 是 | 过期时间 |
 
 约束：

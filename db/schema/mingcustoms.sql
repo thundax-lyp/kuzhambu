@@ -16,7 +16,6 @@ CREATE TABLE IF NOT EXISTS `ming_customs_entry` (
     `visibility` varchar(16) NOT NULL DEFAULT 'PUBLIC',
     `owner_user_id` char(26) NOT NULL,
     `current_version` int NOT NULL DEFAULT 0,
-    `operated_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_ming_customs_entry_id` (`custom_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='明代习俗条目表';
@@ -29,7 +28,6 @@ CREATE TABLE IF NOT EXISTS `ming_customs_qa` (
     `answer` longtext NOT NULL,
     `source` varchar(16) NOT NULL DEFAULT 'MANUAL',
     `sort_order` int NOT NULL DEFAULT 0,
-    `operated_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_ming_customs_qa_id` (`qa_id`),
     KEY `idx_ming_customs_qa_custom_sort` (`custom_id`, `sort_order`)
@@ -43,8 +41,7 @@ CREATE TABLE IF NOT EXISTS `ming_customs_version` (
     `snapshot_json` longtext NOT NULL,
     `change_type` varchar(32) NOT NULL,
     `change_summary` varchar(512) DEFAULT NULL,
-    `operator_user_id` char(26) NOT NULL,
-    `operated_at` datetime(3) NOT NULL,
+    `versioned_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_ming_customs_version_id` (`version_id`),
     UNIQUE KEY `uk_ming_customs_version_no` (`custom_id`, `version_no`)
@@ -60,8 +57,8 @@ CREATE TABLE IF NOT EXISTS `ming_customs_export_job` (
     `custom_count` int NOT NULL DEFAULT 0,
     `contains_private` tinyint(1) NOT NULL DEFAULT 0,
     `status` varchar(16) NOT NULL DEFAULT 'PENDING',
-    `operator_user_id` char(26) NOT NULL,
-    `operated_at` datetime(3) NOT NULL,
+    `requester_user_id` char(26) NOT NULL,
+    `requested_at` datetime(3) NOT NULL,
     `expires_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_ming_customs_export_job_id` (`export_id`),

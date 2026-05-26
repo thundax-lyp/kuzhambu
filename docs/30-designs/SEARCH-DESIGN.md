@@ -66,13 +66,12 @@ Search 表固定使用 `search_` 前缀。所有对外标识使用 ULID，数据
 | `config_value` | `configValue` | 是 | 配置值 JSON |
 | `description` | `description` | 否 | 配置说明 |
 | `enabled` | `enabled` | 是 | 是否启用 |
-| `operator_user_id` | `operatorUserId` | 是 | 操作人 |
-| `operated_at` | `operatedAt` | 是 | 操作时间 |
 
 约束：
 - `config_key` 唯一。
 - 同义词扩展必须有数量限制。
 - 停用词和重排序候选数通过配置表达，不硬编码在业务流程中。
+- 搜索配置变更的操作人、操作时间和变更内容进入 Audit，不进入配置表。
 
 ### search_query_log
 
