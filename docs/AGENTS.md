@@ -32,6 +32,8 @@
   再读 `40-readiness/PR-WORKFLOW.md`。
 - 接口、协议、配置契约变化：
   按需读 `20-interfaces/`。
+- UI 风格、前端体验、页面布局或交互原则变化：
+  读 `00-governance/UI-RULES.md`。
 - 专项方案、路线图、跨模块设计：
   按需读 `30-designs/`。
 - 上线、发布、运维准备：

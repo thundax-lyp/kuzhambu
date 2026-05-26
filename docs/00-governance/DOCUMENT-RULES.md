@@ -17,6 +17,7 @@
 
 - 架构和模块边界：[`ARCHITECTURE.md`](./ARCHITECTURE.md)
 - 命名、目录和文件归属：[`NAMING-AND-PLACEMENT-RULES.md`](./NAMING-AND-PLACEMENT-RULES.md)
+- UI 风格和交互原则：[`UI-RULES.md`](./UI-RULES.md)
 - TODO 协作、删除、测试检查和提交收口：[`TODO-RULES.md`](./TODO-RULES.md)
 - 文档写作、路由和提交口径：本文档
 
