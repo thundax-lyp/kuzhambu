@@ -50,8 +50,8 @@
 
 ## Infrastructure Layer
 
-- Repository：
-- Mapper：
+- Repository：业务域持久化端口实现，面向聚合读写。
+- Mapper：MyBatis 数据库访问对象，按表或查询组织。
 - PersistenceAssembler：
 - 外部客户端：
 - 缓存：

@@ -28,6 +28,8 @@
 - `biz` 和 `infra` 内部按业务域分包，不使用 `infra/shared`。
 - `biz/kuzhambu-biz-<domain>/` 内部使用 `application/` 和 `domain/` 分层包，不建立独立 application Maven 模块。
 - `infra/kuzhambu-infra-<domain>/` 内部按需使用 `persistence/`、`mapper/`、`repository/`、`assembler/`、`client/` 包。
+- `repository/` 放业务域持久化端口的实现，命名为 `*Repository`，面向聚合读写，不按数据库表裸访问命名。
+- `mapper/` 放 MyBatis 数据库访问对象，命名为 `*Mapper`，只表达 DB 表读写实现细节。
 - 持久化转换类命名为 `*PersistenceAssembler`，放在对应业务域 infra 子工程的 `assembler/` 包。
 - 跨业务域技术能力使用 `common-*` 模块承载。
 - 后台接口入口服务放在 `kuzhambu-servers/interfaces/kuzhambu-admin-api/`。

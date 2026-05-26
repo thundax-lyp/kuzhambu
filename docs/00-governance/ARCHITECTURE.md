@@ -66,6 +66,8 @@
 - `application/` 承载用例编排、事务边界、命令、查询和结果对象；`domain/` 承载业务模型、领域服务和业务规则。
 - `kuzhambu-servers/infra/<domain>/` 承载该业务域的数据访问、持久化转换和外部技术落地。
 - `infra` 子工程内部按需使用 `persistence/`、`mapper/`、`repository/`、`assembler/`、`client/` 等包。
+- `Repository` 表达业务域持久化端口，面向 application/domain 提供聚合读写能力，不等同于数据库表访问对象。
+- `Mapper` 表达数据库访问实现细节，按 MyBatis 和表结构组织，只能被本业务域 infra 内的 Repository 实现调用。
 - 持久化转换统一命名为 `*PersistenceAssembler`，归入对应 `infra-<domain>` 的 `assembler/` 包。
 - `kuzhambu-servers/biz/` 和 `kuzhambu-servers/infra/` 必须按业务域拆分为 Maven 子工程。
 - `infra-<domain>` 只能依赖对应的 `biz-<domain>` 和 `common-*`，不得依赖其他 `infra-*` 子工程。
@@ -84,7 +86,7 @@
 - 跨模块引用、审计对象引用、导出引用、发布引用和 URL 参数不得使用数据库自增 ID。
 - 数据库表可以保留自增 `bigint` 作为内部技术主键，但业务逻辑不得依赖其跨边界传播。
 - 业务表不得设置通用审计字段 `created_at`、`updated_at`、`deleted_at`、`created_by`、`updated_by`、`deleted_by`；通用创建、更新、删除审计归属 `audit` 业务域。
-- 业务确实需要表达时间、操作者或生命周期时，必须使用业务语义命名，例如 `occurred_at`、`requested_at`、`completed_at`、`expires_at`、`owner_user_id`、`operator_user_id`，不得用审计字段伪装业务字段。
+- 业务确实需要表达时间、用户或生命周期时，必须使用业务语义命名，例如 `occurred_at`、`requested_at`、`completed_at`、`expires_at`、`owner_user_id`、`requester_user_id`，不得用审计字段伪装业务字段。
 - 分享链接、访问凭证和下载凭证必须使用独立随机 token，不得直接暴露业务 ULID。
 - Python worker 本地虚拟环境固定使用 `kuzhambu-workers/.venv/`，不得提交虚拟环境目录。
 - Java 主系统原则上通过 HTTP request 调用 Python worker。
