@@ -3,7 +3,7 @@
 ## Read Order
 
 - Read `docs/AGENTS.md` first for document routing.
-- For implementation work, read `docs/00-governance/ARCHITECTURE.md`.
+- For implementation work, read `docs/00-governance/ARCHITECTURE.md`; for Java servers work also read `docs/00-governance/SERVERS-ARCHITECTURE.md`.
 - Do not treat root `README.md` as implementation authority.
 
 ## Project Structure & Module Organization
@@ -26,7 +26,7 @@ If Maven is chosen, use `./mvnw test` and `./mvnw package`. Prefer checked-in wr
 
 ## Coding Style & Naming Conventions
 
-Follow idiomatic Java conventions unless another language is introduced: 4-space indentation, `PascalCase` classes, `camelCase` methods and variables, and `UPPER_SNAKE_CASE` constants. Keep package names lowercase, for example `com.github.thundax.kuzhambu`.
+Follow idiomatic Java conventions unless another language is introduced: 4-space indentation, `PascalCase` classes, `camelCase` methods and variables, and `UPPER_SNAKE_CASE` constants. Keep package names lowercase, for example `com.thundax.kuzhambu`.
 
 Follow module-local patterns once a module establishes its own build system, style, or test layout. Avoid unrelated refactors.
 
