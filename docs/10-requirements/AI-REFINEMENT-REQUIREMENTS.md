@@ -18,11 +18,11 @@ AI 内容精修模块定义把 AI 能力应用于内容整理流程的需求。
 
 不覆盖：
 - AI 服务和提示词后台配置。
-- 视觉资产完整创作工作流。
+- 三才图会视觉资产完整创作工作流。
 - 智能问答会话。
 - 知识图谱提取。
 - 摘要、标签和问答对在内容页中的长期维护。
-- 视觉资产的信息融合、视觉描述生成和生图工作流。
+- 视觉资产的信息融合、视觉描述生成、AI 生图和产物版本管理。
 - 视频和音频处理。
 
 
@@ -84,7 +84,6 @@ AI 内容精修模块定义把 AI 能力应用于内容整理流程的需求。
 - [WANGQI-DOCUMENT-REQUIREMENTS.md](./WANGQI-DOCUMENT-REQUIREMENTS.md)：承接王圻文档摘要、标签和问答对生成结果的内联维护。
 - [MING-CUSTOMS-REQUIREMENTS.md](./MING-CUSTOMS-REQUIREMENTS.md)：承接明代习俗摘要、标签和问答对生成结果的内联维护。
 - [TAXONOMY-REQUIREMENTS.md](./TAXONOMY-REQUIREMENTS.md)：负责统一标签治理；本模块只负责标签提取和候选确认。
-- [VISUAL-ASSET-REQUIREMENTS.md](./VISUAL-ASSET-REQUIREMENTS.md)：负责视觉资产完整创作工作流；本模块只覆盖三才图会图片理解。
 
 ## Open Items
 
