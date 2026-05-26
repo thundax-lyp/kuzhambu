@@ -73,17 +73,13 @@ Wangqi 表固定使用 `wangqi_` 前缀。所有对外标识使用 ULID，数据
 | `word_count` | `wordCount` | 是 | 字数统计 |
 | `document_time` | `documentTime` | 否 | 文档时间线排序时间 |
 | `visibility` | `visibility` | 是 | `PUBLIC` / `PRIVATE` |
-| `owner_user_id` | `ownerUserId` | 是 | 创建者用户 ULID |
+| `owner_user_id` | `ownerUserId` | 是 | 归属用户 ULID |
 | `current_version` | `currentVersion` | 是 | 当前正式版本号 |
-| `created_at` | `createdAt` | 是 | 创建时间 |
-| `updated_at` | `updatedAt` | 是 | 更新时间 |
-| `deleted_at` | `deletedAt` | 否 | 删除时间 |
 
 约束：
 - `document_id` 唯一。
 - 王圻文档没有草稿、发布或归档生命周期；平台内可见性只由 `visibility` 表达。
 - 文件缺失或 `file_object_id` 为空时，正文仍应可阅读。
-- 时间线按 `document_time` 排序；没有文档时间时按 `created_at` 排序。
 - `tags_snapshot` 只做展示缓存，标签权威关系由 Taxonomy 维护。
 
 ### wangqi_document_qa
@@ -99,8 +95,6 @@ Wangqi 表固定使用 `wangqi_` 前缀。所有对外标识使用 ULID，数据
 | `answer` | `answer` | 是 | 答案 |
 | `source` | `source` | 是 | `MANUAL` / `AI_APPLIED` |
 | `sort_order` | `sortOrder` | 是 | 排序 |
-| `created_at` | `createdAt` | 是 | 创建时间 |
-| `updated_at` | `updatedAt` | 是 | 更新时间 |
 
 约束：
 - 问答对属于文档上下文，不是独立数据精修工作台对象。
@@ -119,8 +113,6 @@ Wangqi 表固定使用 `wangqi_` 前缀。所有对外标识使用 ULID，数据
 | `snapshot_json` | `snapshotJson` | 是 | 文档快照 JSON |
 | `change_type` | `changeType` | 是 | `MANUAL_SAVE` / `AI_APPLY` / `RESTORE` |
 | `change_summary` | `changeSummary` | 否 | 变更摘要 |
-| `created_by` | `createdBy` | 是 | 操作者用户 ULID |
-| `created_at` | `createdAt` | 是 | 创建时间 |
 
 约束：
 - 手动保存、AI 结果应用和历史恢复产生正式版本。
@@ -142,8 +134,6 @@ Wangqi 表固定使用 `wangqi_` 前缀。所有对外标识使用 ULID，数据
 | `document_count` | `documentCount` | 是 | 文档数量 |
 | `contains_private` | `containsPrivate` | 是 | 是否包含私有文档 |
 | `status` | `status` | 是 | `PENDING` / `DONE` / `FAILED` / `EXPIRED` |
-| `created_by` | `createdBy` | 是 | 创建人 |
-| `created_at` | `createdAt` | 是 | 创建时间 |
 | `expires_at` | `expiresAt` | 是 | 过期时间 |
 
 约束：

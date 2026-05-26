@@ -42,8 +42,6 @@ Auth 数据库表固定使用 `auth_` 前缀。运行态对象使用 Redis / cac
 | `identity_type` | `identityType` | 是 | 当前固定 `USER_ACCOUNT`，可支持 `USER_MOBILE`、`USER_EMAIL` |
 | `identity_value` | `identityValue` | 是 | 规范化后的登录标识 |
 | `status` | `status` | 是 | `ENABLED` / `DISABLED` |
-| `created_at` | `createdAt` | 是 | 创建时间 |
-| `updated_at` | `updatedAt` | 是 | 更新时间 |
 
 约束：
 - 唯一约束：`identity_type + identity_value`。
@@ -70,8 +68,6 @@ Auth 数据库表固定使用 `auth_` 前缀。运行态对象使用 Redis / cac
 | `locked_until` | `lockedUntil` | 否 | 锁定截止时间 |
 | `expires_at` | `expiresAt` | 否 | 凭据过期时间 |
 | `last_verified_at` | `lastVerifiedAt` | 否 | 最近验证时间 |
-| `created_at` | `createdAt` | 是 | 创建时间 |
-| `updated_at` | `updatedAt` | 是 | 更新时间 |
 
 约束：
 - 唯一约束：`identity_id + credential_type`。

@@ -12,8 +12,6 @@ CREATE TABLE IF NOT EXISTS `sys_user` (
     `privilege` varchar(16) NOT NULL DEFAULT 'NORMAL',
     `status` varchar(16) NOT NULL DEFAULT 'ENABLED',
     `remarks` varchar(512) DEFAULT NULL,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updated_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_sys_user_user_id` (`user_id`),
     KEY `idx_sys_user_status` (`status`, `id`),
@@ -28,8 +26,6 @@ CREATE TABLE IF NOT EXISTS `sys_role` (
     `status` varchar(16) NOT NULL DEFAULT 'ENABLED',
     `priority` int NOT NULL DEFAULT 0,
     `remarks` varchar(512) DEFAULT NULL,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updated_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_sys_role_role_id` (`role_id`),
     KEY `idx_sys_role_status` (`status`, `priority`)
@@ -48,8 +44,6 @@ CREATE TABLE IF NOT EXISTS `sys_menu` (
     `target` varchar(64) DEFAULT NULL,
     `priority` int NOT NULL DEFAULT 0,
     `remarks` varchar(512) DEFAULT NULL,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updated_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_sys_menu_menu_id` (`menu_id`),
     KEY `idx_sys_menu_parent` (`parent_menu_id`, `priority`),
@@ -59,7 +53,6 @@ CREATE TABLE IF NOT EXISTS `sys_menu` (
 CREATE TABLE IF NOT EXISTS `sys_user_role` (
     `user_id` char(26) NOT NULL,
     `role_id` char(26) NOT NULL,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     PRIMARY KEY (`user_id`, `role_id`),
     KEY `idx_sys_user_role_role` (`role_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户角色关系表';
@@ -67,7 +60,6 @@ CREATE TABLE IF NOT EXISTS `sys_user_role` (
 CREATE TABLE IF NOT EXISTS `sys_role_menu` (
     `role_id` char(26) NOT NULL,
     `menu_id` char(26) NOT NULL,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     PRIMARY KEY (`role_id`, `menu_id`),
     KEY `idx_sys_role_menu_menu` (`menu_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='角色菜单关系表';

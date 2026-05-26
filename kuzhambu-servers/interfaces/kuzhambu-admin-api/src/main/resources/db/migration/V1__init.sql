@@ -16,8 +16,6 @@ CREATE TABLE IF NOT EXISTS `sys_user` (
     `privilege` varchar(16) NOT NULL DEFAULT 'NORMAL',
     `status` varchar(16) NOT NULL DEFAULT 'ENABLED',
     `remarks` varchar(512) DEFAULT NULL,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updated_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_sys_user_user_id` (`user_id`),
     KEY `idx_sys_user_status` (`status`, `id`),
@@ -32,8 +30,6 @@ CREATE TABLE IF NOT EXISTS `sys_role` (
     `status` varchar(16) NOT NULL DEFAULT 'ENABLED',
     `priority` int NOT NULL DEFAULT 0,
     `remarks` varchar(512) DEFAULT NULL,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updated_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_sys_role_role_id` (`role_id`),
     KEY `idx_sys_role_status` (`status`, `priority`)
@@ -52,8 +48,6 @@ CREATE TABLE IF NOT EXISTS `sys_menu` (
     `target` varchar(64) DEFAULT NULL,
     `priority` int NOT NULL DEFAULT 0,
     `remarks` varchar(512) DEFAULT NULL,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updated_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_sys_menu_menu_id` (`menu_id`),
     KEY `idx_sys_menu_parent` (`parent_menu_id`, `priority`),
@@ -63,7 +57,6 @@ CREATE TABLE IF NOT EXISTS `sys_menu` (
 CREATE TABLE IF NOT EXISTS `sys_user_role` (
     `user_id` char(26) NOT NULL,
     `role_id` char(26) NOT NULL,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     PRIMARY KEY (`user_id`, `role_id`),
     KEY `idx_sys_user_role_role` (`role_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户角色关系表';
@@ -71,7 +64,6 @@ CREATE TABLE IF NOT EXISTS `sys_user_role` (
 CREATE TABLE IF NOT EXISTS `sys_role_menu` (
     `role_id` char(26) NOT NULL,
     `menu_id` char(26) NOT NULL,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     PRIMARY KEY (`role_id`, `menu_id`),
     KEY `idx_sys_role_menu_menu` (`menu_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='角色菜单关系表';
@@ -88,8 +80,6 @@ CREATE TABLE IF NOT EXISTS `auth_principal_identity` (
     `identity_type` varchar(32) NOT NULL,
     `identity_value` varchar(255) NOT NULL,
     `status` varchar(16) NOT NULL DEFAULT 'ENABLED',
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updated_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_auth_principal_identity_id` (`identity_id`),
     UNIQUE KEY `uk_auth_principal_identity_type_value` (`identity_type`, `identity_value`),
@@ -111,8 +101,6 @@ CREATE TABLE IF NOT EXISTS `auth_principal_credential` (
     `locked_until` datetime(3) DEFAULT NULL,
     `expires_at` datetime(3) DEFAULT NULL,
     `last_verified_at` datetime(3) DEFAULT NULL,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updated_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_auth_principal_credential_id` (`credential_id`),
     UNIQUE KEY `uk_auth_principal_credential_identity_type` (`identity_id`, `credential_type`),
@@ -157,7 +145,7 @@ CREATE TABLE IF NOT EXISTS `audit_meta` (
     `last_operator_name` varchar(128) DEFAULT NULL,
     `last_operated_at` datetime(3) NOT NULL,
     `created_log_id` char(26) NOT NULL,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `first_operated_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_audit_meta_meta_id` (`meta_id`),
     UNIQUE KEY `uk_audit_meta_object` (`object_type`, `object_id`),
@@ -219,8 +207,6 @@ CREATE TABLE IF NOT EXISTS `storage_object` (
     `access_endpoint` varchar(1024) DEFAULT NULL,
     `object_status` varchar(16) NOT NULL DEFAULT 'ACTIVE',
     `reference_status` varchar(16) NOT NULL DEFAULT 'UNREFERENCED',
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updated_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_storage_object_id` (`object_id`),
     UNIQUE KEY `uk_storage_object_key` (`bucket_name`, `object_key`),
@@ -235,7 +221,6 @@ CREATE TABLE IF NOT EXISTS `storage_object_reference` (
     `reference_owner_id` varchar(64) NOT NULL,
     `owner_params` text DEFAULT NULL,
     `reference_status` varchar(16) NOT NULL DEFAULT 'REFERENCED',
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     PRIMARY KEY (`object_id`, `reference_owner_type`, `reference_owner_id`),
     KEY `idx_storage_object_reference_owner` (`reference_owner_type`, `reference_owner_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='存储对象引用关系表';
@@ -257,8 +242,6 @@ CREATE TABLE IF NOT EXISTS `storage_multipart_upload` (
     `upload_status` varchar(16) NOT NULL DEFAULT 'INITIATED',
     `completed_at` datetime(3) DEFAULT NULL,
     `aborted_at` datetime(3) DEFAULT NULL,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updated_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_storage_multipart_upload_id` (`upload_id`),
     KEY `idx_storage_multipart_upload_owner` (`owner_type`, `owner_id`, `upload_status`),
@@ -271,7 +254,6 @@ CREATE TABLE IF NOT EXISTS `storage_multipart_upload_part` (
     `part_number` int NOT NULL,
     `etag` varchar(255) NOT NULL,
     `size` bigint NOT NULL,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_storage_multipart_upload_part` (`upload_id`, `part_number`),
     KEY `idx_storage_multipart_upload_part_upload` (`upload_id`)
@@ -290,8 +272,8 @@ CREATE TABLE IF NOT EXISTS `ai_service_config` (
     `enabled` tinyint(1) NOT NULL DEFAULT 1,
     `status` varchar(16) NOT NULL DEFAULT 'UNAVAILABLE',
     `last_checked_at` datetime(3) DEFAULT NULL,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updated_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+    `tested_at` datetime(3) NOT NULL,
+    `configured_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_ai_service_config_id` (`service_id`),
     UNIQUE KEY `uk_ai_service_config_source` (`api_source`)
@@ -306,8 +288,8 @@ CREATE TABLE IF NOT EXISTS `ai_model` (
     `capability_tags` text NOT NULL,
     `description` varchar(1024) DEFAULT NULL,
     `enabled` tinyint(1) NOT NULL DEFAULT 1,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updated_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+    `authored_at` datetime(3) NOT NULL,
+    `configured_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_ai_model_id` (`model_id`),
     UNIQUE KEY `uk_ai_model_source_name` (`api_source`, `model_name`),
@@ -323,10 +305,9 @@ CREATE TABLE IF NOT EXISTS `ai_model_test_record` (
     `status` varchar(16) NOT NULL,
     `latency_ms` int DEFAULT NULL,
     `error_message` varchar(1024) DEFAULT NULL,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `recorded_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_ai_model_test_record_id` (`test_id`),
-    KEY `idx_ai_model_test_record_model` (`model_id`, `created_at`)
+    UNIQUE KEY `uk_ai_model_test_record_id` (`test_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='AI模型检测记录表';
 
 CREATE TABLE IF NOT EXISTS `ai_capability` (
@@ -346,8 +327,8 @@ CREATE TABLE IF NOT EXISTS `ai_capability_mapping` (
     `mapping_id` char(26) NOT NULL,
     `capability` varchar(32) NOT NULL,
     `model_id` char(26) NOT NULL,
-    `updated_by` char(26) NOT NULL,
-    `updated_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+    `mapped_by` char(26) NOT NULL,
+    `configured_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_ai_capability_mapping_id` (`mapping_id`),
     UNIQUE KEY `uk_ai_capability_mapping_capability` (`capability`),
@@ -364,8 +345,8 @@ CREATE TABLE IF NOT EXISTS `ai_prompt` (
     `variables_snapshot` text NOT NULL,
     `description` varchar(1024) DEFAULT NULL,
     `active` tinyint(1) NOT NULL DEFAULT 1,
-    `created_by` char(26) NOT NULL,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `authored_by` char(26) NOT NULL,
+    `registered_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_ai_prompt_id` (`prompt_id`),
     UNIQUE KEY `uk_ai_prompt_version` (`scope`, `capability`, `version_no`),
@@ -387,12 +368,9 @@ CREATE TABLE IF NOT EXISTS `ai_call_metric` (
     `output_tokens` int NOT NULL DEFAULT 0,
     `cost_amount` decimal(18, 6) NOT NULL DEFAULT 0.000000,
     `error_message` varchar(1024) DEFAULT NULL,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `registered_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_ai_call_metric_id` (`metric_id`),
-    KEY `idx_ai_call_metric_capability_time` (`capability`, `created_at`),
-    KEY `idx_ai_call_metric_model_time` (`model_id`, `created_at`),
-    KEY `idx_ai_call_metric_success` (`success`, `created_at`)
+    UNIQUE KEY `uk_ai_call_metric_id` (`metric_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='AI调用指标表';
 
 
@@ -413,16 +391,14 @@ CREATE TABLE IF NOT EXISTS `ai_refinement_candidate` (
     `prompt_id` char(26) DEFAULT NULL,
     `model_name` varchar(255) DEFAULT NULL,
     `error_message` varchar(1024) DEFAULT NULL,
-    `created_by` char(26) NOT NULL,
+    `requested_by` char(26) NOT NULL,
     `applied_by` char(26) DEFAULT NULL,
     `applied_at` datetime(3) DEFAULT NULL,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updated_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+    `requested_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_ai_refinement_candidate_id` (`candidate_id`),
     KEY `idx_ai_refinement_candidate_target` (`content_type`, `content_id`, `operation_type`),
-    KEY `idx_ai_refinement_candidate_batch` (`batch_id`, `status`),
-    KEY `idx_ai_refinement_candidate_status` (`status`, `created_at`)
+    KEY `idx_ai_refinement_candidate_batch` (`batch_id`, `status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='AI精修候选结果表';
 
 CREATE TABLE IF NOT EXISTS `ai_refinement_batch` (
@@ -435,14 +411,11 @@ CREATE TABLE IF NOT EXISTS `ai_refinement_batch` (
     `success_count` int NOT NULL DEFAULT 0,
     `failed_count` int NOT NULL DEFAULT 0,
     `cancelled_count` int NOT NULL DEFAULT 0,
-    `created_by` char(26) NOT NULL,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updated_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+    `requested_by` char(26) NOT NULL,
+    `requested_at` datetime(3) NOT NULL,
     `cancelled_at` datetime(3) DEFAULT NULL,
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_ai_refinement_batch_id` (`batch_id`),
-    KEY `idx_ai_refinement_batch_creator` (`created_by`, `created_at`),
-    KEY `idx_ai_refinement_batch_status` (`status`, `updated_at`)
+    UNIQUE KEY `uk_ai_refinement_batch_id` (`batch_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='AI精修批量操作表';
 
 CREATE TABLE IF NOT EXISTS `ai_refinement_batch_item` (
@@ -454,8 +427,7 @@ CREATE TABLE IF NOT EXISTS `ai_refinement_batch_item` (
     `candidate_id` char(26) DEFAULT NULL,
     `status` varchar(16) NOT NULL DEFAULT 'PENDING',
     `error_message` varchar(1024) DEFAULT NULL,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updated_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+    `requested_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_ai_refinement_batch_item_id` (`batch_item_id`),
     UNIQUE KEY `uk_ai_refinement_batch_item_target` (`batch_id`, `content_id`, `object_id`),
@@ -471,8 +443,7 @@ CREATE TABLE IF NOT EXISTS `image_analysis_cache` (
     `analysis_markdown` longtext NOT NULL,
     `prompt_id` char(26) DEFAULT NULL,
     `model_name` varchar(255) DEFAULT NULL,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updated_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+    `requested_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_image_analysis_cache_id` (`cache_id`),
     UNIQUE KEY `uk_image_analysis_cache_object_hash` (`object_id`, `content_hash`),
@@ -490,8 +461,7 @@ CREATE TABLE IF NOT EXISTS `taxonomy_category` (
     `description` varchar(512) DEFAULT NULL,
     `sort_order` int NOT NULL DEFAULT 0,
     `enabled` tinyint(1) NOT NULL DEFAULT 1,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updated_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+    `operated_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_taxonomy_category_id` (`category_id`),
     UNIQUE KEY `uk_taxonomy_category_name` (`name`),
@@ -507,11 +477,10 @@ CREATE TABLE IF NOT EXISTS `taxonomy_tag` (
     `status` varchar(32) NOT NULL DEFAULT 'PENDING_REVIEW',
     `source` varchar(32) NOT NULL DEFAULT 'AI_EXTRACTED',
     `merge_target_tag_id` char(26) DEFAULT NULL,
-    `created_by` char(26) DEFAULT NULL,
+    `operator_user_id` char(26) DEFAULT NULL,
     `reviewed_by` char(26) DEFAULT NULL,
     `reviewed_at` datetime(3) DEFAULT NULL,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updated_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+    `operated_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_taxonomy_tag_id` (`tag_id`),
     UNIQUE KEY `uk_taxonomy_tag_name` (`tag_name`),
@@ -525,8 +494,8 @@ CREATE TABLE IF NOT EXISTS `taxonomy_tag_alias` (
     `tag_id` char(26) NOT NULL,
     `alias_name` varchar(128) NOT NULL,
     `source` varchar(16) NOT NULL DEFAULT 'MANUAL',
-    `created_by` char(26) NOT NULL,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `operator_user_id` char(26) NOT NULL,
+    `operated_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_taxonomy_tag_alias_id` (`alias_id`),
     UNIQUE KEY `uk_taxonomy_tag_alias_name` (`alias_name`),
@@ -540,8 +509,8 @@ CREATE TABLE IF NOT EXISTS `taxonomy_content_tag_relation` (
     `content_id` char(26) NOT NULL,
     `tag_id` char(26) NOT NULL,
     `source` varchar(32) NOT NULL DEFAULT 'MANUAL',
-    `created_by` char(26) DEFAULT NULL,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `operator_user_id` char(26) DEFAULT NULL,
+    `operated_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_taxonomy_content_tag_relation_id` (`relation_id`),
     UNIQUE KEY `uk_taxonomy_content_tag_relation` (`content_type`, `content_id`, `tag_id`),
@@ -555,9 +524,8 @@ CREATE TABLE IF NOT EXISTS `taxonomy_synonym` (
     `term` varchar(128) NOT NULL,
     `synonym` varchar(128) NOT NULL,
     `enabled` tinyint(1) NOT NULL DEFAULT 1,
-    `created_by` char(26) NOT NULL,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updated_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+    `operator_user_id` char(26) NOT NULL,
+    `operated_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_taxonomy_synonym_id` (`synonym_id`),
     UNIQUE KEY `uk_taxonomy_synonym_pair` (`term`, `synonym`),
@@ -573,11 +541,9 @@ CREATE TABLE IF NOT EXISTS `taxonomy_operation_log` (
     `target_tag_id` char(26) DEFAULT NULL,
     `detail_json` text DEFAULT NULL,
     `operator_user_id` char(26) NOT NULL,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `operated_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_taxonomy_operation_log_id` (`operation_id`),
-    KEY `idx_taxonomy_operation_log_tag` (`tag_id`, `created_at`),
-    KEY `idx_taxonomy_operation_log_operator` (`operator_user_id`, `created_at`)
+    UNIQUE KEY `uk_taxonomy_operation_log_id` (`operation_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='标签治理操作日志表';
 
 
@@ -630,14 +596,12 @@ CREATE TABLE IF NOT EXISTS `sancai_entry` (
     `visual_asset_status` varchar(16) NOT NULL DEFAULT 'MISSING',
     `refinement_status` varchar(16) NOT NULL DEFAULT 'RAW',
     `current_version` int NOT NULL DEFAULT 0,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updated_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
-    `deleted_at` datetime(3) DEFAULT NULL,
+    `operated_at` datetime(3) NOT NULL,
+    `autosaved_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_sancai_entry_id` (`entry_id`),
     KEY `idx_sancai_entry_volume` (`volume_id`, `entry_no`),
-    KEY `idx_sancai_entry_category_status` (`category_code`, `lifecycle_status`, `visibility`),
-    KEY `idx_sancai_entry_updated` (`updated_at`)
+    KEY `idx_sancai_entry_category_status` (`category_code`, `lifecycle_status`, `visibility`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='三才图会条目表';
 
 CREATE TABLE IF NOT EXISTS `sancai_entry_image` (
@@ -647,7 +611,7 @@ CREATE TABLE IF NOT EXISTS `sancai_entry_image` (
     `current_used` tinyint(1) NOT NULL DEFAULT 0,
     `sort_order` int NOT NULL DEFAULT 0,
     `caption` varchar(512) DEFAULT NULL,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `operated_at` datetime(3) NOT NULL,
     PRIMARY KEY (`entry_id`, `object_id`),
     KEY `idx_sancai_entry_image_object` (`object_id`),
     KEY `idx_sancai_entry_image_sort` (`entry_id`, `sort_order`)
@@ -661,8 +625,8 @@ CREATE TABLE IF NOT EXISTS `sancai_entry_qa` (
     `answer` longtext NOT NULL,
     `source` varchar(16) NOT NULL DEFAULT 'MANUAL',
     `sort_order` int NOT NULL DEFAULT 0,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updated_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+    `operated_at` datetime(3) NOT NULL,
+    `autosaved_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_sancai_entry_qa_id` (`qa_id`),
     KEY `idx_sancai_entry_qa_entry_sort` (`entry_id`, `sort_order`)
@@ -676,12 +640,11 @@ CREATE TABLE IF NOT EXISTS `sancai_entry_version` (
     `snapshot_json` longtext NOT NULL,
     `change_type` varchar(32) NOT NULL,
     `change_summary` varchar(512) DEFAULT NULL,
-    `created_by` char(26) NOT NULL,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `operator_user_id` char(26) NOT NULL,
+    `operated_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_sancai_entry_version_id` (`version_id`),
-    UNIQUE KEY `uk_sancai_entry_version_no` (`entry_id`, `version_no`),
-    KEY `idx_sancai_entry_version_entry_time` (`entry_id`, `created_at`)
+    UNIQUE KEY `uk_sancai_entry_version_no` (`entry_id`, `version_no`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='三才图会条目版本表';
 
 CREATE TABLE IF NOT EXISTS `sancai_entry_draft` (
@@ -690,7 +653,7 @@ CREATE TABLE IF NOT EXISTS `sancai_entry_draft` (
     `entry_id` char(26) NOT NULL,
     `user_id` char(26) NOT NULL,
     `draft_json` longtext NOT NULL,
-    `updated_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+    `autosaved_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_sancai_entry_draft_id` (`draft_id`),
     UNIQUE KEY `uk_sancai_entry_draft_user_entry` (`entry_id`, `user_id`)
@@ -711,8 +674,8 @@ CREATE TABLE IF NOT EXISTS `sancai_visual_asset` (
     `generation_params` text DEFAULT NULL,
     `current_used` tinyint(1) NOT NULL DEFAULT 0,
     `status` varchar(16) NOT NULL DEFAULT 'DRAFT',
-    `created_by` char(26) NOT NULL,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `operator_user_id` char(26) NOT NULL,
+    `operated_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_sancai_visual_asset_id` (`asset_id`),
     UNIQUE KEY `uk_sancai_visual_asset_version` (`entry_id`, `version_no`),
@@ -730,12 +693,11 @@ CREATE TABLE IF NOT EXISTS `sancai_export_job` (
     `asset_count` int NOT NULL DEFAULT 0,
     `contains_private` tinyint(1) NOT NULL DEFAULT 0,
     `status` varchar(16) NOT NULL DEFAULT 'PENDING',
-    `created_by` char(26) NOT NULL,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `operator_user_id` char(26) NOT NULL,
+    `operated_at` datetime(3) NOT NULL,
     `expires_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_sancai_export_job_id` (`export_id`),
-    KEY `idx_sancai_export_job_creator` (`created_by`, `created_at`),
     KEY `idx_sancai_export_job_status` (`status`, `expires_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='三才图会导出产物表';
 
@@ -747,11 +709,10 @@ CREATE TABLE IF NOT EXISTS `sancai_showcase_page` (
     `entry_count` int NOT NULL DEFAULT 0,
     `contains_private` tinyint(1) NOT NULL DEFAULT 0,
     `status` varchar(16) NOT NULL DEFAULT 'PENDING',
-    `created_by` char(26) NOT NULL,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `operator_user_id` char(26) NOT NULL,
+    `operated_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_sancai_showcase_page_id` (`showcase_id`),
-    KEY `idx_sancai_showcase_page_creator` (`created_by`, `created_at`)
+    UNIQUE KEY `uk_sancai_showcase_page_id` (`showcase_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='三才图会静态展示页面表';
 
 
@@ -772,14 +733,9 @@ CREATE TABLE IF NOT EXISTS `wangqi_document` (
     `visibility` varchar(16) NOT NULL DEFAULT 'PUBLIC',
     `owner_user_id` char(26) NOT NULL,
     `current_version` int NOT NULL DEFAULT 0,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updated_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
-    `deleted_at` datetime(3) DEFAULT NULL,
+    `operated_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_wangqi_document_id` (`document_id`),
-    KEY `idx_wangqi_document_visibility` (`visibility`, `deleted_at`),
-    KEY `idx_wangqi_document_time` (`document_time`, `created_at`),
-    KEY `idx_wangqi_document_updated` (`updated_at`),
     KEY `idx_wangqi_document_file` (`file_object_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='王圻文档表';
 
@@ -791,8 +747,7 @@ CREATE TABLE IF NOT EXISTS `wangqi_document_qa` (
     `answer` longtext NOT NULL,
     `source` varchar(16) NOT NULL DEFAULT 'MANUAL',
     `sort_order` int NOT NULL DEFAULT 0,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updated_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+    `operated_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_wangqi_document_qa_id` (`qa_id`),
     KEY `idx_wangqi_document_qa_document_sort` (`document_id`, `sort_order`)
@@ -806,12 +761,11 @@ CREATE TABLE IF NOT EXISTS `wangqi_document_version` (
     `snapshot_json` longtext NOT NULL,
     `change_type` varchar(32) NOT NULL,
     `change_summary` varchar(512) DEFAULT NULL,
-    `created_by` char(26) NOT NULL,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `operator_user_id` char(26) NOT NULL,
+    `operated_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_wangqi_document_version_id` (`version_id`),
-    UNIQUE KEY `uk_wangqi_document_version_no` (`document_id`, `version_no`),
-    KEY `idx_wangqi_document_version_time` (`document_id`, `created_at`)
+    UNIQUE KEY `uk_wangqi_document_version_no` (`document_id`, `version_no`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='王圻文档版本表';
 
 CREATE TABLE IF NOT EXISTS `wangqi_export_job` (
@@ -824,12 +778,11 @@ CREATE TABLE IF NOT EXISTS `wangqi_export_job` (
     `document_count` int NOT NULL DEFAULT 0,
     `contains_private` tinyint(1) NOT NULL DEFAULT 0,
     `status` varchar(16) NOT NULL DEFAULT 'PENDING',
-    `created_by` char(26) NOT NULL,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `operator_user_id` char(26) NOT NULL,
+    `operated_at` datetime(3) NOT NULL,
     `expires_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_wangqi_export_job_id` (`export_id`),
-    KEY `idx_wangqi_export_job_creator` (`created_by`, `created_at`),
     KEY `idx_wangqi_export_job_status` (`status`, `expires_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='王圻导出产物表';
 
@@ -853,13 +806,9 @@ CREATE TABLE IF NOT EXISTS `ming_customs_entry` (
     `visibility` varchar(16) NOT NULL DEFAULT 'PUBLIC',
     `owner_user_id` char(26) NOT NULL,
     `current_version` int NOT NULL DEFAULT 0,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updated_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
-    `deleted_at` datetime(3) DEFAULT NULL,
+    `operated_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_ming_customs_entry_id` (`custom_id`),
-    KEY `idx_ming_customs_entry_category` (`category`, `visibility`, `deleted_at`),
-    KEY `idx_ming_customs_entry_updated` (`updated_at`)
+    UNIQUE KEY `uk_ming_customs_entry_id` (`custom_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='明代习俗条目表';
 
 CREATE TABLE IF NOT EXISTS `ming_customs_qa` (
@@ -870,8 +819,7 @@ CREATE TABLE IF NOT EXISTS `ming_customs_qa` (
     `answer` longtext NOT NULL,
     `source` varchar(16) NOT NULL DEFAULT 'MANUAL',
     `sort_order` int NOT NULL DEFAULT 0,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updated_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+    `operated_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_ming_customs_qa_id` (`qa_id`),
     KEY `idx_ming_customs_qa_custom_sort` (`custom_id`, `sort_order`)
@@ -885,12 +833,11 @@ CREATE TABLE IF NOT EXISTS `ming_customs_version` (
     `snapshot_json` longtext NOT NULL,
     `change_type` varchar(32) NOT NULL,
     `change_summary` varchar(512) DEFAULT NULL,
-    `created_by` char(26) NOT NULL,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `operator_user_id` char(26) NOT NULL,
+    `operated_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_ming_customs_version_id` (`version_id`),
-    UNIQUE KEY `uk_ming_customs_version_no` (`custom_id`, `version_no`),
-    KEY `idx_ming_customs_version_time` (`custom_id`, `created_at`)
+    UNIQUE KEY `uk_ming_customs_version_no` (`custom_id`, `version_no`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='明代习俗版本表';
 
 CREATE TABLE IF NOT EXISTS `ming_customs_export_job` (
@@ -903,12 +850,11 @@ CREATE TABLE IF NOT EXISTS `ming_customs_export_job` (
     `custom_count` int NOT NULL DEFAULT 0,
     `contains_private` tinyint(1) NOT NULL DEFAULT 0,
     `status` varchar(16) NOT NULL DEFAULT 'PENDING',
-    `created_by` char(26) NOT NULL,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `operator_user_id` char(26) NOT NULL,
+    `operated_at` datetime(3) NOT NULL,
     `expires_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_ming_customs_export_job_id` (`export_id`),
-    KEY `idx_ming_customs_export_job_creator` (`created_by`, `created_at`),
     KEY `idx_ming_customs_export_job_status` (`status`, `expires_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='明代习俗导出产物表';
 

@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS `audit_meta` (
     `last_operator_name` varchar(128) DEFAULT NULL,
     `last_operated_at` datetime(3) NOT NULL,
     `created_log_id` char(26) NOT NULL,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `first_operated_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_audit_meta_meta_id` (`meta_id`),
     UNIQUE KEY `uk_audit_meta_object` (`object_type`, `object_id`),

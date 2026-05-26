@@ -14,14 +14,9 @@ CREATE TABLE IF NOT EXISTS `wangqi_document` (
     `visibility` varchar(16) NOT NULL DEFAULT 'PUBLIC',
     `owner_user_id` char(26) NOT NULL,
     `current_version` int NOT NULL DEFAULT 0,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updated_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
-    `deleted_at` datetime(3) DEFAULT NULL,
+    `operated_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_wangqi_document_id` (`document_id`),
-    KEY `idx_wangqi_document_visibility` (`visibility`, `deleted_at`),
-    KEY `idx_wangqi_document_time` (`document_time`, `created_at`),
-    KEY `idx_wangqi_document_updated` (`updated_at`),
     KEY `idx_wangqi_document_file` (`file_object_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='王圻文档表';
 
@@ -33,8 +28,7 @@ CREATE TABLE IF NOT EXISTS `wangqi_document_qa` (
     `answer` longtext NOT NULL,
     `source` varchar(16) NOT NULL DEFAULT 'MANUAL',
     `sort_order` int NOT NULL DEFAULT 0,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updated_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+    `operated_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_wangqi_document_qa_id` (`qa_id`),
     KEY `idx_wangqi_document_qa_document_sort` (`document_id`, `sort_order`)
@@ -48,12 +42,11 @@ CREATE TABLE IF NOT EXISTS `wangqi_document_version` (
     `snapshot_json` longtext NOT NULL,
     `change_type` varchar(32) NOT NULL,
     `change_summary` varchar(512) DEFAULT NULL,
-    `created_by` char(26) NOT NULL,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `operator_user_id` char(26) NOT NULL,
+    `operated_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_wangqi_document_version_id` (`version_id`),
-    UNIQUE KEY `uk_wangqi_document_version_no` (`document_id`, `version_no`),
-    KEY `idx_wangqi_document_version_time` (`document_id`, `created_at`)
+    UNIQUE KEY `uk_wangqi_document_version_no` (`document_id`, `version_no`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='王圻文档版本表';
 
 CREATE TABLE IF NOT EXISTS `wangqi_export_job` (
@@ -66,11 +59,10 @@ CREATE TABLE IF NOT EXISTS `wangqi_export_job` (
     `document_count` int NOT NULL DEFAULT 0,
     `contains_private` tinyint(1) NOT NULL DEFAULT 0,
     `status` varchar(16) NOT NULL DEFAULT 'PENDING',
-    `created_by` char(26) NOT NULL,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `operator_user_id` char(26) NOT NULL,
+    `operated_at` datetime(3) NOT NULL,
     `expires_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_wangqi_export_job_id` (`export_id`),
-    KEY `idx_wangqi_export_job_creator` (`created_by`, `created_at`),
     KEY `idx_wangqi_export_job_status` (`status`, `expires_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='王圻导出产物表';

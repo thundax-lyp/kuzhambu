@@ -46,14 +46,12 @@ CREATE TABLE IF NOT EXISTS `sancai_entry` (
     `visual_asset_status` varchar(16) NOT NULL DEFAULT 'MISSING',
     `refinement_status` varchar(16) NOT NULL DEFAULT 'RAW',
     `current_version` int NOT NULL DEFAULT 0,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updated_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
-    `deleted_at` datetime(3) DEFAULT NULL,
+    `operated_at` datetime(3) NOT NULL,
+    `autosaved_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_sancai_entry_id` (`entry_id`),
     KEY `idx_sancai_entry_volume` (`volume_id`, `entry_no`),
-    KEY `idx_sancai_entry_category_status` (`category_code`, `lifecycle_status`, `visibility`),
-    KEY `idx_sancai_entry_updated` (`updated_at`)
+    KEY `idx_sancai_entry_category_status` (`category_code`, `lifecycle_status`, `visibility`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='三才图会条目表';
 
 CREATE TABLE IF NOT EXISTS `sancai_entry_image` (
@@ -63,7 +61,7 @@ CREATE TABLE IF NOT EXISTS `sancai_entry_image` (
     `current_used` tinyint(1) NOT NULL DEFAULT 0,
     `sort_order` int NOT NULL DEFAULT 0,
     `caption` varchar(512) DEFAULT NULL,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `operated_at` datetime(3) NOT NULL,
     PRIMARY KEY (`entry_id`, `object_id`),
     KEY `idx_sancai_entry_image_object` (`object_id`),
     KEY `idx_sancai_entry_image_sort` (`entry_id`, `sort_order`)
@@ -77,8 +75,8 @@ CREATE TABLE IF NOT EXISTS `sancai_entry_qa` (
     `answer` longtext NOT NULL,
     `source` varchar(16) NOT NULL DEFAULT 'MANUAL',
     `sort_order` int NOT NULL DEFAULT 0,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updated_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+    `operated_at` datetime(3) NOT NULL,
+    `autosaved_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_sancai_entry_qa_id` (`qa_id`),
     KEY `idx_sancai_entry_qa_entry_sort` (`entry_id`, `sort_order`)
@@ -92,12 +90,11 @@ CREATE TABLE IF NOT EXISTS `sancai_entry_version` (
     `snapshot_json` longtext NOT NULL,
     `change_type` varchar(32) NOT NULL,
     `change_summary` varchar(512) DEFAULT NULL,
-    `created_by` char(26) NOT NULL,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `operator_user_id` char(26) NOT NULL,
+    `operated_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_sancai_entry_version_id` (`version_id`),
-    UNIQUE KEY `uk_sancai_entry_version_no` (`entry_id`, `version_no`),
-    KEY `idx_sancai_entry_version_entry_time` (`entry_id`, `created_at`)
+    UNIQUE KEY `uk_sancai_entry_version_no` (`entry_id`, `version_no`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='三才图会条目版本表';
 
 CREATE TABLE IF NOT EXISTS `sancai_entry_draft` (
@@ -106,7 +103,7 @@ CREATE TABLE IF NOT EXISTS `sancai_entry_draft` (
     `entry_id` char(26) NOT NULL,
     `user_id` char(26) NOT NULL,
     `draft_json` longtext NOT NULL,
-    `updated_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+    `autosaved_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_sancai_entry_draft_id` (`draft_id`),
     UNIQUE KEY `uk_sancai_entry_draft_user_entry` (`entry_id`, `user_id`)
@@ -127,8 +124,8 @@ CREATE TABLE IF NOT EXISTS `sancai_visual_asset` (
     `generation_params` text DEFAULT NULL,
     `current_used` tinyint(1) NOT NULL DEFAULT 0,
     `status` varchar(16) NOT NULL DEFAULT 'DRAFT',
-    `created_by` char(26) NOT NULL,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `operator_user_id` char(26) NOT NULL,
+    `operated_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_sancai_visual_asset_id` (`asset_id`),
     UNIQUE KEY `uk_sancai_visual_asset_version` (`entry_id`, `version_no`),
@@ -146,12 +143,11 @@ CREATE TABLE IF NOT EXISTS `sancai_export_job` (
     `asset_count` int NOT NULL DEFAULT 0,
     `contains_private` tinyint(1) NOT NULL DEFAULT 0,
     `status` varchar(16) NOT NULL DEFAULT 'PENDING',
-    `created_by` char(26) NOT NULL,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `operator_user_id` char(26) NOT NULL,
+    `operated_at` datetime(3) NOT NULL,
     `expires_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_sancai_export_job_id` (`export_id`),
-    KEY `idx_sancai_export_job_creator` (`created_by`, `created_at`),
     KEY `idx_sancai_export_job_status` (`status`, `expires_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='三才图会导出产物表';
 
@@ -163,9 +159,8 @@ CREATE TABLE IF NOT EXISTS `sancai_showcase_page` (
     `entry_count` int NOT NULL DEFAULT 0,
     `contains_private` tinyint(1) NOT NULL DEFAULT 0,
     `status` varchar(16) NOT NULL DEFAULT 'PENDING',
-    `created_by` char(26) NOT NULL,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `operator_user_id` char(26) NOT NULL,
+    `operated_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_sancai_showcase_page_id` (`showcase_id`),
-    KEY `idx_sancai_showcase_page_creator` (`created_by`, `created_at`)
+    UNIQUE KEY `uk_sancai_showcase_page_id` (`showcase_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='三才图会静态展示页面表';

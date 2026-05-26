@@ -16,8 +16,6 @@ CREATE TABLE IF NOT EXISTS `storage_object` (
     `access_endpoint` varchar(1024) DEFAULT NULL,
     `object_status` varchar(16) NOT NULL DEFAULT 'ACTIVE',
     `reference_status` varchar(16) NOT NULL DEFAULT 'UNREFERENCED',
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updated_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_storage_object_id` (`object_id`),
     UNIQUE KEY `uk_storage_object_key` (`bucket_name`, `object_key`),
@@ -32,7 +30,6 @@ CREATE TABLE IF NOT EXISTS `storage_object_reference` (
     `reference_owner_id` varchar(64) NOT NULL,
     `owner_params` text DEFAULT NULL,
     `reference_status` varchar(16) NOT NULL DEFAULT 'REFERENCED',
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     PRIMARY KEY (`object_id`, `reference_owner_type`, `reference_owner_id`),
     KEY `idx_storage_object_reference_owner` (`reference_owner_type`, `reference_owner_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='存储对象引用关系表';
@@ -54,8 +51,6 @@ CREATE TABLE IF NOT EXISTS `storage_multipart_upload` (
     `upload_status` varchar(16) NOT NULL DEFAULT 'INITIATED',
     `completed_at` datetime(3) DEFAULT NULL,
     `aborted_at` datetime(3) DEFAULT NULL,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `updated_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_storage_multipart_upload_id` (`upload_id`),
     KEY `idx_storage_multipart_upload_owner` (`owner_type`, `owner_id`, `upload_status`),
@@ -68,7 +63,6 @@ CREATE TABLE IF NOT EXISTS `storage_multipart_upload_part` (
     `part_number` int NOT NULL,
     `etag` varchar(255) NOT NULL,
     `size` bigint NOT NULL,
-    `created_at` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_storage_multipart_upload_part` (`upload_id`, `part_number`),
     KEY `idx_storage_multipart_upload_part_upload` (`upload_id`)

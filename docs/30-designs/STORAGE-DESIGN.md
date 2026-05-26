@@ -50,8 +50,6 @@ Storage 表固定使用 `storage_` 前缀。
 | `access_endpoint` | `accessEndpoint` | 否 | 派生访问端点 |
 | `object_status` | `objectStatus` | 是 | `ACTIVE` / `DELETING` / `DELETED` |
 | `reference_status` | `referenceStatus` | 是 | `UNREFERENCED` / `REFERENCED` |
-| `created_at` | `createdAt` | 是 | 创建时间 |
-| `updated_at` | `updatedAt` | 是 | 更新时间 |
 
 约束：
 - `object_id` 唯一。
@@ -70,7 +68,6 @@ Storage 表固定使用 `storage_` 前缀。
 | `reference_owner_id` | `ownerId` | 是 | 引用方业务对象标识 |
 | `owner_params` | `ownerParams` | 否 | 引用方附加参数 JSON |
 | `reference_status` | `referenceStatus` | 是 | `REFERENCED` |
-| `created_at` | `createdAt` | 是 | 创建时间 |
 
 约束：
 - 唯一约束：`object_id + reference_owner_type + reference_owner_id`。
@@ -99,8 +96,6 @@ Storage 表固定使用 `storage_` 前缀。
 | `upload_status` | `uploadStatus` | 是 | `INITIATED` / `UPLOADING` / `COMPLETED` / `ABORTED` |
 | `completed_at` | `completedAt` | 否 | 完成时间 |
 | `aborted_at` | `abortedAt` | 否 | 取消时间 |
-| `created_at` | `createdAt` | 是 | 创建时间 |
-| `updated_at` | `updatedAt` | 是 | 更新时间 |
 
 约束：
 - `upload_id` 唯一。
@@ -117,7 +112,6 @@ Storage 表固定使用 `storage_` 前缀。
 | `part_number` | `partNumber` | 是 | 分片序号 |
 | `etag` | `etag` | 是 | 分片校验标识 |
 | `size` | `size` | 是 | 分片大小 |
-| `created_at` | `createdAt` | 是 | 创建时间 |
 
 约束：
 - 唯一约束：`upload_id + part_number`。

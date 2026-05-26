@@ -113,21 +113,18 @@ Sancai 表固定使用 `sancai_` 前缀。所有对外标识使用 ULID，数据
 | `tags_snapshot` | `tagsSnapshot` | 否 | 标签展示缓存 JSON |
 | `lifecycle_status` | `lifecycleStatus` | 是 | `DRAFT` / `PUBLISHED` / `ARCHIVED` |
 | `visibility` | `visibility` | 是 | `PUBLIC` / `PRIVATE` |
-| `owner_user_id` | `ownerUserId` | 是 | 创建者用户 ULID |
+| `owner_user_id` | `ownerUserId` | 是 | 归属用户 ULID |
 | `translation_status` | `translationStatus` | 是 | `MISSING` / `DONE` |
 | `image_status` | `imageStatus` | 是 | `MISSING` / `DONE` |
 | `visual_asset_status` | `visualAssetStatus` | 是 | `MISSING` / `IN_PROGRESS` / `DONE` |
 | `refinement_status` | `refinementStatus` | 是 | `RAW` / `REFINED` |
 | `current_version` | `currentVersion` | 是 | 当前正式版本号 |
-| `created_at` | `createdAt` | 是 | 创建时间 |
-| `updated_at` | `updatedAt` | 是 | 更新时间 |
-| `deleted_at` | `deletedAt` | 否 | 删除时间 |
 
 约束：
 - `entry_id` 唯一。
 - 生命周期与公开私有状态相互独立。
 - 归档条目不进入默认列表、搜索、问答、导出和静态展示。
-- 删除使用状态字段或删除时间表达，不直接破坏分享目标占位能力。
+- 删除使用状态字段或操作时间表达，不直接破坏分享目标占位能力。
 
 ### sancai_entry_image
 
@@ -141,7 +138,6 @@ Sancai 表固定使用 `sancai_` 前缀。所有对外标识使用 ULID，数据
 | `current_used` | `currentUsed` | 是 | 是否当前展示使用 |
 | `sort_order` | `sortOrder` | 是 | 排序 |
 | `caption` | `caption` | 否 | 图片说明 |
-| `created_at` | `createdAt` | 是 | 创建时间 |
 
 约束：
 - `entry_id + object_id` 唯一。
@@ -159,8 +155,6 @@ Sancai 表固定使用 `sancai_` 前缀。所有对外标识使用 ULID，数据
 | `answer` | `answer` | 是 | 答案 |
 | `source` | `source` | 是 | `MANUAL` / `AI_APPLIED` |
 | `sort_order` | `sortOrder` | 是 | 排序 |
-| `created_at` | `createdAt` | 是 | 创建时间 |
-| `updated_at` | `updatedAt` | 是 | 更新时间 |
 
 约束：
 - 问答对属于条目上下文，不是独立数据精修工作台对象。
@@ -177,8 +171,6 @@ Sancai 表固定使用 `sancai_` 前缀。所有对外标识使用 ULID，数据
 | `snapshot_json` | `snapshotJson` | 是 | 条目快照 JSON |
 | `change_type` | `changeType` | 是 | `MANUAL_SAVE` / `AI_APPLY` / `RESTORE` |
 | `change_summary` | `changeSummary` | 否 | 变更摘要 |
-| `created_by` | `createdBy` | 是 | 操作者用户 ULID |
-| `created_at` | `createdAt` | 是 | 创建时间 |
 
 约束：
 - 手动保存、AI 结果应用和历史恢复产生正式版本。
@@ -195,7 +187,6 @@ Sancai 表固定使用 `sancai_` 前缀。所有对外标识使用 ULID，数据
 | `entry_id` | `entryId` | 是 | 条目 ULID |
 | `user_id` | `userId` | 是 | 用户 ULID |
 | `draft_json` | `draftJson` | 是 | 草稿内容 JSON |
-| `updated_at` | `updatedAt` | 是 | 自动保存时间 |
 
 约束：
 - 同一用户同一条目最多保留一份当前草稿。
@@ -220,8 +211,6 @@ Sancai 表固定使用 `sancai_` 前缀。所有对外标识使用 ULID，数据
 | `generation_params` | `generationParams` | 否 | 生图参数 JSON |
 | `current_used` | `currentUsed` | 是 | 是否当前使用版本 |
 | `status` | `status` | 是 | `DRAFT` / `READY` / `FAILED` |
-| `created_by` | `createdBy` | 是 | 创建人 |
-| `created_at` | `createdAt` | 是 | 创建时间 |
 
 约束：
 - 视觉资产必须绑定明确条目。
@@ -243,8 +232,6 @@ Sancai 表固定使用 `sancai_` 前缀。所有对外标识使用 ULID，数据
 | `asset_count` | `assetCount` | 是 | 资产数量 |
 | `contains_private` | `containsPrivate` | 是 | 是否包含私有内容 |
 | `status` | `status` | 是 | `PENDING` / `DONE` / `FAILED` / `EXPIRED` |
-| `created_by` | `createdBy` | 是 | 创建人 |
-| `created_at` | `createdAt` | 是 | 创建时间 |
 | `expires_at` | `expiresAt` | 是 | 过期时间 |
 
 约束：
@@ -264,8 +251,6 @@ Sancai 表固定使用 `sancai_` 前缀。所有对外标识使用 ULID，数据
 | `entry_count` | `entryCount` | 是 | 条目数量 |
 | `contains_private` | `containsPrivate` | 是 | 是否包含私有内容 |
 | `status` | `status` | 是 | `PENDING` / `DONE` / `FAILED` |
-| `created_by` | `createdBy` | 是 | 创建人 |
-| `created_at` | `createdAt` | 是 | 创建时间 |
 
 约束：
 - 默认只包含公开且未归档条目。

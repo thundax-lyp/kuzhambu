@@ -73,11 +73,8 @@ AI Refinement 表固定使用 `ai_refinement_` 前缀；图片理解缓存使用
 | `prompt_id` | `promptId` | 否 | 调用时提示词版本 ULID |
 | `model_name` | `modelName` | 否 | 调用时模型名快照 |
 | `error_message` | `errorMessage` | 否 | 失败原因 |
-| `created_by` | `createdBy` | 是 | 发起人 |
 | `applied_by` | `appliedBy` | 否 | 确认应用人 |
 | `applied_at` | `appliedAt` | 否 | 确认应用时间 |
-| `created_at` | `createdAt` | 是 | 创建时间 |
-| `updated_at` | `updatedAt` | 是 | 更新时间 |
 
 约束：
 - `candidate_id` 唯一。
@@ -101,9 +98,6 @@ AI Refinement 表固定使用 `ai_refinement_` 前缀；图片理解缓存使用
 | `success_count` | `successCount` | 是 | 成功数 |
 | `failed_count` | `failedCount` | 是 | 失败数 |
 | `cancelled_count` | `cancelledCount` | 是 | 取消数 |
-| `created_by` | `createdBy` | 是 | 发起人 |
-| `created_at` | `createdAt` | 是 | 创建时间 |
-| `updated_at` | `updatedAt` | 是 | 更新时间 |
 | `cancelled_at` | `cancelledAt` | 否 | 取消时间 |
 
 约束：
@@ -125,8 +119,6 @@ AI Refinement 表固定使用 `ai_refinement_` 前缀；图片理解缓存使用
 | `candidate_id` | `candidateId` | 否 | 候选 ULID |
 | `status` | `status` | 是 | 明细状态 |
 | `error_message` | `errorMessage` | 否 | 失败原因 |
-| `created_at` | `createdAt` | 是 | 创建时间 |
-| `updated_at` | `updatedAt` | 是 | 更新时间 |
 
 约束：
 - 同一批量内同一内容和同一图片对象不得重复。
@@ -145,8 +137,6 @@ AI Refinement 表固定使用 `ai_refinement_` 前缀；图片理解缓存使用
 | `analysis_markdown` | `analysisMarkdown` | 是 | AI 分析结果 |
 | `prompt_id` | `promptId` | 否 | 提示词版本 ULID |
 | `model_name` | `modelName` | 否 | 模型名快照 |
-| `created_at` | `createdAt` | 是 | 创建时间 |
-| `updated_at` | `updatedAt` | 是 | 更新时间 |
 
 约束：
 - `object_id + content_hash` 唯一。

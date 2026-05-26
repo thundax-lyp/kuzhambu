@@ -76,11 +76,8 @@ Ming Customs 表固定使用 `ming_customs_` 前缀。所有对外标识使用 U
 | `original_excerpts` | `originalExcerpts` | 否 | 原文摘录 JSON |
 | `word_count` | `wordCount` | 是 | 字数统计 |
 | `visibility` | `visibility` | 是 | `PUBLIC` / `PRIVATE` |
-| `owner_user_id` | `ownerUserId` | 是 | 创建者用户 ULID |
+| `owner_user_id` | `ownerUserId` | 是 | 归属用户 ULID |
 | `current_version` | `currentVersion` | 是 | 当前正式版本号 |
-| `created_at` | `createdAt` | 是 | 创建时间 |
-| `updated_at` | `updatedAt` | 是 | 更新时间 |
-| `deleted_at` | `deletedAt` | 否 | 删除时间 |
 
 约束：
 - `custom_id` 唯一。
@@ -102,8 +99,6 @@ Ming Customs 表固定使用 `ming_customs_` 前缀。所有对外标识使用 U
 | `answer` | `answer` | 是 | 答案 |
 | `source` | `source` | 是 | `MANUAL` / `AI_APPLIED` |
 | `sort_order` | `sortOrder` | 是 | 排序 |
-| `created_at` | `createdAt` | 是 | 创建时间 |
-| `updated_at` | `updatedAt` | 是 | 更新时间 |
 
 约束：
 - 问答对属于习俗上下文，不是独立数据精修工作台对象。
@@ -122,8 +117,6 @@ Ming Customs 表固定使用 `ming_customs_` 前缀。所有对外标识使用 U
 | `snapshot_json` | `snapshotJson` | 是 | 习俗快照 JSON |
 | `change_type` | `changeType` | 是 | `MANUAL_SAVE` / `AI_APPLY` / `RESTORE` |
 | `change_summary` | `changeSummary` | 否 | 变更摘要 |
-| `created_by` | `createdBy` | 是 | 操作者用户 ULID |
-| `created_at` | `createdAt` | 是 | 创建时间 |
 
 约束：
 - 手动保存、AI 结果应用和历史恢复产生正式版本。
@@ -144,8 +137,6 @@ Ming Customs 表固定使用 `ming_customs_` 前缀。所有对外标识使用 U
 | `custom_count` | `customCount` | 是 | 习俗条目数量 |
 | `contains_private` | `containsPrivate` | 是 | 是否包含私有习俗 |
 | `status` | `status` | 是 | `PENDING` / `DONE` / `FAILED` / `EXPIRED` |
-| `created_by` | `createdBy` | 是 | 创建人 |
-| `created_at` | `createdAt` | 是 | 创建时间 |
 | `expires_at` | `expiresAt` | 是 | 过期时间 |
 
 约束：

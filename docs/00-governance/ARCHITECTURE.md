@@ -83,6 +83,8 @@
 - 业务对象对外标识统一使用 ULID，生成能力归属 `kuzhambu-common-core`。
 - 跨模块引用、审计对象引用、导出引用、发布引用和 URL 参数不得使用数据库自增 ID。
 - 数据库表可以保留自增 `bigint` 作为内部技术主键，但业务逻辑不得依赖其跨边界传播。
+- 业务表不得设置通用审计字段 `created_at`、`updated_at`、`deleted_at`、`created_by`、`updated_by`、`deleted_by`；通用创建、更新、删除审计归属 `audit` 业务域。
+- 业务确实需要表达时间、操作者或生命周期时，必须使用业务语义命名，例如 `occurred_at`、`requested_at`、`completed_at`、`expires_at`、`owner_user_id`、`operator_user_id`，不得用审计字段伪装业务字段。
 - 分享链接、访问凭证和下载凭证必须使用独立随机 token，不得直接暴露业务 ULID。
 - Python worker 本地虚拟环境固定使用 `kuzhambu-workers/.venv/`，不得提交虚拟环境目录。
 - Java 主系统原则上通过 HTTP request 调用 Python worker。
