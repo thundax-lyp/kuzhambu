@@ -80,7 +80,3 @@ Storage 负责“文件作为可复用资源如何被保存、读取和引用”
 - [CORE-REQUIREMENTS.md](./CORE-REQUIREMENTS.md)：当前用户头像等框架业务文件应复用 Storage。
 - [SANCAI-KNOWLEDGE-REQUIREMENTS.md](./SANCAI-KNOWLEDGE-REQUIREMENTS.md)、[WANGQI-DOCUMENT-REQUIREMENTS.md](./WANGQI-DOCUMENT-REQUIREMENTS.md)、[MING-CUSTOMS-REQUIREMENTS.md](./MING-CUSTOMS-REQUIREMENTS.md)：业务内容中的图片、附件和导入资源应复用 Storage。
 - [AUDIT-REQUIREMENTS.md](./AUDIT-REQUIREMENTS.md)：业务对象引用文件发生变化时，由业务对象审计记录变更事实。
-
-## Open Items
-
-无

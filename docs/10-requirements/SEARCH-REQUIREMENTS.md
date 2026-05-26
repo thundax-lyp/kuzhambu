@@ -72,7 +72,3 @@
 - [TAXONOMY-REQUIREMENTS.md](./TAXONOMY-REQUIREMENTS.md)：提供标签、同义词和别名能力；搜索消费这些能力但不维护词典。
 - [KNOWLEDGE-GRAPH-REQUIREMENTS.md](./KNOWLEDGE-GRAPH-REQUIREMENTS.md)：搜索可被实体识别和实体链接增强，但不得依赖知识图谱作为前置条件。
 - [OPERATIONS-REQUIREMENTS.md](./OPERATIONS-REQUIREMENTS.md)：消费搜索日志和点击行为用于质量分析。
-
-## Open Items
-
-无

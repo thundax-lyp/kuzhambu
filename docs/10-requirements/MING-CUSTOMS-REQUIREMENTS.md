@@ -85,7 +85,3 @@
 - [TAXONOMY-REQUIREMENTS.md](./TAXONOMY-REQUIREMENTS.md)：治理本模块使用的统一标签；本模块提供内容页内标签编辑入口和标签云筛选。
 - [SEARCH-REQUIREMENTS.md](./SEARCH-REQUIREMENTS.md)、[QA-REQUIREMENTS.md](./QA-REQUIREMENTS.md)、[SHARING-REQUIREMENTS.md](./SHARING-REQUIREMENTS.md)：消费明代习俗内容，并必须遵守本模块公开、私有和删除规则。
 - [AUTH-REQUIREMENTS.md](./AUTH-REQUIREMENTS.md)：提供习俗查看、编辑、删除、导出、分享和批量操作所需的权限判断。
-
-## Open Items
-
-无

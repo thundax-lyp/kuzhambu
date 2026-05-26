@@ -41,7 +41,3 @@
 ## RUNBOOK Boundary
 
 `RUNBOOK` 是一次性复杂任务的执行手册，适用于跨模块清理、迁移、删除或重构。任务完成后，应清理 RUNBOOK 及残留引用。
-
-## Open Items
-
-无

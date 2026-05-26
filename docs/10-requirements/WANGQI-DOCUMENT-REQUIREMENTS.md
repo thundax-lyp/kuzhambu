@@ -95,7 +95,3 @@
 - [TAXONOMY-REQUIREMENTS.md](./TAXONOMY-REQUIREMENTS.md)：治理本模块使用的统一标签；本模块提供内容页内标签编辑入口。
 - [SEARCH-REQUIREMENTS.md](./SEARCH-REQUIREMENTS.md)、[SHARING-REQUIREMENTS.md](./SHARING-REQUIREMENTS.md)：消费王圻文档内容，并必须遵守本模块公开、私有和删除规则。
 - [AUTH-REQUIREMENTS.md](./AUTH-REQUIREMENTS.md)：提供文档查看、编辑、删除、导出、批量操作和问答入口所需的权限判断。
-
-## Open Items
-
-无

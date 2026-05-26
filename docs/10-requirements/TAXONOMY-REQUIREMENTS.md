@@ -85,7 +85,3 @@
 - [MING-CUSTOMS-REQUIREMENTS.md](./MING-CUSTOMS-REQUIREMENTS.md)：提供明代习俗内容页内的标签展示和人工编辑入口。
 - [SEARCH-REQUIREMENTS.md](./SEARCH-REQUIREMENTS.md)：消费标签和同义词能力完成检索扩展，不负责词典维护。
 - [QA-REQUIREMENTS.md](./QA-REQUIREMENTS.md)：消费同义词能力增强问答检索，不负责词典维护。
-
-## Open Items
-
-无

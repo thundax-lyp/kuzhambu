@@ -73,7 +73,3 @@
 - [DATA-REFINEMENT-REQUIREMENTS.md](./DATA-REFINEMENT-REQUIREMENTS.md)：负责实体和关系的人工精修；本模块读取精修结果并更新图谱质量。
 - [AI-CONFIG-PROMPT-REQUIREMENTS.md](./AI-CONFIG-PROMPT-REQUIREMENTS.md)：提供知识图谱提取所需的模型和提示词配置。
 - [SEARCH-REQUIREMENTS.md](./SEARCH-REQUIREMENTS.md)、[QA-REQUIREMENTS.md](./QA-REQUIREMENTS.md)：可受图谱结果增强，但不得依赖图谱作为必需前置。
-
-## Open Items
-
-无

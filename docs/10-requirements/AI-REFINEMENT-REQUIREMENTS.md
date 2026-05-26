@@ -61,7 +61,7 @@ AI 内容精修模块定义把 AI 能力应用于内容整理流程的需求。
 - 拆分后的子条目是独立内容；父条目被删除时，不应自动删除已保存子条目。
 - 图片理解人工编辑后的结果不应自动覆盖底层图片分析缓存。
 - 本模块使用 AI Config Prompt 模块提供的模型、提示词和能力配置，不自行管理 AI 服务配置。
-- 摘要、标签和问答对确认应用后，由对应内容业务模块负责展示和后续维护。
+- 摘要、标签和问答对确认应用后，由对应内容业务模块负责展示和持续维护。
 
 ## Acceptance Criteria
 
@@ -84,7 +84,3 @@ AI 内容精修模块定义把 AI 能力应用于内容整理流程的需求。
 - [WANGQI-DOCUMENT-REQUIREMENTS.md](./WANGQI-DOCUMENT-REQUIREMENTS.md)：承接王圻文档摘要、标签和问答对生成结果的内联维护。
 - [MING-CUSTOMS-REQUIREMENTS.md](./MING-CUSTOMS-REQUIREMENTS.md)：承接明代习俗摘要、标签和问答对生成结果的内联维护。
 - [TAXONOMY-REQUIREMENTS.md](./TAXONOMY-REQUIREMENTS.md)：负责统一标签治理；本模块只负责标签提取和候选确认。
-
-## Open Items
-
-无

@@ -83,7 +83,3 @@ Core 不负责登录、token、认证会话和密码校验；这些能力归属 
 - [AUTH-REQUIREMENTS.md](./AUTH-REQUIREMENTS.md)：使用用户主体、用户状态和权限集合完成认证会话。
 - [AUDIT-REQUIREMENTS.md](./AUDIT-REQUIREMENTS.md)：记录用户、角色和菜单变更审计。
 - [STORAGE-REQUIREMENTS.md](./STORAGE-REQUIREMENTS.md)：当前用户头像等文件能力应复用 Storage。
-
-## Open Items
-
-无

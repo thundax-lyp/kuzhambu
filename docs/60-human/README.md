@@ -6,14 +6,14 @@
 
 ## Current Materials
 
-- `redesign/`: 临时参考材料目录。该目录保留原始文件名和原始结构，后续可整体删除。
+- `redesign/`: 临时参考材料目录。该目录保留原始文件名和原始结构，不作为默认执行规则。
 
 ## Reading Rules
 
 - 只有用户明确要求使用本目录材料时才读取。
 - 读取 `redesign/` 时，先读 `redesign/INDEX.md`，再按索引选择相关文档。
 - 不要默认全量加载 `redesign/`。
-- `redesign/Question.md` 可用于后续审查参考，不直接等同于当前 TODO。
+- `redesign/Question.md` 只作审查参考，不直接等同于当前 TODO。
 
 ## Promotion Rules
 

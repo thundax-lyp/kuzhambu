@@ -4,7 +4,7 @@
 
 本文档定义 kuzhambu 的 Pull Request 合并前验证流程。
 
-目标是保证 PR 合并前固定执行统一 verify 入口，并让后续模块验证接入同一 workflow。
+目标是保证 PR 合并前固定执行统一 verify 入口，并让新增模块验证接入同一 workflow。
 
 ## 2. Scope
 
@@ -55,7 +55,7 @@ PR 描述固定包含：
 - `Scope`: 说明主要改动范围。
 - `Verification`: 记录已运行验证命令和结果。
 - `Documentation And TODO`: 确认文档、TODO 和 RUNBOOK 收口状态。
-- `Risks And Follow-Up`: 说明剩余风险、未自动化验证或后续任务。
+- `Risks And Follow-Up`: 说明剩余风险、未自动化验证或未完成任务。
 
 ## 7. Key Flow
 
@@ -63,7 +63,3 @@ PR 描述固定包含：
 2. GitHub 触发 `PR Verify` workflow。
 3. workflow 执行 `scripts/verify-all.sh`。
 4. 所有当前自动化验证通过后，PR 才允许进入合并判断。
-
-## 8. Open Items
-
-无
