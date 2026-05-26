@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>com.github.thundax</groupId>
+    <groupId>com.thundax</groupId>
     <artifactId>kuzhambu</artifactId>
     <version>0.0.1-dev</version>
   </parent>
@@ -31,4 +31,16 @@
     <module>kuzhambu-infra-sharing</module>
     <module>kuzhambu-infra-operations</module>
   </modules>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <optional>true</optional>
+    </dependency>
+  </dependencies>
 </project>

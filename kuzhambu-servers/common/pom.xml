@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>com.github.thundax</groupId>
+    <groupId>com.thundax</groupId>
     <artifactId>kuzhambu</artifactId>
     <version>0.0.1-dev</version>
   </parent>
@@ -19,8 +19,6 @@
     <module>kuzhambu-common-security</module>
     <module>kuzhambu-common-openapi</module>
     <module>kuzhambu-common-mybatis</module>
-    <module>kuzhambu-common-mysql</module>
-    <module>kuzhambu-common-redis</module>
     <module>kuzhambu-common-cache</module>
     <module>kuzhambu-common-mq</module>
     <module>kuzhambu-common-elasticsearch</module>

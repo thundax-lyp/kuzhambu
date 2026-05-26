@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>com.github.thundax</groupId>
+    <groupId>com.thundax</groupId>
     <artifactId>kuzhambu-common</artifactId>
     <version>0.0.1-dev</version>
     <relativePath>../pom.xml</relativePath>
@@ -14,20 +14,29 @@
 
   <name>kuzhambu-common-cache</name>
 
+  <properties>
+    <jetcache.version>2.7.8</jetcache.version>
+  </properties>
+
   <dependencies>
     <dependency>
-      <groupId>com.github.thundax</groupId>
+      <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-common-core</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.github.thundax</groupId>
-      <artifactId>kuzhambu-common-redis</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-cache</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.alicp.jetcache</groupId>
+      <artifactId>jetcache-starter-redis-lettuce</artifactId>
+      <version>${jetcache.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 </project>
