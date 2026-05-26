@@ -2,7 +2,7 @@
 
 ## Purpose
 
-本文档定义 Auth 模块的数据结构和接口设计。Auth 继承 sandwich 的成熟认证模型，但删除 OAuth2、第三方登录、短信登录、前台会员注册等不属于 kuzhambu 当前交付范围的能力。
+本文档定义 Auth 模块的数据结构和接口设计。Auth 只覆盖账号登录、验证码、认证凭据、token、认证会话和当前认证上下文。
 
 Auth 固定区分用户主体、登录标识、认证凭据、访问 token、refresh token 和认证会话。
 

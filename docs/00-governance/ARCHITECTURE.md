@@ -2,13 +2,13 @@
 
 ## Purpose
 
-本文档记录 kuzhambu 的稳定架构入口。本文只固定已经确认的工程边界、技术基线和模块方向，避免过早引入未确认的服务治理或未来设计。
+本文档记录 kuzhambu 的稳定架构入口。本文只固定工程边界、技术基线和模块方向，不记录未纳入交付范围的设想。
 
 ## Scope
 
 - 适用于新增代码、目录、依赖和构建系统时的架构判断。
 - 不替代具体需求、接口契约或专项设计。
-- 不记录一次性迁移步骤或完成清单。
+- 不记录任务执行过程。
 
 ## Current State
 
@@ -24,7 +24,7 @@
 - 后端构建系统使用 `kuzhambu-servers/pom.xml` 管理的 Maven 多模块。
 - 后端采用 Spring Boot 3.x，不采用 Spring Cloud 微服务架构。
 - 前端应用使用独立 `package.json` 管理，统一放在 `kuzhambu-apps/`。
-- 后台前端 `kuzhambu-apps/admin-web/` 使用 React、Vite 和 Ant Design，参考 `sandwich` 的工程经验但不沿用其 UI 风格。
+- 后台前端 `kuzhambu-apps/admin-web/` 使用 React、Vite 和 Ant Design。
 - 前台前端 `kuzhambu-apps/portal-web/` 使用 React、Vite、shadcn/ui、Tailwind CSS、Zustand、TanStack Query、TypeScript、ESLint 和 Prettier。
 - Python 代码用于能力支撑、生成工具、离线处理和 AI 辅助流程，统一放在 `kuzhambu-workers/`，Python 版本固定为 3.10。
 
@@ -55,7 +55,7 @@
 
 - 先形成最小可运行模块，再沉淀更细分层。
 - 新增目录必须有明确职责和归属，避免空壳结构。
-- 新增依赖必须服务于当前任务，不为未来假设预留。
+- 新增依赖必须服务于已确认任务，不引入假设性依赖。
 - 项目不设置 `platform` 目录或 `platform` Maven 模块。
 - `core`、`auth`、`storage`、`audit` 是独立基础业务域，归入 `kuzhambu-servers/biz/`。
 - `core` 承载 menu、user、role 等框架业务，不承载认证登录态、文件存储或审计底座。
@@ -74,7 +74,7 @@
 - 各业务域 DAO、Mapper、Repository 只能放在对应 `infra-<domain>` 子工程内，跨域访问必须通过对应业务服务接口，不得直接调用其他业务域 DAO。
 - `interfaces` 只能调用业务域 `application/` 暴露的用例服务，不得直接调用 `domain/`、DAO、Mapper 或 Repository。
 - `interfaces` 子工程内部按业务域组织 Controller 和 DTO，不额外建立 `adminapi` 或 `portal` 包层级。
-- `biz-*` 子工程之间暂时不允许相互依赖；跨域编排必须先形成明确需求和设计。
+- `biz-*` 子工程之间不允许相互依赖；跨域编排必须先形成明确需求和设计。
 - 产出 jar 的 Maven 子工程 leaf 目录名必须与 `artifactId` 保持一致；分组聚合 POM 可以放在 `common/`、`biz/`、`infra/` 根部。
 - 不设置 `infra/shared`；跨业务域技术能力应上收到 `common-*` 模块。
 - 基础服务使用 MySQL、Redis、缓存、RocketMQ 和 Elasticsearch；不引入 Seata 或分布式事务基础模块。
@@ -92,7 +92,7 @@
 - Java 主系统原则上通过 HTTP request 调用 Python worker。
 - Python worker 只提供能力计算接口，不承载核心业务规则，不直接写入正式业务数据。
 - Java 主系统负责权限、任务状态、审计、候选结果确认和最终数据写入。
-- API 在线文档使用 Springdoc OpenAPI，不使用旧版 Springfox Swagger；Swagger UI 只作为 OpenAPI 展示入口。
+- API 在线文档使用 Springdoc OpenAPI；Swagger UI 只作为 OpenAPI 展示入口。
 - 后端采用共享业务域的多接口服务形态，`admin-api` 和 `portal-api` 不通过内部 HTTP 调用对方能力。
 - 后台 API 使用 `/api/admin/**`，前台 API 使用 `/api/portal/**`。
 - `portal-api` 表示前台访问边界，不等同于无认证；是否需要登录由资源访问策略决定。

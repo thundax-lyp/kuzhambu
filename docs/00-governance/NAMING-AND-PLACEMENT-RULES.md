@@ -11,9 +11,8 @@
 - 稳定治理规则放在 `docs/00-governance/`。
 - 需求文档放在 `docs/10-requirements/`，命名为 `*-REQUIREMENTS.md`。
 - 接口、协议和配置契约放在 `docs/20-interfaces/`。
-- 专项设计和一次性 `RUNBOOK-*` 放在 `docs/30-designs/`。
+- 专项设计和 `RUNBOOK-*` 放在 `docs/30-designs/`。
 - 上线、发布和运维准备放在 `docs/40-readiness/`。
-- 人类阅读材料、项目叙事和临时参考材料放在 `docs/60-human/`。
 
 ## Code Placement
 
@@ -55,4 +54,3 @@
 - 常量使用 `UPPER_SNAKE_CASE`。
 - 包名使用小写英文，例如 `com.github.thundax.kuzhambu`。
 - 文档文件名使用大写英文和 `-`。
-- `docs/60-human/` 的临时参考材料可保留原始文件名；抽取为正式工程文档时必须改为大写英文命名。
