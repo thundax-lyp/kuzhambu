@@ -36,8 +36,6 @@
 - `kuzhambu-servers/common/kuzhambu-common-security/`：认证上下文、权限注解和安全基础工具。
 - `kuzhambu-servers/common/kuzhambu-common-openapi/`：Springdoc OpenAPI 在线文档基础配置。
 - `kuzhambu-servers/common/kuzhambu-common-mybatis/`：MyBatis 相关通用配置、类型处理和持久化基础能力。
-- `kuzhambu-servers/common/kuzhambu-common-mysql/`：MySQL 驱动和 MySQL 连接基础能力。
-- `kuzhambu-servers/common/kuzhambu-common-redis/`：Redis 连接和 Redis 基础能力。
 - `kuzhambu-servers/common/kuzhambu-common-cache/`：缓存基础能力。
 - `kuzhambu-servers/common/kuzhambu-common-mq/`：RocketMQ 消息基础能力。
 - `kuzhambu-servers/common/kuzhambu-common-elasticsearch/`：Elasticsearch 客户端和索引基础能力。
