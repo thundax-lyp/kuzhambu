@@ -135,6 +135,7 @@ Wangqi 表固定使用 `wangqi_` 前缀。所有对外标识使用 ULID，数据
 | `document_count` | `documentCount` | 是 | 文档数量 |
 | `contains_private` | `containsPrivate` | 是 | 是否包含私有文档 |
 | `status` | `status` | 是 | `PENDING` / `DONE` / `FAILED` / `EXPIRED` |
+| `content_changed` | `contentChanged` | 是 | 导出后内容是否可能已变更 |
 | `requester_user_id` | `requesterUserId` | 是 | 导出请求用户 |
 | `requested_at` | `requestedAt` | 是 | 导出请求时间 |
 | `expires_at` | `expiresAt` | 是 | 过期时间 |
@@ -143,6 +144,7 @@ Wangqi 表固定使用 `wangqi_` 前缀。所有对外标识使用 ULID，数据
 - 导出前必须按权限过滤文档。
 - 包含私有文档时必须二次确认。
 - 过期导出记录不可继续下载。
+- 导出完成后，导出范围内文档发生正式变更时，相关未过期导出记录应标记 `content_changed=true`；该标记只用于提示“内容可能已变更”，不影响下载。
 - HTML 设定集模板是随系统发布的静态资源，不属于本模块数据。
 
 ## Application Layer

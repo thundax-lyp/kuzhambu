@@ -188,10 +188,12 @@ Sancai 表固定使用 `sancai_` 前缀。所有对外标识使用 ULID，数据
 | `entry_id` | `entryId` | 是 | 条目 ULID |
 | `user_id` | `userId` | 是 | 用户 ULID |
 | `draft_json` | `draftJson` | 是 | 草稿内容 JSON |
+| `autosaved_at` | `autosavedAt` | 是 | 服务端草稿保存时间 |
 
 约束：
 - 同一用户同一条目最多保留一份当前草稿。
 - 草稿恢复后可删除或继续覆盖。
+- 当前端同时发现浏览器本地草稿和服务端草稿时，必须展示两份草稿保存时间，默认推荐较新的草稿，用户可选择恢复本地草稿、恢复服务端草稿或放弃恢复。
 
 ### sancai_visual_asset
 
@@ -233,6 +235,7 @@ Sancai 表固定使用 `sancai_` 前缀。所有对外标识使用 ULID，数据
 | `asset_count` | `assetCount` | 是 | 资产数量 |
 | `contains_private` | `containsPrivate` | 是 | 是否包含私有内容 |
 | `status` | `status` | 是 | `PENDING` / `DONE` / `FAILED` / `EXPIRED` |
+| `content_changed` | `contentChanged` | 是 | 导出后内容是否可能已变更 |
 | `requester_user_id` | `requesterUserId` | 是 | 导出请求用户 |
 | `requested_at` | `requestedAt` | 是 | 导出请求时间 |
 | `expires_at` | `expiresAt` | 是 | 过期时间 |
@@ -241,6 +244,7 @@ Sancai 表固定使用 `sancai_` 前缀。所有对外标识使用 ULID，数据
 - 导出前必须按权限过滤内容。
 - 包含私有条目时必须二次确认。
 - 过期导出记录不可继续下载。
+- 导出完成后，导出范围内条目或视觉资产发生正式变更时，相关未过期导出记录应标记 `content_changed=true`；该标记只用于提示“内容可能已变更”，不影响下载。
 
 ### sancai_showcase_page
 
