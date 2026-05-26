@@ -3,6 +3,7 @@
 
 # Log file
 *.log
+.DS_Store
 
 # BlueJ files
 *.ctxt
@@ -22,3 +23,6 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
+/.idea/
+/docs/60-human/11_重构设计/
+/docs/60-human/redesign/
