@@ -26,3 +26,7 @@ replay_pid*
 /.idea/
 /docs/60-human/11_重构设计/
 /docs/60-human/redesign/
+.venv/
+kuzhambu-workers/.venv/
+.env
+deploy/.env
