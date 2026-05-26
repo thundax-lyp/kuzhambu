@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.github.thundax</groupId>
+    <artifactId>kuzhambu</artifactId>
+    <version>0.0.1-dev</version>
+  </parent>
+
+  <artifactId>kuzhambu-common</artifactId>
+  <packaging>pom</packaging>
+
+  <name>kuzhambu-common</name>
+
+  <modules>
+    <module>kuzhambu-common-core</module>
+    <module>kuzhambu-common-web</module>
+    <module>kuzhambu-common-security</module>
+    <module>kuzhambu-common-openapi</module>
+    <module>kuzhambu-common-mybatis</module>
+    <module>kuzhambu-common-mysql</module>
+    <module>kuzhambu-common-redis</module>
+    <module>kuzhambu-common-cache</module>
+    <module>kuzhambu-common-mq</module>
+    <module>kuzhambu-common-elasticsearch</module>
+    <module>kuzhambu-common-oss</module>
+    <module>kuzhambu-common-test</module>
+  </modules>
+</project>

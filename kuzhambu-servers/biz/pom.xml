@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.github.thundax</groupId>
+    <artifactId>kuzhambu</artifactId>
+    <version>0.0.1-dev</version>
+  </parent>
+
+  <artifactId>kuzhambu-biz</artifactId>
+  <packaging>pom</packaging>
+
+  <name>kuzhambu-biz</name>
+
+  <modules>
+    <module>kuzhambu-biz-core</module>
+    <module>kuzhambu-biz-auth</module>
+    <module>kuzhambu-biz-storage</module>
+    <module>kuzhambu-biz-audit</module>
+    <module>kuzhambu-biz-sancai</module>
+    <module>kuzhambu-biz-wangqi</module>
+    <module>kuzhambu-biz-mingcustoms</module>
+    <module>kuzhambu-biz-ai-config</module>
+    <module>kuzhambu-biz-ai-refinement</module>
+    <module>kuzhambu-biz-data-refinement</module>
+    <module>kuzhambu-biz-search</module>
+    <module>kuzhambu-biz-qa</module>
+    <module>kuzhambu-biz-knowledge-graph</module>
+    <module>kuzhambu-biz-taxonomy</module>
+    <module>kuzhambu-biz-sharing</module>
+    <module>kuzhambu-biz-operations</module>
+  </modules>
+</project>
