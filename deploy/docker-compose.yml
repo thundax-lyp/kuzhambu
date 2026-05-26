@@ -1,0 +1,51 @@
+services:
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USERNAME}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+  redis:
+    image: redis:7.2
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.3
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+
+  rocketmq-namesrv:
+    image: apache/rocketmq:5.3.0
+    command: sh mqnamesrv
+    ports:
+      - "9876:9876"
+
+  rocketmq-broker:
+    image: apache/rocketmq:5.3.0
+    command: sh mqbroker -n rocketmq-namesrv:9876
+    depends_on:
+      - rocketmq-namesrv
+    ports:
+      - "10909:10909"
+      - "10911:10911"
+
+volumes:
+  mysql-data:
+  redis-data:
+  elasticsearch-data:
