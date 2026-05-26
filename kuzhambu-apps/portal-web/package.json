@@ -1,5 +1,5 @@
 {
-  "name": "@kuzhambu/admin-web",
+  "name": "@kuzhambu/portal-web",
   "version": "0.0.1-dev",
   "private": true,
   "type": "module",
@@ -12,12 +12,14 @@
     "format": "prettier . --write"
   },
   "dependencies": {
-    "@ant-design/icons": "^6.2.2",
     "@tanstack/react-query": "^5.100.9",
-    "antd": "^6.3.7",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.468.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^7.15.0",
+    "tailwind-merge": "^2.6.0",
     "zustand": "^5.0.8"
   },
   "devDependencies": {
@@ -28,6 +30,7 @@
     "eslint": "^10.3.0",
     "eslint-config-prettier": "^10.1.8",
     "prettier": "^3.8.3",
+    "tailwindcss": "^4.1.17",
     "typescript": "^5.7.2",
     "typescript-eslint": "^8.59.2",
     "vite": "^5.4.11",
