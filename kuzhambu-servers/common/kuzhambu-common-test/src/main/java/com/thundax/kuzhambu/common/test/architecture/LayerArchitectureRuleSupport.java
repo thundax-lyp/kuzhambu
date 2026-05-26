@@ -425,8 +425,8 @@ public final class LayerArchitectureRuleSupport {
     }
 
     private static boolean isLayerPublicApiSource(String path) {
-        return path.contains("/biz/")
-                && (isServiceContractSource(path) || isDaoContractSource(path) || isMapperSource(path));
+        return (path.contains("/biz/") && (isServiceContractSource(path) || isDaoContractSource(path)))
+                || isMapperSource(path);
     }
 
     private static boolean isServiceContractSource(String path) {
@@ -434,11 +434,11 @@ public final class LayerArchitectureRuleSupport {
     }
 
     private static boolean isDaoContractSource(String path) {
-        return path.contains("/dao/") && path.endsWith("Dao.java") && !path.contains("/persistence/dao/");
+        return path.contains("/biz/") && path.contains("/dao/") && path.endsWith("Dao.java");
     }
 
     private static boolean isMapperSource(String path) {
-        return path.contains("/persistence/mapper/") && path.endsWith("Mapper.java");
+        return path.contains("/infra/") && path.contains("/mapper/") && path.endsWith("Mapper.java");
     }
 
     private static List<LayerMethod> layerMethods(SourceFile source) {
