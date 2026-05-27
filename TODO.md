@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `kuzhambu-servers/biz/system`：迁移系统基础域代码和接口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SERVERS-DOMAIN-MODULE-MERGE.md`
-    - 范围对象：`kuzhambu-servers/biz/kuzhambu-biz-core/`、`kuzhambu-servers/biz/kuzhambu-biz-auth/`、`kuzhambu-servers/biz/kuzhambu-biz-audit/`、`kuzhambu-servers/infra/kuzhambu-infra-core/`、`kuzhambu-servers/infra/kuzhambu-infra-auth/`、`kuzhambu-servers/infra/kuzhambu-infra-audit/`、`kuzhambu-servers/biz/system/`
-    - 处理动作：将 core、auth、audit 迁移到 system 域四层模块并更新 package/import
-    - 验收点：system 域代码位于 `com.thundax.kuzhambu.system` 包下，用户权限、认证会话和业务审计边界清晰
-    - 重要度：10/10
-
 - [ ] `kuzhambu-servers/biz/storage`：迁移文件存储域代码和接口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SERVERS-DOMAIN-MODULE-MERGE.md`
