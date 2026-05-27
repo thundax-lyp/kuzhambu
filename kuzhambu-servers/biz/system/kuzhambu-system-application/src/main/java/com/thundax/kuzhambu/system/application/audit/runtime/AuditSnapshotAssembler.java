@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.system.application.audit.runtime;
 
-import com.thundax.kuzhambu.system.application.audit.entity.valueobject.AuditField;
-import com.thundax.kuzhambu.system.application.audit.entity.valueobject.AuditSnapshot;
+import com.thundax.kuzhambu.system.domain.audit.valueobject.AuditField;
+import com.thundax.kuzhambu.system.domain.audit.valueobject.AuditSnapshot;
 import java.util.List;
 
 public interface AuditSnapshotAssembler {

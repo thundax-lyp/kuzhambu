@@ -2,9 +2,9 @@ package com.thundax.kuzhambu.system.application.auth.service.query;
 
 import com.thundax.kuzhambu.system.application.auth.entity.enums.PrincipalCredentialStatus;
 import com.thundax.kuzhambu.system.application.auth.entity.enums.PrincipalCredentialType;
-import com.thundax.kuzhambu.system.application.auth.entity.valueobject.PrincipalCredentialId;
-import com.thundax.kuzhambu.system.application.auth.entity.valueobject.PrincipalIdentityId;
-import com.thundax.kuzhambu.system.application.auth.entity.valueobject.PrincipalKey;
+import com.thundax.kuzhambu.system.domain.auth.valueobject.PrincipalCredentialId;
+import com.thundax.kuzhambu.system.domain.auth.valueobject.PrincipalIdentityId;
+import com.thundax.kuzhambu.system.domain.auth.valueobject.PrincipalKey;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

@@ -3,11 +3,11 @@ package com.thundax.kuzhambu.system.application.core.service;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.system.application.core.entity.Department;
-import com.thundax.kuzhambu.system.application.core.entity.valueobject.DepartmentId;
 import com.thundax.kuzhambu.system.application.core.service.command.ChangeDepartmentInfoCommand;
 import com.thundax.kuzhambu.system.application.core.service.command.CreateDepartmentCommand;
 import com.thundax.kuzhambu.system.application.core.service.command.MoveDepartmentCommand;
 import com.thundax.kuzhambu.system.application.core.service.query.DepartmentQuery;
+import com.thundax.kuzhambu.system.domain.core.valueobject.DepartmentId;
 import java.util.List;
 
 public interface DepartmentService {

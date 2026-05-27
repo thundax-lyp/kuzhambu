@@ -97,10 +97,12 @@ kuzhambu-servers/
           command/
           query/
           assembler/
-          codec/
           support/
       kuzhambu-<domain>-domain/
         src/main/java/com/thundax/kuzhambu/<domain>/domain/
+          <subdomain>/
+            codec/
+            valueobject/
           model/
           service/
           repository/
@@ -145,7 +147,7 @@ com/thundax/kuzhambu/<domain>/interfaces/portal/
 - `application/command/`：写入用例输入模型。
 - `application/query/`：读取用例输入模型。
 - `application/assembler/`：application 内部模型装配，不处理 HTTP 或持久化细节。
-- `application/codec/`：基础类型和值对象互转。
+- `domain/<subdomain>/codec/`：基础类型和值对象互转，`<subdomain>` 使用业务子域名，例如 `core`、`auth`、`audit`、`object`。
 - `application/support/`：仅服务本业务域 application 层的辅助实现。
 - `domain/model/`：聚合、实体、值对象和领域枚举。
 - `domain/service/`：无法自然归入单个领域对象的领域规则。

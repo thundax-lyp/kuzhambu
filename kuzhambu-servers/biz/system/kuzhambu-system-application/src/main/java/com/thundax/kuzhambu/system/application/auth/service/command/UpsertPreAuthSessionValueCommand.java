@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.system.application.auth.service.command;
 
-import com.thundax.kuzhambu.system.application.auth.entity.valueobject.PreAuthSessionId;
+import com.thundax.kuzhambu.system.domain.auth.valueobject.PreAuthSessionId;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

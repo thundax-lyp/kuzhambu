@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.system.application.core.service.query;
 
-import com.thundax.kuzhambu.system.application.core.entity.valueobject.DepartmentId;
+import com.thundax.kuzhambu.system.domain.core.valueobject.DepartmentId;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

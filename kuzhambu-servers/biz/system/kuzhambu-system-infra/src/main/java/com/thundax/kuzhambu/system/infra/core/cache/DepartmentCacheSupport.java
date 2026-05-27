@@ -6,7 +6,7 @@ import com.alicp.jetcache.anno.CreateCache;
 import com.thundax.kuzhambu.common.cache.CacheDTO;
 import com.thundax.kuzhambu.common.cache.KuzhambuCacheNames;
 import com.thundax.kuzhambu.system.application.core.entity.Department;
-import com.thundax.kuzhambu.system.application.core.entity.valueobject.DepartmentIdCodec;
+import com.thundax.kuzhambu.system.domain.core.codec.DepartmentIdCodec;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;

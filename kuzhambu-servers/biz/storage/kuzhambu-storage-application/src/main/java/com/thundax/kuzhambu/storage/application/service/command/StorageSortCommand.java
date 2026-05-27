@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.storage.application.service.command;
 
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
-import com.thundax.kuzhambu.storage.application.entity.valueobject.StoredObjectId;
+import com.thundax.kuzhambu.storage.domain.object.valueobject.StoredObjectId;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

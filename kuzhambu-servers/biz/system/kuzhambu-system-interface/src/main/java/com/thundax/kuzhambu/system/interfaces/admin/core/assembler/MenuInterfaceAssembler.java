@@ -1,12 +1,12 @@
 package com.thundax.kuzhambu.system.interfaces.admin.core.assembler;
 
-import com.thundax.kuzhambu.system.application.core.codec.AccessRankCodec;
 import com.thundax.kuzhambu.system.application.core.entity.Menu;
 import com.thundax.kuzhambu.system.application.core.entity.enums.MenuVisibility;
-import com.thundax.kuzhambu.system.application.core.entity.valueobject.MenuIdCodec;
 import com.thundax.kuzhambu.system.application.core.service.command.ChangeMenuInfoCommand;
 import com.thundax.kuzhambu.system.application.core.service.command.CreateMenuCommand;
 import com.thundax.kuzhambu.system.application.core.service.query.MenuQuery;
+import com.thundax.kuzhambu.system.domain.core.codec.AccessRankCodec;
+import com.thundax.kuzhambu.system.domain.core.codec.MenuIdCodec;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.MenuQueryRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.MenuSaveRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.MenuResponse;

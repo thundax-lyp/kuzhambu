@@ -1,8 +1,8 @@
 package com.thundax.kuzhambu.system.application.audit.runtime.sys;
 
 import com.thundax.kuzhambu.system.application.audit.runtime.AuditObjectLoader;
-import com.thundax.kuzhambu.system.application.core.entity.valueobject.DepartmentIdCodec;
 import com.thundax.kuzhambu.system.application.core.service.DepartmentService;
+import com.thundax.kuzhambu.system.domain.core.codec.DepartmentIdCodec;
 import org.springframework.stereotype.Component;
 
 @Component

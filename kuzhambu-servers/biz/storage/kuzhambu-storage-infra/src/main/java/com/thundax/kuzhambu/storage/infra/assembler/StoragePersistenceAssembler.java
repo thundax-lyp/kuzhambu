@@ -8,9 +8,9 @@ import com.thundax.kuzhambu.storage.application.entity.enums.MultipartUploadStat
 import com.thundax.kuzhambu.storage.application.entity.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.application.entity.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.application.entity.enums.StoredObjectStatus;
-import com.thundax.kuzhambu.storage.application.entity.valueobject.MultipartUploadPartIdCodec;
-import com.thundax.kuzhambu.storage.application.entity.valueobject.MultipartUploadSessionIdCodec;
-import com.thundax.kuzhambu.storage.application.entity.valueobject.StoredObjectIdCodec;
+import com.thundax.kuzhambu.storage.domain.object.codec.MultipartUploadPartIdCodec;
+import com.thundax.kuzhambu.storage.domain.object.codec.MultipartUploadSessionIdCodec;
+import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.infra.dataobject.MultipartUploadPartDO;
 import com.thundax.kuzhambu.storage.infra.dataobject.MultipartUploadSessionDO;
 import com.thundax.kuzhambu.storage.infra.dataobject.StoredObjectDO;

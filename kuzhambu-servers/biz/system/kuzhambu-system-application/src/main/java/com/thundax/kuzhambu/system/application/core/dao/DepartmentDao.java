@@ -3,7 +3,7 @@ package com.thundax.kuzhambu.system.application.core.dao;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.common.core.tree.TreeNodeMoveType;
 import com.thundax.kuzhambu.system.application.core.entity.Department;
-import com.thundax.kuzhambu.system.application.core.entity.valueobject.DepartmentId;
+import com.thundax.kuzhambu.system.domain.core.valueobject.DepartmentId;
 import java.util.List;
 
 public interface DepartmentDao {

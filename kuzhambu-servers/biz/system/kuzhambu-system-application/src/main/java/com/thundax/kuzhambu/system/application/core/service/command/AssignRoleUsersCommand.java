@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.system.application.core.service.command;
 
-import com.thundax.kuzhambu.system.application.core.entity.valueobject.RoleId;
-import com.thundax.kuzhambu.system.application.core.entity.valueobject.UserId;
+import com.thundax.kuzhambu.system.domain.core.valueobject.RoleId;
+import com.thundax.kuzhambu.system.domain.core.valueobject.UserId;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

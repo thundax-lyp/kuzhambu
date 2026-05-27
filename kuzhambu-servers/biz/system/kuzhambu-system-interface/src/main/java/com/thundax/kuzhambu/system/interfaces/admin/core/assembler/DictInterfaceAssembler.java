@@ -1,11 +1,11 @@
 package com.thundax.kuzhambu.system.interfaces.admin.core.assembler;
 
 import com.thundax.kuzhambu.system.application.core.entity.Dict;
-import com.thundax.kuzhambu.system.application.core.entity.valueobject.DictId;
-import com.thundax.kuzhambu.system.application.core.entity.valueobject.DictIdCodec;
 import com.thundax.kuzhambu.system.application.core.service.command.ChangeDictInfoCommand;
 import com.thundax.kuzhambu.system.application.core.service.command.CreateDictCommand;
 import com.thundax.kuzhambu.system.application.core.service.query.DictQuery;
+import com.thundax.kuzhambu.system.domain.core.codec.DictIdCodec;
+import com.thundax.kuzhambu.system.domain.core.valueobject.DictId;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.DictIdRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.DictPageRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.DictQueryRequest;

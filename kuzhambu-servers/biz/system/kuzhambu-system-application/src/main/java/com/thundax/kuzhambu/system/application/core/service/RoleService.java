@@ -5,13 +5,13 @@ import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.system.application.core.entity.Menu;
 import com.thundax.kuzhambu.system.application.core.entity.Role;
 import com.thundax.kuzhambu.system.application.core.entity.User;
-import com.thundax.kuzhambu.system.application.core.entity.valueobject.RoleId;
 import com.thundax.kuzhambu.system.application.core.service.command.AssignRoleUsersCommand;
 import com.thundax.kuzhambu.system.application.core.service.command.ChangeRoleInfoCommand;
 import com.thundax.kuzhambu.system.application.core.service.command.ChangeRoleStatusCommand;
 import com.thundax.kuzhambu.system.application.core.service.command.CreateRoleCommand;
 import com.thundax.kuzhambu.system.application.core.service.command.RoleSortCommand;
 import com.thundax.kuzhambu.system.application.core.service.query.RoleQuery;
+import com.thundax.kuzhambu.system.domain.core.valueobject.RoleId;
 import java.util.List;
 
 public interface RoleService {

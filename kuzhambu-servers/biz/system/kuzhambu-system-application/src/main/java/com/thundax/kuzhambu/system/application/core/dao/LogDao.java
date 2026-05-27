@@ -2,7 +2,7 @@ package com.thundax.kuzhambu.system.application.core.dao;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.system.application.core.entity.Log;
-import com.thundax.kuzhambu.system.application.core.entity.valueobject.LogId;
+import com.thundax.kuzhambu.system.domain.core.valueobject.LogId;
 import java.util.Date;
 import java.util.List;
 

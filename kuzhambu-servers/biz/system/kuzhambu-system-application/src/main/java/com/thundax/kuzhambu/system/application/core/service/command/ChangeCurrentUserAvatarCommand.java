@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.system.application.core.service.command;
 
-import com.thundax.kuzhambu.system.application.core.entity.valueobject.UserId;
+import com.thundax.kuzhambu.system.domain.core.valueobject.UserId;
 import java.io.InputStream;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

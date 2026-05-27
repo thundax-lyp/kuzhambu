@@ -8,7 +8,7 @@ import com.thundax.kuzhambu.common.cache.KuzhambuCacheNames;
 import com.thundax.kuzhambu.system.application.core.entity.Role;
 import com.thundax.kuzhambu.system.application.core.entity.enums.RolePrivilege;
 import com.thundax.kuzhambu.system.application.core.entity.enums.RoleStatus;
-import com.thundax.kuzhambu.system.application.core.entity.valueobject.RoleIdCodec;
+import com.thundax.kuzhambu.system.domain.core.codec.RoleIdCodec;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;

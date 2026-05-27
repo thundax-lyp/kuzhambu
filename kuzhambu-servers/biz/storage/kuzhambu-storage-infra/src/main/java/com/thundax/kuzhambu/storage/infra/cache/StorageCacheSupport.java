@@ -9,7 +9,7 @@ import com.thundax.kuzhambu.storage.application.entity.StoredObject;
 import com.thundax.kuzhambu.storage.application.entity.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.application.entity.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.application.entity.enums.StoredObjectStatus;
-import com.thundax.kuzhambu.storage.application.entity.valueobject.StoredObjectIdCodec;
+import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;

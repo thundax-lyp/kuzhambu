@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.storage.application.entity;
 
-import com.thundax.kuzhambu.storage.application.entity.valueobject.MultipartUploadPartId;
+import com.thundax.kuzhambu.storage.domain.object.valueobject.MultipartUploadPartId;
 import lombok.Getter;
 import lombok.Setter;
 

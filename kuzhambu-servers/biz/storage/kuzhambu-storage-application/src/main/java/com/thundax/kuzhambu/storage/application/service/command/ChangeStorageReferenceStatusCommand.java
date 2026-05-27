@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.storage.application.service.command;
 
 import com.thundax.kuzhambu.storage.application.entity.enums.StoredObjectReferenceStatus;
-import com.thundax.kuzhambu.storage.application.entity.valueobject.StoredObjectId;
+import com.thundax.kuzhambu.storage.domain.object.valueobject.StoredObjectId;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

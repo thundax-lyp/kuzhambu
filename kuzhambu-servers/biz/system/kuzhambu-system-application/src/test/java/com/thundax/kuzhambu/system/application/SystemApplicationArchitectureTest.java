@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.system.application;
 import com.thundax.kuzhambu.common.test.architecture.AbstractArchitectureTest;
 import com.thundax.kuzhambu.common.test.architecture.AnnotationBoundaryArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.ModuleAndDependencyArchitectureRuleSupport;
+import com.thundax.kuzhambu.common.test.architecture.NamingArchitectureRuleSupport;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import org.junit.jupiter.api.Test;
 
@@ -16,5 +17,6 @@ class SystemApplicationArchitectureTest extends AbstractArchitectureTest {
 
         ModuleAndDependencyArchitectureRuleSupport.assertApplicationLayerBoundary(classes, BASE_PACKAGE);
         AnnotationBoundaryArchitectureRuleSupport.assertApplicationNoHttpAnnotations(classes, BASE_PACKAGE);
+        NamingArchitectureRuleSupport.assertCodecPlacement(classes, BASE_PACKAGE);
     }
 }

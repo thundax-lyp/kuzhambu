@@ -3,8 +3,8 @@ package com.thundax.kuzhambu.system.infra.audit.assembler;
 import com.thundax.kuzhambu.system.application.audit.entity.AuditMeta;
 import com.thundax.kuzhambu.system.application.audit.entity.enums.AuditAction;
 import com.thundax.kuzhambu.system.application.audit.entity.enums.AuditOperatorType;
-import com.thundax.kuzhambu.system.application.audit.entity.valueobject.AuditLogIdCodec;
-import com.thundax.kuzhambu.system.application.audit.entity.valueobject.AuditMetaIdCodec;
+import com.thundax.kuzhambu.system.domain.audit.codec.AuditLogIdCodec;
+import com.thundax.kuzhambu.system.domain.audit.codec.AuditMetaIdCodec;
 import com.thundax.kuzhambu.system.infra.audit.dataobject.AuditMetaDO;
 
 public final class AuditMetaPersistenceAssembler {

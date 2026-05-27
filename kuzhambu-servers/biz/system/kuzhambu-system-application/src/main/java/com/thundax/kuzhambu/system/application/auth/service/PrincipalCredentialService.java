@@ -2,9 +2,9 @@ package com.thundax.kuzhambu.system.application.auth.service;
 
 import com.thundax.kuzhambu.common.core.arch.LayerPublicApi;
 import com.thundax.kuzhambu.system.application.auth.entity.PrincipalCredential;
-import com.thundax.kuzhambu.system.application.auth.entity.valueobject.PrincipalCredentialId;
 import com.thundax.kuzhambu.system.application.auth.service.command.PrincipalCredentialCommand;
 import com.thundax.kuzhambu.system.application.auth.service.query.PrincipalCredentialQuery;
+import com.thundax.kuzhambu.system.domain.auth.valueobject.PrincipalCredentialId;
 import java.util.List;
 
 public interface PrincipalCredentialService {

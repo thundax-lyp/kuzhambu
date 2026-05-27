@@ -23,10 +23,6 @@ import com.thundax.kuzhambu.system.application.auth.entity.enums.PrincipalCreden
 import com.thundax.kuzhambu.system.application.auth.entity.enums.PrincipalIdentityType;
 import com.thundax.kuzhambu.system.application.auth.entity.enums.PrincipalLoginEventType;
 import com.thundax.kuzhambu.system.application.auth.entity.enums.PrincipalTokenStatus;
-import com.thundax.kuzhambu.system.application.auth.entity.enums.PrincipalType;
-import com.thundax.kuzhambu.system.application.auth.entity.valueobject.PrincipalAccessTokenCode;
-import com.thundax.kuzhambu.system.application.auth.entity.valueobject.PrincipalKey;
-import com.thundax.kuzhambu.system.application.auth.entity.valueobject.PrincipalRefreshTokenCode;
 import com.thundax.kuzhambu.system.application.auth.exception.InvalidPasswordException;
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalAuthService;
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalIdentityService;
@@ -35,9 +31,13 @@ import com.thundax.kuzhambu.system.application.auth.service.command.Authenticate
 import com.thundax.kuzhambu.system.application.auth.service.dto.PrincipalPasswordPolicyDTO;
 import com.thundax.kuzhambu.system.application.auth.service.query.PrincipalIdentityQuery;
 import com.thundax.kuzhambu.system.application.core.entity.User;
-import com.thundax.kuzhambu.system.application.core.entity.valueobject.UserId;
-import com.thundax.kuzhambu.system.application.core.entity.valueobject.UserIdCodec;
 import com.thundax.kuzhambu.system.application.core.service.UserService;
+import com.thundax.kuzhambu.system.domain.auth.enums.PrincipalType;
+import com.thundax.kuzhambu.system.domain.auth.valueobject.PrincipalAccessTokenCode;
+import com.thundax.kuzhambu.system.domain.auth.valueobject.PrincipalKey;
+import com.thundax.kuzhambu.system.domain.auth.valueobject.PrincipalRefreshTokenCode;
+import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
+import com.thundax.kuzhambu.system.domain.core.valueobject.UserId;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.service.AdminAuthService;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.service.PermissionService;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.service.command.AdminAuthCommand;

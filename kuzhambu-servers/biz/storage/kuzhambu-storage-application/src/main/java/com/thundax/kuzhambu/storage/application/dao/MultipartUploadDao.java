@@ -2,8 +2,8 @@ package com.thundax.kuzhambu.storage.application.dao;
 
 import com.thundax.kuzhambu.storage.application.entity.MultipartUploadPart;
 import com.thundax.kuzhambu.storage.application.entity.MultipartUploadSession;
-import com.thundax.kuzhambu.storage.application.entity.valueobject.MultipartUploadPartId;
-import com.thundax.kuzhambu.storage.application.entity.valueobject.MultipartUploadSessionId;
+import com.thundax.kuzhambu.storage.domain.object.valueobject.MultipartUploadPartId;
+import com.thundax.kuzhambu.storage.domain.object.valueobject.MultipartUploadSessionId;
 import java.util.List;
 
 public interface MultipartUploadDao {

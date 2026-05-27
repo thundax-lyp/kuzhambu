@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.system.infra.core.assembler;
 
 import com.thundax.kuzhambu.system.application.core.entity.Department;
-import com.thundax.kuzhambu.system.application.core.entity.valueobject.DepartmentIdCodec;
+import com.thundax.kuzhambu.system.domain.core.codec.DepartmentIdCodec;
 import com.thundax.kuzhambu.system.infra.core.dataobject.DepartmentDO;
 import java.util.ArrayList;
 import java.util.List;

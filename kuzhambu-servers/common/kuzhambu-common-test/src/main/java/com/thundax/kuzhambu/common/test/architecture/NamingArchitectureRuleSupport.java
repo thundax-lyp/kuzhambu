@@ -76,6 +76,27 @@ public final class NamingArchitectureRuleSupport {
         assertTrue("Layer types must use the fixed suffix for their package: " + violations, violations.isEmpty());
     }
 
+    public static void assertCodecPlacement(JavaClasses classes, String basePackage) {
+        List<String> violations = new ArrayList<String>();
+
+        for (JavaClass javaClass : classes) {
+            if (isTestType(javaClass) || javaClass.getName().contains("$")) {
+                continue;
+            }
+            if (!javaClass.getSimpleName().endsWith("Codec")) {
+                continue;
+            }
+            if (!isPackageUnder(javaClass, basePackage + ".domain")
+                    || !javaClass.getPackageName().contains(".codec")) {
+                violations.add(javaClass.getName());
+            }
+        }
+
+        assertTrue(
+                "*Codec types must be placed under com.thundax.kuzhambu.{module}.domain.{domain}.codec: " + violations,
+                violations.isEmpty());
+    }
+
     public static void assertConfigurationClassNames(JavaClasses classes) {
         List<String> violations = new ArrayList<String>();
 
@@ -392,6 +413,11 @@ public final class NamingArchitectureRuleSupport {
 
     private static boolean isTestType(JavaClass javaClass) {
         return javaClass.getName().contains("Test");
+    }
+
+    private static boolean isPackageUnder(JavaClass javaClass, String packagePrefix) {
+        return javaClass.getPackageName().equals(packagePrefix)
+                || javaClass.getPackageName().startsWith(packagePrefix + ".");
     }
 
     private static boolean isServiceInterface(JavaClass javaClass) {

@@ -2,7 +2,7 @@ package com.thundax.kuzhambu.storage.application.entity;
 
 import com.thundax.kuzhambu.storage.application.entity.enums.MultipartUploadStatus;
 import com.thundax.kuzhambu.storage.application.entity.enums.StorageOwnerType;
-import com.thundax.kuzhambu.storage.application.entity.valueobject.MultipartUploadSessionId;
+import com.thundax.kuzhambu.storage.domain.object.valueobject.MultipartUploadSessionId;
 import java.util.Date;
 import lombok.Getter;
 import lombok.Setter;

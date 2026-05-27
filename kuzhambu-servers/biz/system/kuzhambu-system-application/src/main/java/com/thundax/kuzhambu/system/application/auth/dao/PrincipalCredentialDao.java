@@ -3,9 +3,9 @@ package com.thundax.kuzhambu.system.application.auth.dao;
 import com.thundax.kuzhambu.system.application.auth.entity.PrincipalCredential;
 import com.thundax.kuzhambu.system.application.auth.entity.enums.PrincipalCredentialStatus;
 import com.thundax.kuzhambu.system.application.auth.entity.enums.PrincipalCredentialType;
-import com.thundax.kuzhambu.system.application.auth.entity.valueobject.PrincipalCredentialId;
-import com.thundax.kuzhambu.system.application.auth.entity.valueobject.PrincipalIdentityId;
-import com.thundax.kuzhambu.system.application.auth.entity.valueobject.PrincipalKey;
+import com.thundax.kuzhambu.system.domain.auth.valueobject.PrincipalCredentialId;
+import com.thundax.kuzhambu.system.domain.auth.valueobject.PrincipalIdentityId;
+import com.thundax.kuzhambu.system.domain.auth.valueobject.PrincipalKey;
 import java.util.List;
 
 public interface PrincipalCredentialDao {

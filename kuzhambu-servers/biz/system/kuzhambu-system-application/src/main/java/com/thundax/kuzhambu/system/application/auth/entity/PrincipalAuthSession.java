@@ -1,8 +1,8 @@
 package com.thundax.kuzhambu.system.application.auth.entity;
 
 import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
-import com.thundax.kuzhambu.system.application.auth.entity.valueobject.PrincipalAuthSessionId;
-import com.thundax.kuzhambu.system.application.auth.entity.valueobject.PrincipalKey;
+import com.thundax.kuzhambu.system.domain.auth.valueobject.PrincipalAuthSessionId;
+import com.thundax.kuzhambu.system.domain.auth.valueobject.PrincipalKey;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;

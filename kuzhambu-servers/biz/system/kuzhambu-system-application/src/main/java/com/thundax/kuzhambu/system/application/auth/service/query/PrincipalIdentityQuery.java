@@ -2,8 +2,8 @@ package com.thundax.kuzhambu.system.application.auth.service.query;
 
 import com.thundax.kuzhambu.system.application.auth.entity.enums.PrincipalIdentityStatus;
 import com.thundax.kuzhambu.system.application.auth.entity.enums.PrincipalIdentityType;
-import com.thundax.kuzhambu.system.application.auth.entity.valueobject.PrincipalIdentityId;
-import com.thundax.kuzhambu.system.application.auth.entity.valueobject.PrincipalKey;
+import com.thundax.kuzhambu.system.domain.auth.valueobject.PrincipalIdentityId;
+import com.thundax.kuzhambu.system.domain.auth.valueobject.PrincipalKey;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

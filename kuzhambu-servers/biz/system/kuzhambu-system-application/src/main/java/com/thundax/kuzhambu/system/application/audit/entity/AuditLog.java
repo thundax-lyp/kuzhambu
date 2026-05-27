@@ -2,10 +2,10 @@ package com.thundax.kuzhambu.system.application.audit.entity;
 
 import com.thundax.kuzhambu.system.application.audit.entity.enums.AuditAction;
 import com.thundax.kuzhambu.system.application.audit.entity.enums.AuditOperatorType;
-import com.thundax.kuzhambu.system.application.audit.entity.valueobject.AuditChangedField;
-import com.thundax.kuzhambu.system.application.audit.entity.valueobject.AuditLogId;
-import com.thundax.kuzhambu.system.application.audit.entity.valueobject.AuditMetaId;
-import com.thundax.kuzhambu.system.application.audit.entity.valueobject.AuditSnapshot;
+import com.thundax.kuzhambu.system.domain.audit.valueobject.AuditChangedField;
+import com.thundax.kuzhambu.system.domain.audit.valueobject.AuditLogId;
+import com.thundax.kuzhambu.system.domain.audit.valueobject.AuditMetaId;
+import com.thundax.kuzhambu.system.domain.audit.valueobject.AuditSnapshot;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;

@@ -3,7 +3,7 @@ package com.thundax.kuzhambu.system.infra.core.assembler;
 import com.thundax.kuzhambu.system.application.core.entity.Role;
 import com.thundax.kuzhambu.system.application.core.entity.enums.RolePrivilege;
 import com.thundax.kuzhambu.system.application.core.entity.enums.RoleStatus;
-import com.thundax.kuzhambu.system.application.core.entity.valueobject.RoleIdCodec;
+import com.thundax.kuzhambu.system.domain.core.codec.RoleIdCodec;
 import com.thundax.kuzhambu.system.infra.core.dataobject.MenuRoleDO;
 import com.thundax.kuzhambu.system.infra.core.dataobject.RoleDO;
 import com.thundax.kuzhambu.system.infra.core.dataobject.UserRoleDO;

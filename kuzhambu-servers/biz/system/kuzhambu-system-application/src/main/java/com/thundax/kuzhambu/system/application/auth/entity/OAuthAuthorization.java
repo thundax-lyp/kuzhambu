@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.system.application.auth.entity;
 
 import com.thundax.kuzhambu.common.core.id.EntityId;
-import com.thundax.kuzhambu.system.application.auth.entity.valueobject.PrincipalKey;
+import com.thundax.kuzhambu.system.domain.auth.valueobject.PrincipalKey;
 import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.Set;

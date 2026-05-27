@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.system.application.auth.entity.enums;
 
 import com.thundax.kuzhambu.common.core.exception.DomainException;
+import com.thundax.kuzhambu.system.domain.auth.enums.PrincipalType;
 import java.util.Arrays;
 
 public enum PrincipalCredentialType {
