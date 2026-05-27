@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `kuzhambu-servers/biz/ai`：迁移 AI 生产域代码和接口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SERVERS-DOMAIN-MODULE-MERGE.md`
-    - 范围对象：`kuzhambu-servers/biz/kuzhambu-biz-ai-config/`、`kuzhambu-servers/biz/kuzhambu-biz-ai-refinement/`、`kuzhambu-servers/infra/kuzhambu-infra-ai-config/`、`kuzhambu-servers/infra/kuzhambu-infra-ai-refinement/`、`kuzhambu-servers/biz/ai/`
-    - 处理动作：将 AI 配置、提示词和 AI 精修迁移到 ai 域四层模块并更新 package/import
-    - 验收点：ai 域代码位于 `com.thundax.kuzhambu.ai` 包下，模型配置、提示词和候选确认链路保持完整
-    - 重要度：10/10
-
 - [ ] `kuzhambu-servers/biz/knowledge`：迁移知识组织域代码和接口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SERVERS-DOMAIN-MODULE-MERGE.md`
