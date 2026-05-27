@@ -10,6 +10,8 @@ import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -30,7 +32,10 @@ public class WangqiDocumentAdminController {
         this.service = service;
     }
 
+    @Operation(summary = "分页查询王圻文档", description = "classics:wangqi:view")
+    @ApiImplicitParams({})
     @HasPermission("classics:wangqi:view")
+    @SysLogger(value = "分页查询")
     @PostMapping("page")
     public PageResponse<WangqiDocumentResponse> page(@Valid @RequestBody WangqiDocumentRequest request) {
         return PageResponseHelper.fromPageResult(
@@ -39,13 +44,19 @@ public class WangqiDocumentAdminController {
                 WangqiDocumentInterfaceAssembler::toResponse);
     }
 
+    @Operation(summary = "查看王圻文档", description = "classics:wangqi:view")
+    @ApiImplicitParams({})
     @HasPermission("classics:wangqi:view")
+    @SysLogger(value = "详情")
     @GetMapping("{id}")
     public WangqiDocumentResponse get(@PathVariable Long id) {
         return WangqiDocumentInterfaceAssembler.toResponse(service.get(id));
     }
 
+    @Operation(summary = "查询王圻时间线", description = "classics:wangqi:view")
+    @ApiImplicitParams({})
     @HasPermission("classics:wangqi:view")
+    @SysLogger(value = "时间线")
     @PostMapping("timeline")
     public List<WangqiDocumentResponse> timeline(@Valid @RequestBody WangqiDocumentRequest request) {
         return service.listTimeline(WangqiDocumentInterfaceAssembler.toQuery(request)).stream()
@@ -53,15 +64,22 @@ public class WangqiDocumentAdminController {
                 .toList();
     }
 
+    @Operation(summary = "保存王圻文档", description = "classics:wangqi:edit")
+    @ApiImplicitParams({})
     @HasPermission("classics:wangqi:edit")
+    @SysLogger(value = "保存")
     @PostMapping("save")
-    public Long save(@Valid @RequestBody WangqiDocumentRequest request) {
-        return service.save(WangqiDocumentInterfaceAssembler.toSaveCommand(request));
+    public WangqiDocumentResponse save(@Valid @RequestBody WangqiDocumentRequest request) {
+        Long id = service.save(WangqiDocumentInterfaceAssembler.toSaveCommand(request));
+        return WangqiDocumentResponse.builder().id(id).build();
     }
 
+    @Operation(summary = "删除王圻文档", description = "classics:wangqi:delete")
+    @ApiImplicitParams({})
     @HasPermission("classics:wangqi:delete")
-    @PostMapping("{id}/delete")
-    public void delete(@PathVariable Long id) {
-        service.delete(id);
+    @SysLogger(value = "删除")
+    @PostMapping("delete")
+    public void delete(@Valid @RequestBody WangqiDocumentRequest request) {
+        service.delete(request.getId());
     }
 }

@@ -7,6 +7,8 @@ import com.thundax.kuzhambu.classics.interfaces.admin.content.controller.respons
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -27,7 +29,10 @@ public class ClassicsContentAdminController {
         this.service = service;
     }
 
+    @Operation(summary = "查询古籍内容标签", description = "classics:content:view")
+    @ApiImplicitParams({})
     @HasPermission("classics:content:view")
+    @SysLogger(value = "标签列表")
     @GetMapping("tags")
     public List<ClassicsContentResponse> listTags(@RequestParam String contentType, @RequestParam Long contentId) {
         return service.listTags(contentType, contentId).stream()
@@ -35,13 +40,20 @@ public class ClassicsContentAdminController {
                 .toList();
     }
 
+    @Operation(summary = "保存古籍内容标签", description = "classics:content:edit")
+    @ApiImplicitParams({})
     @HasPermission("classics:content:edit")
+    @SysLogger(value = "保存标签")
     @PostMapping("tags/save")
-    public Long saveTag(@Valid @RequestBody ClassicsContentRequest request) {
-        return service.saveTag(ClassicsContentInterfaceAssembler.toTagCommand(request));
+    public ClassicsContentResponse saveTag(@Valid @RequestBody ClassicsContentRequest request) {
+        Long id = service.saveTag(ClassicsContentInterfaceAssembler.toTagCommand(request));
+        return ClassicsContentResponse.builder().id(id).build();
     }
 
+    @Operation(summary = "查询古籍内容问答", description = "classics:content:view")
+    @ApiImplicitParams({})
     @HasPermission("classics:content:view")
+    @SysLogger(value = "问答列表")
     @GetMapping("qa-pairs")
     public List<ClassicsContentResponse> listQaPairs(@RequestParam String contentType, @RequestParam Long contentId) {
         return service.listQaPairs(contentType, contentId).stream()
@@ -49,15 +61,23 @@ public class ClassicsContentAdminController {
                 .toList();
     }
 
+    @Operation(summary = "保存古籍内容问答", description = "classics:content:edit")
+    @ApiImplicitParams({})
     @HasPermission("classics:content:edit")
+    @SysLogger(value = "保存问答")
     @PostMapping("qa-pairs/save")
-    public Long saveQaPair(@Valid @RequestBody ClassicsContentRequest request) {
-        return service.saveQaPair(ClassicsContentInterfaceAssembler.toQaCommand(request));
+    public ClassicsContentResponse saveQaPair(@Valid @RequestBody ClassicsContentRequest request) {
+        Long id = service.saveQaPair(ClassicsContentInterfaceAssembler.toQaCommand(request));
+        return ClassicsContentResponse.builder().id(id).build();
     }
 
+    @Operation(summary = "创建古籍内容导出任务", description = "classics:content:export")
+    @ApiImplicitParams({})
     @HasPermission("classics:content:export")
+    @SysLogger(value = "创建导出任务")
     @PostMapping("exports")
-    public Long createExport(@Valid @RequestBody ClassicsContentRequest request) {
-        return service.createExportJob(ClassicsContentInterfaceAssembler.toExportCommand(request));
+    public ClassicsContentResponse createExport(@Valid @RequestBody ClassicsContentRequest request) {
+        Long id = service.createExportJob(ClassicsContentInterfaceAssembler.toExportCommand(request));
+        return ClassicsContentResponse.builder().id(id).build();
     }
 }

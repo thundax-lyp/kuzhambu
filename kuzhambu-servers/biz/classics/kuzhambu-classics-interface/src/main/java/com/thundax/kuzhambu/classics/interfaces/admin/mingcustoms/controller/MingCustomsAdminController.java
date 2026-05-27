@@ -10,6 +10,8 @@ import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -31,7 +33,10 @@ public class MingCustomsAdminController {
         this.service = service;
     }
 
+    @Operation(summary = "分页查询明代习俗", description = "classics:mingcustoms:view")
+    @ApiImplicitParams({})
     @HasPermission("classics:mingcustoms:view")
+    @SysLogger(value = "分页查询")
     @PostMapping("page")
     public PageResponse<MingCustomsResponse> page(@Valid @RequestBody MingCustomsRequest request) {
         return PageResponseHelper.fromPageResult(
@@ -40,33 +45,50 @@ public class MingCustomsAdminController {
                 MingCustomsInterfaceAssembler::toResponse);
     }
 
+    @Operation(summary = "查看明代习俗", description = "classics:mingcustoms:view")
+    @ApiImplicitParams({})
     @HasPermission("classics:mingcustoms:view")
+    @SysLogger(value = "详情")
     @GetMapping("{id}")
     public MingCustomsResponse get(@PathVariable Long id) {
         return MingCustomsInterfaceAssembler.toResponse(service.get(id));
     }
 
+    @Operation(summary = "保存明代习俗", description = "classics:mingcustoms:edit")
+    @ApiImplicitParams({})
     @HasPermission("classics:mingcustoms:edit")
+    @SysLogger(value = "保存")
     @PostMapping("save")
-    public Long save(@Valid @RequestBody MingCustomsRequest request) {
-        return service.save(MingCustomsInterfaceAssembler.toSaveCommand(request));
+    public MingCustomsResponse save(@Valid @RequestBody MingCustomsRequest request) {
+        Long id = service.save(MingCustomsInterfaceAssembler.toSaveCommand(request));
+        return MingCustomsResponse.builder().id(id).build();
     }
 
+    @Operation(summary = "新增明代习俗关键词", description = "classics:mingcustoms:edit")
+    @ApiImplicitParams({})
     @HasPermission("classics:mingcustoms:edit")
-    @PostMapping("{id}/keywords")
-    public Long addKeyword(@PathVariable Long id, @Valid @RequestBody MingCustomsRequest request) {
-        return service.addKeyword(MingCustomsInterfaceAssembler.toKeywordCommand(id, request));
+    @SysLogger(value = "新增关键词")
+    @PostMapping("keywords")
+    public MingCustomsResponse addKeyword(@Valid @RequestBody MingCustomsRequest request) {
+        Long id = service.addKeyword(MingCustomsInterfaceAssembler.toKeywordCommand(request.getId(), request));
+        return MingCustomsResponse.builder().id(id).build();
     }
 
+    @Operation(summary = "查询明代习俗关键词云", description = "classics:mingcustoms:view")
+    @ApiImplicitParams({})
     @HasPermission("classics:mingcustoms:view")
+    @SysLogger(value = "关键词云")
     @GetMapping("keyword-cloud")
     public List<String> keywordCloud(@RequestParam(required = false) String visibility) {
         return service.listKeywordCloud(visibility);
     }
 
+    @Operation(summary = "删除明代习俗", description = "classics:mingcustoms:delete")
+    @ApiImplicitParams({})
     @HasPermission("classics:mingcustoms:delete")
-    @PostMapping("{id}/delete")
-    public void delete(@PathVariable Long id) {
-        service.delete(id);
+    @SysLogger(value = "删除")
+    @PostMapping("delete")
+    public void delete(@Valid @RequestBody MingCustomsRequest request) {
+        service.delete(request.getId());
     }
 }

@@ -12,6 +12,8 @@ import com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller.respons
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.apache.commons.lang3.StringUtils;
@@ -32,10 +34,13 @@ public class ClassicsSharingAdminController {
         this.service = service;
     }
 
+    @Operation(summary = "创建古籍分享", description = "classics:sharing:edit")
+    @ApiImplicitParams({})
     @HasPermission("classics:sharing:edit")
+    @SysLogger(value = "创建分享")
     @PostMapping("create")
-    public Long create(@Valid @RequestBody ClassicsSharingRequest request) {
-        return service.createLink(new ShareLinkCreateCommand(
+    public ClassicsSharingResponse create(@Valid @RequestBody ClassicsSharingRequest request) {
+        Long id = service.createLink(new ShareLinkCreateCommand(
                 request.getTokenHash(),
                 request.getTitle(),
                 ClassicsShareVisibility.from(request.getVisibility()),
@@ -46,16 +51,23 @@ public class ClassicsSharingAdminController {
                 null,
                 request.getExpiresAt(),
                 request.getTargets()));
+        return ClassicsSharingResponse.builder().id(id).build();
     }
 
+    @Operation(summary = "变更古籍分享状态", description = "classics:sharing:edit")
+    @ApiImplicitParams({})
     @HasPermission("classics:sharing:edit")
+    @SysLogger(value = "变更状态")
     @PostMapping("status")
     public void status(@Valid @RequestBody ClassicsSharingRequest request) {
         service.changeStatus(
                 new ShareLinkStatusCommand(request.getId(), ClassicsShareLinkStatus.from(request.getStatus())));
     }
 
+    @Operation(summary = "查看古籍分享", description = "classics:sharing:view")
+    @ApiImplicitParams({})
     @HasPermission("classics:sharing:view")
+    @SysLogger(value = "详情")
     @GetMapping("{id}")
     public ClassicsSharingResponse get(@PathVariable Long id) {
         return toResponse(service.getLink(id));

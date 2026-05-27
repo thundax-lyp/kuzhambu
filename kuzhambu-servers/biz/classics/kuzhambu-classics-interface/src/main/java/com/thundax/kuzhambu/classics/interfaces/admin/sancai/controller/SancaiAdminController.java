@@ -11,6 +11,8 @@ import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,7 +32,10 @@ public class SancaiAdminController {
         this.service = service;
     }
 
+    @Operation(summary = "分页查询三才图会条目", description = "classics:sancai:view")
+    @ApiImplicitParams({})
     @HasPermission("classics:sancai:view")
+    @SysLogger(value = "分页查询")
     @PostMapping("entries/page")
     public PageResponse<SancaiEntryResponse> pageEntries(@Valid @RequestBody SancaiEntryPageRequest request) {
         return PageResponseHelper.fromPageResult(
@@ -39,21 +44,31 @@ public class SancaiAdminController {
                 SancaiInterfaceAssembler::toResponse);
     }
 
+    @Operation(summary = "查看三才图会条目", description = "classics:sancai:view")
+    @ApiImplicitParams({})
     @HasPermission("classics:sancai:view")
+    @SysLogger(value = "详情")
     @GetMapping("entries/{id}")
     public SancaiEntryResponse getEntry(@PathVariable Long id) {
         return SancaiInterfaceAssembler.toResponse(service.getEntry(id));
     }
 
+    @Operation(summary = "保存三才图会条目", description = "classics:sancai:edit")
+    @ApiImplicitParams({})
     @HasPermission("classics:sancai:edit")
+    @SysLogger(value = "保存")
     @PostMapping("entries/save")
-    public Long saveEntry(@Valid @RequestBody SancaiEntrySaveRequest request) {
-        return service.saveEntry(SancaiInterfaceAssembler.toCommand(request));
+    public SancaiEntryResponse saveEntry(@Valid @RequestBody SancaiEntrySaveRequest request) {
+        Long id = service.saveEntry(SancaiInterfaceAssembler.toCommand(request));
+        return SancaiEntryResponse.builder().id(id).build();
     }
 
+    @Operation(summary = "删除三才图会条目", description = "classics:sancai:delete")
+    @ApiImplicitParams({})
     @HasPermission("classics:sancai:delete")
-    @PostMapping("entries/{id}/delete")
-    public void deleteEntry(@PathVariable Long id) {
-        service.deleteEntry(id);
+    @SysLogger(value = "删除")
+    @PostMapping("entries/delete")
+    public void deleteEntry(@Valid @RequestBody SancaiEntrySaveRequest request) {
+        service.deleteEntry(request.getId());
     }
 }
