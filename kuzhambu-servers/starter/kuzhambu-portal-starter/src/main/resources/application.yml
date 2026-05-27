@@ -18,9 +18,6 @@ spring:
       url: ${KUZHAMBU_REDIS_URI:redis://127.0.0.1:6379/0}
       password: ${KUZHAMBU_REDIS_PASSWORD:}
       timeout: ${KUZHAMBU_REDIS_TIMEOUT:5s}
-  flyway:
-    enabled: false
-
 rocketmq:
   name-server: ${KUZHAMBU_ROCKETMQ_NAME_SERVER:127.0.0.1:9876}
   producer:
