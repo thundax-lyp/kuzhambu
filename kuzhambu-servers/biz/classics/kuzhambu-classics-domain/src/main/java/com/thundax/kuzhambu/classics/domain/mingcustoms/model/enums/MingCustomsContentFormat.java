@@ -16,6 +16,8 @@ public enum MingCustomsContentFormat {
                 .filter(item -> item.name().equalsIgnoreCase(value))
                 .findFirst()
                 .orElseThrow(() -> new DomainException(
-                        "CLASSICS-12001", "classics.mingcustoms.content.format.invalid", "Unknown ming customs content format: " + value));
+                        "CLASSICS-12001",
+                        "classics.mingcustoms.content.format.invalid",
+                        "Unknown ming customs content format: " + value));
     }
 }

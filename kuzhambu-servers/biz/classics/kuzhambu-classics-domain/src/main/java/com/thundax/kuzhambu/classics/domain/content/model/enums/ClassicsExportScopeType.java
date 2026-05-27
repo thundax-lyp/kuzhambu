@@ -19,6 +19,8 @@ public enum ClassicsExportScopeType {
                 .filter(item -> item.name().equalsIgnoreCase(value))
                 .findFirst()
                 .orElseThrow(() -> new DomainException(
-                        "CLASSICS-13007", "classics.export.scope.type.invalid", "Unknown classics export scope type: " + value));
+                        "CLASSICS-13007",
+                        "classics.export.scope.type.invalid",
+                        "Unknown classics export scope type: " + value));
     }
 }

@@ -16,6 +16,8 @@ public enum ClassicsContentTagStatus {
                 .filter(item -> item.name().equalsIgnoreCase(value))
                 .findFirst()
                 .orElseThrow(() -> new DomainException(
-                        "CLASSICS-13003", "classics.content.tag.status.invalid", "Unknown classics content tag status: " + value));
+                        "CLASSICS-13003",
+                        "classics.content.tag.status.invalid",
+                        "Unknown classics content tag status: " + value));
     }
 }

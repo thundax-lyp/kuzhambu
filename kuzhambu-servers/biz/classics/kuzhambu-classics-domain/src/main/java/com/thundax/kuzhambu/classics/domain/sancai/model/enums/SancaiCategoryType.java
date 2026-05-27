@@ -16,6 +16,8 @@ public enum SancaiCategoryType {
                 .filter(item -> item.name().equalsIgnoreCase(value))
                 .findFirst()
                 .orElseThrow(() -> new DomainException(
-                        "CLASSICS-10001", "classics.sancai.category.type.invalid", "Unknown sancai category type: " + value));
+                        "CLASSICS-10001",
+                        "classics.sancai.category.type.invalid",
+                        "Unknown sancai category type: " + value));
     }
 }

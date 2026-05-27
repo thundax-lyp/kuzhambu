@@ -16,6 +16,8 @@ public enum WangqiDocumentVisibility {
                 .filter(item -> item.name().equalsIgnoreCase(value))
                 .findFirst()
                 .orElseThrow(() -> new DomainException(
-                        "CLASSICS-11002", "classics.wangqi.visibility.invalid", "Unknown wangqi document visibility: " + value));
+                        "CLASSICS-11002",
+                        "classics.wangqi.visibility.invalid",
+                        "Unknown wangqi document visibility: " + value));
     }
 }

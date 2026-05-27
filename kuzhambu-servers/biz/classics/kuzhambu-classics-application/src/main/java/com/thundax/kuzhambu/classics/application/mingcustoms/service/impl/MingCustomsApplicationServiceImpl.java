@@ -38,7 +38,9 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
                 query == null ? null : query.getCategory(),
                 query == null ? null : query.getKeyword(),
                 query == null ? null : query.getTagName(),
-                query == null || query.getVisibility() == null ? null : query.getVisibility().value(),
+                query == null || query.getVisibility() == null
+                        ? null
+                        : query.getVisibility().value(),
                 query == null ? SortDirection.ASC : query.getSortDirection(),
                 page.getPageNo(),
                 page.getPageSize());

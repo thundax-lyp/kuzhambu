@@ -95,7 +95,8 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     }
 
     @Override
-    public PageResult<ClassicsContentExportJob> pageExportJobs(String contentType, String exportKind, String status, PageQuery page) {
+    public PageResult<ClassicsContentExportJob> pageExportJobs(
+            String contentType, String exportKind, String status, PageQuery page) {
         IPage<ClassicsContentExportJob> dataPage =
                 repository.pageExportJobs(contentType, exportKind, status, page.getPageNo(), page.getPageSize());
         return PageResult.of(

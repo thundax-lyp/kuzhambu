@@ -18,6 +18,8 @@ public enum SancaiEntryVisualAssetStatus {
                 .filter(item -> item.name().equalsIgnoreCase(value))
                 .findFirst()
                 .orElseThrow(() -> new DomainException(
-                        "CLASSICS-10007", "classics.sancai.entry.visual.asset.invalid", "Unknown sancai entry visual asset status: " + value));
+                        "CLASSICS-10007",
+                        "classics.sancai.entry.visual.asset.invalid",
+                        "Unknown sancai entry visual asset status: " + value));
     }
 }

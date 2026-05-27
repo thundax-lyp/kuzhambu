@@ -16,6 +16,8 @@ public enum ClassicsSharedContentVisibility {
                 .filter(item -> item.name().equalsIgnoreCase(value))
                 .findFirst()
                 .orElseThrow(() -> new DomainException(
-                        "CLASSICS-14003", "classics.shared.content.visibility.invalid", "Unknown shared content visibility: " + value));
+                        "CLASSICS-14003",
+                        "classics.shared.content.visibility.invalid",
+                        "Unknown shared content visibility: " + value));
     }
 }

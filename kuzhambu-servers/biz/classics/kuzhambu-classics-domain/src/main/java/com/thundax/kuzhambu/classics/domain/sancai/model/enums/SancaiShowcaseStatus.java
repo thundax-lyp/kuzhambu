@@ -19,6 +19,8 @@ public enum SancaiShowcaseStatus {
                 .filter(item -> item.name().equalsIgnoreCase(value))
                 .findFirst()
                 .orElseThrow(() -> new DomainException(
-                        "CLASSICS-10011", "classics.sancai.showcase.status.invalid", "Unknown sancai showcase status: " + value));
+                        "CLASSICS-10011",
+                        "classics.sancai.showcase.status.invalid",
+                        "Unknown sancai showcase status: " + value));
     }
 }

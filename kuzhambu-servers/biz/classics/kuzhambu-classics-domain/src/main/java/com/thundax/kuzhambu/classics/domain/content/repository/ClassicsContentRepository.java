@@ -36,5 +36,6 @@ public interface ClassicsContentRepository {
 
     int updateExportJob(ClassicsContentExportJob exportJob);
 
-    Page<ClassicsContentExportJob> pageExportJobs(String contentType, String exportKind, String status, int pageNo, int pageSize);
+    Page<ClassicsContentExportJob> pageExportJobs(
+            String contentType, String exportKind, String status, int pageNo, int pageSize);
 }

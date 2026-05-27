@@ -16,6 +16,8 @@ public enum MingCustomsVisibility {
                 .filter(item -> item.name().equalsIgnoreCase(value))
                 .findFirst()
                 .orElseThrow(() -> new DomainException(
-                        "CLASSICS-12002", "classics.mingcustoms.visibility.invalid", "Unknown ming customs visibility: " + value));
+                        "CLASSICS-12002",
+                        "classics.mingcustoms.visibility.invalid",
+                        "Unknown ming customs visibility: " + value));
     }
 }

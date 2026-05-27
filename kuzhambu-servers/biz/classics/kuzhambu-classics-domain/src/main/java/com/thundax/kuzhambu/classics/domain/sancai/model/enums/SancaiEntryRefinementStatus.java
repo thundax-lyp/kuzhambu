@@ -17,6 +17,8 @@ public enum SancaiEntryRefinementStatus {
                 .filter(item -> item.name().equalsIgnoreCase(value))
                 .findFirst()
                 .orElseThrow(() -> new DomainException(
-                        "CLASSICS-10008", "classics.sancai.entry.refinement.invalid", "Unknown sancai entry refinement status: " + value));
+                        "CLASSICS-10008",
+                        "classics.sancai.entry.refinement.invalid",
+                        "Unknown sancai entry refinement status: " + value));
     }
 }

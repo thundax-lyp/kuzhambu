@@ -17,6 +17,8 @@ public enum SancaiEntryImageStatus {
                 .filter(item -> item.name().equalsIgnoreCase(value))
                 .findFirst()
                 .orElseThrow(() -> new DomainException(
-                        "CLASSICS-10006", "classics.sancai.entry.image.invalid", "Unknown sancai entry image status: " + value));
+                        "CLASSICS-10006",
+                        "classics.sancai.entry.image.invalid",
+                        "Unknown sancai entry image status: " + value));
     }
 }

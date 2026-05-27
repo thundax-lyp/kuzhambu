@@ -41,7 +41,8 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
 
     @Override
     public PageResult<ClassicsShareLink> pageLinks(String status, String visibility, PageQuery page) {
-        IPage<ClassicsShareLink> dataPage = repository.pageLinks(status, visibility, page.getPageNo(), page.getPageSize());
+        IPage<ClassicsShareLink> dataPage =
+                repository.pageLinks(status, visibility, page.getPageNo(), page.getPageSize());
         return PageResult.of(
                 (int) dataPage.getCurrent(), (int) dataPage.getSize(), dataPage.getTotal(), dataPage.getRecords());
     }

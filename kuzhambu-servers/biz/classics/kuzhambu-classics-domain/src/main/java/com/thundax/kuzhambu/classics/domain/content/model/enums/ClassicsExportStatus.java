@@ -20,6 +20,8 @@ public enum ClassicsExportStatus {
                 .filter(item -> item.name().equalsIgnoreCase(value))
                 .findFirst()
                 .orElseThrow(() -> new DomainException(
-                        "CLASSICS-13008", "classics.export.status.invalid", "Unknown classics export status: " + value));
+                        "CLASSICS-13008",
+                        "classics.export.status.invalid",
+                        "Unknown classics export status: " + value));
     }
 }

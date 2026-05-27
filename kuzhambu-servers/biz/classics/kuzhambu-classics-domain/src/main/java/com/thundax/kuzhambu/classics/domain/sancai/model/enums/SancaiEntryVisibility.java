@@ -16,6 +16,8 @@ public enum SancaiEntryVisibility {
                 .filter(item -> item.name().equalsIgnoreCase(value))
                 .findFirst()
                 .orElseThrow(() -> new DomainException(
-                        "CLASSICS-10004", "classics.sancai.entry.visibility.invalid", "Unknown sancai entry visibility: " + value));
+                        "CLASSICS-10004",
+                        "classics.sancai.entry.visibility.invalid",
+                        "Unknown sancai entry visibility: " + value));
     }
 }

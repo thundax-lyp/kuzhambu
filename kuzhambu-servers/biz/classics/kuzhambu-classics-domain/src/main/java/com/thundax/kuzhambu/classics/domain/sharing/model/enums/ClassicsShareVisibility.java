@@ -16,6 +16,8 @@ public enum ClassicsShareVisibility {
                 .filter(item -> item.name().equalsIgnoreCase(value))
                 .findFirst()
                 .orElseThrow(() -> new DomainException(
-                        "CLASSICS-14001", "classics.share.visibility.invalid", "Unknown classics share visibility: " + value));
+                        "CLASSICS-14001",
+                        "classics.share.visibility.invalid",
+                        "Unknown classics share visibility: " + value));
     }
 }

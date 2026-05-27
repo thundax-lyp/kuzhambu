@@ -17,6 +17,8 @@ public enum WangqiContentFormat {
                 .filter(item -> item.name().equalsIgnoreCase(value))
                 .findFirst()
                 .orElseThrow(() -> new DomainException(
-                        "CLASSICS-11001", "classics.wangqi.content.format.invalid", "Unknown wangqi content format: " + value));
+                        "CLASSICS-11001",
+                        "classics.wangqi.content.format.invalid",
+                        "Unknown wangqi content format: " + value));
     }
 }

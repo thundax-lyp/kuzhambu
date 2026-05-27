@@ -11,7 +11,13 @@ public interface MingCustomsRepository {
     MingCustomsEntry getById(Long id);
 
     Page<MingCustomsEntry> page(
-            String category, String keyword, String tagName, String visibility, SortDirection sortDirection, int pageNo, int pageSize);
+            String category,
+            String keyword,
+            String tagName,
+            String visibility,
+            SortDirection sortDirection,
+            int pageNo,
+            int pageSize);
 
     Long insert(MingCustomsEntry entry);
 

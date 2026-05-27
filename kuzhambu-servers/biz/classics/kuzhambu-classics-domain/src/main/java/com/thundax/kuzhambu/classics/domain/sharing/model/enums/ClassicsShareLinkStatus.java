@@ -17,6 +17,8 @@ public enum ClassicsShareLinkStatus {
                 .filter(item -> item.name().equalsIgnoreCase(value))
                 .findFirst()
                 .orElseThrow(() -> new DomainException(
-                        "CLASSICS-14002", "classics.share.link.status.invalid", "Unknown classics share link status: " + value));
+                        "CLASSICS-14002",
+                        "classics.share.link.status.invalid",
+                        "Unknown classics share link status: " + value));
     }
 }

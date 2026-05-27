@@ -48,12 +48,24 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
         IPage<SancaiEntry> dataPage = repository.pageEntries(
                 query == null ? null : query.getVolumeId(),
                 query == null ? null : query.getKeyword(),
-                query == null || query.getLifecycleStatus() == null ? null : query.getLifecycleStatus().value(),
-                query == null || query.getVisibility() == null ? null : query.getVisibility().value(),
-                query == null || query.getTranslationStatus() == null ? null : query.getTranslationStatus().value(),
-                query == null || query.getImageStatus() == null ? null : query.getImageStatus().value(),
-                query == null || query.getVisualAssetStatus() == null ? null : query.getVisualAssetStatus().value(),
-                query == null || query.getRefinementStatus() == null ? null : query.getRefinementStatus().value(),
+                query == null || query.getLifecycleStatus() == null
+                        ? null
+                        : query.getLifecycleStatus().value(),
+                query == null || query.getVisibility() == null
+                        ? null
+                        : query.getVisibility().value(),
+                query == null || query.getTranslationStatus() == null
+                        ? null
+                        : query.getTranslationStatus().value(),
+                query == null || query.getImageStatus() == null
+                        ? null
+                        : query.getImageStatus().value(),
+                query == null || query.getVisualAssetStatus() == null
+                        ? null
+                        : query.getVisualAssetStatus().value(),
+                query == null || query.getRefinementStatus() == null
+                        ? null
+                        : query.getRefinementStatus().value(),
                 query == null ? SortDirection.ASC : query.getSortDirection(),
                 page.getPageNo(),
                 page.getPageSize());

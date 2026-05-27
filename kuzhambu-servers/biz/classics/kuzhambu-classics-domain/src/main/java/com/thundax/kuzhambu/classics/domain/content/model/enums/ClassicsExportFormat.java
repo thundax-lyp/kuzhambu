@@ -17,6 +17,8 @@ public enum ClassicsExportFormat {
                 .filter(item -> item.name().equalsIgnoreCase(value))
                 .findFirst()
                 .orElseThrow(() -> new DomainException(
-                        "CLASSICS-13006", "classics.export.format.invalid", "Unknown classics export format: " + value));
+                        "CLASSICS-13006",
+                        "classics.export.format.invalid",
+                        "Unknown classics export format: " + value));
     }
 }

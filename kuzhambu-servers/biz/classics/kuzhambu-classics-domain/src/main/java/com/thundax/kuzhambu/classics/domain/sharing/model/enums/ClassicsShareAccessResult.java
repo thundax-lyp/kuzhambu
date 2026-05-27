@@ -19,6 +19,8 @@ public enum ClassicsShareAccessResult {
                 .filter(item -> item.name().equalsIgnoreCase(value))
                 .findFirst()
                 .orElseThrow(() -> new DomainException(
-                        "CLASSICS-14005", "classics.share.access.result.invalid", "Unknown classics share access result: " + value));
+                        "CLASSICS-14005",
+                        "classics.share.access.result.invalid",
+                        "Unknown classics share access result: " + value));
     }
 }

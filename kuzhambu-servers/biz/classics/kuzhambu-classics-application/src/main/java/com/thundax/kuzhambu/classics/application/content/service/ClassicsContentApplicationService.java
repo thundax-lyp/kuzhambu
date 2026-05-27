@@ -31,5 +31,6 @@ public interface ClassicsContentApplicationService {
 
     Long createExportJob(ContentExportCommand command);
 
-    PageResult<ClassicsContentExportJob> pageExportJobs(String contentType, String exportKind, String status, PageQuery page);
+    PageResult<ClassicsContentExportJob> pageExportJobs(
+            String contentType, String exportKind, String status, PageQuery page);
 }

@@ -16,6 +16,8 @@ public enum SancaiVolumeType {
                 .filter(item -> item.name().equalsIgnoreCase(value))
                 .findFirst()
                 .orElseThrow(() -> new DomainException(
-                        "CLASSICS-10002", "classics.sancai.volume.type.invalid", "Unknown sancai volume type: " + value));
+                        "CLASSICS-10002",
+                        "classics.sancai.volume.type.invalid",
+                        "Unknown sancai volume type: " + value));
     }
 }

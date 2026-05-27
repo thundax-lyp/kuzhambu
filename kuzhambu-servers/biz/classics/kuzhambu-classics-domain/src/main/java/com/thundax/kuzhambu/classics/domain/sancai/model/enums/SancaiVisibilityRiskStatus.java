@@ -17,6 +17,8 @@ public enum SancaiVisibilityRiskStatus {
                 .filter(item -> item.name().equalsIgnoreCase(value))
                 .findFirst()
                 .orElseThrow(() -> new DomainException(
-                        "CLASSICS-10012", "classics.visibility.risk.status.invalid", "Unknown visibility risk status: " + value));
+                        "CLASSICS-10012",
+                        "classics.visibility.risk.status.invalid",
+                        "Unknown visibility risk status: " + value));
     }
 }

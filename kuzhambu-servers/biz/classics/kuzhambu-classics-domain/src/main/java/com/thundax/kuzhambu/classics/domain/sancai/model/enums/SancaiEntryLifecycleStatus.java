@@ -17,6 +17,8 @@ public enum SancaiEntryLifecycleStatus {
                 .filter(item -> item.name().equalsIgnoreCase(value))
                 .findFirst()
                 .orElseThrow(() -> new DomainException(
-                        "CLASSICS-10003", "classics.sancai.entry.lifecycle.invalid", "Unknown sancai entry lifecycle status: " + value));
+                        "CLASSICS-10003",
+                        "classics.sancai.entry.lifecycle.invalid",
+                        "Unknown sancai entry lifecycle status: " + value));
     }
 }

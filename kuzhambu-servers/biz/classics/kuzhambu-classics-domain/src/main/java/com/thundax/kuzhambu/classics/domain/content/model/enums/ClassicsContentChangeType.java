@@ -17,6 +17,8 @@ public enum ClassicsContentChangeType {
                 .filter(item -> item.name().equalsIgnoreCase(value))
                 .findFirst()
                 .orElseThrow(() -> new DomainException(
-                        "CLASSICS-13004", "classics.content.change.type.invalid", "Unknown classics content change type: " + value));
+                        "CLASSICS-13004",
+                        "classics.content.change.type.invalid",
+                        "Unknown classics content change type: " + value));
     }
 }

@@ -16,6 +16,8 @@ public enum ClassicsContentSource {
                 .filter(item -> item.name().equalsIgnoreCase(value))
                 .findFirst()
                 .orElseThrow(() -> new DomainException(
-                        "CLASSICS-13002", "classics.content.source.invalid", "Unknown classics content source: " + value));
+                        "CLASSICS-13002",
+                        "classics.content.source.invalid",
+                        "Unknown classics content source: " + value));
     }
 }

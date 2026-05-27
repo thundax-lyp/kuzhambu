@@ -35,7 +35,9 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
     public PageResult<WangqiDocument> page(WangqiDocumentPageQuery query, PageQuery page) {
         IPage<WangqiDocument> dataPage = repository.page(
                 query == null ? null : query.getKeyword(),
-                query == null || query.getVisibility() == null ? null : query.getVisibility().value(),
+                query == null || query.getVisibility() == null
+                        ? null
+                        : query.getVisibility().value(),
                 query == null ? SortDirection.ASC : query.getSortDirection(),
                 page.getPageNo(),
                 page.getPageSize());
@@ -46,7 +48,9 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
     @Override
     public List<WangqiDocument> listTimeline(WangqiDocumentPageQuery query) {
         return repository.listTimeline(
-                query == null || query.getVisibility() == null ? null : query.getVisibility().value(),
+                query == null || query.getVisibility() == null
+                        ? null
+                        : query.getVisibility().value(),
                 query == null ? SortDirection.ASC : query.getSortDirection());
     }
 

@@ -16,6 +16,8 @@ public enum ClassicsShareTargetStatus {
                 .filter(item -> item.name().equalsIgnoreCase(value))
                 .findFirst()
                 .orElseThrow(() -> new DomainException(
-                        "CLASSICS-14004", "classics.share.target.status.invalid", "Unknown classics share target status: " + value));
+                        "CLASSICS-14004",
+                        "classics.share.target.status.invalid",
+                        "Unknown classics share target status: " + value));
     }
 }

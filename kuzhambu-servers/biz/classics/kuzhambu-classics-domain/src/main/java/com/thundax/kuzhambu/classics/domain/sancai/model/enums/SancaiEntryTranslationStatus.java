@@ -17,6 +17,8 @@ public enum SancaiEntryTranslationStatus {
                 .filter(item -> item.name().equalsIgnoreCase(value))
                 .findFirst()
                 .orElseThrow(() -> new DomainException(
-                        "CLASSICS-10005", "classics.sancai.entry.translation.invalid", "Unknown sancai entry translation status: " + value));
+                        "CLASSICS-10005",
+                        "classics.sancai.entry.translation.invalid",
+                        "Unknown sancai entry translation status: " + value));
     }
 }
