@@ -9,10 +9,10 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>kuzhambu-common-mq</artifactId>
+  <artifactId>kuzhambu-common-rocketmq</artifactId>
   <packaging>jar</packaging>
 
-  <name>kuzhambu-common-mq</name>
+  <name>kuzhambu-common-rocketmq</name>
 
   <dependencies>
     <dependency>
@@ -23,10 +23,6 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-autoconfigure</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.amqp</groupId>
-      <artifactId>spring-rabbit</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.rocketmq</groupId>

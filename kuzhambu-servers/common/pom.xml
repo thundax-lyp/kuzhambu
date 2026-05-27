@@ -20,7 +20,7 @@
     <module>kuzhambu-common-openapi</module>
     <module>kuzhambu-common-mybatis</module>
     <module>kuzhambu-common-cache</module>
-    <module>kuzhambu-common-mq</module>
+    <module>kuzhambu-common-rocketmq</module>
     <module>kuzhambu-common-elasticsearch</module>
     <module>kuzhambu-common-oss</module>
     <module>kuzhambu-common-test</module>

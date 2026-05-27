@@ -3,11 +3,9 @@ package com.thundax.kuzhambu.system.interfaces.admin.core.mq;
 import com.thundax.kuzhambu.system.interfaces.admin.core.service.SysLogMessageService;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 @Component
-@ConditionalOnProperty(prefix = "kuzhambu.mq", name = "type", havingValue = "ROCKETMQ")
 @RocketMQMessageListener(
         topic = "${kuzhambu.log.sys.topic:" + SysLogMessageService.TOPIC_SAVE_LOG + "}",
         consumerGroup = "${kuzhambu.log.sys.consumer-group:kuzhambu-admin-starter-sys-log-consumer}",

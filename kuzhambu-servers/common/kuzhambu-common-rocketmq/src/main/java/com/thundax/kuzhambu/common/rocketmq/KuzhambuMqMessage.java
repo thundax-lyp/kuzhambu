@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.common.mq;
+package com.thundax.kuzhambu.common.rocketmq;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -8,42 +8,23 @@ public class KuzhambuMqMessage {
     private final String topic;
     private final String tag;
     private final String key;
-    private final String exchange;
-    private final String routingKey;
     private final Object payload;
     private final Map<String, String> headers;
 
-    public KuzhambuMqMessage(
-            String topic,
-            String tag,
-            String key,
-            String exchange,
-            String routingKey,
-            Object payload,
-            Map<String, String> headers) {
+    public KuzhambuMqMessage(String topic, String tag, String key, Object payload, Map<String, String> headers) {
         this.topic = topic;
         this.tag = tag;
         this.key = key;
-        this.exchange = exchange;
-        this.routingKey = routingKey;
         this.payload = payload;
         this.headers = headers == null ? new LinkedHashMap<>() : new LinkedHashMap<>(headers);
     }
 
     public static KuzhambuMqMessage forTopic(String topic, String key, Object payload) {
-        return new KuzhambuMqMessage(topic, null, key, null, null, payload, null);
+        return new KuzhambuMqMessage(topic, null, key, payload, null);
     }
 
     public static KuzhambuMqMessage forTopicWithTag(String topic, String tag, String key, Object payload) {
-        return new KuzhambuMqMessage(topic, tag, key, null, null, payload, null);
-    }
-
-    public static KuzhambuMqMessage forExchange(String exchange, String routingKey, String key, Object payload) {
-        return new KuzhambuMqMessage(null, null, key, exchange, routingKey, payload, null);
-    }
-
-    public static KuzhambuMqMessage forQueue(String queue, String key, Object payload) {
-        return new KuzhambuMqMessage(queue, null, key, null, queue, payload, null);
+        return new KuzhambuMqMessage(topic, tag, key, payload, null);
     }
 
     public String getTopic() {
@@ -56,14 +37,6 @@ public class KuzhambuMqMessage {
 
     public String getKey() {
         return key;
-    }
-
-    public String getExchange() {
-        return exchange;
-    }
-
-    public String getRoutingKey() {
-        return routingKey;
     }
 
     public Object getPayload() {
@@ -81,6 +54,6 @@ public class KuzhambuMqMessage {
         } else {
             updatedHeaders.put(name, value);
         }
-        return new KuzhambuMqMessage(topic, tag, key, exchange, routingKey, payload, updatedHeaders);
+        return new KuzhambuMqMessage(topic, tag, key, payload, updatedHeaders);
     }
 }

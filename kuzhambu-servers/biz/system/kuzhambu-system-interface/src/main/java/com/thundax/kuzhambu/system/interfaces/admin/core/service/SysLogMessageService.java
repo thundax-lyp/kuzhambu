@@ -4,7 +4,6 @@ import com.thundax.kuzhambu.system.domain.core.model.entity.Log;
 
 public interface SysLogMessageService {
 
-    String QUEUE_SAVE_LOG = "kuzhambu.save-log";
     String TOPIC_SAVE_LOG = "kuzhambu_save_log";
 
     void saveLog(Log sysLog);

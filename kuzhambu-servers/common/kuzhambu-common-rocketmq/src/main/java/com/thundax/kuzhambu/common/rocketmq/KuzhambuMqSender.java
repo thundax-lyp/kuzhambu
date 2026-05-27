@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.common.mq;
+package com.thundax.kuzhambu.common.rocketmq;
 
 public interface KuzhambuMqSender {
 

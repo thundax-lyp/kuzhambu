@@ -1,10 +1,8 @@
 package com.thundax.kuzhambu.system.interfaces.admin.core.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.thundax.kuzhambu.common.mq.KuzhambuMqMessage;
-import com.thundax.kuzhambu.common.mq.KuzhambuMqSender;
-import com.thundax.kuzhambu.common.mq.KuzhambuMqType;
-import com.thundax.kuzhambu.common.mq.configure.KuzhambuMqProperties;
+import com.thundax.kuzhambu.common.rocketmq.KuzhambuMqMessage;
+import com.thundax.kuzhambu.common.rocketmq.KuzhambuMqSender;
 import com.thundax.kuzhambu.system.application.core.command.CreateLogCommand;
 import com.thundax.kuzhambu.system.application.core.query.LogQuery;
 import com.thundax.kuzhambu.system.application.core.service.LogApplicationService;
@@ -35,7 +33,6 @@ public class SysLogMessageServiceImpl implements SysLogMessageService {
     private static final String LOG_EXTEND_NAME = ".log";
 
     private final KuzhambuMqSender mqSender;
-    private final KuzhambuMqProperties mqProperties;
     private final KuzhambuProperties kuzhambuProperties;
     private final LogApplicationService logService;
     private final ObjectMapper objectMapper;
@@ -89,11 +86,7 @@ public class SysLogMessageServiceImpl implements SysLogMessageService {
 
     private KuzhambuMqMessage buildMessage(String payload) {
         KuzhambuProperties.SysLogProperties sysLogProperties = logProperties().getSys();
-        if (KuzhambuMqType.ROCKETMQ == mqProperties.getType()) {
-            return KuzhambuMqMessage.forTopicWithTag(
-                    sysLogProperties.getTopic(), sysLogProperties.getTag(), null, payload);
-        }
-        return KuzhambuMqMessage.forQueue(sysLogProperties.getQueue(), null, payload);
+        return KuzhambuMqMessage.forTopicWithTag(sysLogProperties.getTopic(), sysLogProperties.getTag(), null, payload);
     }
 
     private CreateLogCommand toCreateCommand(Log log) {

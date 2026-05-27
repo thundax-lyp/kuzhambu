@@ -37,7 +37,7 @@
 - `kuzhambu-servers/common/kuzhambu-common-openapi/`：Springdoc OpenAPI 在线文档基础配置。
 - `kuzhambu-servers/common/kuzhambu-common-mybatis/`：MyBatis 相关通用配置、类型处理和持久化基础能力。
 - `kuzhambu-servers/common/kuzhambu-common-cache/`：缓存基础能力。
-- `kuzhambu-servers/common/kuzhambu-common-mq/`：RocketMQ 消息基础能力。
+- `kuzhambu-servers/common/kuzhambu-common-rocketmq/`：RocketMQ 消息基础能力。
 - `kuzhambu-servers/common/kuzhambu-common-elasticsearch/`：Elasticsearch 客户端和索引基础能力。
 - `kuzhambu-servers/common/kuzhambu-common-oss/`：对象存储通用客户端抽象和基础适配。
 - `kuzhambu-servers/common/kuzhambu-common-test/`：测试基建、架构测试和集成测试辅助。

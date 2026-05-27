@@ -37,7 +37,7 @@
     </dependency>
     <dependency>
       <groupId>com.thundax</groupId>
-      <artifactId>kuzhambu-common-mq</artifactId>
+      <artifactId>kuzhambu-common-rocketmq</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

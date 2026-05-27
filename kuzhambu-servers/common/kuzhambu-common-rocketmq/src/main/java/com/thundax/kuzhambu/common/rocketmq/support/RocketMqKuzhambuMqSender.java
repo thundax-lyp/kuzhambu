@@ -1,7 +1,7 @@
-package com.thundax.kuzhambu.common.mq.support;
+package com.thundax.kuzhambu.common.rocketmq.support;
 
-import com.thundax.kuzhambu.common.mq.KuzhambuMqMessage;
-import com.thundax.kuzhambu.common.mq.KuzhambuMqSender;
+import com.thundax.kuzhambu.common.rocketmq.KuzhambuMqMessage;
+import com.thundax.kuzhambu.common.rocketmq.KuzhambuMqSender;
 import java.util.Map;
 import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.apache.rocketmq.spring.support.RocketMQHeaders;

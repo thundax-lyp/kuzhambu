@@ -152,22 +152,13 @@ public class KuzhambuProperties {
 
     public static class SysLogProperties {
 
-        private static final String DEFAULT_QUEUE = "kuzhambu.save-log";
         private static final String DEFAULT_TOPIC = "kuzhambu_save_log";
-
-        @Setter
-        private String queue;
 
         @Setter
         private String topic;
 
         @Setter
         private String tag;
-
-        @NonNull
-        public String getQueue() {
-            return StringUtils.defaultIfBlank(queue, DEFAULT_QUEUE);
-        }
 
         @NonNull
         public String getTopic() {
