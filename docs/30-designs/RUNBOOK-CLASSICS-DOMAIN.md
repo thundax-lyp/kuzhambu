@@ -36,6 +36,7 @@
 - Controller 位于 `interfaces/admin/<subdomain>/controller/`。
 - Repository port 位于 `domain/<subdomain>/repository/`，实现位于 `infra/<subdomain>/repository/impl/`。
 - Mapper 位于 `infra/<subdomain>/persistence/mapper/`，DO 位于 `infra/<subdomain>/persistence/dataobject/`，持久化转换位于 `infra/<subdomain>/persistence/assembler/`。
+- 三才图会新增条目继续使用数据库自增主键，不引入强类型业务 ID。
 
 ## Domain Layer
 
@@ -425,6 +426,5 @@
 
 ## Open Decisions
 
-- 三才图会新增条目的 ID 生成是否继续使用数据库自增，还是引入强类型业务 ID。
 - 导出和静态展示页面是否第一版只记录任务，实际异步生成由后续 worker 接入。
 - 分享访问是否第一版返回完整内容，还是只返回目标列表和内容摘要。

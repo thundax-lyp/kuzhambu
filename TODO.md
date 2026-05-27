@@ -237,12 +237,6 @@
 
 ## 待讨论项
 
-- [ ] 三才图会新增条目 ID 生成策略
-    - 任务类型：待讨论项
-    - 关联任务：`classics-application-sancai`
-    - 决策要求：确认继续使用数据库自增，还是引入强类型业务 ID。
-    - 重要度：7/10
-
 - [ ] 导出和静态展示页面生成策略
     - 任务类型：待讨论项
     - 关联任务：`classics-application-content`、`classics-application-sancai-asset`
