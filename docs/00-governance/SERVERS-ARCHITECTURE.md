@@ -41,10 +41,16 @@
 - `kuzhambu-servers/common/kuzhambu-common-elasticsearch/`：Elasticsearch 客户端和索引基础能力。
 - `kuzhambu-servers/common/kuzhambu-common-oss/`：对象存储通用客户端抽象和基础适配。
 - `kuzhambu-servers/common/kuzhambu-common-test/`：测试基建、架构测试和集成测试辅助。
-- `kuzhambu-servers/biz/`：业务域规则和业务服务，包含 `core`、`auth`、`storage`、`audit`、`knowledge-graph` 等业务域。
-- `kuzhambu-servers/infra/`：各业务域的数据访问、外部调用和技术落地。
-- `kuzhambu-servers/interfaces/kuzhambu-admin-api/`：后台接口入口服务。
-- `kuzhambu-servers/interfaces/kuzhambu-portal-api/`：前台接口入口服务。
+- `kuzhambu-servers/biz/`：业务域模块组，按业务域组织 `interface`、`application`、`domain`、`infra` 四层。
+- `kuzhambu-servers/biz/system/`：系统基础域，承载用户、角色、权限、认证和业务审计。
+- `kuzhambu-servers/biz/storage/`：文件存储域，承载文件对象、引用、读取和上传。
+- `kuzhambu-servers/biz/classics/`：古籍域，承载三才图会、王圻文档、明代习俗和分享。
+- `kuzhambu-servers/biz/ai/`：AI 生产域，承载 AI 配置、提示词和 AI 内容精修。
+- `kuzhambu-servers/biz/knowledge/`：知识组织域，承载标签、同义词、实体关系精修和知识图谱。
+- `kuzhambu-servers/biz/discovery/`：知识发现域，承载搜索和智能问答。
+- `kuzhambu-servers/biz/operations/`：运营运维域，承载看板、报表、任务台账和维护操作记录。
+- `kuzhambu-servers/starter/kuzhambu-admin-starter/`：后台启动应用，只负责后台运行时装配。
+- `kuzhambu-servers/starter/kuzhambu-portal-starter/`：前台启动应用，只负责前台运行时装配。
 
 ## Fast Choice
 
@@ -68,49 +74,65 @@
 
 ## Default Domain Structure
 
-单个业务域默认目录结构如下，`<domain>` 使用业务域名，例如 `core`、`auth`。
+单个业务域默认目录结构如下，`<domain>` 使用业务域名，例如 `system`、`classics`。
 
 ```text
 kuzhambu-servers/
   biz/
-    kuzhambu-biz-<domain>/
-      src/main/java/com/thundax/kuzhambu/biz/<domain>/
-        application/
+    <domain>/
+      kuzhambu-<domain>-interface/
+        src/main/java/com/thundax/kuzhambu/<domain>/interfaces/
+          admin/
+            controller/
+            request/
+            response/
+            assembler/
+          portal/
+            controller/
+            request/
+            response/
+            assembler/
+      kuzhambu-<domain>-application/
+        src/main/java/com/thundax/kuzhambu/<domain>/application/
           command/
           query/
           assembler/
           codec/
           support/
-        domain/
+      kuzhambu-<domain>-domain/
+        src/main/java/com/thundax/kuzhambu/<domain>/domain/
           model/
           service/
           repository/
           event/
+      kuzhambu-<domain>-infra/
+        src/main/java/com/thundax/kuzhambu/<domain>/infra/
+          repository/
+            impl/
+          mapper/
+          dataobject/
+          assembler/
+          client/
 
-  infra/
-    kuzhambu-infra-<domain>/
-      src/main/java/com/thundax/kuzhambu/infra/<domain>/
-        repository/
-          impl/
-        mapper/
-        dataobject/
-        assembler/
-        client/
+  starter/
+    kuzhambu-admin-starter/
+      src/main/java/com/thundax/kuzhambu/starter/admin/
+    kuzhambu-portal-starter/
+      src/main/java/com/thundax/kuzhambu/starter/portal/
+```
 
-  interfaces/
-    kuzhambu-admin-api/
-      src/main/java/com/thundax/kuzhambu/interfaces/admin/<domain>/
+`starter` 只负责运行时装配，不承载业务规则、业务查询聚合、持久化实现或 HTTP 业务入口。后台和前台 HTTP 入口放在各业务域 `interface` 模块内，并通过 `interfaces.admin` 和 `interfaces.portal` package 区分。
+
+业务域 `interface` package 用途：
+
+```text
+com/thundax/kuzhambu/<domain>/interfaces/admin/
         controller/
         request/
         response/
         assembler/
-```
 
-前台入口需要暴露该业务域时，使用：
-
-```text
-kuzhambu-servers/interfaces/kuzhambu-portal-api/
-  src/main/java/com/thundax/kuzhambu/interfaces/portal/<domain>/
+com/thundax/kuzhambu/<domain>/interfaces/portal/
     controller/
     request/
     response/
@@ -134,7 +156,12 @@ kuzhambu-servers/interfaces/kuzhambu-portal-api/
 - `infra/dataobject/`：数据库表映射对象。
 - `infra/assembler/`：domain 与 dataobject 的持久化转换。
 - `infra/client/`：外部系统、对象存储、搜索、worker 等技术客户端。
-- `interfaces/*/<domain>/controller/`：HTTP API 入口。
-- `interfaces/*/<domain>/request/`：HTTP 请求模型。
-- `interfaces/*/<domain>/response/`：HTTP 响应模型。
-- `interfaces/*/<domain>/assembler/`：HTTP 协议模型与 application 契约的转换。
+- `interfaces/admin/controller/`：后台 HTTP API 入口。
+- `interfaces/admin/request/`：后台 HTTP 请求模型。
+- `interfaces/admin/response/`：后台 HTTP 响应模型。
+- `interfaces/admin/assembler/`：后台 HTTP 协议模型与 application 契约的转换。
+- `interfaces/portal/controller/`：前台 HTTP API 入口。
+- `interfaces/portal/request/`：前台 HTTP 请求模型。
+- `interfaces/portal/response/`：前台 HTTP 响应模型。
+- `interfaces/portal/assembler/`：前台 HTTP 协议模型与 application 契约的转换。
+- `starter/*/`：Spring Boot 启动类、运行时配置装配、扫描范围和应用依赖选择。
