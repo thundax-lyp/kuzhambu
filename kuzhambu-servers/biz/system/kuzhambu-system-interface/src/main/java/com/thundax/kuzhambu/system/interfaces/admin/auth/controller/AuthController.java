@@ -34,18 +34,11 @@ import com.thundax.kuzhambu.system.interfaces.admin.auth.controller.request.Auth
 import com.thundax.kuzhambu.system.interfaces.admin.auth.controller.request.AuthLogoutRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.controller.request.AuthTokenRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.controller.request.GithubLoginRequest;
-import com.thundax.kuzhambu.system.interfaces.admin.auth.controller.request.OAuth2AuthorizeRequest;
-import com.thundax.kuzhambu.system.interfaces.admin.auth.controller.request.OAuth2DecisionRequest;
-import com.thundax.kuzhambu.system.interfaces.admin.auth.controller.request.OAuth2TokenRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.controller.request.SmsLoginRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.controller.request.TokenRefreshRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.controller.request.WecomLoginRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.controller.response.AuthAccessTokenResponse;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.controller.response.AuthLoginFormResponse;
-import com.thundax.kuzhambu.system.interfaces.admin.auth.controller.response.OAuth2AuthorizationDecisionResponse;
-import com.thundax.kuzhambu.system.interfaces.admin.auth.controller.response.OAuth2AuthorizationViewResponse;
-import com.thundax.kuzhambu.system.interfaces.admin.auth.controller.response.OAuth2IntrospectionResponse;
-import com.thundax.kuzhambu.system.interfaces.admin.auth.controller.response.OAuth2UserinfoResponse;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.controller.response.TokenVerifyResponse;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.service.AdminAuthService;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.service.command.AdminAuthCommand;
@@ -59,7 +52,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.Date;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -235,49 +227,11 @@ public class AuthController {
         return AuthInterfaceAssembler.toTokenVerifyResponse(authService.getTokenInfo(tokenQuery(request.getToken())));
     }
 
-    @Operation(summary = "OAuth2 token introspection")
-    @PostMapping(value = "oauth2/introspect")
-    public OAuth2IntrospectionResponse introspect(@Valid @RequestBody AuthTokenRequest request) {
-        return AuthInterfaceAssembler.toIntrospectionResponse(authService.getTokenInfo(tokenQuery(request.getToken())));
-    }
-
-    @Operation(summary = "OAuth2 userinfo")
-    @PostMapping(value = "oauth2/userinfo")
-    public OAuth2UserinfoResponse userinfo(@Valid @RequestBody AuthTokenRequest request) {
-        return AuthInterfaceAssembler.toUserinfoResponse(authService.getTokenInfo(tokenQuery(request.getToken())));
-    }
-
     @Operation(summary = "刷新 token")
     @PostMapping(value = "token/refresh")
     public AuthAccessTokenResponse refreshToken(@Valid @RequestBody TokenRefreshRequest request) {
         return AuthInterfaceAssembler.toAccessTokenResponse(authService.refreshAccessToken(
                 refreshTokenCommand(request.getClientId(), request.getRefreshToken(), currentRequest())));
-    }
-
-    @Operation(summary = "OAuth2 授权视图")
-    @PostMapping(value = "oauth2/authorize")
-    public OAuth2AuthorizationViewResponse authorize(@Valid @RequestBody OAuth2AuthorizeRequest request) {
-        return AuthInterfaceAssembler.toAuthorizationViewResponse(authService.authorizeOAuth2(oauthCommand(
-                request.getClientId(), request.getRedirectUri(), request.getScopes(), request.getState())));
-    }
-
-    @Operation(summary = "OAuth2 授权决策")
-    @PostMapping(value = "oauth2/decision")
-    public OAuth2AuthorizationDecisionResponse decision(@Valid @RequestBody OAuth2DecisionRequest request) {
-        return AuthInterfaceAssembler.toAuthorizationDecisionResponse(
-                authService.decideOAuth2(decisionCommand(request)));
-    }
-
-    @Operation(summary = "OAuth2 授权码换 token")
-    @PostMapping(value = "oauth2/token")
-    public AuthAccessTokenResponse token(@Valid @RequestBody OAuth2TokenRequest request) {
-        return AuthInterfaceAssembler.toAccessTokenResponse(authService.exchangeOAuth2Token(exchangeCommand(request)));
-    }
-
-    @Operation(summary = "OAuth2 撤销令牌")
-    @PostMapping(value = "oauth2/revoke")
-    public Boolean revoke(@Valid @RequestBody OAuth2TokenRequest request) {
-        return authService.revokeOAuth2Token(revokeTokenCommand(request));
     }
 
     private PreAuthSession createPreAuthSession() {
@@ -481,45 +435,6 @@ public class AuthController {
         command.setClientId(clientId);
         command.setRefreshToken(refreshToken);
         return withRequestContext(command, request);
-    }
-
-    private AdminAuthCommand oauthCommand(String clientId, String redirectUri, List<String> scopes, String state) {
-        AdminAuthCommand command = new AdminAuthCommand();
-        command.setClientId(clientId);
-        command.setRedirectUri(redirectUri);
-        command.setScopes(scopes);
-        command.setState(state);
-        return command;
-    }
-
-    private AdminAuthCommand decisionCommand(OAuth2DecisionRequest request) {
-        AdminAuthCommand command =
-                oauthCommand(request.getClientId(), request.getRedirectUri(), request.getScopes(), request.getState());
-        command.setCodeChallenge(request.getCodeChallenge());
-        command.setCodeChallengeMethod(request.getCodeChallengeMethod());
-        command.setUserId(UserIdCodec.toDomain(request.getUserId()));
-        command.setApproved(request.isApproved());
-        return withRequestContext(command, currentRequest());
-    }
-
-    private AdminAuthCommand exchangeCommand(OAuth2TokenRequest request) {
-        AdminAuthCommand command = new AdminAuthCommand();
-        command.setClientId(request.getClientId());
-        command.setClientSecret(request.getClientSecret());
-        command.setGrantType(request.getGrantType());
-        command.setRedirectUri(request.getRedirectUri());
-        command.setAuthorizationCode(request.getAuthorizationCode());
-        command.setCodeVerifier(request.getCodeVerifier());
-        command.setRefreshToken(request.getRefreshToken());
-        return withRequestContext(command, currentRequest());
-    }
-
-    private AdminAuthCommand revokeTokenCommand(OAuth2TokenRequest request) {
-        AdminAuthCommand command = new AdminAuthCommand();
-        command.setClientId(request.getClientId());
-        command.setClientSecret(request.getClientSecret());
-        command.setToken(request.getToken());
-        return command;
     }
 
     private AdminAuthCommand loginFailedCommand(

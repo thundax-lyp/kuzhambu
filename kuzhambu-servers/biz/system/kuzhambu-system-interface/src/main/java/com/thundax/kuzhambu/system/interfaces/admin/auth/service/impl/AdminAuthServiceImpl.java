@@ -1,6 +1,5 @@
 package com.thundax.kuzhambu.system.interfaces.admin.auth.service.impl;
 
-import com.thundax.kuzhambu.common.core.crypto.Sha256Digest;
 import com.thundax.kuzhambu.common.core.id.UuidHelper;
 import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.system.application.auth.command.AuthenticateIdentityCommand;
@@ -12,14 +11,11 @@ import com.thundax.kuzhambu.system.application.auth.service.PrincipalAuthApplica
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalIdentityApplicationService;
 import com.thundax.kuzhambu.system.application.auth.service.dto.PrincipalPasswordPolicyDTO;
 import com.thundax.kuzhambu.system.application.core.service.UserApplicationService;
-import com.thundax.kuzhambu.system.domain.auth.model.entity.OAuthAuthorization;
-import com.thundax.kuzhambu.system.domain.auth.model.entity.OAuthClient;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalAccessToken;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalAuthSession;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalIdentity;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalLoginEvent;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalRefreshToken;
-import com.thundax.kuzhambu.system.domain.auth.model.enums.OAuthClientStatus;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalAuthenticationMethod;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalCredentialType;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalIdentityType;
@@ -29,8 +25,6 @@ import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalType;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalAccessTokenCode;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalKey;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalRefreshTokenCode;
-import com.thundax.kuzhambu.system.domain.auth.repository.OAuthAuthorizationRepository;
-import com.thundax.kuzhambu.system.domain.auth.repository.OAuthClientRepository;
 import com.thundax.kuzhambu.system.domain.auth.repository.PrincipalAccessTokenRepository;
 import com.thundax.kuzhambu.system.domain.auth.repository.PrincipalAuthSessionRepository;
 import com.thundax.kuzhambu.system.domain.auth.repository.PrincipalLoginEventRepository;
@@ -47,8 +41,6 @@ import com.thundax.kuzhambu.system.interfaces.admin.auth.service.query.AdminAuth
 import com.thundax.kuzhambu.system.interfaces.admin.auth.service.result.AuthAccessTokenResult;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.service.result.AuthTokenQueryResult;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.service.result.AuthTokenRefreshResult;
-import com.thundax.kuzhambu.system.interfaces.admin.auth.service.result.OAuth2AuthorizationDecisionResult;
-import com.thundax.kuzhambu.system.interfaces.admin.auth.service.result.OAuth2AuthorizationViewResult;
 import com.thundax.kuzhambu.system.interfaces.admin.configure.LoginProperties;
 import java.util.Date;
 import java.util.LinkedHashSet;
@@ -80,13 +72,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     private GithubLoginProvider githubLoginProvider;
 
     @Autowired(required = false)
-    private OAuthAuthorizationRepository oauthAuthorizationRepository;
-
-    @Autowired(required = false)
     private PrincipalAccessTokenRepository principalAccessTokenRepository;
-
-    @Autowired(required = false)
-    private OAuthClientRepository oauthClientRepository;
 
     @Autowired(required = false)
     private PrincipalRefreshTokenRepository principalRefreshTokenRepository;
@@ -164,51 +150,6 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     public AuthTokenRefreshResult refreshAccessToken(AdminAuthCommand command) {
         return refreshAccessToken(
                 command.getClientId(), command.getRefreshToken(), command.getIp(), command.getUserAgent());
-    }
-
-    @Override
-    public OAuth2AuthorizationViewResult authorizeOAuth2(AdminAuthCommand command) {
-        return authorizeOAuth2(
-                command.getClientId(), command.getRedirectUri(), command.getScopes(), command.getState());
-    }
-
-    @Override
-    public OAuth2AuthorizationDecisionResult decideOAuth2(AdminAuthCommand command) {
-        return decideOAuth2(
-                command.getClientId(),
-                command.getRedirectUri(),
-                command.getScopes(),
-                command.getState(),
-                command.getCodeChallenge(),
-                command.getCodeChallengeMethod(),
-                command.getUserId(),
-                command.isApproved(),
-                command.getIp(),
-                command.getUserAgent());
-    }
-
-    @Override
-    public AuthTokenRefreshResult exchangeOAuth2Token(AdminAuthCommand command) {
-        return exchangeOAuth2Token(
-                command.getClientId(),
-                command.getClientSecret(),
-                command.getGrantType(),
-                command.getRedirectUri(),
-                command.getAuthorizationCode(),
-                command.getCodeVerifier(),
-                command.getRefreshToken(),
-                command.getIp(),
-                command.getUserAgent());
-    }
-
-    @Override
-    public boolean revokeAuthorizationCode(AdminAuthCommand command) {
-        return revokeAuthorizationCode(command.getAuthorizationCode());
-    }
-
-    @Override
-    public boolean revokeOAuth2Token(AdminAuthCommand command) {
-        return revokeOAuth2Token(command.getClientId(), command.getClientSecret(), command.getToken());
     }
 
     @Override
@@ -390,10 +331,6 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     }
 
     private AuthTokenQueryResult queryToken(String token) {
-        AuthTokenQueryResult oauthResult = queryOAuthAccessToken(token);
-        if (oauthResult != null) {
-            return oauthResult;
-        }
         AuthAccessTokenResult accessToken = getAccessToken(token);
         if (accessToken == null || !validateToken(accessToken)) {
             return AuthTokenQueryResult.inactive(token);
@@ -407,31 +344,6 @@ public class AdminAuthServiceImpl implements AdminAuthService {
             return AuthTokenQueryResult.inactive(token);
         }
         return AuthTokenQueryResult.active(token, session, user, getAccountLoginName(user.getId()));
-    }
-
-    private AuthTokenQueryResult queryOAuthAccessToken(String token) {
-        if (principalAccessTokenRepository == null) {
-            return null;
-        }
-        PrincipalAccessToken accessToken = principalAccessTokenRepository.getByToken(token);
-        if (accessToken == null) {
-            return null;
-        }
-        if (StringUtils.equals(ADMIN_CLIENT_ID, accessToken.getClientId())) {
-            return null;
-        }
-        if (!accessToken.canAccess(new Date())) {
-            return AuthTokenQueryResult.inactive(token);
-        }
-        PrincipalAuthSession session = getActivePrincipalAuthSession(accessToken, new Date());
-        if (session == null) {
-            return AuthTokenQueryResult.inactive(token);
-        }
-        User user = getUser(UserIdCodec.toDomain(accessToken.getPrincipalKey().getPrincipalId()));
-        if (user == null || !user.isEnable()) {
-            return AuthTokenQueryResult.inactive(token);
-        }
-        return AuthTokenQueryResult.active(token, accessToken, session, user, getAccountLoginName(user.getId()));
     }
 
     private AuthTokenRefreshResult refreshAccessToken(String clientId, String refreshToken) {
@@ -466,228 +378,6 @@ public class AdminAuthServiceImpl implements AdminAuthService {
                 userAgent,
                 PrincipalLoginEvent.REASON_NONE);
         return new AuthTokenRefreshResult(accessToken, accessToken.getRefreshToken());
-    }
-
-    private OAuth2AuthorizationViewResult authorizeOAuth2(
-            String clientId, String redirectUri, List<String> scopes, String state) {
-        OAuthClient client = validateOAuthClient(clientId, redirectUri, scopes);
-        OAuth2AuthorizationViewResult result = new OAuth2AuthorizationViewResult();
-        result.setClientId(client.getClientId());
-        result.setClientName(client.getClientName());
-        result.setRedirectUri(redirectUri);
-        result.setScopes(toScopeSet(scopes));
-        result.setState(state);
-        return result;
-    }
-
-    private OAuth2AuthorizationDecisionResult decideOAuth2(
-            String clientId,
-            String redirectUri,
-            List<String> scopes,
-            String state,
-            String codeChallenge,
-            String codeChallengeMethod,
-            UserId userId,
-            boolean approved) {
-        return decideOAuth2(
-                clientId, redirectUri, scopes, state, codeChallenge, codeChallengeMethod, userId, approved, null, null);
-    }
-
-    private OAuth2AuthorizationDecisionResult decideOAuth2(
-            String clientId,
-            String redirectUri,
-            List<String> scopes,
-            String state,
-            String codeChallenge,
-            String codeChallengeMethod,
-            UserId userId,
-            boolean approved,
-            String ip,
-            String userAgent) {
-        validateOAuthClient(clientId, redirectUri, scopes);
-        OAuth2AuthorizationDecisionResult result = new OAuth2AuthorizationDecisionResult();
-        result.setApproved(approved);
-        result.setState(state);
-        if (!approved) {
-            writeLoginEvent(
-                    PrincipalKey.of(PrincipalType.USER, UserIdCodec.toValue(userId)),
-                    clientId,
-                    PrincipalLoginEventType.OAUTH_AUTHORIZED,
-                    PrincipalAuthenticationMethod.OAUTH_CODE,
-                    null,
-                    ip,
-                    userAgent,
-                    PrincipalLoginEvent.REASON_OAUTH_DENIED);
-            return result;
-        }
-        if (oauthAuthorizationRepository == null) {
-            throw AdminResponseExceptions.oauth2AuthorizationNotConfigured();
-        }
-        Date now = new Date();
-        OAuthAuthorization authorization = new OAuthAuthorization();
-        authorization.setAuthorizationCode(UuidHelper.compact());
-        authorization.setClientId(clientId);
-        authorization.setPrincipalKey(PrincipalKey.of(PrincipalType.USER, UserIdCodec.toValue(userId)));
-        authorization.setRedirectUri(redirectUri);
-        authorization.setScopes(toScopeSet(scopes));
-        authorization.setState(state);
-        authorization.setCodeChallenge(codeChallenge);
-        authorization.setCodeChallengeMethod(codeChallengeMethod);
-        authorization.setIssuedAt(now);
-        authorization.setExpireAt(new Date(now.getTime() + 300000L));
-        authorization.setId(oauthAuthorizationRepository.insert(authorization));
-        result.setAuthorizationCode(authorization.getAuthorizationCode());
-        writeLoginEvent(
-                authorization.getPrincipalKey(),
-                clientId,
-                PrincipalLoginEventType.OAUTH_AUTHORIZED,
-                PrincipalAuthenticationMethod.OAUTH_CODE,
-                null,
-                ip,
-                userAgent,
-                PrincipalLoginEvent.REASON_NONE);
-        return result;
-    }
-
-    private AuthTokenRefreshResult exchangeOAuth2Token(
-            String clientId,
-            String clientSecret,
-            String grantType,
-            String redirectUri,
-            String authorizationCode,
-            String codeVerifier,
-            String refreshToken) {
-        return exchangeOAuth2Token(
-                clientId,
-                clientSecret,
-                grantType,
-                redirectUri,
-                authorizationCode,
-                codeVerifier,
-                refreshToken,
-                null,
-                null);
-    }
-
-    private AuthTokenRefreshResult exchangeOAuth2Token(
-            String clientId,
-            String clientSecret,
-            String grantType,
-            String redirectUri,
-            String authorizationCode,
-            String codeVerifier,
-            String refreshToken,
-            String ip,
-            String userAgent) {
-        OAuthClient client = validateOAuthClientSecret(clientId, clientSecret);
-        if (!client.supportsGrantType(grantType)) {
-            throw AdminResponseExceptions.oauth2GrantTypeUnsupported();
-        }
-        if ("authorization_code".equals(grantType)) {
-            return exchangeAuthorizationCode(client, redirectUri, authorizationCode, codeVerifier, ip, userAgent);
-        }
-        if ("refresh_token".equals(grantType)) {
-            return refreshOAuth2Token(client, refreshToken, ip, userAgent);
-        }
-        throw AdminResponseExceptions.oauth2GrantTypeUnsupported();
-    }
-
-    private AuthTokenRefreshResult exchangeAuthorizationCode(
-            OAuthClient client,
-            String redirectUri,
-            String authorizationCode,
-            String codeVerifier,
-            String ip,
-            String userAgent) {
-        if (oauthAuthorizationRepository == null) {
-            throw AdminResponseExceptions.oauth2AuthorizationNotConfigured();
-        }
-        OAuthAuthorization authorization = oauthAuthorizationRepository.getByAuthorizationCode(authorizationCode);
-        Date now = new Date();
-        if (authorization == null
-                || !authorization.canConsume(now)
-                || !StringUtils.equals(client.getClientId(), authorization.getClientId())
-                || !StringUtils.equals(redirectUri, authorization.getRedirectUri())
-                || !verifyPkce(authorization, codeVerifier)) {
-            throw AdminResponseExceptions.invalidToken();
-        }
-        authorization.markUsed(now);
-        oauthAuthorizationRepository.updateUsed(authorization);
-        long accessTokenTtlSeconds = accessTokenTtlSeconds(client);
-        PrincipalAuthSession session = PrincipalAuthSession.create(
-                authorization.getPrincipalKey(), client.getClientId(), now, accessTokenTtlSeconds);
-        principalAuthSessionRepository.insert(session, runtimeExpiredSeconds(accessTokenTtlSeconds));
-        AuthAccessTokenResult oauthAccessToken = createOAuthAccessToken(client, authorization, session, now);
-        String refreshToken = principalRefreshTokenRepository == null
-                ? null
-                : createPrincipalRefreshToken(oauthAccessToken.getPrincipalAccessToken(), client.getClientId(), now);
-        return new AuthTokenRefreshResult(oauthAccessToken, refreshToken, oauthAccessToken.getToken());
-    }
-
-    private AuthTokenRefreshResult refreshOAuth2Token(
-            OAuthClient client, String refreshToken, String ip, String userAgent) {
-        if (principalRefreshTokenRepository == null) {
-            throw AdminResponseExceptions.invalidToken();
-        }
-        PrincipalRefreshToken current = principalRefreshTokenRepository.getByToken(refreshToken);
-        Date now = new Date();
-        if (current == null
-                || !current.canRefresh(now)
-                || !StringUtils.equals(client.getClientId(), current.getClientId())) {
-            throw AdminResponseExceptions.invalidToken();
-        }
-        current.markUsed();
-        principalRefreshTokenRepository.updateStatus(current);
-
-        PrincipalAuthSession session = getActivePrincipalAuthSession(current, now);
-        if (session == null) {
-            throw AdminResponseExceptions.invalidToken();
-        }
-        AuthAccessTokenResult oauthAccessToken = createOAuthAccessToken(client, current, session, now);
-        String nextRefreshToken =
-                createPrincipalRefreshToken(oauthAccessToken.getPrincipalAccessToken(), client.getClientId(), now);
-        writeLoginEvent(
-                current.getPrincipalKey(),
-                client.getClientId(),
-                PrincipalLoginEventType.TOKEN_REFRESH,
-                PrincipalAuthenticationMethod.REFRESH_TOKEN,
-                null,
-                ip,
-                userAgent,
-                PrincipalLoginEvent.REASON_NONE);
-        return new AuthTokenRefreshResult(oauthAccessToken, nextRefreshToken, oauthAccessToken.getToken());
-    }
-
-    private boolean revokeAuthorizationCode(String authorizationCode) {
-        if (oauthAuthorizationRepository == null) {
-            throw AdminResponseExceptions.oauth2AuthorizationNotConfigured();
-        }
-        return oauthAuthorizationRepository.deleteByAuthorizationCode(authorizationCode) > 0;
-    }
-
-    private boolean revokeOAuth2Token(String clientId, String clientSecret, String token) {
-        validateOAuthClientSecret(clientId, clientSecret);
-        Date now = new Date();
-        boolean revoked = false;
-        if (principalAccessTokenRepository != null) {
-            PrincipalAccessToken accessToken = principalAccessTokenRepository.getByToken(token);
-            if (accessToken != null && accessToken.isActive()) {
-                accessToken.revoke();
-                principalAccessTokenRepository.updateStatus(accessToken);
-                principalAuthSessionRepository.deleteById(accessToken.getSessionId());
-                revoked = true;
-            }
-        }
-        if (principalRefreshTokenRepository != null) {
-            PrincipalRefreshToken refreshToken = principalRefreshTokenRepository.getByToken(token);
-            if (refreshToken != null && refreshToken.isActive()) {
-                refreshToken.revoke();
-                principalRefreshTokenRepository.updateStatus(refreshToken);
-                principalAuthSessionRepository.deleteById(refreshToken.getSessionId());
-                revoked = true;
-            }
-        }
-        return revoked;
     }
 
     private void invalidateSessionByToken(String token, String reason) {
@@ -964,36 +654,6 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         return refreshToken;
     }
 
-    private AuthAccessTokenResult createOAuthAccessToken(
-            OAuthClient client, OAuthAuthorization authorization, PrincipalAuthSession session, Date issuedAt) {
-        String token = UuidHelper.compact();
-        PrincipalAccessToken entity = buildPrincipalAccessToken(
-                token,
-                client.getClientId(),
-                authorization.getPrincipalKey(),
-                authorization.getScopes(),
-                issuedAt,
-                accessTokenTtlSeconds(client));
-        entity.setSessionId(session.getId());
-        entity.setId(requirePrincipalAccessTokenRepository().insert(entity, token));
-        return new AuthAccessTokenResult(token, null, entity);
-    }
-
-    private AuthAccessTokenResult createOAuthAccessToken(
-            OAuthClient client, PrincipalRefreshToken refreshToken, PrincipalAuthSession session, Date issuedAt) {
-        String token = UuidHelper.compact();
-        PrincipalAccessToken entity = buildPrincipalAccessToken(
-                token,
-                client.getClientId(),
-                refreshToken.getPrincipalKey(),
-                new LinkedHashSet<>(),
-                issuedAt,
-                accessTokenTtlSeconds(client));
-        entity.setSessionId(session.getId());
-        entity.setId(requirePrincipalAccessTokenRepository().insert(entity, token));
-        return new AuthAccessTokenResult(token, null, entity);
-    }
-
     private PrincipalAccessToken buildPrincipalAccessToken(
             String token,
             String clientId,
@@ -1027,62 +687,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     }
 
     private long refreshTokenTtlSeconds(String clientId) {
-        if (oauthClientRepository == null) {
-            return 2592000L;
-        }
-        OAuthClient client = oauthClientRepository.getByClientIdAndStatus(clientId, OAuthClientStatus.ENABLED);
-        if (client == null || client.getRefreshTokenTtlSeconds() <= 0L) {
-            return 2592000L;
-        }
-        return client.getRefreshTokenTtlSeconds();
-    }
-
-    private long accessTokenTtlSeconds(OAuthClient client) {
-        if (client == null || client.getAccessTokenTtlSeconds() <= 0L) {
-            return properties.getLoginExpiredSeconds();
-        }
-        return client.getAccessTokenTtlSeconds();
-    }
-
-    private OAuthClient validateOAuthClientSecret(String clientId, String clientSecret) {
-        if (oauthClientRepository == null) {
-            throw AdminResponseExceptions.oauth2ClientNotConfigured();
-        }
-        OAuthClient client = oauthClientRepository.getByClientIdAndStatus(clientId, OAuthClientStatus.ENABLED);
-        if (client == null
-                || !StringUtils.equals(Sha256Digest.hashBase64Url(clientSecret), client.getClientSecretHash())) {
-            throw AdminResponseExceptions.oauth2ClientSecretInvalid();
-        }
-        return client;
-    }
-
-    private OAuthClient validateOAuthClient(String clientId, String redirectUri, List<String> scopes) {
-        if (oauthClientRepository == null) {
-            throw AdminResponseExceptions.oauth2ClientNotConfigured();
-        }
-        OAuthClient client = oauthClientRepository.getByClientIdAndStatus(clientId, OAuthClientStatus.ENABLED);
-        Set<String> requestedScopes = toScopeSet(scopes);
-        if (client == null || !client.supportsRedirectUri(redirectUri) || !client.supportsScopes(requestedScopes)) {
-            throw AdminResponseExceptions.oauth2ClientRequestInvalid();
-        }
-        return client;
-    }
-
-    private Set<String> toScopeSet(List<String> scopes) {
-        return scopes == null ? new LinkedHashSet<>() : new LinkedHashSet<>(scopes);
-    }
-
-    private boolean verifyPkce(OAuthAuthorization authorization, String codeVerifier) {
-        if (StringUtils.isBlank(authorization.getCodeChallenge())) {
-            return true;
-        }
-        if (StringUtils.isBlank(codeVerifier)) {
-            return false;
-        }
-        if ("S256".equalsIgnoreCase(authorization.getCodeChallengeMethod())) {
-            return StringUtils.equals(authorization.getCodeChallenge(), Sha256Digest.hashBase64Url(codeVerifier));
-        }
-        return StringUtils.equals(authorization.getCodeChallenge(), codeVerifier);
+        return 2592000L;
     }
 
     private String getAccountLoginName(UserId userId) {

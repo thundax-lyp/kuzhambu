@@ -5,7 +5,6 @@ import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalIdentityType
 import com.thundax.kuzhambu.system.domain.core.model.entity.User;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.service.result.AuthAccessTokenResult;
-import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -26,15 +25,5 @@ public class AdminAuthCommand {
     private AuthAccessTokenResult accessToken;
     private User user;
     private String clientId;
-    private String clientSecret;
-    private String grantType;
-    private String redirectUri;
-    private String authorizationCode;
-    private String codeVerifier;
     private String refreshToken;
-    private String state;
-    private String codeChallenge;
-    private String codeChallengeMethod;
-    private List<String> scopes;
-    private boolean approved;
 }

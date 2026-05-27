@@ -7,8 +7,6 @@ import com.thundax.kuzhambu.system.interfaces.admin.auth.service.query.AdminAuth
 import com.thundax.kuzhambu.system.interfaces.admin.auth.service.result.AuthAccessTokenResult;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.service.result.AuthTokenQueryResult;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.service.result.AuthTokenRefreshResult;
-import com.thundax.kuzhambu.system.interfaces.admin.auth.service.result.OAuth2AuthorizationDecisionResult;
-import com.thundax.kuzhambu.system.interfaces.admin.auth.service.result.OAuth2AuthorizationViewResult;
 import org.springframework.lang.NonNull;
 
 public interface AdminAuthService {
@@ -29,17 +27,6 @@ public interface AdminAuthService {
     AuthTokenQueryResult getTokenInfo(AdminAuthQuery query);
 
     AuthTokenRefreshResult refreshAccessToken(AdminAuthCommand command);
-
-    OAuth2AuthorizationViewResult authorizeOAuth2(AdminAuthCommand command);
-
-    OAuth2AuthorizationDecisionResult decideOAuth2(AdminAuthCommand command);
-
-    AuthTokenRefreshResult exchangeOAuth2Token(AdminAuthCommand command);
-
-    @LayerPublicApi(reason = "OAuth2 授权码吊销的后台认证业务入口")
-    boolean revokeAuthorizationCode(AdminAuthCommand command);
-
-    boolean revokeOAuth2Token(AdminAuthCommand command);
 
     void invalidateSessionByToken(AdminAuthCommand command);
 

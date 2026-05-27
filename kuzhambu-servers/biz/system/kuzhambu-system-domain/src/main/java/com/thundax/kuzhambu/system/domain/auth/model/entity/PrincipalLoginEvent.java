@@ -30,10 +30,6 @@ public class PrincipalLoginEvent {
     public static final String REASON_RELOGIN = "RELOGIN";
     public static final String REASON_PASSWORD_RESET = "PASSWORD_RESET";
     public static final String REASON_KICKED_OUT = "KICKED_OUT";
-    public static final String REASON_OAUTH_DENIED = "OAUTH_DENIED";
-    public static final String REASON_OAUTH_CLIENT_INVALID = "OAUTH_CLIENT_INVALID";
-    public static final String REASON_OAUTH_CODE_INVALID = "OAUTH_CODE_INVALID";
-    public static final String REASON_OAUTH_CODE_EXPIRED = "OAUTH_CODE_EXPIRED";
     public static final String REASON_SYSTEM_INVALIDATE = "SYSTEM_INVALIDATE";
 
     private PrincipalLoginEventId id;

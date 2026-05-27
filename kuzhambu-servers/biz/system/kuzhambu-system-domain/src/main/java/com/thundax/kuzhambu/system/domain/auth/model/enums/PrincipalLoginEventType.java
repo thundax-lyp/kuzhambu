@@ -7,8 +7,7 @@ public enum PrincipalLoginEventType {
     LOGIN_SUCCESS,
     LOGIN_FAILED,
     LOGOUT,
-    TOKEN_REFRESH,
-    OAUTH_AUTHORIZED;
+    TOKEN_REFRESH;
 
     public String value() {
         return name();

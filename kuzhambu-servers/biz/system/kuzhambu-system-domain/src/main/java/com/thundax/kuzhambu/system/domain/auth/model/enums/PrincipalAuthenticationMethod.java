@@ -9,7 +9,6 @@ public enum PrincipalAuthenticationMethod {
     EMAIL_CODE,
     GITHUB,
     WECOM,
-    OAUTH_CODE,
     REFRESH_TOKEN;
 
     public String value() {
