@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.common.core.id.EntityIdCodec;
 import com.thundax.kuzhambu.system.application.auth.entity.OAuthAuthorization;
 import com.thundax.kuzhambu.system.domain.auth.enums.PrincipalType;
-import com.thundax.kuzhambu.system.domain.auth.valueobject.PrincipalKey;
+import com.thundax.kuzhambu.system.domain.model.valueobject.PrincipalKey;
 import com.thundax.kuzhambu.system.infra.auth.dataobject.OAuthAuthorizationDO;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;

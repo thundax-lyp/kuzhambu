@@ -4,7 +4,7 @@ import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.system.application.auth.dao.PrincipalLoginEventDao;
 import com.thundax.kuzhambu.system.application.auth.entity.PrincipalLoginEvent;
 import com.thundax.kuzhambu.system.domain.auth.codec.PrincipalLoginEventIdCodec;
-import com.thundax.kuzhambu.system.domain.auth.valueobject.PrincipalLoginEventId;
+import com.thundax.kuzhambu.system.domain.model.valueobject.PrincipalLoginEventId;
 import com.thundax.kuzhambu.system.infra.auth.assembler.PrincipalLoginEventPersistenceAssembler;
 import com.thundax.kuzhambu.system.infra.auth.dataobject.PrincipalLoginEventDO;
 import com.thundax.kuzhambu.system.infra.auth.mapper.PrincipalLoginEventMapper;

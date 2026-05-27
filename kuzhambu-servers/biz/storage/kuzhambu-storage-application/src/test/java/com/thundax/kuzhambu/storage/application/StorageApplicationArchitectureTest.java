@@ -18,5 +18,6 @@ class StorageApplicationArchitectureTest extends AbstractArchitectureTest {
         ModuleAndDependencyArchitectureRuleSupport.assertApplicationLayerBoundary(classes, BASE_PACKAGE);
         AnnotationBoundaryArchitectureRuleSupport.assertApplicationNoHttpAnnotations(classes, BASE_PACKAGE);
         NamingArchitectureRuleSupport.assertCodecPlacement(classes, BASE_PACKAGE);
+        NamingArchitectureRuleSupport.assertValueObjectPlacement(classes, BASE_PACKAGE);
     }
 }

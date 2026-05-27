@@ -8,7 +8,7 @@ import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import com.thundax.kuzhambu.system.application.core.dao.DictDao;
 import com.thundax.kuzhambu.system.application.core.entity.Dict;
 import com.thundax.kuzhambu.system.domain.core.codec.DictIdCodec;
-import com.thundax.kuzhambu.system.domain.core.valueobject.DictId;
+import com.thundax.kuzhambu.system.domain.model.valueobject.DictId;
 import com.thundax.kuzhambu.system.infra.core.assembler.DictPersistenceAssembler;
 import com.thundax.kuzhambu.system.infra.core.cache.DictCacheSupport;
 import com.thundax.kuzhambu.system.infra.core.dataobject.DictDO;

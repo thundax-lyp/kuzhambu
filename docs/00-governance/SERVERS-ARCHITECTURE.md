@@ -100,10 +100,10 @@ kuzhambu-servers/
           support/
       kuzhambu-<domain>-domain/
         src/main/java/com/thundax/kuzhambu/<domain>/domain/
+          model/
+            valueobject/
           <subdomain>/
             codec/
-            valueobject/
-          model/
           service/
           repository/
           event/
@@ -149,7 +149,8 @@ com/thundax/kuzhambu/<domain>/interfaces/portal/
 - `application/assembler/`：application 内部模型装配，不处理 HTTP 或持久化细节。
 - `domain/<subdomain>/codec/`：基础类型和值对象互转，`<subdomain>` 使用业务子域名，例如 `core`、`auth`、`audit`、`object`。
 - `application/support/`：仅服务本业务域 application 层的辅助实现。
-- `domain/model/`：聚合、实体、值对象和领域枚举。
+- `domain/model/valueobject/`：强类型 ID、Key、Code、Token、Ref、Snapshot 等领域值对象；`application`、`interfaces`、`infra` 不得定义 `valueobject` 包。
+- `domain/model/`：聚合、实体和领域模型。
 - `domain/service/`：无法自然归入单个领域对象的领域规则。
 - `domain/repository/`：业务域持久化端口，只表达聚合读写语义。
 - `domain/event/`：领域事件。

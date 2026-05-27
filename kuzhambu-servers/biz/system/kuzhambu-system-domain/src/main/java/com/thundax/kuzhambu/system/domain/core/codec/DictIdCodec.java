@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.system.domain.core.codec;
 
-import com.thundax.kuzhambu.system.domain.core.valueobject.DictId;
+import com.thundax.kuzhambu.system.domain.model.valueobject.DictId;
 import java.util.List;
 import java.util.stream.Collectors;
 

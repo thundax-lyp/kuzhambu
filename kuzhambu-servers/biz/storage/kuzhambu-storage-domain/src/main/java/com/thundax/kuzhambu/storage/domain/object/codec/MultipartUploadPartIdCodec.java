@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.storage.domain.object.codec;
 
-import com.thundax.kuzhambu.storage.domain.object.valueobject.MultipartUploadPartId;
+import com.thundax.kuzhambu.storage.domain.model.valueobject.MultipartUploadPartId;
 import java.util.List;
 import java.util.stream.Collectors;
 

@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.system.domain.core.codec;
 
-import com.thundax.kuzhambu.system.domain.core.valueobject.AccessRank;
+import com.thundax.kuzhambu.system.domain.model.valueobject.AccessRank;
 
 public final class AccessRankCodec {
 

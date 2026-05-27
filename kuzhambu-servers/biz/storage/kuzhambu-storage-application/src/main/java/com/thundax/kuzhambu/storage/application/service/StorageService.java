@@ -13,7 +13,7 @@ import com.thundax.kuzhambu.storage.application.service.command.CreateStorageCom
 import com.thundax.kuzhambu.storage.application.service.command.RemoveStorageReferencesCommand;
 import com.thundax.kuzhambu.storage.application.service.command.StorageSortCommand;
 import com.thundax.kuzhambu.storage.application.service.query.StorageQuery;
-import com.thundax.kuzhambu.storage.domain.object.valueobject.StoredObjectId;
+import com.thundax.kuzhambu.storage.domain.model.valueobject.StoredObjectId;
 import java.util.List;
 
 public interface StorageService {

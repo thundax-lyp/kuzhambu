@@ -7,7 +7,7 @@ import com.thundax.kuzhambu.system.application.core.service.query.LogQuery;
 import com.thundax.kuzhambu.system.domain.core.codec.DepartmentIdCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.LogIdCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
-import com.thundax.kuzhambu.system.domain.core.valueobject.DepartmentId;
+import com.thundax.kuzhambu.system.domain.model.valueobject.DepartmentId;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.LogPageRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.LogDepartmentResponse;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.LogResponse;

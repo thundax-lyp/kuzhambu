@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -95,6 +96,52 @@ public final class NamingArchitectureRuleSupport {
         assertTrue(
                 "*Codec types must be placed under com.thundax.kuzhambu.{module}.domain.{domain}.codec: " + violations,
                 violations.isEmpty());
+    }
+
+    public static void assertValueObjectPlacement(JavaClasses classes, String basePackage) {
+        List<String> violations = new ArrayList<String>();
+
+        for (JavaClass javaClass : classes) {
+            if (isTestType(javaClass) || javaClass.getName().contains("$")) {
+                continue;
+            }
+            if (!javaClass.getPackageName().contains(".valueobject")) {
+                continue;
+            }
+            if (!javaClass.getPackageName().equals(basePackage + ".domain.model.valueobject")) {
+                violations.add(javaClass.getName());
+            }
+        }
+
+        assertTrue(
+                "valueobject packages must only be com.thundax.kuzhambu.{module}.domain.model.valueobject: "
+                        + violations,
+                violations.isEmpty());
+    }
+
+    public static void assertBaseIdTypes(JavaClasses classes, String basePackage) {
+        List<String> violations = new ArrayList<String>();
+
+        for (JavaClass javaClass : classes) {
+            if (isTestType(javaClass) || javaClass.getName().contains("$")) {
+                continue;
+            }
+            if (!javaClass.getSimpleName().endsWith("Id")) {
+                continue;
+            }
+            if (!javaClass.getPackageName().equals(basePackage + ".domain.model.valueobject")) {
+                violations.add(javaClass.getName() + " must stay in domain.model.valueobject");
+                continue;
+            }
+            if (!javaClass.getModifiers().contains(JavaModifier.FINAL)) {
+                violations.add(javaClass.getName() + " must be final");
+            }
+            if (!extendsBaseId(javaClass)) {
+                violations.add(javaClass.getName() + " must extend a common Base*Id type");
+            }
+        }
+
+        assertTrue("Strong ID types must be final Base*Id value objects: " + violations, violations.isEmpty());
     }
 
     public static void assertConfigurationClassNames(JavaClasses classes) {
@@ -418,6 +465,17 @@ public final class NamingArchitectureRuleSupport {
     private static boolean isPackageUnder(JavaClass javaClass, String packagePrefix) {
         return javaClass.getPackageName().equals(packagePrefix)
                 || javaClass.getPackageName().startsWith(packagePrefix + ".");
+    }
+
+    private static boolean extendsBaseId(JavaClass javaClass) {
+        Optional<JavaClass> superclass = javaClass.getRawSuperclass();
+        if (!superclass.isPresent()) {
+            return false;
+        }
+        JavaClass rawSuperclass = superclass.get();
+        return rawSuperclass.getPackageName().equals("com.thundax.kuzhambu.common.core.id")
+                && rawSuperclass.getSimpleName().startsWith("Base")
+                && rawSuperclass.getSimpleName().endsWith("Id");
     }
 
     private static boolean isServiceInterface(JavaClass javaClass) {

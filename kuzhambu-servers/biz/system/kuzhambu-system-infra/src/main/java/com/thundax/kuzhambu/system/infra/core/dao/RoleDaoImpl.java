@@ -9,7 +9,7 @@ import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import com.thundax.kuzhambu.system.application.core.dao.RoleDao;
 import com.thundax.kuzhambu.system.application.core.entity.Role;
 import com.thundax.kuzhambu.system.domain.core.codec.RoleIdCodec;
-import com.thundax.kuzhambu.system.domain.core.valueobject.RoleId;
+import com.thundax.kuzhambu.system.domain.model.valueobject.RoleId;
 import com.thundax.kuzhambu.system.infra.core.assembler.RolePersistenceAssembler;
 import com.thundax.kuzhambu.system.infra.core.cache.RoleCacheSupport;
 import com.thundax.kuzhambu.system.infra.core.cache.UserCacheSupport;

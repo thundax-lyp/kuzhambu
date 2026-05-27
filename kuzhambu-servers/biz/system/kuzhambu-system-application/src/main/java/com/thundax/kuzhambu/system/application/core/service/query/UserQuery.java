@@ -2,8 +2,8 @@ package com.thundax.kuzhambu.system.application.core.service.query;
 
 import com.thundax.kuzhambu.system.application.core.entity.enums.UserPrivilege;
 import com.thundax.kuzhambu.system.application.core.entity.enums.UserStatus;
-import com.thundax.kuzhambu.system.domain.core.valueobject.DepartmentId;
-import com.thundax.kuzhambu.system.domain.core.valueobject.UserId;
+import com.thundax.kuzhambu.system.domain.model.valueobject.DepartmentId;
+import com.thundax.kuzhambu.system.domain.model.valueobject.UserId;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

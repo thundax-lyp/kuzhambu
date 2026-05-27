@@ -2,7 +2,7 @@ package com.thundax.kuzhambu.storage.application.entity;
 
 import com.thundax.kuzhambu.storage.application.entity.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.application.entity.enums.StoredObjectReferenceStatus;
-import com.thundax.kuzhambu.storage.domain.object.valueobject.StoredObjectId;
+import com.thundax.kuzhambu.storage.domain.model.valueobject.StoredObjectId;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

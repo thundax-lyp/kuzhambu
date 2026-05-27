@@ -10,7 +10,7 @@ import com.thundax.kuzhambu.common.core.tree.TreeNodeMoveType;
 import com.thundax.kuzhambu.system.application.core.dao.DepartmentDao;
 import com.thundax.kuzhambu.system.application.core.entity.Department;
 import com.thundax.kuzhambu.system.domain.core.codec.DepartmentIdCodec;
-import com.thundax.kuzhambu.system.domain.core.valueobject.DepartmentId;
+import com.thundax.kuzhambu.system.domain.model.valueobject.DepartmentId;
 import com.thundax.kuzhambu.system.infra.core.assembler.DepartmentPersistenceAssembler;
 import com.thundax.kuzhambu.system.infra.core.cache.DepartmentCacheSupport;
 import com.thundax.kuzhambu.system.infra.core.dataobject.DepartmentDO;

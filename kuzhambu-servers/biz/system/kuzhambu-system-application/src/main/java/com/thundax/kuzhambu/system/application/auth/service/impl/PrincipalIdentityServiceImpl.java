@@ -6,7 +6,7 @@ import com.thundax.kuzhambu.system.application.auth.entity.PrincipalIdentity;
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalIdentityService;
 import com.thundax.kuzhambu.system.application.auth.service.command.PrincipalIdentityCommand;
 import com.thundax.kuzhambu.system.application.auth.service.query.PrincipalIdentityQuery;
-import com.thundax.kuzhambu.system.domain.auth.valueobject.PrincipalIdentityId;
+import com.thundax.kuzhambu.system.domain.model.valueobject.PrincipalIdentityId;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;

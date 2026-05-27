@@ -33,11 +33,11 @@ import com.thundax.kuzhambu.system.application.auth.service.query.PrincipalIdent
 import com.thundax.kuzhambu.system.application.core.entity.User;
 import com.thundax.kuzhambu.system.application.core.service.UserService;
 import com.thundax.kuzhambu.system.domain.auth.enums.PrincipalType;
-import com.thundax.kuzhambu.system.domain.auth.valueobject.PrincipalAccessTokenCode;
-import com.thundax.kuzhambu.system.domain.auth.valueobject.PrincipalKey;
-import com.thundax.kuzhambu.system.domain.auth.valueobject.PrincipalRefreshTokenCode;
 import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
-import com.thundax.kuzhambu.system.domain.core.valueobject.UserId;
+import com.thundax.kuzhambu.system.domain.model.valueobject.PrincipalAccessTokenCode;
+import com.thundax.kuzhambu.system.domain.model.valueobject.PrincipalKey;
+import com.thundax.kuzhambu.system.domain.model.valueobject.PrincipalRefreshTokenCode;
+import com.thundax.kuzhambu.system.domain.model.valueobject.UserId;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.service.AdminAuthService;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.service.PermissionService;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.service.command.AdminAuthCommand;

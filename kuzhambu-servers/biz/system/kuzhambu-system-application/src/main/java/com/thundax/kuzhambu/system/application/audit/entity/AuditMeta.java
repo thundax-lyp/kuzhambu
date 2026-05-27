@@ -2,8 +2,8 @@ package com.thundax.kuzhambu.system.application.audit.entity;
 
 import com.thundax.kuzhambu.system.application.audit.entity.enums.AuditAction;
 import com.thundax.kuzhambu.system.application.audit.entity.enums.AuditOperatorType;
-import com.thundax.kuzhambu.system.domain.audit.valueobject.AuditLogId;
-import com.thundax.kuzhambu.system.domain.audit.valueobject.AuditMetaId;
+import com.thundax.kuzhambu.system.domain.model.valueobject.AuditLogId;
+import com.thundax.kuzhambu.system.domain.model.valueobject.AuditMetaId;
 import java.util.Date;
 import lombok.Getter;
 import lombok.Setter;

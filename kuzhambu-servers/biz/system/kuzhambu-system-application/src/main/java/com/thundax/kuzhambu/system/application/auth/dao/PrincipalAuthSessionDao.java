@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.system.application.auth.dao;
 
 import com.thundax.kuzhambu.system.application.auth.entity.PrincipalAuthSession;
-import com.thundax.kuzhambu.system.domain.auth.valueobject.PrincipalAuthSessionId;
+import com.thundax.kuzhambu.system.domain.model.valueobject.PrincipalAuthSessionId;
 import java.util.Date;
 
 public interface PrincipalAuthSessionDao {

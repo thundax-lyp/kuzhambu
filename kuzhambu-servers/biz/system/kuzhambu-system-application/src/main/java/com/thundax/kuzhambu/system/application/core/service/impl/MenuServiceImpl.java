@@ -14,7 +14,7 @@ import com.thundax.kuzhambu.system.application.core.service.command.MoveMenuComm
 import com.thundax.kuzhambu.system.application.core.service.query.MenuQuery;
 import com.thundax.kuzhambu.system.domain.core.codec.AccessRankCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.MenuIdCodec;
-import com.thundax.kuzhambu.system.domain.core.valueobject.MenuId;
+import com.thundax.kuzhambu.system.domain.model.valueobject.MenuId;
 import java.util.Collections;
 import java.util.List;
 import org.springframework.beans.factory.ObjectProvider;

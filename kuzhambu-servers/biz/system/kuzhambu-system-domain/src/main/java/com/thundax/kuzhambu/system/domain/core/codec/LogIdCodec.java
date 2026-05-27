@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.system.domain.core.codec;
 
-import com.thundax.kuzhambu.system.domain.core.valueobject.LogId;
+import com.thundax.kuzhambu.system.domain.model.valueobject.LogId;
 import java.util.List;
 import java.util.stream.Collectors;
 

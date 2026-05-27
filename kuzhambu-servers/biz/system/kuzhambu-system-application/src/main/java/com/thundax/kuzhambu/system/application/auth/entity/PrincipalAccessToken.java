@@ -1,10 +1,10 @@
 package com.thundax.kuzhambu.system.application.auth.entity;
 
 import com.thundax.kuzhambu.system.application.auth.entity.enums.PrincipalTokenStatus;
-import com.thundax.kuzhambu.system.domain.auth.valueobject.PrincipalAccessTokenCode;
-import com.thundax.kuzhambu.system.domain.auth.valueobject.PrincipalAccessTokenId;
-import com.thundax.kuzhambu.system.domain.auth.valueobject.PrincipalAuthSessionId;
-import com.thundax.kuzhambu.system.domain.auth.valueobject.PrincipalKey;
+import com.thundax.kuzhambu.system.domain.model.valueobject.PrincipalAccessTokenCode;
+import com.thundax.kuzhambu.system.domain.model.valueobject.PrincipalAccessTokenId;
+import com.thundax.kuzhambu.system.domain.model.valueobject.PrincipalAuthSessionId;
+import com.thundax.kuzhambu.system.domain.model.valueobject.PrincipalKey;
 import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.Set;

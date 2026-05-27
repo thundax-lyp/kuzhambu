@@ -14,5 +14,7 @@ class StorageDomainArchitectureTest extends AbstractArchitectureTest {
         JavaClasses classes = importPackages(BASE_PACKAGE + ".domain");
 
         NamingArchitectureRuleSupport.assertCodecPlacement(classes, BASE_PACKAGE);
+        NamingArchitectureRuleSupport.assertValueObjectPlacement(classes, BASE_PACKAGE);
+        NamingArchitectureRuleSupport.assertBaseIdTypes(classes, BASE_PACKAGE);
     }
 }

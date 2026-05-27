@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.system.domain.auth.codec;
 
 import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
-import com.thundax.kuzhambu.system.domain.auth.valueobject.PrincipalAccessTokenId;
+import com.thundax.kuzhambu.system.domain.model.valueobject.PrincipalAccessTokenId;
 
 public final class PrincipalAccessTokenIdCodec {
 

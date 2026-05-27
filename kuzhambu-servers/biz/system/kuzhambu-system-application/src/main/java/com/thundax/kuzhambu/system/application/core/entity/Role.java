@@ -4,7 +4,7 @@ import com.thundax.kuzhambu.common.core.sort.Sortable;
 import com.thundax.kuzhambu.system.application.core.entity.enums.RolePrivilege;
 import com.thundax.kuzhambu.system.application.core.entity.enums.RoleStatus;
 import com.thundax.kuzhambu.system.domain.core.codec.MenuIdCodec;
-import com.thundax.kuzhambu.system.domain.core.valueobject.RoleId;
+import com.thundax.kuzhambu.system.domain.model.valueobject.RoleId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;

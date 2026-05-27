@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.system.domain.audit.codec;
 
-import com.thundax.kuzhambu.system.domain.audit.valueobject.AuditMetaId;
+import com.thundax.kuzhambu.system.domain.model.valueobject.AuditMetaId;
 import java.util.List;
 import java.util.stream.Collectors;
 

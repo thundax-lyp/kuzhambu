@@ -19,10 +19,10 @@ import com.thundax.kuzhambu.system.application.core.service.command.ChangeCurren
 import com.thundax.kuzhambu.system.application.core.service.command.RemoveCurrentUserAvatarCommand;
 import com.thundax.kuzhambu.system.application.core.service.query.CurrentUserQuery;
 import com.thundax.kuzhambu.system.domain.auth.enums.PrincipalType;
-import com.thundax.kuzhambu.system.domain.auth.valueobject.PreAuthSessionId;
-import com.thundax.kuzhambu.system.domain.auth.valueobject.PreAuthSessionToken;
-import com.thundax.kuzhambu.system.domain.auth.valueobject.PrincipalKey;
 import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
+import com.thundax.kuzhambu.system.domain.model.valueobject.PreAuthSessionId;
+import com.thundax.kuzhambu.system.domain.model.valueobject.PreAuthSessionToken;
+import com.thundax.kuzhambu.system.domain.model.valueobject.PrincipalKey;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.security.CurrentUserResolver;
 import com.thundax.kuzhambu.system.interfaces.admin.core.aop.annotation.SysLogger;
 import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.PersonalInterfaceAssembler;

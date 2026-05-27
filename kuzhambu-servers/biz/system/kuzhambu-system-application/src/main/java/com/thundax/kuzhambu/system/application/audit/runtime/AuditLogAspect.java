@@ -3,7 +3,7 @@ package com.thundax.kuzhambu.system.application.audit.runtime;
 import com.thundax.kuzhambu.system.application.audit.annotation.AuditLog;
 import com.thundax.kuzhambu.system.application.audit.service.AuditService;
 import com.thundax.kuzhambu.system.application.audit.service.command.CreateAuditLogCommand;
-import com.thundax.kuzhambu.system.domain.audit.valueobject.AuditSnapshot;
+import com.thundax.kuzhambu.system.domain.model.valueobject.AuditSnapshot;
 import java.lang.reflect.Method;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;

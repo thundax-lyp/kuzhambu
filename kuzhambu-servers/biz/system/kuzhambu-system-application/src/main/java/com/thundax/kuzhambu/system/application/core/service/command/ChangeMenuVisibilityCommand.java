@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.system.application.core.service.command;
 
 import com.thundax.kuzhambu.system.application.core.entity.enums.MenuVisibility;
-import com.thundax.kuzhambu.system.domain.core.valueobject.MenuId;
+import com.thundax.kuzhambu.system.domain.model.valueobject.MenuId;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

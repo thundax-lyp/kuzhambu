@@ -8,7 +8,7 @@ import com.thundax.kuzhambu.system.application.core.service.command.ChangeUserIn
 import com.thundax.kuzhambu.system.application.core.service.command.ChangeUserStatusCommand;
 import com.thundax.kuzhambu.system.application.core.service.command.CreateUserCommand;
 import com.thundax.kuzhambu.system.application.core.service.query.UserQuery;
-import com.thundax.kuzhambu.system.domain.core.valueobject.UserId;
+import com.thundax.kuzhambu.system.domain.model.valueobject.UserId;
 import java.util.List;
 
 public interface UserService {

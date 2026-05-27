@@ -9,8 +9,8 @@ import com.thundax.kuzhambu.system.application.auth.service.PreAuthSessionServic
 import com.thundax.kuzhambu.system.application.auth.service.command.UpsertPreAuthSessionValueCommand;
 import com.thundax.kuzhambu.system.application.auth.service.query.PreAuthSessionValueQuery;
 import com.thundax.kuzhambu.system.application.auth.utils.PreAuthCodeHelper;
-import com.thundax.kuzhambu.system.domain.auth.valueobject.PreAuthSessionId;
-import com.thundax.kuzhambu.system.domain.auth.valueobject.PreAuthSessionToken;
+import com.thundax.kuzhambu.system.domain.model.valueobject.PreAuthSessionId;
+import com.thundax.kuzhambu.system.domain.model.valueobject.PreAuthSessionToken;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.assembler.CaptchaInterfaceAssembler;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.controller.request.CaptchaRefreshRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.controller.response.CaptchaRefreshResponse;

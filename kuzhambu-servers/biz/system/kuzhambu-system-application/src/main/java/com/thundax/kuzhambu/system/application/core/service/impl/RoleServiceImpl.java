@@ -21,7 +21,7 @@ import com.thundax.kuzhambu.system.application.core.service.query.RoleQuery;
 import com.thundax.kuzhambu.system.domain.core.codec.MenuIdCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.RoleIdCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
-import com.thundax.kuzhambu.system.domain.core.valueobject.RoleId;
+import com.thundax.kuzhambu.system.domain.model.valueobject.RoleId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;

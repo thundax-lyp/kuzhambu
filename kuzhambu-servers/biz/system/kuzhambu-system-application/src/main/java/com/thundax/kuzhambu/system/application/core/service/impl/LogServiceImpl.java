@@ -10,7 +10,7 @@ import com.thundax.kuzhambu.system.application.core.entity.enums.LogType;
 import com.thundax.kuzhambu.system.application.core.service.LogService;
 import com.thundax.kuzhambu.system.application.core.service.command.CreateLogCommand;
 import com.thundax.kuzhambu.system.application.core.service.query.LogQuery;
-import com.thundax.kuzhambu.system.domain.core.valueobject.LogId;
+import com.thundax.kuzhambu.system.domain.model.valueobject.LogId;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

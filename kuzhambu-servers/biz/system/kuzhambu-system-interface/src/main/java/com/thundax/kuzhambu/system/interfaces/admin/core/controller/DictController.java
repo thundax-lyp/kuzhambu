@@ -13,7 +13,7 @@ import com.thundax.kuzhambu.system.application.core.service.DictService;
 import com.thundax.kuzhambu.system.application.core.service.command.DictSortCommand;
 import com.thundax.kuzhambu.system.application.core.service.query.DictQuery;
 import com.thundax.kuzhambu.system.domain.core.codec.DictIdCodec;
-import com.thundax.kuzhambu.system.domain.core.valueobject.DictId;
+import com.thundax.kuzhambu.system.domain.model.valueobject.DictId;
 import com.thundax.kuzhambu.system.interfaces.admin.core.aop.annotation.SysLogger;
 import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.DictInterfaceAssembler;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.DictIdRequest;

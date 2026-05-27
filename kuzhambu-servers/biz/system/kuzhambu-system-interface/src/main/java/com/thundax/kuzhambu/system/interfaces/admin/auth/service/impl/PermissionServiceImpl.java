@@ -1,9 +1,9 @@
 package com.thundax.kuzhambu.system.interfaces.admin.auth.service.impl;
 
-import static com.thundax.kuzhambu.system.domain.core.valueobject.PermissionCode.ADMIN;
-import static com.thundax.kuzhambu.system.domain.core.valueobject.PermissionCode.SEPARATOR;
-import static com.thundax.kuzhambu.system.domain.core.valueobject.PermissionCode.SUPER;
-import static com.thundax.kuzhambu.system.domain.core.valueobject.PermissionCode.USER;
+import static com.thundax.kuzhambu.system.domain.model.valueobject.PermissionCode.ADMIN;
+import static com.thundax.kuzhambu.system.domain.model.valueobject.PermissionCode.SEPARATOR;
+import static com.thundax.kuzhambu.system.domain.model.valueobject.PermissionCode.SUPER;
+import static com.thundax.kuzhambu.system.domain.model.valueobject.PermissionCode.USER;
 
 import com.thundax.kuzhambu.common.core.arch.OneLineMethodAllowed;
 import com.thundax.kuzhambu.common.security.permission.PermissionMatcher;
@@ -18,7 +18,7 @@ import com.thundax.kuzhambu.system.application.core.service.CurrentUserService;
 import com.thundax.kuzhambu.system.application.core.service.UserService;
 import com.thundax.kuzhambu.system.application.core.service.query.CurrentUserQuery;
 import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
-import com.thundax.kuzhambu.system.domain.core.valueobject.PermissionCode;
+import com.thundax.kuzhambu.system.domain.model.valueobject.PermissionCode;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.service.PermissionService;
 import java.util.ArrayList;
 import java.util.Collection;

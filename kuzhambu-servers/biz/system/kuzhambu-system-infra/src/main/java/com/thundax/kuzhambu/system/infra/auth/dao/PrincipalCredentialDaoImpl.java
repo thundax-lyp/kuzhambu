@@ -9,9 +9,9 @@ import com.thundax.kuzhambu.system.application.auth.entity.enums.PrincipalCreden
 import com.thundax.kuzhambu.system.application.auth.entity.enums.PrincipalCredentialType;
 import com.thundax.kuzhambu.system.domain.auth.codec.PrincipalCredentialIdCodec;
 import com.thundax.kuzhambu.system.domain.auth.codec.PrincipalIdentityIdCodec;
-import com.thundax.kuzhambu.system.domain.auth.valueobject.PrincipalCredentialId;
-import com.thundax.kuzhambu.system.domain.auth.valueobject.PrincipalIdentityId;
-import com.thundax.kuzhambu.system.domain.auth.valueobject.PrincipalKey;
+import com.thundax.kuzhambu.system.domain.model.valueobject.PrincipalCredentialId;
+import com.thundax.kuzhambu.system.domain.model.valueobject.PrincipalIdentityId;
+import com.thundax.kuzhambu.system.domain.model.valueobject.PrincipalKey;
 import com.thundax.kuzhambu.system.infra.auth.assembler.PrincipalCredentialPersistenceAssembler;
 import com.thundax.kuzhambu.system.infra.auth.dataobject.PrincipalCredentialDO;
 import com.thundax.kuzhambu.system.infra.auth.mapper.PrincipalCredentialMapper;

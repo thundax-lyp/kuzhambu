@@ -12,7 +12,7 @@ import com.thundax.kuzhambu.system.application.core.service.command.CreateDepart
 import com.thundax.kuzhambu.system.application.core.service.command.MoveDepartmentCommand;
 import com.thundax.kuzhambu.system.application.core.service.query.DepartmentQuery;
 import com.thundax.kuzhambu.system.domain.core.codec.DepartmentIdCodec;
-import com.thundax.kuzhambu.system.domain.core.valueobject.DepartmentId;
+import com.thundax.kuzhambu.system.domain.model.valueobject.DepartmentId;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

@@ -8,7 +8,7 @@ import com.thundax.kuzhambu.system.application.core.service.command.ChangeCurren
 import com.thundax.kuzhambu.system.application.core.service.command.ChangeCurrentUserPasswordCommand;
 import com.thundax.kuzhambu.system.application.core.service.command.RemoveCurrentUserAvatarCommand;
 import com.thundax.kuzhambu.system.application.core.service.query.CurrentUserQuery;
-import com.thundax.kuzhambu.system.domain.core.valueobject.UserId;
+import com.thundax.kuzhambu.system.domain.model.valueobject.UserId;
 import java.io.InputStream;
 import java.util.List;
 

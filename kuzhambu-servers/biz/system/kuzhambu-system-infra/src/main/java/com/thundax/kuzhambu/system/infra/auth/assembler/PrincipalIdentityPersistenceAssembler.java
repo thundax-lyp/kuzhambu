@@ -5,7 +5,7 @@ import com.thundax.kuzhambu.system.application.auth.entity.enums.PrincipalIdenti
 import com.thundax.kuzhambu.system.application.auth.entity.enums.PrincipalIdentityType;
 import com.thundax.kuzhambu.system.domain.auth.codec.PrincipalIdentityIdCodec;
 import com.thundax.kuzhambu.system.domain.auth.enums.PrincipalType;
-import com.thundax.kuzhambu.system.domain.auth.valueobject.PrincipalKey;
+import com.thundax.kuzhambu.system.domain.model.valueobject.PrincipalKey;
 import com.thundax.kuzhambu.system.infra.auth.dataobject.PrincipalIdentityDO;
 import java.util.ArrayList;
 import java.util.List;

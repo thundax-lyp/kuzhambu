@@ -10,7 +10,7 @@ import com.thundax.kuzhambu.common.core.tree.TreeNodeMoveType;
 import com.thundax.kuzhambu.system.application.core.dao.MenuDao;
 import com.thundax.kuzhambu.system.application.core.entity.Menu;
 import com.thundax.kuzhambu.system.domain.core.codec.MenuIdCodec;
-import com.thundax.kuzhambu.system.domain.core.valueobject.MenuId;
+import com.thundax.kuzhambu.system.domain.model.valueobject.MenuId;
 import com.thundax.kuzhambu.system.infra.core.assembler.MenuPersistenceAssembler;
 import com.thundax.kuzhambu.system.infra.core.cache.MenuCacheSupport;
 import com.thundax.kuzhambu.system.infra.core.dataobject.MenuDO;

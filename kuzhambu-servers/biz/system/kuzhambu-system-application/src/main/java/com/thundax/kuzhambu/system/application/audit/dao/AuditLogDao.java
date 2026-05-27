@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.system.application.audit.entity.AuditLog;
 import com.thundax.kuzhambu.system.application.audit.entity.enums.AuditAction;
 import com.thundax.kuzhambu.system.application.audit.entity.enums.AuditOperatorType;
-import com.thundax.kuzhambu.system.domain.audit.valueobject.AuditLogId;
+import com.thundax.kuzhambu.system.domain.model.valueobject.AuditLogId;
 import java.util.Date;
 import java.util.List;
 

@@ -2,10 +2,10 @@ package com.thundax.kuzhambu.system.application.core.service.command;
 
 import com.thundax.kuzhambu.system.application.core.entity.enums.UserPrivilege;
 import com.thundax.kuzhambu.system.application.core.entity.enums.UserStatus;
-import com.thundax.kuzhambu.system.domain.core.valueobject.AccessRank;
-import com.thundax.kuzhambu.system.domain.core.valueobject.DepartmentId;
-import com.thundax.kuzhambu.system.domain.core.valueobject.RoleId;
-import com.thundax.kuzhambu.system.domain.core.valueobject.UserId;
+import com.thundax.kuzhambu.system.domain.model.valueobject.AccessRank;
+import com.thundax.kuzhambu.system.domain.model.valueobject.DepartmentId;
+import com.thundax.kuzhambu.system.domain.model.valueobject.RoleId;
+import com.thundax.kuzhambu.system.domain.model.valueobject.UserId;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

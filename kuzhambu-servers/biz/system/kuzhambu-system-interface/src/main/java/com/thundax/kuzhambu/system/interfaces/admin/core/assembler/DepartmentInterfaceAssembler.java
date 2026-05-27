@@ -5,7 +5,7 @@ import com.thundax.kuzhambu.system.application.core.service.command.ChangeDepart
 import com.thundax.kuzhambu.system.application.core.service.command.CreateDepartmentCommand;
 import com.thundax.kuzhambu.system.application.core.service.query.DepartmentQuery;
 import com.thundax.kuzhambu.system.domain.core.codec.DepartmentIdCodec;
-import com.thundax.kuzhambu.system.domain.core.valueobject.DepartmentId;
+import com.thundax.kuzhambu.system.domain.model.valueobject.DepartmentId;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.DepartmentQueryRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.DepartmentSaveRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.DepartmentResponse;

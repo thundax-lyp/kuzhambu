@@ -11,10 +11,10 @@ import com.thundax.kuzhambu.system.application.audit.service.query.AuditLogQuery
 import com.thundax.kuzhambu.system.application.audit.service.query.AuditMetaQuery;
 import com.thundax.kuzhambu.system.domain.audit.codec.AuditLogIdCodec;
 import com.thundax.kuzhambu.system.domain.audit.codec.AuditMetaIdCodec;
-import com.thundax.kuzhambu.system.domain.audit.valueobject.AuditChangedField;
-import com.thundax.kuzhambu.system.domain.audit.valueobject.AuditField;
-import com.thundax.kuzhambu.system.domain.audit.valueobject.AuditLogId;
-import com.thundax.kuzhambu.system.domain.audit.valueobject.AuditSnapshot;
+import com.thundax.kuzhambu.system.domain.model.valueobject.AuditChangedField;
+import com.thundax.kuzhambu.system.domain.model.valueobject.AuditField;
+import com.thundax.kuzhambu.system.domain.model.valueobject.AuditLogId;
+import com.thundax.kuzhambu.system.domain.model.valueobject.AuditSnapshot;
 import com.thundax.kuzhambu.system.interfaces.admin.audit.controller.request.AuditLogDetailRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.audit.controller.request.AuditLogPageRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.audit.controller.request.AuditMetaRequest;

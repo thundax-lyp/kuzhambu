@@ -2,7 +2,7 @@ package com.thundax.kuzhambu.system.application.audit.runtime.sys;
 
 import com.thundax.kuzhambu.system.application.audit.runtime.AuditObjectLoader;
 import com.thundax.kuzhambu.system.application.core.service.MenuService;
-import com.thundax.kuzhambu.system.domain.core.valueobject.MenuId;
+import com.thundax.kuzhambu.system.domain.model.valueobject.MenuId;
 import org.springframework.stereotype.Component;
 
 @Component

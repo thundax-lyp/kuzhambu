@@ -7,7 +7,7 @@ import com.thundax.kuzhambu.system.application.core.service.command.ChangeDictIn
 import com.thundax.kuzhambu.system.application.core.service.command.CreateDictCommand;
 import com.thundax.kuzhambu.system.application.core.service.command.DictSortCommand;
 import com.thundax.kuzhambu.system.application.core.service.query.DictQuery;
-import com.thundax.kuzhambu.system.domain.core.valueobject.DictId;
+import com.thundax.kuzhambu.system.domain.model.valueobject.DictId;
 import java.util.List;
 
 public interface DictService {

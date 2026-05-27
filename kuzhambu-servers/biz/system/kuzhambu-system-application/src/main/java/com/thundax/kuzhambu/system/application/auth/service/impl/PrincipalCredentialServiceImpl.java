@@ -6,7 +6,7 @@ import com.thundax.kuzhambu.system.application.auth.entity.PrincipalCredential;
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalCredentialService;
 import com.thundax.kuzhambu.system.application.auth.service.command.PrincipalCredentialCommand;
 import com.thundax.kuzhambu.system.application.auth.service.query.PrincipalCredentialQuery;
-import com.thundax.kuzhambu.system.domain.auth.valueobject.PrincipalCredentialId;
+import com.thundax.kuzhambu.system.domain.model.valueobject.PrincipalCredentialId;
 import java.util.List;
 import org.springframework.stereotype.Service;
 

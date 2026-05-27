@@ -3,7 +3,7 @@ package com.thundax.kuzhambu.system.interfaces.admin.auth.service.command;
 import com.thundax.kuzhambu.system.application.auth.entity.enums.PrincipalAuthenticationMethod;
 import com.thundax.kuzhambu.system.application.auth.entity.enums.PrincipalIdentityType;
 import com.thundax.kuzhambu.system.application.core.entity.User;
-import com.thundax.kuzhambu.system.domain.core.valueobject.UserId;
+import com.thundax.kuzhambu.system.domain.model.valueobject.UserId;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.service.result.AuthAccessTokenResult;
 import java.util.List;
 import lombok.Getter;

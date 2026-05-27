@@ -12,7 +12,7 @@ import com.thundax.kuzhambu.system.application.core.service.DepartmentService;
 import com.thundax.kuzhambu.system.application.core.service.command.MoveDepartmentCommand;
 import com.thundax.kuzhambu.system.application.core.service.query.DepartmentQuery;
 import com.thundax.kuzhambu.system.domain.core.codec.DepartmentIdCodec;
-import com.thundax.kuzhambu.system.domain.core.valueobject.DepartmentId;
+import com.thundax.kuzhambu.system.domain.model.valueobject.DepartmentId;
 import com.thundax.kuzhambu.system.interfaces.admin.core.aop.annotation.SysLogger;
 import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.DepartmentInterfaceAssembler;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.DepartmentIdRequest;

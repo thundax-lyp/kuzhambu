@@ -16,7 +16,7 @@ import com.thundax.kuzhambu.system.application.auth.service.dto.PrincipalPasswor
 import com.thundax.kuzhambu.system.application.auth.service.query.PrincipalCredentialQuery;
 import com.thundax.kuzhambu.system.application.auth.service.query.PrincipalIdentityQuery;
 import com.thundax.kuzhambu.system.application.auth.utils.PasswordHelper;
-import com.thundax.kuzhambu.system.domain.auth.valueobject.PrincipalIdentityId;
+import com.thundax.kuzhambu.system.domain.model.valueobject.PrincipalIdentityId;
 import java.util.Date;
 import org.springframework.stereotype.Service;
 

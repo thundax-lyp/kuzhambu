@@ -10,7 +10,7 @@ import com.thundax.kuzhambu.system.application.core.entity.User;
 import com.thundax.kuzhambu.system.application.core.entity.enums.UserPrivilege;
 import com.thundax.kuzhambu.system.application.core.entity.enums.UserStatus;
 import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
-import com.thundax.kuzhambu.system.domain.core.valueobject.UserId;
+import com.thundax.kuzhambu.system.domain.model.valueobject.UserId;
 import com.thundax.kuzhambu.system.infra.core.assembler.UserPersistenceAssembler;
 import com.thundax.kuzhambu.system.infra.core.cache.RoleCacheSupport;
 import com.thundax.kuzhambu.system.infra.core.cache.UserCacheSupport;

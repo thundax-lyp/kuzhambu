@@ -1,11 +1,11 @@
 package com.thundax.kuzhambu.system.application.auth.entity;
 
 import com.thundax.kuzhambu.system.application.auth.entity.enums.PrincipalTokenStatus;
-import com.thundax.kuzhambu.system.domain.auth.valueobject.PrincipalAccessTokenId;
-import com.thundax.kuzhambu.system.domain.auth.valueobject.PrincipalAuthSessionId;
-import com.thundax.kuzhambu.system.domain.auth.valueobject.PrincipalKey;
-import com.thundax.kuzhambu.system.domain.auth.valueobject.PrincipalRefreshTokenCode;
-import com.thundax.kuzhambu.system.domain.auth.valueobject.PrincipalRefreshTokenId;
+import com.thundax.kuzhambu.system.domain.model.valueobject.PrincipalAccessTokenId;
+import com.thundax.kuzhambu.system.domain.model.valueobject.PrincipalAuthSessionId;
+import com.thundax.kuzhambu.system.domain.model.valueobject.PrincipalKey;
+import com.thundax.kuzhambu.system.domain.model.valueobject.PrincipalRefreshTokenCode;
+import com.thundax.kuzhambu.system.domain.model.valueobject.PrincipalRefreshTokenId;
 import java.util.Date;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

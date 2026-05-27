@@ -14,9 +14,9 @@ import com.thundax.kuzhambu.system.domain.auth.codec.PrincipalAccessTokenIdCodec
 import com.thundax.kuzhambu.system.domain.auth.codec.PrincipalAuthSessionIdCodec;
 import com.thundax.kuzhambu.system.domain.auth.codec.PrincipalRefreshTokenIdCodec;
 import com.thundax.kuzhambu.system.domain.auth.enums.PrincipalType;
-import com.thundax.kuzhambu.system.domain.auth.valueobject.PrincipalKey;
-import com.thundax.kuzhambu.system.domain.auth.valueobject.PrincipalRefreshTokenCode;
-import com.thundax.kuzhambu.system.domain.auth.valueobject.PrincipalRefreshTokenId;
+import com.thundax.kuzhambu.system.domain.model.valueobject.PrincipalKey;
+import com.thundax.kuzhambu.system.domain.model.valueobject.PrincipalRefreshTokenCode;
+import com.thundax.kuzhambu.system.domain.model.valueobject.PrincipalRefreshTokenId;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;

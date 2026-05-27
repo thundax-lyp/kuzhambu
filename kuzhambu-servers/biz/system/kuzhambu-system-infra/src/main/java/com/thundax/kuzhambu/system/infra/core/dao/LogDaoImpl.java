@@ -7,7 +7,7 @@ import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.system.application.core.dao.LogDao;
 import com.thundax.kuzhambu.system.application.core.entity.Log;
 import com.thundax.kuzhambu.system.domain.core.codec.LogIdCodec;
-import com.thundax.kuzhambu.system.domain.core.valueobject.LogId;
+import com.thundax.kuzhambu.system.domain.model.valueobject.LogId;
 import com.thundax.kuzhambu.system.infra.core.assembler.LogPersistenceAssembler;
 import com.thundax.kuzhambu.system.infra.core.dataobject.LogDO;
 import com.thundax.kuzhambu.system.infra.core.mapper.LogMapper;
