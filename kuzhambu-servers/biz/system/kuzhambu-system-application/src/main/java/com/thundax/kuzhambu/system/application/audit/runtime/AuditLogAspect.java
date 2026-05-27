@@ -20,19 +20,16 @@ public class AuditLogAspect {
     static final String SERVICE_METHOD_POINTCUT = "execution(public * com.thundax.kuzhambu..service..*.*(..))";
 
     private final AuditApplicationService auditService;
-    private final AuditExpressionEvaluator expressionEvaluator;
     private final AuditObjectLoaderRegistry loaderRegistry;
     private final AuditSnapshotAssemblerRegistry assemblerRegistry;
     private final AuditOperatorResolver operatorResolver;
 
     public AuditLogAspect(
             AuditApplicationService auditService,
-            AuditExpressionEvaluator expressionEvaluator,
             AuditObjectLoaderRegistry loaderRegistry,
             AuditSnapshotAssemblerRegistry assemblerRegistry,
             AuditOperatorResolver operatorResolver) {
         this.auditService = auditService;
-        this.expressionEvaluator = expressionEvaluator;
         this.loaderRegistry = loaderRegistry;
         this.assemblerRegistry = assemblerRegistry;
         this.operatorResolver = operatorResolver;
@@ -46,10 +43,10 @@ public class AuditLogAspect {
             return joinPoint.proceed();
         }
         Object[] args = joinPoint.getArgs();
-        if (!expressionEvaluator.booleanValue(auditLog.condition(), method, args, true)) {
+        if (!AuditExpressionEvaluator.booleanValue(auditLog.condition(), method, args, true)) {
             return joinPoint.proceed();
         }
-        String objectId = expressionEvaluator.stringValue(auditLog.id(), method, args);
+        String objectId = AuditExpressionEvaluator.stringValue(auditLog.id(), method, args);
         AuditSnapshot before = snapshot(auditLog.type(), objectId);
         Object result = joinPoint.proceed();
         if (objectId == null && result != null) {

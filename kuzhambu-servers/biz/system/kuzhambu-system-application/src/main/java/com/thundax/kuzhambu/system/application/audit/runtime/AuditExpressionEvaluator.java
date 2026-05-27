@@ -13,13 +13,14 @@ import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
-import org.springframework.stereotype.Component;
 
-@Component
-public class AuditExpressionEvaluator {
+public final class AuditExpressionEvaluator {
 
-    private final ExpressionParser parser = new SpelExpressionParser();
-    private final DefaultParameterNameDiscoverer parameterNameDiscoverer = new DefaultParameterNameDiscoverer();
+    private static final ExpressionParser PARSER = new SpelExpressionParser();
+    private static final DefaultParameterNameDiscoverer PARAMETER_NAME_DISCOVERER =
+            new DefaultParameterNameDiscoverer();
+
+    private AuditExpressionEvaluator() {}
 
     public static List<AuditChangedField> diff(AuditSnapshot beforeSnapshot, AuditSnapshot afterSnapshot) {
         List<AuditChangedField> changedFields = new ArrayList<>();
@@ -42,12 +43,12 @@ public class AuditExpressionEvaluator {
         return changedFields;
     }
 
-    public String stringValue(String expression, Method method, Object[] args) {
+    public static String stringValue(String expression, Method method, Object[] args) {
         Object value = value(expression, method, args);
         return value == null ? null : String.valueOf(value);
     }
 
-    public boolean booleanValue(String expression, Method method, Object[] args, boolean defaultValue) {
+    public static boolean booleanValue(String expression, Method method, Object[] args, boolean defaultValue) {
         if (expression == null || expression.trim().isEmpty()) {
             return defaultValue;
         }
@@ -66,17 +67,17 @@ public class AuditExpressionEvaluator {
         return fieldMap;
     }
 
-    private Object value(String expression, Method method, Object[] args) {
+    private static Object value(String expression, Method method, Object[] args) {
         if (expression == null || expression.trim().isEmpty()) {
             return null;
         }
         StandardEvaluationContext context = new StandardEvaluationContext();
-        String[] parameterNames = parameterNameDiscoverer.getParameterNames(method);
+        String[] parameterNames = PARAMETER_NAME_DISCOVERER.getParameterNames(method);
         if (parameterNames != null) {
             for (int i = 0; i < parameterNames.length && i < args.length; i++) {
                 context.setVariable(parameterNames[i], args[i]);
             }
         }
-        return parser.parseExpression(expression).getValue(context);
+        return PARSER.parseExpression(expression).getValue(context);
     }
 }
