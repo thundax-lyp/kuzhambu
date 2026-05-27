@@ -2,13 +2,14 @@
 
 ## Purpose
 
-Storage 模块定义文件对象存储、文件元数据、文件内容读取、对象引用和分片上传需求。
+Storage 域定义文件对象存储、文件元数据、文件内容读取、对象引用和分片上传需求。
 
 Storage 负责“文件作为可复用资源如何被保存、读取和引用”，不负责具体业务内容规则。业务模块只保存稳定文件对象标识或自身语义包装后的引用，不保存底层对象键、物理路径或存储实现细节。
 
 ## Scope
 
 覆盖：
+
 - 后台普通文件上传。
 - 大文件分片上传。
 - 文件对象查询。
@@ -19,6 +20,7 @@ Storage 负责“文件作为可复用资源如何被保存、读取和引用”
 - 文件对象状态和引用状态维护。
 
 不覆盖：
+
 - 通用 portal 上传入口。
 - CDN 分发。
 - 图片裁剪、压缩和水印。
@@ -63,6 +65,7 @@ Storage 负责“文件作为可复用资源如何被保存、读取和引用”
 - 通用上传入口只面向后台；portal 需要上传时必须由具体业务模块定义专用上传入口并复用 Storage。
 - 业务专用上传入口不得绕过 Storage 写入文件内容。
 - 本地文件和 S3 兼容存储只能作为运行时底层存储实现，不改变业务语义。
+- 分享访问页读取文件对象时，必须由 Classics 分享能力先完成分享链接和分享目标校验。
 
 ## Acceptance Criteria
 
@@ -77,6 +80,6 @@ Storage 负责“文件作为可复用资源如何被保存、读取和引用”
 
 ## Related Documents
 
-- [CORE-REQUIREMENTS.md](./CORE-REQUIREMENTS.md)：当前用户头像等框架业务文件应复用 Storage。
-- [SANCAI-KNOWLEDGE-REQUIREMENTS.md](./SANCAI-KNOWLEDGE-REQUIREMENTS.md)、[WANGQI-DOCUMENT-REQUIREMENTS.md](./WANGQI-DOCUMENT-REQUIREMENTS.md)、[MING-CUSTOMS-REQUIREMENTS.md](./MING-CUSTOMS-REQUIREMENTS.md)：业务内容中的图片、附件和导入资源应复用 Storage。
-- [AUDIT-REQUIREMENTS.md](./AUDIT-REQUIREMENTS.md)：业务对象引用文件发生变化时，由业务对象审计记录变更事实。
+- [SYSTEM-REQUIREMENTS.md](./SYSTEM-REQUIREMENTS.md)：当前用户头像等系统业务文件应复用 Storage。
+- [CLASSICS-REQUIREMENTS.md](./CLASSICS-REQUIREMENTS.md)：古籍内容中的图片、附件、导入资源和分享页文件读取应复用 Storage。
+- [SYSTEM-REQUIREMENTS.md](./SYSTEM-REQUIREMENTS.md)：业务对象引用文件发生变化时，由业务对象审计记录变更事实。

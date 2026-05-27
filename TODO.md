@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `docs/10-requirements`：归并需求文档为新业务域
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SERVERS-DOMAIN-MODULE-MERGE.md`
-    - 范围对象：`docs/10-requirements/`
-    - 处理动作：将旧需求文档归并为 `SYSTEM`、`STORAGE`、`CLASSICS`、`AI`、`KNOWLEDGE`、`DISCOVERY`、`OPERATIONS` 七个需求文档
-    - 验收点：新需求文档覆盖旧需求的有效内容，旧需求文档已删除
-    - 重要度：10/10
-
 - [ ] `docs/30-designs`：归并设计文档为新业务域
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SERVERS-DOMAIN-MODULE-MERGE.md`
