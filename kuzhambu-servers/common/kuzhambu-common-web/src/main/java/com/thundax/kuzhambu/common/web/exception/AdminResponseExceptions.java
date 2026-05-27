@@ -44,46 +44,6 @@ public final class AdminResponseExceptions {
         return new KuzhambuException(WebErrorCode.FORBIDDEN);
     }
 
-    public static KuzhambuException oauth2AuthorizationNotConfigured() {
-        return new KuzhambuException(
-                WebErrorCode.SYSTEM_ERROR,
-                "AUTH-00007",
-                "auth.exception.oauth2-authorization-not-configured",
-                "OAuth2 authorization 未配置");
-    }
-
-    public static KuzhambuException oauth2GrantTypeUnsupported() {
-        return new KuzhambuException(
-                WebErrorCode.BAD_REQUEST,
-                "AUTH-00008",
-                "auth.exception.oauth2-grant-type-unsupported",
-                "OAuth2 grant type unsupported");
-    }
-
-    public static KuzhambuException oauth2ClientNotConfigured() {
-        return new KuzhambuException(
-                WebErrorCode.SYSTEM_ERROR,
-                "AUTH-00009",
-                "auth.exception.oauth2-client-not-configured",
-                "OAuth2 client 未配置");
-    }
-
-    public static KuzhambuException oauth2ClientSecretInvalid() {
-        return new KuzhambuException(
-                WebErrorCode.BAD_REQUEST,
-                "AUTH-00010",
-                "auth.exception.oauth2-client-secret-invalid",
-                "OAuth2 client secret invalid");
-    }
-
-    public static KuzhambuException oauth2ClientRequestInvalid() {
-        return new KuzhambuException(
-                WebErrorCode.BAD_REQUEST,
-                "AUTH-00011",
-                "auth.exception.oauth2-client-request-invalid",
-                "OAuth2 client request invalid");
-    }
-
     public static KuzhambuException wecomLoginNotConfigured() {
         return new KuzhambuException(
                 WebErrorCode.SYSTEM_ERROR, "AUTH-00012", "auth.exception.wecom-login-not-configured", "企业微信登录未配置");

@@ -1,0 +1,53 @@
+package com.thundax.kuzhambu.system.domain.auth.model.entity;
+
+import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalTokenStatus;
+import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalAccessTokenId;
+import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalAuthSessionId;
+import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalKey;
+import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalRefreshTokenCode;
+import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalRefreshTokenId;
+import java.util.Date;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class PrincipalRefreshToken {
+    private PrincipalRefreshTokenId id;
+    private PrincipalRefreshTokenCode tokenCode;
+    private PrincipalAccessTokenId accessTokenId;
+    private String clientId;
+    private PrincipalAuthSessionId sessionId;
+    private PrincipalKey principalKey;
+    private Date issuedAt;
+    private Date expireAt;
+    private PrincipalTokenStatus status = PrincipalTokenStatus.ACTIVE;
+
+    public boolean canRefresh(Date now) {
+        return isActive() && !isExpired(now);
+    }
+
+    public void markUsed() {
+        status = PrincipalTokenStatus.USED;
+    }
+
+    public void revoke() {
+        status = PrincipalTokenStatus.REVOKED;
+    }
+
+    public void expire() {
+        status = PrincipalTokenStatus.EXPIRED;
+    }
+
+    public boolean isActive() {
+        return status == PrincipalTokenStatus.ACTIVE;
+    }
+
+    public boolean isExpired(Date now) {
+        return expireAt != null && now != null && !expireAt.after(now);
+    }
+}

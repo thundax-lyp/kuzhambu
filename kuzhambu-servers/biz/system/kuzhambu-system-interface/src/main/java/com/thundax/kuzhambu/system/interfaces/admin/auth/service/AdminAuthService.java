@@ -1,0 +1,47 @@
+package com.thundax.kuzhambu.system.interfaces.admin.auth.service;
+
+import com.thundax.kuzhambu.common.core.arch.LayerPublicApi;
+import com.thundax.kuzhambu.system.domain.core.model.entity.User;
+import com.thundax.kuzhambu.system.interfaces.admin.auth.service.command.AdminAuthCommand;
+import com.thundax.kuzhambu.system.interfaces.admin.auth.service.query.AdminAuthQuery;
+import com.thundax.kuzhambu.system.interfaces.admin.auth.service.result.AuthAccessTokenResult;
+import com.thundax.kuzhambu.system.interfaces.admin.auth.service.result.AuthTokenQueryResult;
+import com.thundax.kuzhambu.system.interfaces.admin.auth.service.result.AuthTokenRefreshResult;
+import org.springframework.lang.NonNull;
+
+public interface AdminAuthService {
+
+    @NonNull
+    AuthAccessTokenResult createAccessToken(AdminAuthCommand command);
+
+    AuthAccessTokenResult getAccessToken(AdminAuthQuery query);
+
+    int deleteAccessTokensByUserId(AdminAuthCommand command);
+
+    boolean validateToken(AdminAuthCommand command);
+
+    void activeAccessToken(AdminAuthCommand command);
+
+    void deleteAccessToken(AdminAuthCommand command);
+
+    AuthTokenQueryResult getTokenInfo(AdminAuthQuery query);
+
+    AuthTokenRefreshResult refreshAccessToken(AdminAuthCommand command);
+
+    void invalidateSessionByToken(AdminAuthCommand command);
+
+    @LayerPublicApi(reason = "账号状态变化时按用户维度失效在线会话的业务入口")
+    int invalidateSessionsByUserId(AdminAuthCommand command);
+
+    User authenticatePassword(AdminAuthCommand command);
+
+    User authenticateSms(AdminAuthCommand command);
+
+    User authenticateWecom(AdminAuthCommand command);
+
+    User authenticateGithub(AdminAuthCommand command);
+
+    void recordLoginFailed(AdminAuthCommand command);
+
+    void validatePassword(AdminAuthCommand command);
+}

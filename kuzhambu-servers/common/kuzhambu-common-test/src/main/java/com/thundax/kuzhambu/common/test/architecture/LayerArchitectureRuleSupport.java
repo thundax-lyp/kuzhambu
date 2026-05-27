@@ -118,23 +118,23 @@ public final class LayerArchitectureRuleSupport {
                 violations.isEmpty());
     }
 
-    public static void assertDaoBoundaryTypesClean(JavaClasses classes) {
+    public static void assertRepositoryBoundaryTypesClean(JavaClasses classes) {
         List<String> violations = new ArrayList<String>();
 
         for (JavaClass javaClass : classes) {
-            if (!isDaoInterface(javaClass)) {
+            if (!isRepositoryInterface(javaClass)) {
                 continue;
             }
             for (JavaMethod method : javaClass.getMethods()) {
-                collectDaoReturnViolation(method, method.getRawReturnType(), violations);
+                collectRepositoryReturnViolation(method, method.getRawReturnType(), violations);
                 for (JavaClass parameterType : method.getRawParameterTypes()) {
-                    collectDaoParameterViolation(method, parameterType, violations);
+                    collectRepositoryParameterViolation(method, parameterType, violations);
                 }
             }
         }
 
         assertTrue(
-                "DAO method boundary types must be Entity, Java standard types, or MyBatis-Plus Page<Entity> "
+                "Repository method boundary types must be Entity, Java standard types, or PageResult<Entity> "
                         + "for page return values. Violations: "
                         + violations,
                 violations.isEmpty());
@@ -166,14 +166,15 @@ public final class LayerArchitectureRuleSupport {
                 "API modules may only declare entry-specific *AuthService, *RegistrationService, "
                         + "PermissionService, SysLogMessageService or implementation "
                         + "source files. "
-                        + "Other Service types belong in kuzhambu-biz. Violations: "
+                        + "Other Service types belong in domain application modules. Violations: "
                         + violations,
                 violations.isEmpty());
     }
 
     public static void assertBusinessModuleSourceDoesNotDeclareEntryServices() {
         Path sourceRoot = ArchitectureSourceSupport.repositoryRoot()
-                .resolve("kuzhambu-biz")
+                .resolve("kuzhambu-servers")
+                .resolve("biz")
                 .resolve("src/main/java/com/thundax/kuzhambu");
         List<String> violations = new ArrayList<String>();
 
@@ -181,8 +182,8 @@ public final class LayerArchitectureRuleSupport {
 
         assertTrue(
                 "*RegistrationService, PermissionService and their implementations are "
-                        + "entry-specific orchestrators and must stay in kuzhambu-admin-api "
-                        + "or kuzhambu-portal-api. Violations: "
+                        + "entry-specific orchestrators and must stay in domain interface modules "
+                        + "or starter modules. Violations: "
                         + violations,
                 violations.isEmpty());
     }
@@ -222,7 +223,7 @@ public final class LayerArchitectureRuleSupport {
         }
 
         assertTrue(
-                "Service, DAO and Mapper public API methods must not be used only by tests unless they declare "
+                "Service, Repository and Mapper public API methods must not be used only by tests unless they declare "
                         + "@LayerPublicApi with a concrete non-test reason. Violations: "
                         + violations,
                 violations.isEmpty());
@@ -244,15 +245,16 @@ public final class LayerArchitectureRuleSupport {
         violations.add(method.getFullName() + " has invalid parameter type " + type.getName());
     }
 
-    private static void collectDaoReturnViolation(JavaMethod method, JavaClass type, List<String> violations) {
-        if (isAllowedDaoResultType(method, type)) {
+    private static void collectRepositoryReturnViolation(JavaMethod method, JavaClass type, List<String> violations) {
+        if (isAllowedRepositoryResultType(method, type)) {
             return;
         }
         violations.add(method.getFullName() + " has invalid return type " + type.getName());
     }
 
-    private static void collectDaoParameterViolation(JavaMethod method, JavaClass type, List<String> violations) {
-        if (isAllowedDaoParameterType(type)) {
+    private static void collectRepositoryParameterViolation(
+            JavaMethod method, JavaClass type, List<String> violations) {
+        if (isAllowedRepositoryParameterType(type)) {
             return;
         }
         violations.add(method.getFullName() + " has invalid parameter type " + type.getName());
@@ -277,13 +279,13 @@ public final class LayerArchitectureRuleSupport {
                 || isPageQuery(type);
     }
 
-    private static boolean isAllowedDaoResultType(JavaMethod method, JavaClass type) {
-        return isAllowedDaoParameterType(type)
+    private static boolean isAllowedRepositoryResultType(JavaMethod method, JavaClass type) {
+        return isAllowedRepositoryParameterType(type)
                 || isEntityId(type)
-                || isMyBatisPlusPage(type) && "page".equals(method.getName());
+                || isPageResult(type) && "page".equals(method.getName());
     }
 
-    private static boolean isAllowedDaoParameterType(JavaClass type) {
+    private static boolean isAllowedRepositoryParameterType(JavaClass type) {
         return isJavaType(type) || isEntityId(type) || isModuleEntity(type);
     }
 
@@ -293,10 +295,10 @@ public final class LayerArchitectureRuleSupport {
                 && javaClass.getPackageName().contains(".service");
     }
 
-    private static boolean isDaoInterface(JavaClass javaClass) {
+    private static boolean isRepositoryInterface(JavaClass javaClass) {
         return javaClass.isInterface()
-                && javaClass.getSimpleName().endsWith("Dao")
-                && javaClass.getPackageName().contains(".dao");
+                && javaClass.getSimpleName().endsWith("Repository")
+                && javaClass.getPackageName().contains(".repository");
     }
 
     private static boolean isVoid(JavaClass type) {
@@ -322,7 +324,8 @@ public final class LayerArchitectureRuleSupport {
     }
 
     private static boolean isModuleEntity(JavaClass type) {
-        return type.getPackageName().contains(".biz.") && type.getPackageName().contains(".domain.model");
+        return type.getPackageName().contains(".domain.")
+                && type.getPackageName().contains(".model.");
     }
 
     private static boolean isDto(JavaClass type) {
@@ -330,15 +333,21 @@ public final class LayerArchitectureRuleSupport {
     }
 
     private static boolean isServiceId(JavaClass type) {
-        return type.getSimpleName().endsWith("Id") && type.getPackageName().contains(".domain.model");
+        return type.getSimpleName().endsWith("Id")
+                && type.getPackageName().contains(".domain.")
+                && type.getPackageName().contains(".model.");
     }
 
     private static boolean isServiceQuery(JavaClass type) {
-        return type.getSimpleName().endsWith("Query") && type.getPackageName().contains(".application.query");
+        return type.getSimpleName().endsWith("Query")
+                && type.getPackageName().contains(".application.")
+                && type.getPackageName().endsWith(".query");
     }
 
     private static boolean isServiceCommand(JavaClass type) {
-        return type.getSimpleName().endsWith("Command") && type.getPackageName().contains(".application.command");
+        return type.getSimpleName().endsWith("Command")
+                && type.getPackageName().contains(".application.")
+                && type.getPackageName().endsWith(".command");
     }
 
     private static boolean isPageQuery(JavaClass type) {
@@ -347,10 +356,6 @@ public final class LayerArchitectureRuleSupport {
 
     private static boolean isPageResult(JavaClass type) {
         return "com.thundax.kuzhambu.common.core.page.PageResult".equals(type.getName());
-    }
-
-    private static boolean isMyBatisPlusPage(JavaClass type) {
-        return "com.baomidou.mybatisplus.extension.plugins.pagination.Page".equals(type.getName());
     }
 
     private static boolean isEmptyServiceBaseType(JavaClass javaClass) {
@@ -425,7 +430,7 @@ public final class LayerArchitectureRuleSupport {
     }
 
     private static boolean isLayerPublicApiSource(String path) {
-        return (path.contains("/biz/") && (isServiceContractSource(path) || isDaoContractSource(path)))
+        return (path.contains("/biz/") && (isServiceContractSource(path) || isRepositoryContractSource(path)))
                 || isMapperSource(path);
     }
 
@@ -433,8 +438,8 @@ public final class LayerArchitectureRuleSupport {
         return path.contains("/service/") && path.endsWith("Service.java") && !path.contains("/service/impl/");
     }
 
-    private static boolean isDaoContractSource(String path) {
-        return path.contains("/biz/") && path.contains("/dao/") && path.endsWith("Dao.java");
+    private static boolean isRepositoryContractSource(String path) {
+        return path.contains("/biz/") && path.contains("/repository/") && path.endsWith("Repository.java");
     }
 
     private static boolean isMapperSource(String path) {

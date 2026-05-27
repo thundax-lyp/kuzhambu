@@ -30,13 +30,45 @@ public class OpenApiConfiguration {
     }
 
     @Bean
-    @ConditionalOnMissingBean
-    public GroupedOpenApi kuzhambuGroupedOpenApi(OpenApiProperties properties) {
-        return GroupedOpenApi.builder()
-                .group("kuzhambu")
-                .packagesToScan(basePackages(properties))
-                .pathsToMatch("/**")
-                .build();
+    @ConditionalOnMissingBean(name = "systemGroupedOpenApi")
+    public GroupedOpenApi systemGroupedOpenApi(OpenApiProperties properties) {
+        return moduleGroupedOpenApi(properties, "system", "系统模块");
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(name = "storageGroupedOpenApi")
+    public GroupedOpenApi storageGroupedOpenApi(OpenApiProperties properties) {
+        return moduleGroupedOpenApi(properties, "storage", "存储模块");
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(name = "classicsGroupedOpenApi")
+    public GroupedOpenApi classicsGroupedOpenApi(OpenApiProperties properties) {
+        return moduleGroupedOpenApi(properties, "classics", "古籍模块");
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(name = "aiGroupedOpenApi")
+    public GroupedOpenApi aiGroupedOpenApi(OpenApiProperties properties) {
+        return moduleGroupedOpenApi(properties, "ai", "智能模块");
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(name = "knowledgeGroupedOpenApi")
+    public GroupedOpenApi knowledgeGroupedOpenApi(OpenApiProperties properties) {
+        return moduleGroupedOpenApi(properties, "knowledge", "知识模块");
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(name = "discoveryGroupedOpenApi")
+    public GroupedOpenApi discoveryGroupedOpenApi(OpenApiProperties properties) {
+        return moduleGroupedOpenApi(properties, "discovery", "发现模块");
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(name = "operationsGroupedOpenApi")
+    public GroupedOpenApi operationsGroupedOpenApi(OpenApiProperties properties) {
+        return moduleGroupedOpenApi(properties, "operations", "运营模块");
     }
 
     @Bean
@@ -76,6 +108,21 @@ public class OpenApiConfiguration {
                 .map(String::trim)
                 .filter(this::hasText)
                 .toArray(String[]::new);
+    }
+
+    private GroupedOpenApi moduleGroupedOpenApi(OpenApiProperties properties, String module, String displayName) {
+        return GroupedOpenApi.builder()
+                .group(module)
+                .displayName(displayName)
+                .packagesToScan(basePackages(properties))
+                .pathsToMatch("/**")
+                .addOpenApiMethodFilter(
+                        method -> isModuleMethod(method.getDeclaringClass().getPackageName(), module))
+                .build();
+    }
+
+    private boolean isModuleMethod(String packageName, String module) {
+        return packageName.startsWith("com.thundax.kuzhambu." + module + ".");
     }
 
     private boolean hasText(String text) {

@@ -1,5 +1,6 @@
 # Compiled class file
 *.class
+**/target/
 
 # Log file
 *.log
@@ -29,4 +30,5 @@ replay_pid*
 .venv/
 kuzhambu-workers/.venv/
 .env
+dev.env
 deploy/.env

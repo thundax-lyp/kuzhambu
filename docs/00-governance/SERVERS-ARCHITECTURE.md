@@ -37,14 +37,20 @@
 - `kuzhambu-servers/common/kuzhambu-common-openapi/`：Springdoc OpenAPI 在线文档基础配置。
 - `kuzhambu-servers/common/kuzhambu-common-mybatis/`：MyBatis 相关通用配置、类型处理和持久化基础能力。
 - `kuzhambu-servers/common/kuzhambu-common-cache/`：缓存基础能力。
-- `kuzhambu-servers/common/kuzhambu-common-mq/`：RocketMQ 消息基础能力。
+- `kuzhambu-servers/common/kuzhambu-common-rocketmq/`：RocketMQ 消息基础能力。
 - `kuzhambu-servers/common/kuzhambu-common-elasticsearch/`：Elasticsearch 客户端和索引基础能力。
 - `kuzhambu-servers/common/kuzhambu-common-oss/`：对象存储通用客户端抽象和基础适配。
 - `kuzhambu-servers/common/kuzhambu-common-test/`：测试基建、架构测试和集成测试辅助。
-- `kuzhambu-servers/biz/`：业务域规则和业务服务，包含 `core`、`auth`、`storage`、`audit`、`knowledge-graph` 等业务域。
-- `kuzhambu-servers/infra/`：各业务域的数据访问、外部调用和技术落地。
-- `kuzhambu-servers/interfaces/kuzhambu-admin-api/`：后台接口入口服务。
-- `kuzhambu-servers/interfaces/kuzhambu-portal-api/`：前台接口入口服务。
+- `kuzhambu-servers/biz/`：业务域模块组，按业务域组织 `interface`、`application`、`domain`、`infra` 四层。
+- `kuzhambu-servers/biz/system/`：系统基础域，承载用户、角色、权限、认证和业务审计。
+- `kuzhambu-servers/biz/storage/`：文件存储域，承载文件对象、引用、读取和上传。
+- `kuzhambu-servers/biz/classics/`：古籍域，承载三才图会、王圻文档、明代习俗和分享。
+- `kuzhambu-servers/biz/ai/`：AI 生产域，承载 AI 配置、提示词和 AI 内容精修。
+- `kuzhambu-servers/biz/knowledge/`：知识组织域，承载标签、同义词、实体关系精修和知识图谱。
+- `kuzhambu-servers/biz/discovery/`：知识发现域，承载搜索和智能问答。
+- `kuzhambu-servers/biz/operations/`：运营运维域，承载看板、报表、任务台账和维护操作记录。
+- `kuzhambu-servers/starter/kuzhambu-admin-starter/`：后台启动应用，只负责后台运行时装配。
+- `kuzhambu-servers/starter/kuzhambu-portal-starter/`：前台启动应用，只负责前台运行时装配。
 
 ## Fast Choice
 
@@ -66,75 +72,127 @@
 - 配置属性：`Properties`
 - 自动配置或配置类：`Configuration`
 
+## Runtime Logging
+
+- 启动模块使用 `logback-spring.xml` 配置运行时日志。
+- 默认日志目录为 `logs/`，可通过 `KUZHAMBU_LOG_PATH` 调整。
+- 默认根日志级别为 `INFO`，可通过 `KUZHAMBU_LOG_LEVEL` 调整。
+- 默认业务包 `com.thundax.kuzhambu` 日志级别为 `INFO`，可通过 `KUZHAMBU_APP_LOG_LEVEL` 调整。
+- 应用日志写入 `${spring.application.name}.log`，访问日志写入 `${spring.application.name}-access.log`。
+- 访问日志 logger 固定为 `com.thundax.kuzhambu.access`，不得混入业务应用日志文件。
+- 日志滚动默认单文件 `100MB`、保留 `30` 天、总量 `5GB`，可通过 `KUZHAMBU_LOG_MAX_FILE_SIZE`、`KUZHAMBU_LOG_MAX_HISTORY`、`KUZHAMBU_LOG_TOTAL_SIZE_CAP` 调整。
+
+## Runtime Environment
+
+- 仓库根目录 `.env.example` 是 Java servers 本地启动环境变量样例。
+- `deploy/.env.example` 是部署支撑样例，必须包含基础设施变量和 Java starter 运行时变量。
+- 新增 `application.yml` 环境变量占位符时，同步更新 `.env.example` 和 `deploy/.env.example`。
+- 真实 `.env` 和 `deploy/.env` 不得提交。
+
 ## Default Domain Structure
 
-单个业务域默认目录结构如下，`<domain>` 使用业务域名，例如 `core`、`auth`。
+单个业务域默认目录结构如下，`<domain>` 使用业务域名，例如 `system`、`classics`。
 
 ```text
 kuzhambu-servers/
   biz/
-    kuzhambu-biz-<domain>/
-      src/main/java/com/thundax/kuzhambu/biz/<domain>/
-        application/
-          command/
-          query/
-          assembler/
-          codec/
-          support/
-        domain/
+    <domain>/
+      kuzhambu-<domain>-interface/
+        src/main/java/com/thundax/kuzhambu/<domain>/interfaces/
+          admin/
+            controller/
+            request/
+            response/
+            assembler/
+          portal/
+            controller/
+            request/
+            response/
+            assembler/
+      kuzhambu-<domain>-application/
+        src/main/java/com/thundax/kuzhambu/<domain>/application/
+          <subdomain>/
+            service/
+              impl/
+            command/
+            query/
+            assembler/
+            support/
+      kuzhambu-<domain>-domain/
+        src/main/java/com/thundax/kuzhambu/<domain>/domain/
           model/
+            entity/
+            enums/
+            valueobject/
+          <subdomain>/
+            codec/
           service/
           repository/
           event/
+      kuzhambu-<domain>-infra/
+        src/main/java/com/thundax/kuzhambu/<domain>/infra/
+          repository/
+            impl/
+          mapper/
+          dataobject/
+          assembler/
+          client/
 
-  infra/
-    kuzhambu-infra-<domain>/
-      src/main/java/com/thundax/kuzhambu/infra/<domain>/
-        repository/
-          impl/
-        mapper/
-        dataobject/
-        assembler/
-        client/
-
-  interfaces/
-    kuzhambu-admin-api/
-      src/main/java/com/thundax/kuzhambu/interfaces/admin/<domain>/
-        controller/
-        request/
-        response/
-        assembler/
+  starter/
+    kuzhambu-admin-starter/
+      src/main/java/com/thundax/kuzhambu/starter/admin/
+    kuzhambu-portal-starter/
+      src/main/java/com/thundax/kuzhambu/starter/portal/
 ```
 
-前台入口需要暴露该业务域时，使用：
+`starter` 只负责运行时装配，不承载业务规则、业务查询聚合、持久化实现或 HTTP 业务入口。后台和前台 HTTP 入口放在各业务域 `interface` 模块内，并通过 `interfaces.admin` 和 `interfaces.portal` package 区分。
+
+业务域 `interface` package 用途：
 
 ```text
-kuzhambu-servers/interfaces/kuzhambu-portal-api/
-  src/main/java/com/thundax/kuzhambu/interfaces/portal/<domain>/
-    controller/
-    request/
-    response/
-    assembler/
+com/thundax/kuzhambu/<domain>/interfaces/admin/
+    <subdomain>/
+        controller/
+            request/
+            response/
+        assembler/
+
+com/thundax/kuzhambu/<domain>/interfaces/portal/
+    <subdomain>/
+        controller/
+            request/
+            response/
+        assembler/
 ```
 
 路径用途：
 
 - `application/`：用例编排、事务边界、跨域协调、命令、查询和结果对象。
-- `application/command/`：写入用例输入模型。
-- `application/query/`：读取用例输入模型。
-- `application/assembler/`：application 内部模型装配，不处理 HTTP 或持久化细节。
-- `application/codec/`：基础类型和值对象互转。
-- `application/support/`：仅服务本业务域 application 层的辅助实现。
-- `domain/model/`：聚合、实体、值对象和领域枚举。
+- `application/<subdomain>/service/`：应用用例入口接口，命名为 `*ApplicationService`。
+- `application/<subdomain>/service/impl/`：应用用例入口实现，命名为 `*ApplicationServiceImpl`。
+- `application/<subdomain>/command/`：写入用例输入模型。
+- `application/<subdomain>/query/`：读取用例输入模型。
+- `application/<subdomain>/assembler/`：application 内部模型装配，不处理 HTTP 或持久化细节。
+- `domain/<subdomain>/codec/`：基础类型和值对象互转，`<subdomain>` 使用业务子域名，例如 `core`、`auth`、`audit`、`object`。
+- `application/<subdomain>/support/`：仅服务本业务域 application 层的辅助实现。
+- `domain/<subdomain>/model/entity/`：领域实体；实体类必须且只能声明 `@Getter`、`@Setter`、`@NoArgsConstructor`、`@AllArgsConstructor` 四个类级 Lombok 注解。
+- `domain/<subdomain>/model/enums/`：领域层枚举；`{module}-domain` 内所有 enum 必须位于对应业务子域的此包。
+- `domain/<subdomain>/model/valueobject/`：强类型 ID、Key、Code、Token、Ref、Snapshot 等领域值对象；`application`、`interfaces`、`infra` 不得定义 `valueobject` 包。
+- `domain/<subdomain>/model/`：聚合、实体和领域模型。
 - `domain/service/`：无法自然归入单个领域对象的领域规则。
-- `domain/repository/`：业务域持久化端口，只表达聚合读写语义。
+- `domain/<subdomain>/repository/`：业务域持久化端口，只表达聚合读写语义。
 - `domain/event/`：领域事件。
-- `infra/repository/impl/`：`domain.repository` 的持久化实现。
-- `infra/mapper/`：MyBatis 数据库访问对象。
-- `infra/dataobject/`：数据库表映射对象。
-- `infra/assembler/`：domain 与 dataobject 的持久化转换。
+- `infra/<subdomain>/repository/impl/`：`domain.<subdomain>.repository` 的持久化实现。
+- `infra/<subdomain>/persistence/mapper/`：MyBatis 数据库访问对象。
+- `infra/<subdomain>/persistence/dataobject/`：数据库表映射对象。
+- `infra/<subdomain>/persistence/assembler/`：domain 与 dataobject 的持久化转换。
 - `infra/client/`：外部系统、对象存储、搜索、worker 等技术客户端。
-- `interfaces/*/<domain>/controller/`：HTTP API 入口。
-- `interfaces/*/<domain>/request/`：HTTP 请求模型。
-- `interfaces/*/<domain>/response/`：HTTP 响应模型。
-- `interfaces/*/<domain>/assembler/`：HTTP 协议模型与 application 契约的转换。
+- `interfaces/admin/<subdomain>/controller/`：后台 HTTP API 入口。
+- `interfaces/admin/<subdomain>/controller/request/`：后台 HTTP 请求模型。
+- `interfaces/admin/<subdomain>/controller/response/`：后台 HTTP 响应模型。
+- `interfaces/admin/<subdomain>/assembler/`：后台 HTTP 协议模型与 application 契约的转换。
+- `interfaces/portal/<subdomain>/controller/`：前台 HTTP API 入口。
+- `interfaces/portal/<subdomain>/controller/request/`：前台 HTTP 请求模型。
+- `interfaces/portal/<subdomain>/controller/response/`：前台 HTTP 响应模型。
+- `interfaces/portal/<subdomain>/assembler/`：前台 HTTP 协议模型与 application 契约的转换。
+- `starter/*/`：Spring Boot 启动类、运行时配置装配、扫描范围和应用依赖选择。

@@ -6,6 +6,7 @@
     <groupId>com.thundax</groupId>
     <artifactId>kuzhambu</artifactId>
     <version>0.0.1-dev</version>
+    <relativePath>../pom.xml</relativePath>
   </parent>
 
   <artifactId>kuzhambu-biz</artifactId>
@@ -14,45 +15,12 @@
   <name>kuzhambu-biz</name>
 
   <modules>
-    <module>kuzhambu-biz-core</module>
-    <module>kuzhambu-biz-auth</module>
-    <module>kuzhambu-biz-storage</module>
-    <module>kuzhambu-biz-audit</module>
-    <module>kuzhambu-biz-sancai</module>
-    <module>kuzhambu-biz-wangqi</module>
-    <module>kuzhambu-biz-mingcustoms</module>
-    <module>kuzhambu-biz-ai-config</module>
-    <module>kuzhambu-biz-ai-refinement</module>
-    <module>kuzhambu-biz-data-refinement</module>
-    <module>kuzhambu-biz-search</module>
-    <module>kuzhambu-biz-qa</module>
-    <module>kuzhambu-biz-knowledge-graph</module>
-    <module>kuzhambu-biz-taxonomy</module>
-    <module>kuzhambu-biz-sharing</module>
-    <module>kuzhambu-biz-operations</module>
+    <module>storage</module>
+    <module>system</module>
+    <module>classics</module>
+    <module>ai</module>
+    <module>knowledge</module>
+    <module>discovery</module>
+    <module>operations</module>
   </modules>
-
-  <dependencies>
-    <dependency>
-      <groupId>com.baomidou</groupId>
-      <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-lang3</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>commons-io</groupId>
-      <artifactId>commons-io</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>net.coobird</groupId>
-      <artifactId>thumbnailator</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.projectlombok</groupId>
-      <artifactId>lombok</artifactId>
-      <optional>true</optional>
-    </dependency>
-  </dependencies>
 </project>

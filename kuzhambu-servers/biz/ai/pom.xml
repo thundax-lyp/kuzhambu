@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.thundax</groupId>
+    <artifactId>kuzhambu-biz</artifactId>
+    <version>0.0.1-dev</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+
+  <artifactId>kuzhambu-ai</artifactId>
+  <packaging>pom</packaging>
+
+  <name>kuzhambu-ai</name>
+
+  <modules>
+    <module>kuzhambu-ai-domain</module>
+    <module>kuzhambu-ai-application</module>
+    <module>kuzhambu-ai-interface</module>
+    <module>kuzhambu-ai-infra</module>
+  </modules>
+</project>
