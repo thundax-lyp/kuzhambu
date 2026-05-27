@@ -47,7 +47,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-@Tag(name = "系统/当前用户")
+@Tag(name = "系统模块")
 @SysLogger(module = {"系统", "当前用户"})
 @RequestMapping(value = "/api/sys/current-user")
 @WrappedApiController

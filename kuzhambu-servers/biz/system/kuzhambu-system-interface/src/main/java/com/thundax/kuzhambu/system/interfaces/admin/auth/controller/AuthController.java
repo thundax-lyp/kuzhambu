@@ -69,7 +69,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-@Tag(name = "鉴权")
+@Tag(name = "系统模块")
 @RequestMapping(value = "/api/auth/session")
 @SysLogger(module = {"系统", "登录"})
 @WrappedApiController

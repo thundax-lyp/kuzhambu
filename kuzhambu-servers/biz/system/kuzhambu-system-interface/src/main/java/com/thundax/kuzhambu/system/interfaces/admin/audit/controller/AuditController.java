@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-@Tag(name = "审计")
+@Tag(name = "系统模块")
 @RequestMapping(value = "/api/audit/log")
 @WrappedApiController
 public class AuditController {

@@ -34,7 +34,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-@Tag(name = "系统/日志")
+@Tag(name = "系统模块")
 @RequestMapping(value = "/api/sys/log")
 @WrappedApiController
 public class LogController {

@@ -41,7 +41,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "鉴权/图形验证码")
+@Tag(name = "系统模块")
 @RequestMapping(value = "/api/auth/captcha")
 @RestController
 @PublicApi

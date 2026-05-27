@@ -100,7 +100,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
-@Tag(name = "系统/用户")
+@Tag(name = "系统模块")
 @SysLogger(module = {"系统", "用户"})
 @RequestMapping(value = "/api/sys/user")
 @RestController
