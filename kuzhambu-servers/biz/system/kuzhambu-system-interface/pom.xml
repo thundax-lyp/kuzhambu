@@ -22,6 +22,11 @@
     </dependency>
     <dependency>
       <groupId>com.thundax</groupId>
+      <artifactId>kuzhambu-storage-application</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-common-web</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -29,6 +34,20 @@
       <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-common-openapi</artifactId>
       <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thundax</groupId>
+      <artifactId>kuzhambu-common-security</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thundax</groupId>
+      <artifactId>kuzhambu-common-mq</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-security</artifactId>
     </dependency>
     <dependency>
       <groupId>org.projectlombok</groupId>

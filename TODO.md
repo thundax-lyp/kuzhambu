@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `kuzhambu-servers/starter`：创建后台和前台启动应用
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SERVERS-DOMAIN-MODULE-MERGE.md`
-    - 范围对象：`kuzhambu-servers/starter/kuzhambu-admin-starter/`、`kuzhambu-servers/starter/kuzhambu-portal-starter/`
-    - 处理动作：将旧 admin/portal 启动入口调整为 starter，并限制各自扫描 admin 或 portal 接口包
-    - 验收点：admin starter 不暴露 portal Controller，portal starter 不暴露 admin Controller
-    - 重要度：9/10
-
 - [ ] `scripts verify`：更新验证入口并完成迁移验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SERVERS-DOMAIN-MODULE-MERGE.md`
