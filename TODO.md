@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `kuzhambu-servers/biz/classics`：迁移古籍域代码和接口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SERVERS-DOMAIN-MODULE-MERGE.md`
-    - 范围对象：`kuzhambu-servers/biz/kuzhambu-biz-sancai/`、`kuzhambu-servers/biz/kuzhambu-biz-wangqi/`、`kuzhambu-servers/biz/kuzhambu-biz-mingcustoms/`、`kuzhambu-servers/biz/kuzhambu-biz-sharing/`、`kuzhambu-servers/infra/kuzhambu-infra-sancai/`、`kuzhambu-servers/infra/kuzhambu-infra-wangqi/`、`kuzhambu-servers/infra/kuzhambu-infra-mingcustoms/`、`kuzhambu-servers/infra/kuzhambu-infra-sharing/`、`kuzhambu-servers/biz/classics/`
-    - 处理动作：将三才图会、王圻文档、明代习俗和分享迁移到 classics 域四层模块并更新 package/import
-    - 验收点：classics 域代码位于 `com.thundax.kuzhambu.classics` 包下，三类古籍内容和分享子能力边界清晰
-    - 重要度：10/10
-
 - [ ] `kuzhambu-servers/biz/ai`：迁移 AI 生产域代码和接口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SERVERS-DOMAIN-MODULE-MERGE.md`
