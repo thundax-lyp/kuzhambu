@@ -81,8 +81,9 @@ public final class ApiAnnotationArchitectureRuleSupport {
         }
 
         assertTrue(
-                "PostMapping methods must use no parameter or a single @Valid @RequestBody *Request parameter, "
-                        + "and return void, *Response, List<*Response>, or PageResponse<*Response>: " + violations,
+                "PostMapping methods must use no parameter, a @Valid @RequestBody *Request/List<*Request> "
+                        + "parameter, or multipart form parameters, and return void, Boolean, String, *Response, "
+                        + "List<*Response>, or PageResponse<*Response>: " + violations,
                 violations.isEmpty());
     }
 
@@ -321,7 +322,7 @@ public final class ApiAnnotationArchitectureRuleSupport {
                 continue;
             }
             String signature = content.substring(matcher.start(), methodBodyStart);
-            if (!hasPostRequestParameterShape(signature)) {
+            if (!hasPostRequestParameterShape(annotations, signature)) {
                 violations.add(ArchitectureSourceSupport.repositoryPath(root, path) + " method=" + methodName
                         + " parameter=" + compact(signature));
             }
@@ -583,26 +584,33 @@ public final class ApiAnnotationArchitectureRuleSupport {
                 || annotations.contains("@PatchMapping");
     }
 
-    private static boolean hasPostRequestParameterShape(String signature) {
+    private static boolean hasPostRequestParameterShape(String annotations, String signature) {
         String parameters = parameters(signature);
         if (parameters.length() == 0) {
+            return true;
+        }
+        if (isMultipartParameterShape(annotations, parameters)) {
             return true;
         }
         if (containsTopLevelComma(parameters)) {
             return false;
         }
-        return parameters.contains("Request")
-                && !parameters.contains("List<")
-                && parameters.contains("@Valid")
-                && parameters.contains("@RequestBody");
+        return parameters.contains("Request") && parameters.contains("@Valid") && parameters.contains("@RequestBody");
     }
 
     private static boolean hasPostResponseShape(String signature, String methodName) {
         String returnType = returnType(signature, methodName);
         return "void".equals(returnType)
+                || "Boolean".equals(returnType)
+                || "String".equals(returnType)
                 || returnType.endsWith("Response")
                 || returnType.matches("List\\s*<\\s*\\w+Response\\s*>")
                 || returnType.matches("PageResponse\\s*<\\s*\\w+Response\\s*>");
+    }
+
+    private static boolean isMultipartParameterShape(String annotations, String parameters) {
+        return annotations.contains("MULTIPART_FORM_DATA_VALUE")
+                && (parameters.contains("MultipartFile") || parameters.contains("UploadRequest"));
     }
 
     private static String parameters(String signature) {
