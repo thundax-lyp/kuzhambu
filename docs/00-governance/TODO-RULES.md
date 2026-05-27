@@ -213,6 +213,8 @@ PR 必须满足：
 - 已完成且无剩余价值的 RUNBOOK 已清理。
 - PR 描述记录验证命令和结果。
 
+PR 合并默认使用普通 merge commit，保留分支中的小步 commit 历史。不得默认 squash；只有明确要求压缩历史时才允许 squash merge。
+
 PR 的验证入口固定由 [`../40-readiness/PR-WORKFLOW.md`](../40-readiness/PR-WORKFLOW.md) 和 `scripts/verify-all.sh` 承载。
 
 ## 12. Verify Protocol
