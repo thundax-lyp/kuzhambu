@@ -237,12 +237,6 @@
 
 ## 待讨论项
 
-- [ ] 导出和静态展示页面生成策略
-    - 任务类型：待讨论项
-    - 关联任务：`classics-application-content`、`classics-application-sancai-asset`
-    - 决策要求：确认第一版只记录任务，还是同步生成产物。
-    - 重要度：7/10
-
 - [ ] 分享访问内容范围
     - 任务类型：待讨论项
     - 关联任务：`classics-interface-sharing`
