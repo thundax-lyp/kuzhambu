@@ -70,6 +70,7 @@ import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.Use
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.UserOptionsResponse;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.UserResponse;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.UserRoleResponse;
+import com.thundax.kuzhambu.system.interfaces.admin.core.support.AdminAvatarUrlBuilder;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
@@ -94,11 +95,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.util.UriComponentsBuilder;
 
 @Tag(name = "系统模块")
 @SysLogger(module = {"系统", "用户"})
@@ -106,8 +103,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 @RestController
 public class UserController {
 
-    private static final String DEFAULT_CONTEXT_PATH = "/admin-api";
-    private static final String AVATAR_PATH = "/api/sys/user/avatar";
     private static final int DEFAULT_PASSWORD_FAILED_LIMIT = 0;
     private static final String PRIVATE_KEY_ITEM = "privateKey";
     private static final String USER_RANK_DICT_TYPE = "user_rank";
@@ -122,6 +117,7 @@ public class UserController {
     private final PreAuthSessionApplicationService preAuthSessionService;
     private final CurrentUserResolver currentUserResolver;
     private final CurrentUserApplicationService currentUserService;
+    private final AdminAvatarUrlBuilder avatarUrlBuilder;
 
     @Autowired
     public UserController(
@@ -133,7 +129,8 @@ public class UserController {
             PrincipalCredentialApplicationService principalCredentialService,
             PreAuthSessionApplicationService preAuthSessionService,
             CurrentUserResolver currentUserResolver,
-            CurrentUserApplicationService currentUserService) {
+            CurrentUserApplicationService currentUserService,
+            AdminAvatarUrlBuilder avatarUrlBuilder) {
 
         this.userService = userService;
         this.departmentService = departmentService;
@@ -144,6 +141,7 @@ public class UserController {
         this.preAuthSessionService = preAuthSessionService;
         this.currentUserResolver = currentUserResolver;
         this.currentUserService = currentUserService;
+        this.avatarUrlBuilder = avatarUrlBuilder;
     }
 
     @Operation(summary = "获取对象", description = "sys:user:view")
@@ -810,30 +808,10 @@ public class UserController {
         return privateKey;
     }
 
-    public static String getAvatarUrl(String userId) {
-        return UriComponentsBuilder.fromPath(currentContextPath())
-                .path(AVATAR_PATH)
-                .queryParam("id", userId)
-                .build()
-                .toUriString();
-    }
-
-    private static String currentContextPath() {
-        RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
-        if (attributes instanceof ServletRequestAttributes) {
-            String contextPath =
-                    ((ServletRequestAttributes) attributes).getRequest().getContextPath();
-            if (StringUtils.isNotBlank(contextPath)) {
-                return contextPath;
-            }
-        }
-        return DEFAULT_CONTEXT_PATH;
-    }
-
     private String readAvatarUrl(UserId userId) {
         if (!currentUserService.existsAvatar(userId)) {
             return null;
         }
-        return getAvatarUrl(UserIdCodec.toStringValue(userId));
+        return avatarUrlBuilder.build(UserIdCodec.toStringValue(userId));
     }
 }

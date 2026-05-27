@@ -33,6 +33,7 @@ import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.Per
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.PersonalInfoResponse;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.PersonalMenuResponse;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.PersonalPermsResponse;
+import com.thundax.kuzhambu.system.interfaces.admin.core.support.AdminAvatarUrlBuilder;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
@@ -59,17 +60,20 @@ public class CurrentUserController {
     private final CurrentUserResolver currentUserResolver;
     private final PrincipalIdentityApplicationService principalIdentityService;
     private final PreAuthSessionApplicationService preAuthSessionService;
+    private final AdminAvatarUrlBuilder avatarUrlBuilder;
 
     public CurrentUserController(
             CurrentUserApplicationService currentUserService,
             CurrentUserResolver currentUserResolver,
             PrincipalIdentityApplicationService principalIdentityService,
-            PreAuthSessionApplicationService preAuthSessionService) {
+            PreAuthSessionApplicationService preAuthSessionService,
+            AdminAvatarUrlBuilder avatarUrlBuilder) {
 
         this.currentUserService = currentUserService;
         this.currentUserResolver = currentUserResolver;
         this.principalIdentityService = principalIdentityService;
         this.preAuthSessionService = preAuthSessionService;
+        this.avatarUrlBuilder = avatarUrlBuilder;
     }
 
     @Operation(summary = "当前用户信息", description = "读取当前登录后台用户的基础资料和登录名")
@@ -236,7 +240,7 @@ public class CurrentUserController {
         if (user == null || !currentUserService.existsAvatar(user.getId())) {
             return null;
         }
-        return UserController.getAvatarUrl(UserIdCodec.toStringValue(user.getId()));
+        return avatarUrlBuilder.build(UserIdCodec.toStringValue(user.getId()));
     }
 
     private PrincipalIdentityQuery identityQuery(PrincipalKey principalKey, PrincipalIdentityType identityType) {
