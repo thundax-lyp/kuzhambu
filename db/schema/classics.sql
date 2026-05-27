@@ -225,6 +225,7 @@ CREATE TABLE IF NOT EXISTS `classics_share_target` (
     `content_type` varchar(32) NOT NULL COMMENT '内容类型',
     `content_id` bigint NOT NULL COMMENT '内容ID',
     `title_snapshot` varchar(512) NOT NULL COMMENT '标题快照',
+    `content_snapshot_json` json DEFAULT NULL COMMENT '完整内容快照',
     `content_visibility_snapshot` varchar(16) NOT NULL COMMENT '内容可见性快照',
     `target_status` varchar(16) NOT NULL DEFAULT 'ACTIVE' COMMENT '目标状态',
     `priority` int NOT NULL COMMENT '全局唯一排序',
