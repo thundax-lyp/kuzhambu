@@ -6,7 +6,7 @@ import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.system.application.audit.command.CreateAuditLogCommand;
 import com.thundax.kuzhambu.system.application.audit.query.AuditLogQuery;
 import com.thundax.kuzhambu.system.application.audit.query.AuditMetaQuery;
-import com.thundax.kuzhambu.system.application.audit.runtime.AuditDiffCalculator;
+import com.thundax.kuzhambu.system.application.audit.runtime.AuditExpressionEvaluator;
 import com.thundax.kuzhambu.system.application.audit.service.AuditApplicationService;
 import com.thundax.kuzhambu.system.domain.audit.model.entity.AuditLog;
 import com.thundax.kuzhambu.system.domain.audit.model.entity.AuditMeta;
@@ -30,15 +30,10 @@ public class AuditApplicationServiceImpl implements AuditApplicationService {
 
     private final AuditMetaRepository auditMetaRepository;
     private final AuditLogRepository auditLogRepository;
-    private final AuditDiffCalculator auditDiffCalculator;
 
-    public AuditApplicationServiceImpl(
-            AuditMetaRepository auditMetaRepository,
-            AuditLogRepository auditLogRepository,
-            AuditDiffCalculator auditDiffCalculator) {
+    public AuditApplicationServiceImpl(AuditMetaRepository auditMetaRepository, AuditLogRepository auditLogRepository) {
         this.auditMetaRepository = auditMetaRepository;
         this.auditLogRepository = auditLogRepository;
-        this.auditDiffCalculator = auditDiffCalculator;
     }
 
     @Override
@@ -57,7 +52,7 @@ public class AuditApplicationServiceImpl implements AuditApplicationService {
         }
 
         List<AuditChangedField> changedFields =
-                auditDiffCalculator.diff(command.getBeforeSnapshot(), command.getAfterSnapshot());
+                AuditExpressionEvaluator.diff(command.getBeforeSnapshot(), command.getAfterSnapshot());
         if (!command.isRecordWhenUnchanged() && changedFields.isEmpty()) {
             return null;
         }
