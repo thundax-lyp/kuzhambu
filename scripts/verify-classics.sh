@@ -23,18 +23,18 @@ required_tables=(
 )
 
 for table in "${required_tables[@]}"; do
-    if ! grep -q "CREATE TABLE ${table}" "${ROOT_DIR}/db/schema/classics.sql"; then
+    if ! grep -q "CREATE TABLE IF NOT EXISTS \`${table}\`" "${ROOT_DIR}/db/schema/classics.sql"; then
         echo "Missing table in schema: ${table}" >&2
         exit 1
     fi
 done
 
-if ! grep -q "INSERT INTO classics_sancai_category" "${ROOT_DIR}/db/data/classics.sql"; then
+if ! grep -q "INSERT INTO \`classics_sancai_category\`" "${ROOT_DIR}/db/data/classics.sql"; then
     echo "Missing sancai category data" >&2
     exit 1
 fi
 
-if ! grep -q "INSERT INTO classics_sancai_entry" "${ROOT_DIR}/db/data/classics.sql"; then
+if ! grep -q "INSERT INTO \`classics_sancai_entry\`" "${ROOT_DIR}/db/data/classics.sql"; then
     echo "Missing sancai entry data" >&2
     exit 1
 fi
