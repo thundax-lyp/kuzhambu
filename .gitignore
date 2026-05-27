@@ -32,3 +32,4 @@ kuzhambu-workers/.venv/
 .env
 dev.env
 deploy/.env
+/temp/
