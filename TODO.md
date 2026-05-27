@@ -27,10 +27,10 @@
     - 验收点：领域模型不依赖 infra，状态字段使用 enum 封装 varchar 值。
     - 重要度：8/10
 
-- [ ] `classics-infra/sancai`：实现三才图会只读 Repository
+- [ ] `classics-infra/sancai`：实现三才图会 Repository
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-DOMAIN.md`
-    - 范围对象：`SancaiQueryRepository.java`、`SancaiQueryRepositoryImpl.java`、`SancaiMapper.java`、`SancaiMapper.xml`
+    - 范围对象：`SancaiRepository.java`、`SancaiRepositoryImpl.java`、`SancaiMapper.java`、`SancaiMapper.xml`
     - 处理动作：实现门类、卷、条目只读查询。
     - 验收点：可按门类查询卷、按卷查询条目、按条目 ID 查询详情。
     - 重要度：9/10
@@ -46,7 +46,7 @@
 - [ ] `classics-admin-api`：提供三才图会后台只读接口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-DOMAIN.md`
-    - 范围对象：`SancaiQueryApi.java`、`SancaiAdminController.java`、`docs/20-interfaces/CLASSICS-API.md`
+    - 范围对象：`SancaiAdminController.java`、`SancaiCategoryResponse.java`、`docs/20-interfaces/CLASSICS-API.md`
     - 处理动作：定义并实现后台三才图会门类、卷、条目查询接口。
     - 验收点：接口文档记录路径、参数、响应字段和错误语义。
     - 重要度：8/10
@@ -62,7 +62,7 @@
 - [ ] `scripts/verify-classics.sh`：增加 Classics 只读链路验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-DOMAIN.md`
-    - 范围对象：`scripts/verify-classics.sh`、`scripts/verify-all.sh`、`SancaiQueryRepositoryTest.java`
+    - 范围对象：`scripts/verify-classics.sh`、`scripts/verify-all.sh`、`SancaiRepositoryTest.java`
     - 处理动作：新增 Classics 最小自动化验证入口并接入总验证。
     - 验收点：验证脚本符合 Prepare、Execute、Assert、Restore 协议。
     - 重要度：7/10

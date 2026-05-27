@@ -54,23 +54,23 @@
 
 建议关联文件：
 
-- `kuzhambu-servers/biz/classics/kuzhambu-classics-domain/src/main/java/.../sancai/SancaiCategory.java`
-- `kuzhambu-servers/biz/classics/kuzhambu-classics-domain/src/main/java/.../sancai/SancaiVolume.java`
-- `kuzhambu-servers/biz/classics/kuzhambu-classics-domain/src/main/java/.../sancai/SancaiEntry.java`
-- `kuzhambu-servers/biz/classics/kuzhambu-classics-domain/src/main/java/.../sancai/SancaiEnums.java`
+- `kuzhambu-servers/biz/classics/kuzhambu-classics-domain/src/main/java/.../domain/sancai/model/entity/SancaiCategory.java`
+- `kuzhambu-servers/biz/classics/kuzhambu-classics-domain/src/main/java/.../domain/sancai/model/entity/SancaiVolume.java`
+- `kuzhambu-servers/biz/classics/kuzhambu-classics-domain/src/main/java/.../domain/sancai/model/entity/SancaiEntry.java`
+- `kuzhambu-servers/biz/classics/kuzhambu-classics-domain/src/main/java/.../domain/sancai/model/enums/SancaiEnums.java`
 
 验收：领域模型不依赖 infra，不暴露数据库实现细节。
 
-## Phase 3: Read Repository
+## Phase 3: Repository
 
 目标：实现三才图会门类、卷、条目只读持久化访问。
 
 建议关联文件：
 
-- `kuzhambu-servers/biz/classics/kuzhambu-classics-domain/src/main/java/.../sancai/SancaiQueryRepository.java`
-- `kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/java/.../sancai/SancaiQueryRepositoryImpl.java`
-- `kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/java/.../sancai/SancaiMapper.java`
-- `kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/resources/mapper/SancaiMapper.xml`
+- `kuzhambu-servers/biz/classics/kuzhambu-classics-domain/src/main/java/.../domain/sancai/repository/SancaiRepository.java`
+- `kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/java/.../infra/sancai/repository/impl/SancaiRepositoryImpl.java`
+- `kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/java/.../infra/sancai/persistence/mapper/SancaiMapper.java`
+- `kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/resources/mapper/sancai/SancaiMapper.xml`
 
 验收：可按 `priority` 查询门类、按 `category_id` 查询卷、按 `volume_id` 查询条目。
 
@@ -93,8 +93,8 @@
 
 建议关联文件：
 
-- `kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/.../SancaiQueryApi.java`
-- `kuzhambu-servers/starter/kuzhambu-admin-starter/src/main/java/.../SancaiAdminController.java`
+- `kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/.../interfaces/admin/sancai/controller/SancaiAdminController.java`
+- `kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/.../interfaces/admin/sancai/controller/response/SancaiCategoryResponse.java`
 - `docs/20-interfaces/CLASSICS-API.md`
 
 验收：接口契约记录路径、参数、响应字段和错误语义。
@@ -120,7 +120,7 @@
 
 - `scripts/verify-classics.sh`
 - `scripts/verify-all.sh`
-- `kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/test/java/.../SancaiQueryRepositoryTest.java`
+- `kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/test/java/.../SancaiRepositoryTest.java`
 
 验收：验证脚本遵守 Prepare、Execute、Assert、Restore 协议，并接入总验证入口。
 
