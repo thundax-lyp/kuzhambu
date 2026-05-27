@@ -166,14 +166,15 @@ public final class LayerArchitectureRuleSupport {
                 "API modules may only declare entry-specific *AuthService, *RegistrationService, "
                         + "PermissionService, SysLogMessageService or implementation "
                         + "source files. "
-                        + "Other Service types belong in kuzhambu-biz. Violations: "
+                        + "Other Service types belong in domain application modules. Violations: "
                         + violations,
                 violations.isEmpty());
     }
 
     public static void assertBusinessModuleSourceDoesNotDeclareEntryServices() {
         Path sourceRoot = ArchitectureSourceSupport.repositoryRoot()
-                .resolve("kuzhambu-biz")
+                .resolve("kuzhambu-servers")
+                .resolve("biz")
                 .resolve("src/main/java/com/thundax/kuzhambu");
         List<String> violations = new ArrayList<String>();
 
@@ -181,8 +182,8 @@ public final class LayerArchitectureRuleSupport {
 
         assertTrue(
                 "*RegistrationService, PermissionService and their implementations are "
-                        + "entry-specific orchestrators and must stay in kuzhambu-admin-api "
-                        + "or kuzhambu-portal-api. Violations: "
+                        + "entry-specific orchestrators and must stay in domain interface modules "
+                        + "or starter modules. Violations: "
                         + violations,
                 violations.isEmpty());
     }
