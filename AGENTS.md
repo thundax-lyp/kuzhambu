@@ -24,6 +24,18 @@ No build tool is configured yet. Add one before introducing executable code. Rec
 
 If Maven is chosen, use `./mvnw test` and `./mvnw package`. Prefer checked-in wrappers (`gradlew` or `mvnw`).
 
+Java servers currently use Maven under `kuzhambu-servers/`. Local starter runs default to repo-root `dev.env`; load it before running Maven. Install reactor dependencies first when needed, then run from the starter module so Maven does not execute `spring-boot:run` on the root aggregator:
+
+```sh
+set -a
+source dev.env
+set +a
+cd kuzhambu-servers
+mvn -pl starter/kuzhambu-admin-starter -am -DskipTests install
+cd starter/kuzhambu-admin-starter
+mvn spring-boot:run
+```
+
 ## Coding Style & Naming Conventions
 
 Follow idiomatic Java conventions unless another language is introduced: 4-space indentation, `PascalCase` classes, `camelCase` methods and variables, and `UPPER_SNAKE_CASE` constants. Keep package names lowercase, for example `com.thundax.kuzhambu`.
