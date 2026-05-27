@@ -26,7 +26,8 @@ public class SancaiRepositoryImpl implements SancaiRepository {
     private final SancaiVolumeMapper volumeMapper;
     private final SancaiMapper entryMapper;
 
-    public SancaiRepositoryImpl(SancaiCategoryMapper categoryMapper, SancaiVolumeMapper volumeMapper, SancaiMapper entryMapper) {
+    public SancaiRepositoryImpl(
+            SancaiCategoryMapper categoryMapper, SancaiVolumeMapper volumeMapper, SancaiMapper entryMapper) {
         this.categoryMapper = categoryMapper;
         this.volumeMapper = volumeMapper;
         this.entryMapper = entryMapper;
@@ -63,7 +64,18 @@ public class SancaiRepositoryImpl implements SancaiRepository {
     }
 
     @Override
-    public Page<SancaiEntry> pageEntries(Long volumeId, String keyword, String lifecycleStatus, String visibility, String translationStatus, String imageStatus, String visualAssetStatus, String refinementStatus, SortDirection sortDirection, int pageNo, int pageSize) {
+    public Page<SancaiEntry> pageEntries(
+            Long volumeId,
+            String keyword,
+            String lifecycleStatus,
+            String visibility,
+            String translationStatus,
+            String imageStatus,
+            String visualAssetStatus,
+            String refinementStatus,
+            SortDirection sortDirection,
+            int pageNo,
+            int pageSize) {
         LambdaQueryWrapper<SancaiEntryDO> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(volumeId != null, SancaiEntryDO::getVolumeId, volumeId)
                 .eq(StringUtils.isNotBlank(lifecycleStatus), SancaiEntryDO::getLifecycleStatus, lifecycleStatus)
@@ -72,7 +84,11 @@ public class SancaiRepositoryImpl implements SancaiRepository {
                 .eq(StringUtils.isNotBlank(imageStatus), SancaiEntryDO::getImageStatus, imageStatus)
                 .eq(StringUtils.isNotBlank(visualAssetStatus), SancaiEntryDO::getVisualAssetStatus, visualAssetStatus)
                 .eq(StringUtils.isNotBlank(refinementStatus), SancaiEntryDO::getRefinementStatus, refinementStatus)
-                .and(StringUtils.isNotBlank(keyword), item -> item.like(SancaiEntryDO::getTitle, keyword).or().like(SancaiEntryDO::getOriginalText, keyword).or().like(SancaiEntryDO::getTranslationText, keyword))
+                .and(StringUtils.isNotBlank(keyword), item -> item.like(SancaiEntryDO::getTitle, keyword)
+                        .or()
+                        .like(SancaiEntryDO::getOriginalText, keyword)
+                        .or()
+                        .like(SancaiEntryDO::getTranslationText, keyword))
                 .orderBy(true, sortDirection != SortDirection.DESC, SancaiEntryDO::getPriority);
         Page<SancaiEntryDO> dataPage = entryMapper.selectPage(new Page<>(pageNo, pageSize), wrapper);
         Page<SancaiEntry> entityPage = new Page<>(dataPage.getCurrent(), dataPage.getSize());
@@ -95,16 +111,24 @@ public class SancaiRepositoryImpl implements SancaiRepository {
 
     @Override
     public int updateEntryStatus(SancaiEntry entry) {
-        return entryMapper.update(null, new LambdaUpdateWrapper<SancaiEntryDO>()
-                .eq(SancaiEntryDO::getId, entry.getId())
-                .set(SancaiEntryDO::getLifecycleStatus, entry.getLifecycleStatus() == null ? null : entry.getLifecycleStatus().value()));
+        return entryMapper.update(
+                null,
+                new LambdaUpdateWrapper<SancaiEntryDO>()
+                        .eq(SancaiEntryDO::getId, entry.getId())
+                        .set(
+                                SancaiEntryDO::getLifecycleStatus,
+                                entry.getLifecycleStatus() == null
+                                        ? null
+                                        : entry.getLifecycleStatus().value()));
     }
 
     @Override
     public int updateEntryVisibility(Long id, String visibility) {
-        return entryMapper.update(null, new LambdaUpdateWrapper<SancaiEntryDO>()
-                .eq(SancaiEntryDO::getId, id)
-                .set(SancaiEntryDO::getVisibility, visibility));
+        return entryMapper.update(
+                null,
+                new LambdaUpdateWrapper<SancaiEntryDO>()
+                        .eq(SancaiEntryDO::getId, id)
+                        .set(SancaiEntryDO::getVisibility, visibility));
     }
 
     @Override

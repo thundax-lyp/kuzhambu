@@ -15,6 +15,7 @@ import lombok.NoArgsConstructor;
 public class ClassicsShareAccessRecordDO {
     @TableId(type = IdType.AUTO)
     private Long id;
+
     private Long shareLinkId;
     private Long shareTargetId;
     private LocalDateTime accessedAt;

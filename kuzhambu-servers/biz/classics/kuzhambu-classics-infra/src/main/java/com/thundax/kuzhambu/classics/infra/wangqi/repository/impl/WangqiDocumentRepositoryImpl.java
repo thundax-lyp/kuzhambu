@@ -28,7 +28,8 @@ public class WangqiDocumentRepositoryImpl implements WangqiDocumentRepository {
     }
 
     @Override
-    public Page<WangqiDocument> page(String keyword, String visibility, SortDirection sortDirection, int pageNo, int pageSize) {
+    public Page<WangqiDocument> page(
+            String keyword, String visibility, SortDirection sortDirection, int pageNo, int pageSize) {
         LambdaQueryWrapper<WangqiDocumentDO> wrapper = buildWrapper(keyword, visibility, sortDirection);
         Page<WangqiDocumentDO> dataPage = mapper.selectPage(new Page<>(pageNo, pageSize), wrapper);
         Page<WangqiDocument> entityPage = new Page<>(dataPage.getCurrent(), dataPage.getSize());
@@ -59,12 +60,20 @@ public class WangqiDocumentRepositoryImpl implements WangqiDocumentRepository {
 
     @Override
     public int updateStorageObjectId(Long id, Long storageObjectId) {
-        return mapper.update(null, new LambdaUpdateWrapper<WangqiDocumentDO>().eq(WangqiDocumentDO::getId, id).set(WangqiDocumentDO::getStorageObjectId, storageObjectId));
+        return mapper.update(
+                null,
+                new LambdaUpdateWrapper<WangqiDocumentDO>()
+                        .eq(WangqiDocumentDO::getId, id)
+                        .set(WangqiDocumentDO::getStorageObjectId, storageObjectId));
     }
 
     @Override
     public int updateVisibility(Long id, String visibility) {
-        return mapper.update(null, new LambdaUpdateWrapper<WangqiDocumentDO>().eq(WangqiDocumentDO::getId, id).set(WangqiDocumentDO::getVisibility, visibility));
+        return mapper.update(
+                null,
+                new LambdaUpdateWrapper<WangqiDocumentDO>()
+                        .eq(WangqiDocumentDO::getId, id)
+                        .set(WangqiDocumentDO::getVisibility, visibility));
     }
 
     @Override
@@ -72,10 +81,15 @@ public class WangqiDocumentRepositoryImpl implements WangqiDocumentRepository {
         return mapper.deleteById(id);
     }
 
-    private static LambdaQueryWrapper<WangqiDocumentDO> buildWrapper(String keyword, String visibility, SortDirection sortDirection) {
+    private static LambdaQueryWrapper<WangqiDocumentDO> buildWrapper(
+            String keyword, String visibility, SortDirection sortDirection) {
         LambdaQueryWrapper<WangqiDocumentDO> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(StringUtils.isNotBlank(visibility), WangqiDocumentDO::getVisibility, visibility)
-                .and(StringUtils.isNotBlank(keyword), item -> item.like(WangqiDocumentDO::getTitle, keyword).or().like(WangqiDocumentDO::getSummary, keyword).or().like(WangqiDocumentDO::getContent, keyword))
+                .and(StringUtils.isNotBlank(keyword), item -> item.like(WangqiDocumentDO::getTitle, keyword)
+                        .or()
+                        .like(WangqiDocumentDO::getSummary, keyword)
+                        .or()
+                        .like(WangqiDocumentDO::getContent, keyword))
                 .orderBy(true, sortDirection != SortDirection.DESC, WangqiDocumentDO::getDocumentTime);
         return wrapper;
     }

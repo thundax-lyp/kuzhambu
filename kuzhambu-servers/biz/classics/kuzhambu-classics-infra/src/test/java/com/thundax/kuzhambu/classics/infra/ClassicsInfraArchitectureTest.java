@@ -17,7 +17,8 @@ class ClassicsInfraArchitectureTest extends AbstractArchitectureTest {
         JavaClasses classes = importPackages(BASE_PACKAGE + ".infra");
 
         ModuleAndDependencyArchitectureRuleSupport.assertInfraLayerBoundary(classes, BASE_PACKAGE);
-        ModuleAndDependencyArchitectureRuleSupport.assertPersistenceMappersOnlyCalledByRepositoryImpl(classes, BASE_PACKAGE);
+        ModuleAndDependencyArchitectureRuleSupport.assertPersistenceMappersOnlyCalledByRepositoryImpl(
+                classes, BASE_PACKAGE);
         ModuleAndDependencyArchitectureRuleSupport.assertCrossDomainDependencyBoundary(classes, "classics");
         AnnotationBoundaryArchitectureRuleSupport.assertInfraAnnotationBoundary(classes, BASE_PACKAGE);
         NamingArchitectureRuleSupport.assertValueObjectPlacement(classes, BASE_PACKAGE);
@@ -28,6 +29,7 @@ class ClassicsInfraArchitectureTest extends AbstractArchitectureTest {
         NamingArchitectureRuleSupport.assertPersistenceAssemblerPlacement(classes, BASE_PACKAGE);
         NamingArchitectureRuleSupport.assertPersistenceAssemblersDeclareStaticConversionMethods(classes);
         NamingArchitectureRuleSupport.assertMapperSourcesDeclareOnlyMapperAnnotation(Path.of("src/main/java"));
-        NamingArchitectureRuleSupport.assertDataObjectSourcesDeclareOnlyRequiredLombokAnnotations(Path.of("src/main/java"));
+        NamingArchitectureRuleSupport.assertDataObjectSourcesDeclareOnlyRequiredLombokAnnotations(
+                Path.of("src/main/java"));
     }
 }

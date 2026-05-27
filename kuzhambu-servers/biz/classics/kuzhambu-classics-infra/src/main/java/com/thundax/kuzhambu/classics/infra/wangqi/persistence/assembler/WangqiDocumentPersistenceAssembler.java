@@ -19,7 +19,9 @@ public final class WangqiDocumentPersistenceAssembler {
                 entity.getId(),
                 entity.getTitle(),
                 entity.getSummary(),
-                entity.getContentFormat() == null ? null : entity.getContentFormat().value(),
+                entity.getContentFormat() == null
+                        ? null
+                        : entity.getContentFormat().value(),
                 entity.getContent(),
                 entity.getDocumentTime(),
                 entity.getStorageObjectId(),

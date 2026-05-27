@@ -30,7 +30,11 @@ public class SancaiAssetRepositoryImpl implements SancaiAssetRepository {
     private final SancaiVisualAssetMapper visualAssetMapper;
     private final SancaiShowcaseMapper showcaseMapper;
 
-    public SancaiAssetRepositoryImpl(SancaiEntryDraftMapper draftMapper, SancaiAssetMapper imageMapper, SancaiVisualAssetMapper visualAssetMapper, SancaiShowcaseMapper showcaseMapper) {
+    public SancaiAssetRepositoryImpl(
+            SancaiEntryDraftMapper draftMapper,
+            SancaiAssetMapper imageMapper,
+            SancaiVisualAssetMapper visualAssetMapper,
+            SancaiShowcaseMapper showcaseMapper) {
         this.draftMapper = draftMapper;
         this.imageMapper = imageMapper;
         this.visualAssetMapper = visualAssetMapper;
@@ -47,13 +51,16 @@ public class SancaiAssetRepositoryImpl implements SancaiAssetRepository {
     @Override
     public SancaiEntryDraft getLatestDraftByEntryId(Long entryId) {
         LambdaQueryWrapper<SancaiEntryDraftDO> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(SancaiEntryDraftDO::getEntryId, entryId).orderByDesc(SancaiEntryDraftDO::getAutosavedAt).last("limit 1");
+        wrapper.eq(SancaiEntryDraftDO::getEntryId, entryId)
+                .orderByDesc(SancaiEntryDraftDO::getAutosavedAt)
+                .last("limit 1");
         return SancaiAssetPersistenceAssembler.toDraftDomain(draftMapper.selectOne(wrapper));
     }
 
     @Override
     public int deleteDraftByEntryId(Long entryId) {
-        return draftMapper.delete(new LambdaQueryWrapper<SancaiEntryDraftDO>().eq(SancaiEntryDraftDO::getEntryId, entryId));
+        return draftMapper.delete(
+                new LambdaQueryWrapper<SancaiEntryDraftDO>().eq(SancaiEntryDraftDO::getEntryId, entryId));
     }
 
     @Override
@@ -76,7 +83,8 @@ public class SancaiAssetRepositoryImpl implements SancaiAssetRepository {
     @Override
     public List<SancaiEntryImage> listImagesByEntryId(Long entryId, SortDirection sortDirection) {
         LambdaQueryWrapper<SancaiEntryImageDO> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(SancaiEntryImageDO::getEntryId, entryId).orderBy(true, sortDirection != SortDirection.DESC, SancaiEntryImageDO::getPriority);
+        wrapper.eq(SancaiEntryImageDO::getEntryId, entryId)
+                .orderBy(true, sortDirection != SortDirection.DESC, SancaiEntryImageDO::getPriority);
         return SancaiAssetPersistenceAssembler.toImageDomainList(imageMapper.selectList(wrapper));
     }
 
@@ -94,13 +102,25 @@ public class SancaiAssetRepositoryImpl implements SancaiAssetRepository {
 
     @Override
     public int updateCurrentVisualAsset(Long entryId, Long visualAssetId) {
-        visualAssetMapper.update(null, new LambdaUpdateWrapper<SancaiVisualAssetDO>().eq(SancaiVisualAssetDO::getEntryId, entryId).set(SancaiVisualAssetDO::getCurrentUsed, false));
-        return visualAssetMapper.update(null, new LambdaUpdateWrapper<SancaiVisualAssetDO>().eq(SancaiVisualAssetDO::getEntryId, entryId).eq(SancaiVisualAssetDO::getId, visualAssetId).set(SancaiVisualAssetDO::getCurrentUsed, true));
+        visualAssetMapper.update(
+                null,
+                new LambdaUpdateWrapper<SancaiVisualAssetDO>()
+                        .eq(SancaiVisualAssetDO::getEntryId, entryId)
+                        .set(SancaiVisualAssetDO::getCurrentUsed, false));
+        return visualAssetMapper.update(
+                null,
+                new LambdaUpdateWrapper<SancaiVisualAssetDO>()
+                        .eq(SancaiVisualAssetDO::getEntryId, entryId)
+                        .eq(SancaiVisualAssetDO::getId, visualAssetId)
+                        .set(SancaiVisualAssetDO::getCurrentUsed, true));
     }
 
     @Override
     public List<SancaiVisualAsset> listVisualAssetsByEntryId(Long entryId) {
-        return SancaiAssetPersistenceAssembler.toVisualAssetDomainList(visualAssetMapper.selectList(new LambdaQueryWrapper<SancaiVisualAssetDO>().eq(SancaiVisualAssetDO::getEntryId, entryId).orderByDesc(SancaiVisualAssetDO::getVersionNo)));
+        return SancaiAssetPersistenceAssembler.toVisualAssetDomainList(
+                visualAssetMapper.selectList(new LambdaQueryWrapper<SancaiVisualAssetDO>()
+                        .eq(SancaiVisualAssetDO::getEntryId, entryId)
+                        .orderByDesc(SancaiVisualAssetDO::getVersionNo)));
     }
 
     @Override
@@ -118,7 +138,8 @@ public class SancaiAssetRepositoryImpl implements SancaiAssetRepository {
     @Override
     public Page<SancaiShowcase> pageShowcases(String status, int pageNo, int pageSize) {
         LambdaQueryWrapper<SancaiShowcaseDO> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(StringUtils.isNotBlank(status), SancaiShowcaseDO::getStatus, status).orderByDesc(SancaiShowcaseDO::getRequestedAt);
+        wrapper.eq(StringUtils.isNotBlank(status), SancaiShowcaseDO::getStatus, status)
+                .orderByDesc(SancaiShowcaseDO::getRequestedAt);
         Page<SancaiShowcaseDO> dataPage = showcaseMapper.selectPage(new Page<>(pageNo, pageSize), wrapper);
         Page<SancaiShowcase> entityPage = new Page<>(dataPage.getCurrent(), dataPage.getSize());
         entityPage.setTotal(dataPage.getTotal());

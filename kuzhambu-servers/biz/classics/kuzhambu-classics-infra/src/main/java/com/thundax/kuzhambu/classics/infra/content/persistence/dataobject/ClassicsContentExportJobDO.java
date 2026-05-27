@@ -15,6 +15,7 @@ import lombok.NoArgsConstructor;
 public class ClassicsContentExportJobDO {
     @TableId(type = IdType.AUTO)
     private Long id;
+
     private String exportKind;
     private String contentType;
     private String exportFormat;

@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 public class ClassicsContentQaPairDO {
     @TableId(type = IdType.AUTO)
     private Long id;
+
     private String contentType;
     private Long contentId;
     private String question;

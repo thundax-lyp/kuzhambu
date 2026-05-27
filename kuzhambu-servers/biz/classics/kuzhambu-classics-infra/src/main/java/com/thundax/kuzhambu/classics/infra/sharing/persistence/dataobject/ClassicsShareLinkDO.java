@@ -15,6 +15,7 @@ import lombok.NoArgsConstructor;
 public class ClassicsShareLinkDO {
     @TableId(type = IdType.AUTO)
     private Long id;
+
     private String tokenHash;
     private String title;
     private String visibility;

@@ -35,11 +35,24 @@ public class MingCustomsRepositoryImpl implements MingCustomsRepository {
     }
 
     @Override
-    public Page<MingCustomsEntry> page(String category, String keyword, String tagName, String visibility, SortDirection sortDirection, int pageNo, int pageSize) {
+    public Page<MingCustomsEntry> page(
+            String category,
+            String keyword,
+            String tagName,
+            String visibility,
+            SortDirection sortDirection,
+            int pageNo,
+            int pageSize) {
         LambdaQueryWrapper<MingCustomsEntryDO> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(StringUtils.isNotBlank(category), MingCustomsEntryDO::getCategory, category)
                 .eq(StringUtils.isNotBlank(visibility), MingCustomsEntryDO::getVisibility, visibility)
-                .and(StringUtils.isNotBlank(keyword), item -> item.like(MingCustomsEntryDO::getTitle, keyword).or().like(MingCustomsEntryDO::getSummary, keyword).or().like(MingCustomsEntryDO::getContent, keyword).or().like(MingCustomsEntryDO::getOriginalExcerpts, keyword))
+                .and(StringUtils.isNotBlank(keyword), item -> item.like(MingCustomsEntryDO::getTitle, keyword)
+                        .or()
+                        .like(MingCustomsEntryDO::getSummary, keyword)
+                        .or()
+                        .like(MingCustomsEntryDO::getContent, keyword)
+                        .or()
+                        .like(MingCustomsEntryDO::getOriginalExcerpts, keyword))
                 .orderBy(true, sortDirection != SortDirection.DESC, MingCustomsEntryDO::getId);
         Page<MingCustomsEntryDO> dataPage = entryMapper.selectPage(new Page<>(pageNo, pageSize), wrapper);
         Page<MingCustomsEntry> entityPage = new Page<>(dataPage.getCurrent(), dataPage.getSize());
@@ -62,7 +75,11 @@ public class MingCustomsRepositoryImpl implements MingCustomsRepository {
 
     @Override
     public int updateVisibility(Long id, String visibility) {
-        return entryMapper.update(null, new LambdaUpdateWrapper<MingCustomsEntryDO>().eq(MingCustomsEntryDO::getId, id).set(MingCustomsEntryDO::getVisibility, visibility));
+        return entryMapper.update(
+                null,
+                new LambdaUpdateWrapper<MingCustomsEntryDO>()
+                        .eq(MingCustomsEntryDO::getId, id)
+                        .set(MingCustomsEntryDO::getVisibility, visibility));
     }
 
     @Override
@@ -72,7 +89,10 @@ public class MingCustomsRepositoryImpl implements MingCustomsRepository {
 
     @Override
     public List<MingCustomsKeyword> listKeywordsByCustomId(Long customId, SortDirection sortDirection) {
-        return MingCustomsPersistenceAssembler.toKeywordDomainList(keywordMapper.selectList(new LambdaQueryWrapper<MingCustomsKeywordDO>().eq(MingCustomsKeywordDO::getCustomId, customId).orderBy(true, sortDirection != SortDirection.DESC, MingCustomsKeywordDO::getPriority)));
+        return MingCustomsPersistenceAssembler.toKeywordDomainList(
+                keywordMapper.selectList(new LambdaQueryWrapper<MingCustomsKeywordDO>()
+                        .eq(MingCustomsKeywordDO::getCustomId, customId)
+                        .orderBy(true, sortDirection != SortDirection.DESC, MingCustomsKeywordDO::getPriority)));
     }
 
     @Override

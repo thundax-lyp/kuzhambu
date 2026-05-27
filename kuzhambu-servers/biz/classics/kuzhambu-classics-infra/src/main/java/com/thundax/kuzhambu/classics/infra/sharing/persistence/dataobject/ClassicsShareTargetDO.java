@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 public class ClassicsShareTargetDO {
     @TableId(type = IdType.AUTO)
     private Long id;
+
     private Long shareLinkId;
     private String contentType;
     private Long contentId;

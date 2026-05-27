@@ -15,6 +15,7 @@ import lombok.NoArgsConstructor;
 public class ClassicsContentVersionDO {
     @TableId(type = IdType.AUTO)
     private Long id;
+
     private String contentType;
     private Long contentId;
     private Integer versionNo;
