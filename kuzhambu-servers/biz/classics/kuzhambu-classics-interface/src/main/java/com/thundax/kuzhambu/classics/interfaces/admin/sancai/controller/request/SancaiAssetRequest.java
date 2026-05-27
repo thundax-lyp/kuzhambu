@@ -11,16 +11,39 @@ import lombok.Setter;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SancaiAssetRequest {
-    @JsonProperty("id") private Long id;
-    @JsonProperty("entryId") private Long entryId;
-    @JsonProperty("storageObjectId") private Long storageObjectId;
-    @JsonProperty("imageType") private String imageType;
-    @JsonProperty("title") private String title;
-    @JsonProperty("currentUsed") private boolean currentUsed;
-    @JsonProperty("priority") private int priority;
-    @JsonProperty("draftJson") private String draftJson;
-    @JsonProperty("scopeJson") private String scopeJson;
-    @JsonProperty("status") private String status;
-    @JsonProperty("entryCount") private int entryCount;
-    @JsonProperty("visibilityRiskStatus") private String visibilityRiskStatus;
+    @JsonProperty("id")
+    private Long id;
+
+    @JsonProperty("entryId")
+    private Long entryId;
+
+    @JsonProperty("storageObjectId")
+    private Long storageObjectId;
+
+    @JsonProperty("imageType")
+    private String imageType;
+
+    @JsonProperty("title")
+    private String title;
+
+    @JsonProperty("currentUsed")
+    private boolean currentUsed;
+
+    @JsonProperty("priority")
+    private int priority;
+
+    @JsonProperty("draftJson")
+    private String draftJson;
+
+    @JsonProperty("scopeJson")
+    private String scopeJson;
+
+    @JsonProperty("status")
+    private String status;
+
+    @JsonProperty("entryCount")
+    private int entryCount;
+
+    @JsonProperty("visibilityRiskStatus")
+    private String visibilityRiskStatus;
 }

@@ -13,11 +13,24 @@ import lombok.Getter;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ClassicsSharingResponse implements Serializable {
-    @JsonProperty("id") private Long id;
-    @JsonProperty("title") private String title;
-    @JsonProperty("visibility") private String visibility;
-    @JsonProperty("status") private String status;
-    @JsonProperty("issuedAt") private LocalDateTime issuedAt;
-    @JsonProperty("expiresAt") private LocalDateTime expiresAt;
-    @JsonProperty("accessCount") private Long accessCount;
+    @JsonProperty("id")
+    private Long id;
+
+    @JsonProperty("title")
+    private String title;
+
+    @JsonProperty("visibility")
+    private String visibility;
+
+    @JsonProperty("status")
+    private String status;
+
+    @JsonProperty("issuedAt")
+    private LocalDateTime issuedAt;
+
+    @JsonProperty("expiresAt")
+    private LocalDateTime expiresAt;
+
+    @JsonProperty("accessCount")
+    private Long accessCount;
 }

@@ -12,18 +12,45 @@ import lombok.Setter;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class MingCustomsRequest extends PageRequest {
-    @JsonProperty("id") private Long id;
-    @JsonProperty("title") private String title;
-    @JsonProperty("category") private String category;
-    @JsonProperty("chapter") private String chapter;
-    @JsonProperty("section") private String section;
-    @JsonProperty("summary") private String summary;
-    @JsonProperty("contentFormat") private String contentFormat;
-    @JsonProperty("content") private String content;
-    @JsonProperty("originalExcerpts") private String originalExcerpts;
-    @JsonProperty("visibility") private String visibility;
-    @JsonProperty("keyword") private String keyword;
-    @JsonProperty("tagName") private String tagName;
-    @JsonProperty("sortDirection") private String sortDirection;
-    @JsonProperty("priority") private int priority;
+    @JsonProperty("id")
+    private Long id;
+
+    @JsonProperty("title")
+    private String title;
+
+    @JsonProperty("category")
+    private String category;
+
+    @JsonProperty("chapter")
+    private String chapter;
+
+    @JsonProperty("section")
+    private String section;
+
+    @JsonProperty("summary")
+    private String summary;
+
+    @JsonProperty("contentFormat")
+    private String contentFormat;
+
+    @JsonProperty("content")
+    private String content;
+
+    @JsonProperty("originalExcerpts")
+    private String originalExcerpts;
+
+    @JsonProperty("visibility")
+    private String visibility;
+
+    @JsonProperty("keyword")
+    private String keyword;
+
+    @JsonProperty("tagName")
+    private String tagName;
+
+    @JsonProperty("sortDirection")
+    private String sortDirection;
+
+    @JsonProperty("priority")
+    private int priority;
 }

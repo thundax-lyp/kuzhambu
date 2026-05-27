@@ -15,12 +15,27 @@ import lombok.Setter;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ClassicsSharingRequest extends PageRequest {
-    @JsonProperty("id") private Long id;
-    @JsonProperty("tokenHash") private String tokenHash;
-    @JsonProperty("title") private String title;
-    @JsonProperty("visibility") private String visibility;
-    @JsonProperty("status") private String status;
-    @JsonProperty("visibilityRiskStatus") private String visibilityRiskStatus;
-    @JsonProperty("expiresAt") private LocalDateTime expiresAt;
-    @JsonProperty("targets") private List<ClassicsShareTarget> targets;
+    @JsonProperty("id")
+    private Long id;
+
+    @JsonProperty("tokenHash")
+    private String tokenHash;
+
+    @JsonProperty("title")
+    private String title;
+
+    @JsonProperty("visibility")
+    private String visibility;
+
+    @JsonProperty("status")
+    private String status;
+
+    @JsonProperty("visibilityRiskStatus")
+    private String visibilityRiskStatus;
+
+    @JsonProperty("expiresAt")
+    private LocalDateTime expiresAt;
+
+    @JsonProperty("targets")
+    private List<ClassicsShareTarget> targets;
 }

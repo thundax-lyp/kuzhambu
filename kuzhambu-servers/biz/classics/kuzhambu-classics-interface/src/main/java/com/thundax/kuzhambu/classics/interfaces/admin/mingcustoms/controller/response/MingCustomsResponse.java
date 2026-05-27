@@ -12,14 +12,33 @@ import lombok.Getter;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class MingCustomsResponse implements Serializable {
-    @JsonProperty("id") private Long id;
-    @JsonProperty("title") private String title;
-    @JsonProperty("category") private String category;
-    @JsonProperty("chapter") private String chapter;
-    @JsonProperty("section") private String section;
-    @JsonProperty("summary") private String summary;
-    @JsonProperty("contentFormat") private String contentFormat;
-    @JsonProperty("content") private String content;
-    @JsonProperty("originalExcerpts") private String originalExcerpts;
-    @JsonProperty("visibility") private String visibility;
+    @JsonProperty("id")
+    private Long id;
+
+    @JsonProperty("title")
+    private String title;
+
+    @JsonProperty("category")
+    private String category;
+
+    @JsonProperty("chapter")
+    private String chapter;
+
+    @JsonProperty("section")
+    private String section;
+
+    @JsonProperty("summary")
+    private String summary;
+
+    @JsonProperty("contentFormat")
+    private String contentFormat;
+
+    @JsonProperty("content")
+    private String content;
+
+    @JsonProperty("originalExcerpts")
+    private String originalExcerpts;
+
+    @JsonProperty("visibility")
+    private String visibility;
 }

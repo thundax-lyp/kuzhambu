@@ -9,7 +9,11 @@ import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import jakarta.validation.Valid;
 import java.util.List;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 @SysLogger(module = {"古籍", "三才图会资产"})
 @RequestMapping("/api/classics/sancai/assets")
@@ -42,7 +46,9 @@ public class SancaiAssetAdminController {
     @HasPermission("classics:sancai:view")
     @GetMapping("images/{entryId}")
     public List<SancaiAssetResponse> listImages(@PathVariable Long entryId) {
-        return service.listImages(entryId).stream().map(SancaiAssetInterfaceAssembler::toImageResponse).toList();
+        return service.listImages(entryId).stream()
+                .map(SancaiAssetInterfaceAssembler::toImageResponse)
+                .toList();
     }
 
     @HasPermission("classics:sancai:edit")

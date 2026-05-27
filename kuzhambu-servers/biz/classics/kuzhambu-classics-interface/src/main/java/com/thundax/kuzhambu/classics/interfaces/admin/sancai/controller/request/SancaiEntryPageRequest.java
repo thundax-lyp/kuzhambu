@@ -12,13 +12,30 @@ import lombok.Setter;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SancaiEntryPageRequest extends PageRequest {
-    @JsonProperty("volumeId") private Long volumeId;
-    @JsonProperty("keyword") private String keyword;
-    @JsonProperty("lifecycleStatus") private String lifecycleStatus;
-    @JsonProperty("visibility") private String visibility;
-    @JsonProperty("translationStatus") private String translationStatus;
-    @JsonProperty("imageStatus") private String imageStatus;
-    @JsonProperty("visualAssetStatus") private String visualAssetStatus;
-    @JsonProperty("refinementStatus") private String refinementStatus;
-    @JsonProperty("sortDirection") private String sortDirection;
+    @JsonProperty("volumeId")
+    private Long volumeId;
+
+    @JsonProperty("keyword")
+    private String keyword;
+
+    @JsonProperty("lifecycleStatus")
+    private String lifecycleStatus;
+
+    @JsonProperty("visibility")
+    private String visibility;
+
+    @JsonProperty("translationStatus")
+    private String translationStatus;
+
+    @JsonProperty("imageStatus")
+    private String imageStatus;
+
+    @JsonProperty("visualAssetStatus")
+    private String visualAssetStatus;
+
+    @JsonProperty("refinementStatus")
+    private String refinementStatus;
+
+    @JsonProperty("sortDirection")
+    private String sortDirection;
 }

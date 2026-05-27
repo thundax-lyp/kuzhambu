@@ -12,6 +12,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @WrappedApiController
 public class ClassicsSharingPortalController {
     private final ClassicsSharingApplicationService service;
-    public ClassicsSharingPortalController(ClassicsSharingApplicationService service) { this.service = service; }
-    @GetMapping("{tokenHash}/targets") public List<ClassicsShareTarget> targets(@PathVariable String tokenHash) { return service.listTargets(service.getLinkByTokenHash(tokenHash).getId()); }
+
+    public ClassicsSharingPortalController(ClassicsSharingApplicationService service) {
+        this.service = service;
+    }
+
+    @GetMapping("{tokenHash}/targets")
+    public List<ClassicsShareTarget> targets(@PathVariable String tokenHash) {
+        return service.listTargets(service.getLinkByTokenHash(tokenHash).getId());
+    }
 }

@@ -12,7 +12,11 @@ import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
 import jakarta.validation.Valid;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 @SysLogger(module = {"古籍", "三才图会"})
 @RequestMapping("/api/classics/sancai")
@@ -27,7 +31,10 @@ public class SancaiAdminController {
     @HasPermission("classics:sancai:view")
     @PostMapping("entries/page")
     public PageResponse<SancaiEntryResponse> pageEntries(@Valid @RequestBody SancaiEntryPageRequest request) {
-        return PageResponseHelper.fromPageResult(service.pageEntries(SancaiInterfaceAssembler.toQuery(request), PageInterfaceAssembler.toPageQuery(request)), SancaiInterfaceAssembler::toResponse);
+        return PageResponseHelper.fromPageResult(
+                service.pageEntries(
+                        SancaiInterfaceAssembler.toQuery(request), PageInterfaceAssembler.toPageQuery(request)),
+                SancaiInterfaceAssembler::toResponse);
     }
 
     @HasPermission("classics:sancai:view")

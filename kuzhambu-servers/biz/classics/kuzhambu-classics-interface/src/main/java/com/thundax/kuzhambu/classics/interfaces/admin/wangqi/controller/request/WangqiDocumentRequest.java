@@ -13,14 +13,33 @@ import lombok.Setter;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class WangqiDocumentRequest extends PageRequest {
-    @JsonProperty("id") private Long id;
-    @JsonProperty("title") private String title;
-    @JsonProperty("summary") private String summary;
-    @JsonProperty("contentFormat") private String contentFormat;
-    @JsonProperty("content") private String content;
-    @JsonProperty("documentTime") private LocalDateTime documentTime;
-    @JsonProperty("storageObjectId") private Long storageObjectId;
-    @JsonProperty("visibility") private String visibility;
-    @JsonProperty("keyword") private String keyword;
-    @JsonProperty("sortDirection") private String sortDirection;
+    @JsonProperty("id")
+    private Long id;
+
+    @JsonProperty("title")
+    private String title;
+
+    @JsonProperty("summary")
+    private String summary;
+
+    @JsonProperty("contentFormat")
+    private String contentFormat;
+
+    @JsonProperty("content")
+    private String content;
+
+    @JsonProperty("documentTime")
+    private LocalDateTime documentTime;
+
+    @JsonProperty("storageObjectId")
+    private Long storageObjectId;
+
+    @JsonProperty("visibility")
+    private String visibility;
+
+    @JsonProperty("keyword")
+    private String keyword;
+
+    @JsonProperty("sortDirection")
+    private String sortDirection;
 }

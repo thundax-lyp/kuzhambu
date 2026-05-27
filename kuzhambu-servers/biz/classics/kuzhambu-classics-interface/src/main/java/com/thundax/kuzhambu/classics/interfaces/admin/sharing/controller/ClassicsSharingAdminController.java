@@ -14,16 +14,68 @@ import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import jakarta.validation.Valid;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 @SysLogger(module = {"古籍", "分享"})
 @RequestMapping("/api/classics/shares")
 @WrappedApiController
 public class ClassicsSharingAdminController {
     private final ClassicsSharingApplicationService service;
-    public ClassicsSharingAdminController(ClassicsSharingApplicationService service) { this.service = service; }
-    @HasPermission("classics:sharing:edit") @PostMapping("create") public Long create(@Valid @RequestBody ClassicsSharingRequest request) { return service.createLink(new ShareLinkCreateCommand(request.getTokenHash(), request.getTitle(), ClassicsShareVisibility.from(request.getVisibility()), ClassicsShareLinkStatus.ACTIVE, StringUtils.isBlank(request.getVisibilityRiskStatus()) ? null : SancaiVisibilityRiskStatus.from(request.getVisibilityRiskStatus()), null, request.getExpiresAt(), request.getTargets())); }
-    @HasPermission("classics:sharing:edit") @PostMapping("status") public void status(@Valid @RequestBody ClassicsSharingRequest request) { service.changeStatus(new ShareLinkStatusCommand(request.getId(), ClassicsShareLinkStatus.from(request.getStatus()))); }
-    @HasPermission("classics:sharing:view") @GetMapping("{id}") public ClassicsSharingResponse get(@PathVariable Long id) { return toResponse(service.getLink(id)); }
-    private static ClassicsSharingResponse toResponse(ClassicsShareLink link) { return link == null ? ClassicsSharingResponse.builder().build() : ClassicsSharingResponse.builder().id(link.getId()).title(link.getTitle()).visibility(link.getVisibility() == null ? null : link.getVisibility().value()).status(link.getStatus() == null ? null : link.getStatus().value()).issuedAt(link.getIssuedAt()).expiresAt(link.getExpiresAt()).accessCount(link.getAccessCount()).build(); }
+
+    public ClassicsSharingAdminController(ClassicsSharingApplicationService service) {
+        this.service = service;
+    }
+
+    @HasPermission("classics:sharing:edit")
+    @PostMapping("create")
+    public Long create(@Valid @RequestBody ClassicsSharingRequest request) {
+        return service.createLink(new ShareLinkCreateCommand(
+                request.getTokenHash(),
+                request.getTitle(),
+                ClassicsShareVisibility.from(request.getVisibility()),
+                ClassicsShareLinkStatus.ACTIVE,
+                StringUtils.isBlank(request.getVisibilityRiskStatus())
+                        ? null
+                        : SancaiVisibilityRiskStatus.from(request.getVisibilityRiskStatus()),
+                null,
+                request.getExpiresAt(),
+                request.getTargets()));
+    }
+
+    @HasPermission("classics:sharing:edit")
+    @PostMapping("status")
+    public void status(@Valid @RequestBody ClassicsSharingRequest request) {
+        service.changeStatus(
+                new ShareLinkStatusCommand(request.getId(), ClassicsShareLinkStatus.from(request.getStatus())));
+    }
+
+    @HasPermission("classics:sharing:view")
+    @GetMapping("{id}")
+    public ClassicsSharingResponse get(@PathVariable Long id) {
+        return toResponse(service.getLink(id));
+    }
+
+    private static ClassicsSharingResponse toResponse(ClassicsShareLink link) {
+        return link == null
+                ? ClassicsSharingResponse.builder().build()
+                : ClassicsSharingResponse.builder()
+                        .id(link.getId())
+                        .title(link.getTitle())
+                        .visibility(
+                                link.getVisibility() == null
+                                        ? null
+                                        : link.getVisibility().value())
+                        .status(
+                                link.getStatus() == null
+                                        ? null
+                                        : link.getStatus().value())
+                        .issuedAt(link.getIssuedAt())
+                        .expiresAt(link.getExpiresAt())
+                        .accessCount(link.getAccessCount())
+                        .build();
+    }
 }
