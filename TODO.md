@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `docs/30-designs`：归并设计文档为新业务域
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SERVERS-DOMAIN-MODULE-MERGE.md`
-    - 范围对象：`docs/30-designs/`
-    - 处理动作：将旧设计文档归并为 `SYSTEM`、`STORAGE`、`CLASSICS`、`AI`、`KNOWLEDGE`、`DISCOVERY`、`OPERATIONS` 七个设计文档
-    - 验收点：新设计文档覆盖旧设计的有效内容，旧设计文档已删除
-    - 重要度：10/10
-
 - [ ] `db/schema db/data`：归并 SQL 文件和表名前缀
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SERVERS-DOMAIN-MODULE-MERGE.md`
