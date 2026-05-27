@@ -38,6 +38,7 @@
 - Mapper 位于 `infra/<subdomain>/persistence/mapper/`，DO 位于 `infra/<subdomain>/persistence/dataobject/`，持久化转换位于 `infra/<subdomain>/persistence/assembler/`。
 - 三才图会新增条目继续使用数据库自增主键，不引入强类型业务 ID。
 - 导出和静态展示页面第一版只记录任务，不同步生成产物；实际生成由后续 worker 接入。
+- 分享访问第一版返回完整内容快照，不只返回目标列表或内容摘要。
 
 ## Domain Layer
 
@@ -424,7 +425,3 @@
 - `.../interfaces/portal/sharing/ClassicsSharingPortalControllerTest.java`
 
 验收：接口响应结构、权限标记和错误语义符合 `docs/20-interfaces/CLASSICS-API.md`。
-
-## Open Decisions
-
-- 分享访问是否第一版返回完整内容，还是只返回目标列表和内容摘要。
