@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.storage.interfaces.admin.controller.request;
+package com.thundax.kuzhambu.storage.interfaces.admin.object.controller.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;

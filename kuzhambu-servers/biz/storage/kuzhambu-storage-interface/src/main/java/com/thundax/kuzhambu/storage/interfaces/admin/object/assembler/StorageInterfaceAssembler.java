@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.storage.interfaces.admin.assembler;
+package com.thundax.kuzhambu.storage.interfaces.admin.object.assembler;
 
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import com.thundax.kuzhambu.storage.application.service.query.StorageQuery;
@@ -7,8 +7,8 @@ import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
-import com.thundax.kuzhambu.storage.interfaces.admin.controller.request.StoragePageRequest;
-import com.thundax.kuzhambu.storage.interfaces.admin.controller.response.StorageObjectResponse;
+import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.request.StoragePageRequest;
+import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.response.StorageObjectResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.lang.NonNull;
 

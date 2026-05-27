@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.storage.interfaces.admin.controller;
+package com.thundax.kuzhambu.storage.interfaces.admin.object.controller;
 
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
@@ -8,9 +8,9 @@ import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
 import com.thundax.kuzhambu.storage.application.service.StorageService;
 import com.thundax.kuzhambu.storage.application.service.query.StorageQuery;
-import com.thundax.kuzhambu.storage.interfaces.admin.assembler.StorageInterfaceAssembler;
-import com.thundax.kuzhambu.storage.interfaces.admin.controller.request.StoragePageRequest;
-import com.thundax.kuzhambu.storage.interfaces.admin.controller.response.StorageObjectResponse;
+import com.thundax.kuzhambu.storage.interfaces.admin.object.assembler.StorageInterfaceAssembler;
+import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.request.StoragePageRequest;
+import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.response.StorageObjectResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;

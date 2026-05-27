@@ -151,16 +151,18 @@ kuzhambu-servers/
 
 ```text
 com/thundax/kuzhambu/<domain>/interfaces/admin/
+    <subdomain>/
         controller/
-        request/
-        response/
+            request/
+            response/
         assembler/
 
 com/thundax/kuzhambu/<domain>/interfaces/portal/
-    controller/
-    request/
-    response/
-    assembler/
+    <subdomain>/
+        controller/
+            request/
+            response/
+        assembler/
 ```
 
 路径用途：
@@ -185,12 +187,12 @@ com/thundax/kuzhambu/<domain>/interfaces/portal/
 - `infra/<subdomain>/persistence/dataobject/`：数据库表映射对象。
 - `infra/<subdomain>/persistence/assembler/`：domain 与 dataobject 的持久化转换。
 - `infra/client/`：外部系统、对象存储、搜索、worker 等技术客户端。
-- `interfaces/admin/controller/`：后台 HTTP API 入口。
-- `interfaces/admin/request/`：后台 HTTP 请求模型。
-- `interfaces/admin/response/`：后台 HTTP 响应模型。
-- `interfaces/admin/assembler/`：后台 HTTP 协议模型与 application 契约的转换。
-- `interfaces/portal/controller/`：前台 HTTP API 入口。
-- `interfaces/portal/request/`：前台 HTTP 请求模型。
-- `interfaces/portal/response/`：前台 HTTP 响应模型。
-- `interfaces/portal/assembler/`：前台 HTTP 协议模型与 application 契约的转换。
+- `interfaces/admin/<subdomain>/controller/`：后台 HTTP API 入口。
+- `interfaces/admin/<subdomain>/controller/request/`：后台 HTTP 请求模型。
+- `interfaces/admin/<subdomain>/controller/response/`：后台 HTTP 响应模型。
+- `interfaces/admin/<subdomain>/assembler/`：后台 HTTP 协议模型与 application 契约的转换。
+- `interfaces/portal/<subdomain>/controller/`：前台 HTTP API 入口。
+- `interfaces/portal/<subdomain>/controller/request/`：前台 HTTP 请求模型。
+- `interfaces/portal/<subdomain>/controller/response/`：前台 HTTP 响应模型。
+- `interfaces/portal/<subdomain>/assembler/`：前台 HTTP 协议模型与 application 契约的转换。
 - `starter/*/`：Spring Boot 启动类、运行时配置装配、扫描范围和应用依赖选择。
