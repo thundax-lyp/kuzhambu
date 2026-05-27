@@ -5,10 +5,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @MapperScan({
-    "com.thundax.kuzhambu.system.infra.core.mapper",
-    "com.thundax.kuzhambu.system.infra.auth.mapper",
-    "com.thundax.kuzhambu.system.infra.audit.mapper",
-    "com.thundax.kuzhambu.storage.infra.mapper"
+    "com.thundax.kuzhambu.system.infra.core.persistence.mapper",
+    "com.thundax.kuzhambu.system.infra.auth.persistence.mapper",
+    "com.thundax.kuzhambu.system.infra.audit.persistence.mapper",
+    "com.thundax.kuzhambu.storage.infra.object.persistence.mapper"
 })
 @SpringBootApplication(
         scanBasePackages = {
