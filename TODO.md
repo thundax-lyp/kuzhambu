@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `kuzhambu-servers/biz/operations`：迁移运营运维域代码和接口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SERVERS-DOMAIN-MODULE-MERGE.md`
-    - 范围对象：`kuzhambu-servers/biz/kuzhambu-biz-operations/`、`kuzhambu-servers/infra/kuzhambu-infra-operations/`、`kuzhambu-servers/biz/operations/`
-    - 处理动作：将 operations 迁移到独立运营运维域四层模块并更新 package/import
-    - 验收点：operations 域代码位于 `com.thundax.kuzhambu.operations` 包下，不属于 system 或 starter，且只保存本领域自有规则和表
-    - 重要度：9/10
-
 - [ ] `kuzhambu-servers/starter`：创建后台和前台启动应用
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SERVERS-DOMAIN-MODULE-MERGE.md`
