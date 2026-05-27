@@ -6,6 +6,10 @@ import com.tngtech.archunit.core.domain.JavaClasses;
 
 public final class ModuleAndDependencyArchitectureRuleSupport {
 
+    private static final String[] DOMAINS = {
+        "ai", "classics", "discovery", "knowledge", "operations", "storage", "system"
+    };
+
     private ModuleAndDependencyArchitectureRuleSupport() {}
 
     public static void assertApplicationLayerBoundary(JavaClasses classes, String basePackage) {
@@ -37,5 +41,22 @@ public final class ModuleAndDependencyArchitectureRuleSupport {
                 .dependOnClassesThat()
                 .resideInAnyPackage(basePackage + ".interfaces..", "com.thundax.kuzhambu.starter..")
                 .check(classes);
+    }
+
+    public static void assertCrossDomainDependencyBoundary(JavaClasses classes, String currentDomain) {
+        for (String domain : DOMAINS) {
+            if (domain.equals(currentDomain)) {
+                continue;
+            }
+            noClasses()
+                    .that()
+                    .resideInAPackage("com.thundax.kuzhambu." + currentDomain + "..")
+                    .should()
+                    .dependOnClassesThat()
+                    .resideInAnyPackage(
+                            "com.thundax.kuzhambu." + domain + ".infra..",
+                            "com.thundax.kuzhambu." + domain + ".domain..repository..")
+                    .check(classes);
+        }
     }
 }

@@ -17,6 +17,7 @@ class SystemInfraArchitectureTest extends AbstractArchitectureTest {
         JavaClasses classes = importPackages(BASE_PACKAGE + ".infra");
 
         ModuleAndDependencyArchitectureRuleSupport.assertInfraLayerBoundary(classes, BASE_PACKAGE);
+        ModuleAndDependencyArchitectureRuleSupport.assertCrossDomainDependencyBoundary(classes, "system");
         AnnotationBoundaryArchitectureRuleSupport.assertInfraAnnotationBoundary(classes, BASE_PACKAGE);
         NamingArchitectureRuleSupport.assertValueObjectPlacement(classes, BASE_PACKAGE);
         NamingArchitectureRuleSupport.assertEntityPlacement(classes, BASE_PACKAGE);

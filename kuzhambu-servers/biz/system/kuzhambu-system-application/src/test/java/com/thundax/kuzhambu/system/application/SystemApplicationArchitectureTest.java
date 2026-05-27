@@ -17,6 +17,7 @@ class SystemApplicationArchitectureTest extends AbstractArchitectureTest {
         JavaClasses classes = importPackages(BASE_PACKAGE + ".application");
 
         ModuleAndDependencyArchitectureRuleSupport.assertApplicationLayerBoundary(classes, BASE_PACKAGE);
+        ModuleAndDependencyArchitectureRuleSupport.assertCrossDomainDependencyBoundary(classes, "system");
         AnnotationBoundaryArchitectureRuleSupport.assertApplicationNoHttpAnnotations(classes, BASE_PACKAGE);
         LayerArchitectureRuleSupport.assertServiceBoundaryTypesClean(classes);
         NamingArchitectureRuleSupport.assertCodecPlacement(classes, BASE_PACKAGE);

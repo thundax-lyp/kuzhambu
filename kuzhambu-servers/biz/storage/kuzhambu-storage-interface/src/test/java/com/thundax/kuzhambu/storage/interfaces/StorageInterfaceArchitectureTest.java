@@ -18,7 +18,12 @@ class StorageInterfaceArchitectureTest extends AbstractArchitectureTest {
         JavaClasses classes = importPackages(BASE_PACKAGE + ".interfaces");
 
         ModuleAndDependencyArchitectureRuleSupport.assertInterfaceLayerBoundary(classes, BASE_PACKAGE);
+        ModuleAndDependencyArchitectureRuleSupport.assertCrossDomainDependencyBoundary(classes, "storage");
         InterfaceBoundaryArchitectureRuleSupport.assertInterfaceNoPersistenceDependency(classes, BASE_PACKAGE);
+        InterfaceBoundaryArchitectureRuleSupport.assertInterfaceProtocolModelsStayInSameSubdomain(
+                Path.of("src/main/java"));
+        InterfaceBoundaryArchitectureRuleSupport.assertInterfaceProtocolsDoNotExposeDomainModels(
+                Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertValueObjectPlacement(classes, BASE_PACKAGE);
         NamingArchitectureRuleSupport.assertEntityPlacement(classes, BASE_PACKAGE);
         ApiAnnotationArchitectureRuleSupport.assertAdminControllersDeclareRequiredClassAnnotations(
