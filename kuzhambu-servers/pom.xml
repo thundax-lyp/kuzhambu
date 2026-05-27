@@ -111,6 +111,14 @@
           <version>${maven-surefire-plugin.version}</version>
         </plugin>
         <plugin>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-maven-plugin</artifactId>
+          <version>${spring-boot.version}</version>
+          <configuration>
+            <mainClass>com.thundax.kuzhambu.starter.admin.KuzhambuAdminApplication</mainClass>
+          </configuration>
+        </plugin>
+        <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-checkstyle-plugin</artifactId>
           <version>${maven-checkstyle-plugin.version}</version>
