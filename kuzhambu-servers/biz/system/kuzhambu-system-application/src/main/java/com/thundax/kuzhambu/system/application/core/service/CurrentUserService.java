@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.system.application.core.service;
 
-import com.thundax.kuzhambu.biz.storage.entity.StoredObject;
+import com.thundax.kuzhambu.storage.application.entity.StoredObject;
 import com.thundax.kuzhambu.system.application.core.entity.Menu;
 import com.thundax.kuzhambu.system.application.core.entity.User;
 import com.thundax.kuzhambu.system.application.core.entity.valueobject.UserId;

@@ -15,8 +15,8 @@
   <name>kuzhambu-biz</name>
 
   <modules>
-    <module>system</module>
     <module>storage</module>
+    <module>system</module>
     <module>classics</module>
     <module>ai</module>
     <module>knowledge</module>

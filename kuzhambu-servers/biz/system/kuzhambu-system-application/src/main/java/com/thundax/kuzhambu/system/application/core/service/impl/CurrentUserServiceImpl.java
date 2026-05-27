@@ -1,16 +1,16 @@
 package com.thundax.kuzhambu.system.application.core.service.impl;
 
-import com.thundax.kuzhambu.biz.storage.entity.StoredObject;
-import com.thundax.kuzhambu.biz.storage.entity.enums.StorageOwnerType;
-import com.thundax.kuzhambu.biz.storage.entity.enums.StoredObjectReferenceStatus;
-import com.thundax.kuzhambu.biz.storage.entity.enums.StoredObjectStatus;
-import com.thundax.kuzhambu.biz.storage.service.StorageService;
-import com.thundax.kuzhambu.biz.storage.service.command.ChangeStorageCommand;
-import com.thundax.kuzhambu.biz.storage.service.command.CreateStorageCommand;
-import com.thundax.kuzhambu.biz.storage.service.query.StorageQuery;
-import com.thundax.kuzhambu.biz.storage.store.StoredObjectStore;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
+import com.thundax.kuzhambu.storage.application.entity.StoredObject;
+import com.thundax.kuzhambu.storage.application.entity.enums.StorageOwnerType;
+import com.thundax.kuzhambu.storage.application.entity.enums.StoredObjectReferenceStatus;
+import com.thundax.kuzhambu.storage.application.entity.enums.StoredObjectStatus;
+import com.thundax.kuzhambu.storage.application.service.StorageService;
+import com.thundax.kuzhambu.storage.application.service.command.ChangeStorageCommand;
+import com.thundax.kuzhambu.storage.application.service.command.CreateStorageCommand;
+import com.thundax.kuzhambu.storage.application.service.query.StorageQuery;
+import com.thundax.kuzhambu.storage.application.store.StoredObjectStore;
 import com.thundax.kuzhambu.system.application.auth.entity.PrincipalCredential;
 import com.thundax.kuzhambu.system.application.auth.entity.PrincipalIdentity;
 import com.thundax.kuzhambu.system.application.auth.entity.enums.PrincipalCredentialStatus;
