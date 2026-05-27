@@ -7,6 +7,7 @@ import com.thundax.kuzhambu.classics.interfaces.admin.content.controller.respons
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+@Tag(name = "古籍模块", description = "通用内容")
 @SysLogger(module = {"古籍", "通用内容"})
 @RequestMapping("/api/classics/content")
 @WrappedApiController

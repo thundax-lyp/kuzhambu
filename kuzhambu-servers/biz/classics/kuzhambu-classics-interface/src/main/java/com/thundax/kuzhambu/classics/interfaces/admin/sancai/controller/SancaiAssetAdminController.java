@@ -7,6 +7,7 @@ import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+@Tag(name = "古籍模块", description = "三才图会资产")
 @SysLogger(module = {"古籍", "三才图会资产"})
 @RequestMapping("/api/classics/sancai/assets")
 @WrappedApiController
