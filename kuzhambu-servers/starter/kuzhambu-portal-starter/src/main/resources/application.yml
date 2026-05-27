@@ -58,6 +58,9 @@ logging:
     com.thundax.kuzhambu: ${KUZHAMBU_APP_LOG_LEVEL:INFO}
 
 kuzhambu:
+  mq:
+    enabled: true
+    type: ROCKETMQ
   logging:
     max-history: ${KUZHAMBU_LOG_MAX_HISTORY:30}
     max-file-size: ${KUZHAMBU_LOG_MAX_FILE_SIZE:100MB}
