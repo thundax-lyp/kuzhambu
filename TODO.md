@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `kuzhambu-servers/biz/knowledge`：迁移知识组织域代码和接口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SERVERS-DOMAIN-MODULE-MERGE.md`
-    - 范围对象：`kuzhambu-servers/biz/kuzhambu-biz-taxonomy/`、`kuzhambu-servers/biz/kuzhambu-biz-data-refinement/`、`kuzhambu-servers/biz/kuzhambu-biz-knowledge-graph/`、`kuzhambu-servers/infra/kuzhambu-infra-taxonomy/`、`kuzhambu-servers/infra/kuzhambu-infra-data-refinement/`、`kuzhambu-servers/infra/kuzhambu-infra-knowledge-graph/`、`kuzhambu-servers/biz/knowledge/`
-    - 处理动作：将标签治理、数据精修和知识图谱迁移到 knowledge 域四层模块并更新 package/import
-    - 验收点：knowledge 域代码位于 `com.thundax.kuzhambu.knowledge` 包下，标签、同义词、实体关系和图谱质量能力保持完整
-    - 重要度：10/10
-
 - [ ] `kuzhambu-servers/biz/discovery`：迁移知识发现域代码和接口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SERVERS-DOMAIN-MODULE-MERGE.md`
