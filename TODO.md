@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `kuzhambu-servers`：重建 Maven 模块结构
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SERVERS-DOMAIN-MODULE-MERGE.md`
-    - 范围对象：`kuzhambu-servers/pom.xml`、`kuzhambu-servers/biz/`、`kuzhambu-servers/starter/`
-    - 处理动作：将后端模块结构调整为 `common/biz/starter`，并在 `biz` 下建立七个业务域四层模块
-    - 验收点：Maven reactor 使用新模块结构，旧横向 `infra` 和 `interfaces` 模块不再作为目标入口
-    - 重要度：10/10
-
 - [ ] `kuzhambu-servers/biz/system`：迁移系统基础域代码和接口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SERVERS-DOMAIN-MODULE-MERGE.md`

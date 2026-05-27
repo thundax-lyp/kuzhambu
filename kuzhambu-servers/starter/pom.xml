@@ -9,18 +9,13 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>kuzhambu-biz</artifactId>
+  <artifactId>kuzhambu-starter</artifactId>
   <packaging>pom</packaging>
 
-  <name>kuzhambu-biz</name>
+  <name>kuzhambu-starter</name>
 
   <modules>
-    <module>system</module>
-    <module>storage</module>
-    <module>classics</module>
-    <module>ai</module>
-    <module>knowledge</module>
-    <module>discovery</module>
-    <module>operations</module>
+    <module>kuzhambu-admin-starter</module>
+    <module>kuzhambu-portal-starter</module>
   </modules>
 </project>

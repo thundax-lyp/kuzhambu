@@ -4,23 +4,20 @@
 
   <parent>
     <groupId>com.thundax</groupId>
-    <artifactId>kuzhambu</artifactId>
+    <artifactId>kuzhambu-biz</artifactId>
     <version>0.0.1-dev</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>kuzhambu-biz</artifactId>
+  <artifactId>kuzhambu-discovery</artifactId>
   <packaging>pom</packaging>
 
-  <name>kuzhambu-biz</name>
+  <name>kuzhambu-discovery</name>
 
   <modules>
-    <module>system</module>
-    <module>storage</module>
-    <module>classics</module>
-    <module>ai</module>
-    <module>knowledge</module>
-    <module>discovery</module>
-    <module>operations</module>
+    <module>kuzhambu-discovery-domain</module>
+    <module>kuzhambu-discovery-application</module>
+    <module>kuzhambu-discovery-interface</module>
+    <module>kuzhambu-discovery-infra</module>
   </modules>
 </project>

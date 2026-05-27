@@ -13,8 +13,7 @@
   <modules>
     <module>common</module>
     <module>biz</module>
-    <module>infra</module>
-    <module>interfaces</module>
+    <module>starter</module>
   </modules>
 
   <properties>
