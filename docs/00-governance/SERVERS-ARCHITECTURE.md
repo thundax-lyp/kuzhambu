@@ -72,6 +72,23 @@
 - 配置属性：`Properties`
 - 自动配置或配置类：`Configuration`
 
+## Runtime Logging
+
+- 启动模块使用 `logback-spring.xml` 配置运行时日志。
+- 默认日志目录为 `logs/`，可通过 `KUZHAMBU_LOG_PATH` 调整。
+- 默认根日志级别为 `INFO`，可通过 `KUZHAMBU_LOG_LEVEL` 调整。
+- 默认业务包 `com.thundax.kuzhambu` 日志级别为 `INFO`，可通过 `KUZHAMBU_APP_LOG_LEVEL` 调整。
+- 应用日志写入 `${spring.application.name}.log`，访问日志写入 `${spring.application.name}-access.log`。
+- 访问日志 logger 固定为 `com.thundax.kuzhambu.access`，不得混入业务应用日志文件。
+- 日志滚动默认单文件 `100MB`、保留 `30` 天、总量 `5GB`，可通过 `KUZHAMBU_LOG_MAX_FILE_SIZE`、`KUZHAMBU_LOG_MAX_HISTORY`、`KUZHAMBU_LOG_TOTAL_SIZE_CAP` 调整。
+
+## Runtime Environment
+
+- 仓库根目录 `.env.example` 是 Java servers 本地启动环境变量样例。
+- `deploy/.env.example` 是部署支撑样例，必须包含基础设施变量和 Java starter 运行时变量。
+- 新增 `application.yml` 环境变量占位符时，同步更新 `.env.example` 和 `deploy/.env.example`。
+- 真实 `.env` 和 `deploy/.env` 不得提交。
+
 ## Default Domain Structure
 
 单个业务域默认目录结构如下，`<domain>` 使用业务域名，例如 `system`、`classics`。
@@ -94,10 +111,13 @@ kuzhambu-servers/
             assembler/
       kuzhambu-<domain>-application/
         src/main/java/com/thundax/kuzhambu/<domain>/application/
-          command/
-          query/
-          assembler/
-          support/
+          <subdomain>/
+            service/
+              impl/
+            command/
+            query/
+            assembler/
+            support/
       kuzhambu-<domain>-domain/
         src/main/java/com/thundax/kuzhambu/<domain>/domain/
           model/
@@ -146,11 +166,13 @@ com/thundax/kuzhambu/<domain>/interfaces/portal/
 路径用途：
 
 - `application/`：用例编排、事务边界、跨域协调、命令、查询和结果对象。
-- `application/command/`：写入用例输入模型。
-- `application/query/`：读取用例输入模型。
-- `application/assembler/`：application 内部模型装配，不处理 HTTP 或持久化细节。
+- `application/<subdomain>/service/`：应用用例入口接口，命名为 `*ApplicationService`。
+- `application/<subdomain>/service/impl/`：应用用例入口实现，命名为 `*ApplicationServiceImpl`。
+- `application/<subdomain>/command/`：写入用例输入模型。
+- `application/<subdomain>/query/`：读取用例输入模型。
+- `application/<subdomain>/assembler/`：application 内部模型装配，不处理 HTTP 或持久化细节。
 - `domain/<subdomain>/codec/`：基础类型和值对象互转，`<subdomain>` 使用业务子域名，例如 `core`、`auth`、`audit`、`object`。
-- `application/support/`：仅服务本业务域 application 层的辅助实现。
+- `application/<subdomain>/support/`：仅服务本业务域 application 层的辅助实现。
 - `domain/<subdomain>/model/entity/`：领域实体；实体类必须且只能声明 `@Getter`、`@Setter`、`@NoArgsConstructor`、`@AllArgsConstructor` 四个类级 Lombok 注解。
 - `domain/<subdomain>/model/enums/`：领域层枚举；`{module}-domain` 内所有 enum 必须位于对应业务子域的此包。
 - `domain/<subdomain>/model/valueobject/`：强类型 ID、Key、Code、Token、Ref、Snapshot 等领域值对象；`application`、`interfaces`、`infra` 不得定义 `valueobject` 包。
