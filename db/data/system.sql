@@ -24,7 +24,7 @@ INSERT INTO `system_role` (
 ) VALUES (
     1,
     '超级管理员',
-    'SUPER',
+    'ADMIN',
     'ENABLED',
     1,
     '拥有全部后台管理权限'
@@ -40,22 +40,22 @@ INSERT INTO `system_menu` (
     `visibility`, `display_params`, `url`, `target`, `remarks`
 ) VALUES
     (
-        1, NULL, 1, 8, '系统管理', 'system:*', 9,
+        1, NULL, 1, 8, '系统管理', 'sys', 9,
         'VISIBLE', '{"icon":"settings"}', '/system', '_self', '系统管理根菜单'
     ),
     (
         2, 1, 2, 3, '用户管理',
-        'system:user:view,system:user:create,system:user:update,system:user:disable,system:user:delete',
+        'sys:user:view,sys:user:edit',
         9, 'VISIBLE', '{"icon":"user"}', '/system/users', '_self', '后台用户管理'
     ),
     (
         3, 1, 4, 5, '角色管理',
-        'system:role:view,system:role:create,system:role:update,system:role:delete,system:role:authorize',
+        'sys:role:view,sys:role:edit',
         9, 'VISIBLE', '{"icon":"shield"}', '/system/roles', '_self', '后台角色管理'
     ),
     (
         4, 1, 6, 7, '菜单管理',
-        'system:menu:view,system:menu:create,system:menu:update,system:menu:delete',
+        'super',
         9, 'VISIBLE', '{"icon":"menu"}', '/system/menus', '_self', '后台菜单管理'
     )
 ON DUPLICATE KEY UPDATE

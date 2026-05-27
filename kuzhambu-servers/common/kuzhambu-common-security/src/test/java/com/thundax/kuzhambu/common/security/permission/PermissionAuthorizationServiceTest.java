@@ -27,6 +27,15 @@ public class PermissionAuthorizationServiceTest {
     }
 
     @Test
+    public void shouldPermitSuperUser() {
+        KuzhambuContextHolder.setSubject(new KuzhambuSubject(
+                "user-1", KuzhambuSubjectType.ADMIN_USER, "Admin", "token-1", Arrays.asList("super")));
+        PermissionAuthorizationService service = new PermissionAuthorizationService(new PrefixPermissionMatcher());
+
+        assertTrue(service.isPermitted("sys:user:view"));
+    }
+
+    @Test
     public void shouldDenyAnonymousUser() {
         PermissionAuthorizationService service = new PermissionAuthorizationService(new PrefixPermissionMatcher());
 

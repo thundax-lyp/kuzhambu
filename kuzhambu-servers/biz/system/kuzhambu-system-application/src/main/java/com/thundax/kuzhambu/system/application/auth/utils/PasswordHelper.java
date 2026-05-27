@@ -9,6 +9,7 @@ public final class PasswordHelper {
 
     private static final String PREFIX = "ENC(";
     private static final String SUFFIX = ")";
+    private static final String NOOP_PREFIX = "{noop}";
 
     private static final String ARG_SEPARATOR = ",";
     private static final int ARG_SALT = 0;
@@ -21,6 +22,9 @@ public final class PasswordHelper {
     }
 
     public static boolean validate(String plainPassword, String encryptedPassword) {
+        if (StringUtils.startsWith(encryptedPassword, NOOP_PREFIX)) {
+            return StringUtils.equals(plainPassword, encryptedPassword.substring(NOOP_PREFIX.length()));
+        }
         if (StringUtils.startsWithIgnoreCase(encryptedPassword, PREFIX)
                 && StringUtils.endsWithIgnoreCase(encryptedPassword, SUFFIX)) {
             String queryString =
