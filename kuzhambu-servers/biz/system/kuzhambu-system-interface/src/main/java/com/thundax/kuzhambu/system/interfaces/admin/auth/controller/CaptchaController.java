@@ -1,6 +1,8 @@
 package com.thundax.kuzhambu.system.interfaces.admin.auth.controller;
 
 import com.thundax.kuzhambu.common.security.annotation.PublicApi;
+import com.thundax.kuzhambu.common.web.annotation.IgnoreSysLogger;
+import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiResponse;
 import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.common.web.exception.KuzhambuException;
@@ -14,6 +16,7 @@ import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PreAuthSessionT
 import com.thundax.kuzhambu.system.interfaces.admin.auth.assembler.CaptchaInterfaceAssembler;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.controller.request.CaptchaRefreshRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.controller.response.CaptchaRefreshResponse;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -39,11 +42,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "系统模块")
+@Tag(name = "系统模块", description = "系统管理")
+@IgnoreSysLogger
 @RequestMapping(value = "/api/auth/captcha")
-@RestController
+@WrappedApiController
 @PublicApi
 public class CaptchaController {
 
@@ -67,6 +70,8 @@ public class CaptchaController {
     }
 
     @Operation(summary = "图形验证码")
+    @ApiImplicitParams({})
+    @IgnoreSysLogger
     @GetMapping
     public void captcha(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String loginToken = request.getParameter("loginToken");
@@ -85,6 +90,8 @@ public class CaptchaController {
     }
 
     @Operation(summary = "刷新图形验证码")
+    @ApiImplicitParams({})
+    @IgnoreSysLogger
     @PostMapping(value = "refresh")
     @WrappedApiResponse
     public CaptchaRefreshResponse refreshCaptcha(@Valid @RequestBody CaptchaRefreshRequest request) {

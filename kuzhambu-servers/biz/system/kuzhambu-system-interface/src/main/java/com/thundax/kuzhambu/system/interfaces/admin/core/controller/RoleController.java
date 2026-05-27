@@ -2,6 +2,8 @@ package com.thundax.kuzhambu.system.interfaces.admin.core.controller;
 
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
+import com.thundax.kuzhambu.common.web.annotation.IgnoreSysLogger;
+import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.OptionInterfaceAssembler;
 import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
@@ -36,7 +38,6 @@ import com.thundax.kuzhambu.system.domain.core.model.entity.User;
 import com.thundax.kuzhambu.system.domain.core.model.enums.RoleStatus;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.RoleId;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
-import com.thundax.kuzhambu.system.interfaces.admin.core.aop.annotation.SysLogger;
 import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.RoleInterfaceAssembler;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.RoleAssignUserRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.RoleIdRequest;
@@ -66,7 +67,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-@Tag(name = "系统模块")
+@Tag(name = "系统模块", description = "系统管理")
 @SysLogger(module = {"系统", "权限"})
 @RequestMapping(value = "/api/sys/role")
 @WrappedApiController
@@ -145,6 +146,7 @@ public class RoleController {
                 dataTypeClass = String.class),
     })
     @HasPermission(value = "sys:role:view")
+    @IgnoreSysLogger
     @PostMapping(value = "options")
     public RoleOptionsResponse options() {
         DictQuery statusQuery = new DictQuery();
@@ -314,6 +316,7 @@ public class RoleController {
                 dataTypeClass = String.class),
     })
     @HasPermission({"sys:role:view", "sys:role:edit"})
+    @IgnoreSysLogger
     @PostMapping(value = "menu/tree")
     public List<RoleMenuResponse> menuTree() {
         return menuService.list(new MenuQuery()).stream()
@@ -330,6 +333,7 @@ public class RoleController {
                 dataTypeClass = String.class),
     })
     @HasPermission({"sys:role:view", "sys:role:edit"})
+    @IgnoreSysLogger
     @PostMapping(value = "user/tree")
     public List<RoleUserTreeNodeResponse> userTree() {
         List<RoleUserTreeNodeResponse> list = new ArrayList<>();
@@ -360,6 +364,7 @@ public class RoleController {
                 dataTypeClass = String.class),
     })
     @HasPermission({"sys:role:view", "sys:role:edit"})
+    @IgnoreSysLogger
     @PostMapping(value = "user/list")
     public List<RoleUserResponse> userList(@Valid @RequestBody RoleIdRequest request) {
         Role bean = roleService.get(RoleIdCodec.toDomain(request.getId()));

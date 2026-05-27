@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.system.interfaces.admin.core.aop;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.thundax.kuzhambu.system.interfaces.admin.core.aop.annotation.SysLogger;
+import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.system.interfaces.admin.core.service.SysLogMessageService;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;

@@ -4,6 +4,7 @@ import com.thundax.kuzhambu.common.core.tree.TreeNodeListHelper;
 import com.thundax.kuzhambu.common.core.tree.TreeNodeMoveType;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
+import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.common.web.request.RequestListHelper;
@@ -13,7 +14,6 @@ import com.thundax.kuzhambu.system.application.core.service.DepartmentApplicatio
 import com.thundax.kuzhambu.system.domain.core.codec.DepartmentIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Department;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.DepartmentId;
-import com.thundax.kuzhambu.system.interfaces.admin.core.aop.annotation.SysLogger;
 import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.DepartmentInterfaceAssembler;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.DepartmentIdRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.DepartmentMoveRequest;
@@ -35,7 +35,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-@Tag(name = "系统模块")
+@Tag(name = "系统模块", description = "系统管理")
 @SysLogger(module = {"系统", "部门"})
 @RequestMapping(value = "/api/sys/department")
 @WrappedApiController

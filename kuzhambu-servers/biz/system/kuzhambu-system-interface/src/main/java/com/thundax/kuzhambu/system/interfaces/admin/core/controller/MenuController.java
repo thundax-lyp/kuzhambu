@@ -4,6 +4,7 @@ import com.thundax.kuzhambu.common.core.tree.TreeNodeListHelper;
 import com.thundax.kuzhambu.common.core.tree.TreeNodeMoveType;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
+import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.common.web.request.RequestListHelper;
@@ -15,7 +16,6 @@ import com.thundax.kuzhambu.system.domain.core.codec.MenuIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Menu;
 import com.thundax.kuzhambu.system.domain.core.model.enums.MenuVisibility;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.MenuId;
-import com.thundax.kuzhambu.system.interfaces.admin.core.aop.annotation.SysLogger;
 import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.MenuInterfaceAssembler;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.MenuDisplayRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.MenuIdRequest;
@@ -38,7 +38,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-@Tag(name = "系统模块")
+@Tag(name = "系统模块", description = "系统管理")
 @SysLogger(module = {"系统", "菜单"})
 @RequestMapping(value = "/api/sys/menu")
 @WrappedApiController

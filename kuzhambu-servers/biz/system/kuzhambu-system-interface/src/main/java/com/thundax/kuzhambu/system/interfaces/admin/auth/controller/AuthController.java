@@ -3,6 +3,8 @@ package com.thundax.kuzhambu.system.interfaces.admin.auth.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.common.core.crypto.Sm2Crypto;
 import com.thundax.kuzhambu.common.security.annotation.PublicApi;
+import com.thundax.kuzhambu.common.web.annotation.IgnoreSysLogger;
+import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.common.web.exception.KuzhambuException;
@@ -44,8 +46,8 @@ import com.thundax.kuzhambu.system.interfaces.admin.auth.service.AdminAuthServic
 import com.thundax.kuzhambu.system.interfaces.admin.auth.service.command.AdminAuthCommand;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.service.query.AdminAuthQuery;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.service.result.AuthAccessTokenResult;
-import com.thundax.kuzhambu.system.interfaces.admin.core.aop.annotation.SysLogger;
 import com.thundax.kuzhambu.system.interfaces.admin.core.service.SysLogMessageService;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -61,7 +63,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-@Tag(name = "系统模块")
+@Tag(name = "系统模块", description = "系统管理")
 @RequestMapping(value = "/api/auth/session")
 @SysLogger(module = {"系统", "登录"})
 @WrappedApiController
@@ -97,6 +99,7 @@ public class AuthController {
     }
 
     @Operation(summary = "请求预认证会话")
+    @ApiImplicitParams({})
     @PostMapping(value = "pre-auth-session")
     @SysLogger(value = "请求预认证会话")
     public AuthLoginFormResponse preAuthSession() {
@@ -104,6 +107,7 @@ public class AuthController {
     }
 
     @Operation(summary = "刷新预认证会话")
+    @ApiImplicitParams({})
     @PostMapping(value = "pre-auth-session/refresh")
     @SysLogger(value = "刷新预认证会话")
     public AuthLoginFormResponse refreshPreAuthSession(@Valid @RequestBody AuthLoginFormRefreshRequest request) {
@@ -115,6 +119,7 @@ public class AuthController {
     }
 
     @Operation(summary = "用户/密码登录")
+    @ApiImplicitParams({})
     @PostMapping(value = "login")
     @SysLogger(value = "用户/密码登录")
     public AuthAccessTokenResponse login(@Valid @RequestBody AuthLoginRequest request) {
@@ -164,7 +169,9 @@ public class AuthController {
     }
 
     @Operation(summary = "短信登录")
+    @ApiImplicitParams({})
     @PostMapping(value = "login/sms")
+    @SysLogger(value = "短信登录")
     public AuthAccessTokenResponse loginBySms(@Valid @RequestBody SmsLoginRequest request) {
         HttpServletRequest currentRequest = currentRequest();
         if (!validateSmsValidateCode(request.getLoginToken(), request.getMobile(), request.getValidateCode())) {
@@ -185,7 +192,9 @@ public class AuthController {
     }
 
     @Operation(summary = "企业微信登录")
+    @ApiImplicitParams({})
     @PostMapping(value = "login/wecom")
+    @SysLogger(value = "企业微信登录")
     public AuthAccessTokenResponse loginByWecom(@Valid @RequestBody WecomLoginRequest request) {
         HttpServletRequest currentRequest = currentRequest();
         User user = authService.authenticateWecom(codeCommand(request.getCode(), currentRequest));
@@ -194,7 +203,9 @@ public class AuthController {
     }
 
     @Operation(summary = "GitHub 登录")
+    @ApiImplicitParams({})
     @PostMapping(value = "login/github")
+    @SysLogger(value = "GitHub登录")
     public AuthAccessTokenResponse loginByGithub(@Valid @RequestBody GithubLoginRequest request) {
         HttpServletRequest currentRequest = currentRequest();
         User user = authService.authenticateGithub(codeCommand(request.getCode(), currentRequest));
@@ -203,6 +214,7 @@ public class AuthController {
     }
 
     @Operation(summary = "登出")
+    @ApiImplicitParams({})
     @PostMapping(value = "logout")
     @SysLogger(value = "登出")
     public Boolean logout(@Valid @RequestBody AuthLogoutRequest request) {
@@ -222,13 +234,17 @@ public class AuthController {
     }
 
     @Operation(summary = "校验 token")
+    @ApiImplicitParams({})
     @PostMapping(value = "token/verify")
+    @IgnoreSysLogger
     public TokenVerifyResponse verifyToken(@Valid @RequestBody AuthTokenRequest request) {
         return AuthInterfaceAssembler.toTokenVerifyResponse(authService.getTokenInfo(tokenQuery(request.getToken())));
     }
 
     @Operation(summary = "刷新 token")
+    @ApiImplicitParams({})
     @PostMapping(value = "token/refresh")
+    @IgnoreSysLogger
     public AuthAccessTokenResponse refreshToken(@Valid @RequestBody TokenRefreshRequest request) {
         return AuthInterfaceAssembler.toAccessTokenResponse(authService.refreshAccessToken(
                 refreshTokenCommand(request.getClientId(), request.getRefreshToken(), currentRequest())));

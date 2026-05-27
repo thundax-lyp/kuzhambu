@@ -2,6 +2,8 @@ package com.thundax.kuzhambu.system.interfaces.admin.core.controller;
 
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
+import com.thundax.kuzhambu.common.web.annotation.IgnoreSysLogger;
+import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
 import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
@@ -14,7 +16,6 @@ import com.thundax.kuzhambu.system.application.core.service.DictApplicationServi
 import com.thundax.kuzhambu.system.domain.core.codec.DictIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Dict;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.DictId;
-import com.thundax.kuzhambu.system.interfaces.admin.core.aop.annotation.SysLogger;
 import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.DictInterfaceAssembler;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.DictIdRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.DictPageRequest;
@@ -36,7 +37,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-@Tag(name = "系统模块")
+@Tag(name = "系统模块", description = "系统管理")
 @SysLogger(module = {"系统", "字典"})
 @RequestMapping(value = "/api/sys/dict")
 @WrappedApiController
@@ -165,6 +166,7 @@ public class DictController {
 
     @Operation(summary = "排序", description = "sys:dict:edit")
     @HasPermission(value = "sys:dict:edit")
+    @IgnoreSysLogger
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,

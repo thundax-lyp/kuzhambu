@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.system.interfaces.admin.core.aop.annotation;
+package com.thundax.kuzhambu.common.web.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

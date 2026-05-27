@@ -3,6 +3,9 @@ package com.thundax.kuzhambu.system.interfaces.admin.core.controller;
 import com.thundax.kuzhambu.common.core.crypto.Sm2Crypto;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
+import com.thundax.kuzhambu.common.web.annotation.IgnoreSysLogger;
+import com.thundax.kuzhambu.common.web.annotation.SysLogger;
+import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiResponse;
 import com.thundax.kuzhambu.common.web.assembler.OptionInterfaceAssembler;
 import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
@@ -56,7 +59,6 @@ import com.thundax.kuzhambu.system.domain.core.model.enums.UserStatus;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.AccessRank;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.security.CurrentUserResolver;
-import com.thundax.kuzhambu.system.interfaces.admin.core.aop.annotation.SysLogger;
 import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.UserInterfaceAssembler;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.UserAvatarRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.UserCheckRequest;
@@ -94,13 +96,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-@Tag(name = "系统模块")
+@Tag(name = "系统模块", description = "系统管理")
 @SysLogger(module = {"系统", "用户"})
 @RequestMapping(value = "/api/sys/user")
-@RestController
+@WrappedApiController
 public class UserController {
 
     private static final int DEFAULT_PASSWORD_FAILED_LIMIT = 0;
@@ -210,6 +211,7 @@ public class UserController {
                 dataTypeClass = String.class),
     })
     @HasPermission(value = "sys:user:view")
+    @IgnoreSysLogger
     @PostMapping(value = "options")
     @WrappedApiResponse
     public UserOptionsResponse options() {
@@ -383,6 +385,7 @@ public class UserController {
                 dataTypeClass = String.class),
     })
     @HasPermission(value = "sys:user:view")
+    @IgnoreSysLogger
     @PostMapping(value = "avatar")
     public String avatar(@Valid @RequestBody UserAvatarRequest request) {
         return readAvatarUrl(UserIdCodec.toDomain(request.getId()));
@@ -464,6 +467,7 @@ public class UserController {
                 dataTypeClass = String.class),
     })
     @HasPermission(value = "sys:user:view")
+    @IgnoreSysLogger
     @PostMapping(value = "check")
     @WrappedApiResponse
     public Boolean check(@Valid @RequestBody UserCheckRequest request) {
@@ -479,6 +483,7 @@ public class UserController {
                 dataTypeClass = String.class),
     })
     @HasPermission(value = "sys:user:view")
+    @IgnoreSysLogger
     @PostMapping(value = "department/tree")
     @WrappedApiResponse
     public List<UserDepartmentResponse> departmentTree() {
@@ -496,6 +501,7 @@ public class UserController {
                 dataTypeClass = String.class),
     })
     @HasPermission(value = "sys:user:view")
+    @IgnoreSysLogger
     @PostMapping(value = "role/list")
     @WrappedApiResponse
     public List<UserRoleResponse> roleList() {
@@ -507,7 +513,15 @@ public class UserController {
     }
 
     @Operation(summary = "用户头像", description = "user")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "user")
+    @IgnoreSysLogger
     @GetMapping(value = "avatar")
     public void avatarImage(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String userId = request.getParameter("id");

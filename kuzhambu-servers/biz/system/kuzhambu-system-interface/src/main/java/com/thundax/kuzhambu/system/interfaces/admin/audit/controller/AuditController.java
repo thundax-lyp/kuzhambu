@@ -4,6 +4,8 @@ import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageRules;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
+import com.thundax.kuzhambu.common.web.annotation.IgnoreSysLogger;
+import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
@@ -32,7 +34,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-@Tag(name = "系统模块")
+@Tag(name = "系统模块", description = "系统管理")
+@SysLogger(module = {"系统", "审计"})
 @RequestMapping(value = "/api/audit/log")
 @WrappedApiController
 public class AuditController {
@@ -48,6 +51,7 @@ public class AuditController {
 
     @Operation(summary = "获取审计元数据", description = "audit:view")
     @HasPermission(value = "audit:view")
+    @IgnoreSysLogger
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,
@@ -63,6 +67,7 @@ public class AuditController {
 
     @Operation(summary = "获取对象审计历史", description = "audit:view")
     @HasPermission(value = "audit:view")
+    @IgnoreSysLogger
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,
@@ -80,6 +85,7 @@ public class AuditController {
 
     @Operation(summary = "获取审计日志详情", description = "audit:view")
     @HasPermission(value = "audit:view")
+    @IgnoreSysLogger
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,
@@ -95,6 +101,7 @@ public class AuditController {
 
     @Operation(summary = "获取对象审计概览", description = "audit:view")
     @HasPermission(value = "audit:view")
+    @IgnoreSysLogger
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,
@@ -114,6 +121,7 @@ public class AuditController {
 
     @Operation(summary = "获取对象审计分页", description = "audit:view")
     @HasPermission(value = "audit:view")
+    @IgnoreSysLogger
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,
@@ -131,6 +139,7 @@ public class AuditController {
 
     @Operation(summary = "审计日志分页", description = "audit:view")
     @HasPermission(value = "audit:view")
+    @IgnoreSysLogger
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,
@@ -148,6 +157,7 @@ public class AuditController {
 
     @Operation(summary = "获取审计选项", description = "audit:view")
     @HasPermission(value = "audit:view")
+    @IgnoreSysLogger
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,
@@ -162,6 +172,7 @@ public class AuditController {
 
     @Operation(summary = "获取审计对象字段", description = "audit:view")
     @HasPermission(value = "audit:view")
+    @IgnoreSysLogger
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,

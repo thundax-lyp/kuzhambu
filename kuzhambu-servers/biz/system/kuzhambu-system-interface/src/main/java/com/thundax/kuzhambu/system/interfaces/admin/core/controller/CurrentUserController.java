@@ -3,6 +3,8 @@ package com.thundax.kuzhambu.system.interfaces.admin.core.controller;
 import com.thundax.kuzhambu.common.core.crypto.Sm2Crypto;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
+import com.thundax.kuzhambu.common.web.annotation.IgnoreSysLogger;
+import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionValueQuery;
@@ -24,7 +26,6 @@ import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalKey;
 import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.User;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.security.CurrentUserResolver;
-import com.thundax.kuzhambu.system.interfaces.admin.core.aop.annotation.SysLogger;
 import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.PersonalInterfaceAssembler;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.PersonalAvatarUploadRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.PersonalInfoUpdateRequest;
@@ -48,7 +49,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-@Tag(name = "系统模块")
+@Tag(name = "系统模块", description = "系统管理")
 @SysLogger(module = {"系统", "当前用户"})
 @RequestMapping(value = "/api/sys/current-user")
 @WrappedApiController
@@ -78,6 +79,7 @@ public class CurrentUserController {
 
     @Operation(summary = "当前用户信息", description = "读取当前登录后台用户的基础资料和登录名")
     @HasPermission(value = "user")
+    @IgnoreSysLogger
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,
@@ -198,6 +200,7 @@ public class CurrentUserController {
 
     @Operation(summary = "当前用户菜单列表", description = "按当前登录后台用户角色和访问等级返回可见菜单树列表")
     @HasPermission(value = "user")
+    @IgnoreSysLogger
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,
@@ -214,6 +217,7 @@ public class CurrentUserController {
 
     @Operation(summary = "当前用户权限列表", description = "返回当前登录后台用户认证上下文中的权限编码集合")
     @HasPermission(value = "user")
+    @IgnoreSysLogger
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,

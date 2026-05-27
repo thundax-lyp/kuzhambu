@@ -2,6 +2,8 @@ package com.thundax.kuzhambu.system.interfaces.admin.core.controller;
 
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
+import com.thundax.kuzhambu.common.web.annotation.IgnoreSysLogger;
+import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
@@ -34,7 +36,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-@Tag(name = "系统模块")
+@Tag(name = "系统模块", description = "系统管理")
+@SysLogger(module = {"系统", "日志"})
 @RequestMapping(value = "/api/sys/log")
 @WrappedApiController
 public class LogController {
@@ -58,6 +61,7 @@ public class LogController {
 
     @Operation(summary = "获取列表", description = "super")
     @HasPermission(value = "super")
+    @IgnoreSysLogger
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,
