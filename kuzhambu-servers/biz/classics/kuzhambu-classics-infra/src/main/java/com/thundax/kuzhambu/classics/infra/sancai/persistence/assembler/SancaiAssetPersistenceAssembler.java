@@ -19,23 +19,56 @@ public final class SancaiAssetPersistenceAssembler {
 
     private SancaiAssetPersistenceAssembler() {}
 
+    public static SancaiEntryImageDO toObject(SancaiEntryImage entity) {
+        return toImageObject(entity);
+    }
+
+    public static SancaiEntryImage toDomain(SancaiEntryImageDO dataObject) {
+        return toImageDomain(dataObject);
+    }
+
     public static SancaiEntryDraftDO toDraftObject(SancaiEntryDraft entity) {
-        return entity == null ? null : new SancaiEntryDraftDO(entity.getId(), entity.getEntryId(), entity.getAutosavedAt(), entity.getDraftJson());
+        return entity == null
+                ? null
+                : new SancaiEntryDraftDO(
+                        entity.getId(), entity.getEntryId(), entity.getAutosavedAt(), entity.getDraftJson());
     }
 
     public static SancaiEntryDraft toDraftDomain(SancaiEntryDraftDO dataObject) {
-        return dataObject == null ? null : new SancaiEntryDraft(dataObject.getId(), dataObject.getEntryId(), dataObject.getAutosavedAt(), dataObject.getDraftJson());
+        return dataObject == null
+                ? null
+                : new SancaiEntryDraft(
+                        dataObject.getId(),
+                        dataObject.getEntryId(),
+                        dataObject.getAutosavedAt(),
+                        dataObject.getDraftJson());
     }
 
     public static SancaiEntryImageDO toImageObject(SancaiEntryImage entity) {
-        return entity == null ? null : new SancaiEntryImageDO(entity.getId(), entity.getEntryId(), entity.getStorageObjectId(), value(entity.getImageType()), entity.getTitle(), entity.isCurrentUsed(), entity.getPriority());
+        return entity == null
+                ? null
+                : new SancaiEntryImageDO(
+                        entity.getId(),
+                        entity.getEntryId(),
+                        entity.getStorageObjectId(),
+                        value(entity.getImageType()),
+                        entity.getTitle(),
+                        entity.isCurrentUsed(),
+                        entity.getPriority());
     }
 
     public static SancaiEntryImage toImageDomain(SancaiEntryImageDO dataObject) {
         if (dataObject == null) {
             return null;
         }
-        return new SancaiEntryImage(dataObject.getId(), dataObject.getEntryId(), dataObject.getStorageObjectId(), dataObject.getImageType() == null ? null : SancaiEntryImageType.from(dataObject.getImageType()), dataObject.getTitle(), Boolean.TRUE.equals(dataObject.getCurrentUsed()), priority(dataObject.getPriority()));
+        return new SancaiEntryImage(
+                dataObject.getId(),
+                dataObject.getEntryId(),
+                dataObject.getStorageObjectId(),
+                dataObject.getImageType() == null ? null : SancaiEntryImageType.from(dataObject.getImageType()),
+                dataObject.getTitle(),
+                Boolean.TRUE.equals(dataObject.getCurrentUsed()),
+                priority(dataObject.getPriority()));
     }
 
     public static List<SancaiEntryImage> toImageDomainList(List<SancaiEntryImageDO> dataObjects) {
@@ -49,14 +82,42 @@ public final class SancaiAssetPersistenceAssembler {
     }
 
     public static SancaiVisualAssetDO toVisualAssetObject(SancaiVisualAsset entity) {
-        return entity == null ? null : new SancaiVisualAssetDO(entity.getId(), entity.getEntryId(), entity.getVersionNo(), value(entity.getStatus()), entity.getSourceImageStorageObjectId(), entity.getGeneratedImageStorageObjectId(), entity.isCurrentUsed(), entity.getTextWeight(), entity.getImageWeight(), entity.getImageAnalysisMarkdown(), entity.getFusionDescription(), entity.getVisualDescription(), entity.getGenerationParamsJson());
+        return entity == null
+                ? null
+                : new SancaiVisualAssetDO(
+                        entity.getId(),
+                        entity.getEntryId(),
+                        entity.getVersionNo(),
+                        value(entity.getStatus()),
+                        entity.getSourceImageStorageObjectId(),
+                        entity.getGeneratedImageStorageObjectId(),
+                        entity.isCurrentUsed(),
+                        entity.getTextWeight(),
+                        entity.getImageWeight(),
+                        entity.getImageAnalysisMarkdown(),
+                        entity.getFusionDescription(),
+                        entity.getVisualDescription(),
+                        entity.getGenerationParamsJson());
     }
 
     public static SancaiVisualAsset toVisualAssetDomain(SancaiVisualAssetDO dataObject) {
         if (dataObject == null) {
             return null;
         }
-        return new SancaiVisualAsset(dataObject.getId(), dataObject.getEntryId(), priority(dataObject.getVersionNo()), dataObject.getStatus() == null ? null : SancaiVisualAssetStatus.from(dataObject.getStatus()), dataObject.getSourceImageStorageObjectId(), dataObject.getGeneratedImageStorageObjectId(), Boolean.TRUE.equals(dataObject.getCurrentUsed()), priority(dataObject.getTextWeight()), priority(dataObject.getImageWeight()), dataObject.getImageAnalysisMarkdown(), dataObject.getFusionDescription(), dataObject.getVisualDescription(), dataObject.getGenerationParamsJson());
+        return new SancaiVisualAsset(
+                dataObject.getId(),
+                dataObject.getEntryId(),
+                priority(dataObject.getVersionNo()),
+                dataObject.getStatus() == null ? null : SancaiVisualAssetStatus.from(dataObject.getStatus()),
+                dataObject.getSourceImageStorageObjectId(),
+                dataObject.getGeneratedImageStorageObjectId(),
+                Boolean.TRUE.equals(dataObject.getCurrentUsed()),
+                priority(dataObject.getTextWeight()),
+                priority(dataObject.getImageWeight()),
+                dataObject.getImageAnalysisMarkdown(),
+                dataObject.getFusionDescription(),
+                dataObject.getVisualDescription(),
+                dataObject.getGenerationParamsJson());
     }
 
     public static List<SancaiVisualAsset> toVisualAssetDomainList(List<SancaiVisualAssetDO> dataObjects) {
@@ -70,14 +131,32 @@ public final class SancaiAssetPersistenceAssembler {
     }
 
     public static SancaiShowcaseDO toShowcaseObject(SancaiShowcase entity) {
-        return entity == null ? null : new SancaiShowcaseDO(entity.getId(), entity.getRequestedAt(), value(entity.getStatus()), entity.getScopeJson(), entity.getStorageObjectId(), entity.getEntryCount(), value(entity.getVisibilityRiskStatus()));
+        return entity == null
+                ? null
+                : new SancaiShowcaseDO(
+                        entity.getId(),
+                        entity.getRequestedAt(),
+                        value(entity.getStatus()),
+                        entity.getScopeJson(),
+                        entity.getStorageObjectId(),
+                        entity.getEntryCount(),
+                        value(entity.getVisibilityRiskStatus()));
     }
 
     public static SancaiShowcase toShowcaseDomain(SancaiShowcaseDO dataObject) {
         if (dataObject == null) {
             return null;
         }
-        return new SancaiShowcase(dataObject.getId(), dataObject.getRequestedAt(), dataObject.getStatus() == null ? null : SancaiShowcaseStatus.from(dataObject.getStatus()), dataObject.getScopeJson(), dataObject.getStorageObjectId(), priority(dataObject.getEntryCount()), dataObject.getVisibilityRiskStatus() == null ? null : SancaiVisibilityRiskStatus.from(dataObject.getVisibilityRiskStatus()));
+        return new SancaiShowcase(
+                dataObject.getId(),
+                dataObject.getRequestedAt(),
+                dataObject.getStatus() == null ? null : SancaiShowcaseStatus.from(dataObject.getStatus()),
+                dataObject.getScopeJson(),
+                dataObject.getStorageObjectId(),
+                priority(dataObject.getEntryCount()),
+                dataObject.getVisibilityRiskStatus() == null
+                        ? null
+                        : SancaiVisibilityRiskStatus.from(dataObject.getVisibilityRiskStatus()));
     }
 
     public static List<SancaiShowcase> toShowcaseDomainList(List<SancaiShowcaseDO> dataObjects) {

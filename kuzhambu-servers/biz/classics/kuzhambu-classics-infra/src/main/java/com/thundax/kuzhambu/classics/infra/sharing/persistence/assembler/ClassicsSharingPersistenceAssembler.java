@@ -19,6 +19,14 @@ import java.util.List;
 public final class ClassicsSharingPersistenceAssembler {
     private ClassicsSharingPersistenceAssembler() {}
 
+    public static ClassicsShareLinkDO toObject(ClassicsShareLink entity) {
+        return toLinkObject(entity);
+    }
+
+    public static ClassicsShareLink toDomain(ClassicsShareLinkDO dataObject) {
+        return toLinkDomain(dataObject);
+    }
+
     public static ClassicsShareLinkDO toLinkObject(ClassicsShareLink entity) {
         return entity == null
                 ? null

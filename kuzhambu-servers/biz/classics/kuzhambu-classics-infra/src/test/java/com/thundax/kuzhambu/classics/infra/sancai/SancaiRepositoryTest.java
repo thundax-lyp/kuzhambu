@@ -10,7 +10,13 @@ class SancaiRepositoryTest {
 
     @Test
     void schemaAndDataShouldContainSancaiTablesAndSeedData() {
-        assertTrue(Files.exists(Path.of("../db/schema/classics.sql")) || Files.exists(Path.of("db/schema/classics.sql")));
-        assertTrue(Files.exists(Path.of("../db/data/classics.sql")) || Files.exists(Path.of("db/data/classics.sql")));
+        assertTrue(existsInKnownRoots("db/schema/classics.sql"));
+        assertTrue(existsInKnownRoots("db/data/classics.sql"));
+    }
+
+    private static boolean existsInKnownRoots(String path) {
+        return Files.exists(Path.of(path))
+                || Files.exists(Path.of("../" + path))
+                || Files.exists(Path.of("../../../../" + path));
     }
 }

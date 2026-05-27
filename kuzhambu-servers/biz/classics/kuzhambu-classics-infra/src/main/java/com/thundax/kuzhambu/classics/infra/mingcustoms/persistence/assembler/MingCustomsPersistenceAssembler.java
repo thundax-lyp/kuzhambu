@@ -13,18 +13,50 @@ public final class MingCustomsPersistenceAssembler {
 
     private MingCustomsPersistenceAssembler() {}
 
+    public static MingCustomsEntryDO toObject(MingCustomsEntry entity) {
+        return toEntryObject(entity);
+    }
+
+    public static MingCustomsEntry toDomain(MingCustomsEntryDO dataObject) {
+        return toEntryDomain(dataObject);
+    }
+
     public static MingCustomsEntryDO toEntryObject(MingCustomsEntry entity) {
         if (entity == null) {
             return null;
         }
-        return new MingCustomsEntryDO(entity.getId(), entity.getTitle(), entity.getCategory(), entity.getChapter(), entity.getSection(), entity.getSummary(), entity.getContentFormat() == null ? null : entity.getContentFormat().value(), entity.getContent(), entity.getOriginalExcerpts(), entity.getVisibility() == null ? null : entity.getVisibility().value());
+        return new MingCustomsEntryDO(
+                entity.getId(),
+                entity.getTitle(),
+                entity.getCategory(),
+                entity.getChapter(),
+                entity.getSection(),
+                entity.getSummary(),
+                entity.getContentFormat() == null
+                        ? null
+                        : entity.getContentFormat().value(),
+                entity.getContent(),
+                entity.getOriginalExcerpts(),
+                entity.getVisibility() == null ? null : entity.getVisibility().value());
     }
 
     public static MingCustomsEntry toEntryDomain(MingCustomsEntryDO dataObject) {
         if (dataObject == null) {
             return null;
         }
-        return new MingCustomsEntry(dataObject.getId(), dataObject.getTitle(), dataObject.getCategory(), dataObject.getChapter(), dataObject.getSection(), dataObject.getSummary(), dataObject.getContentFormat() == null ? null : MingCustomsContentFormat.from(dataObject.getContentFormat()), dataObject.getContent(), dataObject.getOriginalExcerpts(), dataObject.getVisibility() == null ? null : MingCustomsVisibility.from(dataObject.getVisibility()));
+        return new MingCustomsEntry(
+                dataObject.getId(),
+                dataObject.getTitle(),
+                dataObject.getCategory(),
+                dataObject.getChapter(),
+                dataObject.getSection(),
+                dataObject.getSummary(),
+                dataObject.getContentFormat() == null
+                        ? null
+                        : MingCustomsContentFormat.from(dataObject.getContentFormat()),
+                dataObject.getContent(),
+                dataObject.getOriginalExcerpts(),
+                dataObject.getVisibility() == null ? null : MingCustomsVisibility.from(dataObject.getVisibility()));
     }
 
     public static List<MingCustomsEntry> toEntryDomainList(List<MingCustomsEntryDO> dataObjects) {
@@ -38,11 +70,20 @@ public final class MingCustomsPersistenceAssembler {
     }
 
     public static MingCustomsKeywordDO toKeywordObject(MingCustomsKeyword entity) {
-        return entity == null ? null : new MingCustomsKeywordDO(entity.getId(), entity.getCustomId(), entity.getKeyword(), entity.getPriority());
+        return entity == null
+                ? null
+                : new MingCustomsKeywordDO(
+                        entity.getId(), entity.getCustomId(), entity.getKeyword(), entity.getPriority());
     }
 
     public static MingCustomsKeyword toKeywordDomain(MingCustomsKeywordDO dataObject) {
-        return dataObject == null ? null : new MingCustomsKeyword(dataObject.getId(), dataObject.getCustomId(), dataObject.getKeyword(), dataObject.getPriority() == null ? 0 : dataObject.getPriority());
+        return dataObject == null
+                ? null
+                : new MingCustomsKeyword(
+                        dataObject.getId(),
+                        dataObject.getCustomId(),
+                        dataObject.getKeyword(),
+                        dataObject.getPriority() == null ? 0 : dataObject.getPriority());
     }
 
     public static List<MingCustomsKeyword> toKeywordDomainList(List<MingCustomsKeywordDO> dataObjects) {

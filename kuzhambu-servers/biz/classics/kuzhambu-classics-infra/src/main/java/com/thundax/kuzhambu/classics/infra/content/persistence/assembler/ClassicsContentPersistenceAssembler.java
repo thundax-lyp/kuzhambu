@@ -23,6 +23,14 @@ import java.util.List;
 public final class ClassicsContentPersistenceAssembler {
     private ClassicsContentPersistenceAssembler() {}
 
+    public static ClassicsContentTagDO toObject(ClassicsContentTag entity) {
+        return toTagObject(entity);
+    }
+
+    public static ClassicsContentTag toDomain(ClassicsContentTagDO dataObject) {
+        return toTagDomain(dataObject);
+    }
+
     public static ClassicsContentTagDO toTagObject(ClassicsContentTag entity) {
         return entity == null
                 ? null

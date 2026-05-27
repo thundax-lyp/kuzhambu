@@ -21,6 +21,14 @@ public final class SancaiPersistenceAssembler {
 
     private SancaiPersistenceAssembler() {}
 
+    public static SancaiEntryDO toObject(SancaiEntry entity) {
+        return toEntryObject(entity);
+    }
+
+    public static SancaiEntry toDomain(SancaiEntryDO dataObject) {
+        return toEntryDomain(dataObject);
+    }
+
     public static SancaiCategory toCategoryDomain(SancaiCategoryDO dataObject) {
         if (dataObject == null) {
             return null;
@@ -28,7 +36,8 @@ public final class SancaiPersistenceAssembler {
         SancaiCategory category = new SancaiCategory();
         category.setId(dataObject.getId());
         category.setTitle(dataObject.getTitle());
-        category.setCategoryType(dataObject.getCategoryType() == null ? null : SancaiCategoryType.from(dataObject.getCategoryType()));
+        category.setCategoryType(
+                dataObject.getCategoryType() == null ? null : SancaiCategoryType.from(dataObject.getCategoryType()));
         category.setPriority(priorityOrDefault(dataObject.getPriority()));
         return category;
     }
@@ -51,7 +60,8 @@ public final class SancaiPersistenceAssembler {
         volume.setId(dataObject.getId());
         volume.setCategoryId(dataObject.getCategoryId());
         volume.setTitle(dataObject.getTitle());
-        volume.setVolumeType(dataObject.getVolumeType() == null ? null : SancaiVolumeType.from(dataObject.getVolumeType()));
+        volume.setVolumeType(
+                dataObject.getVolumeType() == null ? null : SancaiVolumeType.from(dataObject.getVolumeType()));
         volume.setPriority(priorityOrDefault(dataObject.getPriority()));
         return volume;
     }
@@ -98,12 +108,26 @@ public final class SancaiPersistenceAssembler {
         entry.setOriginalText(dataObject.getOriginalText());
         entry.setTranslationText(dataObject.getTranslationText());
         entry.setSummary(dataObject.getSummary());
-        entry.setLifecycleStatus(dataObject.getLifecycleStatus() == null ? null : SancaiEntryLifecycleStatus.from(dataObject.getLifecycleStatus()));
-        entry.setVisibility(dataObject.getVisibility() == null ? null : SancaiEntryVisibility.from(dataObject.getVisibility()));
-        entry.setTranslationStatus(dataObject.getTranslationStatus() == null ? null : SancaiEntryTranslationStatus.from(dataObject.getTranslationStatus()));
-        entry.setImageStatus(dataObject.getImageStatus() == null ? null : SancaiEntryImageStatus.from(dataObject.getImageStatus()));
-        entry.setVisualAssetStatus(dataObject.getVisualAssetStatus() == null ? null : SancaiEntryVisualAssetStatus.from(dataObject.getVisualAssetStatus()));
-        entry.setRefinementStatus(dataObject.getRefinementStatus() == null ? null : SancaiEntryRefinementStatus.from(dataObject.getRefinementStatus()));
+        entry.setLifecycleStatus(
+                dataObject.getLifecycleStatus() == null
+                        ? null
+                        : SancaiEntryLifecycleStatus.from(dataObject.getLifecycleStatus()));
+        entry.setVisibility(
+                dataObject.getVisibility() == null ? null : SancaiEntryVisibility.from(dataObject.getVisibility()));
+        entry.setTranslationStatus(
+                dataObject.getTranslationStatus() == null
+                        ? null
+                        : SancaiEntryTranslationStatus.from(dataObject.getTranslationStatus()));
+        entry.setImageStatus(
+                dataObject.getImageStatus() == null ? null : SancaiEntryImageStatus.from(dataObject.getImageStatus()));
+        entry.setVisualAssetStatus(
+                dataObject.getVisualAssetStatus() == null
+                        ? null
+                        : SancaiEntryVisualAssetStatus.from(dataObject.getVisualAssetStatus()));
+        entry.setRefinementStatus(
+                dataObject.getRefinementStatus() == null
+                        ? null
+                        : SancaiEntryRefinementStatus.from(dataObject.getRefinementStatus()));
         entry.setPriority(priorityOrDefault(dataObject.getPriority()));
         return entry;
     }
