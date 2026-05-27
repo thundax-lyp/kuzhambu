@@ -38,7 +38,7 @@ public class StoredObjectReferenceRepositoryImpl implements StoredObjectReferenc
     @Override
     public List<StoredObjectReference> listReferences(StoredObject entity) {
         LambdaQueryWrapper<StoredObjectReferenceDO> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(StoredObjectReferenceDO::getFileId, entity.getId().value());
+        wrapper.eq(StoredObjectReferenceDO::getObjectId, entity.getId().value());
         return StoragePersistenceAssembler.toBusinessDomainList(mapper.selectList(wrapper));
     }
 
@@ -56,7 +56,7 @@ public class StoredObjectReferenceRepositoryImpl implements StoredObjectReferenc
     @Override
     public void deleteByObjectId(String id) {
         LambdaQueryWrapper<StoredObjectReferenceDO> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(StoredObjectReferenceDO::getFileId, Long.valueOf(id));
+        wrapper.eq(StoredObjectReferenceDO::getObjectId, Long.valueOf(id));
         mapper.delete(wrapper);
     }
 

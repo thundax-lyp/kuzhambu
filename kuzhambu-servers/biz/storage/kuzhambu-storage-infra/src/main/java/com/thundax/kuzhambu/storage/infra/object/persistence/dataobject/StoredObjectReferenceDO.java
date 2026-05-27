@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @TableName("storage_object_reference")
 public class StoredObjectReferenceDO {
     @TableId(type = IdType.INPUT)
-    private Long fileId;
+    private Long objectId;
 
     private String referenceOwnerId;
     private String referenceOwnerType;

@@ -323,7 +323,7 @@ public class StoredObjectRepositoryImpl implements StoredObjectRepository {
         if (StringUtils.isNotBlank(referenceOwnerType)) {
             wrapper.eq(StoredObjectReferenceDO::getReferenceOwnerType, referenceOwnerType);
         }
-        return businessMapper.selectObjs(wrapper.select(StoredObjectReferenceDO::getFileId)).stream()
+        return businessMapper.selectObjs(wrapper.select(StoredObjectReferenceDO::getObjectId)).stream()
                 .filter(Objects::nonNull)
                 .map(object -> Long.valueOf(String.valueOf(object)))
                 .collect(Collectors.toList());
