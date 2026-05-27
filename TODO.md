@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `kuzhambu-servers/biz/discovery`：迁移知识发现域代码和接口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SERVERS-DOMAIN-MODULE-MERGE.md`
-    - 范围对象：`kuzhambu-servers/biz/kuzhambu-biz-search/`、`kuzhambu-servers/biz/kuzhambu-biz-qa/`、`kuzhambu-servers/infra/kuzhambu-infra-search/`、`kuzhambu-servers/infra/kuzhambu-infra-qa/`、`kuzhambu-servers/biz/discovery/`
-    - 处理动作：将搜索和智能问答迁移到 discovery 域四层模块并更新 package/import
-    - 验收点：discovery 域代码位于 `com.thundax.kuzhambu.discovery` 包下，搜索、问答、来源引用和日志能力保持完整
-    - 重要度：10/10
-
 - [ ] `kuzhambu-servers/biz/operations`：迁移运营运维域代码和接口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SERVERS-DOMAIN-MODULE-MERGE.md`
