@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.common.persistence.configure;
+package com.thundax.kuzhambu.common.mybatis.configure;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;

@@ -1,1 +1,1 @@
-com.thundax.kuzhambu.common.persistence.configure.MybatisPlusConfiguration
+com.thundax.kuzhambu.common.mybatis.configure.MybatisPlusConfiguration

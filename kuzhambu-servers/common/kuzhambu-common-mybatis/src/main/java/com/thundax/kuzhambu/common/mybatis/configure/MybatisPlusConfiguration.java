@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.common.persistence.configure;
+package com.thundax.kuzhambu.common.mybatis.configure;
 
 import com.baomidou.mybatisplus.annotation.DbType;
 import com.baomidou.mybatisplus.autoconfigure.ConfigurationCustomizer;
