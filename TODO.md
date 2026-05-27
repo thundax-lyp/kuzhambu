@@ -11,22 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `classics-starter-admin`：装配 Classics 后台能力
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-DOMAIN.md`
-    - 范围对象：`kuzhambu-servers/starter/kuzhambu-admin-starter/pom.xml`、`kuzhambu-servers/starter/kuzhambu-admin-starter/src/main/resources/application.yml`
-    - 处理动作：将 Classics 后台模块依赖和运行时配置接入 admin starter。
-    - 验收点：starter 不新增业务 Controller 或业务规则。
-    - 重要度：8/10
-
-- [ ] `classics-starter-portal`：装配 Classics portal 分享能力
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-DOMAIN.md`
-    - 范围对象：`kuzhambu-servers/starter/kuzhambu-portal-starter/pom.xml`、`kuzhambu-servers/starter/kuzhambu-portal-starter/src/main/resources/application.yml`
-    - 处理动作：将 Classics 分享访问模块依赖和运行时配置接入 portal starter。
-    - 验收点：portal starter 只做运行时装配。
-    - 重要度：7/10
-
 - [ ] `classics-verification-persistence`：增加 Classics 持久化验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-DOMAIN.md`
