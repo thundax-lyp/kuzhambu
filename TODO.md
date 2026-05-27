@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `db/schema db/data`：归并 SQL 文件和表名前缀
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SERVERS-DOMAIN-MODULE-MERGE.md`
-    - 范围对象：`db/schema/`、`db/data/`
-    - 处理动作：按新业务域归并 SQL 文件，并将设计阶段表名前缀收敛为新业务域前缀
-    - 验收点：新 SQL 文件覆盖旧 DDL 和初始化数据，旧 SQL 文件已删除或不再被引用
-    - 重要度：10/10
-
 - [ ] `kuzhambu-servers`：重建 Maven 模块结构
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SERVERS-DOMAIN-MODULE-MERGE.md`

@@ -1,6 +1,6 @@
 SET NAMES utf8mb4;
 
-INSERT INTO `sancai_category` (
+INSERT INTO `classics_sancai_category` (
     `category_code`, `name`, `formal`, `sort_order`, `description`
 ) VALUES
     ('js', '卷首', 0, 0, '序、凡例等卷首辅助内容'),
@@ -24,7 +24,7 @@ ON DUPLICATE KEY UPDATE
     `sort_order` = VALUES(`sort_order`),
     `description` = VALUES(`description`);
 
-INSERT INTO `sancai_volume` (
+INSERT INTO `classics_sancai_volume` (
     `volume_id`, `category_code`, `volume_no`, `title`, `auxiliary`, `sort_order`, `entry_count`
 ) VALUES (
     '01KUZHAMBU00000000010001',
@@ -41,3 +41,10 @@ INSERT INTO `sancai_volume` (
     `auxiliary` = VALUES(`auxiliary`),
     `sort_order` = VALUES(`sort_order`),
     `entry_count` = VALUES(`entry_count`);
+SET NAMES utf8mb4;
+
+-- Wangqi has no required seed data.
+SET NAMES utf8mb4;
+
+-- Ming Customs has no required seed data.
+SET NAMES utf8mb4;

@@ -1,6 +1,6 @@
 SET NAMES utf8mb4;
 
-INSERT INTO `sys_user` (
+INSERT INTO `system_user` (
     `user_id`, `name`, `email`, `mobile`, `tel`, `avatar_object_id`, `rank`,
     `privilege`, `status`, `remarks`
 ) VALUES (
@@ -21,7 +21,7 @@ INSERT INTO `sys_user` (
     `status` = VALUES(`status`),
     `remarks` = VALUES(`remarks`);
 
-INSERT INTO `sys_role` (
+INSERT INTO `system_role` (
     `role_id`, `name`, `privilege`, `status`, `priority`, `remarks`
 ) VALUES (
     '01KUZHAMBU00000000000002',
@@ -37,27 +37,27 @@ INSERT INTO `sys_role` (
     `priority` = VALUES(`priority`),
     `remarks` = VALUES(`remarks`);
 
-INSERT INTO `sys_menu` (
+INSERT INTO `system_menu` (
     `menu_id`, `parent_menu_id`, `name`, `permission_codes`, `rank`,
     `visibility`, `display_params`, `path`, `target`, `priority`, `remarks`
 ) VALUES
     (
-        '01KUZHAMBU00000000000003', NULL, '系统管理', 'sys:*', 9,
+        '01KUZHAMBU00000000000003', NULL, '系统管理', 'system:*', 9,
         'VISIBLE', '{"icon":"settings"}', '/system', '_self', 10, '系统管理根菜单'
     ),
     (
         '01KUZHAMBU00000000000004', '01KUZHAMBU00000000000003', '用户管理',
-        'sys:user:view,sys:user:create,sys:user:update,sys:user:disable,sys:user:delete',
+        'system:user:view,system:user:create,system:user:update,system:user:disable,system:user:delete',
         9, 'VISIBLE', '{"icon":"user"}', '/system/users', '_self', 20, '后台用户管理'
     ),
     (
         '01KUZHAMBU00000000000005', '01KUZHAMBU00000000000003', '角色管理',
-        'sys:role:view,sys:role:create,sys:role:update,sys:role:delete,sys:role:authorize',
+        'system:role:view,system:role:create,system:role:update,system:role:delete,system:role:authorize',
         9, 'VISIBLE', '{"icon":"shield"}', '/system/roles', '_self', 30, '后台角色管理'
     ),
     (
         '01KUZHAMBU00000000000006', '01KUZHAMBU00000000000003', '菜单管理',
-        'sys:menu:view,sys:menu:create,sys:menu:update,sys:menu:delete',
+        'system:menu:view,system:menu:create,system:menu:update,system:menu:delete',
         9, 'VISIBLE', '{"icon":"menu"}', '/system/menus', '_self', 40, '后台菜单管理'
     )
 ON DUPLICATE KEY UPDATE
@@ -72,11 +72,59 @@ ON DUPLICATE KEY UPDATE
     `priority` = VALUES(`priority`),
     `remarks` = VALUES(`remarks`);
 
-INSERT IGNORE INTO `sys_user_role` (`user_id`, `role_id`) VALUES
+INSERT IGNORE INTO `system_user_role` (`user_id`, `role_id`) VALUES
     ('01KUZHAMBU00000000000001', '01KUZHAMBU00000000000002');
 
-INSERT IGNORE INTO `sys_role_menu` (`role_id`, `menu_id`) VALUES
+INSERT IGNORE INTO `system_role_menu` (`role_id`, `menu_id`) VALUES
     ('01KUZHAMBU00000000000002', '01KUZHAMBU00000000000003'),
     ('01KUZHAMBU00000000000002', '01KUZHAMBU00000000000004'),
     ('01KUZHAMBU00000000000002', '01KUZHAMBU00000000000005'),
     ('01KUZHAMBU00000000000002', '01KUZHAMBU00000000000006');
+SET NAMES utf8mb4;
+
+-- Initial admin account:
+--   login name: admin
+--   password credential value is a placeholder and must be rotated before production use.
+
+INSERT INTO `system_auth_principal_identity` (
+    `identity_id`, `principal_type`, `principal_id`, `identity_type`,
+    `identity_value`, `status`
+) VALUES (
+    '01KUZHAMBU00000000000007',
+    'USER',
+    '01KUZHAMBU00000000000001',
+    'USER_ACCOUNT',
+    'admin',
+    'ENABLED'
+) ON DUPLICATE KEY UPDATE
+    `principal_type` = VALUES(`principal_type`),
+    `principal_id` = VALUES(`principal_id`),
+    `identity_value` = VALUES(`identity_value`),
+    `status` = VALUES(`status`);
+
+INSERT INTO `system_auth_principal_credential` (
+    `credential_id`, `principal_type`, `principal_id`, `identity_id`,
+    `credential_type`, `credential_value`, `status`, `need_change_password`,
+    `failed_count`, `failed_limit`
+) VALUES (
+    '01KUZHAMBU00000000000008',
+    'USER',
+    '01KUZHAMBU00000000000001',
+    '01KUZHAMBU00000000000007',
+    'USER_PASSWORD',
+    '{noop}admin',
+    'ACTIVE',
+    1,
+    0,
+    5
+) ON DUPLICATE KEY UPDATE
+    `principal_type` = VALUES(`principal_type`),
+    `principal_id` = VALUES(`principal_id`),
+    `credential_value` = VALUES(`credential_value`),
+    `status` = VALUES(`status`),
+    `need_change_password` = VALUES(`need_change_password`),
+    `failed_count` = VALUES(`failed_count`),
+    `failed_limit` = VALUES(`failed_limit`);
+SET NAMES utf8mb4;
+
+-- Audit has no required seed data.

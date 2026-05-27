@@ -19,3 +19,6 @@ ON DUPLICATE KEY UPDATE
     `required_tags` = VALUES(`required_tags`),
     `enabled` = VALUES(`enabled`),
     `sort_order` = VALUES(`sort_order`);
+SET NAMES utf8mb4;
+
+-- AI Refinement has no required seed data.
