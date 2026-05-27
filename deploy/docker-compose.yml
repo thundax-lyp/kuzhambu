@@ -13,11 +13,9 @@ services:
 
   redis:
     image: redis:7.2
-    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}", "--save", "", "--appendonly", "no"]
     ports:
       - "6379:6379"
-    volumes:
-      - redis-data:/data
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.15.3
@@ -47,5 +45,4 @@ services:
 
 volumes:
   mysql-data:
-  redis-data:
   elasticsearch-data:
