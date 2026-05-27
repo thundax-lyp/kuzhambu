@@ -20,4 +20,13 @@
     <module>kuzhambu-system-interface</module>
     <module>kuzhambu-system-infra</module>
   </modules>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.thundax</groupId>
+      <artifactId>kuzhambu-common-test</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
 </project>
