@@ -46,11 +46,11 @@ public final class AnnotationBoundaryArchitectureRuleSupport {
                 continue;
             }
             if (!javaClass.getPackageName().startsWith(basePackage + ".infra")
-                    || !javaClass.getPackageName().contains(".mapper")) {
+                    || !javaClass.getPackageName().contains(".persistence.mapper")) {
                 violations.add(javaClass.getName());
             }
         }
-        assertTrue("@Mapper must stay in infra mapper packages: " + violations, violations.isEmpty());
+        assertTrue("@Mapper must stay in infra persistence mapper packages: " + violations, violations.isEmpty());
     }
 
     public static void assertTableAnnotationsInDataObjectPackage(JavaClasses classes, String basePackage) {
@@ -61,12 +61,12 @@ public final class AnnotationBoundaryArchitectureRuleSupport {
                 continue;
             }
             if (!javaClass.getPackageName().startsWith(basePackage + ".infra")
-                    || !javaClass.getPackageName().contains(".dataobject")) {
+                    || !javaClass.getPackageName().contains(".persistence.dataobject")) {
                 violations.add(javaClass.getName());
             }
         }
         assertTrue(
-                "MyBatis table annotations must stay in infra dataobject packages: " + violations,
+                "MyBatis table annotations must stay in infra persistence dataobject packages: " + violations,
                 violations.isEmpty());
     }
 

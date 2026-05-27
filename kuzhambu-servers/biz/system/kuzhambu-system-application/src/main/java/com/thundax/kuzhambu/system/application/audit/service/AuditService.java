@@ -5,9 +5,9 @@ import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.system.application.audit.service.command.CreateAuditLogCommand;
 import com.thundax.kuzhambu.system.application.audit.service.query.AuditLogQuery;
 import com.thundax.kuzhambu.system.application.audit.service.query.AuditMetaQuery;
-import com.thundax.kuzhambu.system.domain.model.entity.AuditLog;
-import com.thundax.kuzhambu.system.domain.model.entity.AuditMeta;
-import com.thundax.kuzhambu.system.domain.model.valueobject.AuditLogId;
+import com.thundax.kuzhambu.system.domain.audit.model.entity.AuditLog;
+import com.thundax.kuzhambu.system.domain.audit.model.entity.AuditMeta;
+import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditLogId;
 import java.util.List;
 
 public interface AuditService {

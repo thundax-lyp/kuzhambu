@@ -21,21 +21,21 @@ import com.thundax.kuzhambu.system.application.core.service.query.DictQuery;
 import com.thundax.kuzhambu.system.application.core.service.query.MenuQuery;
 import com.thundax.kuzhambu.system.application.core.service.query.RoleQuery;
 import com.thundax.kuzhambu.system.application.core.service.query.UserQuery;
+import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalIdentity;
+import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalIdentityType;
+import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalType;
+import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalKey;
 import com.thundax.kuzhambu.system.domain.core.codec.DepartmentIdCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.MenuIdCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.RoleIdCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
-import com.thundax.kuzhambu.system.domain.model.entity.Dict;
-import com.thundax.kuzhambu.system.domain.model.entity.Menu;
-import com.thundax.kuzhambu.system.domain.model.entity.PrincipalIdentity;
-import com.thundax.kuzhambu.system.domain.model.entity.Role;
-import com.thundax.kuzhambu.system.domain.model.entity.User;
-import com.thundax.kuzhambu.system.domain.model.enums.PrincipalIdentityType;
-import com.thundax.kuzhambu.system.domain.model.enums.PrincipalType;
-import com.thundax.kuzhambu.system.domain.model.enums.RoleStatus;
-import com.thundax.kuzhambu.system.domain.model.valueobject.PrincipalKey;
-import com.thundax.kuzhambu.system.domain.model.valueobject.RoleId;
-import com.thundax.kuzhambu.system.domain.model.valueobject.UserId;
+import com.thundax.kuzhambu.system.domain.core.model.entity.Dict;
+import com.thundax.kuzhambu.system.domain.core.model.entity.Menu;
+import com.thundax.kuzhambu.system.domain.core.model.entity.Role;
+import com.thundax.kuzhambu.system.domain.core.model.entity.User;
+import com.thundax.kuzhambu.system.domain.core.model.enums.RoleStatus;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.RoleId;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
 import com.thundax.kuzhambu.system.interfaces.admin.core.aop.annotation.SysLogger;
 import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.RoleInterfaceAssembler;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.RoleAssignUserRequest;
@@ -180,7 +180,7 @@ public class RoleController {
             }
         }
 
-        Role entity = RoleInterfaceAssembler.toEntity(new Role(), request);
+        Role entity = RoleInterfaceAssembler.toDomain(new Role(), request);
         entity.setId(roleService.create(RoleInterfaceAssembler.toCreateCommand(request)));
 
         return toResponse(entity);
@@ -205,7 +205,7 @@ public class RoleController {
             throw AdminResponseExceptions.objectNotFound();
         }
 
-        Role entity = RoleInterfaceAssembler.toEntity(bean, request);
+        Role entity = RoleInterfaceAssembler.toDomain(bean, request);
 
         roleService.changeInfo(RoleInterfaceAssembler.toChangeInfoCommand(request));
 

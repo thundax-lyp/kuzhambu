@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.system.interfaces.admin.core.service;
 
-import com.thundax.kuzhambu.system.domain.model.entity.Log;
+import com.thundax.kuzhambu.system.domain.core.model.entity.Log;
 
 public interface SysLogMessageService {
 

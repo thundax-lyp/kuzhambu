@@ -7,8 +7,8 @@ import com.thundax.kuzhambu.system.application.core.service.command.ChangeMenuVi
 import com.thundax.kuzhambu.system.application.core.service.command.CreateMenuCommand;
 import com.thundax.kuzhambu.system.application.core.service.command.MoveMenuCommand;
 import com.thundax.kuzhambu.system.application.core.service.query.MenuQuery;
-import com.thundax.kuzhambu.system.domain.model.entity.Menu;
-import com.thundax.kuzhambu.system.domain.model.valueobject.MenuId;
+import com.thundax.kuzhambu.system.domain.core.model.entity.Menu;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.MenuId;
 import java.util.List;
 
 public interface MenuService {

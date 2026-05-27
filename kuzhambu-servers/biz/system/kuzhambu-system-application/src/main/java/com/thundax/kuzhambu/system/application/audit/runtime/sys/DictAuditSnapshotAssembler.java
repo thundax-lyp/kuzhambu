@@ -2,9 +2,9 @@ package com.thundax.kuzhambu.system.application.audit.runtime.sys;
 
 import com.thundax.kuzhambu.system.application.audit.runtime.AuditSnapshotAssembler;
 import com.thundax.kuzhambu.system.application.audit.runtime.AuditSnapshots;
-import com.thundax.kuzhambu.system.domain.model.entity.Dict;
-import com.thundax.kuzhambu.system.domain.model.valueobject.AuditField;
-import com.thundax.kuzhambu.system.domain.model.valueobject.AuditSnapshot;
+import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditField;
+import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditSnapshot;
+import com.thundax.kuzhambu.system.domain.core.model.entity.Dict;
 import java.util.Arrays;
 import java.util.List;
 import org.springframework.stereotype.Component;

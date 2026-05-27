@@ -11,8 +11,8 @@ import com.thundax.kuzhambu.system.application.core.service.DepartmentService;
 import com.thundax.kuzhambu.system.application.core.service.command.MoveDepartmentCommand;
 import com.thundax.kuzhambu.system.application.core.service.query.DepartmentQuery;
 import com.thundax.kuzhambu.system.domain.core.codec.DepartmentIdCodec;
-import com.thundax.kuzhambu.system.domain.model.entity.Department;
-import com.thundax.kuzhambu.system.domain.model.valueobject.DepartmentId;
+import com.thundax.kuzhambu.system.domain.core.model.entity.Department;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.DepartmentId;
 import com.thundax.kuzhambu.system.interfaces.admin.core.aop.annotation.SysLogger;
 import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.DepartmentInterfaceAssembler;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.DepartmentIdRequest;
@@ -100,7 +100,7 @@ public class DepartmentController {
     @SysLogger(value = "添加")
     @PostMapping(value = "create")
     public DepartmentResponse add(@Valid @RequestBody DepartmentSaveRequest request) {
-        Department entity = DepartmentInterfaceAssembler.toEntity(new Department(), request);
+        Department entity = DepartmentInterfaceAssembler.toDomain(new Department(), request);
         if (entity.getId() != null) {
             Department bean = departmentService.get(entity.getId());
             if (bean != null) {
@@ -144,7 +144,7 @@ public class DepartmentController {
             }
         }
 
-        Department entity = DepartmentInterfaceAssembler.toEntity(bean, request);
+        Department entity = DepartmentInterfaceAssembler.toDomain(bean, request);
 
         departmentService.changeInfo(DepartmentInterfaceAssembler.toChangeInfoCommand(request));
 

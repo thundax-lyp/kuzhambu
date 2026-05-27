@@ -1,8 +1,8 @@
 package com.thundax.kuzhambu.system.application.core.service.command;
 
-import com.thundax.kuzhambu.system.domain.model.enums.MenuVisibility;
-import com.thundax.kuzhambu.system.domain.model.valueobject.AccessRank;
-import com.thundax.kuzhambu.system.domain.model.valueobject.MenuId;
+import com.thundax.kuzhambu.system.domain.core.model.enums.MenuVisibility;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.AccessRank;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.MenuId;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

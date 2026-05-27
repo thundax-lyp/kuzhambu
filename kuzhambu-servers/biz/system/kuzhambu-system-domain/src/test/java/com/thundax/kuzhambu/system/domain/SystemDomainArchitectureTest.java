@@ -20,5 +20,6 @@ class SystemDomainArchitectureTest extends AbstractArchitectureTest {
         NamingArchitectureRuleSupport.assertEntityPlacement(classes, BASE_PACKAGE);
         NamingArchitectureRuleSupport.assertEntitySourcesDeclareOnlyRequiredAnnotations(Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertDomainEnumPlacement(classes, BASE_PACKAGE);
+        NamingArchitectureRuleSupport.assertRepositoryPlacement(classes, BASE_PACKAGE);
     }
 }

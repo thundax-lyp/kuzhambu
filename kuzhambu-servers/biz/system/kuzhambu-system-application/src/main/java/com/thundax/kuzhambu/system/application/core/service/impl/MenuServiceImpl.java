@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
-import com.thundax.kuzhambu.system.application.core.dao.MenuDao;
 import com.thundax.kuzhambu.system.application.core.service.MenuService;
 import com.thundax.kuzhambu.system.application.core.service.command.ChangeMenuInfoCommand;
 import com.thundax.kuzhambu.system.application.core.service.command.ChangeMenuVisibilityCommand;
@@ -13,8 +12,9 @@ import com.thundax.kuzhambu.system.application.core.service.command.MoveMenuComm
 import com.thundax.kuzhambu.system.application.core.service.query.MenuQuery;
 import com.thundax.kuzhambu.system.domain.core.codec.AccessRankCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.MenuIdCodec;
-import com.thundax.kuzhambu.system.domain.model.entity.Menu;
-import com.thundax.kuzhambu.system.domain.model.valueobject.MenuId;
+import com.thundax.kuzhambu.system.domain.core.model.entity.Menu;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.MenuId;
+import com.thundax.kuzhambu.system.domain.core.repository.MenuRepository;
 import java.util.Collections;
 import java.util.List;
 import org.springframework.beans.factory.ObjectProvider;
@@ -27,16 +27,16 @@ import org.springframework.transaction.annotation.Transactional;
 @BizExceptionBoundary
 public class MenuServiceImpl implements MenuService {
 
-    private final MenuDao dao;
+    private final MenuRepository dao;
     private final List<CacheChangedListener> cacheChangedListeners;
 
-    public MenuServiceImpl(MenuDao dao) {
+    public MenuServiceImpl(MenuRepository dao) {
         this.dao = dao;
         this.cacheChangedListeners = Collections.emptyList();
     }
 
     @Autowired
-    public MenuServiceImpl(MenuDao dao, ObjectProvider<List<CacheChangedListener>> cacheChangedListeners) {
+    public MenuServiceImpl(MenuRepository dao, ObjectProvider<List<CacheChangedListener>> cacheChangedListeners) {
         this.dao = dao;
         this.cacheChangedListeners = cacheChangedListeners == null
                 ? Collections.emptyList()

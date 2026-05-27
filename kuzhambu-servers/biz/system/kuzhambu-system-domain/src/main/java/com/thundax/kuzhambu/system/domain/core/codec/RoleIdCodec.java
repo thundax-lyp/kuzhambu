@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.system.domain.core.codec;
 
-import com.thundax.kuzhambu.system.domain.model.valueobject.RoleId;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.RoleId;
 import java.util.List;
 import java.util.stream.Collectors;
 

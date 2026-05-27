@@ -21,7 +21,7 @@ public final class MethodBodyArchitectureRuleSupport {
             Pattern.compile("@(?:[\\w.]+\\.)?OneLineMethodAllowed\\s*\\(([^)]*)\\)");
     private static final Pattern ALLOW_REASON_PATTERN = Pattern.compile("\\breason\\s*=\\s*\"([^\"]*)\"");
     private static final Pattern TARGET_CLASS_NAME_PATTERN =
-            Pattern.compile("(Controller|ServiceImpl|DaoImpl)\\.java$");
+            Pattern.compile("(Controller|ServiceImpl|RepositoryImpl)\\.java$");
 
     private MethodBodyArchitectureRuleSupport() {}
 
@@ -38,7 +38,7 @@ public final class MethodBodyArchitectureRuleSupport {
         }
 
         assertTrue(
-                "Controller, ServiceImpl and DaoImpl private/protected methods must not contain only one executable "
+                "Controller, ServiceImpl and RepositoryImpl private/protected methods must not contain only one executable "
                         + "line without local reuse unless annotated with @OneLineMethodAllowed(reason = \"...\"). "
                         + "Violations: "
                         + violations,

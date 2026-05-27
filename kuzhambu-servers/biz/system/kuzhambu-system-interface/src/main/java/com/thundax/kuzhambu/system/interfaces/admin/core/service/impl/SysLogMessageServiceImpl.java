@@ -8,7 +8,7 @@ import com.thundax.kuzhambu.common.mq.configure.KuzhambuMqProperties;
 import com.thundax.kuzhambu.system.application.core.service.LogService;
 import com.thundax.kuzhambu.system.application.core.service.command.CreateLogCommand;
 import com.thundax.kuzhambu.system.application.core.service.query.LogQuery;
-import com.thundax.kuzhambu.system.domain.model.entity.Log;
+import com.thundax.kuzhambu.system.domain.core.model.entity.Log;
 import com.thundax.kuzhambu.system.interfaces.admin.configure.KuzhambuProperties;
 import com.thundax.kuzhambu.system.interfaces.admin.core.service.SysLogMessageService;
 import java.io.File;

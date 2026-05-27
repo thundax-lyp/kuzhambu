@@ -3,7 +3,6 @@ package com.thundax.kuzhambu.system.application.auth.service.impl;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.system.application.auth.configure.CaptchaWhitelistProperties;
-import com.thundax.kuzhambu.system.application.auth.dao.PreAuthSessionDao;
 import com.thundax.kuzhambu.system.application.auth.service.PreAuthSessionService;
 import com.thundax.kuzhambu.system.application.auth.service.command.CreatePreAuthSessionCommand;
 import com.thundax.kuzhambu.system.application.auth.service.command.RefreshPreAuthSessionCommand;
@@ -11,9 +10,10 @@ import com.thundax.kuzhambu.system.application.auth.service.command.ReleasePreAu
 import com.thundax.kuzhambu.system.application.auth.service.command.UpsertPreAuthSessionValueCommand;
 import com.thundax.kuzhambu.system.application.auth.service.query.PreAuthSessionValueQuery;
 import com.thundax.kuzhambu.system.application.auth.service.query.PreAuthSessionValueValidateQuery;
-import com.thundax.kuzhambu.system.domain.model.entity.PreAuthSession;
-import com.thundax.kuzhambu.system.domain.model.valueobject.PreAuthSessionId;
-import com.thundax.kuzhambu.system.domain.model.valueobject.PreAuthSessionToken;
+import com.thundax.kuzhambu.system.domain.auth.model.entity.PreAuthSession;
+import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PreAuthSessionId;
+import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PreAuthSessionToken;
+import com.thundax.kuzhambu.system.domain.auth.repository.PreAuthSessionRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,42 +22,42 @@ import org.springframework.stereotype.Service;
 @BizExceptionBoundary
 public class PreAuthSessionServiceImpl implements PreAuthSessionService {
 
-    private final PreAuthSessionDao preAuthSessionDao;
+    private final PreAuthSessionRepository preAuthSessionRepository;
     private final CaptchaWhitelistProperties captchaWhitelistProperties;
 
     @Autowired
     public PreAuthSessionServiceImpl(
-            PreAuthSessionDao preAuthSessionDao, CaptchaWhitelistProperties captchaWhitelistProperties) {
-        this.preAuthSessionDao = preAuthSessionDao;
+            PreAuthSessionRepository preAuthSessionRepository, CaptchaWhitelistProperties captchaWhitelistProperties) {
+        this.preAuthSessionRepository = preAuthSessionRepository;
         this.captchaWhitelistProperties =
                 captchaWhitelistProperties == null ? CaptchaWhitelistProperties.disabled() : captchaWhitelistProperties;
     }
 
     @Override
     public int countActiveSessions() {
-        return preAuthSessionDao.count();
+        return preAuthSessionRepository.count();
     }
 
     @Override
     public PreAuthSession create(CreatePreAuthSessionCommand command) {
         PreAuthSession session = PreAuthSession.create(command.getExpiredSeconds());
-        preAuthSessionDao.insert(session);
+        preAuthSessionRepository.insert(session);
         return session;
     }
 
     @Override
     public PreAuthSessionId getIdByToken(PreAuthSessionToken token) {
-        return preAuthSessionDao.getByToken(token);
+        return preAuthSessionRepository.getByToken(token);
     }
 
     @Override
     public PreAuthSessionId getIdByRefreshToken(PreAuthSessionToken refreshToken) {
-        return preAuthSessionDao.getByRefreshToken(refreshToken);
+        return preAuthSessionRepository.getByRefreshToken(refreshToken);
     }
 
     @Override
     public PreAuthSession get(PreAuthSessionId id) {
-        PreAuthSession session = preAuthSessionDao.getById(id);
+        PreAuthSession session = preAuthSessionRepository.getById(id);
         if (session == null || session.isExpired()) {
             throw new BizException("AUTH-00006", "auth.exception.invalid-token", "token 已失效");
         }
@@ -68,20 +68,20 @@ public class PreAuthSessionServiceImpl implements PreAuthSessionService {
     public PreAuthSession refresh(RefreshPreAuthSessionCommand command) {
         PreAuthSession session = get(command.getId());
         session.refresh(command.getExpiredSeconds(), command.getRefreshTokenGraceSeconds());
-        preAuthSessionDao.update(session);
+        preAuthSessionRepository.update(session);
         return session;
     }
 
     @Override
     public void release(ReleasePreAuthSessionCommand command) {
-        preAuthSessionDao.deleteById(command.getId());
+        preAuthSessionRepository.deleteById(command.getId());
     }
 
     @Override
     public void upsertValue(UpsertPreAuthSessionValueCommand command) {
         PreAuthSession session = get(command.getId());
         session.upsertValue(command.getName(), command.getValue(), command.getExpiredAt());
-        preAuthSessionDao.update(session);
+        preAuthSessionRepository.update(session);
     }
 
     @Override

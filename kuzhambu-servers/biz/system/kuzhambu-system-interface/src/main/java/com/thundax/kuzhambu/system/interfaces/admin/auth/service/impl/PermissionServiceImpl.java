@@ -1,24 +1,24 @@
 package com.thundax.kuzhambu.system.interfaces.admin.auth.service.impl;
 
-import static com.thundax.kuzhambu.system.domain.model.valueobject.PermissionCode.ADMIN;
-import static com.thundax.kuzhambu.system.domain.model.valueobject.PermissionCode.SEPARATOR;
-import static com.thundax.kuzhambu.system.domain.model.valueobject.PermissionCode.SUPER;
-import static com.thundax.kuzhambu.system.domain.model.valueobject.PermissionCode.USER;
+import static com.thundax.kuzhambu.system.domain.core.model.valueobject.PermissionCode.ADMIN;
+import static com.thundax.kuzhambu.system.domain.core.model.valueobject.PermissionCode.SEPARATOR;
+import static com.thundax.kuzhambu.system.domain.core.model.valueobject.PermissionCode.SUPER;
+import static com.thundax.kuzhambu.system.domain.core.model.valueobject.PermissionCode.USER;
 
 import com.thundax.kuzhambu.common.core.arch.OneLineMethodAllowed;
 import com.thundax.kuzhambu.common.security.permission.PermissionMatcher;
 import com.thundax.kuzhambu.common.security.permission.PrefixPermissionMatcher;
-import com.thundax.kuzhambu.system.application.auth.dao.PrincipalAccessTokenDao;
-import com.thundax.kuzhambu.system.application.auth.dao.PrincipalAuthSessionDao;
 import com.thundax.kuzhambu.system.application.core.service.CurrentUserService;
 import com.thundax.kuzhambu.system.application.core.service.UserService;
 import com.thundax.kuzhambu.system.application.core.service.query.CurrentUserQuery;
+import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalAccessToken;
+import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalAuthSession;
+import com.thundax.kuzhambu.system.domain.auth.repository.PrincipalAccessTokenRepository;
+import com.thundax.kuzhambu.system.domain.auth.repository.PrincipalAuthSessionRepository;
 import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
-import com.thundax.kuzhambu.system.domain.model.entity.Menu;
-import com.thundax.kuzhambu.system.domain.model.entity.PrincipalAccessToken;
-import com.thundax.kuzhambu.system.domain.model.entity.PrincipalAuthSession;
-import com.thundax.kuzhambu.system.domain.model.entity.User;
-import com.thundax.kuzhambu.system.domain.model.valueobject.PermissionCode;
+import com.thundax.kuzhambu.system.domain.core.model.entity.Menu;
+import com.thundax.kuzhambu.system.domain.core.model.entity.User;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.PermissionCode;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.service.PermissionService;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -38,19 +38,19 @@ public class PermissionServiceImpl implements PermissionService {
     private static final String SESSION_VALUE_PERMISSIONS = "PERMISSIONS";
     private static final int SAFETY_SECONDS = 10;
 
-    private final PrincipalAccessTokenDao principalAccessTokenDao;
-    private final PrincipalAuthSessionDao principalAuthSessionDao;
+    private final PrincipalAccessTokenRepository principalAccessTokenRepository;
+    private final PrincipalAuthSessionRepository principalAuthSessionRepository;
     private final UserService userService;
     private final CurrentUserService currentUserService;
     private final PermissionMatcher permissionMatcher = new PrefixPermissionMatcher();
 
     public PermissionServiceImpl(
-            PrincipalAccessTokenDao principalAccessTokenDao,
-            PrincipalAuthSessionDao principalAuthSessionDao,
+            PrincipalAccessTokenRepository principalAccessTokenRepository,
+            PrincipalAuthSessionRepository principalAuthSessionRepository,
             UserService userService,
             CurrentUserService currentUserService) {
-        this.principalAccessTokenDao = principalAccessTokenDao;
-        this.principalAuthSessionDao = principalAuthSessionDao;
+        this.principalAccessTokenRepository = principalAccessTokenRepository;
+        this.principalAuthSessionRepository = principalAuthSessionRepository;
         this.userService = userService;
         this.currentUserService = currentUserService;
     }
@@ -66,7 +66,7 @@ public class PermissionServiceImpl implements PermissionService {
         }
         Set<String> permissions = new HashSet<>(loadPermissions(userId));
         session.getValues().put(SESSION_VALUE_PERMISSIONS, new HashSet<>(permissions));
-        principalAuthSessionDao.insert(session, expiredSeconds(session));
+        principalAuthSessionRepository.insert(session, expiredSeconds(session));
         return new HashSet<>(permissions);
     }
 
@@ -119,11 +119,11 @@ public class PermissionServiceImpl implements PermissionService {
         if (StringUtils.isBlank(token)) {
             return null;
         }
-        PrincipalAccessToken accessToken = principalAccessTokenDao.getByToken(token);
+        PrincipalAccessToken accessToken = principalAccessTokenRepository.getByToken(token);
         if (accessToken == null || accessToken.getSessionId() == null || !accessToken.canAccess(new Date())) {
             return null;
         }
-        PrincipalAuthSession session = principalAuthSessionDao.getById(accessToken.getSessionId());
+        PrincipalAuthSession session = principalAuthSessionRepository.getById(accessToken.getSessionId());
         if (session == null || session.isExpired(new Date())) {
             return null;
         }

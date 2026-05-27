@@ -6,7 +6,7 @@ import com.alicp.jetcache.anno.CreateCache;
 import com.thundax.kuzhambu.common.cache.CacheDTO;
 import com.thundax.kuzhambu.common.cache.KuzhambuCacheNames;
 import com.thundax.kuzhambu.system.domain.core.codec.DictIdCodec;
-import com.thundax.kuzhambu.system.domain.model.entity.Dict;
+import com.thundax.kuzhambu.system.domain.core.model.entity.Dict;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import org.springframework.stereotype.Component;

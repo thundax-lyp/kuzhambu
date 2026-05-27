@@ -5,8 +5,8 @@ import com.thundax.kuzhambu.system.application.core.service.command.CreateMenuCo
 import com.thundax.kuzhambu.system.application.core.service.query.MenuQuery;
 import com.thundax.kuzhambu.system.domain.core.codec.AccessRankCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.MenuIdCodec;
-import com.thundax.kuzhambu.system.domain.model.entity.Menu;
-import com.thundax.kuzhambu.system.domain.model.enums.MenuVisibility;
+import com.thundax.kuzhambu.system.domain.core.model.entity.Menu;
+import com.thundax.kuzhambu.system.domain.core.model.enums.MenuVisibility;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.MenuQueryRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.MenuSaveRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.MenuResponse;
@@ -57,7 +57,7 @@ public final class MenuInterfaceAssembler {
     }
 
     @NonNull
-    public static Menu toEntity(@NonNull Menu entity, @NonNull MenuSaveRequest request) {
+    public static Menu toDomain(@NonNull Menu entity, @NonNull MenuSaveRequest request) {
         entity.setId(MenuIdCodec.toDomain(request.getId()));
         entity.setRemarks(request.getRemarks());
         if (request.getParentId() != null) {
@@ -75,7 +75,7 @@ public final class MenuInterfaceAssembler {
 
     @NonNull
     public static CreateMenuCommand toCreateCommand(@NonNull MenuSaveRequest request) {
-        Menu entity = toEntity(new Menu(), request);
+        Menu entity = toDomain(new Menu(), request);
         return new CreateMenuCommand(
                 entity.getId(),
                 entity.getParentId(),
@@ -91,7 +91,7 @@ public final class MenuInterfaceAssembler {
 
     @NonNull
     public static ChangeMenuInfoCommand toChangeInfoCommand(@NonNull MenuSaveRequest request) {
-        Menu entity = toEntity(new Menu(), request);
+        Menu entity = toDomain(new Menu(), request);
         return new ChangeMenuInfoCommand(
                 entity.getId(),
                 entity.getParentId(),

@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.system.domain.core.codec.AccessRankCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.MenuIdCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
-import com.thundax.kuzhambu.system.domain.model.entity.Menu;
-import com.thundax.kuzhambu.system.domain.model.entity.User;
+import com.thundax.kuzhambu.system.domain.core.model.entity.Menu;
+import com.thundax.kuzhambu.system.domain.core.model.entity.User;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.PersonalInfoUpdateRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.PersonalAvatarResponse;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.PersonalInfoResponse;
@@ -64,7 +64,7 @@ public final class PersonalInterfaceAssembler {
     }
 
     @NonNull
-    public static User toEntity(@NonNull User entity, @NonNull PersonalInfoUpdateRequest request) {
+    public static User toDomain(@NonNull User entity, @NonNull PersonalInfoUpdateRequest request) {
         entity.setName(request.getName());
         entity.setEmail(request.getEmail());
         entity.setMobile(request.getMobile());

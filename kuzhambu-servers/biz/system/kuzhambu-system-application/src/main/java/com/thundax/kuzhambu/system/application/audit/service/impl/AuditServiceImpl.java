@@ -4,21 +4,21 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
-import com.thundax.kuzhambu.system.application.audit.dao.AuditLogDao;
-import com.thundax.kuzhambu.system.application.audit.dao.AuditMetaDao;
 import com.thundax.kuzhambu.system.application.audit.runtime.AuditDiffService;
 import com.thundax.kuzhambu.system.application.audit.service.AuditService;
 import com.thundax.kuzhambu.system.application.audit.service.command.CreateAuditLogCommand;
 import com.thundax.kuzhambu.system.application.audit.service.query.AuditLogQuery;
 import com.thundax.kuzhambu.system.application.audit.service.query.AuditMetaQuery;
-import com.thundax.kuzhambu.system.domain.model.entity.AuditLog;
-import com.thundax.kuzhambu.system.domain.model.entity.AuditMeta;
-import com.thundax.kuzhambu.system.domain.model.enums.AuditAction;
-import com.thundax.kuzhambu.system.domain.model.enums.AuditOperatorType;
-import com.thundax.kuzhambu.system.domain.model.valueobject.AuditChangedField;
-import com.thundax.kuzhambu.system.domain.model.valueobject.AuditLogId;
-import com.thundax.kuzhambu.system.domain.model.valueobject.AuditMetaId;
-import com.thundax.kuzhambu.system.domain.model.valueobject.AuditObjectRef;
+import com.thundax.kuzhambu.system.domain.audit.model.entity.AuditLog;
+import com.thundax.kuzhambu.system.domain.audit.model.entity.AuditMeta;
+import com.thundax.kuzhambu.system.domain.audit.model.enums.AuditAction;
+import com.thundax.kuzhambu.system.domain.audit.model.enums.AuditOperatorType;
+import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditChangedField;
+import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditLogId;
+import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditMetaId;
+import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditObjectRef;
+import com.thundax.kuzhambu.system.domain.audit.repository.AuditLogRepository;
+import com.thundax.kuzhambu.system.domain.audit.repository.AuditMetaRepository;
 import java.util.Date;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
@@ -29,13 +29,16 @@ import org.springframework.transaction.annotation.Transactional;
 @BizExceptionBoundary
 public class AuditServiceImpl implements AuditService {
 
-    private final AuditMetaDao auditMetaDao;
-    private final AuditLogDao auditLogDao;
+    private final AuditMetaRepository auditMetaRepository;
+    private final AuditLogRepository auditLogRepository;
     private final AuditDiffService auditDiffService;
 
-    public AuditServiceImpl(AuditMetaDao auditMetaDao, AuditLogDao auditLogDao, AuditDiffService auditDiffService) {
-        this.auditMetaDao = auditMetaDao;
-        this.auditLogDao = auditLogDao;
+    public AuditServiceImpl(
+            AuditMetaRepository auditMetaRepository,
+            AuditLogRepository auditLogRepository,
+            AuditDiffService auditDiffService) {
+        this.auditMetaRepository = auditMetaRepository;
+        this.auditLogRepository = auditLogRepository;
         this.auditDiffService = auditDiffService;
     }
 
@@ -48,7 +51,7 @@ public class AuditServiceImpl implements AuditService {
             return null;
         }
         if (StringUtils.isNotBlank(command.getIdempotencyKey())) {
-            AuditLog existed = auditLogDao.getByIdempotencyKey(command.getIdempotencyKey());
+            AuditLog existed = auditLogRepository.getByIdempotencyKey(command.getIdempotencyKey());
             if (existed != null) {
                 return existed.getId();
             }
@@ -61,7 +64,7 @@ public class AuditServiceImpl implements AuditService {
         }
 
         AuditObjectRef objectRef = new AuditObjectRef(command.getObjectType(), command.getObjectId());
-        AuditMeta meta = auditMetaDao.getByObjectRef(objectRef);
+        AuditMeta meta = auditMetaRepository.getByObjectRef(objectRef);
         long previousVersion = meta == null || meta.getVersion() == null ? 0L : meta.getVersion();
         Date occurredAt = new Date();
         String idempotencyKey = StringUtils.defaultIfBlank(
@@ -101,11 +104,11 @@ public class AuditServiceImpl implements AuditService {
             meta.setLastOperatorName(log.getOperatorName());
             meta.setLastOperatedAt(log.getOccurredAt());
             meta.setCreatedAt(occurredAt);
-            AuditMetaId metaId = auditMetaDao.insert(meta);
+            AuditMetaId metaId = auditMetaRepository.insert(meta);
             meta.setId(metaId);
         }
         log.setMetaId(meta.getId());
-        AuditLogId logId = auditLogDao.insert(log);
+        AuditLogId logId = auditLogRepository.insert(log);
 
         meta.setLastLogId(logId);
         meta.setLastAction(log.getAction());
@@ -117,7 +120,7 @@ public class AuditServiceImpl implements AuditService {
         if (meta.getCreatedLogId() == null) {
             meta.setCreatedLogId(logId);
         }
-        auditMetaDao.update(meta);
+        auditMetaRepository.update(meta);
         return logId;
     }
 
@@ -126,7 +129,7 @@ public class AuditServiceImpl implements AuditService {
         if (id == null) {
             return null;
         }
-        return auditLogDao.getById(id);
+        return auditLogRepository.getById(id);
     }
 
     @Override
@@ -134,17 +137,17 @@ public class AuditServiceImpl implements AuditService {
         if (query == null) {
             return null;
         }
-        return auditMetaDao.getByObjectRef(new AuditObjectRef(query.getObjectType(), query.getObjectId()));
+        return auditMetaRepository.getByObjectRef(new AuditObjectRef(query.getObjectType(), query.getObjectId()));
     }
 
     @Override
     public List<AuditLog> list(AuditMetaQuery query) {
-        return auditLogDao.listByObject(query.getObjectType(), query.getObjectId());
+        return auditLogRepository.listByObject(query.getObjectType(), query.getObjectId());
     }
 
     @Override
     public PageResult<AuditLog> page(AuditLogQuery query, PageQuery pageQuery) {
-        IPage<AuditLog> dataPage = auditLogDao.page(
+        IPage<AuditLog> dataPage = auditLogRepository.page(
                 query == null ? null : query.getObjectType(),
                 query == null ? null : query.getObjectId(),
                 query == null ? null : query.getAction(),

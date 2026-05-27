@@ -7,13 +7,13 @@ import com.thundax.kuzhambu.system.domain.core.codec.AccessRankCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.DepartmentIdCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.RoleIdCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
-import com.thundax.kuzhambu.system.domain.model.entity.Department;
-import com.thundax.kuzhambu.system.domain.model.entity.Role;
-import com.thundax.kuzhambu.system.domain.model.entity.User;
-import com.thundax.kuzhambu.system.domain.model.enums.UserPrivilege;
-import com.thundax.kuzhambu.system.domain.model.enums.UserStatus;
-import com.thundax.kuzhambu.system.domain.model.valueobject.DepartmentId;
-import com.thundax.kuzhambu.system.domain.model.valueobject.RoleId;
+import com.thundax.kuzhambu.system.domain.core.model.entity.Department;
+import com.thundax.kuzhambu.system.domain.core.model.entity.Role;
+import com.thundax.kuzhambu.system.domain.core.model.entity.User;
+import com.thundax.kuzhambu.system.domain.core.model.enums.UserPrivilege;
+import com.thundax.kuzhambu.system.domain.core.model.enums.UserStatus;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.DepartmentId;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.RoleId;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.UserQueryRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.UserSaveRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.UserDepartmentResponse;
@@ -105,7 +105,7 @@ public final class UserInterfaceAssembler {
 
     @NonNull
     public static CreateUserCommand toCreateCommand(@NonNull UserSaveRequest request, String encryptedPassword) {
-        User entity = toEntity(new User(), request);
+        User entity = toDomain(new User(), request);
         return new CreateUserCommand(
                 entity.getId(),
                 entity.getDepartmentId(),
@@ -124,7 +124,7 @@ public final class UserInterfaceAssembler {
 
     @NonNull
     public static ChangeUserInfoCommand toChangeInfoCommand(@NonNull UserSaveRequest request) {
-        User entity = toEntity(new User(), request);
+        User entity = toDomain(new User(), request);
         return new ChangeUserInfoCommand(
                 entity.getId(),
                 entity.getDepartmentId(),
@@ -141,7 +141,7 @@ public final class UserInterfaceAssembler {
     }
 
     @NonNull
-    public static User toEntity(@NonNull User entity, @NonNull UserSaveRequest request) {
+    public static User toDomain(@NonNull User entity, @NonNull UserSaveRequest request) {
         entity.setId(UserIdCodec.toDomain(request.getId()));
         entity.setRemarks(request.getRemarks());
         if (request.getDepartment() != null) {

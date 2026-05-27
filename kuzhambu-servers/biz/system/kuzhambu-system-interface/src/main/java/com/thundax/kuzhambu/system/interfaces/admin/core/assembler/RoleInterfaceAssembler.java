@@ -7,14 +7,14 @@ import com.thundax.kuzhambu.system.domain.core.codec.DepartmentIdCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.MenuIdCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.RoleIdCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
-import com.thundax.kuzhambu.system.domain.model.entity.Department;
-import com.thundax.kuzhambu.system.domain.model.entity.Menu;
-import com.thundax.kuzhambu.system.domain.model.entity.Role;
-import com.thundax.kuzhambu.system.domain.model.entity.User;
-import com.thundax.kuzhambu.system.domain.model.enums.RolePrivilege;
-import com.thundax.kuzhambu.system.domain.model.enums.RoleStatus;
-import com.thundax.kuzhambu.system.domain.model.valueobject.DepartmentId;
-import com.thundax.kuzhambu.system.domain.model.valueobject.MenuId;
+import com.thundax.kuzhambu.system.domain.core.model.entity.Department;
+import com.thundax.kuzhambu.system.domain.core.model.entity.Menu;
+import com.thundax.kuzhambu.system.domain.core.model.entity.Role;
+import com.thundax.kuzhambu.system.domain.core.model.entity.User;
+import com.thundax.kuzhambu.system.domain.core.model.enums.RolePrivilege;
+import com.thundax.kuzhambu.system.domain.core.model.enums.RoleStatus;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.DepartmentId;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.MenuId;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.RoleQueryRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.RoleSaveRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.RoleDepartmentResponse;
@@ -144,7 +144,7 @@ public final class RoleInterfaceAssembler {
     }
 
     @NonNull
-    public static Role toEntity(@NonNull Role entity, @NonNull RoleSaveRequest request) {
+    public static Role toDomain(@NonNull Role entity, @NonNull RoleSaveRequest request) {
         entity.setId(RoleIdCodec.toDomain(request.getId()));
         entity.setRemarks(request.getRemarks());
         entity.setName(request.getName());

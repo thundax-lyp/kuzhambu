@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.system.domain.core.codec;
 
-import com.thundax.kuzhambu.system.domain.model.valueobject.DepartmentId;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.DepartmentId;
 import java.util.List;
 import java.util.stream.Collectors;
 

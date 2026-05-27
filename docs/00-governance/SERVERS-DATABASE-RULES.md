@@ -57,7 +57,7 @@
 - 默认不强制数据库外键。
 - 关联一致性由 application 和 domain 保证。
 - 跨域引用只保存必要业务键、ULID 或快照，不复制对端主表结构。
-- 跨域访问不得直接读取或写入其他业务域的 DAO、Mapper 或底层表。
+- 跨域访问不得直接读取或写入其他业务域的 Repository、Mapper 或底层表。
 
 ## Index And Uniqueness
 

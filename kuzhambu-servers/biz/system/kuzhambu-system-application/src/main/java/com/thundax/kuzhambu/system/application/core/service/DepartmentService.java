@@ -6,8 +6,8 @@ import com.thundax.kuzhambu.system.application.core.service.command.ChangeDepart
 import com.thundax.kuzhambu.system.application.core.service.command.CreateDepartmentCommand;
 import com.thundax.kuzhambu.system.application.core.service.command.MoveDepartmentCommand;
 import com.thundax.kuzhambu.system.application.core.service.query.DepartmentQuery;
-import com.thundax.kuzhambu.system.domain.model.entity.Department;
-import com.thundax.kuzhambu.system.domain.model.valueobject.DepartmentId;
+import com.thundax.kuzhambu.system.domain.core.model.entity.Department;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.DepartmentId;
 import java.util.List;
 
 public interface DepartmentService {

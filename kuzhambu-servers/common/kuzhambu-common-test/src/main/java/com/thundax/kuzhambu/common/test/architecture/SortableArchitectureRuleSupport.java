@@ -65,16 +65,16 @@ public final class SortableArchitectureRuleSupport {
         assertTrue("FlatSort tables must declare unique priority keys: " + violations, violations.isEmpty());
     }
 
-    public static void assertSortableDaoNormalUpdateDoesNotSetPriority(Path sourceRoot) throws IOException {
+    public static void assertSortableRepositoryNormalUpdateDoesNotSetPriority(Path sourceRoot) throws IOException {
         Path root = ArchitectureSourceSupport.repositoryRoot();
         List<String> violations = new ArrayList<String>();
 
         try (Stream<Path> paths = Files.walk(sourceRoot)) {
-            paths.filter(path -> path.getFileName().toString().endsWith("DaoImpl.java"))
-                    .forEach(path -> collectSortableDaoUpdatePriorityViolations(root, path, violations));
+            paths.filter(path -> path.getFileName().toString().endsWith("RepositoryImpl.java"))
+                    .forEach(path -> collectSortableRepositoryUpdatePriorityViolations(root, path, violations));
         }
 
-        assertTrue("Sortable DAO normal update must not set priority: " + violations, violations.isEmpty());
+        assertTrue("Sortable Repository normal update must not set priority: " + violations, violations.isEmpty());
     }
 
     private static void collectSortCommandFieldViolations(Path root, Path path, List<String> violations) {
@@ -102,7 +102,8 @@ public final class SortableArchitectureRuleSupport {
         }
     }
 
-    private static void collectSortableDaoUpdatePriorityViolations(Path root, Path path, List<String> violations) {
+    private static void collectSortableRepositoryUpdatePriorityViolations(
+            Path root, Path path, List<String> violations) {
         String content = ArchitectureSourceSupport.readSourceWithoutComments(path);
         if (!content.contains("updatePriority")) {
             return;

@@ -4,8 +4,8 @@ import com.thundax.kuzhambu.system.application.core.service.command.ChangeDictIn
 import com.thundax.kuzhambu.system.application.core.service.command.CreateDictCommand;
 import com.thundax.kuzhambu.system.application.core.service.query.DictQuery;
 import com.thundax.kuzhambu.system.domain.core.codec.DictIdCodec;
-import com.thundax.kuzhambu.system.domain.model.entity.Dict;
-import com.thundax.kuzhambu.system.domain.model.valueobject.DictId;
+import com.thundax.kuzhambu.system.domain.core.model.entity.Dict;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.DictId;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.DictIdRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.DictPageRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.DictQueryRequest;

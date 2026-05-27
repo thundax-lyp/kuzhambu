@@ -7,14 +7,14 @@ import com.thundax.kuzhambu.common.core.exception.ErrorCode;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
-import com.thundax.kuzhambu.system.application.core.dao.DictDao;
 import com.thundax.kuzhambu.system.application.core.service.DictService;
 import com.thundax.kuzhambu.system.application.core.service.command.ChangeDictInfoCommand;
 import com.thundax.kuzhambu.system.application.core.service.command.CreateDictCommand;
 import com.thundax.kuzhambu.system.application.core.service.command.DictSortCommand;
 import com.thundax.kuzhambu.system.application.core.service.query.DictQuery;
-import com.thundax.kuzhambu.system.domain.model.entity.Dict;
-import com.thundax.kuzhambu.system.domain.model.valueobject.DictId;
+import com.thundax.kuzhambu.system.domain.core.model.entity.Dict;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.DictId;
+import com.thundax.kuzhambu.system.domain.core.repository.DictRepository;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -32,9 +32,9 @@ public class DictServiceImpl implements DictService {
 
     private static final int PRIORITY_STEP = 10;
 
-    private final DictDao dao;
+    private final DictRepository dao;
 
-    public DictServiceImpl(DictDao dao) {
+    public DictServiceImpl(DictRepository dao) {
         this.dao = dao;
     }
 
@@ -84,7 +84,7 @@ public class DictServiceImpl implements DictService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public DictId create(CreateDictCommand command) {
-        Dict dict = toEntity(command);
+        Dict dict = toDomain(command);
         dict.setPriority(dao.maxPriority() + PRIORITY_STEP);
         dict.setId(dao.insert(dict));
         return dict.getId();
@@ -217,7 +217,7 @@ public class DictServiceImpl implements DictService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void changeInfo(ChangeDictInfoCommand command) {
-        dao.update(toEntity(command));
+        dao.update(toDomain(command));
     }
 
     @Override
@@ -228,7 +228,7 @@ public class DictServiceImpl implements DictService {
         }
     }
 
-    private Dict toEntity(CreateDictCommand command) {
+    private Dict toDomain(CreateDictCommand command) {
         Dict dict = new Dict();
         if (command == null) {
             return dict;
@@ -260,7 +260,7 @@ public class DictServiceImpl implements DictService {
         }
     }
 
-    private Dict toEntity(ChangeDictInfoCommand command) {
+    private Dict toDomain(ChangeDictInfoCommand command) {
         Dict dict = new Dict();
         if (command == null) {
             return dict;

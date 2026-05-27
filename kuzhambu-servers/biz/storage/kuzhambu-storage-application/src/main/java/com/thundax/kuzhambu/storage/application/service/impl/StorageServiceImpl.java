@@ -7,8 +7,6 @@ import com.thundax.kuzhambu.common.core.exception.ErrorCode;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
-import com.thundax.kuzhambu.storage.application.dao.StoredObjectDao;
-import com.thundax.kuzhambu.storage.application.dao.StoredObjectReferenceDao;
 import com.thundax.kuzhambu.storage.application.service.StorageService;
 import com.thundax.kuzhambu.storage.application.service.command.AddStorageReferencesCommand;
 import com.thundax.kuzhambu.storage.application.service.command.ChangeStorageCommand;
@@ -18,11 +16,13 @@ import com.thundax.kuzhambu.storage.application.service.command.CreateStorageCom
 import com.thundax.kuzhambu.storage.application.service.command.RemoveStorageReferencesCommand;
 import com.thundax.kuzhambu.storage.application.service.command.StorageSortCommand;
 import com.thundax.kuzhambu.storage.application.service.query.StorageQuery;
-import com.thundax.kuzhambu.storage.domain.model.entity.StoredObject;
-import com.thundax.kuzhambu.storage.domain.model.entity.StoredObjectReference;
-import com.thundax.kuzhambu.storage.domain.model.enums.StoredObjectReferenceStatus;
-import com.thundax.kuzhambu.storage.domain.model.valueobject.StoredObjectId;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
+import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
+import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObjectReference;
+import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
+import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectReferenceRepository;
+import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectRepository;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -39,12 +39,12 @@ public class StorageServiceImpl implements StorageService {
 
     private static final int PRIORITY_STEP = 10;
 
-    private final StoredObjectDao dao;
-    private final StoredObjectReferenceDao businessDao;
+    private final StoredObjectRepository dao;
+    private final StoredObjectReferenceRepository businessRepository;
 
-    public StorageServiceImpl(StoredObjectDao dao, StoredObjectReferenceDao businessDao) {
+    public StorageServiceImpl(StoredObjectRepository dao, StoredObjectReferenceRepository businessRepository) {
         this.dao = dao;
-        this.businessDao = businessDao;
+        this.businessRepository = businessRepository;
     }
 
     @Override
@@ -220,7 +220,7 @@ public class StorageServiceImpl implements StorageService {
 
     @Override
     public List<String> listReferenceOwnerTypes(StorageQuery query) {
-        return businessDao.listReferenceOwnerTypes();
+        return businessRepository.listReferenceOwnerTypes();
     }
 
     @Override
@@ -247,21 +247,21 @@ public class StorageServiceImpl implements StorageService {
         if (command == null) {
             return 0;
         }
-        return businessDao.deleteByOwner(
+        return businessRepository.deleteByOwner(
                 command.getOwnerType() == null ? null : command.getOwnerType().value(), command.getOwnerId());
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void addReferences(AddStorageReferencesCommand command) {
-        businessDao.insertReferences(command.getReferences());
+        businessRepository.insertReferences(command.getReferences());
     }
 
     @Override
     public List<StoredObjectReference> listReferences(StorageQuery query) {
         StoredObject entity = new StoredObject();
         entity.setId(query.getId());
-        return businessDao.listReferences(entity);
+        return businessRepository.listReferences(entity);
     }
 
     @Override

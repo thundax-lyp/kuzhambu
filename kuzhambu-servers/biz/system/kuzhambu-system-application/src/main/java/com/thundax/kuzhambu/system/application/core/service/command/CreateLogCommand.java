@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.system.application.core.service.command;
 
-import com.thundax.kuzhambu.system.domain.model.enums.LogType;
-import com.thundax.kuzhambu.system.domain.model.valueobject.LogId;
+import com.thundax.kuzhambu.system.domain.core.model.enums.LogType;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.LogId;
 import java.util.Date;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

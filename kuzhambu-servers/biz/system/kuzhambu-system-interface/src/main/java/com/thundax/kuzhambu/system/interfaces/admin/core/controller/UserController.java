@@ -10,7 +10,7 @@ import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.common.web.request.RequestListHelper;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
-import com.thundax.kuzhambu.storage.domain.model.entity.StoredObject;
+import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.system.application.auth.service.PreAuthSessionService;
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalCredentialService;
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalIdentityService;
@@ -33,28 +33,28 @@ import com.thundax.kuzhambu.system.application.core.service.query.DictQuery;
 import com.thundax.kuzhambu.system.application.core.service.query.RoleQuery;
 import com.thundax.kuzhambu.system.application.core.service.query.UserQuery;
 import com.thundax.kuzhambu.system.application.core.utils.SysApiUtils;
+import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalCredential;
+import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalIdentity;
+import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalCredentialStatus;
+import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalCredentialType;
+import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalIdentityStatus;
+import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalIdentityType;
+import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalType;
+import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PreAuthSessionId;
+import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PreAuthSessionToken;
+import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalIdentityId;
+import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalKey;
 import com.thundax.kuzhambu.system.domain.core.codec.DepartmentIdCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.RoleIdCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
-import com.thundax.kuzhambu.system.domain.model.entity.Department;
-import com.thundax.kuzhambu.system.domain.model.entity.Dict;
-import com.thundax.kuzhambu.system.domain.model.entity.PrincipalCredential;
-import com.thundax.kuzhambu.system.domain.model.entity.PrincipalIdentity;
-import com.thundax.kuzhambu.system.domain.model.entity.Role;
-import com.thundax.kuzhambu.system.domain.model.entity.User;
-import com.thundax.kuzhambu.system.domain.model.enums.PrincipalCredentialStatus;
-import com.thundax.kuzhambu.system.domain.model.enums.PrincipalCredentialType;
-import com.thundax.kuzhambu.system.domain.model.enums.PrincipalIdentityStatus;
-import com.thundax.kuzhambu.system.domain.model.enums.PrincipalIdentityType;
-import com.thundax.kuzhambu.system.domain.model.enums.PrincipalType;
-import com.thundax.kuzhambu.system.domain.model.enums.RoleStatus;
-import com.thundax.kuzhambu.system.domain.model.enums.UserStatus;
-import com.thundax.kuzhambu.system.domain.model.valueobject.AccessRank;
-import com.thundax.kuzhambu.system.domain.model.valueobject.PreAuthSessionId;
-import com.thundax.kuzhambu.system.domain.model.valueobject.PreAuthSessionToken;
-import com.thundax.kuzhambu.system.domain.model.valueobject.PrincipalIdentityId;
-import com.thundax.kuzhambu.system.domain.model.valueobject.PrincipalKey;
-import com.thundax.kuzhambu.system.domain.model.valueobject.UserId;
+import com.thundax.kuzhambu.system.domain.core.model.entity.Department;
+import com.thundax.kuzhambu.system.domain.core.model.entity.Dict;
+import com.thundax.kuzhambu.system.domain.core.model.entity.Role;
+import com.thundax.kuzhambu.system.domain.core.model.entity.User;
+import com.thundax.kuzhambu.system.domain.core.model.enums.RoleStatus;
+import com.thundax.kuzhambu.system.domain.core.model.enums.UserStatus;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.AccessRank;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.security.CurrentUserResolver;
 import com.thundax.kuzhambu.system.interfaces.admin.core.aop.annotation.SysLogger;
 import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.UserInterfaceAssembler;
@@ -257,7 +257,7 @@ public class UserController {
         }
         validatePassword(request.getLoginPass());
 
-        User entity = UserInterfaceAssembler.toEntity(new User(), request);
+        User entity = UserInterfaceAssembler.toDomain(new User(), request);
         String encryptedPassword = PasswordHelper.encrypt(request.getLoginPass());
 
         if (entity.getId() != null) {
@@ -314,7 +314,7 @@ public class UserController {
         }
         validateEditableRank(currentUser, request);
 
-        User entity = UserInterfaceAssembler.toEntity(bean, request);
+        User entity = UserInterfaceAssembler.toDomain(bean, request);
 
         userService.changeInfo(UserInterfaceAssembler.toChangeInfoCommand(request));
 

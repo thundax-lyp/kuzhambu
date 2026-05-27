@@ -6,9 +6,9 @@ import com.thundax.kuzhambu.system.application.auth.service.command.ReleasePreAu
 import com.thundax.kuzhambu.system.application.auth.service.command.UpsertPreAuthSessionValueCommand;
 import com.thundax.kuzhambu.system.application.auth.service.query.PreAuthSessionValueQuery;
 import com.thundax.kuzhambu.system.application.auth.service.query.PreAuthSessionValueValidateQuery;
-import com.thundax.kuzhambu.system.domain.model.entity.PreAuthSession;
-import com.thundax.kuzhambu.system.domain.model.valueobject.PreAuthSessionId;
-import com.thundax.kuzhambu.system.domain.model.valueobject.PreAuthSessionToken;
+import com.thundax.kuzhambu.system.domain.auth.model.entity.PreAuthSession;
+import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PreAuthSessionId;
+import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PreAuthSessionToken;
 
 public interface PreAuthSessionService {
 

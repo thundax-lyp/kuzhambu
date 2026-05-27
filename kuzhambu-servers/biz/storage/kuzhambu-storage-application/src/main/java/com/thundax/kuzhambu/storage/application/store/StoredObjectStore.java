@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.storage.application.store;
 
-import com.thundax.kuzhambu.storage.domain.model.entity.StoredObject;
+import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import java.io.IOException;
 import java.io.InputStream;
 

@@ -1,9 +1,9 @@
 package com.thundax.kuzhambu.system.application.core.service.query;
 
-import com.thundax.kuzhambu.system.domain.model.enums.UserPrivilege;
-import com.thundax.kuzhambu.system.domain.model.enums.UserStatus;
-import com.thundax.kuzhambu.system.domain.model.valueobject.AccessRank;
-import com.thundax.kuzhambu.system.domain.model.valueobject.UserId;
+import com.thundax.kuzhambu.system.domain.core.model.enums.UserPrivilege;
+import com.thundax.kuzhambu.system.domain.core.model.enums.UserStatus;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.AccessRank;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

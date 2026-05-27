@@ -12,9 +12,9 @@ import com.thundax.kuzhambu.system.application.core.service.command.ChangeMenuVi
 import com.thundax.kuzhambu.system.application.core.service.command.MoveMenuCommand;
 import com.thundax.kuzhambu.system.application.core.service.query.MenuQuery;
 import com.thundax.kuzhambu.system.domain.core.codec.MenuIdCodec;
-import com.thundax.kuzhambu.system.domain.model.entity.Menu;
-import com.thundax.kuzhambu.system.domain.model.enums.MenuVisibility;
-import com.thundax.kuzhambu.system.domain.model.valueobject.MenuId;
+import com.thundax.kuzhambu.system.domain.core.model.entity.Menu;
+import com.thundax.kuzhambu.system.domain.core.model.enums.MenuVisibility;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.MenuId;
 import com.thundax.kuzhambu.system.interfaces.admin.core.aop.annotation.SysLogger;
 import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.MenuInterfaceAssembler;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.MenuDisplayRequest;
@@ -101,7 +101,7 @@ public class MenuController {
     @SysLogger(value = "添加")
     @PostMapping(value = "create")
     public MenuResponse add(@Valid @RequestBody MenuSaveRequest request) {
-        Menu entity = MenuInterfaceAssembler.toEntity(new Menu(), request);
+        Menu entity = MenuInterfaceAssembler.toDomain(new Menu(), request);
         if (entity.getId() != null) {
             Menu bean = menuService.get(entity.getId());
             if (bean != null) {
@@ -145,7 +145,7 @@ public class MenuController {
             }
         }
 
-        Menu entity = MenuInterfaceAssembler.toEntity(bean, request);
+        Menu entity = MenuInterfaceAssembler.toDomain(bean, request);
 
         menuService.changeInfo(MenuInterfaceAssembler.toChangeInfoCommand(request));
 

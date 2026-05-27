@@ -1,12 +1,12 @@
 package com.thundax.kuzhambu.system.application.auth.service.impl;
 
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
-import com.thundax.kuzhambu.system.application.auth.dao.PrincipalIdentityDao;
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalIdentityService;
 import com.thundax.kuzhambu.system.application.auth.service.command.PrincipalIdentityCommand;
 import com.thundax.kuzhambu.system.application.auth.service.query.PrincipalIdentityQuery;
-import com.thundax.kuzhambu.system.domain.model.entity.PrincipalIdentity;
-import com.thundax.kuzhambu.system.domain.model.valueobject.PrincipalIdentityId;
+import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalIdentity;
+import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalIdentityId;
+import com.thundax.kuzhambu.system.domain.auth.repository.PrincipalIdentityRepository;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -15,10 +15,10 @@ import org.springframework.stereotype.Service;
 @BizExceptionBoundary
 public class PrincipalIdentityServiceImpl implements PrincipalIdentityService {
 
-    private final PrincipalIdentityDao principalIdentityDao;
+    private final PrincipalIdentityRepository principalIdentityRepository;
 
-    public PrincipalIdentityServiceImpl(PrincipalIdentityDao principalIdentityDao) {
-        this.principalIdentityDao = principalIdentityDao;
+    public PrincipalIdentityServiceImpl(PrincipalIdentityRepository principalIdentityRepository) {
+        this.principalIdentityRepository = principalIdentityRepository;
     }
 
     @Override
@@ -27,37 +27,38 @@ public class PrincipalIdentityServiceImpl implements PrincipalIdentityService {
             return null;
         }
         if (query.getId() != null) {
-            return principalIdentityDao.getById(query.getId());
+            return principalIdentityRepository.getById(query.getId());
         }
         if (query.getIdentityType() != null && StringUtils.isNotBlank(query.getIdentityValue())) {
-            return principalIdentityDao.getByIdentity(query.getIdentityType(), query.getIdentityValue());
+            return principalIdentityRepository.getByIdentity(query.getIdentityType(), query.getIdentityValue());
         }
         if (query.getPrincipalKey() != null && query.getIdentityType() != null) {
-            return principalIdentityDao.getByPrincipalKeyAndType(query.getPrincipalKey(), query.getIdentityType());
+            return principalIdentityRepository.getByPrincipalKeyAndType(
+                    query.getPrincipalKey(), query.getIdentityType());
         }
         return null;
     }
 
     @Override
     public List<PrincipalIdentity> list(PrincipalIdentityQuery query) {
-        return principalIdentityDao.listByPrincipalKeyAndStatus(query.getPrincipalKey(), query.getStatus());
+        return principalIdentityRepository.listByPrincipalKeyAndStatus(query.getPrincipalKey(), query.getStatus());
     }
 
     @Override
     public PrincipalIdentityId create(PrincipalIdentityCommand command) {
         PrincipalIdentity principalIdentity = command.getPrincipalIdentity();
-        PrincipalIdentityId id = principalIdentityDao.insert(principalIdentity);
+        PrincipalIdentityId id = principalIdentityRepository.insert(principalIdentity);
         principalIdentity.setId(id);
         return id;
     }
 
     @Override
     public void change(PrincipalIdentityCommand command) {
-        principalIdentityDao.update(command.getPrincipalIdentity());
+        principalIdentityRepository.update(command.getPrincipalIdentity());
     }
 
     @Override
     public void changeStatus(PrincipalIdentityCommand command) {
-        principalIdentityDao.updateStatus(command.getPrincipalIdentity());
+        principalIdentityRepository.updateStatus(command.getPrincipalIdentity());
     }
 }

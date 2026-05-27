@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
-import com.thundax.kuzhambu.system.application.core.dao.UserDao;
 import com.thundax.kuzhambu.system.application.core.service.UserService;
 import com.thundax.kuzhambu.system.application.core.service.command.ChangeUserInfoCommand;
 import com.thundax.kuzhambu.system.application.core.service.command.ChangeUserStatusCommand;
@@ -14,10 +13,11 @@ import com.thundax.kuzhambu.system.application.core.service.query.UserQuery;
 import com.thundax.kuzhambu.system.domain.core.codec.DepartmentIdCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.RoleIdCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
-import com.thundax.kuzhambu.system.domain.model.entity.Role;
-import com.thundax.kuzhambu.system.domain.model.entity.User;
-import com.thundax.kuzhambu.system.domain.model.valueobject.RoleId;
-import com.thundax.kuzhambu.system.domain.model.valueobject.UserId;
+import com.thundax.kuzhambu.system.domain.core.model.entity.Role;
+import com.thundax.kuzhambu.system.domain.core.model.entity.User;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.RoleId;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
+import com.thundax.kuzhambu.system.domain.core.repository.UserRepository;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,10 +30,10 @@ import org.springframework.transaction.annotation.Transactional;
 @BizExceptionBoundary
 public class UserServiceImpl implements UserService {
 
-    private final UserDao dao;
+    private final UserRepository dao;
     private final List<UserDeleteCascadeHandler> deleteCascadeHandlers;
 
-    public UserServiceImpl(UserDao dao, ObjectProvider<List<UserDeleteCascadeHandler>> deleteCascadeHandlers) {
+    public UserServiceImpl(UserRepository dao, ObjectProvider<List<UserDeleteCascadeHandler>> deleteCascadeHandlers) {
         this.dao = dao;
         this.deleteCascadeHandlers = deleteCascadeHandlers == null
                 ? Collections.emptyList()

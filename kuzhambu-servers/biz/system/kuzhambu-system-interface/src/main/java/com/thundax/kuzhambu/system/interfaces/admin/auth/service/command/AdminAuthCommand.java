@@ -1,9 +1,9 @@
 package com.thundax.kuzhambu.system.interfaces.admin.auth.service.command;
 
-import com.thundax.kuzhambu.system.domain.model.entity.User;
-import com.thundax.kuzhambu.system.domain.model.enums.PrincipalAuthenticationMethod;
-import com.thundax.kuzhambu.system.domain.model.enums.PrincipalIdentityType;
-import com.thundax.kuzhambu.system.domain.model.valueobject.UserId;
+import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalAuthenticationMethod;
+import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalIdentityType;
+import com.thundax.kuzhambu.system.domain.core.model.entity.User;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.service.result.AuthAccessTokenResult;
 import java.util.List;
 import lombok.Getter;

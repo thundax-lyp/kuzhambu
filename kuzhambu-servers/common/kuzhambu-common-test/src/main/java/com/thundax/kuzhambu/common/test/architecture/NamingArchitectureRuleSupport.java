@@ -36,10 +36,17 @@ public final class NamingArchitectureRuleSupport {
             new LinkedHashSet<String>(Arrays.asList("Getter", "Setter", "NoArgsConstructor", "AllArgsConstructor"));
     private static final Set<String> ENTITY_REQUIRED_ANNOTATIONS =
             new LinkedHashSet<String>(Arrays.asList("Getter", "Setter", "NoArgsConstructor", "AllArgsConstructor"));
+    private static final Set<String> MAPPER_REQUIRED_ANNOTATIONS = new LinkedHashSet<String>(Arrays.asList("Mapper"));
+    private static final Set<String> DATA_OBJECT_REQUIRED_LOMBOK_ANNOTATIONS =
+            new LinkedHashSet<String>(Arrays.asList("Data", "NoArgsConstructor", "AllArgsConstructor"));
+    private static final Set<String> DATA_OBJECT_LOMBOK_ANNOTATIONS = new LinkedHashSet<String>(
+            Arrays.asList("Data", "Getter", "Setter", "NoArgsConstructor", "AllArgsConstructor", "Builder"));
     private static final Pattern SERVICE_QUERY_CLASS_DECLARATION_PATTERN =
             Pattern.compile("(?s)(.*?)\\bpublic\\s+class\\s+\\w+Query\\b");
     private static final Pattern ENTITY_CLASS_DECLARATION_PATTERN =
             Pattern.compile("(?s)(.*?)\\bpublic\\s+class\\s+\\w+\\b");
+    private static final Pattern INTERFACE_DECLARATION_PATTERN =
+            Pattern.compile("(?s)(.*?)\\bpublic\\s+interface\\s+\\w+\\b");
     private static final Pattern SOURCE_ANNOTATION_PATTERN = Pattern.compile("@(?:[\\w.]+\\.)?(\\w+)\\b");
 
     private NamingArchitectureRuleSupport() {}
@@ -112,13 +119,14 @@ public final class NamingArchitectureRuleSupport {
             if (!javaClass.getPackageName().contains(".valueobject")) {
                 continue;
             }
-            if (!javaClass.getPackageName().equals(basePackage + ".domain.model.valueobject")) {
+            if (!matchesModuleSubdomainPackage(
+                    javaClass.getPackageName(), basePackage + ".domain", ".model.valueobject")) {
                 violations.add(javaClass.getName());
             }
         }
 
         assertTrue(
-                "valueobject packages must only be com.thundax.kuzhambu.{module}.domain.model.valueobject: "
+                "valueobject packages must only be com.thundax.kuzhambu.{module}.domain.{domain}.model.valueobject: "
                         + violations,
                 violations.isEmpty());
     }
@@ -133,8 +141,9 @@ public final class NamingArchitectureRuleSupport {
             if (!javaClass.getSimpleName().endsWith("Id")) {
                 continue;
             }
-            if (!javaClass.getPackageName().equals(basePackage + ".domain.model.valueobject")) {
-                violations.add(javaClass.getName() + " must stay in domain.model.valueobject");
+            if (!matchesModuleSubdomainPackage(
+                    javaClass.getPackageName(), basePackage + ".domain", ".model.valueobject")) {
+                violations.add(javaClass.getName() + " must stay in domain.{domain}.model.valueobject");
                 continue;
             }
             if (!javaClass.getModifiers().contains(JavaModifier.FINAL)) {
@@ -158,13 +167,14 @@ public final class NamingArchitectureRuleSupport {
             if (!javaClass.getPackageName().contains(".entity")) {
                 continue;
             }
-            if (!javaClass.getPackageName().equals(basePackage + ".domain.model.entity")) {
+            if (!matchesModuleSubdomainPackage(javaClass.getPackageName(), basePackage + ".domain", ".model.entity")) {
                 violations.add(javaClass.getName());
             }
         }
 
         assertTrue(
-                "entity packages must only be com.thundax.kuzhambu.{module}.domain.model.entity: " + violations,
+                "entity packages must only be com.thundax.kuzhambu.{module}.domain.{domain}.model.entity: "
+                        + violations,
                 violations.isEmpty());
     }
 
@@ -178,14 +188,81 @@ public final class NamingArchitectureRuleSupport {
             if (!isPackageUnder(javaClass, basePackage + ".domain")) {
                 continue;
             }
-            if (!javaClass.getPackageName().equals(basePackage + ".domain.model.enums")) {
+            if (!matchesModuleSubdomainPackage(javaClass.getPackageName(), basePackage + ".domain", ".model.enums")) {
                 violations.add(javaClass.getName());
             }
         }
 
         assertTrue(
-                "domain enums must only be placed under com.thundax.kuzhambu.{module}.domain.model.enums: "
+                "domain enums must only be placed under com.thundax.kuzhambu.{module}.domain.{domain}.model.enums: "
                         + violations,
+                violations.isEmpty());
+    }
+
+    public static void assertRepositoryPlacement(JavaClasses classes, String basePackage) {
+        assertSuffixPlacement(
+                classes,
+                basePackage + ".domain",
+                ".repository",
+                "Repository",
+                true,
+                "*Repository interfaces must be placed under com.thundax.kuzhambu.{module}.domain.{domain}.repository");
+    }
+
+    public static void assertRepositoryImplPlacement(JavaClasses classes, String basePackage) {
+        assertSuffixPlacement(
+                classes,
+                basePackage + ".infra",
+                ".repository.impl",
+                "RepositoryImpl",
+                false,
+                "*RepositoryImpl classes must be placed under com.thundax.kuzhambu.{module}.infra.{domain}.repository.impl");
+    }
+
+    public static void assertPersistenceMapperPlacement(JavaClasses classes, String basePackage) {
+        assertSuffixPlacement(
+                classes,
+                basePackage + ".infra",
+                ".persistence.mapper",
+                "Mapper",
+                null,
+                "*Mapper interfaces must be placed under com.thundax.kuzhambu.{module}.infra.{domain}.persistence.mapper");
+    }
+
+    public static void assertPersistenceDataObjectPlacement(JavaClasses classes, String basePackage) {
+        assertSuffixPlacement(
+                classes,
+                basePackage + ".infra",
+                ".persistence.dataobject",
+                "DO",
+                false,
+                "*DO classes must be placed under com.thundax.kuzhambu.{module}.infra.{domain}.persistence.dataobject");
+    }
+
+    public static void assertPersistenceAssemblerPlacement(JavaClasses classes, String basePackage) {
+        assertSuffixPlacement(
+                classes,
+                basePackage + ".infra",
+                ".persistence.assembler",
+                "PersistenceAssembler",
+                false,
+                "*PersistenceAssembler classes must be placed under com.thundax.kuzhambu.{module}.infra.{domain}.persistence.assembler");
+    }
+
+    public static void assertPersistenceAssemblersDeclareStaticConversionMethods(JavaClasses classes) {
+        List<String> violations = new ArrayList<String>();
+
+        for (JavaClass javaClass : classes) {
+            if (!javaClass.getSimpleName().endsWith("PersistenceAssembler")) {
+                continue;
+            }
+            if (!hasPublicStaticMethod(javaClass, "toObject") || !hasPublicStaticMethod(javaClass, "toDomain")) {
+                violations.add(javaClass.getName());
+            }
+        }
+
+        assertTrue(
+                "*PersistenceAssembler must declare public static toObject/toDomain conversion methods: " + violations,
                 violations.isEmpty());
     }
 
@@ -207,6 +284,47 @@ public final class NamingArchitectureRuleSupport {
         assertTrue(
                 "Entity source must declare exactly @Getter, @Setter, @NoArgsConstructor and @AllArgsConstructor "
                         + "as class annotations: "
+                        + violations,
+                violations.isEmpty());
+    }
+
+    public static void assertMapperSourcesDeclareOnlyMapperAnnotation(Path sourceRoot) throws IOException {
+        Path root = ArchitectureSourceSupport.repositoryRoot();
+        List<String> violations = new ArrayList<String>();
+
+        if (!Files.exists(sourceRoot)) {
+            return;
+        }
+        try (Stream<Path> paths = Files.walk(sourceRoot)) {
+            paths.filter(Files::isRegularFile)
+                    .filter(NamingArchitectureRuleSupport::isMapperSource)
+                    .filter(NamingArchitectureRuleSupport::violatesMapperAnnotations)
+                    .map(path -> ArchitectureSourceSupport.repositoryPath(root, path))
+                    .forEach(violations::add);
+        }
+
+        assertTrue(
+                "*Mapper source must declare exactly @Mapper as class annotation: " + violations, violations.isEmpty());
+    }
+
+    public static void assertDataObjectSourcesDeclareOnlyRequiredLombokAnnotations(Path sourceRoot) throws IOException {
+        Path root = ArchitectureSourceSupport.repositoryRoot();
+        List<String> violations = new ArrayList<String>();
+
+        if (!Files.exists(sourceRoot)) {
+            return;
+        }
+        try (Stream<Path> paths = Files.walk(sourceRoot)) {
+            paths.filter(Files::isRegularFile)
+                    .filter(NamingArchitectureRuleSupport::isDataObjectSource)
+                    .filter(NamingArchitectureRuleSupport::violatesDataObjectLombokAnnotations)
+                    .map(path -> ArchitectureSourceSupport.repositoryPath(root, path))
+                    .forEach(violations::add);
+        }
+
+        assertTrue(
+                "*DO source must declare exactly @Data, @NoArgsConstructor and @AllArgsConstructor as Lombok "
+                        + "class annotations: "
                         + violations,
                 violations.isEmpty());
     }
@@ -242,51 +360,53 @@ public final class NamingArchitectureRuleSupport {
                 violations.isEmpty());
     }
 
-    public static void assertDaoInterfaceMethodNames(JavaClasses classes) {
+    public static void assertRepositoryInterfaceMethodNames(JavaClasses classes) {
         List<String> violations = new ArrayList<String>();
 
         for (JavaClass javaClass : classes) {
-            if (!isDaoInterface(javaClass)) {
+            if (!isRepositoryInterface(javaClass)) {
                 continue;
             }
             for (JavaMethod method : javaClass.getMethods()) {
-                if (!isDaoPortMethodShape(method)) {
+                if (!isRepositoryPortMethodShape(method)) {
                     violations.add(method.getFullName());
                 }
             }
         }
 
         assertTrue(
-                "DAO interface methods should use getById/getByXxx/list/listByIds/page/count/deleteById/batchXxx "
+                "Repository interface methods should use getById/getByXxx/list/listByIds/page/count/deleteById/batchXxx "
                         + "naming: "
                         + violations,
                 violations.isEmpty());
     }
 
-    public static void assertDaoTypeNamesUseDaoSuffix(JavaClasses classes) {
+    public static void assertRepositoryTypeNamesUseRepositorySuffix(JavaClasses classes) {
         List<String> violations = new ArrayList<String>();
 
         for (JavaClass javaClass : classes) {
-            if (!isDaoPackage(javaClass)
+            if (!isRepositoryPackage(javaClass)
                     || isTestType(javaClass)
                     || javaClass.getName().contains("$")) {
                 continue;
             }
-            if (javaClass.isInterface() && !javaClass.getSimpleName().endsWith("Dao")) {
+            if (javaClass.isInterface() && !javaClass.getSimpleName().endsWith("Repository")) {
                 violations.add(javaClass.getName());
             }
             if (!javaClass.isInterface()
-                    && javaClass.getPackageName().contains(".persistence.dao")
-                    && !javaClass.getSimpleName().endsWith("DaoImpl")) {
+                    && javaClass.getPackageName().contains(".repository.impl")
+                    && !javaClass.getSimpleName().endsWith("RepositoryImpl")) {
                 violations.add(javaClass.getName());
             }
             if (javaClass.getSimpleName().endsWith("DAO")
-                    || javaClass.getSimpleName().endsWith("DAOImpl")) {
+                    || javaClass.getSimpleName().endsWith("DAOImpl")
+                    || javaClass.getSimpleName().endsWith("Dao")
+                    || javaClass.getSimpleName().endsWith("DaoImpl")) {
                 violations.add(javaClass.getName());
             }
         }
 
-        assertTrue("DAO types must use Dao/DaoImpl suffixes: " + violations, violations.isEmpty());
+        assertTrue("Repository types must use Repository/RepositoryImpl suffixes: " + violations, violations.isEmpty());
     }
 
     public static void assertServiceAddMethodsReturnEntityId(JavaClasses classes) {
@@ -471,9 +591,9 @@ public final class NamingArchitectureRuleSupport {
             violations.add(javaClass.getName());
         } else if (isServiceInterfacePackage(javaClass) && !simpleName.endsWith("Service")) {
             violations.add(javaClass.getName());
-        } else if (isDaoInterfacePackage(javaClass) && !simpleName.endsWith("Dao")) {
+        } else if (isRepositoryInterfacePackage(javaClass) && !simpleName.endsWith("Repository")) {
             violations.add(javaClass.getName());
-        } else if (isDaoImplementation(javaClass) && !simpleName.endsWith("DaoImpl")) {
+        } else if (isRepositoryImplementation(javaClass) && !simpleName.endsWith("RepositoryImpl")) {
             violations.add(javaClass.getName());
         } else if (packageName.contains(".persistence.mapper") && !simpleName.endsWith("Mapper")) {
             violations.add(javaClass.getName());
@@ -503,26 +623,26 @@ public final class NamingArchitectureRuleSupport {
         return javaClass.isInterface() && packageName.endsWith(".service");
     }
 
-    private static boolean isDaoInterfacePackage(JavaClass javaClass) {
-        return javaClass.isInterface() && javaClass.getPackageName().contains(".dao");
+    private static boolean isRepositoryInterfacePackage(JavaClass javaClass) {
+        return javaClass.isInterface() && javaClass.getPackageName().contains(".repository");
     }
 
-    private static boolean isDaoImplementation(JavaClass javaClass) {
-        return !javaClass.isInterface() && javaClass.getPackageName().contains(".persistence.dao");
+    private static boolean isRepositoryImplementation(JavaClass javaClass) {
+        return !javaClass.isInterface() && javaClass.getPackageName().contains(".repository.impl");
     }
 
     private static boolean isInterfaceAssemblerPackage(String packageName) {
         return packageName.contains(".assembler") && !packageName.contains(".persistence.assembler");
     }
 
-    private static boolean isDaoInterface(JavaClass javaClass) {
+    private static boolean isRepositoryInterface(JavaClass javaClass) {
         return javaClass.isInterface()
-                && javaClass.getSimpleName().endsWith("Dao")
-                && javaClass.getPackageName().contains(".dao");
+                && javaClass.getSimpleName().endsWith("Repository")
+                && javaClass.getPackageName().contains(".repository");
     }
 
-    private static boolean isDaoPackage(JavaClass javaClass) {
-        return javaClass.getPackageName().contains(".dao");
+    private static boolean isRepositoryPackage(JavaClass javaClass) {
+        return javaClass.getPackageName().contains(".repository");
     }
 
     private static boolean isTestType(JavaClass javaClass) {
@@ -551,7 +671,7 @@ public final class NamingArchitectureRuleSupport {
                 && javaClass.getPackageName().contains(".service");
     }
 
-    private static boolean isDaoPortMethodShape(JavaMethod method) {
+    private static boolean isRepositoryPortMethodShape(JavaMethod method) {
         String name = method.getName();
         if (isNonStandardIdsListName(name) || name.startsWith("find")) {
             return false;
@@ -568,14 +688,14 @@ public final class NamingArchitectureRuleSupport {
                 || name.startsWith("update")
                 || name.startsWith("deleteBy")
                 || name.startsWith("batch")
-                || isDaoBusinessActionName(name);
+                || isRepositoryBusinessActionName(name);
     }
 
     private static boolean isNonStandardIdsListName(String name) {
         return name.endsWith("ByIds") && !name.equals("listByIds");
     }
 
-    private static boolean isDaoBusinessActionName(String name) {
+    private static boolean isRepositoryBusinessActionName(String name) {
         return name.equals("active")
                 || name.equals("canSend")
                 || name.equals("deleteBusiness")
@@ -627,7 +747,7 @@ public final class NamingArchitectureRuleSupport {
 
     private static boolean isEntitySource(Path path) {
         String value = ArchitectureSourceSupport.normalizePath(path);
-        return value.contains("/domain/model/entity/") && value.endsWith(".java");
+        return value.contains("/domain/") && value.contains("/model/entity/") && value.endsWith(".java");
     }
 
     private static boolean violatesEntityAnnotations(Path path) {
@@ -646,5 +766,87 @@ public final class NamingArchitectureRuleSupport {
             annotations.add(annotation.group(1));
         }
         return annotations;
+    }
+
+    private static boolean matchesModuleSubdomainPackage(String packageName, String prefix, String suffix) {
+        String expectedPrefix = prefix + ".";
+        if (!packageName.startsWith(expectedPrefix) || !packageName.endsWith(suffix)) {
+            return false;
+        }
+        String middle = packageName.substring(expectedPrefix.length(), packageName.length() - suffix.length());
+        return middle.matches("[a-z][a-z0-9]*");
+    }
+
+    private static void assertSuffixPlacement(
+            JavaClasses classes,
+            String prefix,
+            String suffix,
+            String typeSuffix,
+            Boolean interfaceType,
+            String message) {
+        List<String> violations = new ArrayList<String>();
+
+        for (JavaClass javaClass : classes) {
+            if (isTestType(javaClass) || javaClass.getName().contains("$")) {
+                continue;
+            }
+            if (!javaClass.getSimpleName().endsWith(typeSuffix)) {
+                continue;
+            }
+            if (interfaceType != null && javaClass.isInterface() != interfaceType.booleanValue()) {
+                violations.add(javaClass.getName());
+                continue;
+            }
+            if (!matchesModuleSubdomainPackage(javaClass.getPackageName(), prefix, suffix)) {
+                violations.add(javaClass.getName());
+            }
+        }
+
+        assertTrue(message + ": " + violations, violations.isEmpty());
+    }
+
+    private static boolean hasPublicStaticMethod(JavaClass javaClass, String methodName) {
+        for (JavaMethod method : javaClass.getMethods()) {
+            if (methodName.equals(method.getName())
+                    && method.getModifiers().contains(JavaModifier.PUBLIC)
+                    && method.getModifiers().contains(JavaModifier.STATIC)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isMapperSource(Path path) {
+        String value = ArchitectureSourceSupport.normalizePath(path);
+        return value.contains("/infra/") && value.contains("/persistence/mapper/") && value.endsWith("Mapper.java");
+    }
+
+    private static boolean violatesMapperAnnotations(Path path) {
+        String source = ArchitectureSourceSupport.readSourceWithoutComments(path);
+        Matcher interfaceDeclaration = INTERFACE_DECLARATION_PATTERN.matcher(source);
+        if (!interfaceDeclaration.find()) {
+            return true;
+        }
+        return !MAPPER_REQUIRED_ANNOTATIONS.equals(classAnnotationSimpleNames(interfaceDeclaration.group(1)));
+    }
+
+    private static boolean isDataObjectSource(Path path) {
+        String value = ArchitectureSourceSupport.normalizePath(path);
+        return value.contains("/infra/") && value.contains("/persistence/dataobject/") && value.endsWith("DO.java");
+    }
+
+    private static boolean violatesDataObjectLombokAnnotations(Path path) {
+        String source = ArchitectureSourceSupport.readSourceWithoutComments(path);
+        Matcher classDeclaration = ENTITY_CLASS_DECLARATION_PATTERN.matcher(source);
+        if (!classDeclaration.find()) {
+            return true;
+        }
+        Set<String> lombokAnnotations = new LinkedHashSet<String>();
+        for (String annotation : classAnnotationSimpleNames(classDeclaration.group(1))) {
+            if (DATA_OBJECT_LOMBOK_ANNOTATIONS.contains(annotation)) {
+                lombokAnnotations.add(annotation);
+            }
+        }
+        return !DATA_OBJECT_REQUIRED_LOMBOK_ANNOTATIONS.equals(lombokAnnotations);
     }
 }

@@ -1,8 +1,8 @@
 package com.thundax.kuzhambu.system.application.audit.runtime;
 
 import com.thundax.kuzhambu.common.core.id.BaseLongId;
-import com.thundax.kuzhambu.system.domain.model.valueobject.AuditField;
-import com.thundax.kuzhambu.system.domain.model.valueobject.AuditSnapshot;
+import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditField;
+import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditSnapshot;
 import java.util.Arrays;
 
 public final class AuditSnapshots {

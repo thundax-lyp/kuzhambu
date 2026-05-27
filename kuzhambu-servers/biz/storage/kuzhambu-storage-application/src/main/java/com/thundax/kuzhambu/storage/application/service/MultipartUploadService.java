@@ -5,9 +5,9 @@ import com.thundax.kuzhambu.storage.application.service.command.AbortMultipartUp
 import com.thundax.kuzhambu.storage.application.service.command.CompleteMultipartUploadCommand;
 import com.thundax.kuzhambu.storage.application.service.command.InitMultipartUploadCommand;
 import com.thundax.kuzhambu.storage.application.service.command.UploadMultipartPartCommand;
-import com.thundax.kuzhambu.storage.domain.model.entity.MultipartUploadPart;
-import com.thundax.kuzhambu.storage.domain.model.entity.MultipartUploadSession;
-import com.thundax.kuzhambu.storage.domain.model.entity.StoredObject;
+import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadPart;
+import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadSession;
+import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 
 public interface MultipartUploadService {
 

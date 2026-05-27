@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.system.domain.auth.codec;
 
-import com.thundax.kuzhambu.system.domain.model.valueobject.PrincipalCredentialId;
+import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalCredentialId;
 
 public final class PrincipalCredentialIdCodec {
 

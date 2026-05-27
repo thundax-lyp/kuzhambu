@@ -8,10 +8,10 @@ import com.thundax.kuzhambu.system.application.core.service.command.ChangeRoleSt
 import com.thundax.kuzhambu.system.application.core.service.command.CreateRoleCommand;
 import com.thundax.kuzhambu.system.application.core.service.command.RoleSortCommand;
 import com.thundax.kuzhambu.system.application.core.service.query.RoleQuery;
-import com.thundax.kuzhambu.system.domain.model.entity.Menu;
-import com.thundax.kuzhambu.system.domain.model.entity.Role;
-import com.thundax.kuzhambu.system.domain.model.entity.User;
-import com.thundax.kuzhambu.system.domain.model.valueobject.RoleId;
+import com.thundax.kuzhambu.system.domain.core.model.entity.Menu;
+import com.thundax.kuzhambu.system.domain.core.model.entity.Role;
+import com.thundax.kuzhambu.system.domain.core.model.entity.User;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.RoleId;
 import java.util.List;
 
 public interface RoleService {

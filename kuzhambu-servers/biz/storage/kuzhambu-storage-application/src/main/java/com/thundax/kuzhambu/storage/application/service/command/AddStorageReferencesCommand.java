@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.storage.application.service.command;
 
-import com.thundax.kuzhambu.storage.domain.model.entity.StoredObjectReference;
+import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObjectReference;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

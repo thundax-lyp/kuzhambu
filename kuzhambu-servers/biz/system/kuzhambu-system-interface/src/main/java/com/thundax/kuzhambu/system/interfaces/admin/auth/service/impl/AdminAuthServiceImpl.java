@@ -4,12 +4,6 @@ import com.thundax.kuzhambu.common.core.crypto.Sha256Digest;
 import com.thundax.kuzhambu.common.core.id.UuidHelper;
 import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.system.application.auth.configure.AuthProperties;
-import com.thundax.kuzhambu.system.application.auth.dao.OAuthAuthorizationDao;
-import com.thundax.kuzhambu.system.application.auth.dao.OAuthClientDao;
-import com.thundax.kuzhambu.system.application.auth.dao.PrincipalAccessTokenDao;
-import com.thundax.kuzhambu.system.application.auth.dao.PrincipalAuthSessionDao;
-import com.thundax.kuzhambu.system.application.auth.dao.PrincipalLoginEventDao;
-import com.thundax.kuzhambu.system.application.auth.dao.PrincipalRefreshTokenDao;
 import com.thundax.kuzhambu.system.application.auth.exception.InvalidPasswordException;
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalAuthService;
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalIdentityService;
@@ -18,26 +12,32 @@ import com.thundax.kuzhambu.system.application.auth.service.command.Authenticate
 import com.thundax.kuzhambu.system.application.auth.service.dto.PrincipalPasswordPolicyDTO;
 import com.thundax.kuzhambu.system.application.auth.service.query.PrincipalIdentityQuery;
 import com.thundax.kuzhambu.system.application.core.service.UserService;
+import com.thundax.kuzhambu.system.domain.auth.model.entity.OAuthAuthorization;
+import com.thundax.kuzhambu.system.domain.auth.model.entity.OAuthClient;
+import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalAccessToken;
+import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalAuthSession;
+import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalIdentity;
+import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalLoginEvent;
+import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalRefreshToken;
+import com.thundax.kuzhambu.system.domain.auth.model.enums.OAuthClientStatus;
+import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalAuthenticationMethod;
+import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalCredentialType;
+import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalIdentityType;
+import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalLoginEventType;
+import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalTokenStatus;
+import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalType;
+import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalAccessTokenCode;
+import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalKey;
+import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalRefreshTokenCode;
+import com.thundax.kuzhambu.system.domain.auth.repository.OAuthAuthorizationRepository;
+import com.thundax.kuzhambu.system.domain.auth.repository.OAuthClientRepository;
+import com.thundax.kuzhambu.system.domain.auth.repository.PrincipalAccessTokenRepository;
+import com.thundax.kuzhambu.system.domain.auth.repository.PrincipalAuthSessionRepository;
+import com.thundax.kuzhambu.system.domain.auth.repository.PrincipalLoginEventRepository;
+import com.thundax.kuzhambu.system.domain.auth.repository.PrincipalRefreshTokenRepository;
 import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
-import com.thundax.kuzhambu.system.domain.model.entity.OAuthAuthorization;
-import com.thundax.kuzhambu.system.domain.model.entity.OAuthClient;
-import com.thundax.kuzhambu.system.domain.model.entity.PrincipalAccessToken;
-import com.thundax.kuzhambu.system.domain.model.entity.PrincipalAuthSession;
-import com.thundax.kuzhambu.system.domain.model.entity.PrincipalIdentity;
-import com.thundax.kuzhambu.system.domain.model.entity.PrincipalLoginEvent;
-import com.thundax.kuzhambu.system.domain.model.entity.PrincipalRefreshToken;
-import com.thundax.kuzhambu.system.domain.model.entity.User;
-import com.thundax.kuzhambu.system.domain.model.enums.OAuthClientStatus;
-import com.thundax.kuzhambu.system.domain.model.enums.PrincipalAuthenticationMethod;
-import com.thundax.kuzhambu.system.domain.model.enums.PrincipalCredentialType;
-import com.thundax.kuzhambu.system.domain.model.enums.PrincipalIdentityType;
-import com.thundax.kuzhambu.system.domain.model.enums.PrincipalLoginEventType;
-import com.thundax.kuzhambu.system.domain.model.enums.PrincipalTokenStatus;
-import com.thundax.kuzhambu.system.domain.model.enums.PrincipalType;
-import com.thundax.kuzhambu.system.domain.model.valueobject.PrincipalAccessTokenCode;
-import com.thundax.kuzhambu.system.domain.model.valueobject.PrincipalKey;
-import com.thundax.kuzhambu.system.domain.model.valueobject.PrincipalRefreshTokenCode;
-import com.thundax.kuzhambu.system.domain.model.valueobject.UserId;
+import com.thundax.kuzhambu.system.domain.core.model.entity.User;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.service.AdminAuthService;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.service.PermissionService;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.service.command.AdminAuthCommand;
@@ -67,7 +67,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
 
     private final AuthProperties properties;
     private final LoginProperties loginProperties;
-    private final PrincipalAuthSessionDao principalAuthSessionDao;
+    private final PrincipalAuthSessionRepository principalAuthSessionRepository;
     private final PermissionService permissionService;
     private final PrincipalAuthService principalAuthService;
     private final PrincipalIdentityService principalIdentityService;
@@ -80,31 +80,31 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     private GithubLoginProvider githubLoginProvider;
 
     @Autowired(required = false)
-    private OAuthAuthorizationDao oauthAuthorizationDao;
+    private OAuthAuthorizationRepository oauthAuthorizationRepository;
 
     @Autowired(required = false)
-    private PrincipalAccessTokenDao principalAccessTokenDao;
+    private PrincipalAccessTokenRepository principalAccessTokenRepository;
 
     @Autowired(required = false)
-    private OAuthClientDao oauthClientDao;
+    private OAuthClientRepository oauthClientRepository;
 
     @Autowired(required = false)
-    private PrincipalRefreshTokenDao principalRefreshTokenDao;
+    private PrincipalRefreshTokenRepository principalRefreshTokenRepository;
 
     @Autowired(required = false)
-    private PrincipalLoginEventDao principalLoginEventDao;
+    private PrincipalLoginEventRepository principalLoginEventRepository;
 
     public AdminAuthServiceImpl(
             AuthProperties properties,
             LoginProperties loginProperties,
-            PrincipalAuthSessionDao principalAuthSessionDao,
+            PrincipalAuthSessionRepository principalAuthSessionRepository,
             PermissionService permissionService,
             PrincipalAuthService principalAuthService,
             PrincipalIdentityService principalIdentityService,
             UserService userService) {
         this.properties = properties;
         this.loginProperties = loginProperties;
-        this.principalAuthSessionDao = principalAuthSessionDao;
+        this.principalAuthSessionRepository = principalAuthSessionRepository;
         this.permissionService = permissionService;
         this.principalAuthService = principalAuthService;
         this.principalIdentityService = principalIdentityService;
@@ -297,9 +297,9 @@ public class AdminAuthServiceImpl implements AdminAuthService {
                 properties.getLoginExpiredSeconds());
         PrincipalAuthSession session = PrincipalAuthSession.create(
                 accessToken.getPrincipalKey(), ADMIN_CLIENT_ID, now, properties.getLoginExpiredSeconds());
-        principalAuthSessionDao.insert(session, runtimeExpiredSeconds(properties.getLoginExpiredSeconds()));
+        principalAuthSessionRepository.insert(session, runtimeExpiredSeconds(properties.getLoginExpiredSeconds()));
         accessToken.setSessionId(session.getId());
-        accessToken.setId(requirePrincipalAccessTokenDao().insert(accessToken, token));
+        accessToken.setId(requirePrincipalAccessTokenRepository().insert(accessToken, token));
         permissionService.createPermissions(token, UserIdCodec.toStringValue(userId));
         String refreshToken = createPrincipalRefreshToken(accessToken, ADMIN_CLIENT_ID, now);
         if (StringUtils.isNotBlank(loginName)) {
@@ -320,7 +320,8 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         if (StringUtils.isBlank(token)) {
             return null;
         }
-        PrincipalAccessToken accessToken = requirePrincipalAccessTokenDao().getByToken(token);
+        PrincipalAccessToken accessToken =
+                requirePrincipalAccessTokenRepository().getByToken(token);
         if (accessToken == null
                 || !StringUtils.equals(ADMIN_CLIENT_ID, accessToken.getClientId())
                 || !accessToken.canAccess(new Date())) {
@@ -335,7 +336,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
 
     private int deleteAccessTokensByUserId(UserId userId) {
         int count = 0;
-        List<PrincipalAccessToken> tokens = requirePrincipalAccessTokenDao()
+        List<PrincipalAccessToken> tokens = requirePrincipalAccessTokenRepository()
                 .listByPrincipalKeyAndClientIdAndStatus(
                         PrincipalKey.of(PrincipalType.USER, UserIdCodec.toValue(userId)),
                         ADMIN_CLIENT_ID,
@@ -343,8 +344,8 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         for (PrincipalAccessToken token : tokens) {
             if (token != null && token.isActive()) {
                 token.revoke();
-                requirePrincipalAccessTokenDao().updateStatus(token);
-                principalAuthSessionDao.deleteById(token.getSessionId());
+                requirePrincipalAccessTokenRepository().updateStatus(token);
+                principalAuthSessionRepository.deleteById(token.getSessionId());
                 count++;
             }
         }
@@ -372,7 +373,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         PrincipalAccessToken principalAccessToken = accessToken.getPrincipalAccessToken();
         if (principalAccessToken != null && principalAccessToken.isActive()) {
             principalAccessToken.revoke();
-            requirePrincipalAccessTokenDao().updateStatus(principalAccessToken);
+            requirePrincipalAccessTokenRepository().updateStatus(principalAccessToken);
         }
         deletePrincipalAuthSession(principalAccessToken);
         if (principalAccessToken != null) {
@@ -409,10 +410,10 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     }
 
     private AuthTokenQueryResult queryOAuthAccessToken(String token) {
-        if (principalAccessTokenDao == null) {
+        if (principalAccessTokenRepository == null) {
             return null;
         }
-        PrincipalAccessToken accessToken = principalAccessTokenDao.getByToken(token);
+        PrincipalAccessToken accessToken = principalAccessTokenRepository.getByToken(token);
         if (accessToken == null) {
             return null;
         }
@@ -439,11 +440,11 @@ public class AdminAuthServiceImpl implements AdminAuthService {
 
     private AuthTokenRefreshResult refreshAccessToken(
             String clientId, String refreshToken, String ip, String userAgent) {
-        if (principalRefreshTokenDao == null) {
+        if (principalRefreshTokenRepository == null) {
             throw AdminResponseExceptions.invalidToken();
         }
         String requestedClientId = StringUtils.defaultIfBlank(clientId, ADMIN_CLIENT_ID);
-        PrincipalRefreshToken current = principalRefreshTokenDao.getByToken(refreshToken);
+        PrincipalRefreshToken current = principalRefreshTokenRepository.getByToken(refreshToken);
         Date now = new Date();
         if (current == null
                 || !current.canRefresh(now)
@@ -451,7 +452,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
             throw AdminResponseExceptions.invalidToken();
         }
         current.markUsed();
-        principalRefreshTokenDao.updateStatus(current);
+        principalRefreshTokenRepository.updateStatus(current);
 
         AuthAccessTokenResult accessToken = createAccessToken(
                 UserIdCodec.toDomain(current.getPrincipalKey().getPrincipalId()), null, ip, userAgent);
@@ -519,7 +520,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
                     PrincipalLoginEvent.REASON_OAUTH_DENIED);
             return result;
         }
-        if (oauthAuthorizationDao == null) {
+        if (oauthAuthorizationRepository == null) {
             throw AdminResponseExceptions.oauth2AuthorizationNotConfigured();
         }
         Date now = new Date();
@@ -534,7 +535,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         authorization.setCodeChallengeMethod(codeChallengeMethod);
         authorization.setIssuedAt(now);
         authorization.setExpireAt(new Date(now.getTime() + 300000L));
-        authorization.setId(oauthAuthorizationDao.insert(authorization));
+        authorization.setId(oauthAuthorizationRepository.insert(authorization));
         result.setAuthorizationCode(authorization.getAuthorizationCode());
         writeLoginEvent(
                 authorization.getPrincipalKey(),
@@ -598,10 +599,10 @@ public class AdminAuthServiceImpl implements AdminAuthService {
             String codeVerifier,
             String ip,
             String userAgent) {
-        if (oauthAuthorizationDao == null) {
+        if (oauthAuthorizationRepository == null) {
             throw AdminResponseExceptions.oauth2AuthorizationNotConfigured();
         }
-        OAuthAuthorization authorization = oauthAuthorizationDao.getByAuthorizationCode(authorizationCode);
+        OAuthAuthorization authorization = oauthAuthorizationRepository.getByAuthorizationCode(authorizationCode);
         Date now = new Date();
         if (authorization == null
                 || !authorization.canConsume(now)
@@ -611,13 +612,13 @@ public class AdminAuthServiceImpl implements AdminAuthService {
             throw AdminResponseExceptions.invalidToken();
         }
         authorization.markUsed(now);
-        oauthAuthorizationDao.updateUsed(authorization);
+        oauthAuthorizationRepository.updateUsed(authorization);
         long accessTokenTtlSeconds = accessTokenTtlSeconds(client);
         PrincipalAuthSession session = PrincipalAuthSession.create(
                 authorization.getPrincipalKey(), client.getClientId(), now, accessTokenTtlSeconds);
-        principalAuthSessionDao.insert(session, runtimeExpiredSeconds(accessTokenTtlSeconds));
+        principalAuthSessionRepository.insert(session, runtimeExpiredSeconds(accessTokenTtlSeconds));
         AuthAccessTokenResult oauthAccessToken = createOAuthAccessToken(client, authorization, session, now);
-        String refreshToken = principalRefreshTokenDao == null
+        String refreshToken = principalRefreshTokenRepository == null
                 ? null
                 : createPrincipalRefreshToken(oauthAccessToken.getPrincipalAccessToken(), client.getClientId(), now);
         return new AuthTokenRefreshResult(oauthAccessToken, refreshToken, oauthAccessToken.getToken());
@@ -625,10 +626,10 @@ public class AdminAuthServiceImpl implements AdminAuthService {
 
     private AuthTokenRefreshResult refreshOAuth2Token(
             OAuthClient client, String refreshToken, String ip, String userAgent) {
-        if (principalRefreshTokenDao == null) {
+        if (principalRefreshTokenRepository == null) {
             throw AdminResponseExceptions.invalidToken();
         }
-        PrincipalRefreshToken current = principalRefreshTokenDao.getByToken(refreshToken);
+        PrincipalRefreshToken current = principalRefreshTokenRepository.getByToken(refreshToken);
         Date now = new Date();
         if (current == null
                 || !current.canRefresh(now)
@@ -636,7 +637,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
             throw AdminResponseExceptions.invalidToken();
         }
         current.markUsed();
-        principalRefreshTokenDao.updateStatus(current);
+        principalRefreshTokenRepository.updateStatus(current);
 
         PrincipalAuthSession session = getActivePrincipalAuthSession(current, now);
         if (session == null) {
@@ -658,31 +659,31 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     }
 
     private boolean revokeAuthorizationCode(String authorizationCode) {
-        if (oauthAuthorizationDao == null) {
+        if (oauthAuthorizationRepository == null) {
             throw AdminResponseExceptions.oauth2AuthorizationNotConfigured();
         }
-        return oauthAuthorizationDao.deleteByAuthorizationCode(authorizationCode) > 0;
+        return oauthAuthorizationRepository.deleteByAuthorizationCode(authorizationCode) > 0;
     }
 
     private boolean revokeOAuth2Token(String clientId, String clientSecret, String token) {
         validateOAuthClientSecret(clientId, clientSecret);
         Date now = new Date();
         boolean revoked = false;
-        if (principalAccessTokenDao != null) {
-            PrincipalAccessToken accessToken = principalAccessTokenDao.getByToken(token);
+        if (principalAccessTokenRepository != null) {
+            PrincipalAccessToken accessToken = principalAccessTokenRepository.getByToken(token);
             if (accessToken != null && accessToken.isActive()) {
                 accessToken.revoke();
-                principalAccessTokenDao.updateStatus(accessToken);
-                principalAuthSessionDao.deleteById(accessToken.getSessionId());
+                principalAccessTokenRepository.updateStatus(accessToken);
+                principalAuthSessionRepository.deleteById(accessToken.getSessionId());
                 revoked = true;
             }
         }
-        if (principalRefreshTokenDao != null) {
-            PrincipalRefreshToken refreshToken = principalRefreshTokenDao.getByToken(token);
+        if (principalRefreshTokenRepository != null) {
+            PrincipalRefreshToken refreshToken = principalRefreshTokenRepository.getByToken(token);
             if (refreshToken != null && refreshToken.isActive()) {
                 refreshToken.revoke();
-                principalRefreshTokenDao.updateStatus(refreshToken);
-                principalAuthSessionDao.deleteById(refreshToken.getSessionId());
+                principalRefreshTokenRepository.updateStatus(refreshToken);
+                principalAuthSessionRepository.deleteById(refreshToken.getSessionId());
                 revoked = true;
             }
         }
@@ -694,7 +695,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     }
 
     private int invalidateSessionsByUserId(UserId userId, String reason) {
-        List<PrincipalAccessToken> tokens = requirePrincipalAccessTokenDao()
+        List<PrincipalAccessToken> tokens = requirePrincipalAccessTokenRepository()
                 .listByPrincipalKeyAndClientIdAndStatus(
                         PrincipalKey.of(PrincipalType.USER, UserIdCodec.toValue(userId)),
                         ADMIN_CLIENT_ID,
@@ -703,8 +704,8 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         for (PrincipalAccessToken token : tokens) {
             if (token != null && token.isActive()) {
                 token.revoke();
-                requirePrincipalAccessTokenDao().updateStatus(token);
-                principalAuthSessionDao.deleteById(token.getSessionId());
+                requirePrincipalAccessTokenRepository().updateStatus(token);
+                principalAuthSessionRepository.deleteById(token.getSessionId());
                 count++;
             }
         }
@@ -868,7 +869,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         if (accessToken == null || accessToken.getSessionId() == null) {
             return null;
         }
-        PrincipalAuthSession session = principalAuthSessionDao.getById(accessToken.getSessionId());
+        PrincipalAuthSession session = principalAuthSessionRepository.getById(accessToken.getSessionId());
         if (session == null || session.isExpired(now)) {
             return null;
         }
@@ -883,7 +884,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         if (refreshToken == null || refreshToken.getSessionId() == null) {
             return null;
         }
-        PrincipalAuthSession session = principalAuthSessionDao.getById(refreshToken.getSessionId());
+        PrincipalAuthSession session = principalAuthSessionRepository.getById(refreshToken.getSessionId());
         if (session == null || session.isExpired(now)) {
             return null;
         }
@@ -896,12 +897,12 @@ public class AdminAuthServiceImpl implements AdminAuthService {
             return;
         }
         Date now = new Date();
-        principalAuthSessionDao.touch(session.getId(), now, runtimeExpiredSeconds());
+        principalAuthSessionRepository.touch(session.getId(), now, runtimeExpiredSeconds());
     }
 
     private void deletePrincipalAuthSession(PrincipalAccessToken accessToken) {
         if (accessToken != null) {
-            principalAuthSessionDao.deleteById(accessToken.getSessionId());
+            principalAuthSessionRepository.deleteById(accessToken.getSessionId());
         }
     }
 
@@ -910,8 +911,8 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         if (accessToken != null && accessToken.getPrincipalAccessToken() != null) {
             PrincipalAccessToken principalAccessToken = accessToken.getPrincipalAccessToken();
             principalAccessToken.revoke();
-            requirePrincipalAccessTokenDao().updateStatus(principalAccessToken);
-            principalAuthSessionDao.deleteById(principalAccessToken.getSessionId());
+            requirePrincipalAccessTokenRepository().updateStatus(principalAccessToken);
+            principalAuthSessionRepository.deleteById(principalAccessToken.getSessionId());
         }
     }
 
@@ -924,7 +925,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
             String ip,
             String userAgent,
             String reason) {
-        if (principalLoginEventDao == null) {
+        if (principalLoginEventRepository == null) {
             return;
         }
         PrincipalLoginEvent event = new PrincipalLoginEvent();
@@ -937,7 +938,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         event.setIp(ip);
         event.setUserAgent(userAgent);
         event.setReason(reason);
-        principalLoginEventDao.insert(event);
+        principalLoginEventRepository.insert(event);
     }
 
     private int runtimeExpiredSeconds() {
@@ -959,7 +960,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         entity.setIssuedAt(issuedAt);
         entity.setExpireAt(new Date(issuedAt.getTime() + refreshTokenTtlSeconds(clientId) * 1000L));
         entity.setStatus(PrincipalTokenStatus.ACTIVE);
-        entity.setId(requirePrincipalRefreshTokenDao().insert(entity, refreshToken));
+        entity.setId(requirePrincipalRefreshTokenRepository().insert(entity, refreshToken));
         return refreshToken;
     }
 
@@ -974,7 +975,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
                 issuedAt,
                 accessTokenTtlSeconds(client));
         entity.setSessionId(session.getId());
-        entity.setId(requirePrincipalAccessTokenDao().insert(entity, token));
+        entity.setId(requirePrincipalAccessTokenRepository().insert(entity, token));
         return new AuthAccessTokenResult(token, null, entity);
     }
 
@@ -989,7 +990,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
                 issuedAt,
                 accessTokenTtlSeconds(client));
         entity.setSessionId(session.getId());
-        entity.setId(requirePrincipalAccessTokenDao().insert(entity, token));
+        entity.setId(requirePrincipalAccessTokenRepository().insert(entity, token));
         return new AuthAccessTokenResult(token, null, entity);
     }
 
@@ -1011,25 +1012,25 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         return entity;
     }
 
-    private PrincipalAccessTokenDao requirePrincipalAccessTokenDao() {
-        if (principalAccessTokenDao == null) {
+    private PrincipalAccessTokenRepository requirePrincipalAccessTokenRepository() {
+        if (principalAccessTokenRepository == null) {
             throw new IllegalStateException("principal access token dao 未配置");
         }
-        return principalAccessTokenDao;
+        return principalAccessTokenRepository;
     }
 
-    private PrincipalRefreshTokenDao requirePrincipalRefreshTokenDao() {
-        if (principalRefreshTokenDao == null) {
+    private PrincipalRefreshTokenRepository requirePrincipalRefreshTokenRepository() {
+        if (principalRefreshTokenRepository == null) {
             throw new IllegalStateException("principal refresh token dao 未配置");
         }
-        return principalRefreshTokenDao;
+        return principalRefreshTokenRepository;
     }
 
     private long refreshTokenTtlSeconds(String clientId) {
-        if (oauthClientDao == null) {
+        if (oauthClientRepository == null) {
             return 2592000L;
         }
-        OAuthClient client = oauthClientDao.getByClientIdAndStatus(clientId, OAuthClientStatus.ENABLED);
+        OAuthClient client = oauthClientRepository.getByClientIdAndStatus(clientId, OAuthClientStatus.ENABLED);
         if (client == null || client.getRefreshTokenTtlSeconds() <= 0L) {
             return 2592000L;
         }
@@ -1044,10 +1045,10 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     }
 
     private OAuthClient validateOAuthClientSecret(String clientId, String clientSecret) {
-        if (oauthClientDao == null) {
+        if (oauthClientRepository == null) {
             throw AdminResponseExceptions.oauth2ClientNotConfigured();
         }
-        OAuthClient client = oauthClientDao.getByClientIdAndStatus(clientId, OAuthClientStatus.ENABLED);
+        OAuthClient client = oauthClientRepository.getByClientIdAndStatus(clientId, OAuthClientStatus.ENABLED);
         if (client == null
                 || !StringUtils.equals(Sha256Digest.hashBase64Url(clientSecret), client.getClientSecretHash())) {
             throw AdminResponseExceptions.oauth2ClientSecretInvalid();
@@ -1056,10 +1057,10 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     }
 
     private OAuthClient validateOAuthClient(String clientId, String redirectUri, List<String> scopes) {
-        if (oauthClientDao == null) {
+        if (oauthClientRepository == null) {
             throw AdminResponseExceptions.oauth2ClientNotConfigured();
         }
-        OAuthClient client = oauthClientDao.getByClientIdAndStatus(clientId, OAuthClientStatus.ENABLED);
+        OAuthClient client = oauthClientRepository.getByClientIdAndStatus(clientId, OAuthClientStatus.ENABLED);
         Set<String> requestedScopes = toScopeSet(scopes);
         if (client == null || !client.supportsRedirectUri(redirectUri) || !client.supportsScopes(requestedScopes)) {
             throw AdminResponseExceptions.oauth2ClientRequestInvalid();

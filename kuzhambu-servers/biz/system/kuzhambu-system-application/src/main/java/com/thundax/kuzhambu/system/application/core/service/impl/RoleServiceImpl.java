@@ -7,7 +7,6 @@ import com.thundax.kuzhambu.common.core.exception.ErrorCode;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
-import com.thundax.kuzhambu.system.application.core.dao.RoleDao;
 import com.thundax.kuzhambu.system.application.core.service.RoleService;
 import com.thundax.kuzhambu.system.application.core.service.command.AssignRoleUsersCommand;
 import com.thundax.kuzhambu.system.application.core.service.command.ChangeRoleInfoCommand;
@@ -18,10 +17,11 @@ import com.thundax.kuzhambu.system.application.core.service.query.RoleQuery;
 import com.thundax.kuzhambu.system.domain.core.codec.MenuIdCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.RoleIdCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
-import com.thundax.kuzhambu.system.domain.model.entity.Menu;
-import com.thundax.kuzhambu.system.domain.model.entity.Role;
-import com.thundax.kuzhambu.system.domain.model.entity.User;
-import com.thundax.kuzhambu.system.domain.model.valueobject.RoleId;
+import com.thundax.kuzhambu.system.domain.core.model.entity.Menu;
+import com.thundax.kuzhambu.system.domain.core.model.entity.Role;
+import com.thundax.kuzhambu.system.domain.core.model.entity.User;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.RoleId;
+import com.thundax.kuzhambu.system.domain.core.repository.RoleRepository;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -40,16 +40,16 @@ public class RoleServiceImpl implements RoleService {
 
     private static final int PRIORITY_STEP = 10;
 
-    private final RoleDao dao;
+    private final RoleRepository dao;
     private final List<CacheChangedListener> cacheChangedListeners;
 
-    public RoleServiceImpl(RoleDao dao) {
+    public RoleServiceImpl(RoleRepository dao) {
         this.dao = dao;
         this.cacheChangedListeners = Collections.emptyList();
     }
 
     @Autowired
-    public RoleServiceImpl(RoleDao dao, ObjectProvider<List<CacheChangedListener>> cacheChangedListeners) {
+    public RoleServiceImpl(RoleRepository dao, ObjectProvider<List<CacheChangedListener>> cacheChangedListeners) {
         this.dao = dao;
         this.cacheChangedListeners = cacheChangedListeners == null
                 ? Collections.emptyList()

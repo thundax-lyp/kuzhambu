@@ -4,8 +4,8 @@ import com.thundax.kuzhambu.system.application.core.service.command.ChangeDepart
 import com.thundax.kuzhambu.system.application.core.service.command.CreateDepartmentCommand;
 import com.thundax.kuzhambu.system.application.core.service.query.DepartmentQuery;
 import com.thundax.kuzhambu.system.domain.core.codec.DepartmentIdCodec;
-import com.thundax.kuzhambu.system.domain.model.entity.Department;
-import com.thundax.kuzhambu.system.domain.model.valueobject.DepartmentId;
+import com.thundax.kuzhambu.system.domain.core.model.entity.Department;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.DepartmentId;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.DepartmentQueryRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.DepartmentSaveRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.DepartmentResponse;
@@ -57,7 +57,7 @@ public final class DepartmentInterfaceAssembler {
     }
 
     @NonNull
-    public static Department toEntity(@NonNull Department entity, @NonNull DepartmentSaveRequest request) {
+    public static Department toDomain(@NonNull Department entity, @NonNull DepartmentSaveRequest request) {
         entity.setId(DepartmentIdCodec.toDomain(request.getId()));
         entity.setRemarks(request.getRemarks());
         if (request.getParentId() != null) {
@@ -70,14 +70,14 @@ public final class DepartmentInterfaceAssembler {
 
     @NonNull
     public static CreateDepartmentCommand toCreateCommand(@NonNull DepartmentSaveRequest request) {
-        Department entity = toEntity(new Department(), request);
+        Department entity = toDomain(new Department(), request);
         return new CreateDepartmentCommand(
                 entity.getId(), entity.getParentId(), entity.getName(), entity.getShortName(), entity.getRemarks());
     }
 
     @NonNull
     public static ChangeDepartmentInfoCommand toChangeInfoCommand(@NonNull DepartmentSaveRequest request) {
-        Department entity = toEntity(new Department(), request);
+        Department entity = toDomain(new Department(), request);
         return new ChangeDepartmentInfoCommand(
                 entity.getId(), entity.getParentId(), entity.getName(), entity.getShortName(), entity.getRemarks());
     }

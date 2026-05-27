@@ -13,10 +13,10 @@ import com.thundax.kuzhambu.system.application.auth.service.dto.PrincipalPasswor
 import com.thundax.kuzhambu.system.application.auth.service.query.PrincipalCredentialQuery;
 import com.thundax.kuzhambu.system.application.auth.service.query.PrincipalIdentityQuery;
 import com.thundax.kuzhambu.system.application.auth.utils.PasswordHelper;
-import com.thundax.kuzhambu.system.domain.model.entity.PrincipalCredential;
-import com.thundax.kuzhambu.system.domain.model.entity.PrincipalIdentity;
-import com.thundax.kuzhambu.system.domain.model.enums.PrincipalCredentialType;
-import com.thundax.kuzhambu.system.domain.model.valueobject.PrincipalIdentityId;
+import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalCredential;
+import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalIdentity;
+import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalCredentialType;
+import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalIdentityId;
 import java.util.Date;
 import org.springframework.stereotype.Service;
 

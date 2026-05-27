@@ -4,15 +4,15 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
-import com.thundax.kuzhambu.system.application.core.dao.DepartmentDao;
 import com.thundax.kuzhambu.system.application.core.service.DepartmentService;
 import com.thundax.kuzhambu.system.application.core.service.command.ChangeDepartmentInfoCommand;
 import com.thundax.kuzhambu.system.application.core.service.command.CreateDepartmentCommand;
 import com.thundax.kuzhambu.system.application.core.service.command.MoveDepartmentCommand;
 import com.thundax.kuzhambu.system.application.core.service.query.DepartmentQuery;
 import com.thundax.kuzhambu.system.domain.core.codec.DepartmentIdCodec;
-import com.thundax.kuzhambu.system.domain.model.entity.Department;
-import com.thundax.kuzhambu.system.domain.model.valueobject.DepartmentId;
+import com.thundax.kuzhambu.system.domain.core.model.entity.Department;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.DepartmentId;
+import com.thundax.kuzhambu.system.domain.core.repository.DepartmentRepository;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,9 +22,9 @@ import org.springframework.transaction.annotation.Transactional;
 @BizExceptionBoundary
 public class DepartmentServiceImpl implements DepartmentService {
 
-    private final DepartmentDao dao;
+    private final DepartmentRepository dao;
 
-    public DepartmentServiceImpl(DepartmentDao dao) {
+    public DepartmentServiceImpl(DepartmentRepository dao) {
         this.dao = dao;
     }
 
