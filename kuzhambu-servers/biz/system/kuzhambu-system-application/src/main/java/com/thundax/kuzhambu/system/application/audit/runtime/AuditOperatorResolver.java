@@ -4,12 +4,12 @@ import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
 import com.thundax.kuzhambu.common.security.context.KuzhambuSubject;
 import com.thundax.kuzhambu.common.security.context.KuzhambuSubjectType;
 import com.thundax.kuzhambu.system.domain.audit.model.enums.AuditOperatorType;
-import org.springframework.stereotype.Component;
 
-@Component
-public class AuditOperatorResolver {
+public final class AuditOperatorResolver {
 
-    public AuditOperatorType operatorType() {
+    private AuditOperatorResolver() {}
+
+    public static AuditOperatorType operatorType() {
         KuzhambuSubjectType subjectType = KuzhambuContextHolder.currentSubjectType();
         if (subjectType == null) {
             return AuditOperatorType.UNKNOWN;
@@ -30,11 +30,11 @@ public class AuditOperatorResolver {
         }
     }
 
-    public String operatorId() {
+    public static String operatorId() {
         return KuzhambuContextHolder.currentSubjectId();
     }
 
-    public String operatorName() {
+    public static String operatorName() {
         KuzhambuSubject subject = KuzhambuContextHolder.currentSubject();
         return subject == null ? null : subject.getDisplayName();
     }

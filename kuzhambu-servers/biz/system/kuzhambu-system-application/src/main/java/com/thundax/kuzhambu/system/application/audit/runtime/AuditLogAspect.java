@@ -22,17 +22,14 @@ public class AuditLogAspect {
     private final AuditApplicationService auditService;
     private final AuditObjectLoaderRegistry loaderRegistry;
     private final AuditSnapshotAssemblerRegistry assemblerRegistry;
-    private final AuditOperatorResolver operatorResolver;
 
     public AuditLogAspect(
             AuditApplicationService auditService,
             AuditObjectLoaderRegistry loaderRegistry,
-            AuditSnapshotAssemblerRegistry assemblerRegistry,
-            AuditOperatorResolver operatorResolver) {
+            AuditSnapshotAssemblerRegistry assemblerRegistry) {
         this.auditService = auditService;
         this.loaderRegistry = loaderRegistry;
         this.assemblerRegistry = assemblerRegistry;
-        this.operatorResolver = operatorResolver;
     }
 
     @Around(SERVICE_METHOD_POINTCUT)
@@ -62,9 +59,9 @@ public class AuditLogAspect {
         command.setBeforeSnapshot(before);
         command.setAfterSnapshot(after);
         command.setRecordWhenUnchanged(auditLog.recordWhenUnchanged());
-        command.setOperatorType(operatorResolver.operatorType());
-        command.setOperatorId(operatorResolver.operatorId());
-        command.setOperatorName(operatorResolver.operatorName());
+        command.setOperatorType(AuditOperatorResolver.operatorType());
+        command.setOperatorId(AuditOperatorResolver.operatorId());
+        command.setOperatorName(AuditOperatorResolver.operatorName());
         auditService.record(command);
         return result;
     }
