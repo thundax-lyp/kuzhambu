@@ -18,4 +18,13 @@
     <module>kuzhambu-admin-starter</module>
     <module>kuzhambu-portal-starter</module>
   </modules>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.thundax</groupId>
+      <artifactId>kuzhambu-common-test</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
 </project>

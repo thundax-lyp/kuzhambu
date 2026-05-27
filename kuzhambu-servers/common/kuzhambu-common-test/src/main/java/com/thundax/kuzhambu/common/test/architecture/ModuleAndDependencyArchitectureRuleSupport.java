@@ -43,6 +43,18 @@ public final class ModuleAndDependencyArchitectureRuleSupport {
                 .check(classes);
     }
 
+    public static void assertPersistenceMappersOnlyCalledByRepositoryImpl(JavaClasses classes, String basePackage) {
+        noClasses()
+                .that()
+                .resideOutsideOfPackage(basePackage + ".infra..repository.impl..")
+                .and()
+                .resideOutsideOfPackage(basePackage + ".infra..persistence.mapper..")
+                .should()
+                .dependOnClassesThat()
+                .resideInAPackage(basePackage + ".infra..persistence.mapper..")
+                .check(classes);
+    }
+
     public static void assertCrossDomainDependencyBoundary(JavaClasses classes, String currentDomain) {
         for (String domain : DOMAINS) {
             if (domain.equals(currentDomain)) {

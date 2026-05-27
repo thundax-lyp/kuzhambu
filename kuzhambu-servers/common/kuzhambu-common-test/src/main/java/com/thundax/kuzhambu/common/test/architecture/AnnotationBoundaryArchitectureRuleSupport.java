@@ -26,8 +26,25 @@ public final class AnnotationBoundaryArchitectureRuleSupport {
             "com.baomidou.mybatisplus.annotation.TableName",
             "com.baomidou.mybatisplus.annotation.TableId",
             "com.baomidou.mybatisplus.annotation.TableField");
+    private static final List<String> DOMAIN_FORBIDDEN_ANNOTATIONS = Arrays.asList(
+            "org.springframework.web.bind.annotation.RequestMapping",
+            "org.springframework.web.bind.annotation.GetMapping",
+            "org.springframework.web.bind.annotation.PostMapping",
+            "org.springframework.web.bind.annotation.PutMapping",
+            "org.springframework.web.bind.annotation.DeleteMapping",
+            "org.springframework.web.bind.annotation.PatchMapping",
+            "org.springframework.web.bind.annotation.RestController",
+            "org.springframework.transaction.annotation.Transactional",
+            "org.apache.ibatis.annotations.Mapper",
+            "com.baomidou.mybatisplus.annotation.TableName",
+            "com.baomidou.mybatisplus.annotation.TableId",
+            "com.baomidou.mybatisplus.annotation.TableField");
 
     private AnnotationBoundaryArchitectureRuleSupport() {}
+
+    public static void assertDomainSpringAndPersistenceFree(JavaClasses classes, String basePackage) {
+        assertNoAnnotations(classes, basePackage + ".domain", DOMAIN_FORBIDDEN_ANNOTATIONS);
+    }
 
     public static void assertApplicationNoHttpAnnotations(JavaClasses classes, String basePackage) {
         assertNoAnnotations(classes, basePackage + ".application", merge(HTTP_ANNOTATIONS, OPENAPI_ANNOTATIONS));
