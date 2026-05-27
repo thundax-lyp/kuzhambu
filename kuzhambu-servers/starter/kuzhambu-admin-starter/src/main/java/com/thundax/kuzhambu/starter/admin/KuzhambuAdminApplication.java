@@ -17,7 +17,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
             "com.thundax.kuzhambu.system.infra",
             "com.thundax.kuzhambu.system.interfaces.admin",
             "com.thundax.kuzhambu.storage.application",
-            "com.thundax.kuzhambu.storage.infra"
+            "com.thundax.kuzhambu.storage.infra",
+            "com.thundax.kuzhambu.storage.interfaces.admin"
         })
 public class KuzhambuAdminApplication {
 
