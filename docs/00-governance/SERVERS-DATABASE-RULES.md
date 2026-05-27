@@ -23,6 +23,7 @@
 - 业务域前缀必须与需求文档和模块设计文档中的业务域名称保持一致。
 - 关系表名称必须显式表达关系语义，例如 `system_user_role`、`system_role_menu`。
 - 审计日志表由 system 业务域定义，不在各业务表中机械追加通用审计字段。
+- 操作者、创建者、更新者、删除者、发起人等审计归属不进入业务表，由 system 审计系统记录。
 - 业务发生时间使用业务语义命名，例如 `occurred_at`、`requested_at`、`completed_at`、`expires_at`。
 
 ## SQL Files
@@ -43,6 +44,16 @@
 - 认证事件表：只追加，不保存敏感明文。
 - 审计日志表：归属 system 业务域，只追加，不逻辑删除，不保存敏感明文。
 
+## Ordering And Status Rules
+
+- 排序字段统一命名为 `priority`。
+- 排序字段类型统一使用 `int`。
+- `priority` 表达单表内稳定全局排序值，必须建立单列唯一约束。
+- 不得使用 `sort_order`、`display_order`、`order_no`、`sequence` 等其他排序字段名。
+- `priority` 已经通过单列唯一约束支持排序，不得再参与普通 KEY 或组合 KEY。
+- 业务状态字段统一使用 `varchar` 表达。
+- 不得使用 `int`、`tinyint` 或数据库 enum 表达业务状态。
+
 ## Field Rules
 
 - 是否增加时间字段取决于对象是否有独立生命周期。
@@ -50,7 +61,7 @@
 - `infra` 负责 `Instant` 与数据库 `datetime(3)` 的 UTC 转换。
 - `LocalDateTime` 不作为跨模块和持久化真相时间。
 - 业务表不得设置通用审计字段 `created_at`、`updated_at`、`deleted_at`、`created_by`、`updated_by`、`deleted_by`。
-- 业务确实需要表达用户或生命周期时，必须使用业务语义字段名，例如 `owner_user_id`、`requester_user_id`、`occurred_at`。
+- 业务确实需要表达非审计型用户关系时，必须使用业务语义字段名；操作者、创建者、更新者、删除者、发起人等审计型用户关系不得进入业务表。
 
 ## Relationship Rules
 
