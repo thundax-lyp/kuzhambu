@@ -2,10 +2,10 @@ package com.thundax.kuzhambu.system.application.auth.service.impl;
 
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.system.application.auth.dao.PrincipalCredentialDao;
-import com.thundax.kuzhambu.system.application.auth.entity.PrincipalCredential;
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalCredentialService;
 import com.thundax.kuzhambu.system.application.auth.service.command.PrincipalCredentialCommand;
 import com.thundax.kuzhambu.system.application.auth.service.query.PrincipalCredentialQuery;
+import com.thundax.kuzhambu.system.domain.model.entity.PrincipalCredential;
 import com.thundax.kuzhambu.system.domain.model.valueobject.PrincipalCredentialId;
 import java.util.List;
 import org.springframework.stereotype.Service;

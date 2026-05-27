@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.system.application.auth.dao;
 
-import com.thundax.kuzhambu.system.application.auth.entity.PrincipalLoginEvent;
+import com.thundax.kuzhambu.system.domain.model.entity.PrincipalLoginEvent;
 import com.thundax.kuzhambu.system.domain.model.valueobject.PrincipalLoginEventId;
 
 public interface PrincipalLoginEventDao {

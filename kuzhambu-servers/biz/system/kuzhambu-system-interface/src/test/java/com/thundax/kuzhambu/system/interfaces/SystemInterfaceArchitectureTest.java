@@ -18,5 +18,6 @@ class SystemInterfaceArchitectureTest extends AbstractArchitectureTest {
         ModuleAndDependencyArchitectureRuleSupport.assertInterfaceLayerBoundary(classes, BASE_PACKAGE);
         InterfaceBoundaryArchitectureRuleSupport.assertInterfaceNoPersistenceDependency(classes, BASE_PACKAGE);
         NamingArchitectureRuleSupport.assertValueObjectPlacement(classes, BASE_PACKAGE);
+        NamingArchitectureRuleSupport.assertEntityPlacement(classes, BASE_PACKAGE);
     }
 }

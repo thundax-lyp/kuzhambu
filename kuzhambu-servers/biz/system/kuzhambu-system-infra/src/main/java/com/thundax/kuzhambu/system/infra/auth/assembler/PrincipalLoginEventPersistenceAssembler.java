@@ -1,11 +1,11 @@
 package com.thundax.kuzhambu.system.infra.auth.assembler;
 
-import com.thundax.kuzhambu.system.application.auth.entity.PrincipalLoginEvent;
-import com.thundax.kuzhambu.system.application.auth.entity.enums.PrincipalAuthenticationMethod;
-import com.thundax.kuzhambu.system.application.auth.entity.enums.PrincipalIdentityType;
-import com.thundax.kuzhambu.system.application.auth.entity.enums.PrincipalLoginEventType;
 import com.thundax.kuzhambu.system.domain.auth.codec.PrincipalLoginEventIdCodec;
-import com.thundax.kuzhambu.system.domain.auth.enums.PrincipalType;
+import com.thundax.kuzhambu.system.domain.model.entity.PrincipalLoginEvent;
+import com.thundax.kuzhambu.system.domain.model.enums.PrincipalAuthenticationMethod;
+import com.thundax.kuzhambu.system.domain.model.enums.PrincipalIdentityType;
+import com.thundax.kuzhambu.system.domain.model.enums.PrincipalLoginEventType;
+import com.thundax.kuzhambu.system.domain.model.enums.PrincipalType;
 import com.thundax.kuzhambu.system.domain.model.valueobject.PrincipalKey;
 import com.thundax.kuzhambu.system.infra.auth.dataobject.PrincipalLoginEventDO;
 import java.util.ArrayList;

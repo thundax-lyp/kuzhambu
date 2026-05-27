@@ -2,11 +2,11 @@ package com.thundax.kuzhambu.system.interfaces.admin.core.assembler;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.thundax.kuzhambu.system.application.core.entity.Menu;
-import com.thundax.kuzhambu.system.application.core.entity.User;
 import com.thundax.kuzhambu.system.domain.core.codec.AccessRankCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.MenuIdCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
+import com.thundax.kuzhambu.system.domain.model.entity.Menu;
+import com.thundax.kuzhambu.system.domain.model.entity.User;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.PersonalInfoUpdateRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.PersonalAvatarResponse;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.response.PersonalInfoResponse;

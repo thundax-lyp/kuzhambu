@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.system.application.core.service.command;
 
-import com.thundax.kuzhambu.system.application.core.entity.enums.RolePrivilege;
-import com.thundax.kuzhambu.system.application.core.entity.enums.RoleStatus;
+import com.thundax.kuzhambu.system.domain.model.enums.RolePrivilege;
+import com.thundax.kuzhambu.system.domain.model.enums.RoleStatus;
 import com.thundax.kuzhambu.system.domain.model.valueobject.MenuId;
 import com.thundax.kuzhambu.system.domain.model.valueobject.RoleId;
 import java.util.List;

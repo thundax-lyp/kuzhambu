@@ -1,11 +1,11 @@
 package com.thundax.kuzhambu.system.infra.auth.assembler;
 
-import com.thundax.kuzhambu.system.application.auth.entity.PrincipalCredential;
-import com.thundax.kuzhambu.system.application.auth.entity.enums.PrincipalCredentialStatus;
-import com.thundax.kuzhambu.system.application.auth.entity.enums.PrincipalCredentialType;
 import com.thundax.kuzhambu.system.domain.auth.codec.PrincipalCredentialIdCodec;
 import com.thundax.kuzhambu.system.domain.auth.codec.PrincipalIdentityIdCodec;
-import com.thundax.kuzhambu.system.domain.auth.enums.PrincipalType;
+import com.thundax.kuzhambu.system.domain.model.entity.PrincipalCredential;
+import com.thundax.kuzhambu.system.domain.model.enums.PrincipalCredentialStatus;
+import com.thundax.kuzhambu.system.domain.model.enums.PrincipalCredentialType;
+import com.thundax.kuzhambu.system.domain.model.enums.PrincipalType;
 import com.thundax.kuzhambu.system.domain.model.valueobject.PrincipalKey;
 import com.thundax.kuzhambu.system.infra.auth.dataobject.PrincipalCredentialDO;
 import java.util.ArrayList;

@@ -2,7 +2,7 @@ package com.thundax.kuzhambu.storage.application.dao;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
-import com.thundax.kuzhambu.storage.application.entity.StoredObject;
+import com.thundax.kuzhambu.storage.domain.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.model.valueobject.StoredObjectId;
 import java.util.List;
 

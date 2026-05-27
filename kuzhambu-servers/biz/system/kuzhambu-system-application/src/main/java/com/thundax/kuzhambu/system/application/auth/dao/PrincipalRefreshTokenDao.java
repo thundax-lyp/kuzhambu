@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.system.application.auth.dao;
 
-import com.thundax.kuzhambu.system.application.auth.entity.PrincipalRefreshToken;
-import com.thundax.kuzhambu.system.application.auth.entity.enums.PrincipalTokenStatus;
+import com.thundax.kuzhambu.system.domain.model.entity.PrincipalRefreshToken;
+import com.thundax.kuzhambu.system.domain.model.enums.PrincipalTokenStatus;
 import com.thundax.kuzhambu.system.domain.model.valueobject.PrincipalKey;
 import com.thundax.kuzhambu.system.domain.model.valueobject.PrincipalRefreshTokenCode;
 import com.thundax.kuzhambu.system.domain.model.valueobject.PrincipalRefreshTokenId;

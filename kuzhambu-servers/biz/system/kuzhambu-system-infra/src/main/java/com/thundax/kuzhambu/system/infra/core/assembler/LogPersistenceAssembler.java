@@ -1,8 +1,8 @@
 package com.thundax.kuzhambu.system.infra.core.assembler;
 
-import com.thundax.kuzhambu.system.application.core.entity.Log;
-import com.thundax.kuzhambu.system.application.core.entity.enums.LogType;
 import com.thundax.kuzhambu.system.domain.core.codec.LogIdCodec;
+import com.thundax.kuzhambu.system.domain.model.entity.Log;
+import com.thundax.kuzhambu.system.domain.model.enums.LogType;
 import com.thundax.kuzhambu.system.infra.core.dataobject.LogDO;
 import java.util.ArrayList;
 import java.util.List;

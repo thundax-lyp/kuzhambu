@@ -1,8 +1,8 @@
 package com.thundax.kuzhambu.system.interfaces.admin.auth.service.result;
 
-import com.thundax.kuzhambu.system.application.auth.entity.PrincipalAccessToken;
-import com.thundax.kuzhambu.system.application.auth.entity.PrincipalAuthSession;
-import com.thundax.kuzhambu.system.application.core.entity.User;
+import com.thundax.kuzhambu.system.domain.model.entity.PrincipalAccessToken;
+import com.thundax.kuzhambu.system.domain.model.entity.PrincipalAuthSession;
+import com.thundax.kuzhambu.system.domain.model.entity.User;
 import lombok.Getter;
 import lombok.Setter;
 

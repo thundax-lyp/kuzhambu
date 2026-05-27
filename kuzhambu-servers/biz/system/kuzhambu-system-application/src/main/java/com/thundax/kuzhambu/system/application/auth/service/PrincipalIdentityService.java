@@ -1,9 +1,9 @@
 package com.thundax.kuzhambu.system.application.auth.service;
 
 import com.thundax.kuzhambu.common.core.arch.LayerPublicApi;
-import com.thundax.kuzhambu.system.application.auth.entity.PrincipalIdentity;
 import com.thundax.kuzhambu.system.application.auth.service.command.PrincipalIdentityCommand;
 import com.thundax.kuzhambu.system.application.auth.service.query.PrincipalIdentityQuery;
+import com.thundax.kuzhambu.system.domain.model.entity.PrincipalIdentity;
 import com.thundax.kuzhambu.system.domain.model.valueobject.PrincipalIdentityId;
 import java.util.List;
 

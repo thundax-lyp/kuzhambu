@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.system.application.core.service.query;
 
-import com.thundax.kuzhambu.system.application.core.entity.enums.LogType;
+import com.thundax.kuzhambu.system.domain.model.enums.LogType;
 import java.util.Date;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

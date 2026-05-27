@@ -1,8 +1,8 @@
 package com.thundax.kuzhambu.system.application.auth.service.command;
 
-import com.thundax.kuzhambu.system.application.auth.entity.enums.PrincipalCredentialType;
-import com.thundax.kuzhambu.system.application.auth.entity.enums.PrincipalIdentityType;
 import com.thundax.kuzhambu.system.application.auth.service.dto.PrincipalPasswordPolicyDTO;
+import com.thundax.kuzhambu.system.domain.model.enums.PrincipalCredentialType;
+import com.thundax.kuzhambu.system.domain.model.enums.PrincipalIdentityType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

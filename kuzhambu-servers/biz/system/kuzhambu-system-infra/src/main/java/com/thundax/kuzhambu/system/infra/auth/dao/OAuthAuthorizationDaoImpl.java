@@ -6,7 +6,7 @@ import com.thundax.kuzhambu.common.core.id.EntityId;
 import com.thundax.kuzhambu.common.core.id.EntityIdCodec;
 import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.system.application.auth.dao.OAuthAuthorizationDao;
-import com.thundax.kuzhambu.system.application.auth.entity.OAuthAuthorization;
+import com.thundax.kuzhambu.system.domain.model.entity.OAuthAuthorization;
 import com.thundax.kuzhambu.system.infra.auth.assembler.OAuthAuthorizationPersistenceAssembler;
 import com.thundax.kuzhambu.system.infra.auth.dataobject.OAuthAuthorizationDO;
 import com.thundax.kuzhambu.system.infra.auth.mapper.OAuthAuthorizationMapper;

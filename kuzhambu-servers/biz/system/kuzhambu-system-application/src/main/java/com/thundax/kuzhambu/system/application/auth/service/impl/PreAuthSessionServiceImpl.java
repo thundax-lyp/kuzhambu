@@ -4,7 +4,6 @@ import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.system.application.auth.configure.CaptchaWhitelistProperties;
 import com.thundax.kuzhambu.system.application.auth.dao.PreAuthSessionDao;
-import com.thundax.kuzhambu.system.application.auth.entity.PreAuthSession;
 import com.thundax.kuzhambu.system.application.auth.service.PreAuthSessionService;
 import com.thundax.kuzhambu.system.application.auth.service.command.CreatePreAuthSessionCommand;
 import com.thundax.kuzhambu.system.application.auth.service.command.RefreshPreAuthSessionCommand;
@@ -12,6 +11,7 @@ import com.thundax.kuzhambu.system.application.auth.service.command.ReleasePreAu
 import com.thundax.kuzhambu.system.application.auth.service.command.UpsertPreAuthSessionValueCommand;
 import com.thundax.kuzhambu.system.application.auth.service.query.PreAuthSessionValueQuery;
 import com.thundax.kuzhambu.system.application.auth.service.query.PreAuthSessionValueValidateQuery;
+import com.thundax.kuzhambu.system.domain.model.entity.PreAuthSession;
 import com.thundax.kuzhambu.system.domain.model.valueobject.PreAuthSessionId;
 import com.thundax.kuzhambu.system.domain.model.valueobject.PreAuthSessionToken;
 import org.apache.commons.lang3.StringUtils;

@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.system.application.audit.annotation;
 
-import com.thundax.kuzhambu.system.application.audit.entity.enums.AuditAction;
+import com.thundax.kuzhambu.system.domain.model.enums.AuditAction;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

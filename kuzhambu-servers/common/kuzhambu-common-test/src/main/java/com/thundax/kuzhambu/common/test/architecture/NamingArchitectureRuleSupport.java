@@ -34,8 +34,12 @@ public final class NamingArchitectureRuleSupport {
             Pattern.compile("\\bpublic\\s+void\\s+set[A-Z][A-Za-z0-9_]*\\s*\\(");
     private static final Set<String> SERVICE_QUERY_REQUIRED_ANNOTATIONS =
             new LinkedHashSet<String>(Arrays.asList("Getter", "Setter", "NoArgsConstructor", "AllArgsConstructor"));
+    private static final Set<String> ENTITY_REQUIRED_ANNOTATIONS =
+            new LinkedHashSet<String>(Arrays.asList("Getter", "Setter", "NoArgsConstructor", "AllArgsConstructor"));
     private static final Pattern SERVICE_QUERY_CLASS_DECLARATION_PATTERN =
             Pattern.compile("(?s)(.*?)\\bpublic\\s+class\\s+\\w+Query\\b");
+    private static final Pattern ENTITY_CLASS_DECLARATION_PATTERN =
+            Pattern.compile("(?s)(.*?)\\bpublic\\s+class\\s+\\w+\\b");
     private static final Pattern SOURCE_ANNOTATION_PATTERN = Pattern.compile("@(?:[\\w.]+\\.)?(\\w+)\\b");
 
     private NamingArchitectureRuleSupport() {}
@@ -142,6 +146,69 @@ public final class NamingArchitectureRuleSupport {
         }
 
         assertTrue("Strong ID types must be final Base*Id value objects: " + violations, violations.isEmpty());
+    }
+
+    public static void assertEntityPlacement(JavaClasses classes, String basePackage) {
+        List<String> violations = new ArrayList<String>();
+
+        for (JavaClass javaClass : classes) {
+            if (isTestType(javaClass) || javaClass.getName().contains("$")) {
+                continue;
+            }
+            if (!javaClass.getPackageName().contains(".entity")) {
+                continue;
+            }
+            if (!javaClass.getPackageName().equals(basePackage + ".domain.model.entity")) {
+                violations.add(javaClass.getName());
+            }
+        }
+
+        assertTrue(
+                "entity packages must only be com.thundax.kuzhambu.{module}.domain.model.entity: " + violations,
+                violations.isEmpty());
+    }
+
+    public static void assertDomainEnumPlacement(JavaClasses classes, String basePackage) {
+        List<String> violations = new ArrayList<String>();
+
+        for (JavaClass javaClass : classes) {
+            if (isTestType(javaClass) || javaClass.getName().contains("$") || !javaClass.isEnum()) {
+                continue;
+            }
+            if (!isPackageUnder(javaClass, basePackage + ".domain")) {
+                continue;
+            }
+            if (!javaClass.getPackageName().equals(basePackage + ".domain.model.enums")) {
+                violations.add(javaClass.getName());
+            }
+        }
+
+        assertTrue(
+                "domain enums must only be placed under com.thundax.kuzhambu.{module}.domain.model.enums: "
+                        + violations,
+                violations.isEmpty());
+    }
+
+    public static void assertEntitySourcesDeclareOnlyRequiredAnnotations(Path sourceRoot) throws IOException {
+        Path root = ArchitectureSourceSupport.repositoryRoot();
+        List<String> violations = new ArrayList<String>();
+
+        if (!Files.exists(sourceRoot)) {
+            return;
+        }
+        try (Stream<Path> paths = Files.walk(sourceRoot)) {
+            paths.filter(Files::isRegularFile)
+                    .filter(NamingArchitectureRuleSupport::isEntitySource)
+                    .filter(NamingArchitectureRuleSupport::violatesEntityAnnotations)
+                    .map(path -> ArchitectureSourceSupport.repositoryPath(root, path))
+                    .forEach(violations::add);
+        }
+
+        assertTrue(
+                "Entity source must declare exactly @Getter, @Setter, @NoArgsConstructor and @AllArgsConstructor "
+                        + "as class annotations: "
+                        + violations,
+                violations.isEmpty());
     }
 
     public static void assertConfigurationClassNames(JavaClasses classes) {
@@ -555,11 +622,29 @@ public final class NamingArchitectureRuleSupport {
         if (!classDeclaration.find()) {
             return true;
         }
-        Matcher annotation = SOURCE_ANNOTATION_PATTERN.matcher(classDeclaration.group(1));
+        return !SERVICE_QUERY_REQUIRED_ANNOTATIONS.equals(classAnnotationSimpleNames(classDeclaration.group(1)));
+    }
+
+    private static boolean isEntitySource(Path path) {
+        String value = ArchitectureSourceSupport.normalizePath(path);
+        return value.contains("/domain/model/entity/") && value.endsWith(".java");
+    }
+
+    private static boolean violatesEntityAnnotations(Path path) {
+        String source = ArchitectureSourceSupport.readSourceWithoutComments(path);
+        Matcher classDeclaration = ENTITY_CLASS_DECLARATION_PATTERN.matcher(source);
+        if (!classDeclaration.find()) {
+            return true;
+        }
+        return !ENTITY_REQUIRED_ANNOTATIONS.equals(classAnnotationSimpleNames(classDeclaration.group(1)));
+    }
+
+    private static Set<String> classAnnotationSimpleNames(String sourceBeforeClass) {
+        Matcher annotation = SOURCE_ANNOTATION_PATTERN.matcher(sourceBeforeClass);
         Set<String> annotations = new LinkedHashSet<String>();
         while (annotation.find()) {
             annotations.add(annotation.group(1));
         }
-        return !SERVICE_QUERY_REQUIRED_ANNOTATIONS.equals(annotations);
+        return annotations;
     }
 }

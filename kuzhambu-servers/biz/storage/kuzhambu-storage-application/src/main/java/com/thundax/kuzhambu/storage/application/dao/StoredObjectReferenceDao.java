@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.storage.application.dao;
 
-import com.thundax.kuzhambu.storage.application.entity.StoredObject;
-import com.thundax.kuzhambu.storage.application.entity.StoredObjectReference;
+import com.thundax.kuzhambu.storage.domain.model.entity.StoredObject;
+import com.thundax.kuzhambu.storage.domain.model.entity.StoredObjectReference;
 import java.util.List;
 
 public interface StoredObjectReferenceDao {

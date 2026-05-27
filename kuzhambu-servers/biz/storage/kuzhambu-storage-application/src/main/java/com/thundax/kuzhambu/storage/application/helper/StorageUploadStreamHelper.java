@@ -1,10 +1,10 @@
 package com.thundax.kuzhambu.storage.application.helper;
 
-import com.thundax.kuzhambu.storage.application.entity.StoredObject;
-import com.thundax.kuzhambu.storage.application.entity.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.application.service.StorageService;
 import com.thundax.kuzhambu.storage.application.service.command.CreateStorageCommand;
 import com.thundax.kuzhambu.storage.application.store.StoredObjectStore;
+import com.thundax.kuzhambu.storage.domain.model.entity.StoredObject;
+import com.thundax.kuzhambu.storage.domain.model.enums.StorageOwnerType;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;

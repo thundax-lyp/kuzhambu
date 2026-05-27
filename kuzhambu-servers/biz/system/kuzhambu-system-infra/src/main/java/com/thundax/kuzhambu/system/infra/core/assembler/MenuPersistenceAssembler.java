@@ -1,9 +1,9 @@
 package com.thundax.kuzhambu.system.infra.core.assembler;
 
-import com.thundax.kuzhambu.system.application.core.entity.Menu;
-import com.thundax.kuzhambu.system.application.core.entity.enums.MenuVisibility;
 import com.thundax.kuzhambu.system.domain.core.codec.AccessRankCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.MenuIdCodec;
+import com.thundax.kuzhambu.system.domain.model.entity.Menu;
+import com.thundax.kuzhambu.system.domain.model.enums.MenuVisibility;
 import com.thundax.kuzhambu.system.infra.core.dataobject.MenuDO;
 import java.util.ArrayList;
 import java.util.List;

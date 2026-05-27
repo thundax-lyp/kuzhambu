@@ -1,9 +1,9 @@
 package com.thundax.kuzhambu.storage.application.service.query;
 
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
-import com.thundax.kuzhambu.storage.application.entity.enums.StorageOwnerType;
-import com.thundax.kuzhambu.storage.application.entity.enums.StoredObjectReferenceStatus;
-import com.thundax.kuzhambu.storage.application.entity.enums.StoredObjectStatus;
+import com.thundax.kuzhambu.storage.domain.model.enums.StorageOwnerType;
+import com.thundax.kuzhambu.storage.domain.model.enums.StoredObjectReferenceStatus;
+import com.thundax.kuzhambu.storage.domain.model.enums.StoredObjectStatus;
 import com.thundax.kuzhambu.storage.domain.model.valueobject.StoredObjectId;
 import java.util.List;
 import lombok.AllArgsConstructor;

@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.storage.application.service.command;
 
-import com.thundax.kuzhambu.storage.application.entity.enums.StorageOwnerType;
+import com.thundax.kuzhambu.storage.domain.model.enums.StorageOwnerType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

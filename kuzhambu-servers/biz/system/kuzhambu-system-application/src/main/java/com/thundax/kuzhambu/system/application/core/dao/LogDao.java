@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.system.application.core.dao;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.thundax.kuzhambu.system.application.core.entity.Log;
+import com.thundax.kuzhambu.system.domain.model.entity.Log;
 import com.thundax.kuzhambu.system.domain.model.valueobject.LogId;
 import java.util.Date;
 import java.util.List;

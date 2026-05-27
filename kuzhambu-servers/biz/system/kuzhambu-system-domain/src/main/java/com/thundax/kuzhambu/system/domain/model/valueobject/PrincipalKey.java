@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.system.domain.model.valueobject;
 
-import com.thundax.kuzhambu.system.domain.auth.enums.PrincipalType;
+import com.thundax.kuzhambu.system.domain.model.enums.PrincipalType;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

@@ -1,9 +1,9 @@
 package com.thundax.kuzhambu.system.application.core.dao;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.thundax.kuzhambu.system.application.core.entity.User;
-import com.thundax.kuzhambu.system.application.core.entity.enums.UserPrivilege;
-import com.thundax.kuzhambu.system.application.core.entity.enums.UserStatus;
+import com.thundax.kuzhambu.system.domain.model.entity.User;
+import com.thundax.kuzhambu.system.domain.model.enums.UserPrivilege;
+import com.thundax.kuzhambu.system.domain.model.enums.UserStatus;
 import com.thundax.kuzhambu.system.domain.model.valueobject.UserId;
 import java.util.List;
 

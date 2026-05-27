@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.system.application.auth.service.command;
 
-import com.thundax.kuzhambu.system.application.auth.entity.enums.PrincipalIdentityType;
+import com.thundax.kuzhambu.system.domain.model.enums.PrincipalIdentityType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

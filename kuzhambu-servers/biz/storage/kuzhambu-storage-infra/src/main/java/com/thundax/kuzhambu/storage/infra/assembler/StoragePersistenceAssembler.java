@@ -1,13 +1,13 @@
 package com.thundax.kuzhambu.storage.infra.assembler;
 
-import com.thundax.kuzhambu.storage.application.entity.MultipartUploadPart;
-import com.thundax.kuzhambu.storage.application.entity.MultipartUploadSession;
-import com.thundax.kuzhambu.storage.application.entity.StoredObject;
-import com.thundax.kuzhambu.storage.application.entity.StoredObjectReference;
-import com.thundax.kuzhambu.storage.application.entity.enums.MultipartUploadStatus;
-import com.thundax.kuzhambu.storage.application.entity.enums.StorageOwnerType;
-import com.thundax.kuzhambu.storage.application.entity.enums.StoredObjectReferenceStatus;
-import com.thundax.kuzhambu.storage.application.entity.enums.StoredObjectStatus;
+import com.thundax.kuzhambu.storage.domain.model.entity.MultipartUploadPart;
+import com.thundax.kuzhambu.storage.domain.model.entity.MultipartUploadSession;
+import com.thundax.kuzhambu.storage.domain.model.entity.StoredObject;
+import com.thundax.kuzhambu.storage.domain.model.entity.StoredObjectReference;
+import com.thundax.kuzhambu.storage.domain.model.enums.MultipartUploadStatus;
+import com.thundax.kuzhambu.storage.domain.model.enums.StorageOwnerType;
+import com.thundax.kuzhambu.storage.domain.model.enums.StoredObjectReferenceStatus;
+import com.thundax.kuzhambu.storage.domain.model.enums.StoredObjectStatus;
 import com.thundax.kuzhambu.storage.domain.object.codec.MultipartUploadPartIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.codec.MultipartUploadSessionIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;

@@ -18,5 +18,6 @@ class SystemInfraArchitectureTest extends AbstractArchitectureTest {
         ModuleAndDependencyArchitectureRuleSupport.assertInfraLayerBoundary(classes, BASE_PACKAGE);
         AnnotationBoundaryArchitectureRuleSupport.assertInfraAnnotationBoundary(classes, BASE_PACKAGE);
         NamingArchitectureRuleSupport.assertValueObjectPlacement(classes, BASE_PACKAGE);
+        NamingArchitectureRuleSupport.assertEntityPlacement(classes, BASE_PACKAGE);
     }
 }

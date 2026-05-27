@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.system.application.auth.service.command;
 
-import com.thundax.kuzhambu.system.application.auth.entity.PrincipalCredential;
+import com.thundax.kuzhambu.system.domain.model.entity.PrincipalCredential;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

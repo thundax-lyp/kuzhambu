@@ -2,11 +2,11 @@ package com.thundax.kuzhambu.system.application.audit.service;
 
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
-import com.thundax.kuzhambu.system.application.audit.entity.AuditLog;
-import com.thundax.kuzhambu.system.application.audit.entity.AuditMeta;
 import com.thundax.kuzhambu.system.application.audit.service.command.CreateAuditLogCommand;
 import com.thundax.kuzhambu.system.application.audit.service.query.AuditLogQuery;
 import com.thundax.kuzhambu.system.application.audit.service.query.AuditMetaQuery;
+import com.thundax.kuzhambu.system.domain.model.entity.AuditLog;
+import com.thundax.kuzhambu.system.domain.model.entity.AuditMeta;
 import com.thundax.kuzhambu.system.domain.model.valueobject.AuditLogId;
 import java.util.List;
 

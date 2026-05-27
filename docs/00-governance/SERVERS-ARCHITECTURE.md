@@ -101,6 +101,8 @@ kuzhambu-servers/
       kuzhambu-<domain>-domain/
         src/main/java/com/thundax/kuzhambu/<domain>/domain/
           model/
+            entity/
+            enums/
             valueobject/
           <subdomain>/
             codec/
@@ -149,6 +151,8 @@ com/thundax/kuzhambu/<domain>/interfaces/portal/
 - `application/assembler/`：application 内部模型装配，不处理 HTTP 或持久化细节。
 - `domain/<subdomain>/codec/`：基础类型和值对象互转，`<subdomain>` 使用业务子域名，例如 `core`、`auth`、`audit`、`object`。
 - `application/support/`：仅服务本业务域 application 层的辅助实现。
+- `domain/model/entity/`：领域实体；实体类必须且只能声明 `@Getter`、`@Setter`、`@NoArgsConstructor`、`@AllArgsConstructor` 四个类级 Lombok 注解。
+- `domain/model/enums/`：领域层枚举；`{module}-domain` 内所有 enum 必须位于此包。
 - `domain/model/valueobject/`：强类型 ID、Key、Code、Token、Ref、Snapshot 等领域值对象；`application`、`interfaces`、`infra` 不得定义 `valueobject` 包。
 - `domain/model/`：聚合、实体和领域模型。
 - `domain/service/`：无法自然归入单个领域对象的领域规则。

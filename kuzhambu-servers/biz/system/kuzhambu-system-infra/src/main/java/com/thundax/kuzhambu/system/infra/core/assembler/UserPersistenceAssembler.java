@@ -1,11 +1,11 @@
 package com.thundax.kuzhambu.system.infra.core.assembler;
 
-import com.thundax.kuzhambu.system.application.core.entity.User;
-import com.thundax.kuzhambu.system.application.core.entity.enums.UserPrivilege;
-import com.thundax.kuzhambu.system.application.core.entity.enums.UserStatus;
 import com.thundax.kuzhambu.system.domain.core.codec.AccessRankCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.DepartmentIdCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
+import com.thundax.kuzhambu.system.domain.model.entity.User;
+import com.thundax.kuzhambu.system.domain.model.enums.UserPrivilege;
+import com.thundax.kuzhambu.system.domain.model.enums.UserStatus;
 import com.thundax.kuzhambu.system.infra.core.dataobject.UserDO;
 import com.thundax.kuzhambu.system.infra.core.dataobject.UserRoleDO;
 import java.util.ArrayList;

@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.system.infra.core.assembler;
 
-import com.thundax.kuzhambu.system.application.core.entity.Dict;
 import com.thundax.kuzhambu.system.domain.core.codec.DictIdCodec;
+import com.thundax.kuzhambu.system.domain.model.entity.Dict;
 import com.thundax.kuzhambu.system.infra.core.dataobject.DictDO;
 import java.util.ArrayList;
 import java.util.List;

@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.storage.application.helper;
 
-import com.thundax.kuzhambu.storage.application.entity.StoredObject;
+import com.thundax.kuzhambu.storage.domain.model.entity.StoredObject;
 import lombok.Builder;
 import lombok.Getter;
 

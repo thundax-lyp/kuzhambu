@@ -2,8 +2,8 @@ package com.thundax.kuzhambu.storage.infra.store;
 
 import com.thundax.kuzhambu.common.oss.client.ObjectStorageClient;
 import com.thundax.kuzhambu.common.oss.model.ObjectStorageWriteResult;
-import com.thundax.kuzhambu.storage.application.entity.StoredObject;
 import com.thundax.kuzhambu.storage.application.store.StoredObjectStore;
+import com.thundax.kuzhambu.storage.domain.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import java.io.IOException;
 import java.io.InputStream;

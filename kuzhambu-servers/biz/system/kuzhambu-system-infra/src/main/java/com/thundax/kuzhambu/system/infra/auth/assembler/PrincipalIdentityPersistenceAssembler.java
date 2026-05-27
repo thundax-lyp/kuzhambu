@@ -1,10 +1,10 @@
 package com.thundax.kuzhambu.system.infra.auth.assembler;
 
-import com.thundax.kuzhambu.system.application.auth.entity.PrincipalIdentity;
-import com.thundax.kuzhambu.system.application.auth.entity.enums.PrincipalIdentityStatus;
-import com.thundax.kuzhambu.system.application.auth.entity.enums.PrincipalIdentityType;
 import com.thundax.kuzhambu.system.domain.auth.codec.PrincipalIdentityIdCodec;
-import com.thundax.kuzhambu.system.domain.auth.enums.PrincipalType;
+import com.thundax.kuzhambu.system.domain.model.entity.PrincipalIdentity;
+import com.thundax.kuzhambu.system.domain.model.enums.PrincipalIdentityStatus;
+import com.thundax.kuzhambu.system.domain.model.enums.PrincipalIdentityType;
+import com.thundax.kuzhambu.system.domain.model.enums.PrincipalType;
 import com.thundax.kuzhambu.system.domain.model.valueobject.PrincipalKey;
 import com.thundax.kuzhambu.system.infra.auth.dataobject.PrincipalIdentityDO;
 import java.util.ArrayList;

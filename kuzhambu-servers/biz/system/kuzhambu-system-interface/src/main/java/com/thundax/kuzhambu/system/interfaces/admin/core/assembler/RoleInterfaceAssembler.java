@@ -1,11 +1,5 @@
 package com.thundax.kuzhambu.system.interfaces.admin.core.assembler;
 
-import com.thundax.kuzhambu.system.application.core.entity.Department;
-import com.thundax.kuzhambu.system.application.core.entity.Menu;
-import com.thundax.kuzhambu.system.application.core.entity.Role;
-import com.thundax.kuzhambu.system.application.core.entity.User;
-import com.thundax.kuzhambu.system.application.core.entity.enums.RolePrivilege;
-import com.thundax.kuzhambu.system.application.core.entity.enums.RoleStatus;
 import com.thundax.kuzhambu.system.application.core.service.command.ChangeRoleInfoCommand;
 import com.thundax.kuzhambu.system.application.core.service.command.CreateRoleCommand;
 import com.thundax.kuzhambu.system.application.core.service.query.RoleQuery;
@@ -13,6 +7,12 @@ import com.thundax.kuzhambu.system.domain.core.codec.DepartmentIdCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.MenuIdCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.RoleIdCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
+import com.thundax.kuzhambu.system.domain.model.entity.Department;
+import com.thundax.kuzhambu.system.domain.model.entity.Menu;
+import com.thundax.kuzhambu.system.domain.model.entity.Role;
+import com.thundax.kuzhambu.system.domain.model.entity.User;
+import com.thundax.kuzhambu.system.domain.model.enums.RolePrivilege;
+import com.thundax.kuzhambu.system.domain.model.enums.RoleStatus;
 import com.thundax.kuzhambu.system.domain.model.valueobject.DepartmentId;
 import com.thundax.kuzhambu.system.domain.model.valueobject.MenuId;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.RoleQueryRequest;

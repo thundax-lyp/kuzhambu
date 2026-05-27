@@ -1,8 +1,8 @@
 package com.thundax.kuzhambu.system.interfaces.admin.auth.assembler;
 
-import com.thundax.kuzhambu.system.application.auth.entity.PreAuthSession;
-import com.thundax.kuzhambu.system.application.auth.entity.PrincipalAccessToken;
-import com.thundax.kuzhambu.system.application.core.entity.User;
+import com.thundax.kuzhambu.system.domain.model.entity.PreAuthSession;
+import com.thundax.kuzhambu.system.domain.model.entity.PrincipalAccessToken;
+import com.thundax.kuzhambu.system.domain.model.entity.User;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.controller.response.AuthAccessTokenResponse;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.controller.response.AuthLoginFormResponse;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.controller.response.OAuth2AuthorizationDecisionResponse;
