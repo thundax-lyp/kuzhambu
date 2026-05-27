@@ -297,6 +297,7 @@ Classics 拥有古籍内容主数据和内容上下文内的维护数据。Stora
 | `content_type` | `varchar(32)` | UK(share_link_id, content_type, content_id), KEY | 跨库内容类型 |
 | `content_id` | `bigint` | UK(share_link_id, content_type, content_id), KEY | 内容身份 |
 | `title_snapshot` | `varchar(512)` |  | 内容删除后占位展示 |
+| `content_snapshot_json` | `json` |  | 分享访问第一版返回完整内容快照 |
 | `content_visibility_snapshot` | `varchar(16)` |  | 创建分享时内容可见性快照 |
 | `target_status` | `varchar(16)` |  | 目标可用或内容已删除占位 |
 | `priority` | `int` | UK | 分享页展示排序 |
