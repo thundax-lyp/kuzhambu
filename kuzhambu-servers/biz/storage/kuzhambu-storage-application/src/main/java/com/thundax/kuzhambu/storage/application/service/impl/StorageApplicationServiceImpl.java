@@ -7,7 +7,7 @@ import com.thundax.kuzhambu.common.core.exception.ErrorCode;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
-import com.thundax.kuzhambu.storage.application.service.StorageService;
+import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
 import com.thundax.kuzhambu.storage.application.service.command.AddStorageReferencesCommand;
 import com.thundax.kuzhambu.storage.application.service.command.ChangeStorageCommand;
 import com.thundax.kuzhambu.storage.application.service.command.ChangeStorageObjectStatusCommand;
@@ -35,14 +35,15 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional(readOnly = true)
 @BizExceptionBoundary
-public class StorageServiceImpl implements StorageService {
+public class StorageApplicationServiceImpl implements StorageApplicationService {
 
     private static final int PRIORITY_STEP = 10;
 
     private final StoredObjectRepository dao;
     private final StoredObjectReferenceRepository businessRepository;
 
-    public StorageServiceImpl(StoredObjectRepository dao, StoredObjectReferenceRepository businessRepository) {
+    public StorageApplicationServiceImpl(
+            StoredObjectRepository dao, StoredObjectReferenceRepository businessRepository) {
         this.dao = dao;
         this.businessRepository = businessRepository;
     }

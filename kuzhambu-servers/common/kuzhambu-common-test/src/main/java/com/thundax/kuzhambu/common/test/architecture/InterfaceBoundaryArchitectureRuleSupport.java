@@ -3,6 +3,8 @@ package com.thundax.kuzhambu.common.test.architecture;
 import static com.thundax.kuzhambu.common.test.architecture.ArchitectureAssertions.assertTrue;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
+import com.tngtech.archunit.core.domain.Dependency;
+import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -36,6 +38,35 @@ public final class InterfaceBoundaryArchitectureRuleSupport {
                         basePackage + ".infra.dataobject..",
                         basePackage + ".infra.repository.impl..")
                 .check(classes);
+    }
+
+    public static void assertInterfaceOnlyCallsApplicationServices(JavaClasses classes, String basePackage) {
+        List<String> violations = new ArrayList<String>();
+
+        for (JavaClass javaClass : classes) {
+            if (!javaClass.getPackageName().startsWith(basePackage + ".interfaces.")) {
+                continue;
+            }
+            for (Dependency dependency : javaClass.getDirectDependenciesFromSelf()) {
+                JavaClass targetClass = dependency.getTargetClass();
+                if (!targetClass.getPackageName().startsWith(basePackage + ".application.")
+                        || !targetClass.getPackageName().contains(".service")) {
+                    continue;
+                }
+                if (targetClass.getSimpleName().endsWith("Service")
+                        && !targetClass.getSimpleName().endsWith("ApplicationService")) {
+                    violations.add(javaClass.getName() + " -> " + targetClass.getName());
+                }
+                if (targetClass.getSimpleName().endsWith("ServiceImpl")
+                        && !targetClass.getSimpleName().endsWith("ApplicationServiceImpl")) {
+                    violations.add(javaClass.getName() + " -> " + targetClass.getName());
+                }
+            }
+        }
+
+        assertTrue(
+                "Interface layer must call *ApplicationService instead of generic *Service: " + violations,
+                violations.isEmpty());
     }
 
     public static void assertInterfaceProtocolModelsStayInSameSubdomain(Path sourceRoot) throws IOException {

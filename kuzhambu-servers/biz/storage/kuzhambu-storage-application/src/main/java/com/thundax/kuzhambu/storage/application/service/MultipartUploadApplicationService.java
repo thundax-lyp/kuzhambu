@@ -9,7 +9,7 @@ import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadPa
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadSession;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 
-public interface MultipartUploadService {
+public interface MultipartUploadApplicationService {
 
     @LayerPublicApi(reason = "分片上传流程初始化会话的业务入口")
     MultipartUploadSession init(InitMultipartUploadCommand command);

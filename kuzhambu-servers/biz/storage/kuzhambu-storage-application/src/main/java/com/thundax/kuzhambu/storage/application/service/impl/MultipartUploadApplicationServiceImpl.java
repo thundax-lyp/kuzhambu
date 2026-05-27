@@ -3,8 +3,8 @@ package com.thundax.kuzhambu.storage.application.service.impl;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.id.UuidHelper;
-import com.thundax.kuzhambu.storage.application.service.MultipartUploadService;
-import com.thundax.kuzhambu.storage.application.service.StorageService;
+import com.thundax.kuzhambu.storage.application.service.MultipartUploadApplicationService;
+import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
 import com.thundax.kuzhambu.storage.application.service.command.AbortMultipartUploadCommand;
 import com.thundax.kuzhambu.storage.application.service.command.CompleteMultipartUploadCommand;
 import com.thundax.kuzhambu.storage.application.service.command.CreateStorageCommand;
@@ -27,16 +27,16 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional(readOnly = true)
 @BizExceptionBoundary
-public class MultipartUploadServiceImpl implements MultipartUploadService {
+public class MultipartUploadApplicationServiceImpl implements MultipartUploadApplicationService {
     private static final String EXTENSION_SEPARATOR = ".";
 
     private final MultipartUploadRepository multipartUploadRepository;
-    private final StorageService storageService;
+    private final StorageApplicationService storageApplicationService;
 
-    public MultipartUploadServiceImpl(
-            MultipartUploadRepository multipartUploadRepository, StorageService storageService) {
+    public MultipartUploadApplicationServiceImpl(
+            MultipartUploadRepository multipartUploadRepository, StorageApplicationService storageApplicationService) {
         this.multipartUploadRepository = multipartUploadRepository;
-        this.storageService = storageService;
+        this.storageApplicationService = storageApplicationService;
     }
 
     @Override
@@ -93,7 +93,7 @@ public class MultipartUploadServiceImpl implements MultipartUploadService {
         validateMultipartParts(session, parts);
 
         StoredObject storage = toCompletedStorage(session, command);
-        storage.setId(storageService.create(toCreateStorageCommand(storage)));
+        storage.setId(storageApplicationService.create(toCreateStorageCommand(storage)));
 
         Date now = new Date();
         session.setUploadStatus(MultipartUploadStatus.COMPLETED);

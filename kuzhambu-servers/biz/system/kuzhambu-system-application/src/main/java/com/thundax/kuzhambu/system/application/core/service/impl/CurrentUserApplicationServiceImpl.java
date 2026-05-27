@@ -2,7 +2,7 @@ package com.thundax.kuzhambu.system.application.core.service.impl;
 
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
-import com.thundax.kuzhambu.storage.application.service.StorageService;
+import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
 import com.thundax.kuzhambu.storage.application.service.command.ChangeStorageCommand;
 import com.thundax.kuzhambu.storage.application.service.command.CreateStorageCommand;
 import com.thundax.kuzhambu.storage.application.service.query.StorageQuery;
@@ -81,7 +81,7 @@ public class CurrentUserApplicationServiceImpl implements CurrentUserApplication
     private final MenuApplicationService menuService;
     private final PrincipalIdentityApplicationService principalIdentityService;
     private final PrincipalCredentialApplicationService principalCredentialService;
-    private final StorageService storageService;
+    private final StorageApplicationService storageApplicationService;
     private final StoredObjectStore storedObjectStore;
 
     public CurrentUserApplicationServiceImpl(
@@ -90,14 +90,14 @@ public class CurrentUserApplicationServiceImpl implements CurrentUserApplication
             MenuApplicationService menuService,
             PrincipalIdentityApplicationService principalIdentityService,
             PrincipalCredentialApplicationService principalCredentialService,
-            StorageService storageService,
+            StorageApplicationService storageApplicationService,
             StoredObjectStore storedObjectStore) {
         this.userService = userService;
         this.roleService = roleService;
         this.menuService = menuService;
         this.principalIdentityService = principalIdentityService;
         this.principalCredentialService = principalCredentialService;
-        this.storageService = storageService;
+        this.storageApplicationService = storageApplicationService;
         this.storedObjectStore = storedObjectStore;
     }
 
@@ -159,7 +159,7 @@ public class CurrentUserApplicationServiceImpl implements CurrentUserApplication
         } catch (IOException e) {
             throw storageFailure(e.getMessage());
         }
-        storage.setId(storageService.create(toCreateStorageCommand(storage)));
+        storage.setId(storageApplicationService.create(toCreateStorageCommand(storage)));
         return storage;
     }
 
@@ -248,12 +248,12 @@ public class CurrentUserApplicationServiceImpl implements CurrentUserApplication
         query.setOwnerId(userId == null ? null : String.valueOf(userId.value()));
         query.setObjectStatus(StoredObjectStatus.ACTIVE);
         query.setRemarks(AVATAR_REMARKS);
-        return storageService.list(query);
+        return storageApplicationService.list(query);
     }
 
     private void removeAvatar(UserId userId) {
         for (StoredObject storage : listAvatars(userId)) {
-            storageService.remove(storage.getId());
+            storageApplicationService.remove(storage.getId());
         }
     }
 

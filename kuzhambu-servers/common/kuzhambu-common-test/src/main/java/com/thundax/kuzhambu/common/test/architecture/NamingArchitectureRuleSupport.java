@@ -88,6 +88,30 @@ public final class NamingArchitectureRuleSupport {
         assertTrue("Layer types must use the fixed suffix for their package: " + violations, violations.isEmpty());
     }
 
+    public static void assertApplicationServicesUseApplicationServiceSuffix(JavaClasses classes, String basePackage) {
+        List<String> violations = new ArrayList<String>();
+
+        for (JavaClass javaClass : classes) {
+            if (isTestType(javaClass) || javaClass.getName().contains("$")) {
+                continue;
+            }
+            if (!isPackageUnder(javaClass, basePackage + ".application")) {
+                continue;
+            }
+            String simpleName = javaClass.getSimpleName();
+            if (simpleName.endsWith("Service") && !simpleName.endsWith("ApplicationService")) {
+                violations.add(javaClass.getName());
+            }
+            if (simpleName.endsWith("ServiceImpl") && !simpleName.endsWith("ApplicationServiceImpl")) {
+                violations.add(javaClass.getName());
+            }
+        }
+
+        assertTrue(
+                "Application layer *Service types must be named *ApplicationService: " + violations,
+                violations.isEmpty());
+    }
+
     public static void assertCodecPlacement(JavaClasses classes, String basePackage) {
         List<String> violations = new ArrayList<String>();
 

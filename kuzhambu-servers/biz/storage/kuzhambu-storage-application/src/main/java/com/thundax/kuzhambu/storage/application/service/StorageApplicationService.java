@@ -16,7 +16,7 @@ import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObjectRefer
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import java.util.List;
 
-public interface StorageService {
+public interface StorageApplicationService {
 
     StoredObject get(StoredObjectId id);
 

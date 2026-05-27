@@ -7,7 +7,7 @@ import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
-import com.thundax.kuzhambu.storage.application.service.StorageService;
+import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
 import com.thundax.kuzhambu.storage.application.service.query.StorageQuery;
 import com.thundax.kuzhambu.storage.interfaces.admin.object.assembler.StorageInterfaceAssembler;
 import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.request.StoragePageRequest;
@@ -27,10 +27,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @WrappedApiController
 public class StorageObjectController {
 
-    private final StorageService storageService;
+    private final StorageApplicationService storageApplicationService;
 
-    public StorageObjectController(StorageService storageService) {
-        this.storageService = storageService;
+    public StorageObjectController(StorageApplicationService storageApplicationService) {
+        this.storageApplicationService = storageApplicationService;
     }
 
     @Operation(summary = "获取存储对象分页列表", description = "storage:object:view")
@@ -47,7 +47,7 @@ public class StorageObjectController {
     public PageResponse<StorageObjectResponse> page(@Valid @RequestBody StoragePageRequest request) {
         StorageQuery query = StorageInterfaceAssembler.toQuery(request);
         return PageResponseHelper.fromPageResult(
-                storageService.page(query, PageInterfaceAssembler.toPageQuery(request)),
+                storageApplicationService.page(query, PageInterfaceAssembler.toPageQuery(request)),
                 StorageInterfaceAssembler::toResponse);
     }
 }

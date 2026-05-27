@@ -11,7 +11,7 @@ import java.util.Objects;
 import org.springframework.stereotype.Service;
 
 @Service
-public class AuditDiffService {
+public class AuditDiffCalculator {
 
     public List<AuditChangedField> diff(AuditSnapshot beforeSnapshot, AuditSnapshot afterSnapshot) {
         List<AuditChangedField> changedFields = new ArrayList<>();

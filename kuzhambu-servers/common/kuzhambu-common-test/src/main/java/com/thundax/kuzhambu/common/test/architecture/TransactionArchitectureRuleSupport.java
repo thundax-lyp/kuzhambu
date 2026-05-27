@@ -44,6 +44,6 @@ public final class TransactionArchitectureRuleSupport {
         String simpleName = javaClass.getSimpleName();
         return packageName.startsWith(basePackage + ".application.")
                 && packageName.contains(".service.impl")
-                && (simpleName.endsWith("ApplicationServiceImpl") || simpleName.endsWith("ServiceImpl"));
+                && simpleName.endsWith("ApplicationServiceImpl");
     }
 }

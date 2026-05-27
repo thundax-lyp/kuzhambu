@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.storage.application.helper;
 
-import com.thundax.kuzhambu.storage.application.service.StorageService;
+import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
 import com.thundax.kuzhambu.storage.application.service.command.CreateStorageCommand;
 import com.thundax.kuzhambu.storage.application.store.StoredObjectStore;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
@@ -15,11 +15,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class StorageUploadStreamHelper {
 
-    private final StorageService storageService;
+    private final StorageApplicationService storageApplicationService;
     private final StoredObjectStore storedObjectStore;
 
-    public StorageUploadStreamHelper(StorageService storageService, StoredObjectStore storedObjectStore) {
-        this.storageService = storageService;
+    public StorageUploadStreamHelper(
+            StorageApplicationService storageApplicationService, StoredObjectStore storedObjectStore) {
+        this.storageApplicationService = storageApplicationService;
         this.storedObjectStore = storedObjectStore;
     }
 
@@ -45,7 +46,7 @@ public class StorageUploadStreamHelper {
         } catch (IOException e) {
             return StorageUploadResult.builder().error(e.getMessage()).build();
         }
-        storage.setId(storageService.create(toCreateStorageCommand(storage)));
+        storage.setId(storageApplicationService.create(toCreateStorageCommand(storage)));
         return StorageUploadResult.builder().storage(storage).build();
     }
 
