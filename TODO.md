@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `kuzhambu-servers/biz/storage`：迁移文件存储域代码和接口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SERVERS-DOMAIN-MODULE-MERGE.md`
-    - 范围对象：`kuzhambu-servers/biz/kuzhambu-biz-storage/`、`kuzhambu-servers/infra/kuzhambu-infra-storage/`、`kuzhambu-servers/biz/storage/`
-    - 处理动作：将 storage 迁移到 storage 域四层模块并更新 package/import
-    - 验收点：storage 域代码位于 `com.thundax.kuzhambu.storage` 包下，文件对象、引用、读取和上传能力保持完整
-    - 重要度：10/10
-
 - [ ] `kuzhambu-servers/biz/classics`：迁移古籍域代码和接口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SERVERS-DOMAIN-MODULE-MERGE.md`

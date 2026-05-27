@@ -22,12 +22,27 @@
     </dependency>
     <dependency>
       <groupId>com.thundax</groupId>
+      <artifactId>kuzhambu-storage-application</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-common-mybatis</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-common-cache</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thundax</groupId>
+      <artifactId>kuzhambu-common-mq</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thundax</groupId>
+      <artifactId>kuzhambu-common-oss</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
