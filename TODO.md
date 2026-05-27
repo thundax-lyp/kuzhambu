@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `docs/00-governance`：同步 Java servers 稳定架构规则
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SERVERS-DOMAIN-MODULE-MERGE.md`
-    - 范围对象：`docs/00-governance/SERVERS-ARCHITECTURE.md`、`docs/00-governance/SERVERS-ARCHITECTURE-RULES.md`、`docs/00-governance/SERVERS-DATABASE-RULES.md`
-    - 处理动作：将治理文档同步为 `common/biz/starter`、业务域四层和新 SQL 归并口径
-    - 验收点：治理文档不再把旧 `biz/infra/interfaces` 横向结构作为目标架构
-    - 重要度：10/10
-
 - [ ] `docs/10-requirements`：归并需求文档为新业务域
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SERVERS-DOMAIN-MODULE-MERGE.md`

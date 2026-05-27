@@ -18,13 +18,21 @@
 ## Naming
 
 - 主键列默认命名为 `id`。
-- Core 表固定使用 `sys_` 前缀。
-- Auth 表固定使用 `auth_` 前缀。
-- 其他业务域表默认使用业务域前缀，例如 `storage_`、`audit_`、`search_`。
+- 业务域表默认使用业务域前缀。
+- 当前业务域表前缀固定为 `system_`、`storage_`、`classics_`、`ai_`、`knowledge_`、`discovery_`、`operations_`。
 - 业务域前缀必须与需求文档和模块设计文档中的业务域名称保持一致。
-- 关系表名称必须显式表达关系语义，例如 `sys_user_role`、`sys_role_menu`。
-- 审计日志表由 Audit 业务域定义，不在各业务表中机械追加通用审计字段。
+- 关系表名称必须显式表达关系语义，例如 `system_user_role`、`system_role_menu`。
+- 审计日志表由 system 业务域定义，不在各业务表中机械追加通用审计字段。
 - 业务发生时间使用业务语义命名，例如 `occurred_at`、`requested_at`、`completed_at`、`expires_at`。
+
+## SQL Files
+
+- 业务域 schema 文件固定放在 `db/schema/`。
+- 业务域初始化数据文件固定放在 `db/data/`。
+- 当前 schema 文件固定为 `system.sql`、`storage.sql`、`classics.sql`、`ai.sql`、`knowledge.sql`、`discovery.sql`、`operations.sql`。
+- 当前初始化数据文件固定为 `system.sql`、`storage.sql`、`classics.sql`、`ai.sql`、`knowledge.sql`、`discovery.sql`、`operations.sql`。
+- SQL 文件名必须与业务域名称保持一致。
+- 设计阶段允许随业务域归并同步重命名表名、索引名和初始化数据引用。
 
 ## Table Types
 
@@ -33,7 +41,7 @@
 - 关系表：只保存关系本身的最小字段，关系唯一性用联合唯一约束表达。
 - 台账表：只追加，不回写历史。
 - 认证事件表：只追加，不保存敏感明文。
-- 审计日志表：归属 Audit 业务域，只追加，不逻辑删除，不保存敏感明文。
+- 审计日志表：归属 system 业务域，只追加，不逻辑删除，不保存敏感明文。
 
 ## Field Rules
 
