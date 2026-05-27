@@ -1,5 +1,7 @@
 package com.thundax.kuzhambu.system.application.auth.service.impl;
 
+import com.thundax.kuzhambu.common.core.exception.BizException;
+import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.system.application.auth.entity.PrincipalCredential;
 import com.thundax.kuzhambu.system.application.auth.entity.PrincipalIdentity;
 import com.thundax.kuzhambu.system.application.auth.entity.enums.PrincipalCredentialType;
@@ -15,8 +17,6 @@ import com.thundax.kuzhambu.system.application.auth.service.dto.PrincipalPasswor
 import com.thundax.kuzhambu.system.application.auth.service.query.PrincipalCredentialQuery;
 import com.thundax.kuzhambu.system.application.auth.service.query.PrincipalIdentityQuery;
 import com.thundax.kuzhambu.system.application.auth.utils.PasswordHelper;
-import com.thundax.kuzhambu.common.core.exception.BizException;
-import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import java.util.Date;
 import org.springframework.stereotype.Service;
 

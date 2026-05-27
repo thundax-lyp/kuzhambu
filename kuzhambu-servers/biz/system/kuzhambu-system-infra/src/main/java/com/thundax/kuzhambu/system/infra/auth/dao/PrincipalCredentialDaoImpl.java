@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.system.infra.auth.dao;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.system.application.auth.dao.PrincipalCredentialDao;
 import com.thundax.kuzhambu.system.application.auth.entity.PrincipalCredential;
 import com.thundax.kuzhambu.system.application.auth.entity.enums.PrincipalCredentialStatus;
@@ -11,7 +12,6 @@ import com.thundax.kuzhambu.system.application.auth.entity.valueobject.Principal
 import com.thundax.kuzhambu.system.application.auth.entity.valueobject.PrincipalIdentityId;
 import com.thundax.kuzhambu.system.application.auth.entity.valueobject.PrincipalIdentityIdCodec;
 import com.thundax.kuzhambu.system.application.auth.entity.valueobject.PrincipalKey;
-import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.system.infra.auth.assembler.PrincipalCredentialPersistenceAssembler;
 import com.thundax.kuzhambu.system.infra.auth.dataobject.PrincipalCredentialDO;
 import com.thundax.kuzhambu.system.infra.auth.mapper.PrincipalCredentialMapper;

@@ -1,9 +1,9 @@
 package com.thundax.kuzhambu.system.application.core.dao;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.thundax.kuzhambu.common.core.tree.TreeNodeMoveType;
 import com.thundax.kuzhambu.system.application.core.entity.Menu;
 import com.thundax.kuzhambu.system.application.core.entity.valueobject.MenuId;
-import com.thundax.kuzhambu.common.core.tree.TreeNodeMoveType;
 import java.util.List;
 
 public interface MenuDao {

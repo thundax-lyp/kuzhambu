@@ -1,5 +1,7 @@
 package com.thundax.kuzhambu.system.application.core.service;
 
+import com.thundax.kuzhambu.common.core.page.PageQuery;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.system.application.core.entity.Menu;
 import com.thundax.kuzhambu.system.application.core.entity.Role;
 import com.thundax.kuzhambu.system.application.core.entity.User;
@@ -10,8 +12,6 @@ import com.thundax.kuzhambu.system.application.core.service.command.ChangeRoleSt
 import com.thundax.kuzhambu.system.application.core.service.command.CreateRoleCommand;
 import com.thundax.kuzhambu.system.application.core.service.command.RoleSortCommand;
 import com.thundax.kuzhambu.system.application.core.service.query.RoleQuery;
-import com.thundax.kuzhambu.common.core.page.PageQuery;
-import com.thundax.kuzhambu.common.core.page.PageResult;
 import java.util.List;
 
 public interface RoleService {

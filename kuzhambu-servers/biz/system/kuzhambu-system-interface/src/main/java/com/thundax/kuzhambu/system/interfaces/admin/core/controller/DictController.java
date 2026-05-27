@@ -1,11 +1,5 @@
 package com.thundax.kuzhambu.system.interfaces.admin.core.controller;
 
-import com.thundax.kuzhambu.system.application.core.entity.Dict;
-import com.thundax.kuzhambu.system.application.core.entity.valueobject.DictId;
-import com.thundax.kuzhambu.system.application.core.entity.valueobject.DictIdCodec;
-import com.thundax.kuzhambu.system.application.core.service.DictService;
-import com.thundax.kuzhambu.system.application.core.service.command.DictSortCommand;
-import com.thundax.kuzhambu.system.application.core.service.query.DictQuery;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
@@ -14,6 +8,12 @@ import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.common.web.request.RequestListHelper;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
+import com.thundax.kuzhambu.system.application.core.entity.Dict;
+import com.thundax.kuzhambu.system.application.core.entity.valueobject.DictId;
+import com.thundax.kuzhambu.system.application.core.entity.valueobject.DictIdCodec;
+import com.thundax.kuzhambu.system.application.core.service.DictService;
+import com.thundax.kuzhambu.system.application.core.service.command.DictSortCommand;
+import com.thundax.kuzhambu.system.application.core.service.query.DictQuery;
 import com.thundax.kuzhambu.system.interfaces.admin.core.aop.annotation.SysLogger;
 import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.DictInterfaceAssembler;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.DictIdRequest;

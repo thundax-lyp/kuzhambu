@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.system.application.core.service;
 
+import com.thundax.kuzhambu.biz.storage.entity.StoredObject;
 import com.thundax.kuzhambu.system.application.core.entity.Menu;
 import com.thundax.kuzhambu.system.application.core.entity.User;
 import com.thundax.kuzhambu.system.application.core.entity.valueobject.UserId;
@@ -8,7 +9,6 @@ import com.thundax.kuzhambu.system.application.core.service.command.ChangeCurren
 import com.thundax.kuzhambu.system.application.core.service.command.ChangeCurrentUserPasswordCommand;
 import com.thundax.kuzhambu.system.application.core.service.command.RemoveCurrentUserAvatarCommand;
 import com.thundax.kuzhambu.system.application.core.service.query.CurrentUserQuery;
-import com.thundax.kuzhambu.biz.storage.entity.StoredObject;
 import java.io.InputStream;
 import java.util.List;
 

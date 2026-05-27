@@ -1,9 +1,9 @@
 package com.thundax.kuzhambu.system.application.audit.runtime;
 
-import com.thundax.kuzhambu.system.application.audit.entity.enums.AuditOperatorType;
 import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
 import com.thundax.kuzhambu.common.security.context.KuzhambuSubject;
 import com.thundax.kuzhambu.common.security.context.KuzhambuSubjectType;
+import com.thundax.kuzhambu.system.application.audit.entity.enums.AuditOperatorType;
 import org.springframework.stereotype.Component;
 
 @Component

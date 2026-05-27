@@ -1,9 +1,9 @@
 package com.thundax.kuzhambu.system.application.auth.service;
 
+import com.thundax.kuzhambu.common.core.arch.LayerPublicApi;
 import com.thundax.kuzhambu.system.application.auth.entity.PrincipalIdentity;
 import com.thundax.kuzhambu.system.application.auth.service.command.AuthenticateIdentityCommand;
 import com.thundax.kuzhambu.system.application.auth.service.command.AuthenticatePasswordCommand;
-import com.thundax.kuzhambu.common.core.arch.LayerPublicApi;
 
 public interface PrincipalAuthService {
 

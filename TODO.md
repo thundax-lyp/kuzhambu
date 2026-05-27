@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `scripts verify`：更新验证入口并完成迁移验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SERVERS-DOMAIN-MODULE-MERGE.md`
-    - 范围对象：`scripts/verify-all.sh`、`docs/40-readiness/PR-WORKFLOW.md`、`kuzhambu-servers/`
-    - 处理动作：更新验证入口并运行 Maven reactor、架构规则和统一验证脚本
-    - 验收点：相关验证命令通过，PR 工作流记录新的验证口径
-    - 重要度：10/10
-
 - [ ] `repo cleanup`：清理旧模块、旧文档和 RUNBOOK
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SERVERS-DOMAIN-MODULE-MERGE.md`

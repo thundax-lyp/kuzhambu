@@ -1,5 +1,7 @@
 package com.thundax.kuzhambu.system.application.core.service;
 
+import com.thundax.kuzhambu.common.core.page.PageQuery;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.system.application.core.entity.Role;
 import com.thundax.kuzhambu.system.application.core.entity.User;
 import com.thundax.kuzhambu.system.application.core.entity.valueobject.UserId;
@@ -7,8 +9,6 @@ import com.thundax.kuzhambu.system.application.core.service.command.ChangeUserIn
 import com.thundax.kuzhambu.system.application.core.service.command.ChangeUserStatusCommand;
 import com.thundax.kuzhambu.system.application.core.service.command.CreateUserCommand;
 import com.thundax.kuzhambu.system.application.core.service.query.UserQuery;
-import com.thundax.kuzhambu.common.core.page.PageQuery;
-import com.thundax.kuzhambu.common.core.page.PageResult;
 import java.util.List;
 
 public interface UserService {

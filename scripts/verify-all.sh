@@ -39,6 +39,38 @@ if find "${ROOT_DIR}/docs" -name '*.md' -print | grep -q ' '; then
 fi
 
 echo "Verify backend Maven skeleton"
+JAVA_SPEC_VERSION="$(java -XshowSettings:properties -version 2>&1 | awk -F '= ' '/java.specification.version/ {print $2; exit}')"
+case "${JAVA_SPEC_VERSION}" in
+    1.8|8|9|10)
+        echo "Java 11+ is required for backend verification; current java.specification.version=${JAVA_SPEC_VERSION}" >&2
+        exit 1
+        ;;
+esac
+
+required_server_paths=(
+    "kuzhambu-servers/common"
+    "kuzhambu-servers/biz"
+    "kuzhambu-servers/starter"
+    "kuzhambu-servers/biz/system/kuzhambu-system-interface"
+    "kuzhambu-servers/biz/system/kuzhambu-system-application"
+    "kuzhambu-servers/biz/system/kuzhambu-system-domain"
+    "kuzhambu-servers/biz/system/kuzhambu-system-infra"
+    "kuzhambu-servers/starter/kuzhambu-admin-starter"
+    "kuzhambu-servers/starter/kuzhambu-portal-starter"
+)
+
+for path in "${required_server_paths[@]}"; do
+    if [[ ! -e "${ROOT_DIR}/${path}" ]]; then
+        echo "Missing required server path: ${path}" >&2
+        exit 1
+    fi
+done
+
+if [[ -d "${ROOT_DIR}/kuzhambu-servers/interfaces" ]]; then
+    echo "Legacy kuzhambu-servers/interfaces must be migrated to starter/domain interface modules" >&2
+    exit 1
+fi
+
 (cd "${ROOT_DIR}/kuzhambu-servers" && mvn -q validate)
 
 echo "Verify frontend package manifests"

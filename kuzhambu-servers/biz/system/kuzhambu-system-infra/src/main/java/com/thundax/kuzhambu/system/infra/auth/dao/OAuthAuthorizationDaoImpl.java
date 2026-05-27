@@ -2,11 +2,11 @@ package com.thundax.kuzhambu.system.infra.auth.dao;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.thundax.kuzhambu.system.application.auth.dao.OAuthAuthorizationDao;
-import com.thundax.kuzhambu.system.application.auth.entity.OAuthAuthorization;
 import com.thundax.kuzhambu.common.core.id.EntityId;
 import com.thundax.kuzhambu.common.core.id.EntityIdCodec;
 import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
+import com.thundax.kuzhambu.system.application.auth.dao.OAuthAuthorizationDao;
+import com.thundax.kuzhambu.system.application.auth.entity.OAuthAuthorization;
 import com.thundax.kuzhambu.system.infra.auth.assembler.OAuthAuthorizationPersistenceAssembler;
 import com.thundax.kuzhambu.system.infra.auth.dataobject.OAuthAuthorizationDO;
 import com.thundax.kuzhambu.system.infra.auth.mapper.OAuthAuthorizationMapper;

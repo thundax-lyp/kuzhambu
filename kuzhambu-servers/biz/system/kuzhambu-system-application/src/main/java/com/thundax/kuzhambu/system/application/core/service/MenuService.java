@@ -1,5 +1,7 @@
 package com.thundax.kuzhambu.system.application.core.service;
 
+import com.thundax.kuzhambu.common.core.page.PageQuery;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.system.application.core.entity.Menu;
 import com.thundax.kuzhambu.system.application.core.entity.valueobject.MenuId;
 import com.thundax.kuzhambu.system.application.core.service.command.ChangeMenuInfoCommand;
@@ -7,8 +9,6 @@ import com.thundax.kuzhambu.system.application.core.service.command.ChangeMenuVi
 import com.thundax.kuzhambu.system.application.core.service.command.CreateMenuCommand;
 import com.thundax.kuzhambu.system.application.core.service.command.MoveMenuCommand;
 import com.thundax.kuzhambu.system.application.core.service.query.MenuQuery;
-import com.thundax.kuzhambu.common.core.page.PageQuery;
-import com.thundax.kuzhambu.common.core.page.PageResult;
 import java.util.List;
 
 public interface MenuService {

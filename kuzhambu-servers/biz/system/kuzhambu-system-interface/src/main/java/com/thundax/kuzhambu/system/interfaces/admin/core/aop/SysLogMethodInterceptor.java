@@ -1,10 +1,10 @@
 package com.thundax.kuzhambu.system.interfaces.admin.core.aop;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.thundax.kuzhambu.system.application.core.entity.Log;
-import com.thundax.kuzhambu.system.application.core.entity.enums.LogType;
 import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
 import com.thundax.kuzhambu.common.web.util.RequestIpUtils;
+import com.thundax.kuzhambu.system.application.core.entity.Log;
+import com.thundax.kuzhambu.system.application.core.entity.enums.LogType;
 import com.thundax.kuzhambu.system.interfaces.admin.core.aop.annotation.SysLogger;
 import com.thundax.kuzhambu.system.interfaces.admin.core.service.SysLogMessageService;
 import jakarta.servlet.http.HttpServletRequest;

@@ -1,13 +1,13 @@
 package com.thundax.kuzhambu.system.application.core.service;
 
+import com.thundax.kuzhambu.common.core.page.PageQuery;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.system.application.core.entity.Dict;
 import com.thundax.kuzhambu.system.application.core.entity.valueobject.DictId;
 import com.thundax.kuzhambu.system.application.core.service.command.ChangeDictInfoCommand;
 import com.thundax.kuzhambu.system.application.core.service.command.CreateDictCommand;
 import com.thundax.kuzhambu.system.application.core.service.command.DictSortCommand;
 import com.thundax.kuzhambu.system.application.core.service.query.DictQuery;
-import com.thundax.kuzhambu.common.core.page.PageQuery;
-import com.thundax.kuzhambu.common.core.page.PageResult;
 import java.util.List;
 
 public interface DictService {

@@ -2,9 +2,9 @@ package com.thundax.kuzhambu.system.infra.auth.assembler;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thundax.kuzhambu.common.core.id.EntityIdCodec;
 import com.thundax.kuzhambu.system.application.auth.entity.OAuthClient;
 import com.thundax.kuzhambu.system.application.auth.entity.enums.OAuthClientStatus;
-import com.thundax.kuzhambu.common.core.id.EntityIdCodec;
 import com.thundax.kuzhambu.system.infra.auth.dataobject.OAuthClientDO;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;

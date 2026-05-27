@@ -1,5 +1,10 @@
 package com.thundax.kuzhambu.system.interfaces.admin.core.controller;
 
+import com.thundax.kuzhambu.common.core.crypto.Sm2Crypto;
+import com.thundax.kuzhambu.common.security.annotation.HasPermission;
+import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
+import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
+import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.system.application.auth.entity.PrincipalIdentity;
 import com.thundax.kuzhambu.system.application.auth.entity.enums.PrincipalIdentityType;
 import com.thundax.kuzhambu.system.application.auth.entity.enums.PrincipalType;
@@ -18,11 +23,6 @@ import com.thundax.kuzhambu.system.application.core.service.command.ChangeCurren
 import com.thundax.kuzhambu.system.application.core.service.command.ChangeCurrentUserPasswordCommand;
 import com.thundax.kuzhambu.system.application.core.service.command.RemoveCurrentUserAvatarCommand;
 import com.thundax.kuzhambu.system.application.core.service.query.CurrentUserQuery;
-import com.thundax.kuzhambu.common.core.crypto.Sm2Crypto;
-import com.thundax.kuzhambu.common.security.annotation.HasPermission;
-import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
-import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
-import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.security.CurrentUserResolver;
 import com.thundax.kuzhambu.system.interfaces.admin.core.aop.annotation.SysLogger;
 import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.PersonalInterfaceAssembler;

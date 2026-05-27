@@ -1,5 +1,11 @@
 package com.thundax.kuzhambu.system.interfaces.admin.core.controller;
 
+import com.thundax.kuzhambu.common.security.annotation.HasPermission;
+import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
+import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
+import com.thundax.kuzhambu.common.web.assembler.OptionInterfaceAssembler;
+import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
+import com.thundax.kuzhambu.common.web.request.RequestListHelper;
 import com.thundax.kuzhambu.system.application.auth.entity.PrincipalIdentity;
 import com.thundax.kuzhambu.system.application.auth.entity.enums.PrincipalIdentityType;
 import com.thundax.kuzhambu.system.application.auth.entity.enums.PrincipalType;
@@ -30,12 +36,6 @@ import com.thundax.kuzhambu.system.application.core.service.query.DictQuery;
 import com.thundax.kuzhambu.system.application.core.service.query.MenuQuery;
 import com.thundax.kuzhambu.system.application.core.service.query.RoleQuery;
 import com.thundax.kuzhambu.system.application.core.service.query.UserQuery;
-import com.thundax.kuzhambu.common.security.annotation.HasPermission;
-import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
-import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
-import com.thundax.kuzhambu.common.web.assembler.OptionInterfaceAssembler;
-import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
-import com.thundax.kuzhambu.common.web.request.RequestListHelper;
 import com.thundax.kuzhambu.system.interfaces.admin.core.aop.annotation.SysLogger;
 import com.thundax.kuzhambu.system.interfaces.admin.core.assembler.RoleInterfaceAssembler;
 import com.thundax.kuzhambu.system.interfaces.admin.core.controller.request.RoleAssignUserRequest;

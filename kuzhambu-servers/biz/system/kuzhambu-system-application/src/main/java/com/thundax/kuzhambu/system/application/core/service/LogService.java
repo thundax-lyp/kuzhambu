@@ -1,11 +1,11 @@
 package com.thundax.kuzhambu.system.application.core.service;
 
+import com.thundax.kuzhambu.common.core.page.PageQuery;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.system.application.core.entity.Log;
 import com.thundax.kuzhambu.system.application.core.entity.valueobject.LogId;
 import com.thundax.kuzhambu.system.application.core.service.command.CreateLogCommand;
 import com.thundax.kuzhambu.system.application.core.service.query.LogQuery;
-import com.thundax.kuzhambu.common.core.page.PageQuery;
-import com.thundax.kuzhambu.common.core.page.PageResult;
 import java.util.List;
 
 public interface LogService {

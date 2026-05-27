@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.system.application.auth.entity;
 
-import com.thundax.kuzhambu.system.application.auth.entity.enums.OAuthClientStatus;
 import com.thundax.kuzhambu.common.core.id.EntityId;
+import com.thundax.kuzhambu.system.application.auth.entity.enums.OAuthClientStatus;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import lombok.AllArgsConstructor;

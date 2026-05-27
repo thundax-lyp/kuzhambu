@@ -1,6 +1,9 @@
 package com.thundax.kuzhambu.system.application.core.service.impl;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
+import com.thundax.kuzhambu.common.core.page.PageQuery;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.system.application.core.dao.DepartmentDao;
 import com.thundax.kuzhambu.system.application.core.entity.Department;
 import com.thundax.kuzhambu.system.application.core.entity.valueobject.DepartmentId;
@@ -10,9 +13,6 @@ import com.thundax.kuzhambu.system.application.core.service.command.ChangeDepart
 import com.thundax.kuzhambu.system.application.core.service.command.CreateDepartmentCommand;
 import com.thundax.kuzhambu.system.application.core.service.command.MoveDepartmentCommand;
 import com.thundax.kuzhambu.system.application.core.service.query.DepartmentQuery;
-import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
-import com.thundax.kuzhambu.common.core.page.PageQuery;
-import com.thundax.kuzhambu.common.core.page.PageResult;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
