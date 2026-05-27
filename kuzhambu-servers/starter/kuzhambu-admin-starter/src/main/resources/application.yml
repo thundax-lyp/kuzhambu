@@ -34,6 +34,18 @@ springdoc:
   swagger-ui:
     enabled: ${KUZHAMBU_OPENAPI_ENABLED:true}
 
+jetcache:
+  statIntervalMinutes: ${KUZHAMBU_CACHE_STAT_INTERVAL_MINUTES:15}
+  local:
+    default:
+      type: linkedhashmap
+      keyConvertor: FASTJSON2
+  remote:
+    default:
+      type: redis.lettuce
+      keyConvertor: FASTJSON2
+      uri: ${KUZHAMBU_JETCACHE_REDIS_URI:${KUZHAMBU_REDIS_URI:redis://127.0.0.1:6379/0}}
+
 management:
   endpoints:
     web:
@@ -43,7 +55,18 @@ management:
     health:
       show-details: never
 
+logging:
+  file:
+    path: ${KUZHAMBU_LOG_PATH:logs}
+  level:
+    root: ${KUZHAMBU_LOG_LEVEL:INFO}
+    com.thundax.kuzhambu: ${KUZHAMBU_APP_LOG_LEVEL:INFO}
+
 kuzhambu:
+  logging:
+    max-history: ${KUZHAMBU_LOG_MAX_HISTORY:30}
+    max-file-size: ${KUZHAMBU_LOG_MAX_FILE_SIZE:100MB}
+    total-size-cap: ${KUZHAMBU_LOG_TOTAL_SIZE_CAP:5GB}
   oss:
     type: ${KUZHAMBU_OSS_TYPE:local}
     local:
@@ -57,3 +80,6 @@ kuzhambu:
       path-style-access: ${KUZHAMBU_OSS_S3_PATH_STYLE_ACCESS:true}
   elasticsearch:
     uris: ${KUZHAMBU_ELASTICSEARCH_URIS:http://127.0.0.1:9200}
+  storage:
+    bucket-name: ${KUZHAMBU_STORAGE_BUCKET_NAME:local}
+    content-path: ${KUZHAMBU_STORAGE_CONTENT_PATH:/api/storage/object/}

@@ -30,4 +30,5 @@ replay_pid*
 .venv/
 kuzhambu-workers/.venv/
 .env
+dev.env
 deploy/.env
