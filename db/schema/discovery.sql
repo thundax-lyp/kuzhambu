@@ -2,7 +2,7 @@ SET NAMES utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `discovery_search_config` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `config_id` char(26) NOT NULL,
+    `config_id` bigint NOT NULL,
     `config_key` varchar(128) NOT NULL,
     `config_value` text NOT NULL,
     `description` varchar(512) DEFAULT NULL,
@@ -14,8 +14,8 @@ CREATE TABLE IF NOT EXISTS `discovery_search_config` (
 
 CREATE TABLE IF NOT EXISTS `discovery_search_query_log` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `query_id` char(26) NOT NULL,
-    `user_id` char(26) DEFAULT NULL,
+    `query_id` bigint NOT NULL,
+    `user_id` bigint DEFAULT NULL,
     `raw_query` varchar(512) NOT NULL,
     `normalized_query` varchar(512) DEFAULT NULL,
     `intent` varchar(32) DEFAULT NULL,
@@ -33,11 +33,11 @@ CREATE TABLE IF NOT EXISTS `discovery_search_query_log` (
 
 CREATE TABLE IF NOT EXISTS `discovery_search_click_log` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `click_id` char(26) NOT NULL,
-    `query_id` char(26) NOT NULL,
-    `user_id` char(26) DEFAULT NULL,
+    `click_id` bigint NOT NULL,
+    `query_id` bigint NOT NULL,
+    `user_id` bigint DEFAULT NULL,
     `content_type` varchar(32) NOT NULL,
-    `content_id` char(26) NOT NULL,
+    `content_id` bigint NOT NULL,
     `result_rank` int NOT NULL DEFAULT 0,
     `clicked_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
@@ -49,13 +49,13 @@ SET NAMES utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `discovery_qa_session` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `session_id` char(26) NOT NULL,
-    `owner_user_id` char(26) NOT NULL,
+    `session_id` bigint NOT NULL,
+    `owner_user_id` bigint NOT NULL,
     `title` varchar(256) NOT NULL,
     `scope` varchar(32) NOT NULL,
     `context_mode` varchar(32) NOT NULL,
     `context_content_type` varchar(32) DEFAULT NULL,
-    `context_content_id` char(26) DEFAULT NULL,
+    `context_content_id` bigint DEFAULT NULL,
     `status` varchar(32) NOT NULL,
     `opened_at` datetime(3) NOT NULL,
     `last_message_at` datetime(3) DEFAULT NULL,
@@ -68,8 +68,8 @@ CREATE TABLE IF NOT EXISTS `discovery_qa_session` (
 
 CREATE TABLE IF NOT EXISTS `discovery_qa_message` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `message_id` char(26) NOT NULL,
-    `session_id` char(26) NOT NULL,
+    `message_id` bigint NOT NULL,
+    `session_id` bigint NOT NULL,
     `role` varchar(32) NOT NULL,
     `content` mediumtext NOT NULL,
     `message_status` varchar(32) NOT NULL,
@@ -85,10 +85,10 @@ CREATE TABLE IF NOT EXISTS `discovery_qa_message` (
 
 CREATE TABLE IF NOT EXISTS `discovery_qa_message_source` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `source_id` char(26) NOT NULL,
-    `message_id` char(26) NOT NULL,
+    `source_id` bigint NOT NULL,
+    `message_id` bigint NOT NULL,
     `content_type` varchar(32) NOT NULL,
-    `content_id` char(26) NOT NULL,
+    `content_id` bigint NOT NULL,
     `knowledge_base` varchar(64) NOT NULL,
     `title_snapshot` varchar(512) NOT NULL,
     `location_label` varchar(256) DEFAULT NULL,
@@ -105,8 +105,8 @@ CREATE TABLE IF NOT EXISTS `discovery_qa_message_source` (
 
 CREATE TABLE IF NOT EXISTS `discovery_qa_retrieval_trace` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `trace_id` char(26) NOT NULL,
-    `message_id` char(26) NOT NULL,
+    `trace_id` bigint NOT NULL,
+    `message_id` bigint NOT NULL,
     `raw_question` varchar(1024) NOT NULL,
     `rewritten_question` varchar(2048) DEFAULT NULL,
     `scope` varchar(32) NOT NULL,
@@ -124,13 +124,13 @@ CREATE TABLE IF NOT EXISTS `discovery_qa_retrieval_trace` (
 
 CREATE TABLE IF NOT EXISTS `discovery_qa_session_export` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `export_id` char(26) NOT NULL,
-    `session_id` char(26) NOT NULL,
+    `export_id` bigint NOT NULL,
+    `session_id` bigint NOT NULL,
     `format` varchar(32) NOT NULL,
-    `storage_object_id` char(26) DEFAULT NULL,
+    `storage_object_id` bigint DEFAULT NULL,
     `export_status` varchar(32) NOT NULL,
     `failure_reason` varchar(1024) DEFAULT NULL,
-    `requester_user_id` char(26) NOT NULL,
+    `requester_user_id` bigint NOT NULL,
     `requested_at` datetime(3) NOT NULL,
     `completed_at` datetime(3) DEFAULT NULL,
     PRIMARY KEY (`id`),

@@ -27,7 +27,7 @@ ON DUPLICATE KEY UPDATE
 INSERT INTO `classics_sancai_volume` (
     `volume_id`, `category_code`, `volume_no`, `title`, `auxiliary`, `sort_order`, `entry_count`
 ) VALUES (
-    '01KUZHAMBU00000000010001',
+    1,
     'js',
     NULL,
     '卷首',

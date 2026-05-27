@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS `classics_sancai_category` (
 
 CREATE TABLE IF NOT EXISTS `classics_sancai_volume` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `volume_id` char(26) NOT NULL,
+    `volume_id` bigint NOT NULL,
     `category_code` varchar(16) NOT NULL,
     `volume_no` int DEFAULT NULL,
     `title` varchar(128) NOT NULL,
@@ -29,9 +29,9 @@ CREATE TABLE IF NOT EXISTS `classics_sancai_volume` (
 
 CREATE TABLE IF NOT EXISTS `classics_sancai_entry` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `entry_id` char(26) NOT NULL,
+    `entry_id` bigint NOT NULL,
     `category_code` varchar(16) NOT NULL,
-    `volume_id` char(26) NOT NULL,
+    `volume_id` bigint NOT NULL,
     `entry_no` int DEFAULT NULL,
     `title` varchar(255) NOT NULL,
     `original_text` longtext DEFAULT NULL,
@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS `classics_sancai_entry` (
     `tags_snapshot` text DEFAULT NULL,
     `lifecycle_status` varchar(16) NOT NULL DEFAULT 'DRAFT',
     `visibility` varchar(16) NOT NULL DEFAULT 'PUBLIC',
-    `owner_user_id` char(26) NOT NULL,
+    `owner_user_id` bigint NOT NULL,
     `translation_status` varchar(16) NOT NULL DEFAULT 'MISSING',
     `image_status` varchar(16) NOT NULL DEFAULT 'MISSING',
     `visual_asset_status` varchar(16) NOT NULL DEFAULT 'MISSING',
@@ -53,8 +53,8 @@ CREATE TABLE IF NOT EXISTS `classics_sancai_entry` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='三才图会条目表';
 
 CREATE TABLE IF NOT EXISTS `classics_sancai_entry_image` (
-    `entry_id` char(26) NOT NULL,
-    `object_id` char(26) NOT NULL,
+    `entry_id` bigint NOT NULL,
+    `object_id` bigint NOT NULL,
     `image_role` varchar(16) NOT NULL,
     `current_used` tinyint(1) NOT NULL DEFAULT 0,
     `sort_order` int NOT NULL DEFAULT 0,
@@ -66,8 +66,8 @@ CREATE TABLE IF NOT EXISTS `classics_sancai_entry_image` (
 
 CREATE TABLE IF NOT EXISTS `classics_sancai_entry_qa` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `discovery_qa_id` char(26) NOT NULL,
-    `entry_id` char(26) NOT NULL,
+    `discovery_qa_id` bigint NOT NULL,
+    `entry_id` bigint NOT NULL,
     `question` text NOT NULL,
     `answer` longtext NOT NULL,
     `source` varchar(16) NOT NULL DEFAULT 'MANUAL',
@@ -79,8 +79,8 @@ CREATE TABLE IF NOT EXISTS `classics_sancai_entry_qa` (
 
 CREATE TABLE IF NOT EXISTS `classics_sancai_entry_version` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `version_id` char(26) NOT NULL,
-    `entry_id` char(26) NOT NULL,
+    `version_id` bigint NOT NULL,
+    `entry_id` bigint NOT NULL,
     `version_no` int NOT NULL,
     `snapshot_json` longtext NOT NULL,
     `change_type` varchar(32) NOT NULL,
@@ -93,9 +93,9 @@ CREATE TABLE IF NOT EXISTS `classics_sancai_entry_version` (
 
 CREATE TABLE IF NOT EXISTS `classics_sancai_entry_draft` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `draft_id` char(26) NOT NULL,
-    `entry_id` char(26) NOT NULL,
-    `user_id` char(26) NOT NULL,
+    `draft_id` bigint NOT NULL,
+    `entry_id` bigint NOT NULL,
+    `user_id` bigint NOT NULL,
     `draft_json` longtext NOT NULL,
     `autosaved_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
@@ -105,11 +105,11 @@ CREATE TABLE IF NOT EXISTS `classics_sancai_entry_draft` (
 
 CREATE TABLE IF NOT EXISTS `classics_sancai_visual_asset` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `asset_id` char(26) NOT NULL,
-    `entry_id` char(26) NOT NULL,
+    `asset_id` bigint NOT NULL,
+    `entry_id` bigint NOT NULL,
     `version_no` int NOT NULL,
-    `source_object_id` char(26) DEFAULT NULL,
-    `generated_object_id` char(26) DEFAULT NULL,
+    `source_object_id` bigint DEFAULT NULL,
+    `generated_object_id` bigint DEFAULT NULL,
     `image_analysis` longtext DEFAULT NULL,
     `fusion_description` longtext DEFAULT NULL,
     `visual_description` longtext DEFAULT NULL,
@@ -126,17 +126,17 @@ CREATE TABLE IF NOT EXISTS `classics_sancai_visual_asset` (
 
 CREATE TABLE IF NOT EXISTS `classics_sancai_export_job` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `export_id` char(26) NOT NULL,
+    `export_id` bigint NOT NULL,
     `export_type` varchar(32) NOT NULL,
     `scope_type` varchar(32) NOT NULL,
     `scope_json` text NOT NULL,
-    `object_id` char(26) DEFAULT NULL,
+    `object_id` bigint DEFAULT NULL,
     `entry_count` int NOT NULL DEFAULT 0,
     `asset_count` int NOT NULL DEFAULT 0,
     `contains_private` tinyint(1) NOT NULL DEFAULT 0,
     `status` varchar(16) NOT NULL DEFAULT 'PENDING',
     `content_changed` tinyint(1) NOT NULL DEFAULT 0,
-    `requester_user_id` char(26) NOT NULL,
+    `requester_user_id` bigint NOT NULL,
     `requested_at` datetime(3) NOT NULL,
     `expires_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
@@ -146,14 +146,14 @@ CREATE TABLE IF NOT EXISTS `classics_sancai_export_job` (
 
 CREATE TABLE IF NOT EXISTS `classics_sancai_showcase_page` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `showcase_id` char(26) NOT NULL,
+    `showcase_id` bigint NOT NULL,
     `scope_json` text NOT NULL,
-    `object_id` char(26) NOT NULL,
+    `object_id` bigint NOT NULL,
     `entry_count` int NOT NULL DEFAULT 0,
     `contains_private` tinyint(1) NOT NULL DEFAULT 0,
     `private_risk_confirmed` tinyint(1) NOT NULL DEFAULT 0,
     `status` varchar(16) NOT NULL DEFAULT 'PENDING',
-    `requester_user_id` char(26) NOT NULL,
+    `requester_user_id` bigint NOT NULL,
     `requested_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_classics_sancai_showcase_page_id` (`showcase_id`)
@@ -162,17 +162,17 @@ SET NAMES utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `classics_wangqi_document` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `document_id` char(26) NOT NULL,
+    `document_id` bigint NOT NULL,
     `title` varchar(255) NOT NULL,
     `content` longtext DEFAULT NULL,
     `content_format` varchar(16) NOT NULL DEFAULT 'MARKDOWN',
     `summary` text DEFAULT NULL,
     `tags_snapshot` text DEFAULT NULL,
-    `file_object_id` char(26) DEFAULT NULL,
+    `file_object_id` bigint DEFAULT NULL,
     `word_count` int NOT NULL DEFAULT 0,
     `document_time` datetime(3) DEFAULT NULL,
     `visibility` varchar(16) NOT NULL DEFAULT 'PUBLIC',
-    `owner_user_id` char(26) NOT NULL,
+    `owner_user_id` bigint NOT NULL,
     `current_version` int NOT NULL DEFAULT 0,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_classics_wangqi_document_id` (`document_id`),
@@ -181,8 +181,8 @@ CREATE TABLE IF NOT EXISTS `classics_wangqi_document` (
 
 CREATE TABLE IF NOT EXISTS `classics_wangqi_document_qa` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `discovery_qa_id` char(26) NOT NULL,
-    `document_id` char(26) NOT NULL,
+    `discovery_qa_id` bigint NOT NULL,
+    `document_id` bigint NOT NULL,
     `question` text NOT NULL,
     `answer` longtext NOT NULL,
     `source` varchar(16) NOT NULL DEFAULT 'MANUAL',
@@ -194,8 +194,8 @@ CREATE TABLE IF NOT EXISTS `classics_wangqi_document_qa` (
 
 CREATE TABLE IF NOT EXISTS `classics_wangqi_document_version` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `version_id` char(26) NOT NULL,
-    `document_id` char(26) NOT NULL,
+    `version_id` bigint NOT NULL,
+    `document_id` bigint NOT NULL,
     `version_no` int NOT NULL,
     `snapshot_json` longtext NOT NULL,
     `change_type` varchar(32) NOT NULL,
@@ -208,16 +208,16 @@ CREATE TABLE IF NOT EXISTS `classics_wangqi_document_version` (
 
 CREATE TABLE IF NOT EXISTS `classics_wangqi_export_job` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `export_id` char(26) NOT NULL,
+    `export_id` bigint NOT NULL,
     `export_type` varchar(32) NOT NULL,
     `scope_type` varchar(32) NOT NULL,
     `scope_json` text NOT NULL,
-    `object_id` char(26) DEFAULT NULL,
+    `object_id` bigint DEFAULT NULL,
     `document_count` int NOT NULL DEFAULT 0,
     `contains_private` tinyint(1) NOT NULL DEFAULT 0,
     `status` varchar(16) NOT NULL DEFAULT 'PENDING',
     `content_changed` tinyint(1) NOT NULL DEFAULT 0,
-    `requester_user_id` char(26) NOT NULL,
+    `requester_user_id` bigint NOT NULL,
     `requested_at` datetime(3) NOT NULL,
     `expires_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
@@ -228,7 +228,7 @@ SET NAMES utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `classics_ming_customs_entry` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `custom_id` char(26) NOT NULL,
+    `custom_id` bigint NOT NULL,
     `title` varchar(255) NOT NULL,
     `summary` text DEFAULT NULL,
     `content` longtext DEFAULT NULL,
@@ -240,7 +240,7 @@ CREATE TABLE IF NOT EXISTS `classics_ming_customs_entry` (
     `original_excerpts` longtext DEFAULT NULL,
     `word_count` int NOT NULL DEFAULT 0,
     `visibility` varchar(16) NOT NULL DEFAULT 'PUBLIC',
-    `owner_user_id` char(26) NOT NULL,
+    `owner_user_id` bigint NOT NULL,
     `current_version` int NOT NULL DEFAULT 0,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_classics_ming_customs_entry_id` (`custom_id`)
@@ -248,8 +248,8 @@ CREATE TABLE IF NOT EXISTS `classics_ming_customs_entry` (
 
 CREATE TABLE IF NOT EXISTS `classics_ming_customs_qa` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `discovery_qa_id` char(26) NOT NULL,
-    `custom_id` char(26) NOT NULL,
+    `discovery_qa_id` bigint NOT NULL,
+    `custom_id` bigint NOT NULL,
     `question` text NOT NULL,
     `answer` longtext NOT NULL,
     `source` varchar(16) NOT NULL DEFAULT 'MANUAL',
@@ -261,8 +261,8 @@ CREATE TABLE IF NOT EXISTS `classics_ming_customs_qa` (
 
 CREATE TABLE IF NOT EXISTS `classics_ming_customs_version` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `version_id` char(26) NOT NULL,
-    `custom_id` char(26) NOT NULL,
+    `version_id` bigint NOT NULL,
+    `custom_id` bigint NOT NULL,
     `version_no` int NOT NULL,
     `snapshot_json` longtext NOT NULL,
     `change_type` varchar(32) NOT NULL,
@@ -275,16 +275,16 @@ CREATE TABLE IF NOT EXISTS `classics_ming_customs_version` (
 
 CREATE TABLE IF NOT EXISTS `classics_ming_customs_export_job` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `export_id` char(26) NOT NULL,
+    `export_id` bigint NOT NULL,
     `export_type` varchar(32) NOT NULL,
     `scope_type` varchar(32) NOT NULL,
     `scope_json` text NOT NULL,
-    `object_id` char(26) DEFAULT NULL,
+    `object_id` bigint DEFAULT NULL,
     `custom_count` int NOT NULL DEFAULT 0,
     `contains_private` tinyint(1) NOT NULL DEFAULT 0,
     `status` varchar(16) NOT NULL DEFAULT 'PENDING',
     `content_changed` tinyint(1) NOT NULL DEFAULT 0,
-    `requester_user_id` char(26) NOT NULL,
+    `requester_user_id` bigint NOT NULL,
     `requested_at` datetime(3) NOT NULL,
     `expires_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
@@ -295,9 +295,9 @@ SET NAMES utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `classics_sharing_link` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `share_id` char(26) NOT NULL,
+    `share_id` bigint NOT NULL,
     `share_token` varchar(96) NOT NULL,
-    `owner_user_id` char(26) NOT NULL,
+    `owner_user_id` bigint NOT NULL,
     `title` varchar(256) NOT NULL,
     `visibility` varchar(16) NOT NULL,
     `status` varchar(16) NOT NULL DEFAULT 'ACTIVE',
@@ -315,10 +315,10 @@ CREATE TABLE IF NOT EXISTS `classics_sharing_link` (
 
 CREATE TABLE IF NOT EXISTS `classics_sharing_target` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `target_id` char(26) NOT NULL,
-    `share_id` char(26) NOT NULL,
+    `target_id` bigint NOT NULL,
+    `share_id` bigint NOT NULL,
     `content_type` varchar(32) NOT NULL,
-    `content_id` char(26) NOT NULL,
+    `content_id` bigint NOT NULL,
     `knowledge_base` varchar(64) NOT NULL,
     `title_snapshot` varchar(512) NOT NULL,
     `content_private_snapshot` tinyint(1) NOT NULL DEFAULT 0,

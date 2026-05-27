@@ -2,7 +2,7 @@ SET NAMES utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `knowledge_category` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `category_id` char(26) NOT NULL,
+    `category_id` bigint NOT NULL,
     `name` varchar(128) NOT NULL,
     `description` varchar(512) DEFAULT NULL,
     `sort_order` int NOT NULL DEFAULT 0,
@@ -15,13 +15,13 @@ CREATE TABLE IF NOT EXISTS `knowledge_category` (
 
 CREATE TABLE IF NOT EXISTS `knowledge_tag` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `tag_id` char(26) NOT NULL,
+    `tag_id` bigint NOT NULL,
     `tag_name` varchar(128) NOT NULL,
-    `category_id` char(26) DEFAULT NULL,
+    `category_id` bigint DEFAULT NULL,
     `description` varchar(1024) DEFAULT NULL,
     `status` varchar(32) NOT NULL DEFAULT 'PENDING_REVIEW',
     `source` varchar(32) NOT NULL DEFAULT 'AI_EXTRACTED',
-    `merge_target_tag_id` char(26) DEFAULT NULL,
+    `merge_target_tag_id` bigint DEFAULT NULL,
     `extracted_at` datetime(3) DEFAULT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_knowledge_tag_id` (`tag_id`),
@@ -32,8 +32,8 @@ CREATE TABLE IF NOT EXISTS `knowledge_tag` (
 
 CREATE TABLE IF NOT EXISTS `knowledge_tag_alias` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `alias_id` char(26) NOT NULL,
-    `tag_id` char(26) NOT NULL,
+    `alias_id` bigint NOT NULL,
+    `tag_id` bigint NOT NULL,
     `alias_name` varchar(128) NOT NULL,
     `source` varchar(16) NOT NULL DEFAULT 'MANUAL',
     PRIMARY KEY (`id`),
@@ -44,10 +44,10 @@ CREATE TABLE IF NOT EXISTS `knowledge_tag_alias` (
 
 CREATE TABLE IF NOT EXISTS `knowledge_content_tag_relation` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `relation_id` char(26) NOT NULL,
+    `relation_id` bigint NOT NULL,
     `content_type` varchar(32) NOT NULL,
-    `content_id` char(26) NOT NULL,
-    `tag_id` char(26) NOT NULL,
+    `content_id` bigint NOT NULL,
+    `tag_id` bigint NOT NULL,
     `source` varchar(32) NOT NULL DEFAULT 'MANUAL',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_knowledge_content_tag_relation_id` (`relation_id`),
@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS `knowledge_content_tag_relation` (
 
 CREATE TABLE IF NOT EXISTS `knowledge_synonym` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `synonym_id` char(26) NOT NULL,
+    `synonym_id` bigint NOT NULL,
     `term` varchar(128) NOT NULL,
     `synonym` varchar(128) NOT NULL,
     `enabled` tinyint(1) NOT NULL DEFAULT 1,
@@ -72,9 +72,9 @@ SET NAMES utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `knowledge_refinement_work_item` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `work_item_id` char(26) NOT NULL,
+    `work_item_id` bigint NOT NULL,
     `content_type` varchar(32) NOT NULL,
-    `content_id` char(26) NOT NULL,
+    `content_id` bigint NOT NULL,
     `category_code` varchar(16) DEFAULT NULL,
     `status` varchar(16) NOT NULL DEFAULT 'PENDING',
     `quality_sample` tinyint(1) NOT NULL DEFAULT 0,
@@ -91,9 +91,9 @@ CREATE TABLE IF NOT EXISTS `knowledge_refinement_work_item` (
 
 CREATE TABLE IF NOT EXISTS `knowledge_refinement_entity_annotation` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `annotation_id` char(26) NOT NULL,
-    `work_item_id` char(26) NOT NULL,
-    `content_id` char(26) NOT NULL,
+    `annotation_id` bigint NOT NULL,
+    `work_item_id` bigint NOT NULL,
+    `content_id` bigint NOT NULL,
     `entity_name` varchar(255) NOT NULL,
     `entity_type` varchar(32) NOT NULL,
     `normalized_name` varchar(255) DEFAULT NULL,
@@ -102,7 +102,7 @@ CREATE TABLE IF NOT EXISTS `knowledge_refinement_entity_annotation` (
     `verified` tinyint(1) NOT NULL DEFAULT 0,
     `source` varchar(32) NOT NULL DEFAULT 'AI_EXTRACTED',
     `status` varchar(16) NOT NULL DEFAULT 'ACTIVE',
-    `kg_entity_id` char(26) DEFAULT NULL,
+    `kg_entity_id` bigint DEFAULT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_knowledge_refinement_entity_annotation_id` (`annotation_id`),
     KEY `idx_knowledge_refinement_entity_work_item` (`work_item_id`, `status`),
@@ -112,18 +112,18 @@ CREATE TABLE IF NOT EXISTS `knowledge_refinement_entity_annotation` (
 
 CREATE TABLE IF NOT EXISTS `knowledge_refinement_relation_annotation` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `annotation_id` char(26) NOT NULL,
-    `work_item_id` char(26) NOT NULL,
-    `content_id` char(26) NOT NULL,
-    `source_entity_annotation_id` char(26) NOT NULL,
-    `target_entity_annotation_id` char(26) NOT NULL,
+    `annotation_id` bigint NOT NULL,
+    `work_item_id` bigint NOT NULL,
+    `content_id` bigint NOT NULL,
+    `source_entity_annotation_id` bigint NOT NULL,
+    `target_entity_annotation_id` bigint NOT NULL,
     `relation_type` varchar(64) NOT NULL,
     `description` varchar(512) DEFAULT NULL,
     `confidence` decimal(5, 4) NOT NULL DEFAULT 0.0000,
     `verified` tinyint(1) NOT NULL DEFAULT 0,
     `source` varchar(32) NOT NULL DEFAULT 'AI_EXTRACTED',
     `status` varchar(16) NOT NULL DEFAULT 'ACTIVE',
-    `kg_relation_id` char(26) DEFAULT NULL,
+    `kg_relation_id` bigint DEFAULT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_knowledge_refinement_relation_annotation_id` (`annotation_id`),
     UNIQUE KEY `uk_knowledge_refinement_relation_unique` (`work_item_id`, `source_entity_annotation_id`, `target_entity_annotation_id`, `relation_type`),
@@ -135,7 +135,7 @@ SET NAMES utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `knowledge_graph_entity` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `entity_id` char(26) NOT NULL,
+    `entity_id` bigint NOT NULL,
     `name` varchar(255) NOT NULL,
     `entity_type` varchar(32) NOT NULL,
     `category_code` varchar(16) DEFAULT NULL,
@@ -155,9 +155,9 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_entity` (
 
 CREATE TABLE IF NOT EXISTS `knowledge_graph_relation` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `relation_id` char(26) NOT NULL,
-    `source_entity_id` char(26) NOT NULL,
-    `target_entity_id` char(26) NOT NULL,
+    `relation_id` bigint NOT NULL,
+    `source_entity_id` bigint NOT NULL,
+    `target_entity_id` bigint NOT NULL,
     `relation_type` varchar(64) NOT NULL,
     `description` text DEFAULT NULL,
     `confidence` decimal(5, 4) NOT NULL DEFAULT 0.0000,
@@ -175,10 +175,10 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_relation` (
 
 CREATE TABLE IF NOT EXISTS `knowledge_graph_source_ref` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `source_ref_id` char(26) NOT NULL,
+    `source_ref_id` bigint NOT NULL,
     `graph_object_type` varchar(16) NOT NULL,
-    `graph_object_id` char(26) NOT NULL,
-    `entry_id` char(26) NOT NULL,
+    `graph_object_id` bigint NOT NULL,
+    `entry_id` bigint NOT NULL,
     `category_code` varchar(16) NOT NULL,
     `source_status` varchar(16) NOT NULL DEFAULT 'ACTIVE',
     PRIMARY KEY (`id`),
@@ -190,7 +190,7 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_source_ref` (
 
 CREATE TABLE IF NOT EXISTS `knowledge_graph_extraction_job` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `job_id` char(26) NOT NULL,
+    `job_id` bigint NOT NULL,
     `scope_type` varchar(32) NOT NULL,
     `scope_json` text NOT NULL,
     `status` varchar(32) NOT NULL DEFAULT 'RUNNING',
@@ -198,7 +198,7 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_extraction_job` (
     `total_count` int NOT NULL DEFAULT 0,
     `success_count` int NOT NULL DEFAULT 0,
     `failed_count` int NOT NULL DEFAULT 0,
-    `requester_user_id` char(26) NOT NULL,
+    `requester_user_id` bigint NOT NULL,
     `requested_at` datetime(3) NOT NULL,
     `started_at` datetime(3) DEFAULT NULL,
     `finished_at` datetime(3) DEFAULT NULL,
@@ -210,9 +210,9 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_extraction_job` (
 
 CREATE TABLE IF NOT EXISTS `knowledge_graph_extraction_job_item` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `job_item_id` char(26) NOT NULL,
-    `job_id` char(26) NOT NULL,
-    `entry_id` char(26) NOT NULL,
+    `job_item_id` bigint NOT NULL,
+    `job_id` bigint NOT NULL,
+    `entry_id` bigint NOT NULL,
     `category_code` varchar(16) NOT NULL,
     `status` varchar(16) NOT NULL DEFAULT 'PENDING',
     `entity_count` int NOT NULL DEFAULT 0,
@@ -226,7 +226,7 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_extraction_job_item` (
 
 CREATE TABLE IF NOT EXISTS `knowledge_graph_quality_metric` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `metric_id` char(26) NOT NULL,
+    `metric_id` bigint NOT NULL,
     `category_code` varchar(16) NOT NULL,
     `extract_version` int NOT NULL DEFAULT 0,
     `entity_coverage_rate` decimal(7, 4) NOT NULL DEFAULT 0.0000,
@@ -243,7 +243,7 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_quality_metric` (
 
 CREATE TABLE IF NOT EXISTS `knowledge_graph_lineage_node` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `lineage_node_id` char(26) NOT NULL,
+    `lineage_node_id` bigint NOT NULL,
     `polity_name` varchar(128) NOT NULL,
     `ruler_name` varchar(128) NOT NULL,
     `title` varchar(128) DEFAULT NULL,
@@ -256,9 +256,9 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_lineage_node` (
 
 CREATE TABLE IF NOT EXISTS `knowledge_graph_lineage_relation` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `lineage_relation_id` char(26) NOT NULL,
-    `source_node_id` char(26) NOT NULL,
-    `target_node_id` char(26) NOT NULL,
+    `lineage_relation_id` bigint NOT NULL,
+    `source_node_id` bigint NOT NULL,
+    `target_node_id` bigint NOT NULL,
     `relation_type` varchar(64) NOT NULL,
     `description` varchar(512) DEFAULT NULL,
     PRIMARY KEY (`id`),

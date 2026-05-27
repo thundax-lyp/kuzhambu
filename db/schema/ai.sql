@@ -2,7 +2,7 @@ SET NAMES utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `ai_service_config` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `service_id` char(26) NOT NULL,
+    `service_id` bigint NOT NULL,
     `api_source` varchar(16) NOT NULL,
     `base_url` varchar(512) NOT NULL,
     `encrypted_api_key` varchar(2048) DEFAULT NULL,
@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS `ai_service_config` (
 
 CREATE TABLE IF NOT EXISTS `ai_model` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `model_id` char(26) NOT NULL,
+    `model_id` bigint NOT NULL,
     `api_source` varchar(16) NOT NULL,
     `model_name` varchar(255) NOT NULL,
     `display_name` varchar(255) NOT NULL,
@@ -35,8 +35,8 @@ CREATE TABLE IF NOT EXISTS `ai_model` (
 
 CREATE TABLE IF NOT EXISTS `ai_model_test_record` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `test_id` char(26) NOT NULL,
-    `model_id` char(26) NOT NULL,
+    `test_id` bigint NOT NULL,
+    `model_id` bigint NOT NULL,
     `api_source` varchar(16) NOT NULL,
     `model_name` varchar(255) NOT NULL,
     `status` varchar(16) NOT NULL,
@@ -61,9 +61,9 @@ CREATE TABLE IF NOT EXISTS `ai_capability` (
 
 CREATE TABLE IF NOT EXISTS `ai_capability_mapping` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `mapping_id` char(26) NOT NULL,
+    `mapping_id` bigint NOT NULL,
     `capability` varchar(32) NOT NULL,
-    `model_id` char(26) NOT NULL,
+    `model_id` bigint NOT NULL,
     `configured_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_ai_capability_mapping_id` (`mapping_id`),
@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS `ai_capability_mapping` (
 
 CREATE TABLE IF NOT EXISTS `ai_prompt` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `prompt_id` char(26) NOT NULL,
+    `prompt_id` bigint NOT NULL,
     `scope` varchar(32) NOT NULL,
     `capability` varchar(32) NOT NULL,
     `version_no` int NOT NULL,
@@ -81,7 +81,7 @@ CREATE TABLE IF NOT EXISTS `ai_prompt` (
     `variables_snapshot` text NOT NULL,
     `description` varchar(1024) DEFAULT NULL,
     `active` tinyint(1) NOT NULL DEFAULT 1,
-    `author_user_id` char(26) NOT NULL,
+    `author_user_id` bigint NOT NULL,
     `registered_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_ai_prompt_id` (`prompt_id`),
@@ -91,11 +91,11 @@ CREATE TABLE IF NOT EXISTS `ai_prompt` (
 
 CREATE TABLE IF NOT EXISTS `ai_call_metric` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `metric_id` char(26) NOT NULL,
+    `metric_id` bigint NOT NULL,
     `scope` varchar(32) DEFAULT NULL,
     `capability` varchar(32) NOT NULL,
     `api_source` varchar(16) NOT NULL,
-    `model_id` char(26) DEFAULT NULL,
+    `model_id` bigint DEFAULT NULL,
     `model_name` varchar(255) NOT NULL,
     `success` tinyint(1) NOT NULL DEFAULT 1,
     `fallback_used` tinyint(1) NOT NULL DEFAULT 0,
@@ -112,20 +112,20 @@ SET NAMES utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `ai_refinement_candidate` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `candidate_id` char(26) NOT NULL,
-    `batch_id` char(26) DEFAULT NULL,
+    `candidate_id` bigint NOT NULL,
+    `batch_id` bigint DEFAULT NULL,
     `operation_type` varchar(32) NOT NULL,
     `content_type` varchar(32) NOT NULL,
-    `content_id` char(26) NOT NULL,
-    `object_id` char(26) DEFAULT NULL,
+    `content_id` bigint NOT NULL,
+    `object_id` bigint DEFAULT NULL,
     `result_format` varchar(16) NOT NULL,
     `result_payload` longtext DEFAULT NULL,
     `status` varchar(16) NOT NULL DEFAULT 'PENDING',
-    `prompt_id` char(26) DEFAULT NULL,
+    `prompt_id` bigint DEFAULT NULL,
     `model_name` varchar(255) DEFAULT NULL,
     `error_message` varchar(1024) DEFAULT NULL,
-    `requester_user_id` char(26) NOT NULL,
-    `applier_user_id` char(26) DEFAULT NULL,
+    `requester_user_id` bigint NOT NULL,
+    `applier_user_id` bigint DEFAULT NULL,
     `applied_at` datetime(3) DEFAULT NULL,
     `requested_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
@@ -136,7 +136,7 @@ CREATE TABLE IF NOT EXISTS `ai_refinement_candidate` (
 
 CREATE TABLE IF NOT EXISTS `ai_refinement_batch` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `batch_id` char(26) NOT NULL,
+    `batch_id` bigint NOT NULL,
     `operation_type` varchar(32) NOT NULL,
     `content_type` varchar(32) NOT NULL,
     `status` varchar(32) NOT NULL DEFAULT 'RUNNING',
@@ -144,7 +144,7 @@ CREATE TABLE IF NOT EXISTS `ai_refinement_batch` (
     `success_count` int NOT NULL DEFAULT 0,
     `failed_count` int NOT NULL DEFAULT 0,
     `cancelled_count` int NOT NULL DEFAULT 0,
-    `requester_user_id` char(26) NOT NULL,
+    `requester_user_id` bigint NOT NULL,
     `requested_at` datetime(3) NOT NULL,
     `cancelled_at` datetime(3) DEFAULT NULL,
     PRIMARY KEY (`id`),
@@ -153,11 +153,11 @@ CREATE TABLE IF NOT EXISTS `ai_refinement_batch` (
 
 CREATE TABLE IF NOT EXISTS `ai_refinement_batch_item` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `batch_item_id` char(26) NOT NULL,
-    `batch_id` char(26) NOT NULL,
-    `content_id` char(26) NOT NULL,
-    `object_id` char(26) DEFAULT NULL,
-    `candidate_id` char(26) DEFAULT NULL,
+    `batch_item_id` bigint NOT NULL,
+    `batch_id` bigint NOT NULL,
+    `content_id` bigint NOT NULL,
+    `object_id` bigint DEFAULT NULL,
+    `candidate_id` bigint DEFAULT NULL,
     `status` varchar(16) NOT NULL DEFAULT 'PENDING',
     `error_message` varchar(1024) DEFAULT NULL,
     `requested_at` datetime(3) NOT NULL,
@@ -170,11 +170,11 @@ CREATE TABLE IF NOT EXISTS `ai_refinement_batch_item` (
 
 CREATE TABLE IF NOT EXISTS `ai_image_analysis_cache` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `cache_id` char(26) NOT NULL,
-    `object_id` char(26) NOT NULL,
+    `cache_id` bigint NOT NULL,
+    `object_id` bigint NOT NULL,
     `content_hash` varchar(128) NOT NULL,
     `analysis_markdown` longtext NOT NULL,
-    `prompt_id` char(26) DEFAULT NULL,
+    `prompt_id` bigint DEFAULT NULL,
     `model_name` varchar(255) DEFAULT NULL,
     `requested_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
