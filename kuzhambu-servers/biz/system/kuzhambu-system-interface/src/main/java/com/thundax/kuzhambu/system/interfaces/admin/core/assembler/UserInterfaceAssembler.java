@@ -1,8 +1,8 @@
 package com.thundax.kuzhambu.system.interfaces.admin.core.assembler;
 
-import com.thundax.kuzhambu.system.application.core.service.command.ChangeUserInfoCommand;
-import com.thundax.kuzhambu.system.application.core.service.command.CreateUserCommand;
-import com.thundax.kuzhambu.system.application.core.service.query.UserQuery;
+import com.thundax.kuzhambu.system.application.core.command.ChangeUserInfoCommand;
+import com.thundax.kuzhambu.system.application.core.command.CreateUserCommand;
+import com.thundax.kuzhambu.system.application.core.query.UserQuery;
 import com.thundax.kuzhambu.system.domain.core.codec.AccessRankCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.DepartmentIdCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.RoleIdCodec;

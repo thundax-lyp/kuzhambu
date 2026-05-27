@@ -722,12 +722,16 @@ public final class NamingArchitectureRuleSupport {
     }
 
     private static boolean isInServiceQueryPackage(JavaClass javaClass) {
-        return javaClass.getPackageName().contains(".application.query");
+        return javaClass.getPackageName().contains(".application.")
+                && javaClass.getPackageName().endsWith(".query");
     }
 
     private static boolean isServiceQuerySource(Path path) {
         String value = ArchitectureSourceSupport.normalizePath(path);
-        return value.contains("/biz/") && value.contains("/application/query/") && value.endsWith("Query.java");
+        return value.contains("/biz/")
+                && value.contains("/application/")
+                && value.contains("/query/")
+                && value.endsWith("Query.java");
     }
 
     private static boolean containsServiceQuerySetter(Path path) {

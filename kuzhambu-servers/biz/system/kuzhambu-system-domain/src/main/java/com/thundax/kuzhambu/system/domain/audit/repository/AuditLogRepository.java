@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.system.domain.audit.repository;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.system.domain.audit.model.entity.AuditLog;
 import com.thundax.kuzhambu.system.domain.audit.model.enums.AuditAction;
 import com.thundax.kuzhambu.system.domain.audit.model.enums.AuditOperatorType;
@@ -18,7 +18,7 @@ public interface AuditLogRepository {
 
     List<AuditLog> listByObject(String objectType, String objectId);
 
-    Page<AuditLog> page(
+    PageResult<AuditLog> page(
             String objectType,
             String objectId,
             AuditAction action,

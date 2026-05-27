@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.system.domain.core.codec.LogIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Log;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.LogId;
@@ -56,7 +57,7 @@ public class LogRepositoryImpl implements LogRepository {
     }
 
     @Override
-    public Page<Log> page(
+    public PageResult<Log> page(
             String type,
             String remoteAddr,
             String userLoginName,
@@ -71,10 +72,11 @@ public class LogRepositoryImpl implements LogRepository {
         IPage<LogDO> dataObjectPage = mapper.selectPage(
                 page,
                 buildListWrapper(type, remoteAddr, userLoginName, userName, title, requestUri, beginDate, endDate));
-        Page<Log> entityPage = new Page<>(dataObjectPage.getCurrent(), dataObjectPage.getSize());
-        entityPage.setTotal(dataObjectPage.getTotal());
-        entityPage.setRecords(LogPersistenceAssembler.toDomainList(dataObjectPage.getRecords()));
-        return entityPage;
+        return PageResult.of(
+                (int) dataObjectPage.getCurrent(),
+                (int) dataObjectPage.getSize(),
+                dataObjectPage.getTotal(),
+                LogPersistenceAssembler.toDomainList(dataObjectPage.getRecords()));
     }
 
     @Override

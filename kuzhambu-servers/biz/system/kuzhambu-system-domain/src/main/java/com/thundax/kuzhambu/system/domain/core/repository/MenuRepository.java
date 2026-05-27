@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.system.domain.core.repository;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.tree.TreeNodeMoveType;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Menu;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.MenuId;
@@ -14,7 +14,7 @@ public interface MenuRepository {
 
     List<Menu> list(Long parentId, String visibility, Integer maxRank);
 
-    Page<Menu> page(Long parentId, String visibility, Integer maxRank, int pageNo, int pageSize);
+    PageResult<Menu> page(Long parentId, String visibility, Integer maxRank, int pageNo, int pageSize);
 
     MenuId insert(Menu menu);
 

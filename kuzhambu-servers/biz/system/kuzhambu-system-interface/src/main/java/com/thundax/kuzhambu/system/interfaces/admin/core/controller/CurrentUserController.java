@@ -5,16 +5,16 @@ import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
-import com.thundax.kuzhambu.system.application.auth.service.PreAuthSessionService;
-import com.thundax.kuzhambu.system.application.auth.service.PrincipalIdentityService;
-import com.thundax.kuzhambu.system.application.auth.service.query.PreAuthSessionValueQuery;
-import com.thundax.kuzhambu.system.application.auth.service.query.PrincipalIdentityQuery;
-import com.thundax.kuzhambu.system.application.core.service.CurrentUserService;
-import com.thundax.kuzhambu.system.application.core.service.command.ChangeCurrentUserAvatarCommand;
-import com.thundax.kuzhambu.system.application.core.service.command.ChangeCurrentUserInfoCommand;
-import com.thundax.kuzhambu.system.application.core.service.command.ChangeCurrentUserPasswordCommand;
-import com.thundax.kuzhambu.system.application.core.service.command.RemoveCurrentUserAvatarCommand;
-import com.thundax.kuzhambu.system.application.core.service.query.CurrentUserQuery;
+import com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionValueQuery;
+import com.thundax.kuzhambu.system.application.auth.query.PrincipalIdentityQuery;
+import com.thundax.kuzhambu.system.application.auth.service.PreAuthSessionApplicationService;
+import com.thundax.kuzhambu.system.application.auth.service.PrincipalIdentityApplicationService;
+import com.thundax.kuzhambu.system.application.core.command.ChangeCurrentUserAvatarCommand;
+import com.thundax.kuzhambu.system.application.core.command.ChangeCurrentUserInfoCommand;
+import com.thundax.kuzhambu.system.application.core.command.ChangeCurrentUserPasswordCommand;
+import com.thundax.kuzhambu.system.application.core.command.RemoveCurrentUserAvatarCommand;
+import com.thundax.kuzhambu.system.application.core.query.CurrentUserQuery;
+import com.thundax.kuzhambu.system.application.core.service.CurrentUserApplicationService;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalIdentity;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalIdentityType;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalType;
@@ -55,16 +55,16 @@ public class CurrentUserController {
 
     private static final String PRIVATE_KEY_ITEM = "privateKey";
 
-    private final CurrentUserService currentUserService;
+    private final CurrentUserApplicationService currentUserService;
     private final CurrentUserResolver currentUserResolver;
-    private final PrincipalIdentityService principalIdentityService;
-    private final PreAuthSessionService preAuthSessionService;
+    private final PrincipalIdentityApplicationService principalIdentityService;
+    private final PreAuthSessionApplicationService preAuthSessionService;
 
     public CurrentUserController(
-            CurrentUserService currentUserService,
+            CurrentUserApplicationService currentUserService,
             CurrentUserResolver currentUserResolver,
-            PrincipalIdentityService principalIdentityService,
-            PreAuthSessionService preAuthSessionService) {
+            PrincipalIdentityApplicationService principalIdentityService,
+            PreAuthSessionApplicationService preAuthSessionService) {
 
         this.currentUserService = currentUserService;
         this.currentUserResolver = currentUserResolver;

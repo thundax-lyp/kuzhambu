@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.tree.TreeNodeMoveType;
 import com.thundax.kuzhambu.system.domain.core.codec.DepartmentIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Department;
@@ -68,13 +69,14 @@ public class DepartmentRepositoryImpl implements DepartmentRepository {
     }
 
     @Override
-    public Page<Department> page(Long parentId, String name, String remarks, int pageNo, int pageSize) {
+    public PageResult<Department> page(Long parentId, String name, String remarks, int pageNo, int pageSize) {
         IPage<DepartmentDO> dataObjectPage =
                 mapper.selectPage(new Page<>(pageNo, pageSize), buildListWrapper(parentId, name, remarks));
-        Page<Department> entityPage = new Page<>(dataObjectPage.getCurrent(), dataObjectPage.getSize());
-        entityPage.setTotal(dataObjectPage.getTotal());
-        entityPage.setRecords(DepartmentPersistenceAssembler.toDomainList(dataObjectPage.getRecords()));
-        return entityPage;
+        return PageResult.of(
+                (int) dataObjectPage.getCurrent(),
+                (int) dataObjectPage.getSize(),
+                dataObjectPage.getTotal(),
+                DepartmentPersistenceAssembler.toDomainList(dataObjectPage.getRecords()));
     }
 
     @Override

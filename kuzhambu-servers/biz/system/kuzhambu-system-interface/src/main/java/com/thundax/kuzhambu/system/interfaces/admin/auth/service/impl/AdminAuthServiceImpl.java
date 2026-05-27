@@ -3,15 +3,15 @@ package com.thundax.kuzhambu.system.interfaces.admin.auth.service.impl;
 import com.thundax.kuzhambu.common.core.crypto.Sha256Digest;
 import com.thundax.kuzhambu.common.core.id.UuidHelper;
 import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
+import com.thundax.kuzhambu.system.application.auth.command.AuthenticateIdentityCommand;
+import com.thundax.kuzhambu.system.application.auth.command.AuthenticatePasswordCommand;
 import com.thundax.kuzhambu.system.application.auth.configure.AuthProperties;
 import com.thundax.kuzhambu.system.application.auth.exception.InvalidPasswordException;
-import com.thundax.kuzhambu.system.application.auth.service.PrincipalAuthService;
-import com.thundax.kuzhambu.system.application.auth.service.PrincipalIdentityService;
-import com.thundax.kuzhambu.system.application.auth.service.command.AuthenticateIdentityCommand;
-import com.thundax.kuzhambu.system.application.auth.service.command.AuthenticatePasswordCommand;
+import com.thundax.kuzhambu.system.application.auth.query.PrincipalIdentityQuery;
+import com.thundax.kuzhambu.system.application.auth.service.PrincipalAuthApplicationService;
+import com.thundax.kuzhambu.system.application.auth.service.PrincipalIdentityApplicationService;
 import com.thundax.kuzhambu.system.application.auth.service.dto.PrincipalPasswordPolicyDTO;
-import com.thundax.kuzhambu.system.application.auth.service.query.PrincipalIdentityQuery;
-import com.thundax.kuzhambu.system.application.core.service.UserService;
+import com.thundax.kuzhambu.system.application.core.service.UserApplicationService;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.OAuthAuthorization;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.OAuthClient;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalAccessToken;
@@ -69,9 +69,9 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     private final LoginProperties loginProperties;
     private final PrincipalAuthSessionRepository principalAuthSessionRepository;
     private final PermissionService permissionService;
-    private final PrincipalAuthService principalAuthService;
-    private final PrincipalIdentityService principalIdentityService;
-    private final UserService userService;
+    private final PrincipalAuthApplicationService principalAuthService;
+    private final PrincipalIdentityApplicationService principalIdentityService;
+    private final UserApplicationService userService;
 
     @Autowired(required = false)
     private WecomLoginProvider wecomLoginProvider;
@@ -99,9 +99,9 @@ public class AdminAuthServiceImpl implements AdminAuthService {
             LoginProperties loginProperties,
             PrincipalAuthSessionRepository principalAuthSessionRepository,
             PermissionService permissionService,
-            PrincipalAuthService principalAuthService,
-            PrincipalIdentityService principalIdentityService,
-            UserService userService) {
+            PrincipalAuthApplicationService principalAuthService,
+            PrincipalIdentityApplicationService principalIdentityService,
+            UserApplicationService userService) {
         this.properties = properties;
         this.loginProperties = loginProperties;
         this.principalAuthSessionRepository = principalAuthSessionRepository;

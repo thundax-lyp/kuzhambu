@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import com.thundax.kuzhambu.system.domain.core.codec.RoleIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Role;
@@ -111,12 +112,13 @@ public class RoleRepositoryImpl implements RoleRepository {
     }
 
     @Override
-    public Page<Role> page(String status, int pageNo, int pageSize) {
+    public PageResult<Role> page(String status, int pageNo, int pageSize) {
         Page<RoleDO> dataObjectPage = mapper.selectPage(new Page<>(pageNo, pageSize), buildListWrapper(status));
-        Page<Role> entityPage = new Page<>(dataObjectPage.getCurrent(), dataObjectPage.getSize());
-        entityPage.setTotal(dataObjectPage.getTotal());
-        entityPage.setRecords(RolePersistenceAssembler.toDomainList(dataObjectPage.getRecords()));
-        return entityPage;
+        return PageResult.of(
+                (int) dataObjectPage.getCurrent(),
+                (int) dataObjectPage.getSize(),
+                dataObjectPage.getTotal(),
+                RolePersistenceAssembler.toDomainList(dataObjectPage.getRecords()));
     }
 
     @Override

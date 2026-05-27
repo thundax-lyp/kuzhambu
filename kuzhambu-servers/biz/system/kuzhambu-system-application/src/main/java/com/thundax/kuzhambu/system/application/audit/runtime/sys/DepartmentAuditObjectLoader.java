@@ -1,16 +1,16 @@
 package com.thundax.kuzhambu.system.application.audit.runtime.sys;
 
 import com.thundax.kuzhambu.system.application.audit.runtime.AuditObjectLoader;
-import com.thundax.kuzhambu.system.application.core.service.DepartmentService;
+import com.thundax.kuzhambu.system.application.core.service.DepartmentApplicationService;
 import com.thundax.kuzhambu.system.domain.core.codec.DepartmentIdCodec;
 import org.springframework.stereotype.Component;
 
 @Component
 public class DepartmentAuditObjectLoader implements AuditObjectLoader {
 
-    private final DepartmentService departmentService;
+    private final DepartmentApplicationService departmentService;
 
-    public DepartmentAuditObjectLoader(DepartmentService departmentService) {
+    public DepartmentAuditObjectLoader(DepartmentApplicationService departmentService) {
         this.departmentService = departmentService;
     }
 

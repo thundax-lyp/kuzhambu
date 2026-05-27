@@ -4,10 +4,10 @@ import com.thundax.kuzhambu.common.security.annotation.PublicApi;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiResponse;
 import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.common.web.exception.KuzhambuException;
+import com.thundax.kuzhambu.system.application.auth.command.UpsertPreAuthSessionValueCommand;
 import com.thundax.kuzhambu.system.application.auth.exception.InvalidCaptchaException;
-import com.thundax.kuzhambu.system.application.auth.service.PreAuthSessionService;
-import com.thundax.kuzhambu.system.application.auth.service.command.UpsertPreAuthSessionValueCommand;
-import com.thundax.kuzhambu.system.application.auth.service.query.PreAuthSessionValueQuery;
+import com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionValueQuery;
+import com.thundax.kuzhambu.system.application.auth.service.PreAuthSessionApplicationService;
 import com.thundax.kuzhambu.system.application.auth.utils.PreAuthCodeHelper;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PreAuthSessionId;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PreAuthSessionToken;
@@ -58,10 +58,10 @@ public class CaptchaController {
     private static final int NOISE_LINE_COUNT = 12;
     private static final int MAX_COLOR = 255;
 
-    private final PreAuthSessionService preAuthSessionService;
+    private final PreAuthSessionApplicationService preAuthSessionService;
 
     @Autowired
-    public CaptchaController(PreAuthSessionService preAuthSessionService) {
+    public CaptchaController(PreAuthSessionApplicationService preAuthSessionService) {
 
         this.preAuthSessionService = preAuthSessionService;
     }

@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.system.domain.core.repository;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.system.domain.core.model.entity.User;
 import com.thundax.kuzhambu.system.domain.core.model.enums.UserPrivilege;
 import com.thundax.kuzhambu.system.domain.core.model.enums.UserStatus;
@@ -15,7 +15,7 @@ public interface UserRepository {
 
     List<User> list(Long departmentId, String loginName, String name, UserStatus status, UserPrivilege privilege);
 
-    Page<User> page(
+    PageResult<User> page(
             Long departmentId,
             String loginName,
             String name,

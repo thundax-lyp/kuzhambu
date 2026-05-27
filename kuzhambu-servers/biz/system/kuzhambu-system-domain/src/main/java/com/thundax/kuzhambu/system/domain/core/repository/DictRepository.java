@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.system.domain.core.repository;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Dict;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.DictId;
@@ -14,7 +14,7 @@ public interface DictRepository {
 
     List<Dict> list(String type, String label, String remarks);
 
-    Page<Dict> page(String type, String label, String remarks, int pageNo, int pageSize);
+    PageResult<Dict> page(String type, String label, String remarks, int pageNo, int pageSize);
 
     int maxPriority();
 

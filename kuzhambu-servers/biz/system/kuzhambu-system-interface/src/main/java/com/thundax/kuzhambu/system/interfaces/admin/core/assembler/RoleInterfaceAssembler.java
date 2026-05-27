@@ -1,8 +1,8 @@
 package com.thundax.kuzhambu.system.interfaces.admin.core.assembler;
 
-import com.thundax.kuzhambu.system.application.core.service.command.ChangeRoleInfoCommand;
-import com.thundax.kuzhambu.system.application.core.service.command.CreateRoleCommand;
-import com.thundax.kuzhambu.system.application.core.service.query.RoleQuery;
+import com.thundax.kuzhambu.system.application.core.command.ChangeRoleInfoCommand;
+import com.thundax.kuzhambu.system.application.core.command.CreateRoleCommand;
+import com.thundax.kuzhambu.system.application.core.query.RoleQuery;
 import com.thundax.kuzhambu.system.domain.core.codec.DepartmentIdCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.MenuIdCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.RoleIdCodec;

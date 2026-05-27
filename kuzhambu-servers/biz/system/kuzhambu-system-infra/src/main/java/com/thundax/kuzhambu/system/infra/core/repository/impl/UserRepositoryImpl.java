@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.User;
 import com.thundax.kuzhambu.system.domain.core.model.enums.UserPrivilege;
@@ -92,7 +93,7 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public Page<User> page(
+    public PageResult<User> page(
             Long departmentId,
             String loginName,
             String name,
@@ -102,10 +103,11 @@ public class UserRepositoryImpl implements UserRepository {
             int pageSize) {
         Page<UserDO> dataObjectPage = mapper.selectPage(
                 new Page<>(pageNo, pageSize), buildListWrapper(departmentId, loginName, name, status, privilege));
-        Page<User> entityPage = new Page<>(dataObjectPage.getCurrent(), dataObjectPage.getSize());
-        entityPage.setTotal(dataObjectPage.getTotal());
-        entityPage.setRecords(UserPersistenceAssembler.toDomainList(dataObjectPage.getRecords()));
-        return entityPage;
+        return PageResult.of(
+                (int) dataObjectPage.getCurrent(),
+                (int) dataObjectPage.getSize(),
+                dataObjectPage.getTotal(),
+                UserPersistenceAssembler.toDomainList(dataObjectPage.getRecords()));
     }
 
     @Override

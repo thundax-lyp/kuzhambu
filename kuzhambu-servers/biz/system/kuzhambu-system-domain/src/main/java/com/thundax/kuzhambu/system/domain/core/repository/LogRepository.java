@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.system.domain.core.repository;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Log;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.LogId;
 import java.util.Date;
@@ -22,7 +22,7 @@ public interface LogRepository {
             Date beginDate,
             Date endDate);
 
-    Page<Log> page(
+    PageResult<Log> page(
             String type,
             String remoteAddr,
             String userLoginName,

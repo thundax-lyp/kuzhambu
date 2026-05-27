@@ -7,10 +7,10 @@ import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.common.web.request.RequestListHelper;
-import com.thundax.kuzhambu.system.application.core.service.MenuService;
-import com.thundax.kuzhambu.system.application.core.service.command.ChangeMenuVisibilityCommand;
-import com.thundax.kuzhambu.system.application.core.service.command.MoveMenuCommand;
-import com.thundax.kuzhambu.system.application.core.service.query.MenuQuery;
+import com.thundax.kuzhambu.system.application.core.command.ChangeMenuVisibilityCommand;
+import com.thundax.kuzhambu.system.application.core.command.MoveMenuCommand;
+import com.thundax.kuzhambu.system.application.core.query.MenuQuery;
+import com.thundax.kuzhambu.system.application.core.service.MenuApplicationService;
 import com.thundax.kuzhambu.system.domain.core.codec.MenuIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Menu;
 import com.thundax.kuzhambu.system.domain.core.model.enums.MenuVisibility;
@@ -44,10 +44,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @WrappedApiController
 public class MenuController {
 
-    private final MenuService menuService;
+    private final MenuApplicationService menuService;
 
     @Autowired
-    public MenuController(MenuService menuService) {
+    public MenuController(MenuApplicationService menuService) {
         this.menuService = menuService;
     }
 

@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.tree.TreeNodeMoveType;
 import com.thundax.kuzhambu.system.domain.core.codec.MenuIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Menu;
@@ -72,13 +73,14 @@ public class MenuRepositoryImpl implements MenuRepository {
     }
 
     @Override
-    public Page<Menu> page(Long parentId, String visibility, Integer maxRank, int pageNo, int pageSize) {
+    public PageResult<Menu> page(Long parentId, String visibility, Integer maxRank, int pageNo, int pageSize) {
         IPage<MenuDO> dataObjectPage =
                 mapper.selectPage(new Page<>(pageNo, pageSize), buildListWrapper(parentId, visibility, maxRank));
-        Page<Menu> entityPage = new Page<>(dataObjectPage.getCurrent(), dataObjectPage.getSize());
-        entityPage.setTotal(dataObjectPage.getTotal());
-        entityPage.setRecords(MenuPersistenceAssembler.toDomainList(dataObjectPage.getRecords()));
-        return entityPage;
+        return PageResult.of(
+                (int) dataObjectPage.getCurrent(),
+                (int) dataObjectPage.getSize(),
+                dataObjectPage.getTotal(),
+                MenuPersistenceAssembler.toDomainList(dataObjectPage.getRecords()));
     }
 
     @Override

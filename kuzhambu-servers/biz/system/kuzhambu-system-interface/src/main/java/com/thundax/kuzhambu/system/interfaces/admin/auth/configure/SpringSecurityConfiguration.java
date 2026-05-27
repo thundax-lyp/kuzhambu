@@ -2,7 +2,7 @@ package com.thundax.kuzhambu.system.interfaces.admin.auth.configure;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.common.security.annotation.PublicApi;
-import com.thundax.kuzhambu.system.application.core.service.UserService;
+import com.thundax.kuzhambu.system.application.core.service.UserApplicationService;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.security.filter.AccessTokenAuthenticationFilter;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.service.AdminAuthService;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.service.PermissionService;
@@ -31,7 +31,7 @@ public class SpringSecurityConfiguration {
     private final KuzhambuProperties properties;
     private final AdminAuthService authService;
     private final PermissionService permissionService;
-    private final UserService userService;
+    private final UserApplicationService userService;
     private final RequestMappingHandlerMapping requestMappingHandlerMapping;
     private final ObjectMapper objectMapper;
 
@@ -39,7 +39,7 @@ public class SpringSecurityConfiguration {
             KuzhambuProperties properties,
             AdminAuthService authService,
             PermissionService permissionService,
-            UserService userService,
+            UserApplicationService userService,
             RequestMappingHandlerMapping requestMappingHandlerMapping,
             ObjectMapper objectMapper) {
         this.properties = properties;

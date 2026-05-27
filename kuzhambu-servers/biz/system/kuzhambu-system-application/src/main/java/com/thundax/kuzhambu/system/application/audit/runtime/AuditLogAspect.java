@@ -1,8 +1,8 @@
 package com.thundax.kuzhambu.system.application.audit.runtime;
 
 import com.thundax.kuzhambu.system.application.audit.annotation.AuditLog;
-import com.thundax.kuzhambu.system.application.audit.service.AuditService;
-import com.thundax.kuzhambu.system.application.audit.service.command.CreateAuditLogCommand;
+import com.thundax.kuzhambu.system.application.audit.command.CreateAuditLogCommand;
+import com.thundax.kuzhambu.system.application.audit.service.AuditApplicationService;
 import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditSnapshot;
 import java.lang.reflect.Method;
 import org.apache.commons.lang3.StringUtils;
@@ -19,14 +19,14 @@ public class AuditLogAspect {
 
     static final String SERVICE_METHOD_POINTCUT = "execution(public * com.thundax.kuzhambu..service..*.*(..))";
 
-    private final AuditService auditService;
+    private final AuditApplicationService auditService;
     private final AuditExpressionEvaluator expressionEvaluator;
     private final AuditObjectLoaderRegistry loaderRegistry;
     private final AuditSnapshotAssemblerRegistry assemblerRegistry;
     private final AuditOperatorResolver operatorResolver;
 
     public AuditLogAspect(
-            AuditService auditService,
+            AuditApplicationService auditService,
             AuditExpressionEvaluator expressionEvaluator,
             AuditObjectLoaderRegistry loaderRegistry,
             AuditSnapshotAssemblerRegistry assemblerRegistry,

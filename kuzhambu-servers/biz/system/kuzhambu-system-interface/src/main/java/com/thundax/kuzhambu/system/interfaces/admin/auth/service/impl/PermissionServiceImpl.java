@@ -8,9 +8,9 @@ import static com.thundax.kuzhambu.system.domain.core.model.valueobject.Permissi
 import com.thundax.kuzhambu.common.core.arch.OneLineMethodAllowed;
 import com.thundax.kuzhambu.common.security.permission.PermissionMatcher;
 import com.thundax.kuzhambu.common.security.permission.PrefixPermissionMatcher;
-import com.thundax.kuzhambu.system.application.core.service.CurrentUserService;
-import com.thundax.kuzhambu.system.application.core.service.UserService;
-import com.thundax.kuzhambu.system.application.core.service.query.CurrentUserQuery;
+import com.thundax.kuzhambu.system.application.core.query.CurrentUserQuery;
+import com.thundax.kuzhambu.system.application.core.service.CurrentUserApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.UserApplicationService;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalAccessToken;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalAuthSession;
 import com.thundax.kuzhambu.system.domain.auth.repository.PrincipalAccessTokenRepository;
@@ -40,15 +40,15 @@ public class PermissionServiceImpl implements PermissionService {
 
     private final PrincipalAccessTokenRepository principalAccessTokenRepository;
     private final PrincipalAuthSessionRepository principalAuthSessionRepository;
-    private final UserService userService;
-    private final CurrentUserService currentUserService;
+    private final UserApplicationService userService;
+    private final CurrentUserApplicationService currentUserService;
     private final PermissionMatcher permissionMatcher = new PrefixPermissionMatcher();
 
     public PermissionServiceImpl(
             PrincipalAccessTokenRepository principalAccessTokenRepository,
             PrincipalAuthSessionRepository principalAuthSessionRepository,
-            UserService userService,
-            CurrentUserService currentUserService) {
+            UserApplicationService userService,
+            CurrentUserApplicationService currentUserService) {
         this.principalAccessTokenRepository = principalAccessTokenRepository;
         this.principalAuthSessionRepository = principalAuthSessionRepository;
         this.userService = userService;

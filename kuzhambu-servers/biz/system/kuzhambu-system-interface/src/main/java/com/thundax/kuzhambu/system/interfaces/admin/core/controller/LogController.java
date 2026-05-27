@@ -6,12 +6,12 @@ import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
-import com.thundax.kuzhambu.system.application.auth.service.PrincipalIdentityService;
-import com.thundax.kuzhambu.system.application.auth.service.query.PrincipalIdentityQuery;
-import com.thundax.kuzhambu.system.application.core.service.DepartmentService;
-import com.thundax.kuzhambu.system.application.core.service.LogService;
-import com.thundax.kuzhambu.system.application.core.service.UserService;
-import com.thundax.kuzhambu.system.application.core.service.query.LogQuery;
+import com.thundax.kuzhambu.system.application.auth.query.PrincipalIdentityQuery;
+import com.thundax.kuzhambu.system.application.auth.service.PrincipalIdentityApplicationService;
+import com.thundax.kuzhambu.system.application.core.query.LogQuery;
+import com.thundax.kuzhambu.system.application.core.service.DepartmentApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.LogApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.UserApplicationService;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalIdentity;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalIdentityType;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalType;
@@ -39,17 +39,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @WrappedApiController
 public class LogController {
 
-    private final LogService logService;
-    private final UserService userService;
-    private final PrincipalIdentityService principalIdentityService;
-    private final DepartmentService departmentService;
+    private final LogApplicationService logService;
+    private final UserApplicationService userService;
+    private final PrincipalIdentityApplicationService principalIdentityService;
+    private final DepartmentApplicationService departmentService;
 
     @Autowired
     public LogController(
-            LogService logService,
-            UserService userService,
-            PrincipalIdentityService principalIdentityService,
-            DepartmentService departmentService) {
+            LogApplicationService logService,
+            UserApplicationService userService,
+            PrincipalIdentityApplicationService principalIdentityService,
+            DepartmentApplicationService departmentService) {
         this.logService = logService;
         this.userService = userService;
         this.principalIdentityService = principalIdentityService;

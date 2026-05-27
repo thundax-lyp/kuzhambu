@@ -1,8 +1,8 @@
 package com.thundax.kuzhambu.system.interfaces.admin.core.assembler;
 
-import com.thundax.kuzhambu.system.application.core.service.command.ChangeDictInfoCommand;
-import com.thundax.kuzhambu.system.application.core.service.command.CreateDictCommand;
-import com.thundax.kuzhambu.system.application.core.service.query.DictQuery;
+import com.thundax.kuzhambu.system.application.core.command.ChangeDictInfoCommand;
+import com.thundax.kuzhambu.system.application.core.command.CreateDictCommand;
+import com.thundax.kuzhambu.system.application.core.query.DictQuery;
 import com.thundax.kuzhambu.system.domain.core.codec.DictIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Dict;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.DictId;

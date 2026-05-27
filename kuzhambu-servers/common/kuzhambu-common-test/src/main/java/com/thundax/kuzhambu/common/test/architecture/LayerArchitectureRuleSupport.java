@@ -134,7 +134,7 @@ public final class LayerArchitectureRuleSupport {
         }
 
         assertTrue(
-                "Repository method boundary types must be Entity, Java standard types, or MyBatis-Plus Page<Entity> "
+                "Repository method boundary types must be Entity, Java standard types, or PageResult<Entity> "
                         + "for page return values. Violations: "
                         + violations,
                 violations.isEmpty());
@@ -282,7 +282,7 @@ public final class LayerArchitectureRuleSupport {
     private static boolean isAllowedRepositoryResultType(JavaMethod method, JavaClass type) {
         return isAllowedRepositoryParameterType(type)
                 || isEntityId(type)
-                || isMyBatisPlusPage(type) && "page".equals(method.getName());
+                || isPageResult(type) && "page".equals(method.getName());
     }
 
     private static boolean isAllowedRepositoryParameterType(JavaClass type) {
@@ -324,8 +324,7 @@ public final class LayerArchitectureRuleSupport {
     }
 
     private static boolean isModuleEntity(JavaClass type) {
-        return type.getPackageName().contains(".biz.")
-                && type.getPackageName().contains(".domain.")
+        return type.getPackageName().contains(".domain.")
                 && type.getPackageName().contains(".model.");
     }
 
@@ -340,11 +339,15 @@ public final class LayerArchitectureRuleSupport {
     }
 
     private static boolean isServiceQuery(JavaClass type) {
-        return type.getSimpleName().endsWith("Query") && type.getPackageName().contains(".application.query");
+        return type.getSimpleName().endsWith("Query")
+                && type.getPackageName().contains(".application.")
+                && type.getPackageName().endsWith(".query");
     }
 
     private static boolean isServiceCommand(JavaClass type) {
-        return type.getSimpleName().endsWith("Command") && type.getPackageName().contains(".application.command");
+        return type.getSimpleName().endsWith("Command")
+                && type.getPackageName().contains(".application.")
+                && type.getPackageName().endsWith(".command");
     }
 
     private static boolean isPageQuery(JavaClass type) {
@@ -353,10 +356,6 @@ public final class LayerArchitectureRuleSupport {
 
     private static boolean isPageResult(JavaClass type) {
         return "com.thundax.kuzhambu.common.core.page.PageResult".equals(type.getName());
-    }
-
-    private static boolean isMyBatisPlusPage(JavaClass type) {
-        return "com.baomidou.mybatisplus.extension.plugins.pagination.Page".equals(type.getName());
     }
 
     private static boolean isEmptyServiceBaseType(JavaClass javaClass) {

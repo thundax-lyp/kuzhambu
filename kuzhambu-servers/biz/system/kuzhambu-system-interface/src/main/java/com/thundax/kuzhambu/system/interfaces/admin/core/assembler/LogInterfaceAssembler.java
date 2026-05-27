@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.system.interfaces.admin.core.assembler;
 
-import com.thundax.kuzhambu.system.application.core.service.query.LogQuery;
+import com.thundax.kuzhambu.system.application.core.query.LogQuery;
 import com.thundax.kuzhambu.system.domain.core.codec.DepartmentIdCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.LogIdCodec;
 import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;

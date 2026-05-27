@@ -7,9 +7,9 @@ import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.common.web.request.RequestListHelper;
-import com.thundax.kuzhambu.system.application.core.service.DepartmentService;
-import com.thundax.kuzhambu.system.application.core.service.command.MoveDepartmentCommand;
-import com.thundax.kuzhambu.system.application.core.service.query.DepartmentQuery;
+import com.thundax.kuzhambu.system.application.core.command.MoveDepartmentCommand;
+import com.thundax.kuzhambu.system.application.core.query.DepartmentQuery;
+import com.thundax.kuzhambu.system.application.core.service.DepartmentApplicationService;
 import com.thundax.kuzhambu.system.domain.core.codec.DepartmentIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Department;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.DepartmentId;
@@ -43,10 +43,10 @@ public class DepartmentController {
 
     private static final String DEPARTMENT_NAME = "department";
 
-    private final DepartmentService departmentService;
+    private final DepartmentApplicationService departmentService;
 
     @Autowired
-    public DepartmentController(DepartmentService departmentService) {
+    public DepartmentController(DepartmentApplicationService departmentService) {
         this.departmentService = departmentService;
     }
 

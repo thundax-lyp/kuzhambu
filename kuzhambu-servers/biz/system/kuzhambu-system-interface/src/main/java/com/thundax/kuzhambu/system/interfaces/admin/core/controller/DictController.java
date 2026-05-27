@@ -8,9 +8,9 @@ import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.common.web.request.RequestListHelper;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
-import com.thundax.kuzhambu.system.application.core.service.DictService;
-import com.thundax.kuzhambu.system.application.core.service.command.DictSortCommand;
-import com.thundax.kuzhambu.system.application.core.service.query.DictQuery;
+import com.thundax.kuzhambu.system.application.core.command.DictSortCommand;
+import com.thundax.kuzhambu.system.application.core.query.DictQuery;
+import com.thundax.kuzhambu.system.application.core.service.DictApplicationService;
 import com.thundax.kuzhambu.system.domain.core.codec.DictIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Dict;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.DictId;
@@ -42,9 +42,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @WrappedApiController
 public class DictController {
 
-    private final DictService dictService;
+    private final DictApplicationService dictService;
 
-    public DictController(DictService dictService) {
+    public DictController(DictApplicationService dictService) {
         this.dictService = dictService;
     }
 

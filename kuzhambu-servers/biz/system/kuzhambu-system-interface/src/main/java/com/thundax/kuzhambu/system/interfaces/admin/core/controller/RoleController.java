@@ -6,21 +6,21 @@ import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.OptionInterfaceAssembler;
 import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.common.web.request.RequestListHelper;
-import com.thundax.kuzhambu.system.application.auth.service.PrincipalIdentityService;
-import com.thundax.kuzhambu.system.application.auth.service.query.PrincipalIdentityQuery;
-import com.thundax.kuzhambu.system.application.core.service.DepartmentService;
-import com.thundax.kuzhambu.system.application.core.service.DictService;
-import com.thundax.kuzhambu.system.application.core.service.MenuService;
-import com.thundax.kuzhambu.system.application.core.service.RoleService;
-import com.thundax.kuzhambu.system.application.core.service.UserService;
-import com.thundax.kuzhambu.system.application.core.service.command.AssignRoleUsersCommand;
-import com.thundax.kuzhambu.system.application.core.service.command.ChangeRoleStatusCommand;
-import com.thundax.kuzhambu.system.application.core.service.command.RoleSortCommand;
-import com.thundax.kuzhambu.system.application.core.service.query.DepartmentQuery;
-import com.thundax.kuzhambu.system.application.core.service.query.DictQuery;
-import com.thundax.kuzhambu.system.application.core.service.query.MenuQuery;
-import com.thundax.kuzhambu.system.application.core.service.query.RoleQuery;
-import com.thundax.kuzhambu.system.application.core.service.query.UserQuery;
+import com.thundax.kuzhambu.system.application.auth.query.PrincipalIdentityQuery;
+import com.thundax.kuzhambu.system.application.auth.service.PrincipalIdentityApplicationService;
+import com.thundax.kuzhambu.system.application.core.command.AssignRoleUsersCommand;
+import com.thundax.kuzhambu.system.application.core.command.ChangeRoleStatusCommand;
+import com.thundax.kuzhambu.system.application.core.command.RoleSortCommand;
+import com.thundax.kuzhambu.system.application.core.query.DepartmentQuery;
+import com.thundax.kuzhambu.system.application.core.query.DictQuery;
+import com.thundax.kuzhambu.system.application.core.query.MenuQuery;
+import com.thundax.kuzhambu.system.application.core.query.RoleQuery;
+import com.thundax.kuzhambu.system.application.core.query.UserQuery;
+import com.thundax.kuzhambu.system.application.core.service.DepartmentApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.DictApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.MenuApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.RoleApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.UserApplicationService;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalIdentity;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalIdentityType;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalType;
@@ -76,21 +76,21 @@ public class RoleController {
     private static final String ROLE_PRIVILEGE_DICT_TYPE = "role_privilege";
     private static final String ROLE_STATUS_DICT_TYPE = "role_status";
 
-    private final RoleService roleService;
-    private final MenuService menuService;
-    private final DepartmentService departmentService;
-    private final DictService dictService;
-    private final UserService userService;
-    private final PrincipalIdentityService principalIdentityService;
+    private final RoleApplicationService roleService;
+    private final MenuApplicationService menuService;
+    private final DepartmentApplicationService departmentService;
+    private final DictApplicationService dictService;
+    private final UserApplicationService userService;
+    private final PrincipalIdentityApplicationService principalIdentityService;
 
     @Autowired
     public RoleController(
-            RoleService roleService,
-            MenuService menuService,
-            DepartmentService departmentService,
-            DictService dictService,
-            UserService userService,
-            PrincipalIdentityService principalIdentityService) {
+            RoleApplicationService roleService,
+            MenuApplicationService menuService,
+            DepartmentApplicationService departmentService,
+            DictApplicationService dictService,
+            UserApplicationService userService,
+            PrincipalIdentityApplicationService principalIdentityService) {
 
         this.roleService = roleService;
         this.menuService = menuService;

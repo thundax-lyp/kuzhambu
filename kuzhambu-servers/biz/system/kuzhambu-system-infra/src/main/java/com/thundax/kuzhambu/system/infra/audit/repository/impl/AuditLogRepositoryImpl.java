@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.system.infra.audit.repository.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.system.domain.audit.codec.AuditLogIdCodec;
 import com.thundax.kuzhambu.system.domain.audit.model.entity.AuditLog;
 import com.thundax.kuzhambu.system.domain.audit.model.enums.AuditAction;
@@ -60,7 +61,7 @@ public class AuditLogRepositoryImpl implements AuditLogRepository {
     }
 
     @Override
-    public Page<AuditLog> page(
+    public PageResult<AuditLog> page(
             String objectType,
             String objectId,
             AuditAction action,
@@ -76,10 +77,11 @@ public class AuditLogRepositoryImpl implements AuditLogRepository {
                 objectType, objectId, action, operatorType, operatorId, source, requestId, beginDate, endDate);
         wrapper.orderByDesc(AuditLogDO::getOccurredAt, AuditLogDO::getId);
         Page<AuditLogDO> dataObjectPage = mapper.selectPage(new Page<>(pageNo, pageSize), wrapper);
-        Page<AuditLog> entityPage = new Page<>(dataObjectPage.getCurrent(), dataObjectPage.getSize());
-        entityPage.setTotal(dataObjectPage.getTotal());
-        entityPage.setRecords(AuditLogPersistenceAssembler.toDomainList(dataObjectPage.getRecords()));
-        return entityPage;
+        return PageResult.of(
+                (int) dataObjectPage.getCurrent(),
+                (int) dataObjectPage.getSize(),
+                dataObjectPage.getTotal(),
+                AuditLogPersistenceAssembler.toDomainList(dataObjectPage.getRecords()));
     }
 
     private LambdaQueryWrapper<AuditLogDO> buildWrapper(

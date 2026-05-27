@@ -11,27 +11,27 @@ import com.thundax.kuzhambu.common.web.request.RequestListHelper;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
-import com.thundax.kuzhambu.system.application.auth.service.PreAuthSessionService;
-import com.thundax.kuzhambu.system.application.auth.service.PrincipalCredentialService;
-import com.thundax.kuzhambu.system.application.auth.service.PrincipalIdentityService;
-import com.thundax.kuzhambu.system.application.auth.service.command.PrincipalCredentialCommand;
-import com.thundax.kuzhambu.system.application.auth.service.command.PrincipalIdentityCommand;
-import com.thundax.kuzhambu.system.application.auth.service.query.PreAuthSessionValueQuery;
-import com.thundax.kuzhambu.system.application.auth.service.query.PrincipalCredentialQuery;
-import com.thundax.kuzhambu.system.application.auth.service.query.PrincipalIdentityQuery;
+import com.thundax.kuzhambu.system.application.auth.command.PrincipalCredentialCommand;
+import com.thundax.kuzhambu.system.application.auth.command.PrincipalIdentityCommand;
+import com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionValueQuery;
+import com.thundax.kuzhambu.system.application.auth.query.PrincipalCredentialQuery;
+import com.thundax.kuzhambu.system.application.auth.query.PrincipalIdentityQuery;
+import com.thundax.kuzhambu.system.application.auth.service.PreAuthSessionApplicationService;
+import com.thundax.kuzhambu.system.application.auth.service.PrincipalCredentialApplicationService;
+import com.thundax.kuzhambu.system.application.auth.service.PrincipalIdentityApplicationService;
 import com.thundax.kuzhambu.system.application.auth.utils.PasswordHelper;
-import com.thundax.kuzhambu.system.application.core.service.CurrentUserService;
-import com.thundax.kuzhambu.system.application.core.service.DepartmentService;
-import com.thundax.kuzhambu.system.application.core.service.DictService;
-import com.thundax.kuzhambu.system.application.core.service.RoleService;
-import com.thundax.kuzhambu.system.application.core.service.UserService;
-import com.thundax.kuzhambu.system.application.core.service.command.ChangeCurrentUserAvatarCommand;
-import com.thundax.kuzhambu.system.application.core.service.command.ChangeUserStatusCommand;
-import com.thundax.kuzhambu.system.application.core.service.command.RemoveCurrentUserAvatarCommand;
-import com.thundax.kuzhambu.system.application.core.service.query.DepartmentQuery;
-import com.thundax.kuzhambu.system.application.core.service.query.DictQuery;
-import com.thundax.kuzhambu.system.application.core.service.query.RoleQuery;
-import com.thundax.kuzhambu.system.application.core.service.query.UserQuery;
+import com.thundax.kuzhambu.system.application.core.command.ChangeCurrentUserAvatarCommand;
+import com.thundax.kuzhambu.system.application.core.command.ChangeUserStatusCommand;
+import com.thundax.kuzhambu.system.application.core.command.RemoveCurrentUserAvatarCommand;
+import com.thundax.kuzhambu.system.application.core.query.DepartmentQuery;
+import com.thundax.kuzhambu.system.application.core.query.DictQuery;
+import com.thundax.kuzhambu.system.application.core.query.RoleQuery;
+import com.thundax.kuzhambu.system.application.core.query.UserQuery;
+import com.thundax.kuzhambu.system.application.core.service.CurrentUserApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.DepartmentApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.DictApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.RoleApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.UserApplicationService;
 import com.thundax.kuzhambu.system.application.core.utils.SysApiUtils;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalCredential;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalIdentity;
@@ -113,27 +113,27 @@ public class UserController {
     private static final String USER_RANK_DICT_TYPE = "user_rank";
     private static final String USER_STATUS_DICT_TYPE = "user_status";
 
-    private final UserService userService;
-    private final DepartmentService departmentService;
-    private final DictService dictService;
-    private final RoleService roleService;
-    private final PrincipalIdentityService principalIdentityService;
-    private final PrincipalCredentialService principalCredentialService;
-    private final PreAuthSessionService preAuthSessionService;
+    private final UserApplicationService userService;
+    private final DepartmentApplicationService departmentService;
+    private final DictApplicationService dictService;
+    private final RoleApplicationService roleService;
+    private final PrincipalIdentityApplicationService principalIdentityService;
+    private final PrincipalCredentialApplicationService principalCredentialService;
+    private final PreAuthSessionApplicationService preAuthSessionService;
     private final CurrentUserResolver currentUserResolver;
-    private final CurrentUserService currentUserService;
+    private final CurrentUserApplicationService currentUserService;
 
     @Autowired
     public UserController(
-            UserService userService,
-            DepartmentService departmentService,
-            DictService dictService,
-            RoleService roleService,
-            PrincipalIdentityService principalIdentityService,
-            PrincipalCredentialService principalCredentialService,
-            PreAuthSessionService preAuthSessionService,
+            UserApplicationService userService,
+            DepartmentApplicationService departmentService,
+            DictApplicationService dictService,
+            RoleApplicationService roleService,
+            PrincipalIdentityApplicationService principalIdentityService,
+            PrincipalCredentialApplicationService principalCredentialService,
+            PreAuthSessionApplicationService preAuthSessionService,
             CurrentUserResolver currentUserResolver,
-            CurrentUserService currentUserService) {
+            CurrentUserApplicationService currentUserService) {
 
         this.userService = userService;
         this.departmentService = departmentService;

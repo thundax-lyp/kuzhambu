@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import com.thundax.kuzhambu.system.domain.core.codec.DictIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Dict;
@@ -72,13 +73,14 @@ public class DictRepositoryImpl implements DictRepository {
     }
 
     @Override
-    public Page<Dict> page(String type, String label, String remarks, int pageNo, int pageSize) {
+    public PageResult<Dict> page(String type, String label, String remarks, int pageNo, int pageSize) {
         Page<DictDO> dataObjectPage =
                 mapper.selectPage(new Page<>(pageNo, pageSize), buildQueryWrapper(type, label, remarks));
-        Page<Dict> entityPage = new Page<>(dataObjectPage.getCurrent(), dataObjectPage.getSize());
-        entityPage.setTotal(dataObjectPage.getTotal());
-        entityPage.setRecords(DictPersistenceAssembler.toDomainList(dataObjectPage.getRecords()));
-        return entityPage;
+        return PageResult.of(
+                (int) dataObjectPage.getCurrent(),
+                (int) dataObjectPage.getSize(),
+                dataObjectPage.getTotal(),
+                DictPersistenceAssembler.toDomainList(dataObjectPage.getRecords()));
     }
 
     @Override

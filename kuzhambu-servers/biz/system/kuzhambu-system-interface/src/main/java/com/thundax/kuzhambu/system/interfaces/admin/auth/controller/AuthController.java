@@ -7,15 +7,15 @@ import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.common.web.exception.KuzhambuException;
 import com.thundax.kuzhambu.common.web.util.RequestIpUtils;
+import com.thundax.kuzhambu.system.application.auth.command.CreatePreAuthSessionCommand;
+import com.thundax.kuzhambu.system.application.auth.command.RefreshPreAuthSessionCommand;
+import com.thundax.kuzhambu.system.application.auth.command.ReleasePreAuthSessionCommand;
+import com.thundax.kuzhambu.system.application.auth.command.UpsertPreAuthSessionValueCommand;
 import com.thundax.kuzhambu.system.application.auth.configure.AuthProperties;
 import com.thundax.kuzhambu.system.application.auth.exception.InvalidCaptchaException;
-import com.thundax.kuzhambu.system.application.auth.service.PreAuthSessionService;
-import com.thundax.kuzhambu.system.application.auth.service.command.CreatePreAuthSessionCommand;
-import com.thundax.kuzhambu.system.application.auth.service.command.RefreshPreAuthSessionCommand;
-import com.thundax.kuzhambu.system.application.auth.service.command.ReleasePreAuthSessionCommand;
-import com.thundax.kuzhambu.system.application.auth.service.command.UpsertPreAuthSessionValueCommand;
-import com.thundax.kuzhambu.system.application.auth.service.query.PreAuthSessionValueQuery;
-import com.thundax.kuzhambu.system.application.auth.service.query.PreAuthSessionValueValidateQuery;
+import com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionValueQuery;
+import com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionValueValidateQuery;
+import com.thundax.kuzhambu.system.application.auth.service.PreAuthSessionApplicationService;
 import com.thundax.kuzhambu.system.application.auth.utils.PreAuthCodeHelper;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PreAuthSession;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalLoginEvent;
@@ -85,7 +85,7 @@ public class AuthController {
     private static final int REFRESH_TOKEN_GRACE_SECONDS = 60;
 
     private final AdminAuthService authService;
-    private final PreAuthSessionService preAuthSessionService;
+    private final PreAuthSessionApplicationService preAuthSessionService;
     private final AuthProperties properties;
     private final SysLogMessageService sysLogMessageService;
     private final ObjectMapper objectMapper;
@@ -93,7 +93,7 @@ public class AuthController {
     @Autowired
     public AuthController(
             AdminAuthService authService,
-            PreAuthSessionService preAuthSessionService,
+            PreAuthSessionApplicationService preAuthSessionService,
             AuthProperties properties,
             SysLogMessageService sysLogMessageService,
             ObjectMapper objectMapper) {

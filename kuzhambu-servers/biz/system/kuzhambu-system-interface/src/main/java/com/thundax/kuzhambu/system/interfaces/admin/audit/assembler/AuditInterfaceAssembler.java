@@ -1,10 +1,10 @@
 package com.thundax.kuzhambu.system.interfaces.admin.audit.assembler;
 
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.system.application.audit.query.AuditLogQuery;
+import com.thundax.kuzhambu.system.application.audit.query.AuditMetaQuery;
 import com.thundax.kuzhambu.system.application.audit.runtime.AuditSnapshotAssembler;
 import com.thundax.kuzhambu.system.application.audit.runtime.AuditSnapshotAssemblerRegistry;
-import com.thundax.kuzhambu.system.application.audit.service.query.AuditLogQuery;
-import com.thundax.kuzhambu.system.application.audit.service.query.AuditMetaQuery;
 import com.thundax.kuzhambu.system.domain.audit.codec.AuditLogIdCodec;
 import com.thundax.kuzhambu.system.domain.audit.codec.AuditMetaIdCodec;
 import com.thundax.kuzhambu.system.domain.audit.model.entity.AuditLog;

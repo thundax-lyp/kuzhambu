@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.system.domain.core.repository;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Role;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.RoleId;
@@ -18,7 +18,7 @@ public interface RoleRepository {
 
     List<Role> list(SortDirection sortDirection);
 
-    Page<Role> page(String status, int pageNo, int pageSize);
+    PageResult<Role> page(String status, int pageNo, int pageSize);
 
     RoleId insert(Role role);
 

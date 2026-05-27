@@ -1,16 +1,16 @@
 package com.thundax.kuzhambu.system.application.audit.runtime.sys;
 
 import com.thundax.kuzhambu.system.application.audit.runtime.AuditObjectLoader;
-import com.thundax.kuzhambu.system.application.core.service.MenuService;
+import com.thundax.kuzhambu.system.application.core.service.MenuApplicationService;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.MenuId;
 import org.springframework.stereotype.Component;
 
 @Component
 public class MenuAuditObjectLoader implements AuditObjectLoader {
 
-    private final MenuService menuService;
+    private final MenuApplicationService menuService;
 
-    public MenuAuditObjectLoader(MenuService menuService) {
+    public MenuAuditObjectLoader(MenuApplicationService menuService) {
         this.menuService = menuService;
     }
 

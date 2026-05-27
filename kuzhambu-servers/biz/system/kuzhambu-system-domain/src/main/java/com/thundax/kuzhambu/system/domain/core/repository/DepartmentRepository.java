@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.system.domain.core.repository;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.tree.TreeNodeMoveType;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Department;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.DepartmentId;
@@ -14,7 +14,7 @@ public interface DepartmentRepository {
 
     List<Department> list(Long parentId, String name, String remarks);
 
-    Page<Department> page(Long parentId, String name, String remarks, int pageNo, int pageSize);
+    PageResult<Department> page(Long parentId, String name, String remarks, int pageNo, int pageSize);
 
     DepartmentId insert(Department department);
 

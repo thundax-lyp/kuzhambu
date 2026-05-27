@@ -1,8 +1,8 @@
 package com.thundax.kuzhambu.system.interfaces.admin.core.assembler;
 
-import com.thundax.kuzhambu.system.application.core.service.command.ChangeDepartmentInfoCommand;
-import com.thundax.kuzhambu.system.application.core.service.command.CreateDepartmentCommand;
-import com.thundax.kuzhambu.system.application.core.service.query.DepartmentQuery;
+import com.thundax.kuzhambu.system.application.core.command.ChangeDepartmentInfoCommand;
+import com.thundax.kuzhambu.system.application.core.command.CreateDepartmentCommand;
+import com.thundax.kuzhambu.system.application.core.query.DepartmentQuery;
 import com.thundax.kuzhambu.system.domain.core.codec.DepartmentIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Department;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.DepartmentId;

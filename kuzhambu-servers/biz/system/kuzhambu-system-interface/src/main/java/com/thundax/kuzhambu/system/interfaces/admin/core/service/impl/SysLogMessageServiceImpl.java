@@ -5,9 +5,9 @@ import com.thundax.kuzhambu.common.mq.KuzhambuMqMessage;
 import com.thundax.kuzhambu.common.mq.KuzhambuMqSender;
 import com.thundax.kuzhambu.common.mq.KuzhambuMqType;
 import com.thundax.kuzhambu.common.mq.configure.KuzhambuMqProperties;
-import com.thundax.kuzhambu.system.application.core.service.LogService;
-import com.thundax.kuzhambu.system.application.core.service.command.CreateLogCommand;
-import com.thundax.kuzhambu.system.application.core.service.query.LogQuery;
+import com.thundax.kuzhambu.system.application.core.command.CreateLogCommand;
+import com.thundax.kuzhambu.system.application.core.query.LogQuery;
+import com.thundax.kuzhambu.system.application.core.service.LogApplicationService;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Log;
 import com.thundax.kuzhambu.system.interfaces.admin.configure.KuzhambuProperties;
 import com.thundax.kuzhambu.system.interfaces.admin.core.service.SysLogMessageService;
@@ -37,7 +37,7 @@ public class SysLogMessageServiceImpl implements SysLogMessageService {
     private final KuzhambuMqSender mqSender;
     private final KuzhambuMqProperties mqProperties;
     private final KuzhambuProperties kuzhambuProperties;
-    private final LogService logService;
+    private final LogApplicationService logService;
     private final ObjectMapper objectMapper;
 
     @Override
