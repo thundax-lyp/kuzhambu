@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@Tag(name = "古籍模块", description = "通用内容")
+@Tag(name = "古籍模块-通用内容", description = "通用内容")
 @SysLogger(module = {"古籍", "通用内容"})
 @RequestMapping("/api/classics/content")
 @WrappedApiController

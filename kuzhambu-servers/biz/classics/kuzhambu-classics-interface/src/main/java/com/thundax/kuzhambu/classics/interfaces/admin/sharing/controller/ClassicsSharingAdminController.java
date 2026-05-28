@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-@Tag(name = "古籍模块", description = "分享")
+@Tag(name = "古籍模块-分享", description = "分享")
 @SysLogger(module = {"古籍", "分享"})
 @RequestMapping("/api/classics/shares")
 @WrappedApiController

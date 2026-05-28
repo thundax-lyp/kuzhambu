@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@Tag(name = "古籍模块", description = "明代习俗")
+@Tag(name = "古籍模块-明代习俗", description = "明代习俗")
 @SysLogger(module = {"古籍", "明代习俗"})
 @RequestMapping("/api/classics/ming-customs")
 @WrappedApiController

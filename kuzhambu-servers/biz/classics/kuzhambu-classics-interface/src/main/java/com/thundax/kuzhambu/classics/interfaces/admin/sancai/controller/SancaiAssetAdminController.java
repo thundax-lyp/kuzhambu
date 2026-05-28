@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-@Tag(name = "古籍模块", description = "三才图会资产")
+@Tag(name = "古籍模块-三才图会资产", description = "三才图会资产")
 @SysLogger(module = {"古籍", "三才图会资产"})
 @RequestMapping("/api/classics/sancai/assets")
 @WrappedApiController
