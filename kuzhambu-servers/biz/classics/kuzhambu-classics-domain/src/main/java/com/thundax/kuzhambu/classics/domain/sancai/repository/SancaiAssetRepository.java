@@ -5,34 +5,39 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryDraft
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryImage;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiShowcase;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVisualAsset;
+import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryDraftId;
+import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
+import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryImageId;
+import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiShowcaseId;
+import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVisualAssetId;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import java.util.List;
 
 public interface SancaiAssetRepository {
 
-    Long insertDraft(SancaiEntryDraft draft);
+    SancaiEntryDraftId insertDraft(SancaiEntryDraft draft);
 
-    SancaiEntryDraft getLatestDraftByEntryId(Long entryId);
+    SancaiEntryDraft getLatestDraftByEntryId(SancaiEntryId entryId);
 
-    int deleteDraftByEntryId(Long entryId);
+    int deleteDraftByEntryId(SancaiEntryId entryId);
 
-    Long insertImage(SancaiEntryImage image);
+    SancaiEntryImageId insertImage(SancaiEntryImage image);
 
     int updateImage(SancaiEntryImage image);
 
-    int deleteImageById(Long id);
+    int deleteImageById(SancaiEntryImageId id);
 
-    List<SancaiEntryImage> listImagesByEntryId(Long entryId, SortDirection sortDirection);
+    List<SancaiEntryImage> listImagesByEntryId(SancaiEntryId entryId, SortDirection sortDirection);
 
-    Long insertVisualAsset(SancaiVisualAsset visualAsset);
+    SancaiVisualAssetId insertVisualAsset(SancaiVisualAsset visualAsset);
 
     int updateVisualAsset(SancaiVisualAsset visualAsset);
 
-    int updateCurrentVisualAsset(Long entryId, Long visualAssetId);
+    int updateCurrentVisualAsset(SancaiEntryId entryId, SancaiVisualAssetId visualAssetId);
 
-    List<SancaiVisualAsset> listVisualAssetsByEntryId(Long entryId);
+    List<SancaiVisualAsset> listVisualAssetsByEntryId(SancaiEntryId entryId);
 
-    Long insertShowcase(SancaiShowcase showcase);
+    SancaiShowcaseId insertShowcase(SancaiShowcase showcase);
 
     int updateShowcase(SancaiShowcase showcase);
 

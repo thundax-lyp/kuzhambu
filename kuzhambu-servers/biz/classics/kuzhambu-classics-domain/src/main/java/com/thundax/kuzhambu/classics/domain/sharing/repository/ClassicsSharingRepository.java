@@ -4,32 +4,36 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareAccessRecord;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareLink;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareTarget;
+import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareAccessRecordId;
+import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareLinkId;
+import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareTargetId;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import java.util.List;
 
 public interface ClassicsSharingRepository {
 
-    ClassicsShareLink getLinkById(Long id);
+    ClassicsShareLink getLinkById(ClassicsShareLinkId id);
 
     ClassicsShareLink getLinkByTokenHash(String tokenHash);
 
     Page<ClassicsShareLink> pageLinks(String status, String visibility, int pageNo, int pageSize);
 
-    Long insertLink(ClassicsShareLink link);
+    ClassicsShareLinkId insertLink(ClassicsShareLink link);
 
     int updateLink(ClassicsShareLink link);
 
-    int updateLinkStatus(Long id, String status);
+    int updateLinkStatus(ClassicsShareLinkId id, String status);
 
-    int increaseAccessCount(Long id);
+    int increaseAccessCount(ClassicsShareLinkId id);
 
-    List<ClassicsShareTarget> listTargetsByLinkId(Long shareLinkId, SortDirection sortDirection);
+    List<ClassicsShareTarget> listTargetsByLinkId(ClassicsShareLinkId shareLinkId, SortDirection sortDirection);
 
-    Long insertTarget(ClassicsShareTarget target);
+    ClassicsShareTargetId insertTarget(ClassicsShareTarget target);
 
-    int updateTargetStatus(Long id, String targetStatus);
+    int updateTargetStatus(ClassicsShareTargetId id, String targetStatus);
 
-    Long insertAccessRecord(ClassicsShareAccessRecord record);
+    ClassicsShareAccessRecordId insertAccessRecord(ClassicsShareAccessRecord record);
 
-    Page<ClassicsShareAccessRecord> pageAccessRecords(Long shareLinkId, Long shareTargetId, int pageNo, int pageSize);
+    Page<ClassicsShareAccessRecord> pageAccessRecords(
+            ClassicsShareLinkId shareLinkId, ClassicsShareTargetId shareTargetId, int pageNo, int pageSize);
 }

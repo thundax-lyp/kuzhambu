@@ -2,7 +2,9 @@ package com.thundax.kuzhambu.classics.domain.content.model.entity;
 
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentChangeType;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
-import java.time.LocalDateTime;
+import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
+import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentVersionId;
+import java.util.Date;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,11 +15,11 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ClassicsContentVersion {
-    private Long id;
+    private ClassicsContentVersionId id;
     private ClassicsContentType contentType;
-    private Long contentId;
+    private ClassicsContentId contentId;
     private int versionNo;
-    private LocalDateTime versionedAt;
+    private Date versionedAt;
     private String snapshotJson;
     private ClassicsContentChangeType changeType;
     private String changeSummary;
