@@ -35,13 +35,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-@Tag(name = "系统模块", description = "系统管理")
+@Tag(name = "系统模块-部门", description = "部门")
 @SysLogger(module = {"系统", "部门"})
 @RequestMapping(value = "/api/sys/department")
 @WrappedApiController
 public class DepartmentController {
-
-    private static final String DEPARTMENT_NAME = "department";
 
     private final DepartmentApplicationService departmentService;
 
