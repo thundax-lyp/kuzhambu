@@ -26,9 +26,15 @@ public interface ClassicsSharingRepository {
 
     int increaseAccessCount(ClassicsShareLinkId id);
 
+    List<ClassicsShareTarget> listTargets(SortDirection sortDirection);
+
     List<ClassicsShareTarget> listTargetsByLinkId(ClassicsShareLinkId shareLinkId, SortDirection sortDirection);
 
+    int maxTargetPriority();
+
     ClassicsShareTargetId insertTarget(ClassicsShareTarget target);
+
+    int updateTargetPriority(ClassicsShareTarget target);
 
     int updateTargetStatus(ClassicsShareTargetId id, String targetStatus);
 

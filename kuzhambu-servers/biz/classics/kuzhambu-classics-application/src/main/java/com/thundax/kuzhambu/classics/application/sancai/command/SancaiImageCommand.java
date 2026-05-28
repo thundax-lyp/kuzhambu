@@ -18,5 +18,4 @@ public class SancaiImageCommand {
     private SancaiEntryImageType imageType;
     private String title;
     private boolean currentUsed;
-    private int priority;
 }

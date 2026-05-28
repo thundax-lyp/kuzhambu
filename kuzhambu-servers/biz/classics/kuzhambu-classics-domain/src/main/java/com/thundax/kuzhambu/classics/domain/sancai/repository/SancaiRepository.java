@@ -12,13 +12,27 @@ import java.util.List;
 
 public interface SancaiRepository {
 
+    List<SancaiCategory> listCategoriesByIds(List<Long> idList);
+
     SancaiCategory getCategoryById(SancaiCategoryId id);
 
     List<SancaiCategory> listCategories(SortDirection sortDirection);
 
+    int maxCategoryPriority();
+
     SancaiVolume getVolumeById(SancaiVolumeId id);
 
+    List<SancaiVolume> listVolumes(SortDirection sortDirection);
+
     List<SancaiVolume> listVolumesByCategoryId(SancaiCategoryId categoryId, SortDirection sortDirection);
+
+    List<SancaiEntry> listEntries(SortDirection sortDirection);
+
+    List<SancaiEntry> listEntriesByVolumeId(SancaiVolumeId volumeId, SortDirection sortDirection);
+
+    int maxVolumePriority();
+
+    int maxEntryPriority();
 
     SancaiEntry getEntryById(SancaiEntryId id);
 
@@ -44,4 +58,10 @@ public interface SancaiRepository {
     int updateEntryVisibility(SancaiEntryId id, String visibility);
 
     int deleteEntryById(SancaiEntryId id);
+
+    int updateCategoryPriority(SancaiCategory category);
+
+    int updateVolumePriority(SancaiVolume volume);
+
+    int updateEntryPriority(SancaiEntry entry);
 }

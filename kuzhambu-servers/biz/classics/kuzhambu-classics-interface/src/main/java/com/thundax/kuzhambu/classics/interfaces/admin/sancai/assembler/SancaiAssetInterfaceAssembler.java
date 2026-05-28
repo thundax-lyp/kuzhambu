@@ -28,8 +28,7 @@ public final class SancaiAssetInterfaceAssembler {
                 StorageObjectIdCodec.toDomain(request.getStorageObjectId()),
                 StringUtils.isBlank(request.getImageType()) ? null : SancaiEntryImageType.from(request.getImageType()),
                 request.getTitle(),
-                request.isCurrentUsed(),
-                request.getPriority());
+                request.isCurrentUsed());
     }
 
     public static SancaiShowcaseCommand toShowcaseCommand(SancaiAssetRequest request) {

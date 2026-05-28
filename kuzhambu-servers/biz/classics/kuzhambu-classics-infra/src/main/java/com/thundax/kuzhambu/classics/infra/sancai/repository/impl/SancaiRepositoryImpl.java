@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.classics.infra.sancai.repository.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiCategoryIdCodec;
@@ -22,6 +23,7 @@ import com.thundax.kuzhambu.classics.infra.sancai.persistence.mapper.SancaiMappe
 import com.thundax.kuzhambu.classics.infra.sancai.persistence.mapper.SancaiVolumeMapper;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import java.util.List;
+import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Repository;
 
@@ -40,6 +42,14 @@ public class SancaiRepositoryImpl implements SancaiRepository {
     }
 
     @Override
+    public List<SancaiCategory> listCategoriesByIds(List<Long> idList) {
+        if (idList == null || idList.isEmpty()) {
+            return List.of();
+        }
+        return SancaiPersistenceAssembler.toCategoryDomainList(categoryMapper.selectBatchIds(idList));
+    }
+
+    @Override
     public SancaiCategory getCategoryById(SancaiCategoryId id) {
         return SancaiPersistenceAssembler.toCategoryDomain(categoryMapper.selectById(id == null ? null : id.value()));
     }
@@ -52,8 +62,20 @@ public class SancaiRepositoryImpl implements SancaiRepository {
     }
 
     @Override
+    public int maxCategoryPriority() {
+        return maxPriority(categoryMapper.selectObjs(new QueryWrapper<SancaiCategoryDO>().select("max(priority)")));
+    }
+
+    @Override
     public SancaiVolume getVolumeById(SancaiVolumeId id) {
         return SancaiPersistenceAssembler.toVolumeDomain(volumeMapper.selectById(SancaiVolumeIdCodec.toValue(id)));
+    }
+
+    @Override
+    public List<SancaiVolume> listVolumes(SortDirection sortDirection) {
+        LambdaQueryWrapper<SancaiVolumeDO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.orderBy(true, sortDirection != SortDirection.DESC, SancaiVolumeDO::getPriority);
+        return SancaiPersistenceAssembler.toVolumeDomainList(volumeMapper.selectList(wrapper));
     }
 
     @Override
@@ -62,6 +84,31 @@ public class SancaiRepositoryImpl implements SancaiRepository {
         wrapper.eq(categoryId != null, SancaiVolumeDO::getCategoryId, SancaiCategoryIdCodec.toValue(categoryId));
         wrapper.orderBy(true, sortDirection != SortDirection.DESC, SancaiVolumeDO::getPriority);
         return SancaiPersistenceAssembler.toVolumeDomainList(volumeMapper.selectList(wrapper));
+    }
+
+    @Override
+    public List<SancaiEntry> listEntries(SortDirection sortDirection) {
+        LambdaQueryWrapper<SancaiEntryDO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.orderBy(true, sortDirection != SortDirection.DESC, SancaiEntryDO::getPriority);
+        return SancaiPersistenceAssembler.toEntryDomainList(entryMapper.selectList(wrapper));
+    }
+
+    @Override
+    public List<SancaiEntry> listEntriesByVolumeId(SancaiVolumeId volumeId, SortDirection sortDirection) {
+        LambdaQueryWrapper<SancaiEntryDO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(volumeId != null, SancaiEntryDO::getVolumeId, SancaiVolumeIdCodec.toValue(volumeId));
+        wrapper.orderBy(true, sortDirection != SortDirection.DESC, SancaiEntryDO::getPriority);
+        return SancaiPersistenceAssembler.toEntryDomainList(entryMapper.selectList(wrapper));
+    }
+
+    @Override
+    public int maxVolumePriority() {
+        return maxPriority(volumeMapper.selectObjs(new QueryWrapper<SancaiVolumeDO>().select("max(priority)")));
+    }
+
+    @Override
+    public int maxEntryPriority() {
+        return maxPriority(entryMapper.selectObjs(new QueryWrapper<SancaiEntryDO>().select("max(priority)")));
     }
 
     @Override
@@ -112,7 +159,22 @@ public class SancaiRepositoryImpl implements SancaiRepository {
 
     @Override
     public int updateEntry(SancaiEntry entry) {
-        return entryMapper.updateById(SancaiPersistenceAssembler.toEntryObject(entry));
+        SancaiEntryDO dataObject = SancaiPersistenceAssembler.toEntryObject(entry);
+        return entryMapper.update(
+                null,
+                new LambdaUpdateWrapper<SancaiEntryDO>()
+                        .eq(SancaiEntryDO::getId, dataObject.getId())
+                        .set(SancaiEntryDO::getVolumeId, dataObject.getVolumeId())
+                        .set(SancaiEntryDO::getTitle, dataObject.getTitle())
+                        .set(SancaiEntryDO::getOriginalText, dataObject.getOriginalText())
+                        .set(SancaiEntryDO::getTranslationText, dataObject.getTranslationText())
+                        .set(SancaiEntryDO::getSummary, dataObject.getSummary())
+                        .set(SancaiEntryDO::getLifecycleStatus, dataObject.getLifecycleStatus())
+                        .set(SancaiEntryDO::getVisibility, dataObject.getVisibility())
+                        .set(SancaiEntryDO::getTranslationStatus, dataObject.getTranslationStatus())
+                        .set(SancaiEntryDO::getImageStatus, dataObject.getImageStatus())
+                        .set(SancaiEntryDO::getVisualAssetStatus, dataObject.getVisualAssetStatus())
+                        .set(SancaiEntryDO::getRefinementStatus, dataObject.getRefinementStatus()));
     }
 
     @Override
@@ -140,5 +202,53 @@ public class SancaiRepositoryImpl implements SancaiRepository {
     @Override
     public int deleteEntryById(SancaiEntryId id) {
         return entryMapper.deleteById(SancaiEntryIdCodec.toValue(id));
+    }
+
+    @Override
+    public int updateCategoryPriority(SancaiCategory category) {
+        SancaiCategoryDO dataObject = SancaiPersistenceAssembler.toCategoryObject(category);
+        return categoryMapper.update(
+                null,
+                new LambdaUpdateWrapper<SancaiCategoryDO>()
+                        .eq(SancaiCategoryDO::getId, dataObject.getId())
+                        .set(SancaiCategoryDO::getPriority, dataObject.getPriority()));
+    }
+
+    @Override
+    public int updateVolumePriority(SancaiVolume volume) {
+        SancaiVolumeDO dataObject = SancaiPersistenceAssembler.toVolumeObject(volume);
+        return volumeMapper.update(
+                null,
+                new LambdaUpdateWrapper<SancaiVolumeDO>()
+                        .eq(SancaiVolumeDO::getId, dataObject.getId())
+                        .set(SancaiVolumeDO::getPriority, dataObject.getPriority()));
+    }
+
+    @Override
+    public int updateEntryPriority(SancaiEntry entry) {
+        SancaiEntryDO dataObject = SancaiPersistenceAssembler.toEntryObject(entry);
+        return entryMapper.update(
+                null,
+                new LambdaUpdateWrapper<SancaiEntryDO>()
+                        .eq(SancaiEntryDO::getId, dataObject.getId())
+                        .set(SancaiEntryDO::getPriority, dataObject.getPriority()));
+    }
+
+    private static int maxPriority(List<Object> values) {
+        if (values == null || values.isEmpty()) {
+            return 0;
+        }
+        Object max = values.stream().filter(Objects::nonNull).findFirst().orElse(null);
+        if (max == null) {
+            return 0;
+        }
+        if (max instanceof Number) {
+            return ((Number) max).intValue();
+        }
+        try {
+            return Integer.parseInt(String.valueOf(max));
+        } catch (NumberFormatException exception) {
+            return 0;
+        }
     }
 }

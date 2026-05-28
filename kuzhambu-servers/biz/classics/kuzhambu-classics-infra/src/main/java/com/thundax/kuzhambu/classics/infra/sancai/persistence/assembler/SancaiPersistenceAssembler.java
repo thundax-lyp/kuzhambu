@@ -55,6 +55,18 @@ public final class SancaiPersistenceAssembler {
         return entities;
     }
 
+    public static SancaiCategoryDO toCategoryObject(SancaiCategory entity) {
+        if (entity == null) {
+            return null;
+        }
+        SancaiCategoryDO dataObject = new SancaiCategoryDO();
+        dataObject.setId(SancaiCategoryIdCodec.toValue(entity.getId()));
+        dataObject.setTitle(entity.getTitle());
+        dataObject.setCategoryType(entity.getCategoryType() == null ? null : entity.getCategoryType().value());
+        dataObject.setPriority(entity.getPriority());
+        return dataObject;
+    }
+
     public static SancaiVolume toVolumeDomain(SancaiVolumeDO dataObject) {
         if (dataObject == null) {
             return null;
@@ -77,6 +89,19 @@ public final class SancaiPersistenceAssembler {
             }
         }
         return entities;
+    }
+
+    public static SancaiVolumeDO toVolumeObject(SancaiVolume entity) {
+        if (entity == null) {
+            return null;
+        }
+        SancaiVolumeDO dataObject = new SancaiVolumeDO();
+        dataObject.setId(SancaiVolumeIdCodec.toValue(entity.getId()));
+        dataObject.setCategoryId(SancaiCategoryIdCodec.toValue(entity.getCategoryId()));
+        dataObject.setTitle(entity.getTitle());
+        dataObject.setVolumeType(entity.getVolumeType() == null ? null : entity.getVolumeType().value());
+        dataObject.setPriority(entity.getPriority());
+        return dataObject;
     }
 
     public static SancaiEntryDO toEntryObject(SancaiEntry entity) {

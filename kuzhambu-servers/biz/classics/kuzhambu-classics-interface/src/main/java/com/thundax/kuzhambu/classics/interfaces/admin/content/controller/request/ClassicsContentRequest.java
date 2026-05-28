@@ -34,9 +34,6 @@ public class ClassicsContentRequest extends PageRequest {
     @JsonProperty("status")
     private String status;
 
-    @JsonProperty("priority")
-    private int priority;
-
     @JsonProperty("question")
     private String question;
 

@@ -13,5 +13,4 @@ import lombok.Setter;
 public class MingCustomsKeywordCommand {
     private MingCustomsEntryId customId;
     private String keyword;
-    private int priority;
 }

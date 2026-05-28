@@ -184,10 +184,8 @@ public class DictController {
     }
 
     private List<Long> readOrderedIds(List<String> sourceList) {
-        List<String> orderedIdValues = RequestListHelper.present(sourceList);
-        if (sourceList == null || orderedIdValues.size() != sourceList.size() || orderedIdValues.isEmpty()) {
-            throw AdminResponseExceptions.invalidParameter("orderedIds");
-        }
+        List<String> orderedIdValues =
+                RequestListHelper.presentUnique(sourceList, "orderedIds", AdminResponseExceptions::invalidParameter);
         List<Long> orderedIds = orderedIdValues.stream()
                 .map(value -> Long.valueOf(value.trim()))
                 .collect(Collectors.toList());

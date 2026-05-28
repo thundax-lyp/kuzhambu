@@ -37,7 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
 @BizExceptionBoundary
 public class RoleApplicationServiceImpl implements RoleApplicationService {
 
-    private static final int PRIORITY_STEP = 10;
+    private static final int PRIORITY_STEP = 1;
 
     private final RoleRepository dao;
     private final List<CacheChangedListener> cacheChangedListeners;

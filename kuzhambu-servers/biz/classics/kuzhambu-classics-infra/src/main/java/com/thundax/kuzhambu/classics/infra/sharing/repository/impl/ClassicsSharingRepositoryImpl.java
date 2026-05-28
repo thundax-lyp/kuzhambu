@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.classics.infra.sharing.repository.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.classics.domain.sharing.codec.ClassicsShareAccessRecordIdCodec;
@@ -22,6 +23,7 @@ import com.thundax.kuzhambu.classics.infra.sharing.persistence.mapper.ClassicsSh
 import com.thundax.kuzhambu.classics.infra.sharing.persistence.mapper.ClassicsSharingMapper;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import java.util.List;
+import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Repository;
 
@@ -88,17 +90,39 @@ public class ClassicsSharingRepositoryImpl implements ClassicsSharingRepository 
                         .setSql("access_count = access_count + 1"));
     }
 
+    @Override
+    public List<ClassicsShareTarget> listTargets(SortDirection sortDirection) {
+        return ClassicsSharingPersistenceAssembler.toTargetDomainList(
+                targetMapper.selectList(new LambdaQueryWrapper<ClassicsShareTargetDO>()
+                        .orderBy(true, sortDirection != SortDirection.DESC, ClassicsShareTargetDO::getPriority)));
+    }
+
     public List<ClassicsShareTarget> listTargetsByLinkId(ClassicsShareLinkId shareLinkId, SortDirection sortDirection) {
         return ClassicsSharingPersistenceAssembler.toTargetDomainList(
                 targetMapper.selectList(new LambdaQueryWrapper<ClassicsShareTargetDO>()
-                        .eq(ClassicsShareTargetDO::getShareLinkId, ClassicsShareLinkIdCodec.toValue(shareLinkId))
+                        .eq(shareLinkId != null, ClassicsShareTargetDO::getShareLinkId, ClassicsShareLinkIdCodec.toValue(shareLinkId))
                         .orderBy(true, sortDirection != SortDirection.DESC, ClassicsShareTargetDO::getPriority)));
+    }
+
+    @Override
+    public int maxTargetPriority() {
+        return maxPriority(targetMapper.selectObjs(new QueryWrapper<ClassicsShareTargetDO>().select("max(priority)")));
     }
 
     public ClassicsShareTargetId insertTarget(ClassicsShareTarget target) {
         ClassicsShareTargetDO dataObject = ClassicsSharingPersistenceAssembler.toTargetObject(target);
         targetMapper.insert(dataObject);
         return ClassicsShareTargetIdCodec.toDomain(dataObject.getId());
+    }
+
+    @Override
+    public int updateTargetPriority(ClassicsShareTarget target) {
+        ClassicsShareTargetDO dataObject = ClassicsSharingPersistenceAssembler.toTargetObject(target);
+        return targetMapper.update(
+                null,
+                new LambdaUpdateWrapper<ClassicsShareTargetDO>()
+                        .eq(ClassicsShareTargetDO::getId, dataObject.getId())
+                        .set(ClassicsShareTargetDO::getPriority, dataObject.getPriority()));
     }
 
     public int updateTargetStatus(ClassicsShareTargetId id, String targetStatus) {
@@ -132,5 +156,23 @@ public class ClassicsSharingRepositoryImpl implements ClassicsSharingRepository 
         entityPage.setTotal(dataPage.getTotal());
         entityPage.setRecords(ClassicsSharingPersistenceAssembler.toAccessDomainList(dataPage.getRecords()));
         return entityPage;
+    }
+
+    private static int maxPriority(List<Object> values) {
+        if (values == null || values.isEmpty()) {
+            return 0;
+        }
+        Object max = values.stream().filter(Objects::nonNull).findFirst().orElse(null);
+        if (max == null) {
+            return 0;
+        }
+        if (max instanceof Number) {
+            return ((Number) max).intValue();
+        }
+        try {
+            return Integer.parseInt(String.valueOf(max));
+        } catch (NumberFormatException exception) {
+            return 0;
+        }
     }
 }

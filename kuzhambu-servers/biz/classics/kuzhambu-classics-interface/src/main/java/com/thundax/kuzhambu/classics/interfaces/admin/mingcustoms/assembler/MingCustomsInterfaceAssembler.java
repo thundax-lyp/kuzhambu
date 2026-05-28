@@ -44,8 +44,7 @@ public final class MingCustomsInterfaceAssembler {
     }
 
     public static MingCustomsKeywordCommand toKeywordCommand(Long customId, MingCustomsRequest request) {
-        return new MingCustomsKeywordCommand(
-                MingCustomsEntryIdCodec.toDomain(customId), request.getKeyword(), request.getPriority());
+        return new MingCustomsKeywordCommand(MingCustomsEntryIdCodec.toDomain(customId), request.getKeyword());
     }
 
     public static MingCustomsResponse toResponse(MingCustomsEntry entity) {

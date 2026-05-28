@@ -31,7 +31,13 @@ public interface MingCustomsRepository {
 
     List<MingCustomsKeyword> listKeywordsByCustomId(MingCustomsEntryId customId, SortDirection sortDirection);
 
+    List<MingCustomsKeyword> listKeywords(SortDirection sortDirection);
+
+    int maxPriority();
+
     MingCustomsKeywordId insertKeyword(MingCustomsKeyword keyword);
+
+    int updateKeywordPriority(MingCustomsKeyword keyword);
 
     int deleteKeywordById(MingCustomsKeywordId id);
 

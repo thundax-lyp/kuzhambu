@@ -24,17 +24,16 @@ public class ContentTagCommand {
     private String tagNameSnapshot;
     private ClassicsContentSource source;
     private ClassicsContentTagStatus status;
-    private int priority;
 
     public ClassicsContentTag toEntity() {
-        return new ClassicsContentTag(
-                ClassicsContentTagIdCodec.toDomain(id),
-                contentType,
-                ClassicsContentIdCodec.toDomain(contentId),
-                KnowledgeTagIdCodec.toDomain(tagId),
-                tagNameSnapshot,
-                source,
-                status,
-                priority);
+        ClassicsContentTag tag = new ClassicsContentTag();
+        tag.setId(ClassicsContentTagIdCodec.toDomain(id));
+        tag.setContentType(contentType);
+        tag.setContentId(ClassicsContentIdCodec.toDomain(contentId));
+        tag.setTagId(KnowledgeTagIdCodec.toDomain(tagId));
+        tag.setTagNameSnapshot(tagNameSnapshot);
+        tag.setSource(source);
+        tag.setStatus(status);
+        return tag;
     }
 }

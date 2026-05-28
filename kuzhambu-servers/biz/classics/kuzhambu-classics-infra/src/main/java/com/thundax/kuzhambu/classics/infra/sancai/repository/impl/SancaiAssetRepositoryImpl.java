@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.classics.infra.sancai.repository.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryDraftIdCodec;
@@ -29,6 +30,7 @@ import com.thundax.kuzhambu.classics.infra.sancai.persistence.mapper.SancaiShowc
 import com.thundax.kuzhambu.classics.infra.sancai.persistence.mapper.SancaiVisualAssetMapper;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import java.util.List;
+import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Repository;
 
@@ -82,7 +84,16 @@ public class SancaiAssetRepositoryImpl implements SancaiAssetRepository {
 
     @Override
     public int updateImage(SancaiEntryImage image) {
-        return imageMapper.updateById(SancaiAssetPersistenceAssembler.toImageObject(image));
+        SancaiEntryImageDO dataObject = SancaiAssetPersistenceAssembler.toImageObject(image);
+        return imageMapper.update(
+                null,
+                new LambdaUpdateWrapper<SancaiEntryImageDO>()
+                        .eq(SancaiEntryImageDO::getId, dataObject.getId())
+                        .set(SancaiEntryImageDO::getEntryId, dataObject.getEntryId())
+                        .set(SancaiEntryImageDO::getStorageObjectId, dataObject.getStorageObjectId())
+                        .set(SancaiEntryImageDO::getImageType, dataObject.getImageType())
+                        .set(SancaiEntryImageDO::getTitle, dataObject.getTitle())
+                        .set(SancaiEntryImageDO::getCurrentUsed, dataObject.getCurrentUsed()));
     }
 
     @Override
@@ -91,11 +102,39 @@ public class SancaiAssetRepositoryImpl implements SancaiAssetRepository {
     }
 
     @Override
+    public SancaiEntryImage getImageById(SancaiEntryImageId id) {
+        return SancaiAssetPersistenceAssembler.toImageDomain(
+                imageMapper.selectById(SancaiEntryImageIdCodec.toValue(id)));
+    }
+
+    @Override
+    public List<SancaiEntryImage> listImages(SortDirection sortDirection) {
+        return SancaiAssetPersistenceAssembler.toImageDomainList(
+                imageMapper.selectList(new LambdaQueryWrapper<SancaiEntryImageDO>()
+                        .orderBy(true, sortDirection != SortDirection.DESC, SancaiEntryImageDO::getPriority)));
+    }
+
+    @Override
     public List<SancaiEntryImage> listImagesByEntryId(SancaiEntryId entryId, SortDirection sortDirection) {
         LambdaQueryWrapper<SancaiEntryImageDO> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(SancaiEntryImageDO::getEntryId, SancaiEntryIdCodec.toValue(entryId))
                 .orderBy(true, sortDirection != SortDirection.DESC, SancaiEntryImageDO::getPriority);
         return SancaiAssetPersistenceAssembler.toImageDomainList(imageMapper.selectList(wrapper));
+    }
+
+    @Override
+    public int maxPriority() {
+        return maxPriority(imageMapper.selectObjs(new QueryWrapper<SancaiEntryImageDO>().select("max(priority)")));
+    }
+
+    @Override
+    public int updatePriority(SancaiEntryImage image) {
+        SancaiEntryImageDO dataObject = SancaiAssetPersistenceAssembler.toImageObject(image);
+        return imageMapper.update(
+                null,
+                new LambdaUpdateWrapper<SancaiEntryImageDO>()
+                        .eq(SancaiEntryImageDO::getId, dataObject.getId())
+                        .set(SancaiEntryImageDO::getPriority, dataObject.getPriority()));
     }
 
     @Override
@@ -155,5 +194,23 @@ public class SancaiAssetRepositoryImpl implements SancaiAssetRepository {
         entityPage.setTotal(dataPage.getTotal());
         entityPage.setRecords(SancaiAssetPersistenceAssembler.toShowcaseDomainList(dataPage.getRecords()));
         return entityPage;
+    }
+
+    private static int maxPriority(List<Object> values) {
+        if (values == null || values.isEmpty()) {
+            return 0;
+        }
+        Object max = values.stream().filter(Objects::nonNull).findFirst().orElse(null);
+        if (max == null) {
+            return 0;
+        }
+        if (max instanceof Number) {
+            return ((Number) max).intValue();
+        }
+        try {
+            return Integer.parseInt(String.valueOf(max));
+        } catch (NumberFormatException exception) {
+            return 0;
+        }
     }
 }

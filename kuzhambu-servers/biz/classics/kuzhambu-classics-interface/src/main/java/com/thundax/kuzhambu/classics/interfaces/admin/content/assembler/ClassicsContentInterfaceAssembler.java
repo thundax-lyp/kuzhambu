@@ -29,8 +29,7 @@ public final class ClassicsContentInterfaceAssembler {
                 source(request.getSource()),
                 StringUtils.isBlank(request.getStatus())
                         ? ClassicsContentTagStatus.ACTIVE
-                        : ClassicsContentTagStatus.from(request.getStatus()),
-                request.getPriority());
+                        : ClassicsContentTagStatus.from(request.getStatus()));
     }
 
     public static ContentQaPairCommand toQaCommand(ClassicsContentRequest request) {
@@ -40,8 +39,7 @@ public final class ClassicsContentInterfaceAssembler {
                 request.getContentId(),
                 request.getQuestion(),
                 request.getAnswer(),
-                source(request.getSource()),
-                request.getPriority());
+                source(request.getSource()));
     }
 
     public static ContentExportCommand toExportCommand(ClassicsContentRequest request) {

@@ -49,8 +49,7 @@ public final class SancaiInterfaceAssembler {
                 fromTranslation(request.getTranslationStatus()),
                 fromImage(request.getImageStatus()),
                 fromVisualAsset(request.getVisualAssetStatus()),
-                fromRefinement(request.getRefinementStatus()),
-                request.getPriority());
+                fromRefinement(request.getRefinementStatus()));
     }
 
     public static SancaiEntryResponse toResponse(SancaiEntry entity) {

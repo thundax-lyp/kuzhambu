@@ -2,6 +2,9 @@ package com.thundax.kuzhambu.classics.application.sancai.service;
 
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntrySaveCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryStatusCommand;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiCategorySortCommand;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntrySortCommand;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVolumeSortCommand;
 import com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryPageQuery;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiCategory;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
@@ -17,6 +20,12 @@ public interface SancaiApplicationService {
     List<SancaiCategory> listCategories();
 
     List<SancaiVolume> listVolumes(SancaiCategoryId categoryId);
+
+    void sortCategories(SancaiCategorySortCommand command);
+
+    void sortVolumes(SancaiVolumeSortCommand command);
+
+    void sortEntries(SancaiEntrySortCommand command);
 
     SancaiEntry getEntry(SancaiEntryId id);
 

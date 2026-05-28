@@ -1,19 +1,24 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller;
 
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkCreateCommand;
+import com.thundax.kuzhambu.classics.application.sharing.command.ClassicsShareTargetSortCommand;
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkStatusCommand;
 import com.thundax.kuzhambu.classics.application.sharing.service.ClassicsSharingApplicationService;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisibilityRiskStatus;
 import com.thundax.kuzhambu.classics.domain.sharing.codec.ClassicsShareLinkIdCodec;
+import com.thundax.kuzhambu.classics.domain.sharing.codec.ClassicsShareTargetIdCodec;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareLink;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareLinkStatus;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareVisibility;
 import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareLinkId;
+import com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller.request.ClassicsShareTargetSortRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller.request.ClassicsSharingRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller.response.ClassicsSharingResponse;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
+import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
+import com.thundax.kuzhambu.common.web.request.RequestListHelper;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -68,6 +73,23 @@ public class ClassicsSharingAdminController {
                 ClassicsShareLinkIdCodec.toDomain(request.getId()), ClassicsShareLinkStatus.from(request.getStatus())));
     }
 
+    @Operation(summary = "排序古籍分享目标", description = "classics:sharing:edit")
+    @ApiImplicitParams({})
+    @HasPermission("classics:sharing:edit")
+    @SysLogger(value = "目标排序")
+    @PostMapping("targets/sort")
+    public Boolean sortTargets(@Valid @RequestBody ClassicsShareTargetSortRequest request) {
+        service.sortTargets(new ClassicsShareTargetSortCommand(
+                RequestListHelper.map(
+                        RequestListHelper.presentUnique(
+                                request == null ? null : request.getOrderedIds(),
+                                "orderedIds",
+                                AdminResponseExceptions::invalidParameter),
+                        ClassicsShareTargetIdCodec::toDomain),
+                request == null ? null : request.getSortDirection()));
+        return true;
+    }
+
     @Operation(summary = "查看古籍分享", description = "classics:sharing:view")
     @ApiImplicitParams({})
     @HasPermission("classics:sharing:view")
@@ -96,4 +118,5 @@ public class ClassicsSharingAdminController {
                         .accessCount(link.getAccessCount())
                         .build();
     }
+
 }

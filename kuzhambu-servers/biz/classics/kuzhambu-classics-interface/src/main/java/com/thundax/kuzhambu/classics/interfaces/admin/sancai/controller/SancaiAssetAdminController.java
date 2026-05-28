@@ -1,16 +1,21 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller;
 
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiAssetApplicationService;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImageSortCommand;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
-import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryDraftId;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryImageIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryImageId;
+import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryDraftId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiShowcaseId;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.assembler.SancaiAssetInterfaceAssembler;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiAssetRequest;
+import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiEntryImageSortRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response.SancaiAssetResponse;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
+import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
+import com.thundax.kuzhambu.common.web.request.RequestListHelper;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -74,6 +79,23 @@ public class SancaiAssetAdminController {
                 .toList();
     }
 
+    @Operation(summary = "排序三才图会图片", description = "classics:sancai:edit")
+    @ApiImplicitParams({})
+    @HasPermission("classics:sancai:edit")
+    @SysLogger(value = "图片排序")
+    @PostMapping("images/sort")
+    public Boolean sortImages(@Valid @RequestBody SancaiEntryImageSortRequest request) {
+        service.sortImages(new SancaiEntryImageSortCommand(
+                RequestListHelper.map(
+                        RequestListHelper.presentUnique(
+                                request == null ? null : request.getOrderedIds(),
+                                "orderedIds",
+                                AdminResponseExceptions::invalidParameter),
+                        SancaiEntryImageIdCodec::toDomain),
+                request == null ? null : request.getSortDirection()));
+        return true;
+    }
+
     @Operation(summary = "创建三才图会静态展示任务", description = "classics:sancai:edit")
     @ApiImplicitParams({})
     @HasPermission("classics:sancai:edit")
@@ -83,4 +105,5 @@ public class SancaiAssetAdminController {
         SancaiShowcaseId id = service.requestShowcase(SancaiAssetInterfaceAssembler.toShowcaseCommand(request));
         return SancaiAssetResponse.builder().id(id == null ? null : id.value()).build();
     }
+
 }

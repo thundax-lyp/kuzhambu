@@ -29,9 +29,6 @@ public class SancaiAssetRequest {
     @JsonProperty("currentUsed")
     private boolean currentUsed;
 
-    @JsonProperty("priority")
-    private int priority;
-
     @JsonProperty("draftJson")
     private String draftJson;
 

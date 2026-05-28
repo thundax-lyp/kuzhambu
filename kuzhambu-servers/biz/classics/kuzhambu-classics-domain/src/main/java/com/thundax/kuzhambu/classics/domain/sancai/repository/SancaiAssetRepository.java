@@ -27,7 +27,15 @@ public interface SancaiAssetRepository {
 
     int deleteImageById(SancaiEntryImageId id);
 
+    SancaiEntryImage getImageById(SancaiEntryImageId id);
+
+    List<SancaiEntryImage> listImages(SortDirection sortDirection);
+
     List<SancaiEntryImage> listImagesByEntryId(SancaiEntryId entryId, SortDirection sortDirection);
+
+    int maxPriority();
+
+    int updatePriority(SancaiEntryImage image);
 
     SancaiVisualAssetId insertVisualAsset(SancaiVisualAsset visualAsset);
 

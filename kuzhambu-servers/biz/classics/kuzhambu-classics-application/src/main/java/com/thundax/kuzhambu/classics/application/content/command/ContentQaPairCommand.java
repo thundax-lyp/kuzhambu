@@ -21,16 +21,15 @@ public class ContentQaPairCommand {
     private String question;
     private String answer;
     private ClassicsContentSource source;
-    private int priority;
 
     public ClassicsContentQaPair toEntity() {
-        return new ClassicsContentQaPair(
-                ClassicsContentQaPairId.ofNullable(id),
-                contentType,
-                ClassicsContentIdCodec.toDomain(contentId),
-                question,
-                answer,
-                source,
-                priority);
+        ClassicsContentQaPair qaPair = new ClassicsContentQaPair();
+        qaPair.setId(ClassicsContentQaPairId.ofNullable(id));
+        qaPair.setContentType(contentType);
+        qaPair.setContentId(ClassicsContentIdCodec.toDomain(contentId));
+        qaPair.setQuestion(question);
+        qaPair.setAnswer(answer);
+        qaPair.setSource(source);
+        return qaPair;
     }
 }
