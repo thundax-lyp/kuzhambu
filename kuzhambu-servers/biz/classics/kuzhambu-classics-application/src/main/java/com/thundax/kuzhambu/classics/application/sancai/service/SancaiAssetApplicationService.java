@@ -7,29 +7,34 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryDraft
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryImage;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiShowcase;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVisualAsset;
+import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryDraftId;
+import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
+import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryImageId;
+import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiShowcaseId;
+import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVisualAssetId;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import java.util.List;
 
 public interface SancaiAssetApplicationService {
 
-    Long saveDraft(SancaiDraftSaveCommand command);
+    SancaiEntryDraftId saveDraft(SancaiDraftSaveCommand command);
 
-    SancaiEntryDraft getLatestDraft(Long entryId);
+    SancaiEntryDraft getLatestDraft(SancaiEntryId entryId);
 
-    Long saveImage(SancaiImageCommand command);
+    SancaiEntryImageId saveImage(SancaiImageCommand command);
 
-    void deleteImage(Long id);
+    void deleteImage(SancaiEntryImageId id);
 
-    List<SancaiEntryImage> listImages(Long entryId);
+    List<SancaiEntryImage> listImages(SancaiEntryId entryId);
 
-    Long saveVisualAsset(SancaiVisualAsset visualAsset);
+    SancaiVisualAssetId saveVisualAsset(SancaiVisualAsset visualAsset);
 
-    void useVisualAsset(Long entryId, Long visualAssetId);
+    void useVisualAsset(SancaiEntryId entryId, SancaiVisualAssetId visualAssetId);
 
-    List<SancaiVisualAsset> listVisualAssets(Long entryId);
+    List<SancaiVisualAsset> listVisualAssets(SancaiEntryId entryId);
 
-    Long requestShowcase(SancaiShowcaseCommand command);
+    SancaiShowcaseId requestShowcase(SancaiShowcaseCommand command);
 
     PageResult<SancaiShowcase> pageShowcases(String status, PageQuery page);
 }

@@ -7,29 +7,34 @@ import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContent
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentQaPair;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
+import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentExportJobId;
+import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
+import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentQaPairId;
+import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentTagId;
+import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentVersionId;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import java.util.List;
 
 public interface ClassicsContentApplicationService {
 
-    List<ClassicsContentTag> listTags(String contentType, Long contentId);
+    List<ClassicsContentTag> listTags(String contentType, ClassicsContentId contentId);
 
-    Long saveTag(ContentTagCommand command);
+    ClassicsContentTagId saveTag(ContentTagCommand command);
 
-    void deleteTag(Long id);
+    void deleteTag(ClassicsContentTagId id);
 
-    List<ClassicsContentQaPair> listQaPairs(String contentType, Long contentId);
+    List<ClassicsContentQaPair> listQaPairs(String contentType, ClassicsContentId contentId);
 
-    Long saveQaPair(ContentQaPairCommand command);
+    ClassicsContentQaPairId saveQaPair(ContentQaPairCommand command);
 
-    void deleteQaPair(Long id);
+    void deleteQaPair(ClassicsContentQaPairId id);
 
-    List<ClassicsContentVersion> listVersions(String contentType, Long contentId);
+    List<ClassicsContentVersion> listVersions(String contentType, ClassicsContentId contentId);
 
-    ClassicsContentVersion getVersion(Long id);
+    ClassicsContentVersion getVersion(ClassicsContentVersionId id);
 
-    Long createExportJob(ContentExportCommand command);
+    ClassicsContentExportJobId createExportJob(ContentExportCommand command);
 
     PageResult<ClassicsContentExportJob> pageExportJobs(
             String contentType, String exportKind, String status, PageQuery page);

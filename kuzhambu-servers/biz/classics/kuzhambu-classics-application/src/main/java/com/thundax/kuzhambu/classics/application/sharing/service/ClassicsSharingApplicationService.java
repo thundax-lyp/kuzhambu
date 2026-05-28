@@ -6,23 +6,24 @@ import com.thundax.kuzhambu.classics.application.sharing.query.ShareAccessQuery;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareAccessRecord;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareLink;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareTarget;
+import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareLinkId;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import java.util.List;
 
 public interface ClassicsSharingApplicationService {
 
-    ClassicsShareLink getLink(Long id);
+    ClassicsShareLink getLink(ClassicsShareLinkId id);
 
     ClassicsShareLink getLinkByTokenHash(String tokenHash);
 
     PageResult<ClassicsShareLink> pageLinks(String status, String visibility, PageQuery page);
 
-    Long createLink(ShareLinkCreateCommand command);
+    ClassicsShareLinkId createLink(ShareLinkCreateCommand command);
 
     void changeStatus(ShareLinkStatusCommand command);
 
-    List<ClassicsShareTarget> listTargets(Long shareLinkId);
+    List<ClassicsShareTarget> listTargets(ClassicsShareLinkId shareLinkId);
 
     void recordAccess(ClassicsShareAccessRecord record);
 

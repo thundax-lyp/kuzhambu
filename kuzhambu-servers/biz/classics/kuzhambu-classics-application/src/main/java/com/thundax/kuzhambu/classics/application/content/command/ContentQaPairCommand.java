@@ -1,8 +1,10 @@
 package com.thundax.kuzhambu.classics.application.content.command;
 
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentQaPair;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentSource;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
+import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentQaPairId;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,6 +24,13 @@ public class ContentQaPairCommand {
     private int priority;
 
     public ClassicsContentQaPair toEntity() {
-        return new ClassicsContentQaPair(id, contentType, contentId, question, answer, source, priority);
+        return new ClassicsContentQaPair(
+                ClassicsContentQaPairId.ofNullable(id),
+                contentType,
+                ClassicsContentIdCodec.toDomain(contentId),
+                question,
+                answer,
+                source,
+                priority);
     }
 }

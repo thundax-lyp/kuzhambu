@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.classics.application.mingcustoms.command;
 
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsContentFormat;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsVisibility;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsEntryId;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,7 +13,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MingCustomsSaveCommand {
-    private Long id;
+    private MingCustomsEntryId id;
     private String title;
     private String category;
     private String chapter;

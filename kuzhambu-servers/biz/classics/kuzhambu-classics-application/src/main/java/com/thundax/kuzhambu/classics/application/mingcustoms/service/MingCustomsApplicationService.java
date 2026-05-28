@@ -5,27 +5,29 @@ import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustoms
 import com.thundax.kuzhambu.classics.application.mingcustoms.query.MingCustomsPageQuery;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsKeyword;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsEntryId;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsKeywordId;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import java.util.List;
 
 public interface MingCustomsApplicationService {
 
-    MingCustomsEntry get(Long id);
+    MingCustomsEntry get(MingCustomsEntryId id);
 
     PageResult<MingCustomsEntry> page(MingCustomsPageQuery query, PageQuery page);
 
-    Long save(MingCustomsSaveCommand command);
+    MingCustomsEntryId save(MingCustomsSaveCommand command);
 
-    void changeVisibility(Long id, String visibility);
+    void changeVisibility(MingCustomsEntryId id, String visibility);
 
-    void delete(Long id);
+    void delete(MingCustomsEntryId id);
 
-    List<MingCustomsKeyword> listKeywords(Long customId);
+    List<MingCustomsKeyword> listKeywords(MingCustomsEntryId customId);
 
-    Long addKeyword(MingCustomsKeywordCommand command);
+    MingCustomsKeywordId addKeyword(MingCustomsKeywordCommand command);
 
-    void deleteKeyword(Long id);
+    void deleteKeyword(MingCustomsKeywordId id);
 
     List<String> listKeywordCloud(String visibility);
 }

@@ -8,12 +8,13 @@ import com.thundax.kuzhambu.classics.application.sharing.service.ClassicsSharing
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareAccessRecord;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareLink;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareTarget;
+import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareLinkId;
 import com.thundax.kuzhambu.classics.domain.sharing.repository.ClassicsSharingRepository;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
-import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,7 +31,7 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
     }
 
     @Override
-    public ClassicsShareLink getLink(Long id) {
+    public ClassicsShareLink getLink(ClassicsShareLinkId id) {
         return id == null ? null : repository.getLinkById(id);
     }
 
@@ -49,14 +50,14 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Long createLink(ShareLinkCreateCommand command) {
+    public ClassicsShareLinkId createLink(ShareLinkCreateCommand command) {
         ClassicsShareLink link = command.toLink();
         if (link.getIssuedAt() == null) {
-            link.setIssuedAt(LocalDateTime.now());
+            link.setIssuedAt(new Date());
         }
-        Long linkId = repository.insertLink(link);
+        ClassicsShareLinkId linkId = repository.insertLink(link);
         for (ClassicsShareTarget target : command.getTargets()) {
-            target.setShareLinkId(linkId);
+            target.setShareLinkId(linkId == null ? null : linkId);
             repository.insertTarget(target);
         }
         return linkId;
@@ -69,7 +70,7 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
     }
 
     @Override
-    public List<ClassicsShareTarget> listTargets(Long shareLinkId) {
+    public List<ClassicsShareTarget> listTargets(ClassicsShareLinkId shareLinkId) {
         return repository.listTargetsByLinkId(shareLinkId, SortDirection.ASC);
     }
 
@@ -77,7 +78,7 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
     @Transactional(rollbackFor = Exception.class)
     public void recordAccess(ClassicsShareAccessRecord record) {
         if (record.getAccessedAt() == null) {
-            record.setAccessedAt(LocalDateTime.now());
+            record.setAccessedAt(new Date());
         }
         repository.insertAccessRecord(record);
         repository.increaseAccessCount(record.getShareLinkId());

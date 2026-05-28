@@ -5,9 +5,13 @@ import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntrySaveC
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryStatusCommand;
 import com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryPageQuery;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiApplicationService;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiVolumeIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiCategory;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVolume;
+import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiCategoryId;
+import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
 import com.thundax.kuzhambu.classics.domain.sancai.repository.SancaiRepository;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
@@ -34,19 +38,19 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
     }
 
     @Override
-    public List<SancaiVolume> listVolumes(Long categoryId) {
+    public List<SancaiVolume> listVolumes(SancaiCategoryId categoryId) {
         return repository.listVolumesByCategoryId(categoryId, SortDirection.ASC);
     }
 
     @Override
-    public SancaiEntry getEntry(Long id) {
+    public SancaiEntry getEntry(SancaiEntryId id) {
         return id == null ? null : repository.getEntryById(id);
     }
 
     @Override
     public PageResult<SancaiEntry> pageEntries(SancaiEntryPageQuery query, PageQuery page) {
         IPage<SancaiEntry> dataPage = repository.pageEntries(
-                query == null ? null : query.getVolumeId(),
+                query == null ? null : SancaiVolumeIdCodec.toDomain(query.getVolumeId()),
                 query == null ? null : query.getKeyword(),
                 query == null || query.getLifecycleStatus() == null
                         ? null
@@ -75,7 +79,7 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Long saveEntry(SancaiEntrySaveCommand command) {
+    public SancaiEntryId saveEntry(SancaiEntrySaveCommand command) {
         if (command == null) {
             return null;
         }
@@ -94,27 +98,27 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
             return;
         }
         SancaiEntry entry = new SancaiEntry();
-        entry.setId(command.getId());
+        entry.setId(SancaiEntryIdCodec.toDomain(command.getId()));
         entry.setLifecycleStatus(command.getLifecycleStatus());
         repository.updateEntryStatus(entry);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void changeEntryVisibility(Long id, String visibility) {
+    public void changeEntryVisibility(SancaiEntryId id, String visibility) {
         repository.updateEntryVisibility(id, visibility);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteEntry(Long id) {
+    public void deleteEntry(SancaiEntryId id) {
         repository.deleteEntryById(id);
     }
 
     private static SancaiEntry toEntry(SancaiEntrySaveCommand command) {
         SancaiEntry entry = new SancaiEntry();
-        entry.setId(command.getId());
-        entry.setVolumeId(command.getVolumeId());
+        entry.setId(SancaiEntryIdCodec.toDomain(command.getId()));
+        entry.setVolumeId(SancaiVolumeIdCodec.toDomain(command.getVolumeId()));
         entry.setTitle(command.getTitle());
         entry.setOriginalText(command.getOriginalText());
         entry.setTranslationText(command.getTranslationText());

@@ -5,7 +5,11 @@ import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentSa
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentVisibilityCommand;
 import com.thundax.kuzhambu.classics.application.wangqi.query.WangqiDocumentPageQuery;
 import com.thundax.kuzhambu.classics.application.wangqi.service.WangqiDocumentApplicationService;
+import com.thundax.kuzhambu.classics.domain.common.codec.StorageObjectIdCodec;
+import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId;
+import com.thundax.kuzhambu.classics.domain.wangqi.codec.WangqiDocumentIdCodec;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
+import com.thundax.kuzhambu.classics.domain.wangqi.model.valueobject.WangqiDocumentId;
 import com.thundax.kuzhambu.classics.domain.wangqi.repository.WangqiDocumentRepository;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
@@ -27,7 +31,7 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
     }
 
     @Override
-    public WangqiDocument get(Long id) {
+    public WangqiDocument get(WangqiDocumentId id) {
         return id == null ? null : repository.getById(id);
     }
 
@@ -56,7 +60,7 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Long save(WangqiDocumentSaveCommand command) {
+    public WangqiDocumentId save(WangqiDocumentSaveCommand command) {
         WangqiDocument document = toDocument(command);
         if (document.getId() == null) {
             return repository.insert(document);
@@ -67,31 +71,33 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void changeStorageObject(Long id, Long storageObjectId) {
+    public void changeStorageObject(WangqiDocumentId id, StorageObjectId storageObjectId) {
         repository.updateStorageObjectId(id, storageObjectId);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void changeVisibility(WangqiDocumentVisibilityCommand command) {
-        repository.updateVisibility(command.getId(), command.getVisibility().value());
+        repository.updateVisibility(
+                WangqiDocumentIdCodec.toDomain(command.getId()),
+                command.getVisibility().value());
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void delete(Long id) {
+    public void delete(WangqiDocumentId id) {
         repository.deleteById(id);
     }
 
     private static WangqiDocument toDocument(WangqiDocumentSaveCommand command) {
         WangqiDocument document = new WangqiDocument();
-        document.setId(command.getId());
+        document.setId(WangqiDocumentIdCodec.toDomain(command.getId()));
         document.setTitle(command.getTitle());
         document.setSummary(command.getSummary());
         document.setContentFormat(command.getContentFormat());
         document.setContent(command.getContent());
         document.setDocumentTime(command.getDocumentTime());
-        document.setStorageObjectId(command.getStorageObjectId());
+        document.setStorageObjectId(StorageObjectIdCodec.toDomain(command.getStorageObjectId()));
         document.setVisibility(command.getVisibility());
         return document;
     }

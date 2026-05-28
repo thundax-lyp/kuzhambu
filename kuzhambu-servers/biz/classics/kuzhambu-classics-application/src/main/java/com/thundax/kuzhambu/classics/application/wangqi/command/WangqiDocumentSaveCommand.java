@@ -2,7 +2,7 @@ package com.thundax.kuzhambu.classics.application.wangqi.command;
 
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiContentFormat;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
-import java.time.LocalDateTime;
+import java.util.Date;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,7 +18,7 @@ public class WangqiDocumentSaveCommand {
     private String summary;
     private WangqiContentFormat contentFormat;
     private String content;
-    private LocalDateTime documentTime;
+    private Date documentTime;
     private Long storageObjectId;
     private WangqiDocumentVisibility visibility;
 }

@@ -7,6 +7,8 @@ import com.thundax.kuzhambu.classics.application.mingcustoms.query.MingCustomsPa
 import com.thundax.kuzhambu.classics.application.mingcustoms.service.MingCustomsApplicationService;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsKeyword;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsEntryId;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsKeywordId;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.repository.MingCustomsRepository;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
@@ -28,7 +30,7 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
     }
 
     @Override
-    public MingCustomsEntry get(Long id) {
+    public MingCustomsEntry get(MingCustomsEntryId id) {
         return id == null ? null : repository.getById(id);
     }
 
@@ -50,8 +52,11 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Long save(MingCustomsSaveCommand command) {
+    public MingCustomsEntryId save(MingCustomsSaveCommand command) {
         MingCustomsEntry entry = toEntry(command);
+        if (entry == null) {
+            return null;
+        }
         if (entry.getId() == null) {
             return repository.insert(entry);
         }
@@ -61,24 +66,27 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void changeVisibility(Long id, String visibility) {
+    public void changeVisibility(MingCustomsEntryId id, String visibility) {
         repository.updateVisibility(id, visibility);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void delete(Long id) {
+    public void delete(MingCustomsEntryId id) {
         repository.deleteById(id);
     }
 
     @Override
-    public List<MingCustomsKeyword> listKeywords(Long customId) {
+    public List<MingCustomsKeyword> listKeywords(MingCustomsEntryId customId) {
         return repository.listKeywordsByCustomId(customId, SortDirection.ASC);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Long addKeyword(MingCustomsKeywordCommand command) {
+    public MingCustomsKeywordId addKeyword(MingCustomsKeywordCommand command) {
+        if (command == null) {
+            return null;
+        }
         MingCustomsKeyword keyword = new MingCustomsKeyword();
         keyword.setCustomId(command.getCustomId());
         keyword.setKeyword(command.getKeyword());
@@ -88,7 +96,7 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteKeyword(Long id) {
+    public void deleteKeyword(MingCustomsKeywordId id) {
         repository.deleteKeywordById(id);
     }
 
@@ -98,6 +106,9 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
     }
 
     private static MingCustomsEntry toEntry(MingCustomsSaveCommand command) {
+        if (command == null) {
+            return null;
+        }
         MingCustomsEntry entry = new MingCustomsEntry();
         entry.setId(command.getId());
         entry.setTitle(command.getTitle());

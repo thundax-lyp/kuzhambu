@@ -1,5 +1,7 @@
 package com.thundax.kuzhambu.classics.application.sharing.query;
 
+import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareLinkId;
+import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareTargetId;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,6 +12,6 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ShareAccessQuery {
-    private Long shareLinkId;
-    private Long shareTargetId;
+    private ClassicsShareLinkId shareLinkId;
+    private ClassicsShareTargetId shareTargetId;
 }
