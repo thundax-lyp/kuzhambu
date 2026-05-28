@@ -63,7 +63,7 @@ Run the narrowest relevant validation available. If no validation exists, docume
 
 Current history only contains `Initial commit`; use the project convention `Type(scope): 中文说明`, for example `Docs(governance): 初始化文档治理入口`. Keep each commit focused on one concrete engineering judgment.
 
-Pull requests are stage delivery boundaries. Use `.github/pull_request_template.md`, run `scripts/verify-all.sh`, and complete documentation, TODO, and RUNBOOK cleanup before merge. Merge PRs with normal merge commits by default to preserve the small-step commit history; do not squash unless explicitly requested. Detailed rules live in `docs/00-governance/TODO-RULES.md` and `docs/40-readiness/PR-WORKFLOW.md`.
+Pull requests are stage delivery boundaries. Use `.github/pull_request_template.md`, run `scripts/verify-all.sh`, and complete documentation, TODO, and RUNBOOK cleanup before merge. Changes must go through `branch -> PR -> review -> merge`; do not push or merge work directly to `main`. Merge PRs with normal merge commits by default to preserve the small-step commit history; do not squash unless explicitly requested. Detailed rules live in `docs/00-governance/TODO-RULES.md` and `docs/40-readiness/PR-WORKFLOW.md`.
 
 ## Agent-Specific Instructions
 
