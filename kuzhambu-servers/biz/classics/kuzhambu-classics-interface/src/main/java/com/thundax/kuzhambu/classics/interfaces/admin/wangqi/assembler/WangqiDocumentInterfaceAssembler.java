@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.classics.interfaces.admin.wangqi.assembler;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentSaveCommand;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentVisibilityCommand;
 import com.thundax.kuzhambu.classics.application.wangqi.query.WangqiDocumentPageQuery;
+import com.thundax.kuzhambu.classics.domain.common.codec.StorageObjectIdCodec;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiContentFormat;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
@@ -46,7 +47,7 @@ public final class WangqiDocumentInterfaceAssembler {
         return entity == null
                 ? WangqiDocumentResponse.builder().build()
                 : WangqiDocumentResponse.builder()
-                        .id(entity.getId())
+                        .id(entity.getId() == null ? null : entity.getId().value())
                         .title(entity.getTitle())
                         .summary(entity.getSummary())
                         .contentFormat(
@@ -55,7 +56,7 @@ public final class WangqiDocumentInterfaceAssembler {
                                         : entity.getContentFormat().value())
                         .content(entity.getContent())
                         .documentTime(entity.getDocumentTime())
-                        .storageObjectId(entity.getStorageObjectId())
+                        .storageObjectId(StorageObjectIdCodec.toValue(entity.getStorageObjectId()))
                         .visibility(
                                 entity.getVisibility() == null
                                         ? null

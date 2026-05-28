@@ -1,6 +1,8 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller;
 
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiApplicationService;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
+import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.assembler.SancaiInterfaceAssembler;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiEntryPageRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiEntrySaveRequest;
@@ -50,7 +52,7 @@ public class SancaiAdminController {
     @SysLogger(value = "详情")
     @GetMapping("entries/{id}")
     public SancaiEntryResponse getEntry(@PathVariable Long id) {
-        return SancaiInterfaceAssembler.toResponse(service.getEntry(id));
+        return SancaiInterfaceAssembler.toResponse(service.getEntry(SancaiEntryIdCodec.toDomain(id)));
     }
 
     @Operation(summary = "保存三才图会条目", description = "classics:sancai:edit")
@@ -59,8 +61,8 @@ public class SancaiAdminController {
     @SysLogger(value = "保存")
     @PostMapping("entries/save")
     public SancaiEntryResponse saveEntry(@Valid @RequestBody SancaiEntrySaveRequest request) {
-        Long id = service.saveEntry(SancaiInterfaceAssembler.toCommand(request));
-        return SancaiEntryResponse.builder().id(id).build();
+        SancaiEntryId id = service.saveEntry(SancaiInterfaceAssembler.toCommand(request));
+        return SancaiEntryResponse.builder().id(id == null ? null : id.value()).build();
     }
 
     @Operation(summary = "删除三才图会条目", description = "classics:sancai:delete")
@@ -69,6 +71,6 @@ public class SancaiAdminController {
     @SysLogger(value = "删除")
     @PostMapping("entries/delete")
     public void deleteEntry(@Valid @RequestBody SancaiEntrySaveRequest request) {
-        service.deleteEntry(request.getId());
+        service.deleteEntry(SancaiEntryIdCodec.toDomain(request.getId()));
     }
 }

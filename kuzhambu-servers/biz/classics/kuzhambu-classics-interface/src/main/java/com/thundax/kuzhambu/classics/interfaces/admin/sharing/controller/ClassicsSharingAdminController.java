@@ -4,9 +4,11 @@ import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkCreate
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkStatusCommand;
 import com.thundax.kuzhambu.classics.application.sharing.service.ClassicsSharingApplicationService;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisibilityRiskStatus;
+import com.thundax.kuzhambu.classics.domain.sharing.codec.ClassicsShareLinkIdCodec;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareLink;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareLinkStatus;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareVisibility;
+import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareLinkId;
 import com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller.request.ClassicsSharingRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller.response.ClassicsSharingResponse;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
@@ -40,7 +42,7 @@ public class ClassicsSharingAdminController {
     @SysLogger(value = "创建分享")
     @PostMapping("create")
     public ClassicsSharingResponse create(@Valid @RequestBody ClassicsSharingRequest request) {
-        Long id = service.createLink(new ShareLinkCreateCommand(
+        ClassicsShareLinkId id = service.createLink(new ShareLinkCreateCommand(
                 request.getTokenHash(),
                 request.getTitle(),
                 ClassicsShareVisibility.from(request.getVisibility()),
@@ -51,7 +53,9 @@ public class ClassicsSharingAdminController {
                 null,
                 request.getExpiresAt(),
                 request.getTargets()));
-        return ClassicsSharingResponse.builder().id(id).build();
+        return ClassicsSharingResponse.builder()
+                .id(id == null ? null : id.value())
+                .build();
     }
 
     @Operation(summary = "变更古籍分享状态", description = "classics:sharing:edit")
@@ -60,8 +64,8 @@ public class ClassicsSharingAdminController {
     @SysLogger(value = "变更状态")
     @PostMapping("status")
     public void status(@Valid @RequestBody ClassicsSharingRequest request) {
-        service.changeStatus(
-                new ShareLinkStatusCommand(request.getId(), ClassicsShareLinkStatus.from(request.getStatus())));
+        service.changeStatus(new ShareLinkStatusCommand(
+                ClassicsShareLinkIdCodec.toDomain(request.getId()), ClassicsShareLinkStatus.from(request.getStatus())));
     }
 
     @Operation(summary = "查看古籍分享", description = "classics:sharing:view")
@@ -70,14 +74,14 @@ public class ClassicsSharingAdminController {
     @SysLogger(value = "详情")
     @GetMapping("{id}")
     public ClassicsSharingResponse get(@PathVariable Long id) {
-        return toResponse(service.getLink(id));
+        return toResponse(service.getLink(ClassicsShareLinkIdCodec.toDomain(id)));
     }
 
     private static ClassicsSharingResponse toResponse(ClassicsShareLink link) {
         return link == null
                 ? ClassicsSharingResponse.builder().build()
                 : ClassicsSharingResponse.builder()
-                        .id(link.getId())
+                        .id(link.getId() == null ? null : link.getId().value())
                         .title(link.getTitle())
                         .visibility(
                                 link.getVisibility() == null

@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.classics.interfaces.admin.sancai.assembler;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiDraftSaveCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiImageCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiShowcaseCommand;
+import com.thundax.kuzhambu.classics.domain.common.codec.StorageObjectIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryDraft;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryImage;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiShowcase;
@@ -24,7 +25,7 @@ public final class SancaiAssetInterfaceAssembler {
         return new SancaiImageCommand(
                 request.getId(),
                 request.getEntryId(),
-                request.getStorageObjectId(),
+                StorageObjectIdCodec.toDomain(request.getStorageObjectId()),
                 StringUtils.isBlank(request.getImageType()) ? null : SancaiEntryImageType.from(request.getImageType()),
                 request.getTitle(),
                 request.isCurrentUsed(),
@@ -38,7 +39,7 @@ public final class SancaiAssetInterfaceAssembler {
                         ? SancaiShowcaseStatus.REQUESTED
                         : SancaiShowcaseStatus.from(request.getStatus()),
                 request.getScopeJson(),
-                null,
+                StorageObjectIdCodec.toDomain(request.getStorageObjectId()),
                 request.getEntryCount(),
                 StringUtils.isBlank(request.getVisibilityRiskStatus())
                         ? null
@@ -49,9 +50,15 @@ public final class SancaiAssetInterfaceAssembler {
         return image == null
                 ? SancaiAssetResponse.builder().build()
                 : SancaiAssetResponse.builder()
-                        .id(image.getId())
-                        .entryId(image.getEntryId())
-                        .storageObjectId(image.getStorageObjectId())
+                        .id(image.getId() == null ? null : image.getId().value())
+                        .entryId(
+                                image.getEntryId() == null
+                                        ? null
+                                        : image.getEntryId().value())
+                        .storageObjectId(
+                                image.getStorageObjectId() == null
+                                        ? null
+                                        : image.getStorageObjectId().value())
                         .imageType(
                                 image.getImageType() == null
                                         ? null
@@ -66,8 +73,11 @@ public final class SancaiAssetInterfaceAssembler {
         return draft == null
                 ? SancaiAssetResponse.builder().build()
                 : SancaiAssetResponse.builder()
-                        .id(draft.getId())
-                        .entryId(draft.getEntryId())
+                        .id(draft.getId() == null ? null : draft.getId().value())
+                        .entryId(
+                                draft.getEntryId() == null
+                                        ? null
+                                        : draft.getEntryId().value())
                         .draftJson(draft.getDraftJson())
                         .build();
     }
@@ -76,7 +86,11 @@ public final class SancaiAssetInterfaceAssembler {
         return showcase == null
                 ? SancaiAssetResponse.builder().build()
                 : SancaiAssetResponse.builder()
-                        .id(showcase.getId())
+                        .id(showcase.getId() == null ? null : showcase.getId().value())
+                        .storageObjectId(
+                                showcase.getStorageObjectId() == null
+                                        ? null
+                                        : showcase.getStorageObjectId().value())
                         .status(
                                 showcase.getStatus() == null
                                         ? null

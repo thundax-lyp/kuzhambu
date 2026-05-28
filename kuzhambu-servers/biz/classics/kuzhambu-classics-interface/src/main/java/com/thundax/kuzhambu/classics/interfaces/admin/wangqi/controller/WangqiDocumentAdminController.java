@@ -1,6 +1,8 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller;
 
 import com.thundax.kuzhambu.classics.application.wangqi.service.WangqiDocumentApplicationService;
+import com.thundax.kuzhambu.classics.domain.wangqi.codec.WangqiDocumentIdCodec;
+import com.thundax.kuzhambu.classics.domain.wangqi.model.valueobject.WangqiDocumentId;
 import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.assembler.WangqiDocumentInterfaceAssembler;
 import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.request.WangqiDocumentRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.response.WangqiDocumentResponse;
@@ -50,7 +52,7 @@ public class WangqiDocumentAdminController {
     @SysLogger(value = "详情")
     @GetMapping("{id}")
     public WangqiDocumentResponse get(@PathVariable Long id) {
-        return WangqiDocumentInterfaceAssembler.toResponse(service.get(id));
+        return WangqiDocumentInterfaceAssembler.toResponse(service.get(WangqiDocumentIdCodec.toDomain(id)));
     }
 
     @Operation(summary = "查询王圻时间线", description = "classics:wangqi:view")
@@ -70,8 +72,10 @@ public class WangqiDocumentAdminController {
     @SysLogger(value = "保存")
     @PostMapping("save")
     public WangqiDocumentResponse save(@Valid @RequestBody WangqiDocumentRequest request) {
-        Long id = service.save(WangqiDocumentInterfaceAssembler.toSaveCommand(request));
-        return WangqiDocumentResponse.builder().id(id).build();
+        WangqiDocumentId id = service.save(WangqiDocumentInterfaceAssembler.toSaveCommand(request));
+        return WangqiDocumentResponse.builder()
+                .id(id == null ? null : id.value())
+                .build();
     }
 
     @Operation(summary = "删除王圻文档", description = "classics:wangqi:delete")
@@ -80,6 +84,6 @@ public class WangqiDocumentAdminController {
     @SysLogger(value = "删除")
     @PostMapping("delete")
     public void delete(@Valid @RequestBody WangqiDocumentRequest request) {
-        service.delete(request.getId());
+        service.delete(WangqiDocumentIdCodec.toDomain(request.getId()));
     }
 }

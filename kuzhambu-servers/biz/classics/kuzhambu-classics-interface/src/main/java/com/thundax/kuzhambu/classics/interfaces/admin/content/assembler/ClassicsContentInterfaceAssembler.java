@@ -65,12 +65,15 @@ public final class ClassicsContentInterfaceAssembler {
         return tag == null
                 ? ClassicsContentResponse.builder().build()
                 : ClassicsContentResponse.builder()
-                        .id(tag.getId())
+                        .id(tag.getId() == null ? null : tag.getId().value())
                         .contentType(
                                 tag.getContentType() == null
                                         ? null
                                         : tag.getContentType().value())
-                        .contentId(tag.getContentId())
+                        .contentId(
+                                tag.getContentId() == null
+                                        ? null
+                                        : tag.getContentId().value())
                         .tagNameSnapshot(tag.getTagNameSnapshot())
                         .status(tag.getStatus() == null ? null : tag.getStatus().value())
                         .build();
@@ -80,12 +83,15 @@ public final class ClassicsContentInterfaceAssembler {
         return qa == null
                 ? ClassicsContentResponse.builder().build()
                 : ClassicsContentResponse.builder()
-                        .id(qa.getId())
+                        .id(qa.getId() == null ? null : qa.getId().value())
                         .contentType(
                                 qa.getContentType() == null
                                         ? null
                                         : qa.getContentType().value())
-                        .contentId(qa.getContentId())
+                        .contentId(
+                                qa.getContentId() == null
+                                        ? null
+                                        : qa.getContentId().value())
                         .question(qa.getQuestion())
                         .answer(qa.getAnswer())
                         .build();

@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.assembler;
 import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsKeywordCommand;
 import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsSaveCommand;
 import com.thundax.kuzhambu.classics.application.mingcustoms.query.MingCustomsPageQuery;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsContentFormat;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsVisibility;
@@ -28,7 +29,7 @@ public final class MingCustomsInterfaceAssembler {
 
     public static MingCustomsSaveCommand toSaveCommand(MingCustomsRequest request) {
         return new MingCustomsSaveCommand(
-                request.getId(),
+                MingCustomsEntryIdCodec.toDomain(request.getId()),
                 request.getTitle(),
                 request.getCategory(),
                 request.getChapter(),
@@ -43,14 +44,15 @@ public final class MingCustomsInterfaceAssembler {
     }
 
     public static MingCustomsKeywordCommand toKeywordCommand(Long customId, MingCustomsRequest request) {
-        return new MingCustomsKeywordCommand(customId, request.getKeyword(), request.getPriority());
+        return new MingCustomsKeywordCommand(
+                MingCustomsEntryIdCodec.toDomain(customId), request.getKeyword(), request.getPriority());
     }
 
     public static MingCustomsResponse toResponse(MingCustomsEntry entity) {
         return entity == null
                 ? MingCustomsResponse.builder().build()
                 : MingCustomsResponse.builder()
-                        .id(entity.getId())
+                        .id(entity.getId() == null ? null : entity.getId().value())
                         .title(entity.getTitle())
                         .category(entity.getCategory())
                         .chapter(entity.getChapter())

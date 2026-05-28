@@ -1,6 +1,9 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller;
 
 import com.thundax.kuzhambu.classics.application.mingcustoms.service.MingCustomsApplicationService;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsEntryIdCodec;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsKeywordIdCodec;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsEntryId;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.assembler.MingCustomsInterfaceAssembler;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.request.MingCustomsRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.response.MingCustomsResponse;
@@ -51,7 +54,7 @@ public class MingCustomsAdminController {
     @SysLogger(value = "详情")
     @GetMapping("{id}")
     public MingCustomsResponse get(@PathVariable Long id) {
-        return MingCustomsInterfaceAssembler.toResponse(service.get(id));
+        return MingCustomsInterfaceAssembler.toResponse(service.get(MingCustomsEntryIdCodec.toDomain(id)));
     }
 
     @Operation(summary = "保存明代习俗", description = "classics:mingcustoms:edit")
@@ -60,8 +63,8 @@ public class MingCustomsAdminController {
     @SysLogger(value = "保存")
     @PostMapping("save")
     public MingCustomsResponse save(@Valid @RequestBody MingCustomsRequest request) {
-        Long id = service.save(MingCustomsInterfaceAssembler.toSaveCommand(request));
-        return MingCustomsResponse.builder().id(id).build();
+        MingCustomsEntryId id = service.save(MingCustomsInterfaceAssembler.toSaveCommand(request));
+        return MingCustomsResponse.builder().id(id == null ? null : id.value()).build();
     }
 
     @Operation(summary = "新增明代习俗关键词", description = "classics:mingcustoms:edit")
@@ -70,8 +73,10 @@ public class MingCustomsAdminController {
     @SysLogger(value = "新增关键词")
     @PostMapping("keywords")
     public MingCustomsResponse addKeyword(@Valid @RequestBody MingCustomsRequest request) {
-        Long id = service.addKeyword(MingCustomsInterfaceAssembler.toKeywordCommand(request.getId(), request));
-        return MingCustomsResponse.builder().id(id).build();
+        return MingCustomsResponse.builder()
+                .id(MingCustomsKeywordIdCodec.toValue(
+                        service.addKeyword(MingCustomsInterfaceAssembler.toKeywordCommand(request.getId(), request))))
+                .build();
     }
 
     @Operation(summary = "查询明代习俗关键词云", description = "classics:mingcustoms:view")
@@ -89,6 +94,6 @@ public class MingCustomsAdminController {
     @SysLogger(value = "删除")
     @PostMapping("delete")
     public void delete(@Valid @RequestBody MingCustomsRequest request) {
-        service.delete(request.getId());
+        service.delete(MingCustomsEntryIdCodec.toDomain(request.getId()));
     }
 }
