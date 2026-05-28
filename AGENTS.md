@@ -36,6 +36,13 @@ cd starter/kuzhambu-admin-starter
 mvn spring-boot:run
 ```
 
+Before any Maven compile or package step, run formatting and static checks first:
+
+```sh
+mvn spotless:apply
+mvn checkstyle:check
+```
+
 ## Coding Style & Naming Conventions
 
 Follow idiomatic Java conventions unless another language is introduced: 4-space indentation, `PascalCase` classes, `camelCase` methods and variables, and `UPPER_SNAKE_CASE` constants. Keep package names lowercase, for example `com.thundax.kuzhambu`.
