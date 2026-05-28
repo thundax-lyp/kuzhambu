@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-@Tag(name = "存储模块", description = "存储对象")
+@Tag(name = "存储模块-存储对象", description = "存储对象")
 @SysLogger(module = {"存储", "对象"})
 @RequestMapping(value = "/api/storage/object")
 @WrappedApiController
