@@ -3,7 +3,7 @@ package com.thundax.kuzhambu.classics.infra.content.persistence.dataobject;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import java.time.LocalDateTime;
+import java.util.Date;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -19,7 +19,7 @@ public class ClassicsContentVersionDO {
     private String contentType;
     private Long contentId;
     private Integer versionNo;
-    private LocalDateTime versionedAt;
+    private Date versionedAt;
     private String snapshotJson;
     private String changeType;
     private String changeSummary;

@@ -1,5 +1,11 @@
 package com.thundax.kuzhambu.classics.infra.sancai.persistence.assembler;
 
+import com.thundax.kuzhambu.classics.domain.common.codec.StorageObjectIdCodec;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryDraftIdCodec;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryImageIdCodec;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiShowcaseIdCodec;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiVisualAssetIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryDraft;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryImage;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiShowcase;
@@ -31,15 +37,18 @@ public final class SancaiAssetPersistenceAssembler {
         return entity == null
                 ? null
                 : new SancaiEntryDraftDO(
-                        entity.getId(), entity.getEntryId(), entity.getAutosavedAt(), entity.getDraftJson());
+                        SancaiEntryDraftIdCodec.toValue(entity.getId()),
+                        SancaiEntryIdCodec.toValue(entity.getEntryId()),
+                        entity.getAutosavedAt(),
+                        entity.getDraftJson());
     }
 
     public static SancaiEntryDraft toDraftDomain(SancaiEntryDraftDO dataObject) {
         return dataObject == null
                 ? null
                 : new SancaiEntryDraft(
-                        dataObject.getId(),
-                        dataObject.getEntryId(),
+                        SancaiEntryDraftIdCodec.toDomain(dataObject.getId()),
+                        SancaiEntryIdCodec.toDomain(dataObject.getEntryId()),
                         dataObject.getAutosavedAt(),
                         dataObject.getDraftJson());
     }
@@ -48,9 +57,9 @@ public final class SancaiAssetPersistenceAssembler {
         return entity == null
                 ? null
                 : new SancaiEntryImageDO(
-                        entity.getId(),
-                        entity.getEntryId(),
-                        entity.getStorageObjectId(),
+                        SancaiEntryImageIdCodec.toValue(entity.getId()),
+                        SancaiEntryIdCodec.toValue(entity.getEntryId()),
+                        StorageObjectIdCodec.toValue(entity.getStorageObjectId()),
                         value(entity.getImageType()),
                         entity.getTitle(),
                         entity.isCurrentUsed(),
@@ -62,9 +71,9 @@ public final class SancaiAssetPersistenceAssembler {
             return null;
         }
         return new SancaiEntryImage(
-                dataObject.getId(),
-                dataObject.getEntryId(),
-                dataObject.getStorageObjectId(),
+                SancaiEntryImageIdCodec.toDomain(dataObject.getId()),
+                SancaiEntryIdCodec.toDomain(dataObject.getEntryId()),
+                StorageObjectIdCodec.toDomain(dataObject.getStorageObjectId()),
                 dataObject.getImageType() == null ? null : SancaiEntryImageType.from(dataObject.getImageType()),
                 dataObject.getTitle(),
                 Boolean.TRUE.equals(dataObject.getCurrentUsed()),
@@ -85,12 +94,12 @@ public final class SancaiAssetPersistenceAssembler {
         return entity == null
                 ? null
                 : new SancaiVisualAssetDO(
-                        entity.getId(),
-                        entity.getEntryId(),
+                        SancaiVisualAssetIdCodec.toValue(entity.getId()),
+                        SancaiEntryIdCodec.toValue(entity.getEntryId()),
                         entity.getVersionNo(),
                         value(entity.getStatus()),
-                        entity.getSourceImageStorageObjectId(),
-                        entity.getGeneratedImageStorageObjectId(),
+                        StorageObjectIdCodec.toValue(entity.getSourceImageStorageObjectId()),
+                        StorageObjectIdCodec.toValue(entity.getGeneratedImageStorageObjectId()),
                         entity.isCurrentUsed(),
                         entity.getTextWeight(),
                         entity.getImageWeight(),
@@ -105,12 +114,12 @@ public final class SancaiAssetPersistenceAssembler {
             return null;
         }
         return new SancaiVisualAsset(
-                dataObject.getId(),
-                dataObject.getEntryId(),
+                SancaiVisualAssetIdCodec.toDomain(dataObject.getId()),
+                SancaiEntryIdCodec.toDomain(dataObject.getEntryId()),
                 priority(dataObject.getVersionNo()),
                 dataObject.getStatus() == null ? null : SancaiVisualAssetStatus.from(dataObject.getStatus()),
-                dataObject.getSourceImageStorageObjectId(),
-                dataObject.getGeneratedImageStorageObjectId(),
+                StorageObjectIdCodec.toDomain(dataObject.getSourceImageStorageObjectId()),
+                StorageObjectIdCodec.toDomain(dataObject.getGeneratedImageStorageObjectId()),
                 Boolean.TRUE.equals(dataObject.getCurrentUsed()),
                 priority(dataObject.getTextWeight()),
                 priority(dataObject.getImageWeight()),
@@ -134,11 +143,11 @@ public final class SancaiAssetPersistenceAssembler {
         return entity == null
                 ? null
                 : new SancaiShowcaseDO(
-                        entity.getId(),
+                        SancaiShowcaseIdCodec.toValue(entity.getId()),
                         entity.getRequestedAt(),
                         value(entity.getStatus()),
                         entity.getScopeJson(),
-                        entity.getStorageObjectId(),
+                        StorageObjectIdCodec.toValue(entity.getStorageObjectId()),
                         entity.getEntryCount(),
                         value(entity.getVisibilityRiskStatus()));
     }
@@ -148,11 +157,11 @@ public final class SancaiAssetPersistenceAssembler {
             return null;
         }
         return new SancaiShowcase(
-                dataObject.getId(),
+                SancaiShowcaseIdCodec.toDomain(dataObject.getId()),
                 dataObject.getRequestedAt(),
                 dataObject.getStatus() == null ? null : SancaiShowcaseStatus.from(dataObject.getStatus()),
                 dataObject.getScopeJson(),
-                dataObject.getStorageObjectId(),
+                StorageObjectIdCodec.toDomain(dataObject.getStorageObjectId()),
                 priority(dataObject.getEntryCount()),
                 dataObject.getVisibilityRiskStatus() == null
                         ? null

@@ -4,8 +4,12 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsEntryIdCodec;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsKeywordIdCodec;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsKeyword;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsEntryId;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsKeywordId;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.repository.MingCustomsRepository;
 import com.thundax.kuzhambu.classics.infra.mingcustoms.persistence.assembler.MingCustomsPersistenceAssembler;
 import com.thundax.kuzhambu.classics.infra.mingcustoms.persistence.dataobject.MingCustomsEntryDO;
@@ -30,8 +34,9 @@ public class MingCustomsRepositoryImpl implements MingCustomsRepository {
     }
 
     @Override
-    public MingCustomsEntry getById(Long id) {
-        return MingCustomsPersistenceAssembler.toEntryDomain(entryMapper.selectById(id));
+    public MingCustomsEntry getById(MingCustomsEntryId id) {
+        return MingCustomsPersistenceAssembler.toEntryDomain(
+                entryMapper.selectById(MingCustomsEntryIdCodec.toValue(id)));
     }
 
     @Override
@@ -62,10 +67,10 @@ public class MingCustomsRepositoryImpl implements MingCustomsRepository {
     }
 
     @Override
-    public Long insert(MingCustomsEntry entry) {
+    public MingCustomsEntryId insert(MingCustomsEntry entry) {
         MingCustomsEntryDO dataObject = MingCustomsPersistenceAssembler.toEntryObject(entry);
         entryMapper.insert(dataObject);
-        return dataObject.getId();
+        return MingCustomsEntryIdCodec.toDomain(dataObject.getId());
     }
 
     @Override
@@ -74,37 +79,37 @@ public class MingCustomsRepositoryImpl implements MingCustomsRepository {
     }
 
     @Override
-    public int updateVisibility(Long id, String visibility) {
+    public int updateVisibility(MingCustomsEntryId id, String visibility) {
         return entryMapper.update(
                 null,
                 new LambdaUpdateWrapper<MingCustomsEntryDO>()
-                        .eq(MingCustomsEntryDO::getId, id)
+                        .eq(MingCustomsEntryDO::getId, MingCustomsEntryIdCodec.toValue(id))
                         .set(MingCustomsEntryDO::getVisibility, visibility));
     }
 
     @Override
-    public int deleteById(Long id) {
-        return entryMapper.deleteById(id);
+    public int deleteById(MingCustomsEntryId id) {
+        return entryMapper.deleteById(MingCustomsEntryIdCodec.toValue(id));
     }
 
     @Override
-    public List<MingCustomsKeyword> listKeywordsByCustomId(Long customId, SortDirection sortDirection) {
+    public List<MingCustomsKeyword> listKeywordsByCustomId(MingCustomsEntryId customId, SortDirection sortDirection) {
         return MingCustomsPersistenceAssembler.toKeywordDomainList(
                 keywordMapper.selectList(new LambdaQueryWrapper<MingCustomsKeywordDO>()
-                        .eq(MingCustomsKeywordDO::getCustomId, customId)
+                        .eq(MingCustomsKeywordDO::getCustomId, MingCustomsEntryIdCodec.toValue(customId))
                         .orderBy(true, sortDirection != SortDirection.DESC, MingCustomsKeywordDO::getPriority)));
     }
 
     @Override
-    public Long insertKeyword(MingCustomsKeyword keyword) {
+    public MingCustomsKeywordId insertKeyword(MingCustomsKeyword keyword) {
         MingCustomsKeywordDO dataObject = MingCustomsPersistenceAssembler.toKeywordObject(keyword);
         keywordMapper.insert(dataObject);
-        return dataObject.getId();
+        return MingCustomsKeywordIdCodec.toDomain(dataObject.getId());
     }
 
     @Override
-    public int deleteKeywordById(Long id) {
-        return keywordMapper.deleteById(id);
+    public int deleteKeywordById(MingCustomsKeywordId id) {
+        return keywordMapper.deleteById(MingCustomsKeywordIdCodec.toValue(id));
     }
 
     @Override

@@ -1,5 +1,12 @@
 package com.thundax.kuzhambu.classics.infra.content.persistence.assembler;
 
+import com.thundax.kuzhambu.classics.domain.common.codec.KnowledgeTagIdCodec;
+import com.thundax.kuzhambu.classics.domain.common.codec.StorageObjectIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentExportJobIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentQaPairIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentTagIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentVersionIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentExportJob;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentQaPair;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
@@ -35,10 +42,10 @@ public final class ClassicsContentPersistenceAssembler {
         return entity == null
                 ? null
                 : new ClassicsContentTagDO(
-                        entity.getId(),
+                        ClassicsContentTagIdCodec.toValue(entity.getId()),
                         value(entity.getContentType()),
-                        entity.getContentId(),
-                        entity.getTagId(),
+                        ClassicsContentIdCodec.toValue(entity.getContentId()),
+                        KnowledgeTagIdCodec.toValue(entity.getTagId()),
                         entity.getTagNameSnapshot(),
                         value(entity.getSource()),
                         value(entity.getStatus()),
@@ -49,10 +56,10 @@ public final class ClassicsContentPersistenceAssembler {
         return dataObject == null
                 ? null
                 : new ClassicsContentTag(
-                        dataObject.getId(),
+                        ClassicsContentTagIdCodec.toDomain(dataObject.getId()),
                         fromContentType(dataObject.getContentType()),
-                        dataObject.getContentId(),
-                        dataObject.getTagId(),
+                        ClassicsContentIdCodec.toDomain(dataObject.getContentId()),
+                        KnowledgeTagIdCodec.toDomain(dataObject.getTagId()),
                         dataObject.getTagNameSnapshot(),
                         fromSource(dataObject.getSource()),
                         fromTagStatus(dataObject.getStatus()),
@@ -71,9 +78,9 @@ public final class ClassicsContentPersistenceAssembler {
         return entity == null
                 ? null
                 : new ClassicsContentQaPairDO(
-                        entity.getId(),
+                        ClassicsContentQaPairIdCodec.toValue(entity.getId()),
                         value(entity.getContentType()),
-                        entity.getContentId(),
+                        ClassicsContentIdCodec.toValue(entity.getContentId()),
                         entity.getQuestion(),
                         entity.getAnswer(),
                         value(entity.getSource()),
@@ -84,9 +91,9 @@ public final class ClassicsContentPersistenceAssembler {
         return dataObject == null
                 ? null
                 : new ClassicsContentQaPair(
-                        dataObject.getId(),
+                        ClassicsContentQaPairIdCodec.toDomain(dataObject.getId()),
                         fromContentType(dataObject.getContentType()),
-                        dataObject.getContentId(),
+                        ClassicsContentIdCodec.toDomain(dataObject.getContentId()),
                         dataObject.getQuestion(),
                         dataObject.getAnswer(),
                         fromSource(dataObject.getSource()),
@@ -105,9 +112,9 @@ public final class ClassicsContentPersistenceAssembler {
         return entity == null
                 ? null
                 : new ClassicsContentVersionDO(
-                        entity.getId(),
+                        ClassicsContentVersionIdCodec.toValue(entity.getId()),
                         value(entity.getContentType()),
-                        entity.getContentId(),
+                        ClassicsContentIdCodec.toValue(entity.getContentId()),
                         entity.getVersionNo(),
                         entity.getVersionedAt(),
                         entity.getSnapshotJson(),
@@ -119,9 +126,9 @@ public final class ClassicsContentPersistenceAssembler {
         return dataObject == null
                 ? null
                 : new ClassicsContentVersion(
-                        dataObject.getId(),
+                        ClassicsContentVersionIdCodec.toDomain(dataObject.getId()),
                         fromContentType(dataObject.getContentType()),
-                        dataObject.getContentId(),
+                        ClassicsContentIdCodec.toDomain(dataObject.getContentId()),
                         priority(dataObject.getVersionNo()),
                         dataObject.getVersionedAt(),
                         dataObject.getSnapshotJson(),
@@ -143,7 +150,7 @@ public final class ClassicsContentPersistenceAssembler {
         return entity == null
                 ? null
                 : new ClassicsContentExportJobDO(
-                        entity.getId(),
+                        ClassicsContentExportJobIdCodec.toValue(entity.getId()),
                         value(entity.getExportKind()),
                         value(entity.getContentType()),
                         value(entity.getExportFormat()),
@@ -152,7 +159,7 @@ public final class ClassicsContentPersistenceAssembler {
                         entity.getRequestedAt(),
                         entity.getExpiresAt(),
                         value(entity.getStatus()),
-                        entity.getStorageObjectId(),
+                        StorageObjectIdCodec.toValue(entity.getStorageObjectId()),
                         entity.getItemCount(),
                         entity.getAssetCount(),
                         value(entity.getVisibilityRiskStatus()),
@@ -163,7 +170,7 @@ public final class ClassicsContentPersistenceAssembler {
         return dataObject == null
                 ? null
                 : new ClassicsContentExportJob(
-                        dataObject.getId(),
+                        ClassicsContentExportJobIdCodec.toDomain(dataObject.getId()),
                         dataObject.getExportKind() == null ? null : ClassicsExportKind.from(dataObject.getExportKind()),
                         fromContentType(dataObject.getContentType()),
                         dataObject.getExportFormat() == null
@@ -176,7 +183,7 @@ public final class ClassicsContentPersistenceAssembler {
                         dataObject.getRequestedAt(),
                         dataObject.getExpiresAt(),
                         dataObject.getStatus() == null ? null : ClassicsExportStatus.from(dataObject.getStatus()),
-                        dataObject.getStorageObjectId(),
+                        StorageObjectIdCodec.toDomain(dataObject.getStorageObjectId()),
                         priority(dataObject.getItemCount()),
                         priority(dataObject.getAssetCount()),
                         dataObject.getVisibilityRiskStatus() == null

@@ -3,9 +3,15 @@ package com.thundax.kuzhambu.classics.infra.sharing.repository.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.thundax.kuzhambu.classics.domain.sharing.codec.ClassicsShareAccessRecordIdCodec;
+import com.thundax.kuzhambu.classics.domain.sharing.codec.ClassicsShareLinkIdCodec;
+import com.thundax.kuzhambu.classics.domain.sharing.codec.ClassicsShareTargetIdCodec;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareAccessRecord;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareLink;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareTarget;
+import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareAccessRecordId;
+import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareLinkId;
+import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareTargetId;
 import com.thundax.kuzhambu.classics.domain.sharing.repository.ClassicsSharingRepository;
 import com.thundax.kuzhambu.classics.infra.sharing.persistence.assembler.ClassicsSharingPersistenceAssembler;
 import com.thundax.kuzhambu.classics.infra.sharing.persistence.dataobject.ClassicsShareAccessRecordDO;
@@ -34,8 +40,9 @@ public class ClassicsSharingRepositoryImpl implements ClassicsSharingRepository 
         this.accessMapper = accessMapper;
     }
 
-    public ClassicsShareLink getLinkById(Long id) {
-        return ClassicsSharingPersistenceAssembler.toLinkDomain(linkMapper.selectById(id));
+    public ClassicsShareLink getLinkById(ClassicsShareLinkId id) {
+        return ClassicsSharingPersistenceAssembler.toLinkDomain(
+                linkMapper.selectById(ClassicsShareLinkIdCodec.toValue(id)));
     }
 
     public ClassicsShareLink getLinkByTokenHash(String tokenHash) {
@@ -55,64 +62,70 @@ public class ClassicsSharingRepositoryImpl implements ClassicsSharingRepository 
         return entityPage;
     }
 
-    public Long insertLink(ClassicsShareLink link) {
+    public ClassicsShareLinkId insertLink(ClassicsShareLink link) {
         ClassicsShareLinkDO dataObject = ClassicsSharingPersistenceAssembler.toLinkObject(link);
         linkMapper.insert(dataObject);
-        return dataObject.getId();
+        return ClassicsShareLinkIdCodec.toDomain(dataObject.getId());
     }
 
     public int updateLink(ClassicsShareLink link) {
         return linkMapper.updateById(ClassicsSharingPersistenceAssembler.toLinkObject(link));
     }
 
-    public int updateLinkStatus(Long id, String status) {
+    public int updateLinkStatus(ClassicsShareLinkId id, String status) {
         return linkMapper.update(
                 null,
                 new LambdaUpdateWrapper<ClassicsShareLinkDO>()
-                        .eq(ClassicsShareLinkDO::getId, id)
+                        .eq(ClassicsShareLinkDO::getId, ClassicsShareLinkIdCodec.toValue(id))
                         .set(ClassicsShareLinkDO::getStatus, status));
     }
 
-    public int increaseAccessCount(Long id) {
+    public int increaseAccessCount(ClassicsShareLinkId id) {
         return linkMapper.update(
                 null,
                 new LambdaUpdateWrapper<ClassicsShareLinkDO>()
-                        .eq(ClassicsShareLinkDO::getId, id)
+                        .eq(ClassicsShareLinkDO::getId, ClassicsShareLinkIdCodec.toValue(id))
                         .setSql("access_count = access_count + 1"));
     }
 
-    public List<ClassicsShareTarget> listTargetsByLinkId(Long shareLinkId, SortDirection sortDirection) {
+    public List<ClassicsShareTarget> listTargetsByLinkId(ClassicsShareLinkId shareLinkId, SortDirection sortDirection) {
         return ClassicsSharingPersistenceAssembler.toTargetDomainList(
                 targetMapper.selectList(new LambdaQueryWrapper<ClassicsShareTargetDO>()
-                        .eq(ClassicsShareTargetDO::getShareLinkId, shareLinkId)
+                        .eq(ClassicsShareTargetDO::getShareLinkId, ClassicsShareLinkIdCodec.toValue(shareLinkId))
                         .orderBy(true, sortDirection != SortDirection.DESC, ClassicsShareTargetDO::getPriority)));
     }
 
-    public Long insertTarget(ClassicsShareTarget target) {
+    public ClassicsShareTargetId insertTarget(ClassicsShareTarget target) {
         ClassicsShareTargetDO dataObject = ClassicsSharingPersistenceAssembler.toTargetObject(target);
         targetMapper.insert(dataObject);
-        return dataObject.getId();
+        return ClassicsShareTargetIdCodec.toDomain(dataObject.getId());
     }
 
-    public int updateTargetStatus(Long id, String targetStatus) {
+    public int updateTargetStatus(ClassicsShareTargetId id, String targetStatus) {
         return targetMapper.update(
                 null,
                 new LambdaUpdateWrapper<ClassicsShareTargetDO>()
-                        .eq(ClassicsShareTargetDO::getId, id)
+                        .eq(ClassicsShareTargetDO::getId, ClassicsShareTargetIdCodec.toValue(id))
                         .set(ClassicsShareTargetDO::getTargetStatus, targetStatus));
     }
 
-    public Long insertAccessRecord(ClassicsShareAccessRecord record) {
+    public ClassicsShareAccessRecordId insertAccessRecord(ClassicsShareAccessRecord record) {
         ClassicsShareAccessRecordDO dataObject = ClassicsSharingPersistenceAssembler.toAccessObject(record);
         accessMapper.insert(dataObject);
-        return dataObject.getId();
+        return ClassicsShareAccessRecordIdCodec.toDomain(dataObject.getId());
     }
 
     public Page<ClassicsShareAccessRecord> pageAccessRecords(
-            Long shareLinkId, Long shareTargetId, int pageNo, int pageSize) {
+            ClassicsShareLinkId shareLinkId, ClassicsShareTargetId shareTargetId, int pageNo, int pageSize) {
         LambdaQueryWrapper<ClassicsShareAccessRecordDO> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(shareLinkId != null, ClassicsShareAccessRecordDO::getShareLinkId, shareLinkId)
-                .eq(shareTargetId != null, ClassicsShareAccessRecordDO::getShareTargetId, shareTargetId)
+        wrapper.eq(
+                        shareLinkId != null,
+                        ClassicsShareAccessRecordDO::getShareLinkId,
+                        ClassicsShareLinkIdCodec.toValue(shareLinkId))
+                .eq(
+                        shareTargetId != null,
+                        ClassicsShareAccessRecordDO::getShareTargetId,
+                        ClassicsShareTargetIdCodec.toValue(shareTargetId))
                 .orderByDesc(ClassicsShareAccessRecordDO::getAccessedAt);
         Page<ClassicsShareAccessRecordDO> dataPage = accessMapper.selectPage(new Page<>(pageNo, pageSize), wrapper);
         Page<ClassicsShareAccessRecord> entityPage = new Page<>(dataPage.getCurrent(), dataPage.getSize());

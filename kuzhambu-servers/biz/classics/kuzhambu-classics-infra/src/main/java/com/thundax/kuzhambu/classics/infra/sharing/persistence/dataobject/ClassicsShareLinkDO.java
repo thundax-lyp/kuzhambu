@@ -3,7 +3,7 @@ package com.thundax.kuzhambu.classics.infra.sharing.persistence.dataobject;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import java.time.LocalDateTime;
+import java.util.Date;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,7 +21,7 @@ public class ClassicsShareLinkDO {
     private String visibility;
     private String status;
     private String visibilityRiskStatus;
-    private LocalDateTime issuedAt;
-    private LocalDateTime expiresAt;
+    private Date issuedAt;
+    private Date expiresAt;
     private Long accessCount;
 }

@@ -1,5 +1,8 @@
 package com.thundax.kuzhambu.classics.infra.sancai.persistence.assembler;
 
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiCategoryIdCodec;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiVolumeIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiCategory;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVolume;
@@ -34,7 +37,7 @@ public final class SancaiPersistenceAssembler {
             return null;
         }
         SancaiCategory category = new SancaiCategory();
-        category.setId(dataObject.getId());
+        category.setId(SancaiCategoryIdCodec.toDomain(dataObject.getId()));
         category.setTitle(dataObject.getTitle());
         category.setCategoryType(
                 dataObject.getCategoryType() == null ? null : SancaiCategoryType.from(dataObject.getCategoryType()));
@@ -57,8 +60,8 @@ public final class SancaiPersistenceAssembler {
             return null;
         }
         SancaiVolume volume = new SancaiVolume();
-        volume.setId(dataObject.getId());
-        volume.setCategoryId(dataObject.getCategoryId());
+        volume.setId(SancaiVolumeIdCodec.toDomain(dataObject.getId()));
+        volume.setCategoryId(SancaiCategoryIdCodec.toDomain(dataObject.getCategoryId()));
         volume.setTitle(dataObject.getTitle());
         volume.setVolumeType(
                 dataObject.getVolumeType() == null ? null : SancaiVolumeType.from(dataObject.getVolumeType()));
@@ -81,8 +84,8 @@ public final class SancaiPersistenceAssembler {
             return null;
         }
         SancaiEntryDO dataObject = new SancaiEntryDO();
-        dataObject.setId(entity.getId());
-        dataObject.setVolumeId(entity.getVolumeId());
+        dataObject.setId(SancaiEntryIdCodec.toValue(entity.getId()));
+        dataObject.setVolumeId(SancaiVolumeIdCodec.toValue(entity.getVolumeId()));
         dataObject.setTitle(entity.getTitle());
         dataObject.setOriginalText(entity.getOriginalText());
         dataObject.setTranslationText(entity.getTranslationText());
@@ -102,8 +105,8 @@ public final class SancaiPersistenceAssembler {
             return null;
         }
         SancaiEntry entry = new SancaiEntry();
-        entry.setId(dataObject.getId());
-        entry.setVolumeId(dataObject.getVolumeId());
+        entry.setId(SancaiEntryIdCodec.toDomain(dataObject.getId()));
+        entry.setVolumeId(SancaiVolumeIdCodec.toDomain(dataObject.getVolumeId()));
         entry.setTitle(dataObject.getTitle());
         entry.setOriginalText(dataObject.getOriginalText());
         entry.setTranslationText(dataObject.getTranslationText());

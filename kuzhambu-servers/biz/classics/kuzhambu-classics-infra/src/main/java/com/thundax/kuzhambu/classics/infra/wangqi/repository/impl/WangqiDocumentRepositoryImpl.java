@@ -3,7 +3,11 @@ package com.thundax.kuzhambu.classics.infra.wangqi.repository.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.thundax.kuzhambu.classics.domain.common.codec.StorageObjectIdCodec;
+import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId;
+import com.thundax.kuzhambu.classics.domain.wangqi.codec.WangqiDocumentIdCodec;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
+import com.thundax.kuzhambu.classics.domain.wangqi.model.valueobject.WangqiDocumentId;
 import com.thundax.kuzhambu.classics.domain.wangqi.repository.WangqiDocumentRepository;
 import com.thundax.kuzhambu.classics.infra.wangqi.persistence.assembler.WangqiDocumentPersistenceAssembler;
 import com.thundax.kuzhambu.classics.infra.wangqi.persistence.dataobject.WangqiDocumentDO;
@@ -23,8 +27,8 @@ public class WangqiDocumentRepositoryImpl implements WangqiDocumentRepository {
     }
 
     @Override
-    public WangqiDocument getById(Long id) {
-        return WangqiDocumentPersistenceAssembler.toDomain(mapper.selectById(id));
+    public WangqiDocument getById(WangqiDocumentId id) {
+        return WangqiDocumentPersistenceAssembler.toDomain(mapper.selectById(WangqiDocumentIdCodec.toValue(id)));
     }
 
     @Override
@@ -47,10 +51,10 @@ public class WangqiDocumentRepositoryImpl implements WangqiDocumentRepository {
     }
 
     @Override
-    public Long insert(WangqiDocument document) {
+    public WangqiDocumentId insert(WangqiDocument document) {
         WangqiDocumentDO dataObject = WangqiDocumentPersistenceAssembler.toObject(document);
         mapper.insert(dataObject);
-        return dataObject.getId();
+        return WangqiDocumentIdCodec.toDomain(dataObject.getId());
     }
 
     @Override
@@ -59,26 +63,26 @@ public class WangqiDocumentRepositoryImpl implements WangqiDocumentRepository {
     }
 
     @Override
-    public int updateStorageObjectId(Long id, Long storageObjectId) {
+    public int updateStorageObjectId(WangqiDocumentId id, StorageObjectId storageObjectId) {
         return mapper.update(
                 null,
                 new LambdaUpdateWrapper<WangqiDocumentDO>()
-                        .eq(WangqiDocumentDO::getId, id)
-                        .set(WangqiDocumentDO::getStorageObjectId, storageObjectId));
+                        .eq(WangqiDocumentDO::getId, WangqiDocumentIdCodec.toValue(id))
+                        .set(WangqiDocumentDO::getStorageObjectId, StorageObjectIdCodec.toValue(storageObjectId)));
     }
 
     @Override
-    public int updateVisibility(Long id, String visibility) {
+    public int updateVisibility(WangqiDocumentId id, String visibility) {
         return mapper.update(
                 null,
                 new LambdaUpdateWrapper<WangqiDocumentDO>()
-                        .eq(WangqiDocumentDO::getId, id)
+                        .eq(WangqiDocumentDO::getId, WangqiDocumentIdCodec.toValue(id))
                         .set(WangqiDocumentDO::getVisibility, visibility));
     }
 
     @Override
-    public int deleteById(Long id) {
-        return mapper.deleteById(id);
+    public int deleteById(WangqiDocumentId id) {
+        return mapper.deleteById(WangqiDocumentIdCodec.toValue(id));
     }
 
     private static LambdaQueryWrapper<WangqiDocumentDO> buildWrapper(

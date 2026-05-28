@@ -2,10 +2,20 @@ package com.thundax.kuzhambu.classics.infra.content.repository.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentExportJobIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentQaPairIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentTagIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentVersionIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentExportJob;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentQaPair;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
+import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentExportJobId;
+import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
+import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentQaPairId;
+import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentTagId;
+import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentVersionId;
 import com.thundax.kuzhambu.classics.domain.content.repository.ClassicsContentRepository;
 import com.thundax.kuzhambu.classics.infra.content.persistence.assembler.ClassicsContentPersistenceAssembler;
 import com.thundax.kuzhambu.classics.infra.content.persistence.dataobject.ClassicsContentExportJobDO;
@@ -39,72 +49,75 @@ public class ClassicsContentRepositoryImpl implements ClassicsContentRepository 
         this.exportMapper = exportMapper;
     }
 
-    public List<ClassicsContentTag> listTags(String contentType, Long contentId, SortDirection sortDirection) {
+    public List<ClassicsContentTag> listTags(
+            String contentType, ClassicsContentId contentId, SortDirection sortDirection) {
         return ClassicsContentPersistenceAssembler.toTagDomainList(
                 tagMapper.selectList(new LambdaQueryWrapper<ClassicsContentTagDO>()
                         .eq(ClassicsContentTagDO::getContentType, contentType)
-                        .eq(ClassicsContentTagDO::getContentId, contentId)
+                        .eq(ClassicsContentTagDO::getContentId, ClassicsContentIdCodec.toValue(contentId))
                         .orderBy(true, sortDirection != SortDirection.DESC, ClassicsContentTagDO::getPriority)));
     }
 
-    public Long insertTag(ClassicsContentTag tag) {
+    public ClassicsContentTagId insertTag(ClassicsContentTag tag) {
         ClassicsContentTagDO dataObject = ClassicsContentPersistenceAssembler.toTagObject(tag);
         tagMapper.insert(dataObject);
-        return dataObject.getId();
+        return ClassicsContentTagIdCodec.toDomain(dataObject.getId());
     }
 
     public int updateTag(ClassicsContentTag tag) {
         return tagMapper.updateById(ClassicsContentPersistenceAssembler.toTagObject(tag));
     }
 
-    public int deleteTagById(Long id) {
-        return tagMapper.deleteById(id);
+    public int deleteTagById(ClassicsContentTagId id) {
+        return tagMapper.deleteById(ClassicsContentTagIdCodec.toValue(id));
     }
 
-    public List<ClassicsContentQaPair> listQaPairs(String contentType, Long contentId, SortDirection sortDirection) {
+    public List<ClassicsContentQaPair> listQaPairs(
+            String contentType, ClassicsContentId contentId, SortDirection sortDirection) {
         return ClassicsContentPersistenceAssembler.toQaDomainList(
                 qaPairMapper.selectList(new LambdaQueryWrapper<ClassicsContentQaPairDO>()
                         .eq(ClassicsContentQaPairDO::getContentType, contentType)
-                        .eq(ClassicsContentQaPairDO::getContentId, contentId)
+                        .eq(ClassicsContentQaPairDO::getContentId, ClassicsContentIdCodec.toValue(contentId))
                         .orderBy(true, sortDirection != SortDirection.DESC, ClassicsContentQaPairDO::getPriority)));
     }
 
-    public Long insertQaPair(ClassicsContentQaPair qaPair) {
+    public ClassicsContentQaPairId insertQaPair(ClassicsContentQaPair qaPair) {
         ClassicsContentQaPairDO dataObject = ClassicsContentPersistenceAssembler.toQaObject(qaPair);
         qaPairMapper.insert(dataObject);
-        return dataObject.getId();
+        return ClassicsContentQaPairIdCodec.toDomain(dataObject.getId());
     }
 
     public int updateQaPair(ClassicsContentQaPair qaPair) {
         return qaPairMapper.updateById(ClassicsContentPersistenceAssembler.toQaObject(qaPair));
     }
 
-    public int deleteQaPairById(Long id) {
-        return qaPairMapper.deleteById(id);
+    public int deleteQaPairById(ClassicsContentQaPairId id) {
+        return qaPairMapper.deleteById(ClassicsContentQaPairIdCodec.toValue(id));
     }
 
-    public List<ClassicsContentVersion> listVersions(String contentType, Long contentId) {
+    public List<ClassicsContentVersion> listVersions(String contentType, ClassicsContentId contentId) {
         return ClassicsContentPersistenceAssembler.toVersionDomainList(
                 versionMapper.selectList(new LambdaQueryWrapper<ClassicsContentVersionDO>()
                         .eq(ClassicsContentVersionDO::getContentType, contentType)
-                        .eq(ClassicsContentVersionDO::getContentId, contentId)
+                        .eq(ClassicsContentVersionDO::getContentId, ClassicsContentIdCodec.toValue(contentId))
                         .orderByDesc(ClassicsContentVersionDO::getVersionNo)));
     }
 
-    public Long insertVersion(ClassicsContentVersion version) {
+    public ClassicsContentVersionId insertVersion(ClassicsContentVersion version) {
         ClassicsContentVersionDO dataObject = ClassicsContentPersistenceAssembler.toVersionObject(version);
         versionMapper.insert(dataObject);
-        return dataObject.getId();
+        return ClassicsContentVersionIdCodec.toDomain(dataObject.getId());
     }
 
-    public ClassicsContentVersion getVersionById(Long id) {
-        return ClassicsContentPersistenceAssembler.toVersionDomain(versionMapper.selectById(id));
+    public ClassicsContentVersion getVersionById(ClassicsContentVersionId id) {
+        return ClassicsContentPersistenceAssembler.toVersionDomain(
+                versionMapper.selectById(ClassicsContentVersionIdCodec.toValue(id)));
     }
 
-    public Long insertExportJob(ClassicsContentExportJob exportJob) {
+    public ClassicsContentExportJobId insertExportJob(ClassicsContentExportJob exportJob) {
         ClassicsContentExportJobDO dataObject = ClassicsContentPersistenceAssembler.toExportObject(exportJob);
         exportMapper.insert(dataObject);
-        return dataObject.getId();
+        return ClassicsContentExportJobIdCodec.toDomain(dataObject.getId());
     }
 
     public int updateExportJob(ClassicsContentExportJob exportJob) {
