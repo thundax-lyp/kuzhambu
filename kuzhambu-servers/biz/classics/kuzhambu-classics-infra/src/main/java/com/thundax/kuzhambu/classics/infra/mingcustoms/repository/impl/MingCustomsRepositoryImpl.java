@@ -1,11 +1,16 @@
 package com.thundax.kuzhambu.classics.infra.mingcustoms.repository.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsEntryIdCodec;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsKeywordIdCodec;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsKeyword;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsEntryId;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsKeywordId;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.repository.MingCustomsRepository;
 import com.thundax.kuzhambu.classics.infra.mingcustoms.persistence.assembler.MingCustomsPersistenceAssembler;
 import com.thundax.kuzhambu.classics.infra.mingcustoms.persistence.dataobject.MingCustomsEntryDO;
@@ -14,6 +19,7 @@ import com.thundax.kuzhambu.classics.infra.mingcustoms.persistence.mapper.MingCu
 import com.thundax.kuzhambu.classics.infra.mingcustoms.persistence.mapper.MingCustomsMapper;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Repository;
@@ -30,8 +36,9 @@ public class MingCustomsRepositoryImpl implements MingCustomsRepository {
     }
 
     @Override
-    public MingCustomsEntry getById(Long id) {
-        return MingCustomsPersistenceAssembler.toEntryDomain(entryMapper.selectById(id));
+    public MingCustomsEntry getById(MingCustomsEntryId id) {
+        return MingCustomsPersistenceAssembler.toEntryDomain(
+                entryMapper.selectById(MingCustomsEntryIdCodec.toValue(id)));
     }
 
     @Override
@@ -62,49 +69,84 @@ public class MingCustomsRepositoryImpl implements MingCustomsRepository {
     }
 
     @Override
-    public Long insert(MingCustomsEntry entry) {
+    public MingCustomsEntryId insert(MingCustomsEntry entry) {
         MingCustomsEntryDO dataObject = MingCustomsPersistenceAssembler.toEntryObject(entry);
         entryMapper.insert(dataObject);
-        return dataObject.getId();
+        return MingCustomsEntryIdCodec.toDomain(dataObject.getId());
     }
 
     @Override
     public int update(MingCustomsEntry entry) {
-        return entryMapper.updateById(MingCustomsPersistenceAssembler.toEntryObject(entry));
-    }
-
-    @Override
-    public int updateVisibility(Long id, String visibility) {
+        MingCustomsEntryDO dataObject = MingCustomsPersistenceAssembler.toEntryObject(entry);
         return entryMapper.update(
                 null,
                 new LambdaUpdateWrapper<MingCustomsEntryDO>()
-                        .eq(MingCustomsEntryDO::getId, id)
+                        .eq(MingCustomsEntryDO::getId, dataObject.getId())
+                        .set(MingCustomsEntryDO::getTitle, dataObject.getTitle())
+                        .set(MingCustomsEntryDO::getCategory, dataObject.getCategory())
+                        .set(MingCustomsEntryDO::getChapter, dataObject.getChapter())
+                        .set(MingCustomsEntryDO::getSection, dataObject.getSection())
+                        .set(MingCustomsEntryDO::getSummary, dataObject.getSummary())
+                        .set(MingCustomsEntryDO::getContentFormat, dataObject.getContentFormat())
+                        .set(MingCustomsEntryDO::getContent, dataObject.getContent())
+                        .set(MingCustomsEntryDO::getOriginalExcerpts, dataObject.getOriginalExcerpts())
+                        .set(MingCustomsEntryDO::getVisibility, dataObject.getVisibility()));
+    }
+
+    @Override
+    public int updateVisibility(MingCustomsEntryId id, String visibility) {
+        return entryMapper.update(
+                null,
+                new LambdaUpdateWrapper<MingCustomsEntryDO>()
+                        .eq(MingCustomsEntryDO::getId, MingCustomsEntryIdCodec.toValue(id))
                         .set(MingCustomsEntryDO::getVisibility, visibility));
     }
 
     @Override
-    public int deleteById(Long id) {
-        return entryMapper.deleteById(id);
+    public int deleteById(MingCustomsEntryId id) {
+        return entryMapper.deleteById(MingCustomsEntryIdCodec.toValue(id));
     }
 
     @Override
-    public List<MingCustomsKeyword> listKeywordsByCustomId(Long customId, SortDirection sortDirection) {
+    public List<MingCustomsKeyword> listKeywordsByCustomId(MingCustomsEntryId customId, SortDirection sortDirection) {
         return MingCustomsPersistenceAssembler.toKeywordDomainList(
                 keywordMapper.selectList(new LambdaQueryWrapper<MingCustomsKeywordDO>()
-                        .eq(MingCustomsKeywordDO::getCustomId, customId)
+                        .eq(customId != null, MingCustomsKeywordDO::getCustomId, MingCustomsEntryIdCodec.toValue(customId))
                         .orderBy(true, sortDirection != SortDirection.DESC, MingCustomsKeywordDO::getPriority)));
     }
 
     @Override
-    public Long insertKeyword(MingCustomsKeyword keyword) {
-        MingCustomsKeywordDO dataObject = MingCustomsPersistenceAssembler.toKeywordObject(keyword);
-        keywordMapper.insert(dataObject);
-        return dataObject.getId();
+    public List<MingCustomsKeyword> listKeywords(SortDirection sortDirection) {
+        return MingCustomsPersistenceAssembler.toKeywordDomainList(
+                keywordMapper.selectList(new LambdaQueryWrapper<MingCustomsKeywordDO>()
+                        .orderBy(true, sortDirection != SortDirection.DESC, MingCustomsKeywordDO::getPriority)));
     }
 
     @Override
-    public int deleteKeywordById(Long id) {
-        return keywordMapper.deleteById(id);
+    public int maxPriority() {
+        return maxPriority(keywordMapper.selectObjs(new QueryWrapper<MingCustomsKeywordDO>().select("max(priority)")));
+    }
+
+    @Override
+    public MingCustomsKeywordId insertKeyword(MingCustomsKeyword keyword) {
+        MingCustomsKeywordDO dataObject = MingCustomsPersistenceAssembler.toKeywordObject(keyword);
+        keywordMapper.insert(dataObject);
+        return MingCustomsKeywordIdCodec.toDomain(dataObject.getId());
+    }
+
+    @Override
+    public int updateKeywordPriority(MingCustomsKeyword keyword) {
+        MingCustomsKeywordDO dataObject = MingCustomsPersistenceAssembler.toKeywordObject(keyword);
+        return keywordMapper.update(
+                null,
+                new LambdaUpdateWrapper<MingCustomsKeywordDO>()
+                        .eq(MingCustomsKeywordDO::getId, dataObject.getId())
+                        .set(MingCustomsKeywordDO::getPriority, dataObject.getPriority()));
+    }
+
+    @Override
+    public int deleteKeywordById(MingCustomsKeywordId id) {
+        return keywordMapper.deleteById(MingCustomsKeywordIdCodec.toValue(id));
     }
 
     @Override
@@ -112,5 +154,23 @@ public class MingCustomsRepositoryImpl implements MingCustomsRepository {
         return keywordMapper.selectObjs(Wrappers.<MingCustomsKeywordDO>query().select("keyword")).stream()
                 .map(String::valueOf)
                 .collect(Collectors.toList());
+    }
+
+    private static int maxPriority(List<Object> values) {
+        if (values == null || values.isEmpty()) {
+            return 0;
+        }
+        Object max = values.stream().filter(Objects::nonNull).findFirst().orElse(null);
+        if (max == null) {
+            return 0;
+        }
+        if (max instanceof Number) {
+            return ((Number) max).intValue();
+        }
+        try {
+            return Integer.parseInt(String.valueOf(max));
+        } catch (NumberFormatException exception) {
+            return 0;
+        }
     }
 }

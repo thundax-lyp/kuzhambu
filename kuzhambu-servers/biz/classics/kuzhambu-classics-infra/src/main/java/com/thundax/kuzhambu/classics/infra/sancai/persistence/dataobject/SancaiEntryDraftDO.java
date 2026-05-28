@@ -3,7 +3,7 @@ package com.thundax.kuzhambu.classics.infra.sancai.persistence.dataobject;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import java.time.LocalDateTime;
+import java.util.Date;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,6 +17,6 @@ public class SancaiEntryDraftDO {
     private Long id;
 
     private Long entryId;
-    private LocalDateTime autosavedAt;
+    private Date autosavedAt;
     private String draftJson;
 }

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.util.Date;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -29,7 +29,7 @@ public class WangqiDocumentResponse implements Serializable {
     private String content;
 
     @JsonProperty("documentTime")
-    private LocalDateTime documentTime;
+    private Date documentTime;
 
     @JsonProperty("storageObjectId")
     private Long storageObjectId;

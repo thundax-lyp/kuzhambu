@@ -1,12 +1,25 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.content.controller;
 
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
+import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairSortCommand;
+import com.thundax.kuzhambu.classics.application.content.command.ContentTagSortCommand;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentQaPairIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentTagIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentExportJobId;
+import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
+import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentQaPairId;
+import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentTagId;
 import com.thundax.kuzhambu.classics.interfaces.admin.content.assembler.ClassicsContentInterfaceAssembler;
+import com.thundax.kuzhambu.classics.interfaces.admin.content.controller.request.ClassicsContentQaPairSortRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.content.controller.request.ClassicsContentRequest;
+import com.thundax.kuzhambu.classics.interfaces.admin.content.controller.request.ClassicsContentTagSortRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.content.controller.response.ClassicsContentResponse;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
+import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
+import com.thundax.kuzhambu.common.web.request.RequestListHelper;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -18,7 +31,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@Tag(name = "古籍模块", description = "通用内容")
+@Tag(name = "古籍模块-通用内容", description = "通用内容")
 @SysLogger(module = {"古籍", "通用内容"})
 @RequestMapping("/api/classics/content")
 @WrappedApiController
@@ -35,7 +48,8 @@ public class ClassicsContentAdminController {
     @SysLogger(value = "标签列表")
     @GetMapping("tags")
     public List<ClassicsContentResponse> listTags(@RequestParam String contentType, @RequestParam Long contentId) {
-        return service.listTags(contentType, contentId).stream()
+        ClassicsContentId contentIdValue = ClassicsContentIdCodec.toDomain(contentId);
+        return service.listTags(contentType, contentIdValue).stream()
                 .map(ClassicsContentInterfaceAssembler::toTagResponse)
                 .toList();
     }
@@ -46,8 +60,27 @@ public class ClassicsContentAdminController {
     @SysLogger(value = "保存标签")
     @PostMapping("tags/save")
     public ClassicsContentResponse saveTag(@Valid @RequestBody ClassicsContentRequest request) {
-        Long id = service.saveTag(ClassicsContentInterfaceAssembler.toTagCommand(request));
-        return ClassicsContentResponse.builder().id(id).build();
+        ClassicsContentTagId id = service.saveTag(ClassicsContentInterfaceAssembler.toTagCommand(request));
+        return ClassicsContentResponse.builder()
+                .id(id == null ? null : id.value())
+                .build();
+    }
+
+    @Operation(summary = "排序古籍内容标签", description = "classics:content:edit")
+    @ApiImplicitParams({})
+    @HasPermission("classics:content:edit")
+    @SysLogger(value = "标签排序")
+    @PostMapping("tags/sort")
+    public Boolean sortTags(@Valid @RequestBody ClassicsContentTagSortRequest request) {
+        service.sortTags(new ContentTagSortCommand(
+                RequestListHelper.map(
+                        RequestListHelper.presentUnique(
+                                request == null ? null : request.getOrderedIds(),
+                                "orderedIds",
+                                AdminResponseExceptions::invalidParameter),
+                        ClassicsContentTagIdCodec::toDomain),
+                request == null ? null : request.getSortDirection()));
+        return true;
     }
 
     @Operation(summary = "查询古籍内容问答", description = "classics:content:view")
@@ -56,7 +89,8 @@ public class ClassicsContentAdminController {
     @SysLogger(value = "问答列表")
     @GetMapping("qa-pairs")
     public List<ClassicsContentResponse> listQaPairs(@RequestParam String contentType, @RequestParam Long contentId) {
-        return service.listQaPairs(contentType, contentId).stream()
+        ClassicsContentId contentIdValue = ClassicsContentIdCodec.toDomain(contentId);
+        return service.listQaPairs(contentType, contentIdValue).stream()
                 .map(ClassicsContentInterfaceAssembler::toQaResponse)
                 .toList();
     }
@@ -67,8 +101,27 @@ public class ClassicsContentAdminController {
     @SysLogger(value = "保存问答")
     @PostMapping("qa-pairs/save")
     public ClassicsContentResponse saveQaPair(@Valid @RequestBody ClassicsContentRequest request) {
-        Long id = service.saveQaPair(ClassicsContentInterfaceAssembler.toQaCommand(request));
-        return ClassicsContentResponse.builder().id(id).build();
+        ClassicsContentQaPairId id = service.saveQaPair(ClassicsContentInterfaceAssembler.toQaCommand(request));
+        return ClassicsContentResponse.builder()
+                .id(id == null ? null : id.value())
+                .build();
+    }
+
+    @Operation(summary = "排序古籍内容问答", description = "classics:content:edit")
+    @ApiImplicitParams({})
+    @HasPermission("classics:content:edit")
+    @SysLogger(value = "问答排序")
+    @PostMapping("qa-pairs/sort")
+    public Boolean sortQaPairs(@Valid @RequestBody ClassicsContentQaPairSortRequest request) {
+        service.sortQaPairs(new ContentQaPairSortCommand(
+                RequestListHelper.map(
+                        RequestListHelper.presentUnique(
+                                request == null ? null : request.getOrderedIds(),
+                                "orderedIds",
+                                AdminResponseExceptions::invalidParameter),
+                        ClassicsContentQaPairIdCodec::toDomain),
+                request == null ? null : request.getSortDirection()));
+        return true;
     }
 
     @Operation(summary = "创建古籍内容导出任务", description = "classics:content:export")
@@ -77,7 +130,11 @@ public class ClassicsContentAdminController {
     @SysLogger(value = "创建导出任务")
     @PostMapping("exports")
     public ClassicsContentResponse createExport(@Valid @RequestBody ClassicsContentRequest request) {
-        Long id = service.createExportJob(ClassicsContentInterfaceAssembler.toExportCommand(request));
-        return ClassicsContentResponse.builder().id(id).build();
+        ClassicsContentExportJobId id =
+                service.createExportJob(ClassicsContentInterfaceAssembler.toExportCommand(request));
+        return ClassicsContentResponse.builder()
+                .id(id == null ? null : id.value())
+                .build();
     }
+
 }

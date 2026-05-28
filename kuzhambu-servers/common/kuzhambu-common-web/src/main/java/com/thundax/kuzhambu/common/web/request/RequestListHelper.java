@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.common.web.request;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -18,6 +19,19 @@ public final class RequestListHelper {
                 .orElseGet(Stream::empty)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
+    }
+
+    public static <T> List<T> presentUnique(
+            List<T> sourceList, String parameterName, Function<String, ? extends RuntimeException> exceptionFactory) {
+        List<T> presentList = present(sourceList);
+        if (presentList.isEmpty() || new HashSet<>(presentList).size() != presentList.size()) {
+            throw exceptionFactory.apply(parameterName);
+        }
+        return presentList;
+    }
+
+    public static <T> List<T> presentUnique(List<T> sourceList) {
+        return presentUnique(sourceList, "sourceList", IllegalArgumentException::new);
     }
 
     public static <S, T> List<T> map(List<S> sourceList, Function<S, T> mappingFunction) {

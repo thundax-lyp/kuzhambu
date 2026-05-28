@@ -49,8 +49,7 @@ public final class SancaiInterfaceAssembler {
                 fromTranslation(request.getTranslationStatus()),
                 fromImage(request.getImageStatus()),
                 fromVisualAsset(request.getVisualAssetStatus()),
-                fromRefinement(request.getRefinementStatus()),
-                request.getPriority());
+                fromRefinement(request.getRefinementStatus()));
     }
 
     public static SancaiEntryResponse toResponse(SancaiEntry entity) {
@@ -58,8 +57,11 @@ public final class SancaiInterfaceAssembler {
             return SancaiEntryResponse.builder().build();
         }
         return SancaiEntryResponse.builder()
-                .id(entity.getId())
-                .volumeId(entity.getVolumeId())
+                .id(entity.getId() == null ? null : entity.getId().value())
+                .volumeId(
+                        entity.getVolumeId() == null
+                                ? null
+                                : entity.getVolumeId().value())
                 .title(entity.getTitle())
                 .originalText(entity.getOriginalText())
                 .translationText(entity.getTranslationText())

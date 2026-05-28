@@ -1,8 +1,11 @@
 package com.thundax.kuzhambu.classics.domain.sharing.model.entity;
 
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
+import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareTargetStatus;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsSharedContentVisibility;
+import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareLinkId;
+import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareTargetId;
 import com.thundax.kuzhambu.common.core.sort.Sortable;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,10 +17,10 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ClassicsShareTarget implements Sortable {
-    private Long id;
-    private Long shareLinkId;
+    private ClassicsShareTargetId id;
+    private ClassicsShareLinkId shareLinkId;
     private ClassicsContentType contentType;
-    private Long contentId;
+    private ClassicsContentId contentId;
     private String titleSnapshot;
     private String contentSnapshotJson;
     private ClassicsSharedContentVisibility contentVisibilitySnapshot;

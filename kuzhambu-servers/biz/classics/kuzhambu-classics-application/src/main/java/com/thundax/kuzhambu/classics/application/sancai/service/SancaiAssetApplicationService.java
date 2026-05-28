@@ -2,34 +2,42 @@ package com.thundax.kuzhambu.classics.application.sancai.service;
 
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiDraftSaveCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiImageCommand;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImageSortCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiShowcaseCommand;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryDraft;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryImage;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiShowcase;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVisualAsset;
+import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryDraftId;
+import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
+import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryImageId;
+import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiShowcaseId;
+import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVisualAssetId;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import java.util.List;
 
 public interface SancaiAssetApplicationService {
 
-    Long saveDraft(SancaiDraftSaveCommand command);
+    SancaiEntryDraftId saveDraft(SancaiDraftSaveCommand command);
 
-    SancaiEntryDraft getLatestDraft(Long entryId);
+    SancaiEntryDraft getLatestDraft(SancaiEntryId entryId);
 
-    Long saveImage(SancaiImageCommand command);
+    SancaiEntryImageId saveImage(SancaiImageCommand command);
 
-    void deleteImage(Long id);
+    void sortImages(SancaiEntryImageSortCommand command);
 
-    List<SancaiEntryImage> listImages(Long entryId);
+    void deleteImage(SancaiEntryImageId id);
 
-    Long saveVisualAsset(SancaiVisualAsset visualAsset);
+    List<SancaiEntryImage> listImages(SancaiEntryId entryId);
 
-    void useVisualAsset(Long entryId, Long visualAssetId);
+    SancaiVisualAssetId saveVisualAsset(SancaiVisualAsset visualAsset);
 
-    List<SancaiVisualAsset> listVisualAssets(Long entryId);
+    void useVisualAsset(SancaiEntryId entryId, SancaiVisualAssetId visualAssetId);
 
-    Long requestShowcase(SancaiShowcaseCommand command);
+    List<SancaiVisualAsset> listVisualAssets(SancaiEntryId entryId);
+
+    SancaiShowcaseId requestShowcase(SancaiShowcaseCommand command);
 
     PageResult<SancaiShowcase> pageShowcases(String status, PageQuery page);
 }

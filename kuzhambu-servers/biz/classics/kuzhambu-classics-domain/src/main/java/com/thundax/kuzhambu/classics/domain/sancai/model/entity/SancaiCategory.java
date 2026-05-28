@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.classics.domain.sancai.model.entity;
 
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiCategoryType;
+import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiCategoryId;
 import com.thundax.kuzhambu.common.core.sort.Sortable;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,7 +13,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SancaiCategory implements Sortable {
-    private Long id;
+    private SancaiCategoryId id;
     private String title;
     private SancaiCategoryType categoryType;
     private int priority;

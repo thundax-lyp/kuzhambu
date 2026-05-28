@@ -67,7 +67,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-@Tag(name = "系统模块", description = "系统管理")
+@Tag(name = "系统模块-角色", description = "角色")
 @SysLogger(module = {"系统", "权限"})
 @RequestMapping(value = "/api/sys/role")
 @WrappedApiController
@@ -264,10 +264,8 @@ public class RoleController {
     }
 
     private List<Long> readOrderedIds(List<String> sourceList) {
-        List<String> orderedIdValues = RequestListHelper.present(sourceList);
-        if (sourceList == null || orderedIdValues.size() != sourceList.size() || orderedIdValues.isEmpty()) {
-            throw AdminResponseExceptions.invalidParameter("orderedIds");
-        }
+        List<String> orderedIdValues =
+                RequestListHelper.presentUnique(sourceList, "orderedIds", AdminResponseExceptions::invalidParameter);
         List<Long> orderedIds = orderedIdValues.stream()
                 .map(value -> Long.valueOf(value.trim()))
                 .collect(Collectors.toList());

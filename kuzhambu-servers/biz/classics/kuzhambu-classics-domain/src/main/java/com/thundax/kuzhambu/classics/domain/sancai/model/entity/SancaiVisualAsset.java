@@ -1,6 +1,9 @@
 package com.thundax.kuzhambu.classics.domain.sancai.model.entity;
 
+import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisualAssetStatus;
+import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
+import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVisualAssetId;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,12 +14,12 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SancaiVisualAsset {
-    private Long id;
-    private Long entryId;
+    private SancaiVisualAssetId id;
+    private SancaiEntryId entryId;
     private int versionNo;
     private SancaiVisualAssetStatus status;
-    private Long sourceImageStorageObjectId;
-    private Long generatedImageStorageObjectId;
+    private StorageObjectId sourceImageStorageObjectId;
+    private StorageObjectId generatedImageStorageObjectId;
     private boolean currentUsed;
     private int textWeight;
     private int imageWeight;

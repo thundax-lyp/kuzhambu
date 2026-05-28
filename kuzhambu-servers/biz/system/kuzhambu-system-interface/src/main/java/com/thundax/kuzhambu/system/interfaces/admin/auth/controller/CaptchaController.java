@@ -43,7 +43,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-@Tag(name = "系统模块", description = "系统管理")
+@Tag(name = "系统模块-验证码", description = "验证码")
 @IgnoreSysLogger
 @RequestMapping(value = "/api/auth/captcha")
 @WrappedApiController

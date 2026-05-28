@@ -37,7 +37,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-@Tag(name = "系统模块", description = "系统管理")
+@Tag(name = "系统模块-字典", description = "字典")
 @SysLogger(module = {"系统", "字典"})
 @RequestMapping(value = "/api/sys/dict")
 @WrappedApiController
@@ -184,10 +184,8 @@ public class DictController {
     }
 
     private List<Long> readOrderedIds(List<String> sourceList) {
-        List<String> orderedIdValues = RequestListHelper.present(sourceList);
-        if (sourceList == null || orderedIdValues.size() != sourceList.size() || orderedIdValues.isEmpty()) {
-            throw AdminResponseExceptions.invalidParameter("orderedIds");
-        }
+        List<String> orderedIdValues =
+                RequestListHelper.presentUnique(sourceList, "orderedIds", AdminResponseExceptions::invalidParameter);
         List<Long> orderedIds = orderedIdValues.stream()
                 .map(value -> Long.valueOf(value.trim()))
                 .collect(Collectors.toList());

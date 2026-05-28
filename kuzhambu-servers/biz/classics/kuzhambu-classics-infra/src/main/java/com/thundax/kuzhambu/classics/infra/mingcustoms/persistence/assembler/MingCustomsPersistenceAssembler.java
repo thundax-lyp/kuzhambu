@@ -1,5 +1,7 @@
 package com.thundax.kuzhambu.classics.infra.mingcustoms.persistence.assembler;
 
+import com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsEntryIdCodec;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsKeywordIdCodec;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsKeyword;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsContentFormat;
@@ -26,7 +28,7 @@ public final class MingCustomsPersistenceAssembler {
             return null;
         }
         return new MingCustomsEntryDO(
-                entity.getId(),
+                MingCustomsEntryIdCodec.toValue(entity.getId()),
                 entity.getTitle(),
                 entity.getCategory(),
                 entity.getChapter(),
@@ -45,7 +47,7 @@ public final class MingCustomsPersistenceAssembler {
             return null;
         }
         return new MingCustomsEntry(
-                dataObject.getId(),
+                MingCustomsEntryIdCodec.toDomain(dataObject.getId()),
                 dataObject.getTitle(),
                 dataObject.getCategory(),
                 dataObject.getChapter(),
@@ -73,15 +75,18 @@ public final class MingCustomsPersistenceAssembler {
         return entity == null
                 ? null
                 : new MingCustomsKeywordDO(
-                        entity.getId(), entity.getCustomId(), entity.getKeyword(), entity.getPriority());
+                        MingCustomsKeywordIdCodec.toValue(entity.getId()),
+                        MingCustomsEntryIdCodec.toValue(entity.getCustomId()),
+                        entity.getKeyword(),
+                        entity.getPriority());
     }
 
     public static MingCustomsKeyword toKeywordDomain(MingCustomsKeywordDO dataObject) {
         return dataObject == null
                 ? null
                 : new MingCustomsKeyword(
-                        dataObject.getId(),
-                        dataObject.getCustomId(),
+                        MingCustomsKeywordIdCodec.toDomain(dataObject.getId()),
+                        MingCustomsEntryIdCodec.toDomain(dataObject.getCustomId()),
                         dataObject.getKeyword(),
                         dataObject.getPriority() == null ? 0 : dataObject.getPriority());
     }

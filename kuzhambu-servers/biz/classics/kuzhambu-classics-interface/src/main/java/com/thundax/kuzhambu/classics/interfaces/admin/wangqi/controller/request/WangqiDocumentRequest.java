@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.thundax.kuzhambu.common.web.request.PageRequest;
-import java.time.LocalDateTime;
+import java.util.Date;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -29,7 +29,7 @@ public class WangqiDocumentRequest extends PageRequest {
     private String content;
 
     @JsonProperty("documentTime")
-    private LocalDateTime documentTime;
+    private Date documentTime;
 
     @JsonProperty("storageObjectId")
     private Long storageObjectId;

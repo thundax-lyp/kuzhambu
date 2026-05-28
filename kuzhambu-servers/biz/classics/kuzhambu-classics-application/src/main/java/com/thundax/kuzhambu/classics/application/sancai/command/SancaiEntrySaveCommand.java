@@ -28,5 +28,4 @@ public class SancaiEntrySaveCommand {
     private SancaiEntryImageStatus imageStatus;
     private SancaiEntryVisualAssetStatus visualAssetStatus;
     private SancaiEntryRefinementStatus refinementStatus;
-    private int priority;
 }

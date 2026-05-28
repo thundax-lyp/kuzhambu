@@ -1,12 +1,21 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller;
 
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiAssetApplicationService;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImageSortCommand;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryImageIdCodec;
+import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryImageId;
+import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryDraftId;
+import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiShowcaseId;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.assembler.SancaiAssetInterfaceAssembler;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiAssetRequest;
+import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiEntryImageSortRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response.SancaiAssetResponse;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
+import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
+import com.thundax.kuzhambu.common.web.request.RequestListHelper;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -18,7 +27,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-@Tag(name = "古籍模块", description = "三才图会资产")
+@Tag(name = "古籍模块-三才图会资产", description = "三才图会资产")
 @SysLogger(module = {"古籍", "三才图会资产"})
 @RequestMapping("/api/classics/sancai/assets")
 @WrappedApiController
@@ -35,8 +44,8 @@ public class SancaiAssetAdminController {
     @SysLogger(value = "保存草稿")
     @PostMapping("drafts/save")
     public SancaiAssetResponse saveDraft(@Valid @RequestBody SancaiAssetRequest request) {
-        Long id = service.saveDraft(SancaiAssetInterfaceAssembler.toDraftCommand(request));
-        return SancaiAssetResponse.builder().id(id).build();
+        SancaiEntryDraftId id = service.saveDraft(SancaiAssetInterfaceAssembler.toDraftCommand(request));
+        return SancaiAssetResponse.builder().id(id == null ? null : id.value()).build();
     }
 
     @Operation(summary = "查看三才图会最新草稿", description = "classics:sancai:view")
@@ -45,7 +54,8 @@ public class SancaiAssetAdminController {
     @SysLogger(value = "最新草稿")
     @GetMapping("drafts/latest/{entryId}")
     public SancaiAssetResponse latestDraft(@PathVariable Long entryId) {
-        return SancaiAssetInterfaceAssembler.toDraftResponse(service.getLatestDraft(entryId));
+        return SancaiAssetInterfaceAssembler.toDraftResponse(
+                service.getLatestDraft(SancaiEntryIdCodec.toDomain(entryId)));
     }
 
     @Operation(summary = "保存三才图会图片", description = "classics:sancai:edit")
@@ -54,8 +64,8 @@ public class SancaiAssetAdminController {
     @SysLogger(value = "保存图片")
     @PostMapping("images/save")
     public SancaiAssetResponse saveImage(@Valid @RequestBody SancaiAssetRequest request) {
-        Long id = service.saveImage(SancaiAssetInterfaceAssembler.toImageCommand(request));
-        return SancaiAssetResponse.builder().id(id).build();
+        SancaiEntryImageId id = service.saveImage(SancaiAssetInterfaceAssembler.toImageCommand(request));
+        return SancaiAssetResponse.builder().id(id == null ? null : id.value()).build();
     }
 
     @Operation(summary = "查询三才图会图片", description = "classics:sancai:view")
@@ -64,9 +74,26 @@ public class SancaiAssetAdminController {
     @SysLogger(value = "图片列表")
     @GetMapping("images/{entryId}")
     public List<SancaiAssetResponse> listImages(@PathVariable Long entryId) {
-        return service.listImages(entryId).stream()
+        return service.listImages(SancaiEntryIdCodec.toDomain(entryId)).stream()
                 .map(SancaiAssetInterfaceAssembler::toImageResponse)
                 .toList();
+    }
+
+    @Operation(summary = "排序三才图会图片", description = "classics:sancai:edit")
+    @ApiImplicitParams({})
+    @HasPermission("classics:sancai:edit")
+    @SysLogger(value = "图片排序")
+    @PostMapping("images/sort")
+    public Boolean sortImages(@Valid @RequestBody SancaiEntryImageSortRequest request) {
+        service.sortImages(new SancaiEntryImageSortCommand(
+                RequestListHelper.map(
+                        RequestListHelper.presentUnique(
+                                request == null ? null : request.getOrderedIds(),
+                                "orderedIds",
+                                AdminResponseExceptions::invalidParameter),
+                        SancaiEntryImageIdCodec::toDomain),
+                request == null ? null : request.getSortDirection()));
+        return true;
     }
 
     @Operation(summary = "创建三才图会静态展示任务", description = "classics:sancai:edit")
@@ -75,7 +102,8 @@ public class SancaiAssetAdminController {
     @SysLogger(value = "创建展示任务")
     @PostMapping("showcases/request")
     public SancaiAssetResponse requestShowcase(@Valid @RequestBody SancaiAssetRequest request) {
-        Long id = service.requestShowcase(SancaiAssetInterfaceAssembler.toShowcaseCommand(request));
-        return SancaiAssetResponse.builder().id(id).build();
+        SancaiShowcaseId id = service.requestShowcase(SancaiAssetInterfaceAssembler.toShowcaseCommand(request));
+        return SancaiAssetResponse.builder().id(id == null ? null : id.value()).build();
     }
+
 }

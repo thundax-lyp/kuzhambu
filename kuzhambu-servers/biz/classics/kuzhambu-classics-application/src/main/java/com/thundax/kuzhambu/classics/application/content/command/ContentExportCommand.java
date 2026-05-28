@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.application.content.command;
 
+import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentExportJob;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsExportFormat;
@@ -7,7 +8,7 @@ import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsExportKi
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsExportScopeType;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsExportStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisibilityRiskStatus;
-import java.time.LocalDateTime;
+import java.util.Date;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,10 +24,10 @@ public class ContentExportCommand {
     private ClassicsExportFormat exportFormat;
     private ClassicsExportScopeType scopeType;
     private String scopeJson;
-    private LocalDateTime requestedAt;
-    private LocalDateTime expiresAt;
+    private Date requestedAt;
+    private Date expiresAt;
     private ClassicsExportStatus status;
-    private Long storageObjectId;
+    private StorageObjectId storageObjectId;
     private int itemCount;
     private int assetCount;
     private SancaiVisibilityRiskStatus visibilityRiskStatus;

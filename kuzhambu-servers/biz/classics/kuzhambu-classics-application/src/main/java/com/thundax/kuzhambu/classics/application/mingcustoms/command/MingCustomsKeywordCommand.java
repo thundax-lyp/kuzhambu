@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.application.mingcustoms.command;
 
+import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsEntryId;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,7 +11,6 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MingCustomsKeywordCommand {
-    private Long customId;
+    private MingCustomsEntryId customId;
     private String keyword;
-    private int priority;
 }

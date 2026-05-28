@@ -1,5 +1,8 @@
 package com.thundax.kuzhambu.classics.application.content.command;
 
+import com.thundax.kuzhambu.classics.domain.common.codec.KnowledgeTagIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentTagIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentSource;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentTagStatus;
@@ -21,9 +24,16 @@ public class ContentTagCommand {
     private String tagNameSnapshot;
     private ClassicsContentSource source;
     private ClassicsContentTagStatus status;
-    private int priority;
 
     public ClassicsContentTag toEntity() {
-        return new ClassicsContentTag(id, contentType, contentId, tagId, tagNameSnapshot, source, status, priority);
+        ClassicsContentTag tag = new ClassicsContentTag();
+        tag.setId(ClassicsContentTagIdCodec.toDomain(id));
+        tag.setContentType(contentType);
+        tag.setContentId(ClassicsContentIdCodec.toDomain(contentId));
+        tag.setTagId(KnowledgeTagIdCodec.toDomain(tagId));
+        tag.setTagNameSnapshot(tagNameSnapshot);
+        tag.setSource(source);
+        tag.setStatus(status);
+        return tag;
     }
 }

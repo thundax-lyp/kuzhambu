@@ -29,8 +29,7 @@ public final class ClassicsContentInterfaceAssembler {
                 source(request.getSource()),
                 StringUtils.isBlank(request.getStatus())
                         ? ClassicsContentTagStatus.ACTIVE
-                        : ClassicsContentTagStatus.from(request.getStatus()),
-                request.getPriority());
+                        : ClassicsContentTagStatus.from(request.getStatus()));
     }
 
     public static ContentQaPairCommand toQaCommand(ClassicsContentRequest request) {
@@ -40,8 +39,7 @@ public final class ClassicsContentInterfaceAssembler {
                 request.getContentId(),
                 request.getQuestion(),
                 request.getAnswer(),
-                source(request.getSource()),
-                request.getPriority());
+                source(request.getSource()));
     }
 
     public static ContentExportCommand toExportCommand(ClassicsContentRequest request) {
@@ -65,12 +63,15 @@ public final class ClassicsContentInterfaceAssembler {
         return tag == null
                 ? ClassicsContentResponse.builder().build()
                 : ClassicsContentResponse.builder()
-                        .id(tag.getId())
+                        .id(tag.getId() == null ? null : tag.getId().value())
                         .contentType(
                                 tag.getContentType() == null
                                         ? null
                                         : tag.getContentType().value())
-                        .contentId(tag.getContentId())
+                        .contentId(
+                                tag.getContentId() == null
+                                        ? null
+                                        : tag.getContentId().value())
                         .tagNameSnapshot(tag.getTagNameSnapshot())
                         .status(tag.getStatus() == null ? null : tag.getStatus().value())
                         .build();
@@ -80,12 +81,15 @@ public final class ClassicsContentInterfaceAssembler {
         return qa == null
                 ? ClassicsContentResponse.builder().build()
                 : ClassicsContentResponse.builder()
-                        .id(qa.getId())
+                        .id(qa.getId() == null ? null : qa.getId().value())
                         .contentType(
                                 qa.getContentType() == null
                                         ? null
                                         : qa.getContentType().value())
-                        .contentId(qa.getContentId())
+                        .contentId(
+                                qa.getContentId() == null
+                                        ? null
+                                        : qa.getContentId().value())
                         .question(qa.getQuestion())
                         .answer(qa.getAnswer())
                         .build();

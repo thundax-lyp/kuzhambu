@@ -37,7 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
 @BizExceptionBoundary
 public class StorageApplicationServiceImpl implements StorageApplicationService {
 
-    private static final int PRIORITY_STEP = 10;
+    private static final int PRIORITY_STEP = 1;
 
     private final StoredObjectRepository dao;
     private final StoredObjectReferenceRepository businessRepository;

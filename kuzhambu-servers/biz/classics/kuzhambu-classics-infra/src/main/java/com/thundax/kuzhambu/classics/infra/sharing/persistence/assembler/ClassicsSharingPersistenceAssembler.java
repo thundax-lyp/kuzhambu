@@ -1,7 +1,12 @@
 package com.thundax.kuzhambu.classics.infra.sharing.persistence.assembler;
 
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
+import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisibilityRiskStatus;
+import com.thundax.kuzhambu.classics.domain.sharing.codec.ClassicsShareAccessRecordIdCodec;
+import com.thundax.kuzhambu.classics.domain.sharing.codec.ClassicsShareLinkIdCodec;
+import com.thundax.kuzhambu.classics.domain.sharing.codec.ClassicsShareTargetIdCodec;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareAccessRecord;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareLink;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareTarget;
@@ -31,7 +36,7 @@ public final class ClassicsSharingPersistenceAssembler {
         return entity == null
                 ? null
                 : new ClassicsShareLinkDO(
-                        entity.getId(),
+                        ClassicsShareLinkIdCodec.toValue(entity.getId()),
                         entity.getTokenHash(),
                         entity.getTitle(),
                         value(entity.getVisibility()),
@@ -46,7 +51,7 @@ public final class ClassicsSharingPersistenceAssembler {
         return dataObject == null
                 ? null
                 : new ClassicsShareLink(
-                        dataObject.getId(),
+                        ClassicsShareLinkIdCodec.toDomain(dataObject.getId()),
                         dataObject.getTokenHash(),
                         dataObject.getTitle(),
                         dataObject.getVisibility() == null
@@ -73,10 +78,10 @@ public final class ClassicsSharingPersistenceAssembler {
         return entity == null
                 ? null
                 : new ClassicsShareTargetDO(
-                        entity.getId(),
-                        entity.getShareLinkId(),
+                        ClassicsShareTargetIdCodec.toValue(entity.getId()),
+                        ClassicsShareLinkIdCodec.toValue(entity.getShareLinkId()),
                         value(entity.getContentType()),
-                        entity.getContentId(),
+                        ClassicsContentIdCodec.toValue(entity.getContentId()),
                         entity.getTitleSnapshot(),
                         entity.getContentSnapshotJson(),
                         value(entity.getContentVisibilitySnapshot()),
@@ -88,12 +93,12 @@ public final class ClassicsSharingPersistenceAssembler {
         return dataObject == null
                 ? null
                 : new ClassicsShareTarget(
-                        dataObject.getId(),
-                        dataObject.getShareLinkId(),
+                        ClassicsShareTargetIdCodec.toDomain(dataObject.getId()),
+                        ClassicsShareLinkIdCodec.toDomain(dataObject.getShareLinkId()),
                         dataObject.getContentType() == null
                                 ? null
                                 : ClassicsContentType.from(dataObject.getContentType()),
-                        dataObject.getContentId(),
+                        ClassicsContentId.ofNullable(dataObject.getContentId()),
                         dataObject.getTitleSnapshot(),
                         dataObject.getContentSnapshotJson(),
                         dataObject.getContentVisibilitySnapshot() == null
@@ -117,9 +122,9 @@ public final class ClassicsSharingPersistenceAssembler {
         return entity == null
                 ? null
                 : new ClassicsShareAccessRecordDO(
-                        entity.getId(),
-                        entity.getShareLinkId(),
-                        entity.getShareTargetId(),
+                        ClassicsShareAccessRecordIdCodec.toValue(entity.getId()),
+                        ClassicsShareLinkIdCodec.toValue(entity.getShareLinkId()),
+                        ClassicsShareTargetIdCodec.toValue(entity.getShareTargetId()),
                         entity.getAccessedAt(),
                         value(entity.getAccessResult()),
                         entity.getClientSnapshot());
@@ -129,9 +134,9 @@ public final class ClassicsSharingPersistenceAssembler {
         return dataObject == null
                 ? null
                 : new ClassicsShareAccessRecord(
-                        dataObject.getId(),
-                        dataObject.getShareLinkId(),
-                        dataObject.getShareTargetId(),
+                        ClassicsShareAccessRecordIdCodec.toDomain(dataObject.getId()),
+                        ClassicsShareLinkIdCodec.toDomain(dataObject.getShareLinkId()),
+                        ClassicsShareTargetIdCodec.toDomain(dataObject.getShareTargetId()),
                         dataObject.getAccessedAt(),
                         dataObject.getAccessResult() == null
                                 ? null

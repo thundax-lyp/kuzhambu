@@ -1,8 +1,10 @@
 package com.thundax.kuzhambu.classics.domain.wangqi.model.entity;
 
+import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiContentFormat;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
-import java.time.LocalDateTime;
+import com.thundax.kuzhambu.classics.domain.wangqi.model.valueobject.WangqiDocumentId;
+import java.util.Date;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,12 +15,12 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class WangqiDocument {
-    private Long id;
+    private WangqiDocumentId id;
     private String title;
     private String summary;
     private WangqiContentFormat contentFormat;
     private String content;
-    private LocalDateTime documentTime;
-    private Long storageObjectId;
+    private Date documentTime;
+    private StorageObjectId storageObjectId;
     private WangqiDocumentVisibility visibility;
 }

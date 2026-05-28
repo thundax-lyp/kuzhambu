@@ -29,7 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 @BizExceptionBoundary
 public class DictApplicationServiceImpl implements DictApplicationService {
 
-    private static final int PRIORITY_STEP = 10;
+    private static final int PRIORITY_STEP = 1;
 
     private final DictRepository dao;
 

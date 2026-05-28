@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.classics.application.sancai.command;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,6 +12,6 @@ import lombok.Setter;
 @AllArgsConstructor
 public class SancaiDraftSaveCommand {
     private Long entryId;
-    private LocalDateTime autosavedAt;
+    private Date autosavedAt;
     private String draftJson;
 }

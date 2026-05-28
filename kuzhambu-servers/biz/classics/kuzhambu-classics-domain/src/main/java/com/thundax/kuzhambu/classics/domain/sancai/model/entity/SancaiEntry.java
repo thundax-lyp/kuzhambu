@@ -6,6 +6,8 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryRefine
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryTranslationStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisibility;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisualAssetStatus;
+import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
+import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVolumeId;
 import com.thundax.kuzhambu.common.core.sort.Sortable;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -17,8 +19,8 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SancaiEntry implements Sortable {
-    private Long id;
-    private Long volumeId;
+    private SancaiEntryId id;
+    private SancaiVolumeId volumeId;
     private String title;
     private String originalText;
     private String translationText;

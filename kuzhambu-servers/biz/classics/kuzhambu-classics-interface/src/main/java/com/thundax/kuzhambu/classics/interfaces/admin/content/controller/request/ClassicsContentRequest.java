@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.thundax.kuzhambu.common.web.request.PageRequest;
-import java.time.LocalDateTime;
+import java.util.Date;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -34,9 +34,6 @@ public class ClassicsContentRequest extends PageRequest {
     @JsonProperty("status")
     private String status;
 
-    @JsonProperty("priority")
-    private int priority;
-
     @JsonProperty("question")
     private String question;
 
@@ -56,5 +53,5 @@ public class ClassicsContentRequest extends PageRequest {
     private String scopeJson;
 
     @JsonProperty("expiresAt")
-    private LocalDateTime expiresAt;
+    private Date expiresAt;
 }

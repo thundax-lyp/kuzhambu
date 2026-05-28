@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.application.sancai.command;
 
+import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryImageType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,9 +14,8 @@ import lombok.Setter;
 public class SancaiImageCommand {
     private Long id;
     private Long entryId;
-    private Long storageObjectId;
+    private StorageObjectId storageObjectId;
     private SancaiEntryImageType imageType;
     private String title;
     private boolean currentUsed;
-    private int priority;
 }
