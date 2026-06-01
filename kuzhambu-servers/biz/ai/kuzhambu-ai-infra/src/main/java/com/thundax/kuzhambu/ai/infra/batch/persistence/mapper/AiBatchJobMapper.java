@@ -1,18 +1,16 @@
 package com.thundax.kuzhambu.ai.infra.batch.persistence.mapper;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import java.time.Instant;
+import com.thundax.kuzhambu.ai.infra.batch.persistence.dataobject.AiBatchJobDO;
+import com.thundax.kuzhambu.ai.infra.batch.persistence.dataobject.EntrySplitCandidateDO;
+import com.thundax.kuzhambu.ai.infra.batch.persistence.dataobject.ImageUnderstandingResultDO;
 import java.util.List;
-import lombok.Data;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 
 @Mapper
-public interface AiBatchJobMapper extends BaseMapper<AiBatchJobMapper.AiBatchJobDO> {
+public interface AiBatchJobMapper extends BaseMapper<AiBatchJobDO> {
 
     @Insert(
             """
@@ -45,61 +43,4 @@ public interface AiBatchJobMapper extends BaseMapper<AiBatchJobMapper.AiBatchJob
 
     @Select("select * from ai_entry_split_candidate where candidate_id = #{candidateId} order by priority asc")
     List<EntrySplitCandidateDO> selectEntrySplitCandidates(Long candidateId);
-
-    @Data
-    @TableName("ai_batch_job")
-    class AiBatchJobDO {
-
-        @TableId(type = IdType.AUTO)
-        private Long id;
-
-        private Long batchId;
-        private String scope;
-        private String capability;
-        private String contentType;
-        private String status;
-        private Integer totalCount;
-        private Integer successCount;
-        private Integer failedCount;
-        private Integer cancelledCount;
-        private String failureSummaryJson;
-        private Instant requestedAt;
-        private Instant cancelledAt;
-        private Instant completedAt;
-    }
-
-    @Data
-    @TableName("ai_image_understanding")
-    class ImageUnderstandingResultDO {
-
-        @TableId(type = IdType.AUTO)
-        private Long id;
-
-        private Long understandingId;
-        private Long storageObjectId;
-        private String contentHash;
-        private String analysisMarkdown;
-        private Long callId;
-        private Long promptVersionId;
-        private String modelName;
-        private Instant requestedAt;
-    }
-
-    @Data
-    @TableName("ai_entry_split_candidate")
-    class EntrySplitCandidateDO {
-
-        @TableId(type = IdType.AUTO)
-        private Long id;
-
-        private Long splitCandidateId;
-        private Long candidateId;
-        private String parentContentType;
-        private Long parentContentId;
-        private String title;
-        private String originalText;
-        private String translationText;
-        private Long targetVolumeId;
-        private Integer priority;
-    }
 }

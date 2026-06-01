@@ -9,6 +9,7 @@ import com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.response.A
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -30,6 +31,7 @@ public class AiRefinementController {
     }
 
     @Operation(summary = "AI翻译", description = "ai:refinement:edit")
+    @ApiImplicitParams({})
     @HasPermission(value = "ai:refinement:edit")
     @SysLogger(value = "翻译")
     @PostMapping(value = "translate")
@@ -39,6 +41,7 @@ public class AiRefinementController {
     }
 
     @Operation(summary = "AI摘要", description = "ai:refinement:edit")
+    @ApiImplicitParams({})
     @HasPermission(value = "ai:refinement:edit")
     @SysLogger(value = "摘要")
     @PostMapping(value = "summary")
@@ -48,6 +51,7 @@ public class AiRefinementController {
     }
 
     @Operation(summary = "AI标签", description = "ai:refinement:edit")
+    @ApiImplicitParams({})
     @HasPermission(value = "ai:refinement:edit")
     @SysLogger(value = "标签")
     @PostMapping(value = "tags")
@@ -57,6 +61,7 @@ public class AiRefinementController {
     }
 
     @Operation(summary = "AI问答对", description = "ai:refinement:edit")
+    @ApiImplicitParams({})
     @HasPermission(value = "ai:refinement:edit")
     @SysLogger(value = "问答")
     @PostMapping(value = "qa")
@@ -66,6 +71,7 @@ public class AiRefinementController {
     }
 
     @Operation(summary = "AI图片理解", description = "ai:refinement:edit")
+    @ApiImplicitParams({})
     @HasPermission(value = "ai:refinement:edit")
     @SysLogger(value = "图片理解")
     @PostMapping(value = "image-analysis")
@@ -75,6 +81,7 @@ public class AiRefinementController {
     }
 
     @Operation(summary = "AI视觉描述", description = "ai:refinement:edit")
+    @ApiImplicitParams({})
     @HasPermission(value = "ai:refinement:edit")
     @SysLogger(value = "视觉描述")
     @PostMapping(value = "visual")
@@ -84,6 +91,7 @@ public class AiRefinementController {
     }
 
     @Operation(summary = "AI条目拆分", description = "ai:refinement:edit")
+    @ApiImplicitParams({})
     @HasPermission(value = "ai:refinement:edit")
     @SysLogger(value = "条目拆分")
     @PostMapping(value = "split")

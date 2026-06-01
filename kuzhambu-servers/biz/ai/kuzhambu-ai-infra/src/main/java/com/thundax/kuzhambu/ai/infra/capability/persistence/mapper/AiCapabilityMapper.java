@@ -1,19 +1,17 @@
 package com.thundax.kuzhambu.ai.infra.capability.persistence.mapper;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import java.time.Instant;
+import com.thundax.kuzhambu.ai.infra.capability.persistence.dataobject.AiActionStatusDO;
+import com.thundax.kuzhambu.ai.infra.capability.persistence.dataobject.AiCapabilityDO;
+import com.thundax.kuzhambu.ai.infra.capability.persistence.dataobject.AiCapabilityMappingDO;
 import java.util.List;
-import lombok.Data;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
 @Mapper
-public interface AiCapabilityMapper extends BaseMapper<AiCapabilityMapper.AiCapabilityDO> {
+public interface AiCapabilityMapper extends BaseMapper<AiCapabilityDO> {
 
     @Select("select * from ai_capability_mapping where scope = #{scope} and capability = #{capability}")
     AiCapabilityMappingDO selectMapping(String scope, String capability);
@@ -63,43 +61,4 @@ public interface AiCapabilityMapper extends BaseMapper<AiCapabilityMapper.AiCapa
             where action_status_id = #{actionStatusId}
             """)
     int updateActionStatus(AiActionStatusDO dataObject);
-
-    @Data
-    @TableName("ai_capability")
-    class AiCapabilityDO {
-
-        @TableId(type = IdType.AUTO)
-        private Long id;
-
-        private String capability;
-        private String name;
-        private String requiredTagsJson;
-        private String outputMode;
-        private Boolean enabled;
-        private Integer priority;
-    }
-
-    @Data
-    class AiCapabilityMappingDO {
-
-        private Long id;
-        private Long mappingId;
-        private String scope;
-        private String capability;
-        private Long modelId;
-        private Boolean enabled;
-        private Instant configuredAt;
-    }
-
-    @Data
-    class AiActionStatusDO {
-
-        private Long id;
-        private Long actionStatusId;
-        private String scope;
-        private String capability;
-        private Boolean available;
-        private String unavailableReason;
-        private Instant checkedAt;
-    }
 }

@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `AI V1`：补齐 AI 架构验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-DOMAIN.md#v1-ai-architecture-verification`
-    - 范围对象：`kuzhambu-servers/biz/ai/*/src/test/java/com/thundax/kuzhambu/ai/`
-    - 处理动作：按 RUNBOOK V1 的 4 个关联文件新增或补齐 AI 模块架构验证。
-    - 验收点：架构测试覆盖层依赖、包路径、Controller、Repository、DO 和 Mapper 归属。
-    - 重要度：7/10
-
 - [ ] `AI V2`：验证 worker client 协议
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-DOMAIN.md#v2-worker-client-verification`

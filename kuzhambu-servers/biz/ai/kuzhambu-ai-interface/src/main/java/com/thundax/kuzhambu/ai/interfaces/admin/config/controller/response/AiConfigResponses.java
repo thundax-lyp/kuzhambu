@@ -16,6 +16,17 @@ public final class AiConfigResponses {
 
     @Getter
     @Builder
+    @Schema(name = "AiIdResponse", description = "AI资源ID响应")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class IdResponse implements Serializable {
+
+        @JsonProperty(value = "id")
+        private Long id;
+    }
+
+    @Getter
+    @Builder
     @Schema(name = "AiServiceConfigResponse", description = "AI服务配置响应")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)

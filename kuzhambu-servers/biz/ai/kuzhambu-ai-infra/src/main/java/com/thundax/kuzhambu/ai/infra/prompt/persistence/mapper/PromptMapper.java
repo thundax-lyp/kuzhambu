@@ -1,12 +1,10 @@
 package com.thundax.kuzhambu.ai.infra.prompt.persistence.mapper;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import java.time.Instant;
+import com.thundax.kuzhambu.ai.infra.prompt.persistence.dataobject.PromptTemplateDO;
+import com.thundax.kuzhambu.ai.infra.prompt.persistence.dataobject.PromptVariableDO;
+import com.thundax.kuzhambu.ai.infra.prompt.persistence.dataobject.PromptVersionDO;
 import java.util.List;
-import lombok.Data;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
@@ -14,7 +12,7 @@ import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
 @Mapper
-public interface PromptMapper extends BaseMapper<PromptMapper.PromptTemplateDO> {
+public interface PromptMapper extends BaseMapper<PromptTemplateDO> {
 
     @Select("select * from ai_prompt_template where scope = #{scope} and capability = #{capability}")
     PromptTemplateDO selectTemplateByScope(String scope, String capability);
@@ -64,48 +62,4 @@ public interface PromptMapper extends BaseMapper<PromptMapper.PromptTemplateDO> 
                 (#{variableId}, #{templateId}, #{variableName}, #{required}, #{description}, #{priority})
             """)
     int insertVariable(PromptVariableDO dataObject);
-
-    @Data
-    @TableName("ai_prompt_template")
-    class PromptTemplateDO {
-
-        @TableId(type = IdType.AUTO)
-        private Long id;
-
-        private Long templateId;
-        private String scope;
-        private String capability;
-        private String name;
-        private String description;
-        private String status;
-        private Integer currentVersionNo;
-        private Instant registeredAt;
-    }
-
-    @Data
-    class PromptVersionDO {
-
-        private Long id;
-        private Long promptVersionId;
-        private Long templateId;
-        private Integer versionNo;
-        private String messageTemplatesJson;
-        private String variablesSnapshotJson;
-        private String outputSchemaJson;
-        private String currentKey;
-        private String changeSummary;
-        private Instant registeredAt;
-    }
-
-    @Data
-    class PromptVariableDO {
-
-        private Long id;
-        private Long variableId;
-        private Long templateId;
-        private String variableName;
-        private Boolean required;
-        private String description;
-        private Integer priority;
-    }
 }

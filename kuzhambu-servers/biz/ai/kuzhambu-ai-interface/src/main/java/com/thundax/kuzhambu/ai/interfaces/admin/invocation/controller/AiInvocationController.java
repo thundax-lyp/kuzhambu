@@ -5,11 +5,15 @@ import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
 import com.thundax.kuzhambu.ai.interfaces.admin.invocation.assembler.AiInvocationInterfaceAssembler;
 import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.request.AiInvocationRequests;
-import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.response.AiInvocationResponses;
+import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.response.AiInvocationResponses.BatchJobResponse;
+import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.response.AiInvocationResponses.CallRecordResponse;
+import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.response.AiInvocationResponses.CandidateResponse;
+import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.response.AiInvocationResponses.IdResponse;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -36,28 +40,29 @@ public class AiInvocationController {
     }
 
     @Operation(summary = "获取AI调用记录", description = "ai:invocation:view")
+    @ApiImplicitParams({})
     @HasPermission(value = "ai:invocation:view")
     @SysLogger(value = "调用读取")
     @PostMapping(value = "call/get")
-    public AiInvocationResponses.CallRecordResponse getCallRecord(
-            @Valid @RequestBody AiInvocationRequests.CallIdRequest request) {
+    public CallRecordResponse getCallRecord(@Valid @RequestBody AiInvocationRequests.CallIdRequest request) {
         return AiInvocationInterfaceAssembler.toResponse(invocationRepository.getCallRecord(request.getCallId()));
     }
 
     @Operation(summary = "获取AI候选", description = "ai:invocation:view")
+    @ApiImplicitParams({})
     @HasPermission(value = "ai:invocation:view")
     @SysLogger(value = "候选读取")
     @PostMapping(value = "candidate/get")
-    public AiInvocationResponses.CandidateResponse getCandidate(
-            @Valid @RequestBody AiInvocationRequests.CandidateIdRequest request) {
+    public CandidateResponse getCandidate(@Valid @RequestBody AiInvocationRequests.CandidateIdRequest request) {
         return AiInvocationInterfaceAssembler.toResponse(invocationRepository.getCandidate(request.getCandidateId()));
     }
 
     @Operation(summary = "获取AI候选列表", description = "ai:invocation:view")
+    @ApiImplicitParams({})
     @HasPermission(value = "ai:invocation:view")
     @SysLogger(value = "候选列表")
     @PostMapping(value = "candidate/list")
-    public List<AiInvocationResponses.CandidateResponse> listCandidates(
+    public List<CandidateResponse> listCandidates(
             @Valid @RequestBody AiInvocationRequests.CandidateListRequest request) {
         return invocationRepository
                 .listCandidates(
@@ -68,11 +73,11 @@ public class AiInvocationController {
     }
 
     @Operation(summary = "拒绝AI候选", description = "ai:invocation:edit")
+    @ApiImplicitParams({})
     @HasPermission(value = "ai:invocation:edit")
     @SysLogger(value = "候选拒绝")
     @PostMapping(value = "candidate/reject")
-    public AiInvocationResponses.CandidateResponse rejectCandidate(
-            @Valid @RequestBody AiInvocationRequests.CandidateRejectRequest request) {
+    public CandidateResponse rejectCandidate(@Valid @RequestBody AiInvocationRequests.CandidateRejectRequest request) {
         AiCandidate candidate = invocationRepository.getCandidate(request.getCandidateId());
         assertCandidateFound(candidate, request.getCandidateId());
         candidate.reject(request.getErrorType(), request.getErrorMessage());
@@ -81,11 +86,11 @@ public class AiInvocationController {
     }
 
     @Operation(summary = "标记AI候选已应用", description = "ai:invocation:edit")
+    @ApiImplicitParams({})
     @HasPermission(value = "ai:invocation:edit")
     @SysLogger(value = "候选已应用")
     @PostMapping(value = "candidate/mark-applied")
-    public AiInvocationResponses.CandidateResponse markCandidateApplied(
-            @Valid @RequestBody AiInvocationRequests.CandidateIdRequest request) {
+    public CandidateResponse markCandidateApplied(@Valid @RequestBody AiInvocationRequests.CandidateIdRequest request) {
         AiCandidate candidate = invocationRepository.getCandidate(request.getCandidateId());
         assertCandidateFound(candidate, request.getCandidateId());
         candidate.markApplied(Instant.now());
@@ -94,51 +99,55 @@ public class AiInvocationController {
     }
 
     @Operation(summary = "获取AI批量任务", description = "ai:invocation:view")
+    @ApiImplicitParams({})
     @HasPermission(value = "ai:invocation:view")
     @SysLogger(value = "批量读取")
     @PostMapping(value = "batch/get")
-    public AiInvocationResponses.BatchJobResponse getBatch(
-            @Valid @RequestBody AiInvocationRequests.BatchIdRequest request) {
+    public BatchJobResponse getBatch(@Valid @RequestBody AiInvocationRequests.BatchIdRequest request) {
         return AiInvocationInterfaceAssembler.toResponse(batchJobService.get(request.getBatchId()));
     }
 
     @Operation(summary = "创建AI批量任务", description = "ai:invocation:edit")
+    @ApiImplicitParams({})
     @HasPermission(value = "ai:invocation:edit")
     @SysLogger(value = "批量创建")
     @PostMapping(value = "batch/create")
-    public Long createBatch(@Valid @RequestBody AiInvocationRequests.BatchCreateRequest request) {
-        return batchJobService.create(AiInvocationInterfaceAssembler.toCreateCommand(request));
+    public IdResponse createBatch(@Valid @RequestBody AiInvocationRequests.BatchCreateRequest request) {
+        return IdResponse.builder()
+                .id(batchJobService.create(AiInvocationInterfaceAssembler.toCreateCommand(request)))
+                .build();
     }
 
     @Operation(summary = "取消AI批量任务", description = "ai:invocation:edit")
+    @ApiImplicitParams({})
     @HasPermission(value = "ai:invocation:edit")
     @SysLogger(value = "批量取消")
     @PostMapping(value = "batch/cancel")
-    public AiInvocationResponses.BatchJobResponse cancelBatch(
-            @Valid @RequestBody AiInvocationRequests.BatchIdRequest request) {
+    public BatchJobResponse cancelBatch(@Valid @RequestBody AiInvocationRequests.BatchIdRequest request) {
         return AiInvocationInterfaceAssembler.toResponse(batchJobService.cancel(request.getBatchId()));
     }
 
     @Operation(summary = "记录AI批量成功", description = "ai:invocation:edit")
+    @ApiImplicitParams({})
     @HasPermission(value = "ai:invocation:edit")
     @SysLogger(value = "批量成功")
     @PostMapping(value = "batch/record-success")
-    public AiInvocationResponses.BatchJobResponse recordBatchSuccess(
-            @Valid @RequestBody AiInvocationRequests.BatchIdRequest request) {
+    public BatchJobResponse recordBatchSuccess(@Valid @RequestBody AiInvocationRequests.BatchIdRequest request) {
         return AiInvocationInterfaceAssembler.toResponse(batchJobService.recordSuccess(request.getBatchId()));
     }
 
     @Operation(summary = "记录AI批量失败", description = "ai:invocation:edit")
+    @ApiImplicitParams({})
     @HasPermission(value = "ai:invocation:edit")
     @SysLogger(value = "批量失败")
     @PostMapping(value = "batch/record-failure")
-    public AiInvocationResponses.BatchJobResponse recordBatchFailure(
-            @Valid @RequestBody AiInvocationRequests.BatchFailureRequest request) {
+    public BatchJobResponse recordBatchFailure(@Valid @RequestBody AiInvocationRequests.BatchFailureRequest request) {
         return AiInvocationInterfaceAssembler.toResponse(
                 batchJobService.recordFailure(request.getBatchId(), request.getFailureSummaryJson()));
     }
 
     @Operation(summary = "判断AI批量任务是否可继续派发", description = "ai:invocation:view")
+    @ApiImplicitParams({})
     @HasPermission(value = "ai:invocation:view")
     @SysLogger(value = "批量派发判断")
     @PostMapping(value = "batch/can-dispatch")
