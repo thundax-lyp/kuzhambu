@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `admin-web-validation`：执行 admin-web 迁移验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`kuzhambu-apps/admin-web/`
-    - 处理动作：运行 workspace 下 admin-web 的 format、lint、test 和 build 验证。
-    - 验收点：`format:check`、`lint`、`test`、`build` 通过，或记录明确阻塞原因。
-    - 重要度：10/10
-
 ## 待讨论项
 
 - [ ] kuzhambu admin API 契约是否沿用 `/admin-api/api`
