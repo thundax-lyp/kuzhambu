@@ -12,9 +12,3 @@
 ## 待审阅任务项
 
 ## 待讨论项
-
-- [ ] kuzhambu admin API 契约是否沿用 `/admin-api/api`
-    - 任务类型：待讨论项
-    - 关联任务：`kuzhambu-apps/admin-web`
-    - 决策要求：确认 `ADMIN_API_BASE_URL`、`ADMIN_CLIENT_ID`、token header 和响应 code 是否保持兼容。
-    - 重要度：9/10
