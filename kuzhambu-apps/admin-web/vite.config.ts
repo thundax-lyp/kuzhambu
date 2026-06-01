@@ -20,6 +20,9 @@ export default defineConfig(({ mode }) => {
             setupFiles: "./src/test/setup.ts",
             exclude: ["e2e/**", "node_modules/**", "dist/**"]
         },
+        build: {
+            chunkSizeWarningLimit: 1500
+        },
         server: {
             port: 5173,
             proxy: {
