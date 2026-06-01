@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `AI A1`：实现服务与模型应用服务
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-DOMAIN.md#a1-service-and-model-application`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/config/`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/model/`
-    - 处理动作：按 RUNBOOK A1 的 5 个关联文件实现服务配置、模型管理、连通性检测和检测历史用例。
-    - 验收点：管理员能维护主备服务和模型，并触发检测记录落库。
-    - 重要度：9/10
-
 - [ ] `AI A2`：实现能力映射应用服务
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-DOMAIN.md#a2-capability-application`
