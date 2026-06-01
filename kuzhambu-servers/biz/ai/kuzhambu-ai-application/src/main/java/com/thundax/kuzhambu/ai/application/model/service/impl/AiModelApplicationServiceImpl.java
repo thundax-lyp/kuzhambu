@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.ai.application.model.service.impl;
 
+import com.thundax.kuzhambu.ai.application.capability.service.AiCapabilityApplicationService;
 import com.thundax.kuzhambu.ai.application.model.command.AiModelCheckCommand;
 import com.thundax.kuzhambu.ai.application.model.service.AiModelApplicationService;
 import com.thundax.kuzhambu.ai.domain.model.model.entity.AiModel;
@@ -17,9 +18,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class AiModelApplicationServiceImpl implements AiModelApplicationService {
 
     private final AiModelRepository aiModelRepository;
+    private final AiCapabilityApplicationService aiCapabilityApplicationService;
 
-    public AiModelApplicationServiceImpl(AiModelRepository aiModelRepository) {
+    public AiModelApplicationServiceImpl(
+            AiModelRepository aiModelRepository, AiCapabilityApplicationService aiCapabilityApplicationService) {
         this.aiModelRepository = aiModelRepository;
+        this.aiCapabilityApplicationService = aiCapabilityApplicationService;
     }
 
     @Override
@@ -56,6 +60,7 @@ public class AiModelApplicationServiceImpl implements AiModelApplicationService 
         if (modelId == null) {
             return 0;
         }
+        aiCapabilityApplicationService.assertModelCanBeDeleted(modelId);
         return aiModelRepository.deleteModel(modelId);
     }
 

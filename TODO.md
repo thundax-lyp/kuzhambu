@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `AI A2`：实现能力映射应用服务
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-DOMAIN.md#a2-capability-application`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/capability/`
-    - 处理动作：按 RUNBOOK A2 的 4 个关联文件实现能力查询、映射保存、模型占用检查和动作状态刷新。
-    - 验收点：能力不匹配时保存失败；仍被映射使用的模型不能删除。
-    - 重要度：9/10
-
 - [ ] `AI A3`：实现提示词应用服务
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-DOMAIN.md#a3-prompt-application`
