@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `AI D1`：实现 AI 服务与模型领域模型
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-DOMAIN.md#d1-service-and-model-domain`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-domain/src/main/java/com/thundax/kuzhambu/ai/domain/config/`、`kuzhambu-servers/biz/ai/kuzhambu-ai-domain/src/main/java/com/thundax/kuzhambu/ai/domain/model/`
-    - 处理动作：按 RUNBOOK D1 的 4 个关联文件定义服务配置、模型、检测记录和仓储端口。
-    - 验收点：模型覆盖主备服务、启用状态、模型能力标签、检测结果和检测历史查询。
-    - 重要度：9/10
-
 - [ ] `AI D2`：实现 AI 能力领域模型
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-DOMAIN.md#d2-capability-domain`
