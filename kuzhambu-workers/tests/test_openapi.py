@@ -11,10 +11,42 @@ def test_openapi_schema_uses_internal_path() -> None:
     assert body["info"]["title"] == "Kuzhambu Workers"
     assert "/internal/ai/invoke" in body["paths"]
     assert "/internal/render/classics-export" in body["paths"]
+
+
+def test_openapi_marks_generic_ai_interfaces_as_debug_only() -> None:
+    body = TestClient(app).get("/internal/openapi.json").json()
+
     assert (
         "真实业务必须使用基于 usecase"
         in body["paths"]["/internal/ai/invoke"]["post"]["description"]
     )
+    assert (
+        "真实业务必须使用基于 usecase"
+        in body["paths"]["/internal/ai/stream"]["post"]["description"]
+    )
+    assert body["paths"]["/internal/ai/invoke"]["post"]["summary"] == "Debug AI invoke"
+    assert body["paths"]["/internal/ai/stream"]["post"]["summary"] == "Debug AI stream"
+
+
+def test_openapi_marks_render_interfaces_as_usecase_interfaces() -> None:
+    body = TestClient(app).get("/internal/openapi.json").json()
+
+    descriptions = {
+        path: body["paths"][path]["post"]["description"]
+        for path in [
+            "/internal/render/classics-export",
+            "/internal/render/sancai-showcase",
+            "/internal/render/operations-report",
+            "/internal/render/classics-export/stream",
+            "/internal/render/sancai-showcase/stream",
+            "/internal/render/operations-report/stream",
+        ]
+    }
+
+    assert "Classics 导出 usecase 接口" in descriptions["/internal/render/classics-export"]
+    assert "三才图会静态展示 usecase 接口" in descriptions["/internal/render/sancai-showcase"]
+    assert "Operations 报表 usecase 接口" in descriptions["/internal/render/operations-report"]
+    assert all("真实业务必须使用基于 usecase" not in value for value in descriptions.values())
 
 
 def test_swagger_ui_uses_internal_path() -> None:
@@ -22,4 +54,12 @@ def test_swagger_ui_uses_internal_path() -> None:
 
     assert response.status_code == 200
     assert "swagger-ui" in response.text
+    assert "/internal/openapi.json" in response.text
+
+
+def test_redoc_uses_internal_path() -> None:
+    response = TestClient(app).get("/internal/redoc")
+
+    assert response.status_code == 200
+    assert "redoc" in response.text.lower()
     assert "/internal/openapi.json" in response.text
