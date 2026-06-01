@@ -15,7 +15,7 @@ import { hasPermission } from "@/auth/permission-storage";
 import { SandwishListPage } from "@/components/sandwish-list-page";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
-import { SandwishTag } from "@/components/sandwish-tag";
+import { KuzhambuTag } from "@/components/kuzhambu-tag";
 import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
 import { getCurrentUserInfo } from "@/service/current-user-service";
 import type { CurrentUserRecord } from "@/service/current-user-types";
@@ -597,9 +597,9 @@ export const UserPage = () => {
                 return (
                     <Space size={[4, 4]} wrap>
                         {roleNames.map((roleName, index) => (
-                            <SandwishTag key={roleName} type={roleTagType(user, index)}>
+                            <KuzhambuTag key={roleName} type={roleTagType(user, index)}>
                                 {roleName}
-                            </SandwishTag>
+                            </KuzhambuTag>
                         ))}
                     </Space>
                 );
@@ -630,7 +630,7 @@ export const UserPage = () => {
             key: "ranks",
             width: DEFAULT_COLUMN_WIDTHS.ranks,
             render: (_, user) => (
-                <SandwishTag type={rankTagType(user)}>{readRankLabel(user)}</SandwishTag>
+                <KuzhambuTag type={rankTagType(user)}>{readRankLabel(user)}</KuzhambuTag>
             )
         },
         {

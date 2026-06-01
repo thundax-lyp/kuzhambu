@@ -6,7 +6,7 @@ import type { Key } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { SandwishListPage } from "@/components/sandwish-list-page";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
-import { SandwishTag } from "@/components/sandwish-tag";
+import { KuzhambuTag } from "@/components/kuzhambu-tag";
 import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { SubmissionDetail } from "./components/submission-detail";
@@ -345,7 +345,7 @@ export const SubmissionPage = () => {
             key: "status",
             width: DEFAULT_COLUMN_WIDTHS.status,
             render: (status?: string | null) => (
-                <SandwishTag type={statusTagType(status)}>{readStatusLabel(status)}</SandwishTag>
+                <KuzhambuTag type={statusTagType(status)}>{readStatusLabel(status)}</KuzhambuTag>
             )
         },
         {
@@ -367,12 +367,12 @@ export const SubmissionPage = () => {
                 return (
                     <Space wrap size={4}>
                         {imageObjectIds.slice(0, 3).map((id) => (
-                            <SandwishTag key={id}>
+                            <KuzhambuTag key={id}>
                                 <span className="submission-image-id">{id}</span>
-                            </SandwishTag>
+                            </KuzhambuTag>
                         ))}
                         {imageObjectIds.length > 3 ? (
-                            <SandwishTag>+{imageObjectIds.length - 3}</SandwishTag>
+                            <KuzhambuTag>+{imageObjectIds.length - 3}</KuzhambuTag>
                         ) : null}
                     </Space>
                 );

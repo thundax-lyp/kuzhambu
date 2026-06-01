@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { SandwishListPage } from "@/components/sandwish-list-page";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
-import { SandwishTag } from "@/components/sandwish-tag";
+import { KuzhambuTag } from "@/components/kuzhambu-tag";
 import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { OpenClientEdit } from "./components/open-client-edit";
@@ -277,7 +277,7 @@ export const OpenClientPage = () => {
             title: "状态",
             width: DEFAULT_COLUMN_WIDTHS.status,
             render: (status?: string | null) => (
-                <SandwishTag type={statusTagType(status)}>{readStatusLabel(status)}</SandwishTag>
+                <KuzhambuTag type={statusTagType(status)}>{readStatusLabel(status)}</KuzhambuTag>
             )
         },
         {
@@ -295,7 +295,7 @@ export const OpenClientPage = () => {
             render: (permissions?: string[] | null) => (
                 <Space wrap size={[4, 4]} className="open-client-permission-list">
                     {(permissions || []).map((permission) => (
-                        <SandwishTag key={permission}>{permission}</SandwishTag>
+                        <KuzhambuTag key={permission}>{permission}</KuzhambuTag>
                     ))}
                     {!permissions?.length ? <Text type="secondary">-</Text> : null}
                 </Space>

@@ -2,7 +2,7 @@ import { Avatar, Descriptions, Empty, Space, Typography } from "antd";
 import { ADMIN_API_BASE_URL } from "@/api/http";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
 import { SandwishDrawer } from "@/components/sandwish-drawer";
-import { SandwishTag } from "@/components/sandwish-tag";
+import { KuzhambuTag } from "@/components/kuzhambu-tag";
 import type {
     AuditFieldRecord,
     AuditLogDetailRecord,
@@ -179,7 +179,7 @@ const renderSnapshotCompare = (
                             <Text strong={changed}>
                                 {beforeField?.fieldLabel || afterField?.fieldLabel || key}
                             </Text>
-                            {changed ? <SandwishTag type="warning">已变更</SandwishTag> : null}
+                            {changed ? <KuzhambuTag type="warning">已变更</KuzhambuTag> : null}
                         </div>
                         <Text type="secondary">{beforeValue}</Text>
                         <Text strong={changed}>{afterValue}</Text>

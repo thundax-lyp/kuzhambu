@@ -8,7 +8,7 @@ import { hasPermission } from "@/auth/permission-storage";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
 import { SandwishListPage } from "@/components/sandwish-list-page";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
-import { SandwishTag } from "@/components/sandwish-tag";
+import { KuzhambuTag } from "@/components/kuzhambu-tag";
 import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import * as service from "./storage-object-service";
@@ -303,10 +303,10 @@ export const StorageObjectPage = () => {
             width: DEFAULT_COLUMN_WIDTHS.objectStatus,
             render: (status?: string | null) =>
                 status ? (
-                    <SandwishTag type={objectStatusTagType(status)}>
+                    <KuzhambuTag type={objectStatusTagType(status)}>
                         {objectStatusLabels[status as Exclude<StorageObjectStatusFilter, "ALL">] ||
                             status}
-                    </SandwishTag>
+                    </KuzhambuTag>
                 ) : null
         },
         {
@@ -316,11 +316,11 @@ export const StorageObjectPage = () => {
             width: DEFAULT_COLUMN_WIDTHS.referenceStatus,
             render: (status?: string | null) =>
                 status ? (
-                    <SandwishTag type={referenceStatusTagType(status)}>
+                    <KuzhambuTag type={referenceStatusTagType(status)}>
                         {referenceStatusLabels[
                             status as Exclude<StorageReferenceStatusFilter, "ALL">
                         ] || status}
-                    </SandwishTag>
+                    </KuzhambuTag>
                 ) : null
         },
         {

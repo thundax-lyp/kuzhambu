@@ -8,7 +8,7 @@ import { hasPermission } from "@/auth/permission-storage";
 import { SandwishListPage } from "@/components/sandwish-list-page";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
-import { SandwishTag } from "@/components/sandwish-tag";
+import { KuzhambuTag } from "@/components/kuzhambu-tag";
 import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
 import type { OptionsRecord } from "@/types/options";
 import { RoleEdit } from "./components/role-edit";
@@ -323,9 +323,9 @@ export const RolePage = () => {
             width: DEFAULT_COLUMN_WIDTHS.privilege,
             render: (_, role) =>
                 role.admin ? (
-                    <SandwishTag type="info">{readPrivilegeLabel(role)}</SandwishTag>
+                    <KuzhambuTag type="info">{readPrivilegeLabel(role)}</KuzhambuTag>
                 ) : (
-                    <SandwishTag>{readPrivilegeLabel(role)}</SandwishTag>
+                    <KuzhambuTag>{readPrivilegeLabel(role)}</KuzhambuTag>
                 )
         },
         {

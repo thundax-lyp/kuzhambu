@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `kuzhambu-tag`：迁移 `sandwish-tag`
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/ARCHITECTURE.md`
-    - 范围对象：`src/components/sandwish-tag/`、使用 `SandwishTag` 的 audit/open/storage/submission/system 页面
-    - 处理动作：将标签组件、类型、CSS class 和页面调用方改为 `KuzhambuTag` / `kuzhambu-tag`。
-    - 验收点：`sandwish-tag` 组件模块无旧命名残留，admin-web lint 通过。
-    - 重要度：8/10
-
 - [ ] `kuzhambu-drawer`：迁移 `sandwish-drawer`
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/ARCHITECTURE.md`

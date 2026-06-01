@@ -6,7 +6,7 @@ import type { Key } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { SandwishListPage } from "@/components/sandwish-list-page";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
-import { SandwishTag } from "@/components/sandwish-tag";
+import { KuzhambuTag } from "@/components/kuzhambu-tag";
 import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { DictionaryEdit } from "./components/dictionary-edit";
@@ -167,7 +167,7 @@ export const DictionaryPage = () => {
             dataIndex: "type",
             key: "type",
             width: DEFAULT_COLUMN_WIDTHS.type,
-            render: (type: string) => <SandwishTag type="info">{type}</SandwishTag>
+            render: (type: string) => <KuzhambuTag type="info">{type}</KuzhambuTag>
         },
         {
             title: "标签",

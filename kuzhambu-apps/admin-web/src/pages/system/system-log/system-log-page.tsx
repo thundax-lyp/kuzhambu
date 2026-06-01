@@ -9,7 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Button, Input, Space, Typography } from "antd";
 import { useMemo, useState } from "react";
 import { SandwishListPage } from "@/components/sandwish-list-page";
-import { SandwishTag } from "@/components/sandwish-tag";
+import { KuzhambuTag } from "@/components/kuzhambu-tag";
 import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import * as service from "./system-log-service";
@@ -174,7 +174,7 @@ export const SystemLogPage = () => {
             key: "type",
             width: DEFAULT_COLUMN_WIDTHS.type,
             render: (type?: string | null) =>
-                type ? <SandwishTag type="info">{type}</SandwishTag> : null
+                type ? <KuzhambuTag type="info">{type}</KuzhambuTag> : null
         },
         {
             title: "方法",
@@ -182,7 +182,7 @@ export const SystemLogPage = () => {
             key: "method",
             width: DEFAULT_COLUMN_WIDTHS.method,
             render: (method?: string | null) =>
-                method ? <SandwishTag type={methodTagType(method)}>{method}</SandwishTag> : null
+                method ? <KuzhambuTag type={methodTagType(method)}>{method}</KuzhambuTag> : null
         },
         {
             title: "请求地址",
