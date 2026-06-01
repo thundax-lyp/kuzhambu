@@ -17,8 +17,23 @@ Workers 不承载核心业务规则，不直接写入正式业务数据，不连
 - LangChain 负责 prompt、message、model adapter 和 structured output 基础能力。
 - httpx 负责内部 HTTP、临时 URL 和 OpenAI-compatible 模型访问。
 - Pillow 负责图片尺寸、格式和基础转换处理。
+- Playwright/Chromium print 负责 HTML 到 PDF 渲染，Chromium 通过 Browser Pool 复用。
 - Python 标准库负责 CSV、JSON、HTML、ZIP 和临时文件处理。
 - Ruff 统一负责 Python lint 和 formatter。
+
+## System Dependencies
+
+- Python package 固定使用 `playwright==1.59.0`。
+- PDF 渲染使用 Playwright-managed Chromium，不使用系统 `chromium` 包。
+- Linux 容器基线使用 `mcr.microsoft.com/playwright/python:v1.59.0-jammy`。
+- 非官方镜像构建时必须执行：
+
+```sh
+python -m playwright install --with-deps chromium
+python -m playwright install --list
+```
+
+`install --list` 输出必须保留在构建日志中，用于确认 Chromium revision。
 
 ## Invocation
 

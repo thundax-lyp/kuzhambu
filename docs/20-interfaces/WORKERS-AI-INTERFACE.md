@@ -143,11 +143,13 @@ Health 接口不得检查数据库、Redis 或 MQ。
     "capabilities": [
       "translate",
       "summary",
+      "version_summary",
       "tags",
       "qa",
       "image_analysis",
-      "image_generation",
+      "image_gen",
       "visual",
+      "fusion",
       "split",
       "query_understanding",
       "answer_generation",
@@ -162,14 +164,23 @@ Health 接口不得检查数据库、Redis 或 MQ。
     "endpoints": [
       "/internal/render/classics-export",
       "/internal/render/sancai-showcase",
-      "/internal/render/operations-report"
+      "/internal/render/operations-report",
+      "/internal/render/classics-export/stream",
+      "/internal/render/sancai-showcase/stream",
+      "/internal/render/operations-report/stream"
     ],
     "stream": true,
-    "formats": ["CSV", "JSON", "HTML", "ZIP", "PDF"]
+    "formats": ["CSV", "JSON", "HTML", "ZIP", "PDF"],
+    "pdfEngine": "PLAYWRIGHT_CHROMIUM_PRINT",
+    "browserPool": {
+      "enabled": true,
+      "maxPages": 4
+    }
   },
   "limits": {
     "maxRequestBytes": 10485760,
-    "maxArtifactBytes": 104857600
+    "maxArtifactBytes": 104857600,
+    "artifactChunkBytes": 262144
   }
 }
 ```
@@ -415,7 +426,7 @@ data: {"eventId":"evt_0002","requestId":"req_20260601_000001","traceId":"trace_2
 - `tags`：结构化数组，元素包含 `name`、`dimension` 和可选 `confidence`。
 - `qa`：结构化数组，元素包含 `question`、`answer` 和可选 `sourceHint`。
 - `image_analysis`：Markdown 文本。
-- `image_generation`：产物对象，包含 `artifactType`、`contentType`、`encoding`、`content` 或 `artifactToken`、`sizeBytes`、`sha256` 和可选 `metadata`。
+- `image_gen`：产物对象，包含 `artifactType`、`contentType`、`encoding`、`content` 或 SSE artifact chunk、`sizeBytes`、`sha256` 和可选 `metadata`。
 - `fusion`：纯文本或 Markdown 信息融合说明。
 - `visual`：纯文本视觉描述。
 - `split`：结构化数组，元素包含 `title`、`originalText`、`translationText` 和 `targetVolumeHint`。
@@ -424,6 +435,7 @@ data: {"eventId":"evt_0002","requestId":"req_20260601_000001","traceId":"trace_2
 - `knowledge_graph`：结构化对象，包含 `entities`、`relations`、`sourceSpans` 和可选 `confidence`。
 - `relation_extraction`：结构化对象，包含 `entities`、`relations` 和 `sourceSpans`。
 - `lineage_extraction`：结构化对象，包含 `nodes`、`relations` 和 `sourceSpans`。
+- `version_summary`：纯文本版本摘要。
 - `prompt_suggestion`：文本或结构化建议，必须由用户确认后才可应用。
 
 ## Security

@@ -84,9 +84,8 @@ Render 接口：
 - `POST /internal/render/classics-export/stream`
 - `POST /internal/render/sancai-showcase/stream`
 - `POST /internal/render/operations-report/stream`
-- `GET /internal/artifacts/{artifactToken}`
 
-同步接口适合小型文件。流式接口适合长时间 HTML、ZIP 或 PDF 生成进度展示。`GET /internal/artifacts/{artifactToken}` 用于下载当前请求生成的大型产物。无论同步、流式还是 artifact 下载，最终业务落库都必须由 Java servers 以最终响应或 `completed` 事件为准。
+同步接口适合小型文件。流式接口适合长时间 HTML、ZIP 或 PDF 生成进度展示，并通过 SSE `artifact` 事件分片传输大型产物。无论同步还是流式，最终业务落库都必须由 Java servers 以最终响应或 `completed` 事件为准。
 
 健康和能力发现接口：
 
@@ -222,39 +221,29 @@ Workers 不得根据 `snapshotId`、业务 ID、文件 ID 或模板 ID 回查 Ja
 - `BASE64`
 - `TEXT`
 - `STREAM`
-- `ARTIFACT_TOKEN`
 
-同步 JSON 响应使用 `BASE64` 或 `TEXT` 返回小型产物。大型产物使用 `ARTIFACT_TOKEN`，由 Java servers 通过 `GET /internal/artifacts/{artifactToken}` 读取二进制内容。
+同步 JSON 响应使用 `BASE64` 或 `TEXT` 返回小型产物。大型产物必须使用流式接口，通过 SSE `artifact` 事件分片传输。
 
-## Artifact Download
+## Artifact Chunks
 
-`GET /internal/artifacts/{artifactToken}`
+大型产物使用当前 SSE 连接分片传输，不提供跨请求下载接口。
 
-用于读取 render 请求生成的大型临时产物。
+`artifact` 事件示例：
 
-请求头必须包含：
+```text
+event: artifact
+data: {"eventId":"evt_0100","requestId":"req_20260601_000101","traceId":"trace_20260601_000101","stage":"artifact_chunk","timestamp":"2026-06-01T10:00:02.000Z","artifact":{"artifactId":"art_0001","format":"PDF","filename":"report.pdf","contentType":"application/pdf","encoding":"BASE64_CHUNK","chunkIndex":0,"chunkCount":3,"chunk":"JVBERi0x...","chunkSha256":"sha256:...","totalSizeBytes":1048576,"sha256":"sha256:..."}}
+```
 
-- `X-Kuzhambu-Service`
-- `X-Kuzhambu-Request-Id`
-- `X-Kuzhambu-Trace-Id`
-- `X-Kuzhambu-Timestamp`
-- `X-Kuzhambu-Signature`
+分片规则：
 
-下载响应：
-
-- HTTP `200`。
-- `Content-Type` 使用产物内容类型。
-- `Content-Disposition` 使用安全化后的文件名。
-- `X-Kuzhambu-Artifact-Sha256` 返回文件摘要。
-- `X-Kuzhambu-Artifact-Size` 返回文件大小。
-
-下载规则：
-
-- `artifactToken` 必须由 workers 为当前 render 请求生成。
-- `artifactToken` 不得包含业务 ID、用户 ID、文件路径或可猜测序列。
-- `artifactToken` 必须有过期时间。
-- 过期、签名不匹配、服务不匹配或产物不存在时返回 `404` 或 `403`。
-- artifact 下载只用于 Java servers 取回产物并交给 Storage 保存，不面向 Admin Web 或 Portal Web。
+- `artifactId` 只在当前 SSE 请求内有效。
+- `chunkIndex` 从 `0` 开始，必须连续递增。
+- `chunkCount` 已知时必须返回；无法预先确定时使用 `null`，并在 `completed.artifact` 中返回最终分片数。
+- 每个 chunk 必须包含 `chunkSha256`。
+- 最终产物必须包含整体 `sha256` 和 `totalSizeBytes`。
+- Java servers 必须完成分片连续性、分片摘要和整体摘要校验后，才可以交给 Storage 创建文件对象。
+- SSE 连接中断时，Java servers 必须丢弃未完成产物或标记为部分失败；workers 请求结束后清理请求级 artifact store。
 
 ## Classics Export
 
@@ -298,6 +287,8 @@ Workers 只负责生成文件内容和摘要，不负责导出记录状态、不
 `POST /internal/render/operations-report`
 
 用于生成 Operations 周报或月报 HTML/PDF 产物。
+
+PDF 生成使用 Playwright/Chromium print，由 workers Browser Pool 复用 Chromium 实例并限制并发页面数。
 
 `renderType` 固定为 `OPERATIONS_REPORT`。
 
@@ -344,8 +335,9 @@ data: {"eventId":"evt_0002","requestId":"req_20260601_000101","traceId":"trace_2
     "format": "HTML",
     "filename": "report.html",
     "contentType": "text/html; charset=utf-8",
-    "encoding": "TEXT",
-    "content": "<!doctype html>...",
+    "encoding": "STREAM",
+    "artifactId": "art_0001",
+    "chunkCount": 3,
     "sizeBytes": 8192,
     "sha256": "sha256:..."
   },
