@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `AI D5`：实现批量与专项结果领域模型
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-DOMAIN.md#d5-batch-and-specialized-result-domain`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-domain/src/main/java/com/thundax/kuzhambu/ai/domain/batch/`、`kuzhambu-servers/biz/ai/kuzhambu-ai-domain/src/main/java/com/thundax/kuzhambu/ai/domain/vision/`、`kuzhambu-servers/biz/ai/kuzhambu-ai-domain/src/main/java/com/thundax/kuzhambu/ai/domain/split/`
-    - 处理动作：按 RUNBOOK D5 的 4 个关联文件定义批量任务、图片理解结果、条目拆分候选和仓储端口。
-    - 验收点：批量任务能记录总数、成功数、失败数、取消数和失败摘要；专项结果可关联 call 或 candidate。
-    - 重要度：8/10
-
 - [ ] `AI A1`：实现服务与模型应用服务
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-DOMAIN.md#a1-service-and-model-application`
