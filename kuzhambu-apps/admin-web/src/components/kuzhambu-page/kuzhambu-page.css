@@ -1,13 +1,13 @@
 .kuzhambu-page {
     --kuzhambu-page-accent: var(--accent-blue);
-    --kuzhambu-page-blue-glow: color-mix(in srgb, var(--accent-blue) 12%, transparent);
+    --kuzhambu-page-blue-glow: color-mix(in srgb, var(--accent-blue) 7%, transparent);
     --kuzhambu-page-copy: var(--text-secondary);
-    --kuzhambu-page-cyan-glow: rgba(8, 145, 178, 0.08);
-    --kuzhambu-page-glass-end: color-mix(in srgb, var(--surface-panel) 52%, transparent);
-    --kuzhambu-page-glass-start: color-mix(in srgb, var(--surface-panel) 78%, transparent);
-    --kuzhambu-page-highlight-block: rgba(255, 255, 255, 0.24);
-    --kuzhambu-page-highlight-edge: rgba(255, 255, 255, 0.32);
-    --kuzhambu-page-highlight-inset: rgba(255, 255, 255, 0.72);
+    --kuzhambu-page-cyan-glow: color-mix(in srgb, var(--accent-jade) 6%, transparent);
+    --kuzhambu-page-glass-end: color-mix(in srgb, var(--surface-panel) 72%, transparent);
+    --kuzhambu-page-glass-start: color-mix(in srgb, var(--surface-panel) 92%, transparent);
+    --kuzhambu-page-highlight-block: color-mix(in srgb, var(--accent-yellow) 14%, transparent);
+    --kuzhambu-page-highlight-edge: color-mix(in srgb, var(--accent-orange) 10%, transparent);
+    --kuzhambu-page-highlight-inset: color-mix(in srgb, white 58%, transparent);
     --kuzhambu-page-ink: var(--text-primary);
     --kuzhambu-page-header-margin-bottom: 10px;
     --kuzhambu-page-line: var(--line-subtle);
@@ -21,10 +21,10 @@
 }
 
 html[data-theme="dark"] .kuzhambu-page {
-    --kuzhambu-page-cyan-glow: rgba(34, 211, 238, 0.08);
-    --kuzhambu-page-highlight-block: rgba(185, 207, 238, 0.08);
-    --kuzhambu-page-highlight-edge: rgba(185, 207, 238, 0.1);
-    --kuzhambu-page-highlight-inset: rgba(185, 207, 238, 0.16);
+    --kuzhambu-page-cyan-glow: color-mix(in srgb, var(--accent-jade) 8%, transparent);
+    --kuzhambu-page-highlight-block: rgba(215, 203, 176, 0.08);
+    --kuzhambu-page-highlight-edge: rgba(215, 203, 176, 0.1);
+    --kuzhambu-page-highlight-inset: rgba(215, 203, 176, 0.14);
     --kuzhambu-page-lowlight-inset: rgba(0, 0, 0, 0.22);
 }
 
@@ -34,16 +34,16 @@ html[data-theme="dark"] .kuzhambu-page {
     padding: var(--kuzhambu-page-panel-padding);
     overflow: var(--kuzhambu-page-panel-overflow);
     background:
-        linear-gradient(135deg, var(--kuzhambu-page-blue-glow), transparent 34%),
-        linear-gradient(225deg, var(--kuzhambu-page-cyan-glow), transparent 36%),
+        linear-gradient(135deg, var(--kuzhambu-page-blue-glow), transparent 30%),
+        linear-gradient(225deg, var(--kuzhambu-page-cyan-glow), transparent 34%),
         linear-gradient(180deg, var(--kuzhambu-page-glass-start), var(--kuzhambu-page-glass-end));
     border: 1px solid var(--kuzhambu-page-line);
-    border-radius: 14px;
+    border-radius: 10px;
     box-shadow:
         inset 0 1px 0 var(--kuzhambu-page-highlight-inset),
         inset 0 -1px 0 var(--kuzhambu-page-lowlight-inset),
         var(--kuzhambu-page-shadow);
-    backdrop-filter: blur(24px) saturate(1.28);
+    backdrop-filter: blur(12px) saturate(1.04);
 }
 
 .kuzhambu-page-panel::before {

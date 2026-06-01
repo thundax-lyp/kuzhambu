@@ -301,6 +301,8 @@ export const AdminLayout = () => {
                 collapsed={isMobileLayout ? false : sidebarCollapsed}
                 trigger={null}
             >
+                <div className="sidebar-ink sidebar-ink-1" aria-hidden="true" />
+                <div className="sidebar-ink sidebar-ink-2" aria-hidden="true" />
                 <div className="brand">
                     <KuzhambuLogo className="brand-logo" />
                     <div className="brand-copy">

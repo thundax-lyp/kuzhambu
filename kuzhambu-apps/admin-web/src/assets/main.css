@@ -1,25 +1,28 @@
 :root {
-    --surface-page: #eef3fb;
-    --surface-panel: rgba(255, 255, 255, 0.82);
-    --surface-soft: rgba(229, 236, 248, 0.86);
-    --surface-hover: rgba(214, 226, 246, 0.88);
-    --text-primary: #101827;
-    --text-secondary: #526079;
-    --text-muted: #8792aa;
-    --line-subtle: rgba(116, 132, 160, 0.22);
-    --line-strong: rgba(80, 98, 130, 0.34);
-    --accent-yellow: #d9e7ff;
-    --accent-lime: #6ee7b7;
-    --accent-violet: #7c6df2;
-    --accent-orange: #f59e0b;
-    --accent-blue: #2563eb;
-    --accent-blue-soft: rgba(37, 99, 235, 0.12);
-    --logo-tile: #eff6ff;
-    --logo-middle: #2563eb;
-    --logo-middle-line: #dbeafe;
-    --logo-top-line: #102542;
-    --shadow-soft: 0 22px 70px rgba(31, 45, 71, 0.12);
-    --shadow-blue: 0 16px 36px rgba(37, 99, 235, 0.28);
+    --surface-page: #f7f4ec;
+    --surface-panel: rgba(255, 253, 248, 0.9);
+    --surface-soft: rgba(242, 238, 226, 0.9);
+    --surface-hover: rgba(232, 226, 210, 0.88);
+    --text-primary: #1f2521;
+    --text-secondary: #6d685d;
+    --text-muted: #969085;
+    --line-subtle: rgba(102, 89, 65, 0.18);
+    --line-strong: rgba(74, 65, 48, 0.32);
+    --accent-yellow: #efe4c8;
+    --accent-lime: #7da995;
+    --accent-violet: #8d7f6f;
+    --accent-orange: #b9863b;
+    --accent-blue: #1f4b73;
+    --accent-blue-soft: rgba(31, 75, 115, 0.12);
+    --accent-cinnabar: #b33a32;
+    --accent-jade: #4f927a;
+    --paper-fiber: rgba(116, 101, 76, 0.08);
+    --logo-tile: #fffdf8;
+    --logo-middle: #1f4b73;
+    --logo-middle-line: #f7f1e3;
+    --logo-top-line: #1d211d;
+    --shadow-soft: 0 18px 48px rgba(70, 58, 38, 0.1);
+    --shadow-blue: 0 14px 30px rgba(31, 75, 115, 0.22);
     --sidebar-width: 248px;
     --sidebar-collapsed-width: 88px;
     --workspace-padding-inline: 0px;
@@ -27,7 +30,9 @@
     --workspace-padding-bottom: 0px;
     color: var(--text-primary);
     background: var(--surface-page);
-    font-family: "Avenir Next", "PingFang SC", "Microsoft YaHei", sans-serif;
+    font-family:
+        "Avenir Next", "LXGW WenKai", "STKaiti", "KaiTi", "PingFang SC", "Microsoft YaHei",
+        sans-serif;
     font-synthesis: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
@@ -35,27 +40,30 @@
 }
 
 html[data-theme="dark"] {
-    --surface-page: #07111f;
-    --surface-panel: rgba(17, 28, 46, 0.82);
-    --surface-soft: rgba(31, 45, 68, 0.86);
-    --surface-hover: rgba(42, 62, 95, 0.88);
-    --text-primary: #f8fbff;
-    --text-secondary: #b8c4d8;
-    --text-muted: #748299;
-    --line-subtle: rgba(171, 191, 222, 0.16);
-    --line-strong: rgba(191, 207, 232, 0.28);
-    --accent-yellow: #dbeafe;
-    --accent-lime: #34d399;
-    --accent-violet: #a78bfa;
-    --accent-orange: #f59e0b;
-    --accent-blue: #3b82f6;
-    --accent-blue-soft: rgba(59, 130, 246, 0.18);
-    --logo-tile: #dbeafe;
-    --logo-middle: #1d4ed8;
-    --logo-middle-line: #eff6ff;
-    --logo-top-line: #0f172a;
-    --shadow-soft: 0 24px 80px rgba(0, 0, 0, 0.46);
-    --shadow-blue: 0 18px 42px rgba(37, 99, 235, 0.35);
+    --surface-page: #111713;
+    --surface-panel: rgba(24, 33, 29, 0.9);
+    --surface-soft: rgba(36, 44, 38, 0.86);
+    --surface-hover: rgba(52, 61, 52, 0.88);
+    --text-primary: #f3eee3;
+    --text-secondary: #c5bbab;
+    --text-muted: #8f8779;
+    --line-subtle: rgba(184, 174, 150, 0.18);
+    --line-strong: rgba(215, 203, 176, 0.3);
+    --accent-yellow: #8e7850;
+    --accent-lime: #7bb49e;
+    --accent-violet: #b19d83;
+    --accent-orange: #d6a75f;
+    --accent-blue: #7fa4c4;
+    --accent-blue-soft: rgba(127, 164, 196, 0.18);
+    --accent-cinnabar: #d97867;
+    --accent-jade: #7bb49e;
+    --paper-fiber: rgba(224, 209, 177, 0.08);
+    --logo-tile: #1a211d;
+    --logo-middle: #7fa4c4;
+    --logo-middle-line: #111713;
+    --logo-top-line: #f3eee3;
+    --shadow-soft: 0 24px 70px rgba(0, 0, 0, 0.38);
+    --shadow-blue: 0 18px 40px rgba(127, 164, 196, 0.24);
 }
 
 * {
@@ -67,16 +75,8 @@ body {
     min-height: 100vh;
     margin: 0;
     background:
-        radial-gradient(
-            circle at 16% 4%,
-            color-mix(in srgb, var(--accent-blue) 20%, transparent),
-            transparent 32%
-        ),
-        radial-gradient(
-            circle at 88% 10%,
-            color-mix(in srgb, var(--accent-violet) 14%, transparent),
-            transparent 26%
-        ),
+        linear-gradient(115deg, transparent 0 47%, var(--paper-fiber) 47.2% 47.6%, transparent 48%),
+        linear-gradient(8deg, transparent 0 78%, var(--paper-fiber) 78.2% 78.6%, transparent 79%),
         var(--surface-page);
 }
 
@@ -96,8 +96,14 @@ button {
     background:
         linear-gradient(
             180deg,
-            color-mix(in srgb, var(--surface-soft) 48%, transparent),
-            transparent 420px
+            color-mix(in srgb, var(--surface-soft) 58%, transparent),
+            transparent 360px
+        ),
+        repeating-linear-gradient(
+            90deg,
+            transparent 0 34px,
+            color-mix(in srgb, var(--paper-fiber) 58%, transparent) 35px,
+            transparent 36px
         ),
         var(--surface-page);
 }
@@ -121,23 +127,91 @@ button {
 }
 
 .sidebar {
+    overflow: hidden;
     position: sticky;
     top: 12px;
     height: calc(100vh - 24px);
     padding: 20px 16px;
     color: var(--text-primary);
-    background: color-mix(in srgb, var(--surface-panel) 86%, transparent) !important;
+    background:
+        linear-gradient(
+            180deg,
+            color-mix(in srgb, var(--surface-panel) 96%, transparent),
+            color-mix(in srgb, var(--surface-soft) 72%, transparent)
+        ),
+        var(--surface-panel) !important;
     border: 1px solid var(--line-subtle);
-    border-radius: 18px;
+    border-radius: 10px;
     box-shadow: var(--shadow-soft);
-    backdrop-filter: blur(18px);
+    backdrop-filter: blur(10px);
+    isolation: isolate;
+}
+
+.sidebar-ink {
+    position: absolute;
+    inset: auto 16px 20px 16px;
+    z-index: 0;
+    height: min(58vh, 430px);
+    pointer-events: none;
+    background-repeat: no-repeat;
+    background-position: center bottom;
+    background-size: cover;
+    border-radius: 6px;
+    filter: grayscale(0.22) contrast(0.92) saturate(0.78);
+    mix-blend-mode: multiply;
+    opacity: 0;
+    animation: sidebar-ink-fade 14s ease-in-out infinite;
+}
+
+.sidebar-ink-1 {
+    background-image:
+        linear-gradient(180deg, transparent 0%, var(--surface-panel) 96%),
+        url("/ink-sidebar-admin-dashboard.png");
+}
+
+.sidebar-ink-2 {
+    background-image:
+        linear-gradient(180deg, transparent 0%, var(--surface-panel) 96%),
+        url("/ink-sidebar-knowledge-graph.png");
+    animation-delay: 7s;
+}
+
+html[data-theme="dark"] .sidebar-ink {
+    filter: grayscale(1) invert(1) sepia(0.18) saturate(0.72) hue-rotate(166deg) brightness(0.46)
+        contrast(0.92);
+    mix-blend-mode: lighten;
+    opacity: 0;
 }
 
 .sidebar .ant-layout-sider-children {
+    position: relative;
+    z-index: 1;
     display: flex;
     flex-direction: column;
     min-height: 100%;
     overflow: hidden;
+}
+
+@keyframes sidebar-ink-fade {
+    0%,
+    30% {
+        opacity: 0.72;
+    }
+
+    44%,
+    100% {
+        opacity: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sidebar-ink {
+        animation: none;
+    }
+
+    .sidebar-ink-1 {
+        opacity: 0.72;
+    }
 }
 
 .brand {
@@ -147,6 +221,7 @@ button {
     gap: 12px;
     margin-bottom: 24px;
     padding: 0 4px 12px;
+    border-bottom: 1px solid color-mix(in srgb, var(--line-subtle) 72%, transparent);
 }
 
 .sidebar.ant-layout-sider-collapsed {
@@ -162,8 +237,8 @@ button {
     width: 44px;
     height: 44px;
     border: 1px solid var(--line-strong);
-    border-radius: 14px;
-    box-shadow: 0 14px 34px rgba(37, 99, 235, 0.22);
+    border-radius: 8px;
+    box-shadow: 0 10px 24px rgba(70, 58, 38, 0.12);
 }
 
 .logo-tile {
@@ -256,10 +331,14 @@ button {
 
 .nav-menu .ant-menu-item-selected,
 .nav-menu .ant-menu-submenu-selected > .ant-menu-submenu-title {
-    color: var(--accent-blue) !important;
-    background: var(--accent-blue-soft) !important;
-    border: 1px solid color-mix(in srgb, var(--accent-blue) 18%, var(--line-subtle));
-    box-shadow: none;
+    color: #fffdf8 !important;
+    background: linear-gradient(
+        180deg,
+        var(--accent-blue),
+        color-mix(in srgb, var(--accent-blue) 82%, #111713)
+    ) !important;
+    border: 1px solid color-mix(in srgb, var(--accent-blue) 34%, var(--line-subtle));
+    box-shadow: inset 3px 0 0 color-mix(in srgb, var(--accent-yellow) 72%, transparent);
 }
 
 .nav-menu .ant-menu-item-selected::after,
@@ -273,6 +352,16 @@ button {
 .nav-menu .ant-menu-submenu-selected > .ant-menu-submenu-title .anticon,
 .nav-menu .ant-menu-submenu-selected > .ant-menu-submenu-title .ant-menu-submenu-arrow {
     color: var(--accent-blue) !important;
+}
+
+.nav-menu .ant-menu-item-selected .ant-menu-title-content,
+.nav-menu .ant-menu-submenu-selected > .ant-menu-submenu-title .ant-menu-title-content,
+.nav-menu .ant-menu-item-selected .ant-menu-item-icon,
+.nav-menu .ant-menu-item-selected .anticon,
+.nav-menu .ant-menu-submenu-selected > .ant-menu-submenu-title .ant-menu-item-icon,
+.nav-menu .ant-menu-submenu-selected > .ant-menu-submenu-title .anticon,
+.nav-menu .ant-menu-submenu-selected > .ant-menu-submenu-title .ant-menu-submenu-arrow {
+    color: #fffdf8 !important;
 }
 
 .menu-icon-config-error {
@@ -303,12 +392,41 @@ button {
 }
 
 .admin-content-grid {
+    position: relative;
+    overflow: hidden;
     width: 100%;
     min-height: calc(100vh - 120px);
     min-width: 0;
+    border-radius: 10px;
+}
+
+.admin-content-grid::before {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    z-index: 0;
+    width: min(78vw, 1160px);
+    height: min(64vh, 720px);
+    pointer-events: none;
+    content: "";
+    background:
+        linear-gradient(180deg, transparent 0%, var(--surface-page) 100%),
+        url("/ink-workspace.jpg") right bottom / contain no-repeat;
+    filter: grayscale(0.35) contrast(0.95) saturate(0.74);
+    mix-blend-mode: multiply;
+    opacity: 0.24;
+}
+
+html[data-theme="dark"] .admin-content-grid::before {
+    filter: grayscale(1) invert(1) sepia(0.18) saturate(0.72) hue-rotate(166deg) brightness(0.48)
+        contrast(0.9);
+    mix-blend-mode: lighten;
+    opacity: 0.16;
 }
 
 .workspace > * {
+    position: relative;
+    z-index: 1;
     width: 100%;
     max-width: 100%;
     min-width: 0;
@@ -325,17 +443,19 @@ button {
     height: auto;
     padding: 12px 22px;
     color: var(--text-primary);
-    background: linear-gradient(
-        180deg,
-        color-mix(in srgb, var(--surface-panel) 58%, transparent),
-        color-mix(in srgb, var(--surface-panel) 34%, transparent)
-    );
-    border: 1px solid color-mix(in srgb, white 44%, var(--line-subtle));
-    border-radius: 18px;
+    background:
+        linear-gradient(
+            180deg,
+            color-mix(in srgb, var(--surface-panel) 92%, transparent),
+            color-mix(in srgb, var(--surface-panel) 70%, transparent)
+        ),
+        var(--surface-panel);
+    border: 1px solid var(--line-subtle);
+    border-radius: 10px;
     box-shadow:
         inset 0 1px 0 color-mix(in srgb, white 50%, transparent),
-        0 14px 36px rgba(15, 23, 42, 0.08);
-    backdrop-filter: blur(22px) saturate(1.22);
+        0 12px 30px rgba(70, 58, 38, 0.07);
+    backdrop-filter: blur(12px) saturate(1.06);
     line-height: normal;
 }
 

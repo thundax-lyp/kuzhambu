@@ -25,16 +25,23 @@ const App = () => {
                 algorithm:
                     themeName === "dark" ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
                 token: {
-                    colorPrimary: themeName === "dark" ? "#3b82f6" : "#2563eb",
-                    colorBgContainer: themeName === "dark" ? "#111c2e" : "#ffffff",
+                    colorPrimary: themeName === "dark" ? "#7fa4c4" : "#1f4b73",
+                    colorSuccess: themeName === "dark" ? "#7bb49e" : "#4f927a",
+                    colorWarning: themeName === "dark" ? "#d6a75f" : "#b9863b",
+                    colorError: themeName === "dark" ? "#d97867" : "#b33a32",
+                    colorBgLayout: themeName === "dark" ? "#111713" : "#f7f4ec",
+                    colorBgContainer: themeName === "dark" ? "#18211d" : "#fffdf8",
                     colorBorder:
                         themeName === "dark"
-                            ? "rgba(171, 191, 222, 0.18)"
-                            : "rgba(116, 132, 160, 0.24)",
-                    colorText: themeName === "dark" ? "#f8fbff" : "#101827",
-                    colorTextSecondary: themeName === "dark" ? "#b8c4d8" : "#526079",
+                            ? "rgba(184, 174, 150, 0.22)"
+                            : "rgba(102, 89, 65, 0.18)",
+                    colorText: themeName === "dark" ? "#f3eee3" : "#1f2521",
+                    colorTextSecondary: themeName === "dark" ? "#c5bbab" : "#6d685d",
                     borderRadius: 8,
-                    fontFamily: '"Avenir Next", "PingFang SC", "Microsoft YaHei", sans-serif'
+                    boxShadow: "0 12px 34px rgba(70, 58, 38, 0.08)",
+                    boxShadowSecondary: "0 8px 24px rgba(70, 58, 38, 0.06)",
+                    fontFamily:
+                        '"Avenir Next", "LXGW WenKai", "STKaiti", "KaiTi", "PingFang SC", "Microsoft YaHei", sans-serif'
                 }
             }}
         >
