@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `AI CLOSE`：清理 AI 实现现场
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-AI-DOMAIN.md`
-    - 范围对象：`TODO.md`、`docs/30-designs/RUNBOOK-AI-DOMAIN.md`
-    - 处理动作：AI 域实现和验证完成后删除临时 RUNBOOK，并清空或收窄 AI 相关 TODO。
-    - 验收点：无剩余临时 RUNBOOK 引用，`TODO.md` 不保留已完成任务清单。
-    - 重要度：10/10
-
 ## 待审阅任务项
 
 ## 待讨论项
