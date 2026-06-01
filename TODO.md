@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `workers ai usecase cleanup`：完成 AI usecase 接口收口清理
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-AI-USECASE.md#U10-Cleanup-And-PR-Readiness`
-    - 范围对象：`TODO.md`、`docs/30-designs/RUNBOOK-WORKERS-AI-USECASE.md`、`kuzhambu-workers/README.md`、`.github/pull_request_template.md`
-    - 处理动作：清理已完成 TODO、按规则删除或收窄 RUNBOOK 并确认 PR 准备状态
-    - 验收点：TODO 只保留真实剩余任务，RUNBOOK 按收口规则处理，工作区无无关修改
-    - 重要度：10/10
-
 ## 待审阅任务项
 
 ## 待讨论项

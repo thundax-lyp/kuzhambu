@@ -60,6 +60,10 @@ PDF 渲染通过 Browser Pool 复用 Chromium。每次渲染创建独立 context
 - `GET /internal/capabilities`
 - `POST /internal/ai/invoke`
 - `POST /internal/ai/stream`
+- `POST /internal/ai/classics/*`
+- `POST /internal/ai/discovery/*`
+- `POST /internal/ai/knowledge/*`
+- `POST /internal/ai/platform/*`
 - `POST /internal/render/classics-export`
 - `POST /internal/render/sancai-showcase`
 - `POST /internal/render/operations-report`
@@ -69,6 +73,8 @@ PDF 渲染通过 Browser Pool 复用 Chromium。每次渲染创建独立 context
 OpenAPI 和 Swagger UI 只暴露在 `/internal/*` 路径下，用于内网开发、联调和接口排查。
 
 `/internal/ai/invoke` 和 `/internal/ai/stream` 是通用调试接口，仅用于平台联调和协议验证。真实业务应接入基于 usecase 定义的稳定接口。
+
+AI usecase 路径只允许 `kuzhambu-ai` 服务身份调用；Classics、Discovery、Knowledge 等业务域不得绕过 AI 域直接访问 workers AI 接口。完整 usecase path、capability 和 stream 约束见 `docs/20-interfaces/WORKERS-AI-USECASE-INTERFACE.md`。
 
 ## Local Development
 
