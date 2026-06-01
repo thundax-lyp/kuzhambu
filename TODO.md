@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `AI D4`：实现调用与候选领域模型
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-DOMAIN.md#d4-invocation-and-candidate-domain`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-domain/src/main/java/com/thundax/kuzhambu/ai/domain/invocation/`
-    - 处理动作：按 RUNBOOK D4 的 4 个关联文件定义调用记录、候选结果、用量快照和仓储端口。
-    - 验收点：调用记录能表达同步、stream 成功、stream 中断、主备降级、失败类型和用量摘要。
-    - 重要度：9/10
-
 - [ ] `AI D5`：实现批量与专项结果领域模型
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-DOMAIN.md#d5-batch-and-specialized-result-domain`
