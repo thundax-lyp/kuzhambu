@@ -13,14 +13,6 @@
 
 ## 当前任务项
 
-- [ ] `workers classics export`：实现 Classics 导出渲染
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W13-Classics-Export-Renderer`
-    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/render/classics_export.py`、`kuzhambu-workers/src/kuzhambu_workers/render/templates/classics_export.html`、`kuzhambu-workers/tests/test_classics_export.py`
-    - 处理动作：实现 Classics CSV、JSON、HTML、ZIP 产物生成
-    - 验收点：产物包含 filename、contentType、sizeBytes、sha256，HTML/ZIP 可通过 artifact chunk 输出
-    - 重要度：8/10
-
 - [ ] `workers sancai showcase`：实现三才图会静态展示渲染
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W14-Sancai-Showcase-Renderer`
