@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `AI D3`：实现提示词领域模型
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-DOMAIN.md#d3-prompt-domain`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-domain/src/main/java/com/thundax/kuzhambu/ai/domain/prompt/`
-    - 处理动作：按 RUNBOOK D3 的 5 个关联文件定义提示词模板、版本、变量、仓储端口和变量校验服务。
-    - 验收点：同一 scope + capability 只有一个当前模板，变量缺失时可拒绝保存或调用。
-    - 重要度：9/10
-
 - [ ] `AI D4`：实现调用与候选领域模型
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-DOMAIN.md#d4-invocation-and-candidate-domain`
