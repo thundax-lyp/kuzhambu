@@ -9,6 +9,7 @@
 ## Verification
 
 - [ ] PR workflow: governance files
+- [ ] PR workflow: servers changed -> `mvn -q clean`
 - [ ] PR workflow: servers changed -> `mvn -q spotless:check`
 - [ ] PR workflow: servers changed -> `mvn -q checkstyle:check`
 - [ ] PR workflow: servers changed -> `mvn -q test`

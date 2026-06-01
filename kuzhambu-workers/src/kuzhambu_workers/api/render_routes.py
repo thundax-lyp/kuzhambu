@@ -31,35 +31,72 @@ from kuzhambu_workers.schemas.stream import StreamEventType
 from kuzhambu_workers.streaming.events import artifact_chunk_event, started_event, stream_event
 from kuzhambu_workers.streaming.sse import encode_sse
 
-router = APIRouter(prefix="/internal/render")
+router = APIRouter(prefix="/internal/render", tags=["Render"])
+CLASSICS_EXPORT_NOTICE = (
+    "Classics 导出 usecase 接口。调用方必须先完成权限过滤、风险确认和内容快照准备。"
+)
+SANCAI_SHOWCASE_NOTICE = (
+    "三才图会静态展示 usecase 接口。调用方必须传入完整展示快照，workers 不回查业务数据。"
+)
+OPERATIONS_REPORT_NOTICE = "Operations 报表 usecase 接口。调用方必须传入已聚合的报表快照。"
 
 
-@router.post("/classics-export", response_model=None)
+@router.post(
+    "/classics-export",
+    response_model=None,
+    summary="Classics export",
+    description=CLASSICS_EXPORT_NOTICE,
+)
 async def classics_export(request: Request) -> JSONResponse:
     return await _invoke(request, RenderType.CLASSICS_EXPORT)
 
 
-@router.post("/sancai-showcase", response_model=None)
+@router.post(
+    "/sancai-showcase",
+    response_model=None,
+    summary="Sancai showcase",
+    description=SANCAI_SHOWCASE_NOTICE,
+)
 async def sancai_showcase(request: Request) -> JSONResponse:
     return await _invoke(request, RenderType.SANCAI_SHOWCASE)
 
 
-@router.post("/operations-report", response_model=None)
+@router.post(
+    "/operations-report",
+    response_model=None,
+    summary="Operations report",
+    description=OPERATIONS_REPORT_NOTICE,
+)
 async def operations_report(request: Request) -> JSONResponse:
     return await _invoke(request, RenderType.OPERATIONS_REPORT)
 
 
-@router.post("/classics-export/stream", response_model=None)
+@router.post(
+    "/classics-export/stream",
+    response_model=None,
+    summary="Classics export stream",
+    description=CLASSICS_EXPORT_NOTICE,
+)
 async def classics_export_stream(request: Request) -> StreamingResponse | JSONResponse:
     return await _stream(request, RenderType.CLASSICS_EXPORT)
 
 
-@router.post("/sancai-showcase/stream", response_model=None)
+@router.post(
+    "/sancai-showcase/stream",
+    response_model=None,
+    summary="Sancai showcase stream",
+    description=SANCAI_SHOWCASE_NOTICE,
+)
 async def sancai_showcase_stream(request: Request) -> StreamingResponse | JSONResponse:
     return await _stream(request, RenderType.SANCAI_SHOWCASE)
 
 
-@router.post("/operations-report/stream", response_model=None)
+@router.post(
+    "/operations-report/stream",
+    response_model=None,
+    summary="Operations report stream",
+    description=OPERATIONS_REPORT_NOTICE,
+)
 async def operations_report_stream(request: Request) -> StreamingResponse | JSONResponse:
     return await _stream(request, RenderType.OPERATIONS_REPORT)
 

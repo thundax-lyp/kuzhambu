@@ -1,5 +1,6 @@
 import pytest
 
+from kuzhambu_workers.ai.usecase_registry import USECASE_PATHS
 from kuzhambu_workers.core.config import load_settings
 from kuzhambu_workers.core.errors import WorkerError
 from kuzhambu_workers.core.security import (
@@ -100,6 +101,49 @@ def test_verify_internal_request_rejects_path_for_service(monkeypatch) -> None:
         verify_internal_request(
             method="POST",
             path="/internal/ai/invoke",
+            headers=headers,
+            body=body,
+            settings=settings,
+            request_id="req-1",
+            trace_id="trace-1",
+            now_ms=1_710_000_000_000,
+        )
+
+    assert raised.value.code == "PATH_FORBIDDEN"
+
+
+@pytest.mark.parametrize("path", USECASE_PATHS)
+def test_verify_internal_request_accepts_ai_usecase_path_for_ai_service(monkeypatch, path) -> None:
+    settings = _settings(monkeypatch)
+    body = b'{"requestId":"req-1","traceId":"trace-1"}'
+    headers = _headers(body, service="kuzhambu-ai", path=path)
+
+    verified = verify_internal_request(
+        method="POST",
+        path=path,
+        headers=headers,
+        body=body,
+        settings=settings,
+        request_id="req-1",
+        trace_id="trace-1",
+        now_ms=1_710_000_000_000,
+    )
+
+    assert verified.service == "kuzhambu-ai"
+
+
+def test_verify_internal_request_rejects_ai_usecase_path_for_business_service(
+    monkeypatch,
+) -> None:
+    settings = _settings(monkeypatch)
+    path = "/internal/ai/classics/sancai/translate"
+    body = b'{"requestId":"req-1","traceId":"trace-1"}'
+    headers = _headers(body, service="kuzhambu-classics", path=path)
+
+    with pytest.raises(WorkerError) as raised:
+        verify_internal_request(
+            method="POST",
+            path=path,
             headers=headers,
             body=body,
             settings=settings,

@@ -41,6 +41,25 @@ def test_worker_e2e_rejects_forbidden_service(monkeypatch) -> None:
     assert response.json()["error"]["code"] == "PATH_FORBIDDEN"
 
 
+def test_worker_e2e_rejects_business_service_on_ai_usecase_path(monkeypatch) -> None:
+    _configure(monkeypatch, "kuzhambu-ai,kuzhambu-classics")
+    path = "/internal/ai/classics/sancai/translate"
+    body = _ai_body(
+        operation="CLASSICS_SANCAI_TRANSLATE",
+        capability="translate",
+        scope="classics",
+    )
+
+    response = TestClient(app).post(
+        path,
+        content=body,
+        headers=_headers(body, path, "kuzhambu-classics"),
+    )
+
+    assert response.status_code == 403
+    assert response.json()["error"]["code"] == "PATH_FORBIDDEN"
+
+
 def test_worker_e2e_render_stream_error_terminates_without_completed(monkeypatch) -> None:
     _configure(monkeypatch, "kuzhambu-classics")
     body = _render_body("SANCAI_SHOWCASE", "HTML")
@@ -62,14 +81,19 @@ def _configure(monkeypatch, service: str) -> None:
     monkeypatch.setenv("KUZHAMBU_WORKER_INTERNAL_SECRET", "worker-secret")
 
 
-def _ai_body() -> bytes:
+def _ai_body(
+    *,
+    operation: str = "E2E",
+    capability: str = "summary",
+    scope: str = "SANCAI",
+) -> bytes:
     payload = {
         "requestId": "req-1",
         "traceId": "trace-1",
         "callerDomain": "AI",
-        "operation": "E2E",
-        "capability": "summary",
-        "scope": "SANCAI",
+        "operation": operation,
+        "capability": capability,
+        "scope": scope,
         "modelConfig": {
             "serviceRole": "PRIMARY",
             "apiSource": "OPENAI_COMPATIBLE",

@@ -41,7 +41,7 @@ def _result_format(capability: AiCapability) -> ResultFormat:
         AiCapability.PROMPT_SUGGESTION,
     }:
         return ResultFormat.STRUCTURED
-    if capability == AiCapability.IMAGE_ANALYSIS:
+    if capability in {AiCapability.IMAGE_ANALYSIS, AiCapability.FUSION}:
         return ResultFormat.MARKDOWN
     if capability == AiCapability.IMAGE_GEN:
         return ResultFormat.ARTIFACT
