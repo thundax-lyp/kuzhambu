@@ -110,6 +110,25 @@ CREATE TABLE IF NOT EXISTS `system_auth_principal_login_event` (
     KEY `idx_system_auth_principal_login_event_type_time` (`event_type`, `occurred_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='认证事件表';
 
+CREATE TABLE IF NOT EXISTS `system_log` (
+    `id` bigint NOT NULL,
+    `user_id` bigint DEFAULT NULL,
+    `type` varchar(32) DEFAULT NULL,
+    `log_date` datetime(3) NOT NULL,
+    `title` varchar(255) DEFAULT NULL,
+    `remote_addr` varchar(64) DEFAULT NULL,
+    `user_agent` varchar(512) DEFAULT NULL,
+    `method` varchar(16) DEFAULT NULL,
+    `request_uri` varchar(512) DEFAULT NULL,
+    `request_params` text DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    KEY `idx_system_log_type_time` (`type`, `log_date`),
+    KEY `idx_system_log_remote_time` (`remote_addr`, `log_date`),
+    KEY `idx_system_log_user_time` (`user_id`, `log_date`),
+    KEY `idx_system_log_request_time` (`request_uri`, `log_date`),
+    KEY `idx_system_log_time` (`log_date`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='后台访问运行日志表';
+
 CREATE TABLE IF NOT EXISTS `system_audit_meta` (
     `id` bigint NOT NULL AUTO_INCREMENT,
     `object_type` varchar(128) NOT NULL,
