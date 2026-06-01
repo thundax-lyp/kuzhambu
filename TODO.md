@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `AI I4`：实现 worker client 协议
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-DOMAIN.md#i4-worker-client-contract`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-infra/src/main/java/com/thundax/kuzhambu/ai/infra/client/`
-    - 处理动作：按 RUNBOOK I4 的 5 个关联文件实现 `WORKERS-AI-INTERFACE.md` 定义的 HTTP、SSE、HMAC 和错误归一化。
-    - 验收点：请求头、签名输入、错误类型和 stream completed 处理与接口文档一致。
-    - 重要度：10/10
-
 - [ ] `AI F1`：实现后台配置接口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-DOMAIN.md#f1-admin-config-interface`

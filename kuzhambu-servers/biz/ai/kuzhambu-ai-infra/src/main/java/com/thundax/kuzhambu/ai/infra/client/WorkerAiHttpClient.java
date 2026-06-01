@@ -1,0 +1,434 @@
+package com.thundax.kuzhambu.ai.infra.client;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
+import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
+import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiUsageSnapshot;
+import com.thundax.kuzhambu.ai.infra.client.dto.WorkerAiDtos;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.math.BigDecimal;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.net.http.HttpTimeoutException;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Collections;
+import java.util.function.Consumer;
+import org.springframework.stereotype.Component;
+
+@Component
+public class WorkerAiHttpClient implements WorkerAiClient {
+
+    private static final String CALLER_DOMAIN = "AI";
+    private static final String INVOKE_PATH = "/internal/ai/invoke";
+    private static final String STREAM_PATH = "/internal/ai/stream";
+    private static final String EVENT_ERROR = "error";
+    private static final String ERROR_INTERNAL_FAILURE = "INTERNAL_FAILURE";
+    private static final String ERROR_WORKER_PROTOCOL_FAILURE = "WORKER_PROTOCOL_FAILURE";
+    private static final String ERROR_WORKER_TIMEOUT = "WORKER_TIMEOUT";
+    private static final String ERROR_WORKER_UNAVAILABLE = "WORKER_UNAVAILABLE";
+
+    private final WorkerAiProperties properties;
+    private final WorkerAiSignatureSupport signatureSupport;
+    private final ObjectMapper objectMapper;
+    private final HttpClient httpClient;
+
+    public WorkerAiHttpClient(WorkerAiProperties properties, WorkerAiSignatureSupport signatureSupport) {
+        this.properties = properties;
+        this.signatureSupport = signatureSupport;
+        this.objectMapper = new ObjectMapper().findAndRegisterModules();
+        this.httpClient = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofMillis(properties.getTimeoutMs()))
+                .build();
+    }
+
+    @Override
+    public AiInvokeResult invoke(AiInvokeCommand command) {
+        try {
+            String body = objectMapper.writeValueAsString(toRequest(command, false));
+            HttpRequest request = buildPostRequest(INVOKE_PATH, command.getRequestId(), command.getTraceId(), body);
+            HttpResponse<String> response =
+                    httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+            if (!isSuccessful(response.statusCode())) {
+                return httpFailure(command, response.statusCode(), response.body());
+            }
+            return toInvokeResult(
+                    command, objectMapper.readValue(response.body(), WorkerAiDtos.WorkerAiResponse.class));
+        } catch (JsonProcessingException | IllegalArgumentException ex) {
+            return failure(command, ERROR_WORKER_PROTOCOL_FAILURE, ex.getMessage());
+        } catch (HttpTimeoutException ex) {
+            return failure(command, ERROR_WORKER_TIMEOUT, "Worker request timed out");
+        } catch (IOException ex) {
+            return failure(command, ERROR_WORKER_UNAVAILABLE, "Worker is unavailable");
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            return failure(command, ERROR_WORKER_TIMEOUT, "Worker request was interrupted");
+        } catch (RuntimeException ex) {
+            return failure(command, ERROR_INTERNAL_FAILURE, ex.getMessage());
+        }
+    }
+
+    @Override
+    public void stream(AiInvokeCommand command, Consumer<AiStreamEventResult> eventConsumer) {
+        try {
+            String body = objectMapper.writeValueAsString(toRequest(command, true));
+            HttpRequest request = buildPostRequest(STREAM_PATH, command.getRequestId(), command.getTraceId(), body);
+            HttpResponse<InputStream> response = httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());
+            if (!isSuccessful(response.statusCode())) {
+                emitError(
+                        eventConsumer, command, httpFailure(command, response.statusCode(), readAll(response.body())));
+                return;
+            }
+            readSse(response.body(), eventConsumer, command);
+        } catch (JsonProcessingException | IllegalArgumentException ex) {
+            emitError(eventConsumer, command, failure(command, ERROR_WORKER_PROTOCOL_FAILURE, ex.getMessage()));
+        } catch (HttpTimeoutException ex) {
+            emitError(eventConsumer, command, failure(command, ERROR_WORKER_TIMEOUT, "Worker stream timed out"));
+        } catch (IOException ex) {
+            emitError(
+                    eventConsumer, command, failure(command, ERROR_WORKER_UNAVAILABLE, "Worker stream is unavailable"));
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            emitError(eventConsumer, command, failure(command, ERROR_WORKER_TIMEOUT, "Worker stream was interrupted"));
+        } catch (RuntimeException ex) {
+            emitError(eventConsumer, command, failure(command, ERROR_INTERNAL_FAILURE, ex.getMessage()));
+        }
+    }
+
+    private WorkerAiDtos.WorkerAiRequest toRequest(AiInvokeCommand command, boolean stream) {
+        WorkerAiDtos.WorkerAiRequest request = new WorkerAiDtos.WorkerAiRequest();
+        request.setRequestId(command.getRequestId());
+        request.setTraceId(command.getTraceId());
+        request.setCallerDomain(CALLER_DOMAIN);
+        request.setOperation(command.getOperation());
+        request.setCapability(command.getCapability());
+        request.setScope(command.getScope());
+        request.setModelConfig(modelConfig(command));
+        request.setPrompt(prompt(command));
+        request.setInput(input(command));
+        request.setOutputSchema(jsonOrDefault(
+                command.getOutputSchemaJson(), objectMapper.createObjectNode().put("type", "text")));
+        request.setOptions(options(command, stream));
+        return request;
+    }
+
+    private WorkerAiDtos.ModelConfig modelConfig(AiInvokeCommand command) {
+        WorkerAiDtos.ModelConfig modelConfig = new WorkerAiDtos.ModelConfig();
+        modelConfig.setServiceRole(command.getServiceRole());
+        modelConfig.setModelName(command.getModelName());
+        modelConfig.setCapabilityTags(Collections.emptyList());
+        modelConfig.setTimeoutMs(properties.getTimeoutMs());
+        return modelConfig;
+    }
+
+    private WorkerAiDtos.Prompt prompt(AiInvokeCommand command) {
+        WorkerAiDtos.Prompt prompt = new WorkerAiDtos.Prompt();
+        if (command.getPromptVersionId() != null) {
+            prompt.setPromptVersionId(String.valueOf(command.getPromptVersionId()));
+        }
+        prompt.setMessages(jsonOrDefault(command.getPromptMessagesJson(), objectMapper.createArrayNode()));
+        prompt.setVariables(jsonOrDefault(command.getPromptVariablesJson(), objectMapper.createObjectNode()));
+        prompt.setPromptHash(command.getPromptHash());
+        return prompt;
+    }
+
+    private WorkerAiDtos.Input input(AiInvokeCommand command) {
+        WorkerAiDtos.Input input = new WorkerAiDtos.Input();
+        input.setContentType(command.getContentType());
+        if (command.getContentId() != null) {
+            input.setContentId(String.valueOf(command.getContentId()));
+        }
+        input.setPayload(jsonOrDefault(command.getInputPayloadJson(), objectMapper.createObjectNode()));
+        return input;
+    }
+
+    private WorkerAiDtos.Options options(AiInvokeCommand command, boolean stream) {
+        WorkerAiDtos.Options options = new WorkerAiDtos.Options();
+        options.setStream(stream);
+        options.setForceJson(command.isForceJson());
+        options.setLocale(command.getLocale());
+        return options;
+    }
+
+    private HttpRequest buildPostRequest(String path, String requestId, String traceId, String body) {
+        String timestamp = String.valueOf(System.currentTimeMillis());
+        String signature =
+                signatureSupport.sign("POST", path, timestamp, requestId, body, properties.getInternalSecret());
+        return HttpRequest.newBuilder(uri(path))
+                .timeout(Duration.ofMillis(properties.getTimeoutMs()))
+                .header("Content-Type", "application/json; charset=utf-8")
+                .header("Accept", "application/json, text/event-stream")
+                .header("X-Kuzhambu-Service", properties.getServiceName())
+                .header("X-Kuzhambu-Request-Id", requestId)
+                .header("X-Kuzhambu-Trace-Id", traceId)
+                .header("X-Kuzhambu-Timestamp", timestamp)
+                .header("X-Kuzhambu-Signature", signature)
+                .POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8))
+                .build();
+    }
+
+    private URI uri(String path) {
+        String baseUrl = properties.getBaseUrl();
+        if (baseUrl == null || baseUrl.trim().isEmpty()) {
+            throw new IllegalStateException("Worker base url is not configured");
+        }
+        return URI.create(baseUrl.replaceAll("/+$", "") + path);
+    }
+
+    private AiInvokeResult toInvokeResult(AiInvokeCommand command, WorkerAiDtos.WorkerAiResponse response)
+            throws JsonProcessingException {
+        if (response == null || response.getStatus() == null) {
+            return failure(command, ERROR_WORKER_PROTOCOL_FAILURE, "Worker returned invalid response");
+        }
+        AiInvokeResult result = new AiInvokeResult();
+        result.setRequestId(defaultString(response.getRequestId(), command.getRequestId()));
+        result.setTraceId(defaultString(response.getTraceId(), command.getTraceId()));
+        result.setStatus(response.getStatus());
+        result.setCapability(defaultString(response.getCapability(), command.getCapability()));
+        if (response.getResult() != null) {
+            result.setResultFormat(response.getResult().getFormat());
+            result.setResultPayload(payloadToString(response.getResult().getPayload()));
+        }
+        result.setUsage(toUsage(response.getUsage()));
+        if (response.getWarnings() != null && !response.getWarnings().isNull()) {
+            result.setWarningsJson(objectMapper.writeValueAsString(response.getWarnings()));
+        }
+        if (response.getError() != null) {
+            result.setErrorType(response.getError().getType());
+            result.setErrorMessage(response.getError().getMessage());
+        }
+        return result;
+    }
+
+    private void readSse(InputStream inputStream, Consumer<AiStreamEventResult> eventConsumer, AiInvokeCommand command)
+            throws IOException {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+            String eventType = null;
+            StringBuilder data = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.isEmpty()) {
+                    dispatchSseEvent(eventType, data.toString(), eventConsumer, command);
+                    eventType = null;
+                    data.setLength(0);
+                    continue;
+                }
+                if (line.startsWith(":")) {
+                    continue;
+                }
+                if (line.startsWith("event:")) {
+                    eventType = line.substring("event:".length()).trim();
+                    continue;
+                }
+                if (line.startsWith("data:")) {
+                    if (data.length() > 0) {
+                        data.append('\n');
+                    }
+                    data.append(line.substring("data:".length()).trim());
+                }
+            }
+            dispatchSseEvent(eventType, data.toString(), eventConsumer, command);
+        }
+    }
+
+    private void dispatchSseEvent(
+            String eventType, String data, Consumer<AiStreamEventResult> eventConsumer, AiInvokeCommand command)
+            throws JsonProcessingException {
+        if (isBlank(data)) {
+            return;
+        }
+        AiStreamEventResult event = toStreamEvent(eventType, objectMapper.readTree(data), command);
+        if (eventConsumer != null) {
+            eventConsumer.accept(event);
+        }
+    }
+
+    private AiStreamEventResult toStreamEvent(String eventType, JsonNode node, AiInvokeCommand command) {
+        AiStreamEventResult event = new AiStreamEventResult();
+        event.setEventType(defaultString(eventType, text(node, "eventType")));
+        event.setEventId(text(node, "eventId"));
+        event.setRequestId(defaultString(text(node, "requestId"), command.getRequestId()));
+        event.setTraceId(defaultString(text(node, "traceId"), command.getTraceId()));
+        event.setStage(text(node, "stage"));
+        event.setTimestamp(toInstant(text(node, "timestamp")));
+        event.setDeltaText(payloadToString(node.path("delta").path("text")));
+        event.setStatus(text(node, "status"));
+        setResult(node, event);
+        event.setUsage(toUsage(node.get("usage")));
+        JsonNode error = node.get("error");
+        if (error != null && !error.isNull()) {
+            event.setErrorType(text(error, "type"));
+            event.setErrorMessage(text(error, "message"));
+        }
+        return event;
+    }
+
+    private void setResult(JsonNode node, AiStreamEventResult event) {
+        JsonNode result = node.get("result");
+        if (result == null || result.isNull()) {
+            return;
+        }
+        event.setResultFormat(text(result, "format"));
+        event.setResultPayload(payloadToString(result.get("payload")));
+    }
+
+    private AiInvokeResult httpFailure(AiInvokeCommand command, int statusCode, String body) {
+        WorkerAiDtos.WorkerAiResponse response = readWorkerResponse(body);
+        if (response != null
+                && response.getError() != null
+                && !isBlank(response.getError().getType())) {
+            return failure(
+                    command, response.getError().getType(), response.getError().getMessage());
+        }
+        return failure(command, httpErrorType(statusCode), "Worker returned HTTP " + statusCode);
+    }
+
+    private WorkerAiDtos.WorkerAiResponse readWorkerResponse(String body) {
+        if (isBlank(body)) {
+            return null;
+        }
+        try {
+            return objectMapper.readValue(body, WorkerAiDtos.WorkerAiResponse.class);
+        } catch (JsonProcessingException ex) {
+            return null;
+        }
+    }
+
+    private String httpErrorType(int statusCode) {
+        if (statusCode == 408 || statusCode == 504) {
+            return ERROR_WORKER_TIMEOUT;
+        }
+        if (statusCode >= 500) {
+            return ERROR_WORKER_UNAVAILABLE;
+        }
+        return ERROR_WORKER_PROTOCOL_FAILURE;
+    }
+
+    private void emitError(
+            Consumer<AiStreamEventResult> eventConsumer, AiInvokeCommand command, AiInvokeResult failure) {
+        if (eventConsumer == null) {
+            return;
+        }
+        AiStreamEventResult event = new AiStreamEventResult();
+        event.setEventType(EVENT_ERROR);
+        event.setRequestId(command.getRequestId());
+        event.setTraceId(command.getTraceId());
+        event.setStage(EVENT_ERROR);
+        event.setTimestamp(Instant.now());
+        event.setStatus("FAILED");
+        event.setErrorType(failure.getErrorType());
+        event.setErrorMessage(failure.getErrorMessage());
+        eventConsumer.accept(event);
+    }
+
+    private AiInvokeResult failure(AiInvokeCommand command, String errorType, String errorMessage) {
+        AiInvokeResult result =
+                AiInvokeResult.failed(command.getRequestId(), command.getTraceId(), errorType, errorMessage);
+        result.setCapability(command.getCapability());
+        return result;
+    }
+
+    private JsonNode jsonOrDefault(String json, JsonNode defaultValue) {
+        if (isBlank(json)) {
+            return defaultValue;
+        }
+        try {
+            return objectMapper.readTree(json);
+        } catch (JsonProcessingException ex) {
+            throw new IllegalArgumentException("Invalid worker request JSON field", ex);
+        }
+    }
+
+    private AiUsageSnapshot toUsage(WorkerAiDtos.Usage usage) {
+        if (usage == null) {
+            return AiUsageSnapshot.empty();
+        }
+        return new AiUsageSnapshot(
+                valueOrZero(usage.getLatencyMs()),
+                valueOrZero(usage.getInputTokens()),
+                valueOrZero(usage.getOutputTokens()),
+                decimalOrZero(usage.getCostAmount()));
+    }
+
+    private AiUsageSnapshot toUsage(JsonNode usage) {
+        if (usage == null || usage.isNull()) {
+            return AiUsageSnapshot.empty();
+        }
+        return new AiUsageSnapshot(
+                usage.path("latencyMs").asInt(0),
+                usage.path("inputTokens").asInt(0),
+                usage.path("outputTokens").asInt(0),
+                decimalOrZero(text(usage, "costAmount")));
+    }
+
+    private int valueOrZero(Integer value) {
+        return value == null ? 0 : value;
+    }
+
+    private BigDecimal decimalOrZero(String value) {
+        if (isBlank(value)) {
+            return BigDecimal.ZERO;
+        }
+        try {
+            return new BigDecimal(value);
+        } catch (NumberFormatException ex) {
+            return BigDecimal.ZERO;
+        }
+    }
+
+    private String payloadToString(JsonNode payload) {
+        if (payload == null || payload.isNull() || payload.isMissingNode()) {
+            return null;
+        }
+        if (payload.isTextual()) {
+            return payload.asText();
+        }
+        return payload.toString();
+    }
+
+    private Instant toInstant(String value) {
+        if (isBlank(value)) {
+            return null;
+        }
+        try {
+            return Instant.parse(value);
+        } catch (RuntimeException ex) {
+            return null;
+        }
+    }
+
+    private String text(JsonNode node, String fieldName) {
+        JsonNode value = node == null ? null : node.get(fieldName);
+        return value == null || value.isNull() ? null : value.asText();
+    }
+
+    private String readAll(InputStream inputStream) throws IOException {
+        if (inputStream == null) {
+            return null;
+        }
+        try (inputStream) {
+            return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+        }
+    }
+
+    private boolean isSuccessful(int statusCode) {
+        return statusCode >= 200 && statusCode < 300;
+    }
+
+    private String defaultString(String value, String defaultValue) {
+        return isBlank(value) ? defaultValue : value;
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
+    }
+}
