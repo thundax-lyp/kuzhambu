@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `workers ai knowledge platform routes`：实现 Knowledge 和 Platform AI usecase 路由
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-AI-USECASE.md#U6-Knowledge-And-Platform-AI-Usecase-Routes`
-    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/api/ai_usecase_routes.py`、`kuzhambu-workers/tests/test_ai_usecase_routes_knowledge.py`、`kuzhambu-workers/tests/test_ai_usecase_routes_platform.py`
-    - 处理动作：实现 Knowledge 抽取和 Platform AI usecase routes
-    - 验收点：Knowledge 和 Platform path/capability 校验覆盖成功和失败路径
-    - 重要度：9/10
-
 - [ ] `workers ai usecase security`：接入 AI usecase HMAC 路径授权
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-AI-USECASE.md#U7-Security-Allowlist`

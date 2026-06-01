@@ -66,6 +66,8 @@ def _description(usecase: AiUsecase) -> str:
 _ENABLED_DOMAINS = {
     AiUsecaseDomain.CLASSICS,
     AiUsecaseDomain.DISCOVERY,
+    AiUsecaseDomain.KNOWLEDGE,
+    AiUsecaseDomain.PLATFORM,
 }
 
 
