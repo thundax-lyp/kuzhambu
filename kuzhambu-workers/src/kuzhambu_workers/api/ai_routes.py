@@ -16,7 +16,7 @@ from kuzhambu_workers.schemas.stream import StreamEventType
 from kuzhambu_workers.streaming.events import started_event, stream_event
 from kuzhambu_workers.streaming.sse import encode_sse
 
-router = APIRouter(prefix="/internal/ai")
+router = APIRouter(prefix="/internal/ai", tags=["AI Debug"])
 _REGISTRY = GraphRegistry.build_default()
 AiRequestValidator = Callable[[AiInvokeRequest], WorkerErrorPayload | None]
 DEBUG_INTERFACE_NOTICE = (

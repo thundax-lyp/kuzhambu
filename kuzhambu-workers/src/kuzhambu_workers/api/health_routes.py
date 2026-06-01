@@ -5,7 +5,7 @@ from fastapi import APIRouter
 from kuzhambu_workers import __version__
 from kuzhambu_workers.core.config import load_settings
 
-router = APIRouter(prefix="/internal")
+router = APIRouter(prefix="/internal", tags=["Health"])
 STARTED_AT = datetime.now(timezone.utc)
 
 AI_CAPABILITIES = [

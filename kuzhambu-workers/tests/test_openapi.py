@@ -1,7 +1,14 @@
 from fastapi.testclient import TestClient
 
-from kuzhambu_workers.ai.usecase_registry import USECASES
+from kuzhambu_workers.ai.usecase_registry import USECASES, AiUsecaseDomain
 from kuzhambu_workers.main import app
+
+_DOMAIN_TAGS = {
+    AiUsecaseDomain.CLASSICS: "Classics",
+    AiUsecaseDomain.DISCOVERY: "Discovery",
+    AiUsecaseDomain.KNOWLEDGE: "Knowledge",
+    AiUsecaseDomain.PLATFORM: "Platform",
+}
 
 
 def test_openapi_schema_uses_internal_path() -> None:
@@ -27,6 +34,8 @@ def test_openapi_marks_generic_ai_interfaces_as_debug_only() -> None:
     )
     assert body["paths"]["/internal/ai/invoke"]["post"]["summary"] == "Debug AI invoke"
     assert body["paths"]["/internal/ai/stream"]["post"]["summary"] == "Debug AI stream"
+    assert body["paths"]["/internal/ai/invoke"]["post"]["tags"] == ["AI Debug"]
+    assert body["paths"]["/internal/ai/stream"]["post"]["tags"] == ["AI Debug"]
 
 
 def test_openapi_marks_render_interfaces_as_usecase_interfaces() -> None:
@@ -48,6 +57,7 @@ def test_openapi_marks_render_interfaces_as_usecase_interfaces() -> None:
     assert "三才图会静态展示 usecase 接口" in descriptions["/internal/render/sancai-showcase"]
     assert "Operations 报表 usecase 接口" in descriptions["/internal/render/operations-report"]
     assert all("真实业务必须使用基于 usecase" not in value for value in descriptions.values())
+    assert all(body["paths"][path]["post"]["tags"] == ["Render"] for path in descriptions)
 
 
 def test_openapi_exposes_ai_usecase_paths_with_business_boundaries() -> None:
@@ -57,12 +67,24 @@ def test_openapi_exposes_ai_usecase_paths_with_business_boundaries() -> None:
         assert usecase.path in body["paths"]
         operation = body["paths"][usecase.path]["post"]
         assert operation["summary"] == usecase.summary
+        assert operation["tags"] == [_DOMAIN_TAGS[usecase.domain]]
         assert "调用方固定为 kuzhambu-ai" in operation["description"]
         assert f"capability 必须为 `{usecase.capability.value}`" in operation["description"]
         assert f"options.stream 必须为 `{str(usecase.stream).lower()}`" in operation["description"]
         assert "数据库" not in operation["description"]
         assert "Redis" not in operation["description"]
         assert "MQ" not in operation["description"]
+
+
+def test_openapi_defines_one_tag_per_ai_business() -> None:
+    body = TestClient(app).get("/internal/openapi.json").json()
+
+    tags = [tag["name"] for tag in body["tags"]]
+
+    assert tags[:4] == ["Classics", "Discovery", "Knowledge", "Platform"]
+    assert "AI Debug" in tags
+    assert "Render" in tags
+    assert "Health" in tags
 
 
 def test_swagger_ui_uses_internal_path() -> None:

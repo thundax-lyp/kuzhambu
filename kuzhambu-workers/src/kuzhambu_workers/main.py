@@ -14,6 +14,15 @@ def create_app() -> FastAPI:
         openapi_url="/internal/openapi.json",
         docs_url="/internal/docs",
         redoc_url="/internal/redoc",
+        openapi_tags=[
+            {"name": "Classics", "description": "Classics AI usecase interfaces."},
+            {"name": "Discovery", "description": "Discovery AI usecase interfaces."},
+            {"name": "Knowledge", "description": "Knowledge AI usecase interfaces."},
+            {"name": "Platform", "description": "Platform AI usecase interfaces."},
+            {"name": "AI Debug", "description": "Generic AI debug interfaces."},
+            {"name": "Render", "description": "Render usecase interfaces."},
+            {"name": "Health", "description": "Health and capability probes."},
+        ],
     )
 
     app.include_router(ai_router)

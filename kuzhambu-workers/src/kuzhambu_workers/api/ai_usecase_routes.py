@@ -8,6 +8,12 @@ from kuzhambu_workers.schemas.ai import AiInvokeRequest
 from kuzhambu_workers.schemas.common import WorkerErrorPayload
 
 router = APIRouter()
+_DOMAIN_TAGS = {
+    AiUsecaseDomain.CLASSICS: "Classics",
+    AiUsecaseDomain.DISCOVERY: "Discovery",
+    AiUsecaseDomain.KNOWLEDGE: "Knowledge",
+    AiUsecaseDomain.PLATFORM: "Platform",
+}
 
 
 def _register_usecase(usecase: AiUsecase) -> None:
@@ -24,6 +30,7 @@ def _register_usecase(usecase: AiUsecase) -> None:
         summary=usecase.summary,
         description=_description(usecase),
         name=usecase.operation.lower(),
+        tags=[_DOMAIN_TAGS[usecase.domain]],
     )
 
 

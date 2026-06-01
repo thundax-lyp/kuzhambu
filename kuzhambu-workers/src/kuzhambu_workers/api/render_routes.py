@@ -31,7 +31,7 @@ from kuzhambu_workers.schemas.stream import StreamEventType
 from kuzhambu_workers.streaming.events import artifact_chunk_event, started_event, stream_event
 from kuzhambu_workers.streaming.sse import encode_sse
 
-router = APIRouter(prefix="/internal/render")
+router = APIRouter(prefix="/internal/render", tags=["Render"])
 CLASSICS_EXPORT_NOTICE = (
     "Classics 导出 usecase 接口。调用方必须先完成权限过滤、风险确认和内容快照准备。"
 )
