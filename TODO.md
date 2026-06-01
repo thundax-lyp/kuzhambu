@@ -13,14 +13,6 @@
 
 ## 当前任务项
 
-- [ ] `workers ai routes`：实现 AI invoke 和 stream 路由
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W10-AI-Invoke-And-Stream-Routes`
-    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/api/ai_routes.py`、`kuzhambu-workers/src/kuzhambu_workers/main.py`、`kuzhambu-workers/tests/test_ai_routes.py`
-    - 处理动作：实现 `/internal/ai/invoke` 和 `/internal/ai/stream` 路由编排
-    - 验收点：invoke 返回 JSON，stream 返回 SSE completed，异常映射为稳定错误
-    - 重要度：10/10
-
 - [ ] `workers artifact chunks`：实现请求级 artifact store 和分片
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W11-Artifact-Store-And-Chunking`
