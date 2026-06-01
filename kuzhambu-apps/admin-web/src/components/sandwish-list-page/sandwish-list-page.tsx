@@ -3,8 +3,8 @@ import { useState } from "react";
 import { FilterOutlined, PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import { Button, Input, Space } from "antd";
 import { KuzhambuBatchActionBar } from "@/components/kuzhambu-batch-action-bar";
-import { SandwishFilterPanel } from "@/components/sandwish-filter-panel";
-import type { SandwishFilterPanelField } from "@/components/sandwish-filter-panel";
+import { KuzhambuFilterPanel } from "@/components/kuzhambu-filter-panel";
+import type { KuzhambuFilterPanelField } from "@/components/kuzhambu-filter-panel";
 import { KuzhambuPage } from "@/components/kuzhambu-page";
 import { SandwishTable } from "@/components/sandwish-table";
 import type { SandwishTableProps } from "@/components/sandwish-table";
@@ -17,7 +17,7 @@ export interface SandwishListPageFilterState {
     toggleFilter: () => void;
 }
 
-export type SandwishListPageFilterField = SandwishFilterPanelField;
+export type SandwishListPageFilterField = KuzhambuFilterPanelField;
 
 export interface SandwishListPageProps<RecordType extends object = object> extends Omit<
     SandwishTableProps<RecordType>,
@@ -168,7 +168,7 @@ export const SandwishListPage = <RecordType extends object = object>({
             title={title}
         >
             {enableFilter && (resolvedFilter || filterFields?.length) ? (
-                <SandwishFilterPanel
+                <KuzhambuFilterPanel
                     open={actualFilterOpen}
                     className={filterClassName}
                     fields={filterFields}
@@ -180,7 +180,7 @@ export const SandwishListPage = <RecordType extends object = object>({
                     onReset={onFilterReset}
                 >
                     {resolvedFilter}
-                </SandwishFilterPanel>
+                </KuzhambuFilterPanel>
             ) : null}
 
             {batchActions ? (

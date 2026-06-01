@@ -1,17 +1,17 @@
 import type { ReactNode } from "react";
 import { Button, Col, Row } from "antd";
-import "./sandwish-filter-panel.css";
+import "./kuzhambu-filter-panel.css";
 
-export interface SandwishFilterPanelField {
+export interface KuzhambuFilterPanelField {
     label: ReactNode;
     name: string;
     render: () => ReactNode;
 }
 
-export interface SandwishFilterPanelProps {
+export interface KuzhambuFilterPanelProps {
     children?: ReactNode;
     className?: string;
-    fields?: SandwishFilterPanelField[];
+    fields?: KuzhambuFilterPanelField[];
     onApply?: () => void;
     onReset?: () => void;
     open: boolean;
@@ -23,7 +23,7 @@ const resolveActionOffset = (fieldCount: number, columns: number, span: number) 
     return (columns - usedColumns - 1) * span;
 };
 
-export const SandwishFilterPanel = ({
+export const KuzhambuFilterPanel = ({
     children,
     className,
     fields,
@@ -31,30 +31,30 @@ export const SandwishFilterPanel = ({
     onReset,
     open,
     resetDisabled = false
-}: SandwishFilterPanelProps) => {
+}: KuzhambuFilterPanelProps) => {
     const fieldCount = fields?.length ?? 0;
     const structuredContent = fields?.length ? (
-        <div className="sandwish-filter-panel-form">
-            <Row className="sandwish-filter-panel-fields" gutter={[12, 12]} align="bottom">
+        <div className="kuzhambu-filter-panel-form">
+            <Row className="kuzhambu-filter-panel-fields" gutter={[12, 12]} align="bottom">
                 {fields.map((field) => (
                     <Col
-                        className="sandwish-filter-panel-field"
+                        className="kuzhambu-filter-panel-field"
                         key={field.name}
                         xs={24}
                         sm={12}
                         lg={6}
                     >
-                        <div className="sandwish-filter-panel-label">{field.label}</div>
-                        <div className="sandwish-filter-panel-control">{field.render()}</div>
+                        <div className="kuzhambu-filter-panel-label">{field.label}</div>
+                        <div className="kuzhambu-filter-panel-control">{field.render()}</div>
                     </Col>
                 ))}
                 <Col
-                    className="sandwish-filter-panel-field sandwish-filter-panel-action-field"
+                    className="kuzhambu-filter-panel-field kuzhambu-filter-panel-action-field"
                     xs={{ span: 24, offset: 0 }}
                     sm={{ span: 12, offset: resolveActionOffset(fieldCount, 2, 12) }}
                     lg={{ span: 6, offset: resolveActionOffset(fieldCount, 4, 6) }}
                 >
-                    <div className="sandwish-filter-panel-actions">
+                    <div className="kuzhambu-filter-panel-actions">
                         <Button disabled={resetDisabled} onClick={onReset}>
                             重置
                         </Button>
@@ -70,8 +70,8 @@ export const SandwishFilterPanel = ({
     return (
         <div
             className={[
-                "sandwish-filter-panel",
-                open ? "sandwish-filter-panel-open" : "",
+                "kuzhambu-filter-panel",
+                open ? "kuzhambu-filter-panel-open" : "",
                 className
             ]
                 .filter(Boolean)

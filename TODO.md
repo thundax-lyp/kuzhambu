@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `kuzhambu-filter-panel`：迁移 `sandwish-filter-panel`
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/ARCHITECTURE.md`
-    - 范围对象：`src/components/sandwish-filter-panel/`、`src/components/*list-page*/`
-    - 处理动作：将组件、类型、CSS class、CSS variable 和 list-page 调用方改为 `KuzhambuFilterPanel` / `kuzhambu-filter-panel`。
-    - 验收点：`sandwish-filter-panel` 组件模块无旧命名残留，admin-web lint 通过。
-    - 重要度：8/10
-
 - [ ] `kuzhambu-table`：迁移 `sandwish-table`
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/ARCHITECTURE.md`

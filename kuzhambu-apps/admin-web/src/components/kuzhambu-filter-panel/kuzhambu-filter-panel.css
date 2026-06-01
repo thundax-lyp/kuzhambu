@@ -1,4 +1,4 @@
-.sandwish-filter-panel {
+.kuzhambu-filter-panel {
     position: relative;
     z-index: 1;
     max-height: 0;
@@ -10,9 +10,9 @@
         margin 0.2s ease;
 }
 
-.sandwish-filter-panel-open {
-    max-height: var(--sandwish-filter-panel-open-max-height, 720px);
-    margin: var(--sandwish-filter-panel-open-margin, 0 0 10px);
+.kuzhambu-filter-panel-open {
+    max-height: var(--kuzhambu-filter-panel-open-max-height, 720px);
+    margin: var(--kuzhambu-filter-panel-open-margin, 0 0 10px);
     padding: 12px;
     background: color-mix(in srgb, var(--surface-panel) 82%, var(--surface-soft));
     border: 1px solid var(--line-subtle);
@@ -21,38 +21,38 @@
     opacity: 1;
 }
 
-.sandwish-filter-panel-form {
+.kuzhambu-filter-panel-form {
     display: block;
 }
 
-.sandwish-filter-panel-field {
+.kuzhambu-filter-panel-field {
     min-width: 0;
 }
 
-.sandwish-filter-panel-label {
+.kuzhambu-filter-panel-label {
     color: var(--sandwish-color-text-secondary);
     font-size: 12px;
     font-weight: 600;
 }
 
-.sandwish-filter-panel-control {
+.kuzhambu-filter-panel-control {
     min-width: 0;
     margin-top: 6px;
 }
 
-.sandwish-filter-panel-control > .ant-select,
-.sandwish-filter-panel-control > .ant-input-affix-wrapper,
-.sandwish-filter-panel-control > .ant-input {
+.kuzhambu-filter-panel-control > .ant-select,
+.kuzhambu-filter-panel-control > .ant-input-affix-wrapper,
+.kuzhambu-filter-panel-control > .ant-input {
     width: 100%;
 }
 
-.sandwish-filter-panel .ant-select,
-.sandwish-filter-panel .ant-input-affix-wrapper,
-.sandwish-filter-panel .ant-input {
+.kuzhambu-filter-panel .ant-select,
+.kuzhambu-filter-panel .ant-input-affix-wrapper,
+.kuzhambu-filter-panel .ant-input {
     min-width: 0;
 }
 
-.sandwish-filter-panel-actions {
+.kuzhambu-filter-panel-actions {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px;
@@ -60,18 +60,18 @@
     height: 32px;
 }
 
-.sandwish-filter-panel-actions .ant-btn {
+.kuzhambu-filter-panel-actions .ant-btn {
     width: 100%;
 }
 
-.sandwish-filter-panel-actions .ant-btn-primary {
+.kuzhambu-filter-panel-actions .ant-btn-primary {
     color: var(--accent-blue) !important;
     background: var(--accent-blue-soft) !important;
     border-color: color-mix(in srgb, var(--accent-blue) 26%, transparent) !important;
     box-shadow: none !important;
 }
 
-.sandwish-filter-panel-actions .ant-btn-primary:not(:disabled):hover {
+.kuzhambu-filter-panel-actions .ant-btn-primary:not(:disabled):hover {
     color: var(--accent-blue) !important;
     background: color-mix(in srgb, var(--accent-blue) 14%, transparent) !important;
     border-color: color-mix(in srgb, var(--accent-blue) 34%, transparent) !important;
