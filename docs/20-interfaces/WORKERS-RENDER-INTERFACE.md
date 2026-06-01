@@ -20,7 +20,7 @@ Render 接口只表达“业务域请求 workers 基于已授权内容快照生�
 
 Render 接口是内部接口，只允许明确授权的 Java 业务域调用。
 
-第一版允许：
+允许的服务和路径：
 
 | 服务名 | 允许路径 | 用途 |
 | --- | --- | --- |
@@ -34,7 +34,7 @@ Render 接口是内部接口，只允许明确授权的 Java 业务域调用。
 2. 服务身份层：workers 必须校验调用方服务身份。
 3. 请求完整性层：workers 必须校验请求时间、签名或内部令牌。
 
-第一版使用与 AI workers 一致的内部 HMAC 签名。
+Render 接口使用与 AI workers 一致的内部 HMAC 签名。
 
 必需请求头：
 
@@ -73,19 +73,27 @@ hex(hmac_sha256(internalWorkerSecret, signingInput))
 
 ## Endpoints
 
-第一版 render 接口：
+Render 接口：
 
 - `POST /internal/render/classics-export`
 - `POST /internal/render/sancai-showcase`
 - `POST /internal/render/operations-report`
 
-可选流式接口：
+流式 render 接口：
 
 - `POST /internal/render/classics-export/stream`
 - `POST /internal/render/sancai-showcase/stream`
 - `POST /internal/render/operations-report/stream`
+- `GET /internal/artifacts/{artifactToken}`
 
-同步接口适合小型文件。流式接口适合长时间 HTML、ZIP 或 PDF 生成进度展示。无论同步还是流式，最终业务落库都必须由 Java servers 以最终响应或 `completed` 事件为准。
+同步接口适合小型文件。流式接口适合长时间 HTML、ZIP 或 PDF 生成进度展示。`GET /internal/artifacts/{artifactToken}` 用于下载当前请求生成的大型产物。无论同步、流式还是 artifact 下载，最终业务落库都必须由 Java servers 以最终响应或 `completed` 事件为准。
+
+健康和能力发现接口：
+
+- `GET /internal/health`
+- `GET /internal/capabilities`
+
+Health 和 capabilities 响应模型见 [`WORKERS-AI-INTERFACE.md`](./WORKERS-AI-INTERFACE.md)。
 
 ## Common Request
 
@@ -214,8 +222,39 @@ Workers 不得根据 `snapshotId`、业务 ID、文件 ID 或模板 ID 回查 Ja
 - `BASE64`
 - `TEXT`
 - `STREAM`
+- `ARTIFACT_TOKEN`
 
-第一版同步 JSON 响应默认使用 `BASE64` 或 `TEXT`。大型文件应使用流式接口或后续补充二进制下载接口。
+同步 JSON 响应使用 `BASE64` 或 `TEXT` 返回小型产物。大型产物使用 `ARTIFACT_TOKEN`，由 Java servers 通过 `GET /internal/artifacts/{artifactToken}` 读取二进制内容。
+
+## Artifact Download
+
+`GET /internal/artifacts/{artifactToken}`
+
+用于读取 render 请求生成的大型临时产物。
+
+请求头必须包含：
+
+- `X-Kuzhambu-Service`
+- `X-Kuzhambu-Request-Id`
+- `X-Kuzhambu-Trace-Id`
+- `X-Kuzhambu-Timestamp`
+- `X-Kuzhambu-Signature`
+
+下载响应：
+
+- HTTP `200`。
+- `Content-Type` 使用产物内容类型。
+- `Content-Disposition` 使用安全化后的文件名。
+- `X-Kuzhambu-Artifact-Sha256` 返回文件摘要。
+- `X-Kuzhambu-Artifact-Size` 返回文件大小。
+
+下载规则：
+
+- `artifactToken` 必须由 workers 为当前 render 请求生成。
+- `artifactToken` 不得包含业务 ID、用户 ID、文件路径或可猜测序列。
+- `artifactToken` 必须有过期时间。
+- 过期、签名不匹配、服务不匹配或产物不存在时返回 `404` 或 `403`。
+- artifact 下载只用于 Java servers 取回产物并交给 Storage 保存，不面向 Admin Web 或 Portal Web。
 
 ## Classics Export
 

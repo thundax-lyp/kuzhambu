@@ -2,7 +2,7 @@
 
 ## Purpose
 
-本文档定义 `kuzhambu-workers/` 的第一版工程设计。Workers 是 Python 技术支撑工程，负责无状态 AI graph 执行、流式输出转发、文件渲染和格式加工。
+本文档定义 `kuzhambu-workers/` 的目标工程设计。Workers 是 Python 技术支撑工程，负责无状态 AI graph 执行、流式输出转发、文件渲染和格式加工。
 
 Workers 不拥有业务事实，不连接数据库、Redis 或 MQ，不保存任务状态，不替代 Java servers 的权限、审计、候选区、正式内容、文件对象和任务台账。
 
@@ -36,9 +36,11 @@ kuzhambu-workers/
       prompt_messages.py
       structured_output.py
     render/
+      templates/
       classics_export.py
       sancai_showcase.py
       operations_report.py
+      artifact_store.py
     streaming/
       sse.py
       events.py
@@ -51,7 +53,7 @@ kuzhambu-workers/
 - `core/`：配置、日志、安全、错误归一和临时文件生命周期。
 - `schemas/`：Pydantic 请求、响应、错误和 SSE 事件模型。
 - `ai/`：LangGraph graph 构建、能力注册、LangChain message 组装、模型适配和结构化输出。
-- `render/`：文件渲染、HTML/CSV/JSON/ZIP/PDF 可选能力和模板加载。
+- `render/`：文件渲染、HTML/CSV/JSON/ZIP/PDF 能力、模板加载和请求级产物暂存。
 - `streaming/`：SSE 事件编码、增量输出和最终事件包装。
 - `tests/`：单元测试、协议测试和路由级测试。
 
@@ -87,7 +89,7 @@ Workers 只接受 Java servers 发起的内部调用。
 | Classics | 不可以，必须通过 AI 域 | 可以 |
 | Knowledge | 不可以，必须通过 AI 域 | 暂无 |
 | Discovery | 不可以，必须通过 AI 域 | 暂无 |
-| Operations | 不可以，除非未来通过 AI 域 | 可以 |
+| Operations | 不可以；需要 AI 摘要时必须通过 AI 域 | 可以 |
 | Storage | 不可以 | 不建议 |
 | System | 不可以 | 不可以 |
 | Admin Web / Portal Web | 不可以 | 不可以 |
@@ -98,7 +100,7 @@ Render 能力只处理调用方已经完成权限过滤、风险确认和数据�
 
 ## API Layer
 
-第一版固定入口：
+固定入口：
 
 - `GET /internal/health`
 - `GET /internal/capabilities`
@@ -107,16 +109,24 @@ Render 能力只处理调用方已经完成权限过滤、风险确认和数据�
 - `POST /internal/render/classics-export`
 - `POST /internal/render/sancai-showcase`
 - `POST /internal/render/operations-report`
+- `POST /internal/render/classics-export/stream`
+- `POST /internal/render/sancai-showcase/stream`
+- `POST /internal/render/operations-report/stream`
+- `GET /internal/artifacts/{artifactToken}`
 
 AI 接口契约见 [`WORKERS-AI-INTERFACE.md`](../20-interfaces/WORKERS-AI-INTERFACE.md)。
 
 Render 接口契约见 [`WORKERS-RENDER-INTERFACE.md`](../20-interfaces/WORKERS-RENDER-INTERFACE.md)。
 
+`/internal/health` 返回 worker 进程状态、版本、启动时间和基础依赖可用性，不访问数据库、Redis 或 MQ。
+
+`/internal/capabilities` 返回当前 worker 支持的 AI capability、render type、输出格式、stream 支持情况和最大请求或产物大小，用于 Java servers 启动检查和运维排查。
+
 ## Security
 
 Workers 内部接口必须经过服务身份校验，不得仅依赖路径命名作为保护。
 
-第一版使用内部 HMAC 签名：
+内部接口使用 HMAC 签名：
 
 - `X-Kuzhambu-Service`
 - `X-Kuzhambu-Request-Id`
@@ -138,13 +148,14 @@ Workers 不接收用户 access token，不判断用户权限，不调用 System 
 
 AI 执行入口由 `ai/graph_registry.py` 管理。
 
-Graph registry 第一版能力：
+Graph registry 能力：
 
 - `translate`
 - `summary`
 - `tags`
 - `qa`
 - `image_analysis`
+- `image_generation`
 - `visual`
 - `split`
 - `query_understanding`
@@ -153,8 +164,6 @@ Graph registry 第一版能力：
 - `relation_extraction`
 - `lineage_extraction`
 - `prompt_suggestion`
-
-`image_generation` 已在 AI 域需求中出现，但结果形态和文件归属需要补充接口契约后再进入第一版 graph registry。
 
 AI 执行流程：
 
@@ -171,18 +180,18 @@ Workers 不得根据 `templateId`、`promptVersionId` 或业务 ID 回调 Java s
 
 Render 执行入口由 `render_routes.py` 分发到具体 renderer。
 
-第一版 renderer：
+Renderer：
 
 - `classics_export`：生成 Classics CSV、JSON、HTML 或 ZIP 导出产物。
 - `sancai_showcase`：生成三才图会静态展示页面。
-- `operations_report`：生成 Operations 周报、月报 HTML；PDF 为可选能力。
+- `operations_report`：生成 Operations 周报、月报 HTML 或 PDF 产物。
 
 Render 执行流程：
 
 1. Java servers 完成权限校验、内容可见性过滤、私有内容风险确认和内容快照准备。
 2. Workers 校验内部服务身份和请求模型。
 3. renderer 在请求级临时目录中生成文件。
-4. Workers 返回文件 bytes、base64 或 stream，以及文件名建议、内容类型、文件大小和生成摘要。
+4. Workers 返回文件 text、base64、stream 或短期 artifact token，以及文件名建议、内容类型、文件大小和生成摘要。
 5. Java servers 将返回文件交给 Storage 创建文件对象并建立引用。
 6. 请求结束后 Workers 清理临时目录。
 
@@ -269,7 +278,7 @@ Workers 只输出技术日志和运行指标，不替代 System 业务审计。
 
 ## Configuration
 
-第一版环境变量：
+环境变量：
 
 - `KUZHAMBU_WORKER_ALLOWED_SERVICES`
 - `KUZHAMBU_WORKER_INTERNAL_SECRET`
@@ -278,12 +287,14 @@ Workers 只输出技术日志和运行指标，不替代 System 业务审计。
 - `KUZHAMBU_WORKER_TEMP_DIR`
 - `KUZHAMBU_WORKER_MAX_REQUEST_BYTES`
 - `KUZHAMBU_WORKER_DEFAULT_TIMEOUT_MS`
+- `KUZHAMBU_WORKER_ARTIFACT_TTL_SECONDS`
+- `KUZHAMBU_WORKER_MAX_ARTIFACT_BYTES`
 
 模型服务地址、模型名、API Key、提示词和业务上下文均由 AI 域在请求体中传入，Workers 不保存这些配置。
 
 ## Testing
 
-第一版测试范围：
+测试范围：
 
 - HMAC 签名校验：成功、签名失败、过期时间戳、服务名不允许。
 - Pydantic schema：AI invoke、AI stream、render 请求和错误响应。
@@ -292,12 +303,13 @@ Workers 只输出技术日志和运行指标，不替代 System 业务审计。
 - 临时目录：成功、失败和异常路径都清理。
 - 日志脱敏：AI Key、token、签名和完整输入不出现在日志中。
 - Render renderer：HTML/JSON/ZIP 产物包含元信息、内容类型和生成摘要。
+- Artifact token：只能读取当前请求生成的短期产物，过期和签名错误都失败。
 
 ## Code Quality
 
 Python lint 和 formatter 统一使用 `ruff`。
 
-第一版本地验证命令：
+本地验证命令：
 
 ```sh
 ruff format --check .
