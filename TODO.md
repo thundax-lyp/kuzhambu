@@ -13,14 +13,6 @@
 
 ## 当前任务项
 
-- [ ] `workers model adapter`：实现 message 组装和模型适配边界
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W8-Model-Adapter-And-Prompt-Messages`
-    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/ai/model_adapters.py`、`kuzhambu-workers/src/kuzhambu_workers/ai/prompt_messages.py`、`kuzhambu-workers/src/kuzhambu_workers/ai/structured_output.py`、`kuzhambu-workers/tests/test_prompt_messages.py`
-    - 处理动作：实现 LangChain message 组装、OpenAI-compatible adapter 占位和结构化输出约束
-    - 验收点：优先使用 `prompt.messages`，不回调 AI 域读取模板或变量
-    - 重要度：9/10
-
 - [ ] `workers sse`：实现 SSE 事件编码
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W9-SSE-Encoding`
