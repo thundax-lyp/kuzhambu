@@ -13,14 +13,6 @@
 
 ## 当前任务项
 
-- [ ] `kuzhambu-workers scaffold`：初始化 workers 工程骨架
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W1-Project-Scaffold`
-    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/__init__.py`、`kuzhambu-workers/src/kuzhambu_workers/main.py`、`kuzhambu-workers/src/kuzhambu_workers/api/__init__.py`、`kuzhambu-workers/tests/test_health.py`
-    - 处理动作：建立可导入、可启动、可测试的 FastAPI 包骨架
-    - 验收点：FastAPI app 可导入，pytest 能发现测试，ruff 可运行
-    - 重要度：10/10
-
 - [ ] `workers core config`：实现配置和脱敏日志
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W2-Core-Configuration-And-Logging`
