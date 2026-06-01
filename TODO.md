@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `AI A6`：实现批量任务应用服务
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-DOMAIN.md#a6-batch-application`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/batch/`
-    - 处理动作：按 RUNBOOK A6 的 4 个关联文件实现批量任务创建、单元派发、失败归档和取消语义。
-    - 验收点：取消后不再派发未开始 worker 调用；已完成结果保留。
-    - 重要度：8/10
-
 - [ ] `AI I1`：实现配置与模型持久化
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-DOMAIN.md#i1-config-and-model-persistence`
