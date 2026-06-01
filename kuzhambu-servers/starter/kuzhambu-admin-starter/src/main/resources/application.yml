@@ -84,6 +84,12 @@ kuzhambu:
       path-style-access: ${KUZHAMBU_OSS_S3_PATH_STYLE_ACCESS:true}
   elasticsearch:
     uris: ${KUZHAMBU_ELASTICSEARCH_URIS:http://127.0.0.1:9200}
+  ai:
+    worker:
+      base-url: ${KUZHAMBU_AI_WORKER_BASE_URL:http://127.0.0.1:8000}
+      internal-secret: ${KUZHAMBU_AI_WORKER_INTERNAL_SECRET:}
+      service-name: ${KUZHAMBU_AI_WORKER_SERVICE_NAME:kuzhambu-ai}
+      timeout-ms: ${KUZHAMBU_AI_WORKER_TIMEOUT_MS:60000}
   storage:
     bucket-name: ${KUZHAMBU_STORAGE_BUCKET_NAME:local}
     content-path: ${KUZHAMBU_STORAGE_CONTENT_PATH:/api/storage/object/}

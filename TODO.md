@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `AI S1`：装配后台 starter
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-DOMAIN.md#s1-admin-starter-assembly`
-    - 范围对象：`kuzhambu-servers/starter/kuzhambu-admin-starter/`、`.env.example`、`deploy/.env.example`
-    - 处理动作：按 RUNBOOK S1 的 4 个关联文件装配 AI interface、application、infra 和 worker client 配置。
-    - 验收点：后台 starter 能扫描 AI 模块，worker endpoint 和 HMAC secret 通过环境变量配置。
-    - 重要度：8/10
-
 - [ ] `AI V1`：补齐 AI 架构验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-DOMAIN.md#v1-ai-architecture-verification`
