@@ -7,8 +7,9 @@ def test_health_returns_up() -> None:
     response = TestClient(app).get("/internal/health")
 
     assert response.status_code == 200
-    assert response.json() == {
-        "status": "UP",
-        "service": "kuzhambu-workers",
-        "version": "0.0.1-dev",
-    }
+    body = response.json()
+    assert body["status"] == "UP"
+    assert body["service"] == "kuzhambu-workers"
+    assert body["version"] == "0.0.1-dev"
+    assert body["startedAt"].endswith("Z")
+    assert body["time"].endswith("Z")

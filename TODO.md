@@ -13,14 +13,6 @@
 
 ## 当前任务项
 
-- [ ] `workers health capabilities`：实现健康和能力接口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W5-Health-And-Capabilities-API`
-    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/api/health_routes.py`、`kuzhambu-workers/src/kuzhambu_workers/main.py`、`kuzhambu-workers/tests/test_health_routes.py`
-    - 处理动作：实现 `/internal/health` 和 `/internal/capabilities`
-    - 验收点：health 不检查 DB/Redis/MQ，capabilities 返回 AI/render/PDF/Browser Pool/limits
-    - 重要度：9/10
-
 - [ ] `workers ai schemas`：实现 AI 协议模型
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W6-AI-Schemas`

@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 
 from kuzhambu_workers import __version__
+from kuzhambu_workers.api.health_routes import router as health_router
 
 
 def create_app() -> FastAPI:
@@ -11,13 +12,7 @@ def create_app() -> FastAPI:
         redoc_url=None,
     )
 
-    @app.get("/internal/health")
-    def health() -> dict[str, str]:
-        return {
-            "status": "UP",
-            "service": "kuzhambu-workers",
-            "version": __version__,
-        }
+    app.include_router(health_router)
 
     return app
 
