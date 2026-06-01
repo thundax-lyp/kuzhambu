@@ -1,9 +1,9 @@
 import { clearPermissions } from "./permission-storage";
 
-const ACCESS_TOKEN_KEY = "sandwish.admin.accessToken";
-const REFRESH_TOKEN_KEY = "sandwish.admin.refreshToken";
-const ACCESS_TOKEN_EXPIRE_AT_KEY = "sandwish.admin.accessTokenExpireAt";
-const ACCESS_TOKEN_CHANGE_EVENT = "sandwish.admin.accessToken.change";
+const ACCESS_TOKEN_KEY = "kuzhambu.admin.accessToken";
+const REFRESH_TOKEN_KEY = "kuzhambu.admin.refreshToken";
+const ACCESS_TOKEN_EXPIRE_AT_KEY = "kuzhambu.admin.accessTokenExpireAt";
+const ACCESS_TOKEN_CHANGE_EVENT = "kuzhambu.admin.accessToken.change";
 
 export interface TokenSession {
     token: string;

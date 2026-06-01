@@ -14,7 +14,7 @@ import "./kuzhambu-table.css";
 const DEFAULT_ACTION_COLUMN_KEY = "actions";
 const DEFAULT_ACTION_COLUMN_WIDTH = 116;
 const DEFAULT_ACTION_COLUMN_MOBILE_WIDTH = 54;
-const DEFAULT_SORT_COLUMN_KEY = "__sandwish_sort";
+const DEFAULT_SORT_COLUMN_KEY = "__kuzhambu_sort";
 const DEFAULT_SORT_COLUMN_WIDTH = 28;
 const ACTION_BUTTON_WIDTH = 24;
 const ACTION_CELL_PADDING = 28;

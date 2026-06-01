@@ -96,7 +96,7 @@ export const LoginPage = () => {
                         fill="none"
                         xmlns="http://www.w3.org/2000/svg"
                         role="img"
-                        aria-label="Sandwich"
+                        aria-label="Kuzhambu"
                     >
                         <rect
                             className="login-logo-tile"
@@ -131,7 +131,7 @@ export const LoginPage = () => {
                             strokeLinecap="round"
                         />
                     </svg>
-                    <Title level={1}>SANDWICH WORKSPACE</Title>
+                    <Title level={1}>KUZHAMBU WORKSPACE</Title>
                     <Paragraph>使用后台账号和验证码进入工作区。</Paragraph>
                 </section>
 
@@ -147,7 +147,7 @@ export const LoginPage = () => {
                                 type="error"
                                 showIcon
                                 message="登录表单初始化失败"
-                                description="请确认 admin-api 服务已启动，并检查 /admin-api 代理配置。"
+                                description="请确认后台接口服务已启动，并检查 /admin-api 代理配置。"
                                 action={
                                     <Button size="small" onClick={() => loginFormQuery.refetch()}>
                                         重试

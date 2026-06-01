@@ -1,5 +1,5 @@
-const THEME_STORAGE_KEY = "sandwish.admin.theme";
-const THEME_CHANGE_EVENT = "sandwish.admin.theme.change";
+const THEME_STORAGE_KEY = "kuzhambu.admin.theme";
+const THEME_CHANGE_EVENT = "kuzhambu.admin.theme.change";
 
 export type AdminThemeName = "light" | "dark";
 

@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `admin-web-brand-copy`：收口剩余品牌文案
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/UI-RULES.md`
-    - 范围对象：`src/layouts/admin-layout.tsx`、`src/pages/auth/login/login-page.tsx`、`src/app.test.tsx`、`e2e/layout/admin-layout.spec.ts`、`README.md`、`index.html`
-    - 处理动作：将剩余展示文案从 sandwich 语义改为 kuzhambu 目标品牌文案。
-    - 验收点：展示层无旧品牌文案残留，admin-web lint 和 test 通过。
-    - 重要度：8/10
-
 - [ ] `admin-web-validation`：执行 admin-web 迁移验证
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`

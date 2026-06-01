@@ -1,4 +1,4 @@
-# sandwish-admin-web
+# kuzhambu-admin-web
 
 Kuzhambu 后台管理前端工程，对接 `kuzhambu-admin-api`。
 

@@ -8,7 +8,7 @@
 }
 
 .submission-content-preview {
-    color: var(--sandwish-color-text-secondary);
+    color: var(--kuzhambu-color-text-secondary);
 }
 
 .submission-image-id {
@@ -38,9 +38,9 @@
 
 .submission-upload-list {
     padding: 10px;
-    border: 1px solid var(--sandwish-color-border);
+    border: 1px solid var(--kuzhambu-color-border);
     border-radius: 8px;
-    background: var(--sandwish-color-fill-tertiary);
+    background: var(--kuzhambu-color-fill-tertiary);
 }
 
 .submission-upload-item {

@@ -201,10 +201,10 @@ test.describe("admin layout", () => {
         });
 
         await page.addInitScript(() => {
-            window.localStorage.setItem("sandwish.admin.accessToken", "test-token");
-            window.localStorage.setItem("sandwish.admin.refreshToken", "refresh-token");
+            window.localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
+            window.localStorage.setItem("kuzhambu.admin.refreshToken", "refresh-token");
             window.localStorage.setItem(
-                "sandwish.admin.accessTokenExpireAt",
+                "kuzhambu.admin.accessTokenExpireAt",
                 String(Date.now() + 3600 * 1000)
             );
         });

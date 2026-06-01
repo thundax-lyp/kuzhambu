@@ -30,7 +30,7 @@
 }
 
 .kuzhambu-filter-panel-label {
-    color: var(--sandwish-color-text-secondary);
+    color: var(--kuzhambu-color-text-secondary);
     font-size: 12px;
     font-weight: 600;
 }

@@ -1,4 +1,4 @@
-const PERMISSIONS_KEY = "sandwish.admin.permissions";
+const PERMISSIONS_KEY = "kuzhambu.admin.permissions";
 
 const readStoredPermissions = () => {
     const permissions = localStorage.getItem(PERMISSIONS_KEY);

@@ -133,23 +133,23 @@ const localRules = {
                 };
             }
         },
-        "sandwish-component-name": {
+        "kuzhambu-component-name": {
             create(context) {
-                const isSandwishName = (name) => /^Sandwish[A-Z]/.test(name);
+                const isKuzhambuName = (name) => /^Kuzhambu[A-Z]/.test(name);
 
-                const reportSandwishNameOutsideSharedComponents = (
+                const reportKuzhambuNameOutsideSharedComponents = (
                     node,
                     name,
                     normalizedFilePath
                 ) => {
-                    if (!isSandwishName(name) || normalizedFilePath.includes("/src/components/")) {
+                    if (!isKuzhambuName(name) || normalizedFilePath.includes("/src/components/")) {
                         return;
                     }
 
                     context.report({
                         node,
                         message:
-                            "ADMIN_WEB_NAME_SANDWISH_COMPONENT: Sandwish* names may only be defined in src/components/."
+                            "ADMIN_WEB_NAME_KUZHAMBU_COMPONENT: Kuzhambu* names may only be defined in src/components/."
                     });
                 };
 
@@ -157,7 +157,7 @@ const localRules = {
                     const normalizedFilePath = context.physicalFilename.split(path.sep).join("/");
                     const name = node.id?.name;
                     if (name) {
-                        reportSandwishNameOutsideSharedComponents(
+                        reportKuzhambuNameOutsideSharedComponents(
                             node.id,
                             name,
                             normalizedFilePath
@@ -177,7 +177,7 @@ const localRules = {
                             .join("/");
 
                         if (node.id.type === "Identifier") {
-                            reportSandwishNameOutsideSharedComponents(
+                            reportKuzhambuNameOutsideSharedComponents(
                                 node.id,
                                 node.id.name,
                                 normalizedFilePath
@@ -191,7 +191,7 @@ const localRules = {
 
                         node.specifiers.forEach((specifier) => {
                             if (specifier.exported?.type === "Identifier") {
-                                reportSandwishNameOutsideSharedComponents(
+                                reportKuzhambuNameOutsideSharedComponents(
                                     specifier.exported,
                                     specifier.exported.name,
                                     normalizedFilePath
@@ -1575,7 +1575,7 @@ export default tseslint.config(
             "local/api-contract-type-location": "error",
             "local/service-input-type-location": "error",
             "local/business-data-type-location": "error",
-            "local/sandwish-component-name": "error",
+            "local/kuzhambu-component-name": "error",
             "local/service-method-verb-prefix": "error",
             "local/service-method-input-shape": "error",
             "local/service-helper-contract-types": "error",

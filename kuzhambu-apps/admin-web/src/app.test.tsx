@@ -38,7 +38,7 @@ describe("App", () => {
     });
 
     it("renders the admin dashboard route", async () => {
-        localStorage.setItem("sandwish.admin.accessToken", "test-token");
+        localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
         vi.spyOn(globalThis, "fetch").mockImplementation((input) => {
             const url = String(input);
             if (url.endsWith("/sys/current-user/info")) {
@@ -272,14 +272,14 @@ describe("App", () => {
         render(<App />);
 
         await userEvent.type(await screen.findByPlaceholderText("请输入后台账号"), "developer");
-        await userEvent.type(screen.getByPlaceholderText("请输入密码"), "sandwich");
+        await userEvent.type(screen.getByPlaceholderText("请输入密码"), "kuzhambu");
         await userEvent.type(screen.getByPlaceholderText("验证码"), "1234");
         await userEvent.click(screen.getByRole("button", { name: /登\s*录/ }));
 
         expect(await screen.findByRole("heading", { name: "仪表盘" })).toBeInTheDocument();
-        expect(localStorage.getItem("sandwish.admin.accessToken")).toBe("login-access-token");
-        expect(localStorage.getItem("sandwish.admin.refreshToken")).toBe("login-refresh-token");
-        expect(localStorage.getItem("sandwish.admin.accessTokenExpireAt")).toBe(
+        expect(localStorage.getItem("kuzhambu.admin.accessToken")).toBe("login-access-token");
+        expect(localStorage.getItem("kuzhambu.admin.refreshToken")).toBe("login-refresh-token");
+        expect(localStorage.getItem("kuzhambu.admin.accessTokenExpireAt")).toBe(
             String(loginExpireAt)
         );
         await waitFor(() => expect(hasPermission("sys:user:view")).toBe(true));
@@ -296,7 +296,7 @@ describe("App", () => {
     });
 
     it("logs out and returns to the login route", async () => {
-        localStorage.setItem("sandwish.admin.accessToken", "test-token");
+        localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
         vi.spyOn(globalThis, "fetch").mockImplementation((input) => {
             const url = String(input);
             if (url.endsWith("/sys/current-user/info")) {
@@ -375,14 +375,14 @@ describe("App", () => {
                 method: "POST"
             })
         );
-        expect(localStorage.getItem("sandwish.admin.accessToken")).toBeNull();
+        expect(localStorage.getItem("kuzhambu.admin.accessToken")).toBeNull();
         expect(await screen.findByRole("heading", { name: "登录" })).toBeInTheDocument();
     });
 
     it("renders the department list page", async () => {
-        localStorage.setItem("sandwish.admin.accessToken", "test-token");
+        localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
         localStorage.setItem(
-            "sandwish.admin.permissions",
+            "kuzhambu.admin.permissions",
             JSON.stringify(["sys:department:view", "sys:department:edit"])
         );
         replacePermissions(["sys:department:view", "sys:department:edit"]);
@@ -456,9 +456,9 @@ describe("App", () => {
     }, 30000);
 
     it("renders and filters the dictionary page", async () => {
-        localStorage.setItem("sandwish.admin.accessToken", "test-token");
+        localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
         localStorage.setItem(
-            "sandwish.admin.permissions",
+            "kuzhambu.admin.permissions",
             JSON.stringify(["sys:dict:view", "sys:dict:edit"])
         );
         vi.spyOn(globalThis, "fetch").mockImplementation((input) => {
@@ -540,9 +540,9 @@ describe("App", () => {
     });
 
     it("renders the submission page", async () => {
-        localStorage.setItem("sandwish.admin.accessToken", "test-token");
+        localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
         localStorage.setItem(
-            "sandwish.admin.permissions",
+            "kuzhambu.admin.permissions",
             JSON.stringify(["submission:submission:view", "submission:submission:edit"])
         );
         replacePermissions(["submission:submission:view", "submission:submission:edit"]);
@@ -615,9 +615,9 @@ describe("App", () => {
     });
 
     it("renders the open client page", async () => {
-        localStorage.setItem("sandwish.admin.accessToken", "test-token");
+        localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
         localStorage.setItem(
-            "sandwish.admin.permissions",
+            "kuzhambu.admin.permissions",
             JSON.stringify(["open:client:view", "open:client:edit"])
         );
         replacePermissions(["open:client:view", "open:client:edit"]);
@@ -729,8 +729,8 @@ describe("App", () => {
     });
 
     it("renders the audit log page", async () => {
-        localStorage.setItem("sandwish.admin.accessToken", "test-token");
-        localStorage.setItem("sandwish.admin.permissions", JSON.stringify(["audit:view"]));
+        localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
+        localStorage.setItem("kuzhambu.admin.permissions", JSON.stringify(["audit:view"]));
         replacePermissions(["audit:view"]);
         vi.spyOn(globalThis, "fetch").mockImplementation((input) => {
             const url = String(input);
@@ -914,9 +914,9 @@ describe("App", () => {
     });
 
     it("hides new open client api key and shows generation entry when detail has no key", async () => {
-        localStorage.setItem("sandwish.admin.accessToken", "test-token");
+        localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
         localStorage.setItem(
-            "sandwish.admin.permissions",
+            "kuzhambu.admin.permissions",
             JSON.stringify(["open:client:view", "open:client:edit"])
         );
         replacePermissions(["open:client:view", "open:client:edit"]);
@@ -998,9 +998,9 @@ describe("App", () => {
     });
 
     it("renders the silver user management layout interactions", async () => {
-        localStorage.setItem("sandwish.admin.accessToken", "test-token");
+        localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
         localStorage.setItem(
-            "sandwish.admin.permissions",
+            "kuzhambu.admin.permissions",
             JSON.stringify(["sys:user:view", "sys:user:edit"])
         );
         replacePermissions(["sys:user:view", "sys:user:edit"]);
@@ -1262,7 +1262,7 @@ describe("App", () => {
     });
 
     it("clears stale tokens when protected menu loading is unauthorized", async () => {
-        localStorage.setItem("sandwish.admin.accessToken", "stale-token");
+        localStorage.setItem("kuzhambu.admin.accessToken", "stale-token");
         vi.spyOn(globalThis, "fetch").mockResolvedValue(
             new Response(JSON.stringify({ code: "COMMON-00002", message: "未授权用户" }), {
                 headers: { "Content-Type": "application/json" },
@@ -1273,7 +1273,7 @@ describe("App", () => {
         render(<App />);
 
         expect(await screen.findByRole("heading", { name: "登录" })).toBeInTheDocument();
-        expect(localStorage.getItem("sandwish.admin.accessToken")).toBeNull();
+        expect(localStorage.getItem("kuzhambu.admin.accessToken")).toBeNull();
         expect(globalThis.fetch).toHaveBeenCalledWith(
             "/admin-api/api/sys/current-user/info",
             expect.objectContaining({
@@ -1286,9 +1286,9 @@ describe("App", () => {
     });
 
     it("refreshes the access token before expireAt is within 60 seconds", async () => {
-        localStorage.setItem("sandwish.admin.accessToken", "expiring-token");
-        localStorage.setItem("sandwish.admin.refreshToken", "refresh-token");
-        localStorage.setItem("sandwish.admin.accessTokenExpireAt", String(Date.now() + 30 * 1000));
+        localStorage.setItem("kuzhambu.admin.accessToken", "expiring-token");
+        localStorage.setItem("kuzhambu.admin.refreshToken", "refresh-token");
+        localStorage.setItem("kuzhambu.admin.accessTokenExpireAt", String(Date.now() + 30 * 1000));
         vi.spyOn(globalThis, "fetch").mockImplementation((input, init) => {
             const url = String(input);
             if (url.endsWith("/auth/session/token/refresh")) {
@@ -1379,9 +1379,9 @@ describe("App", () => {
         render(<App />);
 
         expect(await screen.findByRole("heading", { name: "仪表盘" })).toBeInTheDocument();
-        expect(localStorage.getItem("sandwish.admin.accessToken")).toBe("refreshed-access-token");
-        expect(localStorage.getItem("sandwish.admin.refreshToken")).toBe("rotated-refresh-token");
-        expect(localStorage.getItem("sandwish.admin.accessTokenExpireAt")).toBe("1778514052155");
+        expect(localStorage.getItem("kuzhambu.admin.accessToken")).toBe("refreshed-access-token");
+        expect(localStorage.getItem("kuzhambu.admin.refreshToken")).toBe("rotated-refresh-token");
+        expect(localStorage.getItem("kuzhambu.admin.accessTokenExpireAt")).toBe("1778514052155");
         await waitFor(() =>
             expect(globalThis.fetch).toHaveBeenCalledWith(
                 "/admin-api/api/sys/current-user/info",
@@ -1396,10 +1396,10 @@ describe("App", () => {
     });
 
     it("waits for an in-flight token refresh before sending another request", async () => {
-        localStorage.setItem("sandwish.admin.accessToken", "old-token");
-        localStorage.setItem("sandwish.admin.refreshToken", "refresh-token");
+        localStorage.setItem("kuzhambu.admin.accessToken", "old-token");
+        localStorage.setItem("kuzhambu.admin.refreshToken", "refresh-token");
         localStorage.setItem(
-            "sandwish.admin.accessTokenExpireAt",
+            "kuzhambu.admin.accessTokenExpireAt",
             String(Date.now() + 5 * 60 * 1000)
         );
         let resolveRefresh: (response: Response) => void = () => undefined;

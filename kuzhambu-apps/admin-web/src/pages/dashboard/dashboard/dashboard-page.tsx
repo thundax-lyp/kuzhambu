@@ -71,7 +71,7 @@ export const DashboardPage = () => {
             eyebrow=""
             title="仪表盘"
             description="查看会话、审计、存储和今日事项。"
-            actions={<Text className="dashboard-brand">Sandwich Workspace</Text>}
+            actions={<Text className="dashboard-brand">Kuzhambu Workspace</Text>}
         >
             <div className="dashboard-content">
                 <section className="dashboard-metrics" aria-label="核心指标">

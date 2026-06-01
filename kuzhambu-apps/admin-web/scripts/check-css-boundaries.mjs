@@ -5,7 +5,7 @@ import process from "node:process";
 const SOURCE_ROOT = path.resolve("src");
 const COMPONENT_ROOT = path.join(SOURCE_ROOT, "components");
 const OPTIONS_TYPE_FILE = path.join(SOURCE_ROOT, "types", "options.ts").split(path.sep).join("/");
-const CLASS_NAME_PATTERN = /\.((?:sandwish-[a-z0-9]+)(?:-[a-z0-9]+)*)/g;
+const CLASS_NAME_PATTERN = /\.((?:kuzhambu-[a-z0-9]+)(?:-[a-z0-9]+)*)/g;
 const OPTION_RECORD_DECLARATION_PATTERN =
     /\b(?:export\s+)?(?:interface|type)\s+[A-Za-z0-9_]*(?:OptionRecord|OptionsRecord)\b/g;
 const FORBIDDEN_DIRECTORY_RULES = new Map([
@@ -59,7 +59,7 @@ const listDirectories = (directory) => {
 
 const componentNames = fs
     .readdirSync(COMPONENT_ROOT, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory() && entry.name.startsWith("sandwish-"))
+    .filter((entry) => entry.isDirectory() && entry.name.startsWith("kuzhambu-"))
     .map((entry) => entry.name)
     .sort((left, right) => right.length - left.length);
 
