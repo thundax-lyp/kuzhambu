@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `AI F1`：实现后台配置接口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-DOMAIN.md#f1-admin-config-interface`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/config/`
-    - 处理动作：按 RUNBOOK F1 的 4 个关联文件提供 AI 服务、模型、模型检测和能力映射后台接口。
-    - 验收点：后台能配置主备服务、模型、能力映射，并查看检测历史。
-    - 重要度：8/10
-
 - [ ] `AI F2`：实现后台提示词接口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-DOMAIN.md#f2-admin-prompt-interface`
