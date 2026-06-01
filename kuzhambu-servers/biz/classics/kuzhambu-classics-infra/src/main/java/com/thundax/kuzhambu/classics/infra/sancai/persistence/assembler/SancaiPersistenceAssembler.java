@@ -62,7 +62,10 @@ public final class SancaiPersistenceAssembler {
         SancaiCategoryDO dataObject = new SancaiCategoryDO();
         dataObject.setId(SancaiCategoryIdCodec.toValue(entity.getId()));
         dataObject.setTitle(entity.getTitle());
-        dataObject.setCategoryType(entity.getCategoryType() == null ? null : entity.getCategoryType().value());
+        dataObject.setCategoryType(
+                entity.getCategoryType() == null
+                        ? null
+                        : entity.getCategoryType().value());
         dataObject.setPriority(entity.getPriority());
         return dataObject;
     }
@@ -99,7 +102,8 @@ public final class SancaiPersistenceAssembler {
         dataObject.setId(SancaiVolumeIdCodec.toValue(entity.getId()));
         dataObject.setCategoryId(SancaiCategoryIdCodec.toValue(entity.getCategoryId()));
         dataObject.setTitle(entity.getTitle());
-        dataObject.setVolumeType(entity.getVolumeType() == null ? null : entity.getVolumeType().value());
+        dataObject.setVolumeType(
+                entity.getVolumeType() == null ? null : entity.getVolumeType().value());
         dataObject.setPriority(entity.getPriority());
         return dataObject;
     }

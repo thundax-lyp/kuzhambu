@@ -12,8 +12,8 @@ import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCu
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsKeywordId;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.repository.MingCustomsRepository;
 import com.thundax.kuzhambu.common.core.exception.BizException;
-import com.thundax.kuzhambu.common.core.exception.ErrorCode;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
+import com.thundax.kuzhambu.common.core.exception.ErrorCode;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
@@ -65,7 +65,6 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
             return null;
         }
         if (entry.getId() == null) {
-            entry.setPriority(repository.maxPriority() + 1);
             return repository.insert(entry);
         }
         repository.update(entry);

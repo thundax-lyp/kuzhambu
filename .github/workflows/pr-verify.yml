@@ -14,11 +14,84 @@ jobs:
     verify:
         name: Verify Repository
         runs-on: ubuntu-latest
-        timeout-minutes: 10
+        timeout-minutes: 20
 
         steps:
             - name: Checkout
               uses: actions/checkout@v4
 
-            - name: Verify
-              run: scripts/verify-all.sh
+            - name: Setup Java
+              uses: actions/setup-java@v4
+              with:
+                  distribution: temurin
+                  java-version: "17"
+                  cache: maven
+
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "20"
+
+            - name: Setup Python
+              uses: actions/setup-python@v5
+              with:
+                  python-version: "3.11"
+
+            - name: Verify governance files
+              run: |
+                  test -f AGENTS.md
+                  test -f docs/AGENTS.md
+                  test -f docs/00-governance/ARCHITECTURE.md
+                  test -f docs/00-governance/DOCUMENT-RULES.md
+                  test -f docs/00-governance/SERVERS-ARCHITECTURE.md
+                  test -f docs/00-governance/SERVERS-ARCHITECTURE-RULES.md
+                  test -f docs/00-governance/TODO-RULES.md
+                  test -f docs/40-readiness/PR-WORKFLOW.md
+                  test -f .github/pull_request_template.md
+                  test -f .github/workflows/pr-verify.yml
+                  if find docs -name '*.md' -print | grep -q ' '; then
+                    echo "Document filenames must not contain spaces" >&2
+                    exit 1
+                  fi
+
+            - name: Verify backend layout
+              run: |
+                  test -d kuzhambu-servers/common
+                  test -d kuzhambu-servers/biz
+                  test -d kuzhambu-servers/starter
+                  test -d kuzhambu-servers/biz/system/kuzhambu-system-interface
+                  test -d kuzhambu-servers/biz/system/kuzhambu-system-application
+                  test -d kuzhambu-servers/biz/system/kuzhambu-system-domain
+                  test -d kuzhambu-servers/biz/system/kuzhambu-system-infra
+                  test -d kuzhambu-servers/starter/kuzhambu-admin-starter
+                  test -d kuzhambu-servers/starter/kuzhambu-portal-starter
+                  if test -d kuzhambu-servers/interfaces; then
+                    echo "Legacy kuzhambu-servers/interfaces must be migrated to starter/domain interface modules" >&2
+                    exit 1
+                  fi
+
+            - name: Verify Classics SQL seed
+              run: |
+                  test -f db/schema/classics.sql
+                  test -f db/data/classics.sql
+                  grep -q 'CREATE TABLE IF NOT EXISTS `classics_sancai_category`' db/schema/classics.sql
+                  grep -q 'CREATE TABLE IF NOT EXISTS `classics_sancai_volume`' db/schema/classics.sql
+                  grep -q 'CREATE TABLE IF NOT EXISTS `classics_sancai_entry`' db/schema/classics.sql
+                  grep -q 'CREATE TABLE IF NOT EXISTS `classics_wangqi_document`' db/schema/classics.sql
+                  grep -q 'CREATE TABLE IF NOT EXISTS `classics_ming_customs_entry`' db/schema/classics.sql
+                  grep -q 'CREATE TABLE IF NOT EXISTS `classics_share_link`' db/schema/classics.sql
+                  grep -q 'INSERT INTO `classics_sancai_category`' db/data/classics.sql
+                  grep -q 'INSERT INTO `classics_sancai_entry`' db/data/classics.sql
+
+            - name: Verify backend Maven modules
+              working-directory: kuzhambu-servers
+              run: mvn -q clean spotless:check checkstyle:check test
+
+            - name: Verify frontend package manifests
+              run: |
+                  node -e "JSON.parse(require('fs').readFileSync('kuzhambu-apps/package.json', 'utf8'))"
+                  node -e "JSON.parse(require('fs').readFileSync('kuzhambu-apps/admin-web/package.json', 'utf8'))"
+                  node -e "JSON.parse(require('fs').readFileSync('kuzhambu-apps/portal-web/package.json', 'utf8'))"
+
+            - name: Verify Python worker manifest
+              run: python -c "import pathlib, tomllib; tomllib.loads(pathlib.Path('kuzhambu-workers/pyproject.toml').read_text())"

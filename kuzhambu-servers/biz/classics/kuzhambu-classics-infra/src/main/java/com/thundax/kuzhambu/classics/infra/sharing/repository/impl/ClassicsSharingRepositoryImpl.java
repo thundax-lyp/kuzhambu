@@ -100,7 +100,10 @@ public class ClassicsSharingRepositoryImpl implements ClassicsSharingRepository 
     public List<ClassicsShareTarget> listTargetsByLinkId(ClassicsShareLinkId shareLinkId, SortDirection sortDirection) {
         return ClassicsSharingPersistenceAssembler.toTargetDomainList(
                 targetMapper.selectList(new LambdaQueryWrapper<ClassicsShareTargetDO>()
-                        .eq(shareLinkId != null, ClassicsShareTargetDO::getShareLinkId, ClassicsShareLinkIdCodec.toValue(shareLinkId))
+                        .eq(
+                                shareLinkId != null,
+                                ClassicsShareTargetDO::getShareLinkId,
+                                ClassicsShareLinkIdCodec.toValue(shareLinkId))
                         .orderBy(true, sortDirection != SortDirection.DESC, ClassicsShareTargetDO::getPriority)));
     }
 

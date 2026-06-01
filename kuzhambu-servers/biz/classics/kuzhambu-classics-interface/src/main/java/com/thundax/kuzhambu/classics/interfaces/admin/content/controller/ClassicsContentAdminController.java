@@ -1,8 +1,8 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.content.controller;
 
-import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairSortCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentTagSortCommand;
+import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentQaPairIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentTagIdCodec;
@@ -136,5 +136,4 @@ public class ClassicsContentAdminController {
                 .id(id == null ? null : id.value())
                 .build();
     }
-
 }

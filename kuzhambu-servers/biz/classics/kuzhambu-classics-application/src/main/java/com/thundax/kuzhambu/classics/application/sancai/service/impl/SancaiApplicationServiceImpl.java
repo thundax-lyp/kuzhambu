@@ -1,10 +1,10 @@
 package com.thundax.kuzhambu.classics.application.sancai.service.impl;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntrySaveCommand;
-import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryStatusCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiCategorySortCommand;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntrySaveCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntrySortCommand;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryStatusCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVolumeSortCommand;
 import com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryPageQuery;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiApplicationService;
@@ -18,8 +18,8 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntry
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVolumeId;
 import com.thundax.kuzhambu.classics.domain.sancai.repository.SancaiRepository;
 import com.thundax.kuzhambu.common.core.exception.BizException;
-import com.thundax.kuzhambu.common.core.exception.ErrorCode;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
+import com.thundax.kuzhambu.common.core.exception.ErrorCode;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
@@ -64,7 +64,9 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
         }
 
         List<SancaiCategory> currentCategories = repository.listCategories(effectiveDirection);
-        if (currentCategories == null || currentCategories.isEmpty() || currentCategories.size() != orderedIdList.size()) {
+        if (currentCategories == null
+                || currentCategories.isEmpty()
+                || currentCategories.size() != orderedIdList.size()) {
             throw sortMissingId();
         }
 

@@ -215,7 +215,7 @@ PR 必须满足：
 
 PR 合并默认使用普通 merge commit，保留分支中的小步 commit 历史。不得默认 squash；只有明确要求压缩历史时才允许 squash merge。
 
-PR 的验证入口固定由 [`../40-readiness/PR-WORKFLOW.md`](../40-readiness/PR-WORKFLOW.md) 和 `scripts/verify-all.sh` 承载。
+PR 的验证入口固定由 [`../40-readiness/PR-WORKFLOW.md`](../40-readiness/PR-WORKFLOW.md) 和 `.github/workflows/pr-verify.yml` 承载。PR workflow 必须显式列出必过验证步骤，不得只调用一个 shell 脚本隐藏检查内容。
 
 ## 12. Verify Protocol
 
@@ -228,9 +228,9 @@ PR 的验证入口固定由 [`../40-readiness/PR-WORKFLOW.md`](../40-readiness/P
 
 验证脚本必须保证失败路径也执行 `Restore`。
 
-验证脚本固定分两层：
+本地验证脚本可以分两层：
 
-- `scripts/verify-all.sh`：总入口，只负责编排各模块验证。
+- `scripts/verify-all.sh`：本地辅助总入口，只负责编排各模块验证，不作为 PR workflow 的唯一入口。
 - `scripts/verify-*.sh`：模块或 testcase 入口，负责自己的 `Prepare`、`Execute`、`Assert` 和 `Restore`。
 
 所有 `scripts/verify-*.sh` 固定满足：

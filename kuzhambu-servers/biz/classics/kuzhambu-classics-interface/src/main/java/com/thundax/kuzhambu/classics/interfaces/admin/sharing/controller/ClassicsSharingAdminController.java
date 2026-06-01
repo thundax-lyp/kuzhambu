@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller;
 
-import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkCreateCommand;
 import com.thundax.kuzhambu.classics.application.sharing.command.ClassicsShareTargetSortCommand;
+import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkCreateCommand;
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkStatusCommand;
 import com.thundax.kuzhambu.classics.application.sharing.service.ClassicsSharingApplicationService;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisibilityRiskStatus;
@@ -118,5 +118,4 @@ public class ClassicsSharingAdminController {
                         .accessCount(link.getAccessCount())
                         .build();
     }
-
 }

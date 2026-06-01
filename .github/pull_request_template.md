@@ -8,7 +8,8 @@
 
 ## Verification
 
-- [ ] `scripts/verify-all.sh`
+- [ ] PR workflow: `mvn -q clean spotless:check checkstyle:check test`
+- [ ] PR workflow: frontend package manifests and Python worker manifest
 
 ## Documentation And TODO
 

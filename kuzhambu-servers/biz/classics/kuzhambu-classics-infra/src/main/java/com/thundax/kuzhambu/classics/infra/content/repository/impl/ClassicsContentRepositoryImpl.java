@@ -54,11 +54,11 @@ public class ClassicsContentRepositoryImpl implements ClassicsContentRepository 
 
     public List<ClassicsContentTag> listTags(
             String contentType, ClassicsContentId contentId, SortDirection sortDirection) {
-        return ClassicsContentPersistenceAssembler.toTagDomainList(
-                tagMapper.selectList(new LambdaQueryWrapper<ClassicsContentTagDO>()
-                        .eq(StringUtils.isNotBlank(contentType), ClassicsContentTagDO::getContentType, contentType)
-                        .eq(contentId != null, ClassicsContentTagDO::getContentId, ClassicsContentIdCodec.toValue(contentId))
-                        .orderBy(true, sortDirection != SortDirection.DESC, ClassicsContentTagDO::getPriority)));
+        return ClassicsContentPersistenceAssembler.toTagDomainList(tagMapper.selectList(new LambdaQueryWrapper<
+                        ClassicsContentTagDO>()
+                .eq(StringUtils.isNotBlank(contentType), ClassicsContentTagDO::getContentType, contentType)
+                .eq(contentId != null, ClassicsContentTagDO::getContentId, ClassicsContentIdCodec.toValue(contentId))
+                .orderBy(true, sortDirection != SortDirection.DESC, ClassicsContentTagDO::getPriority)));
     }
 
     @Override
@@ -115,11 +115,11 @@ public class ClassicsContentRepositoryImpl implements ClassicsContentRepository 
 
     public List<ClassicsContentQaPair> listQaPairs(
             String contentType, ClassicsContentId contentId, SortDirection sortDirection) {
-        return ClassicsContentPersistenceAssembler.toQaDomainList(
-                qaPairMapper.selectList(new LambdaQueryWrapper<ClassicsContentQaPairDO>()
-                        .eq(StringUtils.isNotBlank(contentType), ClassicsContentQaPairDO::getContentType, contentType)
-                        .eq(contentId != null, ClassicsContentQaPairDO::getContentId, ClassicsContentIdCodec.toValue(contentId))
-                        .orderBy(true, sortDirection != SortDirection.DESC, ClassicsContentQaPairDO::getPriority)));
+        return ClassicsContentPersistenceAssembler.toQaDomainList(qaPairMapper.selectList(new LambdaQueryWrapper<
+                        ClassicsContentQaPairDO>()
+                .eq(StringUtils.isNotBlank(contentType), ClassicsContentQaPairDO::getContentType, contentType)
+                .eq(contentId != null, ClassicsContentQaPairDO::getContentId, ClassicsContentIdCodec.toValue(contentId))
+                .orderBy(true, sortDirection != SortDirection.DESC, ClassicsContentQaPairDO::getPriority)));
     }
 
     @Override
@@ -131,7 +131,8 @@ public class ClassicsContentRepositoryImpl implements ClassicsContentRepository 
 
     @Override
     public int maxQaPairPriority() {
-        return maxPriority(qaPairMapper.selectObjs(new QueryWrapper<ClassicsContentQaPairDO>().select("max(priority)")));
+        return maxPriority(
+                qaPairMapper.selectObjs(new QueryWrapper<ClassicsContentQaPairDO>().select("max(priority)")));
     }
 
     public ClassicsContentQaPairId insertQaPair(ClassicsContentQaPair qaPair) {
