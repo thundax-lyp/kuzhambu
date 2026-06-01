@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `AI F3`：实现后台调用接口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-DOMAIN.md#f3-admin-invocation-interface`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/invocation/`
-    - 处理动作：按 RUNBOOK F3 的 4 个关联文件提供 AI 调用统计、调用记录、批量任务和候选管理接口。
-    - 验收点：管理员能查看调用延迟、失败、成本、批量状态和失败原因。
-    - 重要度：8/10
-
 - [ ] `AI F4`：实现后台精修接口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-DOMAIN.md#f4-admin-refinement-interface`
