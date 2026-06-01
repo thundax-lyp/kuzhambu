@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `workers ai usecase security`：接入 AI usecase HMAC 路径授权
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-AI-USECASE.md#U7-Security-Allowlist`
-    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/core/security.py`、`kuzhambu-workers/tests/test_security.py`、`kuzhambu-workers/tests/test_worker_e2e_security.py`
-    - 处理动作：把 AI usecase path 纳入内部服务路径授权
-    - 验收点：仅 `kuzhambu-ai` 可访问 AI usecase path，业务域服务身份被拒绝
-    - 重要度：10/10
-
 - [ ] `workers ai usecase openapi`：补齐 AI usecase OpenAPI 展示
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-AI-USECASE.md#U8-OpenAPI-Coverage`
