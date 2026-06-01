@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `AI A3`：实现提示词应用服务
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-DOMAIN.md#a3-prompt-application`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/prompt/`
-    - 处理动作：按 RUNBOOK A3 的 5 个关联文件实现提示词编辑、变量解析、版本对比、回滚和优化建议入口。
-    - 验收点：保存或回滚后能刷新相关 AI 动作可用状态；变量缺失时拒绝保存或调用。
-    - 重要度：9/10
-
 - [ ] `AI A4`：实现 worker 调用应用服务
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-DOMAIN.md#a4-worker-invocation-application`
