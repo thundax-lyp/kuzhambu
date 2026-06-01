@@ -13,14 +13,6 @@
 
 ## 当前任务项
 
-- [ ] `workers graph registry`：实现 LangGraph 能力注册
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W7-LangGraph-Registry`
-    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/ai/graph_registry.py`、`kuzhambu-workers/src/kuzhambu_workers/ai/graphs/basic.py`、`kuzhambu-workers/tests/test_graph_registry.py`
-    - 处理动作：实现 canonical capability registry 和最小 LangGraph 执行包装
-    - 验收点：全部 canonical capability 可解析，未知能力返回稳定错误
-    - 重要度：10/10
-
 - [ ] `workers model adapter`：实现 message 组装和模型适配边界
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W8-Model-Adapter-And-Prompt-Messages`
