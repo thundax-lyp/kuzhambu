@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `AI A4`：实现 worker 调用应用服务
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-DOMAIN.md#a4-worker-invocation-application`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/invocation/`
-    - 处理动作：按 RUNBOOK A4 的 5 个关联文件实现 AI 域统一调用 workers 的同步和 SSE 编排。
-    - 验收点：应用层能构造完整 worker 请求，保存调用记录，并把 completed 结果写为候选或返回调用方。
-    - 重要度：10/10
-
 - [ ] `AI A5`：实现内容精修应用服务
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-DOMAIN.md#a5-refinement-application`
