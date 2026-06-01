@@ -6,8 +6,172 @@
 - 宏观任务必须先讨论边界，再拆解为可执行 TODO。
 - 已完成任务必须删除，不在 `TODO.md` 中打勾保留。
 - 完成历史保留在 commit 或 PR 中。
+- Workers 执行顺序遵循 `docs/30-designs/RUNBOOK-WORKERS-MODULE.md`，每项范围对象保持 2-5 个关联文件。
+- 每完成一个 TODO，先运行该项最小验证；涉及 workers 代码时至少运行 `cd kuzhambu-workers && ruff format --check . && ruff check . && pytest`。
+- 每个完成项必须小步提交，并在同一提交中删除或收窄对应 TODO。
+- PR 收口前必须执行最终清理：删除或收窄 `TODO.md`，按规则删除 `docs/30-designs/RUNBOOK-WORKERS-MODULE.md`，并确认 `.github/workflows/pr-verify.yml` 显式验证 workers。
 
 ## 当前任务项
+
+- [ ] `kuzhambu-workers scaffold`：初始化 workers 工程骨架
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W1-Project-Scaffold`
+    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/__init__.py`、`kuzhambu-workers/src/kuzhambu_workers/main.py`、`kuzhambu-workers/src/kuzhambu_workers/api/__init__.py`、`kuzhambu-workers/tests/test_health.py`
+    - 处理动作：建立可导入、可启动、可测试的 FastAPI 包骨架
+    - 验收点：FastAPI app 可导入，pytest 能发现测试，ruff 可运行
+    - 重要度：10/10
+
+- [ ] `workers core config`：实现配置和脱敏日志
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W2-Core-Configuration-And-Logging`
+    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/core/config.py`、`kuzhambu-workers/src/kuzhambu_workers/core/logging.py`、`kuzhambu-workers/tests/test_config.py`、`kuzhambu-workers/tests/test_logging.py`
+    - 处理动作：实现环境变量默认值和敏感字段日志脱敏
+    - 验收点：默认值与设计一致，key、token、signature、prompt、payload 被脱敏
+    - 重要度：10/10
+
+- [ ] `workers errors`：实现稳定错误模型
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W3-Stable-Errors`
+    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/core/errors.py`、`kuzhambu-workers/src/kuzhambu_workers/schemas/common.py`、`kuzhambu-workers/tests/test_errors.py`
+    - 处理动作：实现稳定错误类型、错误响应和异常映射
+    - 验收点：错误响应不暴露密钥、完整 prompt、完整业务输入或临时路径
+    - 重要度：10/10
+
+- [ ] `workers security`：实现内部 HMAC 认证
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W4-Internal-HMAC-Security`
+    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/core/security.py`、`kuzhambu-workers/src/kuzhambu_workers/schemas/common.py`、`kuzhambu-workers/tests/test_security.py`
+    - 处理动作：实现签名校验、服务白名单和路径授权
+    - 验收点：覆盖签名成功失败、时间偏差、服务越权、路径越权和 requestId/traceId 不一致
+    - 重要度：10/10
+
+- [ ] `workers health capabilities`：实现健康和能力接口
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W5-Health-And-Capabilities-API`
+    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/api/health_routes.py`、`kuzhambu-workers/src/kuzhambu_workers/main.py`、`kuzhambu-workers/tests/test_health_routes.py`
+    - 处理动作：实现 `/internal/health` 和 `/internal/capabilities`
+    - 验收点：health 不检查 DB/Redis/MQ，capabilities 返回 AI/render/PDF/Browser Pool/limits
+    - 重要度：9/10
+
+- [ ] `workers ai schemas`：实现 AI 协议模型
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W6-AI-Schemas`
+    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/schemas/ai.py`、`kuzhambu-workers/src/kuzhambu_workers/schemas/stream.py`、`kuzhambu-workers/tests/test_ai_schemas.py`
+    - 处理动作：实现 AI invoke、response、usage、prompt、modelConfig 和 SSE event schema
+    - 验收点：字段与 AI 接口对齐，`image_gen`、`fusion`、`version_summary` 存在
+    - 重要度：10/10
+
+- [ ] `workers graph registry`：实现 LangGraph 能力注册
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W7-LangGraph-Registry`
+    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/ai/graph_registry.py`、`kuzhambu-workers/src/kuzhambu_workers/ai/graphs/basic.py`、`kuzhambu-workers/tests/test_graph_registry.py`
+    - 处理动作：实现 canonical capability registry 和最小 LangGraph 执行包装
+    - 验收点：全部 canonical capability 可解析，未知能力返回稳定错误
+    - 重要度：10/10
+
+- [ ] `workers model adapter`：实现 message 组装和模型适配边界
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W8-Model-Adapter-And-Prompt-Messages`
+    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/ai/model_adapters.py`、`kuzhambu-workers/src/kuzhambu_workers/ai/prompt_messages.py`、`kuzhambu-workers/src/kuzhambu_workers/ai/structured_output.py`、`kuzhambu-workers/tests/test_prompt_messages.py`
+    - 处理动作：实现 LangChain message 组装、OpenAI-compatible adapter 占位和结构化输出约束
+    - 验收点：优先使用 `prompt.messages`，不回调 AI 域读取模板或变量
+    - 重要度：9/10
+
+- [ ] `workers sse`：实现 SSE 事件编码
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W9-SSE-Encoding`
+    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/streaming/events.py`、`kuzhambu-workers/src/kuzhambu_workers/streaming/sse.py`、`kuzhambu-workers/tests/test_sse.py`
+    - 处理动作：实现稳定 SSE 事件编码和事件生成 helper
+    - 验收点：事件类型齐全，事件必含 requestId、traceId、stage、timestamp，JSON data 稳定
+    - 重要度：10/10
+
+- [ ] `workers ai routes`：实现 AI invoke 和 stream 路由
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W10-AI-Invoke-And-Stream-Routes`
+    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/api/ai_routes.py`、`kuzhambu-workers/src/kuzhambu_workers/main.py`、`kuzhambu-workers/tests/test_ai_routes.py`
+    - 处理动作：实现 `/internal/ai/invoke` 和 `/internal/ai/stream` 路由编排
+    - 验收点：invoke 返回 JSON，stream 返回 SSE completed，异常映射为稳定错误
+    - 重要度：10/10
+
+- [ ] `workers artifact chunks`：实现请求级 artifact store 和分片
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W11-Artifact-Store-And-Chunking`
+    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/render/artifact_store.py`、`kuzhambu-workers/src/kuzhambu_workers/streaming/events.py`、`kuzhambu-workers/tests/test_artifact_store.py`
+    - 处理动作：实现请求生命周期内 artifact store 和 SSE 分片读取
+    - 验收点：不提供跨请求下载，chunkIndex 连续，chunkSha256 和整体 sha256 可校验，结束后清理
+    - 重要度：10/10
+
+- [ ] `workers render schemas`：实现 render 协议模型
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W12-Render-Schemas`
+    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/schemas/render.py`、`kuzhambu-workers/tests/test_render_schemas.py`
+    - 处理动作：实现 render 请求、响应、artifact 和 summary schema
+    - 验收点：支持三类 renderType 和 CSV/JSON/HTML/ZIP/PDF，大产物必须走 stream artifact chunk
+    - 重要度：9/10
+
+- [ ] `workers classics export`：实现 Classics 导出渲染
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W13-Classics-Export-Renderer`
+    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/render/classics_export.py`、`kuzhambu-workers/src/kuzhambu_workers/render/templates/classics_export.html`、`kuzhambu-workers/tests/test_classics_export.py`
+    - 处理动作：实现 Classics CSV、JSON、HTML、ZIP 产物生成
+    - 验收点：产物包含 filename、contentType、sizeBytes、sha256，HTML/ZIP 可通过 artifact chunk 输出
+    - 重要度：8/10
+
+- [ ] `workers sancai showcase`：实现三才图会静态展示渲染
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W14-Sancai-Showcase-Renderer`
+    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/render/sancai_showcase.py`、`kuzhambu-workers/src/kuzhambu_workers/render/templates/sancai_showcase.html`、`kuzhambu-workers/tests/test_sancai_showcase.py`
+    - 处理动作：实现三才图会静态展示页面渲染
+    - 验收点：支持数据集元信息、目录、正文和图片引用快照，不回查 Storage 或数据库
+    - 重要度：8/10
+
+- [ ] `workers browser pool`：实现 Playwright Browser Pool
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W15-Browser-Pool`
+    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/render/browser_pool.py`、`kuzhambu-workers/tests/test_browser_pool.py`、`kuzhambu-workers/README.md`
+    - 处理动作：实现 Playwright/Chromium Browser Pool 和运行说明
+    - 验收点：支持 pool size、max pages、page timeout，超时和异常路径释放 page/context
+    - 重要度：9/10
+
+- [ ] `workers operations report`：实现 Operations 报表渲染
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W16-Operations-Report-Renderer`
+    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/render/operations_report.py`、`kuzhambu-workers/src/kuzhambu_workers/render/templates/operations_report.html`、`kuzhambu-workers/src/kuzhambu_workers/render/browser_pool.py`、`kuzhambu-workers/tests/test_operations_report.py`
+    - 处理动作：实现 Operations HTML/PDF 报表渲染
+    - 验收点：HTML 可生成，PDF 使用 Browser Pool 和 Chromium print，PDF 通过 SSE artifact chunk 输出
+    - 重要度：9/10
+
+- [ ] `workers render routes`：实现 render 同步和 stream 路由
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W17-Render-Routes`
+    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/api/render_routes.py`、`kuzhambu-workers/src/kuzhambu_workers/main.py`、`kuzhambu-workers/tests/test_render_routes.py`
+    - 处理动作：实现 render 同步和 stream 路由
+    - 验收点：同步支持小产物，stream 支持 progress、artifact chunk 和 completed，HMAC 授权生效
+    - 重要度：10/10
+
+- [ ] `workers packaging`：补齐开发命令和 PR 验证
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W18-Packaging-And-Dev-Commands`
+    - 范围对象：`kuzhambu-workers/pyproject.toml`、`kuzhambu-workers/README.md`、`docs/40-readiness/PR-WORKFLOW.md`、`.github/workflows/pr-verify.yml`
+    - 处理动作：补齐 Python package、ruff、pytest、运行命令和 PR workflow
+    - 验收点：PR workflow 显式包含 workers 的 ruff format check、ruff check 和 pytest
+    - 重要度：9/10
+
+- [ ] `workers e2e tests`：补充 workers 协议级端到端测试
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W19-End-To-End-Worker-Verification`
+    - 范围对象：`kuzhambu-workers/tests/test_worker_e2e_ai.py`、`kuzhambu-workers/tests/test_worker_e2e_render.py`、`kuzhambu-workers/tests/test_worker_e2e_security.py`
+    - 处理动作：补充 AI、render 和 security 协议级端到端测试
+    - 验收点：AI happy path、render artifact chunk、未签名、错误签名、越权和 stream 中断路径被覆盖
+    - 重要度：10/10
+
+- [ ] `workers cleanup`：完成 PR 前现场清理
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W20-Cleanup-And-PR-Readiness`
+    - 范围对象：`TODO.md`、`docs/30-designs/RUNBOOK-WORKERS-MODULE.md`、`kuzhambu-workers/README.md`、`.github/workflows/pr-verify.yml`
+    - 处理动作：清理已完成 TODO、删除或收窄 RUNBOOK、确认 PR 验证说明
+    - 验收点：TODO 只保留真实剩余任务，RUNBOOK 按收口规则清理，工作区无无关修改
+    - 重要度：10/10
 
 ## 待审阅任务项
 
