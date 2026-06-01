@@ -25,3 +25,139 @@ ON DUPLICATE KEY UPDATE
     `output_mode` = VALUES(`output_mode`),
     `enabled` = VALUES(`enabled`),
     `priority` = VALUES(`priority`);
+
+-- Test seed derived from ../down.s/KB_HTML/db/sancai_kb.db.
+-- Keep this section AI-owned: service/model wiring, capability mapping and prompt templates only.
+
+INSERT INTO `ai_service_config` (
+    `service_id`, `service_role`, `api_source`, `base_url`, `encrypted_api_key`,
+    `enabled`, `status`, `last_checked_at`, `configured_at`
+) VALUES
+    (
+        900001, 'PRIMARY', 'ctyun', 'https://worker-ai.local/mock', NULL,
+        1, 'AVAILABLE', '2026-02-27 04:00:00.000', '2026-02-27 04:00:00.000'
+    )
+ON DUPLICATE KEY UPDATE
+    `api_source` = VALUES(`api_source`),
+    `base_url` = VALUES(`base_url`),
+    `encrypted_api_key` = VALUES(`encrypted_api_key`),
+    `enabled` = VALUES(`enabled`),
+    `status` = VALUES(`status`),
+    `last_checked_at` = VALUES(`last_checked_at`),
+    `configured_at` = VALUES(`configured_at`);
+
+INSERT INTO `ai_model` (
+    `model_id`, `service_id`, `model_name`, `display_name`, `capability_tags_json`,
+    `default_params_json`, `description`, `enabled`, `registered_at`
+) VALUES
+    (
+        900101, 900001, 'CTYUN-CX-Qwen3.5-397B-A17B', 'CTYUN Qwen3.5 397B',
+        '["text", "vision", "structured_output", "streaming_text"]',
+        '{"temperature": 0.2, "max_tokens": 4096}',
+        'KB_HTML image_analysis sample model for classics AI tests.', 1, '2026-02-27 04:00:00.000'
+    ),
+    (
+        900102, 900001, 'CTYUN-CX-DeepSeek-V3.1', 'CTYUN DeepSeek V3.1',
+        '["text", "structured_output", "streaming_text"]',
+        '{"temperature": 0.2, "max_tokens": 4096}',
+        'KB_HTML image_analysis sample model for text and structured AI tests.', 1, '2026-02-27 04:00:00.000'
+    )
+ON DUPLICATE KEY UPDATE
+    `service_id` = VALUES(`service_id`),
+    `display_name` = VALUES(`display_name`),
+    `capability_tags_json` = VALUES(`capability_tags_json`),
+    `default_params_json` = VALUES(`default_params_json`),
+    `description` = VALUES(`description`),
+    `enabled` = VALUES(`enabled`),
+    `registered_at` = VALUES(`registered_at`);
+
+INSERT INTO `ai_capability_mapping` (
+    `mapping_id`, `scope`, `capability`, `model_id`, `enabled`, `configured_at`
+) VALUES
+    (910101, 'classics', 'summary', 900102, 1, '2026-02-27 04:00:00.000'),
+    (910102, 'classics', 'tags', 900102, 1, '2026-02-27 04:00:00.000'),
+    (910103, 'classics', 'qa', 900102, 1, '2026-02-27 04:00:00.000'),
+    (910104, 'classics', 'image_analysis', 900101, 1, '2026-02-27 04:00:00.000')
+ON DUPLICATE KEY UPDATE
+    `model_id` = VALUES(`model_id`),
+    `enabled` = VALUES(`enabled`),
+    `configured_at` = VALUES(`configured_at`);
+
+INSERT INTO `ai_action_status` (
+    `action_status_id`, `scope`, `capability`, `available`, `unavailable_reason`, `checked_at`
+) VALUES
+    (920101, 'classics', 'summary', 1, NULL, '2026-02-27 04:00:00.000'),
+    (920102, 'classics', 'tags', 1, NULL, '2026-02-27 04:00:00.000'),
+    (920103, 'classics', 'qa', 1, NULL, '2026-02-27 04:00:00.000'),
+    (920104, 'classics', 'image_analysis', 1, NULL, '2026-02-27 04:00:00.000')
+ON DUPLICATE KEY UPDATE
+    `available` = VALUES(`available`),
+    `unavailable_reason` = VALUES(`unavailable_reason`),
+    `checked_at` = VALUES(`checked_at`);
+
+INSERT INTO `ai_prompt_template` (
+    `template_id`, `scope`, `capability`, `name`, `description`, `status`,
+    `current_version_no`, `registered_at`
+) VALUES
+    (
+        930101, 'classics', 'summary', '王圻文档摘要', '从 KB_HTML prompts 表导入的摘要测试提示词。',
+        'ACTIVE', 1, '2026-02-27 04:00:00.000'
+    ),
+    (
+        930102, 'classics', 'tags', '王圻文档标签', '从 KB_HTML prompts 表导入的标签测试提示词。',
+        'ACTIVE', 1, '2026-02-27 04:00:00.000'
+    ),
+    (
+        930103, 'classics', 'qa', '王圻文档问答', '从 KB_HTML prompts 表导入的问答测试提示词。',
+        'ACTIVE', 1, '2026-02-27 04:00:00.000'
+    )
+ON DUPLICATE KEY UPDATE
+    `name` = VALUES(`name`),
+    `description` = VALUES(`description`),
+    `status` = VALUES(`status`),
+    `current_version_no` = VALUES(`current_version_no`),
+    `registered_at` = VALUES(`registered_at`);
+
+INSERT INTO `ai_prompt_version` (
+    `prompt_version_id`, `template_id`, `version_no`, `message_templates_json`,
+    `variables_snapshot_json`, `output_schema_json`, `current_key`, `change_summary`, `registered_at`
+) VALUES
+    (
+        940101, 930101, 1,
+        '[{"role":"system","content":"你是熟悉王圻与古籍整理的中文文献助手。"},{"role":"user","content":"请为以下关于王圻的文档生成一个简洁的摘要，包含文档的核心内容、主要观点和重要信息。摘要应准确反映文档内容，长度适中，便于快速了解文档主题。文档内容：{{document}}"}]',
+        '[{"name":"document","required":true,"description":"待摘要的文档内容"}]',
+        '{"type":"object","properties":{"summary":{"type":"string"}},"required":["summary"]}',
+        '930101:current', 'Imported from KB_HTML prompts.summary.', '2026-02-27 04:00:00.000'
+    ),
+    (
+        940102, 930102, 1,
+        '[{"role":"system","content":"你是熟悉王圻与古籍整理的中文标签助手。"},{"role":"user","content":"请从以下关于王圻的文档中提取3-5个最能代表文档主题的标签。标签应简洁明了，能够准确反映文档内容的核心主题和关键词。文档内容：{{document}}"}]',
+        '[{"name":"document","required":true,"description":"待提取标签的文档内容"}]',
+        '{"type":"object","properties":{"tags":{"type":"array","items":{"type":"string"},"minItems":3,"maxItems":5}},"required":["tags"]}',
+        '930102:current', 'Imported from KB_HTML prompts.tags.', '2026-02-27 04:00:00.000'
+    ),
+    (
+        940103, 930103, 1,
+        '[{"role":"system","content":"你是熟悉王圻与古籍整理的中文问答助手。"},{"role":"user","content":"请根据以下关于王圻的文档内容，生成3-5个有价值的问答对。问题应具有针对性，答案应准确反映文档内容。文档内容：{{document}}"}]',
+        '[{"name":"document","required":true,"description":"待生成问答的文档内容"}]',
+        '{"type":"object","properties":{"qa_pairs":{"type":"array","items":{"type":"object","properties":{"question":{"type":"string"},"answer":{"type":"string"}},"required":["question","answer"]},"minItems":3,"maxItems":5}},"required":["qa_pairs"]}',
+        '930103:current', 'Imported from KB_HTML prompts.qa.', '2026-02-27 04:00:00.000'
+    )
+ON DUPLICATE KEY UPDATE
+    `message_templates_json` = VALUES(`message_templates_json`),
+    `variables_snapshot_json` = VALUES(`variables_snapshot_json`),
+    `output_schema_json` = VALUES(`output_schema_json`),
+    `current_key` = VALUES(`current_key`),
+    `change_summary` = VALUES(`change_summary`),
+    `registered_at` = VALUES(`registered_at`);
+
+INSERT INTO `ai_prompt_variable` (
+    `variable_id`, `template_id`, `variable_name`, `required`, `description`, `priority`
+) VALUES
+    (950101, 930101, 'document', 1, '待摘要的文档内容', 1000),
+    (950102, 930102, 'document', 1, '待提取标签的文档内容', 1010),
+    (950103, 930103, 'document', 1, '待生成问答的文档内容', 1020)
+ON DUPLICATE KEY UPDATE
+    `required` = VALUES(`required`),
+    `description` = VALUES(`description`),
+    `priority` = VALUES(`priority`);
