@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `kuzhambu-page`：迁移 `sandwish-page`
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/ARCHITECTURE.md`
-    - 范围对象：`src/components/sandwish-page/`、`dashboard-page.*`、`user-page.css`
-    - 处理动作：将组件、类型、CSS class、CSS variable 和调用方改为 `KuzhambuPage` / `kuzhambu-page`。
-    - 验收点：`sandwish-page` 组件模块无旧命名残留，admin-web lint 通过。
-    - 重要度：9/10
-
 - [ ] `kuzhambu-batch-action-bar`：迁移 `sandwish-batch-action-bar`
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/ARCHITECTURE.md`

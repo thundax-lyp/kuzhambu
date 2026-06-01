@@ -5,7 +5,7 @@ import { Button, Input, Space } from "antd";
 import { SandwishBatchActionBar } from "@/components/sandwish-batch-action-bar";
 import { SandwishFilterPanel } from "@/components/sandwish-filter-panel";
 import type { SandwishFilterPanelField } from "@/components/sandwish-filter-panel";
-import { SandwishPage } from "@/components/sandwish-page";
+import { KuzhambuPage } from "@/components/kuzhambu-page";
 import { SandwishTable } from "@/components/sandwish-table";
 import type { SandwishTableProps } from "@/components/sandwish-table";
 import "./sandwish-list-page.css";
@@ -160,7 +160,7 @@ export const SandwishListPage = <RecordType extends object = object>({
     );
 
     return (
-        <SandwishPage
+        <KuzhambuPage
             actions={headerActions}
             className={pageClassName}
             description={description}
@@ -213,6 +213,6 @@ export const SandwishListPage = <RecordType extends object = object>({
             ) : (
                 <SandwishTable<RecordType> {...tableProps} />
             )}
-        </SandwishPage>
+        </KuzhambuPage>
     );
 };

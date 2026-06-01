@@ -5,7 +5,7 @@ import {
     TeamOutlined
 } from "@ant-design/icons";
 import { Card, Typography } from "antd";
-import { SandwishPage } from "@/components/sandwish-page";
+import { KuzhambuPage } from "@/components/kuzhambu-page";
 import "./dashboard-page.css";
 
 const { Title, Text } = Typography;
@@ -66,7 +66,7 @@ const workColumns = [
 
 export const DashboardPage = () => {
     return (
-        <SandwishPage
+        <KuzhambuPage
             className="dashboard-page"
             eyebrow=""
             title="仪表盘"
@@ -137,6 +137,6 @@ export const DashboardPage = () => {
                     </div>
                 </section>
             </div>
-        </SandwishPage>
+        </KuzhambuPage>
     );
 };
