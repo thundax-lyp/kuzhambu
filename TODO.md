@@ -13,14 +13,6 @@
 
 ## 当前任务项
 
-- [ ] `workers artifact chunks`：实现请求级 artifact store 和分片
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W11-Artifact-Store-And-Chunking`
-    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/render/artifact_store.py`、`kuzhambu-workers/src/kuzhambu_workers/streaming/events.py`、`kuzhambu-workers/tests/test_artifact_store.py`
-    - 处理动作：实现请求生命周期内 artifact store 和 SSE 分片读取
-    - 验收点：不提供跨请求下载，chunkIndex 连续，chunkSha256 和整体 sha256 可校验，结束后清理
-    - 重要度：10/10
-
 - [ ] `workers render schemas`：实现 render 协议模型
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W12-Render-Schemas`
