@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `AI F4`：实现后台精修接口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-DOMAIN.md#f4-admin-refinement-interface`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/refinement/`
-    - 处理动作：按 RUNBOOK F4 的 4 个关联文件提供 Classics 内容上下文可调用的 AI 精修接口。
-    - 验收点：翻译、摘要、标签、问答对、图片理解和条目拆分可进入候选区。
-    - 重要度：8/10
-
 - [ ] `AI S1`：装配后台 starter
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-DOMAIN.md#s1-admin-starter-assembly`
