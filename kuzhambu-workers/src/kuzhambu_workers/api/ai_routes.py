@@ -16,9 +16,18 @@ from kuzhambu_workers.streaming.sse import encode_sse
 
 router = APIRouter(prefix="/internal/ai")
 _REGISTRY = GraphRegistry.build_default()
+DEBUG_INTERFACE_NOTICE = (
+    "通用 AI 接口仅用于调试、平台联调和协议验证；真实业务必须使用基于 usecase "
+    "定义的稳定接口，不得把该通用接口作为业务域长期集成入口。"
+)
 
 
-@router.post("/invoke", response_model=None)
+@router.post(
+    "/invoke",
+    response_model=None,
+    summary="Debug AI invoke",
+    description=DEBUG_INTERFACE_NOTICE,
+)
 async def invoke(request: Request) -> JSONResponse:
     body = await request.body()
     parsed = _parse_request(body)
@@ -44,7 +53,12 @@ async def invoke(request: Request) -> JSONResponse:
         return _failed_response(parsed, to_error_payload(exc))
 
 
-@router.post("/stream", response_model=None)
+@router.post(
+    "/stream",
+    response_model=None,
+    summary="Debug AI stream",
+    description=DEBUG_INTERFACE_NOTICE,
+)
 async def stream(request: Request) -> StreamingResponse | JSONResponse:
     body = await request.body()
     parsed = _parse_request(body)

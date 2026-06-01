@@ -97,12 +97,19 @@ Workers 不使用回调接口。任何回调能力都不得复用当前 AI 执�
 
 ## Endpoints
 
-AI 域到 workers 的标准接口固定为两个：
+当前通用 AI 调试接口固定为两个：
 
 - `POST /internal/ai/invoke`：一次性 JSON 响应。
 - `POST /internal/ai/stream`：SSE 流式响应。
 
-按能力命名的路径可以作为 workers 内部路由或调试别名存在，但 Java AI 域默认只依赖上述两个标准接口。
+这两个通用接口仅用于调试、平台联调和协议验证，不作为真实业务域长期集成入口。真实业务必须使用基于 usecase 定义的稳定接口，由 AI 域或对应业务域明确 path、请求模型、权限边界、审计语义和失败分类。workers 内部仍可以复用 graph registry、model adapter、artifact store 和 SSE 编码等通用能力。
+
+通用接口不承载业务权限、用例级审计或稳定业务语义。后续 usecase 接口示例：
+
+- `POST /internal/ai/classics/translate`
+- `POST /internal/ai/classics/summary`
+- `POST /internal/ai/discovery/answer-generation`
+- `POST /internal/ai/knowledge/lineage-extraction`
 
 健康与能力发现接口：
 

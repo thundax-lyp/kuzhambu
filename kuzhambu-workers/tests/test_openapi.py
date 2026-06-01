@@ -11,6 +11,10 @@ def test_openapi_schema_uses_internal_path() -> None:
     assert body["info"]["title"] == "Kuzhambu Workers"
     assert "/internal/ai/invoke" in body["paths"]
     assert "/internal/render/classics-export" in body["paths"]
+    assert (
+        "真实业务必须使用基于 usecase"
+        in body["paths"]["/internal/ai/invoke"]["post"]["description"]
+    )
 
 
 def test_swagger_ui_uses_internal_path() -> None:

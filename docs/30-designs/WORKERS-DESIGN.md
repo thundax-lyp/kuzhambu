@@ -97,6 +97,8 @@ Workers 只接受 Java servers 发起的内部调用。
 
 AI 能力必须经由 AI 域治理入口。凡是涉及模型、提示词、能力映射、用量统计、候选结果或 AI 失败分类的调用，都不得绕过 AI 域。
 
+Workers 的 AI 对外接口按 usecase 建模。`/internal/ai/invoke` 和 `/internal/ai/stream` 只作为调试、平台联调和协议验证接口，不作为真实业务域长期集成入口。真实业务入口必须由 AI 域或业务域定义稳定 usecase path、请求模型、权限边界、审计语义和失败分类。
+
 Render 能力只处理调用方已经完成权限过滤、风险确认和数据快照准备后的内容。Workers 返回的文件在进入 Storage 前只是临时产物。
 
 ## API Layer

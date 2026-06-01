@@ -68,6 +68,8 @@ PDF 渲染通过 Browser Pool 复用 Chromium。每次渲染创建独立 context
 
 OpenAPI 和 Swagger UI 只暴露在 `/internal/*` 路径下，用于内网开发、联调和接口排查。
 
+`/internal/ai/invoke` 和 `/internal/ai/stream` 是通用调试接口，仅用于平台联调和协议验证。真实业务应接入基于 usecase 定义的稳定接口。
+
 ## Local Development
 
 ```sh
