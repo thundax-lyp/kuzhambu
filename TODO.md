@@ -11,4 +11,122 @@
 
 ## 待审阅任务项
 
+- [ ] `kuzhambu-apps/admin-web`：迁入 sandwich admin-web 工程
+    - 任务类型：执行任务
+    - 依据文档：`docs/00-governance/ARCHITECTURE.md`
+    - 范围对象：`../sandwich/sandwish-admin-web/`、`kuzhambu-apps/admin-web/`
+    - 处理动作：复制前端工程并排除 `node_modules/`、`dist/`、`.DS_Store` 和来源独立 lock。
+    - 验收点：`kuzhambu-apps/admin-web/package.json` name 为 `kuzhambu-admin-web`，workspace 下可安装依赖。
+    - 重要度：10/10
+
+- [ ] `admin-web-governance`：迁入 admin-web 前端治理入口
+    - 任务类型：执行任务
+    - 依据文档：`docs/00-governance/DOCUMENT-RULES.md`
+    - 范围对象：`docs/00-governance/ADMIN-WEB-RULES.md`、`docs/AGENTS.md`、`kuzhambu-apps/admin-web/AGENTS.md`
+    - 处理动作：迁入并改写 admin-web 治理规则和 Agent 路由。
+    - 验收点：治理文档指向 `kuzhambu-apps/admin-web`，共享组件规则使用 `Kuzhambu*`。
+    - 重要度：10/10
+
+- [ ] `kuzhambu-page`：迁移 `sandwish-page`
+    - 任务类型：执行任务
+    - 依据文档：`docs/00-governance/ARCHITECTURE.md`
+    - 范围对象：`src/components/sandwish-page/`、`dashboard-page.*`、`user-page.css`
+    - 处理动作：将组件、类型、CSS class、CSS variable 和调用方改为 `KuzhambuPage` / `kuzhambu-page`。
+    - 验收点：`sandwish-page` 组件模块无旧命名残留，admin-web lint 通过。
+    - 重要度：9/10
+
+- [ ] `kuzhambu-batch-action-bar`：迁移 `sandwish-batch-action-bar`
+    - 任务类型：执行任务
+    - 依据文档：`docs/00-governance/ARCHITECTURE.md`
+    - 范围对象：`src/components/sandwish-batch-action-bar/`、`src/components/*list-page*/`
+    - 处理动作：将组件、类型、CSS class 和 list-page 调用方改为 `KuzhambuBatchActionBar` / `kuzhambu-batch-action-bar`。
+    - 验收点：`sandwish-batch-action-bar` 组件模块无旧命名残留，admin-web lint 通过。
+    - 重要度：8/10
+
+- [ ] `kuzhambu-filter-panel`：迁移 `sandwish-filter-panel`
+    - 任务类型：执行任务
+    - 依据文档：`docs/00-governance/ARCHITECTURE.md`
+    - 范围对象：`src/components/sandwish-filter-panel/`、`src/components/*list-page*/`
+    - 处理动作：将组件、类型、CSS class、CSS variable 和 list-page 调用方改为 `KuzhambuFilterPanel` / `kuzhambu-filter-panel`。
+    - 验收点：`sandwish-filter-panel` 组件模块无旧命名残留，admin-web lint 通过。
+    - 重要度：8/10
+
+- [ ] `kuzhambu-table`：迁移 `sandwish-table`
+    - 任务类型：执行任务
+    - 依据文档：`docs/00-governance/ARCHITECTURE.md`
+    - 范围对象：`src/components/sandwish-table/`、列表页、`src/app.test.tsx`、`eslint.config.js`
+    - 处理动作：将表格组件、类型、排序类型、CSS class、页面调用方和 ESLint 文案改为 `KuzhambuTable` / `kuzhambu-table`。
+    - 验收点：`sandwish-table` 组件模块无旧命名残留，admin-web lint 和 test 通过。
+    - 重要度：9/10
+
+- [ ] `kuzhambu-confirm-modal`：迁移 `sandwish-confirm-modal`
+    - 任务类型：执行任务
+    - 依据文档：`docs/00-governance/ARCHITECTURE.md`
+    - 范围对象：`src/components/sandwish-confirm-modal/`、使用 `useSandwishConfirm` 的页面、`eslint.config.js`
+    - 处理动作：将确认弹窗组件、hook、CSS class、页面调用方和 ESLint 允许路径改为 `KuzhambuConfirmModal` / `useKuzhambuConfirm`。
+    - 验收点：`sandwish-confirm-modal` 组件模块无旧命名残留，admin-web lint 和 test 通过。
+    - 重要度：9/10
+
+- [ ] `kuzhambu-switch`：迁移 `sandwish-switch`
+    - 任务类型：执行任务
+    - 依据文档：`docs/00-governance/ARCHITECTURE.md`
+    - 范围对象：`src/components/sandwish-switch/`、使用 `SandwishSwitch` 的 system 页面
+    - 处理动作：将开关组件、类型、CSS class 和页面调用方改为 `KuzhambuSwitch` / `kuzhambu-switch`。
+    - 验收点：`sandwish-switch` 组件模块无旧命名残留，admin-web lint 通过。
+    - 重要度：8/10
+
+- [ ] `kuzhambu-tag`：迁移 `sandwish-tag`
+    - 任务类型：执行任务
+    - 依据文档：`docs/00-governance/ARCHITECTURE.md`
+    - 范围对象：`src/components/sandwish-tag/`、使用 `SandwishTag` 的 audit/open/storage/submission/system 页面
+    - 处理动作：将标签组件、类型、CSS class 和页面调用方改为 `KuzhambuTag` / `kuzhambu-tag`。
+    - 验收点：`sandwish-tag` 组件模块无旧命名残留，admin-web lint 通过。
+    - 重要度：8/10
+
+- [ ] `kuzhambu-drawer`：迁移 `sandwish-drawer`
+    - 任务类型：执行任务
+    - 依据文档：`docs/00-governance/ARCHITECTURE.md`
+    - 范围对象：`src/components/sandwish-drawer/`、使用 `SandwishDrawer` 的编辑和详情组件
+    - 处理动作：将抽屉组件、类型、CSS class、CSS variable 和调用方改为 `KuzhambuDrawer` / `kuzhambu-drawer`。
+    - 验收点：`sandwish-drawer` 组件模块无旧命名残留，admin-web lint 通过。
+    - 重要度：8/10
+
+- [ ] `kuzhambu-list-page`：迁移 `sandwish-list-page`
+    - 任务类型：执行任务
+    - 依据文档：`docs/00-governance/ARCHITECTURE.md`
+    - 范围对象：`src/components/sandwish-list-page/`、使用 `SandwishListPage` 或其 filter type 的页面
+    - 处理动作：将列表页骨架、类型、CSS class 和页面调用方改为 `KuzhambuListPage` / `kuzhambu-list-page`。
+    - 验收点：`sandwish-list-page` 组件模块无旧命名残留，admin-web lint 和 test 通过。
+    - 重要度：9/10
+
+- [ ] `kuzhambu-logo`：迁移 `sandwich-logo`
+    - 任务类型：执行任务
+    - 依据文档：`docs/00-governance/UI-RULES.md`
+    - 范围对象：`src/components/sandwich-logo.tsx`、`public/sandwich-logo.svg`、`src/layouts/admin-layout.tsx`
+    - 处理动作：将 logo 组件、静态资产和直接调用方改为 `KuzhambuLogo` / `kuzhambu-logo`。
+    - 验收点：logo 组件和静态资源无旧品牌命名残留，admin-web lint 通过。
+    - 重要度：8/10
+
+- [ ] `admin-web-brand-copy`：收口剩余品牌文案
+    - 任务类型：执行任务
+    - 依据文档：`docs/00-governance/UI-RULES.md`
+    - 范围对象：`src/layouts/admin-layout.tsx`、`src/pages/auth/login/login-page.tsx`、`src/app.test.tsx`、`e2e/layout/admin-layout.spec.ts`、`README.md`、`index.html`
+    - 处理动作：将剩余展示文案从 sandwich 语义改为 kuzhambu 目标品牌文案。
+    - 验收点：展示层无旧品牌文案残留，admin-web lint 和 test 通过。
+    - 重要度：8/10
+
+- [ ] `admin-web-validation`：执行 admin-web 迁移验证
+    - 任务类型：执行任务
+    - 依据文档：`docs/00-governance/TODO-RULES.md`
+    - 范围对象：`kuzhambu-apps/admin-web/`
+    - 处理动作：运行 workspace 下 admin-web 的 format、lint、test 和 build 验证。
+    - 验收点：`format:check`、`lint`、`test`、`build` 通过，或记录明确阻塞原因。
+    - 重要度：10/10
+
 ## 待讨论项
+
+- [ ] kuzhambu admin API 契约是否沿用 `/admin-api/api`
+    - 任务类型：待讨论项
+    - 关联任务：`kuzhambu-apps/admin-web`
+    - 决策要求：确认 `ADMIN_API_BASE_URL`、`ADMIN_CLIENT_ID`、token header 和响应 code 是否保持兼容。
+    - 重要度：9/10
