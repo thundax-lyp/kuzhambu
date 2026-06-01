@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `workers ai classics routes`：实现 Classics AI usecase 路由
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-AI-USECASE.md#U4-Classics-AI-Usecase-Routes`
-    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/api/ai_usecase_routes.py`、`kuzhambu-workers/src/kuzhambu_workers/main.py`、`kuzhambu-workers/tests/test_ai_usecase_routes_classics.py`
-    - 处理动作：实现 Classics sancai、wangqi、ming-customs AI usecase routes
-    - 验收点：Classics usecase path 可用且 path/capability/stream 不匹配会失败
-    - 重要度：10/10
-
 - [ ] `workers ai discovery routes`：实现 Discovery AI usecase 路由
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-AI-USECASE.md#U5-Discovery-AI-Usecase-Routes`
