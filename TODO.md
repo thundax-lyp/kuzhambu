@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `workers ai usecase openapi`：补齐 AI usecase OpenAPI 展示
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-AI-USECASE.md#U8-OpenAPI-Coverage`
-    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/api/ai_usecase_routes.py`、`kuzhambu-workers/tests/test_openapi.py`
-    - 处理动作：让 Swagger/OpenAPI 展示 AI usecase path 和边界说明
-    - 验收点：OpenAPI 包含 usecase path 且通用接口仍标注调试用途
-    - 重要度：8/10
-
 - [ ] `workers ai usecase e2e`：补充 AI usecase 协议级端到端测试
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-AI-USECASE.md#U9-End-To-End-Verification`
