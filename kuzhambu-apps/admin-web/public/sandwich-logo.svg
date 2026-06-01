@@ -1,0 +1,9 @@
+<svg width="96" height="96" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Sandwich logo">
+    <rect width="96" height="96" rx="22" fill="#EFF6FF"/>
+    <rect x="7" y="7" width="82" height="82" rx="18" fill="#DBEAFE" stroke="#BFDBFE" stroke-width="2"/>
+    <path d="M24 35C24 27.268 30.268 21 38 21H58C65.732 21 72 27.268 72 35V38H24V35Z" fill="#60A5FA"/>
+    <path d="M22 43H74V53C74 56.314 71.314 59 68 59H28C24.686 59 22 56.314 22 53V43Z" fill="#F8FBFF"/>
+    <path d="M26 62H70V65C70 72.18 64.18 78 57 78H39C31.82 78 26 72.18 26 65V62Z" fill="#2563EB"/>
+    <path d="M35 48H61" stroke="#1E3A8A" stroke-width="4" stroke-linecap="round"/>
+    <path d="M38 31H58" stroke="#E0F2FE" stroke-width="4" stroke-linecap="round"/>
+</svg>

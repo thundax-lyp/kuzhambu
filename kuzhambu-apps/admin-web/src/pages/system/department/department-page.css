@@ -1,0 +1,121 @@
+.department-page {
+    --department-ink: #111827;
+    --department-copy: #52627a;
+    --department-line: rgba(107, 124, 150, 0.24);
+    --department-line-strong: rgba(71, 91, 121, 0.34);
+    --department-green: #0f766e;
+    --department-green-hover: #0d9488;
+    --department-green-soft: rgba(15, 118, 110, 0.1);
+    --department-green-line: rgba(15, 118, 110, 0.26);
+    --department-amber: #b45309;
+    --department-amber-soft: rgba(180, 83, 9, 0.1);
+    --department-amber-line: rgba(180, 83, 9, 0.24);
+    --department-button-bg: rgba(255, 255, 255, 0.64);
+    --department-field-bg: rgba(255, 255, 255, 0.7);
+    color: var(--department-ink);
+}
+
+html[data-theme="dark"] .department-page {
+    --department-ink: #f8fbff;
+    --department-copy: #b8c4d8;
+    --department-line: rgba(171, 191, 222, 0.16);
+    --department-line-strong: rgba(191, 207, 232, 0.28);
+    --department-green: #2dd4bf;
+    --department-green-hover: #5eead4;
+    --department-green-soft: rgba(45, 212, 191, 0.14);
+    --department-green-line: rgba(45, 212, 191, 0.3);
+    --department-amber: #f59e0b;
+    --department-amber-soft: rgba(245, 158, 11, 0.13);
+    --department-amber-line: rgba(245, 158, 11, 0.28);
+    --department-button-bg: rgba(17, 28, 46, 0.64);
+    --department-field-bg: rgba(12, 22, 38, 0.7);
+}
+
+.department-page .ant-typography-secondary {
+    color: var(--department-copy);
+}
+
+.department-page .ant-btn-default {
+    color: var(--department-ink);
+    background: var(--department-button-bg);
+    border-color: var(--department-line);
+}
+
+.department-page .ant-btn-default:not(:disabled):hover {
+    color: var(--department-green) !important;
+    background: var(--department-green-soft) !important;
+    border-color: var(--department-green-line) !important;
+}
+
+.department-page .ant-input-affix-wrapper,
+.department-page .ant-input {
+    color: var(--department-ink);
+    background: var(--department-field-bg) !important;
+    border-color: var(--department-line) !important;
+}
+
+.department-page .ant-input-affix-wrapper:hover,
+.department-page .ant-input:hover {
+    border-color: var(--department-line-strong) !important;
+}
+
+.department-page .ant-input-affix-wrapper:focus,
+.department-page .ant-input-affix-wrapper-focused,
+.department-page .ant-input:focus {
+    border-color: var(--department-green) !important;
+    box-shadow: 0 0 0 3px var(--department-green-soft) !important;
+}
+
+.department-name-icon,
+.department-empty-icon {
+    color: var(--department-green);
+}
+
+.department-name-cell {
+    display: inline-flex;
+    max-width: 100%;
+    min-width: 0;
+}
+
+.department-name-cell .ant-space-item:nth-child(2) {
+    min-width: 0;
+}
+
+.department-name-text,
+.department-path-text {
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: bottom;
+}
+
+.department-name-text {
+    min-width: 0;
+}
+
+.department-table .ant-tag {
+    color: var(--department-amber);
+    background: var(--department-amber-soft);
+    border-color: var(--department-amber-line);
+    border-radius: 7px;
+}
+
+.department-drag-action {
+    cursor: grab;
+}
+
+.department-editor-form {
+    padding-top: 6px;
+}
+
+.department-edit-footer {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.department-empty-icon {
+    font-size: 28px;
+}

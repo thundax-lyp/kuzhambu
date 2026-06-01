@@ -1,0 +1,117 @@
+.menu-page {
+    --menu-ink: #111827;
+    --menu-copy: #52627a;
+    --menu-line: rgba(107, 124, 150, 0.24);
+    --menu-line-strong: rgba(71, 91, 121, 0.34);
+    --menu-green: #0f766e;
+    --menu-green-hover: #0d9488;
+    --menu-green-soft: rgba(15, 118, 110, 0.1);
+    --menu-green-line: rgba(15, 118, 110, 0.26);
+    --menu-amber: #b45309;
+    --menu-amber-soft: rgba(180, 83, 9, 0.1);
+    --menu-amber-line: rgba(180, 83, 9, 0.24);
+    --menu-button-bg: rgba(255, 255, 255, 0.64);
+    --menu-field-bg: rgba(255, 255, 255, 0.7);
+    color: var(--menu-ink);
+}
+
+html[data-theme="dark"] .menu-page {
+    --menu-ink: #f8fbff;
+    --menu-copy: #b8c4d8;
+    --menu-line: rgba(171, 191, 222, 0.16);
+    --menu-line-strong: rgba(191, 207, 232, 0.28);
+    --menu-green: #2dd4bf;
+    --menu-green-hover: #5eead4;
+    --menu-green-soft: rgba(45, 212, 191, 0.14);
+    --menu-green-line: rgba(45, 212, 191, 0.3);
+    --menu-amber: #f59e0b;
+    --menu-amber-soft: rgba(245, 158, 11, 0.13);
+    --menu-amber-line: rgba(245, 158, 11, 0.28);
+    --menu-button-bg: rgba(17, 28, 46, 0.64);
+    --menu-field-bg: rgba(12, 22, 38, 0.7);
+}
+
+.menu-page .ant-typography-secondary {
+    color: var(--menu-copy);
+}
+
+.menu-page .ant-btn-default {
+    color: var(--menu-ink);
+    background: var(--menu-button-bg);
+    border-color: var(--menu-line);
+}
+
+.menu-page .ant-btn-default:not(:disabled):hover {
+    color: var(--menu-green) !important;
+    background: var(--menu-green-soft) !important;
+    border-color: var(--menu-green-line) !important;
+}
+
+.menu-page .ant-input-number,
+.menu-page .ant-input {
+    color: var(--menu-ink);
+    background: var(--menu-field-bg) !important;
+    border-color: var(--menu-line) !important;
+}
+
+.menu-page .ant-input-number:hover,
+.menu-page .ant-input:hover {
+    border-color: var(--menu-line-strong) !important;
+}
+
+.menu-page .ant-input-number-focused,
+.menu-page .ant-input:focus {
+    border-color: var(--menu-green) !important;
+    box-shadow: 0 0 0 3px var(--menu-green-soft) !important;
+}
+
+.menu-name-icon,
+.menu-empty-icon {
+    color: var(--menu-green);
+}
+
+.menu-name-cell {
+    display: inline-flex;
+    max-width: 100%;
+    min-width: 0;
+}
+
+.menu-name-cell .ant-space-item:nth-child(2) {
+    min-width: 0;
+}
+
+.menu-name-text,
+.menu-path-text {
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: bottom;
+}
+
+.menu-name-text {
+    min-width: 0;
+}
+
+.menu-drag-action {
+    cursor: grab;
+}
+
+.menu-editor-form {
+    padding-top: 6px;
+}
+
+.menu-rank-input {
+    width: 100%;
+}
+
+.menu-edit-footer {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.menu-empty-icon {
+    font-size: 28px;
+}

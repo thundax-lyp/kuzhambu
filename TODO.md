@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `kuzhambu-apps/admin-web`：迁入 sandwich admin-web 工程
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/ARCHITECTURE.md`
-    - 范围对象：`../sandwich/sandwish-admin-web/`、`kuzhambu-apps/admin-web/`
-    - 处理动作：复制前端工程并排除 `node_modules/`、`dist/`、`.DS_Store` 和来源独立 lock。
-    - 验收点：`kuzhambu-apps/admin-web/package.json` name 为 `kuzhambu-admin-web`，workspace 下可安装依赖。
-    - 重要度：10/10
-
 - [ ] `admin-web-governance`：迁入 admin-web 前端治理入口
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/DOCUMENT-RULES.md`

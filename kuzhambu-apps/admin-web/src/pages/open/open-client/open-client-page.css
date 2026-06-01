@@ -1,0 +1,126 @@
+.open-client-name-cell,
+.open-client-secret-field {
+    display: grid;
+    gap: 4px;
+}
+
+.open-client-api-key,
+.open-client-permission-list code {
+    overflow-wrap: anywhere;
+}
+
+.open-client-editor-form {
+    display: grid;
+    gap: 4px;
+}
+
+.open-client-editor-footer {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.open-client-editor-api-key {
+    margin-bottom: 4px;
+}
+
+.open-client-editor-api-key-empty {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 32px;
+}
+
+.open-client-secret-modal .ant-modal-body {
+    display: grid;
+    gap: 12px;
+}
+
+.open-client-secret-modal .ant-modal-content {
+    color: var(--text-primary);
+    background: var(--surface-panel);
+    border: 1px solid var(--line-subtle);
+    border-radius: 14px;
+    box-shadow: var(--shadow-soft);
+    backdrop-filter: blur(16px);
+}
+
+.open-client-secret-modal .ant-modal-header {
+    background: transparent;
+}
+
+.open-client-secret-modal .ant-modal-title {
+    color: var(--text-primary);
+}
+
+.open-client-secret-modal .ant-modal-footer .ant-btn-default {
+    color: var(--text-primary);
+    background: color-mix(in srgb, var(--surface-panel) 86%, transparent);
+    border-color: var(--line-subtle);
+}
+
+.open-client-secret-panel {
+    display: grid;
+    gap: 12px;
+}
+
+.open-client-secret-note {
+    display: block;
+    margin-bottom: 12px;
+    color: var(--text-secondary);
+}
+
+.open-client-secret-field {
+    gap: 8px;
+    padding: 12px;
+    background: color-mix(in srgb, var(--surface-panel) 88%, var(--surface-soft));
+    border: 1px solid var(--line-subtle);
+    border-radius: 8px;
+}
+
+.open-client-secret-field-header {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.open-client-secret-control {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    min-height: 38px;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--surface-soft) 68%, transparent);
+    border: 1px solid var(--line-subtle);
+    border-radius: 6px;
+}
+
+.open-client-secret-value {
+    min-width: 0;
+    padding: 9px 11px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    color: var(--text-primary);
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 12px;
+    line-height: 18px;
+    white-space: nowrap;
+}
+
+.open-client-secret-copy.ant-btn {
+    height: 100%;
+    min-width: 72px;
+    color: var(--text-secondary);
+    background: color-mix(in srgb, var(--surface-panel) 64%, transparent);
+    border: 0;
+    border-left: 1px solid var(--line-subtle);
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.open-client-secret-copy.ant-btn:hover,
+.open-client-secret-copy.ant-btn:focus-visible {
+    color: var(--accent-blue);
+    background: var(--accent-blue-soft);
+}

@@ -1,0 +1,125 @@
+.sandwish-list-page-actions {
+    --sandwish-list-page-accent: var(--accent-blue);
+    --sandwish-list-page-accent-line: color-mix(in srgb, var(--accent-blue) 24%, transparent);
+    --sandwish-list-page-accent-shadow: var(--shadow-blue);
+    --sandwish-list-page-accent-soft: var(--accent-blue-soft);
+    --sandwish-list-page-muted: var(--text-muted);
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.sandwish-list-page-search {
+    width: 250px;
+    transition:
+        width 0.18s ease,
+        opacity 0.14s ease,
+        margin 0.18s ease;
+}
+
+.sandwish-list-page-search-hidden {
+    width: 0;
+    min-width: 0;
+    margin: 0;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.sandwish-list-page-search-shortcut {
+    color: var(--sandwish-list-page-muted);
+    font-size: 11px;
+}
+
+.sandwish-list-page-actions .sandwish-list-page-filter-toggle-active {
+    color: var(--sandwish-list-page-accent);
+    background: var(--sandwish-list-page-accent-soft);
+    border-color: var(--sandwish-list-page-accent-line);
+}
+
+.sandwish-list-page-actions .sandwish-list-page-filter-toggle-active:hover {
+    color: var(--sandwish-list-page-accent) !important;
+    background: color-mix(in srgb, var(--sandwish-list-page-accent) 14%, transparent) !important;
+    border-color: color-mix(in srgb, var(--sandwish-list-page-accent) 34%, transparent) !important;
+}
+
+.sandwish-list-page-actions .ant-btn-primary {
+    box-shadow: var(--sandwish-list-page-accent-shadow);
+}
+
+.sandwish-list-page-table-area {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    gap: 14px;
+    align-items: start;
+}
+
+.sandwish-list-page-table-area-aside-right {
+    grid-template-columns: minmax(0, 1fr) minmax(220px, 280px);
+}
+
+.sandwish-list-page-table-area-aside-left {
+    grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+}
+
+.sandwish-list-page-table-area-aside-left .sandwish-list-page-table-aside {
+    grid-column: 1;
+    grid-row: 1;
+}
+
+.sandwish-list-page-table-area-aside-left .sandwish-list-page-table-main {
+    grid-column: 2;
+    grid-row: 1;
+}
+
+.sandwish-list-page-table-main {
+    min-width: 0;
+}
+
+.sandwish-list-page-table-aside {
+    min-width: 0;
+}
+
+@media (max-width: 760px) {
+    .sandwish-list-page-actions {
+        display: grid !important;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        width: 100%;
+        align-items: center;
+    }
+
+    .sandwish-list-page-actions .ant-space-item {
+        min-width: 0;
+    }
+
+    .sandwish-list-page-actions .ant-space-item:has(.sandwish-list-page-search-hidden) {
+        display: none;
+    }
+
+    .sandwish-list-page-search {
+        width: 100%;
+    }
+
+    .sandwish-list-page-actions .ant-space-item:has(.sandwish-list-page-search) {
+        grid-column: 1 / -1;
+    }
+
+    .sandwish-list-page-actions .ant-btn {
+        width: 100%;
+        white-space: nowrap;
+    }
+
+    .sandwish-list-page-search-hidden {
+        display: none;
+    }
+
+    .sandwish-list-page-table-area {
+        grid-template-columns: 1fr;
+    }
+
+    .sandwish-list-page-table-area-aside-left .sandwish-list-page-table-aside,
+    .sandwish-list-page-table-area-aside-left .sandwish-list-page-table-main {
+        grid-column: auto;
+        grid-row: auto;
+    }
+}
