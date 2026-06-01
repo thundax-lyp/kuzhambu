@@ -35,6 +35,14 @@ python -m playwright install --list
 
 `install --list` 输出必须保留在构建日志中，用于确认 Chromium revision。
 
+Browser Pool 运行参数：
+
+- `KUZHAMBU_WORKER_BROWSER_POOL_SIZE`：Chromium browser 进程数量，默认 `1`。
+- `KUZHAMBU_WORKER_BROWSER_MAX_PAGES`：最大并发 page 数，默认 `4`。
+- `KUZHAMBU_WORKER_BROWSER_PAGE_TIMEOUT_MS`：单页渲染超时，默认 `30000` 毫秒。
+
+PDF 渲染通过 Browser Pool 复用 Chromium。每次渲染创建独立 context/page，请求完成、超时或异常后关闭 context。
+
 ## Invocation
 
 - Java 主系统通过内部 HTTP request 调用 Python workers。

@@ -13,14 +13,6 @@
 
 ## 当前任务项
 
-- [ ] `workers browser pool`：实现 Playwright Browser Pool
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W15-Browser-Pool`
-    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/render/browser_pool.py`、`kuzhambu-workers/tests/test_browser_pool.py`、`kuzhambu-workers/README.md`
-    - 处理动作：实现 Playwright/Chromium Browser Pool 和运行说明
-    - 验收点：支持 pool size、max pages、page timeout，超时和异常路径释放 page/context
-    - 重要度：9/10
-
 - [ ] `workers operations report`：实现 Operations 报表渲染
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W16-Operations-Report-Renderer`
