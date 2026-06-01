@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `AI D2`：实现 AI 能力领域模型
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-DOMAIN.md#d2-capability-domain`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-domain/src/main/java/com/thundax/kuzhambu/ai/domain/capability/`
-    - 处理动作：按 RUNBOOK D2 的 4 个关联文件定义能力、能力映射、动作状态和仓储端口。
-    - 验收点：能力映射保存前可判断模型能力标签是否满足业务能力要求。
-    - 重要度：9/10
-
 - [ ] `AI D3`：实现提示词领域模型
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-DOMAIN.md#d3-prompt-domain`
