@@ -8,8 +8,15 @@
 
 ## Verification
 
-- [ ] PR workflow: `mvn -q clean spotless:check checkstyle:check test`
-- [ ] PR workflow: frontend package manifests and Python worker manifest
+- [ ] PR workflow: governance files
+- [ ] PR workflow: servers changed -> `mvn -q spotless:check`
+- [ ] PR workflow: servers changed -> `mvn -q checkstyle:check`
+- [ ] PR workflow: servers changed -> `mvn -q test`
+- [ ] PR workflow: workers changed -> `ruff format --check .`
+- [ ] PR workflow: workers changed -> `ruff check .`
+- [ ] PR workflow: workers changed -> `pytest`
+- [ ] PR workflow: apps changed -> frontend package manifests
+- [ ] PR workflow: db changed -> SQL seed checks
 
 ## Documentation And TODO
 

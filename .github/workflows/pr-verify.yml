@@ -19,8 +19,53 @@ jobs:
         steps:
             - name: Checkout
               uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: Detect changed paths
+              id: changes
+              shell: bash
+              run: |
+                  if [ "${{ github.event_name }}" = "pull_request" ]; then
+                    changed_files="$(git diff --name-only "origin/${{ github.base_ref }}"...HEAD)"
+                  else
+                    changed_files="$(git ls-files)"
+                  fi
+
+                  echo "$changed_files"
+
+                  if echo "$changed_files" | grep -Eq '^(\.github/workflows/pr-verify.yml|\.github/pull_request_template.md)$'; then
+                    verify_workflow_changed=true
+                  else
+                    verify_workflow_changed=false
+                  fi
+
+                  if [ "$verify_workflow_changed" = "true" ] || echo "$changed_files" | grep -Eq '^(kuzhambu-servers/|pom.xml$)'; then
+                    echo "servers_changed=true" >> "$GITHUB_OUTPUT"
+                  else
+                    echo "servers_changed=false" >> "$GITHUB_OUTPUT"
+                  fi
+
+                  if [ "$verify_workflow_changed" = "true" ] || echo "$changed_files" | grep -Eq '^kuzhambu-workers/'; then
+                    echo "workers_changed=true" >> "$GITHUB_OUTPUT"
+                  else
+                    echo "workers_changed=false" >> "$GITHUB_OUTPUT"
+                  fi
+
+                  if [ "$verify_workflow_changed" = "true" ] || echo "$changed_files" | grep -Eq '^kuzhambu-apps/'; then
+                    echo "apps_changed=true" >> "$GITHUB_OUTPUT"
+                  else
+                    echo "apps_changed=false" >> "$GITHUB_OUTPUT"
+                  fi
+
+                  if [ "$verify_workflow_changed" = "true" ] || echo "$changed_files" | grep -Eq '^db/'; then
+                    echo "db_changed=true" >> "$GITHUB_OUTPUT"
+                  else
+                    echo "db_changed=false" >> "$GITHUB_OUTPUT"
+                  fi
 
             - name: Setup Java
+              if: steps.changes.outputs.servers_changed == 'true'
               uses: actions/setup-java@v4
               with:
                   distribution: temurin
@@ -28,11 +73,13 @@ jobs:
                   cache: maven
 
             - name: Setup Node
+              if: steps.changes.outputs.apps_changed == 'true'
               uses: actions/setup-node@v4
               with:
                   node-version: "20"
 
             - name: Setup Python
+              if: steps.changes.outputs.workers_changed == 'true'
               uses: actions/setup-python@v5
               with:
                   python-version: "3.10"
@@ -56,6 +103,7 @@ jobs:
                   fi
 
             - name: Verify backend layout
+              if: steps.changes.outputs.servers_changed == 'true'
               run: |
                   test -d kuzhambu-servers/common
                   test -d kuzhambu-servers/biz
@@ -72,6 +120,7 @@ jobs:
                   fi
 
             - name: Verify Classics SQL seed
+              if: steps.changes.outputs.db_changed == 'true'
               run: |
                   test -f db/schema/classics.sql
                   test -f db/data/classics.sql
@@ -84,34 +133,51 @@ jobs:
                   grep -q 'INSERT INTO `classics_sancai_category`' db/data/classics.sql
                   grep -q 'INSERT INTO `classics_sancai_entry`' db/data/classics.sql
 
-            - name: Verify backend Maven modules
+            - name: Verify backend formatting
+              if: steps.changes.outputs.servers_changed == 'true'
               working-directory: kuzhambu-servers
-              run: mvn -q clean spotless:check checkstyle:check test
+              run: mvn -q spotless:check
+
+            - name: Verify backend style
+              if: steps.changes.outputs.servers_changed == 'true'
+              working-directory: kuzhambu-servers
+              run: mvn -q checkstyle:check
+
+            - name: Verify backend tests
+              if: steps.changes.outputs.servers_changed == 'true'
+              working-directory: kuzhambu-servers
+              run: mvn -q test
 
             - name: Verify frontend package manifests
+              if: steps.changes.outputs.apps_changed == 'true'
               run: |
                   node -e "JSON.parse(require('fs').readFileSync('kuzhambu-apps/package.json', 'utf8'))"
                   node -e "JSON.parse(require('fs').readFileSync('kuzhambu-apps/admin-web/package.json', 'utf8'))"
                   node -e "JSON.parse(require('fs').readFileSync('kuzhambu-apps/portal-web/package.json', 'utf8'))"
 
             - name: Verify Python worker manifest
+              if: steps.changes.outputs.workers_changed == 'true'
               run: |
                   test -f kuzhambu-workers/pyproject.toml
                   grep -q 'name = "kuzhambu-workers"' kuzhambu-workers/pyproject.toml
                   grep -q 'requires-python = ">=3.10,<3.11"' kuzhambu-workers/pyproject.toml
 
             - name: Install Python worker dependencies
+              if: steps.changes.outputs.workers_changed == 'true'
               working-directory: kuzhambu-workers
               run: python -m pip install -e '.[dev]'
 
             - name: Verify Python worker formatting
+              if: steps.changes.outputs.workers_changed == 'true'
               working-directory: kuzhambu-workers
               run: ruff format --check .
 
             - name: Verify Python worker lint
+              if: steps.changes.outputs.workers_changed == 'true'
               working-directory: kuzhambu-workers
               run: ruff check .
 
             - name: Verify Python worker tests
+              if: steps.changes.outputs.workers_changed == 'true'
               working-directory: kuzhambu-workers
               run: pytest
