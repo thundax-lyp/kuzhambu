@@ -13,14 +13,6 @@
 
 ## 当前任务项
 
-- [ ] `workers ai schemas`：实现 AI 协议模型
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W6-AI-Schemas`
-    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/schemas/ai.py`、`kuzhambu-workers/src/kuzhambu_workers/schemas/stream.py`、`kuzhambu-workers/tests/test_ai_schemas.py`
-    - 处理动作：实现 AI invoke、response、usage、prompt、modelConfig 和 SSE event schema
-    - 验收点：字段与 AI 接口对齐，`image_gen`、`fusion`、`version_summary` 存在
-    - 重要度：10/10
-
 - [ ] `workers graph registry`：实现 LangGraph 能力注册
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W7-LangGraph-Registry`

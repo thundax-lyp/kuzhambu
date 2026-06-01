@@ -1,0 +1,112 @@
+from enum import Enum
+from typing import Any
+
+from pydantic import BaseModel, Field
+
+from kuzhambu_workers.schemas.common import UsageSummary, WorkerErrorPayload, WorkerStatus
+
+
+class AiCapability(str, Enum):
+    TRANSLATE = "translate"
+    SUMMARY = "summary"
+    VERSION_SUMMARY = "version_summary"
+    TAGS = "tags"
+    QA = "qa"
+    IMAGE_ANALYSIS = "image_analysis"
+    IMAGE_GEN = "image_gen"
+    VISUAL = "visual"
+    FUSION = "fusion"
+    SPLIT = "split"
+    QUERY_UNDERSTANDING = "query_understanding"
+    ANSWER_GENERATION = "answer_generation"
+    KNOWLEDGE_GRAPH = "knowledge_graph"
+    RELATION_EXTRACTION = "relation_extraction"
+    LINEAGE_EXTRACTION = "lineage_extraction"
+    PROMPT_SUGGESTION = "prompt_suggestion"
+
+
+class ResultFormat(str, Enum):
+    TEXT = "TEXT"
+    MARKDOWN = "MARKDOWN"
+    JSON = "JSON"
+    STRUCTURED = "STRUCTURED"
+    ARTIFACT = "ARTIFACT"
+
+
+class MessageRole(str, Enum):
+    SYSTEM = "system"
+    USER = "user"
+    ASSISTANT = "assistant"
+    TOOL = "tool"
+
+
+class AiModelConfig(BaseModel):
+    serviceRole: str
+    apiSource: str
+    baseUrl: str
+    apiKey: str
+    modelName: str
+    capabilityTags: list[str] = Field(default_factory=list)
+    parameters: dict[str, Any] = Field(default_factory=dict)
+    timeoutMs: int = 60_000
+
+
+class AiMessage(BaseModel):
+    role: MessageRole
+    content: str
+
+
+class AiPrompt(BaseModel):
+    templateId: str | None = None
+    promptVersionId: str | None = None
+    versionNo: int | None = None
+    messages: list[AiMessage]
+    variables: dict[str, Any] = Field(default_factory=dict)
+    promptHash: str | None = None
+
+
+class AiInput(BaseModel):
+    contentType: str
+    contentId: str | None = None
+    payload: dict[str, Any] = Field(default_factory=dict)
+
+
+class AiOutputSchema(BaseModel):
+    type: str
+    schema_: dict[str, Any] | None = Field(default=None, alias="schema")
+
+
+class AiOptions(BaseModel):
+    stream: bool = False
+    forceJson: bool = False
+    locale: str = "zh-CN"
+
+
+class AiInvokeRequest(BaseModel):
+    requestId: str
+    traceId: str
+    callerDomain: str
+    operation: str
+    capability: AiCapability
+    scope: str
+    modelConfig: AiModelConfig
+    prompt: AiPrompt
+    input: AiInput
+    outputSchema: AiOutputSchema
+    options: AiOptions = Field(default_factory=AiOptions)
+
+
+class AiResult(BaseModel):
+    format: ResultFormat
+    payload: Any
+
+
+class AiInvokeResponse(BaseModel):
+    requestId: str
+    traceId: str
+    status: WorkerStatus
+    capability: AiCapability
+    result: AiResult | None = None
+    usage: UsageSummary = Field(default_factory=UsageSummary)
+    warnings: list[dict[str, Any]] = Field(default_factory=list)
+    error: WorkerErrorPayload | None = None
