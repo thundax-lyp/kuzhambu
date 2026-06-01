@@ -13,14 +13,6 @@
 
 ## 当前任务项
 
-- [ ] `workers e2e tests`：补充 workers 协议级端到端测试
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W19-End-To-End-Worker-Verification`
-    - 范围对象：`kuzhambu-workers/tests/test_worker_e2e_ai.py`、`kuzhambu-workers/tests/test_worker_e2e_render.py`、`kuzhambu-workers/tests/test_worker_e2e_security.py`
-    - 处理动作：补充 AI、render 和 security 协议级端到端测试
-    - 验收点：AI happy path、render artifact chunk、未签名、错误签名、越权和 stream 中断路径被覆盖
-    - 重要度：10/10
-
 - [ ] `workers cleanup`：完成 PR 前现场清理
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W20-Cleanup-And-PR-Readiness`
