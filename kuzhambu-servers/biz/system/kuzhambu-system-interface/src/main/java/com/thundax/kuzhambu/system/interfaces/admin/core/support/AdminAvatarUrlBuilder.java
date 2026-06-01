@@ -29,7 +29,8 @@ public class AdminAvatarUrlBuilder {
 
     private String currentContextPath() {
         RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
-        if (attributes instanceof ServletRequestAttributes servletRequestAttributes) {
+        if (attributes instanceof ServletRequestAttributes) {
+            ServletRequestAttributes servletRequestAttributes = (ServletRequestAttributes) attributes;
             String requestContextPath = servletRequestAttributes.getRequest().getContextPath();
             if (StringUtils.isNotBlank(requestContextPath)) {
                 return requestContextPath;
