@@ -13,14 +13,6 @@
 
 ## 当前任务项
 
-- [ ] `workers security`：实现内部 HMAC 认证
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W4-Internal-HMAC-Security`
-    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/core/security.py`、`kuzhambu-workers/src/kuzhambu_workers/schemas/common.py`、`kuzhambu-workers/tests/test_security.py`
-    - 处理动作：实现签名校验、服务白名单和路径授权
-    - 验收点：覆盖签名成功失败、时间偏差、服务越权、路径越权和 requestId/traceId 不一致
-    - 重要度：10/10
-
 - [ ] `workers health capabilities`：实现健康和能力接口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W5-Health-And-Capabilities-API`
