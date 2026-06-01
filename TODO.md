@@ -13,14 +13,6 @@
 
 ## 当前任务项
 
-- [ ] `workers sancai showcase`：实现三才图会静态展示渲染
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W14-Sancai-Showcase-Renderer`
-    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/render/sancai_showcase.py`、`kuzhambu-workers/src/kuzhambu_workers/render/templates/sancai_showcase.html`、`kuzhambu-workers/tests/test_sancai_showcase.py`
-    - 处理动作：实现三才图会静态展示页面渲染
-    - 验收点：支持数据集元信息、目录、正文和图片引用快照，不回查 Storage 或数据库
-    - 重要度：8/10
-
 - [ ] `workers browser pool`：实现 Playwright Browser Pool
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W15-Browser-Pool`
