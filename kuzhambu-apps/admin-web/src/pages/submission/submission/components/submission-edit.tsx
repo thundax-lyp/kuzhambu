@@ -2,7 +2,7 @@ import { FileImageOutlined, UploadOutlined } from "@ant-design/icons";
 import { useMutation } from "@tanstack/react-query";
 import { App, Button, Form, Input, Space, Typography, Upload } from "antd";
 import { useEffect, useState } from "react";
-import { SandwishDrawer } from "@/components/sandwish-drawer";
+import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import * as service from "../submission-service";
 import type { SubmissionSaveCommand } from "../submission-service";
 import type { StorageUploadRecord } from "../submission-types";
@@ -107,7 +107,7 @@ export const SubmissionEdit = ({ open, saving, onClose, onSave }: SubmissionEdit
     };
 
     return (
-        <SandwishDrawer
+        <KuzhambuDrawer
             title="新增提交"
             open={Boolean(open)}
             size="middle"
@@ -183,6 +183,6 @@ export const SubmissionEdit = ({ open, saving, onClose, onSave }: SubmissionEdit
                     </div>
                 </Form.Item>
             </Form>
-        </SandwishDrawer>
+        </KuzhambuDrawer>
     );
 };

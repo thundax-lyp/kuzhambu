@@ -1,6 +1,6 @@
 import { Button, Form, Input, InputNumber, Select } from "antd";
 import { useEffect } from "react";
-import { SandwishDrawer } from "@/components/sandwish-drawer";
+import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import type { MenuSaveCommand } from "../menu-service";
 import type { MenuNode } from "../menu-types";
 
@@ -81,7 +81,7 @@ export const MenuEdit = ({ open, menu, parentOptions, saving, onClose, onSave }:
     };
 
     return (
-        <SandwishDrawer
+        <KuzhambuDrawer
             className="menu-edit-drawer"
             title={menu ? "编辑菜单" : "新增菜单"}
             open={Boolean(open)}
@@ -139,6 +139,6 @@ export const MenuEdit = ({ open, menu, parentOptions, saving, onClose, onSave }:
                     <TextArea rows={3} maxLength={200} showCount placeholder="菜单说明" />
                 </Form.Item>
             </Form>
-        </SandwishDrawer>
+        </KuzhambuDrawer>
     );
 };

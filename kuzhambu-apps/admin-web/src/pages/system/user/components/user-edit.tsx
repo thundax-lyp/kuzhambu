@@ -2,7 +2,7 @@ import { CameraOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
 import { Button, Input, Select, Switch, Upload } from "antd";
 import { useMemo, useState } from "react";
-import { SandwishDrawer } from "@/components/sandwish-drawer";
+import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import type { CurrentUserRecord } from "@/service/current-user-types";
 import type { OptionsRecord } from "@/types/options";
 import * as service from "../user-service";
@@ -163,7 +163,7 @@ export const UserEdit = ({
     };
 
     return (
-        <SandwishDrawer
+        <KuzhambuDrawer
             className="user-edit-drawer"
             title={title}
             open={visible}
@@ -373,6 +373,6 @@ export const UserEdit = ({
                     </label>
                 </div>
             ) : null}
-        </SandwishDrawer>
+        </KuzhambuDrawer>
     );
 };

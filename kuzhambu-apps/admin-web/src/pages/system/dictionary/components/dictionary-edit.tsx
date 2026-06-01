@@ -1,6 +1,6 @@
 import { Button, Form, Input } from "antd";
 import { useEffect } from "react";
-import { SandwishDrawer } from "@/components/sandwish-drawer";
+import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import type { DictSaveCommand } from "../dictionary-service";
 import type { DictRecord } from "../dictionary-types";
 
@@ -73,7 +73,7 @@ export const DictionaryEdit = ({
     };
 
     return (
-        <SandwishDrawer
+        <KuzhambuDrawer
             className="dictionary-edit-drawer"
             title={dictionary ? "编辑字典项" : "新增字典项"}
             open={Boolean(open)}
@@ -117,6 +117,6 @@ export const DictionaryEdit = ({
                     <TextArea rows={3} maxLength={200} showCount placeholder="补充使用说明" />
                 </Form.Item>
             </Form>
-        </SandwishDrawer>
+        </KuzhambuDrawer>
     );
 };

@@ -1,5 +1,5 @@
 import { Space, Tag, Typography } from "antd";
-import { SandwishDrawer } from "@/components/sandwish-drawer";
+import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import type { SubmissionStatus } from "../submission-service";
 import type { SubmissionRecord } from "../submission-types";
 
@@ -21,7 +21,7 @@ const readStatusLabel = (
 };
 
 export const SubmissionDetail = ({ submission, statusLabels, onClose }: SubmissionDetailProps) => (
-    <SandwishDrawer title="提交详情" open={Boolean(submission)} size="middle" onClose={onClose}>
+    <KuzhambuDrawer title="提交详情" open={Boolean(submission)} size="middle" onClose={onClose}>
         {submission ? (
             <div className="submission-detail-content">
                 <Text type="secondary">标题</Text>
@@ -42,5 +42,5 @@ export const SubmissionDetail = ({ submission, statusLabels, onClose }: Submissi
                 )}
             </div>
         ) : null}
-    </SandwishDrawer>
+    </KuzhambuDrawer>
 );

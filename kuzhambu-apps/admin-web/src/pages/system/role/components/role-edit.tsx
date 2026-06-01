@@ -2,7 +2,7 @@ import { Button, Form, Input, Tree, Typography } from "antd";
 import type { DataNode } from "antd/es/tree";
 import { useEffect, useState } from "react";
 import type { Key } from "react";
-import { SandwishDrawer } from "@/components/sandwish-drawer";
+import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
 import type { OptionsRecord } from "@/types/options";
 import type { RoleSaveCommand } from "../role-service";
@@ -99,7 +99,7 @@ export const RoleEdit = ({
     };
 
     return (
-        <SandwishDrawer
+        <KuzhambuDrawer
             className="role-edit-drawer"
             title={role ? "编辑角色" : "新增角色"}
             open={Boolean(open)}
@@ -168,6 +168,6 @@ export const RoleEdit = ({
                     />
                 </div>
             </Form>
-        </SandwishDrawer>
+        </KuzhambuDrawer>
     );
 };

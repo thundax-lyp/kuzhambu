@@ -1,7 +1,7 @@
 import { KeyOutlined } from "@ant-design/icons";
 import { Button, Form, Input, Select, Typography } from "antd";
 import { useEffect } from "react";
-import { SandwishDrawer } from "@/components/sandwish-drawer";
+import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import type { OpenClientSaveCommand } from "../open-client-service";
 import type { OpenClientRecord } from "../open-client-types";
 import { OpenClientSecretField } from "./open-client-secret-field";
@@ -174,7 +174,7 @@ export const OpenClientEdit = ({
     };
 
     return (
-        <SandwishDrawer
+        <KuzhambuDrawer
             title={editing ? "编辑开放客户端" : "新增开放客户端"}
             open={Boolean(open)}
             size="middle"
@@ -213,6 +213,6 @@ export const OpenClientEdit = ({
                     <TextArea rows={3} maxLength={255} />
                 </Form.Item>
             </Form>
-        </SandwishDrawer>
+        </KuzhambuDrawer>
     );
 };

@@ -1,7 +1,7 @@
 import { Avatar, Descriptions, Empty, Space, Typography } from "antd";
 import { ADMIN_API_BASE_URL } from "@/api/http";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
-import { SandwishDrawer } from "@/components/sandwish-drawer";
+import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import { KuzhambuTag } from "@/components/kuzhambu-tag";
 import type {
     AuditFieldRecord,
@@ -198,7 +198,7 @@ export const AuditLogDetail = ({
     open,
     onClose
 }: AuditLogDetailProps) => (
-    <SandwishDrawer title="审计详情" open={open} size="large" loading={loading} onClose={onClose}>
+    <KuzhambuDrawer title="审计详情" open={open} size="large" loading={loading} onClose={onClose}>
         {auditLog ? (
             <div className="audit-log-detail">
                 <Descriptions column={2} size="small" bordered>
@@ -255,5 +255,5 @@ export const AuditLogDetail = ({
             </div>
         ) : null}
         {!auditLog && error ? <Empty description="审计详情加载失败" /> : null}
-    </SandwishDrawer>
+    </KuzhambuDrawer>
 );

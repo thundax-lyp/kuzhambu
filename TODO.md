@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `kuzhambu-drawer`：迁移 `sandwish-drawer`
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/ARCHITECTURE.md`
-    - 范围对象：`src/components/sandwish-drawer/`、使用 `SandwishDrawer` 的编辑和详情组件
-    - 处理动作：将抽屉组件、类型、CSS class、CSS variable 和调用方改为 `KuzhambuDrawer` / `kuzhambu-drawer`。
-    - 验收点：`sandwish-drawer` 组件模块无旧命名残留，admin-web lint 通过。
-    - 重要度：8/10
-
 - [ ] `kuzhambu-list-page`：迁移 `sandwish-list-page`
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/ARCHITECTURE.md`

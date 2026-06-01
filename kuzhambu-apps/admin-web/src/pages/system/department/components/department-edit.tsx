@@ -1,6 +1,6 @@
 import { Button, Form, Input, Select } from "antd";
 import { useEffect } from "react";
-import { SandwishDrawer } from "@/components/sandwish-drawer";
+import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import type { DepartmentSaveCommand } from "../department-service";
 import type { DepartmentNode } from "../department-types";
 
@@ -75,7 +75,7 @@ export const DepartmentEdit = ({
     };
 
     return (
-        <SandwishDrawer
+        <KuzhambuDrawer
             className="department-edit-drawer"
             title={department ? "编辑部门" : "新增部门"}
             open={Boolean(open)}
@@ -115,6 +115,6 @@ export const DepartmentEdit = ({
                     <TextArea rows={4} maxLength={200} showCount placeholder="部门职责说明" />
                 </Form.Item>
             </Form>
-        </SandwishDrawer>
+        </KuzhambuDrawer>
     );
 };
