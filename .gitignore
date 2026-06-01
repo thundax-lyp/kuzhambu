@@ -43,3 +43,4 @@ __pycache__/
 dev.env
 deploy/.env
 /temp/
+/kuzhambu-servers/starter/kuzhambu-admin-starter/logs/

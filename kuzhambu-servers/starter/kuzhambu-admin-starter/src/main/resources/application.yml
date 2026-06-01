@@ -1,7 +1,7 @@
 server:
   port: ${SERVER_PORT:20010}
   servlet:
-    context-path: ${SERVER_SERVLET_CONTEXT_PATH:/api/admin}
+    context-path: ${SERVER_SERVLET_CONTEXT_PATH:/admin-api}
 
 spring:
   application:
