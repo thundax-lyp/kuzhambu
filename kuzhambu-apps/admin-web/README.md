@@ -1,6 +1,6 @@
 # sandwish-admin-web
 
-Sandwich 后台管理前端工程，对接 `sandwish-admin-api`。
+Kuzhambu 后台管理前端工程，对接 `kuzhambu-admin-api`。
 
 ## 技术栈
 
@@ -48,7 +48,7 @@ npm run build
 
 ```text
 public/
-  sandwich-logo.svg    产品 Logo
+  kuzhambu-logo.svg    产品 Logo
 src/
   App.tsx              后台管理端应用壳
   main.tsx             React 入口

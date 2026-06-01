@@ -1,8 +1,8 @@
-interface SandwichLogoProps {
+interface KuzhambuLogoProps {
     className?: string;
 }
 
-export const SandwichLogo = ({ className }: SandwichLogoProps) => {
+export const KuzhambuLogo = ({ className }: KuzhambuLogoProps) => {
     return (
         <svg
             className={className}
@@ -12,7 +12,7 @@ export const SandwichLogo = ({ className }: SandwichLogoProps) => {
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
             role="img"
-            aria-label="Sandwich"
+            aria-label="Kuzhambu"
         >
             <rect className="logo-tile" width="96" height="96" rx="22" />
             <path

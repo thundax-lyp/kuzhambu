@@ -29,7 +29,7 @@ import { useCurrentAccessToken } from "@/auth/hooks/use-current-access-token";
 import { replacePermissions } from "../auth/permission-storage";
 import { toAuthenticatedResourceUrl } from "../auth/resource-url";
 import { clearAccessToken, getAccessToken } from "../auth/token-storage";
-import { SandwichLogo } from "../components/sandwich-logo";
+import { KuzhambuLogo } from "../components/kuzhambu-logo";
 import {
     getCurrentUserInfo,
     listCurrentUserMenus,
@@ -302,9 +302,9 @@ export const AdminLayout = () => {
                 trigger={null}
             >
                 <div className="brand">
-                    <SandwichLogo className="brand-logo" />
+                    <KuzhambuLogo className="brand-logo" />
                     <div className="brand-copy">
-                        <strong>Sandwich</strong>
+                        <strong>Kuzhambu</strong>
                         <span>Console</span>
                     </div>
                 </div>
@@ -336,7 +336,7 @@ export const AdminLayout = () => {
                             onClick={() => setSidebarCollapsed((collapsed) => !collapsed)}
                         />
                         <div>
-                            <Text className="topbar-path">Sandwich Console</Text>
+                            <Text className="topbar-path">Kuzhambu Console</Text>
                         </div>
                     </div>
                     <Space className="topbar-actions">

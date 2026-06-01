@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `kuzhambu-logo`：迁移 `sandwich-logo`
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/UI-RULES.md`
-    - 范围对象：`src/components/sandwich-logo.tsx`、`public/sandwich-logo.svg`、`src/layouts/admin-layout.tsx`
-    - 处理动作：将 logo 组件、静态资产和直接调用方改为 `KuzhambuLogo` / `kuzhambu-logo`。
-    - 验收点：logo 组件和静态资源无旧品牌命名残留，admin-web lint 通过。
-    - 重要度：8/10
-
 - [ ] `admin-web-brand-copy`：收口剩余品牌文案
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/UI-RULES.md`
