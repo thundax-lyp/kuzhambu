@@ -13,14 +13,6 @@
 
 ## 当前任务项
 
-- [ ] `workers render schemas`：实现 render 协议模型
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W12-Render-Schemas`
-    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/schemas/render.py`、`kuzhambu-workers/tests/test_render_schemas.py`
-    - 处理动作：实现 render 请求、响应、artifact 和 summary schema
-    - 验收点：支持三类 renderType 和 CSV/JSON/HTML/ZIP/PDF，大产物必须走 stream artifact chunk
-    - 重要度：9/10
-
 - [ ] `workers classics export`：实现 Classics 导出渲染
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W13-Classics-Export-Renderer`
