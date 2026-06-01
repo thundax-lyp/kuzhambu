@@ -121,6 +121,8 @@ Render 能力只处理调用方已经完成权限过滤、风险确认和数据�
 
 AI 接口契约见 [`WORKERS-AI-INTERFACE.md`](../20-interfaces/WORKERS-AI-INTERFACE.md)。
 
+AI usecase 接口契约见 [`WORKERS-AI-USECASE-INTERFACE.md`](../20-interfaces/WORKERS-AI-USECASE-INTERFACE.md)。
+
 Render 接口契约见 [`WORKERS-RENDER-INTERFACE.md`](../20-interfaces/WORKERS-RENDER-INTERFACE.md)。
 
 OpenAPI 和 Swagger UI 仅作为内部开发、联调和排查入口，固定挂载在 `/internal/*` 路径下，不作为公网接口入口。

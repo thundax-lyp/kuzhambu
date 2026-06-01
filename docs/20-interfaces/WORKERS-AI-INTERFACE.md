@@ -111,6 +111,8 @@ Workers 不使用回调接口。任何回调能力都不得复用当前 AI 执�
 - `POST /internal/ai/discovery/answer-generation`
 - `POST /internal/ai/knowledge/lineage-extraction`
 
+完整 usecase path、capability、stream 和输入快照要求见 [`WORKERS-AI-USECASE-INTERFACE.md`](./WORKERS-AI-USECASE-INTERFACE.md)。
+
 健康与能力发现接口：
 
 - `GET /internal/health`

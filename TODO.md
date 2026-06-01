@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `workers ai usecase contract`：同步 AI usecase 接口口径
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-AI-USECASE.md#U1-Usecase-Contract-Sync`
-    - 范围对象：`docs/20-interfaces/WORKERS-AI-USECASE-INTERFACE.md`、`docs/20-interfaces/WORKERS-AI-INTERFACE.md`、`docs/30-designs/WORKERS-DESIGN.md`、`kuzhambu-workers/README.md`
-    - 处理动作：同步 usecase path、通用调试接口和真实业务接入口径
-    - 验收点：文档一致说明真实业务必须使用 usecase path
-    - 重要度：10/10
-
 - [ ] `workers ai usecase registry`：实现 AI usecase 注册表
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-AI-USECASE.md#U2-Usecase-Registry`
