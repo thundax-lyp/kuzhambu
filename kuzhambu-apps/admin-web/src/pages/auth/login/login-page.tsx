@@ -7,6 +7,7 @@ import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { createLoginForm, getCaptchaUrl, refreshCaptcha } from "@/auth/auth-service";
 import { loginWithPermissions } from "@/auth/auth-session-service";
 import { getAccessToken } from "@/auth/token-storage";
+import { KuzhambuLogo } from "@/components/kuzhambu-logo";
 import "./login-page.css";
 
 const { Title, Text, Paragraph } = Typography;
@@ -88,49 +89,7 @@ export const LoginPage = () => {
         <>
             <main className="login-page">
                 <section className="login-hero">
-                    <svg
-                        className="login-logo"
-                        width="136"
-                        height="136"
-                        viewBox="0 0 136 136"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                        role="img"
-                        aria-label="Kuzhambu"
-                    >
-                        <rect
-                            className="login-logo-tile"
-                            x="8"
-                            y="8"
-                            width="120"
-                            height="120"
-                            rx="28"
-                        />
-                        <path
-                            className="login-logo-top"
-                            d="M30 50C30 37.85 39.85 28 52 28H84C96.15 28 106 37.85 106 50V56H30V50Z"
-                        />
-                        <path
-                            className="login-logo-middle"
-                            d="M24 63H112V80C112 87.73 105.73 94 98 94H38C30.27 94 24 87.73 24 80V63Z"
-                        />
-                        <path
-                            className="login-logo-bottom"
-                            d="M34 101H102V106C102 116.49 93.49 125 83 125H53C42.51 125 34 116.49 34 106V101Z"
-                        />
-                        <path
-                            className="login-logo-middle-line"
-                            d="M45 74H91"
-                            strokeWidth="6"
-                            strokeLinecap="round"
-                        />
-                        <path
-                            className="login-logo-top-line"
-                            d="M53 43H83"
-                            strokeWidth="6"
-                            strokeLinecap="round"
-                        />
-                    </svg>
+                    <KuzhambuLogo className="login-logo" />
                     <Title level={1}>KUZHAMBU WORKSPACE</Title>
                     <Paragraph>使用后台账号和验证码进入工作区。</Paragraph>
                 </section>

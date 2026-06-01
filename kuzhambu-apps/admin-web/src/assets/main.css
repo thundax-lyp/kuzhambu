@@ -17,10 +17,6 @@
     --accent-cinnabar: #b33a32;
     --accent-jade: #4f927a;
     --paper-fiber: rgba(116, 101, 76, 0.08);
-    --logo-tile: #fffdf8;
-    --logo-middle: #1f4b73;
-    --logo-middle-line: #f7f1e3;
-    --logo-top-line: #1d211d;
     --shadow-soft: 0 18px 48px rgba(70, 58, 38, 0.1);
     --shadow-blue: 0 14px 30px rgba(31, 75, 115, 0.22);
     --sidebar-width: 248px;
@@ -58,10 +54,6 @@ html[data-theme="dark"] {
     --accent-cinnabar: #d97867;
     --accent-jade: #7bb49e;
     --paper-fiber: rgba(224, 209, 177, 0.08);
-    --logo-tile: #1a211d;
-    --logo-middle: #7fa4c4;
-    --logo-middle-line: #111713;
-    --logo-top-line: #f3eee3;
     --shadow-soft: 0 24px 70px rgba(0, 0, 0, 0.38);
     --shadow-blue: 0 18px 40px rgba(127, 164, 196, 0.24);
 }
@@ -233,36 +225,13 @@ html[data-theme="dark"] .sidebar-ink {
 }
 
 .brand-logo {
-    display: grid;
+    display: block;
     width: 44px;
     height: 44px;
     border: 1px solid var(--line-strong);
     border-radius: 8px;
+    object-fit: fill;
     box-shadow: 0 10px 24px rgba(70, 58, 38, 0.12);
-}
-
-.logo-tile {
-    fill: var(--logo-tile);
-}
-
-.logo-top {
-    fill: var(--accent-yellow);
-}
-
-.logo-middle {
-    fill: var(--logo-middle);
-}
-
-.logo-bottom {
-    fill: var(--accent-lime);
-}
-
-.logo-middle-line {
-    stroke: var(--logo-middle-line);
-}
-
-.logo-top-line {
-    stroke: var(--logo-top-line);
 }
 
 .brand strong,
