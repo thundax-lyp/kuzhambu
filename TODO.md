@@ -13,14 +13,6 @@
 
 ## 当前任务项
 
-- [ ] `workers operations report`：实现 Operations 报表渲染
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W16-Operations-Report-Renderer`
-    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/render/operations_report.py`、`kuzhambu-workers/src/kuzhambu_workers/render/templates/operations_report.html`、`kuzhambu-workers/src/kuzhambu_workers/render/browser_pool.py`、`kuzhambu-workers/tests/test_operations_report.py`
-    - 处理动作：实现 Operations HTML/PDF 报表渲染
-    - 验收点：HTML 可生成，PDF 使用 Browser Pool 和 Chromium print，PDF 通过 SSE artifact chunk 输出
-    - 重要度：9/10
-
 - [ ] `workers render routes`：实现 render 同步和 stream 路由
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W17-Render-Routes`
