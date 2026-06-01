@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `AI I3`：实现调用记录持久化
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-DOMAIN.md#i3-invocation-persistence`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-infra/src/main/java/com/thundax/kuzhambu/ai/infra/invocation/`、`kuzhambu-servers/biz/ai/kuzhambu-ai-infra/src/main/java/com/thundax/kuzhambu/ai/infra/batch/`
-    - 处理动作：按 RUNBOOK I3 的 4 个关联文件实现调用记录、候选结果、批量任务和专项结果持久化。
-    - 验收点：调用失败、stream 中断、候选状态和批量计数均能持久化。
-    - 重要度：9/10
-
 - [ ] `AI I4`：实现 worker client 协议
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-DOMAIN.md#i4-worker-client-contract`
