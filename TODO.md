@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `AI V2`：验证 worker client 协议
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-DOMAIN.md#v2-worker-client-verification`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-infra/src/test/java/com/thundax/kuzhambu/ai/infra/client/`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/test/java/com/thundax/kuzhambu/ai/application/invocation/`
-    - 处理动作：按 RUNBOOK V2 的 3 个关联文件验证 worker client 请求签名、错误归一化和 stream completed 处理。
-    - 验收点：签名输入与接口文档一致；stream 未收到 completed 时记录为失败或部分失败。
-    - 重要度：9/10
-
 - [ ] `AI V3`：验证 AI 持久化
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-DOMAIN.md#v3-ai-persistence-verification`
