@@ -13,14 +13,6 @@
 
 ## 当前任务项
 
-- [ ] `workers sse`：实现 SSE 事件编码
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W9-SSE-Encoding`
-    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/streaming/events.py`、`kuzhambu-workers/src/kuzhambu_workers/streaming/sse.py`、`kuzhambu-workers/tests/test_sse.py`
-    - 处理动作：实现稳定 SSE 事件编码和事件生成 helper
-    - 验收点：事件类型齐全，事件必含 requestId、traceId、stage、timestamp，JSON data 稳定
-    - 重要度：10/10
-
 - [ ] `workers ai routes`：实现 AI invoke 和 stream 路由
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W10-AI-Invoke-And-Stream-Routes`
