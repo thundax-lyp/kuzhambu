@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `workers ai usecase registry`：实现 AI usecase 注册表
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-AI-USECASE.md#U2-Usecase-Registry`
-    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/ai/usecase_registry.py`、`kuzhambu-workers/tests/test_ai_usecase_registry.py`
-    - 处理动作：实现 path 到 capability、stream 和 OpenAPI 描述的注册表
-    - 验收点：注册表覆盖接口文档中的全部 usecase path
-    - 重要度：10/10
-
 - [ ] `workers ai shared orchestration`：抽取 AI 路由共享编排
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-AI-USECASE.md#U3-AI-Route-Shared-Orchestration`
