@@ -1,8 +1,8 @@
 package com.thundax.kuzhambu.classics.application.sharing.service.impl;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkCreateCommand;
 import com.thundax.kuzhambu.classics.application.sharing.command.ClassicsShareTargetSortCommand;
+import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkCreateCommand;
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkStatusCommand;
 import com.thundax.kuzhambu.classics.application.sharing.query.ShareAccessQuery;
 import com.thundax.kuzhambu.classics.application.sharing.service.ClassicsSharingApplicationService;
@@ -13,15 +13,15 @@ import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsSh
 import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareTargetId;
 import com.thundax.kuzhambu.classics.domain.sharing.repository.ClassicsSharingRepository;
 import com.thundax.kuzhambu.common.core.exception.BizException;
-import com.thundax.kuzhambu.common.core.exception.ErrorCode;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
+import com.thundax.kuzhambu.common.core.exception.ErrorCode;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Service;
@@ -65,7 +65,8 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
         }
         ClassicsShareLinkId linkId = repository.insertLink(link);
         int nextPriority = repository.maxTargetPriority() + 1;
-        List<ClassicsShareTarget> targets = command.getTargets() == null ? Collections.emptyList() : command.getTargets();
+        List<ClassicsShareTarget> targets =
+                command.getTargets() == null ? Collections.emptyList() : command.getTargets();
         for (ClassicsShareTarget target : targets) {
             target.setShareLinkId(linkId == null ? null : linkId);
             target.setPriority(nextPriority++);

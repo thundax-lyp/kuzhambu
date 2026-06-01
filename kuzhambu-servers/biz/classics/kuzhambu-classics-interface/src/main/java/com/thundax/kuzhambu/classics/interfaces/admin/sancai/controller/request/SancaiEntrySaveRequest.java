@@ -46,5 +46,4 @@ public class SancaiEntrySaveRequest {
 
     @JsonProperty("refinementStatus")
     private String refinementStatus;
-
 }

@@ -50,5 +50,4 @@ public class MingCustomsRequest extends PageRequest {
 
     @JsonProperty("sortDirection")
     private String sortDirection;
-
 }

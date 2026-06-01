@@ -109,10 +109,10 @@ public class MingCustomsRepositoryImpl implements MingCustomsRepository {
 
     @Override
     public List<MingCustomsKeyword> listKeywordsByCustomId(MingCustomsEntryId customId, SortDirection sortDirection) {
-        return MingCustomsPersistenceAssembler.toKeywordDomainList(
-                keywordMapper.selectList(new LambdaQueryWrapper<MingCustomsKeywordDO>()
-                        .eq(customId != null, MingCustomsKeywordDO::getCustomId, MingCustomsEntryIdCodec.toValue(customId))
-                        .orderBy(true, sortDirection != SortDirection.DESC, MingCustomsKeywordDO::getPriority)));
+        return MingCustomsPersistenceAssembler.toKeywordDomainList(keywordMapper.selectList(new LambdaQueryWrapper<
+                        MingCustomsKeywordDO>()
+                .eq(customId != null, MingCustomsKeywordDO::getCustomId, MingCustomsEntryIdCodec.toValue(customId))
+                .orderBy(true, sortDirection != SortDirection.DESC, MingCustomsKeywordDO::getPriority)));
     }
 
     @Override
