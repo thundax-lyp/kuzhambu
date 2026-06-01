@@ -27,7 +27,7 @@ Commit 是工程判断记录，可以表示阶段任务中的中间判断。
 
 PR 是阶段性交付边界。PR 合并前必须完整、可编译、可测试，并完成文档、TODO 和 RUNBOOK 收口。
 
-PR 合并前固定执行 `.github/workflows/pr-verify.yml`。workflow 必须显式声明治理文件检查、后端 Maven 验证、前端 package manifest 校验和 worker manifest 校验；不得用一个 shell 脚本隐藏 PR 必过项。
+PR 合并前固定执行 `.github/workflows/pr-verify.yml`。workflow 必须显式声明治理文件检查、后端 Maven 验证、前端 package manifest 校验、worker manifest 校验、workers ruff 检查和 workers pytest；不得用一个 shell 脚本隐藏 PR 必过项。
 
 ## 4. Module Mapping
 
@@ -50,6 +50,7 @@ PR 合并前固定执行 `.github/workflows/pr-verify.yml`。workflow 必须显�
 - Java servers 验证要求本地或 CI 使用 Java 11+；当前 Checkstyle 版本不支持 Java 8 运行时。
 - Java servers PR 验证必须显式执行 `mvn -q clean spotless:check checkstyle:check test`。
 - Java servers 验证必须检查 `common`、`biz`、`starter` 三段式布局，并拒绝继续保留旧 `kuzhambu-servers/interfaces` 入口。
+- Python workers PR 验证必须使用 Python 3.10，并显式执行 `ruff format --check .`、`ruff check .` 和 `pytest`。
 - PR 合并默认使用普通 merge commit，保留分支中的小步 commit 历史；不得默认 squash。
 
 ## 6. PR Description
@@ -66,6 +67,6 @@ PR 描述固定包含：
 
 1. 开发者打开或更新 Pull Request。
 2. GitHub 触发 `PR Verify` workflow。
-3. workflow 显式执行治理文件检查、后端布局检查、Classics SQL seed 检查、`mvn -q clean spotless:check checkstyle:check test`、前端 package manifest 校验和 worker manifest 校验。
+3. workflow 显式执行治理文件检查、后端布局检查、Classics SQL seed 检查、`mvn -q clean spotless:check checkstyle:check test`、前端 package manifest 校验、worker manifest 校验、workers `ruff format --check .`、`ruff check .` 和 `pytest`。
 4. 所有当前自动化验证通过后，PR 才允许进入合并判断。
 5. PR 审核通过后，才允许合并到 `main`；合并时默认执行普通 merge，例如 `gh pr merge <number> --merge --delete-branch`。

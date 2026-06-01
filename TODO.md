@@ -13,14 +13,6 @@
 
 ## 当前任务项
 
-- [ ] `workers packaging`：补齐开发命令和 PR 验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W18-Packaging-And-Dev-Commands`
-    - 范围对象：`kuzhambu-workers/pyproject.toml`、`kuzhambu-workers/README.md`、`docs/40-readiness/PR-WORKFLOW.md`、`.github/workflows/pr-verify.yml`
-    - 处理动作：补齐 Python package、ruff、pytest、运行命令和 PR workflow
-    - 验收点：PR workflow 显式包含 workers 的 ruff format check、ruff check 和 pytest
-    - 重要度：9/10
-
 - [ ] `workers e2e tests`：补充 workers 协议级端到端测试
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W19-End-To-End-Worker-Verification`

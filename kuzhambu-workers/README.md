@@ -63,6 +63,14 @@ PDF 渲染通过 Browser Pool 复用 Chromium。每次渲染创建独立 context
 
 内部接口必须校验服务身份和请求签名，不接收用户 access token。
 
+## Local Development
+
+```sh
+python3.10 -m venv .venv
+.venv/bin/python -m pip install -e '.[dev]'
+.venv/bin/uvicorn kuzhambu_workers.main:app --reload
+```
+
 ## Documents
 
 - `docs/10-requirements/WORKERS-REQUIREMENTS.md`
@@ -73,14 +81,14 @@ PDF 渲染通过 Browser Pool 复用 Chromium。每次渲染创建独立 context
 ## Local Checks
 
 ```sh
-ruff format --check .
-ruff check .
-pytest
+.venv/bin/ruff format --check .
+.venv/bin/ruff check .
+.venv/bin/pytest
 ```
 
 格式化和自动修复：
 
 ```sh
-ruff format .
-ruff check --fix .
+.venv/bin/ruff format .
+.venv/bin/ruff check --fix .
 ```
