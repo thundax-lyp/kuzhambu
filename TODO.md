@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `AI A5`：实现内容精修应用服务
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-DOMAIN.md#a5-refinement-application`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/refinement/`
-    - 处理动作：按 RUNBOOK A5 的 4 个关联文件实现翻译、摘要、标签、问答、图片理解、视觉描述和条目拆分入口。
-    - 验收点：AI 结果先进入候选区；拒绝候选不改变正式内容。
-    - 重要度：9/10
-
 - [ ] `AI A6`：实现批量任务应用服务
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-DOMAIN.md#a6-batch-application`
