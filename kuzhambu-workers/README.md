@@ -1,16 +1,63 @@
 # Kuzhambu Workers
 
-Python 能力支撑工程，用于承载 OCR、图像分析、AI 评估、数据清洗、知识图谱离线处理和批量导入导出辅助。
+Python 技术支撑工程，用于承载无状态 AI graph 执行、流式输出转发、图片理解、内容生成、文件渲染和格式加工。
 
-本目录不承载核心业务规则，不直接写入正式业务数据。
+Workers 不承载核心业务规则，不直接写入正式业务数据，不连接数据库、Redis 或 MQ，不保存任务状态。
 
 ## Environment
 
 - Python 版本固定为 3.10。
 - 本地虚拟环境使用 `kuzhambu-workers/.venv/`。
 
+## Technology Baseline
+
+- FastAPI 提供内部 HTTP API。
+- Pydantic 定义请求和响应模型。
+- LangGraph 承载 AI 执行图。
+- LangChain 负责 prompt、message、model adapter 和 structured output 基础能力。
+- httpx 负责内部 HTTP、临时 URL 和 OpenAI-compatible 模型访问。
+- Pillow 负责图片尺寸、格式和基础转换处理。
+- Python 标准库负责 CSV、JSON、HTML、ZIP 和临时文件处理。
+- Ruff 统一负责 Python lint 和 formatter。
+
 ## Invocation
 
-- Java 主系统原则上通过 HTTP request 调用 Python worker。
-- Worker 只提供能力计算接口。
+- Java 主系统通过内部 HTTP request 调用 Python workers。
+- Workers 只提供能力计算、AI 执行和文件渲染接口。
 - 权限、任务状态、审计、候选结果确认和最终数据写入由 Java 主系统负责。
+- AI 能力只能由 AI 域调用 workers；Classics、Knowledge 和 Discovery 不得绕过 AI 域直接调用 AI workers。
+- Classics 和 Operations 可以在完成权限过滤和内容快照准备后直接调用 render workers。
+
+## Internal APIs
+
+- `GET /internal/health`
+- `GET /internal/capabilities`
+- `POST /internal/ai/invoke`
+- `POST /internal/ai/stream`
+- `POST /internal/render/classics-export`
+- `POST /internal/render/sancai-showcase`
+- `POST /internal/render/operations-report`
+
+内部接口必须校验服务身份和请求签名，不接收用户 access token。
+
+## Documents
+
+- `docs/10-requirements/WORKERS-REQUIREMENTS.md`
+- `docs/20-interfaces/WORKERS-AI-INTERFACE.md`
+- `docs/20-interfaces/WORKERS-RENDER-INTERFACE.md`
+- `docs/30-designs/WORKERS-DESIGN.md`
+
+## Local Checks
+
+```sh
+ruff format --check .
+ruff check .
+pytest
+```
+
+格式化和自动修复：
+
+```sh
+ruff format .
+ruff check --fix .
+```
