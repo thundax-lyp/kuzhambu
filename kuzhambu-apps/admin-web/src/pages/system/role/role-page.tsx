@@ -5,7 +5,7 @@ import type { DataNode } from "antd/es/tree";
 import { useMemo, useState } from "react";
 import type { Key } from "react";
 import { hasPermission } from "@/auth/permission-storage";
-import { SandwishListPage } from "@/components/sandwish-list-page";
+import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
 import { KuzhambuTag } from "@/components/kuzhambu-tag";
@@ -383,7 +383,7 @@ export const RolePage = () => {
 
     return (
         <>
-            <SandwishListPage<RoleRecord>
+            <KuzhambuListPage<RoleRecord>
                 pageClassName="role-page"
                 title="角色管理"
                 description="维护后台角色、角色状态和菜单权限。"

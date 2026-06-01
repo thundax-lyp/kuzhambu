@@ -8,7 +8,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { Button, Input, Space, Typography } from "antd";
 import { useMemo, useState } from "react";
-import { SandwishListPage } from "@/components/sandwish-list-page";
+import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import { KuzhambuTag } from "@/components/kuzhambu-tag";
 import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
@@ -210,7 +210,7 @@ export const SystemLogPage = () => {
     ];
 
     return (
-        <SandwishListPage<LogRecord>
+        <KuzhambuListPage<LogRecord>
             pageClassName="system-log-page"
             title="系统日志"
             description="查看后台操作日志、请求记录和审计线索。"

@@ -6,7 +6,7 @@ import type { Key } from "react";
 import { useCurrentAccessToken } from "@/auth/hooks/use-current-access-token";
 import { hasPermission } from "@/auth/permission-storage";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
-import { SandwishListPage } from "@/components/sandwish-list-page";
+import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuTag } from "@/components/kuzhambu-tag";
 import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
@@ -364,7 +364,7 @@ export const StorageObjectPage = () => {
 
     return (
         <>
-            <SandwishListPage<StorageRecord>
+            <KuzhambuListPage<StorageRecord>
                 pageClassName="storage-object-page"
                 title="存储对象"
                 description="管理上传后的对象文件、存储状态和业务引用入口。"

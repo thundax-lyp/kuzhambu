@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Button, Select, Space, Typography } from "antd";
 import { useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
-import { SandwishListPage } from "@/components/sandwish-list-page";
+import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuTag } from "@/components/kuzhambu-tag";
 import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
@@ -334,7 +334,7 @@ export const OpenClientPage = () => {
 
     return (
         <>
-            <SandwishListPage<OpenClientRecord>
+            <KuzhambuListPage<OpenClientRecord>
                 pageClassName="open-client-page"
                 title="开放客户端"
                 description="管理第三方系统访问 Open API 使用的 API KEY、IP 白名单、有效期和最小权限集合。"

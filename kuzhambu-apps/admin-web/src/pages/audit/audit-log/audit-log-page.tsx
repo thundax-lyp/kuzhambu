@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import { useCurrentAccessToken } from "@/auth/hooks/use-current-access-token";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
 import { ADMIN_API_BASE_URL } from "@/api/http";
-import { SandwishListPage } from "@/components/sandwish-list-page";
+import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import { KuzhambuTag } from "@/components/kuzhambu-tag";
 import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
@@ -283,7 +283,7 @@ export const AuditLogPage = () => {
 
     return (
         <>
-            <SandwishListPage<AuditLogRecord>
+            <KuzhambuListPage<AuditLogRecord>
                 pageClassName="audit-log-page"
                 title="审计日志"
                 description="查看关键业务对象的变更记录、操作者和字段差异。"

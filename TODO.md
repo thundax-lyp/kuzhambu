@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `kuzhambu-list-page`：迁移 `sandwish-list-page`
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/ARCHITECTURE.md`
-    - 范围对象：`src/components/sandwish-list-page/`、使用 `SandwishListPage` 或其 filter type 的页面
-    - 处理动作：将列表页骨架、类型、CSS class 和页面调用方改为 `KuzhambuListPage` / `kuzhambu-list-page`。
-    - 验收点：`sandwish-list-page` 组件模块无旧命名残留，admin-web lint 和 test 通过。
-    - 重要度：9/10
-
 - [ ] `kuzhambu-logo`：迁移 `sandwich-logo`
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/UI-RULES.md`

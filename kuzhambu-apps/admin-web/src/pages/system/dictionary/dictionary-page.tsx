@@ -4,7 +4,7 @@ import { App, Button, Input, Space, Typography } from "antd";
 import { useMemo, useState } from "react";
 import type { Key } from "react";
 import { hasPermission } from "@/auth/permission-storage";
-import { SandwishListPage } from "@/components/sandwish-list-page";
+import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuTag } from "@/components/kuzhambu-tag";
 import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
@@ -216,7 +216,7 @@ export const DictionaryPage = () => {
 
     return (
         <>
-            <SandwishListPage<DictRecord>
+            <KuzhambuListPage<DictRecord>
                 pageClassName="dictionary-page"
                 title="字典管理"
                 description="维护系统字典类型、展示标签、业务值和备注说明。"

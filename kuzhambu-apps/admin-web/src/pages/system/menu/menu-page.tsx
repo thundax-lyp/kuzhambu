@@ -4,7 +4,7 @@ import { App, Button, Space, Typography } from "antd";
 import { useMemo, useState } from "react";
 import type { Key } from "react";
 import { hasPermission } from "@/auth/permission-storage";
-import { SandwishListPage } from "@/components/sandwish-list-page";
+import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
 import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
@@ -335,7 +335,7 @@ export const MenuPage = () => {
 
     return (
         <>
-            <SandwishListPage<MenuTableNode>
+            <KuzhambuListPage<MenuTableNode>
                 pageClassName="menu-page"
                 title="菜单管理"
                 description="维护后台菜单树、页面入口和权限标识。"

@@ -9,7 +9,7 @@ import { App, Button, Space, Tag, Typography } from "antd";
 import { useMemo, useState } from "react";
 import type { Key } from "react";
 import { hasPermission } from "@/auth/permission-storage";
-import { SandwishListPage } from "@/components/sandwish-list-page";
+import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
 import { DepartmentEdit } from "./components/department-edit";
@@ -318,7 +318,7 @@ export const DepartmentPage = () => {
 
     return (
         <>
-            <SandwishListPage<DepartmentTableNode>
+            <KuzhambuListPage<DepartmentTableNode>
                 pageClassName="department-page"
                 title="部门管理"
                 description="维护组织树、部门简称、排序和备注信息。"

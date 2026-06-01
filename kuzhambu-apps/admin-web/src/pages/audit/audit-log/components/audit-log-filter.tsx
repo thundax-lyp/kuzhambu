@@ -1,6 +1,6 @@
 import { GlobalOutlined, IdcardOutlined } from "@ant-design/icons";
 import { Input, Select } from "antd";
-import type { SandwishListPageFilterField } from "@/components/sandwish-list-page";
+import type { KuzhambuListPageFilterField } from "@/components/kuzhambu-list-page";
 import type { OptionsRecord } from "@/types/options";
 import type { AuditOptionKeys } from "../audit-log-service";
 
@@ -36,7 +36,7 @@ export const createAuditLogFilterFields = ({
     filters,
     loading = false,
     onChange
-}: AuditLogFilterFieldsOptions): SandwishListPageFilterField[] => {
+}: AuditLogFilterFieldsOptions): KuzhambuListPageFilterField[] => {
     const updateFilters = (values: Partial<AuditLogFilters>) => {
         onChange({ ...filters, ...values });
     };

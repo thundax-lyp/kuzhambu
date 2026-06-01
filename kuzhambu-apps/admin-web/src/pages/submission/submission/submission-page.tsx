@@ -4,7 +4,7 @@ import { App, Button, Select, Space, Typography } from "antd";
 import { useMemo, useState } from "react";
 import type { Key } from "react";
 import { hasPermission } from "@/auth/permission-storage";
-import { SandwishListPage } from "@/components/sandwish-list-page";
+import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuTag } from "@/components/kuzhambu-tag";
 import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
@@ -403,7 +403,7 @@ export const SubmissionPage = () => {
 
     return (
         <>
-            <SandwishListPage<SubmissionRecord>
+            <KuzhambuListPage<SubmissionRecord>
                 pageClassName="submission-page"
                 title="提交内容"
                 description="管理第三方通过开放接口提交的标题、正文和图片资料。"

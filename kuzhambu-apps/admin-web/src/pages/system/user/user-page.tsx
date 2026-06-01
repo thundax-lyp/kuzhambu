@@ -12,7 +12,7 @@ import type { Key } from "react";
 import { sm2 } from "sm-crypto";
 import { createLoginForm } from "@/auth/auth-service";
 import { hasPermission } from "@/auth/permission-storage";
-import { SandwishListPage } from "@/components/sandwish-list-page";
+import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
 import { KuzhambuTag } from "@/components/kuzhambu-tag";
@@ -666,7 +666,7 @@ export const UserPage = () => {
 
     return (
         <>
-            <SandwishListPage<UserRecord>
+            <KuzhambuListPage<UserRecord>
                 pageClassName="user-page"
                 title="用户管理"
                 description="管理后台用户、角色与权限状态。"

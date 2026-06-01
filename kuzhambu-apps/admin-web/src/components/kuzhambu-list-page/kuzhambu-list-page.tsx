@@ -8,18 +8,18 @@ import type { KuzhambuFilterPanelField } from "@/components/kuzhambu-filter-pane
 import { KuzhambuPage } from "@/components/kuzhambu-page";
 import { KuzhambuTable } from "@/components/kuzhambu-table";
 import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
-import "./sandwish-list-page.css";
+import "./kuzhambu-list-page.css";
 
-export interface SandwishListPageFilterState {
+export interface KuzhambuListPageFilterState {
     closeFilter: () => void;
     filterOpen: boolean;
     openFilter: () => void;
     toggleFilter: () => void;
 }
 
-export type SandwishListPageFilterField = KuzhambuFilterPanelField;
+export type KuzhambuListPageFilterField = KuzhambuFilterPanelField;
 
-export interface SandwishListPageProps<RecordType extends object = object> extends Omit<
+export interface KuzhambuListPageProps<RecordType extends object = object> extends Omit<
     KuzhambuTableProps<RecordType>,
     "title"
 > {
@@ -33,9 +33,9 @@ export interface SandwishListPageProps<RecordType extends object = object> exten
     enableSearch?: boolean;
     eyebrow?: ReactNode;
     filterActive?: boolean;
-    filter?: ReactNode | ((filterState: SandwishListPageFilterState) => ReactNode);
+    filter?: ReactNode | ((filterState: KuzhambuListPageFilterState) => ReactNode);
     filterClassName?: string;
-    filterFields?: SandwishListPageFilterField[];
+    filterFields?: KuzhambuListPageFilterField[];
     filterText?: ReactNode;
     filterOpen?: boolean;
     onAdd?: () => void;
@@ -43,7 +43,7 @@ export interface SandwishListPageProps<RecordType extends object = object> exten
     onFilterOpenChange?: (open: boolean) => void;
     onFilterReset?: () => void;
     onSearchChange?: (value: string) => void;
-    pageActions?: ReactNode | ((filterState: SandwishListPageFilterState) => ReactNode);
+    pageActions?: ReactNode | ((filterState: KuzhambuListPageFilterState) => ReactNode);
     pageClassName?: string;
     searchPlaceholder?: string;
     searchShortcut?: ReactNode;
@@ -57,7 +57,7 @@ export interface SandwishListPageProps<RecordType extends object = object> exten
     title: ReactNode;
 }
 
-export const SandwishListPage = <RecordType extends object = object>({
+export const KuzhambuListPage = <RecordType extends object = object>({
     batchActions,
     batchClassName,
     addText,
@@ -91,7 +91,7 @@ export const SandwishListPage = <RecordType extends object = object>({
     tableAsidePlacement = "right",
     title,
     ...tableProps
-}: SandwishListPageProps<RecordType>) => {
+}: KuzhambuListPageProps<RecordType>) => {
     const [internalFilterOpen, setInternalFilterOpen] = useState(defaultFilterOpen);
     const actualFilterOpen = enableFilter ? (filterOpen ?? internalFilterOpen) : false;
     const setFilterOpen = (open: boolean) => {
@@ -100,7 +100,7 @@ export const SandwishListPage = <RecordType extends object = object>({
         }
         onFilterOpenChange?.(open);
     };
-    const filterState: SandwishListPageFilterState = {
+    const filterState: KuzhambuListPageFilterState = {
         closeFilter: () => setFilterOpen(false),
         filterOpen: actualFilterOpen,
         openFilter: () => setFilterOpen(true),
@@ -113,13 +113,13 @@ export const SandwishListPage = <RecordType extends object = object>({
         searchPlaceholder ?? (subjectName ? `搜索${subjectName}...` : "搜索...");
     const resolvedAddText = addText ?? (subjectName ? `新增${subjectName}` : undefined);
     const headerActions = (
-        <Space className="sandwish-list-page-actions">
+        <Space className="kuzhambu-list-page-actions">
             {enableSearch ? (
                 <Input
                     allowClear
                     className={[
-                        "sandwish-list-page-search",
-                        actualFilterOpen ? "sandwish-list-page-search-hidden" : ""
+                        "kuzhambu-list-page-search",
+                        actualFilterOpen ? "kuzhambu-list-page-search-hidden" : ""
                     ]
                         .filter(Boolean)
                         .join(" ")}
@@ -127,7 +127,7 @@ export const SandwishListPage = <RecordType extends object = object>({
                     prefix={<SearchOutlined />}
                     suffix={
                         searchShortcut ? (
-                            <span className="sandwish-list-page-search-shortcut">
+                            <span className="kuzhambu-list-page-search-shortcut">
                                 {searchShortcut}
                             </span>
                         ) : null
@@ -140,7 +140,7 @@ export const SandwishListPage = <RecordType extends object = object>({
                 <Button
                     className={
                         actualFilterOpen || filterActive
-                            ? "sandwish-list-page-filter-toggle-active"
+                            ? "kuzhambu-list-page-filter-toggle-active"
                             : undefined
                     }
                     icon={<FilterOutlined />}
@@ -194,16 +194,16 @@ export const SandwishListPage = <RecordType extends object = object>({
             {tableAside ? (
                 <div
                     className={[
-                        "sandwish-list-page-table-area",
-                        `sandwish-list-page-table-area-aside-${tableAsidePlacement}`,
+                        "kuzhambu-list-page-table-area",
+                        `kuzhambu-list-page-table-area-aside-${tableAsidePlacement}`,
                         tableAreaClassName
                     ].join(" ")}
                 >
-                    <div className="sandwish-list-page-table-main">
+                    <div className="kuzhambu-list-page-table-main">
                         <KuzhambuTable<RecordType> {...tableProps} />
                     </div>
                     <aside
-                        className={["sandwish-list-page-table-aside", tableAsideClassName]
+                        className={["kuzhambu-list-page-table-aside", tableAsideClassName]
                             .filter(Boolean)
                             .join(" ")}
                     >
