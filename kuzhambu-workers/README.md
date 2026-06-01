@@ -97,7 +97,7 @@ python3.10 -m venv .venv
 ```sh
 .venv/bin/ruff format --check .
 .venv/bin/ruff check .
-.venv/bin/pytest
+.venv/bin/python -m pytest -p no:capture
 ```
 
 格式化和自动修复：

@@ -27,7 +27,7 @@ Commit 是工程判断记录，可以表示阶段任务中的中间判断。
 
 PR 是阶段性交付边界。PR 合并前必须完整、可编译、可测试，并完成文档、TODO 和 RUNBOOK 收口。
 
-PR 合并前固定执行 `.github/workflows/pr-verify.yml`。workflow 必须显式声明治理文件检查，并按变更目录触发后端 Maven 验证、前端 package manifest 校验、前端 Prettier 检查、前端 ESLint 检查、前端 Vitest、worker manifest 校验、workers ruff 检查和 workers pytest；不得用一个 shell 脚本隐藏 PR 必过项。
+PR 合并前固定执行 `.github/workflows/pr-verify.yml`。workflow 必须显式声明治理文件检查，并按变更目录触发后端 Maven 验证、前端 package manifest 校验、前端 Prettier 检查、前端 ESLint 检查、前端 Vitest、worker manifest 校验、workers ruff 检查和 workers pytest no-capture 验证；不得用一个 shell 脚本隐藏 PR 必过项。
 
 ## 4. Module Mapping
 
@@ -47,11 +47,11 @@ PR 合并前固定执行 `.github/workflows/pr-verify.yml`。workflow 必须显�
 - 本地辅助脚本可以复用同等验证能力，但不得成为 PR workflow 唯一可见入口。
 - PR 自动验证只包含已自动化 testcase；未自动化 testcase 不得伪装为 PR 必过项。
 - 没有构建系统或验证命令的模块不得在 workflow 中伪造空验证。
-- Java servers 验证要求本地或 CI 使用 Java 11+；当前 Checkstyle 版本不支持 Java 8 运行时。
+- Java servers 验证要求本地或 CI 使用 Java 17；不得使用 Java 8 或 Java 11 运行 Maven 验证。
 - Java servers 目录发生变更时，PR 验证必须显式执行 `mvn -q clean`、`mvn -q spotless:check`、`mvn -q checkstyle:check` 和 `mvn -q test`。
 - Java servers 验证必须检查 `common`、`biz`、`starter` 三段式布局，并拒绝继续保留旧 `kuzhambu-servers/interfaces` 入口。
 - Apps 目录发生变更时，PR 验证必须使用 Node 20，并显式执行 `npm ci`、`npm run format:check`、`npm run lint` 和 `npm test`。
-- Python workers 目录发生变更时，PR 验证必须使用 Python 3.10，并显式执行 `ruff format --check .`、`ruff check .` 和 `pytest`。
+- Python workers 目录发生变更时，PR 验证必须使用 Python 3.10，并显式执行 `ruff format --check .`、`ruff check .` 和 `python -m pytest -p no:capture`。
 - PR workflow 或 PR 模板发生变更时，PR 验证必须触发 servers、workers、apps 和 db 的显式检查，以验证验证规则本身。
 - PR 合并默认使用普通 merge commit，保留分支中的小步 commit 历史；不得默认 squash。
 
@@ -69,6 +69,6 @@ PR 描述固定包含：
 
 1. 开发者打开或更新 Pull Request。
 2. GitHub 触发 `PR Verify` workflow。
-3. workflow 显式执行治理文件检查，并按变更目录执行后端布局检查、Classics SQL seed 检查、servers `mvn -q clean`、`mvn -q spotless:check`、`mvn -q checkstyle:check`、`mvn -q test`、前端 package manifest 校验、apps `npm ci`、`npm run format:check`、`npm run lint`、`npm test`、worker manifest 校验、workers `ruff format --check .`、`ruff check .` 和 `pytest`。
+3. workflow 显式执行治理文件检查，并按变更目录执行后端布局检查、Classics SQL seed 检查、servers `mvn -q clean`、`mvn -q spotless:check`、`mvn -q checkstyle:check`、`mvn -q test`、前端 package manifest 校验、apps `npm ci`、`npm run format:check`、`npm run lint`、`npm test`、worker manifest 校验、workers `ruff format --check .`、`ruff check .` 和 `python -m pytest -p no:capture`。
 4. 所有当前自动化验证通过后，PR 才允许进入合并判断。
 5. PR 审核通过后，才允许合并到 `main`；合并时默认执行普通 merge，例如 `gh pr merge <number> --merge --delete-branch`。
