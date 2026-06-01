@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `AI I2`：实现能力与提示词持久化
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-DOMAIN.md#i2-capability-and-prompt-persistence`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-infra/src/main/java/com/thundax/kuzhambu/ai/infra/capability/`、`kuzhambu-servers/biz/ai/kuzhambu-ai-infra/src/main/java/com/thundax/kuzhambu/ai/infra/prompt/`
-    - 处理动作：按 RUNBOOK I2 的 4 个关联文件实现能力、能力映射、动作状态和提示词持久化。
-    - 验收点：当前提示词只通过 `scope + capability` 定位，版本历史可查询和回滚。
-    - 重要度：9/10
-
 - [ ] `AI I3`：实现调用记录持久化
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-DOMAIN.md#i3-invocation-persistence`
