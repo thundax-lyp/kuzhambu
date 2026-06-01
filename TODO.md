@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `AI I1`：实现配置与模型持久化
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-DOMAIN.md#i1-config-and-model-persistence`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-infra/src/main/java/com/thundax/kuzhambu/ai/infra/model/`
-    - 处理动作：按 RUNBOOK I1 的 4 个关联文件实现服务配置、模型和检测记录持久化。
-    - 验收点：DO 字段与 `db/schema/ai.sql` 一致，Repository 不泄漏 MyBatis 细节。
-    - 重要度：9/10
-
 - [ ] `AI I2`：实现能力与提示词持久化
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-DOMAIN.md#i2-capability-and-prompt-persistence`
