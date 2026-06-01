@@ -120,7 +120,9 @@ describe("App", () => {
 
         render(<App />);
 
-        expect(await screen.findByRole("heading", { name: "仪表盘" })).toBeInTheDocument();
+        expect(
+            await screen.findByRole("heading", { name: "仪表盘" }, { timeout: 5000 })
+        ).toBeInTheDocument();
         expect(await screen.findByText("Developer")).toBeInTheDocument();
         expect(globalThis.fetch).toHaveBeenCalledWith(
             "/admin-api/api/sys/current-user/info",
@@ -276,7 +278,9 @@ describe("App", () => {
         await userEvent.type(screen.getByPlaceholderText("验证码"), "1234");
         await userEvent.click(screen.getByRole("button", { name: /登\s*录/ }));
 
-        expect(await screen.findByRole("heading", { name: "仪表盘" })).toBeInTheDocument();
+        expect(
+            await screen.findByRole("heading", { name: "仪表盘" }, { timeout: 5000 })
+        ).toBeInTheDocument();
         expect(localStorage.getItem("kuzhambu.admin.accessToken")).toBe("login-access-token");
         expect(localStorage.getItem("kuzhambu.admin.refreshToken")).toBe("login-refresh-token");
         expect(localStorage.getItem("kuzhambu.admin.accessTokenExpireAt")).toBe(

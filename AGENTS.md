@@ -8,21 +8,20 @@
 
 ## Project Structure & Module Organization
 
-This repository is currently minimal: `README.md`, `LICENSE`, `.gitignore`, and governance docs under `docs/`. Keep contributor-facing docs at the root or under `docs/`.
+The repository is organized into governance docs, Java servers, frontend apps, Python workers, and deployment support. Keep contributor-facing docs at the root or under `docs/`.
 
-When source code is added, prefer `src/main/java/` for application code, `src/test/java/` for tests, and `src/main/resources/` for packaged assets or configuration. Use `docs/10-requirements/` for requirements, `docs/20-interfaces/` for contracts, `docs/30-designs/` for designs and temporary runbooks, and `docs/40-readiness/` for release checks.
+Use `kuzhambu-servers/` for Java backend modules, `kuzhambu-apps/` for frontend apps, `kuzhambu-workers/` for Python worker capabilities, and `deploy/` for deployment support. Use `docs/10-requirements/` for requirements, `docs/20-interfaces/` for contracts, `docs/30-designs/` for designs and temporary runbooks, and `docs/40-readiness/` for release checks.
 
 ## Build, Test, and Development Commands
 
-No build tool is configured yet. Add one before introducing executable code. Recommended Java examples:
+Java servers use Maven under `kuzhambu-servers/`. Use Java 17 for compile, test, and local runs:
 
 ```sh
-./gradlew build      # compile, test, and package
-./gradlew test       # run tests
-./gradlew run        # start locally, if supported
+cd kuzhambu-servers
+mvn spotless:check
+mvn checkstyle:check
+mvn test
 ```
-
-If Maven is chosen, use `./mvnw test` and `./mvnw package`. Prefer checked-in wrappers (`gradlew` or `mvnw`).
 
 Java servers currently use Maven under `kuzhambu-servers/`. Local starter runs default to repo-root `dev.env`; load it before running Maven. Install reactor dependencies first when needed, then run from the starter module so Maven does not execute `spring-boot:run` on the root aggregator:
 
@@ -39,8 +38,27 @@ mvn spring-boot:run
 Before any Maven compile or package step, run formatting and static checks first:
 
 ```sh
-mvn spotless:apply
+mvn spotless:check
 mvn checkstyle:check
+```
+
+Frontend apps use npm workspaces under `kuzhambu-apps/`:
+
+```sh
+cd kuzhambu-apps
+npm run lint
+npm run test
+npm run build
+```
+
+Python workers use Python 3.10 and a repo-local virtual environment:
+
+```sh
+cd kuzhambu-workers
+python3.10 -m venv .venv
+.venv/bin/python -m pip install -e '.[dev]'
+.venv/bin/python -m ruff check .
+.venv/bin/python -m pytest -p no:capture
 ```
 
 ## Coding Style & Naming Conventions
@@ -61,7 +79,7 @@ Run the narrowest relevant validation available. If no validation exists, docume
 
 ## Commit & Pull Request Guidelines
 
-Current history only contains `Initial commit`; use the project convention `Type(scope): 中文说明`, for example `Docs(governance): 初始化文档治理入口`. Keep each commit focused on one concrete engineering judgment.
+Use the project convention `Type(scope): 中文说明`, for example `Docs(governance): 初始化文档治理入口`. Keep each commit focused on one concrete engineering judgment.
 
 Pull requests are stage delivery boundaries. Use `.github/pull_request_template.md`, rely on the explicit `.github/workflows/pr-verify.yml` checks, and complete documentation, TODO, and RUNBOOK cleanup before merge. Changes must go through `branch -> PR -> review -> merge`; do not push or merge work directly to `main`. Merge PRs with normal merge commits by default to preserve the small-step commit history; do not squash unless explicitly requested. Detailed rules live in `docs/00-governance/TODO-RULES.md` and `docs/40-readiness/PR-WORKFLOW.md`.
 

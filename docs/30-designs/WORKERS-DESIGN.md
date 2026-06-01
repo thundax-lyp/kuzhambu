@@ -382,7 +382,7 @@ Python lint 和 formatter 统一使用 `ruff`。
 ```sh
 ruff format --check .
 ruff check .
-pytest
+python -m pytest -p no:capture
 ```
 
 格式化命令：
