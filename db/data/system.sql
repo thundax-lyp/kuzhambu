@@ -19,6 +19,25 @@ INSERT INTO `system_user` (
     `status` = VALUES(`status`),
     `remarks` = VALUES(`remarks`);
 
+INSERT INTO `system_user` (
+    `id`, `name`, `email`, `mobile`, `tel`, `ranks`, `privilege`, `status`, `remarks`
+) VALUES (
+    2,
+    '开发者',
+    NULL,
+    NULL,
+    NULL,
+    9,
+    'SUPER',
+    'ENABLED',
+    '本地开发调试超级管理员'
+) ON DUPLICATE KEY UPDATE
+    `name` = VALUES(`name`),
+    `ranks` = VALUES(`ranks`),
+    `privilege` = VALUES(`privilege`),
+    `status` = VALUES(`status`),
+    `remarks` = VALUES(`remarks`);
+
 INSERT INTO `system_role` (
     `id`, `name`, `privilege`, `status`, `priority`, `remarks`
 ) VALUES (
@@ -72,7 +91,8 @@ ON DUPLICATE KEY UPDATE
     `remarks` = VALUES(`remarks`);
 
 INSERT IGNORE INTO `system_user_role` (`user_id`, `role_id`) VALUES
-    (1, 1);
+    (1, 1),
+    (2, 1);
 
 INSERT IGNORE INTO `system_role_menu` (`role_id`, `menu_id`) VALUES
     (1, 1),
@@ -101,6 +121,21 @@ INSERT INTO `system_auth_principal_identity` (
     `identity_value` = VALUES(`identity_value`),
     `status` = VALUES(`status`);
 
+INSERT INTO `system_auth_principal_identity` (
+    `id`, `principal_type`, `principal_id`, `identity_type`, `identity_value`, `status`
+) VALUES (
+    2,
+    'USER',
+    2,
+    'USER_ACCOUNT',
+    'developer',
+    'ENABLED'
+) ON DUPLICATE KEY UPDATE
+    `principal_type` = VALUES(`principal_type`),
+    `principal_id` = VALUES(`principal_id`),
+    `identity_value` = VALUES(`identity_value`),
+    `status` = VALUES(`status`);
+
 INSERT INTO `system_auth_principal_credential` (
     `id`, `principal_type`, `principal_id`, `identity_id`,
     `credential_type`, `credential_value`, `status`, `need_change_password`,
@@ -114,6 +149,30 @@ INSERT INTO `system_auth_principal_credential` (
     '{noop}admin',
     'ACTIVE',
     1,
+    0,
+    5
+) ON DUPLICATE KEY UPDATE
+    `principal_type` = VALUES(`principal_type`),
+    `principal_id` = VALUES(`principal_id`),
+    `credential_value` = VALUES(`credential_value`),
+    `status` = VALUES(`status`),
+    `need_change_password` = VALUES(`need_change_password`),
+    `failed_count` = VALUES(`failed_count`),
+    `failed_limit` = VALUES(`failed_limit`);
+
+INSERT INTO `system_auth_principal_credential` (
+    `id`, `principal_type`, `principal_id`, `identity_id`,
+    `credential_type`, `credential_value`, `status`, `need_change_password`,
+    `failed_count`, `failed_limit`
+) VALUES (
+    2,
+    'USER',
+    2,
+    2,
+    'USER_PASSWORD',
+    '{noop}Q1w2e3r$',
+    'ACTIVE',
+    0,
     0,
     5
 ) ON DUPLICATE KEY UPDATE
