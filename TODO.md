@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `AI F2`：实现后台提示词接口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-DOMAIN.md#f2-admin-prompt-interface`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/prompt/`
-    - 处理动作：按 RUNBOOK F2 的 4 个关联文件提供提示词编辑、变量解析、版本对比、回滚和动作状态接口。
-    - 验收点：管理员能管理提示词版本并看到相关动作是否可用。
-    - 重要度：8/10
-
 - [ ] `AI F3`：实现后台调用接口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-DOMAIN.md#f3-admin-invocation-interface`
