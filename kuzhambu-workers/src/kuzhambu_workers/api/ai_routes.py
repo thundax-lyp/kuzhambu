@@ -1,4 +1,6 @@
+from collections.abc import Callable
 from datetime import datetime, timezone
+from typing import NamedTuple
 
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse, StreamingResponse
@@ -16,10 +18,17 @@ from kuzhambu_workers.streaming.sse import encode_sse
 
 router = APIRouter(prefix="/internal/ai")
 _REGISTRY = GraphRegistry.build_default()
+AiRequestValidator = Callable[[AiInvokeRequest], WorkerErrorPayload | None]
 DEBUG_INTERFACE_NOTICE = (
     "通用 AI 接口仅用于调试、平台联调和协议验证；真实业务必须使用基于 usecase "
     "定义的稳定接口，不得把该通用接口作为业务域长期集成入口。"
 )
+
+
+class ParsedAiRequest(NamedTuple):
+    body: bytes
+    request: AiInvokeRequest | None
+    error_response: JSONResponse | None
 
 
 @router.post(
@@ -29,28 +38,7 @@ DEBUG_INTERFACE_NOTICE = (
     description=DEBUG_INTERFACE_NOTICE,
 )
 async def invoke(request: Request) -> JSONResponse:
-    body = await request.body()
-    parsed = _parse_request(body)
-    if isinstance(parsed, JSONResponse):
-        return parsed
-
-    auth_failure = _verify(request, body, parsed)
-    if auth_failure is not None:
-        return auth_failure
-
-    try:
-        result = _REGISTRY.invoke(parsed)
-        response = AiInvokeResponse(
-            requestId=parsed.requestId,
-            traceId=parsed.traceId,
-            status=WorkerStatus.SUCCEEDED,
-            capability=parsed.capability,
-            result=AiResult.model_validate(result),
-            usage=UsageSummary(),
-        )
-        return JSONResponse(response.model_dump(mode="json"))
-    except Exception as exc:
-        return _failed_response(parsed, to_error_payload(exc))
+    return await invoke_ai_request(request)
 
 
 @router.post(
@@ -60,25 +48,93 @@ async def invoke(request: Request) -> JSONResponse:
     description=DEBUG_INTERFACE_NOTICE,
 )
 async def stream(request: Request) -> StreamingResponse | JSONResponse:
+    return await stream_ai_request(request)
+
+
+async def invoke_ai_request(
+    request: Request,
+    *,
+    registry: GraphRegistry = _REGISTRY,
+    validate: AiRequestValidator | None = None,
+) -> JSONResponse:
+    parsed = await parse_verified_ai_request(request)
+    if parsed.error_response is not None:
+        return parsed.error_response
+
+    ai_request = _require_parsed_request(parsed)
+    validation_failure = _validate_ai_request(ai_request, validate)
+    if validation_failure is not None:
+        return validation_failure
+
+    return invoke_ai_graph(ai_request, registry=registry)
+
+
+async def stream_ai_request(
+    request: Request,
+    *,
+    registry: GraphRegistry = _REGISTRY,
+    validate: AiRequestValidator | None = None,
+) -> StreamingResponse | JSONResponse:
+    parsed = await parse_verified_ai_request(request)
+    if parsed.error_response is not None:
+        return parsed.error_response
+
+    ai_request = _require_parsed_request(parsed)
+    validation_failure = _validate_ai_request(ai_request, validate)
+    if validation_failure is not None:
+        return validation_failure
+
+    return stream_ai_graph(ai_request, registry=registry)
+
+
+async def parse_verified_ai_request(request: Request) -> ParsedAiRequest:
     body = await request.body()
     parsed = _parse_request(body)
     if isinstance(parsed, JSONResponse):
-        return parsed
+        return ParsedAiRequest(body=body, request=None, error_response=parsed)
 
     auth_failure = _verify(request, body, parsed)
     if auth_failure is not None:
-        return auth_failure
+        return ParsedAiRequest(body=body, request=None, error_response=auth_failure)
 
+    return ParsedAiRequest(body=body, request=parsed, error_response=None)
+
+
+def invoke_ai_graph(
+    request: AiInvokeRequest,
+    *,
+    registry: GraphRegistry = _REGISTRY,
+) -> JSONResponse:
+    try:
+        result = registry.invoke(request)
+        response = AiInvokeResponse(
+            requestId=request.requestId,
+            traceId=request.traceId,
+            status=WorkerStatus.SUCCEEDED,
+            capability=request.capability,
+            result=AiResult.model_validate(result),
+            usage=UsageSummary(),
+        )
+        return JSONResponse(response.model_dump(mode="json"))
+    except Exception as exc:
+        return _failed_response(request, to_error_payload(exc))
+
+
+def stream_ai_graph(
+    request: AiInvokeRequest,
+    *,
+    registry: GraphRegistry = _REGISTRY,
+) -> StreamingResponse:
     async def events():
         timestamp = _now()
-        yield encode_sse(started_event(parsed.requestId, parsed.traceId, timestamp))
+        yield encode_sse(started_event(request.requestId, request.traceId, timestamp))
         try:
-            result = _REGISTRY.invoke(parsed)
+            result = registry.invoke(request)
             yield encode_sse(
                 stream_event(
                     StreamEventType.COMPLETED,
-                    request_id=parsed.requestId,
-                    trace_id=parsed.traceId,
+                    request_id=request.requestId,
+                    trace_id=request.traceId,
                     stage="completed",
                     timestamp=_now(),
                     result=result,
@@ -91,8 +147,8 @@ async def stream(request: Request) -> StreamingResponse | JSONResponse:
             yield encode_sse(
                 stream_event(
                     StreamEventType.ERROR,
-                    request_id=parsed.requestId,
-                    trace_id=parsed.traceId,
+                    request_id=request.requestId,
+                    trace_id=request.traceId,
                     stage="error",
                     timestamp=_now(),
                     error=error.model_dump(mode="json"),
@@ -130,7 +186,30 @@ def _verify(request: Request, body: bytes, parsed: AiInvokeRequest) -> JSONRespo
     return None
 
 
-def _failed_response(request: AiInvokeRequest, error: WorkerErrorPayload) -> JSONResponse:
+def _require_parsed_request(parsed: ParsedAiRequest) -> AiInvokeRequest:
+    if parsed.request is None:
+        raise RuntimeError("AI request is unavailable after successful parse and verify.")
+    return parsed.request
+
+
+def _validate_ai_request(
+    request: AiInvokeRequest,
+    validate: AiRequestValidator | None,
+) -> JSONResponse | None:
+    if validate is None:
+        return None
+    error = validate(request)
+    if error is None:
+        return None
+    return _failed_response(request, error, status_code=_status_code(error.code))
+
+
+def _failed_response(
+    request: AiInvokeRequest,
+    error: WorkerErrorPayload,
+    *,
+    status_code: int = 200,
+) -> JSONResponse:
     response = AiInvokeResponse(
         requestId=request.requestId,
         traceId=request.traceId,
@@ -140,7 +219,7 @@ def _failed_response(request: AiInvokeRequest, error: WorkerErrorPayload) -> JSO
         usage=UsageSummary(),
         error=error,
     )
-    return JSONResponse(response.model_dump(mode="json"))
+    return JSONResponse(response.model_dump(mode="json"), status_code=status_code)
 
 
 def _error_json(error: WorkerErrorPayload, status_code: int) -> JSONResponse:

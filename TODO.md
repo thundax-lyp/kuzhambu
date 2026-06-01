@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `workers ai shared orchestration`：抽取 AI 路由共享编排
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-AI-USECASE.md#U3-AI-Route-Shared-Orchestration`
-    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/api/ai_routes.py`、`kuzhambu-workers/tests/test_ai_routes.py`、`kuzhambu-workers/tests/test_worker_e2e_ai.py`
-    - 处理动作：抽取通用 invoke/stream 与 usecase route 可复用的执行编排
-    - 验收点：通用调试接口行为不变且既有 AI 路由测试通过
-    - 重要度：9/10
-
 - [ ] `workers ai classics routes`：实现 Classics AI usecase 路由
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-AI-USECASE.md#U4-Classics-AI-Usecase-Routes`
