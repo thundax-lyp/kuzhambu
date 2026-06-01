@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `AI V3`：验证 AI 持久化
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-DOMAIN.md#v3-ai-persistence-verification`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-infra/src/test/java/com/thundax/kuzhambu/ai/infra/`
-    - 处理动作：按 RUNBOOK V3 的 3 个关联文件验证 AI SQL、DO、Mapper 和 Repository 最小读写。
-    - 验收点：`db/schema/ai.sql` 和 `db/data/ai.sql` 可加载，核心表最小 CRUD 通过。
-    - 重要度：8/10
-
 - [ ] `AI V4`：执行 AI 模块验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-DOMAIN.md#v4-module-verification`

@@ -1,0 +1,139 @@
+package com.thundax.kuzhambu.ai.infra.invocation.repository.impl;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCallRecord;
+import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiUsageSnapshot;
+import com.thundax.kuzhambu.ai.infra.invocation.persistence.dataobject.AiCallRecordDO;
+import com.thundax.kuzhambu.ai.infra.invocation.persistence.dataobject.AiCandidateDO;
+import com.thundax.kuzhambu.ai.infra.invocation.persistence.mapper.AiInvocationMapper;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Instant;
+import java.util.List;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+
+class AiInvocationRepositoryIT {
+
+    @Test
+    void schemaSqlShouldDeclareInvocationPersistenceObjects() throws IOException {
+        String schemaSql = readRequiredSql("db/schema/ai.sql");
+
+        assertTrue(schemaSql.contains("CREATE TABLE IF NOT EXISTS `ai_call_record`"));
+        assertTrue(schemaSql.contains("CREATE TABLE IF NOT EXISTS `ai_candidate`"));
+        assertTrue(schemaSql.contains("UNIQUE KEY `uk_ai_call_record_id`"));
+        assertTrue(schemaSql.contains("KEY `idx_ai_call_record_trace`"));
+        assertTrue(schemaSql.contains("KEY `idx_ai_candidate_target`"));
+    }
+
+    @Test
+    void repositoryShouldMapCallRecordWritesAndReads() {
+        AiInvocationMapper mapper = mock(AiInvocationMapper.class);
+        AiInvocationRepositoryImpl repository = new AiInvocationRepositoryImpl(mapper);
+        Instant requestedAt = Instant.parse("2026-01-05T00:00:00Z");
+        AiCallRecord record = new AiCallRecord(
+                null,
+                7001L,
+                8001L,
+                "classics",
+                "translate",
+                "ENTRY",
+                9001L,
+                9101L,
+                1001L,
+                "PRIMARY",
+                2001L,
+                "gpt-test",
+                5001L,
+                "req-1",
+                "trace-1",
+                "SUCCEEDED",
+                true,
+                true,
+                false,
+                new AiUsageSnapshot(120, 10, 20, new BigDecimal("0.01")),
+                null,
+                null,
+                "[]",
+                requestedAt,
+                requestedAt);
+
+        Long callId = repository.saveCallRecord(record);
+
+        ArgumentCaptor<AiCallRecordDO> callCaptor = ArgumentCaptor.forClass(AiCallRecordDO.class);
+        verify(mapper).insert(callCaptor.capture());
+        AiCallRecordDO savedCall = callCaptor.getValue();
+        assertEquals(7001L, callId);
+        assertEquals("classics", savedCall.getScope());
+        assertEquals(10, savedCall.getInputTokens());
+        assertEquals(new BigDecimal("0.01"), savedCall.getCostAmount());
+
+        when(mapper.selectOne(any())).thenReturn(savedCall);
+        AiCallRecord loadedRecord = repository.getCallRecord(7001L);
+
+        assertEquals("trace-1", loadedRecord.getTraceId());
+        assertEquals(20, loadedRecord.getUsage().getOutputTokens());
+        assertTrue(loadedRecord.isStreamCompleted());
+    }
+
+    @Test
+    void repositoryShouldMapCandidateWritesAndReads() {
+        AiInvocationMapper mapper = mock(AiInvocationMapper.class);
+        AiInvocationRepositoryImpl repository = new AiInvocationRepositoryImpl(mapper);
+        Instant requestedAt = Instant.parse("2026-01-06T00:00:00Z");
+        AiCandidate candidate = new AiCandidate(
+                null,
+                7101L,
+                7001L,
+                8001L,
+                "translate",
+                "ENTRY",
+                9001L,
+                9101L,
+                "json",
+                "{\"title\":\"ok\"}",
+                "PENDING",
+                5001L,
+                "gpt-test",
+                null,
+                null,
+                requestedAt,
+                null);
+
+        Long candidateId = repository.saveCandidate(candidate);
+
+        ArgumentCaptor<AiCandidateDO> candidateCaptor = ArgumentCaptor.forClass(AiCandidateDO.class);
+        verify(mapper).insertCandidate(candidateCaptor.capture());
+        AiCandidateDO savedCandidate = candidateCaptor.getValue();
+        assertEquals(7101L, candidateId);
+        assertEquals("json", savedCandidate.getResultFormat());
+        assertEquals("PENDING", savedCandidate.getStatus());
+
+        when(mapper.selectCandidate(7101L)).thenReturn(savedCandidate);
+        when(mapper.selectCandidates("ENTRY", 9001L, "translate", "PENDING")).thenReturn(List.of(savedCandidate));
+        AiCandidate loadedCandidate = repository.getCandidate(7101L);
+        List<AiCandidate> loadedCandidates = repository.listCandidates("ENTRY", 9001L, "translate", "PENDING");
+
+        assertEquals("{\"title\":\"ok\"}", loadedCandidate.getResultPayload());
+        assertEquals(1, loadedCandidates.size());
+        assertEquals(7101L, loadedCandidates.get(0).getCandidateId());
+    }
+
+    private static String readRequiredSql(String path) throws IOException {
+        for (Path candidate : List.of(Path.of(path), Path.of("../" + path), Path.of("../../../../" + path))) {
+            if (Files.exists(candidate)) {
+                return Files.readString(candidate);
+            }
+        }
+        throw new IOException("Required SQL file not found: " + path);
+    }
+}
