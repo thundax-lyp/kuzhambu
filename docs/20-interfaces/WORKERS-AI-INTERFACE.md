@@ -34,7 +34,7 @@ AI 域不向 workers 开放业务写入、候选结果写入、任务状态回�
 2. 服务身份层：workers 必须校验调用方服务身份，确认请求来自受信任的 Java AI 域。
 3. 请求完整性层：workers 必须校验请求时间、签名或内部令牌，避免非授权服务伪造调用。
 
-第一版推荐使用内部 HMAC 签名，后续可替换为 mTLS 或服务网格身份。
+内部接口使用 HMAC 签名；部署环境可以在网络层叠加 mTLS 或服务网格身份。
 
 必需请求头：
 
@@ -87,7 +87,7 @@ hex(hmac_sha256(internalWorkerSecret, signingInput))
 - workers 的内部服务认证只证明调用方服务可信，不证明最终用户有业务权限。
 - 包含 `modelConfig.apiKey` 的请求必须在受保护的内部网络或 TLS 通道上传输。
 
-如未来必须引入 workers 到 Java servers 的回调接口，必须新增独立接口文档并满足：
+Workers 不使用回调接口。任何回调能力都不得复用当前 AI 执行接口；如需引入，必须新增独立接口文档并满足：
 
 - 只允许回调专用路径，不复用 Admin、Portal 或业务公开接口。
 - 使用独立服务身份和 HMAC 或 mTLS 校验。
@@ -108,6 +108,82 @@ AI 域到 workers 的标准接口固定为两个：
 
 - `GET /internal/health`
 - `GET /internal/capabilities`
+
+## Health Response
+
+`GET /internal/health` 返回：
+
+```json
+{
+  "status": "UP",
+  "service": "kuzhambu-workers",
+  "version": "0.0.1-dev",
+  "startedAt": "2026-06-01T10:00:00.000Z",
+  "time": "2026-06-01T10:05:00.000Z"
+}
+```
+
+`status` 取值：
+
+- `UP`
+- `DEGRADED`
+- `DOWN`
+
+Health 接口不得检查数据库、Redis 或 MQ。
+
+## Capabilities Response
+
+`GET /internal/capabilities` 返回：
+
+```json
+{
+  "ai": {
+    "endpoints": ["/internal/ai/invoke", "/internal/ai/stream"],
+    "stream": true,
+    "capabilities": [
+      "translate",
+      "summary",
+      "version_summary",
+      "tags",
+      "qa",
+      "image_analysis",
+      "image_gen",
+      "visual",
+      "fusion",
+      "split",
+      "query_understanding",
+      "answer_generation",
+      "knowledge_graph",
+      "relation_extraction",
+      "lineage_extraction",
+      "prompt_suggestion"
+    ],
+    "resultFormats": ["TEXT", "MARKDOWN", "JSON", "STRUCTURED", "ARTIFACT"]
+  },
+  "render": {
+    "endpoints": [
+      "/internal/render/classics-export",
+      "/internal/render/sancai-showcase",
+      "/internal/render/operations-report",
+      "/internal/render/classics-export/stream",
+      "/internal/render/sancai-showcase/stream",
+      "/internal/render/operations-report/stream"
+    ],
+    "stream": true,
+    "formats": ["CSV", "JSON", "HTML", "ZIP", "PDF"],
+    "pdfEngine": "PLAYWRIGHT_CHROMIUM_PRINT",
+    "browserPool": {
+      "enabled": true,
+      "maxPages": 4
+    }
+  },
+  "limits": {
+    "maxRequestBytes": 10485760,
+    "maxArtifactBytes": 104857600,
+    "artifactChunkBytes": 262144
+  }
+}
+```
 
 ## Common Request
 
@@ -181,8 +257,8 @@ AI 域到 workers 的标准接口固定为两个：
 - `capability`：AI 能力编码，必须来自 AI 域能力定义。
 - `scope`：知识库或业务范围，例如 `SANCAI`、`WANGQI`、`MING_CUSTOMS`、`DISCOVERY`、`KNOWLEDGE`。
 - `modelConfig`：AI 域选择后的模型服务配置。workers 只使用，不持久化。
-- `prompt.messages`：AI 域渲染后的最终 messages。第一版必须优先使用该字段。
-- `prompt.variables`：用于调试和 workers 侧可选二次校验；变量真相源仍在 AI 域。
+- `prompt.messages`：AI 域渲染后的最终 messages，workers 必须优先使用该字段。
+- `prompt.variables`：用于调试和 workers 侧辅助二次校验；变量真相源仍在 AI 域。
 - workers 不得仅凭 `templateId` 或 `promptVersionId` 回调 AI 域读取提示词内容。
 - `input.payload`：执行所需完整业务快照，不得要求 workers 回查 Java servers 或数据库。
 - `outputSchema`：结构化输出约束；文本类能力可使用 `{ "type": "text" }`。
@@ -350,6 +426,7 @@ data: {"eventId":"evt_0002","requestId":"req_20260601_000001","traceId":"trace_2
 - `tags`：结构化数组，元素包含 `name`、`dimension` 和可选 `confidence`。
 - `qa`：结构化数组，元素包含 `question`、`answer` 和可选 `sourceHint`。
 - `image_analysis`：Markdown 文本。
+- `image_gen`：产物对象，包含 `artifactType`、`contentType`、`encoding`、`content` 或 SSE artifact chunk、`sizeBytes`、`sha256` 和可选 `metadata`。
 - `fusion`：纯文本或 Markdown 信息融合说明。
 - `visual`：纯文本视觉描述。
 - `split`：结构化数组，元素包含 `title`、`originalText`、`translationText` 和 `targetVolumeHint`。
@@ -358,6 +435,7 @@ data: {"eventId":"evt_0002","requestId":"req_20260601_000001","traceId":"trace_2
 - `knowledge_graph`：结构化对象，包含 `entities`、`relations`、`sourceSpans` 和可选 `confidence`。
 - `relation_extraction`：结构化对象，包含 `entities`、`relations` 和 `sourceSpans`。
 - `lineage_extraction`：结构化对象，包含 `nodes`、`relations` 和 `sourceSpans`。
+- `version_summary`：纯文本版本摘要。
 - `prompt_suggestion`：文本或结构化建议，必须由用户确认后才可应用。
 
 ## Security

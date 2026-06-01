@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>{{ title }}</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 32px; color: #1f2328; }
+    header { margin-bottom: 24px; }
+    h1 { font-size: 28px; margin: 0 0 12px; }
+    section { margin: 24px 0; }
+    ul { padding-left: 20px; }
+    .metadata li { display: flex; gap: 12px; margin: 4px 0; }
+    .metadata span { min-width: 96px; color: #5f6368; }
+    article { break-inside: avoid; border-top: 1px solid #d5d8dc; padding: 18px 0; }
+    h2 { font-size: 20px; margin: 0 0 8px; }
+    p { white-space: pre-wrap; line-height: 1.7; }
+    figure { margin: 16px 0 0; }
+    img { max-width: 100%; height: auto; border: 1px solid #d5d8dc; }
+    figcaption { color: #5f6368; font-size: 13px; margin-top: 6px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>{{ title }}</h1>
+    <ul class="metadata">
+{{ metadata }}
+    </ul>
+  </header>
+  <section>
+    <h2>Catalog</h2>
+    <ul>
+{{ catalog }}
+    </ul>
+  </section>
+  <main>
+{{ entries }}
+  </main>
+  <section>
+    <h2>Assets</h2>
+    <ul>
+{{ assets }}
+    </ul>
+  </section>
+</body>
+</html>
