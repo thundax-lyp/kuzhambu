@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { useState } from "react";
 import { FilterOutlined, PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import { Button, Input, Space } from "antd";
-import { SandwishBatchActionBar } from "@/components/sandwish-batch-action-bar";
+import { KuzhambuBatchActionBar } from "@/components/kuzhambu-batch-action-bar";
 import { SandwishFilterPanel } from "@/components/sandwish-filter-panel";
 import type { SandwishFilterPanelField } from "@/components/sandwish-filter-panel";
 import { KuzhambuPage } from "@/components/kuzhambu-page";
@@ -184,7 +184,7 @@ export const SandwishListPage = <RecordType extends object = object>({
             ) : null}
 
             {batchActions ? (
-                <SandwishBatchActionBar
+                <KuzhambuBatchActionBar
                     actions={batchActions}
                     className={batchClassName}
                     selectedCount={selectedCount}

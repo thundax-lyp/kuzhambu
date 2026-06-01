@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `kuzhambu-batch-action-bar`：迁移 `sandwish-batch-action-bar`
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/ARCHITECTURE.md`
-    - 范围对象：`src/components/sandwish-batch-action-bar/`、`src/components/*list-page*/`
-    - 处理动作：将组件、类型、CSS class 和 list-page 调用方改为 `KuzhambuBatchActionBar` / `kuzhambu-batch-action-bar`。
-    - 验收点：`sandwish-batch-action-bar` 组件模块无旧命名残留，admin-web lint 通过。
-    - 重要度：8/10
-
 - [ ] `kuzhambu-filter-panel`：迁移 `sandwish-filter-panel`
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/ARCHITECTURE.md`

@@ -1,39 +1,39 @@
 import type { ReactNode } from "react";
 import { Typography } from "antd";
-import "./sandwish-batch-action-bar.css";
+import "./kuzhambu-batch-action-bar.css";
 
 const { Text } = Typography;
 
-export interface SandwishBatchActionBarProps {
+export interface KuzhambuBatchActionBarProps {
     actions: ReactNode;
     className?: string;
     selectedCount: number;
 }
 
-export const SandwishBatchActionBar = ({
+export const KuzhambuBatchActionBar = ({
     actions,
     className,
     selectedCount
-}: SandwishBatchActionBarProps) => {
+}: KuzhambuBatchActionBarProps) => {
     const hasSelection = selectedCount > 0;
 
     return (
         <div
             className={[
-                "sandwish-batch-action-bar",
-                hasSelection ? "" : "sandwish-batch-action-bar-muted",
+                "kuzhambu-batch-action-bar",
+                hasSelection ? "" : "kuzhambu-batch-action-bar-muted",
                 className
             ]
                 .filter(Boolean)
                 .join(" ")}
         >
             <Text
-                className="sandwish-batch-action-bar-count"
+                className="kuzhambu-batch-action-bar-count"
                 type={hasSelection ? undefined : "secondary"}
             >
                 已选择 {selectedCount} 项
             </Text>
-            <div className="sandwish-batch-action-bar-actions">{actions}</div>
+            <div className="kuzhambu-batch-action-bar-actions">{actions}</div>
         </div>
     );
 };
