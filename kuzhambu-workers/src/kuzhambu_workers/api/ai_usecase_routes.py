@@ -63,6 +63,12 @@ def _description(usecase: AiUsecase) -> str:
     )
 
 
+_ENABLED_DOMAINS = {
+    AiUsecaseDomain.CLASSICS,
+    AiUsecaseDomain.DISCOVERY,
+}
+
+
 for _usecase in USECASES:
-    if _usecase.domain == AiUsecaseDomain.CLASSICS:
+    if _usecase.domain in _ENABLED_DOMAINS:
         _register_usecase(_usecase)

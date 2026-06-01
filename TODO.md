@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `workers ai discovery routes`：实现 Discovery AI usecase 路由
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-AI-USECASE.md#U5-Discovery-AI-Usecase-Routes`
-    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/api/ai_usecase_routes.py`、`kuzhambu-workers/tests/test_ai_usecase_routes_discovery.py`
-    - 处理动作：实现 Discovery 查询理解、查询改写、回答生成和流式回答 usecase routes
-    - 验收点：Discovery 同步和 stream usecase path 均可用
-    - 重要度：9/10
-
 - [ ] `workers ai knowledge platform routes`：实现 Knowledge 和 Platform AI usecase 路由
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-AI-USECASE.md#U6-Knowledge-And-Platform-AI-Usecase-Routes`
