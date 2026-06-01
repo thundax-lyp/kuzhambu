@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `workers ai usecase e2e`：补充 AI usecase 协议级端到端测试
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-AI-USECASE.md#U9-End-To-End-Verification`
-    - 范围对象：`kuzhambu-workers/tests/test_worker_e2e_ai_usecase_classics.py`、`kuzhambu-workers/tests/test_worker_e2e_ai_usecase_discovery.py`、`kuzhambu-workers/tests/test_worker_e2e_ai_usecase_security.py`
-    - 处理动作：补充 Classics、Discovery 和 security usecase e2e 测试
-    - 验收点：happy path、业务服务越权和 path/capability mismatch 被覆盖
-    - 重要度：10/10
-
 - [ ] `workers ai usecase cleanup`：完成 AI usecase 接口收口清理
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-AI-USECASE.md#U10-Cleanup-And-PR-Readiness`
