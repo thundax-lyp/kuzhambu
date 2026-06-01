@@ -133,6 +133,11 @@ jobs:
                   grep -q 'INSERT INTO `classics_sancai_category`' db/data/classics.sql
                   grep -q 'INSERT INTO `classics_sancai_entry`' db/data/classics.sql
 
+            - name: Verify backend clean
+              if: steps.changes.outputs.servers_changed == 'true'
+              working-directory: kuzhambu-servers
+              run: mvn -q clean
+
             - name: Verify backend formatting
               if: steps.changes.outputs.servers_changed == 'true'
               working-directory: kuzhambu-servers
@@ -161,6 +166,11 @@ jobs:
                   test -f kuzhambu-workers/pyproject.toml
                   grep -q 'name = "kuzhambu-workers"' kuzhambu-workers/pyproject.toml
                   grep -q 'requires-python = ">=3.10,<3.11"' kuzhambu-workers/pyproject.toml
+
+            - name: Verify Python worker runtime
+              if: steps.changes.outputs.workers_changed == 'true'
+              run: |
+                  python -c "import sys; assert sys.version_info[:2] == (3, 10), sys.version"
 
             - name: Install Python worker dependencies
               if: steps.changes.outputs.workers_changed == 'true'

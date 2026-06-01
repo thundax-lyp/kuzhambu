@@ -72,7 +72,13 @@ if [[ -d "${ROOT_DIR}/kuzhambu-servers/interfaces" ]]; then
     exit 1
 fi
 
-(cd "${ROOT_DIR}/kuzhambu-servers" && mvn -q test)
+(
+    cd "${ROOT_DIR}/kuzhambu-servers"
+    mvn -q clean
+    mvn -q spotless:check
+    mvn -q checkstyle:check
+    mvn -q test
+)
 
 echo "Verify frontend package manifests"
 node -e "JSON.parse(require('fs').readFileSync('${ROOT_DIR}/kuzhambu-apps/package.json', 'utf8'))"

@@ -29,6 +29,12 @@ replay_pid*
 /docs/60-human/redesign/
 .venv/
 kuzhambu-workers/.venv/
+__pycache__/
+**/__pycache__/
+.pytest_cache/
+**/.pytest_cache/
+.ruff_cache/
+**/.ruff_cache/
 .env
 dev.env
 deploy/.env
