@@ -9,7 +9,7 @@ import { SandwishListPage } from "@/components/sandwish-list-page";
 import { useSandwishConfirm } from "@/components/sandwish-confirm-modal/hooks/use-sandwish-confirm";
 import { SandwishSwitch } from "@/components/sandwish-switch";
 import { SandwishTag } from "@/components/sandwish-tag";
-import type { SandwishTableProps, SandwishTableSortPosition } from "@/components/sandwish-table";
+import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
 import type { OptionsRecord } from "@/types/options";
 import { RoleEdit } from "./components/role-edit";
 import * as service from "./role-service";
@@ -87,7 +87,7 @@ const sortByMove = (
     roles: RoleRecord[],
     sourceRole: RoleRecord,
     targetRole: RoleRecord,
-    position: SandwishTableSortPosition
+    position: KuzhambuTableSortPosition
 ) => {
     const sourceIndex = roles.findIndex((role) => role.id === sourceRole.id);
     const targetIndex = roles.findIndex((role) => role.id === targetRole.id);
@@ -292,7 +292,7 @@ export const RolePage = () => {
     const sortRole = (
         sourceRole: RoleRecord,
         targetRole: RoleRecord,
-        position: SandwishTableSortPosition
+        position: KuzhambuTableSortPosition
     ) => {
         if (!canEditRole || sourceRole.id === targetRole.id) {
             return;
@@ -303,7 +303,7 @@ export const RolePage = () => {
         });
     };
 
-    const columns: SandwishTableProps<RoleRecord>["columns"] = [
+    const columns: KuzhambuTableProps<RoleRecord>["columns"] = [
         {
             title: "角色名称",
             dataIndex: "name",

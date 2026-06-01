@@ -11,7 +11,7 @@ import type { Key } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { SandwishListPage } from "@/components/sandwish-list-page";
 import { useSandwishConfirm } from "@/components/sandwish-confirm-modal/hooks/use-sandwish-confirm";
-import type { SandwishTableProps, SandwishTableSortPosition } from "@/components/sandwish-table";
+import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
 import { DepartmentEdit } from "./components/department-edit";
 import * as service from "./department-service";
 import type { DepartmentMoveCommand, DepartmentSaveCommand } from "./department-service";
@@ -72,7 +72,7 @@ const collectDescendantIds = (department?: DepartmentTableNode | null): Set<stri
     return new Set(collectDepartmentIds(department.children));
 };
 
-const toMoveType = (position: SandwishTableSortPosition): DepartmentMoveCommand["type"] => {
+const toMoveType = (position: KuzhambuTableSortPosition): DepartmentMoveCommand["type"] => {
     return position === "before" ? "before" : "after";
 };
 
@@ -187,7 +187,7 @@ export const DepartmentPage = () => {
     const sortDepartment = (
         sourceDepartment: DepartmentTableNode,
         targetDepartment: DepartmentTableNode,
-        position: SandwishTableSortPosition
+        position: KuzhambuTableSortPosition
     ) => {
         if (!canEditDepartment || sourceDepartment.id === targetDepartment.id) {
             return;
@@ -236,7 +236,7 @@ export const DepartmentPage = () => {
         });
     };
 
-    const columns: SandwishTableProps<DepartmentTableNode>["columns"] = [
+    const columns: KuzhambuTableProps<DepartmentTableNode>["columns"] = [
         {
             title: "部门名称",
             dataIndex: "name",

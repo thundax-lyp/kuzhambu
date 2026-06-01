@@ -7,7 +7,7 @@ import { hasPermission } from "@/auth/permission-storage";
 import { SandwishListPage } from "@/components/sandwish-list-page";
 import { useSandwishConfirm } from "@/components/sandwish-confirm-modal/hooks/use-sandwish-confirm";
 import { SandwishTag } from "@/components/sandwish-tag";
-import type { SandwishTableProps, SandwishTableSortPosition } from "@/components/sandwish-table";
+import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { SubmissionDetail } from "./components/submission-detail";
 import { SubmissionEdit } from "./components/submission-edit";
@@ -122,7 +122,7 @@ const sortByMove = (
     submissions: SubmissionRecord[],
     sourceSubmission: SubmissionRecord,
     targetSubmission: SubmissionRecord,
-    position: SandwishTableSortPosition
+    position: KuzhambuTableSortPosition
 ) => {
     const sourceIndex = submissions.findIndex(
         (submission) => submission.id === sourceSubmission.id
@@ -281,7 +281,7 @@ export const SubmissionPage = () => {
     const moveSubmission = (
         sourceSubmission: SubmissionRecord,
         targetSubmission: SubmissionRecord,
-        position: SandwishTableSortPosition
+        position: KuzhambuTableSortPosition
     ) => {
         if (!canEditSubmission || sourceSubmission.id === targetSubmission.id) {
             return;
@@ -323,7 +323,7 @@ export const SubmissionPage = () => {
         }));
     };
 
-    const columns: SandwishTableProps<SubmissionRecord>["columns"] = [
+    const columns: KuzhambuTableProps<SubmissionRecord>["columns"] = [
         {
             title: "内容",
             dataIndex: "title",

@@ -10,7 +10,7 @@ import { Button, Input, Space, Typography } from "antd";
 import { useMemo, useState } from "react";
 import { SandwishListPage } from "@/components/sandwish-list-page";
 import { SandwishTag } from "@/components/sandwish-tag";
-import type { SandwishTableProps } from "@/components/sandwish-table";
+import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import * as service from "./system-log-service";
 import type { LogPageQuery } from "./system-log-service";
@@ -147,7 +147,7 @@ export const SystemLogPage = () => {
         });
     };
 
-    const columns: SandwishTableProps<LogRecord>["columns"] = [
+    const columns: KuzhambuTableProps<LogRecord>["columns"] = [
         {
             title: "时间",
             dataIndex: "createDate",

@@ -7,7 +7,7 @@ import { hasPermission } from "@/auth/permission-storage";
 import { SandwishListPage } from "@/components/sandwish-list-page";
 import { useSandwishConfirm } from "@/components/sandwish-confirm-modal/hooks/use-sandwish-confirm";
 import { SandwishTag } from "@/components/sandwish-tag";
-import type { SandwishTableProps } from "@/components/sandwish-table";
+import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { DictionaryEdit } from "./components/dictionary-edit";
 import * as dictionaryService from "./dictionary-service";
@@ -161,7 +161,7 @@ export const DictionaryPage = () => {
         });
     };
 
-    const columns: SandwishTableProps<DictRecord>["columns"] = [
+    const columns: KuzhambuTableProps<DictRecord>["columns"] = [
         {
             title: "字典类型",
             dataIndex: "type",

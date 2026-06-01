@@ -7,7 +7,7 @@ import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
 import { ADMIN_API_BASE_URL } from "@/api/http";
 import { SandwishListPage } from "@/components/sandwish-list-page";
 import { SandwishTag } from "@/components/sandwish-tag";
-import type { SandwishTableProps } from "@/components/sandwish-table";
+import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { AuditLogDetail } from "./components/audit-log-detail";
 import { createAuditLogFilterFields } from "./components/audit-log-filter";
@@ -207,7 +207,7 @@ export const AuditLogPage = () => {
         });
     };
 
-    const columns: SandwishTableProps<AuditLogRecord>["columns"] = [
+    const columns: KuzhambuTableProps<AuditLogRecord>["columns"] = [
         {
             title: "时间",
             dataIndex: "occurredAt",

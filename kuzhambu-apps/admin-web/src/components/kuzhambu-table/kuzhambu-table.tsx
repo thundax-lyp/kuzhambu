@@ -9,7 +9,7 @@ import { HolderOutlined, MoreOutlined } from "@ant-design/icons";
 import { Button, Dropdown, Table } from "antd";
 import type { MenuProps, TableProps } from "antd";
 import { PAGE_SIZE_OPTIONS } from "@/types/page";
-import "./sandwish-table.css";
+import "./kuzhambu-table.css";
 
 const DEFAULT_ACTION_COLUMN_KEY = "actions";
 const DEFAULT_ACTION_COLUMN_WIDTH = 116;
@@ -25,41 +25,41 @@ const ACTION_TEXT_CHAR_WIDTH = 14;
 const DEFAULT_MIN_COLUMN_WIDTH = 96;
 const MOBILE_MEDIA_QUERY = "(max-width: 760px)";
 
-export type SandwishTableSortPosition = "before" | "after";
-export type SandwishTableRowActionType = "text" | "warning" | "danger";
+export type KuzhambuTableSortPosition = "before" | "after";
+export type KuzhambuTableRowActionType = "text" | "warning" | "danger";
 
-export interface SandwishTableRowAction<RecordType extends object = object> {
+export interface KuzhambuTableRowAction<RecordType extends object = object> {
     ariaLabel?: string;
     disabled?: boolean;
     icon?: ReactNode;
     key: Key;
     onClick: (record: RecordType) => void;
     text: string;
-    type?: SandwishTableRowActionType;
+    type?: KuzhambuTableRowActionType;
 }
 
-export interface SandwishTableRowActionDivider {
+export interface KuzhambuTableRowActionDivider {
     key?: Key;
     type: "divider";
 }
 
-export type SandwishTableRowActionOption<RecordType extends object = object> =
-    | SandwishTableRowAction<RecordType>
-    | SandwishTableRowActionDivider;
+export type KuzhambuTableRowActionOption<RecordType extends object = object> =
+    | KuzhambuTableRowAction<RecordType>
+    | KuzhambuTableRowActionDivider;
 
-export type SandwishTableRowActions<RecordType extends object = object> =
-    | SandwishTableRowActionOption<RecordType>[]
-    | ((record: RecordType, index?: number) => SandwishTableRowActionOption<RecordType>[]);
+export type KuzhambuTableRowActions<RecordType extends object = object> =
+    | KuzhambuTableRowActionOption<RecordType>[]
+    | ((record: RecordType, index?: number) => KuzhambuTableRowActionOption<RecordType>[]);
 
-export interface SandwishTableActionColumn<RecordType extends object = object> {
+export interface KuzhambuTableActionColumn<RecordType extends object = object> {
     inlineLimit?: number;
-    options?: SandwishTableRowActions<RecordType>;
+    options?: KuzhambuTableRowActions<RecordType>;
 }
 
-export type SandwishTableColumn<RecordType extends object = object> = NonNullable<
+export type KuzhambuTableColumn<RecordType extends object = object> = NonNullable<
     TableProps<RecordType>["columns"]
 >[number] &
-    SandwishTableActionColumn<RecordType>;
+    KuzhambuTableActionColumn<RecordType>;
 
 const readColumnKey = <RecordType extends object>(
     column: NonNullable<TableProps<RecordType>["columns"]>[number]
@@ -107,13 +107,13 @@ const callHandler = <EventType,>(
 };
 
 const isActionDivider = <RecordType extends object>(
-    action: SandwishTableRowActionOption<RecordType>
-): action is SandwishTableRowActionDivider => {
+    action: KuzhambuTableRowActionOption<RecordType>
+): action is KuzhambuTableRowActionDivider => {
     return "type" in action && action.type === "divider";
 };
 
 const normalizeRowActions = <RecordType extends object>(
-    actions: SandwishTableRowActions<RecordType> | undefined,
+    actions: KuzhambuTableRowActions<RecordType> | undefined,
     record: RecordType,
     index?: number
 ) => {
@@ -121,16 +121,16 @@ const normalizeRowActions = <RecordType extends object>(
 };
 
 const countActionButtons = <RecordType extends object>(
-    actions: SandwishTableRowActionOption<RecordType>[]
+    actions: KuzhambuTableRowActionOption<RecordType>[]
 ) => {
     return actions.filter((action) => !isActionDivider(action)).length;
 };
 
 const normalizeActionSeparators = <RecordType extends object>(
-    actions: SandwishTableRowActionOption<RecordType>[]
+    actions: KuzhambuTableRowActionOption<RecordType>[]
 ) => {
-    const normalizedActions: SandwishTableRowActionOption<RecordType>[] = [];
-    let pendingDivider: SandwishTableRowActionDivider | null = null;
+    const normalizedActions: KuzhambuTableRowActionOption<RecordType>[] = [];
+    let pendingDivider: KuzhambuTableRowActionDivider | null = null;
 
     actions.forEach((action) => {
         if (isActionDivider(action)) {
@@ -151,7 +151,7 @@ const normalizeActionSeparators = <RecordType extends object>(
 };
 
 const calculateActionButtonWidth = <RecordType extends object>(
-    action: SandwishTableRowActionOption<RecordType>
+    action: KuzhambuTableRowActionOption<RecordType>
 ) => {
     if (isActionDivider(action)) {
         return ACTION_DIVIDER_WIDTH;
@@ -168,7 +168,7 @@ const calculateActionButtonWidth = <RecordType extends object>(
 };
 
 const calculateActionColumnWidth = <RecordType extends object>(
-    actions: SandwishTableRowActionOption<RecordType>[],
+    actions: KuzhambuTableRowActionOption<RecordType>[],
     inlineLimit = ACTION_INLINE_LIMIT
 ) => {
     const actionCount = countActionButtons(normalizeActionSeparators(actions));
@@ -187,14 +187,14 @@ const calculateActionColumnWidth = <RecordType extends object>(
 };
 
 const splitActions = <RecordType extends object>(
-    actions: SandwishTableRowActionOption<RecordType>[],
+    actions: KuzhambuTableRowActionOption<RecordType>[],
     inlineLimit: number
 ) => {
-    const inlineActions: SandwishTableRowActionOption<RecordType>[] = [];
-    const overflowActions: SandwishTableRowActionOption<RecordType>[] = [];
+    const inlineActions: KuzhambuTableRowActionOption<RecordType>[] = [];
+    const overflowActions: KuzhambuTableRowActionOption<RecordType>[] = [];
     let actionCount = 0;
-    let lastTarget: SandwishTableRowActionOption<RecordType>[] | undefined;
-    let pendingDivider: SandwishTableRowActionDivider | null = null;
+    let lastTarget: KuzhambuTableRowActionOption<RecordType>[] | undefined;
+    let pendingDivider: KuzhambuTableRowActionDivider | null = null;
 
     normalizeActionSeparators(actions).forEach((action) => {
         if (isActionDivider(action)) {
@@ -215,28 +215,28 @@ const splitActions = <RecordType extends object>(
     return { inlineActions, overflowActions };
 };
 
-export interface SandwishTableProps<RecordType extends object = object> extends Omit<
+export interface KuzhambuTableProps<RecordType extends object = object> extends Omit<
     TableProps<RecordType>,
     "columns"
 > {
     actionColumnKey?: Key;
     actionColumnMobileWidth?: number;
     actionColumnWidth?: number;
-    columns?: SandwishTableColumn<RecordType>[];
+    columns?: KuzhambuTableColumn<RecordType>[];
     getSortableRowKey?: (record: RecordType, index?: number) => Key;
     getSortableRowLabel?: (record: RecordType, index?: number) => string;
     minColumnWidth?: number;
     onSort?: (
         sourceRecord: RecordType,
         targetRecord: RecordType,
-        position: SandwishTableSortPosition
+        position: KuzhambuTableSortPosition
     ) => void;
     resizableColumns?: boolean;
     responsive?: boolean;
     sortable?: boolean;
 }
 
-export const SandwishTable = <RecordType extends object = object>({
+export const KuzhambuTable = <RecordType extends object = object>({
     actionColumnKey = DEFAULT_ACTION_COLUMN_KEY,
     actionColumnMobileWidth = DEFAULT_ACTION_COLUMN_MOBILE_WIDTH,
     actionColumnWidth = DEFAULT_ACTION_COLUMN_WIDTH,
@@ -255,12 +255,12 @@ export const SandwishTable = <RecordType extends object = object>({
     scroll,
     sortable = false,
     ...tableProps
-}: SandwishTableProps<RecordType>) => {
+}: KuzhambuTableProps<RecordType>) => {
     const [columnWidths, setColumnWidths] = useState<Record<string, number>>({});
     const [isMobile, setIsMobile] = useState(false);
     const [draggingRecord, setDraggingRecord] = useState<RecordType | null>(null);
     const [dropTarget, setDropTarget] = useState<{
-        position: SandwishTableSortPosition;
+        position: KuzhambuTableSortPosition;
         rowKey: Key;
     } | null>(null);
     const sortableEnabled = sortable && Boolean(onSort);
@@ -348,7 +348,7 @@ export const SandwishTable = <RecordType extends object = object>({
 
     const renderRowActions = useCallback(
         (
-            actionsConfig: SandwishTableRowActions<RecordType>,
+            actionsConfig: KuzhambuTableRowActions<RecordType>,
             inlineLimitConfig: number | undefined,
             record: RecordType,
             index: number
@@ -373,7 +373,7 @@ export const SandwishTable = <RecordType extends object = object>({
                 return {
                     key: action.key,
                     className:
-                        action.type === "warning" ? "sandwish-table-row-action-menu-warning" : "",
+                        action.type === "warning" ? "kuzhambu-table-row-action-menu-warning" : "",
                     danger: action.type === "danger",
                     disabled: action.disabled,
                     icon: action.icon,
@@ -382,22 +382,22 @@ export const SandwishTable = <RecordType extends object = object>({
             });
 
             return (
-                <div className="sandwish-table-row-actions">
-                    <span className="sandwish-table-row-actions-inline">
+                <div className="kuzhambu-table-row-actions">
+                    <span className="kuzhambu-table-row-actions-inline">
                         {inlineActions.map((action, actionIndex) =>
                             isActionDivider(action) ? (
                                 <span
                                     aria-hidden="true"
-                                    className="sandwish-table-row-action-divider"
+                                    className="kuzhambu-table-row-action-divider"
                                     key={action.key ?? `divider-${actionIndex}`}
                                 />
                             ) : (
                                 <Button
                                     aria-label={action.ariaLabel ?? action.text}
                                     className={[
-                                        "sandwish-table-row-action",
+                                        "kuzhambu-table-row-action",
                                         action.type === "warning"
-                                            ? "sandwish-table-row-action-warning"
+                                            ? "kuzhambu-table-row-action-warning"
                                             : ""
                                     ]
                                         .filter(Boolean)
@@ -433,7 +433,7 @@ export const SandwishTable = <RecordType extends object = object>({
                         >
                             <Button
                                 aria-label="展开行操作"
-                                className="sandwish-table-row-action sandwish-table-row-action-more"
+                                className="kuzhambu-table-row-action kuzhambu-table-row-action-more"
                                 icon={<MoreOutlined />}
                                 type="text"
                             />
@@ -447,7 +447,7 @@ export const SandwishTable = <RecordType extends object = object>({
 
     const calculateColumnActionWidth = useCallback(
         (
-            actionsConfig: SandwishTableRowActions<RecordType> | undefined,
+            actionsConfig: KuzhambuTableRowActions<RecordType> | undefined,
             inlineLimitConfig?: number
         ) => {
             const inlineLimit = isMobile ? 0 : (inlineLimitConfig ?? ACTION_INLINE_LIMIT);
@@ -477,8 +477,8 @@ export const SandwishTable = <RecordType extends object = object>({
         }
 
         const normalizeColumns = (
-            currentColumns: SandwishTableColumn<RecordType>[]
-        ): SandwishTableColumn<RecordType>[] => {
+            currentColumns: KuzhambuTableColumn<RecordType>[]
+        ): KuzhambuTableColumn<RecordType>[] => {
             return currentColumns.map((column) => {
                 if ("children" in column && Array.isArray(column.children)) {
                     return {
@@ -510,11 +510,11 @@ export const SandwishTable = <RecordType extends object = object>({
                     typeof column.title !== "function";
                 const defaultTitle = isActionColumn ? (column.title ?? "操作") : column.title;
                 const titleNode = canResize ? (
-                    <span className="sandwish-table-column-title">
+                    <span className="kuzhambu-table-column-title">
                         {plainTitle}
                         <span
                             aria-hidden="true"
-                            className="sandwish-table-column-resize-handle"
+                            className="kuzhambu-table-column-resize-handle"
                             onMouseDown={startResizeColumn(columnKey, currentWidth)}
                         />
                     </span>
@@ -525,7 +525,7 @@ export const SandwishTable = <RecordType extends object = object>({
                 return {
                     ...column,
                     className:
-                        [column.className, isActionColumn ? "sandwish-table-action-column" : ""]
+                        [column.className, isActionColumn ? "kuzhambu-table-action-column" : ""]
                             .filter(Boolean)
                             .join(" ") || undefined,
                     fixed: isActionColumn ? (column.fixed ?? "right") : column.fixed,
@@ -545,14 +545,14 @@ export const SandwishTable = <RecordType extends object = object>({
             return nextColumns;
         }
 
-        const sortColumn: SandwishTableColumn<RecordType> = {
-            className: "sandwish-table-sort-column",
+        const sortColumn: KuzhambuTableColumn<RecordType> = {
+            className: "kuzhambu-table-sort-column",
             fixed: "right",
             key: DEFAULT_SORT_COLUMN_KEY,
             render: (_value: unknown, record: RecordType, index: number) => (
                 <Button
                     aria-label={`拖动${readSortableRowLabel(record, index)}`}
-                    className="sandwish-table-row-drag-handle"
+                    className="kuzhambu-table-row-drag-handle"
                     icon={<HolderOutlined />}
                     type="text"
                 />
@@ -609,7 +609,7 @@ export const SandwishTable = <RecordType extends object = object>({
     }, [pagination]);
 
     const readDropPosition = useCallback(
-        (event: ReactDragEvent<HTMLElement>): SandwishTableSortPosition => {
+        (event: ReactDragEvent<HTMLElement>): KuzhambuTableSortPosition => {
             const rowRect = event.currentTarget.getBoundingClientRect();
             return event.clientY < rowRect.top + rowRect.height / 2 ? "before" : "after";
         },
@@ -628,7 +628,7 @@ export const SandwishTable = <RecordType extends object = object>({
             const isDropTarget =
                 currentRowKey !== undefined && dropTarget?.rowKey === currentRowKey;
             const sortableClassName = isDropTarget
-                ? `sandwish-table-row-drop-${dropTarget.position}`
+                ? `kuzhambu-table-row-drop-${dropTarget.position}`
                 : "";
 
             return {
@@ -701,9 +701,9 @@ export const SandwishTable = <RecordType extends object = object>({
         <Table<RecordType>
             {...tableProps}
             className={[
-                "sandwish-table",
-                sortable ? "sandwish-table-sortable" : "sandwish-table-static",
-                rowSelection ? "sandwish-table-selectable" : "",
+                "kuzhambu-table",
+                sortable ? "kuzhambu-table-sortable" : "kuzhambu-table-static",
+                rowSelection ? "kuzhambu-table-selectable" : "",
                 className
             ]
                 .filter(Boolean)

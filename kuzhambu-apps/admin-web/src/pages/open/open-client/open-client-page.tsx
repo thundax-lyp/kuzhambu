@@ -6,7 +6,7 @@ import { hasPermission } from "@/auth/permission-storage";
 import { SandwishListPage } from "@/components/sandwish-list-page";
 import { useSandwishConfirm } from "@/components/sandwish-confirm-modal/hooks/use-sandwish-confirm";
 import { SandwishTag } from "@/components/sandwish-tag";
-import type { SandwishTableProps } from "@/components/sandwish-table";
+import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { OpenClientEdit } from "./components/open-client-edit";
 import { OpenClientSecretModal } from "./components/open-client-secret-modal";
@@ -259,7 +259,7 @@ export const OpenClientPage = () => {
         }
     };
 
-    const columns: SandwishTableProps<OpenClientRecord>["columns"] = [
+    const columns: KuzhambuTableProps<OpenClientRecord>["columns"] = [
         {
             key: "name",
             title: "客户端",

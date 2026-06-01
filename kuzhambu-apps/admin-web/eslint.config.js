@@ -848,7 +848,7 @@ const localRules = {
                             context.report({
                                 node: property,
                                 message:
-                                    "ADMIN_WEB_UI_TABLE_ACTION_COLUMN: actions column title and width are handled by SandwishTable."
+                                    "ADMIN_WEB_UI_TABLE_ACTION_COLUMN: actions column title and width are handled by KuzhambuTable."
                             });
                         });
 

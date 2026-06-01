@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `kuzhambu-table`：迁移 `sandwish-table`
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/ARCHITECTURE.md`
-    - 范围对象：`src/components/sandwish-table/`、列表页、`src/app.test.tsx`、`eslint.config.js`
-    - 处理动作：将表格组件、类型、排序类型、CSS class、页面调用方和 ESLint 文案改为 `KuzhambuTable` / `kuzhambu-table`。
-    - 验收点：`sandwish-table` 组件模块无旧命名残留，admin-web lint 和 test 通过。
-    - 重要度：9/10
-
 - [ ] `kuzhambu-confirm-modal`：迁移 `sandwish-confirm-modal`
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/ARCHITECTURE.md`

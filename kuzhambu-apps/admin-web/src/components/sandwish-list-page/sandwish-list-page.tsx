@@ -6,8 +6,8 @@ import { KuzhambuBatchActionBar } from "@/components/kuzhambu-batch-action-bar";
 import { KuzhambuFilterPanel } from "@/components/kuzhambu-filter-panel";
 import type { KuzhambuFilterPanelField } from "@/components/kuzhambu-filter-panel";
 import { KuzhambuPage } from "@/components/kuzhambu-page";
-import { SandwishTable } from "@/components/sandwish-table";
-import type { SandwishTableProps } from "@/components/sandwish-table";
+import { KuzhambuTable } from "@/components/kuzhambu-table";
+import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
 import "./sandwish-list-page.css";
 
 export interface SandwishListPageFilterState {
@@ -20,7 +20,7 @@ export interface SandwishListPageFilterState {
 export type SandwishListPageFilterField = KuzhambuFilterPanelField;
 
 export interface SandwishListPageProps<RecordType extends object = object> extends Omit<
-    SandwishTableProps<RecordType>,
+    KuzhambuTableProps<RecordType>,
     "title"
 > {
     batchActions?: ReactNode;
@@ -200,7 +200,7 @@ export const SandwishListPage = <RecordType extends object = object>({
                     ].join(" ")}
                 >
                     <div className="sandwish-list-page-table-main">
-                        <SandwishTable<RecordType> {...tableProps} />
+                        <KuzhambuTable<RecordType> {...tableProps} />
                     </div>
                     <aside
                         className={["sandwish-list-page-table-aside", tableAsideClassName]
@@ -211,7 +211,7 @@ export const SandwishListPage = <RecordType extends object = object>({
                     </aside>
                 </div>
             ) : (
-                <SandwishTable<RecordType> {...tableProps} />
+                <KuzhambuTable<RecordType> {...tableProps} />
             )}
         </KuzhambuPage>
     );

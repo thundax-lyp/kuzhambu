@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { QueryClientProvider } from "@tanstack/react-query";
 import App from "./app";
 import { clearPermissions, hasPermission, replacePermissions } from "./auth/permission-storage";
-import { SandwishTable } from "./components/sandwish-table";
+import { KuzhambuTable } from "./components/kuzhambu-table";
 import { AuditLogPage } from "./pages/audit/audit-log/audit-log-page";
 import { OpenClientPage } from "./pages/open/open-client/open-client-page";
 import { SubmissionPage } from "./pages/submission/submission/submission-page";
@@ -695,7 +695,7 @@ describe("App", () => {
         expect(await screen.findByText("调试客户端")).toBeInTheDocument();
         expect(screen.queryByText("swk_test")).not.toBeInTheDocument();
         expect(screen.getByText("submission:submission:create")).toBeInTheDocument();
-        expect(screen.getByRole("button", { name: /新增客户端/ })).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /新增/ })).toBeInTheDocument();
         expect(globalThis.fetch).toHaveBeenCalledWith(
             "/admin-api/api/open/client/page",
             expect.objectContaining({
@@ -986,7 +986,7 @@ describe("App", () => {
 
         expect(await screen.findByText("未生成凭据客户端")).toBeInTheDocument();
 
-        fireEvent.click(screen.getByRole("button", { name: /新增客户端/ }));
+        fireEvent.click(screen.getByRole("button", { name: /新增/ }));
         expect(screen.queryByText("API KEY 未生成")).not.toBeInTheDocument();
         fireEvent.click(screen.getByRole("button", { name: /取\s*消/ }));
 
@@ -1181,7 +1181,7 @@ describe("App", () => {
         });
         fireEvent.click(screen.getByRole("button", { name: /查\s*询/ }));
 
-        expect(filterButton).toHaveAttribute("aria-expanded", "true");
+        expect(filterButton).toHaveAttribute("aria-expanded", "false");
         expect(screen.getByPlaceholderText("developer")).toHaveValue("ethan");
 
         fireEvent.click(filterButton);
@@ -1227,7 +1227,7 @@ describe("App", () => {
         };
 
         render(
-            <SandwishTable
+            <KuzhambuTable
                 rowKey="id"
                 columns={[{ title: "用户", dataIndex: "name", key: "name", width: 160 }]}
                 dataSource={records}

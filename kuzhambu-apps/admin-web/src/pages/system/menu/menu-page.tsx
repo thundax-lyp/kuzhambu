@@ -7,7 +7,7 @@ import { hasPermission } from "@/auth/permission-storage";
 import { SandwishListPage } from "@/components/sandwish-list-page";
 import { useSandwishConfirm } from "@/components/sandwish-confirm-modal/hooks/use-sandwish-confirm";
 import { SandwishSwitch } from "@/components/sandwish-switch";
-import type { SandwishTableProps, SandwishTableSortPosition } from "@/components/sandwish-table";
+import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
 import { MenuEdit } from "./components/menu-edit";
 import * as service from "./menu-service";
 import type { MenuMoveCommand, MenuSaveCommand } from "./menu-service";
@@ -64,7 +64,7 @@ const collectDescendantIds = (menu?: MenuTableNode | null): Set<string> => {
     return new Set(collectMenuIds(menu.children));
 };
 
-const toMoveType = (position: SandwishTableSortPosition): MenuMoveCommand["type"] => {
+const toMoveType = (position: KuzhambuTableSortPosition): MenuMoveCommand["type"] => {
     return position === "before" ? "before" : "after";
 };
 
@@ -187,7 +187,7 @@ export const MenuPage = () => {
     const sortMenu = (
         sourceMenu: MenuTableNode,
         targetMenu: MenuTableNode,
-        position: SandwishTableSortPosition
+        position: KuzhambuTableSortPosition
     ) => {
         if (!canEditMenu || sourceMenu.id === targetMenu.id) {
             return;
@@ -235,7 +235,7 @@ export const MenuPage = () => {
         });
     };
 
-    const columns: SandwishTableProps<MenuTableNode>["columns"] = [
+    const columns: KuzhambuTableProps<MenuTableNode>["columns"] = [
         {
             title: "菜单名称",
             dataIndex: "name",

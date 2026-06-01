@@ -16,7 +16,7 @@ import { SandwishListPage } from "@/components/sandwish-list-page";
 import { useSandwishConfirm } from "@/components/sandwish-confirm-modal/hooks/use-sandwish-confirm";
 import { SandwishSwitch } from "@/components/sandwish-switch";
 import { SandwishTag } from "@/components/sandwish-tag";
-import type { SandwishTableProps } from "@/components/sandwish-table";
+import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
 import { getCurrentUserInfo } from "@/service/current-user-service";
 import type { CurrentUserRecord } from "@/service/current-user-types";
 import type { OptionsRecord } from "@/types/options";
@@ -553,7 +553,7 @@ export const UserPage = () => {
         updateMutation.mutate(toSaveCommand(activeUser, form));
     };
 
-    const columns: SandwishTableProps<UserRecord>["columns"] = [
+    const columns: KuzhambuTableProps<UserRecord>["columns"] = [
         {
             title: "用户",
             dataIndex: "name",

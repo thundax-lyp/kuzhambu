@@ -9,7 +9,7 @@ import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
 import { SandwishListPage } from "@/components/sandwish-list-page";
 import { useSandwishConfirm } from "@/components/sandwish-confirm-modal/hooks/use-sandwish-confirm";
 import { SandwishTag } from "@/components/sandwish-tag";
-import type { SandwishTableProps, SandwishTableSortPosition } from "@/components/sandwish-table";
+import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import * as service from "./storage-object-service";
 import type { StoragePageQuery } from "./storage-object-service";
@@ -94,7 +94,7 @@ const sortByMove = (
     storages: StorageRecord[],
     sourceStorage: StorageRecord,
     targetStorage: StorageRecord,
-    position: SandwishTableSortPosition
+    position: KuzhambuTableSortPosition
 ) => {
     const sourceIndex = storages.findIndex((storage) => storage.id === sourceStorage.id);
     const targetIndex = storages.findIndex((storage) => storage.id === targetStorage.id);
@@ -238,7 +238,7 @@ export const StorageObjectPage = () => {
     const moveStorage = (
         sourceStorage: StorageRecord,
         targetStorage: StorageRecord,
-        position: SandwishTableSortPosition
+        position: KuzhambuTableSortPosition
     ) => {
         if (!canEditStorage || sourceStorage.id === targetStorage.id) {
             return;
@@ -249,7 +249,7 @@ export const StorageObjectPage = () => {
         });
     };
 
-    const columns: SandwishTableProps<StorageRecord>["columns"] = [
+    const columns: KuzhambuTableProps<StorageRecord>["columns"] = [
         {
             title: "文件",
             dataIndex: "originalFilename",
