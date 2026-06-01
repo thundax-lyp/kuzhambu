@@ -4,14 +4,14 @@
 
 本文档定义 kuzhambu 的 Pull Request 合并前验证流程。
 
-目标是保证 PR 合并前固定执行统一 verify 入口，并让新增模块验证接入同一 workflow。
+目标是保证 PR 合并前固定执行明确、可读的 workflow 步骤，并让新增模块验证接入同一 workflow。
 
 ## 2. Scope
 
 当前范围：
 
 - GitHub Pull Request workflow
-- 统一 verify 入口
+- PR workflow 显式验证步骤
 - PR 标题和描述要求
 - 文档、TODO 和 RUNBOOK 收口要求
 
@@ -27,12 +27,12 @@ Commit 是工程判断记录，可以表示阶段任务中的中间判断。
 
 PR 是阶段性交付边界。PR 合并前必须完整、可编译、可测试，并完成文档、TODO 和 RUNBOOK 收口。
 
-PR 合并前固定执行 `.github/workflows/pr-verify.yml`。workflow 固定调用 `scripts/verify-all.sh`。新增或调整验证命令时，必须接入该脚本，避免 GitHub Actions 与本地验证入口分叉。
+PR 合并前固定执行 `.github/workflows/pr-verify.yml`。workflow 必须显式声明治理文件检查、后端 Maven 验证、前端 package manifest 校验和 worker manifest 校验；不得用一个 shell 脚本隐藏 PR 必过项。
 
 ## 4. Module Mapping
 
 - `.github/workflows/pr-verify.yml`: GitHub PR 触发入口。
-- `scripts/verify-all.sh`: 仓库统一 verify 编排入口。
+- `scripts/verify-all.sh`: 本地辅助 verify 编排入口，不作为 PR workflow 的必过入口。
 - `.github/pull_request_template.md`: PR 描述模板。
 - `docs/00-governance/TODO-RULES.md`: TODO、commit、PR 和 verify protocol 的主规则。
 
@@ -43,11 +43,12 @@ PR 合并前固定执行 `.github/workflows/pr-verify.yml`。workflow 固定调�
 - PR 标题固定使用 `Type(scope): 中文说明`。
 - PR 描述固定使用 `.github/pull_request_template.md`。
 - PR 必须完成阶段任务对应的文档、TODO 和 RUNBOOK 收口。
-- workflow 不直接散落项目验证细节，项目验证细节固定收敛到 `scripts/verify-all.sh`。
-- 新增项目验证能力时必须同步接入 `scripts/verify-all.sh`。
+- workflow 必须直接展示 PR 必过验证步骤；新增项目验证能力时必须同步接入 `.github/workflows/pr-verify.yml`。
+- 本地辅助脚本可以复用同等验证能力，但不得成为 PR workflow 唯一可见入口。
 - PR 自动验证只包含已自动化 testcase；未自动化 testcase 不得伪装为 PR 必过项。
 - 没有构建系统或验证命令的模块不得在 workflow 中伪造空验证。
 - Java servers 验证要求本地或 CI 使用 Java 11+；当前 Checkstyle 版本不支持 Java 8 运行时。
+- Java servers PR 验证必须显式执行 `mvn -q clean spotless:check checkstyle:check test`。
 - Java servers 验证必须检查 `common`、`biz`、`starter` 三段式布局，并拒绝继续保留旧 `kuzhambu-servers/interfaces` 入口。
 - PR 合并默认使用普通 merge commit，保留分支中的小步 commit 历史；不得默认 squash。
 
@@ -65,6 +66,6 @@ PR 描述固定包含：
 
 1. 开发者打开或更新 Pull Request。
 2. GitHub 触发 `PR Verify` workflow。
-3. workflow 执行 `scripts/verify-all.sh`。
+3. workflow 显式执行治理文件检查、后端布局检查、Classics SQL seed 检查、`mvn -q clean spotless:check checkstyle:check test`、前端 package manifest 校验和 worker manifest 校验。
 4. 所有当前自动化验证通过后，PR 才允许进入合并判断。
 5. PR 审核通过后，才允许合并到 `main`；合并时默认执行普通 merge，例如 `gh pr merge <number> --merge --delete-branch`。
