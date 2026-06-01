@@ -13,14 +13,6 @@
 
 ## 当前任务项
 
-- [ ] `workers errors`：实现稳定错误模型
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W3-Stable-Errors`
-    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/core/errors.py`、`kuzhambu-workers/src/kuzhambu_workers/schemas/common.py`、`kuzhambu-workers/tests/test_errors.py`
-    - 处理动作：实现稳定错误类型、错误响应和异常映射
-    - 验收点：错误响应不暴露密钥、完整 prompt、完整业务输入或临时路径
-    - 重要度：10/10
-
 - [ ] `workers security`：实现内部 HMAC 认证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W4-Internal-HMAC-Security`
