@@ -23,6 +23,7 @@ Storage 负责“文件作为可复用资源如何被保存、读取和引用”
 
 - 通用 portal 上传入口。
 - CDN 分发。
+- workers 调用编排。
 - 图片裁剪、压缩和水印。
 - 视频转码。
 - 音频处理。
@@ -64,6 +65,8 @@ Storage 负责“文件作为可复用资源如何被保存、读取和引用”
 - 文件内容读取不得要求调用方感知底层存储类型。
 - 通用上传入口只面向后台；portal 需要上传时必须由具体业务模块定义专用上传入口并复用 Storage。
 - 业务专用上传入口不得绕过 Storage 写入文件内容。
+- Storage 不直接调用 workers。
+- 业务域调用 workers 生成的文件内容，必须回到 Storage 创建文件对象并建立引用。
 - 本地文件和 S3 兼容存储只能作为运行时底层存储实现，不改变业务语义。
 - 分享访问页读取文件对象时，必须由 Classics 分享能力先完成分享链接和分享目标校验。
 
@@ -83,3 +86,4 @@ Storage 负责“文件作为可复用资源如何被保存、读取和引用”
 - [SYSTEM-REQUIREMENTS.md](./SYSTEM-REQUIREMENTS.md)：当前用户头像等系统业务文件应复用 Storage。
 - [CLASSICS-REQUIREMENTS.md](./CLASSICS-REQUIREMENTS.md)：古籍内容中的图片、附件、导入资源和分享页文件读取应复用 Storage。
 - [SYSTEM-REQUIREMENTS.md](./SYSTEM-REQUIREMENTS.md)：业务对象引用文件发生变化时，由业务对象审计记录变更事实。
+- [WORKERS-REQUIREMENTS.md](./WORKERS-REQUIREMENTS.md)：workers 只返回临时文件内容，文件对象创建和引用仍归 Storage。

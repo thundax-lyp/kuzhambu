@@ -20,11 +20,13 @@ Operations 是独立业务域，不属于 System 基础域，也不放入 starte
 - 过期备份、过期分享、过期草稿和过期导出产物清理入口。
 - 长任务和批量操作运行状态查看。
 - 看板自有配置、报表记录、任务台账和维护操作记录。
+- 按权限聚合后的周报和月报数据快照调用 render workers 生成报表产物。
 
 不覆盖：
 
 - 业务内容编辑。
 - AI 提示词和模型配置的具体管理。
+- AI workers 直接调用。
 - 搜索和问答业务结果生成。
 - 文件资源扫描、孤立文件清理和底层存储巡检。
 - System 用户、角色、权限、认证和业务审计规则。
@@ -65,6 +67,10 @@ Operations 是独立业务域，不属于 System 基础域，也不放入 starte
 - 运行日志保留期限必须为 30 天，超过期限的日志应自动清理或归档。
 - 统计数据展示必须遵守权限，不得向非管理员开放运营运维细节。
 - Operations 能力仅 admin 可用。
+- Operations 可以直接调用 render workers 生成周报和月报 HTML 或 PDF 产物。
+- Operations 直接调用 render workers 前必须完成 admin 权限校验、统计数据聚合和报表快照准备。
+- Operations 不得直接调用 workers 的 AI 接口；如未来需要 AI 报表摘要或异常摘要生成，必须通过 AI 域。
+- render workers 返回的报表文件在进入 Storage 前只是临时产物。
 - starter 只负责启动装配，不承载 Operations 的 Controller、ApplicationService、Repository 或持久化实现。
 
 ## Acceptance Criteria
@@ -83,5 +89,6 @@ Operations 是独立业务域，不属于 System 基础域，也不放入 starte
 - [SYSTEM-REQUIREMENTS.md](./SYSTEM-REQUIREMENTS.md)：提供 admin 权限和业务审计。
 - [CLASSICS-REQUIREMENTS.md](./CLASSICS-REQUIREMENTS.md)：提供内容、导出、分享和草稿相关统计及清理对象。
 - [AI-REQUIREMENTS.md](./AI-REQUIREMENTS.md)：提供 AI 调用统计来源。
+- [WORKERS-REQUIREMENTS.md](./WORKERS-REQUIREMENTS.md)：提供 render workers 报表生成边界；AI workers 调用必须经由 AI 域。
 - [KNOWLEDGE-REQUIREMENTS.md](./KNOWLEDGE-REQUIREMENTS.md)：提供标签覆盖率和图谱质量统计来源。
 - [DISCOVERY-REQUIREMENTS.md](./DISCOVERY-REQUIREMENTS.md)：提供搜索和问答行为统计来源。

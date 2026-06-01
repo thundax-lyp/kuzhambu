@@ -22,6 +22,7 @@ Discovery 可被标签、同义词、实体识别和知识图谱增强，但搜�
 不覆盖：
 
 - AI 模型和提示词配置。
+- AI workers 直接调用。
 - 问答对生成和管理。
 - 知识图谱浏览。
 - 同义词词典维护。
@@ -66,6 +67,10 @@ Discovery 可被标签、同义词、实体识别和知识图谱增强，但搜�
 - 会话删除不得删除原始知识库内容。
 - 被删除或无权访问的来源不得展示正文内容，应显示不可用提示。
 - 单文档追加式问答只能使用当前文档和用户有权访问的关联上下文。
+- Discovery 不得直接调用 workers 的 AI 接口。
+- Discovery 需要查询理解、查询改写、回答生成或流式回答时，必须通过 AI 域发起 AI 能力调用。
+- Discovery 调用 AI 域前必须完成权限过滤、检索上下文组装和来源候选准备。
+- AI 域或 workers 返回的回答文本不得绕过 Discovery 的会话、消息、来源引用和调试信息记录。
 - 回答生成失败时必须保留用户问题，并允许用户重试。
 
 ## Acceptance Criteria
@@ -94,3 +99,4 @@ Discovery 可被标签、同义词、实体识别和知识图谱增强，但搜�
 - [CLASSICS-REQUIREMENTS.md](./CLASSICS-REQUIREMENTS.md)：提供可搜索和可问答的古籍内容及生命周期规则。
 - [KNOWLEDGE-REQUIREMENTS.md](./KNOWLEDGE-REQUIREMENTS.md)：提供标签、同义词、实体和图谱增强能力。
 - [AI-REQUIREMENTS.md](./AI-REQUIREMENTS.md)：提供回答生成所需的模型和提示词配置。
+- [WORKERS-REQUIREMENTS.md](./WORKERS-REQUIREMENTS.md)：定义 workers 边界；Discovery 不直接调用 AI workers。

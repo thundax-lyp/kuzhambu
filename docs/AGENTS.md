@@ -21,6 +21,7 @@ AI 文档路由入口。目标：少读、读准、只读取当前工程文档�
 - Java servers 业务对象 ID、强类型标识、ULID 和 token 边界：`00-governance/SERVERS-UNIFIED-ID-DESIGN.md`。
 - TODO、提交、PR、统一验证：`00-governance/TODO-RULES.md`；PR 收口再读 `40-readiness/PR-WORKFLOW.md`。
 - 接口、协议、配置契约：按需读 `20-interfaces/`。
+- AI 域调用 Python workers 协议：`20-interfaces/WORKERS-AI-INTERFACE.md`。
 - UI 风格、前端体验、页面布局：`00-governance/UI-RULES.md`。
 - 专项设计、模块数据结构、接口设计：按需读 `30-designs/`。
 - 发布、上线、运维准备：按需读 `40-readiness/`。

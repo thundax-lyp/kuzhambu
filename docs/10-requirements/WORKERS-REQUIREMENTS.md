@@ -53,7 +53,10 @@ Workers 是无状态执行器，负责 AI 编排执行、流式输出转发、�
 - Workers 是技术支撑工程，不是业务域。
 - Workers 只接受 Java servers 发起的内部调用。
 - Workers 不直接面向 Admin Web 或 Portal Web。
+- Workers 内部接口必须校验服务身份，不得仅依赖路径命名作为保护。
+- Workers 不接收用户 access token，不做用户权限判断。
 - Workers 不直接调用 Java servers 的业务写接口。
+- Workers 不回调 AI 域读取模型、提示词、候选结果或任务状态；AI 域必须在请求体中提供本次执行所需 prompt/messages，AI 执行结果必须通过当前 HTTP 响应或 SSE 流返回。
 - Workers 每次请求必须包含完整执行上下文，不得依赖上一次请求的内存状态。
 - Workers 可以在单次请求生命周期内使用本地临时目录，处理完成后必须清理。
 - Workers 可以输出技术日志，但技术日志不得替代 System 业务审计。
@@ -66,17 +69,10 @@ Workers 对外接口按能力族组织，接口命名应表达执行动作而不
 
 AI 执行接口示例：
 
-- `POST /internal/ai/translate`
-- `POST /internal/ai/summarize`
-- `POST /internal/ai/extract-tags`
-- `POST /internal/ai/generate-qa`
-- `POST /internal/ai/understand-image`
-- `POST /internal/ai/fuse-visual-description`
-- `POST /internal/ai/split-entry`
-- `POST /internal/ai/understand-query`
-- `POST /internal/ai/generate-answer`
-- `POST /internal/ai/extract-graph`
-- `POST /internal/ai/suggest-prompt`
+- `POST /internal/ai/invoke`
+- `POST /internal/ai/stream`
+
+按能力命名的路径可以作为 worker 内部路由或调试别名存在，但 Java AI 域默认只依赖统一 AI 执行接口。
 
 文件和渲染接口示例：
 
@@ -182,6 +178,21 @@ Workers 不拥有异步任务状态。异步流程由 Java servers 编排，Work
 
 ## Cross-Domain Interfaces
 
+调用规则总览：
+
+| 调用方 | AI 接口 | Render 接口 |
+| --- | --- | --- |
+| AI | 可以 | 不建议 |
+| Classics | 不可以，必须通过 AI 域 | 可以 |
+| Knowledge | 不可以，必须通过 AI 域 | 暂无 |
+| Discovery | 不可以，必须通过 AI 域 | 暂无 |
+| Operations | 不可以，除非未来通过 AI 域 | 可以 |
+| Storage | 不可以 | 不建议 |
+| System | 不可以 | 不可以 |
+| Admin Web / Portal Web | 不可以 | 不可以 |
+
+凡是需要模型、提示词、AI 能力映射、用量统计、候选结果或 AI 失败分类的能力，必须经由 AI 域调用 workers。凡是纯文件渲染、格式加工或报表生成能力，可以由拥有对应业务事实的业务域直接调用 render workers。
+
 ### AI
 
 AI 域是所有 AI 能力调用的治理入口。
@@ -265,17 +276,20 @@ System 拥有认证、权限和业务审计。
 ## Business Rules
 
 - Workers 不拥有任何业务主数据。
+- Workers AI 接口只允许 AI 域服务身份调用。
 - Workers 不得连接业务数据库。
 - Workers 不得连接 Redis 或 MQ。
 - Workers 不得保存任务状态。
 - Workers 不得保存跨请求会话。
 - Workers 不得直接写入正式内容、候选结果、审计日志或文件对象。
+- Workers 不得回调 AI 域业务接口。
 - AI Key 不得写入日志、响应、错误详情或临时文件。
 - 请求中的敏感字段必须在日志中脱敏。
 - Workers 返回结果必须可被 Java servers 重放校验和持久化。
 - Workers 失败不得导致 Java servers 丢失用户已输入内容。
 - Workers 的流式片段只是展示过程，不是业务提交事实。
 - Workers 生成的文件在进入 Storage 前只是临时产物。
+- Java servers 调用 Workers 前必须完成用户认证、权限、业务状态和内容可见性校验。
 
 ## Acceptance Criteria
 
@@ -301,3 +315,4 @@ System 拥有认证、权限和业务审计。
 - [OPERATIONS-REQUIREMENTS.md](./OPERATIONS-REQUIREMENTS.md)：报表、长任务和维护记录归 Operations 域。
 - [STORAGE-REQUIREMENTS.md](./STORAGE-REQUIREMENTS.md)：文件对象、引用和内容读取归 Storage 域。
 - [SYSTEM-REQUIREMENTS.md](./SYSTEM-REQUIREMENTS.md)：认证、权限和业务审计归 System 域。
+- [WORKERS-AI-INTERFACE.md](../20-interfaces/WORKERS-AI-INTERFACE.md)：定义 AI 域与 workers 之间的 HTTP、SSE、请求响应和错误协议。

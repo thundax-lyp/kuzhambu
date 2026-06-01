@@ -29,6 +29,7 @@ System 不负责业务内容、文件对象、AI 编排、搜索问答或运营�
 - 前台会员体系、组织部门、岗位和多租户模型。
 - 运行日志、访问日志和技术日志。
 - 文件对象存储。
+- workers 调用编排。
 - 业务数据回滚和完整历史版本恢复。
 
 ## Functional Requirements
@@ -91,6 +92,9 @@ System 不负责业务内容、文件对象、AI 编排、搜索问答或运营�
 - 认证错误响应不得泄露用户是否存在、凭据哈希、token 哈希或内部会话 ID。
 - Controller 只能读取当前认证上下文，不得直接解析 token 运行态。
 - 权限判断必须基于当前认证上下文和 System 提供的权限编码。
+- System 不直接调用 workers。
+- 调用 workers 的业务域必须先通过 System 提供的认证上下文和权限编码完成用户权限判断。
+- workers 内部服务认证只证明调用方服务可信，不替代 System 用户权限判断。
 - admin 和 portal 是访问入口边界，不是两套认证业务规则。
 - 可见菜单用于后台导航展示；隐藏菜单不进入导航树，但可承载细粒度权限编码。
 - 权限编码必须稳定，不得随展示文案变化。
@@ -131,3 +135,4 @@ System 不负责业务内容、文件对象、AI 编排、搜索问答或运营�
 
 - [STORAGE-REQUIREMENTS.md](./STORAGE-REQUIREMENTS.md)：文件对象和文件引用归 Storage 域。
 - [CLASSICS-REQUIREMENTS.md](./CLASSICS-REQUIREMENTS.md)、[AI-REQUIREMENTS.md](./AI-REQUIREMENTS.md)、[KNOWLEDGE-REQUIREMENTS.md](./KNOWLEDGE-REQUIREMENTS.md)、[DISCOVERY-REQUIREMENTS.md](./DISCOVERY-REQUIREMENTS.md)：消费 System 的认证上下文、权限编码和业务审计能力。
+- [WORKERS-REQUIREMENTS.md](./WORKERS-REQUIREMENTS.md)：workers 不接收用户 token，不执行用户权限判断。

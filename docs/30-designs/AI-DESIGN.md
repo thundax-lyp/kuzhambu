@@ -26,6 +26,7 @@ Workers 不拥有 AI 配置、提示词、调用记录或候选结果。Classics
 
 - `AiServiceConfig`
 - `AiModel`
+- `AiCapability`
 - `AiCapabilityMapping`
 - `PromptTemplate`
 - `PromptVersion`
@@ -48,6 +49,7 @@ Workers 不拥有 AI 配置、提示词、调用记录或候选结果。Classics
 - `ai_service_config`
 - `ai_model`
 - `ai_model_check_record`
+- `ai_capability`
 - `ai_capability_mapping`
 - `ai_prompt_template`
 - `ai_prompt_version`
@@ -134,6 +136,7 @@ Discovery 调用入口：
 - `WorkerAiClient` 适配 Python workers 内部 HTTP 和 SSE 接口。
 - AI 域向 workers 传入主服务或备用服务的模型配置、调用参数、渲染后 messages、结构化输出 schema 和完整上下文。
 - workers 内部执行 LangGraph；AI 域不直接依赖 workers 内部 graph 实现。
+- AI 域与 workers 的协议见 [`WORKERS-AI-INTERFACE.md`](../20-interfaces/WORKERS-AI-INTERFACE.md)。
 - Repository 持久化 AI 配置、提示词、调用记录和候选结果。
 - 外部调用失败需要区分网络传输层失败、worker 协议失败、AI 语义层失败和输出格式失败。
 - 网络传输层失败允许由 AI application 决策切换备用服务并重新调用 workers。

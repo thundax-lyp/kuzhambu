@@ -88,6 +88,9 @@ AI 负责配置、调用、候选结果、确认、失败反馈和统计；不�
 - AI 能力调用必须经由 AI 域治理入口；Classics、Knowledge 和 Discovery 不得直接绕过 AI 域调用 workers 的 AI 接口。
 - AI 域传给 workers 的请求必须包含完整上下文，不得依赖 workers 保存跨请求状态。
 - AI 域不得要求 workers 连接数据库、Redis 或 MQ。
+- AI 域不得向 workers 暴露模型配置读取、提示词读取、候选结果写入或任务状态回调接口。
+- AI 域必须在调用 workers 时提供本次执行所需的渲染后 messages，或提供经 AI 域校验的 prompt 模板和变量。
+- workers 执行结果必须通过 AI 域发起的当前 HTTP 响应或 SSE 流返回。
 - AI 域负责决定是否切换主备服务；workers 只执行当前请求中指定的模型服务配置。
 - workers 流式输出中断时，AI 域必须将调用标记为失败或部分失败，并允许用户重新发起完整调用。
 - AI 语义层失败不得自动重试，应提示用户手动重试。

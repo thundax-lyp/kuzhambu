@@ -21,6 +21,7 @@ Knowledge 负责把古籍内容组织成可治理、可检索、可增强问答�
 不覆盖：
 
 - AI 标签提取、图谱提取和问答生成的模型配置。
+- AI workers 直接调用。
 - 内容页内标签人工编辑入口。
 - 搜索结果页面展示。
 - 问答会话。
@@ -85,6 +86,9 @@ Knowledge 负责把古籍内容组织成可治理、可检索、可增强问答�
 - 标签为空不得阻止内容保存。
 - 标签治理操作必须可追溯到操作人和操作时间。
 - 人工确认结果优先于 AI 初始结果，不会被新的 AI 结果静默覆盖。
+- Knowledge 不得直接调用 workers 的 AI 接口。
+- Knowledge 需要实体关系抽取、图谱抽取或世系图抽取时，必须通过 AI 域发起 AI 能力调用。
+- Knowledge 调用 AI 域前必须完成内容范围、业务状态和用户权限校验，并向 AI 域提供抽取所需内容快照。
 - 实体和关系精修主要服务三才图会知识图谱质量。
 - 摘要和问答对精修应在对应内容的编辑页或详情页内联完成。
 - 实体和关系精修保存后，应触发知识图谱质量相关信息更新。
@@ -126,5 +130,6 @@ Knowledge 负责把古籍内容组织成可治理、可检索、可增强问答�
 
 - [CLASSICS-REQUIREMENTS.md](./CLASSICS-REQUIREMENTS.md)：提供知识组织覆盖的古籍内容范围和生命周期规则。
 - [AI-REQUIREMENTS.md](./AI-REQUIREMENTS.md)：提供实体关系提取和标签提取所需 AI 能力。
+- [WORKERS-REQUIREMENTS.md](./WORKERS-REQUIREMENTS.md)：定义 workers 边界；Knowledge 不直接调用 AI workers。
 - [DISCOVERY-REQUIREMENTS.md](./DISCOVERY-REQUIREMENTS.md)：消费标签、同义词、实体和图谱增强搜索问答。
 - [SYSTEM-REQUIREMENTS.md](./SYSTEM-REQUIREMENTS.md)：承载标签治理和精修操作审计。

@@ -21,11 +21,13 @@ Classics 古籍域承载平台三类古籍知识库内容和跨知识库在线�
 - 三才图会、王圻文档和明代习俗的摘要、标签和问答对在内容上下文内联维护。
 - 三才图会、王圻文档和明代习俗的公开和私有可见性管理。
 - 跨知识库单链接多内容分享、批量创建分享链接、公开分享、私有分享、撤销、恢复、过期、只读访问页和访问统计。
+- 按权限过滤后的导出和静态展示页面内容快照调用 render workers 生成文件产物。
 
 不覆盖：
 
 - AI 服务、模型和提示词配置。
 - AI 翻译、标签提取、摘要生成、问答对生成、图片理解和条目拆分的底层执行。
+- AI workers 直接调用。
 - 跨库搜索排序、查询理解和搜索日志。
 - 跨库智能问答会话和回答生成。
 - 知识图谱、实体关系抽取和数据精修工作台。
@@ -184,6 +186,10 @@ Classics 古籍域承载平台三类古籍知识库内容和跨知识库在线�
 - 删除内容前必须二次确认。
 - 导出前必须按权限过滤内容。
 - 导出包含私有内容时必须二次确认。
+- Classics 可以直接调用 render workers 生成 CSV、JSON、HTML、ZIP 或静态展示页面产物。
+- Classics 直接调用 render workers 前必须完成用户权限校验、内容可见性过滤、私有内容风险确认和内容快照准备。
+- Classics 不得直接调用 workers 的 AI 接口；翻译、摘要、标签、问答对、图片理解、信息融合、视觉描述、条目拆分和生图必须通过 AI 域。
+- render workers 返回的文件在进入 Storage 前只是临时产物。
 - 过期导出记录不可继续下载。
 - HTML 设定集导出模板是随系统发布的静态资源，不属于提示词模块或用户上传内容。
 - HTML 设定集模板必须支持数据集元信息、目录、内容正文、离线打开、浏览器打印和 PDF 生成。
@@ -245,5 +251,6 @@ Classics 古籍域承载平台三类古籍知识库内容和跨知识库在线�
 - [SYSTEM-REQUIREMENTS.md](./SYSTEM-REQUIREMENTS.md)：提供认证、权限判断和关键操作日志。
 - [STORAGE-REQUIREMENTS.md](./STORAGE-REQUIREMENTS.md)：提供原始文件、配图、导出产物和分享页文件读取能力。
 - [AI-REQUIREMENTS.md](./AI-REQUIREMENTS.md)：提供 AI 配置、翻译、摘要、标签、问答对、图片理解、条目拆分和视觉资产 AI 能力。
+- [WORKERS-REQUIREMENTS.md](./WORKERS-REQUIREMENTS.md)：提供 render workers 文件生成边界；AI workers 调用必须经由 AI 域。
 - [KNOWLEDGE-REQUIREMENTS.md](./KNOWLEDGE-REQUIREMENTS.md)：治理标签、同义词、实体关系和知识图谱。
 - [DISCOVERY-REQUIREMENTS.md](./DISCOVERY-REQUIREMENTS.md)：消费古籍内容完成搜索和问答。
