@@ -1,0 +1,86 @@
+.kuzhambu-confirm-modal-root {
+    --kuzhambu-confirm-bg: rgba(255, 255, 255, 0.94);
+    --kuzhambu-confirm-ink: #111827;
+    --kuzhambu-confirm-copy: #52627a;
+    --kuzhambu-confirm-line: rgba(107, 124, 150, 0.24);
+    --kuzhambu-confirm-danger: #dc2626;
+    --kuzhambu-confirm-danger-soft: rgba(220, 38, 38, 0.1);
+    --kuzhambu-confirm-danger-line: rgba(220, 38, 38, 0.24);
+    --kuzhambu-confirm-shadow: 0 24px 70px rgba(31, 45, 71, 0.2);
+}
+
+html[data-theme="dark"] .kuzhambu-confirm-modal-root {
+    --kuzhambu-confirm-bg: rgba(12, 22, 38, 0.94);
+    --kuzhambu-confirm-ink: #f8fbff;
+    --kuzhambu-confirm-copy: #b8c4d8;
+    --kuzhambu-confirm-line: rgba(191, 207, 232, 0.22);
+    --kuzhambu-confirm-danger: #f87171;
+    --kuzhambu-confirm-danger-soft: rgba(248, 113, 113, 0.13);
+    --kuzhambu-confirm-danger-line: rgba(248, 113, 113, 0.3);
+    --kuzhambu-confirm-shadow: 0 28px 82px rgba(0, 0, 0, 0.52);
+}
+
+.kuzhambu-confirm-modal .ant-modal-content {
+    color: var(--kuzhambu-confirm-ink);
+    background: var(--kuzhambu-confirm-bg);
+    border: 1px solid var(--kuzhambu-confirm-line);
+    border-radius: 14px;
+    box-shadow: var(--kuzhambu-confirm-shadow);
+    backdrop-filter: blur(16px);
+}
+
+.kuzhambu-confirm-modal .ant-modal-header {
+    background: transparent;
+}
+
+.kuzhambu-confirm-modal .ant-modal-title {
+    color: var(--kuzhambu-confirm-ink);
+}
+
+.kuzhambu-confirm-modal .ant-modal-close {
+    color: var(--kuzhambu-confirm-copy);
+}
+
+.kuzhambu-confirm-modal .ant-modal-footer .ant-btn-default {
+    color: var(--kuzhambu-confirm-ink);
+    background: transparent;
+    border-color: var(--kuzhambu-confirm-line);
+}
+
+.kuzhambu-confirm-modal-danger .ant-modal-footer .ant-btn-primary {
+    color: #fff;
+    background: var(--kuzhambu-confirm-danger);
+    border-color: var(--kuzhambu-confirm-danger);
+}
+
+.kuzhambu-confirm-modal-content {
+    display: grid;
+    grid-template-columns: 42px 1fr;
+    gap: 12px;
+    align-items: flex-start;
+    padding-top: 4px;
+}
+
+.kuzhambu-confirm-modal-content > div {
+    display: grid;
+    gap: 6px;
+}
+
+.kuzhambu-confirm-modal-icon {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    color: var(--kuzhambu-confirm-danger);
+    background: var(--kuzhambu-confirm-danger-soft);
+    border: 1px solid var(--kuzhambu-confirm-danger-line);
+    border-radius: 10px;
+}
+
+.kuzhambu-confirm-modal-content .ant-typography {
+    color: var(--kuzhambu-confirm-ink);
+}
+
+.kuzhambu-confirm-modal-content .ant-typography-secondary {
+    color: var(--kuzhambu-confirm-copy);
+}

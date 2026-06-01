@@ -2,19 +2,19 @@ import { ExclamationCircleOutlined } from "@ant-design/icons";
 import { Modal, Typography } from "antd";
 import type { ModalProps } from "antd";
 import type { ReactNode } from "react";
-import "./sandwish-confirm-modal.css";
+import "./kuzhambu-confirm-modal.css";
 
 const { Text } = Typography;
 
-export type SandwishConfirmModalTone = "danger";
+export type KuzhambuConfirmModalTone = "danger";
 
-export interface SandwishConfirmModalProps extends Omit<ModalProps, "children"> {
+export interface KuzhambuConfirmModalProps extends Omit<ModalProps, "children"> {
     description?: ReactNode;
     message: ReactNode;
-    tone?: SandwishConfirmModalTone;
+    tone?: KuzhambuConfirmModalTone;
 }
 
-export const SandwishConfirmModal = ({
+export const KuzhambuConfirmModal = ({
     className,
     description,
     message,
@@ -23,22 +23,22 @@ export const SandwishConfirmModal = ({
     rootClassName,
     tone = "danger",
     ...modalProps
-}: SandwishConfirmModalProps) => {
+}: KuzhambuConfirmModalProps) => {
     return (
         <Modal
             {...modalProps}
-            className={["sandwish-confirm-modal", `sandwish-confirm-modal-${tone}`, className]
+            className={["kuzhambu-confirm-modal", `kuzhambu-confirm-modal-${tone}`, className]
                 .filter(Boolean)
                 .join(" ")}
-            rootClassName={["sandwish-confirm-modal-root", rootClassName].filter(Boolean).join(" ")}
+            rootClassName={["kuzhambu-confirm-modal-root", rootClassName].filter(Boolean).join(" ")}
             okButtonProps={{
                 danger: tone === "danger",
                 ...okButtonProps
             }}
             okText={okText}
         >
-            <div className="sandwish-confirm-modal-content">
-                <ExclamationCircleOutlined className="sandwish-confirm-modal-icon" />
+            <div className="kuzhambu-confirm-modal-content">
+                <ExclamationCircleOutlined className="kuzhambu-confirm-modal-icon" />
                 <div>
                     <Text strong>{message}</Text>
                     {description ? <Text type="secondary">{description}</Text> : null}

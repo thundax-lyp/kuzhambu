@@ -772,7 +772,7 @@ const localRules = {
                         .split(path.sep)
                         .join("/")
                         .endsWith(
-                            "/src/components/sandwish-confirm-modal/hooks/use-sandwish-confirm.ts"
+                            "/src/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm.ts"
                         );
                 };
 
@@ -792,7 +792,7 @@ const localRules = {
                         context.report({
                             node,
                             message:
-                                "ADMIN_WEB_UI_CONFIRM_HOOK: confirmation actions must use useSandwishConfirm instead of Modal.confirm."
+                                "ADMIN_WEB_UI_CONFIRM_HOOK: confirmation actions must use useKuzhambuConfirm instead of Modal.confirm."
                         });
                     }
                 };

@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `kuzhambu-confirm-modal`：迁移 `sandwish-confirm-modal`
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/ARCHITECTURE.md`
-    - 范围对象：`src/components/sandwish-confirm-modal/`、使用 `useSandwishConfirm` 的页面、`eslint.config.js`
-    - 处理动作：将确认弹窗组件、hook、CSS class、页面调用方和 ESLint 允许路径改为 `KuzhambuConfirmModal` / `useKuzhambuConfirm`。
-    - 验收点：`sandwish-confirm-modal` 组件模块无旧命名残留，admin-web lint 和 test 通过。
-    - 重要度：9/10
-
 - [ ] `kuzhambu-switch`：迁移 `sandwish-switch`
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/ARCHITECTURE.md`

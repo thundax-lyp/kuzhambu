@@ -13,7 +13,7 @@ import { sm2 } from "sm-crypto";
 import { createLoginForm } from "@/auth/auth-service";
 import { hasPermission } from "@/auth/permission-storage";
 import { SandwishListPage } from "@/components/sandwish-list-page";
-import { useSandwishConfirm } from "@/components/sandwish-confirm-modal/hooks/use-sandwish-confirm";
+import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { SandwishSwitch } from "@/components/sandwish-switch";
 import { SandwishTag } from "@/components/sandwish-tag";
 import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
@@ -162,7 +162,7 @@ const toEnableQueryValue = (enable: UserFilterStatus) => {
 
 export const UserPage = () => {
     const { message: messageApi } = App.useApp();
-    const confirm = useSandwishConfirm();
+    const confirm = useKuzhambuConfirm();
     const queryClient = useQueryClient();
     const departmentPanelRef = useRef<HTMLDivElement | null>(null);
     const [query, setQuery] = useState<PageQuery>({

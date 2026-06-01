@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import type { Key } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { SandwishListPage } from "@/components/sandwish-list-page";
-import { useSandwishConfirm } from "@/components/sandwish-confirm-modal/hooks/use-sandwish-confirm";
+import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { SandwishTag } from "@/components/sandwish-tag";
 import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
@@ -41,7 +41,7 @@ const normalizeSearch = (value?: string | null) => {
 
 export const DictionaryPage = () => {
     const { message: messageApi } = App.useApp();
-    const confirm = useSandwishConfirm();
+    const confirm = useKuzhambuConfirm();
     const queryClient = useQueryClient();
     const canEditDictionary = hasPermission("sys:dict:edit");
     const [query, setQuery] = useState<DictPageQuery>({

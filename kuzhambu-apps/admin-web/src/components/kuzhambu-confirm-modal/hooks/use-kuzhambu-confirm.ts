@@ -6,7 +6,7 @@ import { createElement } from "react";
 
 const { Text } = Typography;
 
-interface SandwishConfirmOptions {
+interface KuzhambuConfirmOptions {
     cancelText?: string;
     description?: ReactNode;
     message: ReactNode;
@@ -18,9 +18,9 @@ interface SandwishConfirmOptions {
 const renderContent = (message: ReactNode, description?: ReactNode) => {
     return createElement(
         "div",
-        { className: "sandwish-confirm-modal-content" },
+        { className: "kuzhambu-confirm-modal-content" },
         createElement(ExclamationCircleOutlined, {
-            className: "sandwish-confirm-modal-icon"
+            className: "kuzhambu-confirm-modal-icon"
         }),
         createElement(
             "div",
@@ -31,7 +31,7 @@ const renderContent = (message: ReactNode, description?: ReactNode) => {
     );
 };
 
-export const useSandwishConfirm = () => {
+export const useKuzhambuConfirm = () => {
     const { modal } = App.useApp();
 
     const danger = ({
@@ -41,15 +41,15 @@ export const useSandwishConfirm = () => {
         okText = "确认",
         onConfirm,
         title
-    }: SandwishConfirmOptions) => {
+    }: KuzhambuConfirmOptions) => {
         const options: ModalFuncProps = {
             title,
             icon: null,
             content: renderContent(message, description),
             okText,
             cancelText,
-            className: "sandwish-confirm-modal sandwish-confirm-modal-danger",
-            rootClassName: "sandwish-confirm-modal-root",
+            className: "kuzhambu-confirm-modal kuzhambu-confirm-modal-danger",
+            rootClassName: "kuzhambu-confirm-modal-root",
             okButtonProps: {
                 danger: true
             },
