@@ -13,14 +13,6 @@
 
 ## 当前任务项
 
-- [ ] `workers render routes`：实现 render 同步和 stream 路由
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W17-Render-Routes`
-    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/api/render_routes.py`、`kuzhambu-workers/src/kuzhambu_workers/main.py`、`kuzhambu-workers/tests/test_render_routes.py`
-    - 处理动作：实现 render 同步和 stream 路由
-    - 验收点：同步支持小产物，stream 支持 progress、artifact chunk 和 completed，HMAC 授权生效
-    - 重要度：10/10
-
 - [ ] `workers packaging`：补齐开发命令和 PR 验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W18-Packaging-And-Dev-Commands`
