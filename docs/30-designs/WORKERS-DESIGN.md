@@ -103,6 +103,9 @@ Render 能力只处理调用方已经完成权限过滤、风险确认和数据�
 
 固定入口：
 
+- `GET /internal/openapi.json`
+- `GET /internal/docs`
+- `GET /internal/redoc`
 - `GET /internal/health`
 - `GET /internal/capabilities`
 - `POST /internal/ai/invoke`
@@ -117,6 +120,8 @@ Render 能力只处理调用方已经完成权限过滤、风险确认和数据�
 AI 接口契约见 [`WORKERS-AI-INTERFACE.md`](../20-interfaces/WORKERS-AI-INTERFACE.md)。
 
 Render 接口契约见 [`WORKERS-RENDER-INTERFACE.md`](../20-interfaces/WORKERS-RENDER-INTERFACE.md)。
+
+OpenAPI 和 Swagger UI 仅作为内部开发、联调和排查入口，固定挂载在 `/internal/*` 路径下，不作为公网接口入口。
 
 `/internal/health` 返回 worker 进程状态、版本、启动时间和基础依赖可用性，不访问数据库、Redis 或 MQ。
 

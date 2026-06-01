@@ -53,6 +53,9 @@ PDF 渲染通过 Browser Pool 复用 Chromium。每次渲染创建独立 context
 
 ## Internal APIs
 
+- `GET /internal/openapi.json`
+- `GET /internal/docs`
+- `GET /internal/redoc`
 - `GET /internal/health`
 - `GET /internal/capabilities`
 - `POST /internal/ai/invoke`
@@ -62,6 +65,8 @@ PDF 渲染通过 Browser Pool 复用 Chromium。每次渲染创建独立 context
 - `POST /internal/render/operations-report`
 
 内部接口必须校验服务身份和请求签名，不接收用户 access token。
+
+OpenAPI 和 Swagger UI 只暴露在 `/internal/*` 路径下，用于内网开发、联调和接口排查。
 
 ## Local Development
 

@@ -10,8 +10,9 @@ def create_app() -> FastAPI:
     app = FastAPI(
         title="Kuzhambu Workers",
         version=__version__,
-        docs_url=None,
-        redoc_url=None,
+        openapi_url="/internal/openapi.json",
+        docs_url="/internal/docs",
+        redoc_url="/internal/redoc",
     )
 
     app.include_router(ai_router)
