@@ -6,7 +6,7 @@ import type { Key } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { SandwishListPage } from "@/components/sandwish-list-page";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
-import { SandwishSwitch } from "@/components/sandwish-switch";
+import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
 import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
 import { MenuEdit } from "./components/menu-edit";
 import * as service from "./menu-service";
@@ -283,7 +283,7 @@ export const MenuPage = () => {
             key: "display",
             width: DEFAULT_COLUMN_WIDTHS.display,
             render: (display: boolean | null | undefined, menu) => (
-                <SandwishSwitch
+                <KuzhambuSwitch
                     checked={display !== false}
                     checkedChildren="显示"
                     unCheckedChildren="隐藏"

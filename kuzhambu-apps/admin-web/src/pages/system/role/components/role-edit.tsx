@@ -3,7 +3,7 @@ import type { DataNode } from "antd/es/tree";
 import { useEffect, useState } from "react";
 import type { Key } from "react";
 import { SandwishDrawer } from "@/components/sandwish-drawer";
-import { SandwishSwitch } from "@/components/sandwish-switch";
+import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
 import type { OptionsRecord } from "@/types/options";
 import type { RoleSaveCommand } from "../role-service";
 import type { RoleRecord } from "../role-types";
@@ -127,7 +127,7 @@ export const RoleEdit = ({
                 </Form.Item>
                 <div className="role-editor-switches">
                     <Form.Item name="admin" label="管理权限" valuePropName="checked">
-                        <SandwishSwitch
+                        <KuzhambuSwitch
                             checkedChildren={readOptionLabel(
                                 privilegeOptions,
                                 "ADMIN",
@@ -141,7 +141,7 @@ export const RoleEdit = ({
                         />
                     </Form.Item>
                     <Form.Item name="enable" label="角色状态" valuePropName="checked">
-                        <SandwishSwitch
+                        <KuzhambuSwitch
                             checkedChildren={readOptionLabel(statusOptions, "ENABLED", "启用")}
                             unCheckedChildren={readOptionLabel(statusOptions, "DISABLED", "禁用")}
                         />

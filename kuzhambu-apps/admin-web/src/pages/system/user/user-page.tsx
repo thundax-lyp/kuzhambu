@@ -14,7 +14,7 @@ import { createLoginForm } from "@/auth/auth-service";
 import { hasPermission } from "@/auth/permission-storage";
 import { SandwishListPage } from "@/components/sandwish-list-page";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
-import { SandwishSwitch } from "@/components/sandwish-switch";
+import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
 import { SandwishTag } from "@/components/sandwish-tag";
 import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
 import { getCurrentUserInfo } from "@/service/current-user-service";
@@ -613,7 +613,7 @@ export const UserPage = () => {
             render: (_, user) => {
                 const canManageCurrentUser = canManageUserByRank(currentUserQuery.data, user);
                 return (
-                    <SandwishSwitch
+                    <KuzhambuSwitch
                         checked={user.enable !== false}
                         checkedChildren={readStatusOptionLabel("ENABLED")}
                         unCheckedChildren={readStatusOptionLabel("DISABLED")}

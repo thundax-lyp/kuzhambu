@@ -7,7 +7,7 @@ import type { Key } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { SandwishListPage } from "@/components/sandwish-list-page";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
-import { SandwishSwitch } from "@/components/sandwish-switch";
+import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
 import { SandwishTag } from "@/components/sandwish-tag";
 import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
 import type { OptionsRecord } from "@/types/options";
@@ -334,7 +334,7 @@ export const RolePage = () => {
             key: "enable",
             width: DEFAULT_COLUMN_WIDTHS.status,
             render: (enable: boolean | null | undefined, role) => (
-                <SandwishSwitch
+                <KuzhambuSwitch
                     checked={enable !== false}
                     checkedChildren={readStatusOptionLabel("ENABLED")}
                     unCheckedChildren={readStatusOptionLabel("DISABLED")}

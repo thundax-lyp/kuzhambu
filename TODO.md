@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `kuzhambu-switch`：迁移 `sandwish-switch`
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/ARCHITECTURE.md`
-    - 范围对象：`src/components/sandwish-switch/`、使用 `SandwishSwitch` 的 system 页面
-    - 处理动作：将开关组件、类型、CSS class 和页面调用方改为 `KuzhambuSwitch` / `kuzhambu-switch`。
-    - 验收点：`sandwish-switch` 组件模块无旧命名残留，admin-web lint 通过。
-    - 重要度：8/10
-
 - [ ] `kuzhambu-tag`：迁移 `sandwish-tag`
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/ARCHITECTURE.md`
