@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `admin-web-governance`：迁入 admin-web 前端治理入口
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/DOCUMENT-RULES.md`
-    - 范围对象：`docs/00-governance/ADMIN-WEB-RULES.md`、`docs/AGENTS.md`、`kuzhambu-apps/admin-web/AGENTS.md`
-    - 处理动作：迁入并改写 admin-web 治理规则和 Agent 路由。
-    - 验收点：治理文档指向 `kuzhambu-apps/admin-web`，共享组件规则使用 `Kuzhambu*`。
-    - 重要度：10/10
-
 - [ ] `kuzhambu-page`：迁移 `sandwish-page`
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/ARCHITECTURE.md`

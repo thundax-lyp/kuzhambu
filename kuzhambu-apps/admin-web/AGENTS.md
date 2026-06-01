@@ -1,6 +1,6 @@
 # Admin Web Agent
 
-This file extends the repository root `AGENTS.md` for work under `sandwish-admin-web/`.
+This file extends the repository root `AGENTS.md` for work under `kuzhambu-apps/admin-web/`.
 
 ## Scope
 
@@ -14,7 +14,7 @@ This file extends the repository root `AGENTS.md` for work under `sandwish-admin
 
 - For admin-web naming, placement, service ownership, frontend layering, UI rules, and default forbidden directories, read:
     - `docs/00-governance/ADMIN-WEB-RULES.md`
-- Treat this file as the `sandwish-admin-web` TypeScript architecture entry point.
+- Treat this file as the `kuzhambu-apps/admin-web` TypeScript architecture entry point.
 - Do not restate full naming, placement, layer, or UI rules here. Keep the rule source in `ADMIN-WEB-RULES.md`.
 
 ## Architecture Gates
