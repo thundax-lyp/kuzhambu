@@ -22,7 +22,7 @@
 
 - Java servers 使用 Java 17、Spring Boot 3.x 和 Maven 多模块。
 - 前端应用使用独立 `package.json` 管理。
-- 后台前端 `kuzhambu-apps/admin-web/` 使用 React、Vite 和 Ant Design。
+- 后台前端 `kuzhambu-apps/admin-web/` 使用 React、Vite 和 Ant Design，npm package name 为 `kuzhambu-admin-web`。
 - 前台前端 `kuzhambu-apps/portal-web/` 使用 React、Vite、shadcn/ui、Tailwind CSS、Zustand、TanStack Query、TypeScript、ESLint 和 Prettier。
 - Python workers 使用 Python 3.10，本地虚拟环境固定为 `kuzhambu-workers/.venv/`。
 

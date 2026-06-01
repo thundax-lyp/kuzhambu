@@ -1,0 +1,146 @@
+.dictionary-page {
+    --dictionary-glass: rgba(255, 255, 255, 0.76);
+    --dictionary-glass-strong: rgba(248, 251, 255, 0.9);
+    --dictionary-hover: rgba(214, 226, 242, 0.82);
+    --dictionary-ink: #111827;
+    --dictionary-copy: #52627a;
+    --dictionary-muted: #8a99ad;
+    --dictionary-line: rgba(107, 124, 150, 0.24);
+    --dictionary-line-strong: rgba(71, 91, 121, 0.34);
+    --dictionary-blue: #2563eb;
+    --dictionary-blue-hover: #1d4ed8;
+    --dictionary-blue-soft: rgba(37, 99, 235, 0.1);
+    --dictionary-blue-line: rgba(37, 99, 235, 0.26);
+    --dictionary-cyan: #0891b2;
+    --dictionary-cyan-soft: rgba(8, 145, 178, 0.11);
+    --dictionary-cyan-line: rgba(8, 145, 178, 0.24);
+    --dictionary-code: #5b5fd6;
+    --dictionary-code-soft: rgba(91, 95, 214, 0.1);
+    --dictionary-code-line: rgba(91, 95, 214, 0.24);
+    --dictionary-danger: #dc2626;
+    --dictionary-danger-line: rgba(220, 38, 38, 0.24);
+    --dictionary-shadow: 0 18px 46px rgba(31, 45, 71, 0.13);
+    --dictionary-blue-shadow: 0 10px 26px rgba(37, 99, 235, 0.2);
+    --dictionary-button-bg: rgba(255, 255, 255, 0.64);
+    --dictionary-field-bg: rgba(255, 255, 255, 0.7);
+    --dictionary-filter-bg-end: rgba(248, 251, 255, 0.48);
+    --dictionary-filter-bg-start: rgba(226, 235, 247, 0.62);
+    --dictionary-filter-inset: color-mix(in srgb, white 56%, transparent);
+    color: var(--dictionary-ink);
+}
+
+html[data-theme="dark"] .dictionary-page {
+    --dictionary-glass: rgba(17, 28, 46, 0.72);
+    --dictionary-glass-strong: rgba(12, 22, 38, 0.78);
+    --dictionary-hover: rgba(42, 62, 95, 0.78);
+    --dictionary-ink: #f8fbff;
+    --dictionary-copy: #b8c4d8;
+    --dictionary-muted: #748299;
+    --dictionary-line: rgba(171, 191, 222, 0.16);
+    --dictionary-line-strong: rgba(191, 207, 232, 0.28);
+    --dictionary-blue: #3b82f6;
+    --dictionary-blue-hover: #60a5fa;
+    --dictionary-blue-soft: rgba(59, 130, 246, 0.16);
+    --dictionary-blue-line: rgba(59, 130, 246, 0.3);
+    --dictionary-cyan: #22d3ee;
+    --dictionary-cyan-soft: rgba(34, 211, 238, 0.12);
+    --dictionary-cyan-line: rgba(34, 211, 238, 0.26);
+    --dictionary-code: #a78bfa;
+    --dictionary-code-soft: rgba(167, 139, 250, 0.13);
+    --dictionary-code-line: rgba(167, 139, 250, 0.26);
+    --dictionary-danger: #f87171;
+    --dictionary-danger-line: rgba(248, 113, 113, 0.3);
+    --dictionary-shadow: 0 24px 80px rgba(0, 0, 0, 0.46);
+    --dictionary-blue-shadow: 0 18px 42px rgba(37, 99, 235, 0.35);
+    --dictionary-button-bg: rgba(17, 28, 46, 0.64);
+    --dictionary-field-bg: rgba(12, 22, 38, 0.7);
+    --dictionary-filter-bg-end: rgba(12, 22, 38, 0.48);
+    --dictionary-filter-bg-start: rgba(48, 72, 110, 0.52);
+    --dictionary-filter-inset: rgba(185, 207, 238, 0.12);
+}
+
+.dictionary-page .ant-typography-secondary {
+    color: var(--dictionary-copy);
+}
+
+.dictionary-page .ant-btn-primary {
+    background: linear-gradient(
+        135deg,
+        var(--dictionary-blue),
+        color-mix(in srgb, var(--dictionary-blue) 72%, #102542)
+    );
+    border-color: var(--dictionary-blue);
+    box-shadow: var(--dictionary-blue-shadow);
+}
+
+.dictionary-page .ant-btn-primary:not(:disabled):hover {
+    background: linear-gradient(
+        135deg,
+        var(--dictionary-blue-hover),
+        var(--dictionary-blue)
+    ) !important;
+    border-color: var(--dictionary-blue-hover) !important;
+}
+
+.dictionary-page .ant-btn-default {
+    color: var(--dictionary-ink);
+    background: var(--dictionary-button-bg);
+    border-color: var(--dictionary-line);
+}
+
+.dictionary-page .ant-btn-default:not(:disabled):hover {
+    color: var(--dictionary-blue) !important;
+    background: var(--dictionary-blue-soft) !important;
+    border-color: var(--dictionary-blue-line) !important;
+}
+
+.dictionary-page .ant-input-affix-wrapper,
+.dictionary-page .ant-input,
+.dictionary-page .ant-select-selector {
+    color: var(--dictionary-ink);
+    background: var(--dictionary-field-bg) !important;
+    border-color: var(--dictionary-line) !important;
+}
+
+.dictionary-page .ant-input-affix-wrapper:hover,
+.dictionary-page .ant-input:hover,
+.dictionary-page .ant-select-selector:hover {
+    border-color: var(--dictionary-line-strong) !important;
+}
+
+.dictionary-page .ant-input-affix-wrapper:focus,
+.dictionary-page .ant-input-affix-wrapper-focused,
+.dictionary-page .ant-input:focus,
+.dictionary-page .ant-select-focused .ant-select-selector {
+    border-color: var(--dictionary-blue) !important;
+    box-shadow: 0 0 0 3px var(--dictionary-blue-soft) !important;
+}
+
+.dictionary-table-toolbar .ant-btn-dangerous:not(:disabled) {
+    color: var(--dictionary-danger);
+    border-color: var(--dictionary-danger-line);
+}
+
+.dictionary-table-toolbar .ant-btn-dangerous:not(:disabled):hover {
+    color: var(--dictionary-danger) !important;
+    border-color: color-mix(in srgb, var(--dictionary-danger) 34%, transparent) !important;
+}
+
+.dictionary-table .ant-typography code {
+    padding: 2px 7px;
+    color: var(--dictionary-code);
+    font-size: 12px;
+    background: var(--dictionary-code-soft);
+    border: 1px solid var(--dictionary-code-line);
+    border-radius: 6px;
+}
+
+.dictionary-editor-form {
+    padding-top: 6px;
+}
+
+.dictionary-edit-footer {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}

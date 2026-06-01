@@ -13,6 +13,10 @@
 .mtj.tmp/
 
 # Package Files #
+node_modules/
+**/node_modules/
+dist/
+**/dist/
 *.jar
 *.war
 *.nar
@@ -39,3 +43,4 @@ __pycache__/
 dev.env
 deploy/.env
 /temp/
+/kuzhambu-servers/starter/kuzhambu-admin-starter/logs/

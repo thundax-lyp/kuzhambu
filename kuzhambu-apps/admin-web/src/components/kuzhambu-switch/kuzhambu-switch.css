@@ -1,0 +1,93 @@
+.kuzhambu-switch.ant-switch {
+    min-width: 54px;
+    height: 24px;
+    line-height: 24px;
+    background: rgba(148, 163, 184, 0.5);
+    border: 1px solid rgba(100, 116, 139, 0.18);
+    box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.14);
+}
+
+.kuzhambu-switch.ant-switch:hover:not(.ant-switch-disabled) {
+    background: rgba(100, 116, 139, 0.58);
+}
+
+.kuzhambu-switch.ant-switch.ant-switch-checked {
+    background: #0f9f6e;
+    border-color: rgba(15, 159, 110, 0.36);
+    box-shadow:
+        inset 0 1px 2px rgba(6, 95, 70, 0.18),
+        0 4px 10px rgba(15, 159, 110, 0.18);
+}
+
+.kuzhambu-switch.ant-switch.ant-switch-checked:hover:not(.ant-switch-disabled) {
+    background: #0b8f63;
+}
+
+.kuzhambu-switch .ant-switch-handle {
+    top: 2px;
+    width: 18px;
+    height: 18px;
+}
+
+.kuzhambu-switch .ant-switch-handle::before {
+    border-radius: 999px;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.2);
+}
+
+.kuzhambu-switch.ant-switch.ant-switch-checked .ant-switch-handle {
+    inset-inline-start: calc(100% - 20px);
+}
+
+.kuzhambu-switch .ant-switch-inner {
+    padding-inline: 22px 7px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 22px;
+}
+
+.kuzhambu-switch.ant-switch.ant-switch-checked .ant-switch-inner {
+    padding-inline: 7px 22px;
+}
+
+.kuzhambu-switch .ant-switch-inner-checked,
+.kuzhambu-switch .ant-switch-inner-unchecked {
+    height: 22px;
+    line-height: 22px;
+    transform: translateY(1px);
+}
+
+.kuzhambu-switch.ant-switch:focus-visible {
+    outline: 2px solid rgba(37, 99, 235, 0.4);
+    outline-offset: 2px;
+}
+
+.kuzhambu-switch.ant-switch-disabled {
+    opacity: 0.55;
+}
+
+html[data-theme="dark"] .kuzhambu-switch.ant-switch {
+    background: rgba(71, 85, 105, 0.7);
+    border-color: rgba(203, 213, 225, 0.14);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.28);
+}
+
+html[data-theme="dark"] .kuzhambu-switch.ant-switch:hover:not(.ant-switch-disabled) {
+    background: rgba(100, 116, 139, 0.76);
+}
+
+html[data-theme="dark"] .kuzhambu-switch.ant-switch.ant-switch-checked {
+    background: #10b981;
+    border-color: rgba(52, 211, 153, 0.35);
+    box-shadow:
+        inset 0 1px 2px rgba(6, 95, 70, 0.22),
+        0 4px 12px rgba(16, 185, 129, 0.2);
+}
+
+html[data-theme="dark"]
+    .kuzhambu-switch.ant-switch.ant-switch-checked:hover:not(.ant-switch-disabled) {
+    background: #059669;
+}
+
+html[data-theme="dark"] .kuzhambu-switch .ant-switch-handle::before {
+    box-shadow: 0 2px 7px rgba(0, 0, 0, 0.38);
+}

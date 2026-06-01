@@ -1,0 +1,58 @@
+.submission-title-cell,
+.submission-time-cell,
+.submission-image-list,
+.submission-upload-list,
+.submission-detail-content {
+    display: grid;
+    gap: 4px;
+}
+
+.submission-content-preview {
+    color: var(--kuzhambu-color-text-secondary);
+}
+
+.submission-image-id {
+    display: inline-block;
+    max-width: 132px;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: bottom;
+}
+
+.submission-editor-form {
+    display: grid;
+    gap: 4px;
+}
+
+.submission-editor-footer {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.submission-upload-field {
+    display: grid;
+    gap: 10px;
+}
+
+.submission-upload-list {
+    padding: 10px;
+    border: 1px solid var(--kuzhambu-color-border);
+    border-radius: 8px;
+    background: var(--kuzhambu-color-fill-tertiary);
+}
+
+.submission-upload-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.submission-upload-item-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

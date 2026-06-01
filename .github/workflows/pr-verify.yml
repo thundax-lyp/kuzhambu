@@ -77,6 +77,8 @@ jobs:
               uses: actions/setup-node@v4
               with:
                   node-version: "20"
+                  cache: npm
+                  cache-dependency-path: kuzhambu-apps/package-lock.json
 
             - name: Setup Python
               if: steps.changes.outputs.workers_changed == 'true'
@@ -159,6 +161,26 @@ jobs:
                   node -e "JSON.parse(require('fs').readFileSync('kuzhambu-apps/package.json', 'utf8'))"
                   node -e "JSON.parse(require('fs').readFileSync('kuzhambu-apps/admin-web/package.json', 'utf8'))"
                   node -e "JSON.parse(require('fs').readFileSync('kuzhambu-apps/portal-web/package.json', 'utf8'))"
+
+            - name: Install frontend dependencies
+              if: steps.changes.outputs.apps_changed == 'true'
+              working-directory: kuzhambu-apps
+              run: npm ci
+
+            - name: Verify frontend formatting
+              if: steps.changes.outputs.apps_changed == 'true'
+              working-directory: kuzhambu-apps
+              run: npm run format:check
+
+            - name: Verify frontend lint
+              if: steps.changes.outputs.apps_changed == 'true'
+              working-directory: kuzhambu-apps
+              run: npm run lint
+
+            - name: Verify frontend tests
+              if: steps.changes.outputs.apps_changed == 'true'
+              working-directory: kuzhambu-apps
+              run: npm test
 
             - name: Verify Python worker manifest
               if: steps.changes.outputs.workers_changed == 'true'
