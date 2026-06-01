@@ -13,14 +13,6 @@
 
 ## 当前任务项
 
-- [ ] `workers core config`：实现配置和脱敏日志
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W2-Core-Configuration-And-Logging`
-    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/core/config.py`、`kuzhambu-workers/src/kuzhambu_workers/core/logging.py`、`kuzhambu-workers/tests/test_config.py`、`kuzhambu-workers/tests/test_logging.py`
-    - 处理动作：实现环境变量默认值和敏感字段日志脱敏
-    - 验收点：默认值与设计一致，key、token、signature、prompt、payload 被脱敏
-    - 重要度：10/10
-
 - [ ] `workers errors`：实现稳定错误模型
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-MODULE.md#W3-Stable-Errors`
