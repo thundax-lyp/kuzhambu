@@ -105,6 +105,36 @@ const readUserDepartmentPanelMetrics = async (page: Page) => {
     });
 };
 
+const readSidebarInkMetrics = async (page: Page) => {
+    return page.evaluate(() => {
+        const rect = (selector: string) => {
+            const element = document.querySelector(selector);
+            if (!element) {
+                throw new Error(`${selector} not found`);
+            }
+            const bounds = element.getBoundingClientRect();
+            return {
+                bottom: bounds.bottom,
+                height: bounds.height,
+                left: bounds.left,
+                right: bounds.right,
+                top: bounds.top,
+                width: bounds.width
+            };
+        };
+        const ink = document.querySelector(".sidebar-ink-1");
+        if (!ink) {
+            throw new Error(".sidebar-ink-1 not found");
+        }
+
+        return {
+            ink: rect(".sidebar-ink-1"),
+            opacity: Number(getComputedStyle(ink).opacity),
+            sidebar: rect(".sidebar")
+        };
+    });
+};
+
 test.describe("admin layout", () => {
     test.beforeEach(async ({ page }) => {
         await page.route("**/admin-api/api/sys/current-user/info", async (route) => {
@@ -264,6 +294,19 @@ test.describe("admin layout", () => {
         await expect(main).toHaveCSS("width", "996px");
         await expect(workspaceContent).toHaveCSS("width", "940px");
         await expectNoPageHorizontalOverflow(page);
+    });
+
+    test("stretches the ink sidebar background across the desktop sidebar", async ({ page }) => {
+        await page.setViewportSize({ width: 1280, height: 800 });
+        await page.goto("/dashboard");
+
+        await expect(page.getByRole("menuitem", { name: "仪表盘" })).toBeVisible();
+        const metrics = await readSidebarInkMetrics(page);
+        expect(Math.abs(metrics.ink.top - metrics.sidebar.top)).toBeLessThanOrEqual(1);
+        expect(Math.abs(metrics.ink.right - metrics.sidebar.right)).toBeLessThanOrEqual(1);
+        expect(Math.abs(metrics.ink.bottom - metrics.sidebar.bottom)).toBeLessThanOrEqual(1);
+        expect(Math.abs(metrics.ink.left - metrics.sidebar.left)).toBeLessThanOrEqual(1);
+        expect(metrics.opacity).toBeLessThanOrEqual(0.45);
     });
 
     test("uses the padded viewport width when the mobile menu is closed or open", async ({
