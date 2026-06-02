@@ -1,0 +1,907 @@
+{
+  "departments": [
+    {
+      "name": "GitHub",
+      "shortName": "GitHub",
+      "remarks": "系统初始化根部门",
+      "children": [
+        {
+          "name": "总裁办",
+          "shortName": "CEO Office",
+          "remarks": "公司治理、战略决策和综合协调",
+          "children": [
+            {
+              "name": "战略发展部",
+              "shortName": "Strategy",
+              "remarks": "战略规划、行业研究和重点项目跟进"
+            },
+            {
+              "name": "法务合规部",
+              "shortName": "Legal",
+              "remarks": "合同、合规、风险控制和制度审查"
+            }
+          ]
+        },
+        {
+          "name": "研发中心",
+          "shortName": "R&D",
+          "remarks": "产品研发、工程交付和技术平台建设",
+          "children": [
+            {
+              "name": "平台架构部",
+              "shortName": "Platform",
+              "remarks": "基础架构、公共组件和技术规范"
+            },
+            {
+              "name": "后端研发部",
+              "shortName": "Backend",
+              "remarks": "后端服务、业务接口和系统集成"
+            },
+            {
+              "name": "前端体验部",
+              "shortName": "Frontend",
+              "remarks": "管理台、前台应用和用户体验实现"
+            },
+            {
+              "name": "测试质量部",
+              "shortName": "QA",
+              "remarks": "测试体系、质量保障和发布验收"
+            },
+            {
+              "name": "运维效能部",
+              "shortName": "DevOps",
+              "remarks": "环境、部署、监控和研发效能"
+            },
+            {
+              "name": "数据智能部",
+              "shortName": "Data",
+              "remarks": "数据分析、报表建设和智能能力探索"
+            }
+          ]
+        },
+        {
+          "name": "产品中心",
+          "shortName": "Product",
+          "remarks": "产品规划、体验设计和需求管理",
+          "children": [
+            {
+              "name": "产品规划部",
+              "shortName": "PM",
+              "remarks": "产品路线图、需求评审和版本规划"
+            },
+            {
+              "name": "交互设计部",
+              "shortName": "Design",
+              "remarks": "交互设计、视觉规范和体验走查"
+            },
+            {
+              "name": "用户研究部",
+              "shortName": "UXR",
+              "remarks": "用户研究、反馈分析和可用性验证"
+            }
+          ]
+        },
+        {
+          "name": "商业化中心",
+          "shortName": "Business",
+          "remarks": "市场增长、客户成功和商业化运营",
+          "children": [
+            {
+              "name": "市场运营部",
+              "shortName": "Marketing",
+              "remarks": "市场活动、内容运营和品牌传播"
+            },
+            {
+              "name": "客户成功部",
+              "shortName": "CS",
+              "remarks": "客户交付、续约支持和服务质量"
+            }
+          ]
+        },
+        {
+          "name": "财务人事中心",
+          "shortName": "FAHR",
+          "remarks": "财务核算、人事行政和组织支持",
+          "children": [
+            {
+              "name": "财务管理部",
+              "shortName": "Finance",
+              "remarks": "预算、核算、报销和经营分析"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "roles": [
+    {
+      "id": 1,
+      "name": "超级管理员",
+      "privilege": "ADMIN",
+      "priority": 1,
+      "remarks": "拥有全部后台管理权限",
+      "menus": ["*"]
+    },
+    {
+      "name": "系统管理员",
+      "privilege": "ADMIN",
+      "priority": 20,
+      "remarks": "负责用户、角色、部门、字典、存储和审计等后台基础配置",
+      "menus": [
+        "仪表盘",
+        "审计中心",
+        "审计中心/审计日志",
+        "系统管理",
+        "系统管理/用户管理",
+        "系统管理/部门管理",
+        "系统管理/角色管理",
+        "系统管理/菜单管理",
+        "系统管理/字典管理",
+        "系统管理/存储管理",
+        "系统管理/存储管理/对象管理",
+        "系统管理/系统日志"
+      ]
+    },
+    {
+      "name": "组织管理员",
+      "privilege": "NORMAL",
+      "priority": 30,
+      "remarks": "负责用户与部门维护，不管理角色授权",
+      "menus": ["仪表盘", "系统管理", "系统管理/用户管理", "系统管理/部门管理"]
+    },
+    {
+      "name": "配置管理员",
+      "privilege": "NORMAL",
+      "priority": 40,
+      "remarks": "负责 AI、字典、存储对象和常规配置维护",
+      "menus": [
+        "仪表盘",
+        "AI 管理",
+        "AI 管理/AI 配置",
+        "AI 管理/提示词管理",
+        "AI 管理/AI 精修",
+        "AI 管理/调用记录",
+        "系统管理",
+        "系统管理/字典管理",
+        "系统管理/存储管理",
+        "系统管理/存储管理/对象管理"
+      ]
+    },
+    {
+      "name": "审计观察员",
+      "privilege": "NORMAL",
+      "priority": 50,
+      "remarks": "只读查看系统、业务内容、运营状态和审计记录",
+      "menus": [
+        "仪表盘",
+        "古籍管理",
+        "古籍管理/三才图会",
+        "古籍管理/王圻文档",
+        "古籍管理/明代习俗",
+        "古籍管理/内容导出",
+        "古籍管理/分享管理",
+        "知识管理",
+        "知识管理/标签治理",
+        "知识管理/同义词词典",
+        "知识管理/数据精修",
+        "知识管理/知识图谱",
+        "搜索问答",
+        "搜索问答/跨库搜索",
+        "搜索问答/智能问答",
+        "搜索问答/问答调试",
+        "运营运维",
+        "运营运维/运营看板",
+        "运营运维/报表记录",
+        "运营运维/任务台账",
+        "审计中心",
+        "审计中心/审计日志",
+        "系统管理",
+        "系统管理/用户管理",
+        "系统管理/部门管理",
+        "系统管理/角色管理",
+        "系统管理/字典管理",
+        "系统管理/存储管理",
+        "系统管理/存储管理/对象管理"
+      ]
+    },
+    {
+      "name": "运营支持",
+      "privilege": "NORMAL",
+      "priority": 60,
+      "remarks": "负责运营支持场景下的内容查询、问答和报表查看",
+      "menus": [
+        "仪表盘",
+        "古籍管理",
+        "古籍管理/三才图会",
+        "古籍管理/王圻文档",
+        "古籍管理/明代习俗",
+        "古籍管理/内容导出",
+        "古籍管理/分享管理",
+        "搜索问答",
+        "搜索问答/跨库搜索",
+        "搜索问答/智能问答",
+        "运营运维",
+        "运营运维/运营看板",
+        "运营运维/报表记录",
+        "运营运维/任务台账"
+      ]
+    }
+  ],
+  "users": [
+    {
+      "id": 1,
+      "loginName": "admin",
+      "password": "admin",
+      "name": "系统管理员",
+      "departmentPath": "GitHub",
+      "ranks": 9,
+      "privilege": "SUPER",
+      "status": "ENABLED",
+      "needChangePassword": true,
+      "remarks": "系统初始化管理员",
+      "roles": ["超级管理员"]
+    },
+    {
+      "id": 2,
+      "loginName": "developer",
+      "password": "Q1w2e3r$",
+      "name": "开发者",
+      "departmentPath": "GitHub",
+      "ranks": 9,
+      "privilege": "SUPER",
+      "status": "ENABLED",
+      "needChangePassword": false,
+      "remarks": "本地开发调试超级管理员",
+      "roles": ["超级管理员"]
+    },
+    {
+      "loginName": "lin.zhiyuan",
+      "name": "林知远",
+      "departmentPath": "GitHub/总裁办",
+      "tel": "8001",
+      "ranks": 3,
+      "privilege": "ADMIN",
+      "remarks": "总裁办系统管理员，负责后台基础权限配置",
+      "roles": ["系统管理员"]
+    },
+    {
+      "loginName": "zhou.chengce",
+      "name": "周承策",
+      "departmentPath": "GitHub/总裁办/战略发展部",
+      "tel": "8101",
+      "remarks": "战略发展部组织协调人",
+      "roles": ["组织管理员"]
+    },
+    {
+      "loginName": "gu.qinghe",
+      "name": "顾清禾",
+      "departmentPath": "GitHub/总裁办/法务合规部",
+      "tel": "8201",
+      "remarks": "法务合规部审计观察员",
+      "roles": ["审计观察员"]
+    },
+    {
+      "loginName": "xu.mubai",
+      "name": "许慕白",
+      "departmentPath": "GitHub/研发中心/平台架构部",
+      "tel": "8301",
+      "ranks": 3,
+      "privilege": "ADMIN",
+      "remarks": "平台架构部系统管理员",
+      "roles": ["系统管理员"]
+    },
+    {
+      "loginName": "chen.bozhou",
+      "name": "陈泊舟",
+      "departmentPath": "GitHub/研发中心/后端研发部",
+      "tel": "8302",
+      "remarks": "后端研发部组织管理员",
+      "roles": ["组织管理员"]
+    },
+    {
+      "loginName": "ye.wanqing",
+      "name": "叶晚晴",
+      "departmentPath": "GitHub/研发中心/前端体验部",
+      "tel": "8303",
+      "remarks": "前端体验部配置管理员",
+      "roles": ["配置管理员"]
+    },
+    {
+      "loginName": "tang.yining",
+      "name": "唐以宁",
+      "departmentPath": "GitHub/研发中心/测试质量部",
+      "tel": "8304",
+      "ranks": 3,
+      "remarks": "测试质量部审计观察员",
+      "roles": ["审计观察员"]
+    },
+    {
+      "loginName": "shen.jiamu",
+      "name": "沈嘉木",
+      "departmentPath": "GitHub/研发中心/运维效能部",
+      "tel": "8305",
+      "status": "DISABLED",
+      "remarks": "运维效能部临时停用账号",
+      "roles": ["配置管理员"]
+    },
+    {
+      "loginName": "lu.jingming",
+      "name": "陆景明",
+      "departmentPath": "GitHub/研发中心/数据智能部",
+      "tel": "8306",
+      "remarks": "数据智能部配置管理员",
+      "roles": ["配置管理员"]
+    },
+    {
+      "loginName": "jiang.shuyao",
+      "name": "姜书瑶",
+      "departmentPath": "GitHub/产品中心/产品规划部",
+      "tel": "8401",
+      "remarks": "产品规划部运营支持",
+      "roles": ["运营支持"]
+    },
+    {
+      "loginName": "song.yian",
+      "name": "宋亦安",
+      "departmentPath": "GitHub/产品中心/交互设计部",
+      "tel": "8402",
+      "ranks": 3,
+      "remarks": "交互设计部审计观察员",
+      "roles": ["审计观察员"]
+    },
+    {
+      "loginName": "han.xingye",
+      "name": "韩星野",
+      "departmentPath": "GitHub/商业化中心/市场运营部",
+      "tel": "8501",
+      "remarks": "市场运营部运营支持",
+      "roles": ["运营支持"]
+    },
+    {
+      "loginName": "qin.ruochuan",
+      "name": "秦若川",
+      "departmentPath": "GitHub/商业化中心/客户成功部",
+      "tel": "8502",
+      "remarks": "客户成功部运营支持",
+      "roles": ["运营支持"]
+    },
+    {
+      "loginName": "cheng.yumo",
+      "name": "程予墨",
+      "departmentPath": "GitHub/财务人事中心/财务管理部",
+      "tel": "8601",
+      "remarks": "财务管理部审计观察员",
+      "roles": ["审计观察员"]
+    },
+    {
+      "loginName": "zhao.beichen",
+      "name": "赵北辰",
+      "departmentPath": "GitHub/总裁办",
+      "tel": "8002",
+      "ranks": 3,
+      "privilege": "ADMIN",
+      "remarks": "总裁办组织权限管理员",
+      "roles": ["系统管理员"]
+    },
+    {
+      "loginName": "he.wangshu",
+      "name": "何望舒",
+      "departmentPath": "GitHub/总裁办/战略发展部",
+      "tel": "8102",
+      "remarks": "战略发展部项目协同负责人",
+      "roles": ["组织管理员"]
+    },
+    {
+      "loginName": "qiu.mingche",
+      "name": "邱明澈",
+      "departmentPath": "GitHub/总裁办/法务合规部",
+      "tel": "8202",
+      "ranks": 3,
+      "remarks": "法务合规部审计专员",
+      "roles": ["审计观察员"]
+    },
+    {
+      "loginName": "liang.siheng",
+      "name": "梁思衡",
+      "departmentPath": "GitHub/研发中心/平台架构部",
+      "tel": "8307",
+      "remarks": "平台架构部配置管理员",
+      "roles": ["配置管理员"]
+    },
+    {
+      "loginName": "luo.zijin",
+      "name": "罗子衿",
+      "departmentPath": "GitHub/研发中心/后端研发部",
+      "tel": "8308",
+      "remarks": "后端研发部服务治理负责人",
+      "roles": ["组织管理员"]
+    },
+    {
+      "loginName": "su.yunzhou",
+      "name": "苏云舟",
+      "departmentPath": "GitHub/研发中心/前端体验部",
+      "tel": "8309",
+      "remarks": "前端体验部页面配置负责人",
+      "roles": ["配置管理员"]
+    },
+    {
+      "loginName": "meng.qinglan",
+      "name": "孟青岚",
+      "departmentPath": "GitHub/研发中心/测试质量部",
+      "tel": "8310",
+      "ranks": 3,
+      "remarks": "测试质量部回归验证负责人",
+      "roles": ["审计观察员"]
+    },
+    {
+      "loginName": "bai.jingxing",
+      "name": "白景行",
+      "departmentPath": "GitHub/研发中心/运维效能部",
+      "tel": "8311",
+      "remarks": "运维效能部发布支持",
+      "roles": ["配置管理员"]
+    },
+    {
+      "loginName": "xia.ange",
+      "name": "夏安歌",
+      "departmentPath": "GitHub/研发中心/数据智能部",
+      "tel": "8312",
+      "status": "DISABLED",
+      "remarks": "数据智能部暂停访问账号",
+      "roles": ["审计观察员"]
+    },
+    {
+      "loginName": "ji.xinghe",
+      "name": "季星河",
+      "departmentPath": "GitHub/产品中心/产品规划部",
+      "tel": "8403",
+      "remarks": "产品规划部需求运营支持",
+      "roles": ["运营支持"]
+    },
+    {
+      "loginName": "yu.qingyue",
+      "name": "余清越",
+      "departmentPath": "GitHub/产品中心/交互设计部",
+      "tel": "8404",
+      "ranks": 3,
+      "remarks": "交互设计部体验审阅员",
+      "roles": ["审计观察员"]
+    },
+    {
+      "loginName": "feng.ruogu",
+      "name": "冯若谷",
+      "departmentPath": "GitHub/商业化中心/市场运营部",
+      "tel": "8503",
+      "remarks": "市场运营部活动配置支持",
+      "roles": ["运营支持"]
+    },
+    {
+      "loginName": "wei.nanfeng",
+      "name": "魏南风",
+      "departmentPath": "GitHub/商业化中心/客户成功部",
+      "tel": "8504",
+      "remarks": "客户成功部客户资料维护",
+      "roles": ["运营支持"]
+    },
+    {
+      "loginName": "ding.xiaotang",
+      "name": "丁晓棠",
+      "departmentPath": "GitHub/财务人事中心/财务管理部",
+      "tel": "8602",
+      "ranks": 3,
+      "remarks": "财务管理部报表查看员",
+      "roles": ["审计观察员"]
+    },
+    {
+      "loginName": "ma.yanqiu",
+      "name": "马砚秋",
+      "departmentPath": "GitHub/研发中心",
+      "tel": "8300",
+      "ranks": 3,
+      "privilege": "ADMIN",
+      "remarks": "技术中心系统管理员",
+      "roles": ["系统管理员"]
+    },
+    {
+      "loginName": "xie.changfeng",
+      "name": "谢长风",
+      "departmentPath": "GitHub/产品中心",
+      "tel": "8400",
+      "remarks": "产品体验中心组织管理员",
+      "roles": ["组织管理员"]
+    },
+    {
+      "loginName": "jiang.nanxing",
+      "name": "蒋南星",
+      "departmentPath": "GitHub/产品中心/用户研究部",
+      "tel": "8500",
+      "remarks": "商业增长中心运营管理员",
+      "roles": ["运营支持"]
+    },
+    {
+      "loginName": "yuan.chuxia",
+      "name": "袁初夏",
+      "departmentPath": "GitHub/商业化中心",
+      "tel": "8505",
+      "status": "DISABLED",
+      "remarks": "销售拓展部离岗保留账号",
+      "roles": ["运营支持"]
+    },
+    {
+      "loginName": "cao.yuanshan",
+      "name": "曹远山",
+      "departmentPath": "GitHub/财务人事中心",
+      "tel": "8600",
+      "remarks": "财务人事中心组织支持",
+      "roles": ["组织管理员"]
+    },
+    {
+      "loginName": "ren.lanxi",
+      "name": "任澜溪",
+      "departmentPath": "GitHub",
+      "tel": "8003",
+      "remarks": "总部综合事务支持",
+      "roles": ["运营支持"]
+    }
+  ],
+  "menus": [
+    {
+      "id": 5,
+      "name": "仪表盘",
+      "perms": ["user"],
+      "priority": 100,
+      "icon": "dashboard",
+      "url": "/dashboard",
+      "remarks": "后台工作台"
+    },
+    {
+      "id": 100,
+      "name": "古籍管理",
+      "perms": ["classics"],
+      "priority": 95,
+      "icon": "dictionaries",
+      "url": "/classics",
+      "remarks": "古籍内容管理根菜单",
+      "children": [
+        {
+          "id": 101,
+          "name": "三才图会",
+          "perms": ["classics:sancai:view", "classics:sancai:edit", "classics:sancai:delete"],
+          "priority": 95,
+          "icon": "dictionaries",
+          "url": "/classics/sancai",
+          "remarks": "三才图会知识库"
+        },
+        {
+          "id": 102,
+          "name": "王圻文档",
+          "perms": ["classics:wangqi:view", "classics:wangqi:edit", "classics:wangqi:delete"],
+          "priority": 90,
+          "icon": "dictionaries",
+          "url": "/classics/wangqi",
+          "remarks": "王圻文档知识库"
+        },
+        {
+          "id": 103,
+          "name": "明代习俗",
+          "perms": ["classics:mingcustoms:view", "classics:mingcustoms:edit", "classics:mingcustoms:delete"],
+          "priority": 85,
+          "icon": "dictionaries",
+          "url": "/classics/ming-customs",
+          "remarks": "明代习俗知识库"
+        },
+        {
+          "id": 104,
+          "name": "内容导出",
+          "perms": ["classics:content:view", "classics:content:edit", "classics:content:export"],
+          "priority": 80,
+          "icon": "submissions",
+          "url": "/classics/exports",
+          "remarks": "古籍内容和视觉资产导出"
+        },
+        {
+          "id": 105,
+          "name": "分享管理",
+          "perms": ["classics:sharing:view", "classics:sharing:edit"],
+          "priority": 75,
+          "icon": "open-api",
+          "url": "/classics/shares",
+          "remarks": "古籍内容分享管理"
+        }
+      ]
+    },
+    {
+      "id": 110,
+      "name": "AI 管理",
+      "perms": ["ai"],
+      "priority": 90,
+      "icon": "system",
+      "url": "/ai",
+      "remarks": "AI 配置和调用治理根菜单",
+      "children": [
+        {
+          "id": 111,
+          "name": "AI 配置",
+          "perms": ["ai:config:view", "ai:config:edit"],
+          "priority": 90,
+          "icon": "system",
+          "url": "/ai/config",
+          "remarks": "AI 服务、模型和能力映射"
+        },
+        {
+          "id": 112,
+          "name": "提示词管理",
+          "perms": ["ai:prompt:view", "ai:prompt:edit"],
+          "priority": 85,
+          "icon": "dictionaries",
+          "url": "/ai/prompts",
+          "remarks": "AI 提示词模板和版本"
+        },
+        {
+          "id": 113,
+          "name": "AI 精修",
+          "perms": ["ai:refinement:edit"],
+          "priority": 80,
+          "icon": "submissions",
+          "url": "/ai/refinement",
+          "remarks": "AI 内容精修能力入口"
+        },
+        {
+          "id": 114,
+          "name": "调用记录",
+          "perms": ["ai:invocation:view", "ai:invocation:edit"],
+          "priority": 75,
+          "icon": "logs",
+          "url": "/ai/invocations",
+          "remarks": "AI 调用记录、候选和批量任务"
+        }
+      ]
+    },
+    {
+      "id": 120,
+      "name": "知识管理",
+      "perms": ["knowledge"],
+      "priority": 85,
+      "icon": "dictionaries",
+      "url": "/knowledge",
+      "remarks": "标签、同义词和知识图谱根菜单",
+      "children": [
+        {
+          "id": 121,
+          "name": "标签治理",
+          "perms": ["knowledge:tag:view", "knowledge:tag:edit"],
+          "priority": 85,
+          "icon": "dictionaries",
+          "url": "/knowledge/tags",
+          "remarks": "跨知识库标签治理"
+        },
+        {
+          "id": 122,
+          "name": "同义词词典",
+          "perms": ["knowledge:synonym:view", "knowledge:synonym:edit"],
+          "priority": 80,
+          "icon": "dictionaries",
+          "url": "/knowledge/synonyms",
+          "remarks": "同义词维护和检索扩展"
+        },
+        {
+          "id": 123,
+          "name": "数据精修",
+          "perms": ["knowledge:refinement:view", "knowledge:refinement:edit"],
+          "priority": 75,
+          "icon": "submissions",
+          "url": "/knowledge/refinement",
+          "remarks": "实体和关系精修工作台"
+        },
+        {
+          "id": 124,
+          "name": "知识图谱",
+          "perms": ["knowledge:graph:view", "knowledge:graph:edit"],
+          "priority": 70,
+          "icon": "open-api",
+          "url": "/knowledge/graph",
+          "remarks": "三才图会知识图谱"
+        }
+      ]
+    },
+    {
+      "id": 130,
+      "name": "搜索问答",
+      "perms": ["discovery"],
+      "priority": 80,
+      "icon": "open-api",
+      "url": "/discovery",
+      "remarks": "跨库搜索和智能问答根菜单",
+      "children": [
+        {
+          "id": 131,
+          "name": "跨库搜索",
+          "perms": ["discovery:search:view"],
+          "priority": 80,
+          "icon": "open-api",
+          "url": "/discovery/search",
+          "remarks": "三类古籍跨库搜索"
+        },
+        {
+          "id": 132,
+          "name": "智能问答",
+          "perms": ["discovery:qa:view", "discovery:qa:edit"],
+          "priority": 75,
+          "icon": "open-api",
+          "url": "/discovery/qa",
+          "remarks": "跨知识库智能问答"
+        },
+        {
+          "id": 133,
+          "name": "问答调试",
+          "perms": ["discovery:debug:view"],
+          "priority": 70,
+          "icon": "logs",
+          "url": "/discovery/debug",
+          "remarks": "问答上下文调试"
+        }
+      ]
+    },
+    {
+      "id": 140,
+      "name": "运营运维",
+      "perms": ["operations"],
+      "priority": 70,
+      "icon": "dashboard",
+      "url": "/operations",
+      "remarks": "运营运维根菜单",
+      "children": [
+        {
+          "id": 141,
+          "name": "运营看板",
+          "perms": ["operations:dashboard:view"],
+          "priority": 70,
+          "icon": "dashboard",
+          "url": "/operations/dashboard",
+          "remarks": "内容、AI、搜索和问答统计"
+        },
+        {
+          "id": 142,
+          "name": "报表记录",
+          "perms": ["operations:report:view", "operations:report:edit"],
+          "priority": 65,
+          "icon": "submissions",
+          "url": "/operations/reports",
+          "remarks": "周报月报生成记录"
+        },
+        {
+          "id": 143,
+          "name": "任务台账",
+          "perms": ["operations:task:view"],
+          "priority": 60,
+          "icon": "logs",
+          "url": "/operations/tasks",
+          "remarks": "长任务和批量操作运行状态"
+        },
+        {
+          "id": 144,
+          "name": "备份恢复",
+          "perms": ["operations:backup:view", "operations:backup:edit"],
+          "priority": 55,
+          "icon": "storage",
+          "url": "/operations/backups",
+          "remarks": "备份列表、手动备份和恢复入口"
+        },
+        {
+          "id": 145,
+          "name": "清理维护",
+          "perms": ["operations:cleanup:view", "operations:cleanup:edit"],
+          "priority": 50,
+          "icon": "menus",
+          "url": "/operations/cleanup",
+          "remarks": "维护清理任务入口"
+        }
+      ]
+    },
+    {
+      "id": 50,
+      "name": "审计中心",
+      "perms": ["audit:view"],
+      "priority": 65,
+      "icon": "audit",
+      "url": "/audit",
+      "remarks": "审计中心根菜单",
+      "children": [
+        {
+          "id": 51,
+          "name": "审计日志",
+          "perms": ["audit:view"],
+          "priority": 65,
+          "icon": "audit-logs",
+          "url": "/audit/logs",
+          "remarks": "业务审计日志"
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "name": "系统管理",
+      "perms": ["sys"],
+      "priority": 60,
+      "icon": "system",
+      "url": "/system",
+      "remarks": "系统管理根菜单",
+      "children": [
+        {
+          "id": 2,
+          "name": "用户管理",
+          "perms": ["sys:user:view", "sys:user:edit"],
+          "priority": 60,
+          "icon": "users",
+          "url": "/system/users",
+          "remarks": "后台用户管理"
+        },
+        {
+          "id": 6,
+          "name": "部门管理",
+          "perms": ["sys:department:view", "sys:department:edit"],
+          "priority": 55,
+          "icon": "departments",
+          "url": "/system/departments",
+          "remarks": "后台部门管理"
+        },
+        {
+          "id": 3,
+          "name": "角色管理",
+          "perms": ["sys:role:view", "sys:role:edit"],
+          "priority": 50,
+          "icon": "roles",
+          "url": "/system/roles",
+          "remarks": "后台角色管理"
+        },
+        {
+          "id": 4,
+          "name": "菜单管理",
+          "perms": ["super"],
+          "priority": 45,
+          "icon": "menus",
+          "url": "/system/menus",
+          "remarks": "后台菜单管理"
+        },
+        {
+          "id": 7,
+          "name": "字典管理",
+          "perms": ["sys:dict:view", "sys:dict:edit"],
+          "priority": 40,
+          "icon": "dictionaries",
+          "url": "/system/dictionaries",
+          "remarks": "后台字典管理"
+        },
+        {
+          "id": 20,
+          "name": "存储管理",
+          "perms": ["storage"],
+          "priority": 35,
+          "icon": "storage",
+          "url": "/storage",
+          "remarks": "对象存储管理",
+          "children": [
+            {
+              "id": 21,
+              "name": "对象管理",
+              "perms": ["storage:object:view", "storage:object:edit"],
+              "priority": 35,
+              "icon": "storage-objects",
+              "url": "/storage/objects",
+              "remarks": "对象存储文件管理"
+            }
+          ]
+        },
+        {
+          "id": 8,
+          "name": "系统日志",
+          "perms": ["super"],
+          "priority": 30,
+          "icon": "logs",
+          "url": "/system/logs",
+          "remarks": "后台运行日志"
+        }
+      ]
+    }
+  ]
+}
