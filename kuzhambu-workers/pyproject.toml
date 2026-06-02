@@ -21,6 +21,7 @@ dev = [
     "pytest",
     "pytest-asyncio",
     "ruff",
+    "tomli",
 ]
 
 [build-system]

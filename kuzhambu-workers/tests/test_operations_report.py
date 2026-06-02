@@ -15,7 +15,7 @@ async def test_operations_report_renders_html() -> None:
     assert artifact.content_type == "text/html; charset=utf-8"
     assert artifact.size_bytes == len(artifact.data)
     assert artifact.sha256.startswith("sha256:")
-    assert artifact.summary["itemCount"] == 2
+    assert artifact.summary.itemCount == 2
     assert "Operations 周报" in html
     assert "备份完成" in html
 
