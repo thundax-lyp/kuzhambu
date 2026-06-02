@@ -8,6 +8,8 @@ const sections = [
     { title: "关系探索", description: "承接知识图谱与问答场景", icon: Network }
 ];
 
+const portalApiBaseUrl = import.meta.env.VITE_PORTAL_API_BASE_URL || "/portal-api";
+
 export function App() {
     return (
         <main className="portal-shell">
@@ -16,7 +18,7 @@ export function App() {
                     <p className="portal-kicker">Kuzhambu Portal</p>
                     <h1>古籍知识门户</h1>
                 </div>
-                <a className="portal-action" href="/portal-api/health">
+                <a className="portal-action" href={`${portalApiBaseUrl}/health`}>
                     接口探测
                 </a>
             </header>
