@@ -306,7 +306,7 @@ test.describe("admin layout", () => {
         expect(Math.abs(metrics.ink.right - metrics.sidebar.right)).toBeLessThanOrEqual(1);
         expect(Math.abs(metrics.ink.bottom - metrics.sidebar.bottom)).toBeLessThanOrEqual(1);
         expect(Math.abs(metrics.ink.left - metrics.sidebar.left)).toBeLessThanOrEqual(1);
-        expect(metrics.opacity).toBeLessThanOrEqual(0.45);
+        expect(metrics.opacity).toBe(1);
     });
 
     test("uses the padded viewport width when the mobile menu is closed or open", async ({

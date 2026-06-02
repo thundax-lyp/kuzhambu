@@ -185,7 +185,7 @@ html[data-theme="dark"] .sidebar-ink {
 @keyframes sidebar-ink-fade {
     0%,
     30% {
-        opacity: 0.42;
+        opacity: 1;
     }
 
     44%,
@@ -200,7 +200,7 @@ html[data-theme="dark"] .sidebar-ink {
     }
 
     .sidebar-ink-1 {
-        opacity: 0.42;
+        opacity: 1;
     }
 }
 
