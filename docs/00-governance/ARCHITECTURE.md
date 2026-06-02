@@ -44,5 +44,6 @@
 - Java servers 架构细则、目录、命名和文件归属：[`SERVERS-ARCHITECTURE-RULES.md`](./SERVERS-ARCHITECTURE-RULES.md)。
 - Java servers 数据库表、字段、索引和缓存真相源：[`SERVERS-DATABASE-RULES.md`](./SERVERS-DATABASE-RULES.md)。
 - Java servers 统一业务标识、强类型 ID 和 token 边界：[`SERVERS-UNIFIED-ID-DESIGN.md`](./SERVERS-UNIFIED-ID-DESIGN.md)。
+- Python workers 架构细则、目录、命名、API 和门禁：[`WORKERS-RULES.md`](./WORKERS-RULES.md)。
 - UI 风格和交互原则：[`UI-RULES.md`](./UI-RULES.md)。
 - TODO 协作、删除、测试检查和提交收口：[`TODO-RULES.md`](./TODO-RULES.md)。

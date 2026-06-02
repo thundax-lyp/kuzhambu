@@ -87,6 +87,7 @@ python3.10 -m venv .venv
 ## Documents
 
 - `docs/10-requirements/WORKERS-REQUIREMENTS.md`
+- `docs/00-governance/WORKERS-RULES.md`
 - `docs/20-interfaces/WORKERS-AI-INTERFACE.md`
 - `docs/20-interfaces/WORKERS-AI-USECASE-INTERFACE.md`
 - `docs/20-interfaces/WORKERS-RENDER-INTERFACE.md`

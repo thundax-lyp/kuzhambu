@@ -14,7 +14,8 @@ AI 文档路由入口。目标：少读、读准、只读取当前工程文档�
 
 - 全局架构、顶层目录、工程组边界：`00-governance/ARCHITECTURE.md`。
 - Java servers 代码实现、修复、重构：`00-governance/ARCHITECTURE.md`、`00-governance/SERVERS-ARCHITECTURE.md`，再按需读对应 `10-requirements/*-REQUIREMENTS.md`。
-- Python workers 能力、接口、流式输出和跨域协作：`00-governance/ARCHITECTURE.md`、`10-requirements/WORKERS-REQUIREMENTS.md`、`30-designs/WORKERS-DESIGN.md`。
+- Python workers 命名、目录、分层、API、AI/render 边界和门禁：`00-governance/ARCHITECTURE.md`、`00-governance/WORKERS-RULES.md`。
+- Python workers 能力、接口、流式输出和跨域协作：`00-governance/ARCHITECTURE.md`、`00-governance/WORKERS-RULES.md`、`10-requirements/WORKERS-REQUIREMENTS.md`、`30-designs/WORKERS-DESIGN.md`。
 - admin-web 前端命名、目录、分层、服务边界、UI 组件和门禁：`00-governance/ARCHITECTURE.md`、`00-governance/ADMIN-WEB-RULES.md`。
 - Java servers 架构细则、目录、命名和文件归属：`00-governance/SERVERS-ARCHITECTURE-RULES.md`。
 - 文档结构、文档写作、RUNBOOK：`00-governance/DOCUMENT-RULES.md`。
