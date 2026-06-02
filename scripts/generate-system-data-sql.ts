@@ -11,7 +11,6 @@ type DepartmentSeed = {
 };
 
 type RoleSeed = {
-  id?: number;
   name: string;
   privilege?: string;
   status?: string;
@@ -21,7 +20,6 @@ type RoleSeed = {
 };
 
 type UserSeed = {
-  id?: number;
   loginName: string;
   password?: string;
   name: string;
@@ -38,7 +36,6 @@ type UserSeed = {
 };
 
 type MenuSeed = {
-  id: number;
   name: string;
   perms?: string[];
   priority: number;
@@ -57,8 +54,8 @@ type SystemSeed = {
 };
 
 type TreeRecord<T> = T & {
-  id: string;
-  parentId: string | null;
+  id: number;
+  parentId: number | null;
   path: string;
   lft: number;
   rgt: number;
@@ -68,14 +65,6 @@ const scriptDir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(scriptDir, "..");
 const sourcePath = resolve(repoRoot, "db/data-source/system.json");
 const outputPath = resolve(repoRoot, "db/data/system.sql");
-
-const BASE = {
-  department: 1000000000000000000n,
-  user: 1000000000000000100n,
-  role: 1000000000000000400n,
-  identity: 1000000000000010100n,
-  credential: 1000000000000010200n
-} as const;
 
 const DEFAULT_PASSWORD = "Q1w2e3r$";
 
@@ -96,8 +85,8 @@ const main = () => {
 };
 
 const generate = (seed: SystemSeed) => {
-  const departments = flattenTree(seed.departments, (index) => BASE.department + index);
-  const menus = flattenTree(seed.menus, (_index, node) => node.id);
+  const departments = flattenTree(seed.departments);
+  const menus = flattenTree(seed.menus);
   const roles = buildRoles(seed.roles);
   const users = buildUsers(seed.users);
 
@@ -113,15 +102,22 @@ const generate = (seed: SystemSeed) => {
   appendUserRoleSql(lines, users, roleByName);
   appendRoleMenuSql(lines, roles, menus, menuByPath);
   appendAuthSql(lines, users);
+  appendAutoIncrementSql(lines, [
+    { table: "system_department", nextValue: departments.length + 1 },
+    { table: "system_user", nextValue: users.length + 1 },
+    { table: "system_role", nextValue: roles.length + 1 },
+    { table: "system_menu", nextValue: menus.length + 1 },
+    { table: "system_auth_principal_identity", nextValue: users.length + 1 },
+    { table: "system_auth_principal_credential", nextValue: users.length + 1 }
+  ]);
   lines.push("-- Audit has no required seed data.", "");
   return lines.join("\n");
 };
 
 const buildRoles = (roles: RoleSeed[]) => {
-  let generatedIndex = 1;
-  return roles.map((role) => ({
+  return roles.map((role, index) => ({
     ...role,
-    id: role.id === undefined ? nextId(BASE.role, generatedIndex++) : String(role.id),
+    id: index + 1,
     privilege: role.privilege ?? "NORMAL",
     status: role.status ?? "ENABLED",
     remarks: role.remarks ?? null
@@ -129,10 +125,9 @@ const buildRoles = (roles: RoleSeed[]) => {
 };
 
 const buildUsers = (users: UserSeed[]) => {
-  let generatedIndex = 1;
-  return users.map((user) => ({
+  return users.map((user, index) => ({
     ...user,
-    id: user.id === undefined ? nextId(BASE.user, generatedIndex++) : String(user.id),
+    id: index + 1,
     password: user.password ?? DEFAULT_PASSWORD,
     email: user.email ?? null,
     mobile: user.mobile ?? null,
@@ -145,19 +140,16 @@ const buildUsers = (users: UserSeed[]) => {
   }));
 };
 
-const flattenTree = <T extends object>(
-  nodes: Array<TreeNode<T>>,
-  idFactory: (index: bigint, node: TreeNode<T>, path: string) => bigint | number | string
-) => {
+const flattenTree = <T extends object>(nodes: Array<TreeNode<T>>) => {
   const records: Array<TreeRecord<T>> = [];
-  let index = 1n;
+  let index = 1;
   let position = 1;
 
   const visit = (node: TreeNode<T>, parentId: number | null, parentPath: string | null) => {
     const name = readName(node);
     const path = parentPath ? `${parentPath}/${name}` : name;
-    const id = String(idFactory(index, node, path));
-    index += 1n;
+    const id = index;
+    index += 1;
     const lft = position;
     position += 1;
     for (const child of node.children ?? []) {
@@ -359,8 +351,7 @@ const appendAuthSql = (lines: string[], users: ReturnType<typeof buildUsers>) =>
   lines.push(
     users
       .map((user, index) => {
-        const id = user.id === "1" || user.id === "2" ? user.id : nextId(BASE.identity, index + 1);
-        return row([id, "USER", user.id, "USER_ACCOUNT", user.loginName, user.status]);
+        return row([index + 1, "USER", user.id, "USER_ACCOUNT", user.loginName, user.status]);
       })
       .join(",\n")
   );
@@ -378,8 +369,8 @@ const appendAuthSql = (lines: string[], users: ReturnType<typeof buildUsers>) =>
   lines.push(
     users
       .map((user, index) => {
-        const identityId = user.id === "1" || user.id === "2" ? user.id : nextId(BASE.identity, index + 1);
-        const credentialId = user.id === "1" || user.id === "2" ? user.id : nextId(BASE.credential, index + 1);
+        const identityId = index + 1;
+        const credentialId = index + 1;
         return row([
           credentialId,
           "USER",
@@ -406,6 +397,16 @@ const appendAuthSql = (lines: string[], users: ReturnType<typeof buildUsers>) =>
   lines.push("    `failed_limit` = VALUES(`failed_limit`);");
   lines.push("");
   lines.push("SET NAMES utf8mb4;");
+  lines.push("");
+};
+
+const appendAutoIncrementSql = (
+  lines: string[],
+  targets: Array<{ table: string; nextValue: number }>
+) => {
+  for (const target of targets) {
+    lines.push(`ALTER TABLE \`${target.table}\` AUTO_INCREMENT = ${target.nextValue};`);
+  }
   lines.push("");
 };
 
@@ -440,7 +441,5 @@ const requireLookup = <T>(map: Map<string, T>, key: string, type: string) => {
   }
   return value;
 };
-
-const nextId = (base: bigint, index: number) => (base + BigInt(index)).toString();
 
 main();

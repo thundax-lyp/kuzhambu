@@ -115,7 +115,6 @@
   ],
   "roles": [
     {
-      "id": 1,
       "name": "超级管理员",
       "privilege": "ADMIN",
       "priority": 1,
@@ -229,7 +228,6 @@
   ],
   "users": [
     {
-      "id": 1,
       "loginName": "admin",
       "password": "admin",
       "name": "系统管理员",
@@ -242,7 +240,6 @@
       "roles": ["超级管理员"]
     },
     {
-      "id": 2,
       "loginName": "developer",
       "password": "Q1w2e3r$",
       "name": "开发者",
@@ -546,7 +543,6 @@
   ],
   "menus": [
     {
-      "id": 5,
       "name": "仪表盘",
       "perms": ["user"],
       "priority": 100,
@@ -555,7 +551,6 @@
       "remarks": "后台工作台"
     },
     {
-      "id": 100,
       "name": "古籍管理",
       "perms": ["classics"],
       "priority": 95,
@@ -564,7 +559,6 @@
       "remarks": "古籍内容管理根菜单",
       "children": [
         {
-          "id": 101,
           "name": "三才图会",
           "perms": ["classics:sancai:view", "classics:sancai:edit", "classics:sancai:delete"],
           "priority": 95,
@@ -573,7 +567,6 @@
           "remarks": "三才图会知识库"
         },
         {
-          "id": 102,
           "name": "王圻文档",
           "perms": ["classics:wangqi:view", "classics:wangqi:edit", "classics:wangqi:delete"],
           "priority": 90,
@@ -582,7 +575,6 @@
           "remarks": "王圻文档知识库"
         },
         {
-          "id": 103,
           "name": "明代习俗",
           "perms": ["classics:mingcustoms:view", "classics:mingcustoms:edit", "classics:mingcustoms:delete"],
           "priority": 85,
@@ -591,7 +583,6 @@
           "remarks": "明代习俗知识库"
         },
         {
-          "id": 104,
           "name": "内容导出",
           "perms": ["classics:content:view", "classics:content:edit", "classics:content:export"],
           "priority": 80,
@@ -600,7 +591,6 @@
           "remarks": "古籍内容和视觉资产导出"
         },
         {
-          "id": 105,
           "name": "分享管理",
           "perms": ["classics:sharing:view", "classics:sharing:edit"],
           "priority": 75,
@@ -611,7 +601,6 @@
       ]
     },
     {
-      "id": 110,
       "name": "AI 管理",
       "perms": ["ai"],
       "priority": 90,
@@ -620,7 +609,6 @@
       "remarks": "AI 配置和调用治理根菜单",
       "children": [
         {
-          "id": 111,
           "name": "AI 配置",
           "perms": ["ai:config:view", "ai:config:edit"],
           "priority": 90,
@@ -629,7 +617,6 @@
           "remarks": "AI 服务、模型和能力映射"
         },
         {
-          "id": 112,
           "name": "提示词管理",
           "perms": ["ai:prompt:view", "ai:prompt:edit"],
           "priority": 85,
@@ -638,7 +625,6 @@
           "remarks": "AI 提示词模板和版本"
         },
         {
-          "id": 113,
           "name": "AI 精修",
           "perms": ["ai:refinement:edit"],
           "priority": 80,
@@ -647,7 +633,6 @@
           "remarks": "AI 内容精修能力入口"
         },
         {
-          "id": 114,
           "name": "调用记录",
           "perms": ["ai:invocation:view", "ai:invocation:edit"],
           "priority": 75,
@@ -658,7 +643,6 @@
       ]
     },
     {
-      "id": 120,
       "name": "知识管理",
       "perms": ["knowledge"],
       "priority": 85,
@@ -667,7 +651,6 @@
       "remarks": "标签、同义词和知识图谱根菜单",
       "children": [
         {
-          "id": 121,
           "name": "标签治理",
           "perms": ["knowledge:tag:view", "knowledge:tag:edit"],
           "priority": 85,
@@ -676,7 +659,6 @@
           "remarks": "跨知识库标签治理"
         },
         {
-          "id": 122,
           "name": "同义词词典",
           "perms": ["knowledge:synonym:view", "knowledge:synonym:edit"],
           "priority": 80,
@@ -685,7 +667,6 @@
           "remarks": "同义词维护和检索扩展"
         },
         {
-          "id": 123,
           "name": "数据精修",
           "perms": ["knowledge:refinement:view", "knowledge:refinement:edit"],
           "priority": 75,
@@ -694,7 +675,6 @@
           "remarks": "实体和关系精修工作台"
         },
         {
-          "id": 124,
           "name": "知识图谱",
           "perms": ["knowledge:graph:view", "knowledge:graph:edit"],
           "priority": 70,
@@ -705,7 +685,6 @@
       ]
     },
     {
-      "id": 130,
       "name": "搜索问答",
       "perms": ["discovery"],
       "priority": 80,
@@ -714,7 +693,6 @@
       "remarks": "跨库搜索和智能问答根菜单",
       "children": [
         {
-          "id": 131,
           "name": "跨库搜索",
           "perms": ["discovery:search:view"],
           "priority": 80,
@@ -723,7 +701,6 @@
           "remarks": "三类古籍跨库搜索"
         },
         {
-          "id": 132,
           "name": "智能问答",
           "perms": ["discovery:qa:view", "discovery:qa:edit"],
           "priority": 75,
@@ -732,7 +709,6 @@
           "remarks": "跨知识库智能问答"
         },
         {
-          "id": 133,
           "name": "问答调试",
           "perms": ["discovery:debug:view"],
           "priority": 70,
@@ -743,7 +719,6 @@
       ]
     },
     {
-      "id": 140,
       "name": "运营运维",
       "perms": ["operations"],
       "priority": 70,
@@ -752,7 +727,6 @@
       "remarks": "运营运维根菜单",
       "children": [
         {
-          "id": 141,
           "name": "运营看板",
           "perms": ["operations:dashboard:view"],
           "priority": 70,
@@ -761,7 +735,6 @@
           "remarks": "内容、AI、搜索和问答统计"
         },
         {
-          "id": 142,
           "name": "报表记录",
           "perms": ["operations:report:view", "operations:report:edit"],
           "priority": 65,
@@ -770,7 +743,6 @@
           "remarks": "周报月报生成记录"
         },
         {
-          "id": 143,
           "name": "任务台账",
           "perms": ["operations:task:view"],
           "priority": 60,
@@ -779,7 +751,6 @@
           "remarks": "长任务和批量操作运行状态"
         },
         {
-          "id": 144,
           "name": "备份恢复",
           "perms": ["operations:backup:view", "operations:backup:edit"],
           "priority": 55,
@@ -788,7 +759,6 @@
           "remarks": "备份列表、手动备份和恢复入口"
         },
         {
-          "id": 145,
           "name": "清理维护",
           "perms": ["operations:cleanup:view", "operations:cleanup:edit"],
           "priority": 50,
@@ -799,7 +769,6 @@
       ]
     },
     {
-      "id": 50,
       "name": "审计中心",
       "perms": ["audit:view"],
       "priority": 65,
@@ -808,7 +777,6 @@
       "remarks": "审计中心根菜单",
       "children": [
         {
-          "id": 51,
           "name": "审计日志",
           "perms": ["audit:view"],
           "priority": 65,
@@ -819,7 +787,6 @@
       ]
     },
     {
-      "id": 1,
       "name": "系统管理",
       "perms": ["sys"],
       "priority": 60,
@@ -828,7 +795,6 @@
       "remarks": "系统管理根菜单",
       "children": [
         {
-          "id": 2,
           "name": "用户管理",
           "perms": ["sys:user:view", "sys:user:edit"],
           "priority": 60,
@@ -837,7 +803,6 @@
           "remarks": "后台用户管理"
         },
         {
-          "id": 6,
           "name": "部门管理",
           "perms": ["sys:department:view", "sys:department:edit"],
           "priority": 55,
@@ -846,7 +811,6 @@
           "remarks": "后台部门管理"
         },
         {
-          "id": 3,
           "name": "角色管理",
           "perms": ["sys:role:view", "sys:role:edit"],
           "priority": 50,
@@ -855,7 +819,6 @@
           "remarks": "后台角色管理"
         },
         {
-          "id": 4,
           "name": "菜单管理",
           "perms": ["super"],
           "priority": 45,
@@ -864,7 +827,6 @@
           "remarks": "后台菜单管理"
         },
         {
-          "id": 7,
           "name": "字典管理",
           "perms": ["sys:dict:view", "sys:dict:edit"],
           "priority": 40,
@@ -873,7 +835,6 @@
           "remarks": "后台字典管理"
         },
         {
-          "id": 20,
           "name": "存储管理",
           "perms": ["storage"],
           "priority": 35,
@@ -882,7 +843,6 @@
           "remarks": "对象存储管理",
           "children": [
             {
-              "id": 21,
               "name": "对象管理",
               "perms": ["storage:object:view", "storage:object:edit"],
               "priority": 35,
@@ -893,7 +853,6 @@
           ]
         },
         {
-          "id": 8,
           "name": "系统日志",
           "perms": ["super"],
           "priority": 30,

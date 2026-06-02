@@ -1,7 +1,7 @@
 SET NAMES utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `system_department` (
-    `id` bigint NOT NULL,
+    `id` bigint NOT NULL AUTO_INCREMENT,
     `parent_id` bigint DEFAULT NULL,
     `lft` int NOT NULL DEFAULT 0,
     `rgt` int NOT NULL DEFAULT 0,
@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS `system_menu` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='后台菜单和权限资源表';
 
 CREATE TABLE IF NOT EXISTS `system_dict` (
-    `id` bigint NOT NULL,
+    `id` bigint NOT NULL AUTO_INCREMENT,
     `type` varchar(128) NOT NULL,
     `label` varchar(128) NOT NULL,
     `value` varchar(128) NOT NULL,
@@ -136,7 +136,7 @@ CREATE TABLE IF NOT EXISTS `system_auth_principal_login_event` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='认证事件表';
 
 CREATE TABLE IF NOT EXISTS `system_log` (
-    `id` bigint NOT NULL,
+    `id` bigint NOT NULL AUTO_INCREMENT,
     `user_id` bigint DEFAULT NULL,
     `type` varchar(32) DEFAULT NULL,
     `log_date` datetime(3) NOT NULL,

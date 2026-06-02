@@ -33,6 +33,7 @@
 - 复杂初始化数据允许在 `db/data-source/` 维护结构化源文件，再由仓库级脚本生成 `db/data/` 下的 SQL 产物。
 - 当前 system 初始化数据源为 `db/data-source/system.json`，生成脚本为 `scripts/generate-system-data-sql.ts`。
 - 修改 system 初始化数据时必须先改 JSON 源，再重新生成并提交 `db/data/system.sql`。
+- system 初始化数据的自增主键由生成脚本按表从 1 顺序分配；SQL 产物必须在显式插入后追加 `ALTER TABLE ... AUTO_INCREMENT = max(id) + 1`。
 - 当前 schema 文件固定为 `system.sql`、`storage.sql`、`classics.sql`、`ai.sql`、`knowledge.sql`、`discovery.sql`、`operations.sql`。
 - 当前初始化数据文件固定为 `system.sql`、`storage.sql`、`classics.sql`、`ai.sql`、`knowledge.sql`、`discovery.sql`、`operations.sql`。
 - SQL 文件名必须与业务域名称保持一致。
