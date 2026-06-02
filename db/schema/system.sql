@@ -1,5 +1,18 @@
 SET NAMES utf8mb4;
 
+CREATE TABLE IF NOT EXISTS `system_department` (
+    `id` bigint NOT NULL,
+    `parent_id` bigint DEFAULT NULL,
+    `lft` int NOT NULL DEFAULT 0,
+    `rgt` int NOT NULL DEFAULT 0,
+    `name` varchar(128) NOT NULL,
+    `short_name` varchar(128) DEFAULT NULL,
+    `remarks` varchar(512) DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    KEY `idx_system_department_parent` (`parent_id`, `lft`),
+    KEY `idx_system_department_tree` (`lft`, `rgt`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='后台部门表';
+
 CREATE TABLE IF NOT EXISTS `system_user` (
     `id` bigint NOT NULL AUTO_INCREMENT,
     `department_id` bigint DEFAULT NULL,
@@ -45,6 +58,18 @@ CREATE TABLE IF NOT EXISTS `system_menu` (
     KEY `idx_system_menu_parent` (`parent_id`, `lft`),
     KEY `idx_system_menu_visibility` (`visibility`, `ranks`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='后台菜单和权限资源表';
+
+CREATE TABLE IF NOT EXISTS `system_dict` (
+    `id` bigint NOT NULL,
+    `type` varchar(128) NOT NULL,
+    `label` varchar(128) NOT NULL,
+    `value` varchar(128) NOT NULL,
+    `priority` int NOT NULL DEFAULT 0,
+    `remarks` varchar(512) DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    KEY `idx_system_dict_type_priority` (`type`, `priority`, `id`),
+    KEY `idx_system_dict_type_value` (`type`, `value`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='后台字典表';
 
 CREATE TABLE IF NOT EXISTS `system_user_role` (
     `user_id` bigint NOT NULL,
