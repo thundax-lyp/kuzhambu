@@ -6,7 +6,7 @@ import {
     saveTokenSession
 } from "../auth/token-storage";
 
-export const ADMIN_API_BASE_URL = "/admin-api/api";
+export const ADMIN_API_BASE_URL = import.meta.env.VITE_ADMIN_API_BASE_URL || "/admin-api/api";
 const ACCESS_TOKEN_HEADER = "Access-Token";
 const AUTH_INVALID_CODE = "COMMON-00002";
 const ADMIN_CLIENT_ID = "admin-api";

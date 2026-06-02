@@ -13,7 +13,7 @@ def test_sancai_showcase_renders_offline_html() -> None:
     assert artifact.content_type == "text/html; charset=utf-8"
     assert artifact.size_bytes == len(artifact.data)
     assert artifact.sha256.startswith("sha256:")
-    assert artifact.summary["itemCount"] == 2
+    assert artifact.summary.itemCount == 2
     assert "三才图会" in html
     assert "天地玄黄" in html
     assert "data:image/png;base64," in html

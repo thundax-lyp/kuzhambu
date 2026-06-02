@@ -1,10 +1,44 @@
 from itertools import count
-from typing import Any
+from typing import Any, Protocol
 
-from kuzhambu_workers.render.artifact_store import ArtifactChunk
 from kuzhambu_workers.schemas.stream import StreamEvent, StreamEventType
 
 _EVENT_COUNTER = count(1)
+
+
+class ArtifactChunkEventInput(Protocol):
+    @property
+    def artifact_id(self) -> str: ...
+
+    @property
+    def format(self) -> str: ...
+
+    @property
+    def filename(self) -> str: ...
+
+    @property
+    def content_type(self) -> str: ...
+
+    @property
+    def encoding(self) -> str: ...
+
+    @property
+    def chunk_index(self) -> int: ...
+
+    @property
+    def chunk_count(self) -> int: ...
+
+    @property
+    def chunk(self) -> str: ...
+
+    @property
+    def chunk_sha256(self) -> str: ...
+
+    @property
+    def total_size_bytes(self) -> int: ...
+
+    @property
+    def sha256(self) -> str: ...
 
 
 def next_event_id() -> str:
@@ -66,7 +100,7 @@ def artifact_chunk_event(
     request_id: str,
     trace_id: str,
     timestamp: str,
-    chunk: ArtifactChunk,
+    chunk: ArtifactChunkEventInput,
 ) -> StreamEvent:
     return stream_event(
         StreamEventType.ARTIFACT,

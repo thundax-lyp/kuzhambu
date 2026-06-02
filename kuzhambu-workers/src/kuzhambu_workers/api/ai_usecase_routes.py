@@ -2,7 +2,11 @@ from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse, StreamingResponse
 
 from kuzhambu_workers.ai.usecase_registry import USECASES, AiUsecase, AiUsecaseDomain
-from kuzhambu_workers.api.ai_routes import invoke_ai_request, stream_ai_request
+from kuzhambu_workers.api.ai_routes import (
+    AiRequestValidator,
+    invoke_ai_request,
+    stream_ai_request,
+)
 from kuzhambu_workers.core.errors import protocol_failure
 from kuzhambu_workers.schemas.ai import AiInvokeRequest
 from kuzhambu_workers.schemas.common import WorkerErrorPayload
@@ -34,28 +38,32 @@ def _register_usecase(usecase: AiUsecase) -> None:
     )
 
 
-def _validator(usecase: AiUsecase):
+def _validator(usecase: AiUsecase) -> AiRequestValidator:
     def validate(request: AiInvokeRequest) -> WorkerErrorPayload | None:
         if request.capability != usecase.capability:
-            return protocol_failure(
-                "BAD_REQUEST",
-                "AI usecase path 与 capability 不匹配。",
-                detail={
-                    "path": usecase.path,
-                    "expectedCapability": usecase.capability.value,
-                    "actualCapability": request.capability.value,
-                },
-            ).to_payload()
+            return WorkerErrorPayload.model_validate(
+                protocol_failure(
+                    "BAD_REQUEST",
+                    "AI usecase path 与 capability 不匹配。",
+                    detail={
+                        "path": usecase.path,
+                        "expectedCapability": usecase.capability.value,
+                        "actualCapability": request.capability.value,
+                    },
+                ).to_payload()
+            )
         if request.options.stream != usecase.stream:
-            return protocol_failure(
-                "BAD_REQUEST",
-                "AI usecase path 与 stream 选项不匹配。",
-                detail={
-                    "path": usecase.path,
-                    "expectedStream": usecase.stream,
-                    "actualStream": request.options.stream,
-                },
-            ).to_payload()
+            return WorkerErrorPayload.model_validate(
+                protocol_failure(
+                    "BAD_REQUEST",
+                    "AI usecase path 与 stream 选项不匹配。",
+                    detail={
+                        "path": usecase.path,
+                        "expectedStream": usecase.stream,
+                        "actualStream": request.options.stream,
+                    },
+                ).to_payload()
+            )
         return None
 
     return validate

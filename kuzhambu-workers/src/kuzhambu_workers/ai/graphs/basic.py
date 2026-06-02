@@ -10,7 +10,7 @@ class BasicGraphState(TypedDict, total=False):
     result: dict[str, Any]
 
 
-def build_basic_graph():
+def build_basic_graph() -> Any:
     graph = StateGraph(BasicGraphState)
     graph.add_node("execute", _execute)
     graph.add_edge(START, "execute")

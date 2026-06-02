@@ -16,9 +16,12 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
+    "import-linter",
+    "mypy",
     "pytest",
     "pytest-asyncio",
     "ruff",
+    "tomli",
 ]
 
 [build-system]
@@ -39,9 +42,84 @@ select = [
     "I",
     "UP",
     "B",
+    "RUF",
+    "PT",
+    "T20",
 ]
+
+[tool.ruff.lint.per-file-ignores]
+"src/kuzhambu_workers/ai/usecase_registry.py" = ["RUF001"]
+"src/kuzhambu_workers/api/*_routes.py" = ["RUF001"]
+"src/kuzhambu_workers/core/security.py" = ["RUF001"]
 
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
 line-ending = "lf"
+
+[tool.mypy]
+python_version = "3.10"
+packages = ["kuzhambu_workers"]
+warn_unused_ignores = true
+warn_return_any = true
+no_implicit_optional = true
+check_untyped_defs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+
+[tool.importlinter]
+root_packages = ["kuzhambu_workers"]
+
+[[tool.importlinter.contracts]]
+name = "WORKERS_CORE_NO_FEATURE_DEPENDENCY"
+type = "forbidden"
+source_modules = ["kuzhambu_workers.core"]
+forbidden_modules = [
+    "kuzhambu_workers.api",
+    "kuzhambu_workers.ai",
+    "kuzhambu_workers.render",
+    "kuzhambu_workers.schemas",
+    "kuzhambu_workers.streaming",
+]
+
+[[tool.importlinter.contracts]]
+name = "WORKERS_SCHEMA_NO_RUNTIME_DEPENDENCY"
+type = "forbidden"
+source_modules = ["kuzhambu_workers.schemas"]
+forbidden_modules = [
+    "kuzhambu_workers.api",
+    "kuzhambu_workers.ai",
+    "kuzhambu_workers.render",
+    "kuzhambu_workers.streaming",
+]
+
+[[tool.importlinter.contracts]]
+name = "WORKERS_FEATURE_NO_API_DEPENDENCY"
+type = "forbidden"
+source_modules = [
+    "kuzhambu_workers.ai",
+    "kuzhambu_workers.render",
+    "kuzhambu_workers.streaming",
+]
+forbidden_modules = ["kuzhambu_workers.api"]
+
+[[tool.importlinter.contracts]]
+name = "WORKERS_AI_NO_RENDER_DEPENDENCY"
+type = "forbidden"
+source_modules = ["kuzhambu_workers.ai"]
+forbidden_modules = ["kuzhambu_workers.render"]
+
+[[tool.importlinter.contracts]]
+name = "WORKERS_RENDER_NO_AI_DEPENDENCY"
+type = "forbidden"
+source_modules = ["kuzhambu_workers.render"]
+forbidden_modules = ["kuzhambu_workers.ai"]
+
+[[tool.importlinter.contracts]]
+name = "WORKERS_STREAMING_NO_FEATURE_DEPENDENCY"
+type = "forbidden"
+source_modules = ["kuzhambu_workers.streaming"]
+forbidden_modules = [
+    "kuzhambu_workers.ai",
+    "kuzhambu_workers.render",
+]

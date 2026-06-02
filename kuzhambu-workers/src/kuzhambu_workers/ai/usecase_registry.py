@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum
 
+from kuzhambu_workers.core.service_paths import AI_USECASE_PATHS
 from kuzhambu_workers.schemas.ai import AiCapability, ResultFormat
 
 
@@ -287,7 +288,7 @@ USECASES: tuple[AiUsecase, ...] = (
 )
 
 USECASES_BY_PATH = {usecase.path: usecase for usecase in USECASES}
-USECASE_PATHS = tuple(USECASES_BY_PATH)
+USECASE_PATHS = AI_USECASE_PATHS
 
 
 def get_usecase(path: str) -> AiUsecase | None:

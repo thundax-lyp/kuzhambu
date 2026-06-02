@@ -1,4 +1,5 @@
 from base64 import b64encode
+from collections.abc import AsyncIterator
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Request
@@ -126,7 +127,7 @@ async def _invoke(request: Request, expected_type: RenderType) -> JSONResponse:
         )
         return JSONResponse(response.model_dump(mode="json"))
     except Exception as exc:
-        return _failed_response(parsed, to_error_payload(exc))
+        return _failed_response(parsed, WorkerErrorPayload.model_validate(to_error_payload(exc)))
 
 
 async def _stream(request: Request, expected_type: RenderType) -> StreamingResponse | JSONResponse:
@@ -140,7 +141,7 @@ async def _stream(request: Request, expected_type: RenderType) -> StreamingRespo
     if auth_failure is not None:
         return auth_failure
 
-    async def events():
+    async def events() -> AsyncIterator[str]:
         store = RequestArtifactStore(
             parsed.requestId,
             settings.temp_dir,
@@ -193,11 +194,14 @@ async def _stream(request: Request, expected_type: RenderType) -> StreamingRespo
                         "sha256": metadata.sha256,
                     },
                     usage=UsageSummary().model_dump(mode="json"),
-                    extra={"status": WorkerStatus.SUCCEEDED.value, "summary": artifact.summary},
+                    extra={
+                        "status": WorkerStatus.SUCCEEDED.value,
+                        "summary": artifact.summary.model_dump(mode="json"),
+                    },
                 )
             )
         except Exception as exc:
-            error = to_error_payload(exc)
+            error = WorkerErrorPayload.model_validate(to_error_payload(exc))
             yield encode_sse(
                 stream_event(
                     StreamEventType.ERROR,
@@ -223,7 +227,7 @@ def _parse_request(body: bytes) -> RenderRequest | JSONResponse:
             "Render worker 请求体不合法。",
             detail={"errors": exc.errors(include_input=False)},
         ).to_payload()
-        return _error_json(error, 400)
+        return _error_json(WorkerErrorPayload.model_validate(error), 400)
 
 
 def _verify(
@@ -243,7 +247,10 @@ def _verify(
             trace_id=parsed.traceId,
         )
     except WorkerError as exc:
-        return _error_json(exc.to_payload(), _status_code(exc.code))
+        return _error_json(
+            WorkerErrorPayload.model_validate(exc.to_payload()),
+            _status_code(exc.code),
+        )
     return None
 
 

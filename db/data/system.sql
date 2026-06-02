@@ -1,37 +1,81 @@
 SET NAMES utf8mb4;
 
-INSERT INTO `system_user` (
-    `id`, `name`, `email`, `mobile`, `tel`, `ranks`, `privilege`, `status`, `remarks`
-) VALUES (
-    1,
-    '系统管理员',
-    NULL,
-    NULL,
-    NULL,
-    9,
-    'SUPER',
-    'ENABLED',
-    '系统初始化管理员'
-) ON DUPLICATE KEY UPDATE
+INSERT INTO `system_department` (
+    `id`, `parent_id`, `lft`, `rgt`, `name`, `short_name`, `remarks`
+) VALUES
+    (1, NULL, 1, 40, 'GitHub', 'GitHub', '系统初始化根部门'),
+    (2, 1, 2, 7, '总裁办', 'CEO Office', '公司治理、战略决策和综合协调'),
+    (3, 2, 3, 4, '战略发展部', 'Strategy', '战略规划、行业研究和重点项目跟进'),
+    (4, 2, 5, 6, '法务合规部', 'Legal', '合同、合规、风险控制和制度审查'),
+    (5, 1, 8, 21, '研发中心', 'R&D', '产品研发、工程交付和技术平台建设'),
+    (6, 5, 9, 10, '平台架构部', 'Platform', '基础架构、公共组件和技术规范'),
+    (7, 5, 11, 12, '后端研发部', 'Backend', '后端服务、业务接口和系统集成'),
+    (8, 5, 13, 14, '前端体验部', 'Frontend', '管理台、前台应用和用户体验实现'),
+    (9, 5, 15, 16, '测试质量部', 'QA', '测试体系、质量保障和发布验收'),
+    (10, 5, 17, 18, '运维效能部', 'DevOps', '环境、部署、监控和研发效能'),
+    (11, 5, 19, 20, '数据智能部', 'Data', '数据分析、报表建设和智能能力探索'),
+    (12, 1, 22, 29, '产品中心', 'Product', '产品规划、体验设计和需求管理'),
+    (13, 12, 23, 24, '产品规划部', 'PM', '产品路线图、需求评审和版本规划'),
+    (14, 12, 25, 26, '交互设计部', 'Design', '交互设计、视觉规范和体验走查'),
+    (15, 12, 27, 28, '用户研究部', 'UXR', '用户研究、反馈分析和可用性验证'),
+    (16, 1, 30, 35, '商业化中心', 'Business', '市场增长、客户成功和商业化运营'),
+    (17, 16, 31, 32, '市场运营部', 'Marketing', '市场活动、内容运营和品牌传播'),
+    (18, 16, 33, 34, '客户成功部', 'CS', '客户交付、续约支持和服务质量'),
+    (19, 1, 36, 39, '财务人事中心', 'FAHR', '财务核算、人事行政和组织支持'),
+    (20, 19, 37, 38, '财务管理部', 'Finance', '预算、核算、报销和经营分析')
+ON DUPLICATE KEY UPDATE
+    `parent_id` = VALUES(`parent_id`),
+    `lft` = VALUES(`lft`),
+    `rgt` = VALUES(`rgt`),
     `name` = VALUES(`name`),
-    `ranks` = VALUES(`ranks`),
-    `privilege` = VALUES(`privilege`),
-    `status` = VALUES(`status`),
+    `short_name` = VALUES(`short_name`),
     `remarks` = VALUES(`remarks`);
 
 INSERT INTO `system_user` (
-    `id`, `name`, `email`, `mobile`, `tel`, `ranks`, `privilege`, `status`, `remarks`
-) VALUES (
-    2,
-    '开发者',
-    NULL,
-    NULL,
-    NULL,
-    9,
-    'SUPER',
-    'ENABLED',
-    '本地开发调试超级管理员'
-) ON DUPLICATE KEY UPDATE
+    `id`, `department_id`, `email`, `mobile`, `tel`, `name`, `ranks`,
+    `privilege`, `status`, `remarks`
+) VALUES
+    (1, 1, NULL, NULL, NULL, '系统管理员', 9, 'SUPER', 'ENABLED', '系统初始化管理员'),
+    (2, 1, NULL, NULL, NULL, '开发者', 9, 'SUPER', 'ENABLED', '本地开发调试超级管理员'),
+    (3, 2, NULL, NULL, '8001', '林知远', 3, 'ADMIN', 'ENABLED', '总裁办系统管理员，负责后台基础权限配置'),
+    (4, 3, NULL, NULL, '8101', '周承策', 2, 'NORMAL', 'ENABLED', '战略发展部组织协调人'),
+    (5, 4, NULL, NULL, '8201', '顾清禾', 2, 'NORMAL', 'ENABLED', '法务合规部审计观察员'),
+    (6, 6, NULL, NULL, '8301', '许慕白', 3, 'ADMIN', 'ENABLED', '平台架构部系统管理员'),
+    (7, 7, NULL, NULL, '8302', '陈泊舟', 2, 'NORMAL', 'ENABLED', '后端研发部组织管理员'),
+    (8, 8, NULL, NULL, '8303', '叶晚晴', 2, 'NORMAL', 'ENABLED', '前端体验部配置管理员'),
+    (9, 9, NULL, NULL, '8304', '唐以宁', 3, 'NORMAL', 'ENABLED', '测试质量部审计观察员'),
+    (10, 10, NULL, NULL, '8305', '沈嘉木', 2, 'NORMAL', 'DISABLED', '运维效能部临时停用账号'),
+    (11, 11, NULL, NULL, '8306', '陆景明', 2, 'NORMAL', 'ENABLED', '数据智能部配置管理员'),
+    (12, 13, NULL, NULL, '8401', '姜书瑶', 2, 'NORMAL', 'ENABLED', '产品规划部运营支持'),
+    (13, 14, NULL, NULL, '8402', '宋亦安', 3, 'NORMAL', 'ENABLED', '交互设计部审计观察员'),
+    (14, 17, NULL, NULL, '8501', '韩星野', 2, 'NORMAL', 'ENABLED', '市场运营部运营支持'),
+    (15, 18, NULL, NULL, '8502', '秦若川', 2, 'NORMAL', 'ENABLED', '客户成功部运营支持'),
+    (16, 20, NULL, NULL, '8601', '程予墨', 2, 'NORMAL', 'ENABLED', '财务管理部审计观察员'),
+    (17, 2, NULL, NULL, '8002', '赵北辰', 3, 'ADMIN', 'ENABLED', '总裁办组织权限管理员'),
+    (18, 3, NULL, NULL, '8102', '何望舒', 2, 'NORMAL', 'ENABLED', '战略发展部项目协同负责人'),
+    (19, 4, NULL, NULL, '8202', '邱明澈', 3, 'NORMAL', 'ENABLED', '法务合规部审计专员'),
+    (20, 6, NULL, NULL, '8307', '梁思衡', 2, 'NORMAL', 'ENABLED', '平台架构部配置管理员'),
+    (21, 7, NULL, NULL, '8308', '罗子衿', 2, 'NORMAL', 'ENABLED', '后端研发部服务治理负责人'),
+    (22, 8, NULL, NULL, '8309', '苏云舟', 2, 'NORMAL', 'ENABLED', '前端体验部页面配置负责人'),
+    (23, 9, NULL, NULL, '8310', '孟青岚', 3, 'NORMAL', 'ENABLED', '测试质量部回归验证负责人'),
+    (24, 10, NULL, NULL, '8311', '白景行', 2, 'NORMAL', 'ENABLED', '运维效能部发布支持'),
+    (25, 11, NULL, NULL, '8312', '夏安歌', 2, 'NORMAL', 'DISABLED', '数据智能部暂停访问账号'),
+    (26, 13, NULL, NULL, '8403', '季星河', 2, 'NORMAL', 'ENABLED', '产品规划部需求运营支持'),
+    (27, 14, NULL, NULL, '8404', '余清越', 3, 'NORMAL', 'ENABLED', '交互设计部体验审阅员'),
+    (28, 17, NULL, NULL, '8503', '冯若谷', 2, 'NORMAL', 'ENABLED', '市场运营部活动配置支持'),
+    (29, 18, NULL, NULL, '8504', '魏南风', 2, 'NORMAL', 'ENABLED', '客户成功部客户资料维护'),
+    (30, 20, NULL, NULL, '8602', '丁晓棠', 3, 'NORMAL', 'ENABLED', '财务管理部报表查看员'),
+    (31, 5, NULL, NULL, '8300', '马砚秋', 3, 'ADMIN', 'ENABLED', '技术中心系统管理员'),
+    (32, 12, NULL, NULL, '8400', '谢长风', 2, 'NORMAL', 'ENABLED', '产品体验中心组织管理员'),
+    (33, 15, NULL, NULL, '8500', '蒋南星', 2, 'NORMAL', 'ENABLED', '商业增长中心运营管理员'),
+    (34, 16, NULL, NULL, '8505', '袁初夏', 2, 'NORMAL', 'DISABLED', '销售拓展部离岗保留账号'),
+    (35, 19, NULL, NULL, '8600', '曹远山', 2, 'NORMAL', 'ENABLED', '财务人事中心组织支持'),
+    (36, 1, NULL, NULL, '8003', '任澜溪', 2, 'NORMAL', 'ENABLED', '总部综合事务支持')
+ON DUPLICATE KEY UPDATE
+    `department_id` = VALUES(`department_id`),
+    `email` = VALUES(`email`),
+    `mobile` = VALUES(`mobile`),
+    `tel` = VALUES(`tel`),
     `name` = VALUES(`name`),
     `ranks` = VALUES(`ranks`),
     `privilege` = VALUES(`privilege`),
@@ -40,14 +84,14 @@ INSERT INTO `system_user` (
 
 INSERT INTO `system_role` (
     `id`, `name`, `privilege`, `status`, `priority`, `remarks`
-) VALUES (
-    1,
-    '超级管理员',
-    'ADMIN',
-    'ENABLED',
-    1,
-    '拥有全部后台管理权限'
-) ON DUPLICATE KEY UPDATE
+) VALUES
+    (1, '超级管理员', 'ADMIN', 'ENABLED', 1, '拥有全部后台管理权限'),
+    (2, '系统管理员', 'ADMIN', 'ENABLED', 20, '负责用户、角色、部门、字典、存储和审计等后台基础配置'),
+    (3, '组织管理员', 'NORMAL', 'ENABLED', 30, '负责用户与部门维护，不管理角色授权'),
+    (4, '配置管理员', 'NORMAL', 'ENABLED', 40, '负责 AI、字典、存储对象和常规配置维护'),
+    (5, '审计观察员', 'NORMAL', 'ENABLED', 50, '只读查看系统、业务内容、运营状态和审计记录'),
+    (6, '运营支持', 'NORMAL', 'ENABLED', 60, '负责运营支持场景下的内容查询、问答和报表查看')
+ON DUPLICATE KEY UPDATE
     `name` = VALUES(`name`),
     `privilege` = VALUES(`privilege`),
     `status` = VALUES(`status`),
@@ -58,80 +102,44 @@ INSERT INTO `system_menu` (
     `id`, `parent_id`, `lft`, `rgt`, `name`, `perms`, `ranks`,
     `visibility`, `display_params`, `url`, `target`, `remarks`
 ) VALUES
-    (
-        5, NULL, 1, 2, '仪表盘', 'user', 100,
-        'VISIBLE', '{"icon":"dashboard"}', '/dashboard', '_self', '后台工作台'
-    ),
-    (
-        1, NULL, 3, 16, '系统管理', 'sys', 90,
-        'VISIBLE', '{"icon":"system"}', '/system', '_self', '系统管理根菜单'
-    ),
-    (
-        2, 1, 4, 5, '用户管理',
-        'sys:user:view,sys:user:edit',
-        90, 'VISIBLE', '{"icon":"users"}', '/system/users', '_self', '后台用户管理'
-    ),
-    (
-        6, 1, 6, 7, '部门管理',
-        'sys:department:view,sys:department:edit',
-        80, 'VISIBLE', '{"icon":"departments"}', '/system/departments', '_self', '后台部门管理'
-    ),
-    (
-        3, 1, 8, 9, '角色管理',
-        'sys:role:view,sys:role:edit',
-        70, 'VISIBLE', '{"icon":"roles"}', '/system/roles', '_self', '后台角色管理'
-    ),
-    (
-        4, 1, 10, 11, '菜单管理',
-        'super',
-        60, 'VISIBLE', '{"icon":"menus"}', '/system/menus', '_self', '后台菜单管理'
-    ),
-    (
-        7, 1, 12, 13, '字典管理',
-        'sys:dict:view,sys:dict:edit',
-        50, 'VISIBLE', '{"icon":"dictionaries"}', '/system/dictionaries', '_self', '后台字典管理'
-    ),
-    (
-        8, 1, 14, 15, '系统日志',
-        'super',
-        40, 'VISIBLE', '{"icon":"logs"}', '/system/logs', '_self', '后台运行日志'
-    ),
-    (
-        20, NULL, 17, 20, '存储管理', 'storage', 80,
-        'VISIBLE', '{"icon":"storage"}', '/storage', '_self', '对象存储管理根菜单'
-    ),
-    (
-        21, 20, 18, 19, '对象管理',
-        'storage:object:view,storage:object:edit,storage:storage:edit',
-        80, 'VISIBLE', '{"icon":"storage-objects"}', '/storage/objects', '_self', '对象存储文件管理'
-    ),
-    (
-        30, NULL, 21, 24, '投稿管理', 'submission', 70,
-        'VISIBLE', '{"icon":"submission"}', '/submission', '_self', '投稿管理根菜单'
-    ),
-    (
-        31, 30, 22, 23, '投稿列表',
-        'submission:submission:view,submission:submission:edit',
-        70, 'VISIBLE', '{"icon":"submissions"}', '/submission/submissions', '_self', '投稿内容管理'
-    ),
-    (
-        40, NULL, 25, 28, '开放接口', 'open', 60,
-        'VISIBLE', '{"icon":"open-api"}', '/open', '_self', '开放接口管理根菜单'
-    ),
-    (
-        41, 40, 26, 27, '客户端管理',
-        'open:client:view,open:client:edit',
-        60, 'VISIBLE', '{"icon":"open-clients"}', '/open/clients', '_self', '开放接口客户端管理'
-    ),
-    (
-        50, NULL, 29, 32, '审计中心', 'audit:view', 50,
-        'VISIBLE', '{"icon":"audit"}', '/audit', '_self', '审计中心根菜单'
-    ),
-    (
-        51, 50, 30, 31, '审计日志',
-        'audit:view',
-        50, 'VISIBLE', '{"icon":"audit-logs"}', '/audit/logs', '_self', '业务审计日志'
-    )
+    (1, NULL, 1, 2, '仪表盘', 'user', 100, 'VISIBLE', '{"icon":"dashboard"}', '/dashboard', '_self', '后台工作台'),
+    (2, NULL, 3, 14, '古籍管理', 'classics', 95, 'VISIBLE', '{"icon":"dictionaries"}', '/classics', '_self', '古籍内容管理根菜单'),
+    (3, 2, 4, 5, '三才图会', 'classics:sancai:view,classics:sancai:edit,classics:sancai:delete', 95, 'VISIBLE', '{"icon":"dictionaries"}', '/classics/sancai', '_self', '三才图会知识库'),
+    (4, 2, 6, 7, '王圻文档', 'classics:wangqi:view,classics:wangqi:edit,classics:wangqi:delete', 90, 'VISIBLE', '{"icon":"dictionaries"}', '/classics/wangqi', '_self', '王圻文档知识库'),
+    (5, 2, 8, 9, '明代习俗', 'classics:mingcustoms:view,classics:mingcustoms:edit,classics:mingcustoms:delete', 85, 'VISIBLE', '{"icon":"dictionaries"}', '/classics/ming-customs', '_self', '明代习俗知识库'),
+    (6, 2, 10, 11, '内容导出', 'classics:content:view,classics:content:edit,classics:content:export', 80, 'VISIBLE', '{"icon":"submissions"}', '/classics/exports', '_self', '古籍内容和视觉资产导出'),
+    (7, 2, 12, 13, '分享管理', 'classics:sharing:view,classics:sharing:edit', 75, 'VISIBLE', '{"icon":"open-api"}', '/classics/shares', '_self', '古籍内容分享管理'),
+    (8, NULL, 15, 24, 'AI 管理', 'ai', 90, 'VISIBLE', '{"icon":"system"}', '/ai', '_self', 'AI 配置和调用治理根菜单'),
+    (9, 8, 16, 17, 'AI 配置', 'ai:config:view,ai:config:edit', 90, 'VISIBLE', '{"icon":"system"}', '/ai/config', '_self', 'AI 服务、模型和能力映射'),
+    (10, 8, 18, 19, '提示词管理', 'ai:prompt:view,ai:prompt:edit', 85, 'VISIBLE', '{"icon":"dictionaries"}', '/ai/prompts', '_self', 'AI 提示词模板和版本'),
+    (11, 8, 20, 21, 'AI 精修', 'ai:refinement:edit', 80, 'VISIBLE', '{"icon":"submissions"}', '/ai/refinement', '_self', 'AI 内容精修能力入口'),
+    (12, 8, 22, 23, '调用记录', 'ai:invocation:view,ai:invocation:edit', 75, 'VISIBLE', '{"icon":"logs"}', '/ai/invocations', '_self', 'AI 调用记录、候选和批量任务'),
+    (13, NULL, 25, 34, '知识管理', 'knowledge', 85, 'VISIBLE', '{"icon":"dictionaries"}', '/knowledge', '_self', '标签、同义词和知识图谱根菜单'),
+    (14, 13, 26, 27, '标签治理', 'knowledge:tag:view,knowledge:tag:edit', 85, 'VISIBLE', '{"icon":"dictionaries"}', '/knowledge/tags', '_self', '跨知识库标签治理'),
+    (15, 13, 28, 29, '同义词词典', 'knowledge:synonym:view,knowledge:synonym:edit', 80, 'VISIBLE', '{"icon":"dictionaries"}', '/knowledge/synonyms', '_self', '同义词维护和检索扩展'),
+    (16, 13, 30, 31, '数据精修', 'knowledge:refinement:view,knowledge:refinement:edit', 75, 'VISIBLE', '{"icon":"submissions"}', '/knowledge/refinement', '_self', '实体和关系精修工作台'),
+    (17, 13, 32, 33, '知识图谱', 'knowledge:graph:view,knowledge:graph:edit', 70, 'VISIBLE', '{"icon":"open-api"}', '/knowledge/graph', '_self', '三才图会知识图谱'),
+    (18, NULL, 35, 42, '搜索问答', 'discovery', 80, 'VISIBLE', '{"icon":"open-api"}', '/discovery', '_self', '跨库搜索和智能问答根菜单'),
+    (19, 18, 36, 37, '跨库搜索', 'discovery:search:view', 80, 'VISIBLE', '{"icon":"open-api"}', '/discovery/search', '_self', '三类古籍跨库搜索'),
+    (20, 18, 38, 39, '智能问答', 'discovery:qa:view,discovery:qa:edit', 75, 'VISIBLE', '{"icon":"open-api"}', '/discovery/qa', '_self', '跨知识库智能问答'),
+    (21, 18, 40, 41, '问答调试', 'discovery:debug:view', 70, 'VISIBLE', '{"icon":"logs"}', '/discovery/debug', '_self', '问答上下文调试'),
+    (22, NULL, 43, 54, '运营运维', 'operations', 70, 'VISIBLE', '{"icon":"dashboard"}', '/operations', '_self', '运营运维根菜单'),
+    (23, 22, 44, 45, '运营看板', 'operations:dashboard:view', 70, 'VISIBLE', '{"icon":"dashboard"}', '/operations/dashboard', '_self', '内容、AI、搜索和问答统计'),
+    (24, 22, 46, 47, '报表记录', 'operations:report:view,operations:report:edit', 65, 'VISIBLE', '{"icon":"submissions"}', '/operations/reports', '_self', '周报月报生成记录'),
+    (25, 22, 48, 49, '任务台账', 'operations:task:view', 60, 'VISIBLE', '{"icon":"logs"}', '/operations/tasks', '_self', '长任务和批量操作运行状态'),
+    (26, 22, 50, 51, '备份恢复', 'operations:backup:view,operations:backup:edit', 55, 'VISIBLE', '{"icon":"storage"}', '/operations/backups', '_self', '备份列表、手动备份和恢复入口'),
+    (27, 22, 52, 53, '清理维护', 'operations:cleanup:view,operations:cleanup:edit', 50, 'VISIBLE', '{"icon":"menus"}', '/operations/cleanup', '_self', '维护清理任务入口'),
+    (28, NULL, 55, 58, '审计中心', 'audit:view', 65, 'VISIBLE', '{"icon":"audit"}', '/audit', '_self', '审计中心根菜单'),
+    (29, 28, 56, 57, '审计日志', 'audit:view', 65, 'VISIBLE', '{"icon":"audit-logs"}', '/audit/logs', '_self', '业务审计日志'),
+    (30, NULL, 59, 76, '系统管理', 'sys', 60, 'VISIBLE', '{"icon":"system"}', '/system', '_self', '系统管理根菜单'),
+    (31, 30, 60, 61, '用户管理', 'sys:user:view,sys:user:edit', 60, 'VISIBLE', '{"icon":"users"}', '/system/users', '_self', '后台用户管理'),
+    (32, 30, 62, 63, '部门管理', 'sys:department:view,sys:department:edit', 55, 'VISIBLE', '{"icon":"departments"}', '/system/departments', '_self', '后台部门管理'),
+    (33, 30, 64, 65, '角色管理', 'sys:role:view,sys:role:edit', 50, 'VISIBLE', '{"icon":"roles"}', '/system/roles', '_self', '后台角色管理'),
+    (34, 30, 66, 67, '菜单管理', 'super', 45, 'VISIBLE', '{"icon":"menus"}', '/system/menus', '_self', '后台菜单管理'),
+    (35, 30, 68, 69, '字典管理', 'sys:dict:view,sys:dict:edit', 40, 'VISIBLE', '{"icon":"dictionaries"}', '/system/dictionaries', '_self', '后台字典管理'),
+    (36, 30, 70, 73, '存储管理', 'storage', 35, 'VISIBLE', '{"icon":"storage"}', '/storage', '_self', '对象存储管理'),
+    (37, 36, 71, 72, '对象管理', 'storage:object:view,storage:object:edit', 35, 'VISIBLE', '{"icon":"storage-objects"}', '/storage/objects', '_self', '对象存储文件管理'),
+    (38, 30, 74, 75, '系统日志', 'super', 30, 'VISIBLE', '{"icon":"logs"}', '/system/logs', '_self', '后台运行日志')
 ON DUPLICATE KEY UPDATE
     `parent_id` = VALUES(`parent_id`),
     `lft` = VALUES(`lft`),
@@ -145,9 +153,45 @@ ON DUPLICATE KEY UPDATE
     `target` = VALUES(`target`),
     `remarks` = VALUES(`remarks`);
 
-INSERT IGNORE INTO `system_user_role` (`user_id`, `role_id`) VALUES
+INSERT INTO `system_user_role` (`user_id`, `role_id`) VALUES
     (1, 1),
-    (2, 1);
+    (2, 1),
+    (3, 2),
+    (4, 3),
+    (5, 5),
+    (6, 2),
+    (7, 3),
+    (8, 4),
+    (9, 5),
+    (10, 4),
+    (11, 4),
+    (12, 6),
+    (13, 5),
+    (14, 6),
+    (15, 6),
+    (16, 5),
+    (17, 2),
+    (18, 3),
+    (19, 5),
+    (20, 4),
+    (21, 3),
+    (22, 4),
+    (23, 5),
+    (24, 4),
+    (25, 5),
+    (26, 6),
+    (27, 5),
+    (28, 6),
+    (29, 6),
+    (30, 5),
+    (31, 2),
+    (32, 3),
+    (33, 6),
+    (34, 6),
+    (35, 3),
+    (36, 6)
+ON DUPLICATE KEY UPDATE
+    `role_id` = VALUES(`role_id`);
 
 INSERT IGNORE INTO `system_role_menu` (`role_id`, `menu_id`) VALUES
     (1, 1),
@@ -158,46 +202,154 @@ INSERT IGNORE INTO `system_role_menu` (`role_id`, `menu_id`) VALUES
     (1, 6),
     (1, 7),
     (1, 8),
+    (1, 9),
+    (1, 10),
+    (1, 11),
+    (1, 12),
+    (1, 13),
+    (1, 14),
+    (1, 15),
+    (1, 16),
+    (1, 17),
+    (1, 18),
+    (1, 19),
     (1, 20),
     (1, 21),
+    (1, 22),
+    (1, 23),
+    (1, 24),
+    (1, 25),
+    (1, 26),
+    (1, 27),
+    (1, 28),
+    (1, 29),
     (1, 30),
     (1, 31),
-    (1, 40),
-    (1, 41),
-    (1, 50),
-    (1, 51);
+    (1, 32),
+    (1, 33),
+    (1, 34),
+    (1, 35),
+    (1, 36),
+    (1, 37),
+    (1, 38),
+    (2, 1),
+    (2, 28),
+    (2, 29),
+    (2, 30),
+    (2, 31),
+    (2, 32),
+    (2, 33),
+    (2, 34),
+    (2, 35),
+    (2, 36),
+    (2, 37),
+    (2, 38),
+    (3, 1),
+    (3, 30),
+    (3, 31),
+    (3, 32),
+    (4, 1),
+    (4, 8),
+    (4, 9),
+    (4, 10),
+    (4, 11),
+    (4, 12),
+    (4, 30),
+    (4, 35),
+    (4, 36),
+    (4, 37),
+    (5, 1),
+    (5, 2),
+    (5, 3),
+    (5, 4),
+    (5, 5),
+    (5, 6),
+    (5, 7),
+    (5, 13),
+    (5, 14),
+    (5, 15),
+    (5, 16),
+    (5, 17),
+    (5, 18),
+    (5, 19),
+    (5, 20),
+    (5, 21),
+    (5, 22),
+    (5, 23),
+    (5, 24),
+    (5, 25),
+    (5, 28),
+    (5, 29),
+    (5, 30),
+    (5, 31),
+    (5, 32),
+    (5, 33),
+    (5, 35),
+    (5, 36),
+    (5, 37),
+    (6, 1),
+    (6, 2),
+    (6, 3),
+    (6, 4),
+    (6, 5),
+    (6, 6),
+    (6, 7),
+    (6, 18),
+    (6, 19),
+    (6, 20),
+    (6, 22),
+    (6, 23),
+    (6, 24),
+    (6, 25)
+;
 
 SET NAMES utf8mb4;
 
--- Initial admin account:
+-- Initial admin accounts:
 --   login name: admin
---   password credential value is a placeholder and must be rotated before production use.
+--   login name: developer
+--   password credential values are placeholders and must be rotated before production use.
 
 INSERT INTO `system_auth_principal_identity` (
     `id`, `principal_type`, `principal_id`, `identity_type`, `identity_value`, `status`
-) VALUES (
-    1,
-    'USER',
-    1,
-    'USER_ACCOUNT',
-    'admin',
-    'ENABLED'
-) ON DUPLICATE KEY UPDATE
-    `principal_type` = VALUES(`principal_type`),
-    `principal_id` = VALUES(`principal_id`),
-    `identity_value` = VALUES(`identity_value`),
-    `status` = VALUES(`status`);
-
-INSERT INTO `system_auth_principal_identity` (
-    `id`, `principal_type`, `principal_id`, `identity_type`, `identity_value`, `status`
-) VALUES (
-    2,
-    'USER',
-    2,
-    'USER_ACCOUNT',
-    'developer',
-    'ENABLED'
-) ON DUPLICATE KEY UPDATE
+) VALUES
+    (1, 'USER', 1, 'USER_ACCOUNT', 'admin', 'ENABLED'),
+    (2, 'USER', 2, 'USER_ACCOUNT', 'developer', 'ENABLED'),
+    (3, 'USER', 3, 'USER_ACCOUNT', 'lin.zhiyuan', 'ENABLED'),
+    (4, 'USER', 4, 'USER_ACCOUNT', 'zhou.chengce', 'ENABLED'),
+    (5, 'USER', 5, 'USER_ACCOUNT', 'gu.qinghe', 'ENABLED'),
+    (6, 'USER', 6, 'USER_ACCOUNT', 'xu.mubai', 'ENABLED'),
+    (7, 'USER', 7, 'USER_ACCOUNT', 'chen.bozhou', 'ENABLED'),
+    (8, 'USER', 8, 'USER_ACCOUNT', 'ye.wanqing', 'ENABLED'),
+    (9, 'USER', 9, 'USER_ACCOUNT', 'tang.yining', 'ENABLED'),
+    (10, 'USER', 10, 'USER_ACCOUNT', 'shen.jiamu', 'DISABLED'),
+    (11, 'USER', 11, 'USER_ACCOUNT', 'lu.jingming', 'ENABLED'),
+    (12, 'USER', 12, 'USER_ACCOUNT', 'jiang.shuyao', 'ENABLED'),
+    (13, 'USER', 13, 'USER_ACCOUNT', 'song.yian', 'ENABLED'),
+    (14, 'USER', 14, 'USER_ACCOUNT', 'han.xingye', 'ENABLED'),
+    (15, 'USER', 15, 'USER_ACCOUNT', 'qin.ruochuan', 'ENABLED'),
+    (16, 'USER', 16, 'USER_ACCOUNT', 'cheng.yumo', 'ENABLED'),
+    (17, 'USER', 17, 'USER_ACCOUNT', 'zhao.beichen', 'ENABLED'),
+    (18, 'USER', 18, 'USER_ACCOUNT', 'he.wangshu', 'ENABLED'),
+    (19, 'USER', 19, 'USER_ACCOUNT', 'qiu.mingche', 'ENABLED'),
+    (20, 'USER', 20, 'USER_ACCOUNT', 'liang.siheng', 'ENABLED'),
+    (21, 'USER', 21, 'USER_ACCOUNT', 'luo.zijin', 'ENABLED'),
+    (22, 'USER', 22, 'USER_ACCOUNT', 'su.yunzhou', 'ENABLED'),
+    (23, 'USER', 23, 'USER_ACCOUNT', 'meng.qinglan', 'ENABLED'),
+    (24, 'USER', 24, 'USER_ACCOUNT', 'bai.jingxing', 'ENABLED'),
+    (25, 'USER', 25, 'USER_ACCOUNT', 'xia.ange', 'DISABLED'),
+    (26, 'USER', 26, 'USER_ACCOUNT', 'ji.xinghe', 'ENABLED'),
+    (27, 'USER', 27, 'USER_ACCOUNT', 'yu.qingyue', 'ENABLED'),
+    (28, 'USER', 28, 'USER_ACCOUNT', 'feng.ruogu', 'ENABLED'),
+    (29, 'USER', 29, 'USER_ACCOUNT', 'wei.nanfeng', 'ENABLED'),
+    (30, 'USER', 30, 'USER_ACCOUNT', 'ding.xiaotang', 'ENABLED'),
+    (31, 'USER', 31, 'USER_ACCOUNT', 'ma.yanqiu', 'ENABLED'),
+    (32, 'USER', 32, 'USER_ACCOUNT', 'xie.changfeng', 'ENABLED'),
+    (33, 'USER', 33, 'USER_ACCOUNT', 'jiang.nanxing', 'ENABLED'),
+    (34, 'USER', 34, 'USER_ACCOUNT', 'yuan.chuxia', 'DISABLED'),
+    (35, 'USER', 35, 'USER_ACCOUNT', 'cao.yuanshan', 'ENABLED'),
+    (36, 'USER', 36, 'USER_ACCOUNT', 'ren.lanxi', 'ENABLED')
+ON DUPLICATE KEY UPDATE
     `principal_type` = VALUES(`principal_type`),
     `principal_id` = VALUES(`principal_id`),
     `identity_value` = VALUES(`identity_value`),
@@ -207,44 +359,47 @@ INSERT INTO `system_auth_principal_credential` (
     `id`, `principal_type`, `principal_id`, `identity_id`,
     `credential_type`, `credential_value`, `status`, `need_change_password`,
     `failed_count`, `failed_limit`
-) VALUES (
-    1,
-    'USER',
-    1,
-    1,
-    'USER_PASSWORD',
-    '{noop}admin',
-    'ACTIVE',
-    1,
-    0,
-    5
-) ON DUPLICATE KEY UPDATE
+) VALUES
+    (1, 'USER', 1, 1, 'USER_PASSWORD', '{noop}admin', 'ACTIVE', 1, 0, 5),
+    (2, 'USER', 2, 2, 'USER_PASSWORD', '{noop}Q1w2e3r$', 'ACTIVE', 0, 0, 5),
+    (3, 'USER', 3, 3, 'USER_PASSWORD', '{noop}Q1w2e3r$', 'ACTIVE', 1, 0, 5),
+    (4, 'USER', 4, 4, 'USER_PASSWORD', '{noop}Q1w2e3r$', 'ACTIVE', 1, 0, 5),
+    (5, 'USER', 5, 5, 'USER_PASSWORD', '{noop}Q1w2e3r$', 'ACTIVE', 1, 0, 5),
+    (6, 'USER', 6, 6, 'USER_PASSWORD', '{noop}Q1w2e3r$', 'ACTIVE', 1, 0, 5),
+    (7, 'USER', 7, 7, 'USER_PASSWORD', '{noop}Q1w2e3r$', 'ACTIVE', 1, 0, 5),
+    (8, 'USER', 8, 8, 'USER_PASSWORD', '{noop}Q1w2e3r$', 'ACTIVE', 1, 0, 5),
+    (9, 'USER', 9, 9, 'USER_PASSWORD', '{noop}Q1w2e3r$', 'ACTIVE', 1, 0, 5),
+    (10, 'USER', 10, 10, 'USER_PASSWORD', '{noop}Q1w2e3r$', 'LOCKED', 1, 0, 5),
+    (11, 'USER', 11, 11, 'USER_PASSWORD', '{noop}Q1w2e3r$', 'ACTIVE', 1, 0, 5),
+    (12, 'USER', 12, 12, 'USER_PASSWORD', '{noop}Q1w2e3r$', 'ACTIVE', 1, 0, 5),
+    (13, 'USER', 13, 13, 'USER_PASSWORD', '{noop}Q1w2e3r$', 'ACTIVE', 1, 0, 5),
+    (14, 'USER', 14, 14, 'USER_PASSWORD', '{noop}Q1w2e3r$', 'ACTIVE', 1, 0, 5),
+    (15, 'USER', 15, 15, 'USER_PASSWORD', '{noop}Q1w2e3r$', 'ACTIVE', 1, 0, 5),
+    (16, 'USER', 16, 16, 'USER_PASSWORD', '{noop}Q1w2e3r$', 'ACTIVE', 1, 0, 5),
+    (17, 'USER', 17, 17, 'USER_PASSWORD', '{noop}Q1w2e3r$', 'ACTIVE', 1, 0, 5),
+    (18, 'USER', 18, 18, 'USER_PASSWORD', '{noop}Q1w2e3r$', 'ACTIVE', 1, 0, 5),
+    (19, 'USER', 19, 19, 'USER_PASSWORD', '{noop}Q1w2e3r$', 'ACTIVE', 1, 0, 5),
+    (20, 'USER', 20, 20, 'USER_PASSWORD', '{noop}Q1w2e3r$', 'ACTIVE', 1, 0, 5),
+    (21, 'USER', 21, 21, 'USER_PASSWORD', '{noop}Q1w2e3r$', 'ACTIVE', 1, 0, 5),
+    (22, 'USER', 22, 22, 'USER_PASSWORD', '{noop}Q1w2e3r$', 'ACTIVE', 1, 0, 5),
+    (23, 'USER', 23, 23, 'USER_PASSWORD', '{noop}Q1w2e3r$', 'ACTIVE', 1, 0, 5),
+    (24, 'USER', 24, 24, 'USER_PASSWORD', '{noop}Q1w2e3r$', 'ACTIVE', 1, 0, 5),
+    (25, 'USER', 25, 25, 'USER_PASSWORD', '{noop}Q1w2e3r$', 'LOCKED', 1, 0, 5),
+    (26, 'USER', 26, 26, 'USER_PASSWORD', '{noop}Q1w2e3r$', 'ACTIVE', 1, 0, 5),
+    (27, 'USER', 27, 27, 'USER_PASSWORD', '{noop}Q1w2e3r$', 'ACTIVE', 1, 0, 5),
+    (28, 'USER', 28, 28, 'USER_PASSWORD', '{noop}Q1w2e3r$', 'ACTIVE', 1, 0, 5),
+    (29, 'USER', 29, 29, 'USER_PASSWORD', '{noop}Q1w2e3r$', 'ACTIVE', 1, 0, 5),
+    (30, 'USER', 30, 30, 'USER_PASSWORD', '{noop}Q1w2e3r$', 'ACTIVE', 1, 0, 5),
+    (31, 'USER', 31, 31, 'USER_PASSWORD', '{noop}Q1w2e3r$', 'ACTIVE', 1, 0, 5),
+    (32, 'USER', 32, 32, 'USER_PASSWORD', '{noop}Q1w2e3r$', 'ACTIVE', 1, 0, 5),
+    (33, 'USER', 33, 33, 'USER_PASSWORD', '{noop}Q1w2e3r$', 'ACTIVE', 1, 0, 5),
+    (34, 'USER', 34, 34, 'USER_PASSWORD', '{noop}Q1w2e3r$', 'LOCKED', 1, 0, 5),
+    (35, 'USER', 35, 35, 'USER_PASSWORD', '{noop}Q1w2e3r$', 'ACTIVE', 1, 0, 5),
+    (36, 'USER', 36, 36, 'USER_PASSWORD', '{noop}Q1w2e3r$', 'ACTIVE', 1, 0, 5)
+ON DUPLICATE KEY UPDATE
     `principal_type` = VALUES(`principal_type`),
     `principal_id` = VALUES(`principal_id`),
-    `credential_value` = VALUES(`credential_value`),
-    `status` = VALUES(`status`),
-    `need_change_password` = VALUES(`need_change_password`),
-    `failed_count` = VALUES(`failed_count`),
-    `failed_limit` = VALUES(`failed_limit`);
-
-INSERT INTO `system_auth_principal_credential` (
-    `id`, `principal_type`, `principal_id`, `identity_id`,
-    `credential_type`, `credential_value`, `status`, `need_change_password`,
-    `failed_count`, `failed_limit`
-) VALUES (
-    2,
-    'USER',
-    2,
-    2,
-    'USER_PASSWORD',
-    '{noop}Q1w2e3r$',
-    'ACTIVE',
-    0,
-    0,
-    5
-) ON DUPLICATE KEY UPDATE
-    `principal_type` = VALUES(`principal_type`),
-    `principal_id` = VALUES(`principal_id`),
+    `identity_id` = VALUES(`identity_id`),
     `credential_value` = VALUES(`credential_value`),
     `status` = VALUES(`status`),
     `need_change_password` = VALUES(`need_change_password`),
@@ -252,5 +407,12 @@ INSERT INTO `system_auth_principal_credential` (
     `failed_limit` = VALUES(`failed_limit`);
 
 SET NAMES utf8mb4;
+
+ALTER TABLE `system_department` AUTO_INCREMENT = 21;
+ALTER TABLE `system_user` AUTO_INCREMENT = 37;
+ALTER TABLE `system_role` AUTO_INCREMENT = 7;
+ALTER TABLE `system_menu` AUTO_INCREMENT = 39;
+ALTER TABLE `system_auth_principal_identity` AUTO_INCREMENT = 37;
+ALTER TABLE `system_auth_principal_credential` AUTO_INCREMENT = 37;
 
 -- Audit has no required seed data.

@@ -1,7 +1,7 @@
 import asyncio
 from collections.abc import AsyncIterator, Callable
 from contextlib import asynccontextmanager
-from typing import Any
+from typing import Any, cast
 
 from playwright.async_api import async_playwright
 
@@ -75,7 +75,7 @@ class BrowserPool:
     async def html_to_pdf(self, html: str) -> bytes:
         async with self.page() as page:
             await page.set_content(html, wait_until="load", timeout=self.page_timeout_ms)
-            return await page.pdf(print_background=True)
+            return cast(bytes, await page.pdf(print_background=True))
 
     def _next_browser(self) -> Any:
         if not self._browsers:

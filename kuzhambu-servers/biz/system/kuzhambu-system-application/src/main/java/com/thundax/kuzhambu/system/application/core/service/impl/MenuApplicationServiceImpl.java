@@ -59,7 +59,7 @@ public class MenuApplicationServiceImpl implements MenuApplicationService {
                 query == null || query.getVisibility() == null
                         ? null
                         : query.getVisibility().value(),
-                query == null ? null : AccessRankCodec.toValue(query.getMaxRank()));
+                maxRankValue(query));
     }
 
     public PageResult<Menu> page(MenuQuery query, PageQuery page) {
@@ -68,7 +68,7 @@ public class MenuApplicationServiceImpl implements MenuApplicationService {
                 query == null || query.getVisibility() == null
                         ? null
                         : query.getVisibility().value(),
-                query == null ? null : AccessRankCodec.toValue(query.getMaxRank()),
+                maxRankValue(query),
                 page.getPageNo(),
                 page.getPageSize());
     }
@@ -140,6 +140,10 @@ public class MenuApplicationServiceImpl implements MenuApplicationService {
 
     private void notifyCacheChanged() {
         cacheChangedListeners.forEach(CacheChangedListener::onMenuCacheChanged);
+    }
+
+    private Integer maxRankValue(MenuQuery query) {
+        return query == null || query.getMaxRank() == null ? null : AccessRankCodec.toValue(query.getMaxRank());
     }
 
     public interface CacheChangedListener {

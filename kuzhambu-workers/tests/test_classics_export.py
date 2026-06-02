@@ -17,7 +17,7 @@ def test_classics_export_renders_csv_with_metadata() -> None:
     assert artifact.content_type == "text/csv; charset=utf-8"
     assert artifact.size_bytes == len(artifact.data)
     assert artifact.sha256.startswith("sha256:")
-    assert artifact.summary["itemCount"] == 2
+    assert artifact.summary.itemCount == 2
     assert "第一条" in artifact.data.decode("utf-8")
 
 
