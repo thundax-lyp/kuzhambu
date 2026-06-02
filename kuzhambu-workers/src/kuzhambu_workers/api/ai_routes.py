@@ -1,4 +1,4 @@
-from collections.abc import Callable
+from collections.abc import AsyncIterator, Callable
 from datetime import datetime, timezone
 from typing import NamedTuple
 
@@ -117,7 +117,7 @@ def invoke_ai_graph(
         )
         return JSONResponse(response.model_dump(mode="json"))
     except Exception as exc:
-        return _failed_response(request, to_error_payload(exc))
+        return _failed_response(request, WorkerErrorPayload.model_validate(to_error_payload(exc)))
 
 
 def stream_ai_graph(
@@ -125,7 +125,7 @@ def stream_ai_graph(
     *,
     registry: GraphRegistry = _REGISTRY,
 ) -> StreamingResponse:
-    async def events():
+    async def events() -> AsyncIterator[str]:
         timestamp = _now()
         yield encode_sse(started_event(request.requestId, request.traceId, timestamp))
         try:
@@ -143,7 +143,7 @@ def stream_ai_graph(
                 )
             )
         except Exception as exc:
-            error = to_error_payload(exc)
+            error = WorkerErrorPayload.model_validate(to_error_payload(exc))
             yield encode_sse(
                 stream_event(
                     StreamEventType.ERROR,
@@ -167,7 +167,7 @@ def _parse_request(body: bytes) -> AiInvokeRequest | JSONResponse:
             "AI worker 请求体不合法。",
             detail={"errors": exc.errors(include_input=False)},
         ).to_payload()
-        return _error_json(error, 400)
+        return _error_json(WorkerErrorPayload.model_validate(error), 400)
 
 
 def _verify(request: Request, body: bytes, parsed: AiInvokeRequest) -> JSONResponse | None:
@@ -182,7 +182,10 @@ def _verify(request: Request, body: bytes, parsed: AiInvokeRequest) -> JSONRespo
             trace_id=parsed.traceId,
         )
     except WorkerError as exc:
-        return _error_json(exc.to_payload(), _status_code(exc.code))
+        return _error_json(
+            WorkerErrorPayload.model_validate(exc.to_payload()),
+            _status_code(exc.code),
+        )
     return None
 
 

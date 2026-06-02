@@ -4,10 +4,9 @@ from hashlib import sha256
 from hmac import compare_digest, new
 from time import time
 
-from kuzhambu_workers.ai.usecase_registry import USECASE_PATHS
 from kuzhambu_workers.core.config import WorkerSettings
-from kuzhambu_workers.core.errors import WorkerError
-from kuzhambu_workers.schemas.common import WorkerErrorType
+from kuzhambu_workers.core.errors import WorkerError, WorkerErrorType
+from kuzhambu_workers.core.service_paths import AI_USECASE_PATHS
 
 SERVICE_HEADER = "x-kuzhambu-service"
 REQUEST_ID_HEADER = "x-kuzhambu-request-id"
@@ -24,7 +23,7 @@ SERVICE_PATHS = {
     "kuzhambu-ai": {
         "/internal/ai/invoke",
         "/internal/ai/stream",
-        *USECASE_PATHS,
+        *AI_USECASE_PATHS,
     },
     "kuzhambu-classics": {
         "/internal/render/classics-export",

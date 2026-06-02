@@ -2,10 +2,9 @@ from hashlib import sha256
 from html import escape
 from pathlib import Path
 
-from kuzhambu_workers.core.errors import WorkerError
+from kuzhambu_workers.core.errors import WorkerError, WorkerErrorType
 from kuzhambu_workers.render.classics_export import RenderedArtifact
-from kuzhambu_workers.schemas.common import WorkerErrorType
-from kuzhambu_workers.schemas.render import RenderOutputFormat, RenderRequest
+from kuzhambu_workers.schemas.render import RenderOutputFormat, RenderRequest, RenderSummary
 
 
 def render_sancai_showcase(request: RenderRequest) -> RenderedArtifact:
@@ -37,14 +36,14 @@ def render_sancai_showcase(request: RenderRequest) -> RenderedArtifact:
         data=html,
         size_bytes=len(html),
         sha256=_digest(html),
-        summary={
-            "itemCount": len(entries),
-            "warnings": [],
-            "metadata": {
+        summary=RenderSummary(
+            itemCount=len(entries),
+            warnings=[],
+            metadata={
                 "catalogCount": len(catalog),
                 "assetCount": len(assets),
             },
-        },
+        ),
     )
 
 

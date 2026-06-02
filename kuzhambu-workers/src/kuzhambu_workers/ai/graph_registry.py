@@ -1,6 +1,6 @@
 from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, cast
 
 from kuzhambu_workers.ai.graphs.basic import build_basic_graph
 from kuzhambu_workers.core.errors import unsupported_capability
@@ -25,4 +25,4 @@ class GraphRegistry:
         if graph is None:
             raise unsupported_capability(request.capability.value)
         state = graph.invoke({"request": request})
-        return state["result"]
+        return cast(dict[str, Any], state["result"])

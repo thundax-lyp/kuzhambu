@@ -3,10 +3,9 @@ from html import escape
 from pathlib import Path
 from typing import Protocol
 
-from kuzhambu_workers.core.errors import WorkerError
+from kuzhambu_workers.core.errors import WorkerError, WorkerErrorType
 from kuzhambu_workers.render.classics_export import RenderedArtifact
-from kuzhambu_workers.schemas.common import WorkerErrorType
-from kuzhambu_workers.schemas.render import RenderOutputFormat, RenderRequest
+from kuzhambu_workers.schemas.render import RenderOutputFormat, RenderRequest, RenderSummary
 
 
 class PdfRenderer(Protocol):
@@ -47,13 +46,13 @@ async def render_operations_report(
         data=data,
         size_bytes=len(data),
         sha256=_digest(data),
-        summary={
-            "itemCount": len(_records(payload)),
-            "warnings": [],
-            "metadata": {
+        summary=RenderSummary(
+            itemCount=len(_records(payload)),
+            warnings=[],
+            metadata={
                 "metricCount": len(_metrics(payload)),
             },
-        },
+        ),
     )
 
 

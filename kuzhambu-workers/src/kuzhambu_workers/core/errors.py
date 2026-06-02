@@ -1,7 +1,22 @@
+from enum import Enum
 from typing import Any
 
 from kuzhambu_workers.core.logging import redact_data
-from kuzhambu_workers.schemas.common import WorkerErrorPayload, WorkerErrorType
+
+
+class WorkerErrorType(str, Enum):
+    WORKER_PROTOCOL_FAILURE = "WORKER_PROTOCOL_FAILURE"
+    WORKER_TIMEOUT = "WORKER_TIMEOUT"
+    WORKER_UNAVAILABLE = "WORKER_UNAVAILABLE"
+    MODEL_TRANSPORT_FAILURE = "MODEL_TRANSPORT_FAILURE"
+    MODEL_SEMANTIC_FAILURE = "MODEL_SEMANTIC_FAILURE"
+    OUTPUT_FORMAT_FAILURE = "OUTPUT_FORMAT_FAILURE"
+    IMAGE_INPUT_FAILURE = "IMAGE_INPUT_FAILURE"
+    RENDER_INPUT_FAILURE = "RENDER_INPUT_FAILURE"
+    RENDER_TEMPLATE_FAILURE = "RENDER_TEMPLATE_FAILURE"
+    RENDER_OUTPUT_FAILURE = "RENDER_OUTPUT_FAILURE"
+    UNSUPPORTED_CAPABILITY = "UNSUPPORTED_CAPABILITY"
+    INTERNAL_FAILURE = "INTERNAL_FAILURE"
 
 
 class WorkerError(Exception):
@@ -21,14 +36,14 @@ class WorkerError(Exception):
         self.retryable = retryable
         self.detail = detail or {}
 
-    def to_payload(self) -> WorkerErrorPayload:
-        return WorkerErrorPayload(
-            type=self.error_type,
-            code=self.code,
-            message=self.message,
-            retryable=self.retryable,
-            detail=redact_data(self.detail),
-        )
+    def to_payload(self) -> dict[str, Any]:
+        return {
+            "type": self.error_type,
+            "code": self.code,
+            "message": self.message,
+            "retryable": self.retryable,
+            "detail": redact_data(self.detail),
+        }
 
 
 def protocol_failure(code: str, message: str, detail: dict[str, Any] | None = None) -> WorkerError:
@@ -59,7 +74,7 @@ def internal_failure(error: Exception) -> WorkerError:
     )
 
 
-def to_error_payload(error: Exception) -> WorkerErrorPayload:
+def to_error_payload(error: Exception) -> dict[str, Any]:
     if isinstance(error, WorkerError):
         return error.to_payload()
     return internal_failure(error).to_payload()

@@ -65,11 +65,11 @@ async def test_browser_pool_releases_context_on_exception() -> None:
 
 
 def test_browser_pool_rejects_invalid_limits() -> None:
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="pool_size must be positive"):
         BrowserPool(pool_size=0, max_pages=1, page_timeout_ms=1000)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="max_pages must be positive"):
         BrowserPool(pool_size=1, max_pages=0, page_timeout_ms=1000)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="page_timeout_ms must be positive"):
         BrowserPool(pool_size=1, max_pages=1, page_timeout_ms=0)
 
 

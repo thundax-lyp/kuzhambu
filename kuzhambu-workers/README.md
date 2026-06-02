@@ -98,6 +98,8 @@ python3.10 -m venv .venv
 ```sh
 .venv/bin/ruff format --check .
 .venv/bin/ruff check .
+.venv/bin/mypy src
+.venv/bin/lint-imports
 .venv/bin/python -m pytest -p no:capture
 ```
 

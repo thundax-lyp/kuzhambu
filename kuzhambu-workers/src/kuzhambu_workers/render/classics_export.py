@@ -7,9 +7,8 @@ from io import BytesIO, StringIO
 from pathlib import Path
 from zipfile import ZIP_DEFLATED, ZipFile
 
-from kuzhambu_workers.core.errors import WorkerError
-from kuzhambu_workers.schemas.common import WorkerErrorType
-from kuzhambu_workers.schemas.render import RenderOutputFormat, RenderRequest
+from kuzhambu_workers.core.errors import WorkerError, WorkerErrorType
+from kuzhambu_workers.schemas.render import RenderOutputFormat, RenderRequest, RenderSummary
 
 
 @dataclass(frozen=True)
@@ -20,7 +19,7 @@ class RenderedArtifact:
     data: bytes
     size_bytes: int
     sha256: str
-    summary: dict
+    summary: RenderSummary
 
 
 def render_classics_export(request: RenderRequest) -> RenderedArtifact:
@@ -57,7 +56,7 @@ def render_classics_export(request: RenderRequest) -> RenderedArtifact:
         data=data,
         size_bytes=len(data),
         sha256=_digest(data),
-        summary={"itemCount": len(items), "warnings": []},
+        summary=RenderSummary(itemCount=len(items), warnings=[]),
     )
 
 
