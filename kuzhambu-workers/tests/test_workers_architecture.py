@@ -43,38 +43,42 @@ EXPECTED_IMPORT_LINTER_CONTRACTS = {
 }
 
 
-def test_workers_package_groups_are_explicit() -> None:
+def test_WORKERS_PACKAGE_GROUPS_and_WORKERS_FORBID_BUCKET_DIR() -> None:
     package_groups = {
         path.name
         for path in PACKAGE_ROOT.iterdir()
         if path.is_dir() and not path.name.startswith("__")
     }
 
-    assert package_groups == ALLOWED_PACKAGE_GROUPS
-    assert package_groups.isdisjoint(FORBIDDEN_BUCKET_DIRS)
+    assert package_groups == ALLOWED_PACKAGE_GROUPS, "WORKERS_PACKAGE_GROUPS"
+    assert package_groups.isdisjoint(FORBIDDEN_BUCKET_DIRS), "WORKERS_FORBID_BUCKET_DIR"
 
 
-def test_workers_base_dependencies_do_not_include_stateful_infra() -> None:
+def test_WORKERS_DEPENDENCY_NO_DATABASE_REDIS_OR_QUEUE() -> None:
     pyproject = _pyproject()
     dependencies = {
         _dependency_name(dependency) for dependency in pyproject["project"].get("dependencies", [])
     }
 
-    assert dependencies.isdisjoint(FORBIDDEN_BASE_DEPENDENCIES)
+    assert dependencies.isdisjoint(FORBIDDEN_BASE_DEPENDENCIES), (
+        "WORKERS_DEPENDENCY_NO_DATABASE / WORKERS_DEPENDENCY_NO_REDIS / WORKERS_DEPENDENCY_NO_QUEUE"
+    )
 
 
-def test_workers_import_linter_contracts_match_rules() -> None:
+def test_WORKERS_ARCHITECTURE_IMPORT_LINTER_CONTRACTS_match_rules() -> None:
     pyproject = _pyproject()
     contracts = {contract["name"] for contract in pyproject["tool"]["importlinter"]["contracts"]}
 
-    assert contracts == EXPECTED_IMPORT_LINTER_CONTRACTS
+    assert contracts == EXPECTED_IMPORT_LINTER_CONTRACTS, "WORKERS_TEST_ARCHITECTURE_CONTRACT"
 
 
-def test_ai_usecase_paths_are_shared_by_registry_and_security_allowlist() -> None:
+def test_WORKERS_AI_USECASE_SERVICE_BOUNDARY_path_allowlist_is_shared() -> None:
     ai_paths = SERVICE_PATHS["kuzhambu-ai"]
 
-    assert USECASE_PATHS == service_paths.AI_USECASE_PATHS
-    assert set(service_paths.AI_USECASE_PATHS).issubset(ai_paths)
+    assert USECASE_PATHS == service_paths.AI_USECASE_PATHS, "WORKERS_AI_CANONICAL_CAPABILITY"
+    assert set(service_paths.AI_USECASE_PATHS).issubset(ai_paths), (
+        "WORKERS_AI_USECASE_SERVICE_BOUNDARY"
+    )
 
 
 def _pyproject() -> dict:
