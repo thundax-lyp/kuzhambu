@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web Storage 页面`：对齐 Storage 对象列表和删除接口契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-SYSTEM-STORAGE-LOOP.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/storage/storage-object/storage-object-service.ts`、`kuzhambu-apps/admin-web/src/pages/storage/storage-object/storage-object-types.ts`、`kuzhambu-apps/admin-web/src/pages/storage/storage-object/storage-object-page.tsx`、`kuzhambu-apps/admin-web/src/app.test.tsx`、`kuzhambu-apps/admin-web/e2e/storage/storage-object.spec.ts`
-    - 处理动作：将 Storage 列表和删除请求响应字段固定到后端契约
-    - 验收点：删除动作命中 `/storage/object/delete` 且成功后重新请求 `/storage/object/page`
-    - 重要度：9/10
-
 - [ ] `admin-web System service`：对齐 System 页面写操作请求字段
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-SYSTEM-STORAGE-LOOP.md`

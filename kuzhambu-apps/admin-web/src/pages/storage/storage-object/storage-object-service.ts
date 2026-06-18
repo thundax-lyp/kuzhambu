@@ -6,10 +6,15 @@ export interface StoragePageQuery {
     pageNo?: number;
     pageSize?: number;
     contentType?: string | null;
+    ownerId?: string | null;
+    ownerType?: string | null;
     objectStatus?: string | null;
     referenceStatus?: string | null;
+    referenceOwnerId?: string | null;
+    referenceOwnerType?: string | null;
     originalFilename?: string | null;
     remarks?: string | null;
+    sortDirection?: "ASC" | "DESC" | null;
 }
 
 export interface StorageSortCommand {

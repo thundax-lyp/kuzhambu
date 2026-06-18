@@ -1,10 +1,12 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { QueryClientProvider } from "@tanstack/react-query";
+import { App as AntdApp } from "antd";
 import App from "./app";
 import { clearPermissions, hasPermission, replacePermissions } from "./auth/permission-storage";
 import { KuzhambuTable } from "./components/kuzhambu-table";
 import { AuditLogPage } from "./pages/audit/audit-log/audit-log-page";
+import { StorageObjectPage } from "./pages/storage/storage-object/storage-object-page";
 import { DepartmentPage } from "./pages/system/department/department-page";
 import { DictionaryPage } from "./pages/system/dictionary/dictionary-page";
 import { UserPage } from "./pages/system/user/user-page";
@@ -724,6 +726,133 @@ describe("App", () => {
         expect(screen.getAllByText("旧标题").length).toBeGreaterThan(0);
         expect(screen.getAllByText("新标题").length).toBeGreaterThan(0);
         expect(screen.getByText("已变更")).toBeInTheDocument();
+    });
+
+    it("renders storage objects and refreshes after delete", async () => {
+        localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
+        localStorage.setItem(
+            "kuzhambu.admin.permissions",
+            JSON.stringify(["storage:object:view", "storage:object:edit"])
+        );
+        replacePermissions(["storage:object:view", "storage:object:edit"]);
+        let isDeleted = false;
+        let pageRequestCount = 0;
+        vi.spyOn(globalThis, "fetch").mockImplementation((input, init) => {
+            const url = String(input);
+            if (url.endsWith("/storage/object/page")) {
+                pageRequestCount += 1;
+                expect(init).toEqual(
+                    expect.objectContaining({
+                        body: expect.any(String),
+                        headers: expect.objectContaining({
+                            "Access-Token": "test-token"
+                        }),
+                        method: "POST"
+                    })
+                );
+                const body = JSON.parse(String(init?.body)) as Record<string, unknown>;
+                expect(body).toEqual(
+                    expect.objectContaining({
+                        pageNo: 1,
+                        pageSize: 20
+                    })
+                );
+                const records = isDeleted
+                    ? []
+                    : [
+                          {
+                              id: "storage-1",
+                              originalFilename: "sancai.png",
+                              contentType: "image/png",
+                              ownerId: "asset-1",
+                              ownerType: "USER",
+                              size: 1536,
+                              objectStatus: "ACTIVE",
+                              referenceStatus: "UNREFERENCED",
+                              priority: 100,
+                              remarks: "三才图会图片"
+                          }
+                      ];
+
+                return Promise.resolve(
+                    new Response(
+                        JSON.stringify({
+                            code: "COMMON-00000",
+                            message: "success",
+                            data: {
+                                pageNo: 1,
+                                pageSize: 20,
+                                count: records.length,
+                                records
+                            }
+                        }),
+                        {
+                            headers: { "Content-Type": "application/json" },
+                            status: 200
+                        }
+                    )
+                );
+            }
+
+            if (url.endsWith("/storage/object/delete")) {
+                expect(init).toEqual(
+                    expect.objectContaining({
+                        body: JSON.stringify([{ id: "storage-1" }]),
+                        headers: expect.objectContaining({
+                            "Access-Token": "test-token"
+                        }),
+                        method: "POST"
+                    })
+                );
+                isDeleted = true;
+                return Promise.resolve(
+                    new Response(
+                        JSON.stringify({
+                            code: "COMMON-00000",
+                            message: "success",
+                            data: true
+                        }),
+                        {
+                            headers: { "Content-Type": "application/json" },
+                            status: 200
+                        }
+                    )
+                );
+            }
+
+            return Promise.resolve(
+                new Response(JSON.stringify({ code: "COMMON-00004", message: "not found" }), {
+                    headers: { "Content-Type": "application/json" },
+                    status: 404
+                })
+            );
+        });
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <StorageObjectPage />
+                </AntdApp>
+            </QueryClientProvider>
+        );
+
+        expect(await screen.findByRole("heading", { name: "存储对象" })).toBeInTheDocument();
+        expect(await screen.findByText("sancai.png")).toBeInTheDocument();
+        expect(screen.getAllByText("1.50 KB").length).toBeGreaterThan(0);
+        expect(screen.getByText("可用")).toBeInTheDocument();
+        expect(screen.getByText("未引用")).toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole("button", { name: "删除 sancai.png" }));
+
+        expect((await screen.findAllByText("删除存储对象")).length).toBeGreaterThan(0);
+        expect(screen.getByText("确认删除 sancai.png？")).toBeInTheDocument();
+
+        fireEvent.click(
+            within(await screen.findByRole("dialog")).getByRole("button", { name: /删\s*除/ })
+        );
+
+        await waitFor(() => expect(screen.queryByText("sancai.png")).not.toBeInTheDocument());
+        expect(pageRequestCount).toBeGreaterThanOrEqual(2);
     });
 
     it("renders the silver user management layout interactions", async () => {
