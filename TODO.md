@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `System 日志接口`：固定审计和系统日志查询闭环
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-SYSTEM-STORAGE-LOOP.md`
-    - 范围对象：`kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/audit/controller/AuditLogController.java`、`kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/log/controller/SystemLogController.java`、`kuzhambu-apps/admin-web/src/pages/audit/audit-log/audit-log-service.ts`、`kuzhambu-apps/admin-web/src/pages/system/system-log/system-log-service.ts`
-    - 处理动作：固定审计日志和系统日志分页查询请求字段与响应转换
-    - 验收点：接口测试验证分页字段，Playwright 验证筛选提交后表格更新
-    - 重要度：8/10
-
 - [ ] `Storage 删除接口`：补齐 Storage 对象删除接口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-SYSTEM-STORAGE-LOOP.md`
