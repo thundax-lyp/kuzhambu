@@ -15,6 +15,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class StorageUploadStreamHelper {
 
+    private static final long MAX_UPLOAD_SIZE = 20L * 1024L * 1024L;
+
     private final StorageApplicationService storageApplicationService;
     private final StoredObjectStore storedObjectStore;
 
@@ -54,6 +56,9 @@ public class StorageUploadStreamHelper {
             InputStream inputStream, String originalFilename, long size, List<String> allowedSuffixes) {
         if (inputStream == null || size <= 0L) {
             return StorageUploadResult.builder().error("文件不能为空").build();
+        }
+        if (size > MAX_UPLOAD_SIZE) {
+            return StorageUploadResult.builder().error("文件大小超过限制").build();
         }
         String extendName = StringUtils.lowerCase(FilenameUtils.getExtension(originalFilename));
         if (allowedSuffixes != null && !allowedSuffixes.isEmpty() && !allowedSuffixes.contains(extendName)) {

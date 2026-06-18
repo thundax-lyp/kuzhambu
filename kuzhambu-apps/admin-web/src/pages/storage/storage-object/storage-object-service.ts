@@ -1,4 +1,4 @@
-import { postJson } from "@/api/http";
+import { postFormData, postJson } from "@/api/http";
 import type { Page } from "@/types/page";
 import type { StorageRecord } from "./storage-object-types";
 
@@ -6,10 +6,15 @@ export interface StoragePageQuery {
     pageNo?: number;
     pageSize?: number;
     contentType?: string | null;
+    ownerId?: string | null;
+    ownerType?: string | null;
     objectStatus?: string | null;
     referenceStatus?: string | null;
+    referenceOwnerId?: string | null;
+    referenceOwnerType?: string | null;
     originalFilename?: string | null;
     remarks?: string | null;
+    sortDirection?: "ASC" | "DESC" | null;
 }
 
 export interface StorageSortCommand {
@@ -24,9 +29,15 @@ export const pageStorageObjects = (request: StoragePageQuery = {}) => {
 };
 
 export const removeStorageObjects = (ids: string[]) => {
-    return postJson<boolean, Array<{ id: string }>>("/storage/object/delete", {
-        body: ids.map((id) => ({ id }))
+    return postJson<boolean, { ids: string[] }>("/storage/object/delete", {
+        body: { ids }
     });
+};
+
+export const uploadStorageObject = (file: File) => {
+    const body = new FormData();
+    body.append("file", file);
+    return postFormData<StorageRecord>("/storage/object/upload", body);
 };
 
 export const sortStorageObjects = (request: StorageSortCommand) => {

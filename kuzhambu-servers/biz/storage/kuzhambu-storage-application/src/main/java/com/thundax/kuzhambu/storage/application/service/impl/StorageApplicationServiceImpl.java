@@ -15,7 +15,9 @@ import com.thundax.kuzhambu.storage.application.service.command.ChangeStorageRef
 import com.thundax.kuzhambu.storage.application.service.command.CreateStorageCommand;
 import com.thundax.kuzhambu.storage.application.service.command.RemoveStorageReferencesCommand;
 import com.thundax.kuzhambu.storage.application.service.command.StorageSortCommand;
+import com.thundax.kuzhambu.storage.application.service.content.StoredObjectContent;
 import com.thundax.kuzhambu.storage.application.service.query.StorageQuery;
+import com.thundax.kuzhambu.storage.application.store.StoredObjectStore;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObjectReference;
@@ -23,6 +25,7 @@ import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectRefere
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectReferenceRepository;
 import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectRepository;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -41,11 +44,15 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
 
     private final StoredObjectRepository dao;
     private final StoredObjectReferenceRepository businessRepository;
+    private final StoredObjectStore storedObjectStore;
 
     public StorageApplicationServiceImpl(
-            StoredObjectRepository dao, StoredObjectReferenceRepository businessRepository) {
+            StoredObjectRepository dao,
+            StoredObjectReferenceRepository businessRepository,
+            StoredObjectStore storedObjectStore) {
         this.dao = dao;
         this.businessRepository = businessRepository;
+        this.storedObjectStore = storedObjectStore;
     }
 
     @Override
@@ -278,6 +285,22 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
                 && storage.getOwnerType() == query.getOwnerType()
                 && StringUtils.isNotBlank(query.getOwnerId())
                 && StringUtils.equals(storage.getOwnerId(), query.getOwnerId());
+    }
+
+    @Override
+    public StoredObjectContent openReadableContent(StoredObjectId id) {
+        if (id == null) {
+            throw new BizException("Storage object id can not be empty");
+        }
+        StoredObject storage = get(id);
+        if (storage == null) {
+            throw new BizException("Storage object not found: " + StoredObjectIdCodec.toStringValue(id));
+        }
+        try {
+            return new StoredObjectContent(storage, storedObjectStore.open(storage));
+        } catch (IOException exception) {
+            throw new BizException("Storage object content open failed: " + exception.getMessage());
+        }
     }
 
     private void updatePriorityOrThrow(StoredObjectId id, int priority, String message) {

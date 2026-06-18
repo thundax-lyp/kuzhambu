@@ -1,11 +1,10 @@
-import { DeleteOutlined, FileOutlined, ReloadOutlined } from "@ant-design/icons";
+import { DeleteOutlined, FileOutlined, ReloadOutlined, UploadOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Button, Input, Select, Space, Typography } from "antd";
-import { useMemo, useState } from "react";
-import type { Key } from "react";
-import { useCurrentAccessToken } from "@/auth/hooks/use-current-access-token";
+import { useMemo, useRef, useState } from "react";
+import type { ChangeEvent, Key } from "react";
+import { ADMIN_API_BASE_URL } from "@/api/http";
 import { hasPermission } from "@/auth/permission-storage";
-import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
 import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuTag } from "@/components/kuzhambu-tag";
@@ -22,6 +21,7 @@ const DEFAULT_COLUMN_WIDTHS = {
     name: 280,
     contentType: 180,
     owner: 170,
+    size: 120,
     objectStatus: 120,
     referenceStatus: 130,
     remarks: 240
@@ -60,6 +60,9 @@ const ownerTypeLabels: Record<string, string> = {
     MEMBER: "前台会员"
 };
 
+const uploadAccept =
+    ".jpg,.jpeg,.png,.gif,.webp,.pdf,.txt,.md,.csv,.json,.html,.zip,.docx,.xlsx,.pptx";
+
 const normalizeSearch = (value?: string | null) => {
     const normalizedValue = value?.trim();
     return normalizedValue || undefined;
@@ -67,6 +70,38 @@ const normalizeSearch = (value?: string | null) => {
 
 const readFilename = (storage: StorageRecord) => {
     return normalizeSearch(storage.originalFilename) || `对象 ${storage.id}`;
+};
+
+const toAccessUrl = (accessEndpoint?: string | null) => {
+    if (!accessEndpoint) {
+        return null;
+    }
+    if (/^https?:\/\//i.test(accessEndpoint)) {
+        return accessEndpoint;
+    }
+    if (accessEndpoint.startsWith("/api/")) {
+        return `${ADMIN_API_BASE_URL.replace(/\/api$/, "")}${accessEndpoint}`;
+    }
+    return accessEndpoint;
+};
+
+const formatFileSize = (size?: number | null) => {
+    if (typeof size !== "number" || !Number.isFinite(size) || size < 0) {
+        return null;
+    }
+
+    if (size < 1024) {
+        return `${size} B`;
+    }
+
+    const units = ["KB", "MB", "GB", "TB"];
+    let normalizedSize = size / 1024;
+    let unitIndex = 0;
+    while (normalizedSize >= 1024 && unitIndex < units.length - 1) {
+        normalizedSize /= 1024;
+        unitIndex += 1;
+    }
+    return `${normalizedSize.toFixed(normalizedSize >= 10 ? 1 : 2)} ${units[unitIndex]}`;
 };
 
 const readStatusFilterValue = <T extends string>(value: T | "ALL") => {
@@ -117,8 +152,7 @@ export const StorageObjectPage = () => {
     const { message: messageApi } = App.useApp();
     const confirm = useKuzhambuConfirm();
     const queryClient = useQueryClient();
-    const canEditStorage = hasPermission("storage:storage:edit");
-    const accessToken = useCurrentAccessToken();
+    const canEditStorage = hasPermission("storage:object:edit");
     const [query, setQuery] = useState<StoragePageQuery>({
         pageNo: DEFAULT_PAGE_NO,
         pageSize: DEFAULT_PAGE_SIZE
@@ -126,6 +160,7 @@ export const StorageObjectPage = () => {
     const [searchText, setSearchText] = useState("");
     const [filters, setFilters] = useState<StorageObjectFilters>(DEFAULT_STORAGE_OBJECT_FILTERS);
     const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
+    const uploadInputRef = useRef<HTMLInputElement>(null);
     const hasSelectedStorages = selectedRowKeys.length > 0;
     const hasActiveFilters = Boolean(
         filters.contentType.trim() ||
@@ -161,6 +196,17 @@ export const StorageObjectPage = () => {
         }
     });
 
+    const uploadMutation = useMutation({
+        mutationFn: service.uploadStorageObject,
+        onSuccess: async () => {
+            await invalidateStoragePage();
+            messageApi.success("文件已上传");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "上传失败");
+        }
+    });
+
     const sortMutation = useMutation({
         mutationFn: service.sortStorageObjects,
         onSuccess: async () => {
@@ -178,10 +224,15 @@ export const StorageObjectPage = () => {
             const nextQuery = { ...currentQuery, ...values };
             return {
                 contentType: nextQuery.contentType,
+                ownerId: nextQuery.ownerId,
+                ownerType: nextQuery.ownerType,
                 objectStatus: nextQuery.objectStatus,
                 referenceStatus: nextQuery.referenceStatus,
+                referenceOwnerId: nextQuery.referenceOwnerId,
+                referenceOwnerType: nextQuery.referenceOwnerType,
                 originalFilename: nextQuery.originalFilename,
                 remarks: nextQuery.remarks,
+                sortDirection: nextQuery.sortDirection,
                 pageNo: values.pageNo || DEFAULT_PAGE_NO,
                 pageSize: values.pageSize || currentQuery.pageSize || DEFAULT_PAGE_SIZE
             };
@@ -210,6 +261,18 @@ export const StorageObjectPage = () => {
             referenceStatus: undefined,
             remarks: undefined
         });
+    };
+
+    const openUploadPicker = () => {
+        uploadInputRef.current?.click();
+    };
+
+    const uploadSelectedFile = (event: ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        event.target.value = "";
+        if (file) {
+            uploadMutation.mutate(file);
+        }
     };
 
     const openDeleteConfirm = (storage: StorageRecord) => {
@@ -261,8 +324,8 @@ export const StorageObjectPage = () => {
                     <FileOutlined className="storage-object-file-icon" />
                     <div className="storage-object-name-cell">
                         <Text strong>{readFilename(storage)}</Text>
-                        {storage.extendName ? (
-                            <Text type="secondary">{storage.extendName}</Text>
+                        {formatFileSize(storage.size) ? (
+                            <Text type="secondary">{formatFileSize(storage.size)}</Text>
                         ) : null}
                     </div>
                 </Space>
@@ -295,6 +358,13 @@ export const StorageObjectPage = () => {
                     </div>
                 );
             }
+        },
+        {
+            title: "大小",
+            dataIndex: "size",
+            key: "size",
+            width: DEFAULT_COLUMN_WIDTHS.size,
+            render: (size?: number | null) => formatFileSize(size) || null
         },
         {
             title: "状态",
@@ -335,20 +405,19 @@ export const StorageObjectPage = () => {
             key: "actions",
             options: (storage) => {
                 const filename = readFilename(storage);
-                const previewUrl = toAuthenticatedResourceUrl(storage.contentUrl, accessToken);
+                const accessUrl = toAccessUrl(storage.accessEndpoint);
                 return [
-                    {
-                        key: "preview",
-                        text: "预览",
-                        ariaLabel: `预览 ${filename}`,
-                        disabled: !previewUrl,
-                        onClick: () => {
-                            if (previewUrl) {
-                                window.open(previewUrl, "_blank", "noopener,noreferrer");
-                            }
-                        }
-                    },
-                    { type: "divider" },
+                    ...(accessUrl
+                        ? [
+                              {
+                                  key: "content",
+                                  text: "读取",
+                                  ariaLabel: `读取 ${filename}`,
+                                  onClick: () =>
+                                      window.open(accessUrl, "_blank", "noopener,noreferrer")
+                              }
+                          ]
+                        : []),
                     {
                         key: "delete",
                         text: "删除",
@@ -456,13 +525,31 @@ export const StorageObjectPage = () => {
                 onFilterApply={applyFilters}
                 onFilterReset={resetFilters}
                 pageActions={
-                    <Button
-                        icon={<ReloadOutlined />}
-                        loading={storageQuery.isFetching}
-                        onClick={() => storageQuery.refetch()}
-                    >
-                        刷新
-                    </Button>
+                    <Space wrap>
+                        <input
+                            ref={uploadInputRef}
+                            aria-label="选择上传文件"
+                            className="storage-object-upload-input"
+                            type="file"
+                            accept={uploadAccept}
+                            onChange={uploadSelectedFile}
+                        />
+                        <Button
+                            icon={<UploadOutlined />}
+                            disabled={!canEditStorage}
+                            loading={uploadMutation.isPending}
+                            onClick={openUploadPicker}
+                        >
+                            上传
+                        </Button>
+                        <Button
+                            icon={<ReloadOutlined />}
+                            loading={storageQuery.isFetching}
+                            onClick={() => storageQuery.refetch()}
+                        >
+                            刷新
+                        </Button>
+                    </Space>
                 }
                 batchClassName="storage-object-table-toolbar"
                 selectedCount={selectedRowKeys.length}
@@ -483,7 +570,9 @@ export const StorageObjectPage = () => {
                 className="storage-object-table"
                 columns={columns}
                 dataSource={storages}
-                loading={storageQuery.isFetching || sortMutation.isPending}
+                loading={
+                    storageQuery.isFetching || sortMutation.isPending || uploadMutation.isPending
+                }
                 onSort={moveStorage}
                 pagination={{
                     current: currentPageNo,

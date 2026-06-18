@@ -98,6 +98,10 @@ html[data-theme="dark"] .storage-object-page {
     border-color: var(--storage-object-red-line);
 }
 
+.storage-object-upload-input {
+    display: none;
+}
+
 .storage-object-file-icon {
     color: var(--storage-object-blue);
 }

@@ -10,6 +10,7 @@ import com.thundax.kuzhambu.storage.application.service.command.ChangeStorageRef
 import com.thundax.kuzhambu.storage.application.service.command.CreateStorageCommand;
 import com.thundax.kuzhambu.storage.application.service.command.RemoveStorageReferencesCommand;
 import com.thundax.kuzhambu.storage.application.service.command.StorageSortCommand;
+import com.thundax.kuzhambu.storage.application.service.content.StoredObjectContent;
 import com.thundax.kuzhambu.storage.application.service.query.StorageQuery;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObjectReference;
@@ -48,6 +49,9 @@ public interface StorageApplicationService {
 
     @LayerPublicApi(reason = "存储对象下载或预览前校验内容可读性的业务入口")
     boolean existsReadableContent(StorageQuery query);
+
+    @LayerPublicApi(reason = "存储对象内容读取的业务入口")
+    StoredObjectContent openReadableContent(StoredObjectId id);
 
     void sort(StorageSortCommand command);
 }
