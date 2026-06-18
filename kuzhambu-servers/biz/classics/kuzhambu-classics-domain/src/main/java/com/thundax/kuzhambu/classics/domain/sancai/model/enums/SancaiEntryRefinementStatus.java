@@ -4,7 +4,7 @@ import com.thundax.kuzhambu.common.core.exception.DomainException;
 import java.util.Arrays;
 
 public enum SancaiEntryRefinementStatus {
-    TODO,
+    RAW,
     IN_PROGRESS,
     COMPLETE;
 

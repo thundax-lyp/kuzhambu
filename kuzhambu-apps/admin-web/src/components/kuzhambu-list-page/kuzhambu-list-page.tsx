@@ -111,12 +111,15 @@ export const KuzhambuListPage = <RecordType extends object = object>({
     const resolvedFilter = typeof filter === "function" ? filter(filterState) : filter;
     const resolvedSearchPlaceholder =
         searchPlaceholder ?? (subjectName ? `搜索${subjectName}...` : "搜索...");
+    const resolvedSearchAriaLabel = subjectName ? `搜索${subjectName}` : "搜索列表";
     const resolvedAddText = addText ?? (subjectName ? `新增${subjectName}` : undefined);
+    const resolvedTableAriaLabel = tableProps["aria-label"] ?? `${subjectName ?? "数据"}列表`;
     const headerActions = (
         <Space className="kuzhambu-list-page-actions">
             {enableSearch ? (
                 <Input
                     allowClear
+                    aria-label={resolvedSearchAriaLabel}
                     className={[
                         "kuzhambu-list-page-search",
                         actualFilterOpen ? "kuzhambu-list-page-search-hidden" : ""
@@ -200,7 +203,10 @@ export const KuzhambuListPage = <RecordType extends object = object>({
                     ].join(" ")}
                 >
                     <div className="kuzhambu-list-page-table-main">
-                        <KuzhambuTable<RecordType> {...tableProps} />
+                        <KuzhambuTable<RecordType>
+                            aria-label={resolvedTableAriaLabel}
+                            {...tableProps}
+                        />
                     </div>
                     <aside
                         className={["kuzhambu-list-page-table-aside", tableAsideClassName]
@@ -211,7 +217,7 @@ export const KuzhambuListPage = <RecordType extends object = object>({
                     </aside>
                 </div>
             ) : (
-                <KuzhambuTable<RecordType> {...tableProps} />
+                <KuzhambuTable<RecordType> aria-label={resolvedTableAriaLabel} {...tableProps} />
             )}
         </KuzhambuPage>
     );

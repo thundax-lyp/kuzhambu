@@ -12,6 +12,9 @@ import lombok.Setter;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SancaiEntryPageRequest extends PageRequest {
+    @JsonProperty("categoryId")
+    private Long categoryId;
+
     @JsonProperty("volumeId")
     private Long volumeId;
 

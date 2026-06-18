@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { App as AntdApp } from "antd";
@@ -28,6 +28,7 @@ describe("App", () => {
     });
 
     afterEach(() => {
+        cleanup();
         vi.restoreAllMocks();
     });
 
@@ -75,6 +76,18 @@ describe("App", () => {
                                     name: "用户管理",
                                     icon: "users",
                                     url: "/system/users"
+                                },
+                                {
+                                    id: "20",
+                                    name: "古籍管理",
+                                    displayParams: '{"icon":"classics"}'
+                                },
+                                {
+                                    id: "21",
+                                    parentId: "20",
+                                    name: "三才图会",
+                                    displayParams: '{"icon":"sancai"}',
+                                    url: "/classics/sancai"
                                 }
                             ]
                         }),
@@ -155,6 +168,7 @@ describe("App", () => {
         );
         await waitFor(() => expect(hasPermission("sys:user:view")).toBe(true));
         expect(hasPermission("sys:role:edit")).toBe(false);
+        expect(await screen.findByText("古籍管理")).toBeInTheDocument();
     });
 
     it("loads permissions as part of successful login", async () => {
@@ -807,14 +821,14 @@ describe("App", () => {
                     id: "storage-2",
                     originalFilename: "upload.txt",
                     contentType: "text/plain",
-                    ownerId: null,
-                    ownerType: null,
+                    ownerId: "",
+                    ownerType: "",
                     size: 5,
                     accessEndpoint: "/api/storage/object/storage-2/content",
                     objectStatus: "ACTIVE",
                     referenceStatus: "UNREFERENCED",
                     priority: 101,
-                    remarks: null
+                    remarks: ""
                 };
                 records = [uploadedRecord, ...records];
                 return Promise.resolve(
@@ -1133,6 +1147,7 @@ describe("App", () => {
 
         render(
             <KuzhambuTable
+                aria-label="可排序用户表格"
                 rowKey="id"
                 columns={[{ title: "用户", dataIndex: "name", key: "name", width: 160 }]}
                 dataSource={records}

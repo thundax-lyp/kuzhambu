@@ -219,6 +219,8 @@ export interface KuzhambuTableProps<RecordType extends object = object> extends 
     TableProps<RecordType>,
     "columns"
 > {
+    "aria-label"?: string;
+    "aria-labelledby"?: string;
     actionColumnKey?: Key;
     actionColumnMobileWidth?: number;
     actionColumnWidth?: number;

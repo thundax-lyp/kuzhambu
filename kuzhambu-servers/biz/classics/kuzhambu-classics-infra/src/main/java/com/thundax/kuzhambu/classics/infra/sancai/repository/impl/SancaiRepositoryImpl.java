@@ -67,6 +67,36 @@ public class SancaiRepositoryImpl implements SancaiRepository {
     }
 
     @Override
+    public SancaiCategoryId insertCategory(SancaiCategory category) {
+        SancaiCategoryDO dataObject = SancaiPersistenceAssembler.toCategoryObject(category);
+        categoryMapper.insert(dataObject);
+        return SancaiCategoryIdCodec.toDomain(dataObject.getId());
+    }
+
+    @Override
+    public int updateCategory(SancaiCategory category) {
+        SancaiCategoryDO dataObject = SancaiPersistenceAssembler.toCategoryObject(category);
+        return categoryMapper.update(
+                null,
+                new LambdaUpdateWrapper<SancaiCategoryDO>()
+                        .eq(SancaiCategoryDO::getId, dataObject.getId())
+                        .set(SancaiCategoryDO::getTitle, dataObject.getTitle())
+                        .set(SancaiCategoryDO::getCategoryType, dataObject.getCategoryType())
+                        .set(SancaiCategoryDO::getPriority, dataObject.getPriority()));
+    }
+
+    @Override
+    public int countVolumesByCategoryId(SancaiCategoryId categoryId) {
+        return Math.toIntExact(volumeMapper.selectCount(new LambdaQueryWrapper<SancaiVolumeDO>()
+                .eq(SancaiVolumeDO::getCategoryId, SancaiCategoryIdCodec.toValue(categoryId))));
+    }
+
+    @Override
+    public int deleteCategoryById(SancaiCategoryId id) {
+        return categoryMapper.deleteById(SancaiCategoryIdCodec.toValue(id));
+    }
+
+    @Override
     public SancaiVolume getVolumeById(SancaiVolumeId id) {
         return SancaiPersistenceAssembler.toVolumeDomain(volumeMapper.selectById(SancaiVolumeIdCodec.toValue(id)));
     }

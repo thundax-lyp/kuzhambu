@@ -4,8 +4,8 @@ import com.thundax.kuzhambu.common.core.exception.DomainException;
 import java.util.Arrays;
 
 public enum SancaiVolumeType {
-    FORMAL,
-    FRONT_MATTER;
+    MAIN,
+    AUXILIARY;
 
     public String value() {
         return name();

@@ -4,9 +4,10 @@ import com.thundax.kuzhambu.common.core.exception.DomainException;
 import java.util.Arrays;
 
 public enum SancaiEntryTranslationStatus {
-    UNTRANSLATED,
-    TRANSLATING,
-    TRANSLATED;
+    MISSING,
+    PROCESSING,
+    READY,
+    FAILED;
 
     public String value() {
         return name();

@@ -131,6 +131,21 @@ const requestJson = async <TResponse, TBody = unknown>(
     return { response, payload };
 };
 
+const requestGetJson = async <TResponse>(path: string, token: string | null) => {
+    const headers: HeadersInit = {};
+    if (token) {
+        headers[ACCESS_TOKEN_HEADER] = token;
+    }
+
+    const response = await fetch(`${ADMIN_API_BASE_URL}${path}`, {
+        method: "GET",
+        headers
+    });
+
+    const payload = (await response.json()) as ApiResponse<TResponse>;
+    return { response, payload };
+};
+
 const requestFormData = async <TResponse>(path: string, body: FormData, token: string | null) => {
     const headers: HeadersInit = {};
     if (token) {
@@ -168,6 +183,36 @@ export const postJson = async <TResponse, TBody = unknown>(
                     options,
                     refreshedToken.token
                 );
+                response = retryResult.response;
+                payload = retryResult.payload;
+
+                if (response.ok && isSuccessCode(payload.code)) {
+                    return payload.data;
+                }
+            }
+        }
+
+        if (isAuthInvalid(response, code)) {
+            clearAccessToken();
+        }
+        throw new ApiError(code, payload.message || "请求失败");
+    }
+
+    return payload.data;
+};
+
+export const getJson = async <TResponse>(path: string) => {
+    await refreshAccessTokenIfNeeded();
+
+    const token = getAccessToken();
+    let { response, payload } = await requestGetJson<TResponse>(path, token);
+
+    if (!response.ok || !isSuccessCode(payload.code)) {
+        const code = payload.code ?? response.status;
+        if (isAuthInvalid(response, code) && getRefreshToken()) {
+            const refreshedToken = await refreshAccessToken();
+            if (refreshedToken?.token) {
+                const retryResult = await requestGetJson<TResponse>(path, refreshedToken.token);
                 response = retryResult.response;
                 payload = retryResult.payload;
 

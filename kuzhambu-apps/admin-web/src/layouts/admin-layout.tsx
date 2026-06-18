@@ -53,6 +53,8 @@ const menuIconMap: Record<string, ReactNode> = {
     logs: <AuditOutlined />,
     audit: <AuditOutlined />,
     "audit-logs": <AuditOutlined />,
+    classics: <BookOutlined />,
+    sancai: <BookOutlined />,
     storage: <CloudServerOutlined />,
     "storage-objects": <CloudServerOutlined />,
     submission: <FileTextOutlined />,
@@ -74,6 +76,10 @@ const getOpenKeys = (pathname: string) => {
 
     if (pathname.startsWith("/audit/")) {
         openKeys.push("/audit");
+    }
+
+    if (pathname.startsWith("/classics/")) {
+        openKeys.push("/classics");
     }
 
     return openKeys;
@@ -336,6 +342,7 @@ export const AdminLayout = () => {
                     <Space className="topbar-actions">
                         <Button
                             shape="circle"
+                            aria-label={themeName === "dark" ? "切换为浅色主题" : "切换为深色主题"}
                             icon={themeName === "dark" ? <SunOutlined /> : <MoonOutlined />}
                             onClick={toggleTheme}
                         />

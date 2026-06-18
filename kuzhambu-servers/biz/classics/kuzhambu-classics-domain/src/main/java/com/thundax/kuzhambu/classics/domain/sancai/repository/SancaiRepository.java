@@ -20,6 +20,14 @@ public interface SancaiRepository {
 
     int maxCategoryPriority();
 
+    SancaiCategoryId insertCategory(SancaiCategory category);
+
+    int updateCategory(SancaiCategory category);
+
+    int countVolumesByCategoryId(SancaiCategoryId categoryId);
+
+    int deleteCategoryById(SancaiCategoryId id);
+
     SancaiVolume getVolumeById(SancaiVolumeId id);
 
     List<SancaiVolume> listVolumes(SortDirection sortDirection);

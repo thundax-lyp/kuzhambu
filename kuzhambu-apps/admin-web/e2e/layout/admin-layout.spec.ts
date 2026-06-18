@@ -221,6 +221,18 @@ test.describe("admin layout", () => {
                             name: "用户管理",
                             url: "/system/users",
                             displayParams: '{"icon":"users"}'
+                        },
+                        {
+                            id: "20",
+                            name: "古籍管理",
+                            displayParams: '{"icon":"classics"}'
+                        },
+                        {
+                            id: "21",
+                            parentId: "20",
+                            name: "三才图会",
+                            url: "/classics/sancai",
+                            displayParams: '{"icon":"sancai"}'
                         }
                     ]
                 })
@@ -255,6 +267,64 @@ test.describe("admin layout", () => {
                                 label: "启用",
                                 value: "ENABLED",
                                 remarks: "默认状态"
+                            }
+                        ]
+                    }
+                })
+            });
+        });
+        await page.route("**/admin-api/api/classics/sancai/categories/list", async (route) => {
+            await route.fulfill({
+                contentType: "application/json",
+                body: JSON.stringify({
+                    code: "COMMON-00000",
+                    message: "success",
+                    data: [
+                        {
+                            id: 2,
+                            title: "天文",
+                            categoryType: "FORMAL",
+                            priority: 10
+                        }
+                    ]
+                })
+            });
+        });
+        await page.route("**/admin-api/api/classics/sancai/volumes/list", async (route) => {
+            await route.fulfill({
+                contentType: "application/json",
+                body: JSON.stringify({
+                    code: "COMMON-00000",
+                    message: "success",
+                    data: [
+                        {
+                            id: 101,
+                            categoryId: 2,
+                            title: "天文卷一",
+                            volumeType: "FORMAL",
+                            priority: 101
+                        }
+                    ]
+                })
+            });
+        });
+        await page.route("**/admin-api/api/classics/sancai/entries/page", async (route) => {
+            await route.fulfill({
+                contentType: "application/json",
+                body: JSON.stringify({
+                    code: "COMMON-00000",
+                    message: "success",
+                    data: {
+                        pageNo: 1,
+                        pageSize: 20,
+                        totalCount: 1,
+                        records: [
+                            {
+                                id: 3001,
+                                volumeId: 101,
+                                title: "天地",
+                                summary: "天地初分，清浊定位。",
+                                lifecycleStatus: "PUBLISHED"
                             }
                         ]
                     }
@@ -326,6 +396,11 @@ test.describe("admin layout", () => {
         await page.getByRole("menuitem", { name: "用户管理" }).click();
         await expect(page).toHaveURL(/\/system\/users$/);
         await expect(page.getByRole("heading", { name: "用户管理" })).toBeVisible();
+
+        await page.getByRole("menuitem", { name: "古籍管理" }).click();
+        await page.getByRole("menuitem", { name: "三才图会" }).click();
+        await expect(page).toHaveURL(/\/classics\/sancai$/);
+        await expect(page.getByRole("heading", { name: "三才图会" })).toBeVisible();
     });
 
     test("keeps the workspace content within the expanded and collapsed desktop widths", async ({

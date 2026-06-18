@@ -863,6 +863,92 @@ const localRules = {
                 };
             }
         },
+        "interactive-accessible-name": {
+            create(context) {
+                const readJsxName = (nameNode) => {
+                    if (nameNode.type === "JSXIdentifier") {
+                        return nameNode.name;
+                    }
+                    if (nameNode.type === "JSXMemberExpression") {
+                        return `${readJsxName(nameNode.object)}.${readJsxName(nameNode.property)}`;
+                    }
+                    return "";
+                };
+
+                const hasAttribute = (node, attributeName) => {
+                    return node.attributes.some((attribute) => {
+                        return (
+                            attribute.type === "JSXAttribute" &&
+                            attribute.name.type === "JSXIdentifier" &&
+                            attribute.name.name === attributeName
+                        );
+                    });
+                };
+
+                const hasSpreadAttribute = (node) => {
+                    return node.attributes.some(
+                        (attribute) => attribute.type === "JSXSpreadAttribute"
+                    );
+                };
+
+                const hasAccessibleName = (node) => {
+                    return (
+                        hasAttribute(node, "aria-label") || hasAttribute(node, "aria-labelledby")
+                    );
+                };
+
+                const hasVisibleText = (node) => {
+                    if (!node || node.type !== "JSXElement") {
+                        return false;
+                    }
+
+                    return node.children.some((child) => {
+                        if (child.type === "JSXText") {
+                            return child.value.trim().length > 0;
+                        }
+                        if (child.type === "JSXExpressionContainer") {
+                            return child.expression.type !== "JSXEmptyExpression";
+                        }
+                        if (child.type === "JSXElement") {
+                            return hasVisibleText(child);
+                        }
+                        return false;
+                    });
+                };
+
+                const reportMissingAccessibleName = (node, componentName) => {
+                    context.report({
+                        node,
+                        message: `ADMIN_WEB_UI_INTERACTIVE_ACCESSIBLE_NAME: ${componentName} must have a stable accessible name. Use visible text, aria-label, or aria-labelledby.`
+                    });
+                };
+
+                return {
+                    JSXOpeningElement(node) {
+                        const componentName = readJsxName(node.name);
+                        if (componentName === "Button") {
+                            if (!hasAccessibleName(node) && !hasVisibleText(node.parent)) {
+                                reportMissingAccessibleName(node, componentName);
+                            }
+                            return;
+                        }
+
+                        if (componentName === "Input.Search") {
+                            if (!hasAccessibleName(node) && !hasSpreadAttribute(node)) {
+                                reportMissingAccessibleName(node, componentName);
+                            }
+                            return;
+                        }
+
+                        if (componentName === "Table" || componentName === "KuzhambuTable") {
+                            if (!hasAccessibleName(node) && !hasSpreadAttribute(node)) {
+                                reportMissingAccessibleName(node, componentName);
+                            }
+                        }
+                    }
+                };
+            }
+        },
         "service-method-verb-prefix": {
             create(context) {
                 const startsWithServiceVerb = (name) => {
@@ -1586,6 +1672,7 @@ export default tseslint.config(
             "@typescript-eslint/no-explicit-any": "off",
             "local/confirm-hook-only": "error",
             "local/table-action-column-shape": "error",
+            "local/interactive-accessible-name": "error",
             "@typescript-eslint/naming-convention": [
                 "error",
                 {

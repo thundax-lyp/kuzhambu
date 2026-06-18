@@ -1,17 +1,24 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.sancai.assembler;
 
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiCategorySaveCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntrySaveCommand;
 import com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryPageQuery;
+import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiCategory;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
+import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVolume;
+import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiCategoryType;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryImageStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryLifecycleStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryRefinementStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryTranslationStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisibility;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisualAssetStatus;
+import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiCategorySaveRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiEntryPageRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiEntrySaveRequest;
+import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response.SancaiCategoryResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response.SancaiEntryResponse;
+import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response.SancaiVolumeResponse;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import org.apache.commons.lang3.StringUtils;
 
@@ -52,6 +59,14 @@ public final class SancaiInterfaceAssembler {
                 fromRefinement(request.getRefinementStatus()));
     }
 
+    public static SancaiCategorySaveCommand toCommand(SancaiCategorySaveRequest request) {
+        return new SancaiCategorySaveCommand(
+                request.getId(),
+                request.getTitle(),
+                fromCategoryType(request.getCategoryType()),
+                request.getPriority());
+    }
+
     public static SancaiEntryResponse toResponse(SancaiEntry entity) {
         if (entity == null) {
             return SancaiEntryResponse.builder().build();
@@ -76,8 +91,40 @@ public final class SancaiInterfaceAssembler {
                 .build();
     }
 
+    public static SancaiCategoryResponse toResponse(SancaiCategory entity) {
+        if (entity == null) {
+            return SancaiCategoryResponse.builder().build();
+        }
+        return SancaiCategoryResponse.builder()
+                .id(entity.getId() == null ? null : entity.getId().value())
+                .title(entity.getTitle())
+                .categoryType(value(entity.getCategoryType()))
+                .priority(entity.getPriority())
+                .build();
+    }
+
+    public static SancaiVolumeResponse toResponse(SancaiVolume entity) {
+        if (entity == null) {
+            return SancaiVolumeResponse.builder().build();
+        }
+        return SancaiVolumeResponse.builder()
+                .id(entity.getId() == null ? null : entity.getId().value())
+                .categoryId(
+                        entity.getCategoryId() == null
+                                ? null
+                                : entity.getCategoryId().value())
+                .title(entity.getTitle())
+                .volumeType(value(entity.getVolumeType()))
+                .priority(entity.getPriority())
+                .build();
+    }
+
     private static String value(Enum<?> value) {
         return value == null ? null : value.name();
+    }
+
+    private static SancaiCategoryType fromCategoryType(String value) {
+        return StringUtils.isBlank(value) ? null : SancaiCategoryType.from(value);
     }
 
     private static SancaiEntryLifecycleStatus fromLifecycle(String value) {
