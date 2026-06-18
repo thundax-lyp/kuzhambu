@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.classics.application.sancai.service;
 
-import com.thundax.kuzhambu.classics.application.sancai.command.SancaiDraftSaveCommand;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiDraftCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImageSortCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiImageCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiShowcaseCommand;
@@ -19,11 +19,11 @@ import java.util.List;
 
 public interface SancaiAssetApplicationService {
 
-    SancaiEntryDraftId saveDraft(SancaiDraftSaveCommand command);
+    SancaiEntryDraftId updateDraft(SancaiDraftCommand command);
 
     SancaiEntryDraft getLatestDraft(SancaiEntryId entryId);
 
-    SancaiEntryImageId saveImage(SancaiImageCommand command);
+    SancaiEntryImageId updateImage(SancaiImageCommand command);
 
     void sortImages(SancaiEntryImageSortCommand command);
 
@@ -31,7 +31,7 @@ public interface SancaiAssetApplicationService {
 
     List<SancaiEntryImage> listImages(SancaiEntryId entryId);
 
-    SancaiVisualAssetId saveVisualAsset(SancaiVisualAsset visualAsset);
+    SancaiVisualAssetId updateVisualAsset(SancaiVisualAsset visualAsset);
 
     void useVisualAsset(SancaiEntryId entryId, SancaiVisualAssetId visualAssetId);
 

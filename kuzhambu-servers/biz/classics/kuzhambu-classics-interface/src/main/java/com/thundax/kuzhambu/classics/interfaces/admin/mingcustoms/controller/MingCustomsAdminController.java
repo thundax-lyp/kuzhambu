@@ -61,13 +61,23 @@ public class MingCustomsAdminController {
         return MingCustomsInterfaceAssembler.toResponse(service.get(MingCustomsEntryIdCodec.toDomain(id)));
     }
 
-    @Operation(summary = "保存明代习俗", description = "classics:mingcustoms:edit")
+    @Operation(summary = "新增明代习俗", description = "classics:mingcustoms:edit")
     @ApiImplicitParams({})
     @HasPermission("classics:mingcustoms:edit")
-    @SysLogger(value = "保存")
-    @PostMapping("save")
-    public MingCustomsResponse save(@Valid @RequestBody MingCustomsRequest request) {
-        MingCustomsEntryId id = service.save(MingCustomsInterfaceAssembler.toSaveCommand(request));
+    @SysLogger(value = "新增")
+    @PostMapping("add")
+    public MingCustomsResponse add(@Valid @RequestBody MingCustomsRequest request) {
+        MingCustomsEntryId id = service.add(MingCustomsInterfaceAssembler.toCommand(request));
+        return MingCustomsResponse.builder().id(id == null ? null : id.value()).build();
+    }
+
+    @Operation(summary = "更新明代习俗", description = "classics:mingcustoms:edit")
+    @ApiImplicitParams({})
+    @HasPermission("classics:mingcustoms:edit")
+    @SysLogger(value = "更新")
+    @PostMapping("update")
+    public MingCustomsResponse update(@Valid @RequestBody MingCustomsRequest request) {
+        MingCustomsEntryId id = service.update(MingCustomsInterfaceAssembler.toCommand(request));
         return MingCustomsResponse.builder().id(id == null ? null : id.value()).build();
     }
 
@@ -75,7 +85,7 @@ public class MingCustomsAdminController {
     @ApiImplicitParams({})
     @HasPermission("classics:mingcustoms:edit")
     @SysLogger(value = "新增关键词")
-    @PostMapping("keywords")
+    @PostMapping("keywords/add")
     public MingCustomsResponse addKeyword(@Valid @RequestBody MingCustomsRequest request) {
         return MingCustomsResponse.builder()
                 .id(MingCustomsKeywordIdCodec.toValue(
@@ -105,7 +115,7 @@ public class MingCustomsAdminController {
     @HasPermission("classics:mingcustoms:view")
     @SysLogger(value = "关键词云")
     @GetMapping("keyword-cloud")
-    public List<String> keywordCloud(@RequestParam(required = false) String visibility) {
+    public List<String> listKeywordCloud(@RequestParam(required = false) String visibility) {
         return service.listKeywordCloud(visibility);
     }
 

@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.classics.application.wangqi.service.impl;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentSaveCommand;
+import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentCommand;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentVisibilityCommand;
 import com.thundax.kuzhambu.classics.application.wangqi.query.WangqiDocumentPageQuery;
 import com.thundax.kuzhambu.classics.application.wangqi.service.WangqiDocumentApplicationService;
@@ -60,11 +60,16 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public WangqiDocumentId save(WangqiDocumentSaveCommand command) {
+    public WangqiDocumentId add(WangqiDocumentCommand command) {
         WangqiDocument document = toDocument(command);
-        if (document.getId() == null) {
-            return repository.insert(document);
-        }
+        document.setId(null);
+        return repository.insert(document);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public WangqiDocumentId update(WangqiDocumentCommand command) {
+        WangqiDocument document = toDocument(command);
         repository.update(document);
         return document.getId();
     }
@@ -89,7 +94,7 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
         repository.deleteById(id);
     }
 
-    private static WangqiDocument toDocument(WangqiDocumentSaveCommand command) {
+    private static WangqiDocument toDocument(WangqiDocumentCommand command) {
         WangqiDocument document = new WangqiDocument();
         document.setId(WangqiDocumentIdCodec.toDomain(command.getId()));
         document.setTitle(command.getTitle());

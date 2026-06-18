@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class SancaiDraftSaveCommand {
+public class SancaiDraftCommand {
     private Long entryId;
     private Date autosavedAt;
     private String draftJson;

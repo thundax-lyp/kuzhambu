@@ -12,7 +12,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class WangqiDocumentSaveCommand {
+public class WangqiDocumentCommand {
     private Long id;
     private String title;
     private String summary;

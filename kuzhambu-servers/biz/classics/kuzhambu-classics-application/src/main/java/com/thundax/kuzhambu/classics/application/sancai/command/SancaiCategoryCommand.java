@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class SancaiCategorySaveCommand {
+public class SancaiCategoryCommand {
     private Long id;
     private String title;
     private SancaiCategoryType categoryType;

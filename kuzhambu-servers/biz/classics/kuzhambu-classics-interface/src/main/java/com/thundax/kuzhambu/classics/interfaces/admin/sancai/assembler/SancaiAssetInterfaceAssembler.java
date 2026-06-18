@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.sancai.assembler;
 
-import com.thundax.kuzhambu.classics.application.sancai.command.SancaiDraftSaveCommand;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiDraftCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiImageCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiShowcaseCommand;
 import com.thundax.kuzhambu.classics.domain.common.codec.StorageObjectIdCodec;
@@ -17,8 +17,8 @@ import org.apache.commons.lang3.StringUtils;
 public final class SancaiAssetInterfaceAssembler {
     private SancaiAssetInterfaceAssembler() {}
 
-    public static SancaiDraftSaveCommand toDraftCommand(SancaiAssetRequest request) {
-        return new SancaiDraftSaveCommand(request.getEntryId(), null, request.getDraftJson());
+    public static SancaiDraftCommand toDraftCommand(SancaiAssetRequest request) {
+        return new SancaiDraftCommand(request.getEntryId(), null, request.getDraftJson());
     }
 
     public static SancaiImageCommand toImageCommand(SancaiAssetRequest request) {

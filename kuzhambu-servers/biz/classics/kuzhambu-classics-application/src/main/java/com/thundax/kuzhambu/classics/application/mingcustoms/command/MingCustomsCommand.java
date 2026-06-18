@@ -12,7 +12,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class MingCustomsSaveCommand {
+public class MingCustomsCommand {
     private MingCustomsEntryId id;
     private String title;
     private String category;

@@ -1,11 +1,12 @@
 package com.thundax.kuzhambu.classics.application.sancai.service.impl;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.thundax.kuzhambu.classics.application.sancai.command.SancaiCategorySaveCommand;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiCategoryCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiCategorySortCommand;
-import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntrySaveCommand;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntrySortCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryStatusCommand;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVolumeCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVolumeSortCommand;
 import com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryPageQuery;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiApplicationService;
@@ -57,23 +58,40 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public SancaiCategoryId saveCategory(SancaiCategorySaveCommand command) {
-        if (command == null || StringUtils.isBlank(command.getTitle())) {
-            throw invalidCategory("title");
-        }
-        SancaiCategory category = new SancaiCategory();
-        category.setId(SancaiCategoryIdCodec.toDomain(command.getId()));
-        category.setTitle(command.getTitle().trim());
-        category.setCategoryType(command.getCategoryType());
+    public SancaiCategoryId addCategory(SancaiCategoryCommand command) {
+        SancaiCategory category = toNewCategory(command);
         category.setPriority(
                 command.getPriority() == null ? repository.maxCategoryPriority() + 1 : command.getPriority());
-        if (category.getId() == null) {
-            return repository.insertCategory(category);
+        return repository.insertCategory(category);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public SancaiCategoryId updateCategory(SancaiCategoryCommand command) {
+        if (command == null || command.getId() == null) {
+            throw invalidCategory("id");
         }
+        SancaiCategory category = toNewCategory(command);
+        category.setId(SancaiCategoryIdCodec.toDomain(command.getId()));
+        SancaiCategory oldCategory = repository.getCategoryById(category.getId());
+        if (oldCategory == null) {
+            throw categoryNotFound();
+        }
+        category.setPriority(command.getPriority() == null ? oldCategory.getPriority() : command.getPriority());
         if (repository.updateCategory(category) != 1) {
             throw categoryNotFound();
         }
         return category.getId();
+    }
+
+    private static SancaiCategory toNewCategory(SancaiCategoryCommand command) {
+        if (command == null || StringUtils.isBlank(command.getTitle())) {
+            throw invalidCategory("title");
+        }
+        SancaiCategory category = new SancaiCategory();
+        category.setTitle(command.getTitle().trim());
+        category.setCategoryType(command.getCategoryType());
+        return category;
     }
 
     @Override
@@ -93,6 +111,52 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
     @Override
     public List<SancaiVolume> listVolumes(SancaiCategoryId categoryId) {
         return repository.listVolumesByCategoryId(categoryId, SortDirection.ASC);
+    }
+
+    @Override
+    public SancaiVolume getVolume(SancaiVolumeId id) {
+        return id == null ? null : repository.getVolumeById(id);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public SancaiVolumeId addVolume(SancaiVolumeCommand command) {
+        SancaiVolume volume = toNewVolume(command);
+        volume.setPriority(command.getPriority() == null ? repository.maxVolumePriority() + 1 : command.getPriority());
+        return repository.insertVolume(volume);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public SancaiVolumeId updateVolume(SancaiVolumeCommand command) {
+        if (command == null || command.getId() == null) {
+            throw invalidVolume("id");
+        }
+        SancaiVolume volume = toNewVolume(command);
+        volume.setId(SancaiVolumeIdCodec.toDomain(command.getId()));
+        SancaiVolume oldVolume = repository.getVolumeById(volume.getId());
+        if (oldVolume == null) {
+            throw volumeNotFound();
+        }
+        volume.setPriority(command.getPriority() == null ? oldVolume.getPriority() : command.getPriority());
+        if (repository.updateVolume(volume) != 1) {
+            throw volumeNotFound();
+        }
+        return volume.getId();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteVolume(SancaiVolumeId id) {
+        if (id == null) {
+            throw invalidVolume("id");
+        }
+        if (repository.countEntriesByVolumeId(id) > 0) {
+            throw new BizException("三才图会卷下仍有关联条目，不能删除");
+        }
+        if (repository.deleteVolumeById(id) != 1) {
+            throw volumeNotFound();
+        }
     }
 
     @Override
@@ -302,16 +366,25 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public SancaiEntryId saveEntry(SancaiEntrySaveCommand command) {
+    public SancaiEntryId addEntry(SancaiEntryCommand command) {
         if (command == null) {
             return null;
         }
         SancaiEntry entry = toEntry(command);
-        if (entry.getId() == null) {
-            entry.setPriority(repository.maxEntryPriority() + 1);
-            return repository.insertEntry(entry);
+        entry.setPriority(repository.maxEntryPriority() + 1);
+        return repository.insertEntry(entry);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public SancaiEntryId updateEntry(SancaiEntryCommand command) {
+        if (command == null || command.getId() == null) {
+            return null;
         }
-        repository.updateEntry(entry);
+        SancaiEntry entry = toEntry(command);
+        if (repository.updateEntry(entry) != 1) {
+            throw new BizException("三才图会条目不存在");
+        }
         return entry.getId();
     }
 
@@ -407,11 +480,34 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
         return new BizException("无效的三才图会门类参数: " + field);
     }
 
+    private static BizException invalidVolume(String field) {
+        return new BizException("无效的三才图会卷目参数: " + field);
+    }
+
     private static BizException categoryNotFound() {
         return new BizException("三才图会门类不存在");
     }
 
-    private static SancaiEntry toEntry(SancaiEntrySaveCommand command) {
+    private static BizException volumeNotFound() {
+        return new BizException("三才图会卷目不存在");
+    }
+
+    private SancaiVolume toNewVolume(SancaiVolumeCommand command) {
+        if (command == null || command.getCategoryId() == null || StringUtils.isBlank(command.getTitle())) {
+            throw invalidVolume("categoryId/title");
+        }
+        SancaiCategoryId categoryId = SancaiCategoryIdCodec.toDomain(command.getCategoryId());
+        if (repository.getCategoryById(categoryId) == null) {
+            throw categoryNotFound();
+        }
+        SancaiVolume volume = new SancaiVolume();
+        volume.setCategoryId(categoryId);
+        volume.setTitle(command.getTitle().trim());
+        volume.setVolumeType(command.getVolumeType());
+        return volume;
+    }
+
+    private static SancaiEntry toEntry(SancaiEntryCommand command) {
         SancaiEntry entry = new SancaiEntry();
         entry.setId(SancaiEntryIdCodec.toDomain(command.getId()));
         entry.setVolumeId(SancaiVolumeIdCodec.toDomain(command.getVolumeId()));

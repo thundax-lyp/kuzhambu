@@ -117,6 +117,37 @@ public class SancaiRepositoryImpl implements SancaiRepository {
     }
 
     @Override
+    public SancaiVolumeId insertVolume(SancaiVolume volume) {
+        SancaiVolumeDO dataObject = SancaiPersistenceAssembler.toVolumeObject(volume);
+        volumeMapper.insert(dataObject);
+        return SancaiVolumeIdCodec.toDomain(dataObject.getId());
+    }
+
+    @Override
+    public int updateVolume(SancaiVolume volume) {
+        SancaiVolumeDO dataObject = SancaiPersistenceAssembler.toVolumeObject(volume);
+        return volumeMapper.update(
+                null,
+                new LambdaUpdateWrapper<SancaiVolumeDO>()
+                        .eq(SancaiVolumeDO::getId, dataObject.getId())
+                        .set(SancaiVolumeDO::getCategoryId, dataObject.getCategoryId())
+                        .set(SancaiVolumeDO::getTitle, dataObject.getTitle())
+                        .set(SancaiVolumeDO::getVolumeType, dataObject.getVolumeType())
+                        .set(SancaiVolumeDO::getPriority, dataObject.getPriority()));
+    }
+
+    @Override
+    public int countEntriesByVolumeId(SancaiVolumeId volumeId) {
+        return Math.toIntExact(entryMapper.selectCount(new LambdaQueryWrapper<SancaiEntryDO>()
+                .eq(SancaiEntryDO::getVolumeId, SancaiVolumeIdCodec.toValue(volumeId))));
+    }
+
+    @Override
+    public int deleteVolumeById(SancaiVolumeId id) {
+        return volumeMapper.deleteById(SancaiVolumeIdCodec.toValue(id));
+    }
+
+    @Override
     public List<SancaiEntry> listEntries(SortDirection sortDirection) {
         LambdaQueryWrapper<SancaiEntryDO> wrapper = new LambdaQueryWrapper<>();
         wrapper.orderBy(true, sortDirection != SortDirection.DESC, SancaiEntryDO::getPriority);

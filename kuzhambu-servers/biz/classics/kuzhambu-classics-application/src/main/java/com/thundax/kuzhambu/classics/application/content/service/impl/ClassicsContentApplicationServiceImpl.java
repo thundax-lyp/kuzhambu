@@ -111,12 +111,17 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ClassicsContentTagId saveTag(ContentTagCommand command) {
+    public ClassicsContentTagId addTag(ContentTagCommand command) {
         ClassicsContentTag tag = command.toEntity();
-        if (tag.getId() == null) {
-            tag.setPriority(repository.maxTagPriority() + 1);
-            return repository.insertTag(tag);
-        }
+        tag.setId(null);
+        tag.setPriority(repository.maxTagPriority() + 1);
+        return repository.insertTag(tag);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ClassicsContentTagId updateTag(ContentTagCommand command) {
+        ClassicsContentTag tag = command.toEntity();
         repository.updateTag(tag);
         return tag.getId();
     }
@@ -134,12 +139,17 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ClassicsContentQaPairId saveQaPair(ContentQaPairCommand command) {
+    public ClassicsContentQaPairId addQaPair(ContentQaPairCommand command) {
         ClassicsContentQaPair qaPair = command.toEntity();
-        if (qaPair.getId() == null) {
-            qaPair.setPriority(repository.maxQaPairPriority() + 1);
-            return repository.insertQaPair(qaPair);
-        }
+        qaPair.setId(null);
+        qaPair.setPriority(repository.maxQaPairPriority() + 1);
+        return repository.insertQaPair(qaPair);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ClassicsContentQaPairId updateQaPair(ContentQaPairCommand command) {
+        ClassicsContentQaPair qaPair = command.toEntity();
         repository.updateQaPair(qaPair);
         return qaPair.getId();
     }

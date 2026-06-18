@@ -38,13 +38,13 @@ public class SancaiAssetAdminController {
         this.service = service;
     }
 
-    @Operation(summary = "保存三才图会草稿", description = "classics:sancai:edit")
+    @Operation(summary = "更新三才图会草稿", description = "classics:sancai:edit")
     @ApiImplicitParams({})
     @HasPermission("classics:sancai:edit")
-    @SysLogger(value = "保存草稿")
-    @PostMapping("drafts/save")
-    public SancaiAssetResponse saveDraft(@Valid @RequestBody SancaiAssetRequest request) {
-        SancaiEntryDraftId id = service.saveDraft(SancaiAssetInterfaceAssembler.toDraftCommand(request));
+    @SysLogger(value = "更新草稿")
+    @PostMapping("drafts/update")
+    public SancaiAssetResponse updateDraft(@Valid @RequestBody SancaiAssetRequest request) {
+        SancaiEntryDraftId id = service.updateDraft(SancaiAssetInterfaceAssembler.toDraftCommand(request));
         return SancaiAssetResponse.builder().id(id == null ? null : id.value()).build();
     }
 
@@ -58,13 +58,13 @@ public class SancaiAssetAdminController {
                 service.getLatestDraft(SancaiEntryIdCodec.toDomain(entryId)));
     }
 
-    @Operation(summary = "保存三才图会图片", description = "classics:sancai:edit")
+    @Operation(summary = "更新三才图会图片", description = "classics:sancai:edit")
     @ApiImplicitParams({})
     @HasPermission("classics:sancai:edit")
-    @SysLogger(value = "保存图片")
-    @PostMapping("images/save")
-    public SancaiAssetResponse saveImage(@Valid @RequestBody SancaiAssetRequest request) {
-        SancaiEntryImageId id = service.saveImage(SancaiAssetInterfaceAssembler.toImageCommand(request));
+    @SysLogger(value = "更新图片")
+    @PostMapping("images/update")
+    public SancaiAssetResponse updateImage(@Valid @RequestBody SancaiAssetRequest request) {
+        SancaiEntryImageId id = service.updateImage(SancaiAssetInterfaceAssembler.toImageCommand(request));
         return SancaiAssetResponse.builder().id(id == null ? null : id.value()).build();
     }
 
