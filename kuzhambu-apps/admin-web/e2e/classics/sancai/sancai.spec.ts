@@ -124,7 +124,7 @@ test.describe("classics sancai page", () => {
                     data: {
                         pageNo: body.pageNo ?? 1,
                         pageSize: body.pageSize ?? 20,
-                        totalCount: 1,
+                        totalCount: 45,
                         records: [
                             {
                                 id: 3001,
@@ -139,17 +139,25 @@ test.describe("classics sancai page", () => {
             });
         });
 
+        await page.setViewportSize({ width: 1280, height: 800 });
         await page.goto("/classics/sancai");
 
         await expect(page.getByRole("heading", { name: "三才图会" })).toBeVisible();
+        await expect(page.getByRole("table", { name: "三才图会条目表格" })).toBeVisible();
+        await expect(page.getByRole("columnheader", { name: "条目" })).toBeVisible();
+        await expect(page.getByRole("columnheader", { name: "卷" })).toBeVisible();
+        await expect(page.getByRole("columnheader", { name: "状态" })).toBeVisible();
+        await expect(page.getByRole("columnheader", { name: "摘要" })).toBeVisible();
+        await expect(page.getByRole("columnheader", { name: "操作" })).toBeVisible();
+        await expect(page.getByRole("button", { name: /查看/ })).toBeVisible();
         const categoryList = page.getByLabel("三才图会门类");
-        await expect(categoryList.getByRole("button", { name: /天文/ })).toBeVisible();
+        await expect(categoryList.getByRole("button", { name: "选择门类 天文" })).toBeVisible();
         expect(entryRequests.at(-1)).toEqual({
             pageNo: 1,
             pageSize: 20
         });
 
-        await categoryList.getByRole("button", { name: /天文/ }).click();
+        await categoryList.getByRole("button", { name: "选择门类 天文" }).click();
         await expect
             .poll(() => volumeRequests.at(-1))
             .toEqual({
@@ -163,7 +171,7 @@ test.describe("classics sancai page", () => {
                 pageSize: 20
             });
 
-        await page.getByRole("button", { name: /天文卷一/ }).click();
+        await page.getByRole("button", { name: "选择卷目 天文卷一" }).click();
         await expect
             .poll(() => entryRequests.at(-1))
             .toEqual({
@@ -173,8 +181,8 @@ test.describe("classics sancai page", () => {
                 pageSize: 20
             });
 
-        await page.getByPlaceholder("搜索标题、原文或摘要").fill("天地");
-        await page.getByRole("combobox").click();
+        await page.getByRole("searchbox", { name: "三才图会关键词" }).fill("天地");
+        await page.getByRole("combobox", { name: "三才图会条目状态" }).click();
         await page.getByTitle("已发布").click();
         await page.getByRole("button", { name: /查\s*询/ }).click();
         await expect
@@ -188,12 +196,29 @@ test.describe("classics sancai page", () => {
                 pageSize: 20
             });
 
-        await page.getByRole("button", { name: /重\s*置/ }).click();
+        await page.getByRole("button", { name: "重置三才图会筛选" }).click();
         await expect
             .poll(() => entryRequests.at(-1))
             .toEqual({
                 pageNo: 1,
                 pageSize: 20
+            });
+
+        await page.locator(".ant-pagination-item-2").click();
+        await expect
+            .poll(() => entryRequests.at(-1))
+            .toEqual({
+                pageNo: 2,
+                pageSize: 20
+            });
+
+        await page.getByRole("combobox", { name: "页码" }).click();
+        await page.getByTitle("50 条/页").click();
+        await expect
+            .poll(() => entryRequests.at(-1))
+            .toEqual({
+                pageNo: 1,
+                pageSize: 50
             });
     });
 });

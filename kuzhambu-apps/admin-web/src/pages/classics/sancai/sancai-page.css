@@ -98,8 +98,7 @@ html[data-theme="dark"] .sancai-page {
 }
 
 .sancai-category-list,
-.sancai-volume-list,
-.sancai-entry-list {
+.sancai-volume-list {
     display: grid;
     min-width: 0;
     gap: 8px;
@@ -143,32 +142,47 @@ html[data-theme="dark"] .sancai-page {
     border-color: var(--sancai-accent-line);
 }
 
-.sancai-entry-row {
+.sancai-entry-table-wrap {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) max-content;
     min-width: 0;
     gap: 12px;
-    padding: 12px;
+}
+
+.sancai-entry-table .ant-table {
+    color: var(--sancai-ink);
     background: var(--sancai-soft);
     border: 1px solid var(--sancai-line);
     border-radius: 8px;
 }
 
-.sancai-entry-row h4.ant-typography {
-    margin: 0 0 4px;
-    color: var(--sancai-ink);
-    font-size: 15px;
+.sancai-entry-table .ant-table-thead > tr > th {
+    color: var(--sancai-copy);
+    font-weight: 700;
+    background: var(--sancai-panel);
+    border-bottom-color: var(--sancai-line);
 }
 
-.sancai-entry-row .ant-typography-secondary {
+.sancai-entry-table .ant-table-tbody > tr > td {
+    border-bottom-color: var(--sancai-line);
+}
+
+.sancai-entry-title-cell {
+    display: grid;
+    min-width: 0;
+    gap: 2px;
+}
+
+.sancai-entry-title-cell .ant-typography,
+.sancai-entry-table .ant-table-cell .ant-typography-secondary {
     display: block;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.sancai-entry-row > span {
-    align-self: start;
+.sancai-entry-status {
+    display: inline-flex;
+    width: fit-content;
     padding: 3px 8px;
     color: var(--sancai-accent);
     font-size: 12px;
