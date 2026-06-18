@@ -1,5 +1,4 @@
 import {
-    ApartmentOutlined,
     DeleteOutlined,
     FilterOutlined,
     PlusOutlined,
@@ -8,9 +7,8 @@ import {
     SearchOutlined
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Button, Input, Select, Space, Splitter, Tree, Typography } from "antd";
-import type { DataNode } from "antd/es/tree";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { App, Button, Input, Select, Space, Splitter, Typography } from "antd";
+import { useCallback, useMemo, useState } from "react";
 import type { Key } from "react";
 import { sm2 } from "sm-crypto";
 import { createLoginForm } from "@/auth/auth-service";
@@ -28,6 +26,7 @@ import type { CurrentUserRecord } from "@/service/current-user-types";
 import type { OptionsRecord } from "@/types/options";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { UserAvatar } from "./components/user-avatar";
+import { ALL_DEPARTMENT_ID, UserDepartmentTree } from "./components/user-department-tree";
 import { UserEdit } from "./components/user-edit";
 import * as service from "./user-service";
 import type { PageQuery, SaveCommand, UserOptionKeys } from "./user-service";
@@ -35,9 +34,6 @@ import type { UserDepartmentNode, UserFormValues, UserRecord } from "./user-type
 import "./user-page.css";
 
 const { Text } = Typography;
-
-const ALL_DEPARTMENT_ID = "all";
-const DEPARTMENT_PANEL_BOTTOM_GAP = 8;
 
 const DEFAULT_COLUMN_WIDTHS = {
     name: 230,
@@ -119,43 +115,6 @@ const canManageUserByRank = (
     return readRankValue(targetUser) < readRankValue(currentUser);
 };
 
-const buildDepartmentTree = (departments: UserDepartmentNode[]): DataNode[] => {
-    const rootDepartment: UserDepartmentNode = {
-        id: ALL_DEPARTMENT_ID,
-        parentId: null,
-        name: "全部部门",
-        shortName: "全部"
-    };
-    const allDepartments = [rootDepartment, ...departments];
-    const childrenByParentId = new Map<string | null | undefined, UserDepartmentNode[]>();
-    allDepartments.forEach((department) => {
-        const parentId =
-            department.parentId || (department.id === ALL_DEPARTMENT_ID ? null : ALL_DEPARTMENT_ID);
-        const children = childrenByParentId.get(parentId) || [];
-        children.push(department);
-        childrenByParentId.set(parentId, children);
-    });
-
-    const toNode = (department: UserDepartmentNode): DataNode => ({
-        key: department.id,
-        title: (
-            <span className="user-department-node">
-                <span>{department.name}</span>
-            </span>
-        ),
-        children: childrenByParentId.get(department.id)?.map(toNode)
-    });
-
-    return (childrenByParentId.get(null) || []).map(toNode);
-};
-
-const collectTreeKeys = (nodes: DataNode[]): Key[] => {
-    return nodes.flatMap((node) => [
-        node.key,
-        ...(node.children ? collectTreeKeys(node.children) : [])
-    ]);
-};
-
 const toEnableQueryValue = (enable: UserFilterStatus) => {
     if (enable === "ENABLED") {
         return true;
@@ -170,7 +129,6 @@ export const UserPage = () => {
     const { message: messageApi } = App.useApp();
     const confirm = useKuzhambuConfirm();
     const queryClient = useQueryClient();
-    const departmentPanelRef = useRef<HTMLDivElement | null>(null);
     const [query, setQuery] = useState<PageQuery>({
         pageNo: DEFAULT_PAGE_NO,
         pageSize: DEFAULT_PAGE_SIZE
@@ -179,6 +137,9 @@ export const UserPage = () => {
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [filters, setFilters] = useState<UserFilters>(DEFAULT_USER_FILTERS);
     const [selectedDepartmentId, setSelectedDepartmentId] = useState(ALL_DEPARTMENT_ID);
+    const [departments, setDepartments] = useState<UserDepartmentNode[]>(EMPTY_DEPARTMENTS);
+    const [departmentTreeFetching, setDepartmentTreeFetching] = useState(false);
+    const [departmentRefreshSignal, setDepartmentRefreshSignal] = useState(0);
     const [activeUser, setActiveUser] = useState<UserRecord | null>(null);
     const [userEditorOpen, setUserEditorOpen] = useState(false);
     const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
@@ -190,11 +151,6 @@ export const UserPage = () => {
     const userQuery = useQuery({
         queryKey: ["user", "page", query],
         queryFn: () => service.page(query),
-        retry: false
-    });
-    const departmentQuery = useQuery({
-        queryKey: ["user", "department", "tree"],
-        queryFn: () => service.listDepartments(),
         retry: false
     });
     const userOptionsQuery = useQuery({
@@ -210,10 +166,6 @@ export const UserPage = () => {
     const pageData = userQuery.data;
     const users = useMemo(() => pageData?.records ?? EMPTY_USERS, [pageData?.records]);
     const totalCount = pageData?.count ?? pageData?.totalCount ?? 0;
-    const departments = useMemo(
-        () => departmentQuery.data ?? EMPTY_DEPARTMENTS,
-        [departmentQuery.data]
-    );
     const userOptions = userOptionsQuery.data ?? EMPTY_USER_OPTIONS;
     const statusLabelByValue = useMemo(() => {
         return new Map(userOptions.statusOptions.map((option) => [option.value, option.label]));
@@ -221,77 +173,6 @@ export const UserPage = () => {
     const rankLabelByValue = useMemo(() => {
         return new Map(userOptions.rankOptions.map((option) => [option.value, option.label]));
     }, [userOptions.rankOptions]);
-    const departmentTreeData = useMemo(() => buildDepartmentTree(departments), [departments]);
-    const departmentTreeKeys = useMemo(
-        () => collectTreeKeys(departmentTreeData),
-        [departmentTreeData]
-    );
-    useEffect(() => {
-        const departmentPanel = departmentPanelRef.current;
-        if (!departmentPanel) {
-            return undefined;
-        }
-
-        let frame = 0;
-        const updateFloatingBounds = () => {
-            frame = 0;
-            const floatingContainer =
-                departmentPanel.closest<HTMLElement>(".user-department-aside") ?? departmentPanel;
-            const tableArea =
-                departmentPanel.closest<HTMLElement>(".user-department-table-area") ??
-                floatingContainer;
-            const topbar = document.querySelector(".topbar")?.getBoundingClientRect();
-            const sidebar = document.querySelector(".sidebar")?.getBoundingClientRect();
-            const stickyTop = Math.ceil((topbar?.bottom ?? 76) + 12);
-            const bottomInset = Math.max(
-                12,
-                Math.round(
-                    window.innerHeight -
-                        (sidebar?.bottom ?? window.innerHeight - 12) +
-                        DEPARTMENT_PANEL_BOTTOM_GAP
-                )
-            );
-
-            floatingContainer.style.setProperty("--user-department-sticky-top", `${stickyTop}px`);
-            floatingContainer.style.setProperty(
-                "--user-department-floating-bottom",
-                `${bottomInset}px`
-            );
-            tableArea.style.setProperty("--user-department-sticky-top", `${stickyTop}px`);
-            tableArea.style.setProperty("--user-department-floating-bottom", `${bottomInset}px`);
-        };
-        const scheduleUpdate = () => {
-            if (frame) {
-                return;
-            }
-            frame = window.requestAnimationFrame(updateFloatingBounds);
-        };
-
-        updateFloatingBounds();
-        window.addEventListener("scroll", scheduleUpdate, { passive: true });
-        window.addEventListener("resize", scheduleUpdate);
-
-        const observer =
-            typeof ResizeObserver === "undefined" ? null : new ResizeObserver(scheduleUpdate);
-        const topbarElement = document.querySelector(".topbar");
-        const sidebarElement = document.querySelector(".sidebar");
-        if (observer && topbarElement) {
-            observer.observe(topbarElement);
-        }
-        if (observer && sidebarElement) {
-            observer.observe(sidebarElement);
-        }
-
-        return () => {
-            if (frame) {
-                window.cancelAnimationFrame(frame);
-            }
-            window.removeEventListener("scroll", scheduleUpdate);
-            window.removeEventListener("resize", scheduleUpdate);
-            observer?.disconnect();
-        };
-    }, [departmentTreeData]);
-
     const invalidatePage = async () => {
         await queryClient.invalidateQueries({ queryKey: ["user", "page"] });
     };
@@ -388,14 +269,14 @@ export const UserPage = () => {
         }
     });
 
-    const updateQuery = (nextQuery: Partial<PageQuery>) => {
+    const updateQuery = useCallback((nextQuery: Partial<PageQuery>) => {
         setSelectedRowKeys([]);
         setQuery((currentQuery) => ({
             ...currentQuery,
             ...nextQuery,
             pageNo: nextQuery.pageNo || DEFAULT_PAGE_NO
         }));
-    };
+    }, []);
 
     const searchUsers = (value: string) => {
         setSearchText(value);
@@ -419,14 +300,24 @@ export const UserPage = () => {
         });
     };
 
-    const selectDepartment = (keys: Key[]) => {
-        const nextDepartmentId = String(keys[0] || ALL_DEPARTMENT_ID);
-        setSelectedDepartmentId(nextDepartmentId);
-        updateQuery({
-            departmentId: nextDepartmentId === ALL_DEPARTMENT_ID ? undefined : nextDepartmentId,
-            pageNo: DEFAULT_PAGE_NO
-        });
-    };
+    const selectDepartment = useCallback(
+        (departmentId: string) => {
+            setSelectedDepartmentId(departmentId);
+            updateQuery({
+                departmentId: departmentId === ALL_DEPARTMENT_ID ? undefined : departmentId,
+                pageNo: DEFAULT_PAGE_NO
+            });
+        },
+        [updateQuery]
+    );
+
+    const updateDepartments = useCallback((nextDepartments: UserDepartmentNode[]) => {
+        setDepartments(nextDepartments);
+    }, []);
+
+    const updateDepartmentTreeFetching = useCallback((isFetching: boolean) => {
+        setDepartmentTreeFetching(isFetching);
+    }, []);
 
     const confirmDeleteUser = (user: UserRecord) => {
         confirm.danger({
@@ -685,10 +576,10 @@ export const UserPage = () => {
             </Button>
             <Button
                 icon={<ReloadOutlined />}
-                loading={userQuery.isFetching || departmentQuery.isFetching}
+                loading={userQuery.isFetching || departmentTreeFetching}
                 onClick={() => {
                     userQuery.refetch();
-                    departmentQuery.refetch();
+                    setDepartmentRefreshSignal((currentSignal) => currentSignal + 1);
                 }}
             >
                 刷新
@@ -731,25 +622,6 @@ export const UserPage = () => {
                 批量删除
             </Button>
         </Space>
-    );
-
-    const departmentPanel = (
-        <div className="user-department-panel" ref={departmentPanelRef}>
-            <div className="user-department-panel-head">
-                <Space size={8}>
-                    <ApartmentOutlined />
-                    <Text strong>部门</Text>
-                </Space>
-            </div>
-            <Tree
-                key={departmentTreeKeys.join(",")}
-                blockNode
-                defaultExpandedKeys={departmentTreeKeys}
-                selectedKeys={[selectedDepartmentId]}
-                treeData={departmentTreeData}
-                onSelect={selectDepartment}
-            />
-        </div>
     );
 
     return (
@@ -816,16 +688,17 @@ export const UserPage = () => {
                     selectedCount={selectedRowKeys.length}
                     actions={batchActions}
                 />
-                <Splitter className="user-department-table-area">
-                    <Splitter.Panel
-                        className="user-department-aside"
-                        defaultSize={280}
-                        min={220}
-                        max={520}
-                    >
-                        {departmentPanel}
+                <Splitter className="user-department-work-area">
+                    <Splitter.Panel defaultSize={280} min={220} max={520}>
+                        <UserDepartmentTree
+                            refreshSignal={departmentRefreshSignal}
+                            selectedDepartmentId={selectedDepartmentId}
+                            onDepartmentsChange={updateDepartments}
+                            onFetchingChange={updateDepartmentTreeFetching}
+                            onSelectDepartment={selectDepartment}
+                        />
                     </Splitter.Panel>
-                    <Splitter.Panel className="user-table-panel">
+                    <Splitter.Panel className="user-work-panel">
                         <KuzhambuTable<UserRecord>
                             ariaLabel="用户列表"
                             rowKey="id"

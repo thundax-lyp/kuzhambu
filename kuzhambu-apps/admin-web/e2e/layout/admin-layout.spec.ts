@@ -45,12 +45,52 @@ const mockUserManagementApis = async (page: Page) => {
                         name: "质量保障部",
                         shortName: "质量",
                         namePath: "技术中心/质量保障部"
+                    },
+                    {
+                        id: "103",
+                        name: "战略发展部",
+                        shortName: "战略",
+                        namePath: "战略发展部"
                     }
                 ]
             })
         });
     });
     await page.route("**/admin-api/api/sys/user/page", async (route) => {
+        const requestBody = route.request().postDataJSON() as { departmentId?: string } | null;
+        const selectedDepartmentId = requestBody?.departmentId;
+        const records =
+            selectedDepartmentId === "103"
+                ? [
+                      {
+                          id: "strategy-1",
+                          loginName: "strategy1",
+                          name: "Strategy User",
+                          email: "strategy1@example.com",
+                          ranks: 1,
+                          enable: true,
+                          department: {
+                              id: "103",
+                              name: "战略发展部",
+                              namePath: "战略发展部"
+                          },
+                          roles: [{ id: "r1", name: "管理员" }]
+                      }
+                  ]
+                : Array.from({ length: 10 }, (_, index) => ({
+                      id: String(index + 1),
+                      loginName: `user${index + 1}`,
+                      name: `User ${index + 1}`,
+                      email: `user${index + 1}@example.com`,
+                      ranks: index + 1,
+                      enable: index % 3 !== 0,
+                      department: {
+                          id: index % 2 ? "101" : "102",
+                          name: index % 2 ? "平台研发部" : "质量保障部",
+                          namePath: index % 2 ? "技术中心/平台研发部" : "技术中心/质量保障部"
+                      },
+                      roles: [{ id: "r1", name: index % 2 ? "管理员" : "观察员" }]
+                  }));
         await route.fulfill({
             contentType: "application/json",
             body: JSON.stringify({
@@ -59,21 +99,8 @@ const mockUserManagementApis = async (page: Page) => {
                 data: {
                     pageNo: 1,
                     pageSize: 20,
-                    totalCount: 18,
-                    records: Array.from({ length: 10 }, (_, index) => ({
-                        id: String(index + 1),
-                        loginName: `user${index + 1}`,
-                        name: `User ${index + 1}`,
-                        email: `user${index + 1}@example.com`,
-                        ranks: index + 1,
-                        enable: index % 3 !== 0,
-                        department: {
-                            id: index % 2 ? "101" : "102",
-                            name: index % 2 ? "平台研发部" : "质量保障部",
-                            namePath: index % 2 ? "技术中心/平台研发部" : "技术中心/质量保障部"
-                        },
-                        roles: [{ id: "r1", name: index % 2 ? "管理员" : "观察员" }]
-                    }))
+                    totalCount: records.length,
+                    records
                 }
             })
         });
@@ -143,8 +170,7 @@ const readUserDepartmentPanelMetrics = async (page: Page) => {
 
         return {
             panel: rect(".user-department-panel"),
-            sidebar: rect(".sidebar"),
-            tablePanel: rect(".user-table-panel"),
+            workPanel: rect(".user-work-panel"),
             topbar: rect(".topbar")
         };
     });
@@ -154,7 +180,7 @@ const readUserDepartmentSplitMetrics = async (page: Page) => {
     return page.evaluate(() => {
         const panel = document.querySelector(".user-department-panel");
         const dragger = document.querySelector(
-            ".user-department-table-area > .ant-splitter-bar .ant-splitter-bar-dragger"
+            ".user-department-work-area > .ant-splitter-bar .ant-splitter-bar-dragger"
         );
         if (!panel || !dragger) {
             throw new Error("user department splitter not found");
@@ -489,7 +515,7 @@ test.describe("admin layout", () => {
         await expectNoPageHorizontalOverflow(page);
     });
 
-    test("keeps the user department tree floating below the topbar", async ({ page }) => {
+    test("renders the user department tree and filters users", async ({ page }) => {
         await mockUserManagementApis(page);
         await page.setViewportSize({ width: 1280, height: 800 });
         await page.goto("/system/users");
@@ -497,21 +523,11 @@ test.describe("admin layout", () => {
         await expect(page.getByRole("heading", { name: "用户管理" })).toBeVisible();
         const initialMetrics = await readUserDepartmentPanelMetrics(page);
         expect(initialMetrics.panel.top).toBeGreaterThan(initialMetrics.topbar.bottom);
-        expect(initialMetrics.panel.height).toBeLessThanOrEqual(
-            initialMetrics.tablePanel.height + 2
-        );
+        expect(initialMetrics.panel.height).toBeGreaterThan(0);
+        expect(initialMetrics.workPanel.height).toBeGreaterThan(0);
 
-        await page.evaluate(() => window.scrollTo(0, 160));
-        await expect
-            .poll(async () => {
-                const metrics = await readUserDepartmentPanelMetrics(page);
-                return {
-                    heightWithinTable: metrics.panel.height <= metrics.tablePanel.height + 2
-                };
-            })
-            .toEqual({
-                heightWithinTable: true
-            });
+        await page.getByText("战略发展部").click();
+        await expect(page.getByText("Strategy User")).toBeVisible();
     });
 
     test("keeps the user department splitter easy to drag", async ({ page }) => {
