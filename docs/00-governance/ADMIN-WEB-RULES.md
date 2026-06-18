@@ -164,6 +164,9 @@
 
 ### UI
 
+- 业务控件必须具备稳定的可访问名称。优先使用可见文本；无稳定可见文本时使用 `aria-label` 或 `aria-labelledby`，确保 Playwright 可以通过 `getByRole(..., { name })` 定位。
+- 不得为了测试覆盖原生控件语义 role。`button`、`input`、`select`、`table` 等原生或 Ant Design 已提供语义的控件保留其默认 role，只补充稳定名称。
+
 #### Page Layout
 
 后台业务页面默认遵循以下信息顺序：
@@ -464,6 +467,7 @@ JPG / PNG
 - Playwright locator 优先级固定为：
 
 ```text
+getByRole(..., { name })
 getByRole
 getByLabel
 getByText
@@ -471,6 +475,7 @@ getByTestId
 CSS Selector
 ```
 
+- Playwright 测试业务控件时优先使用 `getByRole(..., { name })`，控件名称来自稳定可见文本、`aria-label` 或 `aria-labelledby`。
 - Playwright 测试禁止使用 `waitForTimeout`。
 - Playwright 测试禁止使用复杂 CSS selector。
 - E2E 测试之间不得依赖共享状态。
