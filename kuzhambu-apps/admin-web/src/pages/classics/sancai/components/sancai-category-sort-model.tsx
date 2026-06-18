@@ -1,14 +1,14 @@
 import { ArrowDownOutlined, ArrowUpOutlined, MenuOutlined } from "@ant-design/icons";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { App, Button, Empty, Modal } from "antd";
+import { Button, Empty, Modal } from "antd";
 import type { DragEvent } from "react";
 import { useState } from "react";
-import * as service from "../sancai-service";
 import type { SancaiCategoryRecord } from "../sancai-types";
 
 interface SancaiCategorySortModelProps {
     categories: SancaiCategoryRecord[];
+    isSubmitting: boolean;
     onCancel: () => void;
+    onSubmit: (orderedIds: number[]) => void;
 }
 
 const readTitle = (value: { id: number; title?: string | null }, fallback: string) => {
@@ -21,25 +21,12 @@ const readCategoryTypeLabel = (category: SancaiCategoryRecord) => {
 
 export const SancaiCategorySortModel = ({
     categories,
-    onCancel
+    isSubmitting,
+    onCancel,
+    onSubmit
 }: SancaiCategorySortModelProps) => {
-    const { message: messageApi } = App.useApp();
-    const queryClient = useQueryClient();
     const [sortedCategories, setSortedCategories] = useState<SancaiCategoryRecord[]>(() => categories);
     const [draggedCategoryId, setDraggedCategoryId] = useState<number | null>(null);
-
-    const sortMutation = useMutation({
-        mutationFn: service.sortCategories,
-        onSuccess: async () => {
-            await queryClient.invalidateQueries({ queryKey: ["classics", "sancai", "categories"] });
-            setDraggedCategoryId(null);
-            onCancel();
-            messageApi.success("三才图会门类顺序已保存");
-        },
-        onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "门类排序保存失败");
-        }
-    });
 
     const moveInSortForm = (categoryId: number, direction: -1 | 1) => {
         setSortedCategories((currentCategories) => {
@@ -79,10 +66,8 @@ export const SancaiCategorySortModel = ({
     };
 
     const persistSort = () => {
-        sortMutation.mutate({
-            orderedIds: sortedCategories.map((category) => category.id),
-            sortDirection: "ASC"
-        });
+        setDraggedCategoryId(null);
+        onSubmit(sortedCategories.map((category) => category.id));
     };
 
     return (
@@ -91,7 +76,7 @@ export const SancaiCategorySortModel = ({
             open
             okText="保存"
             cancelText="取消"
-            confirmLoading={sortMutation.isPending}
+            confirmLoading={isSubmitting}
             onCancel={onCancel}
             onOk={persistSort}
             okButtonProps={{
@@ -104,7 +89,7 @@ export const SancaiCategorySortModel = ({
             <SancaiCategorySortList
                 categories={sortedCategories}
                 draggedCategoryId={draggedCategoryId}
-                isSubmitting={sortMutation.isPending}
+                isSubmitting={isSubmitting}
                 onDragOver={(event) => event.preventDefault()}
                 onDragStart={setDraggedCategoryId}
                 onDrop={dropInSortForm}

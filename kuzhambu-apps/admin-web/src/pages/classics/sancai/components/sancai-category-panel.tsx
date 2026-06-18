@@ -85,6 +85,17 @@ export const SancaiCategoryPanel = ({
             messageApi.error(error instanceof Error ? error.message : "门类删除失败");
         }
     });
+    const sortMutation = useMutation({
+        mutationFn: categoryService.sort,
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: ["classics", "sancai", "categories"] });
+            closeSort();
+            messageApi.success("三才图会门类顺序已保存");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "门类排序保存失败");
+        }
+    });
 
     const startCreate = () => {
         setEditingCategory(null);
@@ -125,6 +136,13 @@ export const SancaiCategoryPanel = ({
 
     const closeSort = () => {
         setIsSortOpen(false);
+    };
+
+    const submitSort = (orderedIds: number[]) => {
+        sortMutation.mutate({
+            orderedIds,
+            sortDirection: "ASC"
+        });
     };
 
     return (
@@ -169,7 +187,12 @@ export const SancaiCategoryPanel = ({
                 />
             ) : null}
             {isSortOpen ? (
-                <SancaiCategorySortModel categories={categories} onCancel={closeSort} />
+                <SancaiCategorySortModel
+                    categories={categories}
+                    isSubmitting={sortMutation.isPending}
+                    onCancel={closeSort}
+                    onSubmit={submitSort}
+                />
             ) : null}
         </section>
     );
