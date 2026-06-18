@@ -1,4 +1,9 @@
-import type { SancaiCategoryRecord, SancaiEntryRecord, SancaiVolumeRecord } from "../sancai-types";
+import type {
+    SancaiCategoryRecord,
+    SancaiContentRecord,
+    SancaiEntryRecord,
+    SancaiVolumeRecord
+} from "../sancai-types";
 
 export interface SancaiCategoryFormValues {
     categoryType: string;
@@ -17,6 +22,11 @@ export interface SancaiEntryFormValues {
     title: string;
     translationText: string;
     visibility: string;
+}
+
+export interface SancaiContentFormValues {
+    answer: string;
+    question: string;
 }
 
 export const toCategoryFormValues = (category?: SancaiCategoryRecord): SancaiCategoryFormValues => {
@@ -44,5 +54,12 @@ export const toEntryFormValues = (entry?: SancaiEntryRecord): SancaiEntryFormVal
         title: entry?.title || "",
         translationText: entry?.translationText || "",
         visibility: entry?.visibility || "PUBLIC"
+    };
+};
+
+export const toContentFormValues = (content?: SancaiContentRecord): SancaiContentFormValues => {
+    return {
+        answer: content?.answer || "",
+        question: content?.question || ""
     };
 };

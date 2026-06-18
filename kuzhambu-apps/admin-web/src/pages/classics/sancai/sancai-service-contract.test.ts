@@ -449,10 +449,12 @@ describe("sancai service request contracts", () => {
         });
 
         await contentService.sort({
+            entryId: 3001,
             orderedIds: [9001, 9002],
             sortDirection: "ASC"
         });
         expectLastCall("POST", "/classics/sancai/contents/sort", {
+            entryId: 3001,
             orderedIds: [9001, 9002],
             sortDirection: "ASC"
         });

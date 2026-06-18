@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web-sancai-content-panel`：新增 Content Panel/List/Model
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-TREE-PAGE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-content-panel.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-content-list.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-content-model.tsx`
-    - 处理动作：新增 Content Panel 并在 Panel 内执行 Content CRUD
-    - 验收点：未选中 Entry 时不请求 Content，选中 Entry 时按当前 `entryId` 请求
-    - 重要度：7/10
-
 - [ ] `admin-web-sancai-cleanup`：清理旧三才页面结构
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-TREE-PAGE.md`

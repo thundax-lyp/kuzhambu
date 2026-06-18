@@ -10,6 +10,7 @@ export interface SancaiContentCommand {
 }
 
 export interface SancaiContentSortCommand {
+    entryId: number;
     orderedIds: number[];
     sortDirection?: "ASC" | "DESC" | null;
 }

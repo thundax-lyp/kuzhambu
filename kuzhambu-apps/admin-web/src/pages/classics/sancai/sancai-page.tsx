@@ -4,6 +4,7 @@ import { Alert, Button, Select } from "antd";
 import { useMemo, useState } from "react";
 import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import { SancaiCatalogTreePanel } from "./components/sancai-catalog-tree-panel";
+import { SancaiContentPanel } from "./components/sancai-content-panel";
 import { SancaiEntryPanel } from "./components/sancai-entry-panel";
 import { SancaiVolumePanel } from "./components/sancai-volume-panel";
 import * as categoryService from "./services/sancai-category-service";
@@ -95,7 +96,7 @@ export const SancaiPage = () => {
     const [selectedKey, setSelectedKey] = useState<string | null>(null);
     const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
     const [createIntent, setCreateIntent] = useState<{
-        target: "entry" | "volume";
+        target: "content" | "entry" | "volume";
         version: number;
     }>({ target: "volume", version: 0 });
     const [refreshVersion, setRefreshVersion] = useState(0);
@@ -139,12 +140,32 @@ export const SancaiPage = () => {
     const visibleVolumes = selectedCategory
         ? volumes.filter((volume) => volume.categoryId === selectedCategory.id)
         : volumes;
-    const selectedPanel = selectedVolume ? "entry" : "volume";
+    let selectedPanel: "content" | "entry" | "volume" = "volume";
+    if (selectedVolume) {
+        selectedPanel = "entry";
+    }
+    if (selectedEntry) {
+        selectedPanel = "content";
+    }
     const treeExpandedKeys = expandedKeys.length
         ? expandedKeys
         : categories.map((category) => toCategoryKey(category.id));
     const isLoading = isQueryLoading(categoriesQuery, volumesQuery, entriesQuery);
     const hasError = isQueryError(categoriesQuery, volumesQuery, entriesQuery);
+    let addText = "新增卷目";
+    if (selectedPanel === "entry") {
+        addText = "新增条目";
+    }
+    if (selectedPanel === "content") {
+        addText = "新增内容";
+    }
+    let enableAdd = Boolean(selectedCategory);
+    if (selectedPanel === "entry") {
+        enableAdd = Boolean(selectedVolume);
+    }
+    if (selectedPanel === "content") {
+        enableAdd = Boolean(selectedEntry);
+    }
 
     const selectVolume = (volume: SancaiVolumeRecord) => {
         setSelectedKey(toVolumeKey(volume.id));
@@ -203,6 +224,47 @@ export const SancaiPage = () => {
         }));
     };
 
+    let panelContent = (
+        <SancaiVolumePanel
+            key={`volume-${selectedCategory?.id ?? "none"}-${createIntent.version}`}
+            categories={categories}
+            defaultCreateOpen={createIntent.target === "volume" && createIntent.version > 0}
+            volumes={visibleVolumes}
+            isLoading={isLoading}
+            selectedCategory={selectedCategory}
+            selectedVolume={selectedVolume}
+            onSelect={selectVolume}
+        />
+    );
+    if (selectedVolume) {
+        panelContent = (
+            <SancaiEntryPanel
+                key={`entry-${selectedVolume.id}-${createIntent.version}`}
+                categoryId={selectedCategory?.id ?? null}
+                defaultCreateOpen={createIntent.target === "entry" && createIntent.version > 0}
+                isCatalogLoading={isLoading}
+                keyword={appliedKeyword}
+                lifecycleStatus={appliedLifecycleStatus}
+                refreshVersion={refreshVersion}
+                selectedEntryId={selectedEntryIdFromKey}
+                volumeId={selectedVolume.id}
+                volumes={visibleVolumes}
+                onClearEntry={clearEntry}
+                onSelectEntry={selectEntry}
+            />
+        );
+    }
+    if (selectedEntry) {
+        panelContent = (
+            <SancaiContentPanel
+                key={`content-${selectedEntry.id}-${createIntent.version}`}
+                defaultCreateOpen={createIntent.target === "content" && createIntent.version > 0}
+                entry={selectedEntry}
+                refreshVersion={refreshVersion}
+            />
+        );
+    }
+
     const pageContent = (
         <>
             {hasError ? (
@@ -214,38 +276,7 @@ export const SancaiPage = () => {
                     description="请确认后台三才图会接口可用后刷新页面。"
                 />
             ) : null}
-
-            {selectedVolume ? (
-                <SancaiEntryPanel
-                    key={`entry-${selectedVolume.id}-${createIntent.version}`}
-                    categoryId={selectedCategory?.id ?? null}
-                    defaultCreateOpen={
-                        createIntent.target === "entry" && createIntent.version > 0
-                    }
-                    isCatalogLoading={isLoading}
-                    keyword={appliedKeyword}
-                    lifecycleStatus={appliedLifecycleStatus}
-                    refreshVersion={refreshVersion}
-                    selectedEntryId={selectedEntryIdFromKey}
-                    volumeId={selectedVolume.id}
-                    volumes={visibleVolumes}
-                    onClearEntry={clearEntry}
-                    onSelectEntry={selectEntry}
-                />
-            ) : (
-                <SancaiVolumePanel
-                    key={`volume-${selectedCategory?.id ?? "none"}-${createIntent.version}`}
-                    categories={categories}
-                    defaultCreateOpen={
-                        createIntent.target === "volume" && createIntent.version > 0
-                    }
-                    volumes={visibleVolumes}
-                    isLoading={isLoading}
-                    selectedCategory={selectedCategory}
-                    selectedVolume={selectedVolume}
-                    onSelect={selectVolume}
-                />
-            )}
+            {panelContent}
         </>
     );
 
@@ -254,9 +285,9 @@ export const SancaiPage = () => {
             pageClassName="sancai-page"
             title="三才图会"
             description="按门类、卷目和条目组织三才图会后台治理入口。"
-            addText={selectedPanel === "entry" ? "新增条目" : "新增卷目"}
+            addText={addText}
             content={pageContent}
-            enableAdd={Boolean(selectedCategory)}
+            enableAdd={enableAdd}
             enableFilter={selectedPanel === "entry"}
             enableSearch={selectedPanel === "entry"}
             filterActive={Boolean(appliedLifecycleStatus)}

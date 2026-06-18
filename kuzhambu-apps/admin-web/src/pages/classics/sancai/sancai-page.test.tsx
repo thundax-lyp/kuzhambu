@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { App as AntdApp } from "antd";
 import { queryClient } from "@/query/query-client";
+import { SancaiContentPanel } from "./components/sancai-content-panel";
 import { SancaiPage } from "./sancai-page";
 
 interface CapturedCall {
@@ -101,6 +102,36 @@ const installSancaiFetchMock = () => {
             });
         }
 
+        if (path.endsWith("/classics/sancai/entries/list")) {
+            return apiResponse([
+                {
+                    id: 3001,
+                    volumeId: 101,
+                    title: "天地",
+                    originalText: "天地玄黄",
+                    translationText: "译文",
+                    summary: "天地摘要",
+                    lifecycleStatus: "DRAFT",
+                    visibility: "PUBLIC",
+                    translationStatus: "PENDING",
+                    imageStatus: "PENDING",
+                    visualAssetStatus: "PENDING",
+                    refinementStatus: "PENDING"
+                }
+            ]);
+        }
+
+        if (path.endsWith("/classics/sancai/contents/list")) {
+            return apiResponse([
+                {
+                    answer: "天地玄黄",
+                    entryId: 3001,
+                    id: 9001,
+                    question: "何为天地"
+                }
+            ]);
+        }
+
         if (path.endsWith("/classics/sancai/volumes/add")) {
             return apiResponse({
                 categoryId: 2,
@@ -127,6 +158,26 @@ const installSancaiFetchMock = () => {
             return apiResponse(true);
         }
 
+        if (path.endsWith("/classics/sancai/contents/add")) {
+            return apiResponse({
+                id: 9002
+            });
+        }
+
+        if (path.endsWith("/classics/sancai/contents/update")) {
+            return apiResponse({
+                id: 9001
+            });
+        }
+
+        if (path.endsWith("/classics/sancai/contents/delete")) {
+            return apiResponse(true);
+        }
+
+        if (path.endsWith("/classics/sancai/contents/sort")) {
+            return apiResponse(true);
+        }
+
         return apiResponse(true);
     });
 };
@@ -139,11 +190,28 @@ const expectCall = (path: string, body: unknown) => {
     });
 };
 
+const hasCall = (path: string) => {
+    return capturedCalls.some((call) => call.path === path);
+};
+
 const renderSancaiPage = () => {
     render(
         <QueryClientProvider client={queryClient}>
             <AntdApp>
                 <SancaiPage />
+            </AntdApp>
+        </QueryClientProvider>
+    );
+};
+
+const renderContentPanel = (entryId: number | null) => {
+    return render(
+        <QueryClientProvider client={queryClient}>
+            <AntdApp>
+                <SancaiContentPanel
+                    entry={entryId === null ? null : { id: entryId, title: "天地" }}
+                    refreshVersion={0}
+                />
             </AntdApp>
         </QueryClientProvider>
     );
@@ -170,9 +238,10 @@ describe("SancaiPage volume CRUD", () => {
         renderSancaiPage();
 
         expect(await screen.findByRole("heading", { name: "三才图会" })).toBeInTheDocument();
-        expect(await screen.findByText("天文卷一")).toBeInTheDocument();
+        expect(
+            await screen.findByRole("button", { name: "选择卷目 天文卷一" })
+        ).toBeInTheDocument();
 
-        await user.click(screen.getByRole("button", { name: "选择门类 天文" }));
         await user.click(screen.getByRole("button", { name: "调整三才图会卷目顺序" }));
         await user.click(screen.getByRole("button", { name: "下移卷目 天文卷一" }));
         await user.click(screen.getByRole("button", { name: "保存三才图会卷目顺序" }));
@@ -191,9 +260,10 @@ describe("SancaiPage volume CRUD", () => {
         renderSancaiPage();
 
         expect(await screen.findByRole("heading", { name: "三才图会" })).toBeInTheDocument();
-        expect(await screen.findByText("天文卷一")).toBeInTheDocument();
+        expect(
+            await screen.findByRole("button", { name: "选择卷目 天文卷一" })
+        ).toBeInTheDocument();
 
-        await user.click(screen.getByRole("button", { name: "选择门类 天文" }));
         await user.click(screen.getByRole("button", { name: "新增三才图会卷目" }));
         await user.type(screen.getByLabelText("三才图会卷目标题"), "新卷");
         await user.click(screen.getByRole("button", { name: "保存新增卷目" }));
@@ -234,5 +304,26 @@ describe("SancaiPage volume CRUD", () => {
                 id: 101
             })
         );
+    }, 10000);
+
+    it("requests content only after receiving an entry", async () => {
+        const { rerender } = renderContentPanel(null);
+
+        expect(hasCall("/classics/sancai/contents/list")).toBe(false);
+
+        rerender(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <SancaiContentPanel entry={{ id: 3001, title: "天地" }} refreshVersion={0} />
+                </AntdApp>
+            </QueryClientProvider>
+        );
+
+        await waitFor(() =>
+            expectCall("/classics/sancai/contents/list", {
+                entryId: 3001
+            })
+        );
+        expect(await screen.findByText("何为天地")).toBeInTheDocument();
     }, 10000);
 });
