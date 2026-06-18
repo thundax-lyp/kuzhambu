@@ -63,8 +63,8 @@ class SancaiAdminControllerTest {
                   "keyword": "天地",
                   "lifecycleStatus": "PUBLISHED",
                   "visibility": "PUBLIC",
-                  "translationStatus": "TRANSLATED",
-                  "imageStatus": "HAS_IMAGE",
+                  "translationStatus": "READY",
+                  "imageStatus": "READY",
                   "visualAssetStatus": "READY",
                   "refinementStatus": "COMPLETE",
                   "sortDirection": "ASC",
@@ -101,8 +101,8 @@ class SancaiAdminControllerTest {
                   "summary": "摘要",
                   "lifecycleStatus": "PUBLISHED",
                   "visibility": "PUBLIC",
-                  "translationStatus": "TRANSLATED",
-                  "imageStatus": "HAS_IMAGE",
+                  "translationStatus": "READY",
+                  "imageStatus": "READY",
                   "visualAssetStatus": "READY",
                   "refinementStatus": "COMPLETE"
                 }
@@ -140,7 +140,7 @@ class SancaiAdminControllerTest {
                         .id(101L)
                         .categoryId(2L)
                         .title("天文卷一")
-                        .volumeType("FORMAL")
+                        .volumeType("MAIN")
                         .priority(101)
                         .build(),
                 "id",
@@ -158,8 +158,8 @@ class SancaiAdminControllerTest {
                         .summary("摘要")
                         .lifecycleStatus("PUBLISHED")
                         .visibility("PUBLIC")
-                        .translationStatus("TRANSLATED")
-                        .imageStatus("HAS_IMAGE")
+                        .translationStatus("READY")
+                        .imageStatus("READY")
                         .visualAssetStatus("READY")
                         .refinementStatus("COMPLETE")
                         .priority(1)
@@ -236,11 +236,7 @@ class SancaiAdminControllerTest {
                     if ("listVolumes".equals(method.getName())) {
                         assertEquals(SancaiCategoryId.of(2L), args[0]);
                         return List.of(new SancaiVolume(
-                                SancaiVolumeId.of(101L),
-                                SancaiCategoryId.of(2L),
-                                "天文卷一",
-                                SancaiVolumeType.FORMAL,
-                                101));
+                                SancaiVolumeId.of(101L), SancaiCategoryId.of(2L), "天文卷一", SancaiVolumeType.MAIN, 101));
                     }
                     if ("pageEntries".equals(method.getName())) {
                         SancaiEntryPageQuery query = (SancaiEntryPageQuery) args[0];
@@ -280,8 +276,8 @@ class SancaiAdminControllerTest {
                 "摘要",
                 SancaiEntryLifecycleStatus.PUBLISHED,
                 SancaiEntryVisibility.PUBLIC,
-                SancaiEntryTranslationStatus.TRANSLATED,
-                SancaiEntryImageStatus.HAS_IMAGE,
+                SancaiEntryTranslationStatus.READY,
+                SancaiEntryImageStatus.READY,
                 SancaiEntryVisualAssetStatus.READY,
                 SancaiEntryRefinementStatus.COMPLETE,
                 1);

@@ -22,8 +22,7 @@ const entryStatusOptions = [
 
 const visibilityOptions = [
     { label: "公开", value: "PUBLIC" },
-    { label: "内部", value: "INTERNAL" },
-    { label: "隐藏", value: "HIDDEN" }
+    { label: "私有", value: "PRIVATE" }
 ];
 
 interface SancaiEntryFormValues {

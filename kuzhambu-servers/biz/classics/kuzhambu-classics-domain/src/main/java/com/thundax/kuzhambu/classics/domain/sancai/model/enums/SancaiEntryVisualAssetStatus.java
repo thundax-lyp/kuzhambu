@@ -4,7 +4,7 @@ import com.thundax.kuzhambu.common.core.exception.DomainException;
 import java.util.Arrays;
 
 public enum SancaiEntryVisualAssetStatus {
-    NONE,
+    MISSING,
     PROCESSING,
     READY,
     FAILED;

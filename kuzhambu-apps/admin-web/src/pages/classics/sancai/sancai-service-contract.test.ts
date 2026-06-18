@@ -88,8 +88,8 @@ describe("sancai service request contracts", () => {
             keyword: "天地",
             lifecycleStatus: "PUBLISHED",
             visibility: "PUBLIC",
-            translationStatus: "TRANSLATED",
-            imageStatus: "HAS_IMAGE",
+            translationStatus: "READY",
+            imageStatus: "READY",
             visualAssetStatus: "READY",
             refinementStatus: "COMPLETE",
             sortDirection: "ASC",
@@ -102,8 +102,8 @@ describe("sancai service request contracts", () => {
             keyword: "天地",
             lifecycleStatus: "PUBLISHED",
             visibility: "PUBLIC",
-            translationStatus: "TRANSLATED",
-            imageStatus: "HAS_IMAGE",
+            translationStatus: "READY",
+            imageStatus: "READY",
             visualAssetStatus: "READY",
             refinementStatus: "COMPLETE",
             sortDirection: "ASC",
@@ -123,8 +123,8 @@ describe("sancai service request contracts", () => {
             summary: "摘要",
             lifecycleStatus: "PUBLISHED",
             visibility: "PUBLIC",
-            translationStatus: "TRANSLATED",
-            imageStatus: "HAS_IMAGE",
+            translationStatus: "READY",
+            imageStatus: "READY",
             visualAssetStatus: "READY",
             refinementStatus: "COMPLETE"
         });
@@ -137,8 +137,8 @@ describe("sancai service request contracts", () => {
             summary: "摘要",
             lifecycleStatus: "PUBLISHED",
             visibility: "PUBLIC",
-            translationStatus: "TRANSLATED",
-            imageStatus: "HAS_IMAGE",
+            translationStatus: "READY",
+            imageStatus: "READY",
             visualAssetStatus: "READY",
             refinementStatus: "COMPLETE"
         });

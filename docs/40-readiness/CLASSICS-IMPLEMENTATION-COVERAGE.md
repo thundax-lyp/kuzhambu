@@ -28,6 +28,7 @@
 - 分享访问首版支持快照字段入库能力（`title_snapshot`、`content_snapshot_json`）。
 - Admin/Portal starter 已扫描 Classics 的 application/infra/interface 包，启动路径与装配可用。
 - 三才图会 Admin Web 最小闭环已完成：后台菜单和 `/classics/sancai` 路由可进入真实页面，支持门类、卷、条目列表、搜索、生命周期筛选、分页、详情打开、标题/原文/译文/摘要/公开状态编辑和保存。
+- 三才图会门类、卷和条目治理状态已统一到运行时可解析的业务枚举口径，覆盖当前 schema 默认值、初始化数据和 dev 数据库取值。
 - 三才图会 Admin Web 已用 Playwright 验证接口闭环和页面闭环，覆盖 categories、volumes、entries/page、entries/{id}、entries/save 请求体。
 
 未完成：

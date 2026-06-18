@@ -5,7 +5,7 @@ import java.util.Arrays;
 
 public enum SancaiCategoryType {
     FORMAL,
-    FRONT_MATTER;
+    AUXILIARY;
 
     public String value() {
         return name();
