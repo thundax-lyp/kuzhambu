@@ -43,6 +43,10 @@ public class StorageObjectResponse implements Serializable {
     @JsonProperty(value = "size")
     private Long size;
 
+    @Schema(name = "accessEndpoint", description = "内容读取地址")
+    @JsonProperty(value = "accessEndpoint")
+    private String accessEndpoint;
+
     @Schema(name = "objectStatus", description = "对象状态")
     @JsonProperty(value = "objectStatus")
     private String objectStatus;

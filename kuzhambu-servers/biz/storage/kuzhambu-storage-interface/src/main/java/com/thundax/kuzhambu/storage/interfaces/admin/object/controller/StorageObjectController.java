@@ -9,11 +9,14 @@ import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.common.web.request.RequestListHelper;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
+import com.thundax.kuzhambu.storage.application.helper.StorageUploadResult;
+import com.thundax.kuzhambu.storage.application.helper.StorageUploadStreamHelper;
 import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
 import com.thundax.kuzhambu.storage.application.service.command.StorageSortCommand;
 import com.thundax.kuzhambu.storage.application.service.query.StorageQuery;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
+import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import com.thundax.kuzhambu.storage.interfaces.admin.object.assembler.StorageInterfaceAssembler;
 import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.request.StorageDeleteRequest;
@@ -25,11 +28,17 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 @Tag(name = "存储模块-存储对象", description = "存储对象")
 @SysLogger(module = {"存储", "对象"})
@@ -37,10 +46,24 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @WrappedApiController
 public class StorageObjectController {
 
+    private static final String CONTENT_PATH_PREFIX = "/api/storage/object/";
+    private static final String CONTENT_PATH_SUFFIX = "/content";
+    private static final List<String> ALLOWED_UPLOAD_SUFFIXES = List.of(
+            "jpg", "jpeg", "png", "gif", "webp", "pdf", "txt", "md", "csv", "json", "html", "zip", "docx", "xlsx",
+            "pptx");
+
     private final StorageApplicationService storageApplicationService;
+    private final StorageUploadStreamHelper storageUploadStreamHelper;
 
     public StorageObjectController(StorageApplicationService storageApplicationService) {
+        this(storageApplicationService, null);
+    }
+
+    @Autowired
+    public StorageObjectController(
+            StorageApplicationService storageApplicationService, StorageUploadStreamHelper storageUploadStreamHelper) {
         this.storageApplicationService = storageApplicationService;
+        this.storageUploadStreamHelper = storageUploadStreamHelper;
     }
 
     @Operation(summary = "获取存储对象分页列表", description = "storage:object:view")
@@ -108,5 +131,54 @@ public class StorageObjectController {
 
         idList.forEach(storageApplicationService::remove);
         return true;
+    }
+
+    @Operation(summary = "上传存储对象", description = "storage:object:edit")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
+    @HasPermission(value = "storage:object:edit")
+    @SysLogger(value = "上传")
+    @PostMapping(value = "upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public StorageObjectResponse upload(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "ownerType", required = false) String ownerType,
+            @RequestParam(value = "ownerId", required = false) String ownerId) {
+        if (storageUploadStreamHelper == null) {
+            throw AdminResponseExceptions.system("storage upload helper is not configured");
+        }
+        try {
+            StorageUploadResult result = storageUploadStreamHelper.upload(
+                    file == null ? null : file.getInputStream(),
+                    file == null ? null : file.getOriginalFilename(),
+                    file == null ? null : file.getContentType(),
+                    file == null ? 0L : file.getSize(),
+                    ALLOWED_UPLOAD_SUFFIXES,
+                    ownerTypeFrom(ownerType),
+                    StringUtils.trimToNull(ownerId));
+            if (result.hasError()) {
+                throw AdminResponseExceptions.invalidParameter(result.getError());
+            }
+            StoredObject storage = result.getStorage();
+            applyDefaultAccessEndpoint(storage);
+            return StorageInterfaceAssembler.toResponse(storage);
+        } catch (IOException exception) {
+            throw AdminResponseExceptions.system(exception.getMessage());
+        }
+    }
+
+    private static StorageOwnerType ownerTypeFrom(String value) {
+        return StringUtils.isBlank(value) ? null : StorageOwnerType.from(value);
+    }
+
+    private static void applyDefaultAccessEndpoint(StoredObject storage) {
+        if (storage != null && storage.getId() != null && StringUtils.isBlank(storage.getAccessEndpoint())) {
+            storage.setAccessEndpoint(
+                    CONTENT_PATH_PREFIX + StoredObjectIdCodec.toStringValue(storage.getId()) + CONTENT_PATH_SUFFIX);
+        }
     }
 }

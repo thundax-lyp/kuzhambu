@@ -45,6 +45,7 @@ public final class StorageInterfaceAssembler {
                 .ownerId(entity.getOwnerId())
                 .ownerType(valueOf(entity.getOwnerType()))
                 .size(entity.getSize())
+                .accessEndpoint(entity.getAccessEndpoint())
                 .objectStatus(valueOf(entity.getObjectStatus()))
                 .referenceStatus(valueOf(entity.getReferenceStatus()))
                 .priority(entity.getPriority())
