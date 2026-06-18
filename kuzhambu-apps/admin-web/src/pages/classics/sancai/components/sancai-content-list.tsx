@@ -70,7 +70,7 @@ export const SancaiContentList = ({
 
     return (
         <KuzhambuTable
-            aria-label="三才图会内容表格"
+            ariaLabel="三才图会内容表格"
             columns={columns}
             dataSource={contents}
             pagination={false}

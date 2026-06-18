@@ -113,6 +113,7 @@
 - `ADMIN_WEB_NAME_BUSINESS_DATA_TYPE_LOCATION`：`XxxRecord` / `XxxNode` 只定义在明确边界的 `*-types.ts`。
 - `ADMIN_WEB_NAME_BOOLEAN`：布尔变量使用 `is`、`has`、`can` 前缀。
 - `ADMIN_WEB_NAME_CONSTANT`：常量使用 `UPPER_SNAKE_CASE`。
+- `ADMIN_WEB_NAME_PROPS_CAMEL_CASE`：`*Props` 属性必须使用 camelCase；原生 DOM attribute 只在渲染边界转换。
 - `ADMIN_WEB_NAME_KUZHAMBU_COMPONENT`：`Kuzhambu*` 只在 `src/components/` 定义。
 - `ADMIN_WEB_NAME_PAGE_CLASS_PREFIX`：页面根节点 class 使用页面域前缀；共享组件 class 使用 `kuzhambu-`。
 - `ADMIN_WEB_STYLE_COMPONENT_CLASS_LOCATION`：组件域 CSS class 只定义在对应组件 CSS 文件中。

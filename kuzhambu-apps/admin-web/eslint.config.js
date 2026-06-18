@@ -268,6 +268,46 @@ const localRules = {
                 };
             }
         },
+        "props-camel-case-property": {
+            create(context) {
+                const isPropsName = (name) => /Props$/.test(name);
+
+                const checkMembers = (members) => {
+                    members.forEach((member) => {
+                        if (
+                            member.type !== "TSPropertySignature" ||
+                            member.key.type !== "Literal" ||
+                            typeof member.key.value !== "string"
+                        ) {
+                            return;
+                        }
+
+                        context.report({
+                            node: member.key,
+                            message: `ADMIN_WEB_NAME_PROPS_CAMEL_CASE: *Props property "${member.key.value}" must be exposed as camelCase. Convert to native DOM attributes only at the render boundary.`
+                        });
+                    });
+                };
+
+                return {
+                    TSInterfaceDeclaration(node) {
+                        if (!isPropsName(node.id.name)) {
+                            return;
+                        }
+                        checkMembers(node.body.body);
+                    },
+                    TSTypeAliasDeclaration(node) {
+                        if (
+                            !isPropsName(node.id.name) ||
+                            node.typeAnnotation.type !== "TSTypeLiteral"
+                        ) {
+                            return;
+                        }
+                        checkMembers(node.typeAnnotation.members);
+                    }
+                };
+            }
+        },
         "e2e-spec-file-path": {
             create(context) {
                 return {
@@ -896,7 +936,10 @@ const localRules = {
 
                 const hasAccessibleName = (node) => {
                     return (
-                        hasAttribute(node, "aria-label") || hasAttribute(node, "aria-labelledby")
+                        hasAttribute(node, "aria-label") ||
+                        hasAttribute(node, "aria-labelledby") ||
+                        hasAttribute(node, "ariaLabel") ||
+                        hasAttribute(node, "ariaLabelledBy")
                     );
                 };
 
@@ -922,7 +965,7 @@ const localRules = {
                 const reportMissingAccessibleName = (node, componentName) => {
                     context.report({
                         node,
-                        message: `ADMIN_WEB_UI_INTERACTIVE_ACCESSIBLE_NAME: ${componentName} must have a stable accessible name. Use visible text, aria-label, or aria-labelledby.`
+                        message: `ADMIN_WEB_UI_INTERACTIVE_ACCESSIBLE_NAME: ${componentName} must have a stable accessible name. Use visible text, ariaLabel/ariaLabelledBy for custom components, or native aria-label/aria-labelledby on DOM elements.`
                     });
                 };
 
@@ -1657,6 +1700,7 @@ export default tseslint.config(
             "local/shared-component-css-local": "error",
             "local/page-style-file": "error",
             "local/hook-file-path": "error",
+            "local/props-camel-case-property": "error",
             "local/e2e-spec-file-path": "error",
             "local/kebab-case-file-name": "error",
             "local/page-component-single-export": "error",

@@ -103,7 +103,7 @@ export const SancaiEntryList = ({
         <div className="sancai-entry-table-wrap">
             <KuzhambuTable
                 className="sancai-entry-table"
-                aria-label="三才图会条目表格"
+                ariaLabel="三才图会条目表格"
                 columns={columns}
                 dataSource={entries}
                 pagination={false}

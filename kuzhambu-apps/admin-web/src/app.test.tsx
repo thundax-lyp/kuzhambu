@@ -1147,7 +1147,7 @@ describe("App", () => {
 
         render(
             <KuzhambuTable
-                aria-label="可排序用户表格"
+                ariaLabel="可排序用户表格"
                 rowKey="id"
                 columns={[{ title: "用户", dataIndex: "name", key: "name", width: 160 }]}
                 dataSource={records}

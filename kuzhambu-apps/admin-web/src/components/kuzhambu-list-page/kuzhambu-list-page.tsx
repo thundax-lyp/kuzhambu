@@ -115,7 +115,7 @@ export const KuzhambuListPage = <RecordType extends object = object>({
         searchPlaceholder ?? (subjectName ? `搜索${subjectName}...` : "搜索...");
     const resolvedSearchAriaLabel = subjectName ? `搜索${subjectName}` : "搜索列表";
     const resolvedAddText = addText ?? (subjectName ? `新增${subjectName}` : undefined);
-    const resolvedTableAriaLabel = tableProps["aria-label"] ?? `${subjectName ?? "数据"}列表`;
+    const resolvedTableAriaLabel = tableProps.ariaLabel ?? `${subjectName ?? "数据"}列表`;
     const headerActions = (
         <Space className="kuzhambu-list-page-actions">
             {enableSearch ? (
@@ -200,8 +200,8 @@ export const KuzhambuListPage = <RecordType extends object = object>({
                 >
                     <div className="kuzhambu-list-page-table-main">
                         <KuzhambuTable<RecordType>
-                            aria-label={resolvedTableAriaLabel}
                             {...tableProps}
+                            ariaLabel={resolvedTableAriaLabel}
                         />
                     </div>
                     <aside
@@ -215,7 +215,7 @@ export const KuzhambuListPage = <RecordType extends object = object>({
             );
         }
 
-        return <KuzhambuTable<RecordType> aria-label={resolvedTableAriaLabel} {...tableProps} />;
+        return <KuzhambuTable<RecordType> {...tableProps} ariaLabel={resolvedTableAriaLabel} />;
     };
 
     return (

@@ -231,7 +231,7 @@ export const SancaiCategoryPanel = ({
             <div className="sancai-catalog-scroll">
                 <KuzhambuTable
                     className="sancai-category-table"
-                    aria-label="三才图会门类表格"
+                    ariaLabel="三才图会门类表格"
                     columns={columns}
                     dataSource={categories}
                     loading={isLoading}
