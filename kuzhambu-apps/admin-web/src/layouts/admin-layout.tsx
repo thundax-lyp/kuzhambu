@@ -57,7 +57,6 @@ const menuIconMap: Record<string, ReactNode> = {
     submission: <FileTextOutlined />,
     submissions: <FileTextOutlined />,
     "open-api": <ApiOutlined />,
-    "open-clients": <IdcardOutlined />,
     permission: <SafetyCertificateOutlined />
 };
 
@@ -70,14 +69,6 @@ const getOpenKeys = (pathname: string) => {
 
     if (pathname.startsWith("/storage/")) {
         openKeys.push("/storage");
-    }
-
-    if (pathname.startsWith("/submission/")) {
-        openKeys.push("/submission");
-    }
-
-    if (pathname.startsWith("/open/")) {
-        openKeys.push("/open");
     }
 
     if (pathname.startsWith("/audit/")) {
