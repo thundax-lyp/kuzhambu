@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as categoryService from "./services/sancai-category-service";
+import * as entryService from "./services/sancai-entry-service";
 import * as volumeService from "./services/sancai-volume-service";
 import * as sancaiService from "./sancai-service";
 
@@ -345,6 +346,73 @@ describe("sancai service request contracts", () => {
         });
         expectLastCall("POST", "/classics/sancai/volumes/sort", {
             orderedIds: [101, 102],
+            sortDirection: "ASC"
+        });
+    });
+
+    it("sends entry service requests with domain function names", async () => {
+        const entryCommand = {
+            volumeId: 101,
+            title: "天地",
+            originalText: "原文",
+            translationText: "译文",
+            summary: "摘要",
+            lifecycleStatus: "PUBLISHED",
+            visibility: "PUBLIC",
+            translationStatus: "READY",
+            imageStatus: "READY",
+            visualAssetStatus: "READY",
+            refinementStatus: "COMPLETE"
+        };
+
+        await entryService.list({
+            categoryId: 2,
+            volumeId: 101,
+            keyword: "天地",
+            lifecycleStatus: "PUBLISHED",
+            visibility: "PUBLIC",
+            translationStatus: "READY",
+            imageStatus: "READY",
+            visualAssetStatus: "READY",
+            refinementStatus: "COMPLETE",
+            sortDirection: "ASC"
+        });
+        expectLastCall("POST", "/classics/sancai/entries/list", {
+            categoryId: 2,
+            volumeId: 101,
+            keyword: "天地",
+            lifecycleStatus: "PUBLISHED",
+            visibility: "PUBLIC",
+            translationStatus: "READY",
+            imageStatus: "READY",
+            visualAssetStatus: "READY",
+            refinementStatus: "COMPLETE",
+            sortDirection: "ASC"
+        });
+
+        await entryService.add(entryCommand);
+        expectLastCall("POST", "/classics/sancai/entries/add", entryCommand);
+
+        await entryService.update({
+            id: 3001,
+            ...entryCommand
+        });
+        expectLastCall("POST", "/classics/sancai/entries/update", {
+            id: 3001,
+            ...entryCommand
+        });
+
+        await entryService.deleteById(3001);
+        expectLastCall("POST", "/classics/sancai/entries/delete", {
+            id: 3001
+        });
+
+        await entryService.sort({
+            orderedIds: [3001, 3002],
+            sortDirection: "ASC"
+        });
+        expectLastCall("POST", "/classics/sancai/entries/sort", {
+            orderedIds: [3001, 3002],
             sortDirection: "ASC"
         });
     });
