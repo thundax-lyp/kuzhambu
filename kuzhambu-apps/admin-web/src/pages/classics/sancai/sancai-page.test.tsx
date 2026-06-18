@@ -1,4 +1,4 @@
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { App as AntdApp } from "antd";
@@ -217,6 +217,11 @@ const renderContentPanel = (entryId: number | null) => {
     );
 };
 
+const selectCategoryFromTable = async (user: ReturnType<typeof userEvent.setup>, title: string) => {
+    const categoryTable = await screen.findByLabelText("三才图会门类表格");
+    await user.click(await within(categoryTable).findByText(title));
+};
+
 describe("SancaiPage volume CRUD", () => {
     beforeEach(() => {
         capturedCalls.length = 0;
@@ -238,6 +243,7 @@ describe("SancaiPage volume CRUD", () => {
         renderSancaiPage();
 
         expect(await screen.findByRole("heading", { name: "三才图会" })).toBeInTheDocument();
+        await selectCategoryFromTable(user, "天文");
         expect(
             await screen.findByRole("button", { name: "选择卷目 天文卷一" })
         ).toBeInTheDocument();
@@ -260,6 +266,7 @@ describe("SancaiPage volume CRUD", () => {
         renderSancaiPage();
 
         expect(await screen.findByRole("heading", { name: "三才图会" })).toBeInTheDocument();
+        await selectCategoryFromTable(user, "天文");
         expect(
             await screen.findByRole("button", { name: "选择卷目 天文卷一" })
         ).toBeInTheDocument();
@@ -325,5 +332,21 @@ describe("SancaiPage volume CRUD", () => {
             })
         );
         expect(await screen.findByText("何为天地")).toBeInTheDocument();
+    }, 10000);
+
+    it("shows category panel when selecting the catalog root", async () => {
+        const user = userEvent.setup();
+
+        renderSancaiPage();
+
+        await selectCategoryFromTable(user, "天文");
+        expect(
+            await screen.findByRole("button", { name: "选择卷目 天文卷一" })
+        ).toBeInTheDocument();
+
+        const catalogTree = screen.getByLabelText("三才图会目录树");
+        await user.click(within(catalogTree).getByText("三才图会"));
+
+        expect(await screen.findByLabelText("三才图会门类表格")).toBeInTheDocument();
     }, 10000);
 });

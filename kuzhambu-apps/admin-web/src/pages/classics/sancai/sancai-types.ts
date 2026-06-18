@@ -36,7 +36,7 @@ export interface SancaiContentRecord {
     answer?: string | null;
 }
 
-export type SancaiCatalogNodeType = "category" | "entry" | "volume";
+export type SancaiCatalogNodeType = "category" | "entry" | "root" | "volume";
 
 export interface SancaiCatalogTreeNode {
     children?: SancaiCatalogTreeNode[];

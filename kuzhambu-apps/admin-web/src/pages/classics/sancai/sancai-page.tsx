@@ -4,6 +4,7 @@ import { Alert, Button, Select } from "antd";
 import { useMemo, useState } from "react";
 import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import { SancaiCatalogTreePanel } from "./components/sancai-catalog-tree-panel";
+import { SancaiCategoryPanel } from "./components/sancai-category-panel";
 import { SancaiContentPanel } from "./components/sancai-content-panel";
 import { SancaiEntryPanel } from "./components/sancai-entry-panel";
 import { SancaiVolumePanel } from "./components/sancai-volume-panel";
@@ -28,6 +29,7 @@ const entryStatusOptions = [
 const EMPTY_CATEGORIES: SancaiCategoryRecord[] = [];
 const EMPTY_ENTRIES: SancaiEntryRecord[] = [];
 const EMPTY_VOLUMES: SancaiVolumeRecord[] = [];
+const ROOT_KEY = "sancai-root";
 
 const isQueryLoading = (...queries: Array<{ isLoading: boolean }>) => {
     return queries.some((query) => query.isLoading);
@@ -69,7 +71,7 @@ const buildTreeNodes = (
     volumes: SancaiVolumeRecord[],
     entries: SancaiEntryRecord[]
 ): SancaiCatalogTreeNode[] => {
-    return categories.map((category) => {
+    const categoryNodes: SancaiCatalogTreeNode[] = categories.map((category) => {
         const categoryVolumes = volumes.filter((volume) => volume.categoryId === category.id);
         return {
             children: categoryVolumes.map((volume) => {
@@ -90,15 +92,23 @@ const buildTreeNodes = (
             title: readTitle(category, "门类")
         };
     });
+    return [
+        {
+            children: categoryNodes,
+            key: ROOT_KEY,
+            nodeType: "root",
+            title: "三才图会"
+        }
+    ];
 };
 
 export const SancaiPage = () => {
     const [selectedKey, setSelectedKey] = useState<string | null>(null);
     const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
     const [createIntent, setCreateIntent] = useState<{
-        target: "content" | "entry" | "volume";
+        target: "category" | "content" | "entry" | "volume";
         version: number;
-    }>({ target: "volume", version: 0 });
+    }>({ target: "category", version: 0 });
     const [refreshVersion, setRefreshVersion] = useState(0);
     const [keyword, setKeyword] = useState("");
     const [appliedKeyword, setAppliedKeyword] = useState<string | null>(null);
@@ -126,8 +136,9 @@ export const SancaiPage = () => {
         () => buildTreeNodes(categories, volumes, entries),
         [categories, entries, volumes]
     );
-    const defaultSelectedKey = categories[0] ? toCategoryKey(categories[0].id) : null;
+    const defaultSelectedKey = ROOT_KEY;
     const actualSelectedKey = selectedKey || defaultSelectedKey;
+    const isRootSelected = actualSelectedKey === ROOT_KEY;
     const selectedCategoryIdFromKey = readNodeId(actualSelectedKey, "category");
     const selectedVolumeIdFromKey = readNodeId(actualSelectedKey, "volume");
     const selectedEntryIdFromKey = readNodeId(actualSelectedKey, "entry");
@@ -140,7 +151,10 @@ export const SancaiPage = () => {
     const visibleVolumes = selectedCategory
         ? volumes.filter((volume) => volume.categoryId === selectedCategory.id)
         : volumes;
-    let selectedPanel: "content" | "entry" | "volume" = "volume";
+    let selectedPanel: "category" | "content" | "entry" | "volume" = "category";
+    if (selectedCategory && !isRootSelected) {
+        selectedPanel = "volume";
+    }
     if (selectedVolume) {
         selectedPanel = "entry";
     }
@@ -149,17 +163,23 @@ export const SancaiPage = () => {
     }
     const treeExpandedKeys = expandedKeys.length
         ? expandedKeys
-        : categories.map((category) => toCategoryKey(category.id));
+        : [ROOT_KEY, ...categories.map((category) => toCategoryKey(category.id))];
     const isLoading = isQueryLoading(categoriesQuery, volumesQuery, entriesQuery);
     const hasError = isQueryError(categoriesQuery, volumesQuery, entriesQuery);
-    let addText = "新增卷目";
+    let addText = "新增门类";
+    if (selectedPanel === "volume") {
+        addText = "新增卷目";
+    }
     if (selectedPanel === "entry") {
         addText = "新增条目";
     }
     if (selectedPanel === "content") {
         addText = "新增内容";
     }
-    let enableAdd = Boolean(selectedCategory);
+    let enableAdd = selectedPanel === "category";
+    if (selectedPanel === "volume") {
+        enableAdd = Boolean(selectedCategory);
+    }
     if (selectedPanel === "entry") {
         enableAdd = Boolean(selectedVolume);
     }
@@ -173,6 +193,11 @@ export const SancaiPage = () => {
         if (categoryId !== null && categoryId !== undefined) {
             setExpandedKeys((keys) => Array.from(new Set([...keys, toCategoryKey(categoryId)])));
         }
+    };
+
+    const selectCategory = (category: SancaiCategoryRecord) => {
+        setSelectedKey(toCategoryKey(category.id));
+        setExpandedKeys((keys) => Array.from(new Set([...keys, ROOT_KEY])));
     };
 
     const selectEntry = (entry: SancaiEntryRecord) => {
@@ -226,17 +251,29 @@ export const SancaiPage = () => {
     };
 
     let panelContent = (
-        <SancaiVolumePanel
-            key={`volume-${selectedCategory?.id ?? "none"}-${createIntent.version}`}
+        <SancaiCategoryPanel
+            key={`category-${createIntent.version}`}
             categories={categories}
-            defaultCreateOpen={createIntent.target === "volume" && createIntent.version > 0}
-            volumes={visibleVolumes}
+            defaultCreateOpen={createIntent.target === "category" && createIntent.version > 0}
             isLoading={isLoading}
             selectedCategory={selectedCategory}
-            selectedVolume={selectedVolume}
-            onSelect={selectVolume}
+            onSelect={selectCategory}
         />
     );
+    if (selectedPanel === "volume") {
+        panelContent = (
+            <SancaiVolumePanel
+                key={`volume-${selectedCategory?.id ?? "none"}-${createIntent.version}`}
+                categories={categories}
+                defaultCreateOpen={createIntent.target === "volume" && createIntent.version > 0}
+                volumes={visibleVolumes}
+                isLoading={isLoading}
+                selectedCategory={selectedCategory}
+                selectedVolume={selectedVolume}
+                onSelect={selectVolume}
+            />
+        );
+    }
     if (selectedVolume) {
         panelContent = (
             <SancaiEntryPanel

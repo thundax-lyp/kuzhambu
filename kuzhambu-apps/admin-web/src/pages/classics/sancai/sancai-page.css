@@ -199,6 +199,26 @@ html[data-theme="dark"] .sancai-page {
     background: var(--sancai-warm);
 }
 
+.sancai-category-title-cell {
+    display: grid;
+    min-width: 0;
+    gap: 2px;
+}
+
+.sancai-category-type-cell {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sancai-category-table-row {
+    cursor: pointer;
+}
+
+.sancai-category-table-row-active > td {
+    background: var(--sancai-accent-soft);
+}
+
 .sancai-catalog-row-active {
     background: var(--sancai-accent-soft);
     border-color: var(--sancai-accent-line);

@@ -3,8 +3,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Button, Typography } from "antd";
 import { useState } from "react";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
+import { KuzhambuTable } from "@/components/kuzhambu-table";
+import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
 import type { DictItem } from "@/types/dict";
-import { SancaiCategoryList } from "./sancai-category-list";
 import { SancaiCategoryModel } from "./sancai-category-model";
 import { SancaiCategorySortModel } from "./sancai-category-sort-model";
 import type { SancaiCategoryFormValues } from "./sancai-form-values";
@@ -15,6 +16,7 @@ const { Text, Title } = Typography;
 
 interface SancaiCategoryPanelProps {
     categories: SancaiCategoryRecord[];
+    defaultCreateOpen?: boolean;
     isLoading: boolean;
     onSelect: (category: SancaiCategoryRecord) => void;
     selectedCategory: SancaiCategoryRecord | null;
@@ -29,8 +31,17 @@ const fallbackCategoryTypeOptions: DictItem[] = [
     { label: "辅助内容", type: "SANCAI_CATEGORY_TYPE", value: "AUXILIARY" }
 ];
 
+const readCategoryTypeLabel = (category: SancaiCategoryRecord, options: DictItem[]) => {
+    return (
+        options.find((option) => option.value === category.categoryType)?.label ||
+        category.categoryType ||
+        "-"
+    );
+};
+
 export const SancaiCategoryPanel = ({
     categories,
+    defaultCreateOpen = false,
     isLoading,
     onSelect,
     selectedCategory
@@ -39,7 +50,7 @@ export const SancaiCategoryPanel = ({
     const confirm = useKuzhambuConfirm();
     const queryClient = useQueryClient();
     const [editingCategory, setEditingCategory] = useState<SancaiCategoryRecord | null>(null);
-    const [isModelOpen, setIsModelOpen] = useState(false);
+    const [isModelOpen, setIsModelOpen] = useState(defaultCreateOpen);
     const [isSortOpen, setIsSortOpen] = useState(false);
     const typesQuery = useQuery<DictItem[]>({
         queryKey: ["classics", "sancai", "categories", "types"],
@@ -145,6 +156,56 @@ export const SancaiCategoryPanel = ({
         });
     };
 
+    const columns: KuzhambuTableProps<SancaiCategoryRecord>["columns"] = [
+        {
+            title: "门类",
+            key: "title",
+            width: 260,
+            render: (_, category) => (
+                <div className="sancai-category-title-cell">
+                    <Text strong>{readTitle(category, "门类")}</Text>
+                    <Text type="secondary">ID {category.id}</Text>
+                </div>
+            )
+        },
+        {
+            title: "类型",
+            key: "categoryType",
+            width: 160,
+            render: (_, category) => (
+                <span className="sancai-category-type-cell">
+                    <span
+                        className={
+                            category.categoryType === "AUXILIARY"
+                                ? "sancai-category-type-dot sancai-category-type-dot-auxiliary"
+                                : "sancai-category-type-dot sancai-category-type-dot-formal"
+                        }
+                        aria-hidden
+                    />
+                    <Text>{readCategoryTypeLabel(category, categoryTypeItems)}</Text>
+                </span>
+            )
+        },
+        {
+            key: "actions",
+            options: (category) => [
+                {
+                    key: "edit",
+                    text: "编辑",
+                    ariaLabel: `编辑门类 ${readTitle(category, "门类")}`,
+                    onClick: () => startEdit(category)
+                },
+                {
+                    danger: true,
+                    key: "delete",
+                    text: "删除",
+                    ariaLabel: `删除门类 ${readTitle(category, "门类")}`,
+                    onClick: () => confirmDelete(category)
+                }
+            ]
+        }
+    ];
+
     return (
         <section className="sancai-catalog-column">
             <div className="sancai-panel-heading">
@@ -168,13 +229,25 @@ export const SancaiCategoryPanel = ({
                 </div>
             </div>
             <div className="sancai-catalog-scroll">
-                <SancaiCategoryList
-                    categories={categories}
-                    isLoading={isLoading}
-                    selectedCategory={selectedCategory}
-                    onDelete={confirmDelete}
-                    onEdit={startEdit}
-                    onSelect={onSelect}
+                <KuzhambuTable
+                    className="sancai-category-table"
+                    aria-label="三才图会门类表格"
+                    columns={columns}
+                    dataSource={categories}
+                    loading={isLoading}
+                    locale={{ emptyText: "暂无门类" }}
+                    pagination={false}
+                    rowKey="id"
+                    size="middle"
+                    scroll={{ x: 520 }}
+                    onRow={(category) => ({
+                        "aria-label": `选择门类 ${readTitle(category, "门类")}`,
+                        className:
+                            category.id === selectedCategory?.id
+                                ? "sancai-category-table-row sancai-category-table-row-active"
+                                : "sancai-category-table-row",
+                        onClick: () => onSelect(category)
+                    })}
                 />
             </div>
             {isModelOpen ? (

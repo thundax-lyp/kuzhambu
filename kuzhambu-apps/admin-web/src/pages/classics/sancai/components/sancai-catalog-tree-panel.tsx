@@ -19,6 +19,7 @@ interface SancaiCatalogTreePanelProps {
 const iconByType: Record<SancaiCatalogNodeType, ReactNode> = {
     category: <FolderOutlined />,
     entry: <FileTextOutlined />,
+    root: <FolderOutlined />,
     volume: <BookOutlined />
 };
 
