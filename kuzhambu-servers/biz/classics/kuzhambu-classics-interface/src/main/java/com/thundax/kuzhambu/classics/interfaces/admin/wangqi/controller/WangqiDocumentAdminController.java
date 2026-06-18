@@ -59,20 +59,32 @@ public class WangqiDocumentAdminController {
     @ApiImplicitParams({})
     @HasPermission("classics:wangqi:view")
     @SysLogger(value = "时间线")
-    @PostMapping("timeline")
-    public List<WangqiDocumentResponse> timeline(@Valid @RequestBody WangqiDocumentRequest request) {
+    @PostMapping("timeline/list")
+    public List<WangqiDocumentResponse> listTimeline(@Valid @RequestBody WangqiDocumentRequest request) {
         return service.listTimeline(WangqiDocumentInterfaceAssembler.toQuery(request)).stream()
                 .map(WangqiDocumentInterfaceAssembler::toResponse)
                 .toList();
     }
 
-    @Operation(summary = "保存王圻文档", description = "classics:wangqi:edit")
+    @Operation(summary = "新增王圻文档", description = "classics:wangqi:edit")
     @ApiImplicitParams({})
     @HasPermission("classics:wangqi:edit")
-    @SysLogger(value = "保存")
-    @PostMapping("save")
-    public WangqiDocumentResponse save(@Valid @RequestBody WangqiDocumentRequest request) {
-        WangqiDocumentId id = service.save(WangqiDocumentInterfaceAssembler.toSaveCommand(request));
+    @SysLogger(value = "新增")
+    @PostMapping("add")
+    public WangqiDocumentResponse add(@Valid @RequestBody WangqiDocumentRequest request) {
+        WangqiDocumentId id = service.add(WangqiDocumentInterfaceAssembler.toCommand(request));
+        return WangqiDocumentResponse.builder()
+                .id(id == null ? null : id.value())
+                .build();
+    }
+
+    @Operation(summary = "更新王圻文档", description = "classics:wangqi:edit")
+    @ApiImplicitParams({})
+    @HasPermission("classics:wangqi:edit")
+    @SysLogger(value = "更新")
+    @PostMapping("update")
+    public WangqiDocumentResponse update(@Valid @RequestBody WangqiDocumentRequest request) {
+        WangqiDocumentId id = service.update(WangqiDocumentInterfaceAssembler.toCommand(request));
         return WangqiDocumentResponse.builder()
                 .id(id == null ? null : id.value())
                 .build();

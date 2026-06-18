@@ -117,6 +117,37 @@ public class SancaiRepositoryImpl implements SancaiRepository {
     }
 
     @Override
+    public SancaiVolumeId insertVolume(SancaiVolume volume) {
+        SancaiVolumeDO dataObject = SancaiPersistenceAssembler.toVolumeObject(volume);
+        volumeMapper.insert(dataObject);
+        return SancaiVolumeIdCodec.toDomain(dataObject.getId());
+    }
+
+    @Override
+    public int updateVolume(SancaiVolume volume) {
+        SancaiVolumeDO dataObject = SancaiPersistenceAssembler.toVolumeObject(volume);
+        return volumeMapper.update(
+                null,
+                new LambdaUpdateWrapper<SancaiVolumeDO>()
+                        .eq(SancaiVolumeDO::getId, dataObject.getId())
+                        .set(SancaiVolumeDO::getCategoryId, dataObject.getCategoryId())
+                        .set(SancaiVolumeDO::getTitle, dataObject.getTitle())
+                        .set(SancaiVolumeDO::getVolumeType, dataObject.getVolumeType())
+                        .set(SancaiVolumeDO::getPriority, dataObject.getPriority()));
+    }
+
+    @Override
+    public int countEntriesByVolumeId(SancaiVolumeId volumeId) {
+        return Math.toIntExact(entryMapper.selectCount(new LambdaQueryWrapper<SancaiEntryDO>()
+                .eq(SancaiEntryDO::getVolumeId, SancaiVolumeIdCodec.toValue(volumeId))));
+    }
+
+    @Override
+    public int deleteVolumeById(SancaiVolumeId id) {
+        return volumeMapper.deleteById(SancaiVolumeIdCodec.toValue(id));
+    }
+
+    @Override
     public List<SancaiEntry> listEntries(SortDirection sortDirection) {
         LambdaQueryWrapper<SancaiEntryDO> wrapper = new LambdaQueryWrapper<>();
         wrapper.orderBy(true, sortDirection != SortDirection.DESC, SancaiEntryDO::getPriority);
@@ -178,6 +209,58 @@ public class SancaiRepositoryImpl implements SancaiRepository {
         entityPage.setTotal(dataPage.getTotal());
         entityPage.setRecords(SancaiPersistenceAssembler.toEntryDomainList(dataPage.getRecords()));
         return entityPage;
+    }
+
+    @Override
+    public List<SancaiEntry> listEntries(
+            SancaiCategoryId categoryId,
+            SancaiVolumeId volumeId,
+            String keyword,
+            String lifecycleStatus,
+            String visibility,
+            String translationStatus,
+            String imageStatus,
+            String visualAssetStatus,
+            String refinementStatus,
+            SortDirection sortDirection) {
+        List<Long> categoryVolumeIds = listVolumeIdsByCategory(categoryId);
+        if (categoryId != null && categoryVolumeIds.isEmpty()) {
+            return List.of();
+        }
+        if (categoryId != null
+                && volumeId != null
+                && !categoryVolumeIds.contains(SancaiVolumeIdCodec.toValue(volumeId))) {
+            return List.of();
+        }
+
+        LambdaQueryWrapper<SancaiEntryDO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(volumeId != null, SancaiEntryDO::getVolumeId, SancaiVolumeIdCodec.toValue(volumeId))
+                .in(volumeId == null && categoryId != null, SancaiEntryDO::getVolumeId, categoryVolumeIds)
+                .eq(StringUtils.isNotBlank(lifecycleStatus), SancaiEntryDO::getLifecycleStatus, lifecycleStatus)
+                .eq(StringUtils.isNotBlank(visibility), SancaiEntryDO::getVisibility, visibility)
+                .eq(StringUtils.isNotBlank(translationStatus), SancaiEntryDO::getTranslationStatus, translationStatus)
+                .eq(StringUtils.isNotBlank(imageStatus), SancaiEntryDO::getImageStatus, imageStatus)
+                .eq(StringUtils.isNotBlank(visualAssetStatus), SancaiEntryDO::getVisualAssetStatus, visualAssetStatus)
+                .eq(StringUtils.isNotBlank(refinementStatus), SancaiEntryDO::getRefinementStatus, refinementStatus)
+                .and(StringUtils.isNotBlank(keyword), item -> item.like(SancaiEntryDO::getTitle, keyword)
+                        .or()
+                        .like(SancaiEntryDO::getOriginalText, keyword)
+                        .or()
+                        .like(SancaiEntryDO::getTranslationText, keyword))
+                .orderBy(true, sortDirection != SortDirection.DESC, SancaiEntryDO::getPriority);
+        return SancaiPersistenceAssembler.toEntryDomainList(entryMapper.selectList(wrapper));
+    }
+
+    private List<Long> listVolumeIdsByCategory(SancaiCategoryId categoryId) {
+        if (categoryId == null) {
+            return List.of();
+        }
+        return volumeMapper
+                .selectList(new LambdaQueryWrapper<SancaiVolumeDO>()
+                        .eq(SancaiVolumeDO::getCategoryId, SancaiCategoryIdCodec.toValue(categoryId)))
+                .stream()
+                .map(SancaiVolumeDO::getId)
+                .toList();
     }
 
     @Override

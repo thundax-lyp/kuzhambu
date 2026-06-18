@@ -1,9 +1,9 @@
 package com.thundax.kuzhambu.classics.application.mingcustoms.service.impl;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsCommand;
 import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsKeywordCommand;
 import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsKeywordSortCommand;
-import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsSaveCommand;
 import com.thundax.kuzhambu.classics.application.mingcustoms.query.MingCustomsPageQuery;
 import com.thundax.kuzhambu.classics.application.mingcustoms.service.MingCustomsApplicationService;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
@@ -59,13 +59,21 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public MingCustomsEntryId save(MingCustomsSaveCommand command) {
+    public MingCustomsEntryId add(MingCustomsCommand command) {
         MingCustomsEntry entry = toEntry(command);
         if (entry == null) {
             return null;
         }
-        if (entry.getId() == null) {
-            return repository.insert(entry);
+        entry.setId(null);
+        return repository.insert(entry);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public MingCustomsEntryId update(MingCustomsCommand command) {
+        MingCustomsEntry entry = toEntry(command);
+        if (entry == null) {
+            return null;
         }
         repository.update(entry);
         return entry.getId();
@@ -203,7 +211,7 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
                 ErrorCode.SORT_DB_FAILURE.getMessage());
     }
 
-    private static MingCustomsEntry toEntry(MingCustomsSaveCommand command) {
+    private static MingCustomsEntry toEntry(MingCustomsCommand command) {
         if (command == null) {
             return null;
         }

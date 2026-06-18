@@ -22,7 +22,9 @@ public interface ClassicsContentApplicationService {
 
     List<ClassicsContentTag> listTags(String contentType, ClassicsContentId contentId);
 
-    ClassicsContentTagId saveTag(ContentTagCommand command);
+    ClassicsContentTagId addTag(ContentTagCommand command);
+
+    ClassicsContentTagId updateTag(ContentTagCommand command);
 
     void sortTags(ContentTagSortCommand command);
 
@@ -30,9 +32,13 @@ public interface ClassicsContentApplicationService {
 
     List<ClassicsContentQaPair> listQaPairs(String contentType, ClassicsContentId contentId);
 
-    ClassicsContentQaPairId saveQaPair(ContentQaPairCommand command);
+    ClassicsContentQaPairId addQaPair(ContentQaPairCommand command);
+
+    ClassicsContentQaPairId updateQaPair(ContentQaPairCommand command);
 
     void sortQaPairs(ContentQaPairSortCommand command);
+
+    void sortQaPairs(String contentType, ClassicsContentId contentId, ContentQaPairSortCommand command);
 
     void deleteQaPair(ClassicsContentQaPairId id);
 

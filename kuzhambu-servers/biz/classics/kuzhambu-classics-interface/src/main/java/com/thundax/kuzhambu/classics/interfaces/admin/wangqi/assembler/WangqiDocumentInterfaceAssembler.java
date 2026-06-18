@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.wangqi.assembler;
 
-import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentSaveCommand;
+import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentCommand;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentVisibilityCommand;
 import com.thundax.kuzhambu.classics.application.wangqi.query.WangqiDocumentPageQuery;
 import com.thundax.kuzhambu.classics.domain.common.codec.StorageObjectIdCodec;
@@ -25,8 +25,8 @@ public final class WangqiDocumentInterfaceAssembler {
                                 request.getSortDirection().trim().toUpperCase()));
     }
 
-    public static WangqiDocumentSaveCommand toSaveCommand(WangqiDocumentRequest request) {
-        return new WangqiDocumentSaveCommand(
+    public static WangqiDocumentCommand toCommand(WangqiDocumentRequest request) {
+        return new WangqiDocumentCommand(
                 request.getId(),
                 request.getTitle(),
                 request.getSummary(),

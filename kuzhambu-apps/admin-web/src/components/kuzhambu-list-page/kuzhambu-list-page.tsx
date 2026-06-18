@@ -8,6 +8,7 @@ import type { KuzhambuFilterPanelField } from "@/components/kuzhambu-filter-pane
 import { KuzhambuPage } from "@/components/kuzhambu-page";
 import { KuzhambuTable } from "@/components/kuzhambu-table";
 import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
+import { KuzhambuListPageTableArea } from "./kuzhambu-list-page-table-area";
 import "./kuzhambu-list-page.css";
 
 export interface KuzhambuListPageFilterState {
@@ -26,6 +27,7 @@ export interface KuzhambuListPageProps<RecordType extends object = object> exten
     batchActions?: ReactNode;
     batchClassName?: string;
     addText?: ReactNode;
+    content?: ReactNode;
     defaultFilterOpen?: boolean;
     enableAdd?: boolean;
     description?: ReactNode;
@@ -61,6 +63,7 @@ export const KuzhambuListPage = <RecordType extends object = object>({
     batchActions,
     batchClassName,
     addText,
+    content,
     defaultFilterOpen = false,
     enableAdd = false,
     description,
@@ -113,7 +116,7 @@ export const KuzhambuListPage = <RecordType extends object = object>({
         searchPlaceholder ?? (subjectName ? `搜索${subjectName}...` : "搜索...");
     const resolvedSearchAriaLabel = subjectName ? `搜索${subjectName}` : "搜索列表";
     const resolvedAddText = addText ?? (subjectName ? `新增${subjectName}` : undefined);
-    const resolvedTableAriaLabel = tableProps["aria-label"] ?? `${subjectName ?? "数据"}列表`;
+    const resolvedTableAriaLabel = tableProps.ariaLabel ?? `${subjectName ?? "数据"}列表`;
     const headerActions = (
         <Space className="kuzhambu-list-page-actions">
             {enableSearch ? (
@@ -161,6 +164,39 @@ export const KuzhambuListPage = <RecordType extends object = object>({
             ) : null}
         </Space>
     );
+    const renderBody = () => {
+        if (content && tableAside) {
+            return (
+                <KuzhambuListPageTableArea
+                    aside={tableAside}
+                    asideClassName={tableAsideClassName}
+                    areaClassName={tableAreaClassName}
+                    placement={tableAsidePlacement}
+                >
+                    {content}
+                </KuzhambuListPageTableArea>
+            );
+        }
+
+        if (content) {
+            return content;
+        }
+
+        if (tableAside) {
+            return (
+                <KuzhambuListPageTableArea
+                    aside={tableAside}
+                    asideClassName={tableAsideClassName}
+                    areaClassName={tableAreaClassName}
+                    placement={tableAsidePlacement}
+                >
+                    <KuzhambuTable<RecordType> {...tableProps} ariaLabel={resolvedTableAriaLabel} />
+                </KuzhambuListPageTableArea>
+            );
+        }
+
+        return <KuzhambuTable<RecordType> {...tableProps} ariaLabel={resolvedTableAriaLabel} />;
+    };
 
     return (
         <KuzhambuPage
@@ -194,31 +230,7 @@ export const KuzhambuListPage = <RecordType extends object = object>({
                 />
             ) : null}
 
-            {tableAside ? (
-                <div
-                    className={[
-                        "kuzhambu-list-page-table-area",
-                        `kuzhambu-list-page-table-area-aside-${tableAsidePlacement}`,
-                        tableAreaClassName
-                    ].join(" ")}
-                >
-                    <div className="kuzhambu-list-page-table-main">
-                        <KuzhambuTable<RecordType>
-                            aria-label={resolvedTableAriaLabel}
-                            {...tableProps}
-                        />
-                    </div>
-                    <aside
-                        className={["kuzhambu-list-page-table-aside", tableAsideClassName]
-                            .filter(Boolean)
-                            .join(" ")}
-                    >
-                        {tableAside}
-                    </aside>
-                </div>
-            ) : (
-                <KuzhambuTable<RecordType> aria-label={resolvedTableAriaLabel} {...tableProps} />
-            )}
+            {renderBody()}
         </KuzhambuPage>
     );
 };

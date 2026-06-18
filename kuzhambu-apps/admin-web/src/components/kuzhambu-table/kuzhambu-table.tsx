@@ -219,11 +219,11 @@ export interface KuzhambuTableProps<RecordType extends object = object> extends 
     TableProps<RecordType>,
     "columns"
 > {
-    "aria-label"?: string;
-    "aria-labelledby"?: string;
     actionColumnKey?: Key;
     actionColumnMobileWidth?: number;
     actionColumnWidth?: number;
+    ariaLabel?: string;
+    ariaLabelledBy?: string;
     columns?: KuzhambuTableColumn<RecordType>[];
     getSortableRowKey?: (record: RecordType, index?: number) => Key;
     getSortableRowLabel?: (record: RecordType, index?: number) => string;
@@ -242,6 +242,8 @@ export const KuzhambuTable = <RecordType extends object = object>({
     actionColumnKey = DEFAULT_ACTION_COLUMN_KEY,
     actionColumnMobileWidth = DEFAULT_ACTION_COLUMN_MOBILE_WIDTH,
     actionColumnWidth = DEFAULT_ACTION_COLUMN_WIDTH,
+    ariaLabel,
+    ariaLabelledBy,
     className,
     columns,
     getSortableRowKey,
@@ -702,6 +704,8 @@ export const KuzhambuTable = <RecordType extends object = object>({
     return (
         <Table<RecordType>
             {...tableProps}
+            aria-label={ariaLabel}
+            aria-labelledby={ariaLabelledBy}
             className={[
                 "kuzhambu-table",
                 sortable ? "kuzhambu-table-sortable" : "kuzhambu-table-static",

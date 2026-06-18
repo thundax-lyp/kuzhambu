@@ -1,53 +1,26 @@
-import {
-    ApartmentOutlined,
-    DeleteOutlined,
-    PoweroffOutlined,
-    ReloadOutlined
-} from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Button, Input, Select, Space, Tree, Typography } from "antd";
-import type { DataNode } from "antd/es/tree";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { App, Splitter } from "antd";
+import { useCallback, useMemo, useState } from "react";
 import type { Key } from "react";
 import { sm2 } from "sm-crypto";
 import { createLoginForm } from "@/auth/auth-service";
 import { hasPermission } from "@/auth/permission-storage";
-import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
-import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
-import { KuzhambuTag } from "@/components/kuzhambu-tag";
-import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
+import { KuzhambuPage } from "@/components/kuzhambu-page";
 import { getCurrentUserInfo } from "@/service/current-user-service";
-import type { CurrentUserRecord } from "@/service/current-user-types";
 import type { OptionsRecord } from "@/types/options";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
-import { UserAvatar } from "./components/user-avatar";
+import { UserBatchActions } from "./components/user-batch-actions";
+import { ALL_DEPARTMENT_ID, UserDepartmentTree } from "./components/user-department-tree";
 import { UserEdit } from "./components/user-edit";
+import { UserFilterPanel } from "./components/user-filter-panel";
+import type { UserFilters, UserFilterStatus } from "./components/user-filter-panel";
+import { UserPageActions } from "./components/user-page-actions";
+import { UserTable } from "./components/user-table";
 import * as service from "./user-service";
 import type { PageQuery, SaveCommand, UserOptionKeys } from "./user-service";
 import type { UserDepartmentNode, UserFormValues, UserRecord } from "./user-types";
 import "./user-page.css";
-
-const { Text } = Typography;
-
-const ALL_DEPARTMENT_ID = "all";
-const DEPARTMENT_PANEL_BOTTOM_GAP = 8;
-
-const DEFAULT_COLUMN_WIDTHS = {
-    name: 230,
-    loginName: 160,
-    department: 190,
-    roles: 190,
-    status: 120,
-    ranks: 90
-};
-
-type UserFilterStatus = "ALL" | "ENABLED" | "DISABLED";
-
-interface UserFilters {
-    loginName: string;
-    enable: UserFilterStatus;
-}
 
 const DEFAULT_USER_FILTERS: UserFilters = {
     loginName: "",
@@ -70,86 +43,6 @@ const readUserName = (user: UserRecord) => {
     return normalizeSearch(user.name) || normalizeSearch(user.loginName) || `用户 ${user.id}`;
 };
 
-const readDepartmentName = (user: UserRecord) => {
-    return user.department?.namePath || user.department?.name || "";
-};
-
-const readRoleNames = (user: UserRecord) => {
-    return (user.roles || []).map((role) => role.name).filter(Boolean);
-};
-
-const statusValue = (user: UserRecord): Exclude<UserFilterStatus, "ALL"> => {
-    return user.enable === false ? "DISABLED" : "ENABLED";
-};
-
-const rankTagType = (user: UserRecord) => {
-    return user.superAdmin || user.ranks === 9 ? "accent" : "info";
-};
-
-const roleTagType = (user: UserRecord, index: number) => {
-    if (user.admin || user.superAdmin) {
-        return "accent";
-    }
-    return index === 0 ? "info" : "neutral";
-};
-
-const readRankValue = (user?: Pick<UserRecord, "ranks" | "superAdmin"> | null) => {
-    if (!user) {
-        return -1;
-    }
-    if (user.superAdmin) {
-        return 9;
-    }
-    return user.ranks ?? 0;
-};
-
-const canManageUserByRank = (
-    currentUser: CurrentUserRecord | undefined,
-    targetUser: UserRecord
-) => {
-    if (!currentUser || currentUser.id === targetUser.id) {
-        return false;
-    }
-    return readRankValue(targetUser) < readRankValue(currentUser);
-};
-
-const buildDepartmentTree = (departments: UserDepartmentNode[]): DataNode[] => {
-    const rootDepartment: UserDepartmentNode = {
-        id: ALL_DEPARTMENT_ID,
-        parentId: null,
-        name: "全部部门",
-        shortName: "全部"
-    };
-    const allDepartments = [rootDepartment, ...departments];
-    const childrenByParentId = new Map<string | null | undefined, UserDepartmentNode[]>();
-    allDepartments.forEach((department) => {
-        const parentId =
-            department.parentId || (department.id === ALL_DEPARTMENT_ID ? null : ALL_DEPARTMENT_ID);
-        const children = childrenByParentId.get(parentId) || [];
-        children.push(department);
-        childrenByParentId.set(parentId, children);
-    });
-
-    const toNode = (department: UserDepartmentNode): DataNode => ({
-        key: department.id,
-        title: (
-            <span className="user-department-node">
-                <span>{department.name}</span>
-            </span>
-        ),
-        children: childrenByParentId.get(department.id)?.map(toNode)
-    });
-
-    return (childrenByParentId.get(null) || []).map(toNode);
-};
-
-const collectTreeKeys = (nodes: DataNode[]): Key[] => {
-    return nodes.flatMap((node) => [
-        node.key,
-        ...(node.children ? collectTreeKeys(node.children) : [])
-    ]);
-};
-
 const toEnableQueryValue = (enable: UserFilterStatus) => {
     if (enable === "ENABLED") {
         return true;
@@ -164,14 +57,17 @@ export const UserPage = () => {
     const { message: messageApi } = App.useApp();
     const confirm = useKuzhambuConfirm();
     const queryClient = useQueryClient();
-    const departmentPanelRef = useRef<HTMLDivElement | null>(null);
     const [query, setQuery] = useState<PageQuery>({
         pageNo: DEFAULT_PAGE_NO,
         pageSize: DEFAULT_PAGE_SIZE
     });
     const [searchText, setSearchText] = useState("");
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [filters, setFilters] = useState<UserFilters>(DEFAULT_USER_FILTERS);
     const [selectedDepartmentId, setSelectedDepartmentId] = useState(ALL_DEPARTMENT_ID);
+    const [departments, setDepartments] = useState<UserDepartmentNode[]>(EMPTY_DEPARTMENTS);
+    const [departmentTreeFetching, setDepartmentTreeFetching] = useState(false);
+    const [departmentRefreshSignal, setDepartmentRefreshSignal] = useState(0);
     const [activeUser, setActiveUser] = useState<UserRecord | null>(null);
     const [userEditorOpen, setUserEditorOpen] = useState(false);
     const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
@@ -183,11 +79,6 @@ export const UserPage = () => {
     const userQuery = useQuery({
         queryKey: ["user", "page", query],
         queryFn: () => service.page(query),
-        retry: false
-    });
-    const departmentQuery = useQuery({
-        queryKey: ["user", "department", "tree"],
-        queryFn: () => service.listDepartments(),
         retry: false
     });
     const userOptionsQuery = useQuery({
@@ -203,10 +94,6 @@ export const UserPage = () => {
     const pageData = userQuery.data;
     const users = useMemo(() => pageData?.records ?? EMPTY_USERS, [pageData?.records]);
     const totalCount = pageData?.count ?? pageData?.totalCount ?? 0;
-    const departments = useMemo(
-        () => departmentQuery.data ?? EMPTY_DEPARTMENTS,
-        [departmentQuery.data]
-    );
     const userOptions = userOptionsQuery.data ?? EMPTY_USER_OPTIONS;
     const statusLabelByValue = useMemo(() => {
         return new Map(userOptions.statusOptions.map((option) => [option.value, option.label]));
@@ -214,101 +101,8 @@ export const UserPage = () => {
     const rankLabelByValue = useMemo(() => {
         return new Map(userOptions.rankOptions.map((option) => [option.value, option.label]));
     }, [userOptions.rankOptions]);
-    const departmentTreeData = useMemo(() => buildDepartmentTree(departments), [departments]);
-    const departmentTreeKeys = useMemo(
-        () => collectTreeKeys(departmentTreeData),
-        [departmentTreeData]
-    );
-    useEffect(() => {
-        const departmentPanel = departmentPanelRef.current;
-        if (!departmentPanel) {
-            return undefined;
-        }
-
-        let frame = 0;
-        const updateFloatingBounds = () => {
-            frame = 0;
-            const floatingContainer =
-                departmentPanel.closest<HTMLElement>(".user-department-aside") ?? departmentPanel;
-            const tableArea =
-                departmentPanel.closest<HTMLElement>(".user-department-table-area") ??
-                floatingContainer;
-            const topbar = document.querySelector(".topbar")?.getBoundingClientRect();
-            const sidebar = document.querySelector(".sidebar")?.getBoundingClientRect();
-            const stickyTop = Math.ceil((topbar?.bottom ?? 76) + 12);
-            const bottomInset = Math.max(
-                12,
-                Math.round(
-                    window.innerHeight -
-                        (sidebar?.bottom ?? window.innerHeight - 12) +
-                        DEPARTMENT_PANEL_BOTTOM_GAP
-                )
-            );
-            const floatingTop = Math.max(
-                stickyTop,
-                Math.ceil(floatingContainer.getBoundingClientRect().top)
-            );
-
-            floatingContainer.style.setProperty("--user-department-sticky-top", `${stickyTop}px`);
-            floatingContainer.style.setProperty(
-                "--user-department-floating-top",
-                `${floatingTop}px`
-            );
-            floatingContainer.style.setProperty(
-                "--user-department-floating-bottom",
-                `${bottomInset}px`
-            );
-            tableArea.style.setProperty("--user-department-sticky-top", `${stickyTop}px`);
-            tableArea.style.setProperty("--user-department-floating-bottom", `${bottomInset}px`);
-        };
-        const scheduleUpdate = () => {
-            if (frame) {
-                return;
-            }
-            frame = window.requestAnimationFrame(updateFloatingBounds);
-        };
-
-        updateFloatingBounds();
-        window.addEventListener("scroll", scheduleUpdate, { passive: true });
-        window.addEventListener("resize", scheduleUpdate);
-
-        const observer =
-            typeof ResizeObserver === "undefined" ? null : new ResizeObserver(scheduleUpdate);
-        const topbarElement = document.querySelector(".topbar");
-        const sidebarElement = document.querySelector(".sidebar");
-        if (observer && topbarElement) {
-            observer.observe(topbarElement);
-        }
-        if (observer && sidebarElement) {
-            observer.observe(sidebarElement);
-        }
-
-        return () => {
-            if (frame) {
-                window.cancelAnimationFrame(frame);
-            }
-            window.removeEventListener("scroll", scheduleUpdate);
-            window.removeEventListener("resize", scheduleUpdate);
-            observer?.disconnect();
-        };
-    }, [departmentTreeData]);
-
     const invalidatePage = async () => {
         await queryClient.invalidateQueries({ queryKey: ["user", "page"] });
-    };
-
-    const readStatusLabel = (user: UserRecord) => {
-        const value = statusValue(user);
-        return statusLabelByValue.get(value) || (value === "DISABLED" ? "禁用" : "启用");
-    };
-
-    const readStatusOptionLabel = (value: Exclude<UserFilterStatus, "ALL">) => {
-        return statusLabelByValue.get(value) || (value === "DISABLED" ? "禁用" : "启用");
-    };
-
-    const readRankLabel = (user: UserRecord) => {
-        const value = user.superAdmin ? "9" : String(user.ranks ?? 0);
-        return rankLabelByValue.get(value) || (user.superAdmin ? "超级管理员" : `等级 ${value}`);
     };
 
     const updateSingleStatus = (user: UserRecord, enable: boolean) => {
@@ -389,14 +183,14 @@ export const UserPage = () => {
         }
     });
 
-    const updateQuery = (nextQuery: Partial<PageQuery>) => {
+    const updateQuery = useCallback((nextQuery: Partial<PageQuery>) => {
         setSelectedRowKeys([]);
         setQuery((currentQuery) => ({
             ...currentQuery,
             ...nextQuery,
             pageNo: nextQuery.pageNo || DEFAULT_PAGE_NO
         }));
-    };
+    }, []);
 
     const searchUsers = (value: string) => {
         setSearchText(value);
@@ -420,14 +214,24 @@ export const UserPage = () => {
         });
     };
 
-    const selectDepartment = (keys: Key[]) => {
-        const nextDepartmentId = String(keys[0] || ALL_DEPARTMENT_ID);
-        setSelectedDepartmentId(nextDepartmentId);
-        updateQuery({
-            departmentId: nextDepartmentId === ALL_DEPARTMENT_ID ? undefined : nextDepartmentId,
-            pageNo: DEFAULT_PAGE_NO
-        });
-    };
+    const selectDepartment = useCallback(
+        (departmentId: string) => {
+            setSelectedDepartmentId(departmentId);
+            updateQuery({
+                departmentId: departmentId === ALL_DEPARTMENT_ID ? undefined : departmentId,
+                pageNo: DEFAULT_PAGE_NO
+            });
+        },
+        [updateQuery]
+    );
+
+    const updateDepartments = useCallback((nextDepartments: UserDepartmentNode[]) => {
+        setDepartments(nextDepartments);
+    }, []);
+
+    const updateDepartmentTreeFetching = useCallback((isFetching: boolean) => {
+        setDepartmentTreeFetching(isFetching);
+    }, []);
 
     const confirmDeleteUser = (user: UserRecord) => {
         confirm.danger({
@@ -553,263 +357,86 @@ export const UserPage = () => {
         updateMutation.mutate(toSaveCommand(activeUser, form));
     };
 
-    const columns: KuzhambuTableProps<UserRecord>["columns"] = [
-        {
-            title: "用户",
-            dataIndex: "name",
-            key: "name",
-            width: DEFAULT_COLUMN_WIDTHS.name,
-            render: (_, user) => {
-                const userName = readUserName(user);
-                return (
-                    <Space size={10}>
-                        <UserAvatar user={user} />
-                        <div className="user-name-cell">
-                            <Text strong>{userName}</Text>
-                            {user.email ? <Text type="secondary">{user.email}</Text> : null}
-                        </div>
-                    </Space>
-                );
-            }
-        },
-        {
-            title: "登录名",
-            dataIndex: "loginName",
-            key: "loginName",
-            width: DEFAULT_COLUMN_WIDTHS.loginName,
-            render: (loginName?: string | null) => loginName || null
-        },
-        {
-            title: "部门",
-            key: "department",
-            width: DEFAULT_COLUMN_WIDTHS.department,
-            render: (_, user) => readDepartmentName(user) || null
-        },
-        {
-            title: "角色",
-            key: "roles",
-            width: DEFAULT_COLUMN_WIDTHS.roles,
-            render: (_, user) => {
-                const roleNames = readRoleNames(user);
-                if (!roleNames.length) {
-                    return null;
-                }
-                return (
-                    <Space size={[4, 4]} wrap>
-                        {roleNames.map((roleName, index) => (
-                            <KuzhambuTag key={roleName} type={roleTagType(user, index)}>
-                                {roleName}
-                            </KuzhambuTag>
-                        ))}
-                    </Space>
-                );
-            }
-        },
-        {
-            title: "状态",
-            dataIndex: "enable",
-            key: "status",
-            width: DEFAULT_COLUMN_WIDTHS.status,
-            render: (_, user) => {
-                const canManageCurrentUser = canManageUserByRank(currentUserQuery.data, user);
-                return (
-                    <KuzhambuSwitch
-                        checked={user.enable !== false}
-                        checkedChildren={readStatusOptionLabel("ENABLED")}
-                        unCheckedChildren={readStatusOptionLabel("DISABLED")}
-                        disabled={!canEditUser || !canManageCurrentUser || statusMutation.isPending}
-                        aria-label={`切换 ${readUserName(user)} 状态，当前${readStatusLabel(user)}`}
-                        onChange={(checked) => updateSingleStatus(user, checked)}
-                    />
-                );
-            }
-        },
-        {
-            title: "级别",
-            dataIndex: "ranks",
-            key: "ranks",
-            width: DEFAULT_COLUMN_WIDTHS.ranks,
-            render: (_, user) => (
-                <KuzhambuTag type={rankTagType(user)}>{readRankLabel(user)}</KuzhambuTag>
-            )
-        },
-        {
-            key: "actions",
-            options: (user) => {
-                const userName = readUserName(user);
-                const canManageCurrentUser = canManageUserByRank(currentUserQuery.data, user);
-                const disabled = !canEditUser || !canManageCurrentUser;
-                return [
-                    {
-                        key: "edit",
-                        text: "编辑",
-                        ariaLabel: `编辑 ${userName}`,
-                        disabled,
-                        onClick: () => {
-                            setActiveUser(user);
-                            setUserEditorOpen(true);
-                        }
-                    },
-                    { type: "divider" },
-                    {
-                        key: "delete",
-                        text: "删除",
-                        type: "danger",
-                        ariaLabel: `删除 ${userName}`,
-                        disabled,
-                        onClick: () => confirmDeleteUser(user)
-                    }
-                ];
-            }
-        }
-    ];
-
     return (
         <>
-            <KuzhambuListPage<UserRecord>
-                pageClassName="user-page"
+            <KuzhambuPage
+                className="user-page"
                 title="用户管理"
                 description="管理后台用户、角色与权限状态。"
-                subjectName="用户"
-                enableAdd={canEditUser}
-                addText="新增"
-                enableFilter
-                enableSearch
-                searchShortcut="⌘K"
-                searchValue={searchText}
-                onSearchChange={searchUsers}
-                onAdd={openCreateUser}
-                filterActive={hasActiveFilters}
-                filterFields={[
-                    {
-                        name: "loginName",
-                        label: "登录名",
-                        render: () => (
-                            <Input
-                                allowClear
-                                placeholder="developer"
-                                value={filters.loginName}
-                                onChange={(event) =>
-                                    setFilters((currentFilters) => ({
-                                        ...currentFilters,
-                                        loginName: event.target.value
-                                    }))
-                                }
-                            />
-                        )
-                    },
-                    {
-                        name: "enable",
-                        label: "状态",
-                        render: () => (
-                            <Select<UserFilterStatus>
-                                value={filters.enable}
-                                options={[
-                                    { value: "ALL", label: "全部" },
-                                    ...userOptions.statusOptions.map((option) => ({
-                                        value: option.value as UserFilterStatus,
-                                        label: option.label
-                                    }))
-                                ]}
-                                loading={userOptionsQuery.isFetching}
-                                onChange={(enable) =>
-                                    setFilters((currentFilters) => ({
-                                        ...currentFilters,
-                                        enable
-                                    }))
-                                }
-                            />
-                        )
-                    }
-                ]}
-                onFilterApply={applyFilters}
-                onFilterReset={resetFilters}
-                pageActions={
-                    <Button
-                        icon={<ReloadOutlined />}
-                        loading={userQuery.isFetching || departmentQuery.isFetching}
-                        onClick={() => {
+                actions={
+                    <UserPageActions
+                        searchText={searchText}
+                        filterOpen={isFilterOpen}
+                        filterActive={hasActiveFilters}
+                        isRefreshing={userQuery.isFetching || departmentTreeFetching}
+                        canCreateUser={canEditUser}
+                        onSearch={searchUsers}
+                        onToggleFilter={() => setIsFilterOpen((open) => !open)}
+                        onRefresh={() => {
                             userQuery.refetch();
-                            departmentQuery.refetch();
+                            setDepartmentRefreshSignal((currentSignal) => currentSignal + 1);
                         }}
-                    >
-                        刷新
-                    </Button>
+                        onCreate={openCreateUser}
+                    />
                 }
-                batchClassName="user-table-toolbar"
-                selectedCount={selectedRowKeys.length}
-                batchActions={
-                    <Space wrap>
-                        <Button
-                            className="user-batch-neutral"
-                            icon={<PoweroffOutlined />}
-                            disabled={!hasSelectedUsers || !canEditUser}
-                            loading={statusMutation.isPending}
-                            onClick={() => batchUpdateStatus(false)}
-                        >
-                            禁用
-                        </Button>
-                        <Button
-                            className="user-batch-enable"
-                            icon={<PoweroffOutlined />}
-                            disabled={!hasSelectedUsers || !canEditUser}
-                            loading={statusMutation.isPending}
-                            onClick={() => batchUpdateStatus(true)}
-                        >
-                            启用
-                        </Button>
-                        <Button
-                            danger
-                            icon={<DeleteOutlined />}
-                            disabled={!hasSelectedUsers || !canEditUser}
-                            loading={deleteMutation.isPending}
-                            onClick={batchDeleteUsers}
-                        >
-                            批量删除
-                        </Button>
-                    </Space>
-                }
-                rowKey="id"
-                className="user-table"
-                columns={columns}
-                dataSource={users}
-                loading={userQuery.isFetching}
-                pagination={{
-                    current: query.pageNo || DEFAULT_PAGE_NO,
-                    pageSize: query.pageSize || DEFAULT_PAGE_SIZE,
-                    total: totalCount,
-                    showTotal: (total) => `${total} 个用户`,
-                    onChange: (pageNo, pageSize) => updateQuery({ pageNo, pageSize })
-                }}
-                rowSelection={{
-                    selectedRowKeys,
-                    onChange: setSelectedRowKeys,
-                    getCheckboxProps: (user) => ({
-                        disabled: !canEditUser || !canManageUserByRank(currentUserQuery.data, user)
-                    })
-                }}
-                tableAsidePlacement="left"
-                tableAreaClassName="user-department-table-area"
-                tableAsideClassName="user-department-aside"
-                tableAside={
-                    <div className="user-department-panel" ref={departmentPanelRef}>
-                        <div className="user-department-panel-head">
-                            <Space size={8}>
-                                <ApartmentOutlined />
-                                <Text strong>部门</Text>
-                            </Space>
-                        </div>
-                        <Tree
-                            key={departmentTreeKeys.join(",")}
-                            blockNode
-                            defaultExpandedKeys={departmentTreeKeys}
-                            selectedKeys={[selectedDepartmentId]}
-                            treeData={departmentTreeData}
-                            onSelect={selectDepartment}
+            >
+                <UserFilterPanel
+                    open={isFilterOpen}
+                    resetDisabled={!hasActiveFilters}
+                    filters={filters}
+                    statusOptions={userOptions.statusOptions}
+                    loading={userOptionsQuery.isFetching}
+                    onFiltersChange={setFilters}
+                    onApply={() => {
+                        applyFilters();
+                        setIsFilterOpen(false);
+                    }}
+                    onReset={resetFilters}
+                />
+                <UserBatchActions
+                    selectedCount={selectedRowKeys.length}
+                    canEditUser={canEditUser}
+                    statusPending={statusMutation.isPending}
+                    deletePending={deleteMutation.isPending}
+                    onDisable={() => batchUpdateStatus(false)}
+                    onEnable={() => batchUpdateStatus(true)}
+                    onDelete={batchDeleteUsers}
+                />
+                <Splitter className="user-department-work-area">
+                    <Splitter.Panel defaultSize={280} min={220} max={520}>
+                        <UserDepartmentTree
+                            refreshSignal={departmentRefreshSignal}
+                            selectedDepartmentId={selectedDepartmentId}
+                            onDepartmentsChange={updateDepartments}
+                            onFetchingChange={updateDepartmentTreeFetching}
+                            onSelectDepartment={selectDepartment}
                         />
-                    </div>
-                }
-            />
+                    </Splitter.Panel>
+                    <Splitter.Panel className="user-work-panel">
+                        <UserTable
+                            users={users}
+                            loading={userQuery.isFetching}
+                            currentPage={query.pageNo || DEFAULT_PAGE_NO}
+                            pageSize={query.pageSize || DEFAULT_PAGE_SIZE}
+                            totalCount={totalCount}
+                            selectedRowKeys={selectedRowKeys}
+                            statusPending={statusMutation.isPending}
+                            canEditUser={canEditUser}
+                            currentUser={currentUserQuery.data}
+                            statusLabelByValue={statusLabelByValue}
+                            rankLabelByValue={rankLabelByValue}
+                            onSelectedRowKeysChange={setSelectedRowKeys}
+                            onPageChange={(pageNo, pageSize) => updateQuery({ pageNo, pageSize })}
+                            onStatusChange={updateSingleStatus}
+                            onEdit={(user) => {
+                                setActiveUser(user);
+                                setUserEditorOpen(true);
+                            }}
+                            onDelete={confirmDeleteUser}
+                        />
+                    </Splitter.Panel>
+                </Splitter>
+            </KuzhambuPage>
 
             <UserEdit
                 key={`${userEditorOpen ? "open" : "closed"}-${activeUser?.id || "create"}-${currentUserQuery.data?.ranks ?? "rank"}`}

@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.assembler;
 
+import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsCommand;
 import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsKeywordCommand;
-import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsSaveCommand;
 import com.thundax.kuzhambu.classics.application.mingcustoms.query.MingCustomsPageQuery;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
@@ -27,8 +27,8 @@ public final class MingCustomsInterfaceAssembler {
                                 request.getSortDirection().trim().toUpperCase()));
     }
 
-    public static MingCustomsSaveCommand toSaveCommand(MingCustomsRequest request) {
-        return new MingCustomsSaveCommand(
+    public static MingCustomsCommand toCommand(MingCustomsRequest request) {
+        return new MingCustomsCommand(
                 MingCustomsEntryIdCodec.toDomain(request.getId()),
                 request.getTitle(),
                 request.getCategory(),

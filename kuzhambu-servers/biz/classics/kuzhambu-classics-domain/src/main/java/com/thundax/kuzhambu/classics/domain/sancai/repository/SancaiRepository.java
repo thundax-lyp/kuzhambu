@@ -34,6 +34,14 @@ public interface SancaiRepository {
 
     List<SancaiVolume> listVolumesByCategoryId(SancaiCategoryId categoryId, SortDirection sortDirection);
 
+    SancaiVolumeId insertVolume(SancaiVolume volume);
+
+    int updateVolume(SancaiVolume volume);
+
+    int countEntriesByVolumeId(SancaiVolumeId volumeId);
+
+    int deleteVolumeById(SancaiVolumeId id);
+
     List<SancaiEntry> listEntries(SortDirection sortDirection);
 
     List<SancaiEntry> listEntriesByVolumeId(SancaiVolumeId volumeId, SortDirection sortDirection);
@@ -56,6 +64,18 @@ public interface SancaiRepository {
             SortDirection sortDirection,
             int pageNo,
             int pageSize);
+
+    List<SancaiEntry> listEntries(
+            SancaiCategoryId categoryId,
+            SancaiVolumeId volumeId,
+            String keyword,
+            String lifecycleStatus,
+            String visibility,
+            String translationStatus,
+            String imageStatus,
+            String visualAssetStatus,
+            String refinementStatus,
+            SortDirection sortDirection);
 
     SancaiEntryId insertEntry(SancaiEntry entry);
 

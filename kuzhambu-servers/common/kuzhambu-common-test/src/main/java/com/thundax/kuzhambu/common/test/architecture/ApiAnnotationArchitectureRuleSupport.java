@@ -18,6 +18,27 @@ public final class ApiAnnotationArchitectureRuleSupport {
         "@GetMapping", "@PostMapping", "@PutMapping", "@DeleteMapping", "@PatchMapping"
     };
     private static final String[] REST_CONTROLLER_ANNOTATIONS = {"@RestController", "@WrappedApiController"};
+    private static final List<String> CONTROLLER_ACTION_VERBS = List.of(
+            "page",
+            "list",
+            "get",
+            "add",
+            "create",
+            "remove",
+            "delete",
+            "update",
+            "change",
+            "sort",
+            "move",
+            "upload",
+            "download",
+            "reset",
+            "login",
+            "logout",
+            "refresh",
+            "load",
+            "request",
+            "latest");
 
     private static final Pattern REST_CONTROLLER_CLASS_PATTERN = Pattern.compile(
             "((?:@[A-Za-z0-9_.]+(?:\\([^)]*\\))?\\s+)*)public\\s+class\\s+([A-Za-z0-9_]+Controller)\\b");
@@ -27,6 +48,8 @@ public final class ApiAnnotationArchitectureRuleSupport {
     private static final Pattern API_TAG_NUMERIC_PREFIX_PATTERN = Pattern.compile("^\\d+(?:-\\d+)*\\.\\s*");
     private static final Pattern REQUEST_MAPPING_VALUE_PATTERN =
             Pattern.compile("@RequestMapping\\s*\\(\\s*(?:value\\s*=\\s*)?\"([^\"]+)\"");
+    private static final Pattern METHOD_MAPPING_VALUE_PATTERN = Pattern.compile(
+            "@(GetMapping|PostMapping|PutMapping|DeleteMapping|PatchMapping)\\s*\\(\\s*(?:value\\s*=\\s*)?\"([^\"]+)\"");
     private static final Pattern RESPONSE_CONSTRUCTOR_PATTERN =
             Pattern.compile("new\\s+([A-Za-z0-9_]+Response)\\s*\\(");
 
@@ -84,6 +107,21 @@ public final class ApiAnnotationArchitectureRuleSupport {
                 "PostMapping methods must use no parameter, a @Valid @RequestBody *Request/List<*Request> "
                         + "parameter, or multipart form parameters, and return void, Boolean, String, *Response, "
                         + "List<*Response>, or PageResponse<*Response>: " + violations,
+                violations.isEmpty());
+    }
+
+    public static void assertControllerActionsUseVerbWhitelist(Path sourceRoot) throws IOException {
+        Path root = ArchitectureSourceSupport.repositoryRoot();
+        List<String> violations = new ArrayList<String>();
+
+        try (Stream<Path> paths = controllerSources(sourceRoot)) {
+            paths.filter(path -> path.getFileName().toString().endsWith("Controller.java"))
+                    .forEach(path -> collectControllerActionVerbViolations(root, path, violations));
+        }
+
+        assertTrue(
+                "Controller action methods and PostMapping action paths must use allowed verbs "
+                        + CONTROLLER_ACTION_VERBS + ": " + violations,
                 violations.isEmpty());
     }
 
@@ -331,6 +369,43 @@ public final class ApiAnnotationArchitectureRuleSupport {
                         + " return=" + compact(signature));
             }
             previousMethodEnd = matcher.end();
+        }
+    }
+
+    private static void collectControllerActionVerbViolations(Path root, Path path, List<String> violations) {
+        String content = ArchitectureSourceSupport.readSource(path);
+        if (restControllerClassAnnotations(content).length() == 0) {
+            return;
+        }
+        Matcher matcher = PUBLIC_METHOD_DECLARATION_PATTERN.matcher(content);
+        int previousMethodEnd = restControllerClassEnd(content);
+        while (matcher.find()) {
+            String annotations = content.substring(previousMethodEnd, matcher.start());
+            String methodName = matcher.group(1);
+            if (!isMappedMethod(annotations)) {
+                previousMethodEnd = matcher.end();
+                continue;
+            }
+            if (!hasAllowedActionVerb(methodName)) {
+                violations.add(ArchitectureSourceSupport.repositoryPath(root, path) + " method=" + methodName);
+            }
+            collectPostMappingActionPathViolations(root, path, methodName, annotations, violations);
+            previousMethodEnd = matcher.end();
+        }
+    }
+
+    private static void collectPostMappingActionPathViolations(
+            Path root, Path path, String methodName, String annotations, List<String> violations) {
+        Matcher matcher = METHOD_MAPPING_VALUE_PATTERN.matcher(annotations);
+        while (matcher.find()) {
+            if (!"PostMapping".equals(matcher.group(1))) {
+                continue;
+            }
+            String action = lastConcretePathSegment(matcher.group(2));
+            if (action.length() > 0 && !CONTROLLER_ACTION_VERBS.contains(action)) {
+                violations.add(ArchitectureSourceSupport.repositoryPath(root, path) + " method=" + methodName + " path="
+                        + matcher.group(2));
+            }
         }
     }
 
@@ -683,5 +758,32 @@ public final class ApiAnnotationArchitectureRuleSupport {
         }
         String[] segments = path.split("/");
         return segments.length >= 4 && segments[2].length() > 0 && segments[3].length() > 0;
+    }
+
+    private static boolean hasAllowedActionVerb(String methodName) {
+        for (String verb : CONTROLLER_ACTION_VERBS) {
+            if (methodName.equals(verb)
+                    || methodName.startsWith(verb)
+                            && methodName.length() > verb.length()
+                            && Character.isUpperCase(methodName.charAt(verb.length()))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static String lastConcretePathSegment(String path) {
+        if (path == null || path.length() == 0) {
+            return "";
+        }
+        String[] segments = path.split("/");
+        for (int i = segments.length - 1; i >= 0; i--) {
+            String segment = segments[i];
+            if (segment.length() == 0 || segment.startsWith("{")) {
+                continue;
+            }
+            return segment;
+        }
+        return "";
     }
 }

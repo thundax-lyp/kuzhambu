@@ -67,8 +67,8 @@ public class ClassicsSharingAdminController {
     @ApiImplicitParams({})
     @HasPermission("classics:sharing:edit")
     @SysLogger(value = "变更状态")
-    @PostMapping("status")
-    public void status(@Valid @RequestBody ClassicsSharingRequest request) {
+    @PostMapping("status/update")
+    public void updateStatus(@Valid @RequestBody ClassicsSharingRequest request) {
         service.changeStatus(new ShareLinkStatusCommand(
                 ClassicsShareLinkIdCodec.toDomain(request.getId()), ClassicsShareLinkStatus.from(request.getStatus())));
     }

@@ -54,13 +54,25 @@ public class ClassicsContentAdminController {
                 .toList();
     }
 
-    @Operation(summary = "保存古籍内容标签", description = "classics:content:edit")
+    @Operation(summary = "新增古籍内容标签", description = "classics:content:edit")
     @ApiImplicitParams({})
     @HasPermission("classics:content:edit")
-    @SysLogger(value = "保存标签")
-    @PostMapping("tags/save")
-    public ClassicsContentResponse saveTag(@Valid @RequestBody ClassicsContentRequest request) {
-        ClassicsContentTagId id = service.saveTag(ClassicsContentInterfaceAssembler.toTagCommand(request));
+    @SysLogger(value = "新增标签")
+    @PostMapping("tags/add")
+    public ClassicsContentResponse addTag(@Valid @RequestBody ClassicsContentRequest request) {
+        ClassicsContentTagId id = service.addTag(ClassicsContentInterfaceAssembler.toTagCommand(request));
+        return ClassicsContentResponse.builder()
+                .id(id == null ? null : id.value())
+                .build();
+    }
+
+    @Operation(summary = "更新古籍内容标签", description = "classics:content:edit")
+    @ApiImplicitParams({})
+    @HasPermission("classics:content:edit")
+    @SysLogger(value = "更新标签")
+    @PostMapping("tags/update")
+    public ClassicsContentResponse updateTag(@Valid @RequestBody ClassicsContentRequest request) {
+        ClassicsContentTagId id = service.updateTag(ClassicsContentInterfaceAssembler.toTagCommand(request));
         return ClassicsContentResponse.builder()
                 .id(id == null ? null : id.value())
                 .build();
@@ -95,13 +107,25 @@ public class ClassicsContentAdminController {
                 .toList();
     }
 
-    @Operation(summary = "保存古籍内容问答", description = "classics:content:edit")
+    @Operation(summary = "新增古籍内容问答", description = "classics:content:edit")
     @ApiImplicitParams({})
     @HasPermission("classics:content:edit")
-    @SysLogger(value = "保存问答")
-    @PostMapping("qa-pairs/save")
-    public ClassicsContentResponse saveQaPair(@Valid @RequestBody ClassicsContentRequest request) {
-        ClassicsContentQaPairId id = service.saveQaPair(ClassicsContentInterfaceAssembler.toQaCommand(request));
+    @SysLogger(value = "新增问答")
+    @PostMapping("qa-pairs/add")
+    public ClassicsContentResponse addQaPair(@Valid @RequestBody ClassicsContentRequest request) {
+        ClassicsContentQaPairId id = service.addQaPair(ClassicsContentInterfaceAssembler.toQaCommand(request));
+        return ClassicsContentResponse.builder()
+                .id(id == null ? null : id.value())
+                .build();
+    }
+
+    @Operation(summary = "更新古籍内容问答", description = "classics:content:edit")
+    @ApiImplicitParams({})
+    @HasPermission("classics:content:edit")
+    @SysLogger(value = "更新问答")
+    @PostMapping("qa-pairs/update")
+    public ClassicsContentResponse updateQaPair(@Valid @RequestBody ClassicsContentRequest request) {
+        ClassicsContentQaPairId id = service.updateQaPair(ClassicsContentInterfaceAssembler.toQaCommand(request));
         return ClassicsContentResponse.builder()
                 .id(id == null ? null : id.value())
                 .build();
@@ -128,7 +152,7 @@ public class ClassicsContentAdminController {
     @ApiImplicitParams({})
     @HasPermission("classics:content:export")
     @SysLogger(value = "创建导出任务")
-    @PostMapping("exports")
+    @PostMapping("exports/create")
     public ClassicsContentResponse createExport(@Valid @RequestBody ClassicsContentRequest request) {
         ClassicsContentExportJobId id =
                 service.createExportJob(ClassicsContentInterfaceAssembler.toExportCommand(request));

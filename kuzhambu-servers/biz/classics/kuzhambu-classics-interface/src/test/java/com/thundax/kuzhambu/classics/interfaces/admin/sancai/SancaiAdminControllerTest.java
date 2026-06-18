@@ -6,8 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.thundax.kuzhambu.classics.application.sancai.command.SancaiCategorySaveCommand;
-import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntrySaveCommand;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiCategoryCommand;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryCommand;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVolumeCommand;
 import com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryPageQuery;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiApplicationService;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiCategory;
@@ -25,14 +26,16 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiCateg
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVolumeId;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.SancaiAdminController;
-import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiCategorySaveRequest;
+import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiCategoryRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiEntryPageRequest;
-import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiEntrySaveRequest;
+import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiEntryRequest;
+import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiVolumeRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response.SancaiCategoryResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response.SancaiEntryResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response.SancaiVolumeResponse;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.common.web.response.DictResponse;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.List;
@@ -48,16 +51,26 @@ class SancaiAdminControllerTest {
     @Test
     void routesShouldKeepAdminApiPaths() throws Exception {
         assertRequestMapping(SancaiAdminController.class, "/api/classics/sancai");
+        assertGetMapping(SancaiAdminController.class, "listCategoryTypes", "categories/types");
+        assertGetMapping(SancaiAdminController.class, "listVolumeTypes", "volumes/types");
         assertPostMapping(SancaiAdminController.class, "listCategories", "categories/list");
         assertGetMapping(SancaiAdminController.class, "getCategory", "categories/{id}", Long.class);
+        assertPostMapping(SancaiAdminController.class, "addCategory", "categories/add", SancaiCategoryRequest.class);
         assertPostMapping(
-                SancaiAdminController.class, "saveCategory", "categories/save", SancaiCategorySaveRequest.class);
+                SancaiAdminController.class, "updateCategory", "categories/update", SancaiCategoryRequest.class);
         assertPostMapping(
-                SancaiAdminController.class, "deleteCategory", "categories/delete", SancaiCategorySaveRequest.class);
+                SancaiAdminController.class, "deleteCategory", "categories/delete", SancaiCategoryRequest.class);
         assertPostMapping(SancaiAdminController.class, "listVolumes", "volumes/list", SancaiEntryPageRequest.class);
+        assertGetMapping(SancaiAdminController.class, "getVolume", "volumes/{id}", Long.class);
+        assertPostMapping(SancaiAdminController.class, "addVolume", "volumes/add", SancaiVolumeRequest.class);
+        assertPostMapping(SancaiAdminController.class, "updateVolume", "volumes/update", SancaiVolumeRequest.class);
+        assertPostMapping(SancaiAdminController.class, "deleteVolume", "volumes/delete", SancaiVolumeRequest.class);
         assertPostMapping(SancaiAdminController.class, "pageEntries", "entries/page", SancaiEntryPageRequest.class);
+        assertPostMapping(SancaiAdminController.class, "listEntries", "entries/list", SancaiEntryPageRequest.class);
         assertGetMapping(SancaiAdminController.class, "getEntry", "entries/{id}", Long.class);
-        assertPostMapping(SancaiAdminController.class, "saveEntry", "entries/save", SancaiEntrySaveRequest.class);
+        assertPostMapping(SancaiAdminController.class, "addEntry", "entries/add", SancaiEntryRequest.class);
+        assertPostMapping(SancaiAdminController.class, "updateEntry", "entries/update", SancaiEntryRequest.class);
+        assertPostMapping(SancaiAdminController.class, "deleteEntry", "entries/delete", SancaiEntryRequest.class);
     }
 
     @Test
@@ -97,7 +110,7 @@ class SancaiAdminControllerTest {
                 "refinementStatus",
                 "sortDirection");
 
-        SancaiCategorySaveRequest categoryRequest = OBJECT_MAPPER.readValue(
+        SancaiCategoryRequest categoryRequest = OBJECT_MAPPER.readValue(
                 """
                 {
                   "id": 2,
@@ -106,11 +119,25 @@ class SancaiAdminControllerTest {
                   "priority": 10
                 }
                 """,
-                SancaiCategorySaveRequest.class);
+                SancaiCategoryRequest.class);
         assertEquals(2L, categoryRequest.getId());
         assertJsonFields(categoryRequest, "id", "title", "categoryType", "priority");
 
-        SancaiEntrySaveRequest saveRequest = OBJECT_MAPPER.readValue(
+        SancaiVolumeRequest volumeRequest = OBJECT_MAPPER.readValue(
+                """
+                {
+                  "id": 101,
+                  "categoryId": 2,
+                  "title": "天文卷一",
+                  "volumeType": "MAIN",
+                  "priority": 101
+                }
+                """,
+                SancaiVolumeRequest.class);
+        assertEquals(101L, volumeRequest.getId());
+        assertJsonFields(volumeRequest, "id", "categoryId", "title", "volumeType", "priority");
+
+        SancaiEntryRequest entryRequest = OBJECT_MAPPER.readValue(
                 """
                 {
                   "id": 3001,
@@ -127,10 +154,10 @@ class SancaiAdminControllerTest {
                   "refinementStatus": "COMPLETE"
                 }
                 """,
-                SancaiEntrySaveRequest.class);
-        assertEquals(3001L, saveRequest.getId());
+                SancaiEntryRequest.class);
+        assertEquals(3001L, entryRequest.getId());
         assertJsonFields(
-                saveRequest,
+                entryRequest,
                 "id",
                 "volumeId",
                 "title",
@@ -203,25 +230,47 @@ class SancaiAdminControllerTest {
     void listAndEntryMethodsShouldUseApplicationContracts() {
         SancaiAdminController controller = new SancaiAdminController(sancaiService());
 
+        List<DictResponse> categoryTypes = controller.listCategoryTypes();
+        assertEquals("SANCAI_CATEGORY_TYPE", categoryTypes.get(0).getType());
+        assertEquals("FORMAL", categoryTypes.get(0).getValue());
+        assertEquals("正式门类", categoryTypes.get(0).getLabel());
+
+        List<DictResponse> volumeTypes = controller.listVolumeTypes();
+        assertEquals("SANCAI_VOLUME_TYPE", volumeTypes.get(0).getType());
+        assertEquals("MAIN", volumeTypes.get(0).getValue());
+        assertEquals("正式卷目", volumeTypes.get(0).getLabel());
+
         List<SancaiCategoryResponse> categories = controller.listCategories();
         assertEquals(1, categories.size());
         assertEquals("天文", categories.get(0).getTitle());
 
         assertEquals("天文", controller.getCategory(2L).getTitle());
 
-        SancaiCategorySaveRequest categoryRequest = new SancaiCategorySaveRequest();
+        SancaiCategoryRequest categoryRequest = new SancaiCategoryRequest();
         categoryRequest.setId(2L);
         categoryRequest.setTitle("天文");
         categoryRequest.setCategoryType("FORMAL");
         categoryRequest.setPriority(10);
-        assertEquals(2L, controller.saveCategory(categoryRequest).getId());
+        assertEquals(2L, controller.addCategory(categoryRequest).getId());
+        assertEquals(2L, controller.updateCategory(categoryRequest).getId());
         controller.deleteCategory(categoryRequest);
 
-        SancaiEntryPageRequest volumeRequest = new SancaiEntryPageRequest();
-        volumeRequest.setCategoryId(2L);
-        List<SancaiVolumeResponse> volumes = controller.listVolumes(volumeRequest);
+        SancaiEntryPageRequest volumePageRequest = new SancaiEntryPageRequest();
+        volumePageRequest.setCategoryId(2L);
+        List<SancaiVolumeResponse> volumes = controller.listVolumes(volumePageRequest);
         assertEquals(1, volumes.size());
         assertEquals(2L, volumes.get(0).getCategoryId());
+        assertEquals("天文卷一", controller.getVolume(101L).getTitle());
+
+        SancaiVolumeRequest volumeRequest = new SancaiVolumeRequest();
+        volumeRequest.setId(101L);
+        volumeRequest.setCategoryId(2L);
+        volumeRequest.setTitle("天文卷一");
+        volumeRequest.setVolumeType("MAIN");
+        volumeRequest.setPriority(101);
+        assertEquals(101L, controller.addVolume(volumeRequest).getId());
+        assertEquals(101L, controller.updateVolume(volumeRequest).getId());
+        controller.deleteVolume(volumeRequest);
 
         SancaiEntryPageRequest pageRequest = new SancaiEntryPageRequest();
         pageRequest.setVolumeId(101L);
@@ -233,16 +282,19 @@ class SancaiAdminControllerTest {
         pageRequest.setPageSize(50);
         assertEquals(
                 "天地", controller.pageEntries(pageRequest).getRecords().get(0).getTitle());
+        assertEquals("天地", controller.listEntries(pageRequest).get(0).getTitle());
 
         assertEquals("天地", controller.getEntry(3001L).getTitle());
 
-        SancaiEntrySaveRequest saveRequest = new SancaiEntrySaveRequest();
-        saveRequest.setId(3001L);
-        saveRequest.setVolumeId(101L);
-        saveRequest.setTitle("天地");
-        saveRequest.setLifecycleStatus("PUBLISHED");
-        saveRequest.setVisibility("PUBLIC");
-        assertEquals(3001L, controller.saveEntry(saveRequest).getId());
+        SancaiEntryRequest entryRequest = new SancaiEntryRequest();
+        entryRequest.setId(3001L);
+        entryRequest.setVolumeId(101L);
+        entryRequest.setTitle("天地");
+        entryRequest.setLifecycleStatus("PUBLISHED");
+        entryRequest.setVisibility("PUBLIC");
+        assertEquals(3001L, controller.addEntry(entryRequest).getId());
+        assertEquals(3001L, controller.updateEntry(entryRequest).getId());
+        controller.deleteEntry(entryRequest);
     }
 
     @Test
@@ -267,8 +319,16 @@ class SancaiAdminControllerTest {
                         assertEquals(SancaiCategoryId.of(2L), args[0]);
                         return new SancaiCategory(SancaiCategoryId.of(2L), "天文", SancaiCategoryType.FORMAL, 10);
                     }
-                    if ("saveCategory".equals(method.getName())) {
-                        SancaiCategorySaveCommand command = (SancaiCategorySaveCommand) args[0];
+                    if ("addCategory".equals(method.getName())) {
+                        SancaiCategoryCommand command = (SancaiCategoryCommand) args[0];
+                        assertEquals(2L, command.getId());
+                        assertEquals("天文", command.getTitle());
+                        assertEquals(SancaiCategoryType.FORMAL, command.getCategoryType());
+                        assertEquals(10, command.getPriority());
+                        return SancaiCategoryId.of(2L);
+                    }
+                    if ("updateCategory".equals(method.getName())) {
+                        SancaiCategoryCommand command = (SancaiCategoryCommand) args[0];
                         assertEquals(2L, command.getId());
                         assertEquals("天文", command.getTitle());
                         assertEquals(SancaiCategoryType.FORMAL, command.getCategoryType());
@@ -284,6 +344,24 @@ class SancaiAdminControllerTest {
                         return List.of(new SancaiVolume(
                                 SancaiVolumeId.of(101L), SancaiCategoryId.of(2L), "天文卷一", SancaiVolumeType.MAIN, 101));
                     }
+                    if ("getVolume".equals(method.getName())) {
+                        assertEquals(SancaiVolumeId.of(101L), args[0]);
+                        return new SancaiVolume(
+                                SancaiVolumeId.of(101L), SancaiCategoryId.of(2L), "天文卷一", SancaiVolumeType.MAIN, 101);
+                    }
+                    if ("addVolume".equals(method.getName()) || "updateVolume".equals(method.getName())) {
+                        SancaiVolumeCommand command = (SancaiVolumeCommand) args[0];
+                        assertEquals(101L, command.getId());
+                        assertEquals(2L, command.getCategoryId());
+                        assertEquals("天文卷一", command.getTitle());
+                        assertEquals(SancaiVolumeType.MAIN, command.getVolumeType());
+                        assertEquals(101, command.getPriority());
+                        return SancaiVolumeId.of(101L);
+                    }
+                    if ("deleteVolume".equals(method.getName())) {
+                        assertEquals(SancaiVolumeId.of(101L), args[0]);
+                        return null;
+                    }
                     if ("pageEntries".equals(method.getName())) {
                         SancaiEntryPageQuery query = (SancaiEntryPageQuery) args[0];
                         PageQuery page = (PageQuery) args[1];
@@ -295,18 +373,30 @@ class SancaiAdminControllerTest {
                         assertEquals(50, page.getPageSize());
                         return PageResult.of(1, 50, 1, List.of(entry()));
                     }
+                    if ("listEntries".equals(method.getName())) {
+                        SancaiEntryPageQuery query = (SancaiEntryPageQuery) args[0];
+                        assertEquals(101L, query.getVolumeId());
+                        assertEquals("天地", query.getKeyword());
+                        assertEquals(SancaiEntryLifecycleStatus.PUBLISHED, query.getLifecycleStatus());
+                        assertEquals(SancaiEntryVisibility.PUBLIC, query.getVisibility());
+                        return List.of(entry());
+                    }
                     if ("getEntry".equals(method.getName())) {
                         assertEquals(SancaiEntryId.of(3001L), args[0]);
                         return entry();
                     }
-                    if ("saveEntry".equals(method.getName())) {
-                        SancaiEntrySaveCommand command = (SancaiEntrySaveCommand) args[0];
+                    if ("addEntry".equals(method.getName()) || "updateEntry".equals(method.getName())) {
+                        SancaiEntryCommand command = (SancaiEntryCommand) args[0];
                         assertEquals(3001L, command.getId());
                         assertEquals(101L, command.getVolumeId());
                         assertEquals("天地", command.getTitle());
                         assertEquals(SancaiEntryLifecycleStatus.PUBLISHED, command.getLifecycleStatus());
                         assertEquals(SancaiEntryVisibility.PUBLIC, command.getVisibility());
                         return SancaiEntryId.of(3001L);
+                    }
+                    if ("deleteEntry".equals(method.getName())) {
+                        assertEquals(SancaiEntryId.of(3001L), args[0]);
+                        return null;
                     }
                     throw new UnsupportedOperationException(method.getName());
                 });

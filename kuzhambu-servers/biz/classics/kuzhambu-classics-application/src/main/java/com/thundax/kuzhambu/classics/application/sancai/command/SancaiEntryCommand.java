@@ -15,7 +15,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class SancaiEntrySaveCommand {
+public class SancaiEntryCommand {
     private Long id;
     private Long volumeId;
     private String title;

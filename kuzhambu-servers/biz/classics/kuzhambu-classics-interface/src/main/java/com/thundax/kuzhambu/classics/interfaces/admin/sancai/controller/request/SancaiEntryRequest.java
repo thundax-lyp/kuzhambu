@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class SancaiEntrySaveRequest {
+public class SancaiEntryRequest {
     @JsonProperty("id")
     private Long id;
 

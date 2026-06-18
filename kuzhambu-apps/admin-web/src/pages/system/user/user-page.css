@@ -84,29 +84,36 @@ html[data-theme="dark"] .user-page {
     --kuzhambu-page-panel-padding: 20px 22px 0;
 }
 
-.user-department-aside {
-    position: sticky;
-    top: var(--user-department-sticky-top, 88px);
-    z-index: 2;
-    align-self: start;
-    height: max(
-        360px,
-        calc(
-            100vh - var(--user-department-floating-top, 218px) -
-                var(--user-department-floating-bottom, 12px)
-        )
-    );
-    max-height: calc(
-        100vh - var(--user-department-sticky-top, 88px) -
-            var(--user-department-floating-bottom, 12px)
-    );
+.user-page-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
 }
 
-.user-department-table-area {
-    min-height: calc(
-        100vh - var(--user-department-sticky-top, 88px) -
-            var(--user-department-floating-bottom, 12px)
-    );
+.user-page-search {
+    width: 250px;
+}
+
+.user-page-search-shortcut {
+    color: var(--user-muted);
+    font-size: 11px;
+}
+
+.user-page-actions .user-page-filter-active {
+    color: var(--user-blue);
+    background: var(--user-blue-soft);
+    border-color: var(--user-blue-line);
+}
+
+.user-page-actions .user-page-filter-active:hover {
+    color: var(--user-blue) !important;
+    background: rgba(37, 99, 235, 0.14) !important;
+    border-color: var(--user-blue-line) !important;
+}
+
+.user-work-panel {
+    box-sizing: border-box;
+    min-width: 0;
+    padding-left: 4px;
 }
 
 .user-page .ant-btn-primary {
@@ -193,13 +200,9 @@ html[data-theme="dark"] .user-page {
 }
 
 .user-department-panel {
-    display: grid;
-    grid-template-rows: auto minmax(0, 1fr);
-    gap: 10px;
-    height: 100%;
-    min-height: 0;
+    box-sizing: border-box;
+    margin-right: 4px;
     padding: 12px;
-    overflow: hidden;
     color: var(--user-ink);
     background:
         linear-gradient(180deg, var(--user-filter-bg-start), var(--user-filter-bg-end)),
@@ -226,9 +229,6 @@ html[data-theme="dark"] .user-page {
 }
 
 .user-department-panel .ant-tree {
-    min-height: 0;
-    height: 100%;
-    overflow: auto;
     color: var(--user-ink);
     background: transparent;
 }
@@ -302,11 +302,31 @@ html[data-theme="dark"] .user-page {
 }
 
 @media (max-width: 760px) {
+    .user-page-actions {
+        display: grid !important;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        width: 100%;
+        align-items: center;
+    }
+
+    .user-page-actions .ant-space-item {
+        min-width: 0;
+    }
+
+    .user-page-actions .ant-space-item:has(.user-page-search) {
+        grid-column: 1 / -1;
+    }
+
+    .user-page-actions .ant-btn,
+    .user-page-search {
+        width: 100%;
+    }
+
     .user-department-panel {
         display: none;
     }
 
-    .user-department-aside {
+    .user-department-work-area .ant-splitter-bar {
         display: none;
     }
 }

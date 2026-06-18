@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.classics.application.wangqi.service;
 
-import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentSaveCommand;
+import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentCommand;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentVisibilityCommand;
 import com.thundax.kuzhambu.classics.application.wangqi.query.WangqiDocumentPageQuery;
 import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId;
@@ -18,7 +18,9 @@ public interface WangqiDocumentApplicationService {
 
     List<WangqiDocument> listTimeline(WangqiDocumentPageQuery query);
 
-    WangqiDocumentId save(WangqiDocumentSaveCommand command);
+    WangqiDocumentId add(WangqiDocumentCommand command);
+
+    WangqiDocumentId update(WangqiDocumentCommand command);
 
     void changeStorageObject(WangqiDocumentId id, StorageObjectId storageObjectId);
 

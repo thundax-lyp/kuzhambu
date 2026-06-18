@@ -10,16 +10,19 @@ import lombok.Setter;
 @Setter
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class SancaiCategorySaveRequest {
+public class SancaiContentRequest {
     @JsonProperty("id")
     private Long id;
 
-    @JsonProperty("title")
-    private String title;
+    @JsonProperty("entryId")
+    private Long entryId;
 
-    @JsonProperty("categoryType")
-    private String categoryType;
+    @JsonProperty("question")
+    private String question;
 
-    @JsonProperty("priority")
-    private Integer priority;
+    @JsonProperty("answer")
+    private String answer;
+
+    @JsonProperty("source")
+    private String source;
 }

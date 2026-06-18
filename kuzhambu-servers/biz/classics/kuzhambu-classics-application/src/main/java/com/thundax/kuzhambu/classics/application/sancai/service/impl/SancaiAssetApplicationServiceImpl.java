@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.classics.application.sancai.service.impl;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.thundax.kuzhambu.classics.application.sancai.command.SancaiDraftSaveCommand;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiDraftCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImageSortCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiImageCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiShowcaseCommand;
@@ -46,7 +46,7 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public SancaiEntryDraftId saveDraft(SancaiDraftSaveCommand command) {
+    public SancaiEntryDraftId updateDraft(SancaiDraftCommand command) {
         SancaiEntryDraft draft = new SancaiEntryDraft();
         draft.setEntryId(SancaiEntryIdCodec.toDomain(command.getEntryId()));
         draft.setAutosavedAt(command.getAutosavedAt() == null ? new Date() : command.getAutosavedAt());
@@ -61,7 +61,7 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public SancaiEntryImageId saveImage(SancaiImageCommand command) {
+    public SancaiEntryImageId updateImage(SancaiImageCommand command) {
         SancaiEntryImage image = new SancaiEntryImage();
         image.setId(SancaiEntryImageIdCodec.toDomain(command.getId()));
         image.setEntryId(SancaiEntryIdCodec.toDomain(command.getEntryId()));
@@ -151,7 +151,7 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public SancaiVisualAssetId saveVisualAsset(SancaiVisualAsset visualAsset) {
+    public SancaiVisualAssetId updateVisualAsset(SancaiVisualAsset visualAsset) {
         if (visualAsset.getId() == null) {
             return repository.insertVisualAsset(visualAsset);
         }
