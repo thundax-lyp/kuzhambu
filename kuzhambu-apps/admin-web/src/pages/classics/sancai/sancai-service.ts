@@ -25,7 +25,11 @@ export interface SancaiCategorySaveCommand {
     id?: number | null;
     title?: string | null;
     categoryType?: string | null;
-    priority?: number | null;
+}
+
+export interface SancaiCategorySortCommand {
+    orderedIds: number[];
+    sortDirection?: "ASC" | "DESC" | null;
 }
 
 export interface SancaiEntrySaveCommand {
@@ -62,6 +66,12 @@ export const saveCategory = (request: SancaiCategorySaveCommand) => {
 
 export const removeCategory = (request: SancaiCategorySaveCommand) => {
     return postJson<boolean, SancaiCategorySaveCommand>("/classics/sancai/categories/delete", {
+        body: request
+    });
+};
+
+export const sortCategories = (request: SancaiCategorySortCommand) => {
+    return postJson<boolean, SancaiCategorySortCommand>("/classics/sancai/categories/sort", {
         body: request
     });
 };

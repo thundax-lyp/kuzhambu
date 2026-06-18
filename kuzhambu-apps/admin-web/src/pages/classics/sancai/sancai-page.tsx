@@ -1,6 +1,15 @@
-import { DeleteOutlined, EditOutlined, PlusOutlined, ReloadOutlined } from "@ant-design/icons";
+import {
+    ArrowDownOutlined,
+    ArrowUpOutlined,
+    DeleteOutlined,
+    EditOutlined,
+    MenuOutlined,
+    PlusOutlined,
+    ReloadOutlined
+} from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Alert, App, Button, Empty, Input, Select, Skeleton, Typography } from "antd";
+import { Alert, App, Button, Empty, Input, Modal, Select, Skeleton, Typography } from "antd";
+import type { DragEvent } from "react";
 import { useState } from "react";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuPage } from "@/components/kuzhambu-page";
@@ -33,7 +42,6 @@ const categoryTypeOptions = [
 
 interface SancaiCategoryFormValues {
     categoryType: string;
-    priority: number | null;
     title: string;
 }
 
@@ -70,6 +78,14 @@ const normalizeKeyword = (value: string) => {
     return keyword || undefined;
 };
 
+const readCategoryTypeLabel = (category: SancaiCategoryRecord) => {
+    return category.categoryType === "AUXILIARY" ? "辅助内容" : "正式门类";
+};
+
+const readVolumeTypeLabel = (volume: SancaiVolumeRecord) => {
+    return volume.volumeType === "AUXILIARY" ? "辅助卷目" : "正式卷目";
+};
+
 const renderCategoryList = (
     categories: SancaiCategoryRecord[],
     selectedCategoryId: number | null,
@@ -99,8 +115,17 @@ const renderCategoryList = (
                         aria-pressed={category.id === selectedCategoryId}
                         onClick={() => onSelect(category)}
                     >
-                        <span>{readTitle(category, "门类")}</span>
-                        <Text type="secondary">{category.categoryType || "未分类"}</Text>
+                        <span className="sancai-category-main">
+                            <span
+                                className={
+                                    category.categoryType === "AUXILIARY"
+                                        ? "sancai-category-type-dot sancai-category-type-dot-auxiliary"
+                                        : "sancai-category-type-dot sancai-category-type-dot-formal"
+                                }
+                                aria-label={`门类类型 ${readCategoryTypeLabel(category)}`}
+                            />
+                            <span>{readTitle(category, "门类")}</span>
+                        </span>
                     </button>
                     <div
                         className="sancai-catalog-actions"
@@ -152,8 +177,17 @@ const renderVolumeList = (
                     aria-pressed={volume.id === selectedVolumeId}
                     onClick={() => onSelect(volume)}
                 >
-                    <span>{readTitle(volume, "卷")}</span>
-                    <Text type="secondary">{volume.volumeType || "未分类"}</Text>
+                    <span className="sancai-volume-main">
+                        <span
+                            className={
+                                volume.volumeType === "AUXILIARY"
+                                    ? "sancai-category-type-dot sancai-category-type-dot-auxiliary"
+                                    : "sancai-category-type-dot sancai-category-type-dot-formal"
+                            }
+                            aria-label={`卷目类型 ${readVolumeTypeLabel(volume)}`}
+                        />
+                        <span>{readTitle(volume, "卷")}</span>
+                    </span>
                 </button>
             ))}
         </div>
@@ -257,7 +291,6 @@ const toFormValues = (entry?: SancaiEntryRecord): SancaiEntryFormValues => {
 const toCategoryFormValues = (category?: SancaiCategoryRecord): SancaiCategoryFormValues => {
     return {
         categoryType: category?.categoryType || "FORMAL",
-        priority: category?.priority ?? null,
         title: category?.title || ""
     };
 };
@@ -286,16 +319,6 @@ const renderCategoryEditor = (
                 options={categoryTypeOptions}
                 onChange={(categoryType) => onChange({ categoryType })}
             />
-            <Input
-                aria-label="三才图会门类排序值"
-                inputMode="numeric"
-                placeholder="排序值"
-                value={form.priority ?? ""}
-                onChange={(event) => {
-                    const value = event.target.value.trim();
-                    onChange({ priority: value ? Number(value) : null });
-                }}
-            />
             <div className="sancai-category-editor-actions">
                 <Button aria-label="取消编辑三才图会门类" onClick={onCancel}>
                     取消
@@ -311,6 +334,80 @@ const renderCategoryEditor = (
                     保存
                 </Button>
             </div>
+        </div>
+    );
+};
+
+const renderCategorySortEditor = (
+    categories: SancaiCategoryRecord[],
+    isSaving: boolean,
+    draggedCategoryId: number | null,
+    onMove: (categoryId: number, direction: -1 | 1) => void,
+    onDragStart: (categoryId: number) => void,
+    onDragOver: (event: DragEvent<HTMLDivElement>) => void,
+    onDrop: (targetCategoryId: number) => void
+) => {
+    if (!categories.length) {
+        return <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无可排序门类" />;
+    }
+
+    return (
+        <div className="sancai-category-sort-list" aria-label="三才图会门类排序列表">
+            {categories.map((category, index) => {
+                const title = readTitle(category, "门类");
+                return (
+                    <div
+                        className={
+                            draggedCategoryId === category.id
+                                ? "sancai-category-sort-item sancai-category-sort-item-dragging"
+                                : "sancai-category-sort-item"
+                        }
+                        draggable
+                        key={category.id}
+                        role="listitem"
+                        aria-label={`门类排序项 ${title}`}
+                        onDragStart={() => onDragStart(category.id)}
+                        onDragOver={onDragOver}
+                        onDrop={() => onDrop(category.id)}
+                    >
+                        <span
+                            className="sancai-category-sort-handle"
+                            aria-label={`拖动门类 ${title}`}
+                        >
+                            <MenuOutlined />
+                        </span>
+                        <span className="sancai-category-sort-title">
+                            <span
+                                className={
+                                    category.categoryType === "AUXILIARY"
+                                        ? "sancai-category-type-dot sancai-category-type-dot-auxiliary"
+                                        : "sancai-category-type-dot sancai-category-type-dot-formal"
+                                }
+                                aria-label={`门类类型 ${readCategoryTypeLabel(category)}`}
+                            />
+                            <span>{title}</span>
+                        </span>
+                        <div className="sancai-category-sort-actions">
+                            <Button
+                                aria-label={`上移门类 ${title}`}
+                                disabled={isSaving || index === 0}
+                                icon={<ArrowUpOutlined />}
+                                size="small"
+                                type="text"
+                                onClick={() => onMove(category.id, -1)}
+                            />
+                            <Button
+                                aria-label={`下移门类 ${title}`}
+                                disabled={isSaving || index === categories.length - 1}
+                                icon={<ArrowDownOutlined />}
+                                size="small"
+                                type="text"
+                                onClick={() => onMove(category.id, 1)}
+                            />
+                        </div>
+                    </div>
+                );
+            })}
         </div>
     );
 };
@@ -383,9 +480,12 @@ export const SancaiPage = () => {
     const [lifecycleStatus, setLifecycleStatus] = useState("ALL");
     const [editingCategory, setEditingCategory] = useState<SancaiCategoryRecord | null>(null);
     const [isCategoryEditorOpen, setIsCategoryEditorOpen] = useState(false);
+    const [isCategorySortOpen, setIsCategorySortOpen] = useState(false);
     const [categoryForm, setCategoryForm] = useState<SancaiCategoryFormValues>(() =>
         toCategoryFormValues()
     );
+    const [sortedCategories, setSortedCategories] = useState<SancaiCategoryRecord[]>([]);
+    const [draggedCategoryId, setDraggedCategoryId] = useState<number | null>(null);
     const [activeEntryId, setActiveEntryId] = useState<number | null>(null);
     const [entryForm, setEntryForm] = useState<SancaiEntryFormValues>(toFormValues());
     const categoriesQuery = useQuery({
@@ -454,6 +554,18 @@ export const SancaiPage = () => {
             messageApi.error(error instanceof Error ? error.message : "门类删除失败");
         }
     });
+    const sortCategoryMutation = useMutation({
+        mutationFn: service.sortCategories,
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: ["classics", "sancai", "categories"] });
+            setIsCategorySortOpen(false);
+            setDraggedCategoryId(null);
+            messageApi.success("三才图会门类顺序已保存");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "门类排序保存失败");
+        }
+    });
     const categories = categoriesQuery.data || [];
     const volumes = volumesQuery.data || [];
     const entries = entriesQuery.data?.records || [];
@@ -514,8 +626,62 @@ export const SancaiPage = () => {
         categoryMutation.mutate({
             id: editingCategory?.id,
             title: categoryForm.title,
-            categoryType: categoryForm.categoryType,
-            priority: categoryForm.priority
+            categoryType: categoryForm.categoryType
+        });
+    };
+
+    const openCategorySort = () => {
+        setSortedCategories(categories);
+        setDraggedCategoryId(null);
+        setIsCategorySortOpen(true);
+    };
+
+    const closeCategorySort = () => {
+        setIsCategorySortOpen(false);
+        setDraggedCategoryId(null);
+    };
+
+    const moveCategoryInSortForm = (categoryId: number, direction: -1 | 1) => {
+        setSortedCategories((currentCategories) => {
+            const index = currentCategories.findIndex((category) => category.id === categoryId);
+            const nextIndex = index + direction;
+            if (index < 0 || nextIndex < 0 || nextIndex >= currentCategories.length) {
+                return currentCategories;
+            }
+            const nextCategories = [...currentCategories];
+            const [category] = nextCategories.splice(index, 1);
+            nextCategories.splice(nextIndex, 0, category);
+            return nextCategories;
+        });
+    };
+
+    const dropCategoryInSortForm = (targetCategoryId: number) => {
+        if (draggedCategoryId === null || draggedCategoryId === targetCategoryId) {
+            return;
+        }
+        setSortedCategories((currentCategories) => {
+            const draggedCategory = currentCategories.find(
+                (category) => category.id === draggedCategoryId
+            );
+            const targetIndex = currentCategories.findIndex(
+                (category) => category.id === targetCategoryId
+            );
+            if (!draggedCategory || targetIndex < 0) {
+                return currentCategories;
+            }
+            const remainingCategories = currentCategories.filter(
+                (category) => category.id !== draggedCategoryId
+            );
+            remainingCategories.splice(targetIndex, 0, draggedCategory);
+            return remainingCategories;
+        });
+        setDraggedCategoryId(null);
+    };
+
+    const saveCategorySort = () => {
+        sortCategoryMutation.mutate({
+            orderedIds: sortedCategories.map((category) => category.id),
+            sortDirection: "ASC"
         });
     };
 
@@ -609,16 +775,23 @@ export const SancaiPage = () => {
                 <aside className="sancai-catalog-panel">
                     <div className="sancai-panel-heading">
                         <Title level={3}>目录</Title>
-                        <Button
-                            aria-label="新增三才图会门类"
-                            icon={<PlusOutlined />}
-                            size="small"
-                            onClick={startCreateCategory}
-                        >
-                            新增
-                        </Button>
+                        <div className="sancai-heading-actions">
+                            <Button
+                                aria-label="调整三才图会门类顺序"
+                                title="调整门类顺序"
+                                icon={<MenuOutlined />}
+                                size="small"
+                                onClick={openCategorySort}
+                            />
+                            <Button
+                                aria-label="新增三才图会门类"
+                                title="新增门类"
+                                icon={<PlusOutlined />}
+                                size="small"
+                                onClick={startCreateCategory}
+                            />
+                        </div>
                     </div>
-                    <Text type="secondary">{categories.length} 门类</Text>
                     {isCategoryEditorOpen
                         ? renderCategoryEditor(
                               editingCategory,
@@ -633,27 +806,37 @@ export const SancaiPage = () => {
                               cancelCategoryEdit
                           )
                         : null}
-                    {isLoading ? (
-                        <Skeleton active paragraph={{ rows: 8 }} />
-                    ) : (
-                        renderCategoryList(
-                            categories,
-                            selectedCategoryId,
-                            selectCategory,
-                            startEditCategory,
-                            confirmDeleteCategory
-                        )
-                    )}
+                    <div className="sancai-catalog-columns">
+                        <section className="sancai-catalog-column">
+                            <div className="sancai-panel-heading">
+                                <Title level={3}>门类</Title>
+                                <Text type="secondary">{categories.length} 项</Text>
+                            </div>
+                            {isLoading ? (
+                                <Skeleton active paragraph={{ rows: 8 }} />
+                            ) : (
+                                renderCategoryList(
+                                    categories,
+                                    selectedCategoryId,
+                                    selectCategory,
+                                    startEditCategory,
+                                    confirmDeleteCategory
+                                )
+                            )}
+                        </section>
 
-                    <div className="sancai-panel-heading sancai-panel-heading-secondary">
-                        <Title level={3}>卷目</Title>
-                        <Text type="secondary">{volumes.length} 卷</Text>
+                        <section className="sancai-catalog-column">
+                            <div className="sancai-panel-heading">
+                                <Title level={3}>卷目</Title>
+                                <Text type="secondary">{volumes.length} 卷</Text>
+                            </div>
+                            {isLoading ? (
+                                <Skeleton active paragraph={{ rows: 5 }} />
+                            ) : (
+                                renderVolumeList(volumes, selectedVolumeId, selectVolume)
+                            )}
+                        </section>
                     </div>
-                    {isLoading ? (
-                        <Skeleton active paragraph={{ rows: 5 }} />
-                    ) : (
-                        renderVolumeList(volumes, selectedVolumeId, selectVolume)
-                    )}
                 </aside>
 
                 <section className="sancai-workspace">
@@ -722,6 +905,31 @@ export const SancaiPage = () => {
                     </div>
                 </section>
             </div>
+            <Modal
+                title="调整三才图会门类顺序"
+                open={isCategorySortOpen}
+                okText="保存"
+                cancelText="取消"
+                confirmLoading={sortCategoryMutation.isPending}
+                onCancel={closeCategorySort}
+                onOk={saveCategorySort}
+                okButtonProps={{
+                    "aria-label": "保存三才图会门类顺序"
+                }}
+                cancelButtonProps={{
+                    "aria-label": "取消调整三才图会门类顺序"
+                }}
+            >
+                {renderCategorySortEditor(
+                    sortedCategories,
+                    sortCategoryMutation.isPending,
+                    draggedCategoryId,
+                    moveCategoryInSortForm,
+                    setDraggedCategoryId,
+                    (event) => event.preventDefault(),
+                    dropCategoryInSortForm
+                )}
+            </Modal>
         </KuzhambuPage>
     );
 };

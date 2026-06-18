@@ -27,9 +27,9 @@
 - 导出和静态展示第一版只记录任务，不同步生成产物。
 - 分享访问首版支持快照字段入库能力（`title_snapshot`、`content_snapshot_json`）。
 - Admin/Portal starter 已扫描 Classics 的 application/infra/interface 包，启动路径与装配可用。
-- 三才图会 Admin Web 最小闭环已完成：后台菜单和 `/classics/sancai` 路由可进入真实页面，支持门类 CRUD、卷列表、条目列表、搜索、生命周期筛选、分页、详情打开、标题/原文/译文/摘要/公开状态编辑和保存。
+- 三才图会 Admin Web 最小闭环已完成：后台菜单和 `/classics/sancai` 路由可进入真实页面，支持门类 CRUD、门类独立排序表单、门类/卷目并列列表、条目列表、搜索、生命周期筛选、分页、详情打开、标题/原文/译文/摘要/公开状态编辑和保存。
 - 三才图会门类、卷和条目治理状态已统一到运行时可解析的业务枚举口径，覆盖当前 schema 默认值、初始化数据和 dev 数据库取值。
-- 三才图会 Admin Web 已用 Playwright 验证接口闭环和页面闭环，覆盖 categories list/detail/save/delete、volumes、entries/page、entries/{id}、entries/save 请求体。
+- 三才图会 Admin Web 已用 Playwright 验证接口闭环和页面闭环，覆盖 categories list/detail/save/delete/sort、volumes、entries/page、entries/{id}、entries/save 请求体。
 
 未完成：
 
@@ -43,8 +43,8 @@
 | 需求项 | 状态 | 已完成部分 | 未完成部分 | 责任域 |
 | --- | --- | --- | --- | --- |
 | 14 个正式门类、卷首辅助内容、卷和条目三级浏览 | 已完成 | 需求、设计、schema、初始化数据已覆盖；门类/卷/条目查询服务、条目查询 API 与 Admin Web 三级浏览页面已实现 | 无 | Classics, Admin Web |
-| 门类治理 CRUD | 已完成 | 门类列表、详情、保存和删除接口已实现；Admin Web 已支持新增、编辑和删除空门类；删除有关联卷的门类由后端业务规则拦截 | 无 | Classics, Admin Web |
-| 门类和卷稳定排序 | 已完成 | `priority` 规则、schema 约束、service 排序参数与稳定排序 API 已支持；门类 CRUD 可维护排序值 | 无 | Classics |
+| 门类治理 CRUD | 已完成 | 门类列表、详情、保存和删除接口已实现；Admin Web 已支持新增、编辑和删除空门类；新增门类不输入 `priority`，由后端追加到末尾；删除有关联卷的门类由后端业务规则拦截 | 无 | Classics, Admin Web |
+| 门类和卷稳定排序 | 已完成 | `priority` 规则、schema 约束、service 排序参数与稳定排序 API 已支持；Admin Web 已提供门类独立排序表单，保存时提交 orderedIds | 无 | Classics, Admin Web |
 | 条目查看、创建、编辑、删除 | 部分完成 | 条目查询、详情、保存、删除接口与运行时代码已到位；Admin Web 已完成列表进入详情、编辑保存和列表刷新闭环 | 删除后分享目标状态同步、风险态重算未完成；删除不纳入本轮 Admin Web 页面闭环 | Classics, Admin Web |
 | 编辑标题、门类、卷、原文、译文和标签 | 部分完成 | 条目编辑核心字段（标题/门类/卷/正文等）与保存链路已实现；Admin Web 已支持标题、原文、译文、摘要、公开状态编辑保存 | 标签协作链路（通用标签联动）和入参校验规则待补齐；门类/卷迁移不纳入本轮页面闭环 | Classics, Admin Web, Knowledge |
 | 展示原文、译文、标签、配图和状态 | 部分完成 | 条目详情、标签列表、配图列表均已提供独立接口；Admin Web 已展示条目列表状态并支持详情编辑核心文本字段 | Admin Web 尚未聚合标签、配图和复杂视觉资产展示 | Classics, Admin Web |

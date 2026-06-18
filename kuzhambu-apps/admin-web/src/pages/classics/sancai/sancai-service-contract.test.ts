@@ -81,19 +81,26 @@ describe("sancai service request contracts", () => {
         await sancaiService.saveCategory({
             id: 2,
             title: "天文",
-            categoryType: "FORMAL",
-            priority: 10
+            categoryType: "FORMAL"
         });
         expectLastCall("POST", "/classics/sancai/categories/save", {
             id: 2,
             title: "天文",
-            categoryType: "FORMAL",
-            priority: 10
+            categoryType: "FORMAL"
         });
 
         await sancaiService.removeCategory({ id: 2 });
         expectLastCall("POST", "/classics/sancai/categories/delete", {
             id: 2
+        });
+
+        await sancaiService.sortCategories({
+            orderedIds: [2, 3, 4],
+            sortDirection: "ASC"
+        });
+        expectLastCall("POST", "/classics/sancai/categories/sort", {
+            orderedIds: [2, 3, 4],
+            sortDirection: "ASC"
         });
 
         await sancaiService.listVolumes({
