@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin starter 与菜单种子数据`：固定后台启动模块依赖和菜单种子数据
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-SYSTEM-STORAGE-LOOP.md`
-    - 范围对象：`kuzhambu-servers/starter/kuzhambu-admin-starter/pom.xml`、`kuzhambu-servers/starter/kuzhambu-admin-starter/src/main/resources/application.yml`、`kuzhambu-servers/starter/kuzhambu-admin-starter/src/main/resources/db/data/system.sql`、`kuzhambu-apps/admin-web/src/router/index.tsx`
-    - 处理动作：固定 admin starter 依赖、API 前缀和后台菜单路径
-    - 验收点：新库初始化后 admin 用户菜单全部落到前端路由，starter 能扫描 System 和 Storage 后台接口
-    - 重要度：8/10
-
 - [ ] `System Storage 接口闭环`：执行接口闭环验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-SYSTEM-STORAGE-LOOP.md`
