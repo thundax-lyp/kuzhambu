@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import * as categoryService from "./services/sancai-category-service";
 import * as sancaiService from "./sancai-service";
 
 interface CapturedCall {
@@ -252,6 +253,48 @@ describe("sancai service request contracts", () => {
             imageStatus: "READY",
             visualAssetStatus: "READY",
             refinementStatus: "COMPLETE"
+        });
+    });
+
+    it("sends category service requests with domain function names", async () => {
+        await categoryService.listTypes();
+        expectLastCall("GET", "/classics/sancai/categories/types", undefined);
+
+        await categoryService.list();
+        expectLastCall("POST", "/classics/sancai/categories/list", undefined);
+
+        await categoryService.add({
+            title: "天文",
+            categoryType: "FORMAL"
+        });
+        expectLastCall("POST", "/classics/sancai/categories/add", {
+            title: "天文",
+            categoryType: "FORMAL"
+        });
+
+        await categoryService.update({
+            id: 2,
+            title: "天文",
+            categoryType: "FORMAL"
+        });
+        expectLastCall("POST", "/classics/sancai/categories/update", {
+            id: 2,
+            title: "天文",
+            categoryType: "FORMAL"
+        });
+
+        await categoryService.deleteById(2);
+        expectLastCall("POST", "/classics/sancai/categories/delete", {
+            id: 2
+        });
+
+        await categoryService.sort({
+            orderedIds: [2, 3, 4],
+            sortDirection: "ASC"
+        });
+        expectLastCall("POST", "/classics/sancai/categories/sort", {
+            orderedIds: [2, 3, 4],
+            sortDirection: "ASC"
         });
     });
 });
