@@ -1,3 +1,204 @@
 .sancai-page {
+    --sancai-ink: var(--text-primary);
+    --sancai-copy: var(--text-secondary);
+    --sancai-panel: color-mix(in srgb, var(--surface-panel) 92%, transparent);
+    --sancai-soft: color-mix(in srgb, var(--surface-soft) 84%, transparent);
+    --sancai-line: var(--line-subtle);
+    --sancai-accent: #0f766e;
+    --sancai-accent-soft: rgba(15, 118, 110, 0.1);
+    --sancai-accent-line: rgba(15, 118, 110, 0.22);
+    --sancai-warm: #b45309;
     min-width: 0;
+}
+
+html[data-theme="dark"] .sancai-page {
+    --sancai-accent: #2dd4bf;
+    --sancai-accent-soft: rgba(45, 212, 191, 0.12);
+    --sancai-accent-line: rgba(45, 212, 191, 0.28);
+    --sancai-warm: #fbbf24;
+}
+
+.sancai-page .ant-typography-secondary {
+    color: var(--sancai-copy);
+}
+
+.sancai-alert {
+    position: relative;
+    z-index: 1;
+    margin-bottom: 14px;
+}
+
+.sancai-shell {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+    min-width: 0;
+    gap: 16px;
+}
+
+.sancai-catalog-panel,
+.sancai-list-panel,
+.sancai-detail-panel {
+    min-width: 0;
+    padding: 16px;
+    background: var(--sancai-panel);
+    border: 1px solid var(--sancai-line);
+    border-radius: 8px;
+}
+
+.sancai-catalog-panel {
+    display: grid;
+    align-content: start;
+    gap: 12px;
+}
+
+.sancai-workspace {
+    display: grid;
+    min-width: 0;
+    gap: 14px;
+}
+
+.sancai-toolbar {
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) 168px max-content;
+    min-width: 0;
+    gap: 10px;
+    padding: 12px;
+    background: var(--sancai-soft);
+    border: 1px solid var(--sancai-line);
+    border-radius: 8px;
+}
+
+.sancai-content-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.45fr) minmax(240px, 0.85fr);
+    min-width: 0;
+    gap: 14px;
+}
+
+.sancai-panel-heading {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.sancai-panel-heading h3.ant-typography {
+    margin: 0;
+    color: var(--sancai-ink);
+    font-size: 16px;
+    line-height: 1.25;
+}
+
+.sancai-panel-heading-secondary {
+    padding-top: 8px;
+    border-top: 1px solid var(--sancai-line);
+}
+
+.sancai-category-list,
+.sancai-volume-list,
+.sancai-entry-list {
+    display: grid;
+    min-width: 0;
+    gap: 8px;
+}
+
+.sancai-catalog-item,
+.sancai-volume-item {
+    display: grid;
+    width: 100%;
+    min-width: 0;
+    gap: 4px;
+    padding: 10px 12px;
+    text-align: left;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 8px;
+}
+
+.sancai-catalog-item > span:first-child,
+.sancai-volume-item > span:first-child {
+    overflow: hidden;
+    color: var(--sancai-ink);
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sancai-catalog-item-active {
+    background: var(--sancai-accent-soft);
+    border-color: var(--sancai-accent-line);
+}
+
+.sancai-entry-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) max-content;
+    min-width: 0;
+    gap: 12px;
+    padding: 12px;
+    background: var(--sancai-soft);
+    border: 1px solid var(--sancai-line);
+    border-radius: 8px;
+}
+
+.sancai-entry-row h4.ant-typography {
+    margin: 0 0 4px;
+    color: var(--sancai-ink);
+    font-size: 15px;
+}
+
+.sancai-entry-row .ant-typography-secondary {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sancai-entry-row > span {
+    align-self: start;
+    padding: 3px 8px;
+    color: var(--sancai-accent);
+    font-size: 12px;
+    font-weight: 700;
+    background: var(--sancai-accent-soft);
+    border: 1px solid var(--sancai-accent-line);
+    border-radius: 999px;
+}
+
+.sancai-detail-card {
+    display: grid;
+    min-width: 0;
+    gap: 8px;
+    padding: 14px;
+    background:
+        linear-gradient(135deg, var(--sancai-accent-soft), transparent 42%), var(--sancai-soft);
+    border: 1px solid var(--sancai-line);
+    border-radius: 8px;
+}
+
+.sancai-detail-card h3.ant-typography {
+    margin: 0;
+    color: var(--sancai-ink);
+    font-size: 20px;
+}
+
+.sancai-detail-card p {
+    margin: 0;
+    color: var(--sancai-copy);
+    line-height: 1.7;
+}
+
+@media (max-width: 1080px) {
+    .sancai-shell,
+    .sancai-content-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 760px) {
+    .sancai-toolbar {
+        grid-template-columns: 1fr;
+    }
 }
