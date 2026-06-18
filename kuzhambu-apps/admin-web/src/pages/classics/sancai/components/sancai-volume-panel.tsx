@@ -15,6 +15,7 @@ const { Text, Title } = Typography;
 
 interface SancaiVolumePanelProps {
     categories: SancaiCategoryRecord[];
+    defaultCreateOpen?: boolean;
     isLoading: boolean;
     onSelect: (volume: SancaiVolumeRecord) => void;
     selectedCategory: SancaiCategoryRecord | null;
@@ -33,6 +34,7 @@ const fallbackVolumeTypeOptions: DictItem[] = [
 
 export const SancaiVolumePanel = ({
     categories,
+    defaultCreateOpen = false,
     isLoading,
     onSelect,
     selectedCategory,
@@ -43,7 +45,7 @@ export const SancaiVolumePanel = ({
     const confirm = useKuzhambuConfirm();
     const queryClient = useQueryClient();
     const [editingVolume, setEditingVolume] = useState<SancaiVolumeRecord | null>(null);
-    const [isModelOpen, setIsModelOpen] = useState(false);
+    const [isModelOpen, setIsModelOpen] = useState(defaultCreateOpen);
     const [isSortOpen, setIsSortOpen] = useState(false);
     const typesQuery = useQuery<DictItem[]>({
         queryKey: ["classics", "sancai", "volumes", "types"],

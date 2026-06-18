@@ -1,8 +1,8 @@
 import { ReloadOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { Alert, Button, Input, Select } from "antd";
+import { Alert, Button, Select } from "antd";
 import { useMemo, useState } from "react";
-import { KuzhambuPage } from "@/components/kuzhambu-page";
+import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import { SancaiCatalogTreePanel } from "./components/sancai-catalog-tree-panel";
 import { SancaiEntryPanel } from "./components/sancai-entry-panel";
 import { SancaiVolumePanel } from "./components/sancai-volume-panel";
@@ -94,6 +94,10 @@ const buildTreeNodes = (
 export const SancaiPage = () => {
     const [selectedKey, setSelectedKey] = useState<string | null>(null);
     const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
+    const [createIntent, setCreateIntent] = useState<{
+        target: "entry" | "volume";
+        version: number;
+    }>({ target: "volume", version: 0 });
     const [refreshVersion, setRefreshVersion] = useState(0);
     const [keyword, setKeyword] = useState("");
     const [appliedKeyword, setAppliedKeyword] = useState<string | null>(null);
@@ -135,6 +139,7 @@ export const SancaiPage = () => {
     const visibleVolumes = selectedCategory
         ? volumes.filter((volume) => volume.categoryId === selectedCategory.id)
         : volumes;
+    const selectedPanel = selectedVolume ? "entry" : "volume";
     const treeExpandedKeys = expandedKeys.length
         ? expandedKeys
         : categories.map((category) => toCategoryKey(category.id));
@@ -191,21 +196,15 @@ export const SancaiPage = () => {
         setRefreshVersion((version) => version + 1);
     };
 
-    return (
-        <KuzhambuPage
-            className="sancai-page"
-            title="三才图会"
-            description="按门类、卷目和条目组织三才图会后台治理入口。"
-            actions={
-                <Button
-                    aria-label="刷新三才图会数据"
-                    icon={<ReloadOutlined />}
-                    onClick={refreshPage}
-                >
-                    刷新
-                </Button>
-            }
-        >
+    const startCreate = () => {
+        setCreateIntent((intent) => ({
+            target: selectedPanel,
+            version: intent.version + 1
+        }));
+    };
+
+    const pageContent = (
+        <>
             {hasError ? (
                 <Alert
                     className="sancai-alert"
@@ -216,65 +215,96 @@ export const SancaiPage = () => {
                 />
             ) : null}
 
-            <div className="sancai-shell">
-                <aside className="sancai-catalog-panel">
-                    <SancaiCatalogTreePanel
-                        expandedKeys={treeExpandedKeys}
-                        isLoading={isLoading}
-                        nodes={treeNodes}
-                        selectedKey={actualSelectedKey}
-                        onExpandedKeysChange={setExpandedKeys}
-                        onSelectNode={(node) => setSelectedKey(node.key)}
-                    />
-                </aside>
+            {selectedVolume ? (
+                <SancaiEntryPanel
+                    key={`entry-${selectedVolume.id}-${createIntent.version}`}
+                    categoryId={selectedCategory?.id ?? null}
+                    defaultCreateOpen={
+                        createIntent.target === "entry" && createIntent.version > 0
+                    }
+                    isCatalogLoading={isLoading}
+                    keyword={appliedKeyword}
+                    lifecycleStatus={appliedLifecycleStatus}
+                    refreshVersion={refreshVersion}
+                    selectedEntryId={selectedEntryIdFromKey}
+                    volumeId={selectedVolume.id}
+                    volumes={visibleVolumes}
+                    onClearEntry={clearEntry}
+                    onSelectEntry={selectEntry}
+                />
+            ) : (
+                <SancaiVolumePanel
+                    key={`volume-${selectedCategory?.id ?? "none"}-${createIntent.version}`}
+                    categories={categories}
+                    defaultCreateOpen={
+                        createIntent.target === "volume" && createIntent.version > 0
+                    }
+                    volumes={visibleVolumes}
+                    isLoading={isLoading}
+                    selectedCategory={selectedCategory}
+                    selectedVolume={selectedVolume}
+                    onSelect={selectVolume}
+                />
+            )}
+        </>
+    );
 
-                <section className="sancai-workspace">
-                    <div className="sancai-toolbar">
-                        <Input.Search
-                            aria-label="三才图会关键词"
-                            placeholder="搜索标题、原文或摘要"
-                            value={keyword}
-                            allowClear
-                            enterButton="查询"
-                            onChange={(event) => setKeyword(event.target.value)}
-                            onSearch={applyFilters}
-                        />
+    return (
+        <KuzhambuListPage
+            pageClassName="sancai-page"
+            title="三才图会"
+            description="按门类、卷目和条目组织三才图会后台治理入口。"
+            addText={selectedPanel === "entry" ? "新增条目" : "新增卷目"}
+            content={pageContent}
+            enableAdd={Boolean(selectedCategory)}
+            enableFilter={selectedPanel === "entry"}
+            enableSearch={selectedPanel === "entry"}
+            filterActive={Boolean(appliedLifecycleStatus)}
+            filterFields={[
+                {
+                    name: "lifecycleStatus",
+                    label: "条目状态",
+                    render: () => (
                         <Select
                             aria-label="三才图会条目状态"
                             value={lifecycleStatus}
                             options={entryStatusOptions}
                             onChange={setLifecycleStatus}
                         />
-                        <Button aria-label="重置三才图会筛选" onClick={resetFilters}>
-                            重置
-                        </Button>
-                    </div>
-
-                    {selectedVolume ? (
-                        <SancaiEntryPanel
-                            categoryId={selectedCategory?.id ?? null}
-                            isCatalogLoading={isLoading}
-                            keyword={appliedKeyword}
-                            lifecycleStatus={appliedLifecycleStatus}
-                            refreshVersion={refreshVersion}
-                            selectedEntryId={selectedEntryIdFromKey}
-                            volumeId={selectedVolume.id}
-                            volumes={visibleVolumes}
-                            onClearEntry={clearEntry}
-                            onSelectEntry={selectEntry}
-                        />
-                    ) : (
-                        <SancaiVolumePanel
-                            categories={categories}
-                            volumes={visibleVolumes}
-                            isLoading={isLoading}
-                            selectedCategory={selectedCategory}
-                            selectedVolume={selectedVolume}
-                            onSelect={selectVolume}
-                        />
-                    )}
-                </section>
-            </div>
-        </KuzhambuPage>
+                    )
+                }
+            ]}
+            pageActions={
+                <Button
+                    aria-label="刷新三才图会数据"
+                    icon={<ReloadOutlined />}
+                    onClick={refreshPage}
+                >
+                    刷新
+                </Button>
+            }
+            searchPlaceholder="搜索标题、原文或摘要"
+            searchValue={keyword}
+            tableAside={
+                <SancaiCatalogTreePanel
+                    expandedKeys={treeExpandedKeys}
+                    isLoading={isLoading}
+                    nodes={treeNodes}
+                    selectedKey={actualSelectedKey}
+                    onExpandedKeysChange={setExpandedKeys}
+                    onSelectNode={(node) => setSelectedKey(node.key)}
+                />
+            }
+            tableAsideClassName="sancai-catalog-panel"
+            tableAsidePlacement="left"
+            tableAreaClassName="sancai-shell"
+            onAdd={startCreate}
+            onFilterApply={applyFilters}
+            onFilterReset={resetFilters}
+            onSearchChange={(value) => {
+                setKeyword(value);
+                setAppliedKeyword(normalizeKeyword(value) ?? null);
+            }}
+        />
     );
 };

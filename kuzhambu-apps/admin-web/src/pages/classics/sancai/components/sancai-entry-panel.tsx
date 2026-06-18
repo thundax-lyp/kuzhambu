@@ -14,6 +14,7 @@ const { Text, Title } = Typography;
 
 interface SancaiEntryPanelProps {
     categoryId: number | null;
+    defaultCreateOpen?: boolean;
     isCatalogLoading: boolean;
     keyword?: string | null;
     lifecycleStatus?: string | null;
@@ -27,6 +28,7 @@ interface SancaiEntryPanelProps {
 
 export const SancaiEntryPanel = ({
     categoryId,
+    defaultCreateOpen = false,
     isCatalogLoading,
     keyword,
     lifecycleStatus,
@@ -40,7 +42,7 @@ export const SancaiEntryPanel = ({
     const { message: messageApi } = App.useApp();
     const confirm = useKuzhambuConfirm();
     const queryClient = useQueryClient();
-    const [isCreating, setIsCreating] = useState(false);
+    const [isCreating, setIsCreating] = useState(defaultCreateOpen);
     const entriesQuery = useQuery({
         queryKey: [
             "classics",

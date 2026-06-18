@@ -26,6 +26,7 @@ export interface KuzhambuListPageProps<RecordType extends object = object> exten
     batchActions?: ReactNode;
     batchClassName?: string;
     addText?: ReactNode;
+    content?: ReactNode;
     defaultFilterOpen?: boolean;
     enableAdd?: boolean;
     description?: ReactNode;
@@ -61,6 +62,7 @@ export const KuzhambuListPage = <RecordType extends object = object>({
     batchActions,
     batchClassName,
     addText,
+    content,
     defaultFilterOpen = false,
     enableAdd = false,
     description,
@@ -161,6 +163,60 @@ export const KuzhambuListPage = <RecordType extends object = object>({
             ) : null}
         </Space>
     );
+    const renderBody = () => {
+        if (content && tableAside) {
+            return (
+                <div
+                    className={[
+                        "kuzhambu-list-page-table-area",
+                        `kuzhambu-list-page-table-area-aside-${tableAsidePlacement}`,
+                        tableAreaClassName
+                    ].join(" ")}
+                >
+                    <div className="kuzhambu-list-page-table-main">{content}</div>
+                    <aside
+                        className={["kuzhambu-list-page-table-aside", tableAsideClassName]
+                            .filter(Boolean)
+                            .join(" ")}
+                    >
+                        {tableAside}
+                    </aside>
+                </div>
+            );
+        }
+
+        if (content) {
+            return content;
+        }
+
+        if (tableAside) {
+            return (
+                <div
+                    className={[
+                        "kuzhambu-list-page-table-area",
+                        `kuzhambu-list-page-table-area-aside-${tableAsidePlacement}`,
+                        tableAreaClassName
+                    ].join(" ")}
+                >
+                    <div className="kuzhambu-list-page-table-main">
+                        <KuzhambuTable<RecordType>
+                            aria-label={resolvedTableAriaLabel}
+                            {...tableProps}
+                        />
+                    </div>
+                    <aside
+                        className={["kuzhambu-list-page-table-aside", tableAsideClassName]
+                            .filter(Boolean)
+                            .join(" ")}
+                    >
+                        {tableAside}
+                    </aside>
+                </div>
+            );
+        }
+
+        return <KuzhambuTable<RecordType> aria-label={resolvedTableAriaLabel} {...tableProps} />;
+    };
 
     return (
         <KuzhambuPage
@@ -194,31 +250,7 @@ export const KuzhambuListPage = <RecordType extends object = object>({
                 />
             ) : null}
 
-            {tableAside ? (
-                <div
-                    className={[
-                        "kuzhambu-list-page-table-area",
-                        `kuzhambu-list-page-table-area-aside-${tableAsidePlacement}`,
-                        tableAreaClassName
-                    ].join(" ")}
-                >
-                    <div className="kuzhambu-list-page-table-main">
-                        <KuzhambuTable<RecordType>
-                            aria-label={resolvedTableAriaLabel}
-                            {...tableProps}
-                        />
-                    </div>
-                    <aside
-                        className={["kuzhambu-list-page-table-aside", tableAsideClassName]
-                            .filter(Boolean)
-                            .join(" ")}
-                    >
-                        {tableAside}
-                    </aside>
-                </div>
-            ) : (
-                <KuzhambuTable<RecordType> aria-label={resolvedTableAriaLabel} {...tableProps} />
-            )}
+            {renderBody()}
         </KuzhambuPage>
     );
 };

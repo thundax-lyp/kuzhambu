@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web-sancai-page-toolbar`：Page 同步工具栏上下文
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-TREE-PAGE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-page.tsx`
-    - 处理动作：接入 `KuzhambuListPage`，让新增按钮、搜索、筛选随当前 Panel 变化
-    - 验收点：Category、Volume、Entry、Content 上下文下工具栏文案和字段均正确
-    - 重要度：8/10
-
 - [ ] `classics-sancai-content-interface`：补齐 Content 后端接口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-TREE-PAGE.md`
