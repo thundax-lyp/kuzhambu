@@ -26,9 +26,7 @@ export const KuzhambuListPageTableArea = ({
     >
         <div className="kuzhambu-list-page-table-main">{children}</div>
         <aside
-            className={["kuzhambu-list-page-table-aside", asideClassName]
-                .filter(Boolean)
-                .join(" ")}
+            className={["kuzhambu-list-page-table-aside", asideClassName].filter(Boolean).join(" ")}
         >
             {aside}
         </aside>

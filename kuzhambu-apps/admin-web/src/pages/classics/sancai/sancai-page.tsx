@@ -133,9 +133,7 @@ export const SancaiPage = () => {
     if (selectedVolume) {
         selectedPanel = "entry";
     }
-    const treeExpandedKeys = expandedKeys.length
-        ? expandedKeys
-        : [ROOT_KEY];
+    const treeExpandedKeys = expandedKeys.length ? expandedKeys : [ROOT_KEY];
     const isLoading = isQueryLoading(categoriesQuery, volumesQuery);
     const hasError = isQueryError(categoriesQuery, volumesQuery);
     const enableEntryFilter = selectedPanel === "entry";
@@ -333,9 +331,7 @@ export const SancaiPage = () => {
                     <aside className="sancai-catalog-panel">
                         <SancaiCatalogTreePanel
                             expandedKeys={treeExpandedKeys}
-                            isRefreshing={
-                                categoriesQuery.isFetching || volumesQuery.isFetching
-                            }
+                            isRefreshing={categoriesQuery.isFetching || volumesQuery.isFetching}
                             isLoading={isLoading}
                             nodes={treeNodes}
                             selectedKey={actualSelectedKey}

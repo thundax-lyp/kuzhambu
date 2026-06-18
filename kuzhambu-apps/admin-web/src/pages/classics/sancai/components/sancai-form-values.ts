@@ -1,8 +1,4 @@
-import type {
-    SancaiCategoryRecord,
-    SancaiEntryRecord,
-    SancaiVolumeRecord
-} from "../sancai-types";
+import type { SancaiCategoryRecord, SancaiEntryRecord, SancaiVolumeRecord } from "../sancai-types";
 
 export interface SancaiCategoryFormValues {
     categoryType: string;

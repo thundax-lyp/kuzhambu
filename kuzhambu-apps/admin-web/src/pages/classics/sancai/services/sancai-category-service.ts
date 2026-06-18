@@ -22,9 +22,12 @@ export const list = () => {
 };
 
 export const add = (request: SancaiCategoryCommand) => {
-    return postJson<SancaiCategoryRecord, SancaiCategoryCommand>("/classics/sancai/categories/add", {
-        body: request
-    });
+    return postJson<SancaiCategoryRecord, SancaiCategoryCommand>(
+        "/classics/sancai/categories/add",
+        {
+            body: request
+        }
+    );
 };
 
 export const update = (request: SancaiCategoryCommand) => {

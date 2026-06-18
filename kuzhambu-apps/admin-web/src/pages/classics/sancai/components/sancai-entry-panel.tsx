@@ -60,7 +60,7 @@ export const SancaiEntryPanel = ({
         retry: false
     });
     const entries = entriesQuery.data || [];
-    const selectedEntry = isCreating ? undefined : editingEntry ?? undefined;
+    const selectedEntry = isCreating ? undefined : (editingEntry ?? undefined);
     const isLoading = isCatalogLoading || entriesQuery.isLoading;
     const addEntryMutation = useMutation({
         mutationFn: entryService.add,
@@ -213,7 +213,7 @@ export const SancaiEntryPanel = ({
                 onView={selectEntry}
             />
             <SancaiEntryModel
-                key={isCreating ? "create" : selectedEntry?.id ?? "empty"}
+                key={isCreating ? "create" : (selectedEntry?.id ?? "empty")}
                 entry={selectedEntry}
                 isSubmitting={addEntryMutation.isPending || updateEntryMutation.isPending}
                 mode={isCreating ? "create" : "edit"}

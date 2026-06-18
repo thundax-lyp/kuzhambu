@@ -71,10 +71,7 @@ export const UserDepartmentTree = ({
         retry: false
     });
     const { data: departmentData, isFetching, refetch } = departmentQuery;
-    const departments = useMemo(
-        () => departmentData ?? EMPTY_DEPARTMENTS,
-        [departmentData]
-    );
+    const departments = useMemo(() => departmentData ?? EMPTY_DEPARTMENTS, [departmentData]);
     const departmentTreeData = useMemo(() => buildDepartmentTree(departments), [departments]);
     const departmentTreeKeys = useMemo(
         () => collectTreeKeys(departmentTreeData),

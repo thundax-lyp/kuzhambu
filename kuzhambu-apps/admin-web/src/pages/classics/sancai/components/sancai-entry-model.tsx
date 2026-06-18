@@ -38,9 +38,7 @@ export const SancaiEntryModel = ({
                 <div className="sancai-drawer-footer">
                     <Button onClick={onCancel}>取消</Button>
                     <Button
-                        aria-label={
-                            mode === "create" ? "保存新增三才图会条目" : "保存三才图会条目"
-                        }
+                        aria-label={mode === "create" ? "保存新增三才图会条目" : "保存三才图会条目"}
                         type="primary"
                         loading={isSubmitting}
                         onClick={() => onSubmit(form)}
