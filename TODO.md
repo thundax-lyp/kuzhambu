@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Storage 读取接口`：补齐文件内容读取接口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-SYSTEM-STORAGE-LOOP.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-interface/src/main/java/com/thundax/kuzhambu/storage/interfaces/admin/object/controller/StorageObjectController.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/main/java/com/thundax/kuzhambu/storage/application/store/StoredObjectStore.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-infra/src/main/java/com/thundax/kuzhambu/storage/infra/store/ObjectStorageStoredObjectStore.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/main/java/com/thundax/kuzhambu/storage/application/service/impl/StorageApplicationServiceImpl.java`
-    - 处理动作：新增 `/api/storage/object/{id}/content` 文件内容读取接口
-    - 验收点：接口测试验证正常读取、删除态读取失败、`Content-Type` 和文件名响应头
-    - 重要度：9/10
-
 - [ ] `admin-web Storage 上传页面`：补齐 Storage 页面上传入口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-SYSTEM-STORAGE-LOOP.md`

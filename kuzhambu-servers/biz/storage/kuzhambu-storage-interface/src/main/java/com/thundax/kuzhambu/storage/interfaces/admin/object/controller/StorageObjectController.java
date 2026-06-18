@@ -13,6 +13,7 @@ import com.thundax.kuzhambu.storage.application.helper.StorageUploadResult;
 import com.thundax.kuzhambu.storage.application.helper.StorageUploadStreamHelper;
 import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
 import com.thundax.kuzhambu.storage.application.service.command.StorageSortCommand;
+import com.thundax.kuzhambu.storage.application.service.content.StoredObjectContent;
 import com.thundax.kuzhambu.storage.application.service.query.StorageQuery;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
@@ -27,13 +28,18 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -168,6 +174,30 @@ public class StorageObjectController {
             return StorageInterfaceAssembler.toResponse(storage);
         } catch (IOException exception) {
             throw AdminResponseExceptions.system(exception.getMessage());
+        }
+    }
+
+    @Operation(summary = "读取存储对象内容", description = "storage:object:view")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
+    @HasPermission(value = "storage:object:view")
+    @SysLogger(value = "读取内容")
+    @GetMapping(value = "{id}/content")
+    public void content(@PathVariable("id") String id, HttpServletResponse response) throws IOException {
+        StoredObjectContent content = storageApplicationService.openReadableContent(StoredObjectIdCodec.toDomain(id));
+        StoredObject storage = content.getStorage();
+        response.setContentType(
+                StringUtils.defaultIfBlank(storage.getContentType(), MediaType.APPLICATION_OCTET_STREAM_VALUE));
+        response.setHeader(
+                "Content-Disposition",
+                "inline; filename=\"" + FilenameUtils.getName(storage.getOriginalFilename()) + "\"");
+        try (InputStream inputStream = content.getInputStream()) {
+            inputStream.transferTo(response.getOutputStream());
         }
     }
 
