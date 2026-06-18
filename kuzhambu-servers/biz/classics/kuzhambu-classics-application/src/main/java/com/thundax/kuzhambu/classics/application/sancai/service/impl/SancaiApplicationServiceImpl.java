@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.classics.application.sancai.service.impl;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiCategorySaveCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiCategorySortCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntrySaveCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntrySortCommand;
@@ -8,6 +9,7 @@ import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryStatu
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVolumeSortCommand;
 import com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryPageQuery;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiApplicationService;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiCategoryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiVolumeIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiCategory;
@@ -28,6 +30,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,6 +48,46 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
     @Override
     public List<SancaiCategory> listCategories() {
         return repository.listCategories(SortDirection.ASC);
+    }
+
+    @Override
+    public SancaiCategory getCategory(SancaiCategoryId id) {
+        return repository.getCategoryById(id);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public SancaiCategoryId saveCategory(SancaiCategorySaveCommand command) {
+        if (command == null || StringUtils.isBlank(command.getTitle())) {
+            throw invalidCategory("title");
+        }
+        SancaiCategory category = new SancaiCategory();
+        category.setId(SancaiCategoryIdCodec.toDomain(command.getId()));
+        category.setTitle(command.getTitle().trim());
+        category.setCategoryType(command.getCategoryType());
+        category.setPriority(
+                command.getPriority() == null ? repository.maxCategoryPriority() + 1 : command.getPriority());
+        if (category.getId() == null) {
+            return repository.insertCategory(category);
+        }
+        if (repository.updateCategory(category) != 1) {
+            throw categoryNotFound();
+        }
+        return category.getId();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteCategory(SancaiCategoryId id) {
+        if (id == null) {
+            throw invalidCategory("id");
+        }
+        if (repository.countVolumesByCategoryId(id) > 0) {
+            throw new BizException("三才图会门类下仍有关联卷，不能删除");
+        }
+        if (repository.deleteCategoryById(id) != 1) {
+            throw categoryNotFound();
+        }
     }
 
     @Override
@@ -358,6 +401,14 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
                 ErrorCode.SORT_DB_FAILURE.getCode(),
                 ErrorCode.SORT_DB_FAILURE.getMessageKey(),
                 ErrorCode.SORT_DB_FAILURE.getMessage());
+    }
+
+    private static BizException invalidCategory(String field) {
+        return new BizException("无效的三才图会门类参数: " + field);
+    }
+
+    private static BizException categoryNotFound() {
+        return new BizException("三才图会门类不存在");
     }
 
     private static SancaiEntry toEntry(SancaiEntrySaveCommand command) {

@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.application.sancai.service;
 
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiCategorySaveCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiCategorySortCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntrySaveCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntrySortCommand;
@@ -18,6 +19,12 @@ import java.util.List;
 public interface SancaiApplicationService {
 
     List<SancaiCategory> listCategories();
+
+    SancaiCategory getCategory(SancaiCategoryId id);
+
+    SancaiCategoryId saveCategory(SancaiCategorySaveCommand command);
+
+    void deleteCategory(SancaiCategoryId id);
 
     List<SancaiVolume> listVolumes(SancaiCategoryId categoryId);
 

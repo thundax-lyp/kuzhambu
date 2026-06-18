@@ -1,16 +1,19 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.sancai.assembler;
 
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiCategorySaveCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntrySaveCommand;
 import com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryPageQuery;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiCategory;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVolume;
+import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiCategoryType;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryImageStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryLifecycleStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryRefinementStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryTranslationStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisibility;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisualAssetStatus;
+import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiCategorySaveRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiEntryPageRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiEntrySaveRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response.SancaiCategoryResponse;
@@ -54,6 +57,14 @@ public final class SancaiInterfaceAssembler {
                 fromImage(request.getImageStatus()),
                 fromVisualAsset(request.getVisualAssetStatus()),
                 fromRefinement(request.getRefinementStatus()));
+    }
+
+    public static SancaiCategorySaveCommand toCommand(SancaiCategorySaveRequest request) {
+        return new SancaiCategorySaveCommand(
+                request.getId(),
+                request.getTitle(),
+                fromCategoryType(request.getCategoryType()),
+                request.getPriority());
     }
 
     public static SancaiEntryResponse toResponse(SancaiEntry entity) {
@@ -110,6 +121,10 @@ public final class SancaiInterfaceAssembler {
 
     private static String value(Enum<?> value) {
         return value == null ? null : value.name();
+    }
+
+    private static SancaiCategoryType fromCategoryType(String value) {
+        return StringUtils.isBlank(value) ? null : SancaiCategoryType.from(value);
     }
 
     private static SancaiEntryLifecycleStatus fromLifecycle(String value) {
