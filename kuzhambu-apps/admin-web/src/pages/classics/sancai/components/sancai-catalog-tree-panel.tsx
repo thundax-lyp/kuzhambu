@@ -1,5 +1,6 @@
 import { BookOutlined, FileTextOutlined, FolderOutlined } from "@ant-design/icons";
 import { Empty, Skeleton, Tree, Typography } from "antd";
+import type { DataNode } from "antd/es/tree";
 import type { Key, ReactNode } from "react";
 import { useMemo } from "react";
 import type { SancaiCatalogNodeType, SancaiCatalogTreeNode } from "../sancai-types";
@@ -25,7 +26,7 @@ const flattenNodes = (nodes: SancaiCatalogTreeNode[]): SancaiCatalogTreeNode[] =
     return nodes.flatMap((node) => [node, ...flattenNodes(node.children || [])]);
 };
 
-const toTreeData = (nodes: SancaiCatalogTreeNode[]) => {
+const toTreeData = (nodes: SancaiCatalogTreeNode[]): DataNode[] => {
     return nodes.map((node) => ({
         children: node.children ? toTreeData(node.children) : undefined,
         key: node.key,

@@ -169,8 +169,9 @@ export const SancaiPage = () => {
 
     const selectVolume = (volume: SancaiVolumeRecord) => {
         setSelectedKey(toVolumeKey(volume.id));
-        if (volume.categoryId) {
-            setExpandedKeys((keys) => Array.from(new Set([...keys, toCategoryKey(volume.categoryId)])));
+        const categoryId = volume.categoryId;
+        if (categoryId !== null && categoryId !== undefined) {
+            setExpandedKeys((keys) => Array.from(new Set([...keys, toCategoryKey(categoryId)])));
         }
     };
 

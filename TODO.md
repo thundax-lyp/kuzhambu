@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web-sancai-cleanup`：清理旧三才页面结构
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-TREE-PAGE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai`
-    - 处理动作：删除旧双列目录样式、旧 service 聚合函数和过渡状态
-    - 验收点：三才页面 lint、相关测试和 build 通过，完成项从 TODO 删除
-    - 重要度：7/10
-
 ## 待审阅任务项
 
 ## 待讨论项
