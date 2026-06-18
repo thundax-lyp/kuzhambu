@@ -1,8 +1,10 @@
-import { Button, Input, Modal, Select } from "antd";
+import { Button, Input, Modal, Select, Typography } from "antd";
 import { useState } from "react";
 import type { DictItem } from "@/types/dict";
 import { toCategoryFormValues, type SancaiCategoryFormValues } from "./sancai-form-values";
 import type { SancaiCategoryRecord } from "../sancai-types";
+
+const { Text } = Typography;
 
 interface SancaiCategoryModelProps {
     category: SancaiCategoryRecord | null;
@@ -31,44 +33,53 @@ export const SancaiCategoryModel = ({
         <Modal
             title={category ? "编辑门类" : "新增门类"}
             open
-            footer={null}
+            footer={
+                <div className="sancai-modal-footer">
+                    <Button onClick={onCancel}>取消</Button>
+                    <Button
+                        aria-label={
+                            category ? `保存门类 ${readTitle(category, "门类")}` : "保存新增门类"
+                        }
+                        loading={isSubmitting}
+                        type="primary"
+                        onClick={() => onSubmit(form)}
+                    >
+                        保存
+                    </Button>
+                </div>
+            }
             destroyOnHidden
             onCancel={onCancel}
         >
             <div className="sancai-category-editor" aria-label={category ? "编辑门类" : "新增门类"}>
-                <Input
-                    aria-label="三才图会门类标题"
-                    placeholder="门类标题"
-                    value={form.title}
-                    onChange={(event) =>
-                        setForm((currentForm) => ({
-                            ...currentForm,
-                            title: event.target.value
-                        }))
-                    }
-                />
-                <Select
-                    aria-label="三才图会门类类型"
-                    value={form.categoryType}
-                    options={categoryTypeOptions}
-                    onChange={(categoryType) =>
-                        setForm((currentForm) => ({
-                            ...currentForm,
-                            categoryType
-                        }))
-                    }
-                />
-                <Button
-                    className="sancai-modal-submit"
-                    aria-label={
-                        category ? `保存门类 ${readTitle(category, "门类")}` : "保存新增门类"
-                    }
-                    loading={isSubmitting}
-                    type="primary"
-                    onClick={() => onSubmit(form)}
-                >
-                    保存
-                </Button>
+                <label className="sancai-form-field">
+                    <Text strong>门类标题</Text>
+                    <Input
+                        aria-label="三才图会门类标题"
+                        placeholder="门类标题"
+                        value={form.title}
+                        onChange={(event) =>
+                            setForm((currentForm) => ({
+                                ...currentForm,
+                                title: event.target.value
+                            }))
+                        }
+                    />
+                </label>
+                <label className="sancai-form-field">
+                    <Text strong>门类类型</Text>
+                    <Select
+                        aria-label="三才图会门类类型"
+                        value={form.categoryType}
+                        options={categoryTypeOptions}
+                        onChange={(categoryType) =>
+                            setForm((currentForm) => ({
+                                ...currentForm,
+                                categoryType
+                            }))
+                        }
+                    />
+                </label>
             </div>
         </Modal>
     );

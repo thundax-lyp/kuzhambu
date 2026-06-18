@@ -1,6 +1,5 @@
-import { PlusOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Alert, App, Button, Skeleton, Typography } from "antd";
+import { Alert, App } from "antd";
 import { useState } from "react";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import type { KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
@@ -10,18 +9,13 @@ import type { SancaiEntryFormValues } from "./sancai-form-values";
 import * as entryService from "../services/sancai-entry-service";
 import type { SancaiEntryRecord, SancaiVolumeRecord } from "../sancai-types";
 
-const { Text, Title } = Typography;
-
 interface SancaiEntryPanelProps {
     categoryId: number | null;
     defaultCreateOpen?: boolean;
     isCatalogLoading: boolean;
     keyword?: string | null;
     lifecycleStatus?: string | null;
-    onClearEntry: () => void;
-    onSelectEntry: (entry: SancaiEntryRecord) => void;
     refreshVersion: number;
-    selectedEntryId: number | null;
     volumeId: number | null;
     volumes: SancaiVolumeRecord[];
 }
@@ -32,10 +26,7 @@ export const SancaiEntryPanel = ({
     isCatalogLoading,
     keyword,
     lifecycleStatus,
-    onClearEntry,
-    onSelectEntry,
     refreshVersion,
-    selectedEntryId,
     volumeId,
     volumes
 }: SancaiEntryPanelProps) => {
@@ -43,6 +34,8 @@ export const SancaiEntryPanel = ({
     const confirm = useKuzhambuConfirm();
     const queryClient = useQueryClient();
     const [isCreating, setIsCreating] = useState(defaultCreateOpen);
+    const [isModelOpen, setIsModelOpen] = useState(defaultCreateOpen);
+    const [editingEntry, setEditingEntry] = useState<SancaiEntryRecord | null>(null);
     const entriesQuery = useQuery({
         queryKey: [
             "classics",
@@ -67,15 +60,15 @@ export const SancaiEntryPanel = ({
         retry: false
     });
     const entries = entriesQuery.data || [];
-    const selectedEntry = isCreating
-        ? undefined
-        : entries.find((entry) => entry.id === selectedEntryId);
+    const selectedEntry = isCreating ? undefined : editingEntry ?? undefined;
     const isLoading = isCatalogLoading || entriesQuery.isLoading;
     const addEntryMutation = useMutation({
         mutationFn: entryService.add,
         onSuccess: async () => {
             await queryClient.invalidateQueries({ queryKey: ["classics", "sancai", "entries"] });
             setIsCreating(false);
+            setIsModelOpen(false);
+            setEditingEntry(null);
             messageApi.success("三才图会条目已新增");
         },
         onError: (error) => {
@@ -86,6 +79,8 @@ export const SancaiEntryPanel = ({
         mutationFn: entryService.update,
         onSuccess: async () => {
             await queryClient.invalidateQueries({ queryKey: ["classics", "sancai", "entries"] });
+            setIsModelOpen(false);
+            setEditingEntry(null);
             messageApi.success("三才图会条目已保存");
         },
         onError: (error) => {
@@ -96,7 +91,7 @@ export const SancaiEntryPanel = ({
         mutationFn: entryService.deleteById,
         onSuccess: async () => {
             await queryClient.invalidateQueries({ queryKey: ["classics", "sancai", "entries"] });
-            onClearEntry();
+            setEditingEntry(null);
             messageApi.success("三才图会条目已删除");
         },
         onError: (error) => {
@@ -114,18 +109,16 @@ export const SancaiEntryPanel = ({
         }
     });
 
-    const startCreate = () => {
-        if (!volumeId) {
-            messageApi.warning("请先选择卷目");
-            return;
-        }
-        onClearEntry();
-        setIsCreating(true);
-    };
-
     const selectEntry = (entry: SancaiEntryRecord) => {
         setIsCreating(false);
-        onSelectEntry(entry);
+        setEditingEntry(entry);
+        setIsModelOpen(true);
+    };
+
+    const closeModel = () => {
+        setIsCreating(false);
+        setEditingEntry(null);
+        setIsModelOpen(false);
     };
 
     const submitEntry = (form: SancaiEntryFormValues) => {
@@ -201,56 +194,33 @@ export const SancaiEntryPanel = ({
     };
 
     return (
-        <div className="sancai-content-grid">
-            <section className="sancai-list-panel">
-                <div className="sancai-panel-heading">
-                    <Title level={3}>条目</Title>
-                    <div className="sancai-heading-actions">
-                        <Text type="secondary">{entries.length} 条</Text>
-                        <Button
-                            aria-label="新增三才图会条目"
-                            title="新增条目"
-                            icon={<PlusOutlined />}
-                            size="small"
-                            onClick={startCreate}
-                        />
-                    </div>
-                </div>
-                {entriesQuery.isError ? (
-                    <Alert
-                        className="sancai-alert"
-                        type="warning"
-                        showIcon
-                        message="三才图会条目加载失败"
-                        description="请确认后台条目接口可用后刷新页面。"
-                    />
-                ) : null}
-                <SancaiEntryList
-                    entries={entries}
-                    isLoading={isLoading || sortEntryMutation.isPending}
-                    volumes={volumes}
-                    onDelete={deleteEntry}
-                    onSort={sortEntry}
-                    onView={selectEntry}
+        <>
+            {entriesQuery.isError ? (
+                <Alert
+                    className="sancai-alert"
+                    type="warning"
+                    showIcon
+                    message="三才图会条目加载失败"
+                    description="请确认后台条目接口可用后刷新页面。"
                 />
-            </section>
-
-            <aside className="sancai-detail-panel">
-                <div className="sancai-panel-heading">
-                    <Title level={3}>详情</Title>
-                </div>
-                {isLoading ? (
-                    <Skeleton active paragraph={{ rows: 6 }} />
-                ) : (
-                    <SancaiEntryModel
-                        key={isCreating ? "create" : selectedEntry?.id ?? "empty"}
-                        entry={selectedEntry}
-                        isSubmitting={addEntryMutation.isPending || updateEntryMutation.isPending}
-                        mode={isCreating ? "create" : "edit"}
-                        onSubmit={submitEntry}
-                    />
-                )}
-            </aside>
-        </div>
+            ) : null}
+            <SancaiEntryList
+                entries={entries}
+                isLoading={isLoading || sortEntryMutation.isPending}
+                volumes={volumes}
+                onDelete={deleteEntry}
+                onSort={sortEntry}
+                onView={selectEntry}
+            />
+            <SancaiEntryModel
+                key={isCreating ? "create" : selectedEntry?.id ?? "empty"}
+                entry={selectedEntry}
+                isSubmitting={addEntryMutation.isPending || updateEntryMutation.isPending}
+                mode={isCreating ? "create" : "edit"}
+                open={isModelOpen && !isLoading}
+                onCancel={closeModel}
+                onSubmit={submitEntry}
+            />
+        </>
     );
 };

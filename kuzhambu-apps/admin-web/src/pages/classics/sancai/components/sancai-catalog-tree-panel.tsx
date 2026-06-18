@@ -1,5 +1,5 @@
-import { BookOutlined, FileTextOutlined, FolderOutlined } from "@ant-design/icons";
-import { Empty, Skeleton, Tree, Typography } from "antd";
+import { BookOutlined, FolderOutlined, ReloadOutlined } from "@ant-design/icons";
+import { Button, Empty, Skeleton, Space, Tree, Typography } from "antd";
 import type { DataNode } from "antd/es/tree";
 import type { Key, ReactNode } from "react";
 import { useMemo } from "react";
@@ -9,16 +9,18 @@ const { Text } = Typography;
 
 interface SancaiCatalogTreePanelProps {
     expandedKeys: string[];
+    isRefreshing: boolean;
     isLoading: boolean;
     nodes: SancaiCatalogTreeNode[];
     onExpandedKeysChange: (keys: string[]) => void;
+    onRefresh: () => void;
     onSelectNode: (node: SancaiCatalogTreeNode) => void;
     selectedKey: string | null;
+    title: string;
 }
 
 const iconByType: Record<SancaiCatalogNodeType, ReactNode> = {
     category: <FolderOutlined />,
-    entry: <FileTextOutlined />,
     root: <FolderOutlined />,
     volume: <BookOutlined />
 };
@@ -44,27 +46,24 @@ const toTreeData = (nodes: SancaiCatalogTreeNode[]): DataNode[] => {
 
 export const SancaiCatalogTreePanel = ({
     expandedKeys,
+    isRefreshing,
     isLoading,
     nodes,
     onExpandedKeysChange,
+    onRefresh,
     onSelectNode,
-    selectedKey
+    selectedKey,
+    title
 }: SancaiCatalogTreePanelProps) => {
     const nodeByKey = useMemo(() => {
         return new Map(flattenNodes(nodes).map((node) => [node.key, node]));
     }, [nodes]);
     const treeData = useMemo(() => toTreeData(nodes), [nodes]);
-
+    let treeContent = <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无目录" />;
     if (isLoading) {
-        return <Skeleton active paragraph={{ rows: 10 }} />;
-    }
-
-    if (!nodes.length) {
-        return <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无目录" />;
-    }
-
-    return (
-        <div className="sancai-catalog-tree-panel" aria-label="三才图会目录树">
+        treeContent = <Skeleton active paragraph={{ rows: 10 }} />;
+    } else if (nodes.length) {
+        treeContent = (
             <Tree
                 blockNode
                 expandedKeys={expandedKeys}
@@ -78,6 +77,26 @@ export const SancaiCatalogTreePanel = ({
                     }
                 }}
             />
+        );
+    }
+
+    return (
+        <div className="sancai-catalog-tree-panel" aria-label="三才图会目录树">
+            <div className="sancai-catalog-panel-head">
+                <Space size={8}>
+                    <FolderOutlined />
+                    <Text strong>{title}</Text>
+                </Space>
+                <Button
+                    aria-label="刷新三才图会目录树"
+                    className="sancai-catalog-refresh"
+                    icon={<ReloadOutlined />}
+                    loading={isRefreshing}
+                    size="small"
+                    onClick={onRefresh}
+                />
+            </div>
+            {treeContent}
         </div>
     );
 };

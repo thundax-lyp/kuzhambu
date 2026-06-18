@@ -1,18 +1,14 @@
-import { MenuOutlined, PlusOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Button, Typography } from "antd";
+import { App, Tag } from "antd";
 import { useState } from "react";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuTable } from "@/components/kuzhambu-table";
-import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
+import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
 import type { DictItem } from "@/types/dict";
 import { SancaiCategoryModel } from "./sancai-category-model";
-import { SancaiCategorySortModel } from "./sancai-category-sort-model";
 import type { SancaiCategoryFormValues } from "./sancai-form-values";
 import * as categoryService from "../services/sancai-category-service";
 import type { SancaiCategoryRecord } from "../sancai-types";
-
-const { Text, Title } = Typography;
 
 interface SancaiCategoryPanelProps {
     categories: SancaiCategoryRecord[];
@@ -39,6 +35,10 @@ const readCategoryTypeLabel = (category: SancaiCategoryRecord, options: DictItem
     );
 };
 
+const readCategoryTypeColor = (category: SancaiCategoryRecord) => {
+    return category.categoryType === "AUXILIARY" ? "gold" : "green";
+};
+
 export const SancaiCategoryPanel = ({
     categories,
     defaultCreateOpen = false,
@@ -51,7 +51,6 @@ export const SancaiCategoryPanel = ({
     const queryClient = useQueryClient();
     const [editingCategory, setEditingCategory] = useState<SancaiCategoryRecord | null>(null);
     const [isModelOpen, setIsModelOpen] = useState(defaultCreateOpen);
-    const [isSortOpen, setIsSortOpen] = useState(false);
     const typesQuery = useQuery<DictItem[]>({
         queryKey: ["classics", "sancai", "categories", "types"],
         queryFn: categoryService.listTypes,
@@ -100,18 +99,12 @@ export const SancaiCategoryPanel = ({
         mutationFn: categoryService.sort,
         onSuccess: async () => {
             await queryClient.invalidateQueries({ queryKey: ["classics", "sancai", "categories"] });
-            closeSort();
             messageApi.success("三才图会门类顺序已保存");
         },
         onError: (error) => {
             messageApi.error(error instanceof Error ? error.message : "门类排序保存失败");
         }
     });
-
-    const startCreate = () => {
-        setEditingCategory(null);
-        setIsModelOpen(true);
-    };
 
     const startEdit = (category: SancaiCategoryRecord) => {
         setEditingCategory(category);
@@ -141,17 +134,28 @@ export const SancaiCategoryPanel = ({
         });
     };
 
-    const openSort = () => {
-        setIsSortOpen(true);
-    };
-
-    const closeSort = () => {
-        setIsSortOpen(false);
-    };
-
-    const submitSort = (orderedIds: number[]) => {
+    const submitSort = (
+        sourceCategory: SancaiCategoryRecord,
+        targetCategory: SancaiCategoryRecord,
+        position: KuzhambuTableSortPosition
+    ) => {
+        if (sourceCategory.id === targetCategory.id) {
+            return;
+        }
+        const remainingCategories = categories.filter(
+            (category) => category.id !== sourceCategory.id
+        );
+        const targetIndex = remainingCategories.findIndex(
+            (category) => category.id === targetCategory.id
+        );
+        if (targetIndex < 0) {
+            return;
+        }
+        const insertIndex = position === "before" ? targetIndex : targetIndex + 1;
+        const sortedCategories = [...remainingCategories];
+        sortedCategories.splice(insertIndex, 0, sourceCategory);
         sortMutation.mutate({
-            orderedIds,
+            orderedIds: sortedCategories.map((category) => category.id),
             sortDirection: "ASC"
         });
     };
@@ -163,8 +167,16 @@ export const SancaiCategoryPanel = ({
             width: 260,
             render: (_, category) => (
                 <div className="sancai-category-title-cell">
-                    <Text strong>{readTitle(category, "门类")}</Text>
-                    <Text type="secondary">ID {category.id}</Text>
+                    <a
+                        href="#"
+                        aria-label={`打开门类 ${readTitle(category, "门类")}`}
+                        onClick={(event) => {
+                            event.preventDefault();
+                            onSelect(category);
+                        }}
+                    >
+                        {readTitle(category, "门类")}
+                    </a>
                 </div>
             )
         },
@@ -173,17 +185,9 @@ export const SancaiCategoryPanel = ({
             key: "categoryType",
             width: 160,
             render: (_, category) => (
-                <span className="sancai-category-type-cell">
-                    <span
-                        className={
-                            category.categoryType === "AUXILIARY"
-                                ? "sancai-category-type-dot sancai-category-type-dot-auxiliary"
-                                : "sancai-category-type-dot sancai-category-type-dot-formal"
-                        }
-                        aria-hidden
-                    />
-                    <Text>{readCategoryTypeLabel(category, categoryTypeItems)}</Text>
-                </span>
+                <Tag color={readCategoryTypeColor(category)}>
+                    {readCategoryTypeLabel(category, categoryTypeItems)}
+                </Tag>
             )
         },
         {
@@ -195,6 +199,7 @@ export const SancaiCategoryPanel = ({
                     ariaLabel: `编辑门类 ${readTitle(category, "门类")}`,
                     onClick: () => startEdit(category)
                 },
+                { type: "divider" },
                 {
                     danger: true,
                     key: "delete",
@@ -207,28 +212,8 @@ export const SancaiCategoryPanel = ({
     ];
 
     return (
-        <section className="sancai-catalog-column">
-            <div className="sancai-panel-heading">
-                <Title level={3}>门类</Title>
-                <div className="sancai-heading-actions">
-                    <Text type="secondary">{categories.length} 项</Text>
-                    <Button
-                        aria-label="调整三才图会门类顺序"
-                        title="调整门类顺序"
-                        icon={<MenuOutlined />}
-                        size="small"
-                        onClick={openSort}
-                    />
-                    <Button
-                        aria-label="新增三才图会门类"
-                        title="新增门类"
-                        icon={<PlusOutlined />}
-                        size="small"
-                        onClick={startCreate}
-                    />
-                </div>
-            </div>
-            <div className="sancai-catalog-scroll">
+        <section className="sancai-panel-body">
+            <div className="sancai-panel-scroll">
                 <KuzhambuTable
                     className="sancai-category-table"
                     ariaLabel="三才图会门类表格"
@@ -240,13 +225,14 @@ export const SancaiCategoryPanel = ({
                     rowKey="id"
                     size="middle"
                     scroll={{ x: 520 }}
+                    sortable
+                    onSort={submitSort}
                     onRow={(category) => ({
                         "aria-label": `选择门类 ${readTitle(category, "门类")}`,
                         className:
                             category.id === selectedCategory?.id
                                 ? "sancai-category-table-row sancai-category-table-row-active"
-                                : "sancai-category-table-row",
-                        onClick: () => onSelect(category)
+                                : "sancai-category-table-row"
                     })}
                 />
             </div>
@@ -257,14 +243,6 @@ export const SancaiCategoryPanel = ({
                     isSubmitting={addMutation.isPending || updateMutation.isPending}
                     onCancel={closeModel}
                     onSubmit={submitCategory}
-                />
-            ) : null}
-            {isSortOpen ? (
-                <SancaiCategorySortModel
-                    categories={categories}
-                    isSubmitting={sortMutation.isPending}
-                    onCancel={closeSort}
-                    onSubmit={submitSort}
                 />
             ) : null}
         </section>

@@ -1,17 +1,14 @@
-import { MenuOutlined, PlusOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Button, Typography } from "antd";
+import { App } from "antd";
 import { useState } from "react";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
+import type { KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
 import type { DictItem } from "@/types/dict";
 import type { SancaiVolumeFormValues } from "./sancai-form-values";
 import { SancaiVolumeList } from "./sancai-volume-list";
 import { SancaiVolumeModel } from "./sancai-volume-model";
-import { SancaiVolumeSortModel } from "./sancai-volume-sort-model";
 import * as volumeService from "../services/sancai-volume-service";
 import type { SancaiCategoryRecord, SancaiVolumeRecord } from "../sancai-types";
-
-const { Text, Title } = Typography;
 
 interface SancaiVolumePanelProps {
     categories: SancaiCategoryRecord[];
@@ -46,7 +43,6 @@ export const SancaiVolumePanel = ({
     const queryClient = useQueryClient();
     const [editingVolume, setEditingVolume] = useState<SancaiVolumeRecord | null>(null);
     const [isModelOpen, setIsModelOpen] = useState(defaultCreateOpen);
-    const [isSortOpen, setIsSortOpen] = useState(false);
     const typesQuery = useQuery<DictItem[]>({
         queryKey: ["classics", "sancai", "volumes", "types"],
         queryFn: volumeService.listTypes,
@@ -96,22 +92,12 @@ export const SancaiVolumePanel = ({
         onSuccess: async () => {
             await queryClient.invalidateQueries({ queryKey: ["classics", "sancai", "volumes"] });
             await queryClient.invalidateQueries({ queryKey: ["classics", "sancai", "entries"] });
-            closeSort();
             messageApi.success("三才图会卷目顺序已保存");
         },
         onError: (error) => {
             messageApi.error(error instanceof Error ? error.message : "卷目排序保存失败");
         }
     });
-
-    const startCreate = () => {
-        if (!selectedCategory) {
-            messageApi.warning("请先选择门类");
-            return;
-        }
-        setEditingVolume(null);
-        setIsModelOpen(true);
-    };
 
     const startEdit = (volume: SancaiVolumeRecord) => {
         setEditingVolume(volume);
@@ -155,54 +141,38 @@ export const SancaiVolumePanel = ({
         });
     };
 
-    const openSort = () => {
-        if (!selectedCategory) {
-            messageApi.warning("请先选择门类");
+    const submitSort = (
+        sourceVolume: SancaiVolumeRecord,
+        targetVolume: SancaiVolumeRecord,
+        position: KuzhambuTableSortPosition
+    ) => {
+        if (sourceVolume.id === targetVolume.id) {
             return;
         }
-        setIsSortOpen(true);
-    };
-
-    const closeSort = () => {
-        setIsSortOpen(false);
-    };
-
-    const submitSort = (orderedIds: number[]) => {
+        const remainingVolumes = volumes.filter((volume) => volume.id !== sourceVolume.id);
+        const targetIndex = remainingVolumes.findIndex((volume) => volume.id === targetVolume.id);
+        if (targetIndex < 0) {
+            return;
+        }
+        const insertIndex = position === "before" ? targetIndex : targetIndex + 1;
+        const sortedVolumes = [...remainingVolumes];
+        sortedVolumes.splice(insertIndex, 0, sourceVolume);
         sortMutation.mutate({
-            orderedIds,
+            orderedIds: sortedVolumes.map((volume) => volume.id),
             sortDirection: "ASC"
         });
     };
 
     return (
-        <section className="sancai-catalog-column">
-            <div className="sancai-panel-heading">
-                <Title level={3}>卷目</Title>
-                <div className="sancai-heading-actions">
-                    <Text type="secondary">{volumes.length} 卷</Text>
-                    <Button
-                        aria-label="调整三才图会卷目顺序"
-                        title="调整卷目顺序"
-                        icon={<MenuOutlined />}
-                        size="small"
-                        onClick={openSort}
-                    />
-                    <Button
-                        aria-label="新增三才图会卷目"
-                        title="新增卷目"
-                        icon={<PlusOutlined />}
-                        size="small"
-                        onClick={startCreate}
-                    />
-                </div>
-            </div>
-            <div className="sancai-catalog-scroll">
+        <section className="sancai-panel-body">
+            <div className="sancai-panel-scroll">
                 <SancaiVolumeList
                     isLoading={isLoading}
                     selectedVolume={selectedVolume}
                     volumes={volumes}
                     onDelete={confirmDelete}
                     onEdit={startEdit}
+                    onSort={submitSort}
                     onSelect={onSelect}
                 />
             </div>
@@ -215,14 +185,6 @@ export const SancaiVolumePanel = ({
                     volumeTypeOptions={volumeTypeItems}
                     onCancel={closeModel}
                     onSubmit={submitVolume}
-                />
-            ) : null}
-            {isSortOpen ? (
-                <SancaiVolumeSortModel
-                    isSubmitting={sortMutation.isPending}
-                    volumes={volumes}
-                    onCancel={closeSort}
-                    onSubmit={submitSort}
                 />
             ) : null}
         </section>

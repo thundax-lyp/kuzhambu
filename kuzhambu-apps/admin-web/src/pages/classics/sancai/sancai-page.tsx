@@ -1,20 +1,18 @@
-import { ReloadOutlined } from "@ant-design/icons";
+import { FilterOutlined, PlusOutlined, ReloadOutlined, SearchOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { Alert, Button, Select } from "antd";
+import { Alert, Button, Input, Select, Space, Splitter } from "antd";
 import { useMemo, useState } from "react";
-import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
+import { KuzhambuFilterPanel } from "@/components/kuzhambu-filter-panel";
+import { KuzhambuPage } from "@/components/kuzhambu-page";
 import { SancaiCatalogTreePanel } from "./components/sancai-catalog-tree-panel";
 import { SancaiCategoryPanel } from "./components/sancai-category-panel";
-import { SancaiContentPanel } from "./components/sancai-content-panel";
 import { SancaiEntryPanel } from "./components/sancai-entry-panel";
 import { SancaiVolumePanel } from "./components/sancai-volume-panel";
 import * as categoryService from "./services/sancai-category-service";
-import * as entryService from "./services/sancai-entry-service";
 import * as volumeService from "./services/sancai-volume-service";
 import type {
     SancaiCatalogTreeNode,
     SancaiCategoryRecord,
-    SancaiEntryRecord,
     SancaiVolumeRecord
 } from "./sancai-types";
 import "./sancai-page.css";
@@ -27,7 +25,6 @@ const entryStatusOptions = [
 ];
 
 const EMPTY_CATEGORIES: SancaiCategoryRecord[] = [];
-const EMPTY_ENTRIES: SancaiEntryRecord[] = [];
 const EMPTY_VOLUMES: SancaiVolumeRecord[] = [];
 const ROOT_KEY = "sancai-root";
 
@@ -56,8 +53,6 @@ const toCategoryKey = (id: number) => `category:${id}`;
 
 const toVolumeKey = (id: number) => `volume:${id}`;
 
-const toEntryKey = (id: number) => `entry:${id}`;
-
 const readNodeId = (key: string | null, nodeType: string) => {
     if (!key?.startsWith(`${nodeType}:`)) {
         return null;
@@ -68,25 +63,16 @@ const readNodeId = (key: string | null, nodeType: string) => {
 
 const buildTreeNodes = (
     categories: SancaiCategoryRecord[],
-    volumes: SancaiVolumeRecord[],
-    entries: SancaiEntryRecord[]
+    volumes: SancaiVolumeRecord[]
 ): SancaiCatalogTreeNode[] => {
     const categoryNodes: SancaiCatalogTreeNode[] = categories.map((category) => {
         const categoryVolumes = volumes.filter((volume) => volume.categoryId === category.id);
         return {
-            children: categoryVolumes.map((volume) => {
-                const volumeEntries = entries.filter((entry) => entry.volumeId === volume.id);
-                return {
-                    children: volumeEntries.map((entry) => ({
-                        key: toEntryKey(entry.id),
-                        nodeType: "entry",
-                        title: readTitle(entry, "条目")
-                    })),
-                    key: toVolumeKey(volume.id),
-                    nodeType: "volume",
-                    title: readTitle(volume, "卷")
-                };
-            }),
+            children: categoryVolumes.map((volume) => ({
+                key: toVolumeKey(volume.id),
+                nodeType: "volume",
+                title: readTitle(volume, "卷")
+            })),
             key: toCategoryKey(category.id),
             nodeType: "category",
             title: readTitle(category, "门类")
@@ -106,12 +92,13 @@ export const SancaiPage = () => {
     const [selectedKey, setSelectedKey] = useState<string | null>(null);
     const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
     const [createIntent, setCreateIntent] = useState<{
-        target: "category" | "content" | "entry" | "volume";
+        target: "category" | "entry" | "volume";
         version: number;
     }>({ target: "category", version: 0 });
     const [refreshVersion, setRefreshVersion] = useState(0);
     const [keyword, setKeyword] = useState("");
     const [appliedKeyword, setAppliedKeyword] = useState<string | null>(null);
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [lifecycleStatus, setLifecycleStatus] = useState("ALL");
     const [appliedLifecycleStatus, setAppliedLifecycleStatus] = useState<string | null>(null);
     const categoriesQuery = useQuery({
@@ -124,48 +111,35 @@ export const SancaiPage = () => {
         queryFn: () => volumeService.list(),
         retry: false
     });
-    const entriesQuery = useQuery({
-        queryKey: ["classics", "sancai", "entries", "tree", refreshVersion],
-        queryFn: () => entryService.list({ sortDirection: "ASC" }),
-        retry: false
-    });
     const categories = categoriesQuery.data ?? EMPTY_CATEGORIES;
     const volumes = volumesQuery.data ?? EMPTY_VOLUMES;
-    const entries = entriesQuery.data ?? EMPTY_ENTRIES;
-    const treeNodes = useMemo(
-        () => buildTreeNodes(categories, volumes, entries),
-        [categories, entries, volumes]
-    );
+    const treeNodes = useMemo(() => buildTreeNodes(categories, volumes), [categories, volumes]);
     const defaultSelectedKey = ROOT_KEY;
     const actualSelectedKey = selectedKey || defaultSelectedKey;
     const isRootSelected = actualSelectedKey === ROOT_KEY;
     const selectedCategoryIdFromKey = readNodeId(actualSelectedKey, "category");
     const selectedVolumeIdFromKey = readNodeId(actualSelectedKey, "volume");
-    const selectedEntryIdFromKey = readNodeId(actualSelectedKey, "entry");
-    const selectedEntry = entries.find((entry) => entry.id === selectedEntryIdFromKey) ?? null;
-    const selectedVolumeId = selectedEntry?.volumeId ?? selectedVolumeIdFromKey;
-    const selectedVolume = volumes.find((volume) => volume.id === selectedVolumeId) ?? null;
+    const selectedVolume = volumes.find((volume) => volume.id === selectedVolumeIdFromKey) ?? null;
     const selectedCategoryId = selectedVolume?.categoryId ?? selectedCategoryIdFromKey;
     const selectedCategory =
         categories.find((category) => category.id === selectedCategoryId) ?? null;
     const visibleVolumes = selectedCategory
         ? volumes.filter((volume) => volume.categoryId === selectedCategory.id)
         : volumes;
-    let selectedPanel: "category" | "content" | "entry" | "volume" = "category";
+    let selectedPanel: "category" | "entry" | "volume" = "category";
     if (selectedCategory && !isRootSelected) {
         selectedPanel = "volume";
     }
     if (selectedVolume) {
         selectedPanel = "entry";
     }
-    if (selectedEntry) {
-        selectedPanel = "content";
-    }
     const treeExpandedKeys = expandedKeys.length
         ? expandedKeys
-        : [ROOT_KEY, ...categories.map((category) => toCategoryKey(category.id))];
-    const isLoading = isQueryLoading(categoriesQuery, volumesQuery, entriesQuery);
-    const hasError = isQueryError(categoriesQuery, volumesQuery, entriesQuery);
+        : [ROOT_KEY];
+    const isLoading = isQueryLoading(categoriesQuery, volumesQuery);
+    const hasError = isQueryError(categoriesQuery, volumesQuery);
+    const enableEntryFilter = selectedPanel === "entry";
+    const filterActive = Boolean(appliedLifecycleStatus);
     let addText = "新增门类";
     if (selectedPanel === "volume") {
         addText = "新增卷目";
@@ -173,18 +147,12 @@ export const SancaiPage = () => {
     if (selectedPanel === "entry") {
         addText = "新增条目";
     }
-    if (selectedPanel === "content") {
-        addText = "新增内容";
-    }
     let enableAdd = selectedPanel === "category";
     if (selectedPanel === "volume") {
         enableAdd = Boolean(selectedCategory);
     }
     if (selectedPanel === "entry") {
         enableAdd = Boolean(selectedVolume);
-    }
-    if (selectedPanel === "content") {
-        enableAdd = Boolean(selectedEntry);
     }
 
     const selectVolume = (volume: SancaiVolumeRecord) => {
@@ -197,32 +165,15 @@ export const SancaiPage = () => {
 
     const selectCategory = (category: SancaiCategoryRecord) => {
         setSelectedKey(toCategoryKey(category.id));
-        setExpandedKeys((keys) => Array.from(new Set([...keys, ROOT_KEY])));
+        setExpandedKeys((keys) =>
+            Array.from(new Set([...keys, ROOT_KEY, toCategoryKey(category.id)]))
+        );
     };
 
-    const selectEntry = (entry: SancaiEntryRecord) => {
-        setSelectedKey(toEntryKey(entry.id));
-        const volume = volumes.find((item) => item.id === entry.volumeId);
-        if (volume) {
-            setExpandedKeys((keys) =>
-                Array.from(
-                    new Set([
-                        ...keys,
-                        ...(volume.categoryId ? [toCategoryKey(volume.categoryId)] : []),
-                        toVolumeKey(volume.id)
-                    ])
-                )
-            );
-        }
-    };
-
-    const clearEntry = () => {
-        if (selectedVolume) {
-            setSelectedKey(toVolumeKey(selectedVolume.id));
-            return;
-        }
-        if (selectedCategory) {
-            setSelectedKey(toCategoryKey(selectedCategory.id));
+    const selectCatalogNode = (node: SancaiCatalogTreeNode) => {
+        setSelectedKey(node.key);
+        if (node.nodeType === "category") {
+            setExpandedKeys((keys) => Array.from(new Set([...keys, ROOT_KEY, node.key])));
         }
     };
 
@@ -239,8 +190,12 @@ export const SancaiPage = () => {
     };
 
     const refreshPage = () => {
-        reloadQueries(categoriesQuery, volumesQuery, entriesQuery);
+        reloadQueries(categoriesQuery, volumesQuery);
         setRefreshVersion((version) => version + 1);
+    };
+
+    const refreshCatalogTree = () => {
+        reloadQueries(categoriesQuery, volumesQuery);
     };
 
     const startCreate = () => {
@@ -284,27 +239,86 @@ export const SancaiPage = () => {
                 keyword={appliedKeyword}
                 lifecycleStatus={appliedLifecycleStatus}
                 refreshVersion={refreshVersion}
-                selectedEntryId={selectedEntryIdFromKey}
                 volumeId={selectedVolume.id}
                 volumes={visibleVolumes}
-                onClearEntry={clearEntry}
-                onSelectEntry={selectEntry}
-            />
-        );
-    }
-    if (selectedEntry) {
-        panelContent = (
-            <SancaiContentPanel
-                key={`content-${selectedEntry.id}-${createIntent.version}`}
-                defaultCreateOpen={createIntent.target === "content" && createIntent.version > 0}
-                entry={selectedEntry}
-                refreshVersion={refreshVersion}
             />
         );
     }
 
-    const pageContent = (
-        <>
+    return (
+        <KuzhambuPage
+            className="sancai-page"
+            title="三才图会"
+            description="按门类、卷目和条目组织三才图会后台治理入口。"
+            actions={
+                <Space className="sancai-page-actions">
+                    {enableEntryFilter ? (
+                        <Input
+                            allowClear
+                            aria-label="搜索三才图会条目"
+                            className="sancai-page-search"
+                            placeholder="搜索标题、原文或摘要"
+                            prefix={<SearchOutlined />}
+                            value={keyword}
+                            onChange={(event) => {
+                                const { value } = event.target;
+                                setKeyword(value);
+                                setAppliedKeyword(normalizeKeyword(value) ?? null);
+                            }}
+                        />
+                    ) : null}
+                    {enableEntryFilter ? (
+                        <Button
+                            className={
+                                isFilterOpen || filterActive ? "sancai-page-filter-active" : ""
+                            }
+                            icon={<FilterOutlined />}
+                            aria-expanded={isFilterOpen}
+                            onClick={() => setIsFilterOpen((open) => !open)}
+                        >
+                            筛选
+                        </Button>
+                    ) : null}
+                    <Button
+                        aria-label="刷新三才图会数据"
+                        icon={<ReloadOutlined />}
+                        onClick={refreshPage}
+                    >
+                        刷新
+                    </Button>
+                    {enableAdd ? (
+                        <Button type="primary" icon={<PlusOutlined />} onClick={startCreate}>
+                            {addText}
+                        </Button>
+                    ) : null}
+                </Space>
+            }
+        >
+            {enableEntryFilter ? (
+                <KuzhambuFilterPanel
+                    open={isFilterOpen}
+                    resetDisabled={!filterActive}
+                    fields={[
+                        {
+                            name: "lifecycleStatus",
+                            label: "条目状态",
+                            render: () => (
+                                <Select
+                                    aria-label="三才图会条目状态"
+                                    value={lifecycleStatus}
+                                    options={entryStatusOptions}
+                                    onChange={setLifecycleStatus}
+                                />
+                            )
+                        }
+                    ]}
+                    onApply={() => {
+                        applyFilters();
+                        setIsFilterOpen(false);
+                    }}
+                    onReset={resetFilters}
+                />
+            ) : null}
             {hasError ? (
                 <Alert
                     className="sancai-alert"
@@ -314,66 +328,26 @@ export const SancaiPage = () => {
                     description="请确认后台三才图会接口可用后刷新页面。"
                 />
             ) : null}
-            {panelContent}
-        </>
-    );
-
-    return (
-        <KuzhambuListPage
-            pageClassName="sancai-page"
-            title="三才图会"
-            description="按门类、卷目和条目组织三才图会后台治理入口。"
-            addText={addText}
-            content={pageContent}
-            enableAdd={enableAdd}
-            enableFilter={selectedPanel === "entry"}
-            enableSearch={selectedPanel === "entry"}
-            filterActive={Boolean(appliedLifecycleStatus)}
-            filterFields={[
-                {
-                    name: "lifecycleStatus",
-                    label: "条目状态",
-                    render: () => (
-                        <Select
-                            aria-label="三才图会条目状态"
-                            value={lifecycleStatus}
-                            options={entryStatusOptions}
-                            onChange={setLifecycleStatus}
+            <Splitter className="sancai-work-area">
+                <Splitter.Panel defaultSize={320} min={260} max={520}>
+                    <aside className="sancai-catalog-panel">
+                        <SancaiCatalogTreePanel
+                            expandedKeys={treeExpandedKeys}
+                            isRefreshing={
+                                categoriesQuery.isFetching || volumesQuery.isFetching
+                            }
+                            isLoading={isLoading}
+                            nodes={treeNodes}
+                            selectedKey={actualSelectedKey}
+                            title="目录"
+                            onExpandedKeysChange={setExpandedKeys}
+                            onRefresh={refreshCatalogTree}
+                            onSelectNode={selectCatalogNode}
                         />
-                    )
-                }
-            ]}
-            pageActions={
-                <Button
-                    aria-label="刷新三才图会数据"
-                    icon={<ReloadOutlined />}
-                    onClick={refreshPage}
-                >
-                    刷新
-                </Button>
-            }
-            searchPlaceholder="搜索标题、原文或摘要"
-            searchValue={keyword}
-            tableAside={
-                <SancaiCatalogTreePanel
-                    expandedKeys={treeExpandedKeys}
-                    isLoading={isLoading}
-                    nodes={treeNodes}
-                    selectedKey={actualSelectedKey}
-                    onExpandedKeysChange={setExpandedKeys}
-                    onSelectNode={(node) => setSelectedKey(node.key)}
-                />
-            }
-            tableAsideClassName="sancai-catalog-panel"
-            tableAsidePlacement="left"
-            tableAreaClassName="sancai-shell"
-            onAdd={startCreate}
-            onFilterApply={applyFilters}
-            onFilterReset={resetFilters}
-            onSearchChange={(value) => {
-                setKeyword(value);
-                setAppliedKeyword(normalizeKeyword(value) ?? null);
-            }}
-        />
+                    </aside>
+                </Splitter.Panel>
+                <Splitter.Panel className="sancai-work-panel">{panelContent}</Splitter.Panel>
+            </Splitter>
+        </KuzhambuPage>
     );
 };

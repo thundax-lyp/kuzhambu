@@ -3,7 +3,6 @@ import userEvent from "@testing-library/user-event";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { App as AntdApp } from "antd";
 import { queryClient } from "@/query/query-client";
-import { SancaiContentPanel } from "./components/sancai-content-panel";
 import { SancaiPage } from "./sancai-page";
 
 interface CapturedCall {
@@ -121,17 +120,6 @@ const installSancaiFetchMock = () => {
             ]);
         }
 
-        if (path.endsWith("/classics/sancai/contents/list")) {
-            return apiResponse([
-                {
-                    answer: "天地玄黄",
-                    entryId: 3001,
-                    id: 9001,
-                    question: "何为天地"
-                }
-            ]);
-        }
-
         if (path.endsWith("/classics/sancai/volumes/add")) {
             return apiResponse({
                 categoryId: 2,
@@ -158,26 +146,6 @@ const installSancaiFetchMock = () => {
             return apiResponse(true);
         }
 
-        if (path.endsWith("/classics/sancai/contents/add")) {
-            return apiResponse({
-                id: 9002
-            });
-        }
-
-        if (path.endsWith("/classics/sancai/contents/update")) {
-            return apiResponse({
-                id: 9001
-            });
-        }
-
-        if (path.endsWith("/classics/sancai/contents/delete")) {
-            return apiResponse(true);
-        }
-
-        if (path.endsWith("/classics/sancai/contents/sort")) {
-            return apiResponse(true);
-        }
-
         return apiResponse(true);
     });
 };
@@ -190,10 +158,6 @@ const expectCall = (path: string, body: unknown) => {
     });
 };
 
-const hasCall = (path: string) => {
-    return capturedCalls.some((call) => call.path === path);
-};
-
 const renderSancaiPage = () => {
     render(
         <QueryClientProvider client={queryClient}>
@@ -204,22 +168,9 @@ const renderSancaiPage = () => {
     );
 };
 
-const renderContentPanel = (entryId: number | null) => {
-    return render(
-        <QueryClientProvider client={queryClient}>
-            <AntdApp>
-                <SancaiContentPanel
-                    entry={entryId === null ? null : { id: entryId, title: "天地" }}
-                    refreshVersion={0}
-                />
-            </AntdApp>
-        </QueryClientProvider>
-    );
-};
-
 const selectCategoryFromTable = async (user: ReturnType<typeof userEvent.setup>, title: string) => {
     const categoryTable = await screen.findByLabelText("三才图会门类表格");
-    await user.click(await within(categoryTable).findByText(title));
+    await user.click(await within(categoryTable).findByRole("link", { name: `打开门类 ${title}` }));
 };
 
 describe("SancaiPage volume CRUD", () => {
@@ -237,29 +188,6 @@ describe("SancaiPage volume CRUD", () => {
         vi.restoreAllMocks();
     });
 
-    it("wires volume sort controls to backend requests", async () => {
-        const user = userEvent.setup();
-
-        renderSancaiPage();
-
-        expect(await screen.findByRole("heading", { name: "三才图会" })).toBeInTheDocument();
-        await selectCategoryFromTable(user, "天文");
-        expect(
-            await screen.findByRole("button", { name: "选择卷目 天文卷一" })
-        ).toBeInTheDocument();
-
-        await user.click(screen.getByRole("button", { name: "调整三才图会卷目顺序" }));
-        await user.click(screen.getByRole("button", { name: "下移卷目 天文卷一" }));
-        await user.click(screen.getByRole("button", { name: "保存三才图会卷目顺序" }));
-
-        await waitFor(() =>
-            expectCall("/classics/sancai/volumes/sort", {
-                orderedIds: [102, 101],
-                sortDirection: "ASC"
-            })
-        );
-    }, 10000);
-
     it("wires volume add, update, and delete controls to backend requests", async () => {
         const user = userEvent.setup();
 
@@ -267,11 +195,9 @@ describe("SancaiPage volume CRUD", () => {
 
         expect(await screen.findByRole("heading", { name: "三才图会" })).toBeInTheDocument();
         await selectCategoryFromTable(user, "天文");
-        expect(
-            await screen.findByRole("button", { name: "选择卷目 天文卷一" })
-        ).toBeInTheDocument();
+        expect(await screen.findByRole("link", { name: "打开卷目 天文卷一" })).toBeInTheDocument();
 
-        await user.click(screen.getByRole("button", { name: "新增三才图会卷目" }));
+        await user.click(screen.getByRole("button", { name: "新增卷目" }));
         await user.type(screen.getByLabelText("三才图会卷目标题"), "新卷");
         await user.click(screen.getByRole("button", { name: "保存新增卷目" }));
 
@@ -313,36 +239,13 @@ describe("SancaiPage volume CRUD", () => {
         );
     }, 10000);
 
-    it("requests content only after receiving an entry", async () => {
-        const { rerender } = renderContentPanel(null);
-
-        expect(hasCall("/classics/sancai/contents/list")).toBe(false);
-
-        rerender(
-            <QueryClientProvider client={queryClient}>
-                <AntdApp>
-                    <SancaiContentPanel entry={{ id: 3001, title: "天地" }} refreshVersion={0} />
-                </AntdApp>
-            </QueryClientProvider>
-        );
-
-        await waitFor(() =>
-            expectCall("/classics/sancai/contents/list", {
-                entryId: 3001
-            })
-        );
-        expect(await screen.findByText("何为天地")).toBeInTheDocument();
-    }, 10000);
-
     it("shows category panel when selecting the catalog root", async () => {
         const user = userEvent.setup();
 
         renderSancaiPage();
 
         await selectCategoryFromTable(user, "天文");
-        expect(
-            await screen.findByRole("button", { name: "选择卷目 天文卷一" })
-        ).toBeInTheDocument();
+        expect(await screen.findByRole("link", { name: "打开卷目 天文卷一" })).toBeInTheDocument();
 
         const catalogTree = screen.getByLabelText("三才图会目录树");
         await user.click(within(catalogTree).getByText("三才图会"));

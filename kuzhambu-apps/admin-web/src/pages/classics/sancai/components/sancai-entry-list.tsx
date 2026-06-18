@@ -1,4 +1,4 @@
-import { Empty, Skeleton, Typography } from "antd";
+import { Empty, Skeleton, Tag, Typography } from "antd";
 import { KuzhambuTable } from "@/components/kuzhambu-table";
 import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
 import type { SancaiEntryRecord, SancaiVolumeRecord } from "../sancai-types";
@@ -31,6 +31,21 @@ const readVolumeTitle = (entry: SancaiEntryRecord, volumes: SancaiVolumeRecord[]
     return volume ? readTitle(volume, "卷") : `卷 ${entry.volumeId || "-"}`;
 };
 
+const statusTagMeta: Record<string, { color: string; label: string }> = {
+    ARCHIVED: { color: "default", label: "已归档" },
+    DRAFT: { color: "gold", label: "草稿" },
+    PUBLISHED: { color: "green", label: "已发布" }
+};
+
+const renderStatusTag = (status?: string | null) => {
+    const normalizedStatus = status || "UNKNOWN";
+    const meta = statusTagMeta[normalizedStatus] ?? {
+        color: "blue",
+        label: normalizedStatus
+    };
+    return <Tag color={meta.color}>{meta.label}</Tag>;
+};
+
 export const SancaiEntryList = ({
     entries,
     isLoading,
@@ -54,8 +69,16 @@ export const SancaiEntryList = ({
             width: 220,
             render: (_, entry) => (
                 <div className="sancai-entry-title-cell">
-                    <Text strong>{readTitle(entry, "条目")}</Text>
-                    <Text type="secondary">ID {entry.id}</Text>
+                    <a
+                        href="#"
+                        aria-label={`打开条目 ${readTitle(entry, "条目")}`}
+                        onClick={(event) => {
+                            event.preventDefault();
+                            onView(entry);
+                        }}
+                    >
+                        {readTitle(entry, "条目")}
+                    </a>
                 </div>
             )
         },
@@ -66,18 +89,16 @@ export const SancaiEntryList = ({
             render: (_, entry) => <Text>{readVolumeTitle(entry, volumes)}</Text>
         },
         {
+            title: "摘要",
+            key: "summary",
+            render: (_, entry) => <Text type="secondary">{readEntrySummary(entry)}</Text>
+        },
+        {
             title: "状态",
             dataIndex: "lifecycleStatus",
             key: "status",
             width: 120,
-            render: (status?: string | null) => (
-                <span className="sancai-entry-status">{status || "UNKNOWN"}</span>
-            )
-        },
-        {
-            title: "摘要",
-            key: "summary",
-            render: (_, entry) => <Text type="secondary">{readEntrySummary(entry)}</Text>
+            render: renderStatusTag
         },
         {
             key: "actions",
@@ -88,6 +109,7 @@ export const SancaiEntryList = ({
                     ariaLabel: `查看 ${readTitle(entry, "条目")}`,
                     onClick: () => onView(entry)
                 },
+                { type: "divider" },
                 {
                     danger: true,
                     key: "delete",
@@ -106,7 +128,9 @@ export const SancaiEntryList = ({
                 ariaLabel="三才图会条目表格"
                 columns={columns}
                 dataSource={entries}
-                pagination={false}
+                pagination={{
+                    showTotal: (total) => `${total} 条稿件`
+                }}
                 rowKey="id"
                 size="middle"
                 scroll={{ x: 760 }}

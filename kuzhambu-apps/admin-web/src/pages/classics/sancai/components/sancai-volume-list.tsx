@@ -1,11 +1,17 @@
-import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
-import { Button, Empty, Skeleton } from "antd";
+import { Empty, Skeleton, Tag } from "antd";
+import { KuzhambuTable } from "@/components/kuzhambu-table";
+import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
 import type { SancaiVolumeRecord } from "../sancai-types";
 
 interface SancaiVolumeListProps {
     isLoading: boolean;
     onDelete: (volume: SancaiVolumeRecord) => void;
     onEdit: (volume: SancaiVolumeRecord) => void;
+    onSort: (
+        sourceVolume: SancaiVolumeRecord,
+        targetVolume: SancaiVolumeRecord,
+        position: KuzhambuTableSortPosition
+    ) => void;
     onSelect: (volume: SancaiVolumeRecord) => void;
     selectedVolume: SancaiVolumeRecord | null;
     volumes: SancaiVolumeRecord[];
@@ -19,10 +25,15 @@ const readVolumeTypeLabel = (volume: SancaiVolumeRecord) => {
     return volume.volumeType === "AUXILIARY" ? "辅助卷目" : "正式卷目";
 };
 
+const readVolumeTypeColor = (volume: SancaiVolumeRecord) => {
+    return volume.volumeType === "AUXILIARY" ? "gold" : "green";
+};
+
 export const SancaiVolumeList = ({
     isLoading,
     onDelete,
     onEdit,
+    onSort,
     onSelect,
     selectedVolume,
     volumes
@@ -35,58 +46,80 @@ export const SancaiVolumeList = ({
         return <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无卷目" />;
     }
 
-    return (
-        <div className="sancai-volume-list" aria-label="三才图会卷目">
-            {volumes.map((volume) => {
+    const columns: KuzhambuTableProps<SancaiVolumeRecord>["columns"] = [
+        {
+            title: "卷目",
+            key: "title",
+            width: 260,
+            render: (_, volume) => {
                 const title = readTitle(volume, "卷");
                 return (
-                    <div
-                        className={
-                            volume.id === selectedVolume?.id
-                                ? "sancai-catalog-row sancai-catalog-row-active"
-                                : "sancai-catalog-row"
-                        }
-                        key={volume.id}
-                    >
-                        <button
-                            className="sancai-catalog-item"
-                            type="button"
-                            aria-label={`选择卷目 ${title}`}
-                            aria-pressed={volume.id === selectedVolume?.id}
-                            onClick={() => onSelect(volume)}
+                    <span className="sancai-volume-main">
+                        <a
+                            href="#"
+                            aria-label={`打开卷目 ${title}`}
+                            onClick={(event) => {
+                                event.preventDefault();
+                                onSelect(volume);
+                            }}
                         >
-                            <span className="sancai-volume-main">
-                                <span
-                                    className={
-                                        volume.volumeType === "AUXILIARY"
-                                            ? "sancai-category-type-dot sancai-category-type-dot-auxiliary"
-                                            : "sancai-category-type-dot sancai-category-type-dot-formal"
-                                    }
-                                    aria-label={`卷目类型 ${readVolumeTypeLabel(volume)}`}
-                                />
-                                <span>{title}</span>
-                            </span>
-                        </button>
-                        <div className="sancai-catalog-actions" aria-label={`${title} 操作`}>
-                            <Button
-                                aria-label={`编辑卷目 ${title}`}
-                                icon={<EditOutlined />}
-                                size="small"
-                                type="text"
-                                onClick={() => onEdit(volume)}
-                            />
-                            <Button
-                                aria-label={`删除卷目 ${title}`}
-                                danger
-                                icon={<DeleteOutlined />}
-                                size="small"
-                                type="text"
-                                onClick={() => onDelete(volume)}
-                            />
-                        </div>
-                    </div>
+                            {title}
+                        </a>
+                    </span>
                 );
+            }
+        },
+        {
+            title: "类型",
+            key: "volumeType",
+            width: 160,
+            render: (_, volume) => (
+                <Tag color={readVolumeTypeColor(volume)}>{readVolumeTypeLabel(volume)}</Tag>
+            )
+        },
+        {
+            key: "actions",
+            options: (volume) => {
+                const title = readTitle(volume, "卷");
+                return [
+                    {
+                        key: "edit",
+                        text: "编辑",
+                        ariaLabel: `编辑卷目 ${title}`,
+                        onClick: () => onEdit(volume)
+                    },
+                    { type: "divider" },
+                    {
+                        danger: true,
+                        key: "delete",
+                        text: "删除",
+                        ariaLabel: `删除卷目 ${title}`,
+                        onClick: () => onDelete(volume)
+                    }
+                ];
+            }
+        }
+    ];
+
+    return (
+        <KuzhambuTable
+            className="sancai-volume-table"
+            ariaLabel="三才图会卷目表格"
+            columns={columns}
+            dataSource={volumes}
+            pagination={false}
+            rowKey="id"
+            size="middle"
+            scroll={{ x: 520 }}
+            sortable
+            onSort={onSort}
+            onRow={(volume) => ({
+                "aria-label": `卷目 ${readTitle(volume, "卷")}`,
+                className:
+                    volume.id === selectedVolume?.id
+                        ? "sancai-volume-table-row sancai-volume-table-row-active"
+                        : "sancai-volume-table-row"
             })}
-        </div>
+        />
     );
 };
