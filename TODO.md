@@ -9,8 +9,6 @@
 
 ## 当前任务项
 
-## 待审阅任务项
-
 - [ ] `Classics 三才接口契约`：固定三才图会后台接口契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-ADMIN-LOOP.md`
@@ -74,5 +72,7 @@
     - 处理动作：同步三才图会 Admin 最小闭环完成状态并删除已完成 TODO 和临时 RUNBOOK
     - 验收点：Coverage 文档准确保留 AI、Worker、导出、分享、复杂视觉资产、标签治理和批量能力缺口
     - 重要度：10/10
+
+## 待审阅任务项
 
 ## 待讨论项
