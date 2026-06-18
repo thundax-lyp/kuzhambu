@@ -797,7 +797,7 @@ describe("App", () => {
             if (url.endsWith("/storage/object/delete")) {
                 expect(init).toEqual(
                     expect.objectContaining({
-                        body: JSON.stringify([{ id: "storage-1" }]),
+                        body: JSON.stringify({ ids: ["storage-1"] }),
                         headers: expect.objectContaining({
                             "Access-Token": "test-token"
                         }),

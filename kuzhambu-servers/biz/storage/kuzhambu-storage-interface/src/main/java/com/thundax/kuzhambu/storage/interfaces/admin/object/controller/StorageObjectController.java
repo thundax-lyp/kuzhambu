@@ -13,7 +13,10 @@ import com.thundax.kuzhambu.storage.application.service.StorageApplicationServic
 import com.thundax.kuzhambu.storage.application.service.command.StorageSortCommand;
 import com.thundax.kuzhambu.storage.application.service.query.StorageQuery;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
+import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import com.thundax.kuzhambu.storage.interfaces.admin.object.assembler.StorageInterfaceAssembler;
+import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.request.StorageDeleteRequest;
 import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.request.StoragePageRequest;
 import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.request.StorageSortRequest;
 import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.response.StorageObjectResponse;
@@ -22,6 +25,8 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.ArrayList;
+import java.util.List;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -76,6 +81,32 @@ public class StorageObjectController {
                                 AdminResponseExceptions::invalidParameter),
                         StoredObjectIdCodec::toDomain),
                 request == null ? null : request.getSortDirection()));
+        return true;
+    }
+
+    @Operation(summary = "删除存储对象", description = "storage:object:edit")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
+    @HasPermission(value = "storage:object:edit")
+    @SysLogger(value = "删除")
+    @PostMapping(value = "delete")
+    public Boolean delete(@Valid @RequestBody StorageDeleteRequest request) {
+        List<StoredObjectId> idList = new ArrayList<>();
+        for (Long id : RequestListHelper.presentUnique(
+                request == null ? null : request.getIds(), "ids", AdminResponseExceptions::invalidParameter)) {
+            StoredObject bean = storageApplicationService.get(StoredObjectIdCodec.toDomain(id));
+            if (bean == null) {
+                throw AdminResponseExceptions.objectNotFound();
+            }
+            idList.add(bean.getId());
+        }
+
+        idList.forEach(storageApplicationService::remove);
         return true;
     }
 }

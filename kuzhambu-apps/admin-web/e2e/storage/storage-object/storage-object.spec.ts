@@ -160,7 +160,7 @@ test.describe("storage object page", () => {
 
         await expect(confirmDialog).toBeHidden();
         await expect(page.locator("tbody").getByText("sancai.png")).toBeHidden();
-        expect(deleteRequestBody).toEqual([{ id: "storage-1" }]);
+        expect(deleteRequestBody).toEqual({ ids: ["storage-1"] });
         expect(pageRequestCount).toBeGreaterThanOrEqual(2);
     });
 });
