@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Admin Web 三才编辑页`：实现三才图会条目详情与保存闭环
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-ADMIN-LOOP.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-page.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-page.css`、`kuzhambu-apps/admin-web/e2e/classics/sancai/sancai.spec.ts`
-    - 处理动作：实现条目详情打开、标题原文译文摘要公开状态编辑和保存刷新
-    - 验收点：Playwright 验证打开详情、编辑保存、列表刷新，请求体与 `SancaiEntrySaveRequest` 对齐
-    - 重要度：10/10
-
 - [ ] `Classics Coverage 收口`：更新 Classics 覆盖报告并清理临时任务文档
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-ADMIN-LOOP.md`

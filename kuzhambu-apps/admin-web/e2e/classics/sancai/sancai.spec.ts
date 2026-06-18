@@ -69,6 +69,8 @@ test.describe("classics sancai page", () => {
     }) => {
         const volumeRequests: Array<Record<string, unknown>> = [];
         const entryRequests: Array<Record<string, unknown>> = [];
+        const detailRequests: string[] = [];
+        const saveRequests: Array<Record<string, unknown>> = [];
 
         await page.route("**/admin-api/api/classics/sancai/categories/list", async (route) => {
             await route.fulfill({
@@ -130,10 +132,54 @@ test.describe("classics sancai page", () => {
                                 id: 3001,
                                 volumeId: 101,
                                 title: "天地",
+                                originalText: "原文",
+                                translationText: "译文",
                                 summary: "天地初分，清浊定位。",
-                                lifecycleStatus: body.lifecycleStatus ?? "PUBLISHED"
+                                lifecycleStatus: body.lifecycleStatus ?? "PUBLISHED",
+                                visibility: "PUBLIC",
+                                translationStatus: "TRANSLATED",
+                                imageStatus: "HAS_IMAGE",
+                                visualAssetStatus: "READY",
+                                refinementStatus: "COMPLETE"
                             }
                         ]
+                    }
+                })
+            });
+        });
+        await page.route("**/admin-api/api/classics/sancai/entries/3001", async (route) => {
+            detailRequests.push(route.request().url());
+            await route.fulfill({
+                contentType: "application/json",
+                body: JSON.stringify({
+                    code: "COMMON-00000",
+                    message: "success",
+                    data: {
+                        id: 3001,
+                        volumeId: 101,
+                        title: "天地",
+                        originalText: "原文",
+                        translationText: "译文",
+                        summary: "天地初分，清浊定位。",
+                        lifecycleStatus: "PUBLISHED",
+                        visibility: "PUBLIC",
+                        translationStatus: "TRANSLATED",
+                        imageStatus: "HAS_IMAGE",
+                        visualAssetStatus: "READY",
+                        refinementStatus: "COMPLETE"
+                    }
+                })
+            });
+        });
+        await page.route("**/admin-api/api/classics/sancai/entries/save", async (route) => {
+            saveRequests.push(readRequestBody(route.request().postData()));
+            await route.fulfill({
+                contentType: "application/json",
+                body: JSON.stringify({
+                    code: "COMMON-00000",
+                    message: "success",
+                    data: {
+                        id: 3001
                     }
                 })
             });
@@ -219,6 +265,32 @@ test.describe("classics sancai page", () => {
             .toEqual({
                 pageNo: 1,
                 pageSize: 50
+            });
+
+        await page.getByRole("button", { name: /查看/ }).click();
+        await expect.poll(() => detailRequests.length).toBe(1);
+        await page.getByRole("textbox", { name: "三才图会条目标题" }).fill("天地新解");
+        await page.getByRole("textbox", { name: "三才图会原文" }).fill("新原文");
+        await page.getByRole("textbox", { name: "三才图会译文" }).fill("新译文");
+        await page.getByRole("textbox", { name: "三才图会摘要" }).fill("新摘要");
+        await page.getByRole("combobox", { name: "三才图会公开状态" }).click();
+        await page.getByTitle("内部").click();
+        await page.getByRole("button", { name: "保存三才图会条目" }).click();
+        await expect
+            .poll(() => saveRequests.at(-1))
+            .toEqual({
+                id: 3001,
+                volumeId: 101,
+                title: "天地新解",
+                originalText: "新原文",
+                translationText: "新译文",
+                summary: "新摘要",
+                lifecycleStatus: "PUBLISHED",
+                visibility: "INTERNAL",
+                translationStatus: "TRANSLATED",
+                imageStatus: "HAS_IMAGE",
+                visualAssetStatus: "READY",
+                refinementStatus: "COMPLETE"
             });
     });
 });

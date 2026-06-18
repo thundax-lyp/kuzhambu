@@ -1,6 +1,6 @@
 import { ReloadOutlined } from "@ant-design/icons";
-import { useQuery } from "@tanstack/react-query";
-import { Alert, Button, Empty, Input, Select, Skeleton, Typography } from "antd";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Alert, App, Button, Empty, Input, Select, Skeleton, Typography } from "antd";
 import { useState } from "react";
 import { KuzhambuPage } from "@/components/kuzhambu-page";
 import { KuzhambuTable } from "@/components/kuzhambu-table";
@@ -19,6 +19,20 @@ const entryStatusOptions = [
     { label: "已发布", value: "PUBLISHED" },
     { label: "已归档", value: "ARCHIVED" }
 ];
+
+const visibilityOptions = [
+    { label: "公开", value: "PUBLIC" },
+    { label: "内部", value: "INTERNAL" },
+    { label: "隐藏", value: "HIDDEN" }
+];
+
+interface SancaiEntryFormValues {
+    originalText: string;
+    summary: string;
+    title: string;
+    translationText: string;
+    visibility: string;
+}
 
 const readTitle = (value: { id: number; title?: string | null }, fallback: string) => {
     return value.title?.trim() || `${fallback} ${value.id}`;
@@ -120,7 +134,8 @@ const renderEntryTable = (
     currentPageNo: number,
     currentPageSize: number,
     totalCount: number,
-    onPageChange: (pageNo: number, pageSize: number) => void
+    onPageChange: (pageNo: number, pageSize: number) => void,
+    onView: (entry: SancaiEntryRecord) => void
 ) => {
     if (!entries.length) {
         return <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无符合筛选条件的条目" />;
@@ -165,8 +180,7 @@ const renderEntryTable = (
                     key: "view",
                     text: "查看",
                     ariaLabel: `查看 ${readTitle(entry, "条目")}`,
-                    disabled: true,
-                    onClick: () => undefined
+                    onClick: () => onView(entry)
                 }
             ]
         }
@@ -193,7 +207,23 @@ const renderEntryTable = (
     );
 };
 
-const renderDetail = (entry?: SancaiEntryRecord) => {
+const toFormValues = (entry?: SancaiEntryRecord): SancaiEntryFormValues => {
+    return {
+        originalText: entry?.originalText || "",
+        summary: entry?.summary || "",
+        title: entry?.title || "",
+        translationText: entry?.translationText || "",
+        visibility: entry?.visibility || "PUBLIC"
+    };
+};
+
+const renderDetail = (
+    entry: SancaiEntryRecord | undefined,
+    form: SancaiEntryFormValues,
+    isSaving: boolean,
+    onChange: (values: Partial<SancaiEntryFormValues>) => void,
+    onSave: () => void
+) => {
     if (!entry) {
         return <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="选择条目后查看详情" />;
     }
@@ -201,13 +231,50 @@ const renderDetail = (entry?: SancaiEntryRecord) => {
     return (
         <div className="sancai-detail-card">
             <Text type="secondary">当前预览</Text>
-            <Title level={3}>{readTitle(entry, "条目")}</Title>
-            <p>{readEntrySummary(entry)}</p>
+            <Input
+                aria-label="三才图会条目标题"
+                value={form.title}
+                onChange={(event) => onChange({ title: event.target.value })}
+            />
+            <Input.TextArea
+                aria-label="三才图会原文"
+                value={form.originalText}
+                autoSize={{ minRows: 4, maxRows: 8 }}
+                onChange={(event) => onChange({ originalText: event.target.value })}
+            />
+            <Input.TextArea
+                aria-label="三才图会译文"
+                value={form.translationText}
+                autoSize={{ minRows: 4, maxRows: 8 }}
+                onChange={(event) => onChange({ translationText: event.target.value })}
+            />
+            <Input.TextArea
+                aria-label="三才图会摘要"
+                value={form.summary}
+                autoSize={{ minRows: 3, maxRows: 6 }}
+                onChange={(event) => onChange({ summary: event.target.value })}
+            />
+            <Select
+                aria-label="三才图会公开状态"
+                value={form.visibility}
+                options={visibilityOptions}
+                onChange={(value) => onChange({ visibility: value })}
+            />
+            <Button
+                aria-label="保存三才图会条目"
+                type="primary"
+                loading={isSaving}
+                onClick={onSave}
+            >
+                保存
+            </Button>
         </div>
     );
 };
 
 export const SancaiPage = () => {
+    const { message: messageApi } = App.useApp();
+    const queryClient = useQueryClient();
     const [query, setQuery] = useState<SancaiEntryPageQuery>({
         pageNo: DEFAULT_PAGE_NO,
         pageSize: DEFAULT_PAGE_SIZE
@@ -215,6 +282,8 @@ export const SancaiPage = () => {
     const [queryVersion, setQueryVersion] = useState(0);
     const [keyword, setKeyword] = useState("");
     const [lifecycleStatus, setLifecycleStatus] = useState("ALL");
+    const [activeEntryId, setActiveEntryId] = useState<number | null>(null);
+    const [entryForm, setEntryForm] = useState<SancaiEntryFormValues>(toFormValues());
     const categoriesQuery = useQuery({
         queryKey: ["classics", "sancai", "categories"],
         queryFn: service.listCategories,
@@ -230,13 +299,34 @@ export const SancaiPage = () => {
         queryFn: () => service.pageEntries(query),
         retry: false
     });
+    const detailQuery = useQuery({
+        queryKey: ["classics", "sancai", "entry", activeEntryId],
+        queryFn: () => service.getEntry(activeEntryId || 0),
+        enabled: activeEntryId !== null,
+        retry: false
+    });
+    const saveMutation = useMutation({
+        mutationFn: service.saveEntry,
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: ["classics", "sancai", "entries"] });
+            if (activeEntryId !== null) {
+                await queryClient.invalidateQueries({
+                    queryKey: ["classics", "sancai", "entry", activeEntryId]
+                });
+            }
+            messageApi.success("三才图会条目已保存");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "保存失败");
+        }
+    });
     const categories = categoriesQuery.data || [];
     const volumes = volumesQuery.data || [];
     const entries = entriesQuery.data?.records || [];
     const totalCount = entriesQuery.data?.totalCount ?? entriesQuery.data?.count ?? 0;
     const currentPageNo = entriesQuery.data?.pageNo || query.pageNo || DEFAULT_PAGE_NO;
     const currentPageSize = entriesQuery.data?.pageSize || query.pageSize || DEFAULT_PAGE_SIZE;
-    const selectedEntry = entries[0];
+    const selectedEntry = detailQuery.data;
     const isLoading = isQueryLoading(categoriesQuery, volumesQuery, entriesQuery);
     const hasError = isQueryError(categoriesQuery, volumesQuery, entriesQuery);
     const selectedCategoryId = query.categoryId ?? null;
@@ -289,6 +379,32 @@ export const SancaiPage = () => {
         setQuery({
             pageNo: DEFAULT_PAGE_NO,
             pageSize: query.pageSize || DEFAULT_PAGE_SIZE
+        });
+    };
+
+    const openEntry = (entry: SancaiEntryRecord) => {
+        setActiveEntryId(entry.id);
+        setEntryForm(toFormValues(entry));
+    };
+
+    const saveEntry = () => {
+        const entry = detailQuery.data || selectedEntry;
+        if (!entry) {
+            return;
+        }
+        saveMutation.mutate({
+            id: entry.id,
+            volumeId: entry.volumeId,
+            title: entryForm.title,
+            originalText: entryForm.originalText,
+            translationText: entryForm.translationText,
+            summary: entryForm.summary,
+            lifecycleStatus: entry.lifecycleStatus,
+            visibility: entryForm.visibility,
+            translationStatus: entry.translationStatus,
+            imageStatus: entry.imageStatus,
+            visualAssetStatus: entry.visualAssetStatus,
+            refinementStatus: entry.refinementStatus
         });
     };
 
@@ -378,7 +494,8 @@ export const SancaiPage = () => {
                                     currentPageNo,
                                     currentPageSize,
                                     totalCount,
-                                    changePage
+                                    changePage,
+                                    openEntry
                                 )
                             )}
                         </section>
@@ -387,10 +504,20 @@ export const SancaiPage = () => {
                             <div className="sancai-panel-heading">
                                 <Title level={3}>详情</Title>
                             </div>
-                            {isLoading ? (
+                            {isLoading || detailQuery.isLoading ? (
                                 <Skeleton active paragraph={{ rows: 6 }} />
                             ) : (
-                                renderDetail(selectedEntry)
+                                renderDetail(
+                                    selectedEntry,
+                                    entryForm,
+                                    saveMutation.isPending,
+                                    (values) =>
+                                        setEntryForm((currentForm) => ({
+                                            ...currentForm,
+                                            ...values
+                                        })),
+                                    saveEntry
+                                )
                             )}
                         </aside>
                     </div>

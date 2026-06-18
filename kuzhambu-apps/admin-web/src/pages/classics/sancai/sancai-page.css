@@ -195,7 +195,7 @@ html[data-theme="dark"] .sancai-page {
 .sancai-detail-card {
     display: grid;
     min-width: 0;
-    gap: 8px;
+    gap: 10px;
     padding: 14px;
     background:
         linear-gradient(135deg, var(--sancai-accent-soft), transparent 42%), var(--sancai-soft);
@@ -203,16 +203,15 @@ html[data-theme="dark"] .sancai-page {
     border-radius: 8px;
 }
 
-.sancai-detail-card h3.ant-typography {
-    margin: 0;
+.sancai-detail-card .ant-input,
+.sancai-detail-card .ant-select-selector {
     color: var(--sancai-ink);
-    font-size: 20px;
+    background: var(--sancai-panel) !important;
+    border-color: var(--sancai-line) !important;
 }
 
-.sancai-detail-card p {
-    margin: 0;
-    color: var(--sancai-copy);
-    line-height: 1.7;
+.sancai-detail-card .ant-btn-primary {
+    justify-self: end;
 }
 
 @media (max-width: 1080px) {
