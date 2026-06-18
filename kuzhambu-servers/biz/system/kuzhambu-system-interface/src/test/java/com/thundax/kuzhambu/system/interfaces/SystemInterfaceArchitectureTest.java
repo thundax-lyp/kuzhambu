@@ -5,9 +5,12 @@ import com.thundax.kuzhambu.common.test.architecture.ApiAnnotationArchitectureRu
 import com.thundax.kuzhambu.common.test.architecture.InterfaceBoundaryArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.ModuleAndDependencyArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.NamingArchitectureRuleSupport;
+import com.thundax.kuzhambu.system.interfaces.admin.auth.configure.SpringSecurityConfiguration;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import java.nio.file.Path;
+import java.util.Arrays;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 
 class SystemInterfaceArchitectureTest extends AbstractArchitectureTest {
 
@@ -32,5 +35,14 @@ class SystemInterfaceArchitectureTest extends AbstractArchitectureTest {
         ApiAnnotationArchitectureRuleSupport.assertAdminControllerMethodsDeclareRequiredAnnotations(
                 Path.of("src/main/java"));
         ApiAnnotationArchitectureRuleSupport.assertPostMappingMethodsUseRequestResponseShape(Path.of("src/main/java"));
+    }
+
+    @Test
+    void securityConfigurationShouldNotBypassSecurityFilterChain() {
+        boolean hasWebSecurityCustomizer = Arrays.stream(SpringSecurityConfiguration.class.getDeclaredMethods())
+                .anyMatch(method -> WebSecurityCustomizer.class.equals(method.getReturnType()));
+
+        org.junit.jupiter.api.Assertions.assertFalse(
+                hasWebSecurityCustomizer, "Public API paths must use permitAll instead of web.ignoring().");
     }
 }
