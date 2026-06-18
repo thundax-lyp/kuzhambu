@@ -221,6 +221,18 @@ test.describe("admin layout", () => {
                             name: "用户管理",
                             url: "/system/users",
                             displayParams: '{"icon":"users"}'
+                        },
+                        {
+                            id: "20",
+                            name: "古籍管理",
+                            displayParams: '{"icon":"classics"}'
+                        },
+                        {
+                            id: "21",
+                            parentId: "20",
+                            name: "三才图会",
+                            url: "/classics/sancai",
+                            displayParams: '{"icon":"sancai"}'
                         }
                     ]
                 })
@@ -326,6 +338,11 @@ test.describe("admin layout", () => {
         await page.getByRole("menuitem", { name: "用户管理" }).click();
         await expect(page).toHaveURL(/\/system\/users$/);
         await expect(page.getByRole("heading", { name: "用户管理" })).toBeVisible();
+
+        await page.getByRole("menuitem", { name: "古籍管理" }).click();
+        await page.getByRole("menuitem", { name: "三才图会" }).click();
+        await expect(page).toHaveURL(/\/classics\/sancai$/);
+        await expect(page.getByRole("heading", { name: "三才图会" })).toBeVisible();
     });
 
     test("keeps the workspace content within the expanded and collapsed desktop widths", async ({

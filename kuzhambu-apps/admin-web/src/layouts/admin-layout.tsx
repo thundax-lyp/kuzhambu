@@ -53,6 +53,8 @@ const menuIconMap: Record<string, ReactNode> = {
     logs: <AuditOutlined />,
     audit: <AuditOutlined />,
     "audit-logs": <AuditOutlined />,
+    classics: <BookOutlined />,
+    sancai: <BookOutlined />,
     storage: <CloudServerOutlined />,
     "storage-objects": <CloudServerOutlined />,
     submission: <FileTextOutlined />,
@@ -74,6 +76,10 @@ const getOpenKeys = (pathname: string) => {
 
     if (pathname.startsWith("/audit/")) {
         openKeys.push("/audit");
+    }
+
+    if (pathname.startsWith("/classics/")) {
+        openKeys.push("/classics");
     }
 
     return openKeys;

@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Admin Web Classics 路由`：接入三才图会后台页面路由
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-ADMIN-LOOP.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/router/index.tsx`、`kuzhambu-apps/admin-web/src/app.test.tsx`、`kuzhambu-apps/admin-web/e2e/layout/admin-layout.spec.ts`
-    - 处理动作：新增 `/classics/sancai` 路由并把导航测试纳入三才图会菜单
-    - 验收点：单测和 Playwright layout 用例能进入三才图会页面且页面非空
-    - 重要度：8/10
-
 - [ ] `Admin Web 三才页面骨架`：实现三才图会页面基础结构
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-ADMIN-LOOP.md`
