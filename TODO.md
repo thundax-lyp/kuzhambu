@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `System 管理接口`：固定用户角色菜单后台管理闭环
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-SYSTEM-STORAGE-LOOP.md`
-    - 范围对象：`kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/user/controller/UserController.java`、`kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/role/controller/RoleController.java`、`kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/menu/controller/MenuController.java`、`kuzhambu-servers/biz/system/kuzhambu-system-interface/src/test/java/com/thundax/kuzhambu/system/interfaces/admin/SystemAdminControllerTest.java`
-    - 处理动作：固定用户、角色和菜单管理接口路径并补充 controller 测试
-    - 验收点：前端 service 可直接调用用户、角色和菜单接口，Playwright 验证列表请求和表单打开路径可用
-    - 重要度：9/10
-
 - [ ] `System 日志接口`：固定审计和系统日志查询闭环
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-SYSTEM-STORAGE-LOOP.md`
