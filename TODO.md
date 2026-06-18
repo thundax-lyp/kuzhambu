@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web System service`：对齐 System 页面写操作请求字段
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-SYSTEM-STORAGE-LOOP.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/system/user/user-service.ts`、`kuzhambu-apps/admin-web/src/pages/system/role/role-service.ts`、`kuzhambu-apps/admin-web/src/pages/system/menu/menu-service.ts`、`kuzhambu-apps/admin-web/src/pages/system/department/department-service.ts`、`kuzhambu-apps/admin-web/src/pages/system/dictionary/dictionary-service.ts`
-    - 处理动作：将用户、角色、菜单、部门和字典写操作请求字段固定为后端 request 类字段
-    - 验收点：Playwright 断言 System 页面表单提交的请求体字段与后端 request 类一致
-    - 重要度：8/10
-
 - [ ] `System 登录与当前用户接口`：固定登录到当前用户闭环
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-SYSTEM-STORAGE-LOOP.md`
