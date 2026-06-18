@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics-sancai-content-interface`：补齐 Content 后端接口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-TREE-PAGE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/sancai`
-    - 处理动作：新增 Content 的 `list/add/update/delete/sort` 明确接口
-    - 验收点：接口测试覆盖按 `entryId` 查询 Content，且未新增或使用 `save`
-    - 重要度：7/10
-
 - [ ] `admin-web-sancai-content-service`：新增 Content service
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-TREE-PAGE.md`
