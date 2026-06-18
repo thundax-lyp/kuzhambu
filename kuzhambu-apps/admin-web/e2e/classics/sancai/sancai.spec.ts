@@ -70,7 +70,7 @@ test.describe("classics sancai page", () => {
         const volumeRequests: Array<Record<string, unknown>> = [];
         const entryRequests: Array<Record<string, unknown>> = [];
         const detailRequests: string[] = [];
-        const saveRequests: Array<Record<string, unknown>> = [];
+        const updateRequests: Array<Record<string, unknown>> = [];
 
         await page.route("**/admin-api/api/classics/sancai/categories/list", async (route) => {
             await route.fulfill({
@@ -171,8 +171,8 @@ test.describe("classics sancai page", () => {
                 })
             });
         });
-        await page.route("**/admin-api/api/classics/sancai/entries/save", async (route) => {
-            saveRequests.push(readRequestBody(route.request().postData()));
+        await page.route("**/admin-api/api/classics/sancai/entries/update", async (route) => {
+            updateRequests.push(readRequestBody(route.request().postData()));
             await route.fulfill({
                 contentType: "application/json",
                 body: JSON.stringify({
@@ -277,7 +277,7 @@ test.describe("classics sancai page", () => {
         await page.getByTitle("内部").click();
         await page.getByRole("button", { name: "保存三才图会条目" }).click();
         await expect
-            .poll(() => saveRequests.at(-1))
+            .poll(() => updateRequests.at(-1))
             .toEqual({
                 id: 3001,
                 volumeId: 101,

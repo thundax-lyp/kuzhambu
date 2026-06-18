@@ -15,6 +15,8 @@ const SERVICE_METHOD_VERBS = [
     "add",
     "create",
     "remove",
+    "delete",
+    "update",
     "change",
     "sort",
     "move",
@@ -25,7 +27,8 @@ const SERVICE_METHOD_VERBS = [
     "logout",
     "refresh",
     "load",
-    "save"
+    "request",
+    "latest"
 ];
 
 const localRules = {

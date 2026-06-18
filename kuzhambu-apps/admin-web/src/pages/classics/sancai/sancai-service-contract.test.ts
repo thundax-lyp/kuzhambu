@@ -72,18 +72,33 @@ describe("sancai service request contracts", () => {
     });
 
     it("sends Sancai list and entry requests with backend contract fields", async () => {
+        await sancaiService.listCategoryTypes();
+        expectLastCall("GET", "/classics/sancai/categories/types", undefined);
+
+        await sancaiService.listVolumeTypes();
+        expectLastCall("GET", "/classics/sancai/volumes/types", undefined);
+
         await sancaiService.listCategories();
         expectLastCall("POST", "/classics/sancai/categories/list", undefined);
 
         await sancaiService.getCategory(2);
         expectLastCall("GET", "/classics/sancai/categories/2", undefined);
 
-        await sancaiService.saveCategory({
+        await sancaiService.addCategory({
+            title: "天文",
+            categoryType: "FORMAL"
+        });
+        expectLastCall("POST", "/classics/sancai/categories/add", {
+            title: "天文",
+            categoryType: "FORMAL"
+        });
+
+        await sancaiService.updateCategory({
             id: 2,
             title: "天文",
             categoryType: "FORMAL"
         });
-        expectLastCall("POST", "/classics/sancai/categories/save", {
+        expectLastCall("POST", "/classics/sancai/categories/update", {
             id: 2,
             title: "天文",
             categoryType: "FORMAL"
@@ -108,6 +123,47 @@ describe("sancai service request contracts", () => {
         });
         expectLastCall("POST", "/classics/sancai/volumes/list", {
             categoryId: 2
+        });
+
+        await sancaiService.getVolume(101);
+        expectLastCall("GET", "/classics/sancai/volumes/101", undefined);
+
+        await sancaiService.addVolume({
+            categoryId: 2,
+            title: "天文卷一",
+            volumeType: "MAIN"
+        });
+        expectLastCall("POST", "/classics/sancai/volumes/add", {
+            categoryId: 2,
+            title: "天文卷一",
+            volumeType: "MAIN"
+        });
+
+        await sancaiService.updateVolume({
+            id: 101,
+            categoryId: 2,
+            title: "天文卷一",
+            volumeType: "MAIN"
+        });
+        expectLastCall("POST", "/classics/sancai/volumes/update", {
+            id: 101,
+            categoryId: 2,
+            title: "天文卷一",
+            volumeType: "MAIN"
+        });
+
+        await sancaiService.removeVolume({ id: 101 });
+        expectLastCall("POST", "/classics/sancai/volumes/delete", {
+            id: 101
+        });
+
+        await sancaiService.sortVolumes({
+            orderedIds: [101, 102],
+            sortDirection: "ASC"
+        });
+        expectLastCall("POST", "/classics/sancai/volumes/sort", {
+            orderedIds: [101, 102],
+            sortDirection: "ASC"
         });
 
         await sancaiService.pageEntries({
@@ -142,7 +198,34 @@ describe("sancai service request contracts", () => {
         await sancaiService.getEntry(3001);
         expectLastCall("GET", "/classics/sancai/entries/3001", undefined);
 
-        await sancaiService.saveEntry({
+        await sancaiService.addEntry({
+            volumeId: 101,
+            title: "天地",
+            originalText: "原文",
+            translationText: "译文",
+            summary: "摘要",
+            lifecycleStatus: "PUBLISHED",
+            visibility: "PUBLIC",
+            translationStatus: "READY",
+            imageStatus: "READY",
+            visualAssetStatus: "READY",
+            refinementStatus: "COMPLETE"
+        });
+        expectLastCall("POST", "/classics/sancai/entries/add", {
+            volumeId: 101,
+            title: "天地",
+            originalText: "原文",
+            translationText: "译文",
+            summary: "摘要",
+            lifecycleStatus: "PUBLISHED",
+            visibility: "PUBLIC",
+            translationStatus: "READY",
+            imageStatus: "READY",
+            visualAssetStatus: "READY",
+            refinementStatus: "COMPLETE"
+        });
+
+        await sancaiService.updateEntry({
             id: 3001,
             volumeId: 101,
             title: "天地",
@@ -156,7 +239,7 @@ describe("sancai service request contracts", () => {
             visualAssetStatus: "READY",
             refinementStatus: "COMPLETE"
         });
-        expectLastCall("POST", "/classics/sancai/entries/save", {
+        expectLastCall("POST", "/classics/sancai/entries/update", {
             id: 3001,
             volumeId: 101,
             title: "天地",

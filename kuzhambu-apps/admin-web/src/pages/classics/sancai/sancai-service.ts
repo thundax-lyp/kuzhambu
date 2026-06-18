@@ -1,4 +1,5 @@
 import { getJson, postJson } from "@/api/http";
+import type { DictItem } from "@/types/dict";
 import type { Page } from "@/types/page";
 import type { SancaiCategoryRecord, SancaiEntryRecord, SancaiVolumeRecord } from "./sancai-types";
 
@@ -21,10 +22,17 @@ export interface SancaiEntryPageQuery {
     sortDirection?: "ASC" | "DESC" | null;
 }
 
-export interface SancaiCategorySaveCommand {
+export interface SancaiCategoryCommand {
     id?: number | null;
     title?: string | null;
     categoryType?: string | null;
+}
+
+export interface SancaiVolumeCommand {
+    id?: number | null;
+    categoryId?: number | null;
+    title?: string | null;
+    volumeType?: string | null;
 }
 
 export interface SancaiCategorySortCommand {
@@ -32,7 +40,7 @@ export interface SancaiCategorySortCommand {
     sortDirection?: "ASC" | "DESC" | null;
 }
 
-export interface SancaiEntrySaveCommand {
+export interface SancaiEntryCommand {
     id?: number | null;
     volumeId?: number | null;
     title?: string | null;
@@ -47,6 +55,14 @@ export interface SancaiEntrySaveCommand {
     refinementStatus?: string | null;
 }
 
+export const listCategoryTypes = () => {
+    return getJson<DictItem[]>("/classics/sancai/categories/types");
+};
+
+export const listVolumeTypes = () => {
+    return getJson<DictItem[]>("/classics/sancai/volumes/types");
+};
+
 export const listCategories = () => {
     return postJson<SancaiCategoryRecord[]>("/classics/sancai/categories/list");
 };
@@ -55,17 +71,23 @@ export const getCategory = (id: number) => {
     return getJson<SancaiCategoryRecord>(`/classics/sancai/categories/${id}`);
 };
 
-export const saveCategory = (request: SancaiCategorySaveCommand) => {
-    return postJson<SancaiCategoryRecord, SancaiCategorySaveCommand>(
-        "/classics/sancai/categories/save",
+export const addCategory = (request: SancaiCategoryCommand) => {
+    return postJson<SancaiCategoryRecord, SancaiCategoryCommand>("/classics/sancai/categories/add", {
+        body: request
+    });
+};
+
+export const updateCategory = (request: SancaiCategoryCommand) => {
+    return postJson<SancaiCategoryRecord, SancaiCategoryCommand>(
+        "/classics/sancai/categories/update",
         {
             body: request
         }
     );
 };
 
-export const removeCategory = (request: SancaiCategorySaveCommand) => {
-    return postJson<boolean, SancaiCategorySaveCommand>("/classics/sancai/categories/delete", {
+export const removeCategory = (request: SancaiCategoryCommand) => {
+    return postJson<boolean, SancaiCategoryCommand>("/classics/sancai/categories/delete", {
         body: request
     });
 };
@@ -76,8 +98,36 @@ export const sortCategories = (request: SancaiCategorySortCommand) => {
     });
 };
 
+export const sortVolumes = (request: SancaiCategorySortCommand) => {
+    return postJson<boolean, SancaiCategorySortCommand>("/classics/sancai/volumes/sort", {
+        body: request
+    });
+};
+
 export const listVolumes = (request: SancaiVolumeQuery = {}) => {
     return postJson<SancaiVolumeRecord[], SancaiVolumeQuery>("/classics/sancai/volumes/list", {
+        body: request
+    });
+};
+
+export const getVolume = (id: number) => {
+    return getJson<SancaiVolumeRecord>(`/classics/sancai/volumes/${id}`);
+};
+
+export const addVolume = (request: SancaiVolumeCommand) => {
+    return postJson<SancaiVolumeRecord, SancaiVolumeCommand>("/classics/sancai/volumes/add", {
+        body: request
+    });
+};
+
+export const updateVolume = (request: SancaiVolumeCommand) => {
+    return postJson<SancaiVolumeRecord, SancaiVolumeCommand>("/classics/sancai/volumes/update", {
+        body: request
+    });
+};
+
+export const removeVolume = (request: SancaiVolumeCommand) => {
+    return postJson<boolean, SancaiVolumeCommand>("/classics/sancai/volumes/delete", {
         body: request
     });
 };
@@ -95,8 +145,14 @@ export const getEntry = (id: number) => {
     return getJson<SancaiEntryRecord>(`/classics/sancai/entries/${id}`);
 };
 
-export const saveEntry = (request: SancaiEntrySaveCommand) => {
-    return postJson<SancaiEntryRecord, SancaiEntrySaveCommand>("/classics/sancai/entries/save", {
+export const addEntry = (request: SancaiEntryCommand) => {
+    return postJson<SancaiEntryRecord, SancaiEntryCommand>("/classics/sancai/entries/add", {
+        body: request
+    });
+};
+
+export const updateEntry = (request: SancaiEntryCommand) => {
+    return postJson<SancaiEntryRecord, SancaiEntryCommand>("/classics/sancai/entries/update", {
         body: request
     });
 };
