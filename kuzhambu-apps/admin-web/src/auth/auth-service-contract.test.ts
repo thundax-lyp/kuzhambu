@@ -1,11 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import {
-    createLoginForm,
-    login,
-    logout,
-    refreshAccessToken,
-    refreshCaptcha
-} from "./auth-service";
+import { createLoginForm, login, logout, refreshAccessToken, refreshCaptcha } from "./auth-service";
 import * as currentUserService from "../service/current-user-service";
 
 interface CapturedCall {

@@ -26,19 +26,19 @@ const mockShellApis = async (page: Page) => {
                 id: "1",
                 name: "仪表盘",
                 url: "/dashboard",
-                displayParams: "{\"icon\":\"dashboard\"}"
+                displayParams: '{"icon":"dashboard"}'
             },
             {
                 id: "2",
                 name: "系统管理",
-                displayParams: "{\"icon\":\"system\"}"
+                displayParams: '{"icon":"system"}'
             },
             {
                 id: "3",
                 parentId: "2",
                 name: "字典管理",
                 url: "/system/dictionaries",
-                displayParams: "{\"icon\":\"dictionary\"}"
+                displayParams: '{"icon":"dictionary"}'
             }
         ]);
     });

@@ -137,7 +137,7 @@ describe("system service request contracts", () => {
             perms: "sys:menu:edit",
             ranks: 10,
             display: true,
-            displayParams: "{\"icon\":\"menu\"}",
+            displayParams: '{"icon":"menu"}',
             url: "/system/menus",
             remarks: "后台菜单"
         };

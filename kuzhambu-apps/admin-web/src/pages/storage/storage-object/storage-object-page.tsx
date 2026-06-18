@@ -413,7 +413,8 @@ export const StorageObjectPage = () => {
                                   key: "content",
                                   text: "读取",
                                   ariaLabel: `读取 ${filename}`,
-                                  onClick: () => window.open(accessUrl, "_blank", "noopener,noreferrer")
+                                  onClick: () =>
+                                      window.open(accessUrl, "_blank", "noopener,noreferrer")
                               }
                           ]
                         : []),
@@ -569,7 +570,9 @@ export const StorageObjectPage = () => {
                 className="storage-object-table"
                 columns={columns}
                 dataSource={storages}
-                loading={storageQuery.isFetching || sortMutation.isPending || uploadMutation.isPending}
+                loading={
+                    storageQuery.isFetching || sortMutation.isPending || uploadMutation.isPending
+                }
                 onSort={moveStorage}
                 pagination={{
                     current: currentPageNo,

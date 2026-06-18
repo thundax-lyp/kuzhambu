@@ -1,7 +1,14 @@
 import { expect, test } from "@playwright/test";
 import type { Page, Route } from "@playwright/test";
 
-const ADMIN_PERMISSIONS = ["user", "sys:user:view", "sys:user:edit", "sys:role:view", "sys:role:edit", "super"];
+const ADMIN_PERMISSIONS = [
+    "user",
+    "sys:user:view",
+    "sys:user:edit",
+    "sys:role:view",
+    "sys:role:edit",
+    "super"
+];
 
 const fulfillSuccess = async (route: Route, data: unknown) => {
     await route.fulfill({
@@ -31,33 +38,33 @@ const mockShellApis = async (page: Page) => {
                 id: "dashboard",
                 name: "仪表盘",
                 url: "/dashboard",
-                displayParams: "{\"icon\":\"dashboard\"}"
+                displayParams: '{"icon":"dashboard"}'
             },
             {
                 id: "system",
                 name: "系统管理",
-                displayParams: "{\"icon\":\"system\"}"
+                displayParams: '{"icon":"system"}'
             },
             {
                 id: "users",
                 parentId: "system",
                 name: "用户管理",
                 url: "/system/users",
-                displayParams: "{\"icon\":\"users\"}"
+                displayParams: '{"icon":"users"}'
             },
             {
                 id: "roles",
                 parentId: "system",
                 name: "角色管理",
                 url: "/system/roles",
-                displayParams: "{\"icon\":\"roles\"}"
+                displayParams: '{"icon":"roles"}'
             },
             {
                 id: "menus",
                 parentId: "system",
                 name: "菜单管理",
                 url: "/system/menus",
-                displayParams: "{\"icon\":\"menus\"}"
+                displayParams: '{"icon":"menus"}'
             }
         ]);
     });

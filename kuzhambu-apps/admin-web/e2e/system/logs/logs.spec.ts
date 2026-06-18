@@ -31,31 +31,31 @@ const mockShellApis = async (page: Page) => {
                 id: "dashboard",
                 name: "仪表盘",
                 url: "/dashboard",
-                displayParams: "{\"icon\":\"dashboard\"}"
+                displayParams: '{"icon":"dashboard"}'
             },
             {
                 id: "system",
                 name: "系统管理",
-                displayParams: "{\"icon\":\"system\"}"
+                displayParams: '{"icon":"system"}'
             },
             {
                 id: "system-log",
                 parentId: "system",
                 name: "系统日志",
                 url: "/system/logs",
-                displayParams: "{\"icon\":\"system-log\"}"
+                displayParams: '{"icon":"system-log"}'
             },
             {
                 id: "audit",
                 name: "审计管理",
-                displayParams: "{\"icon\":\"audit\"}"
+                displayParams: '{"icon":"audit"}'
             },
             {
                 id: "audit-log",
                 parentId: "audit",
                 name: "审计日志",
                 url: "/audit/logs",
-                displayParams: "{\"icon\":\"audit-log\"}"
+                displayParams: '{"icon":"audit-log"}'
             }
         ]);
     });

@@ -32,7 +32,7 @@ const mockCurrentUserApis = async (page: Page) => {
                 id: "dashboard",
                 name: "仪表盘",
                 url: "/dashboard",
-                displayParams: "{\"icon\":\"dashboard\"}"
+                displayParams: '{"icon":"dashboard"}'
             }
         ]);
     });
@@ -49,7 +49,9 @@ test.describe("login page", () => {
         await mockCurrentUserApis(page);
     });
 
-    test("logs in with backend auth request fields and restores the dashboard", async ({ page }) => {
+    test("logs in with backend auth request fields and restores the dashboard", async ({
+        page
+    }) => {
         let loginRequestBody: Record<string, unknown> | undefined;
 
         await page.route("**/admin-api/api/auth/session/pre-auth-session", async (route) => {
