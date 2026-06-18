@@ -1,8 +1,6 @@
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
 
-const USER_DEPARTMENT_PANEL_BOTTOM_GAP = 8;
-
 const expectNoPageHorizontalOverflow = async (page: Page) => {
     await expect
         .poll(async () =>
@@ -146,7 +144,34 @@ const readUserDepartmentPanelMetrics = async (page: Page) => {
         return {
             panel: rect(".user-department-panel"),
             sidebar: rect(".sidebar"),
+            tablePanel: rect(".user-table-panel"),
             topbar: rect(".topbar")
+        };
+    });
+};
+
+const readUserDepartmentSplitMetrics = async (page: Page) => {
+    return page.evaluate(() => {
+        const panel = document.querySelector(".user-department-panel");
+        const dragger = document.querySelector(
+            ".user-department-table-area > .ant-splitter-bar .ant-splitter-bar-dragger"
+        );
+        if (!panel || !dragger) {
+            throw new Error("user department splitter not found");
+        }
+        const panelBounds = panel.getBoundingClientRect();
+        const draggerBounds = dragger.getBoundingClientRect();
+        const hitElement = document.elementFromPoint(
+            draggerBounds.left + draggerBounds.width / 2,
+            draggerBounds.top + draggerBounds.height / 2
+        );
+        return {
+            draggerHeight: draggerBounds.height,
+            draggerLeft: draggerBounds.left,
+            draggerTop: draggerBounds.top,
+            draggerWidth: draggerBounds.width,
+            hitDragger: Boolean(hitElement?.closest(".ant-splitter-bar-dragger")),
+            panelWidth: panelBounds.width
         };
     });
 };
@@ -472,25 +497,49 @@ test.describe("admin layout", () => {
         await expect(page.getByRole("heading", { name: "用户管理" })).toBeVisible();
         const initialMetrics = await readUserDepartmentPanelMetrics(page);
         expect(initialMetrics.panel.top).toBeGreaterThan(initialMetrics.topbar.bottom);
-        expect(
-            Math.abs(
-                initialMetrics.panel.bottom -
-                    (initialMetrics.sidebar.bottom - USER_DEPARTMENT_PANEL_BOTTOM_GAP)
-            )
-        ).toBeLessThanOrEqual(2);
+        expect(initialMetrics.panel.height).toBeLessThanOrEqual(
+            initialMetrics.tablePanel.height + 2
+        );
 
         await page.evaluate(() => window.scrollTo(0, 160));
         await expect
             .poll(async () => {
                 const metrics = await readUserDepartmentPanelMetrics(page);
                 return {
-                    bottomWithinSidebar:
-                        metrics.panel.bottom <=
-                        metrics.sidebar.bottom - USER_DEPARTMENT_PANEL_BOTTOM_GAP + 2
+                    heightWithinTable: metrics.panel.height <= metrics.tablePanel.height + 2
                 };
             })
             .toEqual({
-                bottomWithinSidebar: true
+                heightWithinTable: true
             });
+    });
+
+    test("keeps the user department splitter easy to drag", async ({ page }) => {
+        await mockUserManagementApis(page);
+        await page.setViewportSize({ width: 1280, height: 800 });
+        await page.goto("/system/users");
+
+        await expect(page.getByRole("heading", { name: "用户管理" })).toBeVisible();
+        const initialMetrics = await readUserDepartmentSplitMetrics(page);
+        expect(initialMetrics.hitDragger).toBe(true);
+
+        await page.mouse.move(
+            initialMetrics.draggerLeft + initialMetrics.draggerWidth / 2,
+            initialMetrics.draggerTop + initialMetrics.draggerHeight / 2
+        );
+        await page.mouse.down();
+        await page.mouse.move(
+            initialMetrics.draggerLeft + initialMetrics.draggerWidth / 2 + 80,
+            initialMetrics.draggerTop + initialMetrics.draggerHeight / 2,
+            { steps: 6 }
+        );
+        await page.mouse.up();
+
+        await expect
+            .poll(async () => {
+                const metrics = await readUserDepartmentSplitMetrics(page);
+                return metrics.panelWidth;
+            })
+            .toBeGreaterThan(initialMetrics.panelWidth + 40);
     });
 });

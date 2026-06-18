@@ -1,21 +1,27 @@
 import {
     ApartmentOutlined,
     DeleteOutlined,
+    FilterOutlined,
+    PlusOutlined,
     PoweroffOutlined,
-    ReloadOutlined
+    ReloadOutlined,
+    SearchOutlined
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Button, Input, Select, Space, Tree, Typography } from "antd";
+import { App, Button, Input, Select, Space, Splitter, Tree, Typography } from "antd";
 import type { DataNode } from "antd/es/tree";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Key } from "react";
 import { sm2 } from "sm-crypto";
 import { createLoginForm } from "@/auth/auth-service";
 import { hasPermission } from "@/auth/permission-storage";
-import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
+import { KuzhambuBatchActionBar } from "@/components/kuzhambu-batch-action-bar";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
+import { KuzhambuFilterPanel } from "@/components/kuzhambu-filter-panel";
+import { KuzhambuPage } from "@/components/kuzhambu-page";
 import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
 import { KuzhambuTag } from "@/components/kuzhambu-tag";
+import { KuzhambuTable } from "@/components/kuzhambu-table";
 import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
 import { getCurrentUserInfo } from "@/service/current-user-service";
 import type { CurrentUserRecord } from "@/service/current-user-types";
@@ -170,6 +176,7 @@ export const UserPage = () => {
         pageSize: DEFAULT_PAGE_SIZE
     });
     const [searchText, setSearchText] = useState("");
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [filters, setFilters] = useState<UserFilters>(DEFAULT_USER_FILTERS);
     const [selectedDepartmentId, setSelectedDepartmentId] = useState(ALL_DEPARTMENT_ID);
     const [activeUser, setActiveUser] = useState<UserRecord | null>(null);
@@ -244,16 +251,8 @@ export const UserPage = () => {
                         DEPARTMENT_PANEL_BOTTOM_GAP
                 )
             );
-            const floatingTop = Math.max(
-                stickyTop,
-                Math.ceil(floatingContainer.getBoundingClientRect().top)
-            );
 
             floatingContainer.style.setProperty("--user-department-sticky-top", `${stickyTop}px`);
-            floatingContainer.style.setProperty(
-                "--user-department-floating-top",
-                `${floatingTop}px`
-            );
             floatingContainer.style.setProperty(
                 "--user-department-floating-bottom",
                 `${bottomInset}px`
@@ -664,152 +663,196 @@ export const UserPage = () => {
         }
     ];
 
+    const pageActions = (
+        <Space className="user-page-actions">
+            <Input
+                allowClear
+                aria-label="搜索用户"
+                className="user-page-search"
+                placeholder="搜索用户..."
+                prefix={<SearchOutlined />}
+                suffix={<span className="user-page-search-shortcut">⌘K</span>}
+                value={searchText}
+                onChange={(event) => searchUsers(event.target.value)}
+            />
+            <Button
+                className={isFilterOpen || hasActiveFilters ? "user-page-filter-active" : ""}
+                icon={<FilterOutlined />}
+                aria-expanded={isFilterOpen}
+                onClick={() => setIsFilterOpen((open) => !open)}
+            >
+                筛选
+            </Button>
+            <Button
+                icon={<ReloadOutlined />}
+                loading={userQuery.isFetching || departmentQuery.isFetching}
+                onClick={() => {
+                    userQuery.refetch();
+                    departmentQuery.refetch();
+                }}
+            >
+                刷新
+            </Button>
+            {canEditUser ? (
+                <Button type="primary" icon={<PlusOutlined />} onClick={openCreateUser}>
+                    新增
+                </Button>
+            ) : null}
+        </Space>
+    );
+
+    const batchActions = (
+        <Space wrap>
+            <Button
+                className="user-batch-neutral"
+                icon={<PoweroffOutlined />}
+                disabled={!hasSelectedUsers || !canEditUser}
+                loading={statusMutation.isPending}
+                onClick={() => batchUpdateStatus(false)}
+            >
+                禁用
+            </Button>
+            <Button
+                className="user-batch-enable"
+                icon={<PoweroffOutlined />}
+                disabled={!hasSelectedUsers || !canEditUser}
+                loading={statusMutation.isPending}
+                onClick={() => batchUpdateStatus(true)}
+            >
+                启用
+            </Button>
+            <Button
+                danger
+                icon={<DeleteOutlined />}
+                disabled={!hasSelectedUsers || !canEditUser}
+                loading={deleteMutation.isPending}
+                onClick={batchDeleteUsers}
+            >
+                批量删除
+            </Button>
+        </Space>
+    );
+
+    const departmentPanel = (
+        <div className="user-department-panel" ref={departmentPanelRef}>
+            <div className="user-department-panel-head">
+                <Space size={8}>
+                    <ApartmentOutlined />
+                    <Text strong>部门</Text>
+                </Space>
+            </div>
+            <Tree
+                key={departmentTreeKeys.join(",")}
+                blockNode
+                defaultExpandedKeys={departmentTreeKeys}
+                selectedKeys={[selectedDepartmentId]}
+                treeData={departmentTreeData}
+                onSelect={selectDepartment}
+            />
+        </div>
+    );
+
     return (
         <>
-            <KuzhambuListPage<UserRecord>
-                pageClassName="user-page"
+            <KuzhambuPage
+                className="user-page"
                 title="用户管理"
                 description="管理后台用户、角色与权限状态。"
-                subjectName="用户"
-                enableAdd={canEditUser}
-                addText="新增"
-                enableFilter
-                enableSearch
-                searchShortcut="⌘K"
-                searchValue={searchText}
-                onSearchChange={searchUsers}
-                onAdd={openCreateUser}
-                filterActive={hasActiveFilters}
-                filterFields={[
-                    {
-                        name: "loginName",
-                        label: "登录名",
-                        render: () => (
-                            <Input
-                                allowClear
-                                placeholder="developer"
-                                value={filters.loginName}
-                                onChange={(event) =>
-                                    setFilters((currentFilters) => ({
-                                        ...currentFilters,
-                                        loginName: event.target.value
-                                    }))
-                                }
-                            />
-                        )
-                    },
-                    {
-                        name: "enable",
-                        label: "状态",
-                        render: () => (
-                            <Select<UserFilterStatus>
-                                value={filters.enable}
-                                options={[
-                                    { value: "ALL", label: "全部" },
-                                    ...userOptions.statusOptions.map((option) => ({
-                                        value: option.value as UserFilterStatus,
-                                        label: option.label
-                                    }))
-                                ]}
-                                loading={userOptionsQuery.isFetching}
-                                onChange={(enable) =>
-                                    setFilters((currentFilters) => ({
-                                        ...currentFilters,
-                                        enable
-                                    }))
-                                }
-                            />
-                        )
-                    }
-                ]}
-                onFilterApply={applyFilters}
-                onFilterReset={resetFilters}
-                pageActions={
-                    <Button
-                        icon={<ReloadOutlined />}
-                        loading={userQuery.isFetching || departmentQuery.isFetching}
-                        onClick={() => {
-                            userQuery.refetch();
-                            departmentQuery.refetch();
-                        }}
+                actions={pageActions}
+            >
+                <KuzhambuFilterPanel
+                    open={isFilterOpen}
+                    resetDisabled={!hasActiveFilters}
+                    fields={[
+                        {
+                            name: "loginName",
+                            label: "登录名",
+                            render: () => (
+                                <Input
+                                    allowClear
+                                    placeholder="developer"
+                                    value={filters.loginName}
+                                    onChange={(event) =>
+                                        setFilters((currentFilters) => ({
+                                            ...currentFilters,
+                                            loginName: event.target.value
+                                        }))
+                                    }
+                                />
+                            )
+                        },
+                        {
+                            name: "enable",
+                            label: "状态",
+                            render: () => (
+                                <Select<UserFilterStatus>
+                                    value={filters.enable}
+                                    options={[
+                                        { value: "ALL", label: "全部" },
+                                        ...userOptions.statusOptions.map((option) => ({
+                                            value: option.value as UserFilterStatus,
+                                            label: option.label
+                                        }))
+                                    ]}
+                                    loading={userOptionsQuery.isFetching}
+                                    onChange={(enable) =>
+                                        setFilters((currentFilters) => ({
+                                            ...currentFilters,
+                                            enable
+                                        }))
+                                    }
+                                />
+                            )
+                        }
+                    ]}
+                    onApply={() => {
+                        applyFilters();
+                        setIsFilterOpen(false);
+                    }}
+                    onReset={resetFilters}
+                />
+                <KuzhambuBatchActionBar
+                    className="user-table-toolbar"
+                    selectedCount={selectedRowKeys.length}
+                    actions={batchActions}
+                />
+                <Splitter className="user-department-table-area">
+                    <Splitter.Panel
+                        className="user-department-aside"
+                        defaultSize={280}
+                        min={220}
+                        max={520}
                     >
-                        刷新
-                    </Button>
-                }
-                batchClassName="user-table-toolbar"
-                selectedCount={selectedRowKeys.length}
-                batchActions={
-                    <Space wrap>
-                        <Button
-                            className="user-batch-neutral"
-                            icon={<PoweroffOutlined />}
-                            disabled={!hasSelectedUsers || !canEditUser}
-                            loading={statusMutation.isPending}
-                            onClick={() => batchUpdateStatus(false)}
-                        >
-                            禁用
-                        </Button>
-                        <Button
-                            className="user-batch-enable"
-                            icon={<PoweroffOutlined />}
-                            disabled={!hasSelectedUsers || !canEditUser}
-                            loading={statusMutation.isPending}
-                            onClick={() => batchUpdateStatus(true)}
-                        >
-                            启用
-                        </Button>
-                        <Button
-                            danger
-                            icon={<DeleteOutlined />}
-                            disabled={!hasSelectedUsers || !canEditUser}
-                            loading={deleteMutation.isPending}
-                            onClick={batchDeleteUsers}
-                        >
-                            批量删除
-                        </Button>
-                    </Space>
-                }
-                rowKey="id"
-                className="user-table"
-                columns={columns}
-                dataSource={users}
-                loading={userQuery.isFetching}
-                pagination={{
-                    current: query.pageNo || DEFAULT_PAGE_NO,
-                    pageSize: query.pageSize || DEFAULT_PAGE_SIZE,
-                    total: totalCount,
-                    showTotal: (total) => `${total} 个用户`,
-                    onChange: (pageNo, pageSize) => updateQuery({ pageNo, pageSize })
-                }}
-                rowSelection={{
-                    selectedRowKeys,
-                    onChange: setSelectedRowKeys,
-                    getCheckboxProps: (user) => ({
-                        disabled: !canEditUser || !canManageUserByRank(currentUserQuery.data, user)
-                    })
-                }}
-                tableAsidePlacement="left"
-                tableAreaClassName="user-department-table-area"
-                tableAsideClassName="user-department-aside"
-                tableAside={
-                    <div className="user-department-panel" ref={departmentPanelRef}>
-                        <div className="user-department-panel-head">
-                            <Space size={8}>
-                                <ApartmentOutlined />
-                                <Text strong>部门</Text>
-                            </Space>
-                        </div>
-                        <Tree
-                            key={departmentTreeKeys.join(",")}
-                            blockNode
-                            defaultExpandedKeys={departmentTreeKeys}
-                            selectedKeys={[selectedDepartmentId]}
-                            treeData={departmentTreeData}
-                            onSelect={selectDepartment}
+                        {departmentPanel}
+                    </Splitter.Panel>
+                    <Splitter.Panel className="user-table-panel">
+                        <KuzhambuTable<UserRecord>
+                            ariaLabel="用户列表"
+                            rowKey="id"
+                            className="user-table"
+                            columns={columns}
+                            dataSource={users}
+                            loading={userQuery.isFetching}
+                            pagination={{
+                                current: query.pageNo || DEFAULT_PAGE_NO,
+                                pageSize: query.pageSize || DEFAULT_PAGE_SIZE,
+                                total: totalCount,
+                                showTotal: (total) => `${total} 个用户`,
+                                onChange: (pageNo, pageSize) => updateQuery({ pageNo, pageSize })
+                            }}
+                            rowSelection={{
+                                selectedRowKeys,
+                                onChange: setSelectedRowKeys,
+                                getCheckboxProps: (user) => ({
+                                    disabled:
+                                        !canEditUser ||
+                                        !canManageUserByRank(currentUserQuery.data, user)
+                                })
+                            }}
                         />
-                    </div>
-                }
-            />
+                    </Splitter.Panel>
+                </Splitter>
+            </KuzhambuPage>
 
             <UserEdit
                 key={`${userEditorOpen ? "open" : "closed"}-${activeUser?.id || "create"}-${currentUserQuery.data?.ranks ?? "rank"}`}
