@@ -728,14 +728,28 @@ describe("App", () => {
         expect(screen.getByText("已变更")).toBeInTheDocument();
     });
 
-    it("renders storage objects and refreshes after delete", async () => {
+    it("uploads storage objects and refreshes after delete", async () => {
         localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
         localStorage.setItem(
             "kuzhambu.admin.permissions",
             JSON.stringify(["storage:object:view", "storage:object:edit"])
         );
         replacePermissions(["storage:object:view", "storage:object:edit"]);
-        let isDeleted = false;
+        let records = [
+            {
+                id: "storage-1",
+                originalFilename: "sancai.png",
+                contentType: "image/png",
+                ownerId: "asset-1",
+                ownerType: "USER",
+                size: 1536,
+                accessEndpoint: "/api/storage/object/storage-1/content",
+                objectStatus: "ACTIVE",
+                referenceStatus: "UNREFERENCED",
+                priority: 100,
+                remarks: "三才图会图片"
+            }
+        ];
         let pageRequestCount = 0;
         vi.spyOn(globalThis, "fetch").mockImplementation((input, init) => {
             const url = String(input);
@@ -757,23 +771,6 @@ describe("App", () => {
                         pageSize: 20
                     })
                 );
-                const records = isDeleted
-                    ? []
-                    : [
-                          {
-                              id: "storage-1",
-                              originalFilename: "sancai.png",
-                              contentType: "image/png",
-                              ownerId: "asset-1",
-                              ownerType: "USER",
-                              size: 1536,
-                              objectStatus: "ACTIVE",
-                              referenceStatus: "UNREFERENCED",
-                              priority: 100,
-                              remarks: "三才图会图片"
-                          }
-                      ];
-
                 return Promise.resolve(
                     new Response(
                         JSON.stringify({
@@ -794,6 +791,47 @@ describe("App", () => {
                 );
             }
 
+            if (url.endsWith("/storage/object/upload")) {
+                expect(init).toEqual(
+                    expect.objectContaining({
+                        body: expect.any(FormData),
+                        headers: expect.objectContaining({
+                            "Access-Token": "test-token"
+                        }),
+                        method: "POST"
+                    })
+                );
+                const body = init?.body as FormData;
+                expect((body.get("file") as File).name).toBe("upload.txt");
+                const uploadedRecord = {
+                    id: "storage-2",
+                    originalFilename: "upload.txt",
+                    contentType: "text/plain",
+                    ownerId: null,
+                    ownerType: null,
+                    size: 5,
+                    accessEndpoint: "/api/storage/object/storage-2/content",
+                    objectStatus: "ACTIVE",
+                    referenceStatus: "UNREFERENCED",
+                    priority: 101,
+                    remarks: null
+                };
+                records = [uploadedRecord, ...records];
+                return Promise.resolve(
+                    new Response(
+                        JSON.stringify({
+                            code: "COMMON-00000",
+                            message: "success",
+                            data: uploadedRecord
+                        }),
+                        {
+                            headers: { "Content-Type": "application/json" },
+                            status: 200
+                        }
+                    )
+                );
+            }
+
             if (url.endsWith("/storage/object/delete")) {
                 expect(init).toEqual(
                     expect.objectContaining({
@@ -804,7 +842,7 @@ describe("App", () => {
                         method: "POST"
                     })
                 );
-                isDeleted = true;
+                records = records.filter((record) => record.id !== "storage-1");
                 return Promise.resolve(
                     new Response(
                         JSON.stringify({
@@ -842,6 +880,15 @@ describe("App", () => {
         expect(screen.getByText("可用")).toBeInTheDocument();
         expect(screen.getByText("未引用")).toBeInTheDocument();
 
+        fireEvent.change(screen.getByLabelText("选择上传文件"), {
+            target: {
+                files: [new File(["hello"], "upload.txt", { type: "text/plain" })]
+            }
+        });
+
+        expect(await screen.findByText("upload.txt")).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "读取 upload.txt" })).toBeInTheDocument();
+
         fireEvent.click(screen.getByRole("button", { name: "删除 sancai.png" }));
 
         expect((await screen.findAllByText("删除存储对象")).length).toBeGreaterThan(0);
@@ -853,7 +900,7 @@ describe("App", () => {
 
         await waitFor(() => expect(screen.queryByText("sancai.png")).not.toBeInTheDocument());
         expect(pageRequestCount).toBeGreaterThanOrEqual(2);
-    });
+    }, 10000);
 
     it("renders the silver user management layout interactions", async () => {
         localStorage.setItem("kuzhambu.admin.accessToken", "test-token");

@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web Storage 上传页面`：补齐 Storage 页面上传入口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-SYSTEM-STORAGE-LOOP.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/storage/storage-object/storage-object-page.tsx`、`kuzhambu-apps/admin-web/src/pages/storage/storage-object/storage-object-service.ts`、`kuzhambu-apps/admin-web/src/pages/storage/storage-object/storage-object-types.ts`、`kuzhambu-apps/admin-web/src/app.test.tsx`、`kuzhambu-apps/admin-web/e2e/storage/storage-object.spec.ts`
-    - 处理动作：在 Storage 页面新增普通文件上传入口并通过页面 service 调用上传接口
-    - 验收点：Playwright 验证上传后表格出现新文件，删除后该文件从表格消失
-    - 重要度：8/10
-
 - [ ] `admin starter 与菜单种子数据`：固定后台启动模块依赖和菜单种子数据
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-SYSTEM-STORAGE-LOOP.md`

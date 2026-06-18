@@ -97,29 +97,28 @@ test.describe("storage object page", () => {
         });
     });
 
-    test("loads storage objects and refreshes after deleting one", async ({ page }) => {
+    test("uploads storage objects and refreshes after deleting one", async ({ page }) => {
         await page.setViewportSize({ width: 1280, height: 800 });
-        let isDeleted = false;
+        let records = [
+            {
+                id: "storage-1",
+                originalFilename: "sancai.png",
+                contentType: "image/png",
+                ownerId: "asset-1",
+                ownerType: "USER",
+                size: 1536,
+                accessEndpoint: "/api/storage/object/storage-1/content",
+                objectStatus: "ACTIVE",
+                referenceStatus: "UNREFERENCED",
+                priority: 100,
+                remarks: "三才图会图片"
+            }
+        ];
         let pageRequestCount = 0;
         let deleteRequestBody: unknown;
+        let uploadFileName = "";
         await page.route("**/admin-api/api/storage/object/page", async (route) => {
             pageRequestCount += 1;
-            const records = isDeleted
-                ? []
-                : [
-                      {
-                          id: "storage-1",
-                          originalFilename: "sancai.png",
-                          contentType: "image/png",
-                          ownerId: "asset-1",
-                          ownerType: "USER",
-                          size: 1536,
-                          objectStatus: "ACTIVE",
-                          referenceStatus: "UNREFERENCED",
-                          priority: 100,
-                          remarks: "三才图会图片"
-                      }
-                  ];
             await route.fulfill({
                 contentType: "application/json",
                 body: JSON.stringify({
@@ -134,9 +133,34 @@ test.describe("storage object page", () => {
                 })
             });
         });
+        await page.route("**/admin-api/api/storage/object/upload", async (route) => {
+            uploadFileName = route.request().postData()?.includes("upload.txt") ? "upload.txt" : "";
+            const uploadedRecord = {
+                id: "storage-2",
+                originalFilename: "upload.txt",
+                contentType: "text/plain",
+                ownerId: null,
+                ownerType: null,
+                size: 5,
+                accessEndpoint: "/api/storage/object/storage-2/content",
+                objectStatus: "ACTIVE",
+                referenceStatus: "UNREFERENCED",
+                priority: 101,
+                remarks: null
+            };
+            records = [uploadedRecord, ...records];
+            await route.fulfill({
+                contentType: "application/json",
+                body: JSON.stringify({
+                    code: "COMMON-00000",
+                    message: "success",
+                    data: uploadedRecord
+                })
+            });
+        });
         await page.route("**/admin-api/api/storage/object/delete", async (route) => {
             deleteRequestBody = route.request().postDataJSON();
-            isDeleted = true;
+            records = records.filter((record) => record.id !== "storage-1");
             await route.fulfill({
                 contentType: "application/json",
                 body: JSON.stringify({
@@ -152,6 +176,19 @@ test.describe("storage object page", () => {
         await expect(page.getByRole("heading", { name: "存储对象" })).toBeVisible();
         await expect(page.getByText("sancai.png")).toBeVisible();
         await expect(page.getByText("1.50 KB").first()).toBeVisible();
+
+        const fileChooserPromise = page.waitForEvent("filechooser");
+        await page.getByRole("button", { name: "上传" }).click();
+        const fileChooser = await fileChooserPromise;
+        await fileChooser.setFiles({
+            name: "upload.txt",
+            mimeType: "text/plain",
+            buffer: Buffer.from("hello")
+        });
+
+        await expect(page.getByText("upload.txt")).toBeVisible();
+        await expect(page.getByRole("button", { name: "读取 upload.txt" })).toBeVisible();
+        expect(uploadFileName).toBe("upload.txt");
 
         await page.getByRole("button", { name: "删除 sancai.png" }).click();
         const confirmDialog = page.getByRole("dialog");

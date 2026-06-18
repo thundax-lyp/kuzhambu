@@ -1,4 +1,4 @@
-import { postJson } from "@/api/http";
+import { postFormData, postJson } from "@/api/http";
 import type { Page } from "@/types/page";
 import type { StorageRecord } from "./storage-object-types";
 
@@ -32,6 +32,12 @@ export const removeStorageObjects = (ids: string[]) => {
     return postJson<boolean, { ids: string[] }>("/storage/object/delete", {
         body: { ids }
     });
+};
+
+export const uploadStorageObject = (file: File) => {
+    const body = new FormData();
+    body.append("file", file);
+    return postFormData<StorageRecord>("/storage/object/upload", body);
 };
 
 export const sortStorageObjects = (request: StorageSortCommand) => {
