@@ -202,6 +202,7 @@ export const UserEdit = ({
                             <Button
                                 size="small"
                                 shape="circle"
+                                aria-label="上传用户头像"
                                 icon={<CameraOutlined />}
                                 loading={avatarUploading}
                             />

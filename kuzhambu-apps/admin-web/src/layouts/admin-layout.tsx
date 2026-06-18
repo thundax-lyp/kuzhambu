@@ -342,6 +342,7 @@ export const AdminLayout = () => {
                     <Space className="topbar-actions">
                         <Button
                             shape="circle"
+                            aria-label={themeName === "dark" ? "切换为浅色主题" : "切换为深色主题"}
                             icon={themeName === "dark" ? <SunOutlined /> : <MoonOutlined />}
                             onClick={toggleTheme}
                         />

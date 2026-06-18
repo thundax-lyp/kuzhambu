@@ -135,6 +135,7 @@
 
 - `ADMIN_WEB_UI_CONFIRM_HOOK`：确认操作固定使用 `useKuzhambuConfirm`，页面不直接调用 `Modal.confirm`。
 - `ADMIN_WEB_UI_TABLE_ACTION_COLUMN`：表格操作列使用 `key: "actions"`，优先传 `options`；`render` 只作为复杂逃生口。
+- `ADMIN_WEB_UI_INTERACTIVE_ACCESSIBLE_NAME`：可机器判断的业务交互控件必须有稳定可访问名称。当前门禁覆盖无可见文本的 `Button`、`Input.Search`、`Table` 和 `KuzhambuTable`；名称来自可见文本、`aria-label` 或 `aria-labelledby`。
 
 ### Forbidden Defaults
 
@@ -164,8 +165,9 @@
 
 ### UI
 
-- 业务控件必须具备稳定的可访问名称。优先使用可见文本；无稳定可见文本时使用 `aria-label` 或 `aria-labelledby`，确保 Playwright 可以通过 `getByRole(..., { name })` 定位。
+- Hard Rule 暂未覆盖的业务控件也应具备稳定的可访问名称。优先使用可见文本；无稳定可见文本时使用 `aria-label` 或 `aria-labelledby`，确保 Playwright 可以通过 `getByRole(..., { name })` 定位。
 - 不得为了测试覆盖原生控件语义 role。`button`、`input`、`select`、`table` 等原生或 Ant Design 已提供语义的控件保留其默认 role，只补充稳定名称。
+- `KuzhambuListPage` 这类共享业务组件必须尽量用 `subjectName` 生成搜索框和表格的默认可访问名称，页面只在默认文案不准确时覆盖。
 
 #### Page Layout
 

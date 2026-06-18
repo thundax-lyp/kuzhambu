@@ -821,14 +821,14 @@ describe("App", () => {
                     id: "storage-2",
                     originalFilename: "upload.txt",
                     contentType: "text/plain",
-                    ownerId: null,
-                    ownerType: null,
+                    ownerId: "",
+                    ownerType: "",
                     size: 5,
                     accessEndpoint: "/api/storage/object/storage-2/content",
                     objectStatus: "ACTIVE",
                     referenceStatus: "UNREFERENCED",
                     priority: 101,
-                    remarks: null
+                    remarks: ""
                 };
                 records = [uploadedRecord, ...records];
                 return Promise.resolve(
@@ -1147,6 +1147,7 @@ describe("App", () => {
 
         render(
             <KuzhambuTable
+                aria-label="可排序用户表格"
                 rowKey="id"
                 columns={[{ title: "用户", dataIndex: "name", key: "name", width: 160 }]}
                 dataSource={records}

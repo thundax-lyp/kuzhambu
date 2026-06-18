@@ -12,9 +12,19 @@ const DEV_PROXY_PREFIX = "/admin-api/api";
 
 const capturedCalls: CapturedCall[] = [];
 
+const readFetchUrl = (input: RequestInfo | URL) => {
+    if (typeof input === "string") {
+        return input;
+    }
+    if (input instanceof URL) {
+        return input.href;
+    }
+    return input.url;
+};
+
 const installFetchRecorder = () => {
     vi.spyOn(globalThis, "fetch").mockImplementation(async (input, init) => {
-        const url = typeof input === "string" ? input : input.url;
+        const url = readFetchUrl(input);
         capturedCalls.push({
             body: init?.body ? JSON.parse(String(init.body)) : undefined,
             method: init?.method,
