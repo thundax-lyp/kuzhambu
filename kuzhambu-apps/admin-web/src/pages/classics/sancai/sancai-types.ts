@@ -28,3 +28,12 @@ export interface SancaiEntryRecord {
     refinementStatus?: string | null;
     priority?: number | null;
 }
+
+export type SancaiCatalogNodeType = "category" | "entry" | "volume";
+
+export interface SancaiCatalogTreeNode {
+    children?: SancaiCatalogTreeNode[];
+    key: string;
+    nodeType: SancaiCatalogNodeType;
+    title: string;
+}

@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web-sancai-tree-panel`：新增目录树 Panel
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-TREE-PAGE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-catalog-tree-panel.tsx`
-    - 处理动作：渲染 `Category -> Volume -> Entry` 树并抛出选择和展开事件
-    - 验收点：Tree Panel 不 import service，树节点点击能触发页面级选择
-    - 重要度：9/10
-
 - [ ] `admin-web-sancai-page-tree-state`：Page 维护树选中和联动
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-TREE-PAGE.md`
