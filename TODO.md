@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `System 登录与当前用户接口`：固定登录到当前用户闭环
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-SYSTEM-STORAGE-LOOP.md`
-    - 范围对象：`kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/auth/controller/AuthSessionController.java`、`kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/current/controller/CurrentUserController.java`、`kuzhambu-apps/admin-web/src/pages/auth/login/login-page.tsx`、`kuzhambu-apps/admin-web/src/pages/auth/login/auth-service.ts`、`kuzhambu-apps/admin-web/src/service/current-user-service.ts`
-    - 处理动作：固定登录、刷新、登出、当前用户、菜单和权限字段契约
-    - 验收点：接口测试覆盖登录到当前用户读取，Playwright 验证登录、首页和刷新后登录态恢复
-    - 重要度：10/10
-
 - [ ] `System 管理接口`：固定用户角色菜单后台管理闭环
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-SYSTEM-STORAGE-LOOP.md`
