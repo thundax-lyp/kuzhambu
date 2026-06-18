@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web-sancai-volume-panel`：Volume Panel 接管 CRUD
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-TREE-PAGE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-volume-panel.tsx`
-    - 处理动作：在 Panel 中执行 volume query、add、update、deleteById、sort
-    - 验收点：新增、修改、删除、排序均由 Volume Panel 调用 volume service
-    - 重要度：9/10
-
 - [ ] `admin-web-sancai-entry-panel`：新增 Entry Panel 并接管 CRUD
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-TREE-PAGE.md`

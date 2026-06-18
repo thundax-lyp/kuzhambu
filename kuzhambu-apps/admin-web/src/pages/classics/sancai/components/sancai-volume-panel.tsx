@@ -89,6 +89,18 @@ export const SancaiVolumePanel = ({
             messageApi.error(error instanceof Error ? error.message : "卷目删除失败");
         }
     });
+    const sortMutation = useMutation({
+        mutationFn: volumeService.sort,
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: ["classics", "sancai", "volumes"] });
+            await queryClient.invalidateQueries({ queryKey: ["classics", "sancai", "entries"] });
+            closeSort();
+            messageApi.success("三才图会卷目顺序已保存");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "卷目排序保存失败");
+        }
+    });
 
     const startCreate = () => {
         if (!selectedCategory) {
@@ -153,6 +165,13 @@ export const SancaiVolumePanel = ({
         setIsSortOpen(false);
     };
 
+    const submitSort = (orderedIds: number[]) => {
+        sortMutation.mutate({
+            orderedIds,
+            sortDirection: "ASC"
+        });
+    };
+
     return (
         <section className="sancai-catalog-column">
             <div className="sancai-panel-heading">
@@ -196,7 +215,14 @@ export const SancaiVolumePanel = ({
                     onSubmit={submitVolume}
                 />
             ) : null}
-            {isSortOpen ? <SancaiVolumeSortModel volumes={volumes} onCancel={closeSort} /> : null}
+            {isSortOpen ? (
+                <SancaiVolumeSortModel
+                    isSubmitting={sortMutation.isPending}
+                    volumes={volumes}
+                    onCancel={closeSort}
+                    onSubmit={submitSort}
+                />
+            ) : null}
         </section>
     );
 };

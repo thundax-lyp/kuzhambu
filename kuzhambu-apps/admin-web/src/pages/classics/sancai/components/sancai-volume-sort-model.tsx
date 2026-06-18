@@ -1,13 +1,13 @@
 import { ArrowDownOutlined, ArrowUpOutlined, MenuOutlined } from "@ant-design/icons";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { App, Button, Empty, Modal } from "antd";
+import { Button, Empty, Modal } from "antd";
 import type { DragEvent } from "react";
 import { useState } from "react";
-import * as service from "../sancai-service";
 import type { SancaiVolumeRecord } from "../sancai-types";
 
 interface SancaiVolumeSortModelProps {
+    isSubmitting: boolean;
     onCancel: () => void;
+    onSubmit: (orderedIds: number[]) => void;
     volumes: SancaiVolumeRecord[];
 }
 
@@ -20,26 +20,13 @@ const readVolumeTypeLabel = (volume: SancaiVolumeRecord) => {
 };
 
 export const SancaiVolumeSortModel = ({
+    isSubmitting,
     onCancel,
+    onSubmit,
     volumes
 }: SancaiVolumeSortModelProps) => {
-    const { message: messageApi } = App.useApp();
-    const queryClient = useQueryClient();
     const [sortedVolumes, setSortedVolumes] = useState<SancaiVolumeRecord[]>(() => volumes);
     const [draggedVolumeId, setDraggedVolumeId] = useState<number | null>(null);
-
-    const sortMutation = useMutation({
-        mutationFn: service.sortVolumes,
-        onSuccess: async () => {
-            await queryClient.invalidateQueries({ queryKey: ["classics", "sancai", "volumes"] });
-            setDraggedVolumeId(null);
-            onCancel();
-            messageApi.success("三才图会卷目顺序已保存");
-        },
-        onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "卷目排序保存失败");
-        }
-    });
 
     const moveInSortForm = (volumeId: number, direction: -1 | 1) => {
         setSortedVolumes((currentVolumes) => {
@@ -73,10 +60,8 @@ export const SancaiVolumeSortModel = ({
     };
 
     const persistSort = () => {
-        sortMutation.mutate({
-            orderedIds: sortedVolumes.map((volume) => volume.id),
-            sortDirection: "ASC"
-        });
+        setDraggedVolumeId(null);
+        onSubmit(sortedVolumes.map((volume) => volume.id));
     };
 
     return (
@@ -85,7 +70,7 @@ export const SancaiVolumeSortModel = ({
             open
             okText="保存"
             cancelText="取消"
-            confirmLoading={sortMutation.isPending}
+            confirmLoading={isSubmitting}
             onCancel={onCancel}
             onOk={persistSort}
             okButtonProps={{
@@ -97,7 +82,7 @@ export const SancaiVolumeSortModel = ({
         >
             <SancaiVolumeSortList
                 draggedVolumeId={draggedVolumeId}
-                isSubmitting={sortMutation.isPending}
+                isSubmitting={isSubmitting}
                 volumes={sortedVolumes}
                 onDragOver={(event) => event.preventDefault()}
                 onDragStart={setDraggedVolumeId}
