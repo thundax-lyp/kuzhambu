@@ -17,7 +17,10 @@ interface SancaiEntryPanelProps {
     isCatalogLoading: boolean;
     keyword?: string | null;
     lifecycleStatus?: string | null;
+    onClearEntry: () => void;
+    onSelectEntry: (entry: SancaiEntryRecord) => void;
     refreshVersion: number;
+    selectedEntryId: number | null;
     volumeId: number | null;
     volumes: SancaiVolumeRecord[];
 }
@@ -27,14 +30,16 @@ export const SancaiEntryPanel = ({
     isCatalogLoading,
     keyword,
     lifecycleStatus,
+    onClearEntry,
+    onSelectEntry,
     refreshVersion,
+    selectedEntryId,
     volumeId,
     volumes
 }: SancaiEntryPanelProps) => {
     const { message: messageApi } = App.useApp();
     const confirm = useKuzhambuConfirm();
     const queryClient = useQueryClient();
-    const [selectedEntryId, setSelectedEntryId] = useState<number | null>(null);
     const [isCreating, setIsCreating] = useState(false);
     const entriesQuery = useQuery({
         queryKey: [
@@ -89,7 +94,7 @@ export const SancaiEntryPanel = ({
         mutationFn: entryService.deleteById,
         onSuccess: async () => {
             await queryClient.invalidateQueries({ queryKey: ["classics", "sancai", "entries"] });
-            setSelectedEntryId(null);
+            onClearEntry();
             messageApi.success("三才图会条目已删除");
         },
         onError: (error) => {
@@ -112,13 +117,13 @@ export const SancaiEntryPanel = ({
             messageApi.warning("请先选择卷目");
             return;
         }
-        setSelectedEntryId(null);
+        onClearEntry();
         setIsCreating(true);
     };
 
     const selectEntry = (entry: SancaiEntryRecord) => {
         setIsCreating(false);
-        setSelectedEntryId(entry.id);
+        onSelectEntry(entry);
     };
 
     const submitEntry = (form: SancaiEntryFormValues) => {

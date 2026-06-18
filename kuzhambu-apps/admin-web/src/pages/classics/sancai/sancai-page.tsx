@@ -1,14 +1,20 @@
 import { ReloadOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
 import { Alert, Button, Input, Select } from "antd";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { KuzhambuPage } from "@/components/kuzhambu-page";
-import { SancaiCategoryPanel } from "./components/sancai-category-panel";
+import { SancaiCatalogTreePanel } from "./components/sancai-catalog-tree-panel";
 import { SancaiEntryPanel } from "./components/sancai-entry-panel";
 import { SancaiVolumePanel } from "./components/sancai-volume-panel";
-import * as service from "./sancai-service";
-import type { SancaiEntryPageQuery } from "./sancai-service";
-import type { SancaiCategoryRecord, SancaiVolumeRecord } from "./sancai-types";
+import * as categoryService from "./services/sancai-category-service";
+import * as entryService from "./services/sancai-entry-service";
+import * as volumeService from "./services/sancai-volume-service";
+import type {
+    SancaiCatalogTreeNode,
+    SancaiCategoryRecord,
+    SancaiEntryRecord,
+    SancaiVolumeRecord
+} from "./sancai-types";
 import "./sancai-page.css";
 
 const entryStatusOptions = [
@@ -17,6 +23,10 @@ const entryStatusOptions = [
     { label: "已发布", value: "PUBLISHED" },
     { label: "已归档", value: "ARCHIVED" }
 ];
+
+const EMPTY_CATEGORIES: SancaiCategoryRecord[] = [];
+const EMPTY_ENTRIES: SancaiEntryRecord[] = [];
+const EMPTY_VOLUMES: SancaiVolumeRecord[] = [];
 
 const isQueryLoading = (...queries: Array<{ isLoading: boolean }>) => {
     return queries.some((query) => query.isLoading);
@@ -35,72 +45,149 @@ const normalizeKeyword = (value: string) => {
     return keyword || undefined;
 };
 
+const readTitle = (value: { id: number; title?: string | null }, fallback: string) => {
+    return value.title?.trim() || `${fallback} ${value.id}`;
+};
+
+const toCategoryKey = (id: number) => `category:${id}`;
+
+const toVolumeKey = (id: number) => `volume:${id}`;
+
+const toEntryKey = (id: number) => `entry:${id}`;
+
+const readNodeId = (key: string | null, nodeType: string) => {
+    if (!key?.startsWith(`${nodeType}:`)) {
+        return null;
+    }
+    const id = Number(key.slice(nodeType.length + 1));
+    return Number.isFinite(id) ? id : null;
+};
+
+const buildTreeNodes = (
+    categories: SancaiCategoryRecord[],
+    volumes: SancaiVolumeRecord[],
+    entries: SancaiEntryRecord[]
+): SancaiCatalogTreeNode[] => {
+    return categories.map((category) => {
+        const categoryVolumes = volumes.filter((volume) => volume.categoryId === category.id);
+        return {
+            children: categoryVolumes.map((volume) => {
+                const volumeEntries = entries.filter((entry) => entry.volumeId === volume.id);
+                return {
+                    children: volumeEntries.map((entry) => ({
+                        key: toEntryKey(entry.id),
+                        nodeType: "entry",
+                        title: readTitle(entry, "条目")
+                    })),
+                    key: toVolumeKey(volume.id),
+                    nodeType: "volume",
+                    title: readTitle(volume, "卷")
+                };
+            }),
+            key: toCategoryKey(category.id),
+            nodeType: "category",
+            title: readTitle(category, "门类")
+        };
+    });
+};
+
 export const SancaiPage = () => {
-    const [query, setQuery] = useState<SancaiEntryPageQuery>({});
+    const [selectedKey, setSelectedKey] = useState<string | null>(null);
+    const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
     const [refreshVersion, setRefreshVersion] = useState(0);
     const [keyword, setKeyword] = useState("");
+    const [appliedKeyword, setAppliedKeyword] = useState<string | null>(null);
     const [lifecycleStatus, setLifecycleStatus] = useState("ALL");
+    const [appliedLifecycleStatus, setAppliedLifecycleStatus] = useState<string | null>(null);
     const categoriesQuery = useQuery({
         queryKey: ["classics", "sancai", "categories"],
-        queryFn: service.listCategories,
+        queryFn: categoryService.list,
         retry: false
     });
-    const categories = categoriesQuery.data || [];
-    const selectedCategory =
-        categories.find((category) => category.id === query.categoryId) ?? categories[0] ?? null;
-    const selectedCategoryId = selectedCategory?.id ?? null;
     const volumesQuery = useQuery({
-        queryKey: ["classics", "sancai", "volumes", selectedCategoryId],
-        queryFn: () => service.listVolumes({ categoryId: selectedCategoryId }),
-        enabled: selectedCategoryId !== null,
+        queryKey: ["classics", "sancai", "volumes"],
+        queryFn: () => volumeService.list(),
         retry: false
     });
-    const volumes = volumesQuery.data || [];
-    const selectedVolume =
-        volumes.find((volume) => volume.id === query.volumeId) ?? volumes[0] ?? null;
-    const selectedVolumeId = selectedVolume?.id ?? null;
-    const isLoading = isQueryLoading(categoriesQuery, volumesQuery);
-    const hasError = isQueryError(categoriesQuery, volumesQuery);
-
-    const updateQuery = (values: Partial<SancaiEntryPageQuery>) => {
-        setQuery((currentQuery) => ({
-            ...currentQuery,
-            ...values
-        }));
-    };
-
-    const selectCategory = (category: SancaiCategoryRecord) => {
-        updateQuery({
-            categoryId: category.id,
-            volumeId: undefined
-        });
-    };
+    const entriesQuery = useQuery({
+        queryKey: ["classics", "sancai", "entries", "tree", refreshVersion],
+        queryFn: () => entryService.list({ sortDirection: "ASC" }),
+        retry: false
+    });
+    const categories = categoriesQuery.data ?? EMPTY_CATEGORIES;
+    const volumes = volumesQuery.data ?? EMPTY_VOLUMES;
+    const entries = entriesQuery.data ?? EMPTY_ENTRIES;
+    const treeNodes = useMemo(
+        () => buildTreeNodes(categories, volumes, entries),
+        [categories, entries, volumes]
+    );
+    const defaultSelectedKey = categories[0] ? toCategoryKey(categories[0].id) : null;
+    const actualSelectedKey = selectedKey || defaultSelectedKey;
+    const selectedCategoryIdFromKey = readNodeId(actualSelectedKey, "category");
+    const selectedVolumeIdFromKey = readNodeId(actualSelectedKey, "volume");
+    const selectedEntryIdFromKey = readNodeId(actualSelectedKey, "entry");
+    const selectedEntry = entries.find((entry) => entry.id === selectedEntryIdFromKey) ?? null;
+    const selectedVolumeId = selectedEntry?.volumeId ?? selectedVolumeIdFromKey;
+    const selectedVolume = volumes.find((volume) => volume.id === selectedVolumeId) ?? null;
+    const selectedCategoryId = selectedVolume?.categoryId ?? selectedCategoryIdFromKey;
+    const selectedCategory =
+        categories.find((category) => category.id === selectedCategoryId) ?? null;
+    const visibleVolumes = selectedCategory
+        ? volumes.filter((volume) => volume.categoryId === selectedCategory.id)
+        : volumes;
+    const treeExpandedKeys = expandedKeys.length
+        ? expandedKeys
+        : categories.map((category) => toCategoryKey(category.id));
+    const isLoading = isQueryLoading(categoriesQuery, volumesQuery, entriesQuery);
+    const hasError = isQueryError(categoriesQuery, volumesQuery, entriesQuery);
 
     const selectVolume = (volume: SancaiVolumeRecord) => {
-        updateQuery({
-            categoryId: volume.categoryId ?? selectedCategory?.id,
-            volumeId: volume.id
-        });
+        setSelectedKey(toVolumeKey(volume.id));
+        if (volume.categoryId) {
+            setExpandedKeys((keys) => Array.from(new Set([...keys, toCategoryKey(volume.categoryId)])));
+        }
+    };
+
+    const selectEntry = (entry: SancaiEntryRecord) => {
+        setSelectedKey(toEntryKey(entry.id));
+        const volume = volumes.find((item) => item.id === entry.volumeId);
+        if (volume) {
+            setExpandedKeys((keys) =>
+                Array.from(
+                    new Set([
+                        ...keys,
+                        ...(volume.categoryId ? [toCategoryKey(volume.categoryId)] : []),
+                        toVolumeKey(volume.id)
+                    ])
+                )
+            );
+        }
+    };
+
+    const clearEntry = () => {
+        if (selectedVolume) {
+            setSelectedKey(toVolumeKey(selectedVolume.id));
+            return;
+        }
+        if (selectedCategory) {
+            setSelectedKey(toCategoryKey(selectedCategory.id));
+        }
     };
 
     const applyFilters = () => {
-        updateQuery({
-            keyword: normalizeKeyword(keyword),
-            lifecycleStatus: lifecycleStatus === "ALL" ? undefined : lifecycleStatus
-        });
+        setAppliedKeyword(normalizeKeyword(keyword) ?? null);
+        setAppliedLifecycleStatus(lifecycleStatus === "ALL" ? null : lifecycleStatus);
     };
 
     const resetFilters = () => {
         setKeyword("");
         setLifecycleStatus("ALL");
-        setQuery((currentQuery) => ({
-            categoryId: currentQuery.categoryId,
-            volumeId: currentQuery.volumeId
-        }));
+        setAppliedKeyword(null);
+        setAppliedLifecycleStatus(null);
     };
 
     const refreshPage = () => {
-        reloadQueries(categoriesQuery, volumesQuery);
+        reloadQueries(categoriesQuery, volumesQuery, entriesQuery);
         setRefreshVersion((version) => version + 1);
     };
 
@@ -131,22 +218,14 @@ export const SancaiPage = () => {
 
             <div className="sancai-shell">
                 <aside className="sancai-catalog-panel">
-                    <div className="sancai-catalog-columns">
-                        <SancaiCategoryPanel
-                            categories={categories}
-                            isLoading={isLoading}
-                            selectedCategory={selectedCategory}
-                            onSelect={selectCategory}
-                        />
-                        <SancaiVolumePanel
-                            categories={categories}
-                            volumes={volumes}
-                            isLoading={isLoading}
-                            selectedCategory={selectedCategory}
-                            selectedVolume={selectedVolume}
-                            onSelect={selectVolume}
-                        />
-                    </div>
+                    <SancaiCatalogTreePanel
+                        expandedKeys={treeExpandedKeys}
+                        isLoading={isLoading}
+                        nodes={treeNodes}
+                        selectedKey={actualSelectedKey}
+                        onExpandedKeysChange={setExpandedKeys}
+                        onSelectNode={(node) => setSelectedKey(node.key)}
+                    />
                 </aside>
 
                 <section className="sancai-workspace">
@@ -171,15 +250,29 @@ export const SancaiPage = () => {
                         </Button>
                     </div>
 
-                    <SancaiEntryPanel
-                        categoryId={selectedCategoryId}
-                        isCatalogLoading={isLoading}
-                        keyword={query.keyword ?? null}
-                        lifecycleStatus={query.lifecycleStatus ?? null}
-                        refreshVersion={refreshVersion}
-                        volumeId={selectedVolumeId}
-                        volumes={volumes}
-                    />
+                    {selectedVolume ? (
+                        <SancaiEntryPanel
+                            categoryId={selectedCategory?.id ?? null}
+                            isCatalogLoading={isLoading}
+                            keyword={appliedKeyword}
+                            lifecycleStatus={appliedLifecycleStatus}
+                            refreshVersion={refreshVersion}
+                            selectedEntryId={selectedEntryIdFromKey}
+                            volumeId={selectedVolume.id}
+                            volumes={visibleVolumes}
+                            onClearEntry={clearEntry}
+                            onSelectEntry={selectEntry}
+                        />
+                    ) : (
+                        <SancaiVolumePanel
+                            categories={categories}
+                            volumes={visibleVolumes}
+                            isLoading={isLoading}
+                            selectedCategory={selectedCategory}
+                            selectedVolume={selectedVolume}
+                            onSelect={selectVolume}
+                        />
+                    )}
                 </section>
             </div>
         </KuzhambuPage>

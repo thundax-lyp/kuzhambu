@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web-sancai-page-tree-state`：Page 维护树选中和联动
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-TREE-PAGE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-page.tsx`
-    - 处理动作：由 Page 装配三列表树并维护 selected category、volume、entry
-    - 验收点：树点击和右侧列表项点击共享同一组选中状态
-    - 重要度：9/10
-
 - [ ] `admin-web-sancai-page-toolbar`：Page 同步工具栏上下文
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-TREE-PAGE.md`
