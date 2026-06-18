@@ -1,9 +1,11 @@
 import { ReloadOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
 import { Alert, Button, Empty, Input, Select, Skeleton, Typography } from "antd";
+import { useState } from "react";
 import { KuzhambuPage } from "@/components/kuzhambu-page";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import * as service from "./sancai-service";
+import type { SancaiEntryPageQuery } from "./sancai-service";
 import type { SancaiCategoryRecord, SancaiEntryRecord, SancaiVolumeRecord } from "./sancai-types";
 import "./sancai-page.css";
 
@@ -36,23 +38,33 @@ const reloadQueries = (...queries: Array<{ refetch: () => Promise<unknown> }>) =
     void Promise.all(queries.map((query) => query.refetch()));
 };
 
-const renderCategoryList = (categories: SancaiCategoryRecord[]) => {
+const normalizeKeyword = (value: string) => {
+    const keyword = value.trim();
+    return keyword || undefined;
+};
+
+const renderCategoryList = (
+    categories: SancaiCategoryRecord[],
+    selectedCategoryId: number | null,
+    onSelect: (category: SancaiCategoryRecord) => void
+) => {
     if (!categories.length) {
         return <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无门类" />;
     }
 
     return (
         <div className="sancai-category-list" aria-label="三才图会门类">
-            {categories.map((category, index) => (
+            {categories.map((category) => (
                 <button
                     className={
-                        index === 0
+                        category.id === selectedCategoryId
                             ? "sancai-catalog-item sancai-catalog-item-active"
                             : "sancai-catalog-item"
                     }
                     type="button"
                     key={category.id}
-                    disabled
+                    aria-pressed={category.id === selectedCategoryId}
+                    onClick={() => onSelect(category)}
                 >
                     <span>{readTitle(category, "门类")}</span>
                     <Text type="secondary">{category.categoryType || "未分类"}</Text>
@@ -62,7 +74,11 @@ const renderCategoryList = (categories: SancaiCategoryRecord[]) => {
     );
 };
 
-const renderVolumeList = (volumes: SancaiVolumeRecord[]) => {
+const renderVolumeList = (
+    volumes: SancaiVolumeRecord[],
+    selectedVolumeId: number | null,
+    onSelect: (volume: SancaiVolumeRecord) => void
+) => {
     if (!volumes.length) {
         return <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无卷目" />;
     }
@@ -70,7 +86,17 @@ const renderVolumeList = (volumes: SancaiVolumeRecord[]) => {
     return (
         <div className="sancai-volume-list" aria-label="三才图会卷目">
             {volumes.slice(0, 8).map((volume) => (
-                <button className="sancai-volume-item" type="button" key={volume.id} disabled>
+                <button
+                    className={
+                        volume.id === selectedVolumeId
+                            ? "sancai-volume-item sancai-volume-item-active"
+                            : "sancai-volume-item"
+                    }
+                    type="button"
+                    key={volume.id}
+                    aria-pressed={volume.id === selectedVolumeId}
+                    onClick={() => onSelect(volume)}
+                >
                     <span>{readTitle(volume, "卷")}</span>
                     <Text type="secondary">{volume.volumeType || "未分类"}</Text>
                 </button>
@@ -114,23 +140,26 @@ const renderDetail = (entry?: SancaiEntryRecord) => {
 };
 
 export const SancaiPage = () => {
+    const [query, setQuery] = useState<SancaiEntryPageQuery>({
+        pageNo: DEFAULT_PAGE_NO,
+        pageSize: DEFAULT_PAGE_SIZE
+    });
+    const [queryVersion, setQueryVersion] = useState(0);
+    const [keyword, setKeyword] = useState("");
+    const [lifecycleStatus, setLifecycleStatus] = useState("ALL");
     const categoriesQuery = useQuery({
         queryKey: ["classics", "sancai", "categories"],
         queryFn: service.listCategories,
         retry: false
     });
     const volumesQuery = useQuery({
-        queryKey: ["classics", "sancai", "volumes"],
-        queryFn: () => service.listVolumes({}),
+        queryKey: ["classics", "sancai", "volumes", query.categoryId ?? null],
+        queryFn: () => service.listVolumes({ categoryId: query.categoryId }),
         retry: false
     });
     const entriesQuery = useQuery({
-        queryKey: ["classics", "sancai", "entries", "page", "skeleton"],
-        queryFn: () =>
-            service.pageEntries({
-                pageNo: DEFAULT_PAGE_NO,
-                pageSize: DEFAULT_PAGE_SIZE
-            }),
+        queryKey: ["classics", "sancai", "entries", "page", query, queryVersion],
+        queryFn: () => service.pageEntries(query),
         retry: false
     });
     const categories = categoriesQuery.data || [];
@@ -139,6 +168,49 @@ export const SancaiPage = () => {
     const selectedEntry = entries[0];
     const isLoading = isQueryLoading(categoriesQuery, volumesQuery, entriesQuery);
     const hasError = isQueryError(categoriesQuery, volumesQuery, entriesQuery);
+    const selectedCategoryId = query.categoryId ?? null;
+    const selectedVolumeId = query.volumeId ?? null;
+
+    const updateQuery = (values: Partial<SancaiEntryPageQuery>) => {
+        setQueryVersion((version) => version + 1);
+        setQuery((currentQuery) => ({
+            ...currentQuery,
+            ...values,
+            pageNo: DEFAULT_PAGE_NO,
+            pageSize: currentQuery.pageSize || DEFAULT_PAGE_SIZE
+        }));
+    };
+
+    const selectCategory = (category: SancaiCategoryRecord) => {
+        updateQuery({
+            categoryId: category.id,
+            volumeId: undefined
+        });
+    };
+
+    const selectVolume = (volume: SancaiVolumeRecord) => {
+        updateQuery({
+            categoryId: volume.categoryId ?? query.categoryId,
+            volumeId: volume.id
+        });
+    };
+
+    const applyFilters = () => {
+        updateQuery({
+            keyword: normalizeKeyword(keyword),
+            lifecycleStatus: lifecycleStatus === "ALL" ? undefined : lifecycleStatus
+        });
+    };
+
+    const resetFilters = () => {
+        setKeyword("");
+        setLifecycleStatus("ALL");
+        setQueryVersion((version) => version + 1);
+        setQuery({
+            pageNo: DEFAULT_PAGE_NO,
+            pageSize: query.pageSize || DEFAULT_PAGE_SIZE
+        });
+    };
 
     return (
         <KuzhambuPage
@@ -174,7 +246,7 @@ export const SancaiPage = () => {
                     {isLoading ? (
                         <Skeleton active paragraph={{ rows: 8 }} />
                     ) : (
-                        renderCategoryList(categories)
+                        renderCategoryList(categories, selectedCategoryId, selectCategory)
                     )}
 
                     <div className="sancai-panel-heading sancai-panel-heading-secondary">
@@ -184,20 +256,26 @@ export const SancaiPage = () => {
                     {isLoading ? (
                         <Skeleton active paragraph={{ rows: 5 }} />
                     ) : (
-                        renderVolumeList(volumes)
+                        renderVolumeList(volumes, selectedVolumeId, selectVolume)
                     )}
                 </aside>
 
                 <section className="sancai-workspace">
                     <div className="sancai-toolbar">
                         <Input.Search
-                            disabled
                             placeholder="搜索标题、原文或摘要"
+                            value={keyword}
                             allowClear
                             enterButton="查询"
+                            onChange={(event) => setKeyword(event.target.value)}
+                            onSearch={applyFilters}
                         />
-                        <Select disabled value="ALL" options={entryStatusOptions} />
-                        <Button disabled>重置</Button>
+                        <Select
+                            value={lifecycleStatus}
+                            options={entryStatusOptions}
+                            onChange={setLifecycleStatus}
+                        />
+                        <Button onClick={resetFilters}>重置</Button>
                     </div>
 
                     <div className="sancai-content-grid">

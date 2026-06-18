@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Admin Web 三才筛选联动`：实现门类、卷和筛选请求闭环
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-ADMIN-LOOP.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-page.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-page.css`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-service.ts`、`kuzhambu-apps/admin-web/e2e/classics/sancai/sancai.spec.ts`
-    - 处理动作：实现门类切换、卷切换、关键词搜索、状态筛选和第一页重置
-    - 验收点：Playwright 验证 categories、volumes、entries/page 请求体与后端契约一致
-    - 重要度：10/10
-
 - [ ] `Admin Web 三才条目表格`：实现条目列表和分页展示
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-ADMIN-LOOP.md`
