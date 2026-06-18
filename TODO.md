@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web-sancai-entry-list-model`：新增 Entry List 和 Model
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-TREE-PAGE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-list.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-model.tsx`
-    - 处理动作：新增 Entry 展示列表和纯表单 Model
-    - 验收点：Entry List 只抛事件，Entry Model 只抛 submit values
-    - 重要度：8/10
-
 - [ ] `admin-web-sancai-category-panel`：Category Panel 接管 CRUD
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-TREE-PAGE.md`
