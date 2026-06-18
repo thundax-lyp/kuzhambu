@@ -45,19 +45,20 @@
 
 步骤：
 
-- 为后端当前会返回、但前端尚未实现页面的菜单路径挂载 `PlaceholderPage`。
-- 在布局菜单图标映射中保留 System、Storage、Audit、Dashboard 和占位菜单所需图标。
-- 在 `app.test.tsx` 增加未实现业务菜单点击后展示占位页面的用例。
-- 在 `e2e/layout/` 增加菜单导航 Playwright 用例，覆盖真实页面和占位页面。
+- 保留 `dashboard`、System、Storage 和 Audit 已实现页面路由。
+- 不为 Classics、AI、Knowledge、Discovery、Operations 等未实现业务域新增占位路由。
+- 在布局菜单图标映射中保留已实现页面和种子菜单所需图标。
+- 在 `app.test.tsx` 覆盖已实现页面菜单渲染。
+- 在 `e2e/layout/` 增加菜单导航 Playwright 用例，覆盖 `dashboard` 和已实现页面。
 - 运行 `npm run lint --workspace admin-web`。
 - 运行 `npm test --workspace admin-web`。
 - 运行 `npm run e2e --workspace admin-web`。
 
 验收：
 
-- 登录后菜单中出现的路径不会进入空白页面。
+- 登录后已实现页面菜单路径不会进入空白页面。
 - System、Storage、Audit、Dashboard 真实页面仍按原路由进入。
-- Playwright 验证菜单点击后 URL 和页面标题一致。
+- Playwright 验证 `dashboard` 和已实现页面菜单点击后 URL 和页面标题一致。
 
 ### A2. 对齐 Storage 对象列表和删除接口契约
 

@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web 路由与布局`：固定后台菜单到已实现页面
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-SYSTEM-STORAGE-LOOP.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/router/index.tsx`、`kuzhambu-apps/admin-web/src/layouts/admin-layout.tsx`、`kuzhambu-apps/admin-web/src/app.test.tsx`、`kuzhambu-apps/admin-web/e2e/layout/`
-    - 处理动作：为后端菜单路径挂载真实页面或 `PlaceholderPage` 并补充菜单导航测试
-    - 验收点：菜单点击后不会进入空白页，Playwright 断言 URL 和页面标题一致
-    - 重要度：9/10
-
 - [ ] `admin-web Storage 页面`：对齐 Storage 对象列表和删除接口契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-SYSTEM-STORAGE-LOOP.md`

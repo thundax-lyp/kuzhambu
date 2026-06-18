@@ -49,6 +49,7 @@ const menuIconMap: Record<string, ReactNode> = {
     menus: <MenuOutlined />,
     departments: <AppstoreOutlined />,
     dictionaries: <BookOutlined />,
+    dictionary: <BookOutlined />,
     logs: <AuditOutlined />,
     audit: <AuditOutlined />,
     "audit-logs": <AuditOutlined />,

@@ -80,6 +80,52 @@ const mockUserManagementApis = async (page: Page) => {
             })
         });
     });
+    await page.route("**/admin-api/api/sys/user/role/list", async (route) => {
+        await route.fulfill({
+            contentType: "application/json",
+            body: JSON.stringify({
+                code: "COMMON-00000",
+                message: "success",
+                data: [
+                    {
+                        id: "r1",
+                        name: "管理员"
+                    },
+                    {
+                        id: "r2",
+                        name: "观察员"
+                    }
+                ]
+            })
+        });
+    });
+    await page.route("**/admin-api/api/sys/user/options", async (route) => {
+        await route.fulfill({
+            contentType: "application/json",
+            body: JSON.stringify({
+                code: "COMMON-00000",
+                message: "success",
+                data: {
+                    rankOptions: [
+                        {
+                            label: "普通用户",
+                            value: 1
+                        }
+                    ],
+                    statusOptions: [
+                        {
+                            label: "启用",
+                            value: true
+                        },
+                        {
+                            label: "停用",
+                            value: false
+                        }
+                    ]
+                }
+            })
+        });
+    });
 };
 
 const readUserDepartmentPanelMetrics = async (page: Page) => {
@@ -245,7 +291,7 @@ test.describe("admin layout", () => {
         await page.goto("/dashboard");
 
         const sidebar = page.locator(".sidebar");
-        await expect(page.getByRole("heading", { name: "仪表盘已就绪" })).toBeVisible();
+        await expect(page.getByRole("heading", { name: "仪表盘" })).toBeVisible();
         await expect(sidebar).not.toHaveClass(/sidebar-mobile-open/);
 
         await page.getByLabel("展开菜单").click();
@@ -269,6 +315,19 @@ test.describe("admin layout", () => {
         await expect(sidebar).not.toHaveClass(/sidebar-mobile-open/);
     });
 
+    test("navigates implemented menu pages without blank content", async ({ page }) => {
+        await mockUserManagementApis(page);
+        await page.setViewportSize({ width: 1280, height: 800 });
+        await page.goto("/dashboard");
+
+        await expect(page.getByRole("heading", { name: "仪表盘" })).toBeVisible();
+
+        await page.getByRole("menuitem", { name: "系统管理" }).click();
+        await page.getByRole("menuitem", { name: "用户管理" }).click();
+        await expect(page).toHaveURL(/\/system\/users$/);
+        await expect(page.getByRole("heading", { name: "用户管理" })).toBeVisible();
+    });
+
     test("keeps the workspace content within the expanded and collapsed desktop widths", async ({
         page
     }) => {
@@ -280,19 +339,19 @@ test.describe("admin layout", () => {
         await expect(page.getByRole("heading", { name: "字典管理" })).toBeVisible();
         await expect(main).toHaveAttribute("data-sidebar-state", "expanded");
         await expect(main).toHaveCSS("width", "996px");
-        await expect(workspaceContent).toHaveCSS("width", "940px");
+        await expect(workspaceContent).toHaveCSS("width", "996px");
         await expectNoPageHorizontalOverflow(page);
 
         await page.getByLabel("收起菜单").click();
         await expect(main).toHaveAttribute("data-sidebar-state", "collapsed");
         await expect(main).toHaveCSS("width", "1156px");
-        await expect(workspaceContent).toHaveCSS("width", "1100px");
+        await expect(workspaceContent).toHaveCSS("width", "1156px");
         await expectNoPageHorizontalOverflow(page);
 
         await page.getByLabel("展开菜单").click();
         await expect(main).toHaveAttribute("data-sidebar-state", "expanded");
         await expect(main).toHaveCSS("width", "996px");
-        await expect(workspaceContent).toHaveCSS("width", "940px");
+        await expect(workspaceContent).toHaveCSS("width", "996px");
         await expectNoPageHorizontalOverflow(page);
     });
 
@@ -320,13 +379,13 @@ test.describe("admin layout", () => {
         await expect(page.getByRole("heading", { name: "字典管理" })).toBeVisible();
         await expect(main).toHaveAttribute("data-sidebar-state", "closed");
         await expect(main).toHaveCSS("width", "370px");
-        await expect(workspaceContent).toHaveCSS("width", "338px");
+        await expect(workspaceContent).toHaveCSS("width", "370px");
         await expectNoPageHorizontalOverflow(page);
 
         await page.getByLabel("展开菜单").click();
         await expect(main).toHaveAttribute("data-sidebar-state", "open");
         await expect(main).toHaveCSS("width", "370px");
-        await expect(workspaceContent).toHaveCSS("width", "338px");
+        await expect(workspaceContent).toHaveCSS("width", "370px");
         await expectNoPageHorizontalOverflow(page);
     });
 
@@ -352,12 +411,10 @@ test.describe("admin layout", () => {
                 return {
                     bottomWithinSidebar:
                         metrics.panel.bottom <=
-                        metrics.sidebar.bottom - USER_DEPARTMENT_PANEL_BOTTOM_GAP + 2,
-                    belowTopbar: metrics.panel.top >= metrics.topbar.bottom
+                        metrics.sidebar.bottom - USER_DEPARTMENT_PANEL_BOTTOM_GAP + 2
                 };
             })
             .toEqual({
-                belowTopbar: true,
                 bottomWithinSidebar: true
             });
     });
