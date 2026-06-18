@@ -8,6 +8,7 @@ import type { KuzhambuFilterPanelField } from "@/components/kuzhambu-filter-pane
 import { KuzhambuPage } from "@/components/kuzhambu-page";
 import { KuzhambuTable } from "@/components/kuzhambu-table";
 import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
+import { KuzhambuListPageTableArea } from "./kuzhambu-list-page-table-area";
 import "./kuzhambu-list-page.css";
 
 export interface KuzhambuListPageFilterState {
@@ -166,22 +167,14 @@ export const KuzhambuListPage = <RecordType extends object = object>({
     const renderBody = () => {
         if (content && tableAside) {
             return (
-                <div
-                    className={[
-                        "kuzhambu-list-page-table-area",
-                        `kuzhambu-list-page-table-area-aside-${tableAsidePlacement}`,
-                        tableAreaClassName
-                    ].join(" ")}
+                <KuzhambuListPageTableArea
+                    aside={tableAside}
+                    asideClassName={tableAsideClassName}
+                    areaClassName={tableAreaClassName}
+                    placement={tableAsidePlacement}
                 >
-                    <div className="kuzhambu-list-page-table-main">{content}</div>
-                    <aside
-                        className={["kuzhambu-list-page-table-aside", tableAsideClassName]
-                            .filter(Boolean)
-                            .join(" ")}
-                    >
-                        {tableAside}
-                    </aside>
-                </div>
+                    {content}
+                </KuzhambuListPageTableArea>
             );
         }
 
@@ -191,27 +184,14 @@ export const KuzhambuListPage = <RecordType extends object = object>({
 
         if (tableAside) {
             return (
-                <div
-                    className={[
-                        "kuzhambu-list-page-table-area",
-                        `kuzhambu-list-page-table-area-aside-${tableAsidePlacement}`,
-                        tableAreaClassName
-                    ].join(" ")}
+                <KuzhambuListPageTableArea
+                    aside={tableAside}
+                    asideClassName={tableAsideClassName}
+                    areaClassName={tableAreaClassName}
+                    placement={tableAsidePlacement}
                 >
-                    <div className="kuzhambu-list-page-table-main">
-                        <KuzhambuTable<RecordType>
-                            {...tableProps}
-                            ariaLabel={resolvedTableAriaLabel}
-                        />
-                    </div>
-                    <aside
-                        className={["kuzhambu-list-page-table-aside", tableAsideClassName]
-                            .filter(Boolean)
-                            .join(" ")}
-                    >
-                        {tableAside}
-                    </aside>
-                </div>
+                    <KuzhambuTable<RecordType> {...tableProps} ariaLabel={resolvedTableAriaLabel} />
+                </KuzhambuListPageTableArea>
             );
         }
 
