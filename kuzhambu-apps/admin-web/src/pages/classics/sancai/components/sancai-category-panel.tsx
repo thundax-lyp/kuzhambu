@@ -1,16 +1,14 @@
-import {
-    DeleteOutlined,
-    EditOutlined,
-    MenuOutlined,
-    PlusOutlined
-} from "@ant-design/icons";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { App, Button, Empty, Skeleton, Typography } from "antd";
+import { MenuOutlined, PlusOutlined } from "@ant-design/icons";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { App, Button, Typography } from "antd";
 import { useState } from "react";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
+import type { DictItem } from "@/types/dict";
+import { SancaiCategoryList } from "./sancai-category-list";
 import { SancaiCategoryModel } from "./sancai-category-model";
 import { SancaiCategorySortModel } from "./sancai-category-sort-model";
-import * as service from "../sancai-service";
+import type { SancaiCategoryFormValues } from "./sancai-form-values";
+import * as categoryService from "../services/sancai-category-service";
 import type { SancaiCategoryRecord } from "../sancai-types";
 
 const { Text, Title } = Typography;
@@ -26,9 +24,10 @@ const readTitle = (value: { id: number; title?: string | null }, fallback: strin
     return value.title?.trim() || `${fallback} ${value.id}`;
 };
 
-const readCategoryTypeLabel = (category: SancaiCategoryRecord) => {
-    return category.categoryType === "AUXILIARY" ? "辅助内容" : "正式门类";
-};
+const fallbackCategoryTypeOptions: DictItem[] = [
+    { label: "正式门类", type: "SANCAI_CATEGORY_TYPE", value: "FORMAL" },
+    { label: "辅助内容", type: "SANCAI_CATEGORY_TYPE", value: "AUXILIARY" }
+];
 
 export const SancaiCategoryPanel = ({
     categories,
@@ -42,14 +41,42 @@ export const SancaiCategoryPanel = ({
     const [editingCategory, setEditingCategory] = useState<SancaiCategoryRecord | null>(null);
     const [isModelOpen, setIsModelOpen] = useState(false);
     const [isSortOpen, setIsSortOpen] = useState(false);
+    const typesQuery = useQuery<DictItem[]>({
+        queryKey: ["classics", "sancai", "categories", "types"],
+        queryFn: categoryService.listTypes,
+        retry: false
+    });
+    const categoryTypeItems = typesQuery.data?.length
+        ? typesQuery.data
+        : fallbackCategoryTypeOptions;
 
     const closeModel = () => {
         setIsModelOpen(false);
         setEditingCategory(null);
     };
 
+    const afterChanged = async (message: string) => {
+        await queryClient.invalidateQueries({ queryKey: ["classics", "sancai", "categories"] });
+        closeModel();
+        messageApi.success(message);
+    };
+
+    const addMutation = useMutation({
+        mutationFn: categoryService.add,
+        onSuccess: () => afterChanged("三才图会门类已新增"),
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "门类新增失败");
+        }
+    });
+    const updateMutation = useMutation({
+        mutationFn: categoryService.update,
+        onSuccess: () => afterChanged("三才图会门类已更新"),
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "门类更新失败");
+        }
+    });
     const deleteMutation = useMutation({
-        mutationFn: service.removeCategory,
+        mutationFn: categoryService.deleteById,
         onSuccess: async () => {
             await queryClient.invalidateQueries({ queryKey: ["classics", "sancai", "categories"] });
             messageApi.success("三才图会门类已删除");
@@ -69,13 +96,26 @@ export const SancaiCategoryPanel = ({
         setIsModelOpen(true);
     };
 
+    const submitCategory = (form: SancaiCategoryFormValues) => {
+        const request = {
+            id: editingCategory?.id,
+            title: form.title,
+            categoryType: form.categoryType
+        };
+        if (editingCategory) {
+            updateMutation.mutate(request);
+            return;
+        }
+        addMutation.mutate(request);
+    };
+
     const confirmDelete = (category: SancaiCategoryRecord) => {
         confirm.danger({
             title: "删除三才图会门类",
             message: `确认删除 ${readTitle(category, "门类")}？`,
             description: "仅空门类可删除。若该门类下仍有关联卷，接口会拒绝删除。",
             okText: "删除",
-            onConfirm: () => deleteMutation.mutateAsync({ id: category.id })
+            onConfirm: () => deleteMutation.mutateAsync(category.id)
         });
     };
 
@@ -86,69 +126,6 @@ export const SancaiCategoryPanel = ({
     const closeSort = () => {
         setIsSortOpen(false);
     };
-
-    const categoryContent = (() => {
-        if (isLoading) {
-            return <Skeleton active paragraph={{ rows: 8 }} />;
-        }
-        if (!categories.length) {
-            return <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无门类" />;
-        }
-        return (
-            <div className="sancai-category-list" aria-label="三才图会门类">
-                {categories.map((category) => (
-                    <div
-                        className={
-                            category.id === selectedCategory?.id
-                                ? "sancai-catalog-row sancai-catalog-row-active"
-                                : "sancai-catalog-row"
-                        }
-                        key={category.id}
-                    >
-                        <button
-                            className="sancai-catalog-item"
-                            type="button"
-                            aria-label={`选择门类 ${readTitle(category, "门类")}`}
-                            aria-pressed={category.id === selectedCategory?.id}
-                            onClick={() => onSelect(category)}
-                        >
-                            <span className="sancai-category-main">
-                                <span
-                                    className={
-                                        category.categoryType === "AUXILIARY"
-                                            ? "sancai-category-type-dot sancai-category-type-dot-auxiliary"
-                                            : "sancai-category-type-dot sancai-category-type-dot-formal"
-                                    }
-                                    aria-label={`门类类型 ${readCategoryTypeLabel(category)}`}
-                                />
-                                <span>{readTitle(category, "门类")}</span>
-                            </span>
-                        </button>
-                        <div
-                            className="sancai-catalog-actions"
-                            aria-label={`${readTitle(category, "门类")} 操作`}
-                        >
-                            <Button
-                                aria-label={`编辑门类 ${readTitle(category, "门类")}`}
-                                icon={<EditOutlined />}
-                                size="small"
-                                type="text"
-                                onClick={() => startEdit(category)}
-                            />
-                            <Button
-                                aria-label={`删除门类 ${readTitle(category, "门类")}`}
-                                danger
-                                icon={<DeleteOutlined />}
-                                size="small"
-                                type="text"
-                                onClick={() => confirmDelete(category)}
-                            />
-                        </div>
-                    </div>
-                ))}
-            </div>
-        );
-    })();
 
     return (
         <section className="sancai-catalog-column">
@@ -172,9 +149,24 @@ export const SancaiCategoryPanel = ({
                     />
                 </div>
             </div>
-            <div className="sancai-catalog-scroll">{categoryContent}</div>
+            <div className="sancai-catalog-scroll">
+                <SancaiCategoryList
+                    categories={categories}
+                    isLoading={isLoading}
+                    selectedCategory={selectedCategory}
+                    onDelete={confirmDelete}
+                    onEdit={startEdit}
+                    onSelect={onSelect}
+                />
+            </div>
             {isModelOpen ? (
-                <SancaiCategoryModel category={editingCategory} onCancel={closeModel} />
+                <SancaiCategoryModel
+                    category={editingCategory}
+                    categoryTypeOptions={categoryTypeItems}
+                    isSubmitting={addMutation.isPending || updateMutation.isPending}
+                    onCancel={closeModel}
+                    onSubmit={submitCategory}
+                />
             ) : null}
             {isSortOpen ? (
                 <SancaiCategorySortModel categories={categories} onCancel={closeSort} />
