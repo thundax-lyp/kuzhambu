@@ -50,6 +50,8 @@ public interface SancaiApplicationService {
 
     PageResult<SancaiEntry> pageEntries(SancaiEntryPageQuery query, PageQuery page);
 
+    List<SancaiEntry> listEntries(SancaiEntryPageQuery query);
+
     SancaiEntryId addEntry(SancaiEntryCommand command);
 
     SancaiEntryId updateEntry(SancaiEntryCommand command);

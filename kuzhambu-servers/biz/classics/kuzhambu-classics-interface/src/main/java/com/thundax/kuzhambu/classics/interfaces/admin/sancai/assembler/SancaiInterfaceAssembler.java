@@ -32,6 +32,7 @@ public final class SancaiInterfaceAssembler {
 
     public static SancaiEntryPageQuery toQuery(SancaiEntryPageRequest request) {
         SancaiEntryPageQuery query = new SancaiEntryPageQuery();
+        query.setCategoryId(request.getCategoryId());
         query.setVolumeId(request.getVolumeId());
         query.setKeyword(request.getKeyword());
         query.setLifecycleStatus(fromLifecycle(request.getLifecycleStatus()));

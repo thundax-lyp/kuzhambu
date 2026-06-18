@@ -66,6 +66,7 @@ class SancaiAdminControllerTest {
         assertPostMapping(SancaiAdminController.class, "updateVolume", "volumes/update", SancaiVolumeRequest.class);
         assertPostMapping(SancaiAdminController.class, "deleteVolume", "volumes/delete", SancaiVolumeRequest.class);
         assertPostMapping(SancaiAdminController.class, "pageEntries", "entries/page", SancaiEntryPageRequest.class);
+        assertPostMapping(SancaiAdminController.class, "listEntries", "entries/list", SancaiEntryPageRequest.class);
         assertGetMapping(SancaiAdminController.class, "getEntry", "entries/{id}", Long.class);
         assertPostMapping(SancaiAdminController.class, "addEntry", "entries/add", SancaiEntryRequest.class);
         assertPostMapping(SancaiAdminController.class, "updateEntry", "entries/update", SancaiEntryRequest.class);
@@ -281,6 +282,7 @@ class SancaiAdminControllerTest {
         pageRequest.setPageSize(50);
         assertEquals(
                 "天地", controller.pageEntries(pageRequest).getRecords().get(0).getTitle());
+        assertEquals("天地", controller.listEntries(pageRequest).get(0).getTitle());
 
         assertEquals("天地", controller.getEntry(3001L).getTitle());
 
@@ -370,6 +372,14 @@ class SancaiAdminControllerTest {
                         assertEquals(1, page.getPageNo());
                         assertEquals(50, page.getPageSize());
                         return PageResult.of(1, 50, 1, List.of(entry()));
+                    }
+                    if ("listEntries".equals(method.getName())) {
+                        SancaiEntryPageQuery query = (SancaiEntryPageQuery) args[0];
+                        assertEquals(101L, query.getVolumeId());
+                        assertEquals("天地", query.getKeyword());
+                        assertEquals(SancaiEntryLifecycleStatus.PUBLISHED, query.getLifecycleStatus());
+                        assertEquals(SancaiEntryVisibility.PUBLIC, query.getVisibility());
+                        return List.of(entry());
                     }
                     if ("getEntry".equals(method.getName())) {
                         assertEquals(SancaiEntryId.of(3001L), args[0]);

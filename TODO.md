@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics-sancai-entry-interface`：新增 Entry list 接口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-TREE-PAGE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/sancai`
-    - 处理动作：新增 `POST /api/classics/sancai/entries/list`
-    - 验收点：Controller 测试覆盖 `entries/list`，且接口命名未出现 `save`
-    - 重要度：9/10
-
 - [ ] `admin-web-sancai-category-service`：拆分 Category service
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-TREE-PAGE.md`

@@ -365,6 +365,33 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
     }
 
     @Override
+    public List<SancaiEntry> listEntries(SancaiEntryPageQuery query) {
+        return repository.listEntries(
+                query == null ? null : SancaiCategoryIdCodec.toDomain(query.getCategoryId()),
+                query == null ? null : SancaiVolumeIdCodec.toDomain(query.getVolumeId()),
+                query == null ? null : query.getKeyword(),
+                query == null || query.getLifecycleStatus() == null
+                        ? null
+                        : query.getLifecycleStatus().value(),
+                query == null || query.getVisibility() == null
+                        ? null
+                        : query.getVisibility().value(),
+                query == null || query.getTranslationStatus() == null
+                        ? null
+                        : query.getTranslationStatus().value(),
+                query == null || query.getImageStatus() == null
+                        ? null
+                        : query.getImageStatus().value(),
+                query == null || query.getVisualAssetStatus() == null
+                        ? null
+                        : query.getVisualAssetStatus().value(),
+                query == null || query.getRefinementStatus() == null
+                        ? null
+                        : query.getRefinementStatus().value(),
+                query == null ? SortDirection.ASC : query.getSortDirection());
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public SancaiEntryId addEntry(SancaiEntryCommand command) {
         if (command == null) {

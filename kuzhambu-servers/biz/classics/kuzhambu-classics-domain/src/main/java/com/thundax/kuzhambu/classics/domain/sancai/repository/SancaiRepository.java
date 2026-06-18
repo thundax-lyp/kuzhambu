@@ -65,6 +65,18 @@ public interface SancaiRepository {
             int pageNo,
             int pageSize);
 
+    List<SancaiEntry> listEntries(
+            SancaiCategoryId categoryId,
+            SancaiVolumeId volumeId,
+            String keyword,
+            String lifecycleStatus,
+            String visibility,
+            String translationStatus,
+            String imageStatus,
+            String visualAssetStatus,
+            String refinementStatus,
+            SortDirection sortDirection);
+
     SancaiEntryId insertEntry(SancaiEntry entry);
 
     int updateEntry(SancaiEntry entry);

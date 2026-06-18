@@ -186,6 +186,17 @@ public class SancaiAdminController {
                 SancaiInterfaceAssembler::toResponse);
     }
 
+    @Operation(summary = "查询三才图会条目", description = "classics:sancai:view")
+    @ApiImplicitParams({})
+    @HasPermission("classics:sancai:view")
+    @SysLogger(value = "条目列表")
+    @PostMapping("entries/list")
+    public List<SancaiEntryResponse> listEntries(@Valid @RequestBody SancaiEntryPageRequest request) {
+        return service.listEntries(SancaiInterfaceAssembler.toQuery(request)).stream()
+                .map(SancaiInterfaceAssembler::toResponse)
+                .toList();
+    }
+
     @Operation(summary = "查看三才图会条目", description = "classics:sancai:view")
     @ApiImplicitParams({})
     @HasPermission("classics:sancai:view")

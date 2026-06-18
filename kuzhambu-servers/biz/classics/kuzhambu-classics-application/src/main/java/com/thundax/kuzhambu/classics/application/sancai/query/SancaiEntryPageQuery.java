@@ -17,6 +17,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SancaiEntryPageQuery {
+    private Long categoryId;
     private Long volumeId;
     private String keyword;
     private SancaiEntryLifecycleStatus lifecycleStatus;
