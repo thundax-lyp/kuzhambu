@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `System Storage 接口闭环`：执行接口闭环验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-SYSTEM-STORAGE-LOOP.md`
-    - 范围对象：`dev.env`、`kuzhambu-servers/starter/kuzhambu-admin-starter/src/main/resources/application.yml`、`kuzhambu-servers/biz/system/kuzhambu-system-interface/src/test/java/com/thundax/kuzhambu/system/interfaces/admin/SystemAdminControllerTest.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-interface/src/test/java/com/thundax/kuzhambu/storage/interfaces/admin/StorageObjectControllerTest.java`
-    - 处理动作：验证 System 登录态、System 管理查询、Storage 上传读取删除的接口链路
-    - 验收点：接口闭环包含成功路径和至少一个失败路径，且不依赖 Admin Web 页面
-    - 重要度：10/10
-
 - [ ] `admin-web 页面闭环`：执行 Admin Web 页面闭环验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-SYSTEM-STORAGE-LOOP.md`
