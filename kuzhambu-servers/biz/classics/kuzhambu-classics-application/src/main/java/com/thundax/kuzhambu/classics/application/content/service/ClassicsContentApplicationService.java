@@ -38,6 +38,8 @@ public interface ClassicsContentApplicationService {
 
     void sortQaPairs(ContentQaPairSortCommand command);
 
+    void sortQaPairs(String contentType, ClassicsContentId contentId, ContentQaPairSortCommand command);
+
     void deleteQaPair(ClassicsContentQaPairId id);
 
     List<ClassicsContentVersion> listVersions(String contentType, ClassicsContentId contentId);

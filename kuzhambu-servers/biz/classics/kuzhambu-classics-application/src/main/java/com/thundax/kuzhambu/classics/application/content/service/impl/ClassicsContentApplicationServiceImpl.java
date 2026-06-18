@@ -159,13 +159,24 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     public void sortQaPairs(ContentQaPairSortCommand command) {
         SortDirection effectiveDirection =
                 command == null || command.getSortDirection() == null ? SortDirection.ASC : command.getSortDirection();
+        sortQaPairs(command, repository.listQaPairs(effectiveDirection));
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void sortQaPairs(String contentType, ClassicsContentId contentId, ContentQaPairSortCommand command) {
+        SortDirection effectiveDirection =
+                command == null || command.getSortDirection() == null ? SortDirection.ASC : command.getSortDirection();
+        sortQaPairs(command, repository.listQaPairs(contentType, contentId, effectiveDirection));
+    }
+
+    private void sortQaPairs(ContentQaPairSortCommand command, List<ClassicsContentQaPair> currentQaPairs) {
         List<ClassicsContentQaPairId> orderedIdList =
                 command == null || command.getOrderedIds() == null ? Collections.emptyList() : command.getOrderedIds();
         if (orderedIdList.isEmpty()) {
             throw sortEmptyInput();
         }
 
-        List<ClassicsContentQaPair> currentQaPairs = repository.listQaPairs(effectiveDirection);
         if (currentQaPairs == null || currentQaPairs.isEmpty() || currentQaPairs.size() != orderedIdList.size()) {
             throw sortMissingId();
         }

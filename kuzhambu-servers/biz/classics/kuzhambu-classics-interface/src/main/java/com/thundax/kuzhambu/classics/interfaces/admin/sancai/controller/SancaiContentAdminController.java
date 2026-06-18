@@ -90,14 +90,17 @@ public class SancaiContentAdminController {
     @SysLogger(value = "内容排序")
     @PostMapping("sort")
     public Boolean sortContents(@Valid @RequestBody SancaiContentSortRequest request) {
-        service.sortQaPairs(new ContentQaPairSortCommand(
-                RequestListHelper.map(
-                        RequestListHelper.presentUnique(
-                                request == null ? null : request.getOrderedIds(),
-                                "orderedIds",
-                                AdminResponseExceptions::invalidParameter),
-                        ClassicsContentQaPairIdCodec::toDomain),
-                request == null ? null : request.getSortDirection()));
+        service.sortQaPairs(
+                CONTENT_TYPE,
+                ClassicsContentIdCodec.toDomain(request == null ? null : request.getEntryId()),
+                new ContentQaPairSortCommand(
+                        RequestListHelper.map(
+                                RequestListHelper.presentUnique(
+                                        request == null ? null : request.getOrderedIds(),
+                                        "orderedIds",
+                                        AdminResponseExceptions::invalidParameter),
+                                ClassicsContentQaPairIdCodec::toDomain),
+                        request == null ? null : request.getSortDirection()));
         return true;
     }
 
