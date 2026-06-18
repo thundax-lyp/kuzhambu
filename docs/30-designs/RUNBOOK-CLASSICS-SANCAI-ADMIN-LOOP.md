@@ -80,28 +80,73 @@
 - `npm test` 覆盖 Classics 菜单路由。
 - `npm run e2e` 中 layout 导航用例覆盖三才图会入口。
 
-### 4. 实现三才图会列表页
+### 4. 实现三才图会页面骨架
 
 范围文件：
 
 - `kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-page.tsx`
 - `kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-page.css`
 - `kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-types.ts`
+
+步骤：
+
+1. 新建 `SancaiPage` 页面文件和样式文件。
+2. 页面采用左侧目录筛选区、顶部检索工具条、主列表区、右侧或弹窗详情区的结构。
+3. 定义页面状态类型：当前门类、当前卷、关键词、状态筛选、分页、选中条目、加载状态、错误状态。
+4. 页面空状态必须区分“门类为空”“卷为空”“筛选后无条目”。
+5. 页面只使用真实服务方法，不使用业务占位数据。
+
+验收：
+
+- `/classics/sancai` 能渲染稳定页面结构。
+- 页面骨架在无数据、加载中和错误状态下不空白、不遮挡。
+
+### 5. 实现门类、卷和筛选联动
+
+范围文件：
+
+- `kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-page.tsx`
+- `kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-page.css`
+- `kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-service.ts`
 - `kuzhambu-apps/admin-web/e2e/classics/sancai/sancai.spec.ts`
 
 步骤：
 
-1. 页面加载时请求门类列表，选中第一个门类后请求卷列表。
-2. 支持选择门类、选择卷、关键词搜索、状态筛选和分页请求条目列表。
-3. 列表展示标题、门类/卷上下文、生命周期状态、公开状态、翻译状态、配图状态、视觉资产状态和完善状态。
-4. Playwright mock 后端 categories、volumes、entries/page，验证筛选和分页请求体。
+1. 页面加载时调用 `categories/list` 获取门类，默认选中第一个门类。
+2. 门类变化后调用 `volumes/list` 获取卷，并清空当前卷和条目分页。
+3. 卷变化后调用 `entries/page`，请求体包含 `volumeId`、`keyword`、`lifecycleStatus`、`visibility`、`translationStatus`、`imageStatus`、`visualAssetStatus`、`refinementStatus`、`pageNo`、`pageSize`、`sortDirection`。
+4. 搜索关键词提交后重置到第一页。
+5. 状态筛选变化后重置到第一页。
+6. Playwright mock categories、volumes、entries/page，验证门类切换、卷切换、搜索和状态筛选的请求体。
 
 验收：
 
-- 用户进入 `/classics/sancai` 后能看到门类、卷和条目列表。
-- 页面筛选操作能发送后端契约要求的请求体。
+- 用户能按门类进入卷，再按卷查看条目。
+- 搜索和状态筛选请求体与后端 `SancaiEntryPageRequest` 对齐。
 
-### 5. 实现条目详情与编辑保存
+### 6. 实现条目列表和分页展示
+
+范围文件：
+
+- `kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-page.tsx`
+- `kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-page.css`
+- `kuzhambu-apps/admin-web/e2e/classics/sancai/sancai.spec.ts`
+
+步骤：
+
+1. 列表列展示标题、卷名或卷 ID、生命周期状态、公开状态、翻译状态、配图状态、视觉资产状态、完善状态、摘要预览和操作入口。
+2. 原文和译文不在列表中完整展开，只显示短摘要或预览，避免列表失控。
+3. 分页支持 50、100、200 三档 pageSize，默认 50。
+4. 行操作至少包含“查看/编辑”，删除和批量操作不进入本轮。
+5. 列表空状态保留当前筛选条件，不自动重置用户筛选。
+6. Playwright 验证列表列、分页切换、pageSize 切换和空结果展示。
+
+验收：
+
+- 用户能快速扫描条目状态并进入详情。
+- 分页请求与当前筛选条件一致。
+
+### 7. 实现条目详情与编辑保存
 
 范围文件：
 
@@ -112,17 +157,18 @@
 步骤：
 
 1. 点击条目行或查看按钮时调用 `entries/{id}` 获取详情。
-2. 在抽屉或弹窗中展示并编辑标题、原文、译文、摘要、生命周期状态、公开状态。
-3. 保存时调用 `entries/save`，请求体包含 `id`、`volumeId`、`title`、`originalText`、`translationText`、`summary`、`lifecycleStatus`、`visibility`。
-4. 保存成功后刷新当前列表并保持当前筛选条件。
-5. Playwright 验证打开详情、编辑保存、刷新列表。
+2. 详情区展示标题、原文、译文、摘要、生命周期状态、公开状态、翻译状态、配图状态、视觉资产状态、完善状态。
+3. 编辑字段只包含标题、原文、译文、摘要、生命周期状态和公开状态。
+4. 保存时调用 `entries/save`，请求体包含 `id`、`volumeId`、`title`、`originalText`、`translationText`、`summary`、`lifecycleStatus`、`visibility`。
+5. 保存成功后刷新当前列表，并保持门类、卷、搜索、状态筛选和分页条件。
+6. Playwright 验证打开详情、修改字段、保存请求体、保存后列表刷新。
 
 验收：
 
 - 页面闭环覆盖列表进入详情、编辑保存、列表刷新。
 - 保存请求体与后端 `SancaiEntrySaveRequest` 对齐。
 
-### 6. 更新 Classics 覆盖报告并收口
+### 8. 更新 Classics 覆盖报告并收口
 
 范围文件：
 

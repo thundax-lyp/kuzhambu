@@ -9,6 +9,8 @@
 
 ## 当前任务项
 
+## 待审阅任务项
+
 - [ ] `Classics 三才接口契约`：固定三才图会后台接口契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-ADMIN-LOOP.md`
@@ -33,12 +35,28 @@
     - 验收点：单测和 Playwright layout 用例能进入三才图会页面且页面非空
     - 重要度：8/10
 
-- [ ] `Admin Web 三才列表页`：实现三才图会列表筛选闭环
+- [ ] `Admin Web 三才页面骨架`：实现三才图会页面基础结构
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-ADMIN-LOOP.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-page.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-page.css`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-types.ts`、`kuzhambu-apps/admin-web/e2e/classics/sancai/sancai.spec.ts`
-    - 处理动作：实现门类、卷、关键词、状态筛选、分页和条目列表展示
-    - 验收点：Playwright 验证页面能加载门类、卷、条目列表并发送正确筛选请求体
+    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-page.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-page.css`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-types.ts`
+    - 处理动作：实现左侧目录筛选区、顶部检索工具条、主列表区和详情区的页面骨架
+    - 验收点：页面在加载中、错误、门类为空、卷为空、筛选无结果状态下不空白且不遮挡
+    - 重要度：10/10
+
+- [ ] `Admin Web 三才筛选联动`：实现门类、卷和筛选请求闭环
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-ADMIN-LOOP.md`
+    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-page.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-page.css`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-service.ts`、`kuzhambu-apps/admin-web/e2e/classics/sancai/sancai.spec.ts`
+    - 处理动作：实现门类切换、卷切换、关键词搜索、状态筛选和第一页重置
+    - 验收点：Playwright 验证 categories、volumes、entries/page 请求体与后端契约一致
+    - 重要度：10/10
+
+- [ ] `Admin Web 三才条目表格`：实现条目列表和分页展示
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-ADMIN-LOOP.md`
+    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-page.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-page.css`、`kuzhambu-apps/admin-web/e2e/classics/sancai/sancai.spec.ts`
+    - 处理动作：展示条目标题、卷上下文、状态、摘要预览、分页和查看编辑入口
+    - 验收点：Playwright 验证列表列、分页切换、pageSize 切换和空结果展示
     - 重要度：10/10
 
 - [ ] `Admin Web 三才编辑页`：实现三才图会条目详情与保存闭环
@@ -56,7 +74,5 @@
     - 处理动作：同步三才图会 Admin 最小闭环完成状态并删除已完成 TODO 和临时 RUNBOOK
     - 验收点：Coverage 文档准确保留 AI、Worker、导出、分享、复杂视觉资产、标签治理和批量能力缺口
     - 重要度：10/10
-
-## 待审阅任务项
 
 ## 待讨论项
