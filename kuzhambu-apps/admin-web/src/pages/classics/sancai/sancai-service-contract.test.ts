@@ -1,6 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as categoryService from "./services/sancai-category-service";
-import * as contentService from "./services/sancai-content-service";
 import * as entryService from "./services/sancai-entry-service";
 import * as volumeService from "./services/sancai-volume-service";
 
@@ -229,48 +228,6 @@ describe("sancai service request contracts", () => {
         });
         expectLastCall("POST", "/classics/sancai/entries/sort", {
             orderedIds: [3001, 3002],
-            sortDirection: "ASC"
-        });
-    });
-
-    it("sends content service requests with domain function names", async () => {
-        const contentCommand = {
-            entryId: 3001,
-            question: "原文是什么？",
-            answer: "天地。",
-            source: "manual"
-        };
-
-        await contentService.listByEntry(3001);
-        expectLastCall("POST", "/classics/sancai/contents/list", {
-            entryId: 3001
-        });
-
-        await contentService.add(contentCommand);
-        expectLastCall("POST", "/classics/sancai/contents/add", contentCommand);
-
-        await contentService.update({
-            id: 9001,
-            ...contentCommand
-        });
-        expectLastCall("POST", "/classics/sancai/contents/update", {
-            id: 9001,
-            ...contentCommand
-        });
-
-        await contentService.deleteById(9001);
-        expectLastCall("POST", "/classics/sancai/contents/delete", {
-            id: 9001
-        });
-
-        await contentService.sort({
-            entryId: 3001,
-            orderedIds: [9001, 9002],
-            sortDirection: "ASC"
-        });
-        expectLastCall("POST", "/classics/sancai/contents/sort", {
-            entryId: 3001,
-            orderedIds: [9001, 9002],
             sortDirection: "ASC"
         });
     });

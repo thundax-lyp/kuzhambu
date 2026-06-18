@@ -29,13 +29,6 @@ export interface SancaiEntryRecord {
     priority?: number | null;
 }
 
-export interface SancaiContentRecord {
-    id: number;
-    entryId?: number | null;
-    question?: string | null;
-    answer?: string | null;
-}
-
 export type SancaiCatalogNodeType = "category" | "root" | "volume";
 
 export interface SancaiCatalogTreeNode {
