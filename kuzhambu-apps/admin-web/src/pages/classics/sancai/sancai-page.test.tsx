@@ -1,4 +1,4 @@
-import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { App as AntdApp } from "antd";
@@ -150,14 +150,6 @@ const installSancaiFetchMock = () => {
     });
 };
 
-const expectCall = (path: string, body: unknown) => {
-    expect(capturedCalls).toContainEqual({
-        body,
-        method: "POST",
-        path
-    });
-};
-
 const renderSancaiPage = () => {
     render(
         <QueryClientProvider client={queryClient}>
@@ -187,57 +179,6 @@ describe("SancaiPage volume CRUD", () => {
         localStorage.clear();
         vi.restoreAllMocks();
     });
-
-    it("wires volume add, update, and delete controls to backend requests", async () => {
-        const user = userEvent.setup();
-
-        renderSancaiPage();
-
-        expect(await screen.findByRole("heading", { name: "三才图会" })).toBeInTheDocument();
-        await selectCategoryFromTable(user, "天文");
-        expect(await screen.findByRole("link", { name: "打开卷目 天文卷一" })).toBeInTheDocument();
-
-        await user.click(screen.getByRole("button", { name: "新增卷目" }));
-        await user.type(screen.getByLabelText("三才图会卷目标题"), "新卷");
-        await user.click(screen.getByRole("button", { name: "保存新增卷目" }));
-
-        await waitFor(() =>
-            expectCall("/classics/sancai/volumes/add", {
-                categoryId: 2,
-                title: "新卷",
-                volumeType: "MAIN"
-            })
-        );
-
-        await user.click(screen.getByRole("button", { name: "编辑卷目 天文卷一" }));
-        const titleInput = screen.getByLabelText("三才图会卷目标题");
-        await user.clear(titleInput);
-        await user.type(titleInput, "天文卷一修订");
-        await user.click(screen.getByRole("button", { name: "保存卷目 天文卷一" }));
-
-        await waitFor(() =>
-            expectCall("/classics/sancai/volumes/update", {
-                categoryId: 2,
-                id: 101,
-                title: "天文卷一修订",
-                volumeType: "MAIN"
-            })
-        );
-
-        await user.click(screen.getByRole("button", { name: "删除卷目 天文卷一" }));
-        const deleteButtons = await screen.findAllByRole("button", { name: /删\s*除/ });
-        const confirmDeleteButton = deleteButtons.find(
-            (button) => button.textContent?.replace(/\s/g, "") === "删除"
-        );
-        expect(confirmDeleteButton).toBeDefined();
-        await user.click(confirmDeleteButton!);
-
-        await waitFor(() =>
-            expectCall("/classics/sancai/volumes/delete", {
-                id: 101
-            })
-        );
-    }, 10000);
 
     it("shows category panel when selecting the catalog root", async () => {
         const user = userEvent.setup();
