@@ -21,6 +21,13 @@ export interface SancaiEntryPageQuery {
     sortDirection?: "ASC" | "DESC" | null;
 }
 
+export interface SancaiCategorySaveCommand {
+    id?: number | null;
+    title?: string | null;
+    categoryType?: string | null;
+    priority?: number | null;
+}
+
 export interface SancaiEntrySaveCommand {
     id?: number | null;
     volumeId?: number | null;
@@ -38,6 +45,25 @@ export interface SancaiEntrySaveCommand {
 
 export const listCategories = () => {
     return postJson<SancaiCategoryRecord[]>("/classics/sancai/categories/list");
+};
+
+export const getCategory = (id: number) => {
+    return getJson<SancaiCategoryRecord>(`/classics/sancai/categories/${id}`);
+};
+
+export const saveCategory = (request: SancaiCategorySaveCommand) => {
+    return postJson<SancaiCategoryRecord, SancaiCategorySaveCommand>(
+        "/classics/sancai/categories/save",
+        {
+            body: request
+        }
+    );
+};
+
+export const removeCategory = (request: SancaiCategorySaveCommand) => {
+    return postJson<boolean, SancaiCategorySaveCommand>("/classics/sancai/categories/delete", {
+        body: request
+    });
 };
 
 export const listVolumes = (request: SancaiVolumeQuery = {}) => {

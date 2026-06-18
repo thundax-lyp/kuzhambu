@@ -75,6 +75,27 @@ describe("sancai service request contracts", () => {
         await sancaiService.listCategories();
         expectLastCall("POST", "/classics/sancai/categories/list", undefined);
 
+        await sancaiService.getCategory(2);
+        expectLastCall("GET", "/classics/sancai/categories/2", undefined);
+
+        await sancaiService.saveCategory({
+            id: 2,
+            title: "天文",
+            categoryType: "FORMAL",
+            priority: 10
+        });
+        expectLastCall("POST", "/classics/sancai/categories/save", {
+            id: 2,
+            title: "天文",
+            categoryType: "FORMAL",
+            priority: 10
+        });
+
+        await sancaiService.removeCategory({ id: 2 });
+        expectLastCall("POST", "/classics/sancai/categories/delete", {
+            id: 2
+        });
+
         await sancaiService.listVolumes({
             categoryId: 2
         });

@@ -1,7 +1,8 @@
-import { ReloadOutlined } from "@ant-design/icons";
+import { DeleteOutlined, EditOutlined, PlusOutlined, ReloadOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Alert, App, Button, Empty, Input, Select, Skeleton, Typography } from "antd";
 import { useState } from "react";
+import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuPage } from "@/components/kuzhambu-page";
 import { KuzhambuTable } from "@/components/kuzhambu-table";
 import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
@@ -24,6 +25,17 @@ const visibilityOptions = [
     { label: "公开", value: "PUBLIC" },
     { label: "私有", value: "PRIVATE" }
 ];
+
+const categoryTypeOptions = [
+    { label: "正式门类", value: "FORMAL" },
+    { label: "辅助内容", value: "AUXILIARY" }
+];
+
+interface SancaiCategoryFormValues {
+    categoryType: string;
+    priority: number | null;
+    title: string;
+}
 
 interface SancaiEntryFormValues {
     originalText: string;
@@ -61,7 +73,9 @@ const normalizeKeyword = (value: string) => {
 const renderCategoryList = (
     categories: SancaiCategoryRecord[],
     selectedCategoryId: number | null,
-    onSelect: (category: SancaiCategoryRecord) => void
+    onSelect: (category: SancaiCategoryRecord) => void,
+    onEdit: (category: SancaiCategoryRecord) => void,
+    onDelete: (category: SancaiCategoryRecord) => void
 ) => {
     if (!categories.length) {
         return <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无门类" />;
@@ -70,21 +84,45 @@ const renderCategoryList = (
     return (
         <div className="sancai-category-list" aria-label="三才图会门类">
             {categories.map((category) => (
-                <button
+                <div
                     className={
                         category.id === selectedCategoryId
-                            ? "sancai-catalog-item sancai-catalog-item-active"
-                            : "sancai-catalog-item"
+                            ? "sancai-catalog-row sancai-catalog-row-active"
+                            : "sancai-catalog-row"
                     }
-                    type="button"
                     key={category.id}
-                    aria-label={`选择门类 ${readTitle(category, "门类")}`}
-                    aria-pressed={category.id === selectedCategoryId}
-                    onClick={() => onSelect(category)}
                 >
-                    <span>{readTitle(category, "门类")}</span>
-                    <Text type="secondary">{category.categoryType || "未分类"}</Text>
-                </button>
+                    <button
+                        className="sancai-catalog-item"
+                        type="button"
+                        aria-label={`选择门类 ${readTitle(category, "门类")}`}
+                        aria-pressed={category.id === selectedCategoryId}
+                        onClick={() => onSelect(category)}
+                    >
+                        <span>{readTitle(category, "门类")}</span>
+                        <Text type="secondary">{category.categoryType || "未分类"}</Text>
+                    </button>
+                    <div
+                        className="sancai-catalog-actions"
+                        aria-label={`${readTitle(category, "门类")} 操作`}
+                    >
+                        <Button
+                            aria-label={`编辑门类 ${readTitle(category, "门类")}`}
+                            icon={<EditOutlined />}
+                            size="small"
+                            type="text"
+                            onClick={() => onEdit(category)}
+                        />
+                        <Button
+                            aria-label={`删除门类 ${readTitle(category, "门类")}`}
+                            danger
+                            icon={<DeleteOutlined />}
+                            size="small"
+                            type="text"
+                            onClick={() => onDelete(category)}
+                        />
+                    </div>
+                </div>
             ))}
         </div>
     );
@@ -216,6 +254,67 @@ const toFormValues = (entry?: SancaiEntryRecord): SancaiEntryFormValues => {
     };
 };
 
+const toCategoryFormValues = (category?: SancaiCategoryRecord): SancaiCategoryFormValues => {
+    return {
+        categoryType: category?.categoryType || "FORMAL",
+        priority: category?.priority ?? null,
+        title: category?.title || ""
+    };
+};
+
+const renderCategoryEditor = (
+    category: SancaiCategoryRecord | null,
+    form: SancaiCategoryFormValues,
+    isSaving: boolean,
+    onChange: (values: Partial<SancaiCategoryFormValues>) => void,
+    onSave: () => void,
+    onCancel: () => void
+) => {
+    const title = category ? "编辑门类" : "新增门类";
+    return (
+        <div className="sancai-category-editor" aria-label={title}>
+            <Text strong>{title}</Text>
+            <Input
+                aria-label="三才图会门类标题"
+                placeholder="门类标题"
+                value={form.title}
+                onChange={(event) => onChange({ title: event.target.value })}
+            />
+            <Select
+                aria-label="三才图会门类类型"
+                value={form.categoryType}
+                options={categoryTypeOptions}
+                onChange={(categoryType) => onChange({ categoryType })}
+            />
+            <Input
+                aria-label="三才图会门类排序值"
+                inputMode="numeric"
+                placeholder="排序值"
+                value={form.priority ?? ""}
+                onChange={(event) => {
+                    const value = event.target.value.trim();
+                    onChange({ priority: value ? Number(value) : null });
+                }}
+            />
+            <div className="sancai-category-editor-actions">
+                <Button aria-label="取消编辑三才图会门类" onClick={onCancel}>
+                    取消
+                </Button>
+                <Button
+                    aria-label={
+                        category ? `保存门类 ${readTitle(category, "门类")}` : "保存新增门类"
+                    }
+                    loading={isSaving}
+                    type="primary"
+                    onClick={onSave}
+                >
+                    保存
+                </Button>
+            </div>
+        </div>
+    );
+};
+
 const renderDetail = (
     entry: SancaiEntryRecord | undefined,
     form: SancaiEntryFormValues,
@@ -273,6 +372,7 @@ const renderDetail = (
 
 export const SancaiPage = () => {
     const { message: messageApi } = App.useApp();
+    const confirm = useKuzhambuConfirm();
     const queryClient = useQueryClient();
     const [query, setQuery] = useState<SancaiEntryPageQuery>({
         pageNo: DEFAULT_PAGE_NO,
@@ -281,6 +381,11 @@ export const SancaiPage = () => {
     const [queryVersion, setQueryVersion] = useState(0);
     const [keyword, setKeyword] = useState("");
     const [lifecycleStatus, setLifecycleStatus] = useState("ALL");
+    const [editingCategory, setEditingCategory] = useState<SancaiCategoryRecord | null>(null);
+    const [isCategoryEditorOpen, setIsCategoryEditorOpen] = useState(false);
+    const [categoryForm, setCategoryForm] = useState<SancaiCategoryFormValues>(() =>
+        toCategoryFormValues()
+    );
     const [activeEntryId, setActiveEntryId] = useState<number | null>(null);
     const [entryForm, setEntryForm] = useState<SancaiEntryFormValues>(toFormValues());
     const categoriesQuery = useQuery({
@@ -319,6 +424,36 @@ export const SancaiPage = () => {
             messageApi.error(error instanceof Error ? error.message : "保存失败");
         }
     });
+    const categoryMutation = useMutation({
+        mutationFn: service.saveCategory,
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: ["classics", "sancai", "categories"] });
+            setIsCategoryEditorOpen(false);
+            setEditingCategory(null);
+            setCategoryForm(toCategoryFormValues());
+            messageApi.success("三才图会门类已保存");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "门类保存失败");
+        }
+    });
+    const deleteCategoryMutation = useMutation({
+        mutationFn: service.removeCategory,
+        onSuccess: async (_, variables) => {
+            await queryClient.invalidateQueries({ queryKey: ["classics", "sancai", "categories"] });
+            if (variables.id === query.categoryId) {
+                setQueryVersion((version) => version + 1);
+                setQuery({
+                    pageNo: DEFAULT_PAGE_NO,
+                    pageSize: query.pageSize || DEFAULT_PAGE_SIZE
+                });
+            }
+            messageApi.success("三才图会门类已删除");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "门类删除失败");
+        }
+    });
     const categories = categoriesQuery.data || [];
     const volumes = volumesQuery.data || [];
     const entries = entriesQuery.data?.records || [];
@@ -354,6 +489,43 @@ export const SancaiPage = () => {
         updateQuery({
             categoryId: category.id,
             volumeId: undefined
+        });
+    };
+
+    const startCreateCategory = () => {
+        setEditingCategory(null);
+        setCategoryForm(toCategoryFormValues());
+        setIsCategoryEditorOpen(true);
+    };
+
+    const startEditCategory = (category: SancaiCategoryRecord) => {
+        setEditingCategory(category);
+        setCategoryForm(toCategoryFormValues(category));
+        setIsCategoryEditorOpen(true);
+    };
+
+    const cancelCategoryEdit = () => {
+        setIsCategoryEditorOpen(false);
+        setEditingCategory(null);
+        setCategoryForm(toCategoryFormValues());
+    };
+
+    const saveCategory = () => {
+        categoryMutation.mutate({
+            id: editingCategory?.id,
+            title: categoryForm.title,
+            categoryType: categoryForm.categoryType,
+            priority: categoryForm.priority
+        });
+    };
+
+    const confirmDeleteCategory = (category: SancaiCategoryRecord) => {
+        confirm.danger({
+            title: "删除三才图会门类",
+            message: `确认删除 ${readTitle(category, "门类")}？`,
+            description: "仅空门类可删除。若该门类下仍有关联卷，接口会拒绝删除。",
+            okText: "删除",
+            onConfirm: () => deleteCategoryMutation.mutateAsync({ id: category.id })
         });
     };
 
@@ -437,12 +609,40 @@ export const SancaiPage = () => {
                 <aside className="sancai-catalog-panel">
                     <div className="sancai-panel-heading">
                         <Title level={3}>目录</Title>
-                        <Text type="secondary">{categories.length} 门类</Text>
+                        <Button
+                            aria-label="新增三才图会门类"
+                            icon={<PlusOutlined />}
+                            size="small"
+                            onClick={startCreateCategory}
+                        >
+                            新增
+                        </Button>
                     </div>
+                    <Text type="secondary">{categories.length} 门类</Text>
+                    {isCategoryEditorOpen
+                        ? renderCategoryEditor(
+                              editingCategory,
+                              categoryForm,
+                              categoryMutation.isPending,
+                              (values) =>
+                                  setCategoryForm((currentForm) => ({
+                                      ...currentForm,
+                                      ...values
+                                  })),
+                              saveCategory,
+                              cancelCategoryEdit
+                          )
+                        : null}
                     {isLoading ? (
                         <Skeleton active paragraph={{ rows: 8 }} />
                     ) : (
-                        renderCategoryList(categories, selectedCategoryId, selectCategory)
+                        renderCategoryList(
+                            categories,
+                            selectedCategoryId,
+                            selectCategory,
+                            startEditCategory,
+                            confirmDeleteCategory
+                        )
                     )}
 
                     <div className="sancai-panel-heading sancai-panel-heading-secondary">
