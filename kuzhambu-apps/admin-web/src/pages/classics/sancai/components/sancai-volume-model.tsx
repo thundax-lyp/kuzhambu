@@ -1,22 +1,18 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Button, Input, Modal, Select } from "antd";
+import { Button, Input, Modal, Select } from "antd";
 import { useState } from "react";
 import type { DictItem } from "@/types/dict";
 import { toVolumeFormValues, type SancaiVolumeFormValues } from "./sancai-form-values";
-import * as service from "../sancai-service";
 import type { SancaiCategoryRecord, SancaiVolumeRecord } from "../sancai-types";
 
 interface SancaiVolumeModelProps {
     categories: SancaiCategoryRecord[];
     fallbackCategoryId: number | null;
+    isSubmitting: boolean;
     onCancel: () => void;
+    onSubmit: (values: SancaiVolumeFormValues) => void;
     volume: SancaiVolumeRecord | null;
+    volumeTypeOptions: DictItem[];
 }
-
-const fallbackVolumeTypeOptions: DictItem[] = [
-    { label: "正式卷目", type: "SANCAI_VOLUME_TYPE", value: "MAIN" },
-    { label: "辅助卷目", type: "SANCAI_VOLUME_TYPE", value: "AUXILIARY" }
-];
 
 const readTitle = (value: { id: number; title?: string | null }, fallback: string) => {
     return value.title?.trim() || `${fallback} ${value.id}`;
@@ -25,71 +21,15 @@ const readTitle = (value: { id: number; title?: string | null }, fallback: strin
 export const SancaiVolumeModel = ({
     categories,
     fallbackCategoryId,
+    isSubmitting,
     onCancel,
-    volume
+    onSubmit,
+    volume,
+    volumeTypeOptions
 }: SancaiVolumeModelProps) => {
-    const { message: messageApi } = App.useApp();
-    const queryClient = useQueryClient();
     const [form, setForm] = useState<SancaiVolumeFormValues>(() =>
         toVolumeFormValues(volume ?? undefined, fallbackCategoryId)
     );
-    const typesQuery = useQuery<DictItem[]>({
-        queryKey: ["classics", "sancai", "volumes", "types"],
-        queryFn: service.listVolumeTypes,
-        retry: false
-    });
-    const volumeTypeItems = typesQuery.data?.length
-        ? typesQuery.data
-        : fallbackVolumeTypeOptions;
-
-    const afterChanged = async () => {
-        await queryClient.invalidateQueries({ queryKey: ["classics", "sancai", "volumes"] });
-        await queryClient.invalidateQueries({ queryKey: ["classics", "sancai", "entries"] });
-        onCancel();
-        messageApi.success("三才图会卷目已保存");
-    };
-
-    const addMutation = useMutation({
-        mutationFn: service.addVolume,
-        onSuccess: afterChanged,
-        onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "卷目新增失败");
-        }
-    });
-    const updateMutation = useMutation({
-        mutationFn: service.updateVolume,
-        onSuccess: afterChanged,
-        onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "卷目更新失败");
-        }
-    });
-
-    const readValidCategoryId = () => {
-        const categoryId = form.categoryId ?? fallbackCategoryId;
-        if (!categoryId || !categories.some((category) => category.id === categoryId)) {
-            messageApi.warning("请选择有效门类");
-            return null;
-        }
-        return categoryId;
-    };
-
-    const persist = () => {
-        const categoryId = readValidCategoryId();
-        if (!categoryId) {
-            return;
-        }
-        const request = {
-            id: volume?.id,
-            categoryId,
-            title: form.title,
-            volumeType: form.volumeType
-        };
-        if (volume) {
-            updateMutation.mutate(request);
-            return;
-        }
-        addMutation.mutate(request);
-    };
 
     return (
         <Modal
@@ -103,16 +43,15 @@ export const SancaiVolumeModel = ({
                 volume={volume}
                 categories={categories}
                 form={form}
-                isSubmitting={addMutation.isPending || updateMutation.isPending}
-                isTypeLoading={typesQuery.isFetching}
-                volumeTypeItems={volumeTypeItems}
+                isSubmitting={isSubmitting}
+                volumeTypeItems={volumeTypeOptions}
                 onChange={(values) =>
                     setForm((currentForm) => ({
                         ...currentForm,
                         ...values
                     }))
                 }
-                onSubmit={persist}
+                onSubmit={() => onSubmit(form)}
             />
         </Modal>
     );
@@ -122,7 +61,6 @@ const SancaiVolumeForm = ({
     categories,
     form,
     isSubmitting,
-    isTypeLoading,
     onChange,
     onSubmit,
     volume,
@@ -131,7 +69,6 @@ const SancaiVolumeForm = ({
     categories: SancaiCategoryRecord[];
     form: SancaiVolumeFormValues;
     isSubmitting: boolean;
-    isTypeLoading: boolean;
     onChange: (values: Partial<SancaiVolumeFormValues>) => void;
     onSubmit: () => void;
     volume: SancaiVolumeRecord | null;
@@ -159,7 +96,6 @@ const SancaiVolumeForm = ({
                 aria-label="三才图会卷目类型"
                 value={form.volumeType}
                 options={volumeTypeItems}
-                loading={isTypeLoading}
                 onChange={(volumeType) => onChange({ volumeType })}
             />
             <Button

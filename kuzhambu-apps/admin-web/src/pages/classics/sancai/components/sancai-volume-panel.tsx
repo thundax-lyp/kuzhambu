@@ -1,16 +1,14 @@
-import {
-    DeleteOutlined,
-    EditOutlined,
-    MenuOutlined,
-    PlusOutlined
-} from "@ant-design/icons";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { App, Button, Empty, Skeleton, Typography } from "antd";
+import { MenuOutlined, PlusOutlined } from "@ant-design/icons";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { App, Button, Typography } from "antd";
 import { useState } from "react";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
+import type { DictItem } from "@/types/dict";
+import type { SancaiVolumeFormValues } from "./sancai-form-values";
+import { SancaiVolumeList } from "./sancai-volume-list";
 import { SancaiVolumeModel } from "./sancai-volume-model";
 import { SancaiVolumeSortModel } from "./sancai-volume-sort-model";
-import * as service from "../sancai-service";
+import * as volumeService from "../services/sancai-volume-service";
 import type { SancaiCategoryRecord, SancaiVolumeRecord } from "../sancai-types";
 
 const { Text, Title } = Typography;
@@ -28,9 +26,10 @@ const readTitle = (value: { id: number; title?: string | null }, fallback: strin
     return value.title?.trim() || `${fallback} ${value.id}`;
 };
 
-const readVolumeTypeLabel = (volume: SancaiVolumeRecord) => {
-    return volume.volumeType === "AUXILIARY" ? "辅助卷目" : "正式卷目";
-};
+const fallbackVolumeTypeOptions: DictItem[] = [
+    { label: "正式卷目", type: "SANCAI_VOLUME_TYPE", value: "MAIN" },
+    { label: "辅助卷目", type: "SANCAI_VOLUME_TYPE", value: "AUXILIARY" }
+];
 
 export const SancaiVolumePanel = ({
     categories,
@@ -46,16 +45,44 @@ export const SancaiVolumePanel = ({
     const [editingVolume, setEditingVolume] = useState<SancaiVolumeRecord | null>(null);
     const [isModelOpen, setIsModelOpen] = useState(false);
     const [isSortOpen, setIsSortOpen] = useState(false);
+    const typesQuery = useQuery<DictItem[]>({
+        queryKey: ["classics", "sancai", "volumes", "types"],
+        queryFn: volumeService.listTypes,
+        retry: false
+    });
+    const volumeTypeItems = typesQuery.data?.length ? typesQuery.data : fallbackVolumeTypeOptions;
 
     const closeModel = () => {
         setIsModelOpen(false);
         setEditingVolume(null);
     };
 
+    const afterChanged = async (message: string) => {
+        await queryClient.invalidateQueries({ queryKey: ["classics", "sancai", "volumes"] });
+        await queryClient.invalidateQueries({ queryKey: ["classics", "sancai", "entries"] });
+        closeModel();
+        messageApi.success(message);
+    };
+
+    const addMutation = useMutation({
+        mutationFn: volumeService.add,
+        onSuccess: () => afterChanged("三才图会卷目已新增"),
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "卷目新增失败");
+        }
+    });
+    const updateMutation = useMutation({
+        mutationFn: volumeService.update,
+        onSuccess: () => afterChanged("三才图会卷目已更新"),
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "卷目更新失败");
+        }
+    });
     const deleteMutation = useMutation({
-        mutationFn: service.removeVolume,
+        mutationFn: volumeService.deleteById,
         onSuccess: async () => {
             await queryClient.invalidateQueries({ queryKey: ["classics", "sancai", "volumes"] });
+            await queryClient.invalidateQueries({ queryKey: ["classics", "sancai", "entries"] });
             messageApi.success("三才图会卷目已删除");
         },
         onError: (error) => {
@@ -77,13 +104,40 @@ export const SancaiVolumePanel = ({
         setIsModelOpen(true);
     };
 
+    const readValidCategoryId = (form: SancaiVolumeFormValues) => {
+        const categoryId = form.categoryId ?? selectedCategory?.id ?? null;
+        if (!categoryId || !categories.some((category) => category.id === categoryId)) {
+            messageApi.warning("请选择有效门类");
+            return null;
+        }
+        return categoryId;
+    };
+
+    const submitVolume = (form: SancaiVolumeFormValues) => {
+        const categoryId = readValidCategoryId(form);
+        if (!categoryId) {
+            return;
+        }
+        const request = {
+            id: editingVolume?.id,
+            categoryId,
+            title: form.title,
+            volumeType: form.volumeType
+        };
+        if (editingVolume) {
+            updateMutation.mutate(request);
+            return;
+        }
+        addMutation.mutate(request);
+    };
+
     const confirmDelete = (volume: SancaiVolumeRecord) => {
         confirm.danger({
             title: "删除三才图会卷目",
             message: `确认删除 ${readTitle(volume, "卷")}？`,
             description: "仅空卷目可删除。若该卷下仍有关联条目，接口会拒绝删除。",
             okText: "删除",
-            onConfirm: () => deleteMutation.mutateAsync({ id: volume.id })
+            onConfirm: () => deleteMutation.mutateAsync(volume.id)
         });
     };
 
@@ -98,69 +152,6 @@ export const SancaiVolumePanel = ({
     const closeSort = () => {
         setIsSortOpen(false);
     };
-
-    const volumeContent = (() => {
-        if (isLoading) {
-            return <Skeleton active paragraph={{ rows: 5 }} />;
-        }
-        if (!volumes.length) {
-            return <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无卷目" />;
-        }
-        return (
-            <div className="sancai-volume-list" aria-label="三才图会卷目">
-                {volumes.map((volume) => (
-                    <div
-                        className={
-                            volume.id === selectedVolume?.id
-                                ? "sancai-catalog-row sancai-catalog-row-active"
-                                : "sancai-catalog-row"
-                        }
-                        key={volume.id}
-                    >
-                        <button
-                            className="sancai-catalog-item"
-                            type="button"
-                            aria-label={`选择卷目 ${readTitle(volume, "卷")}`}
-                            aria-pressed={volume.id === selectedVolume?.id}
-                            onClick={() => onSelect(volume)}
-                        >
-                            <span className="sancai-volume-main">
-                                <span
-                                    className={
-                                        volume.volumeType === "AUXILIARY"
-                                            ? "sancai-category-type-dot sancai-category-type-dot-auxiliary"
-                                            : "sancai-category-type-dot sancai-category-type-dot-formal"
-                                    }
-                                    aria-label={`卷目类型 ${readVolumeTypeLabel(volume)}`}
-                                />
-                                <span>{readTitle(volume, "卷")}</span>
-                            </span>
-                        </button>
-                        <div
-                            className="sancai-catalog-actions"
-                            aria-label={`${readTitle(volume, "卷")} 操作`}
-                        >
-                            <Button
-                                aria-label={`编辑卷目 ${readTitle(volume, "卷")}`}
-                                icon={<EditOutlined />}
-                                size="small"
-                                type="text"
-                                onClick={() => startEdit(volume)}
-                            />
-                            <Button
-                                aria-label={`删除卷目 ${readTitle(volume, "卷")}`}
-                                danger
-                                icon={<DeleteOutlined />}
-                                size="small"
-                                type="text"
-                                onClick={() => confirmDelete(volume)}
-                            />
-                        </div>
-                    </div>
-                ))}
-            </div>
-        );
-    })();
 
     return (
         <section className="sancai-catalog-column">
@@ -184,13 +175,25 @@ export const SancaiVolumePanel = ({
                     />
                 </div>
             </div>
-            <div className="sancai-catalog-scroll">{volumeContent}</div>
+            <div className="sancai-catalog-scroll">
+                <SancaiVolumeList
+                    isLoading={isLoading}
+                    selectedVolume={selectedVolume}
+                    volumes={volumes}
+                    onDelete={confirmDelete}
+                    onEdit={startEdit}
+                    onSelect={onSelect}
+                />
+            </div>
             {isModelOpen ? (
                 <SancaiVolumeModel
                     categories={categories}
                     fallbackCategoryId={selectedCategory?.id ?? null}
+                    isSubmitting={addMutation.isPending || updateMutation.isPending}
                     volume={editingVolume}
+                    volumeTypeOptions={volumeTypeItems}
                     onCancel={closeModel}
+                    onSubmit={submitVolume}
                 />
             ) : null}
             {isSortOpen ? <SancaiVolumeSortModel volumes={volumes} onCancel={closeSort} /> : null}

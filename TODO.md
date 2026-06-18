@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web-sancai-volume-list-model`：纯化 Volume List 和 Model
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-TREE-PAGE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-volume-list.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-volume-model.tsx`
-    - 处理动作：让 List 只展示事件、Model 只提交表单值
-    - 验收点：两个组件不 import service、不调用 mutation
-    - 重要度：8/10
-
 - [ ] `admin-web-sancai-entry-list-model`：新增 Entry List 和 Model
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-TREE-PAGE.md`
