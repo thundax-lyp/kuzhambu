@@ -1,18 +1,20 @@
 import { Empty, Skeleton, Typography } from "antd";
 import { KuzhambuTable } from "@/components/kuzhambu-table";
-import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
+import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
 import type { SancaiEntryRecord, SancaiVolumeRecord } from "../sancai-types";
 
 const { Text } = Typography;
 
 interface SancaiEntryListProps {
-    currentPageNo: number;
-    currentPageSize: number;
     entries: SancaiEntryRecord[];
     isLoading: boolean;
-    onPageChange: (pageNo: number, pageSize: number) => void;
+    onDelete: (entry: SancaiEntryRecord) => void;
+    onSort: (
+        sourceEntry: SancaiEntryRecord,
+        targetEntry: SancaiEntryRecord,
+        position: KuzhambuTableSortPosition
+    ) => void;
     onView: (entry: SancaiEntryRecord) => void;
-    totalCount: number;
     volumes: SancaiVolumeRecord[];
 }
 
@@ -30,13 +32,11 @@ const readVolumeTitle = (entry: SancaiEntryRecord, volumes: SancaiVolumeRecord[]
 };
 
 export const SancaiEntryList = ({
-    currentPageNo,
-    currentPageSize,
     entries,
     isLoading,
-    onPageChange,
+    onDelete,
+    onSort,
     onView,
-    totalCount,
     volumes
 }: SancaiEntryListProps) => {
     if (isLoading) {
@@ -87,6 +87,13 @@ export const SancaiEntryList = ({
                     text: "查看",
                     ariaLabel: `查看 ${readTitle(entry, "条目")}`,
                     onClick: () => onView(entry)
+                },
+                {
+                    danger: true,
+                    key: "delete",
+                    text: "删除",
+                    ariaLabel: `删除 ${readTitle(entry, "条目")}`,
+                    onClick: () => onDelete(entry)
                 }
             ]
         }
@@ -99,15 +106,12 @@ export const SancaiEntryList = ({
                 aria-label="三才图会条目表格"
                 columns={columns}
                 dataSource={entries}
-                pagination={{
-                    current: currentPageNo,
-                    pageSize: currentPageSize,
-                    total: totalCount,
-                    onChange: onPageChange
-                }}
+                pagination={false}
                 rowKey="id"
                 size="middle"
                 scroll={{ x: 760 }}
+                sortable
+                onSort={onSort}
             />
         </div>
     );

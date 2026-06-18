@@ -1,20 +1,15 @@
 import { ReloadOutlined } from "@ant-design/icons";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Alert, App, Button, Input, Select, Skeleton, Typography } from "antd";
+import { useQuery } from "@tanstack/react-query";
+import { Alert, Button, Input, Select } from "antd";
 import { useState } from "react";
 import { KuzhambuPage } from "@/components/kuzhambu-page";
-import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { SancaiCategoryPanel } from "./components/sancai-category-panel";
-import { SancaiEntryList } from "./components/sancai-entry-list";
-import { SancaiEntryModel } from "./components/sancai-entry-model";
-import type { SancaiEntryFormValues } from "./components/sancai-form-values";
+import { SancaiEntryPanel } from "./components/sancai-entry-panel";
 import { SancaiVolumePanel } from "./components/sancai-volume-panel";
 import * as service from "./sancai-service";
 import type { SancaiEntryPageQuery } from "./sancai-service";
-import type { SancaiCategoryRecord, SancaiEntryRecord, SancaiVolumeRecord } from "./sancai-types";
+import type { SancaiCategoryRecord, SancaiVolumeRecord } from "./sancai-types";
 import "./sancai-page.css";
-
-const { Text, Title } = Typography;
 
 const entryStatusOptions = [
     { label: "全部状态", value: "ALL" },
@@ -41,16 +36,10 @@ const normalizeKeyword = (value: string) => {
 };
 
 export const SancaiPage = () => {
-    const { message: messageApi } = App.useApp();
-    const queryClient = useQueryClient();
-    const [query, setQuery] = useState<SancaiEntryPageQuery>({
-        pageNo: DEFAULT_PAGE_NO,
-        pageSize: DEFAULT_PAGE_SIZE
-    });
-    const [queryVersion, setQueryVersion] = useState(0);
+    const [query, setQuery] = useState<SancaiEntryPageQuery>({});
+    const [refreshVersion, setRefreshVersion] = useState(0);
     const [keyword, setKeyword] = useState("");
     const [lifecycleStatus, setLifecycleStatus] = useState("ALL");
-    const [activeEntryId, setActiveEntryId] = useState<number | null>(null);
     const categoriesQuery = useQuery({
         queryKey: ["classics", "sancai", "categories"],
         queryFn: service.listCategories,
@@ -70,61 +59,13 @@ export const SancaiPage = () => {
     const selectedVolume =
         volumes.find((volume) => volume.id === query.volumeId) ?? volumes[0] ?? null;
     const selectedVolumeId = selectedVolume?.id ?? null;
-    const effectiveEntryQuery: SancaiEntryPageQuery = {
-        ...query,
-        categoryId: selectedCategoryId ?? undefined,
-        volumeId: selectedVolumeId ?? undefined
-    };
-    const entriesQuery = useQuery({
-        queryKey: ["classics", "sancai", "entries", "page", effectiveEntryQuery, queryVersion],
-        queryFn: () => service.pageEntries(effectiveEntryQuery),
-        enabled: selectedCategoryId !== null,
-        retry: false
-    });
-    const detailQuery = useQuery({
-        queryKey: ["classics", "sancai", "entry", activeEntryId],
-        queryFn: () => service.getEntry(activeEntryId || 0),
-        enabled: activeEntryId !== null,
-        retry: false
-    });
-    const updateEntryMutation = useMutation({
-        mutationFn: service.updateEntry,
-        onSuccess: async () => {
-            await queryClient.invalidateQueries({ queryKey: ["classics", "sancai", "entries"] });
-            if (activeEntryId !== null) {
-                await queryClient.invalidateQueries({
-                    queryKey: ["classics", "sancai", "entry", activeEntryId]
-                });
-            }
-            messageApi.success("三才图会条目已保存");
-        },
-        onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "保存失败");
-        }
-    });
-    const entries = entriesQuery.data?.records || [];
-    const totalCount = entriesQuery.data?.totalCount ?? entriesQuery.data?.count ?? 0;
-    const currentPageNo = entriesQuery.data?.pageNo || query.pageNo || DEFAULT_PAGE_NO;
-    const currentPageSize = entriesQuery.data?.pageSize || query.pageSize || DEFAULT_PAGE_SIZE;
-    const selectedEntry = detailQuery.data;
-    const isLoading = isQueryLoading(categoriesQuery, volumesQuery, entriesQuery);
-    const hasError = isQueryError(categoriesQuery, volumesQuery, entriesQuery);
-    const updateQuery = (values: Partial<SancaiEntryPageQuery>) => {
-        setQueryVersion((version) => version + 1);
-        setQuery((currentQuery) => ({
-            ...currentQuery,
-            ...values,
-            pageNo: DEFAULT_PAGE_NO,
-            pageSize: currentQuery.pageSize || DEFAULT_PAGE_SIZE
-        }));
-    };
+    const isLoading = isQueryLoading(categoriesQuery, volumesQuery);
+    const hasError = isQueryError(categoriesQuery, volumesQuery);
 
-    const changePage = (pageNo: number, pageSize: number) => {
-        setQueryVersion((version) => version + 1);
+    const updateQuery = (values: Partial<SancaiEntryPageQuery>) => {
         setQuery((currentQuery) => ({
             ...currentQuery,
-            pageNo: pageSize === currentPageSize ? pageNo : DEFAULT_PAGE_NO,
-            pageSize
+            ...values
         }));
     };
 
@@ -152,36 +93,15 @@ export const SancaiPage = () => {
     const resetFilters = () => {
         setKeyword("");
         setLifecycleStatus("ALL");
-        setQueryVersion((version) => version + 1);
-        setQuery({
-            pageNo: DEFAULT_PAGE_NO,
-            pageSize: query.pageSize || DEFAULT_PAGE_SIZE
-        });
+        setQuery((currentQuery) => ({
+            categoryId: currentQuery.categoryId,
+            volumeId: currentQuery.volumeId
+        }));
     };
 
-    const openEntry = (entry: SancaiEntryRecord) => {
-        setActiveEntryId(entry.id);
-    };
-
-    const updateEntry = (form: SancaiEntryFormValues) => {
-        const entry = detailQuery.data || selectedEntry;
-        if (!entry) {
-            return;
-        }
-        updateEntryMutation.mutate({
-            id: entry.id,
-            volumeId: entry.volumeId,
-            title: form.title,
-            originalText: form.originalText,
-            translationText: form.translationText,
-            summary: form.summary,
-            lifecycleStatus: entry.lifecycleStatus,
-            visibility: form.visibility,
-            translationStatus: entry.translationStatus,
-            imageStatus: entry.imageStatus,
-            visualAssetStatus: entry.visualAssetStatus,
-            refinementStatus: entry.refinementStatus
-        });
+    const refreshPage = () => {
+        reloadQueries(categoriesQuery, volumesQuery);
+        setRefreshVersion((version) => version + 1);
     };
 
     return (
@@ -193,7 +113,7 @@ export const SancaiPage = () => {
                 <Button
                     aria-label="刷新三才图会数据"
                     icon={<ReloadOutlined />}
-                    onClick={() => reloadQueries(categoriesQuery, volumesQuery, entriesQuery)}
+                    onClick={refreshPage}
                 >
                     刷新
                 </Button>
@@ -251,40 +171,15 @@ export const SancaiPage = () => {
                         </Button>
                     </div>
 
-                    <div className="sancai-content-grid">
-                        <section className="sancai-list-panel">
-                            <div className="sancai-panel-heading">
-                                <Title level={3}>条目</Title>
-                                <Text type="secondary">{totalCount} 条</Text>
-                            </div>
-                            <SancaiEntryList
-                                currentPageNo={currentPageNo}
-                                currentPageSize={currentPageSize}
-                                entries={entries}
-                                isLoading={isLoading}
-                                totalCount={totalCount}
-                                volumes={volumes}
-                                onPageChange={changePage}
-                                onView={openEntry}
-                            />
-                        </section>
-
-                        <aside className="sancai-detail-panel">
-                            <div className="sancai-panel-heading">
-                                <Title level={3}>详情</Title>
-                            </div>
-                            {isLoading || detailQuery.isLoading ? (
-                                <Skeleton active paragraph={{ rows: 6 }} />
-                            ) : (
-                                <SancaiEntryModel
-                                    key={selectedEntry?.id ?? "empty"}
-                                    entry={selectedEntry}
-                                    isSubmitting={updateEntryMutation.isPending}
-                                    onSubmit={updateEntry}
-                                />
-                            )}
-                        </aside>
-                    </div>
+                    <SancaiEntryPanel
+                        categoryId={selectedCategoryId}
+                        isCatalogLoading={isLoading}
+                        keyword={query.keyword ?? null}
+                        lifecycleStatus={query.lifecycleStatus ?? null}
+                        refreshVersion={refreshVersion}
+                        volumeId={selectedVolumeId}
+                        volumes={volumes}
+                    />
                 </section>
             </div>
         </KuzhambuPage>

@@ -13,17 +13,19 @@ const visibilityOptions = [
 interface SancaiEntryModelProps {
     entry: SancaiEntryRecord | undefined;
     isSubmitting: boolean;
+    mode?: "create" | "edit";
     onSubmit: (values: SancaiEntryFormValues) => void;
 }
 
 export const SancaiEntryModel = ({
     entry,
     isSubmitting,
+    mode = "edit",
     onSubmit
 }: SancaiEntryModelProps) => {
     const [form, setForm] = useState<SancaiEntryFormValues>(() => toEntryFormValues(entry));
 
-    if (!entry) {
+    if (!entry && mode !== "create") {
         return <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="选择条目后查看详情" />;
     }
 
@@ -85,7 +87,7 @@ export const SancaiEntryModel = ({
                 }
             />
             <Button
-                aria-label="保存三才图会条目"
+                aria-label={mode === "create" ? "保存新增三才图会条目" : "保存三才图会条目"}
                 type="primary"
                 loading={isSubmitting}
                 onClick={() => onSubmit(form)}
