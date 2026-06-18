@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Admin Web 三才服务契约`：补齐三才图会前端服务契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-ADMIN-LOOP.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-types.ts`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-service.ts`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-service-contract.test.ts`
-    - 处理动作：新增三才图会前端类型、接口方法和请求字段契约测试
-    - 验收点：前端 service contract test 固定 categories、volumes、entries/page、entries/{id}、entries/save 路径和请求体
-    - 重要度：9/10
-
 - [ ] `Admin Web Classics 路由`：接入三才图会后台页面路由
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-ADMIN-LOOP.md`
