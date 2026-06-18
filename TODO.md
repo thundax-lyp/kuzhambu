@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web-sancai-volume-service`：拆分 Volume service
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-TREE-PAGE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/services/sancai-volume-service.ts`
-    - 处理动作：提供 `list/add/update/deleteById/sort/listTypes`
-    - 验收点：service contract 测试覆盖 volume 请求路径
-    - 重要度：8/10
-
 - [ ] `admin-web-sancai-entry-service`：拆分 Entry service
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-TREE-PAGE.md`

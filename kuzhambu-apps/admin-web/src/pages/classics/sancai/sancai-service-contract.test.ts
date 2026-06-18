@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as categoryService from "./services/sancai-category-service";
+import * as volumeService from "./services/sancai-volume-service";
 import * as sancaiService from "./sancai-service";
 
 interface CapturedCall {
@@ -294,6 +295,56 @@ describe("sancai service request contracts", () => {
         });
         expectLastCall("POST", "/classics/sancai/categories/sort", {
             orderedIds: [2, 3, 4],
+            sortDirection: "ASC"
+        });
+    });
+
+    it("sends volume service requests with domain function names", async () => {
+        await volumeService.listTypes();
+        expectLastCall("GET", "/classics/sancai/volumes/types", undefined);
+
+        await volumeService.list({
+            categoryId: 2
+        });
+        expectLastCall("POST", "/classics/sancai/volumes/list", {
+            categoryId: 2
+        });
+
+        await volumeService.add({
+            categoryId: 2,
+            title: "天文卷一",
+            volumeType: "MAIN"
+        });
+        expectLastCall("POST", "/classics/sancai/volumes/add", {
+            categoryId: 2,
+            title: "天文卷一",
+            volumeType: "MAIN"
+        });
+
+        await volumeService.update({
+            id: 101,
+            categoryId: 2,
+            title: "天文卷一",
+            volumeType: "MAIN"
+        });
+        expectLastCall("POST", "/classics/sancai/volumes/update", {
+            id: 101,
+            categoryId: 2,
+            title: "天文卷一",
+            volumeType: "MAIN"
+        });
+
+        await volumeService.deleteById(101);
+        expectLastCall("POST", "/classics/sancai/volumes/delete", {
+            id: 101
+        });
+
+        await volumeService.sort({
+            orderedIds: [101, 102],
+            sortDirection: "ASC"
+        });
+        expectLastCall("POST", "/classics/sancai/volumes/sort", {
+            orderedIds: [101, 102],
             sortDirection: "ASC"
         });
     });
