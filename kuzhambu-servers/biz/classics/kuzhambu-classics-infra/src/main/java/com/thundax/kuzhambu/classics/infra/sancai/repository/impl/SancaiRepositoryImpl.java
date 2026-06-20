@@ -173,6 +173,13 @@ public class SancaiRepositoryImpl implements SancaiRepository {
     }
 
     @Override
+    public int maxEntryPriorityByVolumeId(SancaiVolumeId volumeId) {
+        return maxPriority(entryMapper.selectObjs(new QueryWrapper<SancaiEntryDO>()
+                .select("max(priority)")
+                .eq("volume_id", SancaiVolumeIdCodec.toValue(volumeId))));
+    }
+
+    @Override
     public SancaiEntry getEntryById(SancaiEntryId id) {
         return SancaiPersistenceAssembler.toEntryDomain(entryMapper.selectById(SancaiEntryIdCodec.toValue(id)));
     }
@@ -288,6 +295,40 @@ public class SancaiRepositoryImpl implements SancaiRepository {
                         .set(SancaiEntryDO::getImageStatus, dataObject.getImageStatus())
                         .set(SancaiEntryDO::getVisualAssetStatus, dataObject.getVisualAssetStatus())
                         .set(SancaiEntryDO::getRefinementStatus, dataObject.getRefinementStatus())
+                        .set(
+                                dataObject.getCurrentVersionId() != null,
+                                SancaiEntryDO::getCurrentVersionId,
+                                dataObject.getCurrentVersionId())
+                        .set(
+                                dataObject.getCurrentVersionNo() != null,
+                                SancaiEntryDO::getCurrentVersionNo,
+                                dataObject.getCurrentVersionNo())
+                        .set(
+                                dataObject.getCurrentVersionedAt() != null,
+                                SancaiEntryDO::getCurrentVersionedAt,
+                                dataObject.getCurrentVersionedAt())
+                        .set(SancaiEntryDO::getContentUpdatedAt, dataObject.getContentUpdatedAt()));
+    }
+
+    @Override
+    public int updateRestoredEntry(SancaiEntry entry) {
+        SancaiEntryDO dataObject = SancaiPersistenceAssembler.toEntryObject(entry);
+        return entryMapper.update(
+                null,
+                new LambdaUpdateWrapper<SancaiEntryDO>()
+                        .eq(SancaiEntryDO::getId, dataObject.getId())
+                        .set(SancaiEntryDO::getVolumeId, dataObject.getVolumeId())
+                        .set(SancaiEntryDO::getTitle, dataObject.getTitle())
+                        .set(SancaiEntryDO::getOriginalText, dataObject.getOriginalText())
+                        .set(SancaiEntryDO::getTranslationText, dataObject.getTranslationText())
+                        .set(SancaiEntryDO::getSummary, dataObject.getSummary())
+                        .set(SancaiEntryDO::getLifecycleStatus, dataObject.getLifecycleStatus())
+                        .set(SancaiEntryDO::getVisibility, dataObject.getVisibility())
+                        .set(SancaiEntryDO::getTranslationStatus, dataObject.getTranslationStatus())
+                        .set(SancaiEntryDO::getImageStatus, dataObject.getImageStatus())
+                        .set(SancaiEntryDO::getVisualAssetStatus, dataObject.getVisualAssetStatus())
+                        .set(SancaiEntryDO::getRefinementStatus, dataObject.getRefinementStatus())
+                        .set(SancaiEntryDO::getPriority, dataObject.getPriority())
                         .set(
                                 dataObject.getCurrentVersionId() != null,
                                 SancaiEntryDO::getCurrentVersionId,

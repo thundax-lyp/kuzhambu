@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics-sancai-version-restore-core`：实现三才图会历史版本恢复核心能力
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-VERSION-RESTORE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sancai/support/SancaiEntryVersionRestorer.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/service/impl/ClassicsContentApplicationServiceImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-domain/src/main/java/com/thundax/kuzhambu/classics/domain/sancai/repository/SancaiRepository.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/java/com/thundax/kuzhambu/classics/infra/sancai/repository/impl/SancaiRepositoryImpl.java`
-    - 处理动作：新增 Restorer、接入 `SANCAI_ENTRY` 恢复分发，并用目标卷 `max(priority)+1` 写入恢复排序。
-    - 验收点：`restoreHistoryVersion` 支持 `SANCAI_ENTRY`，恢复写入内容字段和状态字段并生成 `HISTORY_RESTORED` 新版本。
-    - 重要度：10/10
-
 - [ ] `classics-sancai-version-admin-api`：开放三才图会版本列表、详情和恢复接口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-VERSION-RESTORE.md`
