@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.classics.infra.sharing.persistence.assembler;
 
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentVersionIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisibilityRiskStatus;
@@ -82,6 +83,8 @@ public final class ClassicsSharingPersistenceAssembler {
                         ClassicsShareLinkIdCodec.toValue(entity.getShareLinkId()),
                         value(entity.getContentType()),
                         ClassicsContentIdCodec.toValue(entity.getContentId()),
+                        ClassicsContentVersionIdCodec.toValue(entity.getContentVersionId()),
+                        entity.getContentVersionNo(),
                         entity.getTitleSnapshot(),
                         entity.getContentSnapshotJson(),
                         value(entity.getContentVisibilitySnapshot()),
@@ -99,6 +102,8 @@ public final class ClassicsSharingPersistenceAssembler {
                                 ? null
                                 : ClassicsContentType.from(dataObject.getContentType()),
                         ClassicsContentId.ofNullable(dataObject.getContentId()),
+                        ClassicsContentVersionIdCodec.toDomain(dataObject.getContentVersionId()),
+                        dataObject.getContentVersionNo(),
                         dataObject.getTitleSnapshot(),
                         dataObject.getContentSnapshotJson(),
                         dataObject.getContentVisibilitySnapshot() == null

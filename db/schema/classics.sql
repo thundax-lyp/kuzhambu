@@ -239,6 +239,8 @@ CREATE TABLE IF NOT EXISTS `classics_share_target` (
     `share_link_id` bigint NOT NULL COMMENT '分享链接ID',
     `content_type` varchar(32) NOT NULL COMMENT '内容类型',
     `content_id` bigint NOT NULL COMMENT '内容ID',
+    `content_version_id` bigint DEFAULT NULL COMMENT '分享绑定内容版本ID',
+    `content_version_no` int DEFAULT NULL COMMENT '分享绑定内容版本号',
     `title_snapshot` varchar(512) NOT NULL COMMENT '标题快照',
     `content_snapshot_json` json DEFAULT NULL COMMENT '完整内容快照',
     `content_visibility_snapshot` varchar(16) NOT NULL COMMENT '内容可见性快照',
@@ -247,7 +249,8 @@ CREATE TABLE IF NOT EXISTS `classics_share_target` (
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_classics_share_target_content` (`share_link_id`, `content_type`, `content_id`),
     UNIQUE KEY `uk_classics_share_target_priority` (`priority`),
-    KEY `idx_classics_share_target_content` (`content_type`, `content_id`)
+    KEY `idx_classics_share_target_content` (`content_type`, `content_id`),
+    KEY `idx_classics_share_target_version` (`content_version_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='分享目标表';
 
 CREATE TABLE IF NOT EXISTS `classics_share_access_record` (
