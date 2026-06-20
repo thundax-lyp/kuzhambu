@@ -1,0 +1,44 @@
+const PORTAL_API_BASE_URL = import.meta.env.VITE_PORTAL_API_BASE_URL || "/portal-api/api";
+
+interface ApiResponse<T> {
+    code?: string;
+    data?: T;
+    message?: string;
+}
+
+const buildUrl = (path: string, query?: Record<string, string | number | null | undefined>) => {
+    const normalizedBaseUrl = PORTAL_API_BASE_URL.replace(/\/+$/, "");
+    const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+    const url = new URL(`${normalizedBaseUrl}${normalizedPath}`, window.location.origin);
+
+    Object.entries(query ?? {}).forEach(([key, value]) => {
+        if (value !== null && value !== undefined && value !== "") {
+            url.searchParams.set(key, String(value));
+        }
+    });
+
+    if (url.origin === window.location.origin) {
+        return `${url.pathname}${url.search}`;
+    }
+
+    return url.toString();
+};
+
+export const getJson = async <T>(
+    path: string,
+    query?: Record<string, string | number | null | undefined>
+) => {
+    const response = await fetch(buildUrl(path, query), {
+        headers: {
+            Accept: "application/json"
+        },
+        method: "GET"
+    });
+
+    if (!response.ok) {
+        throw new Error("Portal API request failed");
+    }
+
+    const payload = (await response.json()) as ApiResponse<T>;
+    return payload.data as T;
+};

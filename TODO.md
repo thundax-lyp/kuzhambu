@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `portal-web home and share route`：新增 Portal 首页和分享路由
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARE-SNAPSHOT.md`
-    - 范围对象：`App.tsx`、`home-page.tsx`、`api/http.ts`、`share-service.ts`、`vite-env.d.ts`
-    - 处理动作：新增 `/`、`/shares`、`/share/:shareToken` 路由和 Portal 分享 API client
-    - 验收点：Portal 首页展示分享入口，Portal Web 使用明文 shareToken 调用详情 API
-    - 重要度：8/10
-
 - [ ] `portal-web classics share list`：实现 Portal 分享列表页
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARE-SNAPSHOT.md`
