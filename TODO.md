@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `wangqi file version panels`：实现王圻原始文件和版本组件
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-WANGQI-ADMIN-WEB.md`
-    - 范围对象：`wangqi-storage-file-panel.tsx`、`wangqi-version-history-panel.tsx`
-    - 处理动作：实现原始文件上传/元数据/下载和版本历史/对比/恢复面板。
-    - 验收点：恢复成功后刷新详情、列表、时间线、版本列表和文件元数据。
-    - 重要度：9/10
-
 - [ ] `wangqi route page`：注册王圻页面和路由
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-WANGQI-ADMIN-WEB.md`
