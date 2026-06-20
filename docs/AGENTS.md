@@ -20,6 +20,7 @@ AI 文档路由入口。目标：少读、读准、只读取当前工程文档�
 - Java servers 架构细则、目录、命名和文件归属：`00-governance/SERVERS-ARCHITECTURE-RULES.md`。
 - 文档结构、文档写作、RUNBOOK：`00-governance/DOCUMENT-RULES.md`。
 - Java servers 数据库表、字段、索引、缓存真相源：`00-governance/SERVERS-DATABASE-RULES.md`。
+- 本地 admin 登录冒烟、默认账号、验证码和 SM2 密码加密：`00-governance/HOW-TO-ADMIN-LOGIN-SMOKE.md`。
 - Java servers 业务对象 ID、强类型标识、ULID 和 token 边界：`00-governance/SERVERS-UNIFIED-ID-DESIGN.md`。
 - TODO、提交、PR、统一验证：`00-governance/TODO-RULES.md`；PR 收口再读 `40-readiness/PR-WORKFLOW.md`。
 - 接口、协议、配置契约：按需读 `20-interfaces/`。
