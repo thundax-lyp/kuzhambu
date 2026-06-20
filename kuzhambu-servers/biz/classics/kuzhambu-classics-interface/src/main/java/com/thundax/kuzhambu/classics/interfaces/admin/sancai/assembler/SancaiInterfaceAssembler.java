@@ -4,6 +4,9 @@ import com.thundax.kuzhambu.classics.application.sancai.command.SancaiCategoryCo
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVolumeCommand;
 import com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryPageQuery;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentVersionIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiCategory;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVolume;
@@ -21,6 +24,7 @@ import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiVolumeRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response.SancaiCategoryResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response.SancaiEntryResponse;
+import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response.SancaiEntryVersionResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response.SancaiVolumeResponse;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import com.thundax.kuzhambu.common.web.response.DictResponse;
@@ -115,7 +119,33 @@ public final class SancaiInterfaceAssembler {
                 .visualAssetStatus(value(entity.getVisualAssetStatus()))
                 .refinementStatus(value(entity.getRefinementStatus()))
                 .priority(entity.getPriority())
+                .currentVersionId(ClassicsContentVersionIdCodec.toValue(entity.getCurrentVersionId()))
+                .currentVersionNo(entity.getCurrentVersionNo())
+                .currentVersionedAt(entity.getCurrentVersionedAt())
+                .contentUpdatedAt(entity.getContentUpdatedAt())
+                .versionDirty(versionDirty(entity))
                 .build();
+    }
+
+    public static SancaiEntryVersionResponse toVersionResponse(ClassicsContentVersion version) {
+        return version == null
+                ? SancaiEntryVersionResponse.builder().build()
+                : SancaiEntryVersionResponse.builder()
+                        .id(ClassicsContentVersionIdCodec.toValue(version.getId()))
+                        .contentType(
+                                version.getContentType() == null
+                                        ? null
+                                        : version.getContentType().value())
+                        .contentId(ClassicsContentIdCodec.toValue(version.getContentId()))
+                        .versionNo(version.getVersionNo())
+                        .versionedAt(version.getVersionedAt())
+                        .snapshotJson(version.getSnapshotJson())
+                        .changeType(
+                                version.getChangeType() == null
+                                        ? null
+                                        : version.getChangeType().value())
+                        .changeSummary(version.getChangeSummary())
+                        .build();
     }
 
     public static SancaiCategoryResponse toResponse(SancaiCategory entity) {
@@ -148,6 +178,17 @@ public final class SancaiInterfaceAssembler {
 
     private static String value(Enum<?> value) {
         return value == null ? null : value.name();
+    }
+
+    private static boolean versionDirty(SancaiEntry entity) {
+        if (entity == null) {
+            return false;
+        }
+        if (entity.getCurrentVersionId() == null || entity.getCurrentVersionedAt() == null) {
+            return true;
+        }
+        return entity.getContentUpdatedAt() != null
+                && entity.getContentUpdatedAt().after(entity.getCurrentVersionedAt());
     }
 
     private static DictResponse dict(String type, String value, String label) {
