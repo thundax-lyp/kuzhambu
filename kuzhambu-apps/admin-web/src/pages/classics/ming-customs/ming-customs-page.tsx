@@ -1,6 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Select } from "antd";
 import { useMemo, useState } from "react";
+import * as shareService from "@/api/classics/share-service";
+import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { MingCustomsKeywordCloud } from "./components/ming-customs-keyword-cloud";
@@ -37,6 +39,7 @@ const readVisibilityValue = (visibility: MingCustomsVisibilityFilter) => {
 
 export const MingCustomsPage = () => {
     const { message: messageApi } = App.useApp();
+    const confirm = useKuzhambuConfirm();
     const queryClient = useQueryClient();
     const [query, setQuery] = useState<MingCustomsQuery>({
         pageNo: DEFAULT_PAGE_NO,
@@ -109,6 +112,30 @@ export const MingCustomsPage = () => {
             messageApi.error(error instanceof Error ? error.message : "保存失败");
         }
     });
+    const deleteMutation = useMutation({
+        mutationFn: service.deleteById,
+        onSuccess: async () => {
+            await invalidateMingCustoms();
+            messageApi.success("明代习俗已删除");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "删除失败");
+        }
+    });
+    const shareMutation = useMutation({
+        mutationFn: shareService.create,
+        onSuccess: (share) => {
+            if (typeof navigator.clipboard?.writeText === "function") {
+                void navigator.clipboard.writeText(share.shareUrl);
+                messageApi.success("分享链接已复制");
+                return;
+            }
+            messageApi.success(`分享链接：${share.shareUrl}`);
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "分享创建失败");
+        }
+    });
 
     const searchMingCustoms = (value: string) => {
         setSearchText(value);
@@ -167,6 +194,31 @@ export const MingCustomsPage = () => {
         }
         setEditorOpen(false);
         setEditingEntry(null);
+    };
+
+    const deleteEntry = (entry: MingCustomsRecord) => {
+        const title = entry.title?.trim() || `条目 ${entry.id}`;
+        confirm.danger({
+            title: "删除明代习俗",
+            message: `确认删除 ${title}？`,
+            description: "删除后该条目将不再出现在明代习俗列表。",
+            okText: "删除",
+            onConfirm: () => deleteMutation.mutateAsync(entry.id)
+        });
+    };
+
+    const shareEntry = (entry: MingCustomsRecord) => {
+        const title = entry.title?.trim() || `条目 ${entry.id}`;
+        shareMutation.mutate({
+            targets: [
+                {
+                    contentId: entry.id,
+                    contentType: "MING_CUSTOMS"
+                }
+            ],
+            title: `${title} 分享`,
+            visibility: "PUBLIC"
+        });
     };
 
     return (
@@ -256,7 +308,9 @@ export const MingCustomsPage = () => {
                         categoryLabels={categoryLabels}
                         loading={mingCustomsQuery.isLoading}
                         dataSource={records}
+                        onDelete={deleteEntry}
                         onOpenEdit={openEditEditor}
+                        onShare={shareEntry}
                         pagination={{
                             current: currentPageNo,
                             pageSize: currentPageSize,

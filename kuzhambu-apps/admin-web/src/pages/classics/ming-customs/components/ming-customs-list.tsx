@@ -28,7 +28,9 @@ export interface MingCustomsListProps {
     categoryLabels: Record<string, string>;
     dataSource: MingCustomsRecord[];
     loading?: boolean;
+    onDelete: (record: MingCustomsRecord) => void;
     onOpenEdit: (record: MingCustomsRecord) => void;
+    onShare: (record: MingCustomsRecord) => void;
     pagination: KuzhambuTableProps<MingCustomsRecord>["pagination"];
 }
 
@@ -36,7 +38,9 @@ export const MingCustomsList = ({
     categoryLabels,
     dataSource,
     loading = false,
+    onDelete,
     onOpenEdit,
+    onShare,
     pagination
 }: MingCustomsListProps) => {
     const columns: KuzhambuTableProps<MingCustomsRecord>["columns"] = [
@@ -100,6 +104,31 @@ export const MingCustomsList = ({
             width: DEFAULT_COLUMN_WIDTHS.summary,
             ellipsis: true,
             render: (summary?: string | null) => summary || <Text type="secondary">暂无摘要</Text>
+        },
+        {
+            key: "actions",
+            options: (record) => [
+                {
+                    key: "edit",
+                    text: "编辑",
+                    ariaLabel: `编辑 ${record.title || "未命名条目"}`,
+                    onClick: () => onOpenEdit(record)
+                },
+                {
+                    key: "share",
+                    text: "分享",
+                    ariaLabel: `分享 ${record.title || "未命名条目"}`,
+                    onClick: () => onShare(record)
+                },
+                { type: "divider" },
+                {
+                    key: "delete",
+                    text: "删除",
+                    type: "danger",
+                    ariaLabel: `删除 ${record.title || "未命名条目"}`,
+                    onClick: () => onDelete(record)
+                }
+            ]
         }
     ];
 

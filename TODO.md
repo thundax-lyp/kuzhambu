@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web ming-customs share-delete`：支持明代习俗删除和分享
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-MINGCUSTOMS-ADMIN-WEB.md`
-    - 范围对象：`ming-customs-list.tsx`、`ming-customs-page.tsx`、`ming-customs-page.test.tsx`
-    - 处理动作：接入删除确认和 `shareService.create`。
-    - 验收点：页面测试确认 delete 请求和分享 target `{ contentType: "MING_CUSTOMS", contentId }`。
-    - 重要度：8/10
-
 - [ ] `admin-web ming-customs e2e`：固定明代习俗后台冒烟
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-MINGCUSTOMS-ADMIN-WEB.md`

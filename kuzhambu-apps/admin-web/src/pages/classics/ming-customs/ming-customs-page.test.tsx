@@ -1,9 +1,19 @@
 import { QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { App as AntdApp } from "antd";
 import { queryClient } from "@/query/query-client";
 import { MingCustomsPage } from "./ming-customs-page";
+
+const confirmDangerMock = vi.hoisted(() =>
+    vi.fn((options: { onConfirm: () => unknown }) => options.onConfirm())
+);
+
+vi.mock("@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm", () => ({
+    useKuzhambuConfirm: () => ({
+        danger: confirmDangerMock
+    })
+}));
 
 interface CapturedCall {
     body: unknown;
@@ -132,6 +142,20 @@ const installMingCustomsFetchMock = () => {
             });
         }
 
+        if (path.endsWith("/classics/ming-customs/delete")) {
+            return apiResponse(true);
+        }
+
+        if (path.endsWith("/classics/shares/create")) {
+            return apiResponse({
+                id: 900000000001,
+                shareToken: "abc123_-",
+                shareUrl: "http://localhost:5174/share/abc123_-",
+                title: "岁时礼仪：元旦朝贺 分享",
+                visibility: "PUBLIC"
+            });
+        }
+
         return apiResponse(true);
     });
 };
@@ -149,6 +173,7 @@ const renderMingCustomsPage = () => {
 describe("MingCustomsPage", () => {
     beforeEach(() => {
         capturedCalls.length = 0;
+        confirmDangerMock.mockClear();
         queryClient.clear();
         localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
         installMingCustomsFetchMock();
@@ -283,6 +308,48 @@ describe("MingCustomsPage", () => {
                     contentFormat: "HTML",
                     content: "更新后的正文",
                     originalExcerpts: "正旦朝贺。",
+                    visibility: "PUBLIC"
+                }
+            });
+        });
+    });
+
+    it("deletes ming customs entry after confirmation", async () => {
+        renderMingCustomsPage();
+
+        await screen.findByText("岁时礼仪：元旦朝贺");
+        fireEvent.click(screen.getByLabelText("删除 岁时礼仪：元旦朝贺"));
+
+        await waitFor(() => {
+            expect(confirmDangerMock).toHaveBeenCalled();
+            expect(capturedCalls).toContainEqual({
+                method: "POST",
+                path: "/classics/ming-customs/delete",
+                body: {
+                    id: 500000000001
+                }
+            });
+        });
+    });
+
+    it("creates public share for ming customs entry", async () => {
+        renderMingCustomsPage();
+
+        await screen.findByText("岁时礼仪：元旦朝贺");
+        fireEvent.click(screen.getByLabelText("分享 岁时礼仪：元旦朝贺"));
+
+        await waitFor(() => {
+            expect(capturedCalls).toContainEqual({
+                method: "POST",
+                path: "/classics/shares/create",
+                body: {
+                    targets: [
+                        {
+                            contentId: 500000000001,
+                            contentType: "MING_CUSTOMS"
+                        }
+                    ],
+                    title: "岁时礼仪：元旦朝贺 分享",
                     visibility: "PUBLIC"
                 }
             });
