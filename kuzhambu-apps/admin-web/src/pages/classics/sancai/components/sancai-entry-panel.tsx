@@ -7,8 +7,13 @@ import type { KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
 import { SancaiEntryList } from "./sancai-entry-list";
 import { SancaiEntryModel } from "./sancai-entry-model";
 import type { SancaiEntryFormValues } from "./sancai-form-values";
+import { SancaiVersionHistoryPanel } from "./sancai-version-history-panel";
 import * as entryService from "../services/sancai-entry-service";
-import type { SancaiEntryRecord, SancaiVolumeRecord } from "../sancai-types";
+import type {
+    SancaiContentVersionRecord,
+    SancaiEntryRecord,
+    SancaiVolumeRecord
+} from "../sancai-types";
 
 interface SancaiEntryPanelProps {
     categoryId: number | null;
@@ -31,12 +36,13 @@ export const SancaiEntryPanel = ({
     volumeId,
     volumes
 }: SancaiEntryPanelProps) => {
-    const { message: messageApi } = App.useApp();
+    const { message: messageApi, modal: modalApi } = App.useApp();
     const confirm = useKuzhambuConfirm();
     const queryClient = useQueryClient();
     const [isCreating, setIsCreating] = useState(defaultCreateOpen);
     const [isModelOpen, setIsModelOpen] = useState(defaultCreateOpen);
     const [editingEntry, setEditingEntry] = useState<SancaiEntryRecord | null>(null);
+    const [selectedVersionId, setSelectedVersionId] = useState<number | null>(null);
     const entriesQuery = useQuery({
         queryKey: [
             "classics",
@@ -61,15 +67,61 @@ export const SancaiEntryPanel = ({
         retry: false
     });
     const entries = entriesQuery.data || [];
-    const selectedEntry = isCreating ? undefined : (editingEntry ?? undefined);
+    const detailQuery = useQuery({
+        queryKey: ["classics", "sancai", "entries", "detail", editingEntry?.id],
+        queryFn: () => entryService.get(editingEntry?.id ?? 0),
+        enabled: isModelOpen && !isCreating && Boolean(editingEntry?.id),
+        retry: false
+    });
+    const selectedEntry = isCreating ? undefined : (detailQuery.data ?? editingEntry ?? undefined);
+    const versionsQuery = useQuery({
+        queryKey: ["classics", "sancai", "entries", "versions", selectedEntry?.id],
+        queryFn: () => entryService.listVersions(selectedEntry?.id ?? 0),
+        enabled: isModelOpen && !isCreating && Boolean(selectedEntry?.id),
+        retry: false
+    });
+    const versionDetailQuery = useQuery({
+        queryKey: [
+            "classics",
+            "sancai",
+            "entries",
+            "version",
+            selectedEntry?.id,
+            selectedVersionId
+        ],
+        queryFn: () => entryService.getVersion(selectedEntry?.id ?? 0, selectedVersionId ?? 0),
+        enabled: isModelOpen && Boolean(selectedEntry?.id && selectedVersionId),
+        retry: false
+    });
+    const versions = versionsQuery.data || [];
+    const selectedVersion =
+        versionDetailQuery.data ||
+        versions.find((version) => version.id === selectedVersionId) ||
+        null;
+    let modelKey = "empty";
+    if (isCreating) {
+        modelKey = "create";
+    } else if (selectedEntry) {
+        modelKey = [
+            selectedEntry.id,
+            selectedEntry.currentVersionId ?? "no-version",
+            selectedEntry.contentUpdatedAt ?? "no-content-time"
+        ].join(":");
+    }
     const isLoading = isCatalogLoading || entriesQuery.isLoading;
+    const invalidateEntries = async () => {
+        await Promise.all([
+            queryClient.invalidateQueries({ queryKey: ["classics", "sancai", "entries"] })
+        ]);
+    };
     const addEntryMutation = useMutation({
         mutationFn: entryService.add,
         onSuccess: async () => {
-            await queryClient.invalidateQueries({ queryKey: ["classics", "sancai", "entries"] });
+            await invalidateEntries();
             setIsCreating(false);
             setIsModelOpen(false);
             setEditingEntry(null);
+            setSelectedVersionId(null);
             messageApi.success("三才图会条目已新增");
         },
         onError: (error) => {
@@ -79,9 +131,10 @@ export const SancaiEntryPanel = ({
     const updateEntryMutation = useMutation({
         mutationFn: entryService.update,
         onSuccess: async () => {
-            await queryClient.invalidateQueries({ queryKey: ["classics", "sancai", "entries"] });
+            await invalidateEntries();
             setIsModelOpen(false);
             setEditingEntry(null);
+            setSelectedVersionId(null);
             messageApi.success("三才图会条目已保存");
         },
         onError: (error) => {
@@ -91,8 +144,9 @@ export const SancaiEntryPanel = ({
     const deleteEntryMutation = useMutation({
         mutationFn: entryService.deleteById,
         onSuccess: async () => {
-            await queryClient.invalidateQueries({ queryKey: ["classics", "sancai", "entries"] });
+            await invalidateEntries();
             setEditingEntry(null);
+            setSelectedVersionId(null);
             messageApi.success("三才图会条目已删除");
         },
         onError: (error) => {
@@ -102,7 +156,7 @@ export const SancaiEntryPanel = ({
     const sortEntryMutation = useMutation({
         mutationFn: entryService.sort,
         onSuccess: async () => {
-            await queryClient.invalidateQueries({ queryKey: ["classics", "sancai", "entries"] });
+            await invalidateEntries();
             messageApi.success("三才图会条目顺序已保存");
         },
         onError: (error) => {
@@ -123,16 +177,33 @@ export const SancaiEntryPanel = ({
             messageApi.error(error instanceof Error ? error.message : "分享创建失败");
         }
     });
+    const resetVersionMutation = useMutation({
+        mutationFn: ({ entryId, versionId }: { entryId: number; versionId: number }) =>
+            entryService.resetVersion(entryId, versionId),
+        onSuccess: async () => {
+            setSelectedVersionId(null);
+            await invalidateEntries();
+            modalApi.success({
+                title: "三才图会版本已恢复",
+                content: "已生成新的正式版本，并已将条目移动到恢复快照所在卷目的末尾。"
+            });
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "版本恢复失败");
+        }
+    });
 
     const selectEntry = (entry: SancaiEntryRecord) => {
         setIsCreating(false);
         setEditingEntry(entry);
+        setSelectedVersionId(null);
         setIsModelOpen(true);
     };
 
     const closeModel = () => {
         setIsCreating(false);
         setEditingEntry(null);
+        setSelectedVersionId(null);
         setIsModelOpen(false);
     };
 
@@ -200,6 +271,23 @@ export const SancaiEntryPanel = ({
         });
     };
 
+    const resetVersion = (version: SancaiContentVersionRecord) => {
+        if (!selectedEntry?.id) {
+            return;
+        }
+        confirm.danger({
+            title: "恢复三才图会版本",
+            message: `确认恢复版本 ${version.versionNo ?? version.id}？`,
+            description: "恢复后会产生新的正式版本，并刷新条目详情、列表和版本历史。",
+            okText: "恢复",
+            onConfirm: () =>
+                resetVersionMutation.mutateAsync({
+                    entryId: selectedEntry.id,
+                    versionId: version.id
+                })
+        });
+    };
+
     const sortEntry = (
         sourceEntry: SancaiEntryRecord,
         targetEntry: SancaiEntryRecord,
@@ -243,13 +331,27 @@ export const SancaiEntryPanel = ({
                 onView={selectEntry}
             />
             <SancaiEntryModel
-                key={isCreating ? "create" : (selectedEntry?.id ?? "empty")}
+                key={modelKey}
                 entry={selectedEntry}
                 isSubmitting={addEntryMutation.isPending || updateEntryMutation.isPending}
                 mode={isCreating ? "create" : "edit"}
                 open={isModelOpen && !isLoading}
                 onCancel={closeModel}
                 onSubmit={submitEntry}
+                afterForm={
+                    !isCreating && selectedEntry ? (
+                        <SancaiVersionHistoryPanel
+                            currentEntry={selectedEntry}
+                            detailLoading={versionDetailQuery.isLoading}
+                            listLoading={versionsQuery.isLoading}
+                            resetting={resetVersionMutation.isPending}
+                            selectedVersion={selectedVersion}
+                            versions={versions}
+                            onSelectVersion={(version) => setSelectedVersionId(version.id)}
+                            onResetVersion={resetVersion}
+                        />
+                    ) : null
+                }
             />
         </>
     );

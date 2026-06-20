@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web-sancai-version-integration`：把版本恢复闭环接入三才图会条目抽屉
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-VERSION-RESTORE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-model.tsx`
-    - 处理动作：接入版本查询、版本选择、恢复确认、恢复后详情刷新和成功 message box。
-    - 验收点：恢复后抽屉保持打开、表单刷新为恢复内容，并弹窗说明已生成新正式版本且条目移动到卷末尾。
-    - 重要度：9/10
-
 - [ ] `admin-web-sancai-version-tests`：覆盖三才图会版本恢复前端交互
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-VERSION-RESTORE.md`

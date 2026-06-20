@@ -1,11 +1,13 @@
 import { Button, Drawer, Input, Switch, Typography } from "antd";
 import { useState } from "react";
+import type { ReactNode } from "react";
 import { toEntryFormValues, type SancaiEntryFormValues } from "./sancai-form-values";
 import type { SancaiEntryRecord } from "../sancai-types";
 
 const { Text } = Typography;
 
 interface SancaiEntryModelProps {
+    afterForm?: ReactNode;
     entry: SancaiEntryRecord | undefined;
     isSubmitting: boolean;
     mode?: "create" | "edit";
@@ -15,6 +17,7 @@ interface SancaiEntryModelProps {
 }
 
 export const SancaiEntryModel = ({
+    afterForm,
     entry,
     isSubmitting,
     mode = "edit",
@@ -121,6 +124,7 @@ export const SancaiEntryModel = ({
                     />
                 </div>
             </div>
+            {afterForm}
         </Drawer>
     );
 };
