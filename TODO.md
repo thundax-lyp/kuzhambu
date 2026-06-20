@@ -19,14 +19,6 @@
     - 验收点：Controller 测试固定 source-file POST/GET 路径和 version POST 路径。
     - 重要度：9/10
 
-- [ ] `storage physical delete`：补齐 Storage owner 类型和物理删除能力
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-WANGQI-ADMIN-WEB.md`
-    - 范围对象：`StorageOwnerType.java`、`StoredObjectRepository.java`、`StoredObjectStore.java`、`StoredObjectRepositoryImpl.java`、`ObjectStorageStoredObjectStore.java`
-    - 处理动作：增加 `CLASSICS_WANGQI_DOCUMENT` 并提供数据库记录和底层对象的物理删除能力。
-    - 验收点：Storage 可物理删除数据库记录和底层存储对象，底层删除失败会暴露异常。
-    - 重要度：10/10
-
 - [ ] `storage orphan cleanup`：实现 Storage 孤立对象清理计划任务
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-WANGQI-ADMIN-WEB.md`

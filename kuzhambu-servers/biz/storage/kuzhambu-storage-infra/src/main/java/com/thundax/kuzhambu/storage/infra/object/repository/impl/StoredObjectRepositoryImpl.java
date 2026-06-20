@@ -215,6 +215,19 @@ public class StoredObjectRepositoryImpl implements StoredObjectRepository {
     }
 
     @Override
+    public int physicalDeleteById(StoredObjectId id) {
+        if (id == null) {
+            return 0;
+        }
+        LambdaQueryWrapper<StoredObjectReferenceDO> referenceWrapper = new LambdaQueryWrapper<>();
+        referenceWrapper.eq(StoredObjectReferenceDO::getObjectId, id.value());
+        businessMapper.delete(referenceWrapper);
+        int count = mapper.deleteById(id.value());
+        cacheSupport.removeById(String.valueOf(id.value()));
+        return count;
+    }
+
+    @Override
     public List<String> listMimeTypes() {
         return mapper
                 .selectObjs(new QueryWrapper<StoredObjectDO>()

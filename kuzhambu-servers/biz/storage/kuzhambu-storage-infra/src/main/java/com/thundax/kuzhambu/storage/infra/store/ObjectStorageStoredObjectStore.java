@@ -50,6 +50,11 @@ public class ObjectStorageStoredObjectStore implements StoredObjectStore {
         return objectStorageClient.get(objectKey(storage));
     }
 
+    @Override
+    public void delete(StoredObject storage) throws IOException {
+        objectStorageClient.delete(objectKey(storage));
+    }
+
     private String objectKey(StoredObject storage) {
         return storage.getObjectKey() == null ? storage.getPathName() : storage.getObjectKey();
     }

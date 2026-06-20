@@ -48,6 +48,8 @@ public interface StoredObjectRepository {
 
     int deleteById(StoredObjectId id);
 
+    int physicalDeleteById(StoredObjectId id);
+
     List<String> listMimeTypes();
 
     int updateObjectStatus(StoredObject storage);
