@@ -5,8 +5,13 @@ import com.thundax.kuzhambu.classics.application.content.service.ClassicsContent
 import com.thundax.kuzhambu.classics.application.sharing.command.ClassicsShareTargetSortCommand;
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkCreateCommand;
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkStatusCommand;
+import com.thundax.kuzhambu.classics.application.sharing.command.ShareTargetCreateCommand;
 import com.thundax.kuzhambu.classics.application.sharing.query.ShareAccessQuery;
+import com.thundax.kuzhambu.classics.application.sharing.result.ShareLinkCreateResult;
+import com.thundax.kuzhambu.classics.application.sharing.result.SharePortalResult;
 import com.thundax.kuzhambu.classics.application.sharing.service.ClassicsSharingApplicationService;
+import com.thundax.kuzhambu.classics.application.sharing.support.ClassicsShareTokenGenerator;
+import com.thundax.kuzhambu.classics.application.sharing.support.ClassicsShareTokenHasher;
 import com.thundax.kuzhambu.classics.domain.content.model.Versionable;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentChangeType;
@@ -52,18 +57,24 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
     private final SancaiRepository sancaiRepository;
     private final WangqiDocumentRepository wangqiDocumentRepository;
     private final MingCustomsRepository mingCustomsRepository;
+    private final ClassicsShareTokenGenerator shareTokenGenerator;
+    private final ClassicsShareTokenHasher shareTokenHasher;
 
     public ClassicsSharingApplicationServiceImpl(
             ClassicsSharingRepository repository,
             ClassicsContentApplicationService contentApplicationService,
             SancaiRepository sancaiRepository,
             WangqiDocumentRepository wangqiDocumentRepository,
-            MingCustomsRepository mingCustomsRepository) {
+            MingCustomsRepository mingCustomsRepository,
+            ClassicsShareTokenGenerator shareTokenGenerator,
+            ClassicsShareTokenHasher shareTokenHasher) {
         this.repository = repository;
         this.contentApplicationService = contentApplicationService;
         this.sancaiRepository = sancaiRepository;
         this.wangqiDocumentRepository = wangqiDocumentRepository;
         this.mingCustomsRepository = mingCustomsRepository;
+        this.shareTokenGenerator = shareTokenGenerator;
+        this.shareTokenHasher = shareTokenHasher;
     }
 
     @Override
@@ -86,22 +97,49 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ClassicsShareLinkId createLink(ShareLinkCreateCommand command) {
-        ClassicsShareLink link = command.toLink();
+    public ShareLinkCreateResult createLink(ShareLinkCreateCommand command) {
+        String shareToken = shareTokenGenerator.generate();
+        ClassicsShareLink link = command.toLink(shareTokenHasher.hash(shareToken));
         if (link.getIssuedAt() == null) {
             link.setIssuedAt(new Date());
         }
         ClassicsShareLinkId linkId = repository.insertLink(link);
         int nextPriority = repository.maxTargetPriority() + 1;
-        List<ClassicsShareTarget> targets =
+        List<ShareTargetCreateCommand> targetCommands =
                 command.getTargets() == null ? Collections.emptyList() : command.getTargets();
-        for (ClassicsShareTarget target : targets) {
+        List<ClassicsShareTarget> savedTargets = new ArrayList<>(targetCommands.size());
+        for (ShareTargetCreateCommand targetCommand : targetCommands) {
+            ClassicsShareTarget target = targetCommand.toTarget();
             bindVersionSnapshot(target);
             target.setShareLinkId(linkId == null ? null : linkId);
             target.setPriority(nextPriority++);
             repository.insertTarget(target);
+            savedTargets.add(target);
         }
-        return linkId;
+        return new ShareLinkCreateResult(
+                linkId,
+                shareToken,
+                null,
+                link.getTitle(),
+                link.getVisibility(),
+                link.getStatus(),
+                link.getExpiresAt(),
+                savedTargets);
+    }
+
+    @Override
+    public SharePortalResult getPortalShare(String shareToken) {
+        ClassicsShareLink link = repository.getLinkByTokenHash(shareTokenHasher.hash(shareToken));
+        if (link == null || link.getId() == null) {
+            throw shareContentNotFound();
+        }
+        return new SharePortalResult(
+                link.getTitle(),
+                link.getVisibility(),
+                link.getStatus(),
+                link.getIssuedAt(),
+                link.getExpiresAt(),
+                listTargets(link.getId()));
     }
 
     @Override

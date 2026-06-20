@@ -11,22 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `classics sharing application contract`：收敛分享创建和 Portal 查询 application 契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARE-SNAPSHOT.md`
-    - 范围对象：`ShareLinkCreateCommand.java`、`ShareTargetCreateCommand.java`、`ShareLinkCreateResult.java`、`SharePortalResult.java`、`ClassicsSharingApplicationService.java`
-    - 处理动作：将创建分享入参改为 target 引用并让 application 返回创建结果和 Portal 查询结果
-    - 验收点：application 层不再要求客户端提交 `tokenHash/titleSnapshot/contentSnapshotJson`
-    - 重要度：9/10
-
-- [ ] `classics shareToken support`：新增分享 shareToken 生成和 hash 支撑
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARE-SNAPSHOT.md`
-    - 范围对象：`ClassicsShareTokenGenerator.java`、`ClassicsShareTokenHasher.java`、`ClassicsSharingApplicationServiceImpl.java`
-    - 处理动作：在创建分享时生成明文 shareToken 和 shareToken hash，在 Portal 查询时用明文 shareToken 计算 hash
-    - 验收点：Admin 请求不允许自定义 shareToken，shareToken 使用 base64url-safe 小写字符串，数据库只保存 `token_hash`，Admin 创建结果可以拿到后端生成的明文 `shareToken`
-    - 重要度：9/10
-
 - [ ] `classics sharing version binding`：锁定分享 target 与正式内容版本的绑定行为
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARE-SNAPSHOT.md`

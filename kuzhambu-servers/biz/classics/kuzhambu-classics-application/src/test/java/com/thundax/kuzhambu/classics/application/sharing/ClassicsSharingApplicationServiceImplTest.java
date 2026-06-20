@@ -8,7 +8,11 @@ import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkCreateCommand;
+import com.thundax.kuzhambu.classics.application.sharing.command.ShareTargetCreateCommand;
+import com.thundax.kuzhambu.classics.application.sharing.result.ShareLinkCreateResult;
 import com.thundax.kuzhambu.classics.application.sharing.service.impl.ClassicsSharingApplicationServiceImpl;
+import com.thundax.kuzhambu.classics.application.sharing.support.ClassicsShareTokenGenerator;
+import com.thundax.kuzhambu.classics.application.sharing.support.ClassicsShareTokenHasher;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentChangeType;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
@@ -40,12 +44,16 @@ class ClassicsSharingApplicationServiceImplTest {
         SancaiRepository sancaiRepository = mock(SancaiRepository.class);
         WangqiDocumentRepository wangqiDocumentRepository = mock(WangqiDocumentRepository.class);
         MingCustomsRepository mingCustomsRepository = mock(MingCustomsRepository.class);
+        ClassicsShareTokenGenerator shareTokenGenerator = mock(ClassicsShareTokenGenerator.class);
+        ClassicsShareTokenHasher shareTokenHasher = mock(ClassicsShareTokenHasher.class);
         ClassicsSharingApplicationServiceImpl service = new ClassicsSharingApplicationServiceImpl(
                 sharingRepository,
                 contentApplicationService,
                 sancaiRepository,
                 wangqiDocumentRepository,
-                mingCustomsRepository);
+                mingCustomsRepository,
+                shareTokenGenerator,
+                shareTokenHasher);
 
         SancaiEntry entry = new SancaiEntry();
         entry.setId(SancaiEntryId.of(100L));
@@ -60,6 +68,8 @@ class ClassicsSharingApplicationServiceImplTest {
 
         when(sharingRepository.insertLink(org.mockito.ArgumentMatchers.any())).thenReturn(ClassicsShareLinkId.of(10L));
         when(sharingRepository.maxTargetPriority()).thenReturn(4);
+        when(shareTokenGenerator.generate()).thenReturn("abc123_-");
+        when(shareTokenHasher.hash("abc123_-")).thenReturn("hashed-share-token");
         when(sancaiRepository.getEntryById(SancaiEntryId.of(100L))).thenReturn(entry);
         when(contentApplicationService.ensureVersioned(
                         eq(entry), eq(ClassicsContentChangeType.SHARE_CREATED), eq("创建分享")))
@@ -69,16 +79,19 @@ class ClassicsSharingApplicationServiceImplTest {
                 });
         when(sancaiRepository.updateEntry(entry)).thenReturn(1);
 
-        ClassicsShareTarget target = new ClassicsShareTarget();
-        target.setContentType(ClassicsContentType.SANCAI_ENTRY);
-        target.setContentId(ClassicsContentId.of(100L));
-        target.setTitleSnapshot("请求标题");
-        target.setContentSnapshotJson("{\"stale\":true}");
-        target.setContentVisibilitySnapshot(ClassicsSharedContentVisibility.PRIVATE);
-        service.createLink(new ShareLinkCreateCommand(null, "分享", null, null, null, null, null, List.of(target)));
+        ShareLinkCreateResult result = service.createLink(new ShareLinkCreateCommand(
+                "分享",
+                null,
+                null,
+                null,
+                null,
+                null,
+                List.of(new ShareTargetCreateCommand(ClassicsContentType.SANCAI_ENTRY, ClassicsContentId.of(100L)))));
 
         ArgumentCaptor<ClassicsShareTarget> captor = ArgumentCaptor.forClass(ClassicsShareTarget.class);
         verify(sharingRepository).insertTarget(captor.capture());
+        assertEquals("abc123_-", result.getShareToken());
+        assertEquals(ClassicsShareLinkId.of(10L), result.getId());
         ClassicsShareTarget savedTarget = captor.getValue();
         assertEquals(ClassicsShareLinkId.of(10L), savedTarget.getShareLinkId());
         assertEquals(5, savedTarget.getPriority());
@@ -97,12 +110,16 @@ class ClassicsSharingApplicationServiceImplTest {
         SancaiRepository sancaiRepository = mock(SancaiRepository.class);
         WangqiDocumentRepository wangqiDocumentRepository = mock(WangqiDocumentRepository.class);
         MingCustomsRepository mingCustomsRepository = mock(MingCustomsRepository.class);
+        ClassicsShareTokenGenerator shareTokenGenerator = mock(ClassicsShareTokenGenerator.class);
+        ClassicsShareTokenHasher shareTokenHasher = mock(ClassicsShareTokenHasher.class);
         ClassicsSharingApplicationServiceImpl service = new ClassicsSharingApplicationServiceImpl(
                 sharingRepository,
                 contentApplicationService,
                 sancaiRepository,
                 wangqiDocumentRepository,
-                mingCustomsRepository);
+                mingCustomsRepository,
+                shareTokenGenerator,
+                shareTokenHasher);
 
         ClassicsShareTarget target = new ClassicsShareTarget();
         target.setId(ClassicsShareTargetId.of(20L));

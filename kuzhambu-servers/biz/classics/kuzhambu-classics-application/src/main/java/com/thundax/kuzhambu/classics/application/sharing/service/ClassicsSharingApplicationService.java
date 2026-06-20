@@ -4,6 +4,8 @@ import com.thundax.kuzhambu.classics.application.sharing.command.ClassicsShareTa
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkCreateCommand;
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkStatusCommand;
 import com.thundax.kuzhambu.classics.application.sharing.query.ShareAccessQuery;
+import com.thundax.kuzhambu.classics.application.sharing.result.ShareLinkCreateResult;
+import com.thundax.kuzhambu.classics.application.sharing.result.SharePortalResult;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareAccessRecord;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareLink;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareTarget;
@@ -20,7 +22,9 @@ public interface ClassicsSharingApplicationService {
 
     PageResult<ClassicsShareLink> pageLinks(String status, String visibility, PageQuery page);
 
-    ClassicsShareLinkId createLink(ShareLinkCreateCommand command);
+    ShareLinkCreateResult createLink(ShareLinkCreateCommand command);
+
+    SharePortalResult getPortalShare(String shareToken);
 
     void changeStatus(ShareLinkStatusCommand command);
 

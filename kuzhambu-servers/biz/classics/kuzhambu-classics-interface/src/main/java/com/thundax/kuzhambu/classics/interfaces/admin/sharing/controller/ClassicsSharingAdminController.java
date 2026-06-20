@@ -3,6 +3,8 @@ package com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller;
 import com.thundax.kuzhambu.classics.application.sharing.command.ClassicsShareTargetSortCommand;
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkCreateCommand;
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkStatusCommand;
+import com.thundax.kuzhambu.classics.application.sharing.command.ShareTargetCreateCommand;
+import com.thundax.kuzhambu.classics.application.sharing.result.ShareLinkCreateResult;
 import com.thundax.kuzhambu.classics.application.sharing.service.ClassicsSharingApplicationService;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisibilityRiskStatus;
 import com.thundax.kuzhambu.classics.domain.sharing.codec.ClassicsShareLinkIdCodec;
@@ -50,8 +52,7 @@ public class ClassicsSharingAdminController {
     @SysLogger(value = "创建分享")
     @PostMapping("create")
     public ClassicsSharingResponse create(@Valid @RequestBody ClassicsSharingRequest request) {
-        ClassicsShareLinkId id = service.createLink(new ShareLinkCreateCommand(
-                request.getTokenHash(),
+        ShareLinkCreateResult result = service.createLink(new ShareLinkCreateCommand(
                 request.getTitle(),
                 ClassicsShareVisibility.from(request.getVisibility()),
                 ClassicsShareLinkStatus.ACTIVE,
@@ -60,9 +61,18 @@ public class ClassicsSharingAdminController {
                         : SancaiVisibilityRiskStatus.from(request.getVisibilityRiskStatus()),
                 null,
                 request.getExpiresAt(),
-                request.getTargets()));
+                toTargetCommands(request.getTargets())));
         return ClassicsSharingResponse.builder()
-                .id(id == null ? null : id.value())
+                .id(result.getId() == null ? null : result.getId().value())
+                .shareToken(result.getShareToken())
+                .title(result.getTitle())
+                .visibility(
+                        result.getVisibility() == null
+                                ? null
+                                : result.getVisibility().value())
+                .status(result.getStatus() == null ? null : result.getStatus().value())
+                .expiresAt(result.getExpiresAt())
+                .targets(toTargetResponses(result.getTargets()))
                 .build();
     }
 
@@ -129,6 +139,14 @@ public class ClassicsSharingAdminController {
                 ? List.of()
                 : targets.stream()
                         .map(ClassicsSharingAdminController::toTargetResponse)
+                        .toList();
+    }
+
+    private static List<ShareTargetCreateCommand> toTargetCommands(List<ClassicsShareTarget> targets) {
+        return targets == null
+                ? List.of()
+                : targets.stream()
+                        .map(target -> new ShareTargetCreateCommand(target.getContentType(), target.getContentId()))
                         .toList();
     }
 
