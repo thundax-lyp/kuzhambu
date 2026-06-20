@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `classics share portal url config`：接入 Portal Web base URL 配置
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARE-SNAPSHOT.md`
-    - 范围对象：`ClassicsShareProperties.java`、`application.yml`、`.env.example`、`deploy/.env.example`
-    - 处理动作：新增 `KUZHAMBU_PORTAL_WEB_BASE_URL` 配置并用于组装 Admin 创建结果 `shareUrl`
-    - 验收点：配置缺失时本地默认值明确，Admin 创建成功返回 `{portalWebBaseUrl}/share/{shareToken}`
-    - 重要度：8/10
-
 - [ ] `admin-web classics share client`：新增 Admin Web 分享创建 client
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARE-SNAPSHOT.md`

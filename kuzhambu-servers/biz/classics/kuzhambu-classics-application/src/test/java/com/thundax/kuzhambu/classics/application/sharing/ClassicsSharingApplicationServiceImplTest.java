@@ -105,6 +105,7 @@ class ClassicsSharingApplicationServiceImplTest {
         ArgumentCaptor<ClassicsShareTarget> captor = ArgumentCaptor.forClass(ClassicsShareTarget.class);
         verify(sharingRepository).insertTarget(captor.capture());
         assertEquals("abc123_-", result.getShareToken());
+        assertEquals("http://localhost:5174/share/abc123_-", result.getShareUrl());
         assertEquals(ClassicsShareLinkId.of(10L), result.getId());
         ClassicsShareTarget savedTarget = captor.getValue();
         assertEquals(ClassicsShareLinkId.of(10L), savedTarget.getShareLinkId());

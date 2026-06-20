@@ -6,6 +6,7 @@ import com.thundax.kuzhambu.classics.application.sharing.command.ClassicsShareTa
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkCreateCommand;
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkStatusCommand;
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareTargetCreateCommand;
+import com.thundax.kuzhambu.classics.application.sharing.configure.ClassicsShareProperties;
 import com.thundax.kuzhambu.classics.application.sharing.query.ShareAccessQuery;
 import com.thundax.kuzhambu.classics.application.sharing.result.ShareLinkCreateResult;
 import com.thundax.kuzhambu.classics.application.sharing.result.SharePortalResult;
@@ -47,6 +48,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -62,6 +64,7 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
     private final MingCustomsRepository mingCustomsRepository;
     private final ClassicsShareTokenGenerator shareTokenGenerator;
     private final ClassicsShareTokenHasher shareTokenHasher;
+    private ClassicsShareProperties shareProperties = new ClassicsShareProperties();
 
     public ClassicsSharingApplicationServiceImpl(
             ClassicsSharingRepository repository,
@@ -78,6 +81,13 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
         this.mingCustomsRepository = mingCustomsRepository;
         this.shareTokenGenerator = shareTokenGenerator;
         this.shareTokenHasher = shareTokenHasher;
+    }
+
+    @Autowired(required = false)
+    public void setShareProperties(ClassicsShareProperties shareProperties) {
+        if (shareProperties != null) {
+            this.shareProperties = shareProperties;
+        }
     }
 
     @Override
@@ -131,7 +141,7 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
         return new ShareLinkCreateResult(
                 linkId,
                 shareToken,
-                null,
+                shareProperties.buildShareUrl(shareToken),
                 link.getTitle(),
                 link.getVisibility(),
                 link.getStatus(),
