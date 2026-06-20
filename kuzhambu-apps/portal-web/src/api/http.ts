@@ -1,4 +1,4 @@
-const PORTAL_API_BASE_URL = import.meta.env.VITE_PORTAL_API_BASE_URL || "/portal-api/api";
+const PORTAL_API_BASE_URL = import.meta.env.VITE_PORTAL_API_BASE_URL || "/kuzhambu-api/api";
 
 interface ApiResponse<T> {
     code?: string;

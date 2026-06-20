@@ -27,7 +27,7 @@ export default defineConfig(({ mode }) => {
         server: {
             port: 5173,
             proxy: {
-                "/admin-api": {
+                "/kuzhambu-admin-api": {
                     target: adminApiBaseUrl,
                     changeOrigin: true
                 }

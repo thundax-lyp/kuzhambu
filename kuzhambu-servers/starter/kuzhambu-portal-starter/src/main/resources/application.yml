@@ -1,7 +1,7 @@
 server:
   port: ${SERVER_PORT:20011}
   servlet:
-    context-path: ${SERVER_SERVLET_CONTEXT_PATH:/api/portal}
+    context-path: ${SERVER_SERVLET_CONTEXT_PATH:/kuzhambu-api}
 
 spring:
   application:
@@ -61,7 +61,7 @@ kuzhambu:
   access-token-filter:
     exclude-path:
       - /api/portal/classics/shares/**
-      - ${SERVER_SERVLET_CONTEXT_PATH:/api/portal}/api/portal/classics/shares/**
+      - ${SERVER_SERVLET_CONTEXT_PATH:/kuzhambu-api}/api/portal/classics/shares/**
   auth:
     captcha:
       whitelist-enabled: ${KUZHAMBU_AUTH_CAPTCHA_WHITELIST_ENABLED:false}
@@ -85,4 +85,4 @@ kuzhambu:
     uris: ${KUZHAMBU_ELASTICSEARCH_URIS:http://127.0.0.1:9200}
   storage:
     bucket-name: ${KUZHAMBU_STORAGE_BUCKET_NAME:local}
-    content-path: ${KUZHAMBU_STORAGE_CONTENT_PATH:/api/storage/object/}
+    content-path: ${KUZHAMBU_STORAGE_CONTENT_PATH:/kuzhambu-api/api/storage/object/}

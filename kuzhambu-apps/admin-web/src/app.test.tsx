@@ -138,7 +138,7 @@ describe("App", () => {
         ).toBeInTheDocument();
         expect(await screen.findByText("Developer")).toBeInTheDocument();
         expect(globalThis.fetch).toHaveBeenCalledWith(
-            "/admin-api/api/sys/current-user/info",
+            "/kuzhambu-admin-api/api/sys/current-user/info",
             expect.objectContaining({
                 headers: expect.objectContaining({
                     "Access-Token": "test-token"
@@ -149,7 +149,7 @@ describe("App", () => {
         expect(await screen.findByText("系统管理")).toBeInTheDocument();
         expect(document.querySelector(".anticon-safety-certificate")).toBeInTheDocument();
         expect(globalThis.fetch).toHaveBeenCalledWith(
-            "/admin-api/api/sys/current-user/menus",
+            "/kuzhambu-admin-api/api/sys/current-user/menus",
             expect.objectContaining({
                 headers: expect.objectContaining({
                     "Access-Token": "test-token"
@@ -158,7 +158,7 @@ describe("App", () => {
             })
         );
         expect(globalThis.fetch).toHaveBeenCalledWith(
-            "/admin-api/api/sys/current-user/perms",
+            "/kuzhambu-admin-api/api/sys/current-user/perms",
             expect.objectContaining({
                 headers: expect.objectContaining({
                     "Access-Token": "test-token"
@@ -303,7 +303,7 @@ describe("App", () => {
         await waitFor(() => expect(hasPermission("sys:user:view")).toBe(true));
         expect(hasPermission("sys:role:view")).toBe(false);
         expect(globalThis.fetch).toHaveBeenCalledWith(
-            "/admin-api/api/sys/current-user/perms",
+            "/kuzhambu-admin-api/api/sys/current-user/perms",
             expect.objectContaining({
                 headers: expect.objectContaining({
                     "Access-Token": "login-access-token"
@@ -384,7 +384,7 @@ describe("App", () => {
         await userEvent.click(await screen.findByRole("menuitem", { name: /退出登录/ }));
 
         expect(globalThis.fetch).toHaveBeenCalledWith(
-            "/admin-api/api/auth/session/logout",
+            "/kuzhambu-admin-api/api/auth/session/logout",
             expect.objectContaining({
                 body: JSON.stringify({ token: "test-token" }),
                 headers: expect.objectContaining({
@@ -462,7 +462,7 @@ describe("App", () => {
         expect(screen.getByRole("button", { name: "编辑 总部" })).toBeInTheDocument();
         expect(screen.getByRole("button", { name: "删除 总部" })).toBeInTheDocument();
         expect(globalThis.fetch).toHaveBeenCalledWith(
-            "/admin-api/api/sys/department/list",
+            "/kuzhambu-admin-api/api/sys/department/list",
             expect.objectContaining({
                 body: JSON.stringify({}),
                 headers: expect.objectContaining({
@@ -541,7 +541,7 @@ describe("App", () => {
 
         await waitFor(() =>
             expect(globalThis.fetch).toHaveBeenLastCalledWith(
-                "/admin-api/api/sys/dict/page",
+                "/kuzhambu-admin-api/api/sys/dict/page",
                 expect.objectContaining({
                     body: JSON.stringify({
                         type: "user_status",
@@ -715,13 +715,13 @@ describe("App", () => {
             expect(
                 Array.from(document.querySelectorAll("img")).some((image) =>
                     image.src.endsWith(
-                        "/admin-api/api/sys/user/avatar?id=1000000000000000101&token=test-token"
+                        "/kuzhambu-admin-api/api/sys/user/avatar?id=1000000000000000101&token=test-token"
                     )
                 )
             ).toBe(true);
         });
         expect(globalThis.fetch).toHaveBeenCalledWith(
-            "/admin-api/api/audit/log/page",
+            "/kuzhambu-admin-api/api/audit/log/page",
             expect.objectContaining({
                 body: JSON.stringify({
                     pageNo: 1,
@@ -1118,12 +1118,12 @@ describe("App", () => {
         expect(screen.getByDisplayValue("Olivia Martinez")).toBeInTheDocument();
         await waitFor(() =>
             expect(globalThis.fetch).toHaveBeenCalledWith(
-                "/admin-api/api/sys/user/role/list",
+                "/kuzhambu-admin-api/api/sys/user/role/list",
                 expect.any(Object)
             )
         );
         expect(globalThis.fetch).toHaveBeenCalledWith(
-            "/admin-api/api/sys/user/options",
+            "/kuzhambu-admin-api/api/sys/user/options",
             expect.any(Object)
         );
 
@@ -1195,7 +1195,7 @@ describe("App", () => {
         expect(await screen.findByRole("heading", { name: "登录" })).toBeInTheDocument();
         expect(localStorage.getItem("kuzhambu.admin.accessToken")).toBeNull();
         expect(globalThis.fetch).toHaveBeenCalledWith(
-            "/admin-api/api/sys/current-user/info",
+            "/kuzhambu-admin-api/api/sys/current-user/info",
             expect.objectContaining({
                 headers: expect.objectContaining({
                     "Access-Token": "stale-token"
@@ -1304,7 +1304,7 @@ describe("App", () => {
         expect(localStorage.getItem("kuzhambu.admin.accessTokenExpireAt")).toBe("1778514052155");
         await waitFor(() =>
             expect(globalThis.fetch).toHaveBeenCalledWith(
-                "/admin-api/api/sys/current-user/info",
+                "/kuzhambu-admin-api/api/sys/current-user/info",
                 expect.objectContaining({
                     headers: expect.objectContaining({
                         "Access-Token": "refreshed-access-token"
@@ -1374,14 +1374,14 @@ describe("App", () => {
         const infoRequest = getCurrentUserInfo().catch(() => null);
         await waitFor(() =>
             expect(globalThis.fetch).toHaveBeenCalledWith(
-                "/admin-api/api/auth/session/token/refresh",
+                "/kuzhambu-admin-api/api/auth/session/token/refresh",
                 expect.any(Object)
             )
         );
         const menuRequest = listCurrentUserMenus();
 
         expect(globalThis.fetch).not.toHaveBeenCalledWith(
-            "/admin-api/api/sys/current-user/menus",
+            "/kuzhambu-admin-api/api/sys/current-user/menus",
             expect.any(Object)
         );
         resolveRefresh(

@@ -19,7 +19,7 @@ const expectNoPageHorizontalOverflow = async (page: Page) => {
 };
 
 const mockUserManagementApis = async (page: Page) => {
-    await page.route("**/admin-api/api/sys/user/department/tree", async (route) => {
+    await page.route("**/kuzhambu-admin-api/api/sys/user/department/tree", async (route) => {
         await route.fulfill({
             contentType: "application/json",
             body: JSON.stringify({
@@ -56,7 +56,7 @@ const mockUserManagementApis = async (page: Page) => {
             })
         });
     });
-    await page.route("**/admin-api/api/sys/user/page", async (route) => {
+    await page.route("**/kuzhambu-admin-api/api/sys/user/page", async (route) => {
         const requestBody = route.request().postDataJSON() as { departmentId?: string } | null;
         const selectedDepartmentId = requestBody?.departmentId;
         const records =
@@ -105,7 +105,7 @@ const mockUserManagementApis = async (page: Page) => {
             })
         });
     });
-    await page.route("**/admin-api/api/sys/user/role/list", async (route) => {
+    await page.route("**/kuzhambu-admin-api/api/sys/user/role/list", async (route) => {
         await route.fulfill({
             contentType: "application/json",
             body: JSON.stringify({
@@ -124,7 +124,7 @@ const mockUserManagementApis = async (page: Page) => {
             })
         });
     });
-    await page.route("**/admin-api/api/sys/user/options", async (route) => {
+    await page.route("**/kuzhambu-admin-api/api/sys/user/options", async (route) => {
         await route.fulfill({
             contentType: "application/json",
             body: JSON.stringify({
@@ -234,7 +234,7 @@ const readSidebarInkMetrics = async (page: Page) => {
 
 test.describe("admin layout", () => {
     test.beforeEach(async ({ page }) => {
-        await page.route("**/admin-api/api/sys/current-user/info", async (route) => {
+        await page.route("**/kuzhambu-admin-api/api/sys/current-user/info", async (route) => {
             await route.fulfill({
                 contentType: "application/json",
                 body: JSON.stringify({
@@ -248,7 +248,7 @@ test.describe("admin layout", () => {
                 })
             });
         });
-        await page.route("**/admin-api/api/sys/current-user/menus", async (route) => {
+        await page.route("**/kuzhambu-admin-api/api/sys/current-user/menus", async (route) => {
             await route.fulfill({
                 contentType: "application/json",
                 body: JSON.stringify({
@@ -289,7 +289,7 @@ test.describe("admin layout", () => {
                 })
             });
         });
-        await page.route("**/admin-api/api/sys/current-user/perms", async (route) => {
+        await page.route("**/kuzhambu-admin-api/api/sys/current-user/perms", async (route) => {
             await route.fulfill({
                 contentType: "application/json",
                 body: JSON.stringify({
@@ -301,7 +301,7 @@ test.describe("admin layout", () => {
                 })
             });
         });
-        await page.route("**/admin-api/api/sys/dict/page", async (route) => {
+        await page.route("**/kuzhambu-admin-api/api/sys/dict/page", async (route) => {
             await route.fulfill({
                 contentType: "application/json",
                 body: JSON.stringify({
@@ -324,65 +324,74 @@ test.describe("admin layout", () => {
                 })
             });
         });
-        await page.route("**/admin-api/api/classics/sancai/categories/list", async (route) => {
-            await route.fulfill({
-                contentType: "application/json",
-                body: JSON.stringify({
-                    code: "COMMON-00000",
-                    message: "success",
-                    data: [
-                        {
-                            id: 2,
-                            title: "天文",
-                            categoryType: "FORMAL",
-                            priority: 10
-                        }
-                    ]
-                })
-            });
-        });
-        await page.route("**/admin-api/api/classics/sancai/volumes/list", async (route) => {
-            await route.fulfill({
-                contentType: "application/json",
-                body: JSON.stringify({
-                    code: "COMMON-00000",
-                    message: "success",
-                    data: [
-                        {
-                            id: 101,
-                            categoryId: 2,
-                            title: "天文卷一",
-                            volumeType: "FORMAL",
-                            priority: 101
-                        }
-                    ]
-                })
-            });
-        });
-        await page.route("**/admin-api/api/classics/sancai/entries/page", async (route) => {
-            await route.fulfill({
-                contentType: "application/json",
-                body: JSON.stringify({
-                    code: "COMMON-00000",
-                    message: "success",
-                    data: {
-                        pageNo: 1,
-                        pageSize: 20,
-                        totalCount: 1,
-                        records: [
+        await page.route(
+            "**/kuzhambu-admin-api/api/classics/sancai/categories/list",
+            async (route) => {
+                await route.fulfill({
+                    contentType: "application/json",
+                    body: JSON.stringify({
+                        code: "COMMON-00000",
+                        message: "success",
+                        data: [
                             {
-                                id: 3001,
-                                volumeId: 101,
-                                title: "天地",
-                                summary: "天地初分，清浊定位。",
-                                lifecycleStatus: "PUBLISHED"
+                                id: 2,
+                                title: "天文",
+                                categoryType: "FORMAL",
+                                priority: 10
                             }
                         ]
-                    }
-                })
-            });
-        });
-        await page.route("**/admin-api/api/auth/session/token/refresh", async (route) => {
+                    })
+                });
+            }
+        );
+        await page.route(
+            "**/kuzhambu-admin-api/api/classics/sancai/volumes/list",
+            async (route) => {
+                await route.fulfill({
+                    contentType: "application/json",
+                    body: JSON.stringify({
+                        code: "COMMON-00000",
+                        message: "success",
+                        data: [
+                            {
+                                id: 101,
+                                categoryId: 2,
+                                title: "天文卷一",
+                                volumeType: "FORMAL",
+                                priority: 101
+                            }
+                        ]
+                    })
+                });
+            }
+        );
+        await page.route(
+            "**/kuzhambu-admin-api/api/classics/sancai/entries/page",
+            async (route) => {
+                await route.fulfill({
+                    contentType: "application/json",
+                    body: JSON.stringify({
+                        code: "COMMON-00000",
+                        message: "success",
+                        data: {
+                            pageNo: 1,
+                            pageSize: 20,
+                            totalCount: 1,
+                            records: [
+                                {
+                                    id: 3001,
+                                    volumeId: 101,
+                                    title: "天地",
+                                    summary: "天地初分，清浊定位。",
+                                    lifecycleStatus: "PUBLISHED"
+                                }
+                            ]
+                        }
+                    })
+                });
+            }
+        );
+        await page.route("**/kuzhambu-admin-api/api/auth/session/token/refresh", async (route) => {
             await route.fulfill({
                 contentType: "application/json",
                 body: JSON.stringify({

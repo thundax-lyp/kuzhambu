@@ -20,8 +20,8 @@ services:
       dockerfile: kuzhambu-apps/Dockerfile
       args:
         APP_NAME: admin-web
-        VITE_ADMIN_WEB_BASE: /kuzhambu-admin/
-        VITE_ADMIN_API_BASE_URL: /kuzhambu-admin/api
+        VITE_ADMIN_WEB_BASE: ${ADMIN_WEB_BASE:-/kuzhambu-admin/}
+        VITE_ADMIN_API_BASE_URL: ${ADMIN_API_BASE_URL:-/kuzhambu-admin-api/api}
 
   portal-web:
     build:
@@ -30,7 +30,7 @@ services:
       args:
         APP_NAME: portal-web
         VITE_PORTAL_WEB_BASE: ${PORTAL_WEB_BASE:-/kuzhambu/}
-        VITE_PORTAL_API_BASE_URL: ${PORTAL_API_BASE_URL:-/kuzhambu/api}
+        VITE_PORTAL_API_BASE_URL: ${PORTAL_API_BASE_URL:-/kuzhambu-api/api}
 
   admin-starter:
     build:
@@ -47,7 +47,7 @@ services:
     environment:
       JAVA_OPTS: ${JAVA_OPTS:-"-Xms512m -Xmx512m"}
       SERVER_PORT: 20010
-      SERVER_SERVLET_CONTEXT_PATH: /admin-api
+      SERVER_SERVLET_CONTEXT_PATH: ${ADMIN_CONTEXT_PATH:-/kuzhambu-admin-api}
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-local}
       KUZHAMBU_DB_DRIVER: com.mysql.cj.jdbc.Driver
       KUZHAMBU_DB_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-kuzhambu}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
@@ -72,7 +72,7 @@ services:
       KUZHAMBU_OSS_TYPE: ${KUZHAMBU_OSS_TYPE:-local}
       KUZHAMBU_OSS_LOCAL_ROOT_PATH: /app/storage/object
       KUZHAMBU_STORAGE_BUCKET_NAME: ${KUZHAMBU_STORAGE_BUCKET_NAME:-local}
-      KUZHAMBU_STORAGE_CONTENT_PATH: /kuzhambu-admin/api/storage/object/
+      KUZHAMBU_STORAGE_CONTENT_PATH: ${ADMIN_STORAGE_CONTENT_PATH:-/kuzhambu-admin-api/api/storage/object/}
       KUZHAMBU_ELASTICSEARCH_URIS: http://elasticsearch:9200
       KUZHAMBU_AI_WORKER_BASE_URL: http://workers:8000
       KUZHAMBU_AI_WORKER_INTERNAL_SECRET: ${KUZHAMBU_INTERNAL_SECRET:-change-me}
@@ -97,7 +97,7 @@ services:
     environment:
       JAVA_OPTS: ${JAVA_OPTS:-"-Xms512m -Xmx512m"}
       SERVER_PORT: 20011
-      SERVER_SERVLET_CONTEXT_PATH: /portal-api
+      SERVER_SERVLET_CONTEXT_PATH: ${PORTAL_CONTEXT_PATH:-/kuzhambu-api}
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-local}
       KUZHAMBU_DB_DRIVER: com.mysql.cj.jdbc.Driver
       KUZHAMBU_DB_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-kuzhambu}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
@@ -120,7 +120,7 @@ services:
       KUZHAMBU_OSS_TYPE: ${KUZHAMBU_OSS_TYPE:-local}
       KUZHAMBU_OSS_LOCAL_ROOT_PATH: /app/storage/object
       KUZHAMBU_STORAGE_BUCKET_NAME: ${KUZHAMBU_STORAGE_BUCKET_NAME:-local}
-      KUZHAMBU_STORAGE_CONTENT_PATH: /kuzhambu/api/storage/object/
+      KUZHAMBU_STORAGE_CONTENT_PATH: ${PORTAL_STORAGE_CONTENT_PATH:-/kuzhambu-api/api/storage/object/}
       KUZHAMBU_ELASTICSEARCH_URIS: http://elasticsearch:9200
     volumes:
       - portal-storage:/app/storage

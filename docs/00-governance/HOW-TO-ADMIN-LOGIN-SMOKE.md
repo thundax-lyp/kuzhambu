@@ -66,17 +66,17 @@ KUZHAMBU_AUTH_CAPTCHA_WHITELIST_VALUES=6666
 因此本地冒烟测试可直接使用验证码 `6666`。如果关闭白名单，需要先创建登录前会话，再访问验证码图片：
 
 ```text
-GET /admin-api/api/auth/captcha?loginToken={loginToken}&width=150&height=40
+GET /kuzhambu-admin-api/api/auth/captcha?loginToken={loginToken}&width=150&height=40
 ```
 
 ## 登录流程
 
 admin 登录不是直接提交明文密码。流程是：
 
-1. `POST /admin-api/api/auth/session/pre-auth-session`
+1. `POST /kuzhambu-admin-api/api/auth/session/pre-auth-session`
 2. 从响应 `data` 读取 `loginToken`、`refreshToken`、`publicKey`
 3. 使用 `publicKey` 对明文密码做 SM2 加密，模式为 `0`
-4. `POST /admin-api/api/auth/session/login`
+4. `POST /kuzhambu-admin-api/api/auth/session/login`
 
 登录请求字段是：
 
@@ -110,7 +110,7 @@ mvn spring-boot:run
 
 ```sh
 PRE_AUTH_JSON=$(curl -fsS -X POST \
-  http://127.0.0.1:20010/admin-api/api/auth/session/pre-auth-session \
+  http://127.0.0.1:20010/kuzhambu-admin-api/api/auth/session/pre-auth-session \
   -H 'Content-Type: application/json' \
   -d '{}')
 
@@ -131,7 +131,7 @@ ENCRYPTED_PASSWORD=$(PUBLIC_KEY="$PUBLIC_KEY" PLAIN_PASSWORD="$PLAIN_PASSWORD" \
 
 ```sh
 curl -fsS -X POST \
-  http://127.0.0.1:20010/admin-api/api/auth/session/login \
+  http://127.0.0.1:20010/kuzhambu-admin-api/api/auth/session/login \
   -H 'Content-Type: application/json' \
   -d "{
     \"loginToken\":\"$LOGIN_TOKEN\",
@@ -148,4 +148,4 @@ curl -fsS -X POST \
 - 如果 `node -e` 找不到 `sm-crypto`，先在 `kuzhambu-apps/` 安装前端依赖，或直接通过 admin-web 登录页验证。
 - 如果验证码失败，确认当前 shell 已加载 `dev.env`，并确认 starter 进程使用的是同一份环境变量。
 - 如果返回用户名或密码错误，先用上面的 SQL 确认账号启用、凭据激活，并注意 `Q1w2e3r$` 在 shell 中必须用单引号保护 `$`。
-- 如果接口路径 404，确认 admin starter 的路径前缀是 `/admin-api/api/...`。
+- 如果接口路径 404，确认 admin starter 的路径前缀是 `/kuzhambu-admin-api/api/...`。

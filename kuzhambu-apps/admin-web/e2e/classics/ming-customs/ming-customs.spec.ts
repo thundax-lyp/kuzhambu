@@ -12,7 +12,7 @@ const apiResponse = (data: unknown) => ({
 
 test.describe("classics ming customs page", () => {
     test.beforeEach(async ({ page }) => {
-        await page.route("**/admin-api/api/sys/current-user/info", async (route) => {
+        await page.route("**/kuzhambu-admin-api/api/sys/current-user/info", async (route) => {
             await route.fulfill({
                 contentType: "application/json",
                 body: JSON.stringify(
@@ -24,7 +24,7 @@ test.describe("classics ming customs page", () => {
                 )
             });
         });
-        await page.route("**/admin-api/api/sys/current-user/menus", async (route) => {
+        await page.route("**/kuzhambu-admin-api/api/sys/current-user/menus", async (route) => {
             await route.fulfill({
                 contentType: "application/json",
                 body: JSON.stringify(
@@ -45,7 +45,7 @@ test.describe("classics ming customs page", () => {
                 )
             });
         });
-        await page.route("**/admin-api/api/sys/current-user/perms", async (route) => {
+        await page.route("**/kuzhambu-admin-api/api/sys/current-user/perms", async (route) => {
             await route.fulfill({
                 contentType: "application/json",
                 body: JSON.stringify(
@@ -86,7 +86,7 @@ test.describe("classics ming customs page", () => {
         const deleteRequests: Array<Record<string, unknown>> = [];
         const shareRequests: Array<Record<string, unknown>> = [];
 
-        await page.route("**/admin-api/api/sys/dict/page", async (route) => {
+        await page.route("**/kuzhambu-admin-api/api/sys/dict/page", async (route) => {
             await route.fulfill({
                 contentType: "application/json",
                 body: JSON.stringify(
@@ -112,7 +112,7 @@ test.describe("classics ming customs page", () => {
                 )
             });
         });
-        await page.route("**/admin-api/api/classics/ming-customs/page", async (route) => {
+        await page.route("**/kuzhambu-admin-api/api/classics/ming-customs/page", async (route) => {
             const body = readRequestBody(route.request().postData());
             pageRequests.push(body);
             await route.fulfill({
@@ -143,7 +143,7 @@ test.describe("classics ming customs page", () => {
             });
         });
         await page.route(
-            "**/admin-api/api/classics/ming-customs/keyword-cloud**",
+            "**/kuzhambu-admin-api/api/classics/ming-customs/keyword-cloud**",
             async (route) => {
                 await route.fulfill({
                     contentType: "application/json",
@@ -156,48 +156,57 @@ test.describe("classics ming customs page", () => {
                 });
             }
         );
-        await page.route("**/admin-api/api/classics/ming-customs/500000000001", async (route) => {
-            await route.fulfill({
-                contentType: "application/json",
-                body: JSON.stringify(
-                    apiResponse({
-                        id: 500000000001,
-                        title: "岁时礼仪：元旦朝贺",
-                        category: "RITUAL",
-                        chapter: "岁时礼仪",
-                        section: "正旦",
-                        summary: "记录明代正旦朝贺与家族拜礼。",
-                        contentFormat: "HTML",
-                        content:
-                            "<h2>正旦</h2><img src=x onerror=alert(1)><script>alert(1)</script>",
-                        originalExcerpts: "正旦朝贺。",
-                        visibility: "PUBLIC"
-                    })
-                )
-            });
-        });
-        await page.route("**/admin-api/api/classics/ming-customs/add", async (route) => {
+        await page.route(
+            "**/kuzhambu-admin-api/api/classics/ming-customs/500000000001",
+            async (route) => {
+                await route.fulfill({
+                    contentType: "application/json",
+                    body: JSON.stringify(
+                        apiResponse({
+                            id: 500000000001,
+                            title: "岁时礼仪：元旦朝贺",
+                            category: "RITUAL",
+                            chapter: "岁时礼仪",
+                            section: "正旦",
+                            summary: "记录明代正旦朝贺与家族拜礼。",
+                            contentFormat: "HTML",
+                            content:
+                                "<h2>正旦</h2><img src=x onerror=alert(1)><script>alert(1)</script>",
+                            originalExcerpts: "正旦朝贺。",
+                            visibility: "PUBLIC"
+                        })
+                    )
+                });
+            }
+        );
+        await page.route("**/kuzhambu-admin-api/api/classics/ming-customs/add", async (route) => {
             addRequests.push(readRequestBody(route.request().postData()));
             await route.fulfill({
                 contentType: "application/json",
                 body: JSON.stringify(apiResponse({ id: 500000000003 }))
             });
         });
-        await page.route("**/admin-api/api/classics/ming-customs/update", async (route) => {
-            updateRequests.push(readRequestBody(route.request().postData()));
-            await route.fulfill({
-                contentType: "application/json",
-                body: JSON.stringify(apiResponse({ id: 500000000001 }))
-            });
-        });
-        await page.route("**/admin-api/api/classics/ming-customs/delete", async (route) => {
-            deleteRequests.push(readRequestBody(route.request().postData()));
-            await route.fulfill({
-                contentType: "application/json",
-                body: JSON.stringify(apiResponse(true))
-            });
-        });
-        await page.route("**/admin-api/api/classics/shares/create", async (route) => {
+        await page.route(
+            "**/kuzhambu-admin-api/api/classics/ming-customs/update",
+            async (route) => {
+                updateRequests.push(readRequestBody(route.request().postData()));
+                await route.fulfill({
+                    contentType: "application/json",
+                    body: JSON.stringify(apiResponse({ id: 500000000001 }))
+                });
+            }
+        );
+        await page.route(
+            "**/kuzhambu-admin-api/api/classics/ming-customs/delete",
+            async (route) => {
+                deleteRequests.push(readRequestBody(route.request().postData()));
+                await route.fulfill({
+                    contentType: "application/json",
+                    body: JSON.stringify(apiResponse(true))
+                });
+            }
+        );
+        await page.route("**/kuzhambu-admin-api/api/classics/shares/create", async (route) => {
             shareRequests.push(readRequestBody(route.request().postData()));
             await route.fulfill({
                 contentType: "application/json",

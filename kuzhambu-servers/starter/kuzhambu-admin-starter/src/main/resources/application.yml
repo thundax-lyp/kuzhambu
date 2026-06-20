@@ -1,7 +1,7 @@
 server:
   port: ${SERVER_PORT:20010}
   servlet:
-    context-path: ${SERVER_SERVLET_CONTEXT_PATH:/admin-api}
+    context-path: ${SERVER_SERVLET_CONTEXT_PATH:/kuzhambu-admin-api}
 
 spring:
   application:
@@ -92,7 +92,7 @@ kuzhambu:
       timeout-ms: ${KUZHAMBU_AI_WORKER_TIMEOUT_MS:60000}
   storage:
     bucket-name: ${KUZHAMBU_STORAGE_BUCKET_NAME:local}
-    content-path: ${KUZHAMBU_STORAGE_CONTENT_PATH:/api/storage/object/}
+    content-path: ${KUZHAMBU_STORAGE_CONTENT_PATH:/kuzhambu-admin-api/api/storage/object/}
   classics:
     share:
       portal-web-base-url: ${KUZHAMBU_PORTAL_WEB_BASE_URL:http://localhost:5174}

@@ -53,7 +53,7 @@ const readFetchUrl = (input: RequestInfo | URL) => {
 const installMingCustomsFetchMock = () => {
     vi.spyOn(globalThis, "fetch").mockImplementation((input, init) => {
         const url = readFetchUrl(input);
-        const path = url.replace("/admin-api/api", "");
+        const path = url.replace("/kuzhambu-admin-api/api", "");
         capturedCalls.push({
             body: init?.body ? JSON.parse(String(init.body)) : undefined,
             method: init?.method,

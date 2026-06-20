@@ -11,7 +11,7 @@ interface CapturedCall {
 }
 
 const API_PREFIX = "http://localhost:20010";
-const DEV_PROXY_PREFIX = "/admin-api/api";
+const DEV_PROXY_PREFIX = "/kuzhambu-admin-api/api";
 
 const capturedRequests: CapturedCall[] = [];
 

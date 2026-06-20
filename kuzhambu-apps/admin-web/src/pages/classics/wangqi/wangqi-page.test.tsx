@@ -79,7 +79,7 @@ const wangqiRecord = {
 const installWangqiFetchMock = () => {
     vi.spyOn(globalThis, "fetch").mockImplementation((input, init) => {
         const url = readFetchUrl(input);
-        const path = url.replace("/admin-api/api", "");
+        const path = url.replace("/kuzhambu-admin-api/api", "");
         capturedCalls.push({
             body: readFetchBody(init?.body),
             method: init?.method,

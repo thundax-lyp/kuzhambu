@@ -17,16 +17,16 @@ The compose stack builds and runs:
 Default HTTP port is `8080`.
 
 - Admin web: `http://localhost:8080/kuzhambu-admin/`
-- Admin API through nginx: `http://localhost:8080/kuzhambu-admin/api/`
+- Admin API through nginx: `http://localhost:8080/kuzhambu-admin-api/api/`
 - Portal web: `http://localhost:8080/kuzhambu/`
-- Portal API through nginx: `http://localhost:8080/kuzhambu/api/`
+- Portal API through nginx: `http://localhost:8080/kuzhambu-api/api/`
 
-The Java starters keep their internal context paths:
+The Java starters use API-specific context paths:
 
-- `admin-starter`: `/admin-api`
-- `portal-starter`: `/portal-api`
+- `admin-starter`: `/kuzhambu-admin-api`
+- `portal-starter`: `/kuzhambu-api`
 
-Nginx translates the public web context paths to those internal starter context paths.
+The frontend web routes stay under `/kuzhambu-admin/` and `/kuzhambu/`.
 
 ## Internal Operations Routes
 

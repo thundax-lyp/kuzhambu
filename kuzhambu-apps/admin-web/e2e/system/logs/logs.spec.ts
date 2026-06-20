@@ -15,7 +15,7 @@ const fulfillSuccess = async (route: Route, data: unknown) => {
 };
 
 const mockShellApis = async (page: Page) => {
-    await page.route("**/admin-api/api/sys/current-user/info", async (route) => {
+    await page.route("**/kuzhambu-admin-api/api/sys/current-user/info", async (route) => {
         await fulfillSuccess(route, {
             id: "user-1",
             loginName: "developer",
@@ -25,7 +25,7 @@ const mockShellApis = async (page: Page) => {
             superAdmin: true
         });
     });
-    await page.route("**/admin-api/api/sys/current-user/menus", async (route) => {
+    await page.route("**/kuzhambu-admin-api/api/sys/current-user/menus", async (route) => {
         await fulfillSuccess(route, [
             {
                 id: "dashboard",
@@ -59,7 +59,7 @@ const mockShellApis = async (page: Page) => {
             }
         ]);
     });
-    await page.route("**/admin-api/api/sys/current-user/perms", async (route) => {
+    await page.route("**/kuzhambu-admin-api/api/sys/current-user/perms", async (route) => {
         await fulfillSuccess(route, {
             perms: PERMISSIONS
         });
@@ -82,7 +82,7 @@ test.describe("system and audit logs", () => {
     test("submits filters and refreshes system and audit log tables", async ({ page }) => {
         await page.setViewportSize({ width: 1280, height: 800 });
         let systemLogRequestBody: Record<string, unknown> | undefined;
-        await page.route("**/admin-api/api/sys/log/page", async (route) => {
+        await page.route("**/kuzhambu-admin-api/api/sys/log/page", async (route) => {
             const requestBody = route.request().postDataJSON();
             systemLogRequestBody = requestBody;
             const filtered = requestBody.userLoginName === "developer";
@@ -128,14 +128,14 @@ test.describe("system and audit logs", () => {
         );
 
         let auditLogRequestBody: Record<string, unknown> | undefined;
-        await page.route("**/admin-api/api/audit/log/options", async (route) => {
+        await page.route("**/kuzhambu-admin-api/api/audit/log/options", async (route) => {
             await fulfillSuccess(route, {
                 actions: [{ label: "新增", value: "CREATE" }],
                 objectTypes: [{ label: "用户", value: "USER" }],
                 operatorTypes: [{ label: "用户", value: "USER" }]
             });
         });
-        await page.route("**/admin-api/api/audit/log/page", async (route) => {
+        await page.route("**/kuzhambu-admin-api/api/audit/log/page", async (route) => {
             const requestBody = route.request().postDataJSON();
             auditLogRequestBody = requestBody;
             const filtered = requestBody.beginDate === "2026-06-18 00:00:00";
