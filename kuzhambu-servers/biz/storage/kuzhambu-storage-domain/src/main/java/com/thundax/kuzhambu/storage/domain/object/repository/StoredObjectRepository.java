@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
+import java.time.Instant;
 import java.util.List;
 
 public interface StoredObjectRepository {
@@ -49,6 +50,8 @@ public interface StoredObjectRepository {
     int deleteById(StoredObjectId id);
 
     int physicalDeleteById(StoredObjectId id);
+
+    List<StoredObject> listExpiredUnreferencedActive(Instant storedBefore);
 
     List<String> listMimeTypes();
 

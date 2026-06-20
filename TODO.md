@@ -19,14 +19,6 @@
     - 验收点：Controller 测试固定 source-file POST/GET 路径和 version POST 路径。
     - 重要度：9/10
 
-- [ ] `storage orphan cleanup`：实现 Storage 孤立对象清理计划任务
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-WANGQI-ADMIN-WEB.md`
-    - 范围对象：`StorageOrphanObjectCleanupScheduler.java`、`StorageOrphanObjectCleanupSchedulerTest.java`、`KuzhambuAdminApplication.java`、`AdminStarterArchitectureTest.java`
-    - 处理动作：新增每 4 小时清理超过 12 小时未绑定 ACTIVE 对象的计划任务并确保 scheduling 启用。
-    - 验收点：测试覆盖超时未绑定、未超时、已绑定和非 ACTIVE 对象清理边界。
-    - 重要度：10/10
-
 - [ ] `wangqi version api`：暴露 Wangqi 版本 Admin API
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-WANGQI-ADMIN-WEB.md`

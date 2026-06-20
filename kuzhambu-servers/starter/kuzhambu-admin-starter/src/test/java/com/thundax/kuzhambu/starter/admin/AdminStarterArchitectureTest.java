@@ -8,6 +8,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 class AdminStarterArchitectureTest extends AbstractArchitectureTest {
 
@@ -39,5 +40,11 @@ class AdminStarterArchitectureTest extends AbstractArchitectureTest {
                         "com.thundax.kuzhambu.system.infra.auth.persistence.mapper",
                         "com.thundax.kuzhambu.system.infra.audit.persistence.mapper",
                         "com.thundax.kuzhambu.storage.infra.object.persistence.mapper");
+    }
+
+    @Test
+    void adminStarterShouldEnableSchedulingForRuntimeCleanupTasks() {
+        Assertions.assertThat(KuzhambuAdminApplication.class.getAnnotation(EnableScheduling.class))
+                .isNotNull();
     }
 }

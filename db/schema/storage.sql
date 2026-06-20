@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS `storage_object` (
     `object_key` varchar(512) NOT NULL,
     `size` bigint NOT NULL DEFAULT 0,
     `access_endpoint` varchar(1024) DEFAULT NULL,
+    `stored_at` datetime(3) NOT NULL,
     `object_status` varchar(16) NOT NULL DEFAULT 'ACTIVE',
     `reference_status` varchar(16) NOT NULL DEFAULT 'UNREFERENCED',
     `priority` int NOT NULL DEFAULT 0,
@@ -18,6 +19,7 @@ CREATE TABLE IF NOT EXISTS `storage_object` (
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_storage_object_key` (`bucket_name`, `object_key`),
     KEY `idx_storage_object_status` (`object_status`, `reference_status`),
+    KEY `idx_storage_object_cleanup` (`object_status`, `reference_status`, `stored_at`),
     KEY `idx_storage_object_mime_type` (`mime_type`),
     KEY `idx_storage_object_owner` (`owner_type`, `owner_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='存储对象表';
