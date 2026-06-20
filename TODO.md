@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics-sancai-version-closeout`：完成三才图会版本恢复文档收口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-VERSION-RESTORE.md`
-    - 范围对象：`docs/40-readiness/CLASSICS-IMPLEMENTATION-COVERAGE.md`、`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-VERSION-RESTORE.md`、`TODO.md`
-    - 处理动作：完成验证后更新覆盖度、删除 RUNBOOK 并清理已完成 TODO。
-    - 验收点：coverage 标记三才图会版本历史/对比/恢复完成，RUNBOOK 删除，TODO 仅保留未关闭任务。
-    - 重要度：7/10
-
 ## 待审阅任务项
 
 ## 待讨论项
