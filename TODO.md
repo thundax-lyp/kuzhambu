@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web ming-customs e2e`：固定明代习俗后台冒烟
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-MINGCUSTOMS-ADMIN-WEB.md`
-    - 范围对象：`kuzhambu-apps/admin-web/e2e/classics/ming-customs/ming-customs.spec.ts`
-    - 处理动作：新增明代习俗页面、搜索、编辑、富文本和分享 E2E。
-    - 验收点：`npm run e2e -- e2e/classics/ming-customs/ming-customs.spec.ts` 通过。
-    - 重要度：8/10
-
 - [ ] `classics/mingcustoms verification`：执行明代习俗闭环验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-MINGCUSTOMS-ADMIN-WEB.md`
