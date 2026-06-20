@@ -5,9 +5,14 @@ import { SharePage } from "@/features/shares/share-page";
 
 import "./styles.css";
 
+const normalizeRouterBasename = (baseUrl: string) => {
+    const normalizedBaseUrl = baseUrl.replace(/\/+$/, "");
+    return normalizedBaseUrl === "" ? undefined : normalizedBaseUrl;
+};
+
 export function App() {
     return (
-        <BrowserRouter>
+        <BrowserRouter basename={normalizeRouterBasename(import.meta.env.BASE_URL)}>
             <Routes>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/shares" element={<ShareListPage />} />

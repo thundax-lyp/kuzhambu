@@ -29,8 +29,8 @@ services:
       dockerfile: kuzhambu-apps/Dockerfile
       args:
         APP_NAME: portal-web
-        VITE_PORTAL_WEB_BASE: /kuzhambu/
-        VITE_PORTAL_API_BASE_URL: /kuzhambu/api
+        VITE_PORTAL_WEB_BASE: ${PORTAL_WEB_BASE:-/kuzhambu/}
+        VITE_PORTAL_API_BASE_URL: ${PORTAL_API_BASE_URL:-/kuzhambu/api}
 
   admin-starter:
     build:
