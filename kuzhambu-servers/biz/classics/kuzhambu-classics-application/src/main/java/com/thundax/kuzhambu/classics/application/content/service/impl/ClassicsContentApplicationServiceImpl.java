@@ -274,6 +274,20 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    public ClassicsContentVersion applyAiResult(Versionable content, String changeSummary) {
+        // TODO: Wire this to the future AI candidate confirmation flow before enabling AI_APPLIED versions.
+        throw new BizException("AI 结果应用流程尚未接入 Classics Versionable");
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ClassicsContentVersion restoreHistoryVersion(ClassicsContentVersionId versionId) {
+        // TODO: Rehydrate the target content from snapshot_json before enabling HISTORY_RESTORED versions.
+        throw new BizException("历史版本恢复流程尚未接入 Classics Versionable");
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public ClassicsContentExportJobId createExportJob(ContentExportCommand command) {
         ClassicsContentExportJob job = command.toEntity();
         if (job.getRequestedAt() == null) {

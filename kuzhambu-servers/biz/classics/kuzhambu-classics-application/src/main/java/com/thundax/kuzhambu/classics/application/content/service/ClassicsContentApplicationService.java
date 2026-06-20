@@ -51,6 +51,10 @@ public interface ClassicsContentApplicationService {
     ClassicsContentVersion ensureVersioned(
             Versionable content, ClassicsContentChangeType changeType, String changeSummary);
 
+    ClassicsContentVersion applyAiResult(Versionable content, String changeSummary);
+
+    ClassicsContentVersion restoreHistoryVersion(ClassicsContentVersionId versionId);
+
     ClassicsContentExportJobId createExportJob(ContentExportCommand command);
 
     PageResult<ClassicsContentExportJob> pageExportJobs(

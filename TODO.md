@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `classics AI restore flows`：AI 应用和历史恢复触发正式版本
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-VERSIONABLE.md`
-    - 范围对象：AI 应用结果写入入口、历史恢复入口、`ClassicsContentApplicationServiceImpl.java`
-    - 处理动作：在用户确认 AI 应用和历史恢复后分别生成 `AI_APPLIED` 与 `HISTORY_RESTORED` 正式版本
-    - 验收点：AI 应用和历史恢复都有可追溯版本，且单次实施文件范围控制在 2-5 个文件
-    - 重要度：9/10
-
 - [ ] `classics versionable tests`：补齐 Versionable 自动化测试
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-VERSIONABLE.md`
