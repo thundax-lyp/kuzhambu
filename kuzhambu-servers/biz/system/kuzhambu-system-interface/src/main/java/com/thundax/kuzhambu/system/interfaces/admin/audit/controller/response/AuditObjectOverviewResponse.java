@@ -20,5 +20,6 @@ public class AuditObjectOverviewResponse implements Serializable {
     private AuditMetaResponse meta;
 
     @Schema(name = "latestLogs", description = "最近审计日志")
+    @Builder.Default
     private List<AuditLogResponse> latestLogs = new ArrayList<>();
 }

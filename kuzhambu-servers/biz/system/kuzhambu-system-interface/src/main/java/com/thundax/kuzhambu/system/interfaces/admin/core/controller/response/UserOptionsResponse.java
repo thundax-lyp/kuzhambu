@@ -18,8 +18,10 @@ import lombok.Getter;
 public class UserOptionsResponse implements Serializable {
 
     @Schema(name = "statusOptions", description = "用户状态选项")
+    @Builder.Default
     private List<OptionResponse> statusOptions = new ArrayList<>();
 
     @Schema(name = "rankOptions", description = "用户等级选项")
+    @Builder.Default
     private List<OptionResponse> rankOptions = new ArrayList<>();
 }

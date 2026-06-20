@@ -17,11 +17,14 @@ import lombok.Getter;
 public class AuditOptionsResponse implements Serializable {
 
     @Schema(name = "objectTypes", description = "对象类型")
+    @Builder.Default
     private List<AuditOptionResponse> objectTypes = new ArrayList<>();
 
     @Schema(name = "actions", description = "审计动作")
+    @Builder.Default
     private List<AuditOptionResponse> actions = new ArrayList<>();
 
     @Schema(name = "operatorTypes", description = "操作者类型")
+    @Builder.Default
     private List<AuditOptionResponse> operatorTypes = new ArrayList<>();
 }

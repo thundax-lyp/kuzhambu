@@ -26,5 +26,6 @@ public class AuditSnapshotResponse implements Serializable {
     private String displayName;
 
     @Schema(name = "fields", description = "字段")
+    @Builder.Default
     private List<AuditSnapshotFieldResponse> fields = new ArrayList<>();
 }

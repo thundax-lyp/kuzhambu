@@ -72,5 +72,6 @@ public class AuditLogResponse implements Serializable {
     private Date occurredAt;
 
     @Schema(name = "changedFields", description = "变更字段")
+    @Builder.Default
     private List<AuditFieldResponse> changedFields = new ArrayList<>();
 }
