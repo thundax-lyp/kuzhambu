@@ -11,12 +11,4 @@
 
 ## 待审阅任务项
 
-- [ ] `wangqi closeout`：文档和现场收口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-WANGQI-ADMIN-WEB.md`
-    - 范围对象：`docs/40-readiness/CLASSICS-IMPLEMENTATION-COVERAGE.md`、`TODO.md`、`docs/30-designs/RUNBOOK-CLASSICS-WANGQI-ADMIN-WEB.md`
-    - 处理动作：更新覆盖状态、删除完成 TODO、删除 RUNBOOK 并清理本地服务和临时产物。
-    - 验收点：`git status --short` 最终为空且无残留 admin/front dev server。
-    - 重要度：10/10
-
 ## 待讨论项
