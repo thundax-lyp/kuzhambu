@@ -117,7 +117,7 @@ public class MingCustomsAdminController {
     @SysLogger(value = "关键词云")
     @GetMapping("keyword-cloud")
     public List<MingCustomsKeywordCloudItemResponse> listKeywordCloud(
-            @RequestParam(required = false) String visibility) {
+            @RequestParam(value = "visibility", required = false) String visibility) {
         return service.listKeywordCloud(visibility).stream()
                 .map(MingCustomsInterfaceAssembler::toKeywordCloudResponse)
                 .toList();
