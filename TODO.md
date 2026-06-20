@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `portal-web classics share page`：实现 Portal Web 分享快照展示页
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARE-SNAPSHOT.md`
-    - 范围对象：`share-page.tsx`、`share-page.test.tsx`、`styles.css`
-    - 处理动作：展示 link 元信息、target 列表和固化快照详情
-    - 验收点：`/share/:shareToken` 能展示快照且不调用 Admin API
-    - 重要度：8/10
-
 - [ ] `classics share validation`：运行分享链路测试和 dev.env 冒烟
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARE-SNAPSHOT.md`
