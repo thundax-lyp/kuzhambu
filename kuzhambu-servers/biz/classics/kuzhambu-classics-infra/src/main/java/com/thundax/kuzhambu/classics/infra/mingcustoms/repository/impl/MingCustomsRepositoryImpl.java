@@ -91,6 +91,18 @@ public class MingCustomsRepositoryImpl implements MingCustomsRepository {
                         .set(MingCustomsEntryDO::getContent, dataObject.getContent())
                         .set(MingCustomsEntryDO::getOriginalExcerpts, dataObject.getOriginalExcerpts())
                         .set(MingCustomsEntryDO::getVisibility, dataObject.getVisibility())
+                        .set(
+                                dataObject.getCurrentVersionId() != null,
+                                MingCustomsEntryDO::getCurrentVersionId,
+                                dataObject.getCurrentVersionId())
+                        .set(
+                                dataObject.getCurrentVersionNo() != null,
+                                MingCustomsEntryDO::getCurrentVersionNo,
+                                dataObject.getCurrentVersionNo())
+                        .set(
+                                dataObject.getCurrentVersionedAt() != null,
+                                MingCustomsEntryDO::getCurrentVersionedAt,
+                                dataObject.getCurrentVersionedAt())
                         .set(MingCustomsEntryDO::getContentUpdatedAt, dataObject.getContentUpdatedAt()));
     }
 

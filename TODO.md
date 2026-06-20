@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `classics manual save flows`：三类内容手动保存触发正式版本
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-VERSIONABLE.md`
-    - 范围对象：`SancaiApplicationServiceImpl.java`、`WangqiDocumentApplicationServiceImpl.java`、`MingCustomsApplicationServiceImpl.java`
-    - 处理动作：在三类内容手动保存成功后生成 `MANUAL_SAVE` 正式版本
-    - 验收点：手动保存会写入 `classics_content_version`，自动保存草稿不会写入正式版本
-    - 重要度：10/10
-
 - [ ] `classics AI restore flows`：AI 应用和历史恢复触发正式版本
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-VERSIONABLE.md`

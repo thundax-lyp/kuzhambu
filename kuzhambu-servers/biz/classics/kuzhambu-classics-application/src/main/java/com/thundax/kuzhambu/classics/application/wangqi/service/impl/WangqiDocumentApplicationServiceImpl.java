@@ -1,12 +1,14 @@
 package com.thundax.kuzhambu.classics.application.wangqi.service.impl;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentCommand;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentVisibilityCommand;
 import com.thundax.kuzhambu.classics.application.wangqi.query.WangqiDocumentPageQuery;
 import com.thundax.kuzhambu.classics.application.wangqi.service.WangqiDocumentApplicationService;
 import com.thundax.kuzhambu.classics.domain.common.codec.StorageObjectIdCodec;
 import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentChangeType;
 import com.thundax.kuzhambu.classics.domain.wangqi.codec.WangqiDocumentIdCodec;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.valueobject.WangqiDocumentId;
@@ -15,6 +17,7 @@ import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
+import java.util.Date;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,9 +28,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentApplicationService {
 
     private final WangqiDocumentRepository repository;
+    private final ClassicsContentApplicationService contentApplicationService;
 
-    public WangqiDocumentApplicationServiceImpl(WangqiDocumentRepository repository) {
+    public WangqiDocumentApplicationServiceImpl(
+            WangqiDocumentRepository repository, ClassicsContentApplicationService contentApplicationService) {
         this.repository = repository;
+        this.contentApplicationService = contentApplicationService;
     }
 
     @Override
@@ -63,14 +69,20 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
     public WangqiDocumentId add(WangqiDocumentCommand command) {
         WangqiDocument document = toDocument(command);
         document.setId(null);
-        return repository.insert(document);
+        document.setContentUpdatedAt(new Date());
+        WangqiDocumentId id = repository.insert(document);
+        document.setId(id);
+        markManualSaveVersion(document);
+        return id;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public WangqiDocumentId update(WangqiDocumentCommand command) {
         WangqiDocument document = toDocument(command);
+        document.setContentUpdatedAt(new Date());
         repository.update(document);
+        markManualSaveVersion(document);
         return document.getId();
     }
 
@@ -105,5 +117,10 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
         document.setStorageObjectId(StorageObjectIdCodec.toDomain(command.getStorageObjectId()));
         document.setVisibility(command.getVisibility());
         return document;
+    }
+
+    private void markManualSaveVersion(WangqiDocument document) {
+        contentApplicationService.ensureVersioned(document, ClassicsContentChangeType.MANUAL_SAVE, "手动保存");
+        repository.update(document);
     }
 }

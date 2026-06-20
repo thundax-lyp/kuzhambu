@@ -288,6 +288,18 @@ public class SancaiRepositoryImpl implements SancaiRepository {
                         .set(SancaiEntryDO::getImageStatus, dataObject.getImageStatus())
                         .set(SancaiEntryDO::getVisualAssetStatus, dataObject.getVisualAssetStatus())
                         .set(SancaiEntryDO::getRefinementStatus, dataObject.getRefinementStatus())
+                        .set(
+                                dataObject.getCurrentVersionId() != null,
+                                SancaiEntryDO::getCurrentVersionId,
+                                dataObject.getCurrentVersionId())
+                        .set(
+                                dataObject.getCurrentVersionNo() != null,
+                                SancaiEntryDO::getCurrentVersionNo,
+                                dataObject.getCurrentVersionNo())
+                        .set(
+                                dataObject.getCurrentVersionedAt() != null,
+                                SancaiEntryDO::getCurrentVersionedAt,
+                                dataObject.getCurrentVersionedAt())
                         .set(SancaiEntryDO::getContentUpdatedAt, dataObject.getContentUpdatedAt()));
     }
 
