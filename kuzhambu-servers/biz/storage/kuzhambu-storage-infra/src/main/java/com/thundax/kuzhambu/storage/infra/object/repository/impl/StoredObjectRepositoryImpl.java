@@ -9,6 +9,7 @@ import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
+import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectRepository;
@@ -18,6 +19,7 @@ import com.thundax.kuzhambu.storage.infra.object.persistence.dataobject.StoredOb
 import com.thundax.kuzhambu.storage.infra.object.persistence.dataobject.StoredObjectReferenceDO;
 import com.thundax.kuzhambu.storage.infra.object.persistence.mapper.StoredObjectMapper;
 import com.thundax.kuzhambu.storage.infra.object.persistence.mapper.StoredObjectReferenceMapper;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -146,6 +148,9 @@ public class StoredObjectRepositoryImpl implements StoredObjectRepository {
     public StoredObjectId insert(StoredObject entity) {
         StoredObjectDO dataObject = StoragePersistenceAssembler.toObject(entity);
         dataObject.setId(idGenerator.nextId().value());
+        if (dataObject.getStoredAt() == null) {
+            dataObject.setStoredAt(Instant.now());
+        }
         mapper.insert(dataObject);
         cacheSupport.removeById(String.valueOf(dataObject.getId()));
         return StoredObjectIdCodec.toDomain(dataObject.getId());
@@ -212,6 +217,30 @@ public class StoredObjectRepositoryImpl implements StoredObjectRepository {
                         .ne("object_status", StoredObjectStatus.DELETED.value()));
         cacheSupport.removeById(String.valueOf(id.value()));
         return count;
+    }
+
+    @Override
+    public int physicalDeleteById(StoredObjectId id) {
+        if (id == null) {
+            return 0;
+        }
+        LambdaQueryWrapper<StoredObjectReferenceDO> referenceWrapper = new LambdaQueryWrapper<>();
+        referenceWrapper.eq(StoredObjectReferenceDO::getObjectId, id.value());
+        businessMapper.delete(referenceWrapper);
+        int count = mapper.deleteById(id.value());
+        cacheSupport.removeById(String.valueOf(id.value()));
+        return count;
+    }
+
+    @Override
+    public List<StoredObject> listExpiredUnreferencedActive(Instant storedBefore) {
+        LambdaQueryWrapper<StoredObjectDO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(StoredObjectDO::getObjectStatus, StoredObjectStatus.ACTIVE.value())
+                .eq(StoredObjectDO::getReferenceStatus, StoredObjectReferenceStatus.UNREFERENCED.value())
+                .le(StoredObjectDO::getStoredAt, storedBefore)
+                .orderByAsc(StoredObjectDO::getStoredAt)
+                .orderByAsc(StoredObjectDO::getId);
+        return StoragePersistenceAssembler.toDomainList(mapper.selectList(wrapper));
     }
 
     @Override

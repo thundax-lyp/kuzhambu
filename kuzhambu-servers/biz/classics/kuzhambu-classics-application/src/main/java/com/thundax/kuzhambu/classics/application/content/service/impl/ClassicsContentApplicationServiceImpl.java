@@ -8,12 +8,14 @@ import com.thundax.kuzhambu.classics.application.content.command.ContentTagComma
 import com.thundax.kuzhambu.classics.application.content.command.ContentTagSortCommand;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.content.support.ClassicsContentSnapshotAssembler;
+import com.thundax.kuzhambu.classics.application.wangqi.support.WangqiDocumentVersionRestorer;
 import com.thundax.kuzhambu.classics.domain.content.model.Versionable;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentExportJob;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentQaPair;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentChangeType;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentExportJobId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentQaPairId;
@@ -21,6 +23,7 @@ import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsCo
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentVersionId;
 import com.thundax.kuzhambu.classics.domain.content.repository.ClassicsContentRepository;
 import com.thundax.kuzhambu.classics.domain.content.service.ClassicsContentVersioningService;
+import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.exception.ErrorCode;
@@ -42,11 +45,14 @@ import org.springframework.transaction.annotation.Transactional;
 public class ClassicsContentApplicationServiceImpl implements ClassicsContentApplicationService {
 
     private final ClassicsContentRepository repository;
+    private final WangqiDocumentVersionRestorer wangqiDocumentVersionRestorer;
     private final ClassicsContentVersioningService versioningService = new ClassicsContentVersioningService();
     private final ClassicsContentSnapshotAssembler snapshotAssembler = new ClassicsContentSnapshotAssembler();
 
-    public ClassicsContentApplicationServiceImpl(ClassicsContentRepository repository) {
+    public ClassicsContentApplicationServiceImpl(
+            ClassicsContentRepository repository, WangqiDocumentVersionRestorer wangqiDocumentVersionRestorer) {
         this.repository = repository;
+        this.wangqiDocumentVersionRestorer = wangqiDocumentVersionRestorer;
     }
 
     @Override
@@ -250,6 +256,12 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    public int deleteVersions(String contentType, ClassicsContentId contentId) {
+        return repository.deleteVersions(contentType, contentId);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public ClassicsContentVersion ensureVersioned(
             Versionable content, ClassicsContentChangeType changeType, String changeSummary) {
         if (content == null) {
@@ -282,8 +294,17 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ClassicsContentVersion restoreHistoryVersion(ClassicsContentVersionId versionId) {
-        // TODO: Rehydrate the target content from snapshot_json before enabling HISTORY_RESTORED versions.
-        throw new BizException("历史版本恢复流程尚未接入 Classics Versionable");
+        ClassicsContentVersion version = repository.getVersionById(versionId);
+        if (version == null) {
+            throw new BizException("历史版本不存在");
+        }
+        if (version.getContentType() == ClassicsContentType.WANGQI_DOCUMENT) {
+            Versionable restored = wangqiDocumentVersionRestorer.restoreSnapshot(version);
+            ClassicsContentVersion restoredVersion = createRestoredVersion(restored, version);
+            wangqiDocumentVersionRestorer.markVersioned((WangqiDocument) restored);
+            return restoredVersion;
+        }
+        throw new BizException("暂不支持恢复该类型历史版本: " + version.getContentType());
     }
 
     @Override
@@ -321,6 +342,20 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         if (repository.updateQaPairPriority(qaPair) != 1) {
             throw sortDbFailure();
         }
+    }
+
+    private ClassicsContentVersion createRestoredVersion(Versionable content, ClassicsContentVersion restoredFrom) {
+        ClassicsContentVersion version = versioningService.newVersion(
+                content,
+                versioningService.nextVersionNo(repository.latestVersionNo(content.contentType(), content.contentId())),
+                new Date(),
+                snapshotAssembler.toSnapshotJson(content),
+                ClassicsContentChangeType.HISTORY_RESTORED,
+                "恢复历史版本 v" + restoredFrom.getVersionNo());
+        ClassicsContentVersionId versionId = repository.insertVersion(version);
+        version.setId(versionId);
+        versioningService.markVersioned(content, version);
+        return version;
     }
 
     private static BizException sortEmptyInput() {

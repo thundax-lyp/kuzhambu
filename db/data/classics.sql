@@ -4779,6 +4779,26 @@ INSERT INTO `classics_content_tag` (`content_type`, `content_id`, `tag_name_snap
 INSERT INTO `classics_content_tag` (`content_type`, `content_id`, `tag_name_snapshot`, `source`, `status`, `priority`) VALUES (CAST(FROM_BASE64("U0FOQ0FJX0VOVFJZ") AS CHAR CHARACTER SET utf8mb4), 300000002578, CAST(FROM_BASE64("5piG5LuR5bGx") AS CHAR CHARACTER SET utf8mb4), CAST(FROM_BASE64("TUFOVUFM") AS CHAR CHARACTER SET utf8mb4), CAST(FROM_BASE64("QUNUSVZF") AS CHAR CHARACTER SET utf8mb4), 1294) ON DUPLICATE KEY UPDATE `source` = VALUES(`source`), `status` = VALUES(`status`), `priority` = VALUES(`priority`);
 INSERT INTO `classics_content_tag` (`content_type`, `content_id`, `tag_name_snapshot`, `source`, `status`, `priority`) VALUES (CAST(FROM_BASE64("U0FOQ0FJX0VOVFJZ") AS CHAR CHARACTER SET utf8mb4), 300000002578, CAST(FROM_BASE64("6buR6Imy57695q+b") AS CHAR CHARACTER SET utf8mb4), CAST(FROM_BASE64("TUFOVUFM") AS CHAR CHARACTER SET utf8mb4), CAST(FROM_BASE64("QUNUSVZF") AS CHAR CHARACTER SET utf8mb4), 1295) ON DUPLICATE KEY UPDATE `source` = VALUES(`source`), `status` = VALUES(`status`), `priority` = VALUES(`priority`);
 
+-- 王圻文档样例数据
+INSERT INTO `classics_wangqi_document` (
+    `id`, `title`, `summary`, `content_format`, `content`, `document_time`, `storage_object_id`, `visibility`,
+    `current_version_id`, `current_version_no`, `current_versioned_at`, `content_updated_at`
+) VALUES
+    (400000000001, '王圻文档样例：山川考略', '用于 Admin Web 冒烟的公开 Markdown 王圻文档。', 'MARKDOWN', '## 山川考略\n\n王圻文档样例正文，用于验证列表、详情和时间线展示。\n\n- 公开可见\n- Markdown 格式', '2026-01-01 08:00:00.000', NULL, 'PUBLIC', NULL, NULL, NULL, '2026-01-01 08:00:00.000'),
+    (400000000002, '王圻文档样例：器用摘录', '用于 Admin Web 冒烟的私有 HTML 王圻文档。', 'HTML', '<h2>器用摘录</h2><p>王圻文档样例正文，用于验证 HTML 清洗展示和私有状态筛选。</p>', '2026-01-02 08:00:00.000', NULL, 'PRIVATE', NULL, NULL, NULL, '2026-01-02 08:00:00.000')
+ON DUPLICATE KEY UPDATE
+    `title` = VALUES(`title`),
+    `summary` = VALUES(`summary`),
+    `content_format` = VALUES(`content_format`),
+    `content` = VALUES(`content`),
+    `document_time` = VALUES(`document_time`),
+    `storage_object_id` = VALUES(`storage_object_id`),
+    `visibility` = VALUES(`visibility`),
+    `current_version_id` = VALUES(`current_version_id`),
+    `current_version_no` = VALUES(`current_version_no`),
+    `current_versioned_at` = VALUES(`current_versioned_at`),
+    `content_updated_at` = VALUES(`content_updated_at`);
+
 -- 明代习俗样例数据
 INSERT INTO `classics_ming_customs_entry` (
     `id`, `title`, `category`, `chapter`, `section`, `summary`, `content_format`, `content`, `original_excerpts`, `visibility`,

@@ -193,6 +193,12 @@ public class ClassicsContentRepositoryImpl implements ClassicsContentRepository 
                 versionMapper.selectById(ClassicsContentVersionIdCodec.toValue(id)));
     }
 
+    public int deleteVersions(String contentType, ClassicsContentId contentId) {
+        return versionMapper.delete(new LambdaQueryWrapper<ClassicsContentVersionDO>()
+                .eq(ClassicsContentVersionDO::getContentType, contentType)
+                .eq(ClassicsContentVersionDO::getContentId, ClassicsContentIdCodec.toValue(contentId)));
+    }
+
     public ClassicsContentExportJobId insertExportJob(ClassicsContentExportJob exportJob) {
         ClassicsContentExportJobDO dataObject = ClassicsContentPersistenceAssembler.toExportObject(exportJob);
         exportMapper.insert(dataObject);

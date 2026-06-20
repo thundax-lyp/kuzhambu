@@ -29,7 +29,7 @@ class ClassicsContentApplicationServiceImplTest {
     @Test
     void ensureVersionedShouldInsertVersionAndBackfillContentMarker() {
         FakeRepository repository = new FakeRepository();
-        ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(repository);
+        ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(repository, null);
         SancaiEntry entry = new SancaiEntry();
         entry.setId(SancaiEntryId.of(100L));
         entry.setTitle("entry");
@@ -50,7 +50,7 @@ class ClassicsContentApplicationServiceImplTest {
         FakeRepository repository = new FakeRepository();
         ClassicsContentVersion existing = existingVersion(9L, 2, new Date(2_000L));
         repository.insertedVersions.add(existing);
-        ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(repository);
+        ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(repository, null);
         SancaiEntry entry = new SancaiEntry();
         entry.setId(SancaiEntryId.of(100L));
         entry.setCurrentVersionId(existing.getId());
@@ -173,6 +173,11 @@ class ClassicsContentApplicationServiceImplTest {
         @Override
         public ClassicsContentVersion getVersionById(ClassicsContentVersionId id) {
             return null;
+        }
+
+        @Override
+        public int deleteVersions(String contentType, ClassicsContentId contentId) {
+            return 0;
         }
 
         @Override

@@ -6,7 +6,8 @@ import java.util.Arrays;
 public enum StorageOwnerType {
     USER,
     MEMBER,
-    SUBMISSION;
+    SUBMISSION,
+    CLASSICS_WANGQI_DOCUMENT;
 
     public String value() {
         return name();

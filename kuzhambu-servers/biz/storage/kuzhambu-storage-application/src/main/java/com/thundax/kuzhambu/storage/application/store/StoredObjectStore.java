@@ -11,4 +11,6 @@ public interface StoredObjectStore {
     boolean exists(StoredObject storage);
 
     InputStream open(StoredObject storage) throws IOException;
+
+    void delete(StoredObject storage) throws IOException;
 }

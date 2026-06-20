@@ -109,6 +109,11 @@ class StorageObjectUploadContractTest {
         public InputStream open(StoredObject storage) {
             return InputStream.nullInputStream();
         }
+
+        @Override
+        public void delete(StoredObject storage) {
+            // Contract test store does not persist object bytes.
+        }
     }
 
     private static final class InMemoryMultipartFile implements MultipartFile {

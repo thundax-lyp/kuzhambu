@@ -43,10 +43,8 @@ public class WangqiDocumentRepositoryImpl implements WangqiDocumentRepository {
     }
 
     @Override
-    public List<WangqiDocument> listTimeline(String visibility, SortDirection sortDirection) {
-        LambdaQueryWrapper<WangqiDocumentDO> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(StringUtils.isNotBlank(visibility), WangqiDocumentDO::getVisibility, visibility)
-                .orderBy(true, sortDirection != SortDirection.DESC, WangqiDocumentDO::getDocumentTime);
+    public List<WangqiDocument> listTimeline(String keyword, String visibility, SortDirection sortDirection) {
+        LambdaQueryWrapper<WangqiDocumentDO> wrapper = buildWrapper(keyword, visibility, sortDirection);
         return WangqiDocumentPersistenceAssembler.toDomainList(mapper.selectList(wrapper));
     }
 
@@ -60,6 +58,26 @@ public class WangqiDocumentRepositoryImpl implements WangqiDocumentRepository {
     @Override
     public int update(WangqiDocument document) {
         return mapper.updateById(WangqiDocumentPersistenceAssembler.toObject(document));
+    }
+
+    @Override
+    public int updateRestoredVersion(WangqiDocument document) {
+        WangqiDocumentDO dataObject = WangqiDocumentPersistenceAssembler.toObject(document);
+        return mapper.update(
+                null,
+                new LambdaUpdateWrapper<WangqiDocumentDO>()
+                        .eq(WangqiDocumentDO::getId, dataObject.getId())
+                        .set(WangqiDocumentDO::getTitle, dataObject.getTitle())
+                        .set(WangqiDocumentDO::getSummary, dataObject.getSummary())
+                        .set(WangqiDocumentDO::getContentFormat, dataObject.getContentFormat())
+                        .set(WangqiDocumentDO::getContent, dataObject.getContent())
+                        .set(WangqiDocumentDO::getDocumentTime, dataObject.getDocumentTime())
+                        .set(WangqiDocumentDO::getStorageObjectId, dataObject.getStorageObjectId())
+                        .set(WangqiDocumentDO::getVisibility, dataObject.getVisibility())
+                        .set(WangqiDocumentDO::getCurrentVersionId, dataObject.getCurrentVersionId())
+                        .set(WangqiDocumentDO::getCurrentVersionNo, dataObject.getCurrentVersionNo())
+                        .set(WangqiDocumentDO::getCurrentVersionedAt, dataObject.getCurrentVersionedAt())
+                        .set(WangqiDocumentDO::getContentUpdatedAt, dataObject.getContentUpdatedAt()));
     }
 
     @Override

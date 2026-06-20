@@ -65,6 +65,8 @@ public interface ClassicsContentRepository {
 
     ClassicsContentVersion getVersionById(ClassicsContentVersionId id);
 
+    int deleteVersions(String contentType, ClassicsContentId contentId);
+
     ClassicsContentExportJobId insertExportJob(ClassicsContentExportJob exportJob);
 
     int updateExportJob(ClassicsContentExportJob exportJob);

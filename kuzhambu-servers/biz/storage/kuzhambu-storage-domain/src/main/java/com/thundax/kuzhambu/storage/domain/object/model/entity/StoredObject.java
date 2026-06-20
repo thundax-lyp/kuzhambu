@@ -7,6 +7,7 @@ import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectRefere
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.Date;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -34,6 +35,7 @@ public class StoredObject implements Sortable {
     private String objectKey;
     private Long size;
     private String accessEndpoint;
+    private Instant storedAt;
     private StoredObjectStatus objectStatus = StoredObjectStatus.ACTIVE;
     private StoredObjectReferenceStatus referenceStatus = StoredObjectReferenceStatus.UNREFERENCED;
     private int priority;

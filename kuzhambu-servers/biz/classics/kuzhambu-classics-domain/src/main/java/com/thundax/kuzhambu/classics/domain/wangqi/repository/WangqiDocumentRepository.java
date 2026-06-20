@@ -13,11 +13,13 @@ public interface WangqiDocumentRepository {
 
     Page<WangqiDocument> page(String keyword, String visibility, SortDirection sortDirection, int pageNo, int pageSize);
 
-    List<WangqiDocument> listTimeline(String visibility, SortDirection sortDirection);
+    List<WangqiDocument> listTimeline(String keyword, String visibility, SortDirection sortDirection);
 
     WangqiDocumentId insert(WangqiDocument document);
 
     int update(WangqiDocument document);
+
+    int updateRestoredVersion(WangqiDocument document);
 
     int updateStorageObjectId(WangqiDocumentId id, StorageObjectId storageObjectId);
 
