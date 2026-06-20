@@ -49,7 +49,7 @@ export const MingCustomsList = ({
             dataIndex: "title",
             key: "title",
             width: DEFAULT_COLUMN_WIDTHS.title,
-            render: (title?: string | null, record) => (
+            render: (title: string | null | undefined, record) => (
                 <Button
                     type="link"
                     className="ming-customs-title-link"
