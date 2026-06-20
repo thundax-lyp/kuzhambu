@@ -16,6 +16,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class ClassicsShareLink {
     private ClassicsShareLinkId id;
+    private String shareToken;
     private String tokenHash;
     private String title;
     private ClassicsShareVisibility visibility;

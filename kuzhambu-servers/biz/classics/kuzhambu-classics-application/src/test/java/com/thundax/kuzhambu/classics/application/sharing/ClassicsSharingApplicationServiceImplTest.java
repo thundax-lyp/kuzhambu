@@ -110,6 +110,7 @@ class ClassicsSharingApplicationServiceImplTest {
         assertEquals("abc123_-", result.getShareToken());
         assertEquals("http://localhost:5174/share/abc123_-", result.getShareUrl());
         assertEquals(ClassicsShareLinkId.of(10L), result.getId());
+        assertEquals("abc123_-", linkCaptor.getValue().getShareToken());
         assertEquals("hashed-share-token", linkCaptor.getValue().getTokenHash());
         ClassicsShareTarget savedTarget = targetCaptor.getValue();
         assertEquals(ClassicsShareLinkId.of(10L), savedTarget.getShareLinkId());

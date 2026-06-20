@@ -24,8 +24,8 @@ public class ShareLinkCreateCommand {
     private Date expiresAt;
     private List<ShareTargetCreateCommand> targets;
 
-    public ClassicsShareLink toLink(String tokenHash) {
+    public ClassicsShareLink toLink(String shareToken, String tokenHash) {
         return new ClassicsShareLink(
-                null, tokenHash, title, visibility, status, visibilityRiskStatus, issuedAt, expiresAt, 0L);
+                null, shareToken, tokenHash, title, visibility, status, visibilityRiskStatus, issuedAt, expiresAt, 0L);
     }
 }

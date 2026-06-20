@@ -17,6 +17,9 @@ public class ClassicsShareLinkDO {
     @TableId(type = IdType.AUTO)
     private Long id;
 
+    @TableField("share_token")
+    private String shareToken;
+
     @TableField("token_hash")
     private String tokenHash;
 

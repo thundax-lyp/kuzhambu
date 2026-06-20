@@ -92,6 +92,7 @@ public final class ClassicsSharingPortalInterfaceAssembler {
                         item.getShareLinkId() == null
                                 ? null
                                 : item.getShareLinkId().value())
+                .shareToken(item.getShareToken())
                 .shareTitle(item.getShareTitle())
                 .issuedAt(item.getIssuedAt())
                 .expiresAt(item.getExpiresAt())

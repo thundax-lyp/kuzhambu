@@ -41,6 +41,7 @@ public final class ClassicsSharingPersistenceAssembler {
                 ? null
                 : new ClassicsShareLinkDO(
                         ClassicsShareLinkIdCodec.toValue(entity.getId()),
+                        entity.getShareToken(),
                         entity.getTokenHash(),
                         entity.getTitle(),
                         value(entity.getVisibility()),
@@ -56,6 +57,7 @@ public final class ClassicsSharingPersistenceAssembler {
                 ? null
                 : new ClassicsShareLink(
                         ClassicsShareLinkIdCodec.toDomain(dataObject.getId()),
+                        dataObject.getShareToken(),
                         dataObject.getTokenHash(),
                         dataObject.getTitle(),
                         dataObject.getVisibility() == null
@@ -134,6 +136,7 @@ public final class ClassicsSharingPersistenceAssembler {
                 ? null
                 : new ClassicsSharePortalListItem(
                         ClassicsShareLinkIdCodec.toDomain(dataObject.getShareLinkId()),
+                        dataObject.getShareToken(),
                         dataObject.getShareTitle(),
                         dataObject.getIssuedAt(),
                         dataObject.getExpiresAt(),

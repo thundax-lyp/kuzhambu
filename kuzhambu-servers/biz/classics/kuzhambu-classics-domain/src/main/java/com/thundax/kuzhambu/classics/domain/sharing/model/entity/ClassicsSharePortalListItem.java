@@ -18,6 +18,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class ClassicsSharePortalListItem {
     private ClassicsShareLinkId shareLinkId;
+    private String shareToken;
     private String shareTitle;
     private Date issuedAt;
     private Date expiresAt;

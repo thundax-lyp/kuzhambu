@@ -221,6 +221,7 @@ CREATE TABLE IF NOT EXISTS `classics_content_export_job` (
 
 CREATE TABLE IF NOT EXISTS `classics_share_link` (
     `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+    `share_token` varchar(64) DEFAULT NULL COMMENT '公开分享短码',
     `token_hash` varchar(128) NOT NULL COMMENT '分享令牌哈希',
     `title` varchar(256) NOT NULL COMMENT '分享标题',
     `visibility` varchar(16) NOT NULL COMMENT '分享可见性',
@@ -230,6 +231,7 @@ CREATE TABLE IF NOT EXISTS `classics_share_link` (
     `expires_at` datetime(3) DEFAULT NULL COMMENT '过期时间',
     `access_count` bigint NOT NULL DEFAULT 0 COMMENT '访问次数',
     PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_classics_share_link_share_token` (`share_token`),
     UNIQUE KEY `uk_classics_share_link_token` (`token_hash`),
     KEY `idx_classics_share_link_status` (`status`, `expires_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='分享链接表';

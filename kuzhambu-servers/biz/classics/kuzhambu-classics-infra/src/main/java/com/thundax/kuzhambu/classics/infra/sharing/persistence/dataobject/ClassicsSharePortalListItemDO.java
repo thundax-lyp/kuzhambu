@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ClassicsSharePortalListItemDO {
     private Long shareLinkId;
+    private String shareToken;
     private String shareTitle;
     private Date issuedAt;
     private Date expiresAt;

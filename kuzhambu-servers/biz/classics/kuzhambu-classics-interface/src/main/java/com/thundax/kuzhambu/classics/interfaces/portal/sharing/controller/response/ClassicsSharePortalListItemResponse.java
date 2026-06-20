@@ -16,6 +16,9 @@ public class ClassicsSharePortalListItemResponse implements Serializable {
     @JsonProperty("shareLinkId")
     private Long shareLinkId;
 
+    @JsonProperty("shareToken")
+    private String shareToken;
+
     @JsonProperty("shareTitle")
     private String shareTitle;
 

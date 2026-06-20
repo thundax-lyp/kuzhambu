@@ -121,7 +121,7 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
     @Transactional(rollbackFor = Exception.class)
     public ShareLinkCreateResult createLink(ShareLinkCreateCommand command) {
         String shareToken = shareTokenGenerator.generate();
-        ClassicsShareLink link = command.toLink(shareTokenHasher.hash(shareToken));
+        ClassicsShareLink link = command.toLink(shareToken, shareTokenHasher.hash(shareToken));
         if (link.getIssuedAt() == null) {
             link.setIssuedAt(new Date());
         }

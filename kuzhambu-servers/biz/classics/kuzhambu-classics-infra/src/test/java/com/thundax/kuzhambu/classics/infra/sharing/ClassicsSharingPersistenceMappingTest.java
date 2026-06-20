@@ -17,6 +17,7 @@ class ClassicsSharingPersistenceMappingTest {
     void linkMappingShouldCarryTokenHash() throws NoSuchFieldException {
         ClassicsShareLink link = new ClassicsShareLink(
                 null,
+                "share-token",
                 "hashed-share-token",
                 "分享",
                 ClassicsShareVisibility.PUBLIC,
@@ -27,9 +28,13 @@ class ClassicsSharingPersistenceMappingTest {
                 0L);
 
         ClassicsShareLinkDO dataObject = ClassicsSharingPersistenceAssembler.toLinkObject(link);
+        Field shareTokenField = ClassicsShareLinkDO.class.getDeclaredField("shareToken");
         Field tokenHashField = ClassicsShareLinkDO.class.getDeclaredField("tokenHash");
 
+        assertEquals("share-token", dataObject.getShareToken());
         assertEquals("hashed-share-token", dataObject.getTokenHash());
+        assertEquals(
+                "share_token", shareTokenField.getAnnotation(TableField.class).value());
         assertEquals(
                 "token_hash", tokenHashField.getAnnotation(TableField.class).value());
     }

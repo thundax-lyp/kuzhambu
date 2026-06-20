@@ -17,6 +17,7 @@ export interface ClassicsSharePortalListItem {
     issuedAt?: string | null;
     priority?: number | null;
     shareLinkId?: number | null;
+    shareToken?: string | null;
     shareTitle?: string | null;
     targetStatus?: string | null;
     titleSnapshot?: string | null;

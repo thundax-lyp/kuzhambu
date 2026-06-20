@@ -93,6 +93,7 @@ class ClassicsSharingPortalControllerTest {
         assertEquals(1, response.getTotalCount());
         JsonNode json = OBJECT_MAPPER.valueToTree(response);
         assertJsonFields(json, "pageNo", "pageSize", "totalCount", "totalPage", "records");
+        assertEquals("share-token", json.at("/records/0/shareToken").asText());
         assertEquals("正式标题", json.at("/records/0/titleSnapshot").asText());
         assertFalse(json.at("/records/0").has("contentSnapshotJson"), json::toString);
         assertFalse(json.at("/records/0").has("tokenHash"), json::toString);
@@ -144,6 +145,7 @@ class ClassicsSharingPortalControllerTest {
     private static ClassicsSharePortalListItem listItem() {
         return new ClassicsSharePortalListItem(
                 ClassicsShareLinkId.of(10L),
+                "share-token",
                 "公开分享",
                 new Date(1_000L),
                 new Date(3_000L),

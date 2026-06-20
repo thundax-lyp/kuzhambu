@@ -151,35 +151,51 @@ export const ShareListPage = () => {
             <section className="portal-list" aria-label="分享列表">
                 <div className="portal-list-summary">{resultSummary}</div>
                 {records.length ? (
-                    records.map((record) => (
-                        <article
-                            className="portal-list-item"
-                            key={`${record.shareLinkId}-${record.priority}`}
-                        >
-                            <div>
-                                <p>{record.shareTitle || "未命名分享"}</p>
-                                <h2>{record.titleSnapshot || `内容 ${record.contentId || "-"}`}</h2>
-                            </div>
-                            <dl>
+                    records.map((record) => {
+                        const itemKey = `${record.shareLinkId}-${record.priority}`;
+                        const itemContent = (
+                            <>
                                 <div>
-                                    <dt>分类</dt>
-                                    <dd>{formatContentType(record.contentType)}</dd>
+                                    <p>{record.shareTitle || "未命名分享"}</p>
+                                    <h2>
+                                        {record.titleSnapshot || `内容 ${record.contentId || "-"}`}
+                                    </h2>
                                 </div>
-                                <div>
-                                    <dt>版本</dt>
-                                    <dd>{record.contentVersionNo ?? "-"}</dd>
-                                </div>
-                                <div>
-                                    <dt>分享时间</dt>
-                                    <dd>{formatDateTime(record.issuedAt)}</dd>
-                                </div>
-                                <div>
-                                    <dt>过期时间</dt>
-                                    <dd>{formatDateTime(record.expiresAt)}</dd>
-                                </div>
-                            </dl>
-                        </article>
-                    ))
+                                <dl>
+                                    <div>
+                                        <dt>分类</dt>
+                                        <dd>{formatContentType(record.contentType)}</dd>
+                                    </div>
+                                    <div>
+                                        <dt>版本</dt>
+                                        <dd>{record.contentVersionNo ?? "-"}</dd>
+                                    </div>
+                                    <div>
+                                        <dt>分享时间</dt>
+                                        <dd>{formatDateTime(record.issuedAt)}</dd>
+                                    </div>
+                                    <div>
+                                        <dt>过期时间</dt>
+                                        <dd>{formatDateTime(record.expiresAt)}</dd>
+                                    </div>
+                                </dl>
+                            </>
+                        );
+
+                        return record.shareToken ? (
+                            <Link
+                                className="portal-list-item"
+                                key={itemKey}
+                                to={`/share/${record.shareToken}`}
+                            >
+                                {itemContent}
+                            </Link>
+                        ) : (
+                            <article className="portal-list-item" key={itemKey}>
+                                {itemContent}
+                            </article>
+                        );
+                    })
                 ) : (
                     <div className="portal-empty">暂无符合条件的公开分享。</div>
                 )}
