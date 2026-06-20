@@ -11,6 +11,7 @@ import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentC
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsKeyword;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsEntryId;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsKeywordCloudItem;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsKeywordId;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.repository.MingCustomsRepository;
 import com.thundax.kuzhambu.common.core.exception.BizException;
@@ -189,7 +190,7 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
     }
 
     @Override
-    public List<String> listKeywordCloud(String visibility) {
+    public List<MingCustomsKeywordCloudItem> listKeywordCloud(String visibility) {
         return repository.listKeywordCloud(visibility);
     }
 

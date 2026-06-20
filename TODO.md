@@ -9,22 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics/mingcustoms keyword-cloud domain`：增加明代习俗关键词云领域契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-MINGCUSTOMS-ADMIN-WEB.md`
-    - 范围对象：`MingCustomsRepository.java`、`MingCustomsKeywordCloudItem.java`、`MingCustomsApplicationService.java`、`MingCustomsApplicationServiceImpl.java`、`MingCustomsRepositoryImpl.java`
-    - 处理动作：将 keyword-cloud 从关键词列表改为按 keyword 聚合并返回 count。
-    - 验收点：infra 测试覆盖聚合数量、排序和 visibility 过滤。
-    - 重要度：10/10
-
-- [ ] `classics/mingcustoms keyword-cloud interface`：输出明代习俗关键词云接口契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-MINGCUSTOMS-ADMIN-WEB.md`
-    - 范围对象：`MingCustomsKeywordCloudItemResponse.java`、`MingCustomsInterfaceAssembler.java`、`MingCustomsAdminController.java`、`MingCustomsAdminControllerTest.java`、`MingCustomsRepositoryTest.java`
-    - 处理动作：让 Admin API keyword-cloud 返回 `{ keyword, count }[]`。
-    - 验收点：Controller contract test 固定 `keyword` 和 `count` 字段。
-    - 重要度：10/10
-
 - [ ] `classics/mingcustoms init-data`：增加明代习俗初始化数据
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-MINGCUSTOMS-ADMIN-WEB.md`

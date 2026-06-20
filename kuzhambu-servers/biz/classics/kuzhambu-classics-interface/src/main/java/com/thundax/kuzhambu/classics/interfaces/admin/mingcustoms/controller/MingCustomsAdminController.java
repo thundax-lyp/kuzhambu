@@ -8,6 +8,7 @@ import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCu
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.assembler.MingCustomsInterfaceAssembler;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.request.MingCustomsKeywordSortRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.request.MingCustomsRequest;
+import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.response.MingCustomsKeywordCloudItemResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.response.MingCustomsResponse;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
@@ -115,8 +116,11 @@ public class MingCustomsAdminController {
     @HasPermission("classics:mingcustoms:view")
     @SysLogger(value = "关键词云")
     @GetMapping("keyword-cloud")
-    public List<String> listKeywordCloud(@RequestParam(required = false) String visibility) {
-        return service.listKeywordCloud(visibility);
+    public List<MingCustomsKeywordCloudItemResponse> listKeywordCloud(
+            @RequestParam(required = false) String visibility) {
+        return service.listKeywordCloud(visibility).stream()
+                .map(MingCustomsInterfaceAssembler::toKeywordCloudResponse)
+                .toList();
     }
 
     @Operation(summary = "删除明代习俗", description = "classics:mingcustoms:delete")

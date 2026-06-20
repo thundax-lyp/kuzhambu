@@ -10,6 +10,7 @@ import com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsKeyword
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsKeyword;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsEntryId;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsKeywordCloudItem;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsKeywordId;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.repository.MingCustomsRepository;
 import com.thundax.kuzhambu.classics.infra.mingcustoms.persistence.assembler.MingCustomsPersistenceAssembler;
@@ -19,8 +20,8 @@ import com.thundax.kuzhambu.classics.infra.mingcustoms.persistence.mapper.MingCu
 import com.thundax.kuzhambu.classics.infra.mingcustoms.persistence.mapper.MingCustomsMapper;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Repository;
 
@@ -163,10 +164,31 @@ public class MingCustomsRepositoryImpl implements MingCustomsRepository {
     }
 
     @Override
-    public List<String> listKeywordCloud(String visibility) {
-        return keywordMapper.selectObjs(Wrappers.<MingCustomsKeywordDO>query().select("keyword")).stream()
-                .map(String::valueOf)
-                .collect(Collectors.toList());
+    public List<MingCustomsKeywordCloudItem> listKeywordCloud(String visibility) {
+        QueryWrapper<MingCustomsKeywordDO> wrapper = Wrappers.<MingCustomsKeywordDO>query()
+                .select("keyword", "count(*) as count")
+                .groupBy("keyword")
+                .orderByDesc("count")
+                .orderByAsc("keyword");
+        if (StringUtils.isNotBlank(visibility)) {
+            wrapper.exists(
+                    "select 1 from classics_ming_customs_entry e" + " where e.id = custom_id and e.visibility = {0}",
+                    visibility);
+        }
+        return keywordMapper.selectMaps(wrapper).stream()
+                .map(MingCustomsRepositoryImpl::toKeywordCloudItem)
+                .toList();
+    }
+
+    private static MingCustomsKeywordCloudItem toKeywordCloudItem(Map<String, Object> row) {
+        return new MingCustomsKeywordCloudItem(String.valueOf(row.get("keyword")), toLong(row.get("count")));
+    }
+
+    private static Long toLong(Object value) {
+        if (value instanceof Number) {
+            return ((Number) value).longValue();
+        }
+        return Long.valueOf(String.valueOf(value));
     }
 
     private static int maxPriority(List<Object> values) {
