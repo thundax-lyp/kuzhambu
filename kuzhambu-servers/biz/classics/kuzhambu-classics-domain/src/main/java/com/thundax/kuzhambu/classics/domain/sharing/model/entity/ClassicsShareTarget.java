@@ -29,4 +29,7 @@ public class ClassicsShareTarget implements Sortable {
     private ClassicsSharedContentVisibility contentVisibilitySnapshot;
     private ClassicsShareTargetStatus targetStatus;
     private int priority;
+    private ClassicsContentVersionId currentContentVersionId;
+    private Integer currentContentVersionNo;
+    private Boolean contentChangedAfterShare;
 }

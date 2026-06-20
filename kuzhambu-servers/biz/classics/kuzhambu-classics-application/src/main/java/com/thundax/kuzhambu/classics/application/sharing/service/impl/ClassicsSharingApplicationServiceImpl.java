@@ -173,7 +173,12 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
 
     @Override
     public List<ClassicsShareTarget> listTargets(ClassicsShareLinkId shareLinkId) {
-        return repository.listTargetsByLinkId(shareLinkId, SortDirection.ASC);
+        List<ClassicsShareTarget> targets = repository.listTargetsByLinkId(shareLinkId, SortDirection.ASC);
+        if (targets == null) {
+            return List.of();
+        }
+        targets.forEach(this::enrichCurrentVersionMarker);
+        return targets;
     }
 
     @Override
@@ -228,16 +233,35 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
         }
         ClassicsContentType contentType = target.getContentType();
         Long contentId = target.getContentId().value();
-        Versionable content =
-                switch (contentType) {
-                    case SANCAI_ENTRY -> sancaiRepository.getEntryById(SancaiEntryIdCodec.toDomain(contentId));
-                    case WANGQI_DOCUMENT -> wangqiDocumentRepository.getById(WangqiDocumentIdCodec.toDomain(contentId));
-                    case MING_CUSTOMS -> mingCustomsRepository.getById(MingCustomsEntryIdCodec.toDomain(contentId));
-                };
+        Versionable content = loadContent(contentType, contentId);
         if (content == null) {
             throw shareContentNotFound();
         }
         return content;
+    }
+
+    private Versionable loadContent(ClassicsContentType contentType, Long contentId) {
+        return switch (contentType) {
+            case SANCAI_ENTRY -> sancaiRepository.getEntryById(SancaiEntryIdCodec.toDomain(contentId));
+            case WANGQI_DOCUMENT -> wangqiDocumentRepository.getById(WangqiDocumentIdCodec.toDomain(contentId));
+            case MING_CUSTOMS -> mingCustomsRepository.getById(MingCustomsEntryIdCodec.toDomain(contentId));
+        };
+    }
+
+    private void enrichCurrentVersionMarker(ClassicsShareTarget target) {
+        if (target == null || target.getContentType() == null || target.getContentId() == null) {
+            return;
+        }
+        Versionable content =
+                loadContent(target.getContentType(), target.getContentId().value());
+        if (content == null) {
+            target.setContentChangedAfterShare(Boolean.TRUE);
+            return;
+        }
+        target.setCurrentContentVersionId(content.currentVersionId());
+        target.setCurrentContentVersionNo(content.currentVersionNo());
+        target.setContentChangedAfterShare(target.getContentVersionId() != null
+                && !target.getContentVersionId().equals(content.currentVersionId()));
     }
 
     private void persistVersionMarker(Versionable content) {

@@ -22,8 +22,10 @@ import com.thundax.kuzhambu.classics.domain.sancai.repository.SancaiRepository;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareTarget;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsSharedContentVisibility;
 import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareLinkId;
+import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareTargetId;
 import com.thundax.kuzhambu.classics.domain.sharing.repository.ClassicsSharingRepository;
 import com.thundax.kuzhambu.classics.domain.wangqi.repository.WangqiDocumentRepository;
+import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import java.util.Date;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -86,5 +88,42 @@ class ClassicsSharingApplicationServiceImplTest {
         assertEquals("正式标题", savedTarget.getTitleSnapshot());
         assertEquals(ClassicsSharedContentVisibility.PUBLIC, savedTarget.getContentVisibilitySnapshot());
         verify(sancaiRepository).updateEntry(entry);
+    }
+
+    @Test
+    void listTargetsShouldExposeCurrentVersionDifference() {
+        ClassicsSharingRepository sharingRepository = mock(ClassicsSharingRepository.class);
+        ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
+        SancaiRepository sancaiRepository = mock(SancaiRepository.class);
+        WangqiDocumentRepository wangqiDocumentRepository = mock(WangqiDocumentRepository.class);
+        MingCustomsRepository mingCustomsRepository = mock(MingCustomsRepository.class);
+        ClassicsSharingApplicationServiceImpl service = new ClassicsSharingApplicationServiceImpl(
+                sharingRepository,
+                contentApplicationService,
+                sancaiRepository,
+                wangqiDocumentRepository,
+                mingCustomsRepository);
+
+        ClassicsShareTarget target = new ClassicsShareTarget();
+        target.setId(ClassicsShareTargetId.of(20L));
+        target.setContentType(ClassicsContentType.SANCAI_ENTRY);
+        target.setContentId(ClassicsContentId.of(100L));
+        target.setContentVersionId(ClassicsContentVersionId.of(9L));
+        target.setContentVersionNo(2);
+        SancaiEntry entry = new SancaiEntry();
+        entry.setId(SancaiEntryId.of(100L));
+        entry.setCurrentVersionId(ClassicsContentVersionId.of(10L));
+        entry.setCurrentVersionNo(3);
+
+        ClassicsShareLinkId shareLinkId = ClassicsShareLinkId.of(10L);
+        when(sharingRepository.listTargetsByLinkId(shareLinkId, SortDirection.ASC))
+                .thenReturn(List.of(target));
+        when(sancaiRepository.getEntryById(SancaiEntryId.of(100L))).thenReturn(entry);
+
+        List<ClassicsShareTarget> targets = service.listTargets(shareLinkId);
+
+        assertEquals(ClassicsContentVersionId.of(10L), targets.get(0).getCurrentContentVersionId());
+        assertEquals(3, targets.get(0).getCurrentContentVersionNo());
+        assertEquals(Boolean.TRUE, targets.get(0).getContentChangedAfterShare());
     }
 }
