@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `classics share docs readiness`：同步分享快照收口文档
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARE-SNAPSHOT.md`
-    - 范围对象：`docs/40-readiness/CLASSICS-IMPLEMENTATION-COVERAGE.md`、`docs/20-interfaces/`、`docs/00-governance/SERVERS-ARCHITECTURE.md`、`docs/30-designs/RUNBOOK-CLASSICS-SHARE-SNAPSHOT.md`
-    - 处理动作：同步三类版本快照 schema、接口、配置、覆盖度状态，并在 PR 收口时删除或收窄 RUNBOOK
-    - 验收点：`docs/20-interfaces/` 固定三类正式版本 `snapshot_json` 字段，文档口径与实现和验证结果一致
-    - 重要度：7/10
-
 - [ ] `classics share cleanup`：清理分享快照任务现场
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-CLASSICS-SHARE-SNAPSHOT.md`

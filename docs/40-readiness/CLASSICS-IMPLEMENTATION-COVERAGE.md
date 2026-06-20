@@ -25,7 +25,7 @@
 - Classics 服务实现阶段已按 `domain -> application -> infra -> interface -> starter -> verification` 拆分并交付阶段结果。
 - 关键架构决策已确认：不做读写分离、Repository 统一命名、业务表不放审计字段、状态使用 `varchar`、`priority` 表内唯一且不参与 KEY、三才图会新增条目使用数据库自增主键。
 - 导出和静态展示第一版只记录任务，不同步生成产物。
-- 分享访问首版支持快照字段入库能力（`title_snapshot`、`content_snapshot_json`）。
+- 分享访问首版支持正式版本绑定和快照字段入库能力（`content_version_id`、`content_version_no`、`title_snapshot`、`content_snapshot_json`）。
 - Admin/Portal starter 已扫描 Classics 的 application/infra/interface 包，启动路径与装配可用。
 - 三才图会 Admin Web 最小闭环已完成：后台菜单和 `/classics/sancai` 路由可进入真实页面，支持门类 CRUD、门类独立排序表单、门类/卷目并列列表、条目列表、搜索、生命周期筛选、分页、详情打开、标题/原文/译文/摘要/公开状态编辑和保存。
 - 三才图会门类、卷和条目治理状态已统一到运行时可解析的业务枚举口径，覆盖当前 schema 默认值、初始化数据和 dev 数据库取值。
@@ -104,11 +104,11 @@
 | 选择三类内容生成分享链接 | 部分完成 | 分享链接创建、状态变更与目标写入服务链路已实现，目标含内容快照字段 | 内容选择与冲突校验、创建幂等性未完成 | Classics |
 | 单链接多个内容 | 部分完成 | 目标关系支持一对多，创建流程可写入多个 target | target 校验、重复去重与回写策略未实现 | Classics |
 | 批量创建分享链接 | 部分完成 | 分享模型与接口需求已覆盖批量创建入口 | 批量结果模型、失败原因与回滚策略未实现 | Classics |
-| 分享链接公开或私有 | 部分完成 | 可见性字段与管理接口（创建/状态变更）已实现 | 访问阶段权限判断与公开/私有分支控制未实现 | Classics, System |
+| 分享链接公开或私有 | 部分完成 | 可见性字段与管理接口（创建/状态变更）已实现；Portal 公开分享访问无需登录，过期、撤销、不存在统一按 404 处理 | 私有分享访问分支、管理侧恢复策略未实现 | Classics, System |
 | 过期时间、撤销和恢复 | 部分完成 | 过期时间与状态更新字段已实现 | 过期清理、恢复/恢复到位自动流未实现 | Classics |
-| 只读访问页 | 已完成 | Portal 已提供 targets 查询端点，分享链接详情可查询 | 无 | Classics, System |
+| 只读访问页 | 已完成 | Portal 已提供公开分享列表和详情端点；Portal Web 已提供首页、分享列表和分享详情路由，展示固化快照 | 无 | Classics, System, Portal Web |
 | 访问统计 | 部分完成 | 访问记录实体与应用服务接口（写入/分页查询）已实现 | 访问入口统计对接与对外统计 API 未接通 | Classics |
-| 分享完整内容快照 | 部分完成 | 快照字段已入模并同步到 schema | 分享创建时未回填快照数据到快照字段 | Classics |
+| 分享完整内容快照 | 已完成 | 分享创建时先确保正式内容版本，再将 `classics_content_version.snapshot_json` 固化到 `classics_share_target.content_snapshot_json`；target 记录 `content_version_id/content_version_no`；三类正式版本快照 schema 已沉淀到 `docs/20-interfaces/CLASSICS-CONTENT-VERSION-SNAPSHOT-INTERFACE.md` | 无 | Classics |
 | 私有内容分享确认文案 | 已完成 | 分享创建与状态模型已支持风险状态表达，确认文案由前端按风险状态渲染 | 无 | Classics |
 | 目标被删除后占位展示 | 已完成 | 目标快照和目标状态可持久化，查询接口可返回状态供前端按状态展示 | 无 | Classics |
 
@@ -129,12 +129,15 @@
 
 ### B1 分享完整内容快照设计补齐
 
-状态：未完成。
+状态：已完成。
 
-需要补充：
+已补充：
 
-- 分享创建时补齐 `ClassicsShareTarget` 的 `titleSnapshot` 与 `contentSnapshotJson` 读取与持久化策略。
-- 后续执行任务需补充快照写入与一致性校验。
+- 分享创建时由后端读取 `Versionable` 主内容，调用正式版本创建/复用流程。
+- `ClassicsShareTarget` 写入 `titleSnapshot`、`contentVisibilitySnapshot`、`contentVersionId`、`contentVersionNo` 和 `contentSnapshotJson`。
+- `contentSnapshotJson` 直接来自绑定的 `classics_content_version.snapshot_json`。
+- Portal API 使用后端生成的 `shareToken` 查询，不暴露 `token_hash`；公开访问失败原因在 Portal 侧统一为 404。
+- 三类正式版本快照字段固定在 `docs/20-interfaces/CLASSICS-CONTENT-VERSION-SNAPSHOT-INTERFACE.md`。
 
 ### B2 AI 候选结果协作设计
 
