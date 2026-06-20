@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `classics seed`：补齐王圻初始化数据
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-WANGQI-ADMIN-WEB.md`
-    - 范围对象：`db/data/classics.sql`、`scripts/verify-classics.sh`
-    - 处理动作：增加王圻 PUBLIC/PRIVATE seed 并补 seed 校验。
-    - 验收点：`scripts/verify-classics.sh` 能校验王圻 seed 存在。
-    - 重要度：8/10
-
 - [ ] `WangqiDocumentAdminControllerTest`：补强后端 Controller 冒烟契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-WANGQI-ADMIN-WEB.md`

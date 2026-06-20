@@ -39,4 +39,24 @@ if ! grep -q "INSERT INTO \`classics_sancai_entry\`" "${ROOT_DIR}/db/data/classi
     exit 1
 fi
 
+if ! grep -q "INSERT INTO \`classics_wangqi_document\`" "${ROOT_DIR}/db/data/classics.sql"; then
+    echo "Missing wangqi document data" >&2
+    exit 1
+fi
+
+if ! grep -q "(400000000001, .*'MARKDOWN'.*'PUBLIC'.*'2026-01-01 08:00:00.000')" "${ROOT_DIR}/db/data/classics.sql"; then
+    echo "Missing public markdown wangqi document data" >&2
+    exit 1
+fi
+
+if ! grep -q "(400000000002, .*'HTML'.*'PRIVATE'.*'2026-01-02 08:00:00.000')" "${ROOT_DIR}/db/data/classics.sql"; then
+    echo "Missing private html wangqi document data" >&2
+    exit 1
+fi
+
+if ! grep -q "\`content_updated_at\`" "${ROOT_DIR}/db/data/classics.sql"; then
+    echo "Missing explicit content_updated_at in classics data" >&2
+    exit 1
+fi
+
 echo "Classics schema and data files are present"
