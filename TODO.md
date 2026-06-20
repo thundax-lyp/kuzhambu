@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `admin-web classics share client`：新增 Admin Web 分享创建 client
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARE-SNAPSHOT.md`
-    - 范围对象：`share-service.ts`、`share-types.ts`、`share-service-contract.test.ts`
-    - 处理动作：新增 Admin Web 分享创建请求类型、响应类型和 service contract test
-    - 验收点：Admin Web client 只提交 target 引用并能读取 `shareUrl`
-    - 重要度：7/10
-
 - [ ] `admin-web sancai share entry`：在三才页面接入分享创建入口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARE-SNAPSHOT.md`
