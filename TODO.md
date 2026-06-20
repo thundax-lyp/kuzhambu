@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `wangqi frontend tests`：补页面单测和 E2E
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-WANGQI-ADMIN-WEB.md`
-    - 范围对象：`wangqi-page.test.tsx`、`kuzhambu-apps/admin-web/e2e/classics/wangqi/wangqi.spec.ts`
-    - 处理动作：覆盖列表、筛选、详情、保存、删除、文件、版本对比和恢复流程。
-    - 验收点：`npm run test` 和 Wangqi E2E 覆盖核心闭环。
-    - 重要度：9/10
-
 - [ ] `dev.env smoke`：执行 Wangqi dev.env 冒烟
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-WANGQI-ADMIN-WEB.md`
