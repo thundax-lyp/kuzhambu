@@ -1,17 +1,32 @@
 package com.thundax.kuzhambu.classics.application.sharing.service.impl;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.sharing.command.ClassicsShareTargetSortCommand;
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkCreateCommand;
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkStatusCommand;
 import com.thundax.kuzhambu.classics.application.sharing.query.ShareAccessQuery;
 import com.thundax.kuzhambu.classics.application.sharing.service.ClassicsSharingApplicationService;
+import com.thundax.kuzhambu.classics.domain.content.model.Versionable;
+import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentChangeType;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsEntryIdCodec;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.repository.MingCustomsRepository;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
+import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
+import com.thundax.kuzhambu.classics.domain.sancai.repository.SancaiRepository;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareAccessRecord;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareLink;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareTarget;
+import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsSharedContentVisibility;
 import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareLinkId;
 import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareTargetId;
 import com.thundax.kuzhambu.classics.domain.sharing.repository.ClassicsSharingRepository;
+import com.thundax.kuzhambu.classics.domain.wangqi.codec.WangqiDocumentIdCodec;
+import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
+import com.thundax.kuzhambu.classics.domain.wangqi.repository.WangqiDocumentRepository;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.exception.ErrorCode;
@@ -33,9 +48,22 @@ import org.springframework.transaction.annotation.Transactional;
 public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApplicationService {
 
     private final ClassicsSharingRepository repository;
+    private final ClassicsContentApplicationService contentApplicationService;
+    private final SancaiRepository sancaiRepository;
+    private final WangqiDocumentRepository wangqiDocumentRepository;
+    private final MingCustomsRepository mingCustomsRepository;
 
-    public ClassicsSharingApplicationServiceImpl(ClassicsSharingRepository repository) {
+    public ClassicsSharingApplicationServiceImpl(
+            ClassicsSharingRepository repository,
+            ClassicsContentApplicationService contentApplicationService,
+            SancaiRepository sancaiRepository,
+            WangqiDocumentRepository wangqiDocumentRepository,
+            MingCustomsRepository mingCustomsRepository) {
         this.repository = repository;
+        this.contentApplicationService = contentApplicationService;
+        this.sancaiRepository = sancaiRepository;
+        this.wangqiDocumentRepository = wangqiDocumentRepository;
+        this.mingCustomsRepository = mingCustomsRepository;
     }
 
     @Override
@@ -68,6 +96,7 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
         List<ClassicsShareTarget> targets =
                 command.getTargets() == null ? Collections.emptyList() : command.getTargets();
         for (ClassicsShareTarget target : targets) {
+            bindVersionSnapshot(target);
             target.setShareLinkId(linkId == null ? null : linkId);
             target.setPriority(nextPriority++);
             repository.insertTarget(target);
@@ -175,6 +204,84 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
         if (repository.updateTargetPriority(target) != 1) {
             throw sortDbFailure();
         }
+    }
+
+    private void bindVersionSnapshot(ClassicsShareTarget target) {
+        Versionable content = loadContent(target);
+        ClassicsContentVersion version =
+                contentApplicationService.ensureVersioned(content, ClassicsContentChangeType.SHARE_CREATED, "创建分享");
+        if (version == null || version.getId() == null) {
+            throw shareContentNotFound();
+        }
+
+        target.setContentVersionId(version.getId());
+        target.setContentVersionNo(version.getVersionNo());
+        target.setContentSnapshotJson(version.getSnapshotJson());
+        target.setTitleSnapshot(titleOf(content));
+        target.setContentVisibilitySnapshot(visibilityOf(content));
+        persistVersionMarker(content);
+    }
+
+    private Versionable loadContent(ClassicsShareTarget target) {
+        if (target == null || target.getContentType() == null || target.getContentId() == null) {
+            throw shareContentNotFound();
+        }
+        ClassicsContentType contentType = target.getContentType();
+        Long contentId = target.getContentId().value();
+        Versionable content =
+                switch (contentType) {
+                    case SANCAI_ENTRY -> sancaiRepository.getEntryById(SancaiEntryIdCodec.toDomain(contentId));
+                    case WANGQI_DOCUMENT -> wangqiDocumentRepository.getById(WangqiDocumentIdCodec.toDomain(contentId));
+                    case MING_CUSTOMS -> mingCustomsRepository.getById(MingCustomsEntryIdCodec.toDomain(contentId));
+                };
+        if (content == null) {
+            throw shareContentNotFound();
+        }
+        return content;
+    }
+
+    private void persistVersionMarker(Versionable content) {
+        int updated =
+                switch (content.contentType()) {
+                    case SANCAI_ENTRY -> sancaiRepository.updateEntry((SancaiEntry) content);
+                    case WANGQI_DOCUMENT -> wangqiDocumentRepository.update((WangqiDocument) content);
+                    case MING_CUSTOMS -> mingCustomsRepository.update((MingCustomsEntry) content);
+                };
+        if (updated != 1) {
+            throw shareContentNotFound();
+        }
+    }
+
+    private static String titleOf(Versionable content) {
+        return switch (content.contentType()) {
+            case SANCAI_ENTRY -> ((SancaiEntry) content).getTitle();
+            case WANGQI_DOCUMENT -> ((WangqiDocument) content).getTitle();
+            case MING_CUSTOMS -> ((MingCustomsEntry) content).getTitle();
+        };
+    }
+
+    private static ClassicsSharedContentVisibility visibilityOf(Versionable content) {
+        return switch (content.contentType()) {
+            case SANCAI_ENTRY ->
+                ((SancaiEntry) content).getVisibility() == null
+                        ? null
+                        : ClassicsSharedContentVisibility.from(
+                                ((SancaiEntry) content).getVisibility().value());
+            case WANGQI_DOCUMENT ->
+                ((WangqiDocument) content).getVisibility() == null
+                        ? null
+                        : ClassicsSharedContentVisibility.from(
+                                ((WangqiDocument) content).getVisibility().value());
+            case MING_CUSTOMS ->
+                ((MingCustomsEntry) content).getVisibility() == null
+                        ? null
+                        : ClassicsSharedContentVisibility.from(
+                                ((MingCustomsEntry) content).getVisibility().value());
+        };
+    }
+
+    private static BizException shareContentNotFound() {
+        return new BizException("分享内容不存在或不支持版本标定");
     }
 
     private static BizException sortEmptyInput() {
