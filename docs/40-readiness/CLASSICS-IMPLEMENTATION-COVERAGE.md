@@ -27,9 +27,9 @@
 - 导出和静态展示第一版只记录任务，不同步生成产物。
 - 分享访问首版支持正式版本绑定和快照字段入库能力（`content_version_id`、`content_version_no`、`title_snapshot`、`content_snapshot_json`）。
 - Admin/Portal starter 已扫描 Classics 的 application/infra/interface 包，启动路径与装配可用。
-- 三才图会 Admin Web 最小闭环已完成：后台菜单和 `/classics/sancai` 路由可进入真实页面，支持门类 CRUD、门类独立排序表单、门类/卷目并列列表、条目列表、搜索、生命周期筛选、分页、详情打开、标题/原文/译文/摘要/公开状态编辑和保存。
+- 三才图会 Admin Web 最小闭环已完成：后台菜单和 `/classics/sancai` 路由可进入真实页面，支持门类 CRUD、门类独立排序表单、门类/卷目并列列表、条目列表、搜索、生命周期筛选、分页、详情打开、标题/原文/译文/摘要/公开状态编辑和保存，以及版本历史、版本字段对比和历史恢复。
 - 三才图会门类、卷和条目治理状态已统一到运行时可解析的业务枚举口径，覆盖当前 schema 默认值、初始化数据和 dev 数据库取值。
-- 三才图会 Admin Web 已用 Playwright 验证接口闭环和页面闭环，覆盖 categories list/detail/save/delete/sort、volumes、entries/page、entries/{id}、entries/save 请求体。
+- 三才图会 Admin Web 已用 Playwright 验证接口闭环和页面闭环，覆盖 categories list/detail/save/delete/sort、volumes、entries/page、entries/{id}、entries/save、entries/versions/list、entries/versions/get、entries/versions/reset 请求体。
 - 明代习俗 Admin Web 最小闭环已完成：后台菜单和 `/classics/ming-customs` 路由可进入真实页面，支持标题/分类/可见性/时间筛选、关键词云、分页、详情打开、新增、编辑、删除和分享入口。
 - 明代习俗分类字典和初始化数据已补齐，`CLASSICS_MING_CUSTOMS_CATEGORY` 可由运行时字典接口读取，dev.env 数据库已同步。
 - 明代习俗富文本展示已通过 Admin Web 独立控件封装 Markdown/HTML 渲染，前端使用统一清洗策略处理危险内容。
@@ -65,7 +65,7 @@
 | 分页、筛选、当前卷搜索和多选 | 部分完成 | 条目分页、筛选、卷过滤、排序查询已实现；Admin Web 已支持门类/卷筛选、关键词搜索、生命周期筛选、分页和 pageSize 切换，并用 Playwright 固定请求体 | 多选结果模型、批量操作和返回聚合未实现 | Classics, Admin Web |
 | 生命周期：草稿、发布、归档、恢复 | 部分完成 | 状态枚举与变更能力在服务层已有实现；Admin Web 已支持按生命周期筛选条目 | 管理接口未完整暴露、恢复策略与版本链路未闭环；本轮页面未提供生命周期编辑 | Classics, Admin Web |
 | 公开和私有可见性管理 | 部分完成 | 条目可见性字段、变更能力已落地；Admin Web 已支持单条目公开状态编辑保存 | 权限过滤调用点、批量修改失败语义未实现 | Classics, Admin Web, System |
-| 版本历史、版本对比和历史恢复 | 部分完成 | 通用版本模型与任务定义已到位 | 条目版本查询/对比、恢复写入规则未对外服务 | Classics |
+| 版本历史、版本对比和历史恢复 | 已完成 | 后端已暴露三才图会条目版本列表、版本详情和历史恢复端点，并校验版本归属；恢复采用追加式版本语义，目标卷内排序值使用当前 `max(priority) + 1`；Admin Web 已提供版本历史列表、当前/历史字段对比、恢复确认、恢复后详情刷新和成功提示 | 无 | Classics, Admin Web |
 | CSV、JSON、HTML 设定集导出 | 部分完成 | 导出任务表、异步接入决策和通用导出创建能力已到位 | 仅记录任务；产物生成与下载未完成 | Classics, Worker, Storage |
 | HTML 视觉资产设定集导出 | 部分完成 | 视觉资产字段与导出任务结构已覆盖 | 仅记录任务；产物生成与下载未完成 | Classics, Worker, Storage |
 | 导出记录查看、下载、删除和过期 | 部分完成 | 导出任务表支持状态、过期和 storage 关联字段 | 列表/下载/权限过滤 API 与清理策略未形成闭环 | Classics, System, Storage |

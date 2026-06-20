@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
+import java.util.Date;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -50,4 +51,19 @@ public class SancaiEntryResponse implements Serializable {
 
     @JsonProperty("priority")
     private Integer priority;
+
+    @JsonProperty("currentVersionId")
+    private Long currentVersionId;
+
+    @JsonProperty("currentVersionNo")
+    private Integer currentVersionNo;
+
+    @JsonProperty("currentVersionedAt")
+    private Date currentVersionedAt;
+
+    @JsonProperty("contentUpdatedAt")
+    private Date contentUpdatedAt;
+
+    @JsonProperty("versionDirty")
+    private Boolean versionDirty;
 }

@@ -1,9 +1,14 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller;
 
+import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiCategorySortCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntrySortCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVolumeSortCommand;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiApplicationService;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentVersionIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiCategoryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiVolumeIdCodec;
@@ -16,11 +21,14 @@ import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiEntryPageRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiEntryRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiEntrySortRequest;
+import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiEntryVersionRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiVolumeRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiVolumeSortRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response.SancaiCategoryResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response.SancaiEntryResponse;
+import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response.SancaiEntryVersionResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response.SancaiVolumeResponse;
+import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
@@ -47,9 +55,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @WrappedApiController
 public class SancaiAdminController {
     private final SancaiApplicationService service;
+    private final ClassicsContentApplicationService contentService;
 
-    public SancaiAdminController(SancaiApplicationService service) {
+    public SancaiAdminController(SancaiApplicationService service, ClassicsContentApplicationService contentService) {
         this.service = service;
+        this.contentService = contentService;
     }
 
     @Operation(summary = "查询三才图会门类类型", description = "classics:sancai:view")
@@ -226,6 +236,44 @@ public class SancaiAdminController {
         return SancaiEntryResponse.builder().id(id == null ? null : id.value()).build();
     }
 
+    @Operation(summary = "查询三才图会条目版本", description = "classics:sancai:view")
+    @ApiImplicitParams({})
+    @HasPermission("classics:sancai:view")
+    @SysLogger(value = "版本列表")
+    @PostMapping("entries/versions/list")
+    public List<SancaiEntryVersionResponse> listEntryVersions(@Valid @RequestBody SancaiEntryVersionRequest request) {
+        Long entryId = requireParameter(request == null ? null : request.getId(), "id");
+        return contentService
+                .listVersions(ClassicsContentType.SANCAI_ENTRY.value(), ClassicsContentIdCodec.toDomain(entryId))
+                .stream()
+                .map(SancaiInterfaceAssembler::toVersionResponse)
+                .toList();
+    }
+
+    @Operation(summary = "查看三才图会条目版本", description = "classics:sancai:view")
+    @ApiImplicitParams({})
+    @HasPermission("classics:sancai:view")
+    @SysLogger(value = "版本详情")
+    @PostMapping("entries/versions/get")
+    public SancaiEntryVersionResponse getEntryVersion(@Valid @RequestBody SancaiEntryVersionRequest request) {
+        Long entryId = requireParameter(request == null ? null : request.getId(), "id");
+        Long versionId = requireParameter(request == null ? null : request.getVersionId(), "versionId");
+        return SancaiInterfaceAssembler.toVersionResponse(ownedEntryVersion(entryId, versionId));
+    }
+
+    @Operation(summary = "恢复三才图会条目版本", description = "classics:sancai:edit")
+    @ApiImplicitParams({})
+    @HasPermission("classics:sancai:edit")
+    @SysLogger(value = "版本恢复")
+    @PostMapping("entries/versions/reset")
+    public SancaiEntryVersionResponse resetEntryVersion(@Valid @RequestBody SancaiEntryVersionRequest request) {
+        Long entryId = requireParameter(request == null ? null : request.getId(), "id");
+        Long versionId = requireParameter(request == null ? null : request.getVersionId(), "versionId");
+        ownedEntryVersion(entryId, versionId);
+        return SancaiInterfaceAssembler.toVersionResponse(
+                contentService.restoreHistoryVersion(ClassicsContentVersionIdCodec.toDomain(versionId)));
+    }
+
     @Operation(summary = "排序三才图会门类", description = "classics:sancai:edit")
     @ApiImplicitParams({})
     @HasPermission("classics:sancai:edit")
@@ -284,5 +332,22 @@ public class SancaiAdminController {
     @PostMapping("entries/delete")
     public void deleteEntry(@Valid @RequestBody SancaiEntryRequest request) {
         service.deleteEntry(SancaiEntryIdCodec.toDomain(request.getId()));
+    }
+
+    private ClassicsContentVersion ownedEntryVersion(Long entryId, Long versionId) {
+        ClassicsContentVersion version = contentService.getVersion(ClassicsContentVersionIdCodec.toDomain(versionId));
+        if (version == null
+                || version.getContentType() != ClassicsContentType.SANCAI_ENTRY
+                || !ClassicsContentIdCodec.toDomain(entryId).equals(version.getContentId())) {
+            throw new BizException("三才图会版本不属于当前条目");
+        }
+        return version;
+    }
+
+    private static Long requireParameter(Long value, String name) {
+        if (value == null) {
+            throw AdminResponseExceptions.invalidParameter(name);
+        }
+        return value;
     }
 }

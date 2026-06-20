@@ -115,10 +115,55 @@ const installSancaiFetchMock = () => {
                     translationStatus: "PENDING",
                     imageStatus: "PENDING",
                     visualAssetStatus: "PENDING",
-                    refinementStatus: "PENDING"
+                    refinementStatus: "PENDING",
+                    currentVersionId: 9001,
+                    currentVersionNo: 1,
+                    currentVersionedAt: "2026-06-20T01:00:00.000+08:00",
+                    contentUpdatedAt: "2026-06-20T01:00:00.000+08:00",
+                    versionDirty: false
                 }
             ]);
         }
+
+        if (path.endsWith("/classics/sancai/entries/3001")) {
+            return apiResponse({
+                id: 3001,
+                volumeId: 101,
+                title: "天地",
+                originalText: "天地玄黄",
+                translationText: "译文",
+                summary: "天地摘要",
+                lifecycleStatus: "PUBLISHED",
+                visibility: "PUBLIC",
+                translationStatus: "TRANSLATED",
+                imageStatus: "HAS_IMAGE",
+                visualAssetStatus: "READY",
+                refinementStatus: "COMPLETE",
+                currentVersionId: 9001,
+                currentVersionNo: 1,
+                currentVersionedAt: "2026-06-20T01:00:00.000+08:00",
+                contentUpdatedAt: "2026-06-20T01:00:00.000+08:00",
+                versionDirty: false
+            });
+        }
+
+        if (path.endsWith("/classics/sancai/entries/versions/list")) {
+            return apiResponse([
+                {
+                    id: 9001,
+                    contentType: "SANCAI_ENTRY",
+                    contentId: 3001,
+                    versionNo: 1,
+                    versionedAt: "2026-06-20T01:00:00.000+08:00",
+                    snapshotJson: JSON.stringify({
+                        title: "历史天地"
+                    }),
+                    changeType: "MANUAL_SAVE",
+                    changeSummary: "手动保存"
+                }
+            ]);
+        }
+
         if (path.endsWith("/classics/sancai/volumes/add")) {
             return apiResponse({
                 categoryId: 2,

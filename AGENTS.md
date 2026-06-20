@@ -42,6 +42,8 @@ mvn spotless:check
 mvn checkstyle:check
 ```
 
+If `spotless:check` reports only formatting violations, it is acceptable to run the narrowest relevant formatter, such as module-scoped `mvn -pl ... spotless:apply`. After applying formatting, inspect `git diff` and keep only task-related file changes.
+
 Frontend apps use npm workspaces under `kuzhambu-apps/`:
 
 ```sh
@@ -59,15 +61,20 @@ npm run format:check
 npm run lint
 ```
 
+If `format:check` reports only formatting violations, it is acceptable to run the narrowest relevant formatter, such as workspace-scoped `npm --workspace ... run format`. After applying formatting, inspect `git diff` and keep only task-related file changes.
+
 Python workers use Python 3.10 and a repo-local virtual environment:
 
 ```sh
 cd kuzhambu-workers
 python3.10 -m venv .venv
 .venv/bin/python -m pip install -e '.[dev]'
+.venv/bin/python -m ruff format --check .
 .venv/bin/python -m ruff check .
 .venv/bin/python -m pytest -p no:capture
 ```
+
+Before any Python worker test, package, or runtime validation step, run Ruff formatting and lint checks first. If `ruff format --check` reports only formatting violations, it is acceptable to run `.venv/bin/python -m ruff format .`. After applying formatting, inspect `git diff` and keep only task-related file changes.
 
 ## Coding Style & Naming Conventions
 

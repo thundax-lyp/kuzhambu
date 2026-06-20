@@ -50,6 +50,8 @@ public interface SancaiRepository {
 
     int maxEntryPriority();
 
+    int maxEntryPriorityByVolumeId(SancaiVolumeId volumeId);
+
     SancaiEntry getEntryById(SancaiEntryId id);
 
     Page<SancaiEntry> pageEntries(
@@ -80,6 +82,8 @@ public interface SancaiRepository {
     SancaiEntryId insertEntry(SancaiEntry entry);
 
     int updateEntry(SancaiEntry entry);
+
+    int updateRestoredEntry(SancaiEntry entry);
 
     int updateEntryStatus(SancaiEntry entry);
 

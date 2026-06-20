@@ -8,6 +8,7 @@ import com.thundax.kuzhambu.classics.application.content.command.ContentTagComma
 import com.thundax.kuzhambu.classics.application.content.command.ContentTagSortCommand;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.content.support.ClassicsContentSnapshotAssembler;
+import com.thundax.kuzhambu.classics.application.sancai.support.SancaiEntryVersionRestorer;
 import com.thundax.kuzhambu.classics.application.wangqi.support.WangqiDocumentVersionRestorer;
 import com.thundax.kuzhambu.classics.domain.content.model.Versionable;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentExportJob;
@@ -23,6 +24,7 @@ import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsCo
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentVersionId;
 import com.thundax.kuzhambu.classics.domain.content.repository.ClassicsContentRepository;
 import com.thundax.kuzhambu.classics.domain.content.service.ClassicsContentVersioningService;
+import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
@@ -46,13 +48,22 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
 
     private final ClassicsContentRepository repository;
     private final WangqiDocumentVersionRestorer wangqiDocumentVersionRestorer;
+    private final SancaiEntryVersionRestorer sancaiEntryVersionRestorer;
     private final ClassicsContentVersioningService versioningService = new ClassicsContentVersioningService();
     private final ClassicsContentSnapshotAssembler snapshotAssembler = new ClassicsContentSnapshotAssembler();
 
     public ClassicsContentApplicationServiceImpl(
             ClassicsContentRepository repository, WangqiDocumentVersionRestorer wangqiDocumentVersionRestorer) {
+        this(repository, wangqiDocumentVersionRestorer, null);
+    }
+
+    public ClassicsContentApplicationServiceImpl(
+            ClassicsContentRepository repository,
+            WangqiDocumentVersionRestorer wangqiDocumentVersionRestorer,
+            SancaiEntryVersionRestorer sancaiEntryVersionRestorer) {
         this.repository = repository;
         this.wangqiDocumentVersionRestorer = wangqiDocumentVersionRestorer;
+        this.sancaiEntryVersionRestorer = sancaiEntryVersionRestorer;
     }
 
     @Override
@@ -302,6 +313,12 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             Versionable restored = wangqiDocumentVersionRestorer.restoreSnapshot(version);
             ClassicsContentVersion restoredVersion = createRestoredVersion(restored, version);
             wangqiDocumentVersionRestorer.markVersioned((WangqiDocument) restored);
+            return restoredVersion;
+        }
+        if (version.getContentType() == ClassicsContentType.SANCAI_ENTRY) {
+            Versionable restored = sancaiEntryVersionRestorer.restoreSnapshot(version);
+            ClassicsContentVersion restoredVersion = createRestoredVersion(restored, version);
+            sancaiEntryVersionRestorer.markVersioned((SancaiEntry) restored);
             return restoredVersion;
         }
         throw new BizException("暂不支持恢复该类型历史版本: " + version.getContentType());

@@ -205,6 +205,9 @@ describe("sancai service request contracts", () => {
             sortDirection: "ASC"
         });
 
+        await entryService.get(3001);
+        expectLastCall("GET", "/classics/sancai/entries/3001", undefined);
+
         await entryService.add(entryCommand);
         expectLastCall("POST", "/classics/sancai/entries/add", entryCommand);
 
@@ -229,6 +232,23 @@ describe("sancai service request contracts", () => {
         expectLastCall("POST", "/classics/sancai/entries/sort", {
             orderedIds: [3001, 3002],
             sortDirection: "ASC"
+        });
+
+        await entryService.listVersions(3001);
+        expectLastCall("POST", "/classics/sancai/entries/versions/list", {
+            id: 3001
+        });
+
+        await entryService.getVersion(3001, 9001);
+        expectLastCall("POST", "/classics/sancai/entries/versions/get", {
+            id: 3001,
+            versionId: 9001
+        });
+
+        await entryService.resetVersion(3001, 9001);
+        expectLastCall("POST", "/classics/sancai/entries/versions/reset", {
+            id: 3001,
+            versionId: 9001
         });
     });
 });
