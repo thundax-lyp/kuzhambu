@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `db/schema/classics.sql db/data/classics.sql docs/30-designs/CLASSICS-DESIGN.md`：补齐 Classics 统一版本标定数据库字段
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-VERSIONABLE.md`
-    - 范围对象：`db/schema/classics.sql`、`db/data/classics.sql`、`docs/30-designs/CLASSICS-DESIGN.md`
-    - 处理动作：为三类主内容表增加 `current_version_id/current_version_no/current_versioned_at/content_updated_at` 并同步初始化数据和设计文档
-    - 验收点：schema、初始化数据和设计文档字段一致，且本地库可按 `dev.env` 同步
-    - 重要度：10/10
-
 - [ ] `classics-domain content`：新增 Versionable 契约和版本仓储能力
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-VERSIONABLE.md`
