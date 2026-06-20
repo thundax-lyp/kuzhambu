@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics/mingcustoms cleanup`：清理明代习俗闭环调试现场
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-MINGCUSTOMS-ADMIN-WEB.md`
-    - 范围对象：`dev.env`、本地运行进程、本地日志、`git status`
-    - 处理动作：清理冒烟测试数据、停止本地服务、移除临时日志并确认工作区只保留本轮应提交文件。
-    - 验收点：dev.env 无临时测试脏数据，本地无遗留调试进程，`git status` 无非预期改动。
-    - 重要度：9/10
-
 - [ ] `classics/mingcustoms docs-cleanup`：更新覆盖状态并清理手册
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-MINGCUSTOMS-ADMIN-WEB.md`
