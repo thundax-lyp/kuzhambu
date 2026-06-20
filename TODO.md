@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web ming-customs service`：增加明代习俗前端服务契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-MINGCUSTOMS-ADMIN-WEB.md`
-    - 范围对象：`ming-customs-types.ts`、`ming-customs-service.ts`、`ming-customs-service-contract.test.ts`
-    - 处理动作：封装 page/get/add/update/delete/keyword-cloud/category-options 服务。
-    - 验收点：service contract test 固定 URL、method、request body 和 response 映射。
-    - 重要度：9/10
-
 - [ ] `admin-web rich-content viewer`：增加富文本展示控件
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-MINGCUSTOMS-ADMIN-WEB.md`
