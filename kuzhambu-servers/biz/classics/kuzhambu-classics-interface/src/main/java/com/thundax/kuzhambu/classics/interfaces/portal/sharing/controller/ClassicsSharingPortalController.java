@@ -1,9 +1,9 @@
 package com.thundax.kuzhambu.classics.interfaces.portal.sharing.controller;
 
 import com.thundax.kuzhambu.classics.application.sharing.service.ClassicsSharingApplicationService;
-import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareTarget;
+import com.thundax.kuzhambu.classics.interfaces.portal.sharing.assembler.ClassicsSharingPortalInterfaceAssembler;
+import com.thundax.kuzhambu.classics.interfaces.portal.sharing.controller.response.ClassicsSharePortalResponse;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
-import java.util.List;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,8 +17,8 @@ public class ClassicsSharingPortalController {
         this.service = service;
     }
 
-    @GetMapping("{tokenHash}/targets")
-    public List<ClassicsShareTarget> listTargets(@PathVariable("tokenHash") String tokenHash) {
-        return service.listTargets(service.getLinkByTokenHash(tokenHash).getId());
+    @GetMapping("{shareToken}")
+    public ClassicsSharePortalResponse get(@PathVariable("shareToken") String shareToken) {
+        return ClassicsSharingPortalInterfaceAssembler.toResponse(service.getPortalShare(shareToken));
     }
 }

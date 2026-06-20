@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `classics portal sharing interface`：调整 Portal 分享查询为明文 shareToken 入口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARE-SNAPSHOT.md`
-    - 范围对象：`ClassicsSharingPortalController.java`、`ClassicsSharingPortalInterfaceAssembler.java`、`ClassicsSharePortalResponse.java`、`ClassicsSharePortalTargetResponse.java`
-    - 处理动作：将 Portal 查询路径改为接收明文 shareToken，并返回 link 元信息和 target 快照 DTO
-    - 验收点：Portal API 不暴露 `tokenHash`，response 不返回 domain entity 内部结构
-    - 重要度：9/10
-
 - [ ] `classics portal share list interface`：新增 Portal 分享列表查询接口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARE-SNAPSHOT.md`
