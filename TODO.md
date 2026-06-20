@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web ming-customs route`：注册明代习俗页面入口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-MINGCUSTOMS-ADMIN-WEB.md`
-    - 范围对象：`router/index.tsx`、`ming-customs-page.tsx`、`ming-customs-page.css`、`ming-customs-page.test.tsx`
-    - 处理动作：注册 `/classics/ming-customs` 页面骨架和首次加载。
-    - 验收点：页面测试确认标题可见并触发 `POST /classics/ming-customs/page`。
-    - 重要度：8/10
-
 - [ ] `admin-web ming-customs list`：增加明代习俗列表和关键词云
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-MINGCUSTOMS-ADMIN-WEB.md`
