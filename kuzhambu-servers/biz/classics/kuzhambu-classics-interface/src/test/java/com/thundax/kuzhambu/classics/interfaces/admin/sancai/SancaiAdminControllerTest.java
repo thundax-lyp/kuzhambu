@@ -6,11 +6,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiCategoryCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVolumeCommand;
 import com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryPageQuery;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiApplicationService;
+import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentChangeType;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
+import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
+import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentVersionId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiCategory;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVolume;
@@ -29,9 +35,11 @@ import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.SancaiAd
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiCategoryRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiEntryPageRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiEntryRequest;
+import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiEntryVersionRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiVolumeRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response.SancaiCategoryResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response.SancaiEntryResponse;
+import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response.SancaiEntryVersionResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response.SancaiVolumeResponse;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
@@ -70,6 +78,21 @@ class SancaiAdminControllerTest {
         assertGetMapping(SancaiAdminController.class, "getEntry", "entries/{id}", Long.class);
         assertPostMapping(SancaiAdminController.class, "addEntry", "entries/add", SancaiEntryRequest.class);
         assertPostMapping(SancaiAdminController.class, "updateEntry", "entries/update", SancaiEntryRequest.class);
+        assertPostMapping(
+                SancaiAdminController.class,
+                "listEntryVersions",
+                "entries/versions/list",
+                SancaiEntryVersionRequest.class);
+        assertPostMapping(
+                SancaiAdminController.class,
+                "getEntryVersion",
+                "entries/versions/get",
+                SancaiEntryVersionRequest.class);
+        assertPostMapping(
+                SancaiAdminController.class,
+                "resetEntryVersion",
+                "entries/versions/reset",
+                SancaiEntryVersionRequest.class);
         assertPostMapping(SancaiAdminController.class, "deleteEntry", "entries/delete", SancaiEntryRequest.class);
     }
 
@@ -170,6 +193,17 @@ class SancaiAdminControllerTest {
                 "imageStatus",
                 "visualAssetStatus",
                 "refinementStatus");
+        SancaiEntryVersionRequest versionRequest = OBJECT_MAPPER.readValue(
+                """
+                {
+                  "id": 3001,
+                  "versionId": 9001
+                }
+                """,
+                SancaiEntryVersionRequest.class);
+        assertEquals(3001L, versionRequest.getId());
+        assertEquals(9001L, versionRequest.getVersionId());
+        assertJsonFields(versionRequest, "id", "versionId");
 
         assertJsonFields(
                 SancaiCategoryResponse.builder()
@@ -210,6 +244,11 @@ class SancaiAdminControllerTest {
                         .visualAssetStatus("READY")
                         .refinementStatus("COMPLETE")
                         .priority(1)
+                        .currentVersionId(9001L)
+                        .currentVersionNo(1)
+                        .currentVersionedAt(new java.util.Date(1_000L))
+                        .contentUpdatedAt(new java.util.Date(1_000L))
+                        .versionDirty(false)
                         .build(),
                 "id",
                 "volumeId",
@@ -223,12 +262,36 @@ class SancaiAdminControllerTest {
                 "imageStatus",
                 "visualAssetStatus",
                 "refinementStatus",
-                "priority");
+                "priority",
+                "currentVersionId",
+                "currentVersionNo",
+                "currentVersionedAt",
+                "contentUpdatedAt",
+                "versionDirty");
+        assertJsonFields(
+                SancaiEntryVersionResponse.builder()
+                        .id(9001L)
+                        .contentType("SANCAI_ENTRY")
+                        .contentId(3001L)
+                        .versionNo(1)
+                        .versionedAt(new java.util.Date(1_000L))
+                        .snapshotJson("{}")
+                        .changeType("MANUAL_SAVE")
+                        .changeSummary("手动保存")
+                        .build(),
+                "id",
+                "contentType",
+                "contentId",
+                "versionNo",
+                "versionedAt",
+                "snapshotJson",
+                "changeType",
+                "changeSummary");
     }
 
     @Test
     void listAndEntryMethodsShouldUseApplicationContracts() {
-        SancaiAdminController controller = new SancaiAdminController(sancaiService());
+        SancaiAdminController controller = new SancaiAdminController(sancaiService(), contentService());
 
         List<DictResponse> categoryTypes = controller.listCategoryTypes();
         assertEquals("SANCAI_CATEGORY_TYPE", categoryTypes.get(0).getType());
@@ -298,8 +361,50 @@ class SancaiAdminControllerTest {
     }
 
     @Test
+    void versionMethodsShouldUseContentContracts() {
+        SancaiAdminController controller = new SancaiAdminController(sancaiService(), contentService());
+        SancaiEntryVersionRequest request = new SancaiEntryVersionRequest();
+        request.setId(3001L);
+        request.setVersionId(9001L);
+
+        List<SancaiEntryVersionResponse> versions = controller.listEntryVersions(request);
+        assertEquals(1, versions.size());
+        assertEquals(1, versions.get(0).getVersionNo());
+        assertEquals("SANCAI_ENTRY", versions.get(0).getContentType());
+
+        SancaiEntryVersionResponse version = controller.getEntryVersion(request);
+        assertEquals(9001L, version.getId());
+        assertEquals(3001L, version.getContentId());
+
+        SancaiEntryVersionResponse restoredVersion = controller.resetEntryVersion(request);
+        assertEquals(9002L, restoredVersion.getId());
+        assertEquals("HISTORY_RESTORED", restoredVersion.getChangeType());
+    }
+
+    @Test
+    void versionMethodsShouldRejectMismatchedVersionOwnership() {
+        SancaiAdminController controller = new SancaiAdminController(sancaiService(), contentService());
+        SancaiEntryVersionRequest request = new SancaiEntryVersionRequest();
+        request.setId(3002L);
+        request.setVersionId(9001L);
+
+        assertThrows(RuntimeException.class, () -> controller.getEntryVersion(request));
+        assertThrows(RuntimeException.class, () -> controller.resetEntryVersion(request));
+    }
+
+    @Test
+    void versionMethodsShouldRejectMissingVersionId() {
+        SancaiAdminController controller = new SancaiAdminController(sancaiService(), contentService());
+        SancaiEntryVersionRequest request = new SancaiEntryVersionRequest();
+        request.setId(3001L);
+
+        assertThrows(RuntimeException.class, () -> controller.getEntryVersion(request));
+        assertThrows(RuntimeException.class, () -> controller.resetEntryVersion(request));
+    }
+
+    @Test
     void invalidPageEnumShouldBeRejectedBeforeApplicationCall() {
-        SancaiAdminController controller = new SancaiAdminController(sancaiService());
+        SancaiAdminController controller = new SancaiAdminController(sancaiService(), contentService());
         SancaiEntryPageRequest request = new SancaiEntryPageRequest();
         request.setLifecycleStatus("UNKNOWN");
 
@@ -402,6 +507,28 @@ class SancaiAdminControllerTest {
                 });
     }
 
+    private static ClassicsContentApplicationService contentService() {
+        return (ClassicsContentApplicationService) Proxy.newProxyInstance(
+                ClassicsContentApplicationService.class.getClassLoader(),
+                new Class<?>[] {ClassicsContentApplicationService.class},
+                (proxy, method, args) -> {
+                    if ("listVersions".equals(method.getName())) {
+                        assertEquals(ClassicsContentType.SANCAI_ENTRY.value(), args[0]);
+                        assertEquals(ClassicsContentId.of(3001L), args[1]);
+                        return List.of(version(9001L, 3001L, 1, ClassicsContentChangeType.MANUAL_SAVE));
+                    }
+                    if ("getVersion".equals(method.getName())) {
+                        assertEquals(ClassicsContentVersionId.of(9001L), args[0]);
+                        return version(9001L, 3001L, 1, ClassicsContentChangeType.MANUAL_SAVE);
+                    }
+                    if ("restoreHistoryVersion".equals(method.getName())) {
+                        assertEquals(ClassicsContentVersionId.of(9001L), args[0]);
+                        return version(9002L, 3001L, 2, ClassicsContentChangeType.HISTORY_RESTORED);
+                    }
+                    throw new UnsupportedOperationException(method.getName());
+                });
+    }
+
     private static SancaiEntry entry() {
         return new SancaiEntry(
                 SancaiEntryId.of(3001L),
@@ -417,6 +544,20 @@ class SancaiAdminControllerTest {
                 SancaiEntryVisualAssetStatus.READY,
                 SancaiEntryRefinementStatus.COMPLETE,
                 1);
+    }
+
+    private static ClassicsContentVersion version(
+            Long versionId, Long contentId, int versionNo, ClassicsContentChangeType changeType) {
+        ClassicsContentVersion version = new ClassicsContentVersion();
+        version.setId(ClassicsContentVersionId.of(versionId));
+        version.setContentType(ClassicsContentType.SANCAI_ENTRY);
+        version.setContentId(ClassicsContentId.of(contentId));
+        version.setVersionNo(versionNo);
+        version.setVersionedAt(new java.util.Date(1_000L));
+        version.setSnapshotJson("{}");
+        version.setChangeType(changeType);
+        version.setChangeSummary(changeType == ClassicsContentChangeType.HISTORY_RESTORED ? "恢复历史版本 v1" : "手动保存");
+        return version;
     }
 
     private static void assertRequestMapping(Class<?> controllerType, String expectedPath) {

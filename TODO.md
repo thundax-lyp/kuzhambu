@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics-sancai-version-admin-api`：开放三才图会版本列表、详情和恢复接口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-VERSION-RESTORE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/sancai/controller/SancaiAdminController.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/test/java/com/thundax/kuzhambu/classics/interfaces/admin/sancai/controller/SancaiAdminControllerTest.java`
-    - 处理动作：增加 `entries/versions/list|get|reset` 管理接口并补归属校验。
-    - 验收点：接口权限、路径、请求体、版本归属校验和 reset 调用链均被 controller 测试覆盖。
-    - 重要度：9/10
-
 - [ ] `classics-sancai-version-backend-tests`：锁定三才图会恢复后端行为
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-VERSION-RESTORE.md`
