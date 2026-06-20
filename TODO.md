@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `classics version snapshot dto`：新增三类正式版本快照 DTO
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARE-SNAPSHOT.md`
-    - 范围对象：`SancaiEntryVersionSnapshot.java`、`WangqiDocumentVersionSnapshot.java`、`MingCustomsVersionSnapshot.java`、`ClassicsContentSnapshotAssembler.java`
-    - 处理动作：用三个 DTO 固定三类内容的正式版本 `snapshot_json` 映射结构
-    - 验收点：`ClassicsContentSnapshotAssembler` 不再输出隐式 Map 结构，三类快照字段由 DTO 明确定义
-    - 重要度：9/10
-
 - [ ] `classics admin sharing interface`：新增 Admin 分享创建 request/response DTO
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARE-SNAPSHOT.md`
