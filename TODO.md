@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `SancaiEntry persistence`：接入三才条目版本标定持久化映射
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-VERSIONABLE.md`
-    - 范围对象：`SancaiEntryDO.java`、`SancaiPersistenceAssembler.java`
-    - 处理动作：为三才条目 DO 和 assembler 补充版本标定字段映射
-    - 验收点：三才条目的数据库字段、DO 和 domain entity 字段一致
-    - 重要度：8/10
-
 - [ ] `WangqiDocument persistence`：接入王圻文档版本标定持久化映射
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-VERSIONABLE.md`

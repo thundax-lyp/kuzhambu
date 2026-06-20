@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.infra.sancai.persistence.assembler;
 
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentVersionIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiCategoryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiVolumeIdCodec;
@@ -18,6 +19,7 @@ import com.thundax.kuzhambu.classics.infra.sancai.persistence.dataobject.SancaiC
 import com.thundax.kuzhambu.classics.infra.sancai.persistence.dataobject.SancaiEntryDO;
 import com.thundax.kuzhambu.classics.infra.sancai.persistence.dataobject.SancaiVolumeDO;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public final class SancaiPersistenceAssembler {
@@ -126,6 +128,10 @@ public final class SancaiPersistenceAssembler {
         dataObject.setVisualAssetStatus(value(entity.getVisualAssetStatus()));
         dataObject.setRefinementStatus(value(entity.getRefinementStatus()));
         dataObject.setPriority(entity.getPriority());
+        dataObject.setCurrentVersionId(ClassicsContentVersionIdCodec.toValue(entity.getCurrentVersionId()));
+        dataObject.setCurrentVersionNo(entity.getCurrentVersionNo());
+        dataObject.setCurrentVersionedAt(entity.getCurrentVersionedAt());
+        dataObject.setContentUpdatedAt(contentUpdatedAt(entity.getContentUpdatedAt()));
         return dataObject;
     }
 
@@ -161,6 +167,10 @@ public final class SancaiPersistenceAssembler {
                         ? null
                         : SancaiEntryRefinementStatus.from(dataObject.getRefinementStatus()));
         entry.setPriority(priorityOrDefault(dataObject.getPriority()));
+        entry.setCurrentVersionId(ClassicsContentVersionIdCodec.toDomain(dataObject.getCurrentVersionId()));
+        entry.setCurrentVersionNo(dataObject.getCurrentVersionNo());
+        entry.setCurrentVersionedAt(dataObject.getCurrentVersionedAt());
+        entry.setContentUpdatedAt(dataObject.getContentUpdatedAt());
         return entry;
     }
 
@@ -180,5 +190,9 @@ public final class SancaiPersistenceAssembler {
 
     private static int priorityOrDefault(Integer priority) {
         return priority == null ? 0 : priority;
+    }
+
+    private static Date contentUpdatedAt(Date contentUpdatedAt) {
+        return contentUpdatedAt == null ? new Date() : contentUpdatedAt;
     }
 }

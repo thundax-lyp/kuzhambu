@@ -287,7 +287,8 @@ public class SancaiRepositoryImpl implements SancaiRepository {
                         .set(SancaiEntryDO::getTranslationStatus, dataObject.getTranslationStatus())
                         .set(SancaiEntryDO::getImageStatus, dataObject.getImageStatus())
                         .set(SancaiEntryDO::getVisualAssetStatus, dataObject.getVisualAssetStatus())
-                        .set(SancaiEntryDO::getRefinementStatus, dataObject.getRefinementStatus()));
+                        .set(SancaiEntryDO::getRefinementStatus, dataObject.getRefinementStatus())
+                        .set(SancaiEntryDO::getContentUpdatedAt, dataObject.getContentUpdatedAt()));
     }
 
     @Override
