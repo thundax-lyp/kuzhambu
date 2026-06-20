@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `classics versionable validation`：运行 Versionable 验证和 dev.env 冒烟测试
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-VERSIONABLE.md`
-    - 范围对象：`kuzhambu-servers`、`dev.env`、`kuzhambu-admin-starter`
-    - 处理动作：运行 Maven 格式检查、静态检查、相关测试、本地数据库同步、starter 启动和业务冒烟检查
-    - 验收点：相关验证通过，至少一类内容手动保存生成正式版本并回填主表，至少一个非正式版本动作不生成版本
-    - 重要度：10/10
-
 - [ ] `classics share target version binding`：分享目标绑定正式内容版本
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-VERSIONABLE.md`
