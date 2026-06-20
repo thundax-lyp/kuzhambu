@@ -103,6 +103,13 @@
 
 需要发生的后端接口变更：
 
+- `WangqiDocumentResponse` 必须一次性补齐页面展示所需字段，不留实现时再补：
+    - `currentVersionId`
+    - `currentVersionNo`
+    - `currentVersionedAt`
+    - `contentUpdatedAt`
+    - `versionDirty`
+    - `sourceFile`
 - 在 `WangqiDocumentAdminController` 增加原始文件端点：
     - `POST /api/classics/wangqi/documents/{id}/source-file/upload`
     - `GET /api/classics/wangqi/documents/{id}/source-file/content`
@@ -236,10 +243,30 @@ interface WangqiDocumentResponse {
     documentTime?: string | null;
     storageObjectId?: number | null;
     visibility?: string | null;
+    currentVersionId?: number | null;
+    currentVersionNo?: number | null;
+    currentVersionedAt?: string | null;
+    contentUpdatedAt?: string | null;
+    versionDirty?: boolean;
+    sourceFile?: WangqiSourceFileResponse | null;
+}
+
+interface WangqiSourceFileResponse {
+    documentId: number;
+    storageObjectId?: number | null;
+    originalFilename?: string | null;
+    contentType?: string | null;
+    size?: number | null;
+    contentUrl?: string | null;
 }
 ```
 
-本轮不要求响应返回 `currentVersionId`、`currentVersionNo`、`currentVersionedAt` 或 `contentUpdatedAt`。如果实现页面时需要展示“正式版本/污染状态”，必须先补充后端 response、接口测试和本文档，再实现前端展示。
+版本状态计算规则：
+
+- `versionDirty = currentVersionId == null || currentVersionedAt == null || contentUpdatedAt > currentVersionedAt`。
+- `sourceFile` 由后端根据 `storageObjectId` 查询 Storage 元数据后组装。
+- `sourceFile.contentUrl` 固定为 `/api/classics/wangqi/documents/{id}/source-file/content`。
+- page、get、timeline 返回同一个 `WangqiDocumentResponse` 结构；列表可以只展示其中部分字段，但契约保持一致。
 
 ### 前端领域类型
 
@@ -258,15 +285,30 @@ export interface WangqiDocumentRecord {
     documentTime?: string | null;
     storageObjectId?: number | null;
     visibility?: string | null;
+    currentVersionId?: number | null;
+    currentVersionNo?: number | null;
+    currentVersionedAt?: string | null;
+    contentUpdatedAt?: string | null;
+    versionDirty?: boolean;
+    sourceFile?: WangqiSourceFileRecord | null;
+}
+
+export interface WangqiSourceFileRecord {
+    documentId: number;
+    storageObjectId?: number | null;
+    originalFilename?: string | null;
+    contentType?: string | null;
+    size?: number | null;
+    contentUrl?: string | null;
 }
 ```
 
-### Storage 对象类型
+### 原始文件类型
 
-Wangqi 页面新增局部类型，不直接导入 Storage 页面私有类型：
+Wangqi 页面新增局部类型，不直接导入 Storage 页面私有类型。该类型与后端 `WangqiSourceFileResponse` 对齐：
 
 ```ts
-export interface WangqiStorageObjectRecord {
+export interface WangqiSourceFileRecord {
     documentId: number;
     storageObjectId?: number | null;
     originalFilename?: string | null;
@@ -601,7 +643,7 @@ Storage 字段规则：
 动作：
 
 - 定义 `WangqiDocumentRecord`。
-- 定义 `WangqiStorageObjectRecord`。
+- 定义 `WangqiSourceFileRecord`。
 - 定义 `WangqiContentVersionRecord` 和 `WangqiVersionSnapshot`。
 - 定义 `WangqiDocumentQuery` 和 `WangqiDocumentCommand`。
 - 实现 page/get/listTimeline/add/update/deleteById。
@@ -787,4 +829,3 @@ mvn spring-boot:run
 - 王圻原始文件本轮通过 Wangqi 自有 API 接入上传和下载/读取；底层复用 Storage helper/service，但不暴露统一 Storage API 给 Wangqi 页面直接调用。
 - 王圻标签、问答对和 AI 候选确认仍属于后续 Classics/Knowledge/AI 协作任务。
 - 私有文档权限过滤依赖 System 权限接入，本轮只按现有接口和 seed 权限完成后台管理闭环。
-- 如果实现过程中发现后端 response 缺少页面必须展示的字段，应先补充接口契约、测试和本 RUNBOOK，再继续前端实现。
