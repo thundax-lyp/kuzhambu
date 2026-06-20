@@ -11,12 +11,12 @@
 
 ## 待审阅任务项
 
-- [ ] `WangqiDocumentAdminControllerTest`：补强后端 Controller 冒烟契约
+- [ ] `WangqiDocumentAdminControllerTest`：补强 source-file 和 version Controller 冒烟契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-WANGQI-ADMIN-WEB.md`
     - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/test/java/com/thundax/kuzhambu/classics/interfaces/admin/wangqi/WangqiDocumentAdminControllerTest.java`
-    - 处理动作：覆盖 Wangqi page/get/timeline/add/update/delete、source-file 和 version API 路径契约。
-    - 验收点：Controller 测试固定新增 POST 协议路径和资源 GET 路径。
+    - 处理动作：在 source-file 和 version API 实现后补齐对应路径、权限注解和 multipart/资源 GET 契约测试。
+    - 验收点：Controller 测试固定 source-file POST/GET 路径和 version POST 路径。
     - 重要度：9/10
 
 - [ ] `wangqi timeline query`：补齐王圻时间线 keyword 查询链路

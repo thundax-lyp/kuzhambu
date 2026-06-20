@@ -17,8 +17,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -50,9 +48,10 @@ public class WangqiDocumentAdminController {
     @ApiImplicitParams({})
     @HasPermission("classics:wangqi:view")
     @SysLogger(value = "详情")
-    @GetMapping("{id}")
-    public WangqiDocumentResponse get(@PathVariable Long id) {
-        return WangqiDocumentInterfaceAssembler.toResponse(service.get(WangqiDocumentIdCodec.toDomain(id)));
+    @PostMapping("{id}/get")
+    public WangqiDocumentResponse get(@Valid @RequestBody WangqiDocumentRequest request) {
+        return WangqiDocumentInterfaceAssembler.toResponse(
+                service.get(WangqiDocumentIdCodec.toDomain(request.getId())));
     }
 
     @Operation(summary = "查询王圻时间线", description = "classics:wangqi:view")
