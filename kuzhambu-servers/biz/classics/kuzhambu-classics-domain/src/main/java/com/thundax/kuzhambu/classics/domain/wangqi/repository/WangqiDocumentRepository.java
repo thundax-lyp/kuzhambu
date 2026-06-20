@@ -19,6 +19,8 @@ public interface WangqiDocumentRepository {
 
     int update(WangqiDocument document);
 
+    int updateRestoredVersion(WangqiDocument document);
+
     int updateStorageObjectId(WangqiDocumentId id, StorageObjectId storageObjectId);
 
     int updateVisibility(WangqiDocumentId id, String visibility);

@@ -156,16 +156,20 @@
     - 不接受任意 storage object id，避免绕过 Wangqi 权限边界。
     - 作为资源流 GET，未登录或认证失败按平台规则返回 `401`；文档不存在、未关联原始文件或文件不可读返回 `404`。
 - 在 `WangqiDocumentAdminController` 增加版本端点：
-    - `POST /api/classics/wangqi/documents/{id}/versions/list`
-    - `POST /api/classics/wangqi/documents/{id}/versions/{versionId}/get`
-    - `POST /api/classics/wangqi/documents/{id}/versions/{versionId}/restore`
+    - `POST /api/classics/wangqi/documents/versions/list`，请求体包含 `id`
+    - `POST /api/classics/wangqi/documents/versions/get`，请求体包含 `id`、`versionId`
+    - `POST /api/classics/wangqi/documents/versions/reset`，请求体包含 `id`、`versionId`
 - 通用 `ClassicsContentApplicationService.restoreHistoryVersion` 必须使用显式 `contentType` dispatcher：
     - `WANGQI_DOCUMENT` 分支委托普通 Spring Service/Handler 解析 `WangqiDocumentVersionSnapshot` 并回写王圻主表。
     - 非本轮支持的 contentType 不允许静默忽略，应返回明确业务异常。
     - dispatcher 不做反射和字符串拼接查找，使用枚举分支显式调用对应 domain 能力。
     - 不从通用 `ClassicsContentApplicationServiceImpl` 反向调用 `WangqiDocumentApplicationService`，避免 application service 之间形成循环依赖。
 - 新增版本请求/响应模型：
+    - `WangqiDocumentVersionRequest`
     - `WangqiDocumentVersionResponse`
+- `WangqiDocumentVersionRequest` 字段：
+    - `id`
+    - `versionId`
 - `WangqiDocumentVersionResponse` 字段：
     - `id`
     - `contentType`
@@ -176,9 +180,9 @@
     - `changeType`
     - `changeSummary`
 - Wangqi controller 恢复历史版本入口调用 `ClassicsContentApplicationService.restoreHistoryVersion(versionId)`。
-- Wangqi controller 在版本详情和恢复入口必须校验路径中的 `{id}` 与版本记录归属一致：
+- Wangqi controller 在版本详情和恢复入口必须校验请求体中的 `id` 与版本记录归属一致：
     - `version.contentType == WANGQI_DOCUMENT`
-    - `version.contentId == {id}`
+    - `version.contentId == request.id`
     - 不一致时按 JSON/API 通用协议返回业务失败，HTTP 状态保持 `200`。
     - 不得跨文档读取或恢复版本。
 - 恢复成功后，王圻文档详情应能看到恢复后的内容；本轮必须补齐 `WANGQI_DOCUMENT` 的恢复回写逻辑。
@@ -442,11 +446,11 @@ export interface WangqiVersionSnapshot {
 Wangqi service 新增方法：
 
 - `listVersions(documentId: number)`
-    - `POST /classics/wangqi/documents/{documentId}/versions/list`
+    - `POST /classics/wangqi/documents/versions/list`
 - `getVersion(documentId: number, versionId: number)`
-    - `POST /classics/wangqi/documents/{documentId}/versions/{versionId}/get`
+    - `POST /classics/wangqi/documents/versions/get`
 - `restoreVersion(documentId: number, versionId: number)`
-    - `POST /classics/wangqi/documents/{documentId}/versions/{versionId}/restore`
+    - `POST /classics/wangqi/documents/versions/reset`
 
 版本对比规则：
 
@@ -733,10 +737,11 @@ Storage 字段规则：
 文件：
 
 - `kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/wangqi/controller/WangqiDocumentAdminController.java`
+- `kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/wangqi/controller/request/WangqiDocumentVersionRequest.java`
 - `kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/wangqi/controller/response/WangqiDocumentVersionResponse.java`
 - `kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/wangqi/assembler/WangqiDocumentInterfaceAssembler.java`
 - `kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/service/impl/ClassicsContentApplicationServiceImpl.java`
-- `kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/wangqi/support/WangqiDocumentVersionRestoreService.java`
+- `kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/wangqi/support/WangqiDocumentVersionRestorer.java`
 
 动作：
 
@@ -744,9 +749,9 @@ Storage 字段规则：
 - Wangqi detail 数据请求使用 `POST {id}/get`；资源流以外不新增协议型 GET。
 - 版本入口使用 Wangqi domain 权限：`classics:wangqi:view/edit`。
 - Wangqi controller 调用通用 `ClassicsContentApplicationService`。
-- 版本详情和恢复必须校验版本归属：`contentType=WANGQI_DOCUMENT` 且 `contentId` 等于 URL 中的文档 ID。
-- `restoreHistoryVersion` 使用显式 contentType dispatcher；本轮实现 `WANGQI_DOCUMENT` 分支并委托 `WangqiDocumentVersionRestoreService`。
-- `WangqiDocumentVersionRestoreService` 是普通 Service/Handler，只封装王圻恢复回写和新版本追加，不暴露为跨域 ApplicationService。
+- 版本详情和恢复必须校验版本归属：`contentType=WANGQI_DOCUMENT` 且 `contentId` 等于请求体中的文档 ID。
+- `restoreHistoryVersion` 使用显式 contentType dispatcher；本轮实现 `WANGQI_DOCUMENT` 分支并委托 `WangqiDocumentVersionRestorer`。
+- `WangqiDocumentVersionRestorer` 是普通 Handler，只封装王圻恢复回写和新版本追加，不暴露为跨域 ApplicationService。
 
 验证：
 
@@ -955,9 +960,9 @@ mvn spring-boot:run
 - `POST /admin-api/api/classics/wangqi/documents/{id}/source-file/upload`
 - `POST /admin-api/api/classics/wangqi/documents/{id}/source-file/get`
 - `GET /admin-api/api/classics/wangqi/documents/{id}/source-file/content`
-- `POST /admin-api/api/classics/wangqi/documents/{id}/versions/list`
-- `POST /admin-api/api/classics/wangqi/documents/{id}/versions/{versionId}/get`
-- `POST /admin-api/api/classics/wangqi/documents/{id}/versions/{versionId}/restore`
+- `POST /admin-api/api/classics/wangqi/documents/versions/list`
+- `POST /admin-api/api/classics/wangqi/documents/versions/get`
+- `POST /admin-api/api/classics/wangqi/documents/versions/reset`
 
 验收：
 

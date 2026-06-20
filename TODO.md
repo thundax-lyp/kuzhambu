@@ -11,21 +11,13 @@
 
 ## 待审阅任务项
 
-- [ ] `WangqiDocumentAdminControllerTest`：补强 source-file 和 version Controller 冒烟契约
+- [ ] `WangqiDocumentAdminControllerTest`：补强 source-file Controller 冒烟契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-WANGQI-ADMIN-WEB.md`
     - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/test/java/com/thundax/kuzhambu/classics/interfaces/admin/wangqi/WangqiDocumentAdminControllerTest.java`
-    - 处理动作：在 source-file 和 version API 实现后补齐对应路径、权限注解和 multipart/资源 GET 契约测试。
-    - 验收点：Controller 测试固定 source-file POST/GET 路径和 version POST 路径。
+    - 处理动作：在 source-file API 实现后补齐对应路径、权限注解和 multipart/资源 GET 契约测试。
+    - 验收点：Controller 测试固定 source-file POST/GET 路径。
     - 重要度：9/10
-
-- [ ] `wangqi version api`：暴露 Wangqi 版本 Admin API
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-WANGQI-ADMIN-WEB.md`
-    - 范围对象：`WangqiDocumentAdminController.java`、`WangqiDocumentVersionResponse.java`、`WangqiDocumentInterfaceAssembler.java`、`ClassicsContentApplicationServiceImpl.java`、`WangqiDocumentVersionRestoreService.java`
-    - 处理动作：新增 Wangqi 版本列表、详情和恢复接口，并实现显式 contentType restore dispatcher。
-    - 验收点：版本详情和恢复会校验 `contentType=WANGQI_DOCUMENT` 且 `contentId` 匹配 URL 文档 ID。
-    - 重要度：10/10
 
 - [ ] `wangqi source application`：封装王圻原始文件 application 编排
     - 任务类型：执行任务

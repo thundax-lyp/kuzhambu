@@ -61,6 +61,26 @@ public class WangqiDocumentRepositoryImpl implements WangqiDocumentRepository {
     }
 
     @Override
+    public int updateRestoredVersion(WangqiDocument document) {
+        WangqiDocumentDO dataObject = WangqiDocumentPersistenceAssembler.toObject(document);
+        return mapper.update(
+                null,
+                new LambdaUpdateWrapper<WangqiDocumentDO>()
+                        .eq(WangqiDocumentDO::getId, dataObject.getId())
+                        .set(WangqiDocumentDO::getTitle, dataObject.getTitle())
+                        .set(WangqiDocumentDO::getSummary, dataObject.getSummary())
+                        .set(WangqiDocumentDO::getContentFormat, dataObject.getContentFormat())
+                        .set(WangqiDocumentDO::getContent, dataObject.getContent())
+                        .set(WangqiDocumentDO::getDocumentTime, dataObject.getDocumentTime())
+                        .set(WangqiDocumentDO::getStorageObjectId, dataObject.getStorageObjectId())
+                        .set(WangqiDocumentDO::getVisibility, dataObject.getVisibility())
+                        .set(WangqiDocumentDO::getCurrentVersionId, dataObject.getCurrentVersionId())
+                        .set(WangqiDocumentDO::getCurrentVersionNo, dataObject.getCurrentVersionNo())
+                        .set(WangqiDocumentDO::getCurrentVersionedAt, dataObject.getCurrentVersionedAt())
+                        .set(WangqiDocumentDO::getContentUpdatedAt, dataObject.getContentUpdatedAt()));
+    }
+
+    @Override
     public int updateStorageObjectId(WangqiDocumentId id, StorageObjectId storageObjectId) {
         return mapper.update(
                 null,

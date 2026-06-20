@@ -4,11 +4,15 @@ import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentCo
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentVisibilityCommand;
 import com.thundax.kuzhambu.classics.application.wangqi.query.WangqiDocumentPageQuery;
 import com.thundax.kuzhambu.classics.domain.common.codec.StorageObjectIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentVersionIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiContentFormat;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
 import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.request.WangqiDocumentRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.response.WangqiDocumentResponse;
+import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.response.WangqiDocumentVersionResponse;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import org.apache.commons.lang3.StringUtils;
 
@@ -61,6 +65,27 @@ public final class WangqiDocumentInterfaceAssembler {
                                 entity.getVisibility() == null
                                         ? null
                                         : entity.getVisibility().value())
+                        .build();
+    }
+
+    public static WangqiDocumentVersionResponse toVersionResponse(ClassicsContentVersion version) {
+        return version == null
+                ? WangqiDocumentVersionResponse.builder().build()
+                : WangqiDocumentVersionResponse.builder()
+                        .id(ClassicsContentVersionIdCodec.toValue(version.getId()))
+                        .contentType(
+                                version.getContentType() == null
+                                        ? null
+                                        : version.getContentType().value())
+                        .contentId(ClassicsContentIdCodec.toValue(version.getContentId()))
+                        .versionNo(version.getVersionNo())
+                        .versionedAt(version.getVersionedAt())
+                        .snapshotJson(version.getSnapshotJson())
+                        .changeType(
+                                version.getChangeType() == null
+                                        ? null
+                                        : version.getChangeType().value())
+                        .changeSummary(version.getChangeSummary())
                         .build();
     }
 

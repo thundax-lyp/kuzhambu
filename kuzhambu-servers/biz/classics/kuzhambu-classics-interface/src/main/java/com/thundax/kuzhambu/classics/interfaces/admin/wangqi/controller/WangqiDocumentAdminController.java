@@ -1,11 +1,19 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller;
 
+import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.wangqi.service.WangqiDocumentApplicationService;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentVersionIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.wangqi.codec.WangqiDocumentIdCodec;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.valueobject.WangqiDocumentId;
 import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.assembler.WangqiDocumentInterfaceAssembler;
 import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.request.WangqiDocumentRequest;
+import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.request.WangqiDocumentVersionRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.response.WangqiDocumentResponse;
+import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.response.WangqiDocumentVersionResponse;
+import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
@@ -27,9 +35,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @WrappedApiController
 public class WangqiDocumentAdminController {
     private final WangqiDocumentApplicationService service;
+    private final ClassicsContentApplicationService contentService;
 
-    public WangqiDocumentAdminController(WangqiDocumentApplicationService service) {
+    public WangqiDocumentAdminController(
+            WangqiDocumentApplicationService service, ClassicsContentApplicationService contentService) {
         this.service = service;
+        this.contentService = contentService;
     }
 
     @Operation(summary = "分页查询王圻文档", description = "classics:wangqi:view")
@@ -96,5 +107,50 @@ public class WangqiDocumentAdminController {
     @PostMapping("delete")
     public void delete(@Valid @RequestBody WangqiDocumentRequest request) {
         service.delete(WangqiDocumentIdCodec.toDomain(request.getId()));
+    }
+
+    @Operation(summary = "查询王圻文档版本", description = "classics:wangqi:view")
+    @ApiImplicitParams({})
+    @HasPermission("classics:wangqi:view")
+    @SysLogger(value = "版本列表")
+    @PostMapping("versions/list")
+    public List<WangqiDocumentVersionResponse> listVersions(@Valid @RequestBody WangqiDocumentVersionRequest request) {
+        return contentService
+                .listVersions(
+                        ClassicsContentType.WANGQI_DOCUMENT.value(), ClassicsContentIdCodec.toDomain(request.getId()))
+                .stream()
+                .map(WangqiDocumentInterfaceAssembler::toVersionResponse)
+                .toList();
+    }
+
+    @Operation(summary = "查看王圻文档版本", description = "classics:wangqi:view")
+    @ApiImplicitParams({})
+    @HasPermission("classics:wangqi:view")
+    @SysLogger(value = "版本详情")
+    @PostMapping("versions/get")
+    public WangqiDocumentVersionResponse getVersion(@Valid @RequestBody WangqiDocumentVersionRequest request) {
+        return WangqiDocumentInterfaceAssembler.toVersionResponse(
+                ownedVersion(request.getId(), request.getVersionId()));
+    }
+
+    @Operation(summary = "恢复王圻文档版本", description = "classics:wangqi:edit")
+    @ApiImplicitParams({})
+    @HasPermission("classics:wangqi:edit")
+    @SysLogger(value = "版本恢复")
+    @PostMapping("versions/reset")
+    public WangqiDocumentVersionResponse resetVersion(@Valid @RequestBody WangqiDocumentVersionRequest request) {
+        ownedVersion(request.getId(), request.getVersionId());
+        return WangqiDocumentInterfaceAssembler.toVersionResponse(
+                contentService.restoreHistoryVersion(ClassicsContentVersionIdCodec.toDomain(request.getVersionId())));
+    }
+
+    private ClassicsContentVersion ownedVersion(Long documentId, Long versionId) {
+        ClassicsContentVersion version = contentService.getVersion(ClassicsContentVersionIdCodec.toDomain(versionId));
+        if (version == null
+                || version.getContentType() != ClassicsContentType.WANGQI_DOCUMENT
+                || !ClassicsContentIdCodec.toDomain(documentId).equals(version.getContentId())) {
+            throw new BizException("王圻版本不属于当前文档");
+        }
+        return version;
     }
 }
