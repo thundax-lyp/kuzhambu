@@ -3,6 +3,12 @@ import { Link, useParams } from "react-router-dom";
 import * as shareService from "@/api/share-service";
 import type { ClassicsSharePortalTarget } from "@/api/share-types";
 
+const CONTENT_TYPE_LABELS = new Map([
+    ["SANCAI_ENTRY", "三才图会"],
+    ["WANGQI_DOCUMENT", "万启文档"],
+    ["MING_CUSTOMS", "明代民俗"]
+]);
+
 const formatDateTime = (value?: string | null) => {
     if (!value) {
         return "未设置";
@@ -30,6 +36,10 @@ const readTargetTitle = (target: ClassicsSharePortalTarget, index: number) => {
     return target.titleSnapshot?.trim() || `分享内容 ${index + 1}`;
 };
 
+const formatContentType = (value?: string | null) => {
+    return value ? (CONTENT_TYPE_LABELS.get(value) ?? value) : "未知分类";
+};
+
 export const SharePage = () => {
     const { shareToken } = useParams();
     const token = shareToken ?? "";
@@ -46,7 +56,7 @@ export const SharePage = () => {
         <main className="portal-shell">
             <header className="portal-header">
                 <div>
-                    <p className="portal-kicker">Share</p>
+                    <p className="portal-kicker">分享快照</p>
                     <h1>{share?.title || "分享详情"}</h1>
                 </div>
                 <Link className="portal-action" to="/shares">
@@ -98,7 +108,7 @@ export const SharePage = () => {
                                 >
                                     <header>
                                         <div>
-                                            <p>{target.contentType || "UNKNOWN"}</p>
+                                            <p>{formatContentType(target.contentType)}</p>
                                             <h2>{readTargetTitle(target, index)}</h2>
                                         </div>
                                         <span>v{target.contentVersionNo ?? "-"}</span>

@@ -11,6 +11,13 @@ const CONTENT_TYPE_OPTIONS = [
     { label: "明代民俗", value: "MING_CUSTOMS" }
 ];
 
+const CONTENT_TYPE_LABELS = new Map(
+    CONTENT_TYPE_OPTIONS.filter((option) => option.value).map((option) => [
+        option.value,
+        option.label
+    ])
+);
+
 const formatDateTime = (value?: string | null) => {
     if (!value) {
         return "未设置";
@@ -28,6 +35,10 @@ const toIsoStartOfDay = (value: string) => {
 
 const toIsoEndOfDay = (value: string) => {
     return value ? new Date(`${value}T23:59:59`).toISOString() : null;
+};
+
+const formatContentType = (value?: string | null) => {
+    return value ? (CONTENT_TYPE_LABELS.get(value) ?? value) : "-";
 };
 
 export const ShareListPage = () => {
@@ -81,7 +92,7 @@ export const ShareListPage = () => {
         <main className="portal-shell">
             <header className="portal-header">
                 <div>
-                    <p className="portal-kicker">Shares</p>
+                    <p className="portal-kicker">公开分享</p>
                     <h1>分享列表</h1>
                 </div>
                 <Link className="portal-action" to="/">
@@ -141,7 +152,10 @@ export const ShareListPage = () => {
                 <div className="portal-list-summary">{resultSummary}</div>
                 {records.length ? (
                     records.map((record) => (
-                        <article className="portal-list-item" key={`${record.shareLinkId}-${record.priority}`}>
+                        <article
+                            className="portal-list-item"
+                            key={`${record.shareLinkId}-${record.priority}`}
+                        >
                             <div>
                                 <p>{record.shareTitle || "未命名分享"}</p>
                                 <h2>{record.titleSnapshot || `内容 ${record.contentId || "-"}`}</h2>
@@ -149,7 +163,7 @@ export const ShareListPage = () => {
                             <dl>
                                 <div>
                                     <dt>分类</dt>
-                                    <dd>{record.contentType || "-"}</dd>
+                                    <dd>{formatContentType(record.contentType)}</dd>
                                 </div>
                                 <div>
                                     <dt>版本</dt>
