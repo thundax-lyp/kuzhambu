@@ -1,12 +1,13 @@
-import { useQuery } from "@tanstack/react-query";
-import { Select } from "antd";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { App, Select } from "antd";
 import { useMemo, useState } from "react";
 import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { MingCustomsKeywordCloud } from "./components/ming-customs-keyword-cloud";
 import { MingCustomsList } from "./components/ming-customs-list";
+import { MingCustomsModel } from "./components/ming-customs-model";
 import * as service from "./ming-customs-service";
-import type { MingCustomsQuery } from "./ming-customs-service";
+import type { MingCustomsCommand, MingCustomsQuery } from "./ming-customs-service";
 import type { MingCustomsRecord } from "./ming-customs-types";
 import "./ming-customs-page.css";
 
@@ -35,6 +36,8 @@ const readVisibilityValue = (visibility: MingCustomsVisibilityFilter) => {
 };
 
 export const MingCustomsPage = () => {
+    const { message: messageApi } = App.useApp();
+    const queryClient = useQueryClient();
     const [query, setQuery] = useState<MingCustomsQuery>({
         pageNo: DEFAULT_PAGE_NO,
         pageSize: DEFAULT_PAGE_SIZE,
@@ -42,6 +45,9 @@ export const MingCustomsPage = () => {
     });
     const [searchText, setSearchText] = useState("");
     const [filters, setFilters] = useState<MingCustomsFilters>(DEFAULT_MING_CUSTOMS_FILTERS);
+    const [editorMode, setEditorMode] = useState<"create" | "edit">("create");
+    const [editorOpen, setEditorOpen] = useState(false);
+    const [editingEntry, setEditingEntry] = useState<MingCustomsRecord | null>(null);
     const hasActiveFilters = Boolean(
         filters.category ||
         filters.visibility !== "ALL" ||
@@ -63,6 +69,12 @@ export const MingCustomsPage = () => {
         queryFn: () => service.listKeywordCloud(query.visibility),
         retry: false
     });
+    const detailQuery = useQuery({
+        queryKey: ["ming-customs", "detail", editingEntry?.id],
+        queryFn: () => service.get(editingEntry?.id ?? 0),
+        enabled: editorOpen && editorMode === "edit" && Boolean(editingEntry?.id),
+        retry: false
+    });
     const pageResult = mingCustomsQuery.data;
     const records = useMemo(() => pageResult?.records || [], [pageResult?.records]);
     const categoryOptions = useMemo(
@@ -75,6 +87,28 @@ export const MingCustomsPage = () => {
     const totalCount = pageResult?.count ?? pageResult?.totalCount ?? 0;
     const currentPageNo = pageResult?.pageNo || query.pageNo || DEFAULT_PAGE_NO;
     const currentPageSize = pageResult?.pageSize || query.pageSize || DEFAULT_PAGE_SIZE;
+    const editorEntry = detailQuery.data || editingEntry;
+
+    const invalidateMingCustoms = async () => {
+        await Promise.all([
+            queryClient.invalidateQueries({ queryKey: ["ming-customs", "page"] }),
+            queryClient.invalidateQueries({ queryKey: ["ming-customs", "keyword-cloud"] })
+        ]);
+    };
+
+    const saveMutation = useMutation({
+        mutationFn: (command: MingCustomsCommand) =>
+            editorMode === "create" ? service.add(command) : service.update(command),
+        onSuccess: async () => {
+            setEditorOpen(false);
+            setEditingEntry(null);
+            await invalidateMingCustoms();
+            messageApi.success(editorMode === "create" ? "明代习俗已新增" : "明代习俗已保存");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "保存失败");
+        }
+    });
 
     const searchMingCustoms = (value: string) => {
         setSearchText(value);
@@ -115,110 +149,146 @@ export const MingCustomsPage = () => {
         }));
     };
 
+    const openCreateEditor = () => {
+        setEditorMode("create");
+        setEditingEntry(null);
+        setEditorOpen(true);
+    };
+
+    const openEditEditor = (entry: MingCustomsRecord) => {
+        setEditorMode("edit");
+        setEditingEntry(entry);
+        setEditorOpen(true);
+    };
+
+    const closeEditor = () => {
+        if (saveMutation.isPending) {
+            return;
+        }
+        setEditorOpen(false);
+        setEditingEntry(null);
+    };
+
     return (
-        <KuzhambuListPage<MingCustomsRecord>
-            pageClassName="ming-customs-page"
-            title="明代习俗"
-            description="明代习俗专题条目治理入口。"
-            subjectName="明代习俗"
-            enableSearch
-            enableFilter
-            filterActive={hasActiveFilters}
-            filterFields={[
-                {
-                    name: "category",
-                    label: "分类",
-                    render: () => (
-                        <Select
-                            allowClear
-                            aria-label="明代习俗分类"
-                            placeholder="全部分类"
-                            value={filters.category || undefined}
-                            options={categoryOptions.map((option) => ({
-                                value: option.value,
-                                label: option.label
-                            }))}
-                            onChange={(value) =>
-                                setFilters((currentFilters) => ({
-                                    ...currentFilters,
-                                    category: value || ""
+        <>
+            <KuzhambuListPage<MingCustomsRecord>
+                pageClassName="ming-customs-page"
+                title="明代习俗"
+                description="明代习俗专题条目治理入口。"
+                subjectName="明代习俗"
+                enableSearch
+                enableFilter
+                enableAdd
+                addText="新增明代习俗"
+                filterActive={hasActiveFilters}
+                filterFields={[
+                    {
+                        name: "category",
+                        label: "分类",
+                        render: () => (
+                            <Select
+                                allowClear
+                                aria-label="明代习俗分类"
+                                placeholder="全部分类"
+                                value={filters.category || undefined}
+                                options={categoryOptions.map((option) => ({
+                                    value: option.value,
+                                    label: option.label
+                                }))}
+                                onChange={(value) =>
+                                    setFilters((currentFilters) => ({
+                                        ...currentFilters,
+                                        category: value || ""
+                                    }))
+                                }
+                            />
+                        )
+                    },
+                    {
+                        name: "visibility",
+                        label: "可见性",
+                        render: () => (
+                            <Select
+                                aria-label="明代习俗可见性"
+                                value={filters.visibility}
+                                options={[
+                                    { value: "ALL", label: "全部" },
+                                    { value: "PUBLIC", label: "公开" },
+                                    { value: "PRIVATE", label: "私有" }
+                                ]}
+                                onChange={(value) =>
+                                    setFilters((currentFilters) => ({
+                                        ...currentFilters,
+                                        visibility: value
+                                    }))
+                                }
+                            />
+                        )
+                    },
+                    {
+                        name: "sortDirection",
+                        label: "排序",
+                        render: () => (
+                            <Select
+                                aria-label="明代习俗排序方向"
+                                value={filters.sortDirection}
+                                options={[
+                                    { value: "DESC", label: "最新优先" },
+                                    { value: "ASC", label: "最早优先" }
+                                ]}
+                                onChange={(value) =>
+                                    setFilters((currentFilters) => ({
+                                        ...currentFilters,
+                                        sortDirection: value
+                                    }))
+                                }
+                            />
+                        )
+                    }
+                ]}
+                onFilterApply={applyFilters}
+                onFilterReset={resetFilters}
+                onAdd={openCreateEditor}
+                searchValue={searchText}
+                onSearchChange={searchMingCustoms}
+                content={
+                    <MingCustomsList
+                        categoryLabels={categoryLabels}
+                        loading={mingCustomsQuery.isLoading}
+                        dataSource={records}
+                        onOpenEdit={openEditEditor}
+                        pagination={{
+                            current: currentPageNo,
+                            pageSize: currentPageSize,
+                            total: totalCount,
+                            onChange: (pageNo, pageSize) =>
+                                setQuery((currentQuery) => ({
+                                    ...currentQuery,
+                                    pageNo,
+                                    pageSize
                                 }))
-                            }
-                        />
-                    )
-                },
-                {
-                    name: "visibility",
-                    label: "可见性",
-                    render: () => (
-                        <Select
-                            aria-label="明代习俗可见性"
-                            value={filters.visibility}
-                            options={[
-                                { value: "ALL", label: "全部" },
-                                { value: "PUBLIC", label: "公开" },
-                                { value: "PRIVATE", label: "私有" }
-                            ]}
-                            onChange={(value) =>
-                                setFilters((currentFilters) => ({
-                                    ...currentFilters,
-                                    visibility: value
-                                }))
-                            }
-                        />
-                    )
-                },
-                {
-                    name: "sortDirection",
-                    label: "排序",
-                    render: () => (
-                        <Select
-                            aria-label="明代习俗排序方向"
-                            value={filters.sortDirection}
-                            options={[
-                                { value: "DESC", label: "最新优先" },
-                                { value: "ASC", label: "最早优先" }
-                            ]}
-                            onChange={(value) =>
-                                setFilters((currentFilters) => ({
-                                    ...currentFilters,
-                                    sortDirection: value
-                                }))
-                            }
-                        />
-                    )
+                        }}
+                    />
                 }
-            ]}
-            onFilterApply={applyFilters}
-            onFilterReset={resetFilters}
-            searchValue={searchText}
-            onSearchChange={searchMingCustoms}
-            content={
-                <MingCustomsList
-                    categoryLabels={categoryLabels}
-                    loading={mingCustomsQuery.isLoading}
-                    dataSource={records}
-                    pagination={{
-                        current: currentPageNo,
-                        pageSize: currentPageSize,
-                        total: totalCount,
-                        onChange: (pageNo, pageSize) =>
-                            setQuery((currentQuery) => ({
-                                ...currentQuery,
-                                pageNo,
-                                pageSize
-                            }))
-                    }}
-                />
-            }
-            tableAside={
-                <MingCustomsKeywordCloud
-                    loading={keywordCloudQuery.isLoading}
-                    items={keywordCloudQuery.data || []}
-                    onSelect={selectKeyword}
-                />
-            }
-            tableAsidePlacement="right"
-        />
+                tableAside={
+                    <MingCustomsKeywordCloud
+                        loading={keywordCloudQuery.isLoading}
+                        items={keywordCloudQuery.data || []}
+                        onSelect={selectKeyword}
+                    />
+                }
+                tableAsidePlacement="right"
+            />
+            <MingCustomsModel
+                categoryOptions={categoryOptions}
+                entry={editorEntry}
+                loading={detailQuery.isLoading}
+                mode={editorMode}
+                open={editorOpen}
+                saving={saveMutation.isPending}
+                onClose={closeEditor}
+                onSave={(command) => saveMutation.mutate(command)}
+            />
+        </>
     );
 };

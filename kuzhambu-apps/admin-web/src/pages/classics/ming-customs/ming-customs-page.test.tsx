@@ -66,9 +66,26 @@ const installMingCustomsFetchMock = () => {
                         section: "正旦",
                         summary: "记录明代正旦朝贺与家族拜礼。",
                         contentFormat: "MARKDOWN",
+                        content: "## 正旦\n\n士民相贺。",
+                        originalExcerpts: "正旦朝贺。",
                         visibility: "PUBLIC"
                     }
                 ]
+            });
+        }
+
+        if (path.endsWith("/classics/ming-customs/500000000001")) {
+            return apiResponse({
+                id: 500000000001,
+                title: "岁时礼仪：元旦朝贺",
+                category: "RITUAL",
+                chapter: "岁时礼仪",
+                section: "正旦",
+                summary: "记录明代正旦朝贺与家族拜礼。",
+                contentFormat: "HTML",
+                content: "<h2>正旦</h2><img src=x onerror=alert(1)><script>alert(1)</script>",
+                originalExcerpts: "正旦朝贺。",
+                visibility: "PUBLIC"
             });
         }
 
@@ -98,6 +115,20 @@ const installMingCustomsFetchMock = () => {
                         label: "岁时节令"
                     }
                 ]
+            });
+        }
+
+        if (path.endsWith("/classics/ming-customs/add")) {
+            return apiResponse({
+                id: 500000000003,
+                title: "新增习俗"
+            });
+        }
+
+        if (path.endsWith("/classics/ming-customs/update")) {
+            return apiResponse({
+                id: 500000000001,
+                title: "岁时礼仪：元旦朝贺"
             });
         }
 
@@ -185,6 +216,74 @@ describe("MingCustomsPage", () => {
                     keyword: "礼制",
                     category: "RITUAL",
                     sortDirection: "DESC"
+                }
+            });
+        });
+    });
+
+    it("creates ming customs entry from the editor", async () => {
+        const user = userEvent.setup();
+        renderMingCustomsPage();
+
+        await screen.findByText("岁时礼仪：元旦朝贺");
+        await user.click(screen.getByRole("button", { name: "plus 新增明代习俗" }));
+        await user.type(await screen.findByLabelText("明代习俗标题"), "新增灯市习俗");
+        await user.click(screen.getByLabelText("明代习俗编辑分类"));
+        await user.click(await screen.findByTitle("岁时节令"));
+        await user.type(screen.getByLabelText("明代习俗概述"), "记录上元灯市。");
+        await user.type(screen.getByLabelText("明代习俗正文"), "## 上元\n\n灯市连宵。");
+        await user.click(screen.getByRole("button", { name: "保存新增明代习俗" }));
+
+        await waitFor(() => {
+            expect(capturedCalls).toContainEqual(
+                expect.objectContaining({
+                    method: "POST",
+                    path: "/classics/ming-customs/add",
+                    body: {
+                        title: "新增灯市习俗",
+                        category: "FESTIVAL",
+                        summary: "记录上元灯市。",
+                        contentFormat: "MARKDOWN",
+                        content: "## 上元\n\n灯市连宵。",
+                        visibility: "PUBLIC"
+                    }
+                })
+            );
+        });
+    });
+
+    it("edits ming customs entry and renders sanitized content preview", async () => {
+        const user = userEvent.setup();
+        renderMingCustomsPage();
+
+        await user.click(
+            await screen.findByRole("button", { name: "编辑明代习俗 岁时礼仪：元旦朝贺" })
+        );
+        const preview = await screen.findByLabelText("明代习俗正文预览");
+        expect(await within(preview).findByRole("heading", { name: "正旦" })).toBeInTheDocument();
+        expect(screen.queryByText("alert(1)")).not.toBeInTheDocument();
+        expect(preview.querySelector("script")).toBeNull();
+
+        const contentInput = screen.getByLabelText("明代习俗正文");
+        await user.clear(contentInput);
+        await user.type(contentInput, "更新后的正文");
+        await user.click(screen.getByRole("button", { name: "保存明代习俗" }));
+
+        await waitFor(() => {
+            expect(capturedCalls).toContainEqual({
+                method: "POST",
+                path: "/classics/ming-customs/update",
+                body: {
+                    id: 500000000001,
+                    title: "岁时礼仪：元旦朝贺",
+                    category: "RITUAL",
+                    chapter: "岁时礼仪",
+                    section: "正旦",
+                    summary: "记录明代正旦朝贺与家族拜礼。",
+                    contentFormat: "HTML",
+                    content: "更新后的正文",
+                    originalExcerpts: "正旦朝贺。",
+                    visibility: "PUBLIC"
                 }
             });
         });

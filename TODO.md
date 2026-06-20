@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web ming-customs editor`：增加明代习俗详情编辑
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-MINGCUSTOMS-ADMIN-WEB.md`
-    - 范围对象：`ming-customs-model.tsx`、`ming-customs-form-values.ts`、`ming-customs-page.tsx`、`ming-customs-page.css`
-    - 处理动作：实现详情抽屉、新增、编辑、字典分类和富文本正文展示。
-    - 验收点：页面测试确认 add/update 请求、textarea 编辑和正文安全渲染。
-    - 重要度：9/10
-
 - [ ] `admin-web ming-customs share-delete`：支持明代习俗删除和分享
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-MINGCUSTOMS-ADMIN-WEB.md`

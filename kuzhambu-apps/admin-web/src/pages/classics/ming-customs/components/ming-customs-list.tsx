@@ -1,4 +1,4 @@
-import { Typography } from "antd";
+import { Button, Typography } from "antd";
 import { KuzhambuTable } from "@/components/kuzhambu-table";
 import { KuzhambuTag } from "@/components/kuzhambu-tag";
 import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
@@ -28,6 +28,7 @@ export interface MingCustomsListProps {
     categoryLabels: Record<string, string>;
     dataSource: MingCustomsRecord[];
     loading?: boolean;
+    onOpenEdit: (record: MingCustomsRecord) => void;
     pagination: KuzhambuTableProps<MingCustomsRecord>["pagination"];
 }
 
@@ -35,6 +36,7 @@ export const MingCustomsList = ({
     categoryLabels,
     dataSource,
     loading = false,
+    onOpenEdit,
     pagination
 }: MingCustomsListProps) => {
     const columns: KuzhambuTableProps<MingCustomsRecord>["columns"] = [
@@ -43,7 +45,16 @@ export const MingCustomsList = ({
             dataIndex: "title",
             key: "title",
             width: DEFAULT_COLUMN_WIDTHS.title,
-            render: (title?: string | null) => <Text strong>{title || "未命名条目"}</Text>
+            render: (title?: string | null, record) => (
+                <Button
+                    type="link"
+                    className="ming-customs-title-link"
+                    aria-label={`编辑明代习俗 ${title || "未命名条目"}`}
+                    onClick={() => onOpenEdit(record)}
+                >
+                    <Text strong>{title || "未命名条目"}</Text>
+                </Button>
+            )
         },
         {
             title: "分类",

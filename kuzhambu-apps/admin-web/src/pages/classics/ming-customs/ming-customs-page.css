@@ -2,6 +2,18 @@
     --ming-customs-accent-color: #946f43;
 }
 
+.ming-customs-title-link {
+    max-width: 100%;
+    height: auto;
+    padding: 0;
+    text-align: left;
+    white-space: normal;
+}
+
+.ming-customs-title-link span {
+    color: var(--ming-customs-accent-color);
+}
+
 .ming-customs-keyword-cloud {
     width: 236px;
     padding: 14px;
@@ -65,4 +77,48 @@ html[data-theme="dark"] .ming-customs-keyword-cloud-item {
     color: #f1c27d;
     background: rgba(205, 167, 112, 0.12);
     border-color: rgba(205, 167, 112, 0.28);
+}
+
+.ming-customs-model-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.ming-customs-model-form {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.ming-customs-model-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 16px;
+}
+
+.ming-customs-model-preview {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 24px;
+    padding: 14px;
+    background: rgba(148, 111, 67, 0.06);
+    border: 1px solid rgba(148, 111, 67, 0.16);
+    border-radius: 8px;
+}
+
+.ming-customs-model-preview-content {
+    min-height: 72px;
+}
+
+@media (max-width: 760px) {
+    .ming-customs-model-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+html[data-theme="dark"] .ming-customs-model-preview {
+    background: rgba(205, 167, 112, 0.1);
+    border-color: rgba(205, 167, 112, 0.24);
 }
