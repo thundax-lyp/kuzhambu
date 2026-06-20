@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web-sancai-version-service`：接入三才图会版本前端类型和服务
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-VERSION-RESTORE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-types.ts`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/services/sancai-entry-service.ts`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-service-contract.test.ts`
-    - 处理动作：补版本字段、版本快照类型、详情 GET 和版本 list/get/reset 服务方法。
-    - 验收点：service contract 测试覆盖新增路径、请求体和恢复后详情刷新入口。
-    - 重要度：8/10
-
 - [ ] `admin-web-sancai-version-panel`：新增三才图会版本历史对比面板
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-VERSION-RESTORE.md`
