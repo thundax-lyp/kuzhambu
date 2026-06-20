@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics/mingcustoms verification`：执行明代习俗闭环验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-MINGCUSTOMS-ADMIN-WEB.md`
-    - 范围对象：`kuzhambu-servers`、`kuzhambu-apps`、`dev.env`
-    - 处理动作：运行 RUNBOOK 验证计划并完成 dev.env 冒烟。
-    - 验收点：后端 Maven、前端 format/lint/test/build、数据生成校验和 dev.env 冒烟均有结果。
-    - 重要度：10/10
-
 - [ ] `classics/mingcustoms cleanup`：清理明代习俗闭环调试现场
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-MINGCUSTOMS-ADMIN-WEB.md`
