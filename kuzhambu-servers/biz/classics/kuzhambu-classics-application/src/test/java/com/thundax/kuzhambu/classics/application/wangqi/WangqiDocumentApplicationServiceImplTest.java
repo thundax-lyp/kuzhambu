@@ -12,6 +12,8 @@ import com.thundax.kuzhambu.classics.application.wangqi.result.WangqiDocumentSou
 import com.thundax.kuzhambu.classics.application.wangqi.service.impl.WangqiDocumentApplicationServiceImpl;
 import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentChangeType;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
+import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.valueobject.WangqiDocumentId;
@@ -22,12 +24,15 @@ import com.thundax.kuzhambu.storage.application.helper.StorageUploadStreamHelper
 import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
 import com.thundax.kuzhambu.storage.application.service.command.AddStorageReferencesCommand;
 import com.thundax.kuzhambu.storage.application.service.command.ChangeStorageReferenceStatusCommand;
+import com.thundax.kuzhambu.storage.application.service.command.RemoveStorageReferencesCommand;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
+import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import java.io.ByteArrayInputStream;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 class WangqiDocumentApplicationServiceImplTest {
 
@@ -83,6 +88,40 @@ class WangqiDocumentApplicationServiceImplTest {
                 .changeReferenceStatus(org.mockito.ArgumentMatchers.any(ChangeStorageReferenceStatusCommand.class));
         verify(repository).update(document);
         verify(contentApplicationService).ensureVersioned(document, ClassicsContentChangeType.MANUAL_SAVE, "上传原始文件");
+    }
+
+    @Test
+    void deleteShouldReleaseSourceFileReferenceStatus() {
+        WangqiDocumentRepository repository = mock(WangqiDocumentRepository.class);
+        ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
+        StorageApplicationService storageApplicationService = mock(StorageApplicationService.class);
+        WangqiDocumentApplicationServiceImpl service = new WangqiDocumentApplicationServiceImpl(
+                repository, contentApplicationService, null, storageApplicationService);
+        WangqiDocumentId documentId = WangqiDocumentId.of(400000000001L);
+        WangqiDocument document = new WangqiDocument();
+        document.setId(documentId);
+        document.setStorageObjectId(StorageObjectId.of(7001L));
+        when(repository.getById(documentId)).thenReturn(document);
+
+        service.delete(documentId);
+
+        verify(contentApplicationService)
+                .deleteVersions(ClassicsContentType.WANGQI_DOCUMENT.value(), ClassicsContentId.of(400000000001L));
+        ArgumentCaptor<RemoveStorageReferencesCommand> removeCaptor =
+                ArgumentCaptor.forClass(RemoveStorageReferencesCommand.class);
+        verify(storageApplicationService).removeReferences(removeCaptor.capture());
+        assertEquals(
+                StorageOwnerType.CLASSICS_WANGQI_DOCUMENT,
+                removeCaptor.getValue().getOwnerType());
+        assertEquals("400000000001", removeCaptor.getValue().getOwnerId());
+        ArgumentCaptor<ChangeStorageReferenceStatusCommand> statusCaptor =
+                ArgumentCaptor.forClass(ChangeStorageReferenceStatusCommand.class);
+        verify(storageApplicationService).changeReferenceStatus(statusCaptor.capture());
+        assertEquals(StoredObjectId.of(7001L), statusCaptor.getValue().getId());
+        assertEquals(
+                StoredObjectReferenceStatus.UNREFERENCED,
+                statusCaptor.getValue().getReferenceStatus());
+        verify(repository).deleteById(documentId);
     }
 
     private static StoredObject storage() {

@@ -188,10 +188,12 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
         if (id == null) {
             return;
         }
+        WangqiDocument document = get(id);
         contentApplicationService.deleteVersions(
                 ClassicsContentType.WANGQI_DOCUMENT.value(), ClassicsContentIdCodec.toDomain(id.value()));
         storageApplicationService.removeReferences(
                 new RemoveStorageReferencesCommand(StorageOwnerType.CLASSICS_WANGQI_DOCUMENT, ownerId(id)));
+        releaseSourceFile(document);
         repository.deleteById(id);
     }
 
@@ -312,6 +314,14 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
         }
         storageApplicationService.changeReferenceStatus(
                 new ChangeStorageReferenceStatusCommand(objectId, StoredObjectReferenceStatus.REFERENCED));
+    }
+
+    private void releaseSourceFile(WangqiDocument document) {
+        if (document == null || document.getStorageObjectId() == null) {
+            return;
+        }
+        storageApplicationService.changeReferenceStatus(new ChangeStorageReferenceStatusCommand(
+                toStoredObjectId(document.getStorageObjectId()), StoredObjectReferenceStatus.UNREFERENCED));
     }
 
     private static StoredObjectId toStoredObjectId(StorageObjectId id) {

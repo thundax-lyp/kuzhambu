@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `dev.env smoke`：执行 Wangqi dev.env 冒烟
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-WANGQI-ADMIN-WEB.md`
-    - 范围对象：`dev.env`、`kuzhambu-servers/starter/kuzhambu-admin-starter`、Wangqi Admin API
-    - 处理动作：加载 dev.env 启动 admin starter 并按 RUNBOOK 冒烟 Wangqi API。
-    - 验收点：page/timeline/detail/source-file/version/restore API 均满足 RUNBOOK 验收。
-    - 重要度：10/10
-
 - [ ] `wangqi closeout`：文档和现场收口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-WANGQI-ADMIN-WEB.md`
