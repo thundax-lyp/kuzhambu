@@ -5,10 +5,6 @@ import type { MingCustomsKeywordCloudItem, MingCustomsRecord } from "./ming-cust
 
 const CATEGORY_DICT_TYPE = "CLASSICS_MING_CUSTOMS_CATEGORY";
 
-interface DictPageResponse {
-    records: DictItem[];
-}
-
 export type MingCustomsQuery = PageQuery<{
     keyword?: string | null;
     category?: string | null;
@@ -71,7 +67,7 @@ export const listKeywordCloud = (visibility?: string | null) => {
 };
 
 export const listCategoryOptions = async () => {
-    const pageResult = await postJson<DictPageResponse, PageQuery<{ type: string }>>(
+    const pageResult = await postJson<{ records: DictItem[] }, PageQuery<{ type: string }>>(
         "/sys/dict/page",
         {
             body: {
