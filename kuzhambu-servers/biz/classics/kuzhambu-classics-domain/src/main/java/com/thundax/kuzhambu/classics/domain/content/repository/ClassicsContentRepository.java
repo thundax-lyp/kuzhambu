@@ -5,6 +5,7 @@ import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContent
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentQaPair;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentExportJobId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentQaPairId;
@@ -49,6 +50,16 @@ public interface ClassicsContentRepository {
     int deleteQaPairById(ClassicsContentQaPairId id);
 
     List<ClassicsContentVersion> listVersions(String contentType, ClassicsContentId contentId);
+
+    default ClassicsContentVersion latestVersion(ClassicsContentType contentType, ClassicsContentId contentId) {
+        List<ClassicsContentVersion> versions = listVersions(contentType.value(), contentId);
+        return versions.isEmpty() ? null : versions.get(0);
+    }
+
+    default int latestVersionNo(ClassicsContentType contentType, ClassicsContentId contentId) {
+        ClassicsContentVersion version = latestVersion(contentType, contentId);
+        return version == null ? 0 : version.getVersionNo();
+    }
 
     ClassicsContentVersionId insertVersion(ClassicsContentVersion version);
 

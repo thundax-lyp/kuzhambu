@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `classics-domain content`：新增 Versionable 契约和版本仓储能力
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-VERSIONABLE.md`
-    - 范围对象：`Versionable.java`、`ClassicsContentVersion.java`、`ClassicsContentRepository.java`
-    - 处理动作：新增 `Versionable` 契约并补充内容版本查询和插入所需仓储方法
-    - 验收点：`Versionable` 只表达内容身份和版本标定信息，不包含分享或 JSON 快照生成逻辑
-    - 重要度：9/10
-
 - [ ] `classics-domain entities`：三类内容实体实现 Versionable
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-VERSIONABLE.md`
