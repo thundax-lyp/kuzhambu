@@ -87,14 +87,14 @@ describe("SancaiEntryPanel sharing", () => {
             expect(shareService.create).toHaveBeenCalled();
         });
         expect(vi.mocked(shareService.create).mock.calls[0]?.[0]).toEqual({
-                targets: [
-                    {
-                        contentId: 3001,
-                        contentType: "SANCAI_ENTRY"
-                    }
-                ],
-                title: "天地 分享",
-                visibility: "PUBLIC"
-            });
+            targets: [
+                {
+                    contentId: 3001,
+                    contentType: "SANCAI_ENTRY"
+                }
+            ],
+            title: "天地 分享",
+            visibility: "PUBLIC"
+        });
     });
 });
