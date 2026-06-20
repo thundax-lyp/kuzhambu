@@ -58,6 +58,7 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
     @Override
     public List<WangqiDocument> listTimeline(WangqiDocumentPageQuery query) {
         return repository.listTimeline(
+                query == null ? null : query.getKeyword(),
                 query == null || query.getVisibility() == null
                         ? null
                         : query.getVisibility().value(),

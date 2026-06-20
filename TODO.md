@@ -19,14 +19,6 @@
     - 验收点：Controller 测试固定 source-file POST/GET 路径和 version POST 路径。
     - 重要度：9/10
 
-- [ ] `wangqi timeline query`：补齐王圻时间线 keyword 查询链路
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-WANGQI-ADMIN-WEB.md`
-    - 范围对象：`WangqiDocumentPageQuery.java`、`WangqiDocumentApplicationServiceImpl.java`、`WangqiDocumentRepository.java`、`WangqiDocumentRepositoryImpl.java`、`WangqiDocumentMapper.java`
-    - 处理动作：让 `listTimeline` 与 page 使用同一查询对象并支持 keyword/visibility/sortDirection。
-    - 验收点：timeline 查询可按标题、摘要和正文 keyword 过滤。
-    - 重要度：8/10
-
 - [ ] `storage physical delete`：补齐 Storage owner 类型和物理删除能力
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-WANGQI-ADMIN-WEB.md`

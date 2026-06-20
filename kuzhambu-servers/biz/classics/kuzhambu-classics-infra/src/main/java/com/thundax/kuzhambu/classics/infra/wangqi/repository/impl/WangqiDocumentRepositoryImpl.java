@@ -43,10 +43,8 @@ public class WangqiDocumentRepositoryImpl implements WangqiDocumentRepository {
     }
 
     @Override
-    public List<WangqiDocument> listTimeline(String visibility, SortDirection sortDirection) {
-        LambdaQueryWrapper<WangqiDocumentDO> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(StringUtils.isNotBlank(visibility), WangqiDocumentDO::getVisibility, visibility)
-                .orderBy(true, sortDirection != SortDirection.DESC, WangqiDocumentDO::getDocumentTime);
+    public List<WangqiDocument> listTimeline(String keyword, String visibility, SortDirection sortDirection) {
+        LambdaQueryWrapper<WangqiDocumentDO> wrapper = buildWrapper(keyword, visibility, sortDirection);
         return WangqiDocumentPersistenceAssembler.toDomainList(mapper.selectList(wrapper));
     }
 
