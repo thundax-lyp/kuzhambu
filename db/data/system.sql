@@ -153,6 +153,22 @@ ON DUPLICATE KEY UPDATE
     `target` = VALUES(`target`),
     `remarks` = VALUES(`remarks`);
 
+INSERT INTO `system_dict` (
+    `id`, `type`, `label`, `value`, `priority`, `remarks`
+) VALUES
+    (1, 'CLASSICS_MING_CUSTOMS_CATEGORY', '礼制', 'RITUAL', 10, '明代习俗分类'),
+    (2, 'CLASSICS_MING_CUSTOMS_CATEGORY', '岁时节令', 'FESTIVAL', 20, '明代习俗分类'),
+    (3, 'CLASSICS_MING_CUSTOMS_CATEGORY', '婚丧嫁娶', 'MARRIAGE', 30, '明代习俗分类'),
+    (4, 'CLASSICS_MING_CUSTOMS_CATEGORY', '日用生活', 'DAILY_LIFE', 40, '明代习俗分类'),
+    (5, 'CLASSICS_MING_CUSTOMS_CATEGORY', '信仰禁忌', 'BELIEF', 50, '明代习俗分类'),
+    (6, 'CLASSICS_MING_CUSTOMS_CATEGORY', '社会交往', 'SOCIAL', 60, '明代习俗分类')
+ON DUPLICATE KEY UPDATE
+    `type` = VALUES(`type`),
+    `label` = VALUES(`label`),
+    `value` = VALUES(`value`),
+    `priority` = VALUES(`priority`),
+    `remarks` = VALUES(`remarks`);
+
 INSERT INTO `system_user_role` (`user_id`, `role_id`) VALUES
     (1, 1),
     (2, 1),
@@ -412,6 +428,7 @@ ALTER TABLE `system_department` AUTO_INCREMENT = 21;
 ALTER TABLE `system_user` AUTO_INCREMENT = 37;
 ALTER TABLE `system_role` AUTO_INCREMENT = 7;
 ALTER TABLE `system_menu` AUTO_INCREMENT = 39;
+ALTER TABLE `system_dict` AUTO_INCREMENT = 7;
 ALTER TABLE `system_auth_principal_identity` AUTO_INCREMENT = 37;
 ALTER TABLE `system_auth_principal_credential` AUTO_INCREMENT = 37;
 

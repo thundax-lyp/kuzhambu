@@ -19,6 +19,8 @@
         "@ant-design/icons": "^6.2.2",
         "@tanstack/react-query": "^5.100.9",
         "antd": "^6.3.7",
+        "dompurify": "^3.4.11",
+        "marked": "^15.0.12",
         "react": "^18.3.1",
         "react-dom": "^18.3.1",
         "react-router-dom": "^7.15.0",

@@ -1,0 +1,95 @@
+.kuzhambu-rich-content-viewer {
+    color: #263449;
+    font-size: 14px;
+    line-height: 1.76;
+    overflow-wrap: anywhere;
+}
+
+.kuzhambu-rich-content-viewer :where(h1, h2, h3, h4) {
+    margin: 0 0 10px;
+    color: #172033;
+    font-weight: 700;
+    line-height: 1.35;
+}
+
+.kuzhambu-rich-content-viewer :where(h1) {
+    font-size: 22px;
+}
+
+.kuzhambu-rich-content-viewer :where(h2) {
+    font-size: 18px;
+}
+
+.kuzhambu-rich-content-viewer :where(h3, h4) {
+    font-size: 16px;
+}
+
+.kuzhambu-rich-content-viewer :where(p, ul, ol, blockquote, pre) {
+    margin: 0 0 12px;
+}
+
+.kuzhambu-rich-content-viewer :where(ul, ol) {
+    padding-left: 22px;
+}
+
+.kuzhambu-rich-content-viewer :where(a) {
+    color: #2563eb;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.kuzhambu-rich-content-viewer :where(blockquote) {
+    padding: 8px 12px;
+    color: #52627a;
+    background: rgba(37, 99, 235, 0.06);
+    border-left: 3px solid rgba(37, 99, 235, 0.32);
+}
+
+.kuzhambu-rich-content-viewer :where(code) {
+    padding: 2px 5px;
+    color: #9f1239;
+    background: rgba(244, 63, 94, 0.08);
+    border-radius: 5px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 13px;
+}
+
+.kuzhambu-rich-content-viewer :where(pre) {
+    padding: 12px;
+    overflow: auto;
+    background: rgba(15, 23, 42, 0.06);
+    border-radius: 8px;
+}
+
+.kuzhambu-rich-content-viewer :where(pre code) {
+    padding: 0;
+    color: inherit;
+    background: transparent;
+}
+
+html[data-theme="dark"] .kuzhambu-rich-content-viewer {
+    color: #d7dfed;
+}
+
+html[data-theme="dark"] .kuzhambu-rich-content-viewer :where(h1, h2, h3, h4) {
+    color: #f2f6fc;
+}
+
+html[data-theme="dark"] .kuzhambu-rich-content-viewer :where(a) {
+    color: #93c5fd;
+}
+
+html[data-theme="dark"] .kuzhambu-rich-content-viewer :where(blockquote) {
+    color: #b8c4d8;
+    background: rgba(96, 165, 250, 0.1);
+    border-left-color: rgba(96, 165, 250, 0.36);
+}
+
+html[data-theme="dark"] .kuzhambu-rich-content-viewer :where(code) {
+    color: #fda4af;
+    background: rgba(244, 63, 94, 0.16);
+}
+
+html[data-theme="dark"] .kuzhambu-rich-content-viewer :where(pre) {
+    background: rgba(226, 232, 240, 0.08);
+}

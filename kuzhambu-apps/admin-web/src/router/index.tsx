@@ -2,6 +2,7 @@ import { Navigate, RouterProvider, createBrowserRouter } from "react-router-dom"
 import { AdminLayout } from "../layouts/admin-layout";
 import { AuditLogPage } from "../pages/audit/audit-log/audit-log-page";
 import { LoginPage } from "../pages/auth/login/login-page";
+import { MingCustomsPage } from "../pages/classics/ming-customs/ming-customs-page";
 import { SancaiPage } from "../pages/classics/sancai/sancai-page";
 import { DashboardPage } from "../pages/dashboard/dashboard/dashboard-page";
 import { StorageObjectPage } from "../pages/storage/storage-object/storage-object-page";
@@ -74,6 +75,10 @@ const router = createBrowserRouter(
                         {
                             path: "classics/sancai",
                             element: <SancaiPage />
+                        },
+                        {
+                            path: "classics/ming-customs",
+                            element: <MingCustomsPage />
                         }
                     ]
                 }

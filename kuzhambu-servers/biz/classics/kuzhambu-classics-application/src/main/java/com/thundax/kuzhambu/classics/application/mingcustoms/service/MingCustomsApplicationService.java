@@ -7,6 +7,7 @@ import com.thundax.kuzhambu.classics.application.mingcustoms.query.MingCustomsPa
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsKeyword;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsEntryId;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsKeywordCloudItem;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsKeywordId;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
@@ -34,5 +35,5 @@ public interface MingCustomsApplicationService {
 
     void deleteKeyword(MingCustomsKeywordId id);
 
-    List<String> listKeywordCloud(String visibility);
+    List<MingCustomsKeywordCloudItem> listKeywordCloud(String visibility);
 }

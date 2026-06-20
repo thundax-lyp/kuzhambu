@@ -7,7 +7,9 @@ import com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsEntryId
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsContentFormat;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsVisibility;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsKeywordCloudItem;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.request.MingCustomsRequest;
+import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.response.MingCustomsKeywordCloudItemResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.response.MingCustomsResponse;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import org.apache.commons.lang3.StringUtils;
@@ -67,6 +69,15 @@ public final class MingCustomsInterfaceAssembler {
                                 entity.getVisibility() == null
                                         ? null
                                         : entity.getVisibility().value())
+                        .build();
+    }
+
+    public static MingCustomsKeywordCloudItemResponse toKeywordCloudResponse(MingCustomsKeywordCloudItem item) {
+        return item == null
+                ? MingCustomsKeywordCloudItemResponse.builder().build()
+                : MingCustomsKeywordCloudItemResponse.builder()
+                        .keyword(item.getKeyword())
+                        .count(item.getCount())
                         .build();
     }
 
