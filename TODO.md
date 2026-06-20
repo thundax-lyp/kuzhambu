@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `classics admin sharing assembler test`：固定 Admin 分享创建接口契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARE-SNAPSHOT.md`
-    - 范围对象：`ClassicsSharingInterfaceAssembler.java`、`ClassicsSharingAdminControllerTest.java`
-    - 处理动作：补接口 assembler 和 controller contract test，固定请求体与响应字段
-    - 验收点：测试覆盖 Admin 创建响应包含 `shareUrl` 且请求体不包含内容快照
-    - 重要度：8/10
-
 - [ ] `classics portal sharing interface`：调整 Portal 分享查询为明文 shareToken 入口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARE-SNAPSHOT.md`
