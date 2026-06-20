@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `wangqi frontend service`：新增前端 service 和类型契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-WANGQI-ADMIN-WEB.md`
-    - 范围对象：`wangqi-types.ts`、`wangqi-service.ts`、`wangqi-service-contract.test.ts`
-    - 处理动作：定义 Wangqi record/query/command/source-file/version 类型并固定所有 API path。
-    - 验收点：service contract 测试覆盖 POST 协议路径、source-file 资源路径和 version 路径。
-    - 重要度：9/10
-
 - [ ] `wangqi list form timeline`：实现王圻列表、表单和时间线组件
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-WANGQI-ADMIN-WEB.md`
