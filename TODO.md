@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `classics versioning service`：实现统一版本判断和版本生成服务
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-VERSIONABLE.md`
-    - 范围对象：`ClassicsContentVersioningService.java`、`ClassicsContentSnapshotAssembler.java`、`ClassicsContentApplicationServiceImpl.java`
-    - 处理动作：实现 `needsVersion`、版本号递增、稳定快照生成和 `ensureVersioned` 能力
-    - 验收点：任意 `Versionable` 内容可判断是否需要版本，并能生成版本后回填主表版本标定字段
-    - 重要度：10/10
-
 - [ ] `classics manual save flows`：三类内容手动保存触发正式版本
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-VERSIONABLE.md`
