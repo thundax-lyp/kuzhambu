@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.classics.application.sancai.service.impl;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiCategoryCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiCategorySortCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryCommand;
@@ -10,6 +11,7 @@ import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVolumeComm
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVolumeSortCommand;
 import com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryPageQuery;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiApplicationService;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentChangeType;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiCategoryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiVolumeIdCodec;
@@ -28,6 +30,7 @@ import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,9 +44,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class SancaiApplicationServiceImpl implements SancaiApplicationService {
 
     private final SancaiRepository repository;
+    private final ClassicsContentApplicationService contentApplicationService;
 
-    public SancaiApplicationServiceImpl(SancaiRepository repository) {
+    public SancaiApplicationServiceImpl(
+            SancaiRepository repository, ClassicsContentApplicationService contentApplicationService) {
         this.repository = repository;
+        this.contentApplicationService = contentApplicationService;
     }
 
     @Override
@@ -399,7 +405,11 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
         }
         SancaiEntry entry = toEntry(command);
         entry.setPriority(repository.maxEntryPriority() + 1);
-        return repository.insertEntry(entry);
+        entry.setContentUpdatedAt(new Date());
+        SancaiEntryId id = repository.insertEntry(entry);
+        entry.setId(id);
+        markManualSaveVersion(entry);
+        return id;
     }
 
     @Override
@@ -409,9 +419,11 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
             return null;
         }
         SancaiEntry entry = toEntry(command);
+        entry.setContentUpdatedAt(new Date());
         if (repository.updateEntry(entry) != 1) {
             throw new BizException("三才图会条目不存在");
         }
+        markManualSaveVersion(entry);
         return entry.getId();
     }
 
@@ -549,5 +561,10 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
         entry.setVisualAssetStatus(command.getVisualAssetStatus());
         entry.setRefinementStatus(command.getRefinementStatus());
         return entry;
+    }
+
+    private void markManualSaveVersion(SancaiEntry entry) {
+        contentApplicationService.ensureVersioned(entry, ClassicsContentChangeType.MANUAL_SAVE, "手动保存");
+        repository.updateEntry(entry);
     }
 }

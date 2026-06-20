@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -39,7 +40,7 @@ public class SpringSecurityConfiguration {
             AdminAuthService authService,
             PermissionService permissionService,
             UserApplicationService userService,
-            RequestMappingHandlerMapping requestMappingHandlerMapping,
+            @Qualifier("requestMappingHandlerMapping") RequestMappingHandlerMapping requestMappingHandlerMapping,
             ObjectMapper objectMapper) {
         this.properties = properties;
         this.authService = authService;

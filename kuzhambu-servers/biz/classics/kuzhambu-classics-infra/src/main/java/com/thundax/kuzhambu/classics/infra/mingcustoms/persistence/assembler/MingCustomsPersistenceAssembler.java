@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.infra.mingcustoms.persistence.assembler;
 
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentVersionIdCodec;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsKeywordIdCodec;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
@@ -9,6 +10,7 @@ import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsV
 import com.thundax.kuzhambu.classics.infra.mingcustoms.persistence.dataobject.MingCustomsEntryDO;
 import com.thundax.kuzhambu.classics.infra.mingcustoms.persistence.dataobject.MingCustomsKeywordDO;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public final class MingCustomsPersistenceAssembler {
@@ -39,14 +41,18 @@ public final class MingCustomsPersistenceAssembler {
                         : entity.getContentFormat().value(),
                 entity.getContent(),
                 entity.getOriginalExcerpts(),
-                entity.getVisibility() == null ? null : entity.getVisibility().value());
+                entity.getVisibility() == null ? null : entity.getVisibility().value(),
+                ClassicsContentVersionIdCodec.toValue(entity.getCurrentVersionId()),
+                entity.getCurrentVersionNo(),
+                entity.getCurrentVersionedAt(),
+                contentUpdatedAt(entity.getContentUpdatedAt()));
     }
 
     public static MingCustomsEntry toEntryDomain(MingCustomsEntryDO dataObject) {
         if (dataObject == null) {
             return null;
         }
-        return new MingCustomsEntry(
+        MingCustomsEntry entry = new MingCustomsEntry(
                 MingCustomsEntryIdCodec.toDomain(dataObject.getId()),
                 dataObject.getTitle(),
                 dataObject.getCategory(),
@@ -59,6 +65,11 @@ public final class MingCustomsPersistenceAssembler {
                 dataObject.getContent(),
                 dataObject.getOriginalExcerpts(),
                 dataObject.getVisibility() == null ? null : MingCustomsVisibility.from(dataObject.getVisibility()));
+        entry.setCurrentVersionId(ClassicsContentVersionIdCodec.toDomain(dataObject.getCurrentVersionId()));
+        entry.setCurrentVersionNo(dataObject.getCurrentVersionNo());
+        entry.setCurrentVersionedAt(dataObject.getCurrentVersionedAt());
+        entry.setContentUpdatedAt(dataObject.getContentUpdatedAt());
+        return entry;
     }
 
     public static List<MingCustomsEntry> toEntryDomainList(List<MingCustomsEntryDO> dataObjects) {
@@ -99,5 +110,9 @@ public final class MingCustomsPersistenceAssembler {
             }
         }
         return entities;
+    }
+
+    private static Date contentUpdatedAt(Date contentUpdatedAt) {
+        return contentUpdatedAt == null ? new Date() : contentUpdatedAt;
     }
 }

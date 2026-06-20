@@ -1,11 +1,13 @@
 package com.thundax.kuzhambu.classics.application.mingcustoms.service.impl;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsCommand;
 import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsKeywordCommand;
 import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsKeywordSortCommand;
 import com.thundax.kuzhambu.classics.application.mingcustoms.query.MingCustomsPageQuery;
 import com.thundax.kuzhambu.classics.application.mingcustoms.service.MingCustomsApplicationService;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentChangeType;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsKeyword;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsEntryId;
@@ -19,6 +21,7 @@ import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,9 +34,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class MingCustomsApplicationServiceImpl implements MingCustomsApplicationService {
 
     private final MingCustomsRepository repository;
+    private final ClassicsContentApplicationService contentApplicationService;
 
-    public MingCustomsApplicationServiceImpl(MingCustomsRepository repository) {
+    public MingCustomsApplicationServiceImpl(
+            MingCustomsRepository repository, ClassicsContentApplicationService contentApplicationService) {
         this.repository = repository;
+        this.contentApplicationService = contentApplicationService;
     }
 
     @Override
@@ -65,7 +71,11 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
             return null;
         }
         entry.setId(null);
-        return repository.insert(entry);
+        entry.setContentUpdatedAt(new Date());
+        MingCustomsEntryId id = repository.insert(entry);
+        entry.setId(id);
+        markManualSaveVersion(entry);
+        return id;
     }
 
     @Override
@@ -75,7 +85,9 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
         if (entry == null) {
             return null;
         }
+        entry.setContentUpdatedAt(new Date());
         repository.update(entry);
+        markManualSaveVersion(entry);
         return entry.getId();
     }
 
@@ -227,5 +239,10 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
         entry.setOriginalExcerpts(command.getOriginalExcerpts());
         entry.setVisibility(command.getVisibility());
         return entry;
+    }
+
+    private void markManualSaveVersion(MingCustomsEntry entry) {
+        contentApplicationService.ensureVersioned(entry, ClassicsContentChangeType.MANUAL_SAVE, "手动保存");
+        repository.update(entry);
     }
 }

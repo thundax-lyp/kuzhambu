@@ -7,16 +7,20 @@ import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairSo
 import com.thundax.kuzhambu.classics.application.content.command.ContentTagCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentTagSortCommand;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
+import com.thundax.kuzhambu.classics.application.content.support.ClassicsContentSnapshotAssembler;
+import com.thundax.kuzhambu.classics.domain.content.model.Versionable;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentExportJob;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentQaPair;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentChangeType;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentExportJobId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentQaPairId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentTagId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentVersionId;
 import com.thundax.kuzhambu.classics.domain.content.repository.ClassicsContentRepository;
+import com.thundax.kuzhambu.classics.domain.content.service.ClassicsContentVersioningService;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.exception.ErrorCode;
@@ -38,6 +42,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class ClassicsContentApplicationServiceImpl implements ClassicsContentApplicationService {
 
     private final ClassicsContentRepository repository;
+    private final ClassicsContentVersioningService versioningService = new ClassicsContentVersioningService();
+    private final ClassicsContentSnapshotAssembler snapshotAssembler = new ClassicsContentSnapshotAssembler();
 
     public ClassicsContentApplicationServiceImpl(ClassicsContentRepository repository) {
         this.repository = repository;
@@ -240,6 +246,44 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     @Override
     public ClassicsContentVersion getVersion(ClassicsContentVersionId id) {
         return repository.getVersionById(id);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ClassicsContentVersion ensureVersioned(
+            Versionable content, ClassicsContentChangeType changeType, String changeSummary) {
+        if (content == null) {
+            return null;
+        }
+        if (!versioningService.needsVersion(content)) {
+            return repository.latestVersion(content.contentType(), content.contentId());
+        }
+
+        ClassicsContentVersion version = versioningService.newVersion(
+                content,
+                versioningService.nextVersionNo(repository.latestVersionNo(content.contentType(), content.contentId())),
+                new Date(),
+                snapshotAssembler.toSnapshotJson(content),
+                changeType,
+                changeSummary);
+        ClassicsContentVersionId versionId = repository.insertVersion(version);
+        version.setId(versionId);
+        versioningService.markVersioned(content, version);
+        return version;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ClassicsContentVersion applyAiResult(Versionable content, String changeSummary) {
+        // TODO: Wire this to the future AI candidate confirmation flow before enabling AI_APPLIED versions.
+        throw new BizException("AI 结果应用流程尚未接入 Classics Versionable");
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ClassicsContentVersion restoreHistoryVersion(ClassicsContentVersionId versionId) {
+        // TODO: Rehydrate the target content from snapshot_json before enabling HISTORY_RESTORED versions.
+        throw new BizException("历史版本恢复流程尚未接入 Classics Versionable");
     }
 
     @Override

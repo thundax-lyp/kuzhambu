@@ -76,8 +76,12 @@ Classics 拥有古籍内容主数据和内容上下文内的维护数据。Stora
 | `visual_asset_status` | `varchar(16)` | KEY(translation_status, image_status, visual_asset_status, refinement_status) | 按视觉资产状态筛选 |
 | `refinement_status` | `varchar(16)` | KEY(translation_status, image_status, visual_asset_status, refinement_status) | 按完善状态筛选 |
 | `priority` | `int` | UK | 条目列表稳定排序 |
+| `current_version_id` | `bigint` | KEY | 当前正式内容版本标定 |
+| `current_version_no` | `int` |  | 当前正式内容版本号展示和差异判断 |
+| `current_versioned_at` | `datetime(3)` |  | 当前正式内容版本生成时间 |
+| `content_updated_at` | `datetime(3)` |  | 内容语义更新时间，用于判断未版本化变更 |
 
-约束：`id` 主键；`priority` 唯一。索引：`volume_id`、`(lifecycle_status, visibility)`、`(translation_status, image_status, visual_asset_status, refinement_status)`。
+约束：`id` 主键；`priority` 唯一。索引：`current_version_id`、`volume_id`、`(lifecycle_status, visibility)`、`(translation_status, image_status, visual_asset_status, refinement_status)`。
 
 ### classics_sancai_entry_draft
 
@@ -160,8 +164,12 @@ Classics 拥有古籍内容主数据和内容上下文内的维护数据。Stora
 | `document_time` | `datetime(3)` | KEY | 时间线浏览 |
 | `storage_object_id` | `bigint` | KEY | 原始文档 Storage 对象关联和替换 |
 | `visibility` | `varchar(16)` | KEY | 公开和私有可见性 |
+| `current_version_id` | `bigint` | KEY | 当前正式内容版本标定 |
+| `current_version_no` | `int` |  | 当前正式内容版本号展示和差异判断 |
+| `current_versioned_at` | `datetime(3)` |  | 当前正式内容版本生成时间 |
+| `content_updated_at` | `datetime(3)` |  | 内容语义更新时间，用于判断未版本化变更 |
 
-约束：`id` 主键。索引：`document_time`、`visibility`、`storage_object_id`。
+约束：`id` 主键。索引：`current_version_id`、`document_time`、`visibility`、`storage_object_id`。
 
 ### classics_ming_customs_entry
 
@@ -179,8 +187,12 @@ Classics 拥有古籍内容主数据和内容上下文内的维护数据。Stora
 | `content` | `longtext` |  | 正文展示和编辑 |
 | `original_excerpts` | `longtext` |  | 原文摘录展示 |
 | `visibility` | `varchar(16)` | KEY(category, visibility), KEY | 公开和私有可见性 |
+| `current_version_id` | `bigint` | KEY | 当前正式内容版本标定 |
+| `current_version_no` | `int` |  | 当前正式内容版本号展示和差异判断 |
+| `current_versioned_at` | `datetime(3)` |  | 当前正式内容版本生成时间 |
+| `content_updated_at` | `datetime(3)` |  | 内容语义更新时间，用于判断未版本化变更 |
 
-约束：`id` 主键。索引：`(category, visibility)`、`visibility`。
+约束：`id` 主键。索引：`current_version_id`、`(category, visibility)`、`visibility`。
 
 ### classics_ming_customs_keyword
 
@@ -244,6 +256,8 @@ Classics 拥有古籍内容主数据和内容上下文内的维护数据。Stora
 | `change_summary` | `varchar(512)` |  | 版本摘要展示 |
 
 约束：`id` 主键；`(content_type, content_id, version_no)` 唯一。索引：`(content_type, content_id, versioned_at)`。
+
+主内容版本标定规则：`classics_sancai_entry`、`classics_wangqi_document`、`classics_ming_customs_entry` 统一使用 `current_version_id/current_version_no/current_versioned_at/content_updated_at` 表达当前正式版本和内容语义更新时间。正式版本只由用户确认动作产生，例如手动保存、AI 应用和历史恢复；自动保存草稿、排序、状态刷新、访问统计等非内容确认动作不得生成 `classics_content_version`。
 
 ### classics_content_export_job
 

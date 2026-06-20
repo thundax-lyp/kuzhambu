@@ -35,8 +35,13 @@ CREATE TABLE IF NOT EXISTS `classics_sancai_entry` (
     `visual_asset_status` varchar(16) NOT NULL DEFAULT 'MISSING' COMMENT '视觉资产状态',
     `refinement_status` varchar(16) NOT NULL DEFAULT 'RAW' COMMENT '完善状态',
     `priority` int NOT NULL COMMENT '全局唯一排序',
+    `current_version_id` bigint DEFAULT NULL COMMENT '当前正式内容版本ID',
+    `current_version_no` int DEFAULT NULL COMMENT '当前正式内容版本号',
+    `current_versioned_at` datetime(3) DEFAULT NULL COMMENT '当前正式内容版本生成时间',
+    `content_updated_at` datetime(3) NOT NULL COMMENT '内容语义更新时间',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_classics_sancai_entry_priority` (`priority`),
+    KEY `idx_classics_sancai_entry_current_version` (`current_version_id`),
     KEY `idx_classics_sancai_entry_volume` (`volume_id`),
     KEY `idx_classics_sancai_entry_lifecycle` (`lifecycle_status`, `visibility`),
     KEY `idx_classics_sancai_entry_status` (`translation_status`, `image_status`, `visual_asset_status`, `refinement_status`)
@@ -107,7 +112,12 @@ CREATE TABLE IF NOT EXISTS `classics_wangqi_document` (
     `document_time` datetime(3) DEFAULT NULL COMMENT '文档时间',
     `storage_object_id` bigint DEFAULT NULL COMMENT '原始文档Storage对象ID',
     `visibility` varchar(16) NOT NULL DEFAULT 'PUBLIC' COMMENT '平台内可见性',
+    `current_version_id` bigint DEFAULT NULL COMMENT '当前正式内容版本ID',
+    `current_version_no` int DEFAULT NULL COMMENT '当前正式内容版本号',
+    `current_versioned_at` datetime(3) DEFAULT NULL COMMENT '当前正式内容版本生成时间',
+    `content_updated_at` datetime(3) NOT NULL COMMENT '内容语义更新时间',
     PRIMARY KEY (`id`),
+    KEY `idx_classics_wangqi_document_current_version` (`current_version_id`),
     KEY `idx_classics_wangqi_document_time` (`document_time`),
     KEY `idx_classics_wangqi_document_visibility` (`visibility`),
     KEY `idx_classics_wangqi_document_storage_object` (`storage_object_id`)
@@ -124,7 +134,12 @@ CREATE TABLE IF NOT EXISTS `classics_ming_customs_entry` (
     `content` longtext DEFAULT NULL COMMENT '正文',
     `original_excerpts` longtext DEFAULT NULL COMMENT '原文摘录',
     `visibility` varchar(16) NOT NULL DEFAULT 'PUBLIC' COMMENT '平台内可见性',
+    `current_version_id` bigint DEFAULT NULL COMMENT '当前正式内容版本ID',
+    `current_version_no` int DEFAULT NULL COMMENT '当前正式内容版本号',
+    `current_versioned_at` datetime(3) DEFAULT NULL COMMENT '当前正式内容版本生成时间',
+    `content_updated_at` datetime(3) NOT NULL COMMENT '内容语义更新时间',
     PRIMARY KEY (`id`),
+    KEY `idx_classics_ming_customs_current_version` (`current_version_id`),
     KEY `idx_classics_ming_customs_category` (`category`, `visibility`),
     KEY `idx_classics_ming_customs_visibility` (`visibility`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='明代习俗条目表';
@@ -224,6 +239,8 @@ CREATE TABLE IF NOT EXISTS `classics_share_target` (
     `share_link_id` bigint NOT NULL COMMENT '分享链接ID',
     `content_type` varchar(32) NOT NULL COMMENT '内容类型',
     `content_id` bigint NOT NULL COMMENT '内容ID',
+    `content_version_id` bigint DEFAULT NULL COMMENT '分享绑定内容版本ID',
+    `content_version_no` int DEFAULT NULL COMMENT '分享绑定内容版本号',
     `title_snapshot` varchar(512) NOT NULL COMMENT '标题快照',
     `content_snapshot_json` json DEFAULT NULL COMMENT '完整内容快照',
     `content_visibility_snapshot` varchar(16) NOT NULL COMMENT '内容可见性快照',
@@ -232,7 +249,8 @@ CREATE TABLE IF NOT EXISTS `classics_share_target` (
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_classics_share_target_content` (`share_link_id`, `content_type`, `content_id`),
     UNIQUE KEY `uk_classics_share_target_priority` (`priority`),
-    KEY `idx_classics_share_target_content` (`content_type`, `content_id`)
+    KEY `idx_classics_share_target_content` (`content_type`, `content_id`),
+    KEY `idx_classics_share_target_version` (`content_version_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='分享目标表';
 
 CREATE TABLE IF NOT EXISTS `classics_share_access_record` (

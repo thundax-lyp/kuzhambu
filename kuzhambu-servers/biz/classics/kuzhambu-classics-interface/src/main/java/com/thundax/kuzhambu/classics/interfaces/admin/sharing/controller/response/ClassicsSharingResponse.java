@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -33,4 +34,49 @@ public class ClassicsSharingResponse implements Serializable {
 
     @JsonProperty("accessCount")
     private Long accessCount;
+
+    @JsonProperty("targets")
+    private List<Target> targets;
+
+    @Getter
+    @Builder
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class Target implements Serializable {
+        @JsonProperty("id")
+        private Long id;
+
+        @JsonProperty("contentType")
+        private String contentType;
+
+        @JsonProperty("contentId")
+        private Long contentId;
+
+        @JsonProperty("contentVersionId")
+        private Long contentVersionId;
+
+        @JsonProperty("contentVersionNo")
+        private Integer contentVersionNo;
+
+        @JsonProperty("currentContentVersionId")
+        private Long currentContentVersionId;
+
+        @JsonProperty("currentContentVersionNo")
+        private Integer currentContentVersionNo;
+
+        @JsonProperty("contentChangedAfterShare")
+        private Boolean contentChangedAfterShare;
+
+        @JsonProperty("titleSnapshot")
+        private String titleSnapshot;
+
+        @JsonProperty("contentVisibilitySnapshot")
+        private String contentVisibilitySnapshot;
+
+        @JsonProperty("targetStatus")
+        private String targetStatus;
+
+        @JsonProperty("priority")
+        private Integer priority;
+    }
 }

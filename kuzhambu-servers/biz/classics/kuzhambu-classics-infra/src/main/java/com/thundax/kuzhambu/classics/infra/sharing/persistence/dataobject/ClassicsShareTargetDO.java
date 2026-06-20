@@ -18,6 +18,8 @@ public class ClassicsShareTargetDO {
     private Long shareLinkId;
     private String contentType;
     private Long contentId;
+    private Long contentVersionId;
+    private Integer contentVersionNo;
     private String titleSnapshot;
     private String contentSnapshotJson;
     private String contentVisibilitySnapshot;

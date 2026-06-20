@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.classics.infra.mingcustoms.persistence.dataobject;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import java.util.Date;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -24,4 +25,8 @@ public class MingCustomsEntryDO {
     private String content;
     private String originalExcerpts;
     private String visibility;
+    private Long currentVersionId;
+    private Integer currentVersionNo;
+    private Date currentVersionedAt;
+    private Date contentUpdatedAt;
 }

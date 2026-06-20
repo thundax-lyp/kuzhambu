@@ -18,7 +18,7 @@ public class ClassicsSharingPortalController {
     }
 
     @GetMapping("{tokenHash}/targets")
-    public List<ClassicsShareTarget> listTargets(@PathVariable String tokenHash) {
+    public List<ClassicsShareTarget> listTargets(@PathVariable("tokenHash") String tokenHash) {
         return service.listTargets(service.getLinkByTokenHash(tokenHash).getId());
     }
 }
