@@ -13,6 +13,7 @@ import com.thundax.kuzhambu.classics.application.content.service.ClassicsContent
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkCreateCommand;
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareTargetCreateCommand;
 import com.thundax.kuzhambu.classics.application.sharing.result.ShareLinkCreateResult;
+import com.thundax.kuzhambu.classics.application.sharing.result.SharePortalResult;
 import com.thundax.kuzhambu.classics.application.sharing.service.impl.ClassicsSharingApplicationServiceImpl;
 import com.thundax.kuzhambu.classics.application.sharing.support.ClassicsShareTokenGenerator;
 import com.thundax.kuzhambu.classics.application.sharing.support.ClassicsShareTokenHasher;
@@ -29,7 +30,9 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisibility;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
 import com.thundax.kuzhambu.classics.domain.sancai.repository.SancaiRepository;
+import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareLink;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareTarget;
+import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareLinkStatus;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareVisibility;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsSharedContentVisibility;
 import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareLinkId;
@@ -281,6 +284,35 @@ class ClassicsSharingApplicationServiceImplTest {
         assertEquals(Boolean.TRUE, targets.get(0).getContentChangedAfterShare());
     }
 
+    @Test
+    void getPortalShareShouldReturnPublicActiveShareByPlainShareToken() {
+        ClassicsSharingRepository sharingRepository = mock(ClassicsSharingRepository.class);
+        ClassicsShareTokenHasher shareTokenHasher = mock(ClassicsShareTokenHasher.class);
+        ClassicsSharingApplicationServiceImpl service = portalService(sharingRepository, shareTokenHasher);
+        ClassicsShareLink link = link(ClassicsShareVisibility.PUBLIC, ClassicsShareLinkStatus.ACTIVE, futureDate());
+        ClassicsShareTarget target = new ClassicsShareTarget();
+        target.setTitleSnapshot("正式标题");
+
+        when(shareTokenHasher.hash("share-token")).thenReturn("hashed-share-token");
+        when(sharingRepository.getLinkByTokenHash("hashed-share-token")).thenReturn(link);
+        when(sharingRepository.listTargetsByLinkId(ClassicsShareLinkId.of(10L), SortDirection.ASC))
+                .thenReturn(List.of(target));
+
+        SharePortalResult result = service.getPortalShare("share-token");
+
+        assertEquals("公开分享", result.getTitle());
+        assertEquals(1, result.getTargets().size());
+        assertEquals("正式标题", result.getTargets().get(0).getTitleSnapshot());
+    }
+
+    @Test
+    void getPortalShareShouldHideMissingRevokedExpiredAndPrivateLinks() {
+        assertPortalShareHidden(null);
+        assertPortalShareHidden(link(ClassicsShareVisibility.PUBLIC, ClassicsShareLinkStatus.REVOKED, futureDate()));
+        assertPortalShareHidden(link(ClassicsShareVisibility.PUBLIC, ClassicsShareLinkStatus.ACTIVE, pastDate()));
+        assertPortalShareHidden(link(ClassicsShareVisibility.PRIVATE, ClassicsShareLinkStatus.ACTIVE, futureDate()));
+    }
+
     private static ClassicsContentVersion version(Long id, int versionNo, String snapshotJson) {
         ClassicsContentVersion version = new ClassicsContentVersion();
         version.setId(ClassicsContentVersionId.of(id));
@@ -288,5 +320,49 @@ class ClassicsSharingApplicationServiceImplTest {
         version.setVersionedAt(new Date(versionNo));
         version.setSnapshotJson(snapshotJson);
         return version;
+    }
+
+    private static void assertPortalShareHidden(ClassicsShareLink link) {
+        ClassicsSharingRepository sharingRepository = mock(ClassicsSharingRepository.class);
+        ClassicsShareTokenHasher shareTokenHasher = mock(ClassicsShareTokenHasher.class);
+        ClassicsSharingApplicationServiceImpl service = portalService(sharingRepository, shareTokenHasher);
+        when(shareTokenHasher.hash("share-token")).thenReturn("hashed-share-token");
+        when(sharingRepository.getLinkByTokenHash("hashed-share-token")).thenReturn(link);
+
+        assertThrows(BizException.class, () -> service.getPortalShare("share-token"));
+        verify(sharingRepository, never())
+                .listTargetsByLinkId(org.mockito.ArgumentMatchers.any(), eq(SortDirection.ASC));
+    }
+
+    private static ClassicsSharingApplicationServiceImpl portalService(
+            ClassicsSharingRepository sharingRepository, ClassicsShareTokenHasher shareTokenHasher) {
+        return new ClassicsSharingApplicationServiceImpl(
+                sharingRepository,
+                mock(ClassicsContentApplicationService.class),
+                mock(SancaiRepository.class),
+                mock(WangqiDocumentRepository.class),
+                mock(MingCustomsRepository.class),
+                mock(ClassicsShareTokenGenerator.class),
+                shareTokenHasher);
+    }
+
+    private static ClassicsShareLink link(
+            ClassicsShareVisibility visibility, ClassicsShareLinkStatus status, Date expiresAt) {
+        ClassicsShareLink link = new ClassicsShareLink();
+        link.setId(ClassicsShareLinkId.of(10L));
+        link.setTitle("公开分享");
+        link.setVisibility(visibility);
+        link.setStatus(status);
+        link.setIssuedAt(new Date(1_000L));
+        link.setExpiresAt(expiresAt);
+        return link;
+    }
+
+    private static Date futureDate() {
+        return new Date(System.currentTimeMillis() + 60_000L);
+    }
+
+    private static Date pastDate() {
+        return new Date(System.currentTimeMillis() - 60_000L);
     }
 }

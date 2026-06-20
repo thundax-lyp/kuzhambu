@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `classics portal sharing contract test`：固定 Portal 分享查询响应语义
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARE-SNAPSHOT.md`
-    - 范围对象：`ClassicsSharingPortalControllerTest.java`、`ClassicsSharingApplicationServiceImplTest.java`
-    - 处理动作：补明文 shareToken 查询、分享列表查询、过期、撤销和不存在 shareToken 的测试
-    - 验收点：Portal 查询测试覆盖详情和列表成功响应，过期、撤销和不存在 shareToken 均返回 404 且不区分失败原因
-    - 重要度：8/10
-
 - [ ] `classics share portal url config`：接入 Portal Web base URL 配置
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARE-SNAPSHOT.md`

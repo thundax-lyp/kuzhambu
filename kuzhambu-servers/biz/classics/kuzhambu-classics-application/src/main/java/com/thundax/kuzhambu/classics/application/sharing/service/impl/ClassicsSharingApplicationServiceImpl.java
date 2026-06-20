@@ -26,6 +26,7 @@ import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareAc
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareLink;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsSharePortalListItem;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareTarget;
+import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareLinkStatus;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareVisibility;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsSharedContentVisibility;
 import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareLinkId;
@@ -141,7 +142,7 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
     @Override
     public SharePortalResult getPortalShare(String shareToken) {
         ClassicsShareLink link = repository.getLinkByTokenHash(shareTokenHasher.hash(shareToken));
-        if (link == null || link.getId() == null) {
+        if (!isPortalVisible(link)) {
             throw shareContentNotFound();
         }
         return new SharePortalResult(
@@ -151,6 +152,17 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
                 link.getIssuedAt(),
                 link.getExpiresAt(),
                 listTargets(link.getId()));
+    }
+
+    private static boolean isPortalVisible(ClassicsShareLink link) {
+        if (link == null || link.getId() == null) {
+            return false;
+        }
+        if (link.getVisibility() != ClassicsShareVisibility.PUBLIC
+                || link.getStatus() != ClassicsShareLinkStatus.ACTIVE) {
+            return false;
+        }
+        return link.getExpiresAt() == null || link.getExpiresAt().after(new Date());
     }
 
     @Override
