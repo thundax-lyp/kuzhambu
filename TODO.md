@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `wangqi route page`：注册王圻页面和路由
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-WANGQI-ADMIN-WEB.md`
-    - 范围对象：`wangqi-page.tsx`、`wangqi-page.css`、`kuzhambu-apps/admin-web/src/router/index.tsx`
-    - 处理动作：组装 Wangqi 页面 query/mutation/drawer 并注册 `/classics/wangqi` route。
-    - 验收点：Admin Web 可从路由进入王圻页面且风格延续古风口径。
-    - 重要度：8/10
-
 - [ ] `wangqi frontend tests`：补页面单测和 E2E
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-WANGQI-ADMIN-WEB.md`

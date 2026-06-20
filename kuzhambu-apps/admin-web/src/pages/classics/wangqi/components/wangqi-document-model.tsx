@@ -1,5 +1,6 @@
 import { Button, DatePicker, Form, Input, InputNumber, Select, Switch, Typography } from "antd";
 import { useEffect } from "react";
+import type { ReactNode } from "react";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import { KuzhambuRichContentViewer } from "@/components/kuzhambu-rich-content-viewer";
 import {
@@ -14,6 +15,7 @@ const { Text } = Typography;
 const { TextArea } = Input;
 
 export interface WangqiDocumentModelProps {
+    afterForm?: ReactNode;
     document?: WangqiDocumentRecord | null;
     loading?: boolean;
     mode: "create" | "edit";
@@ -24,6 +26,7 @@ export interface WangqiDocumentModelProps {
 }
 
 export const WangqiDocumentModel = ({
+    afterForm,
     document,
     loading = false,
     mode,
@@ -146,6 +149,7 @@ export const WangqiDocumentModel = ({
                     </Text>
                 </section>
             </Form>
+            {afterForm}
         </KuzhambuDrawer>
     );
 };
