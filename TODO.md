@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics-sancai-version-backend-tests`：锁定三才图会恢复后端行为
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-VERSION-RESTORE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/sancai/support/SancaiEntryVersionRestorerTest.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/content/service/impl/ClassicsContentApplicationServiceImplTest.java`
-    - 处理动作：补 Restorer 和 Content service 分发的单元测试。
-    - 验收点：测试覆盖快照归属、非法快照、条目不存在、目标卷末尾 priority、`HISTORY_RESTORED` 新版本和版本指针回写。
-    - 重要度：9/10
-
 - [ ] `admin-web-sancai-version-service`：接入三才图会版本前端类型和服务
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-VERSION-RESTORE.md`
