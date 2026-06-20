@@ -46,9 +46,17 @@ Frontend apps use npm workspaces under `kuzhambu-apps/`:
 
 ```sh
 cd kuzhambu-apps
+npm run format:check
 npm run lint
 npm run test
 npm run build
+```
+
+Before any frontend build or package step, run Prettier formatting checks and lint first:
+
+```sh
+npm run format:check
+npm run lint
 ```
 
 Python workers use Python 3.10 and a repo-local virtual environment:
