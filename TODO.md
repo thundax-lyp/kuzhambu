@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `classics-domain entities`：三类内容实体实现 Versionable
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-VERSIONABLE.md`
-    - 范围对象：`SancaiEntry.java`、`WangqiDocument.java`、`MingCustomsEntry.java`
-    - 处理动作：为三类内容实体增加版本标定字段并实现 `Versionable`
-    - 验收点：三类内容能通过统一接口暴露内容身份、当前版本和内容更新时间
-    - 重要度：9/10
-
 - [ ] `SancaiEntry persistence`：接入三才条目版本标定持久化映射
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-VERSIONABLE.md`
