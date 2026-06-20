@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `wangqi list form timeline`：实现王圻列表、表单和时间线组件
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-WANGQI-ADMIN-WEB.md`
-    - 范围对象：`wangqi-document-form-values.ts`、`wangqi-document-list.tsx`、`wangqi-document-model.tsx`、`wangqi-timeline-panel.tsx`
-    - 处理动作：实现列表筛选、抽屉表单、正文预览和时间线交互。
-    - 验收点：页面可按 keyword/visibility/sortDirection 查询并打开详情抽屉。
-    - 重要度：8/10
-
 - [ ] `wangqi file version panels`：实现王圻原始文件和版本组件
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-WANGQI-ADMIN-WEB.md`
