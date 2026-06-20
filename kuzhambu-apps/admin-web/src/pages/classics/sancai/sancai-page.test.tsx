@@ -119,7 +119,6 @@ const installSancaiFetchMock = () => {
                 }
             ]);
         }
-
         if (path.endsWith("/classics/sancai/volumes/add")) {
             return apiResponse({
                 categoryId: 2,

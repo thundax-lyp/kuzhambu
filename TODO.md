@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `admin-web sancai share entry`：在三才页面接入分享创建入口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARE-SNAPSHOT.md`
-    - 范围对象：`sancai-page.tsx`、`sancai-types.ts`、`share-service.ts`
-    - 处理动作：让三才页面创建分享时只传 `contentType/contentId` 并展示或复制 `shareUrl`
-    - 验收点：页面不会构造 `titleSnapshot/contentSnapshotJson`
-    - 重要度：7/10
-
 - [ ] `portal-web home and share route`：新增 Portal 首页和分享路由
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARE-SNAPSHOT.md`

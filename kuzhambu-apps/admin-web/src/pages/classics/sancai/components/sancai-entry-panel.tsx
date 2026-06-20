@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Alert, App } from "antd";
 import { useState } from "react";
+import * as shareService from "@/api/classics/share-service";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import type { KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
 import { SancaiEntryList } from "./sancai-entry-list";
@@ -108,6 +109,20 @@ export const SancaiEntryPanel = ({
             messageApi.error(error instanceof Error ? error.message : "排序保存失败");
         }
     });
+    const shareEntryMutation = useMutation({
+        mutationFn: shareService.create,
+        onSuccess: (share) => {
+            if (typeof navigator.clipboard?.writeText === "function") {
+                void navigator.clipboard.writeText(share.shareUrl);
+                messageApi.success("分享链接已复制");
+                return;
+            }
+            messageApi.success(`分享链接：${share.shareUrl}`);
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "分享创建失败");
+        }
+    });
 
     const selectEntry = (entry: SancaiEntryRecord) => {
         setIsCreating(false);
@@ -171,6 +186,20 @@ export const SancaiEntryPanel = ({
         });
     };
 
+    const shareEntry = (entry: SancaiEntryRecord) => {
+        const title = entry.title?.trim() || `条目 ${entry.id}`;
+        shareEntryMutation.mutate({
+            targets: [
+                {
+                    contentId: entry.id,
+                    contentType: "SANCAI_ENTRY"
+                }
+            ],
+            title: `${title} 分享`,
+            visibility: "PUBLIC"
+        });
+    };
+
     const sortEntry = (
         sourceEntry: SancaiEntryRecord,
         targetEntry: SancaiEntryRecord,
@@ -209,6 +238,7 @@ export const SancaiEntryPanel = ({
                 isLoading={isLoading || sortEntryMutation.isPending}
                 volumes={volumes}
                 onDelete={deleteEntry}
+                onShare={shareEntry}
                 onSort={sortEntry}
                 onView={selectEntry}
             />
