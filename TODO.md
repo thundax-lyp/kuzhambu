@@ -19,14 +19,6 @@
     - 验收点：Controller 测试固定 source-file POST/GET 路径。
     - 重要度：9/10
 
-- [ ] `wangqi source application`：封装王圻原始文件 application 编排
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-WANGQI-ADMIN-WEB.md`
-    - 范围对象：`WangqiDocumentSourceFileCommand.java`、`WangqiDocumentApplicationService.java`、`WangqiDocumentApplicationServiceImpl.java`、`kuzhambu-classics-application/pom.xml`
-    - 处理动作：在 application service 内完成 source-file 上传、读取、版本创建、删除历史版本和 Storage reference 释放编排。
-    - 验收点：普通保存、上传替换和历史恢复都会按 RUNBOOK 生成正式版本或清理引用。
-    - 重要度：10/10
-
 - [ ] `wangqi source api`：封装王圻原始文件 Admin API
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-WANGQI-ADMIN-WEB.md`

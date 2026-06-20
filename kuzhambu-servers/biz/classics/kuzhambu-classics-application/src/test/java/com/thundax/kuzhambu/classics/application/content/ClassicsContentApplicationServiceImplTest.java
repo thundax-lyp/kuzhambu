@@ -176,6 +176,11 @@ class ClassicsContentApplicationServiceImplTest {
         }
 
         @Override
+        public int deleteVersions(String contentType, ClassicsContentId contentId) {
+            return 0;
+        }
+
+        @Override
         public ClassicsContentExportJobId insertExportJob(ClassicsContentExportJob exportJob) {
             return null;
         }

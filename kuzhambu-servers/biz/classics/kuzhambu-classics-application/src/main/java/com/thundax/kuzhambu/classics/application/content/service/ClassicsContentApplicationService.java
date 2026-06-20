@@ -48,6 +48,8 @@ public interface ClassicsContentApplicationService {
 
     ClassicsContentVersion getVersion(ClassicsContentVersionId id);
 
+    int deleteVersions(String contentType, ClassicsContentId contentId);
+
     ClassicsContentVersion ensureVersioned(
             Versionable content, ClassicsContentChangeType changeType, String changeSummary);
 

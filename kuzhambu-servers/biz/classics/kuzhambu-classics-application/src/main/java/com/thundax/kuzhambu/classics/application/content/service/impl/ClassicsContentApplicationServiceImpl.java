@@ -256,6 +256,12 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    public int deleteVersions(String contentType, ClassicsContentId contentId) {
+        return repository.deleteVersions(contentType, contentId);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public ClassicsContentVersion ensureVersioned(
             Versionable content, ClassicsContentChangeType changeType, String changeSummary) {
         if (content == null) {
