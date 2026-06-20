@@ -25,6 +25,7 @@ import com.thundax.kuzhambu.classics.domain.sancai.repository.SancaiRepository;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareAccessRecord;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareLink;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareTarget;
+import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareVisibility;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsSharedContentVisibility;
 import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareLinkId;
 import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareTargetId;
@@ -110,7 +111,7 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
         List<ClassicsShareTarget> savedTargets = new ArrayList<>(targetCommands.size());
         for (ShareTargetCreateCommand targetCommand : targetCommands) {
             ClassicsShareTarget target = targetCommand.toTarget();
-            bindVersionSnapshot(target);
+            bindVersionSnapshot(target, link.getVisibility());
             target.setShareLinkId(linkId == null ? null : linkId);
             target.setPriority(nextPriority++);
             repository.insertTarget(target);
@@ -249,8 +250,14 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
         }
     }
 
-    private void bindVersionSnapshot(ClassicsShareTarget target) {
+    private void bindVersionSnapshot(ClassicsShareTarget target, ClassicsShareVisibility shareVisibility) {
         Versionable content = loadContent(target);
+        ClassicsSharedContentVisibility contentVisibility = visibilityOf(content);
+        if (shareVisibility == ClassicsShareVisibility.PUBLIC
+                && contentVisibility != ClassicsSharedContentVisibility.PUBLIC) {
+            throw privateContentCannotBePublicShared();
+        }
+
         ClassicsContentVersion version =
                 contentApplicationService.ensureVersioned(content, ClassicsContentChangeType.SHARE_CREATED, "创建分享");
         if (version == null || version.getId() == null) {
@@ -261,7 +268,7 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
         target.setContentVersionNo(version.getVersionNo());
         target.setContentSnapshotJson(version.getSnapshotJson());
         target.setTitleSnapshot(titleOf(content));
-        target.setContentVisibilitySnapshot(visibilityOf(content));
+        target.setContentVisibilitySnapshot(contentVisibility);
         persistVersionMarker(content);
     }
 
@@ -344,6 +351,10 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
 
     private static BizException shareContentNotFound() {
         return new BizException("分享内容不存在或不支持版本标定");
+    }
+
+    private static BizException privateContentCannotBePublicShared() {
+        return new BizException("私有古籍内容不允许公开分享");
     }
 
     private static BizException sortEmptyInput() {

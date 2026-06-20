@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `classics admin sharing interface`：新增 Admin 分享创建 request/response DTO
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARE-SNAPSHOT.md`
-    - 范围对象：`ClassicsSharingAdminController.java`、`ClassicsSharingRequest.java`、`ClassicsShareTargetRequest.java`、`ClassicsSharingResponse.java`、`ClassicsShareTargetResponse.java`
-    - 处理动作：让 Admin 创建接口只接收分享配置和 target 引用，并返回 `shareToken/shareUrl/targets`
-    - 验收点：Admin 接口不直接暴露或接收 `ClassicsShareTarget` domain entity，私有内容 target 创建分享时被拒绝
-    - 重要度：9/10
-
 - [ ] `classics admin sharing assembler test`：固定 Admin 分享创建接口契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARE-SNAPSHOT.md`

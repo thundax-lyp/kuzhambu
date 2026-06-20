@@ -1,8 +1,10 @@
 package com.thundax.kuzhambu.classics.application.sharing;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -28,6 +30,7 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisibi
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
 import com.thundax.kuzhambu.classics.domain.sancai.repository.SancaiRepository;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareTarget;
+import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareVisibility;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsSharedContentVisibility;
 import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareLinkId;
 import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareTargetId;
@@ -36,6 +39,7 @@ import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.valueobject.WangqiDocumentId;
 import com.thundax.kuzhambu.classics.domain.wangqi.repository.WangqiDocumentRepository;
+import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import java.util.Date;
 import java.util.List;
@@ -190,6 +194,50 @@ class ClassicsSharingApplicationServiceImplTest {
         assertEquals("三才", savedTargets.get(0).getTitleSnapshot());
         assertEquals("王圻", savedTargets.get(1).getTitleSnapshot());
         assertEquals("明俗", savedTargets.get(2).getTitleSnapshot());
+    }
+
+    @Test
+    void createPublicLinkShouldRejectPrivateContent() {
+        ClassicsSharingRepository sharingRepository = mock(ClassicsSharingRepository.class);
+        ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
+        SancaiRepository sancaiRepository = mock(SancaiRepository.class);
+        WangqiDocumentRepository wangqiDocumentRepository = mock(WangqiDocumentRepository.class);
+        MingCustomsRepository mingCustomsRepository = mock(MingCustomsRepository.class);
+        ClassicsShareTokenGenerator shareTokenGenerator = mock(ClassicsShareTokenGenerator.class);
+        ClassicsShareTokenHasher shareTokenHasher = mock(ClassicsShareTokenHasher.class);
+        ClassicsSharingApplicationServiceImpl service = new ClassicsSharingApplicationServiceImpl(
+                sharingRepository,
+                contentApplicationService,
+                sancaiRepository,
+                wangqiDocumentRepository,
+                mingCustomsRepository,
+                shareTokenGenerator,
+                shareTokenHasher);
+
+        SancaiEntry entry = new SancaiEntry();
+        entry.setId(SancaiEntryId.of(100L));
+        entry.setTitle("私有内容");
+        entry.setVisibility(SancaiEntryVisibility.PRIVATE);
+
+        when(shareTokenGenerator.generate()).thenReturn("abc123_-");
+        when(shareTokenHasher.hash("abc123_-")).thenReturn("hashed-share-token");
+        when(sharingRepository.insertLink(org.mockito.ArgumentMatchers.any())).thenReturn(ClassicsShareLinkId.of(10L));
+        when(sancaiRepository.getEntryById(SancaiEntryId.of(100L))).thenReturn(entry);
+
+        assertThrows(
+                BizException.class,
+                () -> service.createLink(new ShareLinkCreateCommand(
+                        "公开分享",
+                        ClassicsShareVisibility.PUBLIC,
+                        null,
+                        null,
+                        null,
+                        null,
+                        List.of(new ShareTargetCreateCommand(
+                                ClassicsContentType.SANCAI_ENTRY, ClassicsContentId.of(100L))))));
+        verify(contentApplicationService, never())
+                .ensureVersioned(eq(entry), eq(ClassicsContentChangeType.SHARE_CREATED), eq("创建分享"));
+        verify(sharingRepository, never()).insertTarget(org.mockito.ArgumentMatchers.any());
     }
 
     @Test

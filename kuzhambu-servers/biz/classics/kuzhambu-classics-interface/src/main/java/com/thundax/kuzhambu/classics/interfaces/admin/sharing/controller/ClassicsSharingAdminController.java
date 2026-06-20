@@ -6,6 +6,8 @@ import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkStatus
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareTargetCreateCommand;
 import com.thundax.kuzhambu.classics.application.sharing.result.ShareLinkCreateResult;
 import com.thundax.kuzhambu.classics.application.sharing.service.ClassicsSharingApplicationService;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
+import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisibilityRiskStatus;
 import com.thundax.kuzhambu.classics.domain.sharing.codec.ClassicsShareLinkIdCodec;
 import com.thundax.kuzhambu.classics.domain.sharing.codec.ClassicsShareTargetIdCodec;
@@ -14,6 +16,7 @@ import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareTa
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareLinkStatus;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareVisibility;
 import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareLinkId;
+import com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller.request.ClassicsShareTargetRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller.request.ClassicsShareTargetSortRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller.request.ClassicsSharingRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller.response.ClassicsSharingResponse;
@@ -142,11 +145,13 @@ public class ClassicsSharingAdminController {
                         .toList();
     }
 
-    private static List<ShareTargetCreateCommand> toTargetCommands(List<ClassicsShareTarget> targets) {
+    private static List<ShareTargetCreateCommand> toTargetCommands(List<ClassicsShareTargetRequest> targets) {
         return targets == null
                 ? List.of()
                 : targets.stream()
-                        .map(target -> new ShareTargetCreateCommand(target.getContentType(), target.getContentId()))
+                        .map(target -> new ShareTargetCreateCommand(
+                                ClassicsContentType.from(target.getContentType()),
+                                ClassicsContentId.of(target.getContentId())))
                         .toList();
     }
 
