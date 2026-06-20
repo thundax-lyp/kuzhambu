@@ -93,3 +93,6 @@ kuzhambu:
   storage:
     bucket-name: ${KUZHAMBU_STORAGE_BUCKET_NAME:local}
     content-path: ${KUZHAMBU_STORAGE_CONTENT_PATH:/api/storage/object/}
+  classics:
+    share:
+      portal-web-base-url: ${KUZHAMBU_PORTAL_WEB_BASE_URL:http://localhost:5174}

@@ -9,6 +9,7 @@ interface SancaiEntryListProps {
     entries: SancaiEntryRecord[];
     isLoading: boolean;
     onDelete: (entry: SancaiEntryRecord) => void;
+    onShare: (entry: SancaiEntryRecord) => void;
     onSort: (
         sourceEntry: SancaiEntryRecord,
         targetEntry: SancaiEntryRecord,
@@ -50,6 +51,7 @@ export const SancaiEntryList = ({
     entries,
     isLoading,
     onDelete,
+    onShare,
     onSort,
     onView,
     volumes
@@ -103,6 +105,12 @@ export const SancaiEntryList = ({
         {
             key: "actions",
             options: (entry) => [
+                {
+                    key: "share",
+                    text: "分享",
+                    ariaLabel: `分享 ${readTitle(entry, "条目")}`,
+                    onClick: () => onShare(entry)
+                },
                 {
                     key: "view",
                     text: "查看",

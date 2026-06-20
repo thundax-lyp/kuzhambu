@@ -5,8 +5,14 @@ import com.thundax.kuzhambu.classics.application.content.service.ClassicsContent
 import com.thundax.kuzhambu.classics.application.sharing.command.ClassicsShareTargetSortCommand;
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkCreateCommand;
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkStatusCommand;
+import com.thundax.kuzhambu.classics.application.sharing.command.ShareTargetCreateCommand;
+import com.thundax.kuzhambu.classics.application.sharing.configure.ClassicsShareProperties;
 import com.thundax.kuzhambu.classics.application.sharing.query.ShareAccessQuery;
+import com.thundax.kuzhambu.classics.application.sharing.result.ShareLinkCreateResult;
+import com.thundax.kuzhambu.classics.application.sharing.result.SharePortalResult;
 import com.thundax.kuzhambu.classics.application.sharing.service.ClassicsSharingApplicationService;
+import com.thundax.kuzhambu.classics.application.sharing.support.ClassicsShareTokenGenerator;
+import com.thundax.kuzhambu.classics.application.sharing.support.ClassicsShareTokenHasher;
 import com.thundax.kuzhambu.classics.domain.content.model.Versionable;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentChangeType;
@@ -19,7 +25,10 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.repository.SancaiRepository;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareAccessRecord;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareLink;
+import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsSharePortalListItem;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareTarget;
+import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareLinkStatus;
+import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareVisibility;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsSharedContentVisibility;
 import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareLinkId;
 import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareTargetId;
@@ -39,6 +48,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,18 +62,32 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
     private final SancaiRepository sancaiRepository;
     private final WangqiDocumentRepository wangqiDocumentRepository;
     private final MingCustomsRepository mingCustomsRepository;
+    private final ClassicsShareTokenGenerator shareTokenGenerator;
+    private final ClassicsShareTokenHasher shareTokenHasher;
+    private ClassicsShareProperties shareProperties = new ClassicsShareProperties();
 
     public ClassicsSharingApplicationServiceImpl(
             ClassicsSharingRepository repository,
             ClassicsContentApplicationService contentApplicationService,
             SancaiRepository sancaiRepository,
             WangqiDocumentRepository wangqiDocumentRepository,
-            MingCustomsRepository mingCustomsRepository) {
+            MingCustomsRepository mingCustomsRepository,
+            ClassicsShareTokenGenerator shareTokenGenerator,
+            ClassicsShareTokenHasher shareTokenHasher) {
         this.repository = repository;
         this.contentApplicationService = contentApplicationService;
         this.sancaiRepository = sancaiRepository;
         this.wangqiDocumentRepository = wangqiDocumentRepository;
         this.mingCustomsRepository = mingCustomsRepository;
+        this.shareTokenGenerator = shareTokenGenerator;
+        this.shareTokenHasher = shareTokenHasher;
+    }
+
+    @Autowired(required = false)
+    public void setShareProperties(ClassicsShareProperties shareProperties) {
+        if (shareProperties != null) {
+            this.shareProperties = shareProperties;
+        }
     }
 
     @Override
@@ -85,23 +109,70 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
     }
 
     @Override
+    public PageResult<ClassicsSharePortalListItem> pagePortalShares(
+            String contentType, String title, Date issuedAfter, Date issuedBefore, PageQuery page) {
+        IPage<ClassicsSharePortalListItem> dataPage = repository.pagePortalShares(
+                contentType, title, issuedAfter, issuedBefore, page.getPageNo(), page.getPageSize());
+        return PageResult.of(
+                (int) dataPage.getCurrent(), (int) dataPage.getSize(), dataPage.getTotal(), dataPage.getRecords());
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
-    public ClassicsShareLinkId createLink(ShareLinkCreateCommand command) {
-        ClassicsShareLink link = command.toLink();
+    public ShareLinkCreateResult createLink(ShareLinkCreateCommand command) {
+        String shareToken = shareTokenGenerator.generate();
+        ClassicsShareLink link = command.toLink(shareToken, shareTokenHasher.hash(shareToken));
         if (link.getIssuedAt() == null) {
             link.setIssuedAt(new Date());
         }
         ClassicsShareLinkId linkId = repository.insertLink(link);
         int nextPriority = repository.maxTargetPriority() + 1;
-        List<ClassicsShareTarget> targets =
+        List<ShareTargetCreateCommand> targetCommands =
                 command.getTargets() == null ? Collections.emptyList() : command.getTargets();
-        for (ClassicsShareTarget target : targets) {
-            bindVersionSnapshot(target);
+        List<ClassicsShareTarget> savedTargets = new ArrayList<>(targetCommands.size());
+        for (ShareTargetCreateCommand targetCommand : targetCommands) {
+            ClassicsShareTarget target = targetCommand.toTarget();
+            bindVersionSnapshot(target, link.getVisibility());
             target.setShareLinkId(linkId == null ? null : linkId);
             target.setPriority(nextPriority++);
             repository.insertTarget(target);
+            savedTargets.add(target);
         }
-        return linkId;
+        return new ShareLinkCreateResult(
+                linkId,
+                shareToken,
+                shareProperties.buildShareUrl(shareToken),
+                link.getTitle(),
+                link.getVisibility(),
+                link.getStatus(),
+                link.getExpiresAt(),
+                savedTargets);
+    }
+
+    @Override
+    public SharePortalResult getPortalShare(String shareToken) {
+        ClassicsShareLink link = repository.getLinkByTokenHash(shareTokenHasher.hash(shareToken));
+        if (!isPortalVisible(link)) {
+            throw shareContentNotFound();
+        }
+        return new SharePortalResult(
+                link.getTitle(),
+                link.getVisibility(),
+                link.getStatus(),
+                link.getIssuedAt(),
+                link.getExpiresAt(),
+                listTargets(link.getId()));
+    }
+
+    private static boolean isPortalVisible(ClassicsShareLink link) {
+        if (link == null || link.getId() == null) {
+            return false;
+        }
+        if (link.getVisibility() != ClassicsShareVisibility.PUBLIC
+                || link.getStatus() != ClassicsShareLinkStatus.ACTIVE) {
+            return false;
+        }
+        return link.getExpiresAt() == null || link.getExpiresAt().after(new Date());
     }
 
     @Override
@@ -211,8 +282,14 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
         }
     }
 
-    private void bindVersionSnapshot(ClassicsShareTarget target) {
+    private void bindVersionSnapshot(ClassicsShareTarget target, ClassicsShareVisibility shareVisibility) {
         Versionable content = loadContent(target);
+        ClassicsSharedContentVisibility contentVisibility = visibilityOf(content);
+        if (shareVisibility == ClassicsShareVisibility.PUBLIC
+                && contentVisibility != ClassicsSharedContentVisibility.PUBLIC) {
+            throw privateContentCannotBePublicShared();
+        }
+
         ClassicsContentVersion version =
                 contentApplicationService.ensureVersioned(content, ClassicsContentChangeType.SHARE_CREATED, "创建分享");
         if (version == null || version.getId() == null) {
@@ -223,7 +300,7 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
         target.setContentVersionNo(version.getVersionNo());
         target.setContentSnapshotJson(version.getSnapshotJson());
         target.setTitleSnapshot(titleOf(content));
-        target.setContentVisibilitySnapshot(visibilityOf(content));
+        target.setContentVisibilitySnapshot(contentVisibility);
         persistVersionMarker(content);
     }
 
@@ -306,6 +383,10 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
 
     private static BizException shareContentNotFound() {
         return new BizException("分享内容不存在或不支持版本标定");
+    }
+
+    private static BizException privateContentCannotBePublicShared() {
+        return new BizException("私有古籍内容不允许公开分享");
     }
 
     private static BizException sortEmptyInput() {

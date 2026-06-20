@@ -1,30 +1,49 @@
 package com.thundax.kuzhambu.classics.application.sharing;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkCreateCommand;
+import com.thundax.kuzhambu.classics.application.sharing.command.ShareTargetCreateCommand;
+import com.thundax.kuzhambu.classics.application.sharing.result.ShareLinkCreateResult;
+import com.thundax.kuzhambu.classics.application.sharing.result.SharePortalResult;
 import com.thundax.kuzhambu.classics.application.sharing.service.impl.ClassicsSharingApplicationServiceImpl;
+import com.thundax.kuzhambu.classics.application.sharing.support.ClassicsShareTokenGenerator;
+import com.thundax.kuzhambu.classics.application.sharing.support.ClassicsShareTokenHasher;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentChangeType;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentVersionId;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsVisibility;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsEntryId;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.repository.MingCustomsRepository;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisibility;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
 import com.thundax.kuzhambu.classics.domain.sancai.repository.SancaiRepository;
+import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareLink;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareTarget;
+import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareLinkStatus;
+import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareTargetStatus;
+import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareVisibility;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsSharedContentVisibility;
 import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareLinkId;
 import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareTargetId;
 import com.thundax.kuzhambu.classics.domain.sharing.repository.ClassicsSharingRepository;
+import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
+import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
+import com.thundax.kuzhambu.classics.domain.wangqi.model.valueobject.WangqiDocumentId;
 import com.thundax.kuzhambu.classics.domain.wangqi.repository.WangqiDocumentRepository;
+import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import java.util.Date;
 import java.util.List;
@@ -40,12 +59,16 @@ class ClassicsSharingApplicationServiceImplTest {
         SancaiRepository sancaiRepository = mock(SancaiRepository.class);
         WangqiDocumentRepository wangqiDocumentRepository = mock(WangqiDocumentRepository.class);
         MingCustomsRepository mingCustomsRepository = mock(MingCustomsRepository.class);
+        ClassicsShareTokenGenerator shareTokenGenerator = mock(ClassicsShareTokenGenerator.class);
+        ClassicsShareTokenHasher shareTokenHasher = mock(ClassicsShareTokenHasher.class);
         ClassicsSharingApplicationServiceImpl service = new ClassicsSharingApplicationServiceImpl(
                 sharingRepository,
                 contentApplicationService,
                 sancaiRepository,
                 wangqiDocumentRepository,
-                mingCustomsRepository);
+                mingCustomsRepository,
+                shareTokenGenerator,
+                shareTokenHasher);
 
         SancaiEntry entry = new SancaiEntry();
         entry.setId(SancaiEntryId.of(100L));
@@ -60,6 +83,8 @@ class ClassicsSharingApplicationServiceImplTest {
 
         when(sharingRepository.insertLink(org.mockito.ArgumentMatchers.any())).thenReturn(ClassicsShareLinkId.of(10L));
         when(sharingRepository.maxTargetPriority()).thenReturn(4);
+        when(shareTokenGenerator.generate()).thenReturn("abc123_-");
+        when(shareTokenHasher.hash("abc123_-")).thenReturn("hashed-share-token");
         when(sancaiRepository.getEntryById(SancaiEntryId.of(100L))).thenReturn(entry);
         when(contentApplicationService.ensureVersioned(
                         eq(entry), eq(ClassicsContentChangeType.SHARE_CREATED), eq("创建分享")))
@@ -69,17 +94,25 @@ class ClassicsSharingApplicationServiceImplTest {
                 });
         when(sancaiRepository.updateEntry(entry)).thenReturn(1);
 
-        ClassicsShareTarget target = new ClassicsShareTarget();
-        target.setContentType(ClassicsContentType.SANCAI_ENTRY);
-        target.setContentId(ClassicsContentId.of(100L));
-        target.setTitleSnapshot("请求标题");
-        target.setContentSnapshotJson("{\"stale\":true}");
-        target.setContentVisibilitySnapshot(ClassicsSharedContentVisibility.PRIVATE);
-        service.createLink(new ShareLinkCreateCommand(null, "分享", null, null, null, null, null, List.of(target)));
+        ShareLinkCreateResult result = service.createLink(new ShareLinkCreateCommand(
+                "分享",
+                null,
+                null,
+                null,
+                null,
+                null,
+                List.of(new ShareTargetCreateCommand(ClassicsContentType.SANCAI_ENTRY, ClassicsContentId.of(100L)))));
 
-        ArgumentCaptor<ClassicsShareTarget> captor = ArgumentCaptor.forClass(ClassicsShareTarget.class);
-        verify(sharingRepository).insertTarget(captor.capture());
-        ClassicsShareTarget savedTarget = captor.getValue();
+        ArgumentCaptor<ClassicsShareLink> linkCaptor = ArgumentCaptor.forClass(ClassicsShareLink.class);
+        verify(sharingRepository).insertLink(linkCaptor.capture());
+        ArgumentCaptor<ClassicsShareTarget> targetCaptor = ArgumentCaptor.forClass(ClassicsShareTarget.class);
+        verify(sharingRepository).insertTarget(targetCaptor.capture());
+        assertEquals("abc123_-", result.getShareToken());
+        assertEquals("http://localhost:5174/share/abc123_-", result.getShareUrl());
+        assertEquals(ClassicsShareLinkId.of(10L), result.getId());
+        assertEquals("abc123_-", linkCaptor.getValue().getShareToken());
+        assertEquals("hashed-share-token", linkCaptor.getValue().getTokenHash());
+        ClassicsShareTarget savedTarget = targetCaptor.getValue();
         assertEquals(ClassicsShareLinkId.of(10L), savedTarget.getShareLinkId());
         assertEquals(5, savedTarget.getPriority());
         assertEquals(ClassicsContentVersionId.of(9L), savedTarget.getContentVersionId());
@@ -87,7 +120,134 @@ class ClassicsSharingApplicationServiceImplTest {
         assertEquals("{\"title\":\"正式标题\"}", savedTarget.getContentSnapshotJson());
         assertEquals("正式标题", savedTarget.getTitleSnapshot());
         assertEquals(ClassicsSharedContentVisibility.PUBLIC, savedTarget.getContentVisibilitySnapshot());
+        assertEquals(ClassicsShareTargetStatus.AVAILABLE, savedTarget.getTargetStatus());
         verify(sancaiRepository).updateEntry(entry);
+    }
+
+    @Test
+    void createLinkShouldBindFormalVersionSnapshotsForAllSupportedContentTypes() {
+        ClassicsSharingRepository sharingRepository = mock(ClassicsSharingRepository.class);
+        ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
+        SancaiRepository sancaiRepository = mock(SancaiRepository.class);
+        WangqiDocumentRepository wangqiDocumentRepository = mock(WangqiDocumentRepository.class);
+        MingCustomsRepository mingCustomsRepository = mock(MingCustomsRepository.class);
+        ClassicsShareTokenGenerator shareTokenGenerator = mock(ClassicsShareTokenGenerator.class);
+        ClassicsShareTokenHasher shareTokenHasher = mock(ClassicsShareTokenHasher.class);
+        ClassicsSharingApplicationServiceImpl service = new ClassicsSharingApplicationServiceImpl(
+                sharingRepository,
+                contentApplicationService,
+                sancaiRepository,
+                wangqiDocumentRepository,
+                mingCustomsRepository,
+                shareTokenGenerator,
+                shareTokenHasher);
+
+        SancaiEntry sancai = new SancaiEntry();
+        sancai.setId(SancaiEntryId.of(100L));
+        sancai.setTitle("三才");
+        sancai.setVisibility(SancaiEntryVisibility.PUBLIC);
+        WangqiDocument wangqi = new WangqiDocument();
+        wangqi.setId(WangqiDocumentId.of(200L));
+        wangqi.setTitle("王圻");
+        wangqi.setVisibility(WangqiDocumentVisibility.PUBLIC);
+        MingCustomsEntry mingCustoms = new MingCustomsEntry();
+        mingCustoms.setId(MingCustomsEntryId.of(300L));
+        mingCustoms.setTitle("明俗");
+        mingCustoms.setVisibility(MingCustomsVisibility.PUBLIC);
+
+        ClassicsContentVersion sancaiVersion = version(11L, 1, "{\"title\":\"三才\"}");
+        ClassicsContentVersion wangqiVersion = version(12L, 2, "{\"title\":\"王圻\"}");
+        ClassicsContentVersion mingCustomsVersion = version(13L, 3, "{\"title\":\"明俗\"}");
+
+        when(sharingRepository.insertLink(org.mockito.ArgumentMatchers.any())).thenReturn(ClassicsShareLinkId.of(10L));
+        when(sharingRepository.maxTargetPriority()).thenReturn(0);
+        when(shareTokenGenerator.generate()).thenReturn("abc123_-");
+        when(shareTokenHasher.hash("abc123_-")).thenReturn("hashed-share-token");
+        when(sancaiRepository.getEntryById(SancaiEntryId.of(100L))).thenReturn(sancai);
+        when(wangqiDocumentRepository.getById(WangqiDocumentId.of(200L))).thenReturn(wangqi);
+        when(mingCustomsRepository.getById(MingCustomsEntryId.of(300L))).thenReturn(mingCustoms);
+        when(contentApplicationService.ensureVersioned(
+                        eq(sancai), eq(ClassicsContentChangeType.SHARE_CREATED), eq("创建分享")))
+                .thenReturn(sancaiVersion);
+        when(contentApplicationService.ensureVersioned(
+                        eq(wangqi), eq(ClassicsContentChangeType.SHARE_CREATED), eq("创建分享")))
+                .thenReturn(wangqiVersion);
+        when(contentApplicationService.ensureVersioned(
+                        eq(mingCustoms), eq(ClassicsContentChangeType.SHARE_CREATED), eq("创建分享")))
+                .thenReturn(mingCustomsVersion);
+        when(sancaiRepository.updateEntry(sancai)).thenReturn(1);
+        when(wangqiDocumentRepository.update(wangqi)).thenReturn(1);
+        when(mingCustomsRepository.update(mingCustoms)).thenReturn(1);
+
+        ShareLinkCreateResult result = service.createLink(new ShareLinkCreateCommand(
+                "分享",
+                null,
+                null,
+                null,
+                null,
+                null,
+                List.of(
+                        new ShareTargetCreateCommand(ClassicsContentType.SANCAI_ENTRY, ClassicsContentId.of(100L)),
+                        new ShareTargetCreateCommand(ClassicsContentType.WANGQI_DOCUMENT, ClassicsContentId.of(200L)),
+                        new ShareTargetCreateCommand(ClassicsContentType.MING_CUSTOMS, ClassicsContentId.of(300L)))));
+
+        ArgumentCaptor<ClassicsShareTarget> captor = ArgumentCaptor.forClass(ClassicsShareTarget.class);
+        verify(sharingRepository, times(3)).insertTarget(captor.capture());
+        List<ClassicsShareTarget> savedTargets = captor.getAllValues();
+        assertEquals(3, result.getTargets().size());
+        assertEquals(sancaiVersion.getSnapshotJson(), savedTargets.get(0).getContentSnapshotJson());
+        assertEquals(wangqiVersion.getSnapshotJson(), savedTargets.get(1).getContentSnapshotJson());
+        assertEquals(mingCustomsVersion.getSnapshotJson(), savedTargets.get(2).getContentSnapshotJson());
+        assertEquals(ClassicsContentVersionId.of(11L), savedTargets.get(0).getContentVersionId());
+        assertEquals(ClassicsContentVersionId.of(12L), savedTargets.get(1).getContentVersionId());
+        assertEquals(ClassicsContentVersionId.of(13L), savedTargets.get(2).getContentVersionId());
+        assertEquals("三才", savedTargets.get(0).getTitleSnapshot());
+        assertEquals("王圻", savedTargets.get(1).getTitleSnapshot());
+        assertEquals("明俗", savedTargets.get(2).getTitleSnapshot());
+    }
+
+    @Test
+    void createPublicLinkShouldRejectPrivateContent() {
+        ClassicsSharingRepository sharingRepository = mock(ClassicsSharingRepository.class);
+        ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
+        SancaiRepository sancaiRepository = mock(SancaiRepository.class);
+        WangqiDocumentRepository wangqiDocumentRepository = mock(WangqiDocumentRepository.class);
+        MingCustomsRepository mingCustomsRepository = mock(MingCustomsRepository.class);
+        ClassicsShareTokenGenerator shareTokenGenerator = mock(ClassicsShareTokenGenerator.class);
+        ClassicsShareTokenHasher shareTokenHasher = mock(ClassicsShareTokenHasher.class);
+        ClassicsSharingApplicationServiceImpl service = new ClassicsSharingApplicationServiceImpl(
+                sharingRepository,
+                contentApplicationService,
+                sancaiRepository,
+                wangqiDocumentRepository,
+                mingCustomsRepository,
+                shareTokenGenerator,
+                shareTokenHasher);
+
+        SancaiEntry entry = new SancaiEntry();
+        entry.setId(SancaiEntryId.of(100L));
+        entry.setTitle("私有内容");
+        entry.setVisibility(SancaiEntryVisibility.PRIVATE);
+
+        when(shareTokenGenerator.generate()).thenReturn("abc123_-");
+        when(shareTokenHasher.hash("abc123_-")).thenReturn("hashed-share-token");
+        when(sharingRepository.insertLink(org.mockito.ArgumentMatchers.any())).thenReturn(ClassicsShareLinkId.of(10L));
+        when(sancaiRepository.getEntryById(SancaiEntryId.of(100L))).thenReturn(entry);
+
+        assertThrows(
+                BizException.class,
+                () -> service.createLink(new ShareLinkCreateCommand(
+                        "公开分享",
+                        ClassicsShareVisibility.PUBLIC,
+                        null,
+                        null,
+                        null,
+                        null,
+                        List.of(new ShareTargetCreateCommand(
+                                ClassicsContentType.SANCAI_ENTRY, ClassicsContentId.of(100L))))));
+        verify(contentApplicationService, never())
+                .ensureVersioned(eq(entry), eq(ClassicsContentChangeType.SHARE_CREATED), eq("创建分享"));
+        verify(sharingRepository, never()).insertTarget(org.mockito.ArgumentMatchers.any());
     }
 
     @Test
@@ -97,12 +257,16 @@ class ClassicsSharingApplicationServiceImplTest {
         SancaiRepository sancaiRepository = mock(SancaiRepository.class);
         WangqiDocumentRepository wangqiDocumentRepository = mock(WangqiDocumentRepository.class);
         MingCustomsRepository mingCustomsRepository = mock(MingCustomsRepository.class);
+        ClassicsShareTokenGenerator shareTokenGenerator = mock(ClassicsShareTokenGenerator.class);
+        ClassicsShareTokenHasher shareTokenHasher = mock(ClassicsShareTokenHasher.class);
         ClassicsSharingApplicationServiceImpl service = new ClassicsSharingApplicationServiceImpl(
                 sharingRepository,
                 contentApplicationService,
                 sancaiRepository,
                 wangqiDocumentRepository,
-                mingCustomsRepository);
+                mingCustomsRepository,
+                shareTokenGenerator,
+                shareTokenHasher);
 
         ClassicsShareTarget target = new ClassicsShareTarget();
         target.setId(ClassicsShareTargetId.of(20L));
@@ -125,5 +289,87 @@ class ClassicsSharingApplicationServiceImplTest {
         assertEquals(ClassicsContentVersionId.of(10L), targets.get(0).getCurrentContentVersionId());
         assertEquals(3, targets.get(0).getCurrentContentVersionNo());
         assertEquals(Boolean.TRUE, targets.get(0).getContentChangedAfterShare());
+    }
+
+    @Test
+    void getPortalShareShouldReturnPublicActiveShareByPlainShareToken() {
+        ClassicsSharingRepository sharingRepository = mock(ClassicsSharingRepository.class);
+        ClassicsShareTokenHasher shareTokenHasher = mock(ClassicsShareTokenHasher.class);
+        ClassicsSharingApplicationServiceImpl service = portalService(sharingRepository, shareTokenHasher);
+        ClassicsShareLink link = link(ClassicsShareVisibility.PUBLIC, ClassicsShareLinkStatus.ACTIVE, futureDate());
+        ClassicsShareTarget target = new ClassicsShareTarget();
+        target.setTitleSnapshot("正式标题");
+
+        when(shareTokenHasher.hash("share-token")).thenReturn("hashed-share-token");
+        when(sharingRepository.getLinkByTokenHash("hashed-share-token")).thenReturn(link);
+        when(sharingRepository.listTargetsByLinkId(ClassicsShareLinkId.of(10L), SortDirection.ASC))
+                .thenReturn(List.of(target));
+
+        SharePortalResult result = service.getPortalShare("share-token");
+
+        assertEquals("公开分享", result.getTitle());
+        assertEquals(1, result.getTargets().size());
+        assertEquals("正式标题", result.getTargets().get(0).getTitleSnapshot());
+    }
+
+    @Test
+    void getPortalShareShouldHideMissingRevokedExpiredAndPrivateLinks() {
+        assertPortalShareHidden(null);
+        assertPortalShareHidden(link(ClassicsShareVisibility.PUBLIC, ClassicsShareLinkStatus.REVOKED, futureDate()));
+        assertPortalShareHidden(link(ClassicsShareVisibility.PUBLIC, ClassicsShareLinkStatus.ACTIVE, pastDate()));
+        assertPortalShareHidden(link(ClassicsShareVisibility.PRIVATE, ClassicsShareLinkStatus.ACTIVE, futureDate()));
+    }
+
+    private static ClassicsContentVersion version(Long id, int versionNo, String snapshotJson) {
+        ClassicsContentVersion version = new ClassicsContentVersion();
+        version.setId(ClassicsContentVersionId.of(id));
+        version.setVersionNo(versionNo);
+        version.setVersionedAt(new Date(versionNo));
+        version.setSnapshotJson(snapshotJson);
+        return version;
+    }
+
+    private static void assertPortalShareHidden(ClassicsShareLink link) {
+        ClassicsSharingRepository sharingRepository = mock(ClassicsSharingRepository.class);
+        ClassicsShareTokenHasher shareTokenHasher = mock(ClassicsShareTokenHasher.class);
+        ClassicsSharingApplicationServiceImpl service = portalService(sharingRepository, shareTokenHasher);
+        when(shareTokenHasher.hash("share-token")).thenReturn("hashed-share-token");
+        when(sharingRepository.getLinkByTokenHash("hashed-share-token")).thenReturn(link);
+
+        assertThrows(BizException.class, () -> service.getPortalShare("share-token"));
+        verify(sharingRepository, never())
+                .listTargetsByLinkId(org.mockito.ArgumentMatchers.any(), eq(SortDirection.ASC));
+    }
+
+    private static ClassicsSharingApplicationServiceImpl portalService(
+            ClassicsSharingRepository sharingRepository, ClassicsShareTokenHasher shareTokenHasher) {
+        return new ClassicsSharingApplicationServiceImpl(
+                sharingRepository,
+                mock(ClassicsContentApplicationService.class),
+                mock(SancaiRepository.class),
+                mock(WangqiDocumentRepository.class),
+                mock(MingCustomsRepository.class),
+                mock(ClassicsShareTokenGenerator.class),
+                shareTokenHasher);
+    }
+
+    private static ClassicsShareLink link(
+            ClassicsShareVisibility visibility, ClassicsShareLinkStatus status, Date expiresAt) {
+        ClassicsShareLink link = new ClassicsShareLink();
+        link.setId(ClassicsShareLinkId.of(10L));
+        link.setTitle("公开分享");
+        link.setVisibility(visibility);
+        link.setStatus(status);
+        link.setIssuedAt(new Date(1_000L));
+        link.setExpiresAt(expiresAt);
+        return link;
+    }
+
+    private static Date futureDate() {
+        return new Date(System.currentTimeMillis() + 60_000L);
+    }
+
+    private static Date pastDate() {
+        return new Date(System.currentTimeMillis() - 60_000L);
     }
 }

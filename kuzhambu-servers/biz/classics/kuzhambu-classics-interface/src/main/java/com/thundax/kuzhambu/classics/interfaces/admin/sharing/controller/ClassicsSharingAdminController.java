@@ -1,21 +1,16 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller;
 
 import com.thundax.kuzhambu.classics.application.sharing.command.ClassicsShareTargetSortCommand;
-import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkCreateCommand;
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkStatusCommand;
 import com.thundax.kuzhambu.classics.application.sharing.service.ClassicsSharingApplicationService;
-import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisibilityRiskStatus;
 import com.thundax.kuzhambu.classics.domain.sharing.codec.ClassicsShareLinkIdCodec;
 import com.thundax.kuzhambu.classics.domain.sharing.codec.ClassicsShareTargetIdCodec;
-import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareLink;
-import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareTarget;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareLinkStatus;
-import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareVisibility;
 import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareLinkId;
+import com.thundax.kuzhambu.classics.interfaces.admin.sharing.assembler.ClassicsSharingInterfaceAssembler;
 import com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller.request.ClassicsShareTargetSortRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller.request.ClassicsSharingRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller.response.ClassicsSharingResponse;
-import com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller.response.ClassicsSharingResponse.Target;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
@@ -25,8 +20,6 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.util.List;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -50,20 +43,8 @@ public class ClassicsSharingAdminController {
     @SysLogger(value = "创建分享")
     @PostMapping("create")
     public ClassicsSharingResponse create(@Valid @RequestBody ClassicsSharingRequest request) {
-        ClassicsShareLinkId id = service.createLink(new ShareLinkCreateCommand(
-                request.getTokenHash(),
-                request.getTitle(),
-                ClassicsShareVisibility.from(request.getVisibility()),
-                ClassicsShareLinkStatus.ACTIVE,
-                StringUtils.isBlank(request.getVisibilityRiskStatus())
-                        ? null
-                        : SancaiVisibilityRiskStatus.from(request.getVisibilityRiskStatus()),
-                null,
-                request.getExpiresAt(),
-                request.getTargets()));
-        return ClassicsSharingResponse.builder()
-                .id(id == null ? null : id.value())
-                .build();
+        return ClassicsSharingInterfaceAssembler.toResponse(
+                service.createLink(ClassicsSharingInterfaceAssembler.toCreateCommand(request)));
     }
 
     @Operation(summary = "变更古籍分享状态", description = "classics:sharing:edit")
@@ -100,70 +81,6 @@ public class ClassicsSharingAdminController {
     @GetMapping("{id}")
     public ClassicsSharingResponse get(@PathVariable("id") Long id) {
         ClassicsShareLinkId linkId = ClassicsShareLinkIdCodec.toDomain(id);
-        return toResponse(service.getLink(linkId), service.listTargets(linkId));
-    }
-
-    private static ClassicsSharingResponse toResponse(ClassicsShareLink link, List<ClassicsShareTarget> targets) {
-        return link == null
-                ? ClassicsSharingResponse.builder().build()
-                : ClassicsSharingResponse.builder()
-                        .id(link.getId() == null ? null : link.getId().value())
-                        .title(link.getTitle())
-                        .visibility(
-                                link.getVisibility() == null
-                                        ? null
-                                        : link.getVisibility().value())
-                        .status(
-                                link.getStatus() == null
-                                        ? null
-                                        : link.getStatus().value())
-                        .issuedAt(link.getIssuedAt())
-                        .expiresAt(link.getExpiresAt())
-                        .accessCount(link.getAccessCount())
-                        .targets(toTargetResponses(targets))
-                        .build();
-    }
-
-    private static List<Target> toTargetResponses(List<ClassicsShareTarget> targets) {
-        return targets == null
-                ? List.of()
-                : targets.stream()
-                        .map(ClassicsSharingAdminController::toTargetResponse)
-                        .toList();
-    }
-
-    private static Target toTargetResponse(ClassicsShareTarget target) {
-        return Target.builder()
-                .id(target.getId() == null ? null : target.getId().value())
-                .contentType(
-                        target.getContentType() == null
-                                ? null
-                                : target.getContentType().value())
-                .contentId(
-                        target.getContentId() == null
-                                ? null
-                                : target.getContentId().value())
-                .contentVersionId(
-                        target.getContentVersionId() == null
-                                ? null
-                                : target.getContentVersionId().value())
-                .contentVersionNo(target.getContentVersionNo())
-                .currentContentVersionId(
-                        target.getCurrentContentVersionId() == null
-                                ? null
-                                : target.getCurrentContentVersionId().value())
-                .currentContentVersionNo(target.getCurrentContentVersionNo())
-                .contentChangedAfterShare(target.getContentChangedAfterShare())
-                .titleSnapshot(target.getTitleSnapshot())
-                .contentVisibilitySnapshot(
-                        target.getContentVisibilitySnapshot() == null
-                                ? null
-                                : target.getContentVisibilitySnapshot().value())
-                .targetStatus(
-                        target.getTargetStatus() == null
-                                ? null
-                                : target.getTargetStatus().value())
-                .priority(target.getPriority())
-                .build();
+        return ClassicsSharingInterfaceAssembler.toResponse(service.getLink(linkId), service.listTargets(linkId));
     }
 }

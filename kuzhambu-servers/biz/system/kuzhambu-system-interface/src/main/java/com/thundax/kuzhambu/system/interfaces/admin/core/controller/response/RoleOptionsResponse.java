@@ -18,8 +18,10 @@ import lombok.Getter;
 public class RoleOptionsResponse implements Serializable {
 
     @Schema(name = "statusOptions", description = "角色状态选项")
+    @Builder.Default
     private List<OptionResponse> statusOptions = new ArrayList<>();
 
     @Schema(name = "privilegeOptions", description = "角色权限选项")
+    @Builder.Default
     private List<OptionResponse> privilegeOptions = new ArrayList<>();
 }

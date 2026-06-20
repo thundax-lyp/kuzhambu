@@ -3,7 +3,6 @@ package com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller.reques
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareTarget;
 import com.thundax.kuzhambu.common.web.request.PageRequest;
 import java.util.Date;
 import java.util.List;
@@ -17,9 +16,6 @@ import lombok.Setter;
 public class ClassicsSharingRequest extends PageRequest {
     @JsonProperty("id")
     private Long id;
-
-    @JsonProperty("tokenHash")
-    private String tokenHash;
 
     @JsonProperty("title")
     private String title;
@@ -37,5 +33,5 @@ public class ClassicsSharingRequest extends PageRequest {
     private Date expiresAt;
 
     @JsonProperty("targets")
-    private List<ClassicsShareTarget> targets;
+    private List<ClassicsShareTargetRequest> targets;
 }

@@ -17,6 +17,12 @@ public class ClassicsSharingResponse implements Serializable {
     @JsonProperty("id")
     private Long id;
 
+    @JsonProperty("shareToken")
+    private String shareToken;
+
+    @JsonProperty("shareUrl")
+    private String shareUrl;
+
     @JsonProperty("title")
     private String title;
 
