@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `portal-web classics share list`：实现 Portal 分享列表页
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARE-SNAPSHOT.md`
-    - 范围对象：`share-list-page.tsx`、`share-list-page.test.tsx`、`share-service.ts`、`share-types.ts`
-    - 处理动作：实现分享列表，支持按分类、时间和标题查询
-    - 验收点：`/shares` 能查询公开分享摘要，列表页不展示完整内容快照
-    - 重要度：8/10
-
 - [ ] `portal-web classics share page`：实现 Portal Web 分享快照展示页
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARE-SNAPSHOT.md`
