@@ -294,6 +294,50 @@ html[data-theme="dark"] .sancai-page {
     gap: 8px;
 }
 
+.sancai-version-history-panel {
+    min-width: 0;
+}
+
+.sancai-version-history-panel-grid {
+    display: grid;
+    grid-template-columns: minmax(220px, 0.85fr) minmax(0, 1.15fr);
+    min-width: 0;
+    gap: 12px;
+}
+
+.sancai-version-history-list,
+.sancai-version-history-detail {
+    min-width: 0;
+    padding: 12px;
+    background: var(--sancai-soft);
+    border: 1px solid var(--sancai-line);
+    border-radius: 8px;
+}
+
+.sancai-version-history-list .ant-list-item {
+    align-items: flex-start;
+    padding-inline: 0;
+}
+
+.sancai-version-history-detail {
+    min-height: 220px;
+}
+
+.sancai-version-history-detail-stack {
+    width: 100%;
+}
+
+.sancai-version-compare .ant-descriptions-item-label {
+    width: 132px;
+    color: var(--sancai-copy);
+    font-weight: 700;
+}
+
+.sancai-version-compare .is-changed .ant-descriptions-item-label {
+    color: var(--sancai-accent);
+    background: var(--sancai-accent-soft);
+}
+
 .sancai-modal-footer {
     display: flex;
     justify-content: flex-end;
@@ -318,5 +362,9 @@ html[data-theme="dark"] .sancai-page {
 
     .sancai-panel-scroll {
         overflow: visible;
+    }
+
+    .sancai-version-history-panel-grid {
+        grid-template-columns: minmax(0, 1fr);
     }
 }

@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web-sancai-version-panel`：新增三才图会版本历史对比面板
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-VERSION-RESTORE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-version-history-panel.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-page.css`
-    - 处理动作：实现版本列表、快照解析、当前/历史字段对比和恢复按钮状态。
-    - 验收点：面板能展示版本列表、标记差异字段，并在快照不可解析时禁用恢复。
-    - 重要度：8/10
-
 - [ ] `admin-web-sancai-version-integration`：把版本恢复闭环接入三才图会条目抽屉
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-VERSION-RESTORE.md`
