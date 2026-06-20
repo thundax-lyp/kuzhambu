@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `classics portal share list interface`：新增 Portal 分享列表查询接口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARE-SNAPSHOT.md`
-    - 范围对象：`ClassicsSharingPortalController.java`、`ClassicsSharePortalSearchRequest.java`、`ClassicsSharePortalListResponse.java`、`ClassicsSharePortalListItemResponse.java`
-    - 处理动作：新增公开分享列表查询，支持按分类、时间和标题搜索
-    - 验收点：列表只返回可公开访问的分享摘要，不返回完整 `content_snapshot_json`
-    - 重要度：8/10
-
 - [ ] `classics portal sharing contract test`：固定 Portal 分享查询响应语义
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARE-SNAPSHOT.md`

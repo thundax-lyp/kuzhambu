@@ -24,6 +24,7 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.repository.SancaiRepository;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareAccessRecord;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareLink;
+import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsSharePortalListItem;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareTarget;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareVisibility;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsSharedContentVisibility;
@@ -92,6 +93,15 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
     public PageResult<ClassicsShareLink> pageLinks(String status, String visibility, PageQuery page) {
         IPage<ClassicsShareLink> dataPage =
                 repository.pageLinks(status, visibility, page.getPageNo(), page.getPageSize());
+        return PageResult.of(
+                (int) dataPage.getCurrent(), (int) dataPage.getSize(), dataPage.getTotal(), dataPage.getRecords());
+    }
+
+    @Override
+    public PageResult<ClassicsSharePortalListItem> pagePortalShares(
+            String contentType, String title, Date issuedAfter, Date issuedBefore, PageQuery page) {
+        IPage<ClassicsSharePortalListItem> dataPage = repository.pagePortalShares(
+                contentType, title, issuedAfter, issuedBefore, page.getPageNo(), page.getPageSize());
         return PageResult.of(
                 (int) dataPage.getCurrent(), (int) dataPage.getSize(), dataPage.getTotal(), dataPage.getRecords());
     }

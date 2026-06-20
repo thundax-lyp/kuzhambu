@@ -9,7 +9,11 @@ import com.thundax.kuzhambu.classics.domain.sharing.codec.ClassicsShareLinkIdCod
 import com.thundax.kuzhambu.classics.domain.sharing.codec.ClassicsShareTargetIdCodec;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareAccessRecord;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareLink;
+import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsSharePortalListItem;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareTarget;
+import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareLinkStatus;
+import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareTargetStatus;
+import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareVisibility;
 import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareAccessRecordId;
 import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareLinkId;
 import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareTargetId;
@@ -17,11 +21,13 @@ import com.thundax.kuzhambu.classics.domain.sharing.repository.ClassicsSharingRe
 import com.thundax.kuzhambu.classics.infra.sharing.persistence.assembler.ClassicsSharingPersistenceAssembler;
 import com.thundax.kuzhambu.classics.infra.sharing.persistence.dataobject.ClassicsShareAccessRecordDO;
 import com.thundax.kuzhambu.classics.infra.sharing.persistence.dataobject.ClassicsShareLinkDO;
+import com.thundax.kuzhambu.classics.infra.sharing.persistence.dataobject.ClassicsSharePortalListItemDO;
 import com.thundax.kuzhambu.classics.infra.sharing.persistence.dataobject.ClassicsShareTargetDO;
 import com.thundax.kuzhambu.classics.infra.sharing.persistence.mapper.ClassicsShareLinkMapper;
 import com.thundax.kuzhambu.classics.infra.sharing.persistence.mapper.ClassicsShareTargetMapper;
 import com.thundax.kuzhambu.classics.infra.sharing.persistence.mapper.ClassicsSharingMapper;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
@@ -61,6 +67,24 @@ public class ClassicsSharingRepositoryImpl implements ClassicsSharingRepository 
         Page<ClassicsShareLink> entityPage = new Page<>(dataPage.getCurrent(), dataPage.getSize());
         entityPage.setTotal(dataPage.getTotal());
         entityPage.setRecords(ClassicsSharingPersistenceAssembler.toLinkDomainList(dataPage.getRecords()));
+        return entityPage;
+    }
+
+    @Override
+    public Page<ClassicsSharePortalListItem> pagePortalShares(
+            String contentType, String title, Date issuedAfter, Date issuedBefore, int pageNo, int pageSize) {
+        Page<ClassicsSharePortalListItemDO> dataPage = targetMapper.pagePortalShares(
+                new Page<>(pageNo, pageSize),
+                ClassicsShareVisibility.PUBLIC.value(),
+                ClassicsShareLinkStatus.ACTIVE.value(),
+                ClassicsShareTargetStatus.AVAILABLE.value(),
+                contentType,
+                title,
+                issuedAfter,
+                issuedBefore);
+        Page<ClassicsSharePortalListItem> entityPage = new Page<>(dataPage.getCurrent(), dataPage.getSize());
+        entityPage.setTotal(dataPage.getTotal());
+        entityPage.setRecords(ClassicsSharingPersistenceAssembler.toPortalListItemDomainList(dataPage.getRecords()));
         return entityPage;
     }
 

@@ -4,12 +4,14 @@ import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentVersionIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
+import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentVersionId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisibilityRiskStatus;
 import com.thundax.kuzhambu.classics.domain.sharing.codec.ClassicsShareAccessRecordIdCodec;
 import com.thundax.kuzhambu.classics.domain.sharing.codec.ClassicsShareLinkIdCodec;
 import com.thundax.kuzhambu.classics.domain.sharing.codec.ClassicsShareTargetIdCodec;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareAccessRecord;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareLink;
+import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsSharePortalListItem;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareTarget;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareAccessResult;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareLinkStatus;
@@ -18,6 +20,7 @@ import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareVis
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsSharedContentVisibility;
 import com.thundax.kuzhambu.classics.infra.sharing.persistence.dataobject.ClassicsShareAccessRecordDO;
 import com.thundax.kuzhambu.classics.infra.sharing.persistence.dataobject.ClassicsShareLinkDO;
+import com.thundax.kuzhambu.classics.infra.sharing.persistence.dataobject.ClassicsSharePortalListItemDO;
 import com.thundax.kuzhambu.classics.infra.sharing.persistence.dataobject.ClassicsShareTargetDO;
 import java.util.ArrayList;
 import java.util.List;
@@ -122,6 +125,39 @@ public final class ClassicsSharingPersistenceAssembler {
         List<ClassicsShareTarget> entities = new ArrayList<>();
         if (dataObjects != null) {
             dataObjects.forEach(item -> entities.add(toTargetDomain(item)));
+        }
+        return entities;
+    }
+
+    public static ClassicsSharePortalListItem toPortalListItemDomain(ClassicsSharePortalListItemDO dataObject) {
+        return dataObject == null
+                ? null
+                : new ClassicsSharePortalListItem(
+                        ClassicsShareLinkIdCodec.toDomain(dataObject.getShareLinkId()),
+                        dataObject.getShareTitle(),
+                        dataObject.getIssuedAt(),
+                        dataObject.getExpiresAt(),
+                        dataObject.getContentType() == null
+                                ? null
+                                : ClassicsContentType.from(dataObject.getContentType()),
+                        ClassicsContentId.ofNullable(dataObject.getContentId()),
+                        ClassicsContentVersionId.ofNullable(dataObject.getContentVersionId()),
+                        dataObject.getContentVersionNo(),
+                        dataObject.getTitleSnapshot(),
+                        dataObject.getContentVisibilitySnapshot() == null
+                                ? null
+                                : ClassicsSharedContentVisibility.from(dataObject.getContentVisibilitySnapshot()),
+                        dataObject.getTargetStatus() == null
+                                ? null
+                                : ClassicsShareTargetStatus.from(dataObject.getTargetStatus()),
+                        dataObject.getPriority() == null ? 0 : dataObject.getPriority());
+    }
+
+    public static List<ClassicsSharePortalListItem> toPortalListItemDomainList(
+            List<ClassicsSharePortalListItemDO> dataObjects) {
+        List<ClassicsSharePortalListItem> entities = new ArrayList<>();
+        if (dataObjects != null) {
+            dataObjects.forEach(item -> entities.add(toPortalListItemDomain(item)));
         }
         return entities;
     }
