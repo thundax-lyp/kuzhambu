@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `classics sharing version binding`：锁定分享 target 与正式内容版本的绑定行为
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARE-SNAPSHOT.md`
-    - 范围对象：`ClassicsSharingApplicationServiceImpl.java`、`ClassicsContentApplicationService.java`、`ClassicsSharingApplicationServiceImplTest.java`
-    - 处理动作：补齐创建分享时 `SHARE_CREATED`、版本复用、target 版本字段和快照一致性的测试与实现
-    - 验收点：`classics_share_target.content_snapshot_json` 与绑定 `classics_content_version.snapshot_json` 一致
-    - 重要度：10/10
-
 - [ ] `classics version snapshot dto`：新增三类正式版本快照 DTO
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARE-SNAPSHOT.md`
