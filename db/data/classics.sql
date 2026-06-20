@@ -4778,3 +4778,35 @@ INSERT INTO `classics_content_tag` (`content_type`, `content_id`, `tag_name_snap
 INSERT INTO `classics_content_tag` (`content_type`, `content_id`, `tag_name_snapshot`, `source`, `status`, `priority`) VALUES (CAST(FROM_BASE64("U0FOQ0FJX0VOVFJZ") AS CHAR CHARACTER SET utf8mb4), 300000002578, CAST(FROM_BASE64("6ZW/5a+/6LGh5b6B") AS CHAR CHARACTER SET utf8mb4), CAST(FROM_BASE64("TUFOVUFM") AS CHAR CHARACTER SET utf8mb4), CAST(FROM_BASE64("QUNUSVZF") AS CHAR CHARACTER SET utf8mb4), 1293) ON DUPLICATE KEY UPDATE `source` = VALUES(`source`), `status` = VALUES(`status`), `priority` = VALUES(`priority`);
 INSERT INTO `classics_content_tag` (`content_type`, `content_id`, `tag_name_snapshot`, `source`, `status`, `priority`) VALUES (CAST(FROM_BASE64("U0FOQ0FJX0VOVFJZ") AS CHAR CHARACTER SET utf8mb4), 300000002578, CAST(FROM_BASE64("5piG5LuR5bGx") AS CHAR CHARACTER SET utf8mb4), CAST(FROM_BASE64("TUFOVUFM") AS CHAR CHARACTER SET utf8mb4), CAST(FROM_BASE64("QUNUSVZF") AS CHAR CHARACTER SET utf8mb4), 1294) ON DUPLICATE KEY UPDATE `source` = VALUES(`source`), `status` = VALUES(`status`), `priority` = VALUES(`priority`);
 INSERT INTO `classics_content_tag` (`content_type`, `content_id`, `tag_name_snapshot`, `source`, `status`, `priority`) VALUES (CAST(FROM_BASE64("U0FOQ0FJX0VOVFJZ") AS CHAR CHARACTER SET utf8mb4), 300000002578, CAST(FROM_BASE64("6buR6Imy57695q+b") AS CHAR CHARACTER SET utf8mb4), CAST(FROM_BASE64("TUFOVUFM") AS CHAR CHARACTER SET utf8mb4), CAST(FROM_BASE64("QUNUSVZF") AS CHAR CHARACTER SET utf8mb4), 1295) ON DUPLICATE KEY UPDATE `source` = VALUES(`source`), `status` = VALUES(`status`), `priority` = VALUES(`priority`);
+
+-- 明代习俗样例数据
+INSERT INTO `classics_ming_customs_entry` (
+    `id`, `title`, `category`, `chapter`, `section`, `summary`, `content_format`, `content`, `original_excerpts`, `visibility`,
+    `current_version_id`, `current_version_no`, `current_versioned_at`, `content_updated_at`
+) VALUES
+    (500000000001, '岁时礼仪：元旦朝贺', 'RITUAL', '岁时礼仪', '正旦', '记录明代正旦朝贺与家族拜礼的基本流程。', 'MARKDOWN', '## 元旦朝贺\n\n明代正旦礼俗兼具朝廷仪制与民间拜年。官员入朝行贺，士民则以宗族、邻里为序互致新年祝愿。\n\n- 朝贺重在等级秩序\n- 家礼重在亲族往来', '正旦，百官朝贺，士庶相庆。', 'PUBLIC', NULL, NULL, NULL, '2026-01-01 00:00:00.000'),
+    (500000000002, '节令生活：上元灯市', 'FESTIVAL', '岁时节令', '上元', '记录明代上元灯市、观灯与城市夜游习俗。', 'MARKDOWN', '## 上元灯市\n\n上元前后，城市张灯设彩，市肆延长夜间经营，观灯成为民众共享的节令活动。\n\n- 灯市带动夜间游赏\n- 观灯连接市井商业与节令娱乐', '上元张灯，士女游观，市肆喧阗。', 'PRIVATE', NULL, NULL, NULL, '2026-01-01 00:00:00.000')
+ON DUPLICATE KEY UPDATE
+    `title` = VALUES(`title`),
+    `category` = VALUES(`category`),
+    `chapter` = VALUES(`chapter`),
+    `section` = VALUES(`section`),
+    `summary` = VALUES(`summary`),
+    `content_format` = VALUES(`content_format`),
+    `content` = VALUES(`content`),
+    `original_excerpts` = VALUES(`original_excerpts`),
+    `visibility` = VALUES(`visibility`),
+    `current_version_id` = VALUES(`current_version_id`),
+    `current_version_no` = VALUES(`current_version_no`),
+    `current_versioned_at` = VALUES(`current_versioned_at`),
+    `content_updated_at` = VALUES(`content_updated_at`);
+
+INSERT INTO `classics_ming_customs_keyword` (`id`, `custom_id`, `keyword`, `priority`) VALUES
+    (500000000001, 500000000001, '礼制', 900001),
+    (500000000002, 500000000001, '正旦', 900002),
+    (500000000003, 500000000002, '节令', 900003),
+    (500000000004, 500000000002, '灯市', 900004)
+ON DUPLICATE KEY UPDATE
+    `custom_id` = VALUES(`custom_id`),
+    `keyword` = VALUES(`keyword`),
+    `priority` = VALUES(`priority`);

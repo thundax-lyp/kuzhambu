@@ -46,10 +46,19 @@ type MenuSeed = {
   remarks?: string;
 };
 
+type DictSeed = {
+  type: string;
+  label: string;
+  value: string;
+  priority: number;
+  remarks?: string;
+};
+
 type SystemSeed = {
   departments: Array<TreeNode<DepartmentSeed>>;
   roles: RoleSeed[];
   users: UserSeed[];
+  dicts?: DictSeed[];
   menus: Array<TreeNode<MenuSeed>>;
 };
 
@@ -75,7 +84,9 @@ const main = () => {
   if (process.argv.includes("--check")) {
     const current = readFileSync(outputPath, "utf8");
     if (current !== sql) {
-      console.error("db/data/system.sql is out of date. Run: node scripts/generate-system-data-sql.ts");
+      console.error(
+        "db/data/system.sql is out of date. Run: node scripts/generate-system-data-sql.ts",
+      );
       process.exit(1);
     }
     return;
@@ -90,7 +101,10 @@ const generate = (seed: SystemSeed) => {
   const roles = buildRoles(seed.roles);
   const users = buildUsers(seed.users);
 
-  const departmentByPath = indexBy(departments, (department) => department.path);
+  const departmentByPath = indexBy(
+    departments,
+    (department) => department.path,
+  );
   const roleByName = indexBy(roles, (role) => role.name);
   const menuByPath = indexBy(menus, (menu) => menu.path);
 
@@ -99,6 +113,7 @@ const generate = (seed: SystemSeed) => {
   appendUserSql(lines, users, departmentByPath);
   appendRoleSql(lines, roles);
   appendMenuSql(lines, menus);
+  appendDictSql(lines, seed.dicts ?? []);
   appendUserRoleSql(lines, users, roleByName);
   appendRoleMenuSql(lines, roles, menus, menuByPath);
   appendAuthSql(lines, users);
@@ -107,8 +122,9 @@ const generate = (seed: SystemSeed) => {
     { table: "system_user", nextValue: users.length + 1 },
     { table: "system_role", nextValue: roles.length + 1 },
     { table: "system_menu", nextValue: menus.length + 1 },
+    { table: "system_dict", nextValue: (seed.dicts ?? []).length + 1 },
     { table: "system_auth_principal_identity", nextValue: users.length + 1 },
-    { table: "system_auth_principal_credential", nextValue: users.length + 1 }
+    { table: "system_auth_principal_credential", nextValue: users.length + 1 },
   ]);
   lines.push("-- Audit has no required seed data.", "");
   return lines.join("\n");
@@ -120,7 +136,7 @@ const buildRoles = (roles: RoleSeed[]) => {
     id: index + 1,
     privilege: role.privilege ?? "NORMAL",
     status: role.status ?? "ENABLED",
-    remarks: role.remarks ?? null
+    remarks: role.remarks ?? null,
   }));
 };
 
@@ -136,7 +152,7 @@ const buildUsers = (users: UserSeed[]) => {
     privilege: user.privilege ?? "NORMAL",
     status: user.status ?? "ENABLED",
     needChangePassword: user.needChangePassword ?? true,
-    remarks: user.remarks ?? null
+    remarks: user.remarks ?? null,
   }));
 };
 
@@ -145,7 +161,11 @@ const flattenTree = <T extends object>(nodes: Array<TreeNode<T>>) => {
   let index = 1;
   let position = 1;
 
-  const visit = (node: TreeNode<T>, parentId: number | null, parentPath: string | null) => {
+  const visit = (
+    node: TreeNode<T>,
+    parentId: number | null,
+    parentPath: string | null,
+  ) => {
     const name = readName(node);
     const path = parentPath ? `${parentPath}/${name}` : name;
     const id = index;
@@ -176,9 +196,14 @@ const readName = (node: object) => {
   return name;
 };
 
-const appendDepartmentSql = (lines: string[], departments: Array<TreeRecord<DepartmentSeed>>) => {
+const appendDepartmentSql = (
+  lines: string[],
+  departments: Array<TreeRecord<DepartmentSeed>>,
+) => {
   lines.push("INSERT INTO `system_department` (");
-  lines.push("    `id`, `parent_id`, `lft`, `rgt`, `name`, `short_name`, `remarks`");
+  lines.push(
+    "    `id`, `parent_id`, `lft`, `rgt`, `name`, `short_name`, `remarks`",
+  );
   lines.push(") VALUES");
   lines.push(
     departments
@@ -190,10 +215,10 @@ const appendDepartmentSql = (lines: string[], departments: Array<TreeRecord<Depa
           department.rgt,
           department.name,
           department.shortName ?? null,
-          department.remarks ?? null
-        ])
+          department.remarks ?? null,
+        ]),
       )
-      .join(",\n")
+      .join(",\n"),
   );
   lines.push("ON DUPLICATE KEY UPDATE");
   lines.push("    `parent_id` = VALUES(`parent_id`),");
@@ -208,16 +233,22 @@ const appendDepartmentSql = (lines: string[], departments: Array<TreeRecord<Depa
 const appendUserSql = (
   lines: string[],
   users: ReturnType<typeof buildUsers>,
-  departmentByPath: Map<string, TreeRecord<DepartmentSeed>>
+  departmentByPath: Map<string, TreeRecord<DepartmentSeed>>,
 ) => {
   lines.push("INSERT INTO `system_user` (");
-  lines.push("    `id`, `department_id`, `email`, `mobile`, `tel`, `name`, `ranks`,");
+  lines.push(
+    "    `id`, `department_id`, `email`, `mobile`, `tel`, `name`, `ranks`,",
+  );
   lines.push("    `privilege`, `status`, `remarks`");
   lines.push(") VALUES");
   lines.push(
     users
       .map((user) => {
-        const department = requireLookup(departmentByPath, user.departmentPath, "department");
+        const department = requireLookup(
+          departmentByPath,
+          user.departmentPath,
+          "department",
+        );
         return row([
           user.id,
           department.id,
@@ -228,10 +259,10 @@ const appendUserSql = (
           user.ranks,
           user.privilege,
           user.status,
-          user.remarks
+          user.remarks,
         ]);
       })
-      .join(",\n")
+      .join(",\n"),
   );
   lines.push("ON DUPLICATE KEY UPDATE");
   lines.push("    `department_id` = VALUES(`department_id`),");
@@ -246,14 +277,26 @@ const appendUserSql = (
   lines.push("");
 };
 
-const appendRoleSql = (lines: string[], roles: ReturnType<typeof buildRoles>) => {
+const appendRoleSql = (
+  lines: string[],
+  roles: ReturnType<typeof buildRoles>,
+) => {
   lines.push("INSERT INTO `system_role` (");
   lines.push("    `id`, `name`, `privilege`, `status`, `priority`, `remarks`");
   lines.push(") VALUES");
   lines.push(
     roles
-      .map((role) => row([role.id, role.name, role.privilege, role.status, role.priority, role.remarks]))
-      .join(",\n")
+      .map((role) =>
+        row([
+          role.id,
+          role.name,
+          role.privilege,
+          role.status,
+          role.priority,
+          role.remarks,
+        ]),
+      )
+      .join(",\n"),
   );
   lines.push("ON DUPLICATE KEY UPDATE");
   lines.push("    `name` = VALUES(`name`),");
@@ -284,10 +327,10 @@ const appendMenuSql = (lines: string[], menus: Array<TreeRecord<MenuSeed>>) => {
           JSON.stringify({ icon: menu.icon }),
           menu.url ?? null,
           menu.target ?? "_self",
-          menu.remarks ?? null
-        ])
+          menu.remarks ?? null,
+        ]),
       )
-      .join(",\n")
+      .join(",\n"),
   );
   lines.push("ON DUPLICATE KEY UPDATE");
   lines.push("    `parent_id` = VALUES(`parent_id`),");
@@ -304,13 +347,45 @@ const appendMenuSql = (lines: string[], menus: Array<TreeRecord<MenuSeed>>) => {
   lines.push("");
 };
 
+const appendDictSql = (lines: string[], dicts: DictSeed[]) => {
+  if (dicts.length === 0) {
+    return;
+  }
+  lines.push("INSERT INTO `system_dict` (");
+  lines.push("    `id`, `type`, `label`, `value`, `priority`, `remarks`");
+  lines.push(") VALUES");
+  lines.push(
+    dicts
+      .map((dict, index) =>
+        row([
+          index + 1,
+          dict.type,
+          dict.label,
+          dict.value,
+          dict.priority,
+          dict.remarks ?? null,
+        ]),
+      )
+      .join(",\n"),
+  );
+  lines.push("ON DUPLICATE KEY UPDATE");
+  lines.push("    `type` = VALUES(`type`),");
+  lines.push("    `label` = VALUES(`label`),");
+  lines.push("    `value` = VALUES(`value`),");
+  lines.push("    `priority` = VALUES(`priority`),");
+  lines.push("    `remarks` = VALUES(`remarks`);");
+  lines.push("");
+};
+
 const appendUserRoleSql = (
   lines: string[],
   users: ReturnType<typeof buildUsers>,
-  roleByName: Map<string, ReturnType<typeof buildRoles>[number]>
+  roleByName: Map<string, ReturnType<typeof buildRoles>[number]>,
 ) => {
   const values = users.flatMap((user) =>
-    user.roles.map((roleName) => row([user.id, requireLookup(roleByName, roleName, "role").id]))
+    user.roles.map((roleName) =>
+      row([user.id, requireLookup(roleByName, roleName, "role").id]),
+    ),
   );
   lines.push("INSERT INTO `system_user_role` (`user_id`, `role_id`) VALUES");
   lines.push(values.join(",\n"));
@@ -323,37 +398,55 @@ const appendRoleMenuSql = (
   lines: string[],
   roles: ReturnType<typeof buildRoles>,
   menus: Array<TreeRecord<MenuSeed>>,
-  menuByPath: Map<string, TreeRecord<MenuSeed>>
+  menuByPath: Map<string, TreeRecord<MenuSeed>>,
 ) => {
   const values = roles.flatMap((role) => {
     const roleMenus = role.menus.includes("*")
       ? menus
-      : role.menus.map((menuPath) => requireLookup(menuByPath, menuPath, "menu"));
+      : role.menus.map((menuPath) =>
+          requireLookup(menuByPath, menuPath, "menu"),
+        );
     return roleMenus.map((menu) => row([role.id, menu.id]));
   });
-  lines.push("INSERT IGNORE INTO `system_role_menu` (`role_id`, `menu_id`) VALUES");
+  lines.push(
+    "INSERT IGNORE INTO `system_role_menu` (`role_id`, `menu_id`) VALUES",
+  );
   lines.push(values.join(",\n"));
   lines.push(";");
   lines.push("");
 };
 
-const appendAuthSql = (lines: string[], users: ReturnType<typeof buildUsers>) => {
+const appendAuthSql = (
+  lines: string[],
+  users: ReturnType<typeof buildUsers>,
+) => {
   lines.push("SET NAMES utf8mb4;");
   lines.push("");
   lines.push("-- Initial admin accounts:");
   lines.push("--   login name: admin");
   lines.push("--   login name: developer");
-  lines.push("--   password credential values are placeholders and must be rotated before production use.");
+  lines.push(
+    "--   password credential values are placeholders and must be rotated before production use.",
+  );
   lines.push("");
   lines.push("INSERT INTO `system_auth_principal_identity` (");
-  lines.push("    `id`, `principal_type`, `principal_id`, `identity_type`, `identity_value`, `status`");
+  lines.push(
+    "    `id`, `principal_type`, `principal_id`, `identity_type`, `identity_value`, `status`",
+  );
   lines.push(") VALUES");
   lines.push(
     users
       .map((user, index) => {
-        return row([index + 1, "USER", user.id, "USER_ACCOUNT", user.loginName, user.status]);
+        return row([
+          index + 1,
+          "USER",
+          user.id,
+          "USER_ACCOUNT",
+          user.loginName,
+          user.status,
+        ]);
       })
-      .join(",\n")
+      .join(",\n"),
   );
   lines.push("ON DUPLICATE KEY UPDATE");
   lines.push("    `principal_type` = VALUES(`principal_type`),");
@@ -363,7 +456,9 @@ const appendAuthSql = (lines: string[], users: ReturnType<typeof buildUsers>) =>
   lines.push("");
   lines.push("INSERT INTO `system_auth_principal_credential` (");
   lines.push("    `id`, `principal_type`, `principal_id`, `identity_id`,");
-  lines.push("    `credential_type`, `credential_value`, `status`, `need_change_password`,");
+  lines.push(
+    "    `credential_type`, `credential_value`, `status`, `need_change_password`,",
+  );
   lines.push("    `failed_count`, `failed_limit`");
   lines.push(") VALUES");
   lines.push(
@@ -381,10 +476,10 @@ const appendAuthSql = (lines: string[], users: ReturnType<typeof buildUsers>) =>
           user.status === "DISABLED" ? "LOCKED" : "ACTIVE",
           user.needChangePassword ? 1 : 0,
           0,
-          5
+          5,
         ]);
       })
-      .join(",\n")
+      .join(",\n"),
   );
   lines.push("ON DUPLICATE KEY UPDATE");
   lines.push("    `principal_type` = VALUES(`principal_type`),");
@@ -402,15 +497,18 @@ const appendAuthSql = (lines: string[], users: ReturnType<typeof buildUsers>) =>
 
 const appendAutoIncrementSql = (
   lines: string[],
-  targets: Array<{ table: string; nextValue: number }>
+  targets: Array<{ table: string; nextValue: number }>,
 ) => {
   for (const target of targets) {
-    lines.push(`ALTER TABLE \`${target.table}\` AUTO_INCREMENT = ${target.nextValue};`);
+    lines.push(
+      `ALTER TABLE \`${target.table}\` AUTO_INCREMENT = ${target.nextValue};`,
+    );
   }
   lines.push("");
 };
 
-const row = (values: Array<string | number | null>) => `    (${values.map(sqlValue).join(", ")})`;
+const row = (values: Array<string | number | null>) =>
+  `    (${values.map(sqlValue).join(", ")})`;
 
 const sqlValue = (value: string | number | null) => {
   if (value === null) {

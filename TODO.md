@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics/mingcustoms init-data`：增加明代习俗初始化数据
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-MINGCUSTOMS-ADMIN-WEB.md`
-    - 范围对象：`db/data/system.sql`、`db/data/classics.sql`、`db/data-source/system.json`、`scripts/generate-system-data-sql.ts`
-    - 处理动作：增加分类字典、明代习俗样例数据，并扩展 system seed 生成脚本支持 `dicts`。
-    - 验收点：`node scripts/generate-system-data-sql.ts --check` 通过，dev.env 可查询到字典和样例数据。
-    - 重要度：9/10
-
 - [ ] `admin-web ming-customs service`：增加明代习俗前端服务契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-MINGCUSTOMS-ADMIN-WEB.md`

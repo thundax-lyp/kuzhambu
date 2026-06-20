@@ -541,6 +541,50 @@
       "roles": ["运营支持"]
     }
   ],
+  "dicts": [
+    {
+      "type": "CLASSICS_MING_CUSTOMS_CATEGORY",
+      "label": "礼制",
+      "value": "RITUAL",
+      "priority": 10,
+      "remarks": "明代习俗分类"
+    },
+    {
+      "type": "CLASSICS_MING_CUSTOMS_CATEGORY",
+      "label": "岁时节令",
+      "value": "FESTIVAL",
+      "priority": 20,
+      "remarks": "明代习俗分类"
+    },
+    {
+      "type": "CLASSICS_MING_CUSTOMS_CATEGORY",
+      "label": "婚丧嫁娶",
+      "value": "MARRIAGE",
+      "priority": 30,
+      "remarks": "明代习俗分类"
+    },
+    {
+      "type": "CLASSICS_MING_CUSTOMS_CATEGORY",
+      "label": "日用生活",
+      "value": "DAILY_LIFE",
+      "priority": 40,
+      "remarks": "明代习俗分类"
+    },
+    {
+      "type": "CLASSICS_MING_CUSTOMS_CATEGORY",
+      "label": "信仰禁忌",
+      "value": "BELIEF",
+      "priority": 50,
+      "remarks": "明代习俗分类"
+    },
+    {
+      "type": "CLASSICS_MING_CUSTOMS_CATEGORY",
+      "label": "社会交往",
+      "value": "SOCIAL",
+      "priority": 60,
+      "remarks": "明代习俗分类"
+    }
+  ],
   "menus": [
     {
       "name": "仪表盘",
@@ -560,7 +604,11 @@
       "children": [
         {
           "name": "三才图会",
-          "perms": ["classics:sancai:view", "classics:sancai:edit", "classics:sancai:delete"],
+          "perms": [
+            "classics:sancai:view",
+            "classics:sancai:edit",
+            "classics:sancai:delete"
+          ],
           "priority": 95,
           "icon": "dictionaries",
           "url": "/classics/sancai",
@@ -568,7 +616,11 @@
         },
         {
           "name": "王圻文档",
-          "perms": ["classics:wangqi:view", "classics:wangqi:edit", "classics:wangqi:delete"],
+          "perms": [
+            "classics:wangqi:view",
+            "classics:wangqi:edit",
+            "classics:wangqi:delete"
+          ],
           "priority": 90,
           "icon": "dictionaries",
           "url": "/classics/wangqi",
@@ -576,7 +628,11 @@
         },
         {
           "name": "明代习俗",
-          "perms": ["classics:mingcustoms:view", "classics:mingcustoms:edit", "classics:mingcustoms:delete"],
+          "perms": [
+            "classics:mingcustoms:view",
+            "classics:mingcustoms:edit",
+            "classics:mingcustoms:delete"
+          ],
           "priority": 85,
           "icon": "dictionaries",
           "url": "/classics/ming-customs",
@@ -584,7 +640,11 @@
         },
         {
           "name": "内容导出",
-          "perms": ["classics:content:view", "classics:content:edit", "classics:content:export"],
+          "perms": [
+            "classics:content:view",
+            "classics:content:edit",
+            "classics:content:export"
+          ],
           "priority": 80,
           "icon": "submissions",
           "url": "/classics/exports",
