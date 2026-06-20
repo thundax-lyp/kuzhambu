@@ -74,7 +74,9 @@ test.describe("classics sancai page", () => {
     }) => {
         const volumeRequests: Array<Record<string, unknown>> = [];
         const entryListRequests: Array<Record<string, unknown>> = [];
+        const resetRequests: Array<Record<string, unknown>> = [];
         const updateRequests: Array<Record<string, unknown>> = [];
+        let entryRestored = false;
 
         await page.route("**/admin-api/api/classics/sancai/categories/list", async (route) => {
             await route.fulfill({
@@ -152,20 +154,145 @@ test.describe("classics sancai page", () => {
                             id: 3001,
                             volumeId: 101,
                             title: "天地",
-                            originalText: "原文",
-                            translationText: "译文",
-                            summary: "天地初分，清浊定位。",
+                            originalText: entryRestored ? "历史原文" : "原文",
+                            translationText: entryRestored ? "历史译文" : "译文",
+                            summary: entryRestored ? "历史摘要" : "天地初分，清浊定位。",
                             lifecycleStatus: body.lifecycleStatus ?? "PUBLISHED",
                             visibility: "PUBLIC",
                             translationStatus: "TRANSLATED",
                             imageStatus: "HAS_IMAGE",
                             visualAssetStatus: "READY",
-                            refinementStatus: "COMPLETE"
+                            refinementStatus: "COMPLETE",
+                            currentVersionId: entryRestored ? 9002 : 9001,
+                            currentVersionNo: entryRestored ? 2 : 1,
+                            currentVersionedAt: entryRestored
+                                ? "2026-06-21T01:00:00.000+08:00"
+                                : "2026-06-20T01:00:00.000+08:00",
+                            contentUpdatedAt: entryRestored
+                                ? "2026-06-21T01:00:00.000+08:00"
+                                : "2026-06-20T01:00:00.000+08:00",
+                            versionDirty: false
                         }
                     ]
                 })
             });
         });
+        await page.route("**/admin-api/api/classics/sancai/entries/3001", async (route) => {
+            await route.fulfill({
+                contentType: "application/json",
+                body: JSON.stringify({
+                    code: "COMMON-00000",
+                    message: "success",
+                    data: {
+                        id: 3001,
+                        volumeId: 101,
+                        title: entryRestored ? "历史天地" : "天地",
+                        originalText: entryRestored ? "历史原文" : "原文",
+                        translationText: entryRestored ? "历史译文" : "译文",
+                        summary: entryRestored ? "历史摘要" : "天地初分，清浊定位。",
+                        lifecycleStatus: "PUBLISHED",
+                        visibility: "PUBLIC",
+                        translationStatus: "TRANSLATED",
+                        imageStatus: "HAS_IMAGE",
+                        visualAssetStatus: "READY",
+                        refinementStatus: "COMPLETE",
+                        currentVersionId: entryRestored ? 9002 : 9001,
+                        currentVersionNo: entryRestored ? 2 : 1,
+                        currentVersionedAt: entryRestored
+                            ? "2026-06-21T01:00:00.000+08:00"
+                            : "2026-06-20T01:00:00.000+08:00",
+                        contentUpdatedAt: entryRestored
+                            ? "2026-06-21T01:00:00.000+08:00"
+                            : "2026-06-20T01:00:00.000+08:00",
+                        versionDirty: false
+                    }
+                })
+            });
+        });
+        await page.route(
+            "**/admin-api/api/classics/sancai/entries/versions/list",
+            async (route) => {
+                await route.fulfill({
+                    contentType: "application/json",
+                    body: JSON.stringify({
+                        code: "COMMON-00000",
+                        message: "success",
+                        data: [
+                            {
+                                id: 9001,
+                                contentType: "SANCAI_ENTRY",
+                                contentId: 3001,
+                                versionNo: 1,
+                                versionedAt: "2026-06-20T01:00:00.000+08:00",
+                                snapshotJson: JSON.stringify({
+                                    contentType: "SANCAI_ENTRY",
+                                    contentId: 3001,
+                                    volumeId: 101,
+                                    title: "历史天地",
+                                    originalText: "历史原文",
+                                    translationText: "历史译文",
+                                    summary: "历史摘要",
+                                    lifecycleStatus: "PUBLISHED",
+                                    visibility: "PUBLIC",
+                                    translationStatus: "TRANSLATED",
+                                    imageStatus: "HAS_IMAGE",
+                                    visualAssetStatus: "READY",
+                                    refinementStatus: "COMPLETE",
+                                    priority: 1
+                                }),
+                                changeType: "MANUAL_SAVE",
+                                changeSummary: "手动保存"
+                            }
+                        ]
+                    })
+                });
+            }
+        );
+        await page.route("**/admin-api/api/classics/sancai/entries/versions/get", async (route) => {
+            await route.fulfill({
+                contentType: "application/json",
+                body: JSON.stringify({
+                    code: "COMMON-00000",
+                    message: "success",
+                    data: {
+                        id: 9001,
+                        contentType: "SANCAI_ENTRY",
+                        contentId: 3001,
+                        versionNo: 1,
+                        versionedAt: "2026-06-20T01:00:00.000+08:00",
+                        snapshotJson: JSON.stringify({
+                            title: "历史天地",
+                            originalText: "历史原文",
+                            summary: "历史摘要"
+                        }),
+                        changeType: "MANUAL_SAVE",
+                        changeSummary: "手动保存"
+                    }
+                })
+            });
+        });
+        await page.route(
+            "**/admin-api/api/classics/sancai/entries/versions/reset",
+            async (route) => {
+                resetRequests.push(readRequestBody(route.request().postData()));
+                entryRestored = true;
+                await route.fulfill({
+                    contentType: "application/json",
+                    body: JSON.stringify({
+                        code: "COMMON-00000",
+                        message: "success",
+                        data: {
+                            id: 9002,
+                            contentType: "SANCAI_ENTRY",
+                            contentId: 3001,
+                            versionNo: 2,
+                            changeType: "HISTORY_RESTORED",
+                            changeSummary: "恢复历史版本 v1"
+                        }
+                    })
+                });
+            }
+        );
         await page.route("**/admin-api/api/classics/sancai/entries/update", async (route) => {
             updateRequests.push(readRequestBody(route.request().postData()));
             await route.fulfill({
@@ -233,6 +360,28 @@ test.describe("classics sancai page", () => {
         await expect(page.locator(".kuzhambu-filter-panel").getByText("全部状态")).toBeVisible();
 
         await page.getByRole("button", { name: /查看/ }).click();
+        await expect(page.getByLabel("三才图会版本历史面板")).toBeVisible();
+        await page.getByRole("button", { name: "查看三才图会版本 1" }).click();
+        await expect(page.getByText("历史：历史天地")).toBeVisible();
+        await page.getByRole("button", { name: "恢复三才图会版本 1" }).click();
+        await page
+            .locator(".ant-modal-wrap")
+            .getByRole("button", { name: /恢\s*复/ })
+            .click();
+        await expect
+            .poll(() => resetRequests.at(-1))
+            .toEqual({
+                id: 3001,
+                versionId: 9001
+            });
+        await expect(
+            page.locator(".ant-modal-confirm-title", { hasText: "三才图会版本已恢复" })
+        ).toBeVisible();
+        await page.locator(".ant-modal-wrap").getByRole("button", { name: "知道了" }).click();
+        await expect(page.getByRole("textbox", { name: "三才图会条目标题" })).toHaveValue(
+            "历史天地"
+        );
+
         await page.getByRole("textbox", { name: "三才图会条目标题" }).fill("天地新解");
         await page.getByRole("textbox", { name: "三才图会原文" }).fill("新原文");
         await page.getByRole("textbox", { name: "三才图会译文" }).fill("新译文");

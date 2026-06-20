@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web-sancai-version-tests`：覆盖三才图会版本恢复前端交互
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-VERSION-RESTORE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.test.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-page.test.tsx`、`kuzhambu-apps/admin-web/e2e/classics/sancai/sancai.spec.ts`
-    - 处理动作：补组件测试和 E2E 场景验证版本查看、对比、恢复与成功提示。
-    - 验收点：测试断言恢复确认、reset 调用、当前条目刷新、message box 文案和版本闭环 E2E 均通过。
-    - 重要度：8/10
-
 - [ ] `classics-sancai-version-closeout`：完成三才图会版本恢复文档收口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-VERSION-RESTORE.md`
