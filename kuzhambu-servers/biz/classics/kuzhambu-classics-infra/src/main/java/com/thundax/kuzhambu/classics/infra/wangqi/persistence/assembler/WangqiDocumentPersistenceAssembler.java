@@ -1,12 +1,14 @@
 package com.thundax.kuzhambu.classics.infra.wangqi.persistence.assembler;
 
 import com.thundax.kuzhambu.classics.domain.common.codec.StorageObjectIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentVersionIdCodec;
 import com.thundax.kuzhambu.classics.domain.wangqi.codec.WangqiDocumentIdCodec;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiContentFormat;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
 import com.thundax.kuzhambu.classics.infra.wangqi.persistence.dataobject.WangqiDocumentDO;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public final class WangqiDocumentPersistenceAssembler {
@@ -27,14 +29,18 @@ public final class WangqiDocumentPersistenceAssembler {
                 entity.getContent(),
                 entity.getDocumentTime(),
                 StorageObjectIdCodec.toValue(entity.getStorageObjectId()),
-                entity.getVisibility() == null ? null : entity.getVisibility().value());
+                entity.getVisibility() == null ? null : entity.getVisibility().value(),
+                ClassicsContentVersionIdCodec.toValue(entity.getCurrentVersionId()),
+                entity.getCurrentVersionNo(),
+                entity.getCurrentVersionedAt(),
+                contentUpdatedAt(entity.getContentUpdatedAt()));
     }
 
     public static WangqiDocument toDomain(WangqiDocumentDO dataObject) {
         if (dataObject == null) {
             return null;
         }
-        return new WangqiDocument(
+        WangqiDocument document = new WangqiDocument(
                 WangqiDocumentIdCodec.toDomain(dataObject.getId()),
                 dataObject.getTitle(),
                 dataObject.getSummary(),
@@ -43,6 +49,11 @@ public final class WangqiDocumentPersistenceAssembler {
                 dataObject.getDocumentTime(),
                 StorageObjectIdCodec.toDomain(dataObject.getStorageObjectId()),
                 dataObject.getVisibility() == null ? null : WangqiDocumentVisibility.from(dataObject.getVisibility()));
+        document.setCurrentVersionId(ClassicsContentVersionIdCodec.toDomain(dataObject.getCurrentVersionId()));
+        document.setCurrentVersionNo(dataObject.getCurrentVersionNo());
+        document.setCurrentVersionedAt(dataObject.getCurrentVersionedAt());
+        document.setContentUpdatedAt(dataObject.getContentUpdatedAt());
+        return document;
     }
 
     public static List<WangqiDocument> toDomainList(List<WangqiDocumentDO> dataObjects) {
@@ -53,5 +64,9 @@ public final class WangqiDocumentPersistenceAssembler {
             }
         }
         return entities;
+    }
+
+    private static Date contentUpdatedAt(Date contentUpdatedAt) {
+        return contentUpdatedAt == null ? new Date() : contentUpdatedAt;
     }
 }

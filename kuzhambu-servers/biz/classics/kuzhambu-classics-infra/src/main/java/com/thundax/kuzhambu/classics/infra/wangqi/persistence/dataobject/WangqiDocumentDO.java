@@ -23,4 +23,8 @@ public class WangqiDocumentDO {
     private Date documentTime;
     private Long storageObjectId;
     private String visibility;
+    private Long currentVersionId;
+    private Integer currentVersionNo;
+    private Date currentVersionedAt;
+    private Date contentUpdatedAt;
 }
