@@ -6,7 +6,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentCommand;
+import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentSourceFileCommand;
 import com.thundax.kuzhambu.classics.application.wangqi.query.WangqiDocumentPageQuery;
+import com.thundax.kuzhambu.classics.application.wangqi.result.WangqiDocumentSourceFile;
 import com.thundax.kuzhambu.classics.application.wangqi.service.WangqiDocumentApplicationService;
 import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
@@ -25,13 +27,23 @@ import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
+import com.thundax.kuzhambu.storage.application.service.content.StoredObjectContent;
+import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Date;
 import java.util.List;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.multipart.MultipartFile;
 
 class WangqiDocumentAdminControllerTest {
 
@@ -72,6 +84,26 @@ class WangqiDocumentAdminControllerTest {
                 "delete",
                 "classics:wangqi:delete",
                 WangqiDocumentRequest.class);
+        assertMultipartPostMapping(
+                WangqiDocumentAdminController.class,
+                "uploadSourceFile",
+                "{id}/source-file/upload",
+                "classics:wangqi:edit",
+                Long.class,
+                MultipartFile.class);
+        assertPostMapping(
+                WangqiDocumentAdminController.class,
+                "getSourceFile",
+                "{id}/source-file/get",
+                "classics:wangqi:view",
+                WangqiDocumentRequest.class);
+        assertGetMapping(
+                WangqiDocumentAdminController.class,
+                "downloadSourceFile",
+                "{id}/source-file/content",
+                "classics:wangqi:view",
+                Long.class,
+                jakarta.servlet.http.HttpServletResponse.class);
         assertPostMapping(
                 WangqiDocumentAdminController.class,
                 "listVersions",
@@ -140,10 +172,20 @@ class WangqiDocumentAdminControllerTest {
         assertEquals(400000000001L, versionResponse.get("contentId").asLong());
         assertEquals(2, versionResponse.get("versionNo").asInt());
         assertEquals("MANUAL_SAVE", versionResponse.get("changeType").asText());
+
+        JsonNode sourceFileResponse = OBJECT_MAPPER.valueToTree(controller().getSourceFile(request()));
+        assertEquals(400000000001L, sourceFileResponse.get("documentId").asLong());
+        assertEquals(7001L, sourceFileResponse.get("storageObjectId").asLong());
+        assertEquals("wangqi.pdf", sourceFileResponse.get("originalFilename").asText());
+        assertEquals("application/pdf", sourceFileResponse.get("contentType").asText());
+        assertEquals(10L, sourceFileResponse.get("size").asLong());
+        assertEquals(
+                "/api/classics/wangqi/documents/400000000001/source-file/content",
+                sourceFileResponse.get("contentUrl").asText());
     }
 
     @Test
-    void controllerShouldProxyWangqiDocumentService() {
+    void controllerShouldProxyWangqiDocumentService() throws Exception {
         WangqiDocumentAdminController controller = controller();
         WangqiDocumentRequest request = request();
 
@@ -156,6 +198,20 @@ class WangqiDocumentAdminControllerTest {
         assertEquals(1, controller.listVersions(versionRequest()).size());
         assertEquals(9001L, controller.getVersion(versionRequest()).getId());
         assertEquals(9002L, controller.resetVersion(versionRequest()).getId());
+        assertEquals(
+                7001L,
+                controller
+                        .uploadSourceFile(
+                                400000000001L,
+                                new InMemoryMultipartFile("wangqi.pdf", "application/pdf", "source-bin".getBytes()))
+                        .getStorageObjectId());
+        assertEquals(7001L, controller.getSourceFile(request).getStorageObjectId());
+
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        controller.downloadSourceFile(400000000001L, response);
+        assertEquals("application/pdf", response.getContentType());
+        Assertions.assertTrue(response.getHeader("Content-Disposition").contains("wangqi.pdf"));
+        assertEquals("source-bin", response.getContentAsString());
     }
 
     private static WangqiDocumentAdminController controller() {
@@ -196,6 +252,23 @@ class WangqiDocumentAdminControllerTest {
                     if ("delete".equals(method.getName())) {
                         assertEquals(WangqiDocumentId.of(400000000001L), args[0]);
                         return null;
+                    }
+                    if ("changeSourceFile".equals(method.getName())) {
+                        WangqiDocumentSourceFileCommand command = (WangqiDocumentSourceFileCommand) args[0];
+                        assertEquals(400000000001L, command.getDocumentId());
+                        assertEquals("wangqi.pdf", command.getOriginalFilename());
+                        assertEquals("application/pdf", command.getContentType());
+                        assertEquals(10L, command.getSize());
+                        return sourceFile();
+                    }
+                    if ("getSourceFile".equals(method.getName())) {
+                        assertEquals(WangqiDocumentId.of(400000000001L), args[0]);
+                        return sourceFile();
+                    }
+                    if ("getSourceFileContent".equals(method.getName())) {
+                        assertEquals(WangqiDocumentId.of(400000000001L), args[0]);
+                        return new StoredObjectContent(
+                                sourceFileStorage(), new ByteArrayInputStream("source-bin".getBytes()));
                     }
                     throw new UnsupportedOperationException(method.getName());
                 });
@@ -278,6 +351,19 @@ class WangqiDocumentAdminControllerTest {
                 "手动保存");
     }
 
+    private static WangqiDocumentSourceFile sourceFile() {
+        return new WangqiDocumentSourceFile(400000000001L, sourceFileStorage());
+    }
+
+    private static StoredObject sourceFileStorage() {
+        StoredObject storage = new StoredObject();
+        storage.setId(com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId.of(7001L));
+        storage.setOriginalFilename("wangqi.pdf");
+        storage.setContentType("application/pdf");
+        storage.setSize(10L);
+        return storage;
+    }
+
     private static void assertRequestMapping(Class<?> controllerType, String expectedPath) {
         RequestMapping mapping = controllerType.getAnnotation(RequestMapping.class);
         assertEquals(expectedPath, mapping.value()[0]);
@@ -295,5 +381,87 @@ class WangqiDocumentAdminControllerTest {
         assertEquals(expectedPath, mapping.value()[0]);
         HasPermission permission = method.getAnnotation(HasPermission.class);
         assertEquals(List.of(expectedPermission), List.of(permission.value()));
+    }
+
+    private static void assertMultipartPostMapping(
+            Class<?> controllerType,
+            String methodName,
+            String expectedPath,
+            String expectedPermission,
+            Class<?>... parameterTypes)
+            throws Exception {
+        Method method = controllerType.getDeclaredMethod(methodName, parameterTypes);
+        PostMapping mapping = method.getAnnotation(PostMapping.class);
+        assertEquals(expectedPath, mapping.value()[0]);
+        assertEquals(MediaType.MULTIPART_FORM_DATA_VALUE, mapping.consumes()[0]);
+        HasPermission permission = method.getAnnotation(HasPermission.class);
+        assertEquals(List.of(expectedPermission), List.of(permission.value()));
+    }
+
+    private static void assertGetMapping(
+            Class<?> controllerType,
+            String methodName,
+            String expectedPath,
+            String expectedPermission,
+            Class<?>... parameterTypes)
+            throws Exception {
+        Method method = controllerType.getDeclaredMethod(methodName, parameterTypes);
+        GetMapping mapping = method.getAnnotation(GetMapping.class);
+        assertEquals(expectedPath, mapping.value()[0]);
+        HasPermission permission = method.getAnnotation(HasPermission.class);
+        assertEquals(List.of(expectedPermission), List.of(permission.value()));
+    }
+
+    private static final class InMemoryMultipartFile implements MultipartFile {
+
+        private final String originalFilename;
+        private final String contentType;
+        private final byte[] content;
+
+        private InMemoryMultipartFile(String originalFilename, String contentType, byte[] content) {
+            this.originalFilename = originalFilename;
+            this.contentType = contentType;
+            this.content = content;
+        }
+
+        @Override
+        public String getName() {
+            return "file";
+        }
+
+        @Override
+        public String getOriginalFilename() {
+            return originalFilename;
+        }
+
+        @Override
+        public String getContentType() {
+            return contentType;
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return content.length == 0;
+        }
+
+        @Override
+        public long getSize() {
+            return content.length;
+        }
+
+        @Override
+        public byte[] getBytes() {
+            return content;
+        }
+
+        @Override
+        public InputStream getInputStream() {
+            return new ByteArrayInputStream(content);
+        }
+
+        @Override
+        public void transferTo(File dest) {
+            throw new UnsupportedOperationException("transferTo");
+        }
     }
 }

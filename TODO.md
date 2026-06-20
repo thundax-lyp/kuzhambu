@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `WangqiDocumentAdminControllerTest`：补强 source-file Controller 冒烟契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-WANGQI-ADMIN-WEB.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/test/java/com/thundax/kuzhambu/classics/interfaces/admin/wangqi/WangqiDocumentAdminControllerTest.java`
-    - 处理动作：在 source-file API 实现后补齐对应路径、权限注解和 multipart/资源 GET 契约测试。
-    - 验收点：Controller 测试固定 source-file POST/GET 路径。
-    - 重要度：9/10
-
 - [ ] `wangqi frontend service`：新增前端 service 和类型契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-WANGQI-ADMIN-WEB.md`
