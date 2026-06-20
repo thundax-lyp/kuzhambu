@@ -33,6 +33,7 @@ import com.thundax.kuzhambu.classics.domain.sancai.repository.SancaiRepository;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareLink;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareTarget;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareLinkStatus;
+import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareTargetStatus;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareVisibility;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsSharedContentVisibility;
 import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareLinkId;
@@ -102,12 +103,15 @@ class ClassicsSharingApplicationServiceImplTest {
                 null,
                 List.of(new ShareTargetCreateCommand(ClassicsContentType.SANCAI_ENTRY, ClassicsContentId.of(100L)))));
 
-        ArgumentCaptor<ClassicsShareTarget> captor = ArgumentCaptor.forClass(ClassicsShareTarget.class);
-        verify(sharingRepository).insertTarget(captor.capture());
+        ArgumentCaptor<ClassicsShareLink> linkCaptor = ArgumentCaptor.forClass(ClassicsShareLink.class);
+        verify(sharingRepository).insertLink(linkCaptor.capture());
+        ArgumentCaptor<ClassicsShareTarget> targetCaptor = ArgumentCaptor.forClass(ClassicsShareTarget.class);
+        verify(sharingRepository).insertTarget(targetCaptor.capture());
         assertEquals("abc123_-", result.getShareToken());
         assertEquals("http://localhost:5174/share/abc123_-", result.getShareUrl());
         assertEquals(ClassicsShareLinkId.of(10L), result.getId());
-        ClassicsShareTarget savedTarget = captor.getValue();
+        assertEquals("hashed-share-token", linkCaptor.getValue().getTokenHash());
+        ClassicsShareTarget savedTarget = targetCaptor.getValue();
         assertEquals(ClassicsShareLinkId.of(10L), savedTarget.getShareLinkId());
         assertEquals(5, savedTarget.getPriority());
         assertEquals(ClassicsContentVersionId.of(9L), savedTarget.getContentVersionId());
@@ -115,6 +119,7 @@ class ClassicsSharingApplicationServiceImplTest {
         assertEquals("{\"title\":\"正式标题\"}", savedTarget.getContentSnapshotJson());
         assertEquals("正式标题", savedTarget.getTitleSnapshot());
         assertEquals(ClassicsSharedContentVisibility.PUBLIC, savedTarget.getContentVisibilitySnapshot());
+        assertEquals(ClassicsShareTargetStatus.AVAILABLE, savedTarget.getTargetStatus());
         verify(sancaiRepository).updateEntry(entry);
     }
 

@@ -58,6 +58,10 @@ logging:
     com.thundax.kuzhambu: ${KUZHAMBU_APP_LOG_LEVEL:INFO}
 
 kuzhambu:
+  access-token-filter:
+    exclude-path:
+      - /api/portal/classics/shares/**
+      - ${SERVER_SERVLET_CONTEXT_PATH:/api/portal}/api/portal/classics/shares/**
   auth:
     captcha:
       whitelist-enabled: ${KUZHAMBU_AUTH_CAPTCHA_WHITELIST_ENABLED:false}

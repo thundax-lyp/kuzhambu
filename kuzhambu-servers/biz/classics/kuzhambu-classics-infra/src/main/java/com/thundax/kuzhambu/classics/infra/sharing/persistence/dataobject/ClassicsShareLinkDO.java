@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.classics.infra.sharing.persistence.dataobject;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.util.Date;
@@ -16,7 +17,9 @@ public class ClassicsShareLinkDO {
     @TableId(type = IdType.AUTO)
     private Long id;
 
+    @TableField("token_hash")
     private String tokenHash;
+
     private String title;
     private String visibility;
     private String status;

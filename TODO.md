@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `classics share validation`：运行分享链路测试和 dev.env 冒烟
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARE-SNAPSHOT.md`
-    - 范围对象：`kuzhambu-servers`、`kuzhambu-apps`、`dev.env`
-    - 处理动作：执行后端、前端最小验证，并用 `dev.env` 完成 Admin 创建分享和 Portal 访问冒烟
-    - 验收点：验证命令和冒烟结果可写入 PR 描述
-    - 重要度：9/10
-
 - [ ] `classics share docs readiness`：同步分享快照收口文档
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARE-SNAPSHOT.md`

@@ -95,12 +95,20 @@ public class SpringSecurityConfiguration {
             }
 
             if (entry.getKey().getPathPatternsCondition() != null) {
-                paths.addAll(entry.getKey().getPathPatternsCondition().getPatternValues());
+                paths.addAll(entry.getKey().getPathPatternsCondition().getPatternValues().stream()
+                        .map(SpringSecurityConfiguration::normalizePublicApiPath)
+                        .toList());
             } else if (entry.getKey().getPatternsCondition() != null) {
-                paths.addAll(entry.getKey().getPatternsCondition().getPatterns());
+                paths.addAll(entry.getKey().getPatternsCondition().getPatterns().stream()
+                        .map(SpringSecurityConfiguration::normalizePublicApiPath)
+                        .toList());
             }
         }
         return paths;
+    }
+
+    static String normalizePublicApiPath(String path) {
+        return path.replaceAll("\\{[^/]+}", "*");
     }
 
     private boolean isPublicApi(HandlerMethod handlerMethod) {

@@ -25,6 +25,7 @@ import com.thundax.kuzhambu.classics.interfaces.portal.sharing.controller.respon
 import com.thundax.kuzhambu.classics.interfaces.portal.sharing.controller.response.ClassicsSharePortalResponse;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.common.security.annotation.PublicApi;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Date;
@@ -39,6 +40,11 @@ class ClassicsSharingPortalControllerTest {
     @Test
     void controllerTypeShouldExist() {
         assertNotNull(ClassicsSharingPortalController.class);
+    }
+
+    @Test
+    void controllerShouldBePublicApi() {
+        assertNotNull(ClassicsSharingPortalController.class.getAnnotation(PublicApi.class));
     }
 
     @Test

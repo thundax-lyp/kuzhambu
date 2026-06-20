@@ -6,11 +6,13 @@ import com.thundax.kuzhambu.classics.interfaces.portal.sharing.controller.reques
 import com.thundax.kuzhambu.classics.interfaces.portal.sharing.controller.response.ClassicsSharePortalListResponse;
 import com.thundax.kuzhambu.classics.interfaces.portal.sharing.controller.response.ClassicsSharePortalResponse;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
+import com.thundax.kuzhambu.common.security.annotation.PublicApi;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+@PublicApi
 @RequestMapping("/api/portal/classics/shares")
 @WrappedApiController
 public class ClassicsSharingPortalController {

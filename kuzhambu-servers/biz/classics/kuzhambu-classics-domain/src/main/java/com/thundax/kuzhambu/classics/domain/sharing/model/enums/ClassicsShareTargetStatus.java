@@ -12,6 +12,9 @@ public enum ClassicsShareTargetStatus {
     }
 
     public static ClassicsShareTargetStatus from(String value) {
+        if ("ACTIVE".equalsIgnoreCase(value)) {
+            return AVAILABLE;
+        }
         return Arrays.stream(values())
                 .filter(item -> item.name().equalsIgnoreCase(value))
                 .findFirst()

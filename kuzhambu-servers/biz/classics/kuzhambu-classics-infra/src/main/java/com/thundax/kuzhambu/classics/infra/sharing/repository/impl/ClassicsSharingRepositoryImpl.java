@@ -78,6 +78,7 @@ public class ClassicsSharingRepositoryImpl implements ClassicsSharingRepository 
                 ClassicsShareVisibility.PUBLIC.value(),
                 ClassicsShareLinkStatus.ACTIVE.value(),
                 ClassicsShareTargetStatus.AVAILABLE.value(),
+                "ACTIVE",
                 contentType,
                 title,
                 issuedAfter,

@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.classics.application.sharing.command;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareTarget;
+import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareTargetStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,6 +21,7 @@ public class ShareTargetCreateCommand {
         ClassicsShareTarget target = new ClassicsShareTarget();
         target.setContentType(contentType);
         target.setContentId(contentId);
+        target.setTargetStatus(ClassicsShareTargetStatus.AVAILABLE);
         return target;
     }
 }
