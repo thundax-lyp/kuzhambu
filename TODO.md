@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `MingCustomsEntry persistence`：接入明代习俗版本标定持久化映射
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-VERSIONABLE.md`
-    - 范围对象：`MingCustomsEntryDO.java`、`MingCustomsPersistenceAssembler.java`
-    - 处理动作：为明代习俗 DO 和 assembler 补充版本标定字段映射
-    - 验收点：明代习俗的数据库字段、DO 和 domain entity 字段一致
-    - 重要度：8/10
-
 - [ ] `classics versioning service`：实现统一版本判断和版本生成服务
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-VERSIONABLE.md`

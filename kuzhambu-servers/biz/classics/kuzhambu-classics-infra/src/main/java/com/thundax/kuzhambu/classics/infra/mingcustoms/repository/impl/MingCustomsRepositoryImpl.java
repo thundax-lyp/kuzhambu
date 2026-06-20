@@ -90,7 +90,8 @@ public class MingCustomsRepositoryImpl implements MingCustomsRepository {
                         .set(MingCustomsEntryDO::getContentFormat, dataObject.getContentFormat())
                         .set(MingCustomsEntryDO::getContent, dataObject.getContent())
                         .set(MingCustomsEntryDO::getOriginalExcerpts, dataObject.getOriginalExcerpts())
-                        .set(MingCustomsEntryDO::getVisibility, dataObject.getVisibility()));
+                        .set(MingCustomsEntryDO::getVisibility, dataObject.getVisibility())
+                        .set(MingCustomsEntryDO::getContentUpdatedAt, dataObject.getContentUpdatedAt()));
     }
 
     @Override
