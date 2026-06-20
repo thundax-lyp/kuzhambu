@@ -1,6 +1,8 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller;
 
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
+import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentSourceFileCommand;
+import com.thundax.kuzhambu.classics.application.wangqi.result.WangqiDocumentSourceFile;
 import com.thundax.kuzhambu.classics.application.wangqi.service.WangqiDocumentApplicationService;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentVersionIdCodec;
@@ -12,6 +14,7 @@ import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.assembler.WangqiDoc
 import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.request.WangqiDocumentRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.request.WangqiDocumentVersionRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.response.WangqiDocumentResponse;
+import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.response.WangqiDocumentSourceFileResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.response.WangqiDocumentVersionResponse;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
@@ -20,14 +23,26 @@ import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
+import com.thundax.kuzhambu.storage.application.service.content.StoredObjectContent;
+import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 @Tag(name = "古籍模块-王圻文档", description = "王圻文档")
 @SysLogger(module = {"古籍", "王圻文档"})
@@ -107,6 +122,60 @@ public class WangqiDocumentAdminController {
     @PostMapping("delete")
     public void delete(@Valid @RequestBody WangqiDocumentRequest request) {
         service.delete(WangqiDocumentIdCodec.toDomain(request.getId()));
+    }
+
+    @Operation(summary = "上传王圻原始文件", description = "classics:wangqi:edit")
+    @ApiImplicitParams({})
+    @HasPermission("classics:wangqi:edit")
+    @SysLogger(value = "原始文件上传")
+    @PostMapping(value = "{id}/source-file/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public WangqiDocumentSourceFileResponse uploadSourceFile(
+            @PathVariable("id") Long id, @RequestParam("file") MultipartFile file) {
+        try {
+            WangqiDocumentSourceFile result = service.changeSourceFile(new WangqiDocumentSourceFileCommand(
+                    id,
+                    file == null ? null : file.getInputStream(),
+                    file == null ? null : file.getOriginalFilename(),
+                    file == null ? null : file.getContentType(),
+                    file == null ? 0L : file.getSize()));
+            return WangqiDocumentInterfaceAssembler.toSourceFileResponse(result);
+        } catch (IOException exception) {
+            throw new BizException("王圻原始文件上传失败：" + exception.getMessage());
+        }
+    }
+
+    @Operation(summary = "查看王圻原始文件", description = "classics:wangqi:view")
+    @ApiImplicitParams({})
+    @HasPermission("classics:wangqi:view")
+    @SysLogger(value = "原始文件详情")
+    @PostMapping("{id}/source-file/get")
+    public WangqiDocumentSourceFileResponse getSourceFile(@Valid @RequestBody WangqiDocumentRequest request) {
+        return WangqiDocumentInterfaceAssembler.toSourceFileResponse(
+                service.getSourceFile(WangqiDocumentIdCodec.toDomain(request.getId())));
+    }
+
+    @Operation(summary = "读取王圻原始文件内容", description = "classics:wangqi:view")
+    @ApiImplicitParams({})
+    @HasPermission("classics:wangqi:view")
+    @SysLogger(value = "原始文件读取")
+    @GetMapping("{id}/source-file/content")
+    public void downloadSourceFile(@PathVariable("id") Long id, HttpServletResponse response) throws IOException {
+        StoredObjectContent content;
+        try {
+            content = service.getSourceFileContent(WangqiDocumentIdCodec.toDomain(id));
+        } catch (BizException exception) {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+        StoredObject storage = content.getStorage();
+        response.setContentType(
+                StringUtils.defaultIfBlank(storage.getContentType(), MediaType.APPLICATION_OCTET_STREAM_VALUE));
+        response.setHeader(
+                "Content-Disposition",
+                "inline; filename=\"" + FilenameUtils.getName(storage.getOriginalFilename()) + "\"");
+        try (InputStream inputStream = content.getInputStream()) {
+            inputStream.transferTo(response.getOutputStream());
+        }
     }
 
     @Operation(summary = "查询王圻文档版本", description = "classics:wangqi:view")

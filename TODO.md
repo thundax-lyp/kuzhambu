@@ -19,14 +19,6 @@
     - 验收点：Controller 测试固定 source-file POST/GET 路径。
     - 重要度：9/10
 
-- [ ] `wangqi source api`：封装王圻原始文件 Admin API
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-WANGQI-ADMIN-WEB.md`
-    - 范围对象：`WangqiDocumentAdminController.java`、`WangqiDocumentSourceFileResponse.java`、`WangqiDocumentInterfaceAssembler.java`
-    - 处理动作：新增 source-file upload/get/content 端点并区分 JSON 协议响应和资源流响应。
-    - 验收点：`POST {id}/source-file/get` 走通用协议，`GET {id}/source-file/content` 走资源 401/404。
-    - 重要度：9/10
-
 - [ ] `wangqi frontend service`：新增前端 service 和类型契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-WANGQI-ADMIN-WEB.md`

@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.classics.interfaces.admin.wangqi.assembler;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentCommand;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentVisibilityCommand;
 import com.thundax.kuzhambu.classics.application.wangqi.query.WangqiDocumentPageQuery;
+import com.thundax.kuzhambu.classics.application.wangqi.result.WangqiDocumentSourceFile;
 import com.thundax.kuzhambu.classics.domain.common.codec.StorageObjectIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentVersionIdCodec;
@@ -12,6 +13,7 @@ import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiContentForm
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
 import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.request.WangqiDocumentRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.response.WangqiDocumentResponse;
+import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.response.WangqiDocumentSourceFileResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.response.WangqiDocumentVersionResponse;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import org.apache.commons.lang3.StringUtils;
@@ -68,6 +70,19 @@ public final class WangqiDocumentInterfaceAssembler {
                         .build();
     }
 
+    public static WangqiDocumentSourceFileResponse toSourceFileResponse(WangqiDocumentSourceFile file) {
+        return file == null
+                ? WangqiDocumentSourceFileResponse.builder().build()
+                : WangqiDocumentSourceFileResponse.builder()
+                        .documentId(file.getDocumentId())
+                        .storageObjectId(file.getStorageObjectId())
+                        .originalFilename(file.getOriginalFilename())
+                        .contentType(file.getContentType())
+                        .size(file.getSize())
+                        .contentUrl(sourceFileContentUrl(file.getDocumentId()))
+                        .build();
+    }
+
     public static WangqiDocumentVersionResponse toVersionResponse(ClassicsContentVersion version) {
         return version == null
                 ? WangqiDocumentVersionResponse.builder().build()
@@ -91,5 +106,9 @@ public final class WangqiDocumentInterfaceAssembler {
 
     private static WangqiDocumentVisibility visibility(String value) {
         return StringUtils.isBlank(value) ? null : WangqiDocumentVisibility.from(value);
+    }
+
+    private static String sourceFileContentUrl(Long documentId) {
+        return documentId == null ? null : "/api/classics/wangqi/documents/" + documentId + "/source-file/content";
     }
 }
