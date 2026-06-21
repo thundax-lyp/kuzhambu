@@ -15,13 +15,20 @@ import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiEntryImageSortRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response.SancaiAssetResponse;
 import com.thundax.kuzhambu.common.core.exception.BizException;
+import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
+import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
 import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.common.web.request.RequestListHelper;
+import com.thundax.kuzhambu.common.web.response.PageResponse;
+import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
+import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
 import com.thundax.kuzhambu.storage.application.service.content.StoredObjectContent;
+import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -34,6 +41,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -49,9 +57,17 @@ import org.springframework.web.multipart.MultipartFile;
 @WrappedApiController
 public class SancaiAssetAdminController {
     private final SancaiAssetApplicationService service;
+    private final StorageApplicationService storageApplicationService;
 
     public SancaiAssetAdminController(SancaiAssetApplicationService service) {
+        this(service, null);
+    }
+
+    @Autowired
+    public SancaiAssetAdminController(
+            SancaiAssetApplicationService service, StorageApplicationService storageApplicationService) {
         this.service = service;
+        this.storageApplicationService = storageApplicationService;
     }
 
     @Operation(summary = "更新三才图会草稿", description = "classics:sancai:edit")
@@ -185,6 +201,47 @@ public class SancaiAssetAdminController {
         return SancaiAssetResponse.builder().id(id == null ? null : id.value()).build();
     }
 
+    @Operation(summary = "分页查询三才图会静态展示任务", description = "classics:sancai:view")
+    @ApiImplicitParams({})
+    @HasPermission("classics:sancai:view")
+    @SysLogger(value = "展示任务列表")
+    @PostMapping("showcases/page")
+    public PageResponse<SancaiAssetResponse> pageShowcases(@Valid @RequestBody SancaiAssetRequest request) {
+        PageQuery pageQuery = PageInterfaceAssembler.toPageQuery(request);
+        return PageResponseHelper.fromPageResult(
+                service.pageShowcases(request.getStatus(), pageQuery),
+                SancaiAssetInterfaceAssembler::toShowcaseResponse);
+    }
+
+    @Operation(summary = "下载三才图会静态展示产物", description = "classics:sancai:view")
+    @ApiImplicitParams({})
+    @HasPermission("classics:sancai:view")
+    @SysLogger(value = "展示产物下载")
+    @GetMapping("showcases/{id}/content")
+    public void downloadShowcaseContent(
+            @PathVariable Long id,
+            @RequestParam(value = "download", required = false) Boolean download,
+            HttpServletResponse response)
+            throws IOException {
+        if (id == null || storageApplicationService == null) {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+        StoredObjectContent content = storageApplicationService.openReadableContent(toStoredObjectId(id));
+        StoredObject storage = content.getStorage();
+        response.setContentType(
+                StringUtils.defaultIfBlank(storage.getContentType(), MediaType.APPLICATION_OCTET_STREAM_VALUE));
+        if (storage.getSize() != null) {
+            response.setContentLengthLong(storage.getSize());
+        }
+        response.setHeader(
+                "Content-Disposition",
+                contentDisposition(storage.getOriginalFilename(), Boolean.TRUE.equals(download)));
+        try (InputStream inputStream = content.getInputStream()) {
+            inputStream.transferTo(response.getOutputStream());
+        }
+    }
+
     private static String contentDisposition(String originalFilename, boolean download) {
         String disposition = download ? "attachment" : "inline";
         String filename = StringUtils.defaultIfBlank(FilenameUtils.getName(originalFilename), "file");
@@ -192,5 +249,9 @@ public class SancaiAssetAdminController {
         String encodedFilename =
                 URLEncoder.encode(filename, StandardCharsets.UTF_8).replace("+", "%20");
         return disposition + "; filename=\"" + asciiFilename + "\"; filename*=UTF-8''" + encodedFilename;
+    }
+
+    private static StoredObjectId toStoredObjectId(Long id) {
+        return StoredObjectIdCodec.toDomain(id);
     }
 }

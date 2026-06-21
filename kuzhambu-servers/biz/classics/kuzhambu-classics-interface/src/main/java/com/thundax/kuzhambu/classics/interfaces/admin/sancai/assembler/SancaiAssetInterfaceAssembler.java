@@ -98,19 +98,37 @@ public final class SancaiAssetInterfaceAssembler {
     }
 
     public static SancaiAssetResponse toShowcaseResponse(SancaiShowcase showcase) {
+        Long storageObjectId = showcase == null || showcase.getStorageObjectId() == null
+                ? null
+                : showcase.getStorageObjectId().value();
         return showcase == null
                 ? SancaiAssetResponse.builder().build()
                 : SancaiAssetResponse.builder()
                         .id(showcase.getId() == null ? null : showcase.getId().value())
-                        .storageObjectId(
-                                showcase.getStorageObjectId() == null
-                                        ? null
-                                        : showcase.getStorageObjectId().value())
                         .status(
                                 showcase.getStatus() == null
                                         ? null
                                         : showcase.getStatus().value())
+                        .requestedAt(showcase.getRequestedAt())
                         .scopeJson(showcase.getScopeJson())
+                        .storageObjectId(showcase.getStorageObjectId() == null ? null : storageObjectId)
+                        .entryCount(showcase.getEntryCount())
+                        .visibilityRiskStatus(
+                                showcase.getVisibilityRiskStatus() == null
+                                        ? null
+                                        : showcase.getVisibilityRiskStatus().value())
+                        .contentUrl(showcaseUrl(storageObjectId))
+                        .downloadUrl(showcaseDownloadUrl(storageObjectId))
                         .build();
+    }
+
+    private static String showcaseUrl(Long storageObjectId) {
+        return storageObjectId == null ? null : "/api/classics/sancai/assets/showcases/" + storageObjectId + "/content";
+    }
+
+    private static String showcaseDownloadUrl(Long storageObjectId) {
+        return storageObjectId == null
+                ? null
+                : "/api/classics/sancai/assets/showcases/" + storageObjectId + "/content?download=true";
     }
 }
