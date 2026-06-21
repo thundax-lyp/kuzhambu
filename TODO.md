@@ -9,13 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics/sancai/image-admin-api`：接入 Sancai 图片上传和内容读取接口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/sancai/controller/SancaiAssetAdminController.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/test/java/com/thundax/kuzhambu/classics/interfaces/admin/sancai/SancaiAdminControllerTest.java`
-    - 处理动作：提供 Sancai multipart 上传接口和业务域图片内容读取接口。
-    - 验收点：接口测试覆盖路由、业务资源 URL、格式拒绝、inline/download、`filename*` 和 entry/image 不匹配。
-    - 重要度：10/10
 - [ ] `classics/snapshot/sancai-images`：补齐 Sancai 快照图片资源
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`
