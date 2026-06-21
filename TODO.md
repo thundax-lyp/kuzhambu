@@ -9,13 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics/snapshot/sancai-images`：补齐 Sancai 快照图片资源
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/support/SancaiEntryVersionSnapshot.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/support/ClassicsContentSnapshotAssembler.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/content/support/ClassicsContentSnapshotAssemblerTest.java`
-    - 处理动作：让 Sancai 快照写入当前使用图片资源 ID 和元数据，并支持数组序列化。
-    - 验收点：快照测试覆盖只包含 `currentUsed=true`、多图按 `priority ASC`、不持久化预览 URL。
-    - 重要度：9/10
 - [ ] `docs/snapshot-interface`：同步 Classics 快照接口文档
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`

@@ -8,6 +8,7 @@ import com.thundax.kuzhambu.classics.application.content.command.ContentTagComma
 import com.thundax.kuzhambu.classics.application.content.command.ContentTagSortCommand;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.content.support.ClassicsContentSnapshotAssembler;
+import com.thundax.kuzhambu.classics.application.sancai.service.SancaiAssetApplicationService;
 import com.thundax.kuzhambu.classics.application.sancai.support.SancaiEntryVersionRestorer;
 import com.thundax.kuzhambu.classics.application.wangqi.support.WangqiDocumentVersionRestorer;
 import com.thundax.kuzhambu.classics.domain.content.model.Versionable;
@@ -50,22 +51,32 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     private final ClassicsContentRepository repository;
     private final WangqiDocumentVersionRestorer wangqiDocumentVersionRestorer;
     private final SancaiEntryVersionRestorer sancaiEntryVersionRestorer;
+    private final SancaiAssetApplicationService sancaiAssetApplicationService;
     private final ClassicsContentVersioningService versioningService = new ClassicsContentVersioningService();
     private final ClassicsContentSnapshotAssembler snapshotAssembler = new ClassicsContentSnapshotAssembler();
 
     public ClassicsContentApplicationServiceImpl(
             ClassicsContentRepository repository, WangqiDocumentVersionRestorer wangqiDocumentVersionRestorer) {
-        this(repository, wangqiDocumentVersionRestorer, null);
+        this(repository, wangqiDocumentVersionRestorer, null, null);
+    }
+
+    public ClassicsContentApplicationServiceImpl(
+            ClassicsContentRepository repository,
+            WangqiDocumentVersionRestorer wangqiDocumentVersionRestorer,
+            SancaiEntryVersionRestorer sancaiEntryVersionRestorer) {
+        this(repository, wangqiDocumentVersionRestorer, sancaiEntryVersionRestorer, null);
     }
 
     @Autowired
     public ClassicsContentApplicationServiceImpl(
             ClassicsContentRepository repository,
             WangqiDocumentVersionRestorer wangqiDocumentVersionRestorer,
-            SancaiEntryVersionRestorer sancaiEntryVersionRestorer) {
+            SancaiEntryVersionRestorer sancaiEntryVersionRestorer,
+            SancaiAssetApplicationService sancaiAssetApplicationService) {
         this.repository = repository;
         this.wangqiDocumentVersionRestorer = wangqiDocumentVersionRestorer;
         this.sancaiEntryVersionRestorer = sancaiEntryVersionRestorer;
+        this.sancaiAssetApplicationService = sancaiAssetApplicationService;
     }
 
     @Override
@@ -288,7 +299,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                 content,
                 versioningService.nextVersionNo(repository.latestVersionNo(content.contentType(), content.contentId())),
                 new Date(),
-                snapshotAssembler.toSnapshotJson(content),
+                snapshotJson(content),
                 changeType,
                 changeSummary);
         ClassicsContentVersionId versionId = repository.insertVersion(version);
@@ -368,13 +379,20 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                 content,
                 versioningService.nextVersionNo(repository.latestVersionNo(content.contentType(), content.contentId())),
                 new Date(),
-                snapshotAssembler.toSnapshotJson(content),
+                snapshotJson(content),
                 ClassicsContentChangeType.HISTORY_RESTORED,
                 "恢复历史版本 v" + restoredFrom.getVersionNo());
         ClassicsContentVersionId versionId = repository.insertVersion(version);
         version.setId(versionId);
         versioningService.markVersioned(content, version);
         return version;
+    }
+
+    private String snapshotJson(Versionable content) {
+        if (content instanceof SancaiEntry entry && sancaiAssetApplicationService != null) {
+            return snapshotAssembler.toSnapshotJson(entry, sancaiAssetApplicationService.listImages(entry.getId()));
+        }
+        return snapshotAssembler.toSnapshotJson(content);
     }
 
     private static BizException sortEmptyInput() {
