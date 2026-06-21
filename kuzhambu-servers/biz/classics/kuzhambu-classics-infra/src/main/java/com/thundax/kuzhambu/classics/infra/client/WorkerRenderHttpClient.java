@@ -74,7 +74,8 @@ public class WorkerRenderHttpClient implements WorkerRenderClient {
 
     private HttpRequest buildPostRequest(String path, String requestId, String traceId, String body) {
         String timestamp = String.valueOf(System.currentTimeMillis());
-        String signature = signatureSupport.sign("POST", path, timestamp, requestId, body, properties.getInternalSecret());
+        String signature =
+                signatureSupport.sign("POST", path, timestamp, requestId, body, properties.getInternalSecret());
         return HttpRequest.newBuilder(uri(path))
                 .timeout(Duration.ofMillis(properties.getTimeoutMs()))
                 .header("Content-Type", "application/json; charset=utf-8")
@@ -102,7 +103,9 @@ public class WorkerRenderHttpClient implements WorkerRenderClient {
 
     private WorkerRenderDtos.WorkerRenderResponse httpFailure(int statusCode, String body) {
         WorkerRenderDtos.WorkerRenderResponse response = readWorkerResponse(body);
-        if (response != null && response.getError() != null && response.getError().getType() != null) {
+        if (response != null
+                && response.getError() != null
+                && response.getError().getType() != null) {
             return response;
         }
         return failure(httpErrorType(statusCode), "Worker returned HTTP " + statusCode);

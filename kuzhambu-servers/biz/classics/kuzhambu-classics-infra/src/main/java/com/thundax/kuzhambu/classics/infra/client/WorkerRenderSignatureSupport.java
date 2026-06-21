@@ -13,7 +13,8 @@ public class WorkerRenderSignatureSupport {
     private static final String HMAC_SHA256 = "HmacSHA256";
     private static final char[] HEX = "0123456789abcdef".toCharArray();
 
-    public String sign(String method, String path, String timestamp, String requestId, String requestBody, String secret) {
+    public String sign(
+            String method, String path, String timestamp, String requestId, String requestBody, String secret) {
         if (isBlank(secret)) {
             throw new IllegalStateException("Worker internal secret is not configured");
         }

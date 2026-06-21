@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.classics.domain.content.repository;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentExportJob;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentQaPair;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
@@ -12,6 +13,7 @@ import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsCo
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentTagId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentVersionId;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
+import java.util.Date;
 import java.util.List;
 
 public interface ClassicsContentRepository {
@@ -70,6 +72,17 @@ public interface ClassicsContentRepository {
     ClassicsContentExportJobId insertExportJob(ClassicsContentExportJob exportJob);
 
     int updateExportJob(ClassicsContentExportJob exportJob);
+
+    int markExportJobCompleted(
+            ClassicsContentExportJobId id,
+            StorageObjectId storageObjectId,
+            Date expiresAt,
+            int itemCount,
+            int assetCount);
+
+    int markExportJobFailed(ClassicsContentExportJobId id);
+
+    int markExportJobExpired(ClassicsContentExportJobId id);
 
     Page<ClassicsContentExportJob> pageExportJobs(
             String contentType, String exportKind, String status, int pageNo, int pageSize);

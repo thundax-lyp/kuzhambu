@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics-content export job domain`：补导出任务状态回写
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-RENDER-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-domain/src/main/java/com/thundax/kuzhambu/classics/domain/content/model/entity/ClassicsContentExportJob.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-domain/src/main/java/com/thundax/kuzhambu/classics/domain/content/repository/ClassicsContentRepository.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/java/com/thundax/kuzhambu/classics/infra/content/repository/impl/ClassicsContentRepositoryImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/java/com/thundax/kuzhambu/classics/infra/content/persistence/mapper/ClassicsContentMapper.java`
-    - 处理动作：为导出任务增加成功、失败、过期状态回写和产物字段更新能力。
-    - 验收点：导出任务能按任务 ID 回写 `status/storageObjectId/expiresAt/itemCount/assetCount`。
-    - 重要度：10/10
-
 - [ ] `storage upload helper`：固定服务端导出产物入库路径
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-RENDER-CLOSURE.md`

@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.thundax.kuzhambu.classics.domain.common.codec.StorageObjectIdCodec;
+import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentExportJobIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentQaPairIdCodec;
@@ -13,6 +15,7 @@ import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContent
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentQaPair;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsExportStatus;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentExportJobId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentQaPairId;
@@ -29,6 +32,7 @@ import com.thundax.kuzhambu.classics.infra.content.persistence.mapper.ClassicsCo
 import com.thundax.kuzhambu.classics.infra.content.persistence.mapper.ClassicsContentTagMapper;
 import com.thundax.kuzhambu.classics.infra.content.persistence.mapper.ClassicsContentVersionMapper;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
@@ -207,6 +211,34 @@ public class ClassicsContentRepositoryImpl implements ClassicsContentRepository 
 
     public int updateExportJob(ClassicsContentExportJob exportJob) {
         return exportMapper.updateById(ClassicsContentPersistenceAssembler.toExportObject(exportJob));
+    }
+
+    @Override
+    public int markExportJobCompleted(
+            ClassicsContentExportJobId id,
+            StorageObjectId storageObjectId,
+            Date expiresAt,
+            int itemCount,
+            int assetCount) {
+        return exportMapper.markExportJobCompleted(
+                ClassicsContentExportJobIdCodec.toValue(id),
+                ClassicsExportStatus.COMPLETED.value(),
+                StorageObjectIdCodec.toValue(storageObjectId),
+                expiresAt,
+                itemCount,
+                assetCount);
+    }
+
+    @Override
+    public int markExportJobFailed(ClassicsContentExportJobId id) {
+        return exportMapper.markExportJobStatus(
+                ClassicsContentExportJobIdCodec.toValue(id), ClassicsExportStatus.FAILED.value());
+    }
+
+    @Override
+    public int markExportJobExpired(ClassicsContentExportJobId id) {
+        return exportMapper.markExportJobStatus(
+                ClassicsContentExportJobIdCodec.toValue(id), ClassicsExportStatus.EXPIRED.value());
     }
 
     public Page<ClassicsContentExportJob> pageExportJobs(

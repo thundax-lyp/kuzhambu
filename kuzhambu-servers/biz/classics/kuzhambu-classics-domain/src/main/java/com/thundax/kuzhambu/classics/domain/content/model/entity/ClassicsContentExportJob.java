@@ -33,4 +33,20 @@ public class ClassicsContentExportJob {
     private int assetCount;
     private SancaiVisibilityRiskStatus visibilityRiskStatus;
     private boolean contentChanged;
+
+    public void markCompleted(StorageObjectId storageObjectId, Date expiresAt, int itemCount, int assetCount) {
+        this.status = ClassicsExportStatus.COMPLETED;
+        this.storageObjectId = storageObjectId;
+        this.expiresAt = expiresAt;
+        this.itemCount = itemCount;
+        this.assetCount = assetCount;
+    }
+
+    public void markFailed() {
+        this.status = ClassicsExportStatus.FAILED;
+    }
+
+    public void markExpired() {
+        this.status = ClassicsExportStatus.EXPIRED;
+    }
 }

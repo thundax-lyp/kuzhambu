@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.classics.application.content.service.impl.ClassicsContentApplicationServiceImpl;
 import com.thundax.kuzhambu.classics.application.sancai.support.SancaiEntryVersionRestorer;
+import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentExportJob;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentQaPair;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
@@ -244,6 +245,26 @@ class ClassicsContentApplicationServiceImplTest {
 
         @Override
         public int updateExportJob(ClassicsContentExportJob exportJob) {
+            return 0;
+        }
+
+        @Override
+        public int markExportJobCompleted(
+                ClassicsContentExportJobId id,
+                StorageObjectId storageObjectId,
+                Date expiresAt,
+                int itemCount,
+                int assetCount) {
+            return 0;
+        }
+
+        @Override
+        public int markExportJobFailed(ClassicsContentExportJobId id) {
+            return 0;
+        }
+
+        @Override
+        public int markExportJobExpired(ClassicsContentExportJobId id) {
             return 0;
         }
 

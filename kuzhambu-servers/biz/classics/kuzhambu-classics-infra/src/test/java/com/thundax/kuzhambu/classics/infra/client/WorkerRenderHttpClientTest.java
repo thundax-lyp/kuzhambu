@@ -2,7 +2,6 @@ package com.thundax.kuzhambu.classics.infra.client;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
@@ -63,14 +62,23 @@ class WorkerRenderHttpClientTest {
         assertEquals("req-1", response.getRequestId());
         assertEquals("CLASSICS_EXPORT", response.getRenderType());
         assertNotNull(response.getArtifact());
-        assertEquals("/internal/render/classics-export", captured.get().getRequestURI().getPath());
-        assertEquals("kuzhambu-classics-test", captured.get().getRequestHeaders().getFirst("X-Kuzhambu-Service"));
+        assertEquals(
+                "/internal/render/classics-export",
+                captured.get().getRequestURI().getPath());
+        assertEquals(
+                "kuzhambu-classics-test", captured.get().getRequestHeaders().getFirst("X-Kuzhambu-Service"));
         assertEquals("req-1", captured.get().getRequestHeaders().getFirst("X-Kuzhambu-Request-Id"));
         String timestamp = captured.get().getRequestHeaders().getFirst("X-Kuzhambu-Timestamp");
         assertNotNull(timestamp);
         assertEquals(
                 new WorkerRenderSignatureSupport()
-                        .sign("POST", "/internal/render/classics-export", timestamp, "req-1", capturedBody.get(), "worker-secret"),
+                        .sign(
+                                "POST",
+                                "/internal/render/classics-export",
+                                timestamp,
+                                "req-1",
+                                capturedBody.get(),
+                                "worker-secret"),
                 captured.get().getRequestHeaders().getFirst("X-Kuzhambu-Signature"));
     }
 

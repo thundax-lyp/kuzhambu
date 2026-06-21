@@ -20,10 +20,12 @@ class WorkerRenderSignatureSupportTest {
                         + "1710000000000\n"
                         + "req-1\n"
                         + "5041bf1f713df204784353e82f6a4a535931cb64f1f4b4a5aeaffcb720918b22",
-                signatureSupport.signingInput("POST", "/internal/render/classics-export", "1710000000000", "req-1", body));
+                signatureSupport.signingInput(
+                        "POST", "/internal/render/classics-export", "1710000000000", "req-1", body));
         assertEquals(
                 "e3f6590c755f86d638a11f4ecebdc33f86a71f9a9808afd1c030e63fecc7065c",
-                signatureSupport.sign("POST", "/internal/render/classics-export", "1710000000000", "req-1", body, "secret"));
+                signatureSupport.sign(
+                        "POST", "/internal/render/classics-export", "1710000000000", "req-1", body, "secret"));
     }
 
     @Test
