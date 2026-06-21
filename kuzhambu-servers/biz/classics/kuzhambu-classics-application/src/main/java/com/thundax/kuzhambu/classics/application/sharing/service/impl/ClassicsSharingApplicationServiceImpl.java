@@ -1,6 +1,9 @@
 package com.thundax.kuzhambu.classics.application.sharing.service.impl;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.sharing.command.ClassicsShareTargetSortCommand;
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkCreateCommand;
@@ -27,7 +30,9 @@ import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareAc
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareLink;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsSharePortalListItem;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareTarget;
+import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareAccessResult;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareLinkStatus;
+import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareTargetStatus;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareVisibility;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsSharedContentVisibility;
 import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareLinkId;
@@ -42,6 +47,10 @@ import com.thundax.kuzhambu.common.core.exception.ErrorCode;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
+import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
+import com.thundax.kuzhambu.storage.application.service.content.StoredObjectContent;
+import com.thundax.kuzhambu.storage.application.service.query.StorageQuery;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -57,6 +66,8 @@ import org.springframework.transaction.annotation.Transactional;
 @BizExceptionBoundary
 public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApplicationService {
 
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
     private final ClassicsSharingRepository repository;
     private final ClassicsContentApplicationService contentApplicationService;
     private final SancaiRepository sancaiRepository;
@@ -64,7 +75,28 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
     private final MingCustomsRepository mingCustomsRepository;
     private final ClassicsShareTokenGenerator shareTokenGenerator;
     private final ClassicsShareTokenHasher shareTokenHasher;
+    private final StorageApplicationService storageApplicationService;
     private ClassicsShareProperties shareProperties = new ClassicsShareProperties();
+
+    @Autowired
+    public ClassicsSharingApplicationServiceImpl(
+            ClassicsSharingRepository repository,
+            ClassicsContentApplicationService contentApplicationService,
+            SancaiRepository sancaiRepository,
+            WangqiDocumentRepository wangqiDocumentRepository,
+            MingCustomsRepository mingCustomsRepository,
+            ClassicsShareTokenGenerator shareTokenGenerator,
+            ClassicsShareTokenHasher shareTokenHasher,
+            StorageApplicationService storageApplicationService) {
+        this.repository = repository;
+        this.contentApplicationService = contentApplicationService;
+        this.sancaiRepository = sancaiRepository;
+        this.wangqiDocumentRepository = wangqiDocumentRepository;
+        this.mingCustomsRepository = mingCustomsRepository;
+        this.shareTokenGenerator = shareTokenGenerator;
+        this.shareTokenHasher = shareTokenHasher;
+        this.storageApplicationService = storageApplicationService;
+    }
 
     public ClassicsSharingApplicationServiceImpl(
             ClassicsSharingRepository repository,
@@ -74,13 +106,15 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
             MingCustomsRepository mingCustomsRepository,
             ClassicsShareTokenGenerator shareTokenGenerator,
             ClassicsShareTokenHasher shareTokenHasher) {
-        this.repository = repository;
-        this.contentApplicationService = contentApplicationService;
-        this.sancaiRepository = sancaiRepository;
-        this.wangqiDocumentRepository = wangqiDocumentRepository;
-        this.mingCustomsRepository = mingCustomsRepository;
-        this.shareTokenGenerator = shareTokenGenerator;
-        this.shareTokenHasher = shareTokenHasher;
+        this(
+                repository,
+                contentApplicationService,
+                sancaiRepository,
+                wangqiDocumentRepository,
+                mingCustomsRepository,
+                shareTokenGenerator,
+                shareTokenHasher,
+                null);
     }
 
     @Autowired(required = false)
@@ -162,6 +196,35 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
                 link.getIssuedAt(),
                 link.getExpiresAt(),
                 listTargets(link.getId()));
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public StoredObjectContent getPortalShareResourceContent(
+            String shareToken, Long storageObjectId, boolean download) {
+        if (storageObjectId == null || storageApplicationService == null) {
+            throw shareContentNotFound();
+        }
+        ClassicsShareLink link = repository.getLinkByTokenHash(shareTokenHasher.hash(shareToken));
+        if (!isPortalVisible(link)) {
+            throw shareContentNotFound();
+        }
+        ClassicsShareTarget matchedTarget = findReadableResourceTarget(link.getId(), storageObjectId, download);
+        if (matchedTarget == null) {
+            throw shareContentNotFound();
+        }
+        StoredObjectId objectId = StoredObjectId.of(storageObjectId);
+        StorageQuery query = new StorageQuery();
+        query.setId(objectId);
+        if (!storageApplicationService.existsReadableContent(query)) {
+            throw shareContentNotFound();
+        }
+        StoredObjectContent content = storageApplicationService.openReadableContent(objectId);
+        if (content == null) {
+            throw shareContentNotFound();
+        }
+        recordAllowedResourceAccess(link.getId(), matchedTarget.getId(), storageObjectId);
+        return content;
     }
 
     private static boolean isPortalVisible(ClassicsShareLink link) {
@@ -273,6 +336,68 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
                 (int) dataPage.getCurrent(), (int) dataPage.getSize(), dataPage.getTotal(), dataPage.getRecords());
     }
 
+    private ClassicsShareTarget findReadableResourceTarget(
+            ClassicsShareLinkId shareLinkId, Long storageObjectId, boolean download) {
+        List<ClassicsShareTarget> targets = repository.listTargetsByLinkId(shareLinkId, SortDirection.ASC);
+        if (targets == null || targets.isEmpty()) {
+            return null;
+        }
+        for (ClassicsShareTarget target : targets) {
+            if (!isAvailableTarget(target)) {
+                continue;
+            }
+            if (snapshotContainsReadableResource(target, storageObjectId, download)) {
+                return target;
+            }
+        }
+        return null;
+    }
+
+    private static boolean snapshotContainsReadableResource(
+            ClassicsShareTarget target, Long storageObjectId, boolean download) {
+        JsonNode snapshot = readSnapshot(target.getContentSnapshotJson());
+        if (snapshot == null || target.getContentType() == null) {
+            return false;
+        }
+        return switch (target.getContentType()) {
+            case WANGQI_DOCUMENT ->
+                longValue(snapshot.get("storageObjectId")) != null
+                        && longValue(snapshot.get("storageObjectId")).equals(storageObjectId);
+            case SANCAI_ENTRY -> !download && sancaiSnapshotContainsResource(snapshot, storageObjectId);
+            case MING_CUSTOMS -> false;
+        };
+    }
+
+    private static boolean sancaiSnapshotContainsResource(JsonNode snapshot, Long storageObjectId) {
+        JsonNode images = snapshot.get("images");
+        if (images == null || !images.isArray()) {
+            return false;
+        }
+        for (JsonNode image : images) {
+            Long imageStorageObjectId = longValue(image.get("storageObjectId"));
+            if (storageObjectId.equals(imageStorageObjectId)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isAvailableTarget(ClassicsShareTarget target) {
+        return target != null
+                && target.getId() != null
+                && target.getTargetStatus() == ClassicsShareTargetStatus.AVAILABLE;
+    }
+
+    private void recordAllowedResourceAccess(
+            ClassicsShareLinkId shareLinkId, ClassicsShareTargetId shareTargetId, Long storageObjectId) {
+        ClassicsShareAccessRecord record = new ClassicsShareAccessRecord();
+        record.setShareLinkId(shareLinkId);
+        record.setShareTargetId(shareTargetId);
+        record.setAccessResult(ClassicsShareAccessResult.ALLOWED);
+        record.setClientSnapshot("resourceStorageObjectId=" + storageObjectId);
+        recordAccess(record);
+    }
+
     private void updateTargetPriorityOrThrow(ClassicsShareTargetId id, int priority) {
         ClassicsShareTarget target = new ClassicsShareTarget();
         target.setId(id);
@@ -379,6 +504,21 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
                         : ClassicsSharedContentVisibility.from(
                                 ((MingCustomsEntry) content).getVisibility().value());
         };
+    }
+
+    private static JsonNode readSnapshot(String snapshotJson) {
+        if (snapshotJson == null || snapshotJson.isBlank()) {
+            return null;
+        }
+        try {
+            return OBJECT_MAPPER.readTree(snapshotJson);
+        } catch (JsonProcessingException ex) {
+            return null;
+        }
+    }
+
+    private static Long longValue(JsonNode node) {
+        return node == null || !node.canConvertToLong() ? null : node.asLong();
     }
 
     private static BizException shareContentNotFound() {

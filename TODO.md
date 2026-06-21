@@ -9,13 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics/portal/resource-read`：接入 Portal 分享资源读取应用能力
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sharing/service/ClassicsSharingApplicationService.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sharing/service/impl/ClassicsSharingApplicationServiceImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/sharing/ClassicsSharingApplicationServiceImplTest.java`
-    - 处理动作：按分享 token 和快照资源 ID 校验后读取 Storage 内容并记录成功访问。
-    - 验收点：测试覆盖不在快照内、过期撤销、跨内容类型误读、非 Wangqi 下载和失败统一 404。
-    - 重要度：10/10
 - [ ] `classics/portal/resource-api`：接入 Portal 分享资源读取接口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`
