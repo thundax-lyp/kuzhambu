@@ -9,6 +9,140 @@
 
 ## 当前任务项
 
+- [ ] `storage/admin/content-response`：收敛 Storage 内容读取响应头
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`
+    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-interface/src/main/java/com/thundax/kuzhambu/storage/interfaces/admin/object/controller/StorageObjectController.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-interface/src/test/java/com/thundax/kuzhambu/storage/interfaces/admin/StorageObjectContentContractTest.java`
+    - 处理动作：为 Storage 内容读取补齐 inline/download、`Content-Length`、安全文件名和 `filename*` 响应头。
+    - 验收点：Storage 内容读取测试覆盖预览、下载、中文文件名和长度响应。
+    - 重要度：9/10
+- [ ] `classics/wangqi/source-content`：补齐 Wangqi 原始文件读取能力
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`
+    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/wangqi/controller/WangqiDocumentAdminController.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/wangqi/service/impl/WangqiDocumentApplicationServiceImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/test/java/com/thundax/kuzhambu/classics/interfaces/admin/wangqi/WangqiDocumentAdminControllerTest.java`
+    - 处理动作：让 Wangqi 原始文件读取支持 `download` 参数并保持业务归属校验。
+    - 验收点：Wangqi controller 测试覆盖 inline、attachment、长度响应和非归属不可读。
+    - 重要度：8/10
+- [ ] `classics/sancai/image-contract`：新增 Sancai 图片上传和读取应用层契约
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`
+    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sancai/command/SancaiEntryImageUploadCommand.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sancai/result/SancaiEntryImageResource.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sancai/result/SancaiEntryImageContent.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sancai/service/SancaiAssetApplicationService.java`
+    - 处理动作：定义 Sancai 图片上传命令、展示资源、内容读取结果和应用服务方法。
+    - 验收点：Sancai application 层公开契约能够表达上传、展示资源和内容读取闭环。
+    - 重要度：9/10
+- [ ] `classics/sancai/storage-owner`：补齐 Sancai 图片 Storage owner 类型
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`
+    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-domain/src/main/java/com/thundax/kuzhambu/storage/domain/object/model/enums/StorageOwnerType.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sancai/service/impl/SancaiAssetApplicationServiceImpl.java`
+    - 处理动作：为 Sancai 图片建立专用 Storage owner type 和 ownerId 生成口径。
+    - 验收点：Sancai 图片引用统一使用 `CLASSICS_SANCAI_ENTRY_IMAGE` 和 `entry:{entryId}:image:{imageId}`。
+    - 重要度：8/10
+- [ ] `classics/sancai/image-repository`：补齐 Sancai 图片引用仓储能力
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`
+    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-domain/src/main/java/com/thundax/kuzhambu/classics/domain/sancai/repository/SancaiAssetRepository.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/java/com/thundax/kuzhambu/classics/infra/sancai/repository/impl/SancaiAssetRepositoryImpl.java`
+    - 处理动作：补齐按图片 ID、条目当前图和排序读取图片记录的仓储能力。
+    - 验收点：应用层能够校验 `replaceImageId` 归属和读取 `currentUsed=true` 图片列表。
+    - 重要度：9/10
+- [ ] `classics/sancai/image-upload-binding`：实现 Sancai 图片上传替换和引用绑定
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`
+    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sancai/service/impl/SancaiAssetApplicationServiceImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/test/java/com/thundax/kuzhambu/classics/interfaces/admin/sancai/SancaiAdminControllerTest.java`
+    - 处理动作：实现 Sancai 上传创建新图片、替换当前图、保留历史引用并维护 Storage reference。
+    - 验收点：默认图片格式过滤生效，旧图变为 `currentUsed=false`，历史图 Storage reference 保留。
+    - 重要度：10/10
+- [ ] `classics/sancai/image-admin-api`：接入 Sancai 图片上传和内容读取接口
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`
+    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/sancai/controller/SancaiAssetAdminController.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/test/java/com/thundax/kuzhambu/classics/interfaces/admin/sancai/SancaiAdminControllerTest.java`
+    - 处理动作：提供 Sancai multipart 上传接口和业务域图片内容读取接口。
+    - 验收点：接口测试覆盖路由、业务资源 URL、格式拒绝、inline/download、`filename*` 和 entry/image 不匹配。
+    - 重要度：10/10
+- [ ] `classics/snapshot/sancai-images`：补齐 Sancai 快照图片资源
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`
+    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/support/SancaiEntryVersionSnapshot.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/support/ClassicsContentSnapshotAssembler.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/content/support/ClassicsContentSnapshotAssemblerTest.java`
+    - 处理动作：让 Sancai 快照写入当前使用图片资源 ID 和元数据，并支持数组序列化。
+    - 验收点：快照测试覆盖只包含 `currentUsed=true`、多图按 `priority ASC`、不持久化预览 URL。
+    - 重要度：9/10
+- [ ] `docs/snapshot-interface`：同步 Classics 快照接口文档
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`
+    - 范围对象：`docs/20-interfaces/CLASSICS-CONTENT-VERSION-SNAPSHOT-INTERFACE.md`、`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`
+    - 处理动作：把 Sancai `images` 快照字段和 Wangqi 资源对象兼容口径同步到接口文档。
+    - 验收点：接口文档与实现口径一致，明确快照只存稳定 ID 和元数据。
+    - 重要度：7/10
+- [ ] `classics/portal/resource-enrichment`：在 Portal 分享详情响应中装配资源对象
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`
+    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/portal/sharing/controller/ClassicsSharingPortalController.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/portal/sharing/assembler/ClassicsSharingPortalInterfaceAssembler.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/test/java/com/thundax/kuzhambu/classics/interfaces/portal/sharing/ClassicsSharingPortalControllerTest.java`
+    - 处理动作：解析分享快照并在响应层装配 Wangqi `storageObject` 和 Sancai `images[].storageObject`。
+    - 验收点：Portal 分享详情响应不暴露 `shareToken`，资源 URL 指向 Portal 读取接口，缺失资源置空但保留正文。
+    - 重要度：9/10
+- [ ] `classics/portal/resource-read`：接入 Portal 分享资源读取应用能力
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`
+    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sharing/service/ClassicsSharingApplicationService.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sharing/service/impl/ClassicsSharingApplicationServiceImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/sharing/ClassicsSharingApplicationServiceImplTest.java`
+    - 处理动作：按分享 token 和快照资源 ID 校验后读取 Storage 内容并记录成功访问。
+    - 验收点：测试覆盖不在快照内、过期撤销、跨内容类型误读、非 Wangqi 下载和失败统一 404。
+    - 重要度：10/10
+- [ ] `classics/portal/resource-api`：接入 Portal 分享资源读取接口
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`
+    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/portal/sharing/controller/ClassicsSharingPortalController.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/test/java/com/thundax/kuzhambu/classics/interfaces/portal/sharing/ClassicsSharingPortalControllerTest.java`
+    - 处理动作：暴露 `/resources/{storageObjectId}/content` 并设置 inline/download 响应头。
+    - 验收点：接口测试覆盖成功读取、失败统一 404 和非 Wangqi 下载限制。
+    - 重要度：10/10
+- [ ] `admin-web/storage/preview`：接入 Admin Storage 页面预览和下载
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`
+    - 范围对象：`kuzhambu-apps/admin-web/src/pages/storage/storage-object/storage-object-page.tsx`、`kuzhambu-apps/admin-web/src/pages/storage/storage-object/storage-object-service.ts`、`kuzhambu-apps/admin-web/src/pages/storage/storage-object/storage-object-types.ts`
+    - 处理动作：增加 Storage 内容 URL helper，并用 `toAuthenticatedResourceUrl` 驱动预览和下载动作。
+    - 验收点：Storage 页面预览和下载按钮分别使用业务 URL、token 拼接和 `download` 参数。
+    - 重要度：8/10
+- [ ] `admin-web/wangqi/source-preview`：接入 Admin Wangqi 原始文件预览下载
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`
+    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/wangqi/components/wangqi-storage-file-panel.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/wangqi/wangqi-service.ts`、`kuzhambu-apps/admin-web/src/pages/classics/wangqi/wangqi-types.ts`、`kuzhambu-apps/admin-web/src/pages/classics/wangqi/wangqi-service-contract.test.ts`
+    - 处理动作：让 Wangqi 文件面板通过业务域接口和鉴权 URL 完成预览下载。
+    - 验收点：Wangqi 不再直连 Storage 通用读取，服务测试覆盖 `download` URL 参数。
+    - 重要度：8/10
+- [ ] `admin-web/sancai/image-upload-preview`：接入 Admin Sancai 图片上传预览
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`
+    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-types.ts`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/services/sancai-entry-service.ts`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-model.tsx`
+    - 处理动作：让 Sancai 页面通过业务上传接口和鉴权资源 URL 完成上传、预览和下载。
+    - 验收点：Sancai 上传不使用 Storage 通用上传入口，图片预览和下载都带 token。
+    - 重要度：9/10
+- [ ] `portal-web/share/resource-types`：补齐 Portal 分享资源类型和服务
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`
+    - 范围对象：`kuzhambu-apps/portal-web/src/pages/share/share-types.ts`、`kuzhambu-apps/portal-web/src/pages/share/share-service.ts`
+    - 处理动作：定义 Portal 分享资源类型和分享资源 URL helper。
+    - 验收点：Portal Web 能表达 `target.storageObject` 和 `target.images[].storageObject`，资源 URL 指向分享读取接口。
+    - 重要度：8/10
+- [ ] `portal-web/share/resource-preview`：接入 Portal 分享页资源预览
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`
+    - 范围对象：`kuzhambu-apps/portal-web/src/pages/share/share-form.tsx`、`kuzhambu-apps/portal-web/src/pages/share/share-types.ts`
+    - 处理动作：渲染 Portal 已装配的 Wangqi 原始文件和 Sancai 图片资源。
+    - 验收点：Portal 分享页不以裸 JSON 作为主要内容，只有 Wangqi 原始文件显示下载按钮。
+    - 重要度：9/10
+- [ ] `readiness/storage-preview`：完成 Storage 预览闭环验证记录
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`
+    - 范围对象：`docs/40-readiness/PR-WORKFLOW.md`、`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`、`TODO.md`
+    - 处理动作：运行 RUNBOOK 要求的后端、前端和人工冒烟验证并更新 readiness 覆盖记录。
+    - 验收点：PR 收口材料记录 Maven、npm 和人工冒烟结果，验证失败项已修复或明确剩余风险。
+    - 重要度：8/10
+- [ ] `cleanup/storage-preview-runbook`：清理 Storage 预览闭环现场任务
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`
+    - 范围对象：`TODO.md`、`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`、`docs/40-readiness/PR-WORKFLOW.md`
+    - 处理动作：在功能、验证和文档同步完成后删除临时 RUNBOOK 并清空或收窄已完成 TODO。
+    - 验收点：PR 合并前没有已完成任务残留，临时 RUNBOOK 已删除，工作区只保留交付相关改动。
+    - 重要度：10/10
+
 ## 待审阅任务项
 
 ## 待讨论项
