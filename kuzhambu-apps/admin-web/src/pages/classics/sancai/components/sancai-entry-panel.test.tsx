@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { App as AntdApp } from "antd";
 import * as shareService from "@/api/classics/share-service";
+import * as exportService from "@/api/classics/export-service";
 import { SancaiEntryPanel } from "./sancai-entry-panel";
 import * as entryService from "../services/sancai-entry-service";
 
@@ -28,6 +29,43 @@ vi.mock("@/api/classics/share-service", () => ({
         title: "天地 分享",
         visibility: "PUBLIC"
     }))
+}));
+
+vi.mock("@/api/classics/export-service", () => ({
+    create: vi.fn(async () => ({
+        id: 1001,
+        contentType: "SANCAI_ENTRY",
+        exportKind: "CONTENT_DATASET",
+        exportFormat: "HTML",
+        scopeType: "SELECTED_ITEMS",
+        scopeJson: JSON.stringify({
+            title: "天地 导出",
+            ids: [3001]
+        }),
+        status: "REQUESTED"
+    })),
+    page: vi.fn(async () => ({
+        records: [
+            {
+                id: 1001,
+                contentType: "SANCAI_ENTRY",
+                exportKind: "CONTENT_DATASET",
+                exportFormat: "HTML",
+                scopeType: "SELECTED_ITEMS",
+                scopeJson: JSON.stringify({
+                    title: "天地 导出",
+                    ids: [3001]
+                }),
+                requestedAt: "2026-06-21T10:00:00.000+08:00",
+                status: "COMPLETED",
+                itemCount: 1,
+                assetCount: 0,
+                downloadUrl: "/downloads/1001.zip"
+            }
+        ],
+        total: 1
+    })),
+    getContentUrl: vi.fn()
 }));
 
 vi.mock("../services/sancai-entry-service", () => ({
@@ -237,5 +275,30 @@ describe("SancaiEntryPanel sharing", () => {
         );
         expect(await screen.findAllByText("三才图会版本已恢复")).not.toHaveLength(0);
         expect(await screen.findByDisplayValue("历史天地")).toBeInTheDocument();
+    });
+
+    it("creates export job and shows download section", async () => {
+        const user = userEvent.setup();
+
+        renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        await user.click(await within(entryTable).findByRole("button", { name: "导出 天地" }));
+
+        await waitFor(() => {
+            expect(exportService.create).toHaveBeenCalledWith({
+                contentType: "SANCAI_ENTRY",
+                exportKind: "CONTENT_DATASET",
+                exportFormat: "HTML",
+                scopeType: "SELECTED_ITEMS",
+                scopeJson: JSON.stringify({
+                    title: "天地 导出",
+                    ids: [3001]
+                })
+            });
+        });
+
+        expect(await screen.findByText("导出任务")).toBeInTheDocument();
+        expect(await screen.findByRole("button", { name: "下载" })).toBeInTheDocument();
     });
 });

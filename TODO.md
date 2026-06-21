@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web sancai export ui`：接入导出任务前端闭环
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-RENDER-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-types.ts`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.tsx`
-    - 处理动作：在三才图会条目面板中增加导出动作、任务列表展示和下载入口。
-    - 验收点：管理员能在三才图会条目页发起导出并看到任务状态与下载入口。
-    - 重要度：9/10
-
 - [ ] `sancai showcase domain`：补静态展示任务状态回写
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-RENDER-CLOSURE.md`

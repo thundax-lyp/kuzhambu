@@ -22,11 +22,13 @@ export interface ClassicsExportContentUrlCommand {
     mode?: ClassicsExportContentMode;
 }
 
-export type ClassicsExportQuery = PageQuery<{
-    contentType?: string | null;
-    exportKind?: string | null;
-    status?: ClassicsExportStatus | null;
-}> | PageQuery;
+export type ClassicsExportQuery =
+    | PageQuery<{
+          contentType?: string | null;
+          exportKind?: string | null;
+          status?: ClassicsExportStatus | null;
+      }>
+    | PageQuery;
 
 const EXPORT_PATH = "/classics/content/exports";
 

@@ -80,6 +80,27 @@ export interface SancaiVersionSnapshot {
     priority?: number | null;
 }
 
+export type SancaiExportStatus = "REQUESTED" | "RUNNING" | "COMPLETED" | "FAILED" | "EXPIRED";
+
+export interface SancaiExportJobRecord {
+    id?: number | null;
+    contentType?: string | null;
+    exportKind?: string | null;
+    exportFormat?: string | null;
+    scopeType?: string | null;
+    scopeJson?: string | null;
+    requestedAt?: string | null;
+    expiresAt?: string | null;
+    status?: SancaiExportStatus | null;
+    storageObjectId?: number | null;
+    itemCount?: number | null;
+    assetCount?: number | null;
+    visibilityRiskStatus?: string | null;
+    contentChanged?: boolean | null;
+    contentUrl?: string | null;
+    downloadUrl?: string | null;
+}
+
 export type SancaiCatalogNodeType = "category" | "root" | "volume";
 
 export interface SancaiCatalogTreeNode {

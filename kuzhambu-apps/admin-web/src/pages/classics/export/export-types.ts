@@ -1,9 +1,4 @@
-export type ClassicsExportStatus =
-    | "REQUESTED"
-    | "RUNNING"
-    | "COMPLETED"
-    | "FAILED"
-    | "EXPIRED";
+export type ClassicsExportStatus = "REQUESTED" | "RUNNING" | "COMPLETED" | "FAILED" | "EXPIRED";
 
 export interface ClassicsExportJobRecord {
     id?: number | null;
