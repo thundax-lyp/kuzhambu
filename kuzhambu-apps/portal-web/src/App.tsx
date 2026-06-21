@@ -1,7 +1,7 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import { HomePage } from "@/features/home/home-page";
-import { ShareListPage } from "@/features/shares/share-list-page";
-import { SharePage } from "@/features/shares/share-page";
+import { HomePage } from "@/pages/home/home-page";
+import { ShareListPage } from "@/pages/shares/share-list-page";
+import { SharePage } from "@/pages/shares/share-page";
 
 import "./styles.css";
 
