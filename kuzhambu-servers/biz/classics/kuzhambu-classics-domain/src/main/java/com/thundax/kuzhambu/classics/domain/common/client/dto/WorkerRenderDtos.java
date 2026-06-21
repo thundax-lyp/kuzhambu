@@ -1,7 +1,7 @@
-package com.thundax.kuzhambu.classics.infra.client.dto;
+package com.thundax.kuzhambu.classics.domain.common.client.dto;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import java.util.List;
+import java.util.Map;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -52,7 +52,7 @@ public final class WorkerRenderDtos {
 
         private String snapshotId;
         private String contentType;
-        private JsonNode payload;
+        private String payloadJson;
     }
 
     @Getter
@@ -119,6 +119,6 @@ public final class WorkerRenderDtos {
         private String code;
         private String message;
         private Boolean retryable;
-        private JsonNode detail;
+        private Map<String, Object> detail;
     }
 }

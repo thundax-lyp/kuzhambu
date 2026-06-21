@@ -2,7 +2,8 @@ package com.thundax.kuzhambu.classics.infra.client;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.thundax.kuzhambu.classics.infra.client.dto.WorkerRenderDtos;
+import com.thundax.kuzhambu.classics.domain.common.client.WorkerRenderClient;
+import com.thundax.kuzhambu.classics.domain.common.client.dto.WorkerRenderDtos;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -22,17 +23,18 @@ public class WorkerRenderHttpClient implements WorkerRenderClient {
     private static final String ERROR_WORKER_PROTOCOL_FAILURE = "WORKER_PROTOCOL_FAILURE";
     private static final String ERROR_WORKER_TIMEOUT = "WORKER_TIMEOUT";
     private static final String ERROR_WORKER_UNAVAILABLE = "WORKER_UNAVAILABLE";
-    private static final String ERROR_WORKER_RESPONSE_PARSE_FAILURE = "WORKER_RESPONSE_PARSE_FAILURE";
 
     private final WorkerRenderProperties properties;
     private final WorkerRenderSignatureSupport signatureSupport;
     private final ObjectMapper objectMapper;
     private final HttpClient httpClient;
+    private final WorkerRenderHttpAssembler assembler;
 
     public WorkerRenderHttpClient(WorkerRenderProperties properties, WorkerRenderSignatureSupport signatureSupport) {
         this.properties = properties;
         this.signatureSupport = signatureSupport;
         this.objectMapper = new ObjectMapper().findAndRegisterModules();
+        this.assembler = new WorkerRenderHttpAssembler(objectMapper);
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofMillis(properties.getTimeoutMs()))
                 .build();
@@ -50,14 +52,17 @@ public class WorkerRenderHttpClient implements WorkerRenderClient {
 
     private WorkerRenderDtos.WorkerRenderResponse render(String path, WorkerRenderDtos.WorkerRenderRequest request) {
         try {
-            String body = objectMapper.writeValueAsString(request);
+            WorkerRenderHttpDtos.WorkerRenderRequest httpRequestBody = assembler.toHttpRequest(request);
+            String body = objectMapper.writeValueAsString(httpRequestBody);
             HttpRequest httpRequest = buildPostRequest(path, request.getRequestId(), request.getTraceId(), body);
             HttpResponse<String> response =
                     httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
             if (!isSuccessful(response.statusCode())) {
                 return httpFailure(response.statusCode(), response.body());
             }
-            return objectMapper.readValue(response.body(), WorkerRenderDtos.WorkerRenderResponse.class);
+            WorkerRenderHttpDtos.WorkerRenderResponse httpResponse =
+                    objectMapper.readValue(response.body(), WorkerRenderHttpDtos.WorkerRenderResponse.class);
+            return assembler.toDomainResponse(httpResponse);
         } catch (JsonProcessingException | IllegalArgumentException ex) {
             return failure(ERROR_WORKER_PROTOCOL_FAILURE, ex.getMessage());
         } catch (HttpTimeoutException ex) {
@@ -102,23 +107,23 @@ public class WorkerRenderHttpClient implements WorkerRenderClient {
     }
 
     private WorkerRenderDtos.WorkerRenderResponse httpFailure(int statusCode, String body) {
-        WorkerRenderDtos.WorkerRenderResponse response = readWorkerResponse(body);
+        WorkerRenderHttpDtos.WorkerRenderResponse response = readWorkerResponse(body);
         if (response != null
                 && response.getError() != null
                 && response.getError().getType() != null) {
-            return response;
+            return assembler.toDomainResponse(response);
         }
         return failure(httpErrorType(statusCode), "Worker returned HTTP " + statusCode);
     }
 
-    private WorkerRenderDtos.WorkerRenderResponse readWorkerResponse(String body) {
+    private WorkerRenderHttpDtos.WorkerRenderResponse readWorkerResponse(String body) {
         if (body == null || body.isBlank()) {
             return null;
         }
         try {
-            return objectMapper.readValue(body, WorkerRenderDtos.WorkerRenderResponse.class);
+            return objectMapper.readValue(body, WorkerRenderHttpDtos.WorkerRenderResponse.class);
         } catch (JsonProcessingException ex) {
-            return failure(ERROR_WORKER_RESPONSE_PARSE_FAILURE, "Failed to parse worker error response");
+            return null;
         }
     }
 
@@ -133,13 +138,6 @@ public class WorkerRenderHttpClient implements WorkerRenderClient {
     }
 
     private WorkerRenderDtos.WorkerRenderResponse failure(String errorType, String message) {
-        WorkerRenderDtos.WorkerRenderResponse response = new WorkerRenderDtos.WorkerRenderResponse();
-        response.setStatus("FAILED");
-        response.setRenderType("UNKNOWN");
-        WorkerRenderDtos.WorkerRenderError error = new WorkerRenderDtos.WorkerRenderError();
-        error.setType(errorType);
-        error.setMessage(message);
-        response.setError(error);
-        return response;
+        return assembler.failure(errorType, message);
     }
 }

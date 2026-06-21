@@ -2,11 +2,11 @@ package com.thundax.kuzhambu.classics.interfaces.admin.content.controller;
 
 import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairSortCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentTagSortCommand;
+import com.thundax.kuzhambu.classics.application.content.result.ClassicsExportJobResult;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentQaPairIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentTagIdCodec;
-import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentExportJobId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentQaPairId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentTagId;
@@ -154,10 +154,17 @@ public class ClassicsContentAdminController {
     @SysLogger(value = "创建导出任务")
     @PostMapping("exports/create")
     public ClassicsContentResponse createExport(@Valid @RequestBody ClassicsContentRequest request) {
-        ClassicsContentExportJobId id =
+        ClassicsExportJobResult result =
                 service.createExportJob(ClassicsContentInterfaceAssembler.toExportCommand(request));
         return ClassicsContentResponse.builder()
-                .id(id == null ? null : id.value())
+                .id(
+                        result == null || result.getJobId() == null
+                                ? null
+                                : result.getJobId().value())
+                .status(
+                        result == null || result.getStatus() == null
+                                ? null
+                                : result.getStatus().name())
                 .build();
     }
 }

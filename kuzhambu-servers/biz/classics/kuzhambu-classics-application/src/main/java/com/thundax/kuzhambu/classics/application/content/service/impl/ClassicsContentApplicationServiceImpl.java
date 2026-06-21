@@ -1,18 +1,27 @@
 package com.thundax.kuzhambu.classics.application.content.service.impl;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.thundax.kuzhambu.classics.application.content.command.ContentExportCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairSortCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentTagCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentTagSortCommand;
+import com.thundax.kuzhambu.classics.application.content.result.ClassicsExportJobResult;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.content.support.ClassicsContentSnapshotAssembler;
 import com.thundax.kuzhambu.classics.application.content.support.SancaiEntryVersionSnapshot;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiAssetApplicationService;
 import com.thundax.kuzhambu.classics.application.sancai.support.SancaiEntryVersionRestorer;
 import com.thundax.kuzhambu.classics.application.wangqi.support.WangqiDocumentVersionRestorer;
+import com.thundax.kuzhambu.classics.domain.common.client.WorkerRenderClient;
+import com.thundax.kuzhambu.classics.domain.common.client.dto.WorkerRenderDtos;
 import com.thundax.kuzhambu.classics.domain.common.codec.StorageObjectIdCodec;
+import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId;
 import com.thundax.kuzhambu.classics.domain.content.model.Versionable;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentExportJob;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentQaPair;
@@ -20,6 +29,7 @@ import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContent
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentChangeType;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsExportStatus;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentExportJobId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentQaPairId;
@@ -36,10 +46,14 @@ import com.thundax.kuzhambu.common.core.exception.ErrorCode;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
+import com.thundax.kuzhambu.storage.application.helper.StorageUploadResult;
+import com.thundax.kuzhambu.storage.application.helper.StorageUploadStreamHelper;
 import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
+import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -54,24 +68,34 @@ import org.springframework.transaction.annotation.Transactional;
 @BizExceptionBoundary
 public class ClassicsContentApplicationServiceImpl implements ClassicsContentApplicationService {
 
+    private static final int EXPORT_EXPIRES_DAYS = 7;
+    private static final String DEFAULT_EXPORT_TEMPLATE_ID = "classics-export-default";
+    private static final String DEFAULT_EXPORT_TEMPLATE_VERSION = "2026.06.01";
+    private static final String DEFAULT_RENDER_OPERATION = "CLASSICS_EXPORT";
+    private static final String DEFAULT_RENDER_TYPE = "CLASSICS_EXPORT";
+    private static final String DEFAULT_TITLE = "classics-export";
+
     private final ClassicsContentRepository repository;
     private final WangqiDocumentVersionRestorer wangqiDocumentVersionRestorer;
     private final SancaiEntryVersionRestorer sancaiEntryVersionRestorer;
     private final SancaiAssetApplicationService sancaiAssetApplicationService;
     private final StorageApplicationService storageApplicationService;
+    private final WorkerRenderClient workerRenderClient;
+    private final StorageUploadStreamHelper storageUploadStreamHelper;
+    private final ObjectMapper objectMapper;
     private final ClassicsContentVersioningService versioningService = new ClassicsContentVersioningService();
     private final ClassicsContentSnapshotAssembler snapshotAssembler = new ClassicsContentSnapshotAssembler();
 
     public ClassicsContentApplicationServiceImpl(
             ClassicsContentRepository repository, WangqiDocumentVersionRestorer wangqiDocumentVersionRestorer) {
-        this(repository, wangqiDocumentVersionRestorer, null, null, null);
+        this(repository, wangqiDocumentVersionRestorer, null, null, null, null, null);
     }
 
     public ClassicsContentApplicationServiceImpl(
             ClassicsContentRepository repository,
             WangqiDocumentVersionRestorer wangqiDocumentVersionRestorer,
             SancaiEntryVersionRestorer sancaiEntryVersionRestorer) {
-        this(repository, wangqiDocumentVersionRestorer, sancaiEntryVersionRestorer, null, null);
+        this(repository, wangqiDocumentVersionRestorer, sancaiEntryVersionRestorer, null, null, null, null);
     }
 
     @Autowired
@@ -80,12 +104,17 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             WangqiDocumentVersionRestorer wangqiDocumentVersionRestorer,
             SancaiEntryVersionRestorer sancaiEntryVersionRestorer,
             SancaiAssetApplicationService sancaiAssetApplicationService,
-            StorageApplicationService storageApplicationService) {
+            StorageApplicationService storageApplicationService,
+            WorkerRenderClient workerRenderClient,
+            StorageUploadStreamHelper storageUploadStreamHelper) {
         this.repository = repository;
         this.wangqiDocumentVersionRestorer = wangqiDocumentVersionRestorer;
         this.sancaiEntryVersionRestorer = sancaiEntryVersionRestorer;
         this.sancaiAssetApplicationService = sancaiAssetApplicationService;
         this.storageApplicationService = storageApplicationService;
+        this.workerRenderClient = workerRenderClient;
+        this.storageUploadStreamHelper = storageUploadStreamHelper;
+        this.objectMapper = new ObjectMapper().findAndRegisterModules();
     }
 
     @Override
@@ -348,12 +377,44 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ClassicsContentExportJobId createExportJob(ContentExportCommand command) {
+    public ClassicsExportJobResult createExportJob(ContentExportCommand command) {
         ClassicsContentExportJob job = command.toEntity();
         if (job.getRequestedAt() == null) {
             job.setRequestedAt(new Date());
         }
-        return repository.insertExportJob(job);
+        ClassicsContentExportJobId jobId = repository.insertExportJob(job);
+        if (jobId == null) {
+            throw new BizException("创建导出任务失败");
+        }
+
+        try {
+            WorkerRenderDtos.WorkerRenderResponse response =
+                    workerRenderClient.renderClassicsExport(renderRequest(jobId, job));
+            if (!isSuccess(response)) {
+                repository.markExportJobFailed(jobId);
+                return new ClassicsExportJobResult(jobId, ClassicsExportStatus.FAILED, null);
+            }
+            StorageUploadResult uploadResult = saveRenderArtifact(jobId, response);
+            if (uploadResult.hasError()) {
+                repository.markExportJobFailed(jobId);
+                return new ClassicsExportJobResult(jobId, ClassicsExportStatus.FAILED, null);
+            }
+            StorageObjectId storageObjectId = toStorageObjectId(uploadResult);
+            int itemCount =
+                    response.getSummary() == null || response.getSummary().getItemCount() == null
+                            ? 0
+                            : response.getSummary().getItemCount();
+            repository.markExportJobCompleted(
+                    jobId,
+                    storageObjectId,
+                    new Date(job.getRequestedAt().getTime() + EXPORT_EXPIRES_DAYS * 24L * 60L * 60L * 1000L),
+                    itemCount,
+                    job.getAssetCount());
+            return new ClassicsExportJobResult(jobId, ClassicsExportStatus.COMPLETED, storageObjectId);
+        } catch (Exception ex) {
+            repository.markExportJobFailed(jobId);
+            return new ClassicsExportJobResult(jobId, ClassicsExportStatus.FAILED, null);
+        }
     }
 
     @Override
@@ -407,6 +468,154 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                     entry, images.stream().map(this::toImageResource).toList());
         }
         return snapshotAssembler.toSnapshotJson(content);
+    }
+
+    private WorkerRenderDtos.WorkerRenderRequest renderRequest(
+            ClassicsContentExportJobId jobId, ClassicsContentExportJob job) {
+        WorkerRenderDtos.WorkerRenderRequest request = new WorkerRenderDtos.WorkerRenderRequest();
+        request.setRequestId("classics-export-" + jobId.value());
+        request.setTraceId("classics-export-" + jobId.value());
+        request.setCallerDomain("CLASSICS");
+        request.setOperation(DEFAULT_RENDER_OPERATION);
+        request.setRenderType(DEFAULT_RENDER_TYPE);
+        request.setTemplate(renderTemplate());
+        request.setOutput(renderOutput(
+                job.getExportFormat() == null ? null : job.getExportFormat().value(), jobId));
+        request.setInput(renderInput(job.getScopeJson()));
+        request.setOptions(renderOptions());
+        return request;
+    }
+
+    private WorkerRenderDtos.Template renderTemplate() {
+        WorkerRenderDtos.Template template = new WorkerRenderDtos.Template();
+        template.setTemplateId(DEFAULT_EXPORT_TEMPLATE_ID);
+        template.setTemplateVersion(DEFAULT_EXPORT_TEMPLATE_VERSION);
+        return template;
+    }
+
+    private WorkerRenderDtos.Output renderOutput(String format, ClassicsContentExportJobId jobId) {
+        WorkerRenderDtos.Output output = new WorkerRenderDtos.Output();
+        output.setFormat(format);
+        output.setFilenameHint(DEFAULT_TITLE + "-" + jobId.value() + "." + formatSafeSuffix(format));
+        output.setLocale("zh-CN");
+        return output;
+    }
+
+    private String formatSafeSuffix(String format) {
+        return format == null ? "zip" : format.toLowerCase();
+    }
+
+    private WorkerRenderDtos.Input renderInput(String scopeJson) {
+        WorkerRenderDtos.Input input = new WorkerRenderDtos.Input();
+        input.setSnapshotId(null);
+        input.setContentType("CLASSICS_EXPORT_SNAPSHOT");
+        input.setPayloadJson(renderPayloadJson(scopeJson));
+        return input;
+    }
+
+    private String renderPayloadJson(String scopeJson) {
+        JsonNode payload = normalizePayload(scopeJson);
+        try {
+            return objectMapper.writeValueAsString(payload);
+        } catch (JsonProcessingException ex) {
+            return null;
+        }
+    }
+
+    private WorkerRenderDtos.Options renderOptions() {
+        WorkerRenderDtos.Options options = new WorkerRenderDtos.Options();
+        options.setStream(false);
+        options.setIncludeMetadata(true);
+        return options;
+    }
+
+    private JsonNode normalizePayload(String scopeJson) {
+        JsonNode payload = parsePayload(scopeJson);
+        if (payload.isObject()) {
+            ensurePayloadDefaults((ObjectNode) payload);
+            return payload;
+        }
+        ObjectNode wrapped = objectMapper.createObjectNode();
+        wrapped.put("title", DEFAULT_TITLE);
+        ArrayNode items = objectMapper.createArrayNode();
+        items.add(payload == null ? "" : payload.asText());
+        wrapped.set("items", items);
+        return wrapped;
+    }
+
+    private void ensurePayloadDefaults(ObjectNode payload) {
+        if (!payload.has("title")) {
+            payload.put("title", DEFAULT_TITLE);
+        }
+        if (!payload.has("items")) {
+            payload.set("items", objectMapper.createArrayNode());
+        }
+    }
+
+    private JsonNode parsePayload(String scopeJson) {
+        try {
+            if (scopeJson == null || scopeJson.isBlank()) {
+                return defaultPayload();
+            }
+            JsonNode parsed = objectMapper.readTree(scopeJson);
+            return parsed == null ? defaultPayload() : parsed;
+        } catch (Exception ex) {
+            return defaultPayload();
+        }
+    }
+
+    private ObjectNode defaultPayload() {
+        ObjectNode defaultPayload = objectMapper.createObjectNode();
+        defaultPayload.put("title", DEFAULT_TITLE);
+        defaultPayload.set("items", objectMapper.createArrayNode());
+        return defaultPayload;
+    }
+
+    private StorageUploadResult saveRenderArtifact(
+            ClassicsContentExportJobId jobId, WorkerRenderDtos.WorkerRenderResponse response) throws Exception {
+        WorkerRenderDtos.Artifact artifact = response.getArtifact();
+        byte[] content = artifactContent(artifact);
+        return storageUploadStreamHelper.uploadServerArtifact(
+                new ByteArrayInputStream(content),
+                filenameHint(artifact.getFilename(), response),
+                artifact.getContentType(),
+                content.length);
+    }
+
+    private String filenameHint(String originalFilename, WorkerRenderDtos.WorkerRenderResponse response) {
+        if (originalFilename != null && !originalFilename.isBlank()) {
+            return originalFilename;
+        }
+        String format =
+                response.getArtifact() == null ? "zip" : response.getArtifact().getFormat();
+        return "classics-export-" + System.currentTimeMillis() + "." + formatSafeSuffix(format);
+    }
+
+    private StorageObjectId toStorageObjectId(StorageUploadResult uploadResult) {
+        return uploadResult == null
+                        || uploadResult.getStorage() == null
+                        || uploadResult.getStorage().getId() == null
+                ? null
+                : StorageObjectId.of(uploadResult.getStorage().getId().value());
+    }
+
+    private byte[] artifactContent(WorkerRenderDtos.Artifact artifact) {
+        if (artifact == null
+                || artifact.getContent() == null
+                || artifact.getContent().isBlank()) {
+            return new byte[0];
+        }
+        if ("TEXT".equalsIgnoreCase(artifact.getEncoding())) {
+            return artifact.getContent().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        }
+        if ("BASE64".equalsIgnoreCase(artifact.getEncoding())) {
+            return Base64.getDecoder().decode(artifact.getContent());
+        }
+        throw new BizException("暂不支持的导出产物编码: " + artifact.getEncoding());
+    }
+
+    private boolean isSuccess(WorkerRenderDtos.WorkerRenderResponse response) {
+        return response != null && "SUCCEEDED".equalsIgnoreCase(response.getStatus()) && response.getArtifact() != null;
     }
 
     private SancaiEntryVersionSnapshot.ImageResource toImageResource(SancaiEntryImage image) {

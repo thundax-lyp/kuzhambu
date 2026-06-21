@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
-import com.thundax.kuzhambu.classics.infra.client.dto.WorkerRenderDtos;
+import com.thundax.kuzhambu.classics.domain.common.client.dto.WorkerRenderDtos;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
@@ -149,7 +149,7 @@ class WorkerRenderHttpClientTest {
         WorkerRenderDtos.Input input = new WorkerRenderDtos.Input();
         input.setSnapshotId("snapshot-1");
         input.setContentType("CLASSICS_EXPORT_SNAPSHOT");
-        input.setPayload(null);
+        input.setPayloadJson(null);
         return input;
     }
 

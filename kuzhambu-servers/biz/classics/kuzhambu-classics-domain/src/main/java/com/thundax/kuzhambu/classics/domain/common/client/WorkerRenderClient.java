@@ -1,6 +1,6 @@
-package com.thundax.kuzhambu.classics.infra.client;
+package com.thundax.kuzhambu.classics.domain.common.client;
 
-import com.thundax.kuzhambu.classics.infra.client.dto.WorkerRenderDtos;
+import com.thundax.kuzhambu.classics.domain.common.client.dto.WorkerRenderDtos;
 
 public interface WorkerRenderClient {
 
