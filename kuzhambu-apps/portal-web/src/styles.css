@@ -69,14 +69,24 @@
 }
 
 body {
+    position: relative;
     margin: 0;
     min-width: 320px;
     min-height: 100vh;
-    background:
-        url("./assets/ink-landscape.svg") top right / min(1180px, 92vw) auto no-repeat,
-        linear-gradient(115deg, transparent 0 47%, var(--paper-fiber) 47.2% 47.6%, transparent 48%),
-        linear-gradient(8deg, transparent 0 78%, var(--paper-fiber) 78.2% 78.6%, transparent 79%),
-        var(--surface-page);
+    background: var(--surface-page);
+}
+
+body::before {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    content: "";
+    background-image: url("./assets/ink-sidebar-knowledge-graph.png");
+    background-repeat: repeat;
+    background-position: right top;
+    background-size: 320px 480px;
+    opacity: 0.42;
 }
 
 a {
@@ -85,6 +95,8 @@ a {
 }
 
 .portal-shell {
+    position: relative;
+    z-index: 1;
     min-height: 100vh;
     padding: 40px clamp(20px, 5vw, 72px);
     background:
