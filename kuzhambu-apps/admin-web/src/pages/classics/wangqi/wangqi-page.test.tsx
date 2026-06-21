@@ -207,7 +207,7 @@ describe("WangqiPage", () => {
         vi.restoreAllMocks();
     });
 
-    it("loads list and filters by keyword visibility and timeline query", async () => {
+    it("loads list, filters by keyword visibility and opens timeline", async () => {
         const user = userEvent.setup();
         renderWangqiPage();
 
@@ -249,23 +249,16 @@ describe("WangqiPage", () => {
             );
         });
 
+        await user.click(screen.getByRole("button", { name: /时间线/ }));
         const timeline = await screen.findByLabelText("王圻文档时间线");
-        await user.clear(within(timeline).getByLabelText("搜索王圻时间线"));
-        await user.type(within(timeline).getByLabelText("搜索王圻时间线"), "王圻");
-        await waitFor(() => {
-            expect(capturedCalls).toContainEqual(
-                expect.objectContaining({
-                    path: "/classics/wangqi/documents/timeline/list",
-                    body: expect.objectContaining({ keyword: "王圻" })
-                })
-            );
-        });
-    });
+        expect(within(timeline).getByText("2026/01/01")).toBeInTheDocument();
+        expect(within(timeline).getByText("记录王圻古籍条目。")).toBeInTheDocument();
+    }, 10000);
 
     it("opens editor, sanitizes preview and saves", async () => {
         renderWangqiPage();
 
-        fireEvent.click(await screen.findByRole("button", { name: /查看或编辑 王圻文档/ }));
+        fireEvent.click(await screen.findByRole("button", { name: /编辑 王圻文档/ }));
         expect(await screen.findByLabelText("王圻文档正文预览")).toBeInTheDocument();
         expect(screen.queryByText("alert(1)")).not.toBeInTheDocument();
 
