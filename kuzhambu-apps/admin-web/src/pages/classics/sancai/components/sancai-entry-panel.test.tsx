@@ -186,7 +186,24 @@ vi.mock("../services/sancai-entry-service", () => ({
         }
     ),
     uploadImage: vi.fn(),
-    update: vi.fn()
+    update: vi.fn(),
+    requestShowcase: vi.fn(async () => ({
+        id: 2001,
+        status: "REQUESTED"
+    })),
+    pageShowcases: vi.fn(async () => ({
+        records: [
+            {
+                id: 2001,
+                requestedAt: "2026-06-21T10:30:00.000+08:00",
+                status: "COMPLETED",
+                entryCount: 1,
+                visibilityRiskStatus: "PUBLIC_ONLY",
+                downloadUrl: "/downloads/showcase.html"
+            }
+        ],
+        total: 1
+    }))
 }));
 
 const renderEntryPanel = () => {
@@ -299,6 +316,79 @@ describe("SancaiEntryPanel sharing", () => {
         });
 
         expect(await screen.findByText("导出任务")).toBeInTheDocument();
-        expect(await screen.findByRole("button", { name: "下载" })).toBeInTheDocument();
+        const exportSection = screen.getByText("导出任务").closest("section") as HTMLElement;
+        expect(
+            await within(exportSection).findByRole("button", { name: /下\s*载/ })
+        ).toBeInTheDocument();
+    });
+
+    it("shows expired export task as disabled download", async () => {
+        vi.mocked(exportService.page).mockResolvedValueOnce({
+            records: [
+                {
+                    id: 1002,
+                    contentType: "SANCAI_ENTRY",
+                    exportKind: "CONTENT_DATASET",
+                    exportFormat: "HTML",
+                    scopeType: "SELECTED_ITEMS",
+                    scopeJson: JSON.stringify({
+                        title: "天地 导出",
+                        ids: [3001]
+                    }),
+                    requestedAt: "2026-06-10T10:00:00.000+08:00",
+                    expiresAt: "2026-06-13T10:00:00.000+08:00",
+                    status: "COMPLETED",
+                    itemCount: 1,
+                    assetCount: 0,
+                    downloadUrl: "/downloads/1002.zip"
+                }
+            ],
+            total: 1
+        });
+
+        renderEntryPanel();
+
+        const exportSection = (await screen
+            .findByText("导出任务")
+            .then((node) => node.closest("section"))) as HTMLElement;
+        expect(exportSection).toBeTruthy();
+        expect(await within(exportSection).findByText("已过期")).toBeInTheDocument();
+        expect(
+            await within(exportSection).findByRole("button", { name: /下\s*载/ })
+        ).toBeDisabled();
+    });
+
+    it("creates showcase job and shows showcase task", async () => {
+        const user = userEvent.setup();
+
+        renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        await user.click(
+            await within(entryTable).findByRole("button", { name: "生成静态展示 天地" })
+        );
+
+        await waitFor(() => {
+            expect(entryService.requestShowcase).toHaveBeenCalledTimes(1);
+        });
+        const request = vi.mocked(entryService.requestShowcase).mock.calls.at(-1)?.at(0) || {};
+        expect(request).toMatchObject({
+            entryCount: 1,
+            visibilityRiskStatus: "PUBLIC_ONLY"
+        });
+        const scopeJson = JSON.parse(request.scopeJson as string);
+        expect(scopeJson.title).toContain("静态展示");
+        expect(scopeJson.entries).toEqual([
+            {
+                id: 3001,
+                title: "天地",
+                volumeId: 101
+            }
+        ]);
+        expect(await screen.findByText("静态展示任务")).toBeInTheDocument();
+        const showcaseSection = screen.getByText("静态展示任务").closest("section") as HTMLElement;
+        expect(
+            await within(showcaseSection).findByRole("button", { name: /下\s*载/ })
+        ).toBeInTheDocument();
     });
 });
