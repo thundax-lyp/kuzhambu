@@ -9,13 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics/sancai/image-contract`：新增 Sancai 图片上传和读取应用层契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sancai/command/SancaiEntryImageUploadCommand.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sancai/result/SancaiEntryImageResource.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sancai/result/SancaiEntryImageContent.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sancai/service/SancaiAssetApplicationService.java`
-    - 处理动作：定义 Sancai 图片上传命令、展示资源、内容读取结果和应用服务方法。
-    - 验收点：Sancai application 层公开契约能够表达上传、展示资源和内容读取闭环。
-    - 重要度：9/10
 - [ ] `classics/sancai/storage-owner`：补齐 Sancai 图片 Storage owner 类型
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`
@@ -33,9 +26,9 @@
 - [ ] `classics/sancai/image-upload-binding`：实现 Sancai 图片上传替换和引用绑定
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sancai/service/impl/SancaiAssetApplicationServiceImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/test/java/com/thundax/kuzhambu/classics/interfaces/admin/sancai/SancaiAdminControllerTest.java`
-    - 处理动作：实现 Sancai 上传创建新图片、替换当前图、保留历史引用并维护 Storage reference。
-    - 验收点：默认图片格式过滤生效，旧图变为 `currentUsed=false`，历史图 Storage reference 保留。
+    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sancai/service/SancaiAssetApplicationService.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sancai/service/impl/SancaiAssetApplicationServiceImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/test/java/com/thundax/kuzhambu/classics/interfaces/admin/sancai/SancaiAdminControllerTest.java`
+    - 处理动作：接入 Sancai 图片上传、读取服务方法，并实现上传创建新图片、替换当前图、保留历史引用和维护 Storage reference。
+    - 验收点：服务契约能表达上传、展示资源和内容读取，默认图片格式过滤生效，旧图变为 `currentUsed=false` 且历史图 Storage reference 保留。
     - 重要度：10/10
 - [ ] `classics/sancai/image-admin-api`：接入 Sancai 图片上传和内容读取接口
     - 任务类型：执行任务
