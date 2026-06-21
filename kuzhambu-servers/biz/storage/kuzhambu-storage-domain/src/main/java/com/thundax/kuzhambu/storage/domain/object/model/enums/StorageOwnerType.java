@@ -7,7 +7,8 @@ public enum StorageOwnerType {
     USER,
     MEMBER,
     SUBMISSION,
-    CLASSICS_WANGQI_DOCUMENT;
+    CLASSICS_WANGQI_DOCUMENT,
+    CLASSICS_SANCAI_ENTRY_IMAGE;
 
     public String value() {
         return name();

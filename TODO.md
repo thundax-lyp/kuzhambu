@@ -9,13 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics/sancai/storage-owner`：补齐 Sancai 图片 Storage owner 类型
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-domain/src/main/java/com/thundax/kuzhambu/storage/domain/object/model/enums/StorageOwnerType.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sancai/service/impl/SancaiAssetApplicationServiceImpl.java`
-    - 处理动作：为 Sancai 图片建立专用 Storage owner type 和 ownerId 生成口径。
-    - 验收点：Sancai 图片引用统一使用 `CLASSICS_SANCAI_ENTRY_IMAGE` 和 `entry:{entryId}:image:{imageId}`。
-    - 重要度：8/10
 - [ ] `classics/sancai/image-repository`：补齐 Sancai 图片引用仓储能力
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`

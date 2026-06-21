@@ -38,6 +38,9 @@ import org.springframework.transaction.annotation.Transactional;
 @BizExceptionBoundary
 public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplicationService {
 
+    private static final String IMAGE_OWNER_ID_PREFIX = "entry:";
+    private static final String IMAGE_OWNER_ID_SEPARATOR = ":image:";
+
     private final SancaiAssetRepository repository;
 
     public SancaiAssetApplicationServiceImpl(SancaiAssetRepository repository) {
@@ -218,5 +221,12 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
                 ErrorCode.SORT_DB_FAILURE.getCode(),
                 ErrorCode.SORT_DB_FAILURE.getMessageKey(),
                 ErrorCode.SORT_DB_FAILURE.getMessage());
+    }
+
+    static String imageOwnerId(SancaiEntryId entryId, SancaiEntryImageId imageId) {
+        if (entryId == null || imageId == null) {
+            return null;
+        }
+        return IMAGE_OWNER_ID_PREFIX + entryId.value() + IMAGE_OWNER_ID_SEPARATOR + imageId.value();
     }
 }
