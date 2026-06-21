@@ -17,16 +17,16 @@ The compose stack builds and runs:
 Default HTTP port is `8080`.
 
 - Admin web: `http://localhost:8080/kuzhambu-admin/`
-- Admin API through nginx: `http://localhost:8080/kuzhambu-admin/api/`
+- Admin API through nginx: `http://localhost:8080/kuzhambu-admin-api/api/`
 - Portal web: `http://localhost:8080/kuzhambu/`
-- Portal API through nginx: `http://localhost:8080/kuzhambu/api/`
+- Portal API through nginx: `http://localhost:8080/kuzhambu-api/api/`
 
-The Java starters keep their internal context paths:
+The Java starters use API-specific context paths:
 
-- `admin-starter`: `/admin-api`
-- `portal-starter`: `/portal-api`
+- `admin-starter`: `/kuzhambu-admin-api`
+- `portal-starter`: `/kuzhambu-api`
 
-Nginx translates the public web context paths to those internal starter context paths.
+The frontend web routes stay under `/kuzhambu-admin/` and `/kuzhambu/`.
 
 ## Internal Operations Routes
 
@@ -49,3 +49,20 @@ cd deploy
 cp .env.example .env
 docker compose --env-file .env up --build
 ```
+
+## Images
+
+Compose uses project-prefixed image names by default:
+
+- `kuzhambu/admin-web:dev`
+- `kuzhambu/portal-web:dev`
+- `kuzhambu/admin-starter:dev`
+- `kuzhambu/portal-starter:dev`
+- `kuzhambu/workers:dev`
+- `kuzhambu/nginx:1.27-alpine`
+- `kuzhambu/mysql:8.4`
+- `kuzhambu/redis:7.2`
+- `kuzhambu/elasticsearch:8.15.3`
+- `kuzhambu/rocketmq:5.3.0`
+
+Override the names with `KUZHAMBU_*_IMAGE` variables in `deploy/.env`. Business images are produced by `docker compose --env-file .env build`. Foundation images must be available locally under the configured names before offline smoke tests or image export.

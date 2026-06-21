@@ -67,11 +67,6 @@ export const MingCustomsPage = () => {
         queryFn: service.listCategoryOptions,
         retry: false
     });
-    const keywordCloudQuery = useQuery({
-        queryKey: ["ming-customs", "keyword-cloud", query.visibility],
-        queryFn: () => service.listKeywordCloud(query.visibility),
-        retry: false
-    });
     const detailQuery = useQuery({
         queryKey: ["ming-customs", "detail", editingEntry?.id],
         queryFn: () => service.get(editingEntry?.id ?? 0),
@@ -301,6 +296,12 @@ export const MingCustomsPage = () => {
                 onFilterApply={applyFilters}
                 onFilterReset={resetFilters}
                 onAdd={openCreateEditor}
+                pageActions={
+                    <MingCustomsKeywordCloud
+                        visibility={query.visibility}
+                        onSelect={selectKeyword}
+                    />
+                }
                 searchValue={searchText}
                 onSearchChange={searchMingCustoms}
                 content={
@@ -324,14 +325,6 @@ export const MingCustomsPage = () => {
                         }}
                     />
                 }
-                tableAside={
-                    <MingCustomsKeywordCloud
-                        loading={keywordCloudQuery.isLoading}
-                        items={keywordCloudQuery.data || []}
-                        onSelect={selectKeyword}
-                    />
-                }
-                tableAsidePlacement="right"
             />
             <MingCustomsModel
                 categoryOptions={categoryOptions}

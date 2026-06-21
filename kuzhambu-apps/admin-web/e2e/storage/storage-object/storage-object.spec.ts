@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
 
 const mockShellApis = async (page: Page) => {
-    await page.route("**/admin-api/api/sys/current-user/info", async (route) => {
+    await page.route("**/kuzhambu-admin-api/api/sys/current-user/info", async (route) => {
         await route.fulfill({
             contentType: "application/json",
             body: JSON.stringify({
@@ -16,7 +16,7 @@ const mockShellApis = async (page: Page) => {
             })
         });
     });
-    await page.route("**/admin-api/api/sys/current-user/menus", async (route) => {
+    await page.route("**/kuzhambu-admin-api/api/sys/current-user/menus", async (route) => {
         await route.fulfill({
             contentType: "application/json",
             body: JSON.stringify({
@@ -52,7 +52,7 @@ const mockShellApis = async (page: Page) => {
             })
         });
     });
-    await page.route("**/admin-api/api/sys/current-user/perms", async (route) => {
+    await page.route("**/kuzhambu-admin-api/api/sys/current-user/perms", async (route) => {
         await route.fulfill({
             contentType: "application/json",
             body: JSON.stringify({
@@ -64,7 +64,7 @@ const mockShellApis = async (page: Page) => {
             })
         });
     });
-    await page.route("**/admin-api/api/auth/session/token/refresh", async (route) => {
+    await page.route("**/kuzhambu-admin-api/api/auth/session/token/refresh", async (route) => {
         await route.fulfill({
             contentType: "application/json",
             body: JSON.stringify({
@@ -117,7 +117,7 @@ test.describe("storage object page", () => {
         let pageRequestCount = 0;
         let deleteRequestBody: unknown;
         let uploadFileName = "";
-        await page.route("**/admin-api/api/storage/object/page", async (route) => {
+        await page.route("**/kuzhambu-admin-api/api/storage/object/page", async (route) => {
             pageRequestCount += 1;
             await route.fulfill({
                 contentType: "application/json",
@@ -133,7 +133,7 @@ test.describe("storage object page", () => {
                 })
             });
         });
-        await page.route("**/admin-api/api/storage/object/upload", async (route) => {
+        await page.route("**/kuzhambu-admin-api/api/storage/object/upload", async (route) => {
             uploadFileName = route.request().postData()?.includes("upload.txt") ? "upload.txt" : "";
             const uploadedRecord = {
                 id: "storage-2",
@@ -158,7 +158,7 @@ test.describe("storage object page", () => {
                 })
             });
         });
-        await page.route("**/admin-api/api/storage/object/delete", async (route) => {
+        await page.route("**/kuzhambu-admin-api/api/storage/object/delete", async (route) => {
             deleteRequestBody = route.request().postDataJSON();
             records = records.filter((record) => record.id !== "storage-1");
             await route.fulfill({

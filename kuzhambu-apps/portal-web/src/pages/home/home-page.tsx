@@ -1,5 +1,7 @@
 import { BookOpen, Network, Search, Share2 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 const sections = [
     {
@@ -26,9 +28,9 @@ export const HomePage = () => {
                     <p className="portal-kicker">三才翰典 Portal</p>
                     <h1>古籍知识门户</h1>
                 </div>
-                <Link className="portal-action" to="/shares">
-                    进入分享
-                </Link>
+                <Button asChild className="portal-action" size="lg" variant="outline">
+                    <Link to="/shares">进入分享</Link>
+                </Button>
             </header>
 
             <section className="portal-grid" aria-label="门户能力">
@@ -36,12 +38,14 @@ export const HomePage = () => {
                     const Icon = section.icon;
 
                     return (
-                        <Link className="portal-section" key={section.title} to={section.href}>
-                            <Icon aria-hidden="true" size={24} strokeWidth={1.8} />
-                            <div>
-                                <h2>{section.title}</h2>
-                                <p>{section.description}</p>
-                            </div>
+                        <Link key={section.title} to={section.href}>
+                            <Card className="portal-section">
+                                <Icon aria-hidden="true" size={24} strokeWidth={1.8} />
+                                <div>
+                                    <h2>{section.title}</h2>
+                                    <p>{section.description}</p>
+                                </div>
+                            </Card>
                         </Link>
                     );
                 })}

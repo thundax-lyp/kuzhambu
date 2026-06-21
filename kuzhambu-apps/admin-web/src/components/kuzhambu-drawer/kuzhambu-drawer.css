@@ -4,21 +4,24 @@
     --kuzhambu-drawer-large-width: var(--kuzhambu-drawer-workspace-width);
     --kuzhambu-drawer-middle-width: calc(var(--kuzhambu-drawer-workspace-width) * 2 / 3);
     --kuzhambu-drawer-small-width: calc(var(--kuzhambu-drawer-workspace-width) / 3);
-    --kuzhambu-drawer-glass-strong: rgba(248, 251, 255, 0.68);
-    --kuzhambu-drawer-head-glow: rgba(226, 235, 247, 0.38);
-    --kuzhambu-drawer-edge-glow: rgba(255, 255, 255, 0.72);
-    --kuzhambu-drawer-ambient: rgba(37, 99, 235, 0.08);
-    --kuzhambu-drawer-ink: var(--text-primary);
-    --kuzhambu-drawer-line: var(--line-subtle);
+    --kuzhambu-drawer-glass-strong: rgba(252, 248, 238, 0.94);
+    --kuzhambu-drawer-head-glow: rgba(156, 114, 66, 0.14);
+    --kuzhambu-drawer-edge-glow: rgba(255, 252, 244, 0.86);
+    --kuzhambu-drawer-ambient: rgba(124, 93, 59, 0.1);
+    --kuzhambu-drawer-ink: #2f2418;
+    --kuzhambu-drawer-line: rgba(124, 93, 59, 0.26);
+    --kuzhambu-drawer-action: #7c5d3b;
     --kuzhambu-drawer-shadow: var(--shadow-soft);
 }
 
 html[data-theme="dark"] .kuzhambu-drawer-root {
-    --kuzhambu-drawer-glass-strong: rgba(12, 22, 38, 0.62);
-    --kuzhambu-drawer-head-glow: rgba(48, 72, 110, 0.34);
-    --kuzhambu-drawer-edge-glow: rgba(185, 207, 238, 0.18);
-    --kuzhambu-drawer-ambient: rgba(59, 130, 246, 0.14);
-    --kuzhambu-drawer-line: rgba(171, 191, 222, 0.18);
+    --kuzhambu-drawer-glass-strong: rgba(42, 31, 22, 0.88);
+    --kuzhambu-drawer-head-glow: rgba(205, 167, 112, 0.16);
+    --kuzhambu-drawer-edge-glow: rgba(246, 209, 151, 0.18);
+    --kuzhambu-drawer-ambient: rgba(205, 167, 112, 0.12);
+    --kuzhambu-drawer-ink: #f4dfbd;
+    --kuzhambu-drawer-line: rgba(205, 167, 112, 0.28);
+    --kuzhambu-drawer-action: #cda770;
     --kuzhambu-drawer-shadow:
         0 28px 76px rgba(0, 0, 0, 0.52), inset 1px 0 0 var(--kuzhambu-drawer-edge-glow);
 }
@@ -29,16 +32,16 @@ body:has(.admin-main[data-sidebar-state="collapsed"]) .kuzhambu-drawer-root {
 
 .kuzhambu-drawer-root .ant-drawer-mask {
     background:
-        radial-gradient(circle at 72% 18%, rgba(80, 126, 201, 0.14), transparent 30%),
-        rgba(15, 23, 42, 0.1);
+        radial-gradient(circle at 72% 18%, rgba(124, 93, 59, 0.12), transparent 30%),
+        rgba(49, 35, 22, 0.12);
     backdrop-filter: blur(2px);
     -webkit-backdrop-filter: blur(2px);
 }
 
 html[data-theme="dark"] .kuzhambu-drawer-root .ant-drawer-mask {
     background:
-        radial-gradient(circle at 72% 18%, rgba(59, 130, 246, 0.16), transparent 30%),
-        rgba(2, 6, 14, 0.22);
+        radial-gradient(circle at 72% 18%, rgba(205, 167, 112, 0.16), transparent 30%),
+        rgba(12, 8, 5, 0.32);
 }
 
 .kuzhambu-drawer-root .kuzhambu-drawer,
@@ -47,10 +50,19 @@ html[data-theme="dark"] .kuzhambu-drawer-root .ant-drawer-mask {
     overflow: hidden;
     color: var(--kuzhambu-drawer-ink);
     background:
+        linear-gradient(90deg, rgba(124, 93, 59, 0.07) 0 1px, transparent 1px 100%),
+        linear-gradient(180deg, rgba(124, 93, 59, 0.04) 0 1px, transparent 1px 100%),
         radial-gradient(circle at 16% 0%, var(--kuzhambu-drawer-edge-glow), transparent 34%),
         radial-gradient(circle at 88% 12%, var(--kuzhambu-drawer-ambient), transparent 32%),
         linear-gradient(180deg, var(--kuzhambu-drawer-head-glow), transparent),
         var(--kuzhambu-drawer-glass-strong);
+    background-size:
+        22px 100%,
+        100% 28px,
+        auto,
+        auto,
+        auto,
+        auto;
     border: 1px solid var(--kuzhambu-drawer-line);
     box-shadow: var(--kuzhambu-drawer-shadow);
     backdrop-filter: blur(30px) saturate(1.34);
@@ -86,14 +98,14 @@ html[data-theme="dark"] .kuzhambu-drawer-root .ant-drawer-mask {
 
 .kuzhambu-drawer-root .ant-drawer-header,
 .kuzhambu-drawer-root .ant-drawer-footer {
-    background: transparent;
+    background: rgba(246, 237, 220, 0.72);
     border-color: var(--kuzhambu-drawer-line);
 }
 
 .kuzhambu-drawer-root .ant-drawer-title {
-    color: var(--kuzhambu-drawer-ink);
+    color: var(--kuzhambu-drawer-action);
     font-size: 17px;
-    font-weight: 650;
+    font-weight: 800;
 }
 
 .kuzhambu-drawer-root .ant-drawer-body {
@@ -113,6 +125,18 @@ html[data-theme="dark"] .kuzhambu-drawer-root .ant-drawer-mask {
 .kuzhambu-drawer-root .ant-drawer-footer .ant-btn {
     width: 100%;
     min-height: 40px;
+}
+
+.kuzhambu-drawer-root .ant-drawer-footer .ant-btn-primary {
+    background: var(--kuzhambu-drawer-action);
+    border-color: var(--kuzhambu-drawer-action);
+    box-shadow: none;
+}
+
+html[data-theme="dark"] .kuzhambu-drawer-root .ant-drawer-header,
+html[data-theme="dark"] .kuzhambu-drawer-root .ant-drawer-footer {
+    background: rgba(58, 41, 28, 0.78);
+    border-color: var(--kuzhambu-drawer-line);
 }
 
 @media (max-width: 760px) {

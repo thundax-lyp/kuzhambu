@@ -53,10 +53,9 @@ export const MingCustomsModel = ({
 
     return (
         <KuzhambuDrawer
-            className="ming-customs-model"
             title={mode === "create" ? "新增明代习俗" : "编辑明代习俗"}
             open={open}
-            size="large"
+            size="middle"
             loading={loading}
             destroyOnHidden
             onClose={onClose}

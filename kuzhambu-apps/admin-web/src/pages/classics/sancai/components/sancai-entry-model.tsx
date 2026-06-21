@@ -1,6 +1,7 @@
-import { Button, Drawer, Input, Switch, Typography } from "antd";
+import { Button, Input, Switch, Typography } from "antd";
 import { useState } from "react";
 import type { ReactNode } from "react";
+import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import { toEntryFormValues, type SancaiEntryFormValues } from "./sancai-form-values";
 import type { SancaiEntryRecord } from "../sancai-types";
 
@@ -32,10 +33,10 @@ export const SancaiEntryModel = ({
     }
 
     return (
-        <Drawer
+        <KuzhambuDrawer
             title={mode === "create" ? "新增条目" : "编辑条目"}
             open={open}
-            width={720}
+            size="middle"
             destroyOnHidden
             footer={
                 <div className="sancai-drawer-footer">
@@ -125,6 +126,6 @@ export const SancaiEntryModel = ({
                 </div>
             </div>
             {afterForm}
-        </Drawer>
+        </KuzhambuDrawer>
     );
 };

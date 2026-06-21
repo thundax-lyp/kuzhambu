@@ -86,32 +86,7 @@
     background: rgba(186, 126, 49, 0.08);
 }
 
-.wangqi-timeline-panel {
-    width: 280px;
-    padding: 14px;
-    background: rgba(255, 255, 255, 0.74);
-    border: 1px solid var(--wangqi-panel-border);
-    border-radius: 8px;
-}
-
-.wangqi-timeline-panel-controls {
-    width: 100%;
-    margin-bottom: 12px;
-}
-
-.wangqi-timeline-panel-filter-row {
-    display: grid;
-    grid-template-columns: 96px minmax(0, 1fr);
-    gap: 8px;
-}
-
-.wangqi-timeline-panel-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.wangqi-timeline-panel-item {
+.wangqi-timeline-item {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     justify-items: start;
@@ -124,17 +99,12 @@
     border-radius: 8px;
 }
 
-.wangqi-timeline-panel-item-time {
-    color: #758195;
-    font-size: 12px;
-}
-
-.wangqi-timeline-panel-item-title {
+.wangqi-timeline-item-title {
     color: var(--wangqi-accent-color);
     font-weight: 700;
 }
 
-.wangqi-timeline-panel-item-summary {
+.wangqi-timeline-item-summary {
     max-width: 100%;
 }
 
@@ -143,18 +113,10 @@
     .wangqi-version-history-panel-grid {
         grid-template-columns: minmax(0, 1fr);
     }
-
-    .wangqi-timeline-panel {
-        width: 100%;
-    }
 }
 
 html[data-theme="dark"] .wangqi-page {
     --wangqi-accent-color: #f1c27d;
     --wangqi-panel-border: rgba(205, 167, 112, 0.24);
     --wangqi-panel-bg: rgba(205, 167, 112, 0.1);
-}
-
-html[data-theme="dark"] .wangqi-timeline-panel {
-    background: rgba(17, 28, 46, 0.74);
 }

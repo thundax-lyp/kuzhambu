@@ -16,7 +16,7 @@ const fulfillSuccess = async (route: Route, data: unknown) => {
 };
 
 const mockCurrentUserApis = async (page: Page) => {
-    await page.route("**/admin-api/api/sys/current-user/info", async (route) => {
+    await page.route("**/kuzhambu-admin-api/api/sys/current-user/info", async (route) => {
         await fulfillSuccess(route, {
             id: "user-1",
             loginName: "developer",
@@ -26,7 +26,7 @@ const mockCurrentUserApis = async (page: Page) => {
             superAdmin: false
         });
     });
-    await page.route("**/admin-api/api/sys/current-user/menus", async (route) => {
+    await page.route("**/kuzhambu-admin-api/api/sys/current-user/menus", async (route) => {
         await fulfillSuccess(route, [
             {
                 id: "dashboard",
@@ -36,7 +36,7 @@ const mockCurrentUserApis = async (page: Page) => {
             }
         ]);
     });
-    await page.route("**/admin-api/api/sys/current-user/perms", async (route) => {
+    await page.route("**/kuzhambu-admin-api/api/sys/current-user/perms", async (route) => {
         await fulfillSuccess(route, {
             perms: ["user", "sys:user:view"]
         });
@@ -54,15 +54,18 @@ test.describe("login page", () => {
     }) => {
         let loginRequestBody: Record<string, unknown> | undefined;
 
-        await page.route("**/admin-api/api/auth/session/pre-auth-session", async (route) => {
-            await fulfillSuccess(route, {
-                loginToken: "login-form-token",
-                refreshToken: "pre-auth-refresh-token",
-                expiredAt: Date.now() + 5 * 60 * 1000,
-                publicKey: TEST_PUBLIC_KEY
-            });
-        });
-        await page.route("**/admin-api/api/auth/captcha?**", async (route) => {
+        await page.route(
+            "**/kuzhambu-admin-api/api/auth/session/pre-auth-session",
+            async (route) => {
+                await fulfillSuccess(route, {
+                    loginToken: "login-form-token",
+                    refreshToken: "pre-auth-refresh-token",
+                    expiredAt: Date.now() + 5 * 60 * 1000,
+                    publicKey: TEST_PUBLIC_KEY
+                });
+            }
+        );
+        await page.route("**/kuzhambu-admin-api/api/auth/captcha?**", async (route) => {
             await route.fulfill({
                 contentType: "image/png",
                 body: Buffer.from(
@@ -71,7 +74,7 @@ test.describe("login page", () => {
                 )
             });
         });
-        await page.route("**/admin-api/api/auth/session/login", async (route) => {
+        await page.route("**/kuzhambu-admin-api/api/auth/session/login", async (route) => {
             loginRequestBody = route.request().postDataJSON();
             await fulfillSuccess(route, {
                 token: "login-access-token",

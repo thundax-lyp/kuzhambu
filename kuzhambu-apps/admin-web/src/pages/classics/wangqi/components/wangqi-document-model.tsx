@@ -54,10 +54,9 @@ export const WangqiDocumentModel = ({
 
     return (
         <KuzhambuDrawer
-            className="wangqi-document-model"
             title={mode === "create" ? "新增王圻文档" : "编辑王圻文档"}
             open={open}
-            size="large"
+            size="middle"
             loading={loading}
             destroyOnHidden
             onClose={onClose}

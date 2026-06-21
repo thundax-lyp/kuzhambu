@@ -6,7 +6,7 @@ const readRequestBody = (postData: string | null) => {
 
 test.describe("classics sancai page", () => {
     test.beforeEach(async ({ page }) => {
-        await page.route("**/admin-api/api/sys/current-user/info", async (route) => {
+        await page.route("**/kuzhambu-admin-api/api/sys/current-user/info", async (route) => {
             await route.fulfill({
                 contentType: "application/json",
                 body: JSON.stringify({
@@ -20,7 +20,7 @@ test.describe("classics sancai page", () => {
                 })
             });
         });
-        await page.route("**/admin-api/api/sys/current-user/menus", async (route) => {
+        await page.route("**/kuzhambu-admin-api/api/sys/current-user/menus", async (route) => {
             await route.fulfill({
                 contentType: "application/json",
                 body: JSON.stringify({
@@ -43,7 +43,7 @@ test.describe("classics sancai page", () => {
                 })
             });
         });
-        await page.route("**/admin-api/api/sys/current-user/perms", async (route) => {
+        await page.route("**/kuzhambu-admin-api/api/sys/current-user/perms", async (route) => {
             await route.fulfill({
                 contentType: "application/json",
                 body: JSON.stringify({
@@ -78,86 +78,136 @@ test.describe("classics sancai page", () => {
         const updateRequests: Array<Record<string, unknown>> = [];
         let entryRestored = false;
 
-        await page.route("**/admin-api/api/classics/sancai/categories/list", async (route) => {
-            await route.fulfill({
-                contentType: "application/json",
-                body: JSON.stringify({
-                    code: "COMMON-00000",
-                    message: "success",
-                    data: [
-                        {
-                            id: 2,
-                            title: "天文",
-                            categoryType: "FORMAL",
-                            priority: 10
-                        },
-                        {
-                            id: 3,
-                            title: "地理",
-                            categoryType: "FORMAL",
-                            priority: 20
-                        }
-                    ]
-                })
-            });
-        });
-        await page.route("**/admin-api/api/classics/sancai/categories/types", async (route) => {
-            await route.fulfill({
-                contentType: "application/json",
-                body: JSON.stringify({
-                    code: "COMMON-00000",
-                    message: "success",
-                    data: [{ label: "正式门类", type: "SANCAI_CATEGORY_TYPE", value: "FORMAL" }]
-                })
-            });
-        });
-        await page.route("**/admin-api/api/classics/sancai/volumes/types", async (route) => {
-            await route.fulfill({
-                contentType: "application/json",
-                body: JSON.stringify({
-                    code: "COMMON-00000",
-                    message: "success",
-                    data: [{ label: "正式卷目", type: "SANCAI_VOLUME_TYPE", value: "FORMAL" }]
-                })
-            });
-        });
-        await page.route("**/admin-api/api/classics/sancai/volumes/list", async (route) => {
-            const body = readRequestBody(route.request().postData());
-            volumeRequests.push(body);
-            await route.fulfill({
-                contentType: "application/json",
-                body: JSON.stringify({
-                    code: "COMMON-00000",
-                    message: "success",
-                    data: [
-                        {
-                            id: 101,
-                            categoryId: body.categoryId ?? 2,
-                            title: "天文卷一",
-                            volumeType: "FORMAL",
-                            priority: 101
-                        }
-                    ]
-                })
-            });
-        });
-        await page.route("**/admin-api/api/classics/sancai/entries/list", async (route) => {
-            const body = readRequestBody(route.request().postData());
-            entryListRequests.push(body);
-            await route.fulfill({
-                contentType: "application/json",
-                body: JSON.stringify({
-                    code: "COMMON-00000",
-                    message: "success",
-                    data: [
-                        {
+        await page.route(
+            "**/kuzhambu-admin-api/api/classics/sancai/categories/list",
+            async (route) => {
+                await route.fulfill({
+                    contentType: "application/json",
+                    body: JSON.stringify({
+                        code: "COMMON-00000",
+                        message: "success",
+                        data: [
+                            {
+                                id: 2,
+                                title: "天文",
+                                categoryType: "FORMAL",
+                                priority: 10
+                            },
+                            {
+                                id: 3,
+                                title: "地理",
+                                categoryType: "FORMAL",
+                                priority: 20
+                            }
+                        ]
+                    })
+                });
+            }
+        );
+        await page.route(
+            "**/kuzhambu-admin-api/api/classics/sancai/categories/types",
+            async (route) => {
+                await route.fulfill({
+                    contentType: "application/json",
+                    body: JSON.stringify({
+                        code: "COMMON-00000",
+                        message: "success",
+                        data: [{ label: "正式门类", type: "SANCAI_CATEGORY_TYPE", value: "FORMAL" }]
+                    })
+                });
+            }
+        );
+        await page.route(
+            "**/kuzhambu-admin-api/api/classics/sancai/volumes/types",
+            async (route) => {
+                await route.fulfill({
+                    contentType: "application/json",
+                    body: JSON.stringify({
+                        code: "COMMON-00000",
+                        message: "success",
+                        data: [{ label: "正式卷目", type: "SANCAI_VOLUME_TYPE", value: "FORMAL" }]
+                    })
+                });
+            }
+        );
+        await page.route(
+            "**/kuzhambu-admin-api/api/classics/sancai/volumes/list",
+            async (route) => {
+                const body = readRequestBody(route.request().postData());
+                volumeRequests.push(body);
+                await route.fulfill({
+                    contentType: "application/json",
+                    body: JSON.stringify({
+                        code: "COMMON-00000",
+                        message: "success",
+                        data: [
+                            {
+                                id: 101,
+                                categoryId: body.categoryId ?? 2,
+                                title: "天文卷一",
+                                volumeType: "FORMAL",
+                                priority: 101
+                            }
+                        ]
+                    })
+                });
+            }
+        );
+        await page.route(
+            "**/kuzhambu-admin-api/api/classics/sancai/entries/list",
+            async (route) => {
+                const body = readRequestBody(route.request().postData());
+                entryListRequests.push(body);
+                await route.fulfill({
+                    contentType: "application/json",
+                    body: JSON.stringify({
+                        code: "COMMON-00000",
+                        message: "success",
+                        data: [
+                            {
+                                id: 3001,
+                                volumeId: 101,
+                                title: "天地",
+                                originalText: entryRestored ? "历史原文" : "原文",
+                                translationText: entryRestored ? "历史译文" : "译文",
+                                summary: entryRestored ? "历史摘要" : "天地初分，清浊定位。",
+                                lifecycleStatus: body.lifecycleStatus ?? "PUBLISHED",
+                                visibility: "PUBLIC",
+                                translationStatus: "TRANSLATED",
+                                imageStatus: "HAS_IMAGE",
+                                visualAssetStatus: "READY",
+                                refinementStatus: "COMPLETE",
+                                currentVersionId: entryRestored ? 9002 : 9001,
+                                currentVersionNo: entryRestored ? 2 : 1,
+                                currentVersionedAt: entryRestored
+                                    ? "2026-06-21T01:00:00.000+08:00"
+                                    : "2026-06-20T01:00:00.000+08:00",
+                                contentUpdatedAt: entryRestored
+                                    ? "2026-06-21T01:00:00.000+08:00"
+                                    : "2026-06-20T01:00:00.000+08:00",
+                                versionDirty: false
+                            }
+                        ]
+                    })
+                });
+            }
+        );
+        await page.route(
+            "**/kuzhambu-admin-api/api/classics/sancai/entries/3001",
+            async (route) => {
+                await route.fulfill({
+                    contentType: "application/json",
+                    body: JSON.stringify({
+                        code: "COMMON-00000",
+                        message: "success",
+                        data: {
                             id: 3001,
                             volumeId: 101,
-                            title: "天地",
+                            title: entryRestored ? "历史天地" : "天地",
                             originalText: entryRestored ? "历史原文" : "原文",
                             translationText: entryRestored ? "历史译文" : "译文",
                             summary: entryRestored ? "历史摘要" : "天地初分，清浊定位。",
-                            lifecycleStatus: body.lifecycleStatus ?? "PUBLISHED",
+                            lifecycleStatus: "PUBLISHED",
                             visibility: "PUBLIC",
                             translationStatus: "TRANSLATED",
                             imageStatus: "HAS_IMAGE",
@@ -173,44 +223,12 @@ test.describe("classics sancai page", () => {
                                 : "2026-06-20T01:00:00.000+08:00",
                             versionDirty: false
                         }
-                    ]
-                })
-            });
-        });
-        await page.route("**/admin-api/api/classics/sancai/entries/3001", async (route) => {
-            await route.fulfill({
-                contentType: "application/json",
-                body: JSON.stringify({
-                    code: "COMMON-00000",
-                    message: "success",
-                    data: {
-                        id: 3001,
-                        volumeId: 101,
-                        title: entryRestored ? "历史天地" : "天地",
-                        originalText: entryRestored ? "历史原文" : "原文",
-                        translationText: entryRestored ? "历史译文" : "译文",
-                        summary: entryRestored ? "历史摘要" : "天地初分，清浊定位。",
-                        lifecycleStatus: "PUBLISHED",
-                        visibility: "PUBLIC",
-                        translationStatus: "TRANSLATED",
-                        imageStatus: "HAS_IMAGE",
-                        visualAssetStatus: "READY",
-                        refinementStatus: "COMPLETE",
-                        currentVersionId: entryRestored ? 9002 : 9001,
-                        currentVersionNo: entryRestored ? 2 : 1,
-                        currentVersionedAt: entryRestored
-                            ? "2026-06-21T01:00:00.000+08:00"
-                            : "2026-06-20T01:00:00.000+08:00",
-                        contentUpdatedAt: entryRestored
-                            ? "2026-06-21T01:00:00.000+08:00"
-                            : "2026-06-20T01:00:00.000+08:00",
-                        versionDirty: false
-                    }
-                })
-            });
-        });
+                    })
+                });
+            }
+        );
         await page.route(
-            "**/admin-api/api/classics/sancai/entries/versions/list",
+            "**/kuzhambu-admin-api/api/classics/sancai/entries/versions/list",
             async (route) => {
                 await route.fulfill({
                     contentType: "application/json",
@@ -248,31 +266,34 @@ test.describe("classics sancai page", () => {
                 });
             }
         );
-        await page.route("**/admin-api/api/classics/sancai/entries/versions/get", async (route) => {
-            await route.fulfill({
-                contentType: "application/json",
-                body: JSON.stringify({
-                    code: "COMMON-00000",
-                    message: "success",
-                    data: {
-                        id: 9001,
-                        contentType: "SANCAI_ENTRY",
-                        contentId: 3001,
-                        versionNo: 1,
-                        versionedAt: "2026-06-20T01:00:00.000+08:00",
-                        snapshotJson: JSON.stringify({
-                            title: "历史天地",
-                            originalText: "历史原文",
-                            summary: "历史摘要"
-                        }),
-                        changeType: "MANUAL_SAVE",
-                        changeSummary: "手动保存"
-                    }
-                })
-            });
-        });
         await page.route(
-            "**/admin-api/api/classics/sancai/entries/versions/reset",
+            "**/kuzhambu-admin-api/api/classics/sancai/entries/versions/get",
+            async (route) => {
+                await route.fulfill({
+                    contentType: "application/json",
+                    body: JSON.stringify({
+                        code: "COMMON-00000",
+                        message: "success",
+                        data: {
+                            id: 9001,
+                            contentType: "SANCAI_ENTRY",
+                            contentId: 3001,
+                            versionNo: 1,
+                            versionedAt: "2026-06-20T01:00:00.000+08:00",
+                            snapshotJson: JSON.stringify({
+                                title: "历史天地",
+                                originalText: "历史原文",
+                                summary: "历史摘要"
+                            }),
+                            changeType: "MANUAL_SAVE",
+                            changeSummary: "手动保存"
+                        }
+                    })
+                });
+            }
+        );
+        await page.route(
+            "**/kuzhambu-admin-api/api/classics/sancai/entries/versions/reset",
             async (route) => {
                 resetRequests.push(readRequestBody(route.request().postData()));
                 entryRestored = true;
@@ -293,19 +314,22 @@ test.describe("classics sancai page", () => {
                 });
             }
         );
-        await page.route("**/admin-api/api/classics/sancai/entries/update", async (route) => {
-            updateRequests.push(readRequestBody(route.request().postData()));
-            await route.fulfill({
-                contentType: "application/json",
-                body: JSON.stringify({
-                    code: "COMMON-00000",
-                    message: "success",
-                    data: {
-                        id: 3001
-                    }
-                })
-            });
-        });
+        await page.route(
+            "**/kuzhambu-admin-api/api/classics/sancai/entries/update",
+            async (route) => {
+                updateRequests.push(readRequestBody(route.request().postData()));
+                await route.fulfill({
+                    contentType: "application/json",
+                    body: JSON.stringify({
+                        code: "COMMON-00000",
+                        message: "success",
+                        data: {
+                            id: 3001
+                        }
+                    })
+                });
+            }
+        );
 
         await page.setViewportSize({ width: 1280, height: 800 });
         await page.goto("/classics/sancai");

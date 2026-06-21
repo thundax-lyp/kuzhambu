@@ -12,7 +12,7 @@ const apiResponse = (data: unknown) => ({
 
 test.describe("classics wangqi page", () => {
     test.beforeEach(async ({ page }) => {
-        await page.route("**/admin-api/api/sys/current-user/info", async (route) => {
+        await page.route("**/kuzhambu-admin-api/api/sys/current-user/info", async (route) => {
             await route.fulfill({
                 contentType: "application/json",
                 body: JSON.stringify(
@@ -20,7 +20,7 @@ test.describe("classics wangqi page", () => {
                 )
             });
         });
-        await page.route("**/admin-api/api/sys/current-user/menus", async (route) => {
+        await page.route("**/kuzhambu-admin-api/api/sys/current-user/menus", async (route) => {
             await route.fulfill({
                 contentType: "application/json",
                 body: JSON.stringify(
@@ -37,7 +37,7 @@ test.describe("classics wangqi page", () => {
                 )
             });
         });
-        await page.route("**/admin-api/api/sys/current-user/perms", async (route) => {
+        await page.route("**/kuzhambu-admin-api/api/sys/current-user/perms", async (route) => {
             await route.fulfill({
                 contentType: "application/json",
                 body: JSON.stringify(
@@ -87,25 +87,28 @@ test.describe("classics wangqi page", () => {
             visibility: "PUBLIC"
         };
 
-        await page.route("**/admin-api/api/classics/wangqi/documents/page", async (route) => {
-            const body = readRequestBody(route.request().postData());
-            pageRequests.push(body);
-            await route.fulfill({
-                contentType: "application/json",
-                body: JSON.stringify(
-                    apiResponse({
-                        pageNo: 1,
-                        pageSize: 20,
-                        totalCount: 1,
-                        count: 1,
-                        totalPage: 1,
-                        records: [{ ...record, visibility: body.visibility ?? "PUBLIC" }]
-                    })
-                )
-            });
-        });
         await page.route(
-            "**/admin-api/api/classics/wangqi/documents/timeline/list",
+            "**/kuzhambu-admin-api/api/classics/wangqi/documents/page",
+            async (route) => {
+                const body = readRequestBody(route.request().postData());
+                pageRequests.push(body);
+                await route.fulfill({
+                    contentType: "application/json",
+                    body: JSON.stringify(
+                        apiResponse({
+                            pageNo: 1,
+                            pageSize: 20,
+                            totalCount: 1,
+                            count: 1,
+                            totalPage: 1,
+                            records: [{ ...record, visibility: body.visibility ?? "PUBLIC" }]
+                        })
+                    )
+                });
+            }
+        );
+        await page.route(
+            "**/kuzhambu-admin-api/api/classics/wangqi/documents/timeline/list",
             async (route) => {
                 await route.fulfill({
                     contentType: "application/json",
@@ -114,7 +117,7 @@ test.describe("classics wangqi page", () => {
             }
         );
         await page.route(
-            "**/admin-api/api/classics/wangqi/documents/400000000001/get",
+            "**/kuzhambu-admin-api/api/classics/wangqi/documents/400000000001/get",
             async (route) => {
                 await route.fulfill({
                     contentType: "application/json",
@@ -129,7 +132,7 @@ test.describe("classics wangqi page", () => {
             }
         );
         await page.route(
-            "**/admin-api/api/classics/wangqi/documents/400000000001/source-file/get",
+            "**/kuzhambu-admin-api/api/classics/wangqi/documents/400000000001/source-file/get",
             async (route) => {
                 await route.fulfill({
                     contentType: "application/json",
@@ -148,7 +151,7 @@ test.describe("classics wangqi page", () => {
             }
         );
         await page.route(
-            "**/admin-api/api/classics/wangqi/documents/400000000001/source-file/upload",
+            "**/kuzhambu-admin-api/api/classics/wangqi/documents/400000000001/source-file/upload",
             async (route) => {
                 uploadRequests.push(route.request().method());
                 await route.fulfill({
@@ -160,7 +163,7 @@ test.describe("classics wangqi page", () => {
             }
         );
         await page.route(
-            "**/admin-api/api/classics/wangqi/documents/versions/list",
+            "**/kuzhambu-admin-api/api/classics/wangqi/documents/versions/list",
             async (route) => {
                 await route.fulfill({
                     contentType: "application/json",
@@ -183,7 +186,7 @@ test.describe("classics wangqi page", () => {
             }
         );
         await page.route(
-            "**/admin-api/api/classics/wangqi/documents/versions/get",
+            "**/kuzhambu-admin-api/api/classics/wangqi/documents/versions/get",
             async (route) => {
                 await route.fulfill({
                     contentType: "application/json",
@@ -202,7 +205,7 @@ test.describe("classics wangqi page", () => {
             }
         );
         await page.route(
-            "**/admin-api/api/classics/wangqi/documents/versions/reset",
+            "**/kuzhambu-admin-api/api/classics/wangqi/documents/versions/reset",
             async (route) => {
                 resetRequests.push(readRequestBody(route.request().postData()));
                 await route.fulfill({
@@ -211,20 +214,26 @@ test.describe("classics wangqi page", () => {
                 });
             }
         );
-        await page.route("**/admin-api/api/classics/wangqi/documents/update", async (route) => {
-            updateRequests.push(readRequestBody(route.request().postData()));
-            await route.fulfill({
-                contentType: "application/json",
-                body: JSON.stringify(apiResponse({ id: 400000000001 }))
-            });
-        });
-        await page.route("**/admin-api/api/classics/wangqi/documents/delete", async (route) => {
-            deleteRequests.push(readRequestBody(route.request().postData()));
-            await route.fulfill({
-                contentType: "application/json",
-                body: JSON.stringify(apiResponse(true))
-            });
-        });
+        await page.route(
+            "**/kuzhambu-admin-api/api/classics/wangqi/documents/update",
+            async (route) => {
+                updateRequests.push(readRequestBody(route.request().postData()));
+                await route.fulfill({
+                    contentType: "application/json",
+                    body: JSON.stringify(apiResponse({ id: 400000000001 }))
+                });
+            }
+        );
+        await page.route(
+            "**/kuzhambu-admin-api/api/classics/wangqi/documents/delete",
+            async (route) => {
+                deleteRequests.push(readRequestBody(route.request().postData()));
+                await route.fulfill({
+                    contentType: "application/json",
+                    body: JSON.stringify(apiResponse(true))
+                });
+            }
+        );
 
         await page.setViewportSize({ width: 1280, height: 800 });
         await page.goto("/classics/wangqi");

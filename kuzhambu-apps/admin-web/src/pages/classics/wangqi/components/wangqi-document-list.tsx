@@ -28,7 +28,14 @@ const formatDateTime = (value?: string | null) => {
         return "未填写";
     }
     const date = new Date(value);
-    return Number.isNaN(date.getTime()) ? value : date.toLocaleString();
+    if (Number.isNaN(date.getTime())) {
+        return value;
+    }
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}/${month}/${day}`;
 };
 
 export interface WangqiDocumentListProps {
@@ -36,7 +43,9 @@ export interface WangqiDocumentListProps {
     loading?: boolean;
     onDelete: (record: WangqiDocumentRecord) => void;
     onOpenEdit: (record: WangqiDocumentRecord) => void;
+    onSortDirectionChange: (sortDirection: "ASC" | "DESC") => void;
     pagination: KuzhambuTableProps<WangqiDocumentRecord>["pagination"];
+    sortDirection: "ASC" | "DESC";
 }
 
 export const WangqiDocumentList = ({
@@ -44,7 +53,9 @@ export const WangqiDocumentList = ({
     loading = false,
     onDelete,
     onOpenEdit,
-    pagination
+    onSortDirectionChange,
+    pagination,
+    sortDirection
 }: WangqiDocumentListProps) => {
     const columns: KuzhambuTableProps<WangqiDocumentRecord>["columns"] = [
         {
@@ -75,6 +86,9 @@ export const WangqiDocumentList = ({
             title: "文档时间",
             dataIndex: "documentTime",
             key: "documentTime",
+            sorter: true,
+            sortDirections: ["descend", "ascend"],
+            sortOrder: sortDirection === "ASC" ? "ascend" : "descend",
             width: DEFAULT_COLUMN_WIDTHS.documentTime,
             render: formatDateTime
         },
@@ -102,8 +116,8 @@ export const WangqiDocumentList = ({
             options: (record) => [
                 {
                     key: "edit",
-                    text: "查看/编辑",
-                    ariaLabel: `查看或编辑 ${record.title || "未命名文档"}`,
+                    text: "编辑",
+                    ariaLabel: `编辑 ${record.title || "未命名文档"}`,
                     onClick: () => onOpenEdit(record)
                 },
                 { type: "divider" },
@@ -125,6 +139,13 @@ export const WangqiDocumentList = ({
             loading={loading}
             dataSource={dataSource}
             columns={columns}
+            onChange={(_pagination, _filters, sorter) => {
+                const activeSorter = Array.isArray(sorter) ? sorter[0] : sorter;
+                if (activeSorter?.columnKey !== "documentTime" || !activeSorter.order) {
+                    return;
+                }
+                onSortDirectionChange(activeSorter.order === "ascend" ? "ASC" : "DESC");
+            }}
             pagination={pagination}
         />
     );

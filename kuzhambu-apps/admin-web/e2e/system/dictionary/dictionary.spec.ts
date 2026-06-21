@@ -13,14 +13,14 @@ const fulfillSuccess = async (route: Route, data: unknown) => {
 };
 
 const mockShellApis = async (page: Page) => {
-    await page.route("**/admin-api/api/sys/current-user/info", async (route) => {
+    await page.route("**/kuzhambu-admin-api/api/sys/current-user/info", async (route) => {
         await fulfillSuccess(route, {
             id: "1",
             loginName: "developer",
             name: "Developer"
         });
     });
-    await page.route("**/admin-api/api/sys/current-user/menus", async (route) => {
+    await page.route("**/kuzhambu-admin-api/api/sys/current-user/menus", async (route) => {
         await fulfillSuccess(route, [
             {
                 id: "1",
@@ -42,12 +42,12 @@ const mockShellApis = async (page: Page) => {
             }
         ]);
     });
-    await page.route("**/admin-api/api/sys/current-user/perms", async (route) => {
+    await page.route("**/kuzhambu-admin-api/api/sys/current-user/perms", async (route) => {
         await fulfillSuccess(route, {
             perms: ["sys:dict:view", "sys:dict:edit"]
         });
     });
-    await page.route("**/admin-api/api/auth/session/token/refresh", async (route) => {
+    await page.route("**/kuzhambu-admin-api/api/auth/session/token/refresh", async (route) => {
         await fulfillSuccess(route, {
             token: "test-token",
             refreshToken: "refresh-token",
@@ -77,7 +77,7 @@ test.describe("dictionary page", () => {
         await page.setViewportSize({ width: 1280, height: 800 });
         let created = false;
         let createRequestBody: unknown;
-        await page.route("**/admin-api/api/sys/dict/page", async (route) => {
+        await page.route("**/kuzhambu-admin-api/api/sys/dict/page", async (route) => {
             await fulfillSuccess(route, {
                 pageNo: 1,
                 pageSize: 20,
@@ -95,7 +95,7 @@ test.describe("dictionary page", () => {
                     : []
             });
         });
-        await page.route("**/admin-api/api/sys/dict/create", async (route) => {
+        await page.route("**/kuzhambu-admin-api/api/sys/dict/create", async (route) => {
             createRequestBody = route.request().postDataJSON();
             created = true;
             await fulfillSuccess(route, {

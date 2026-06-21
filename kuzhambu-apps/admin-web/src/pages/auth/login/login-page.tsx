@@ -106,7 +106,7 @@ export const LoginPage = () => {
                                 type="error"
                                 showIcon
                                 message="登录表单初始化失败"
-                                description="请确认后台接口服务已启动，并检查 /admin-api 代理配置。"
+                                description="请确认后台接口服务已启动，并检查 /kuzhambu-admin-api 代理配置。"
                                 action={
                                     <Button size="small" onClick={() => loginFormQuery.refetch()}>
                                         重试

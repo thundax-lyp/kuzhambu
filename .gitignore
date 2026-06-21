@@ -45,3 +45,4 @@ deploy/.env
 /temp/
 /logs/
 /kuzhambu-servers/starter/kuzhambu-admin-starter/logs/
+/kuzhambu-servers/starter/kuzhambu-portal-starter/logs/

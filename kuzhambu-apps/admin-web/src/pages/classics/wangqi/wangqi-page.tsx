@@ -7,7 +7,7 @@ import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { WangqiDocumentList } from "./components/wangqi-document-list";
 import { WangqiDocumentModel } from "./components/wangqi-document-model";
 import { WangqiStorageFilePanel } from "./components/wangqi-storage-file-panel";
-import { WangqiTimelinePanel } from "./components/wangqi-timeline-panel";
+import { WangqiTimeline } from "./components/wangqi-timeline";
 import { WangqiVersionHistoryPanel } from "./components/wangqi-version-history-panel";
 import * as wangqiService from "./wangqi-service";
 import type { WangqiDocumentCommand, WangqiDocumentQuery } from "./wangqi-service";
@@ -62,16 +62,6 @@ export const WangqiPage = () => {
         queryFn: () => wangqiService.page(query),
         retry: false
     });
-    const timelineQuery = useQuery({
-        queryKey: ["wangqi", "timeline", query.keyword, query.visibility, query.sortDirection],
-        queryFn: () =>
-            wangqiService.listTimeline({
-                keyword: query.keyword,
-                visibility: query.visibility,
-                sortDirection: query.sortDirection
-            }),
-        retry: false
-    });
     const detailQuery = useQuery({
         queryKey: ["wangqi", "detail", editingDocument?.id],
         queryFn: () => wangqiService.get(editingDocument?.id ?? 0),
@@ -100,7 +90,6 @@ export const WangqiPage = () => {
 
     const pageResult = pageQuery.data;
     const records = useMemo(() => pageResult?.records || [], [pageResult?.records]);
-    const timelineRecords = useMemo(() => timelineQuery.data || [], [timelineQuery.data]);
     const versions = useMemo(() => versionsQuery.data || [], [versionsQuery.data]);
     const totalCount = pageResult?.count ?? pageResult?.totalCount ?? 0;
     const currentPageNo = pageResult?.pageNo || query.pageNo || DEFAULT_PAGE_NO;
@@ -113,7 +102,6 @@ export const WangqiPage = () => {
     const invalidateWangqi = async () => {
         await Promise.all([
             queryClient.invalidateQueries({ queryKey: ["wangqi", "page"] }),
-            queryClient.invalidateQueries({ queryKey: ["wangqi", "timeline"] }),
             queryClient.invalidateQueries({ queryKey: ["wangqi", "detail"] }),
             queryClient.invalidateQueries({ queryKey: ["wangqi", "source-file"] }),
             queryClient.invalidateQueries({ queryKey: ["wangqi", "versions"] }),
@@ -190,25 +178,19 @@ export const WangqiPage = () => {
         });
     };
 
+    const sortWangqiDocuments = (sortDirection: WangqiSortDirectionFilter) => {
+        setFilters((currentFilters) => ({
+            ...currentFilters,
+            sortDirection
+        }));
+        updateQuery({ sortDirection });
+    };
+
     const resetFilters = () => {
         setFilters(DEFAULT_WANGQI_FILTERS);
         updateQuery({
             visibility: undefined,
             sortDirection: DEFAULT_WANGQI_FILTERS.sortDirection
-        });
-    };
-
-    const syncTimelineQuery = (nextQuery: WangqiDocumentQuery) => {
-        setSearchText(nextQuery.keyword || "");
-        setFilters({
-            visibility: (nextQuery.visibility as WangqiVisibilityFilter | undefined) || "ALL",
-            sortDirection:
-                (nextQuery.sortDirection as WangqiSortDirectionFilter | undefined) || "DESC"
-        });
-        updateQuery({
-            keyword: normalizeSearch(nextQuery.keyword),
-            visibility: nextQuery.visibility,
-            sortDirection: nextQuery.sortDirection
         });
     };
 
@@ -329,6 +311,13 @@ export const WangqiPage = () => {
                 onFilterApply={applyFilters}
                 onFilterReset={resetFilters}
                 onAdd={openCreateEditor}
+                pageActions={
+                    <WangqiTimeline
+                        loading={pageQuery.isLoading}
+                        dataSource={records}
+                        onOpenDocument={openEditEditor}
+                    />
+                }
                 searchPlaceholder="搜索王圻文档标题、摘要或正文"
                 searchValue={searchText}
                 onSearchChange={searchWangqi}
@@ -338,24 +327,16 @@ export const WangqiPage = () => {
                         dataSource={records}
                         onDelete={deleteDocument}
                         onOpenEdit={openEditEditor}
+                        onSortDirectionChange={sortWangqiDocuments}
                         pagination={{
                             current: currentPageNo,
                             pageSize: currentPageSize,
                             total: totalCount,
                             onChange: (pageNo, pageSize) => updateQuery({ pageNo, pageSize })
                         }}
+                        sortDirection={query.sortDirection || DEFAULT_WANGQI_FILTERS.sortDirection}
                     />
                 }
-                tableAside={
-                    <WangqiTimelinePanel
-                        loading={timelineQuery.isLoading}
-                        dataSource={timelineRecords}
-                        query={query}
-                        onOpenDocument={openEditEditor}
-                        onQueryChange={syncTimelineQuery}
-                    />
-                }
-                tableAsidePlacement="right"
             />
             <WangqiDocumentModel
                 document={activeDocument}

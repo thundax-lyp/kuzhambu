@@ -2,7 +2,7 @@ name: kuzhambu
 
 services:
   nginx:
-    image: nginx:1.27-alpine
+    image: "${KUZHAMBU_NGINX_IMAGE:-kuzhambu/nginx:1.27-alpine}"
     depends_on:
       - admin-web
       - portal-web
@@ -15,24 +15,27 @@ services:
       - ./nginx/kuzhambu.conf:/etc/nginx/conf.d/default.conf:ro
 
   admin-web:
+    image: "${KUZHAMBU_ADMIN_WEB_IMAGE:-kuzhambu/admin-web:dev}"
     build:
       context: ..
       dockerfile: kuzhambu-apps/Dockerfile
       args:
         APP_NAME: admin-web
-        VITE_ADMIN_WEB_BASE: /kuzhambu-admin/
-        VITE_ADMIN_API_BASE_URL: /kuzhambu-admin/api
+        VITE_ADMIN_WEB_BASE: ${ADMIN_WEB_BASE:-/kuzhambu-admin/}
+        VITE_ADMIN_API_BASE_URL: ${ADMIN_API_BASE_URL:-/kuzhambu-admin-api/api}
 
   portal-web:
+    image: "${KUZHAMBU_PORTAL_WEB_IMAGE:-kuzhambu/portal-web:dev}"
     build:
       context: ..
       dockerfile: kuzhambu-apps/Dockerfile
       args:
         APP_NAME: portal-web
-        VITE_PORTAL_WEB_BASE: /kuzhambu/
-        VITE_PORTAL_API_BASE_URL: /kuzhambu/api
+        VITE_PORTAL_WEB_BASE: ${PORTAL_WEB_BASE:-/kuzhambu/}
+        VITE_PORTAL_API_BASE_URL: ${PORTAL_API_BASE_URL:-/kuzhambu-api/api}
 
   admin-starter:
+    image: "${KUZHAMBU_ADMIN_STARTER_IMAGE:-kuzhambu/admin-starter:dev}"
     build:
       context: ..
       dockerfile: kuzhambu-servers/Dockerfile
@@ -47,7 +50,7 @@ services:
     environment:
       JAVA_OPTS: ${JAVA_OPTS:-"-Xms512m -Xmx512m"}
       SERVER_PORT: 20010
-      SERVER_SERVLET_CONTEXT_PATH: /admin-api
+      SERVER_SERVLET_CONTEXT_PATH: ${ADMIN_CONTEXT_PATH:-/kuzhambu-admin-api}
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-local}
       KUZHAMBU_DB_DRIVER: com.mysql.cj.jdbc.Driver
       KUZHAMBU_DB_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-kuzhambu}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
@@ -72,7 +75,7 @@ services:
       KUZHAMBU_OSS_TYPE: ${KUZHAMBU_OSS_TYPE:-local}
       KUZHAMBU_OSS_LOCAL_ROOT_PATH: /app/storage/object
       KUZHAMBU_STORAGE_BUCKET_NAME: ${KUZHAMBU_STORAGE_BUCKET_NAME:-local}
-      KUZHAMBU_STORAGE_CONTENT_PATH: /kuzhambu-admin/api/storage/object/
+      KUZHAMBU_STORAGE_CONTENT_PATH: ${ADMIN_STORAGE_CONTENT_PATH:-/kuzhambu-admin-api/api/storage/object/}
       KUZHAMBU_ELASTICSEARCH_URIS: http://elasticsearch:9200
       KUZHAMBU_AI_WORKER_BASE_URL: http://workers:8000
       KUZHAMBU_AI_WORKER_INTERNAL_SECRET: ${KUZHAMBU_INTERNAL_SECRET:-change-me}
@@ -83,6 +86,7 @@ services:
       - admin-logs:/app/logs
 
   portal-starter:
+    image: "${KUZHAMBU_PORTAL_STARTER_IMAGE:-kuzhambu/portal-starter:dev}"
     build:
       context: ..
       dockerfile: kuzhambu-servers/Dockerfile
@@ -97,7 +101,7 @@ services:
     environment:
       JAVA_OPTS: ${JAVA_OPTS:-"-Xms512m -Xmx512m"}
       SERVER_PORT: 20011
-      SERVER_SERVLET_CONTEXT_PATH: /portal-api
+      SERVER_SERVLET_CONTEXT_PATH: ${PORTAL_CONTEXT_PATH:-/kuzhambu-api}
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-local}
       KUZHAMBU_DB_DRIVER: com.mysql.cj.jdbc.Driver
       KUZHAMBU_DB_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-kuzhambu}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
@@ -120,13 +124,14 @@ services:
       KUZHAMBU_OSS_TYPE: ${KUZHAMBU_OSS_TYPE:-local}
       KUZHAMBU_OSS_LOCAL_ROOT_PATH: /app/storage/object
       KUZHAMBU_STORAGE_BUCKET_NAME: ${KUZHAMBU_STORAGE_BUCKET_NAME:-local}
-      KUZHAMBU_STORAGE_CONTENT_PATH: /kuzhambu/api/storage/object/
+      KUZHAMBU_STORAGE_CONTENT_PATH: ${PORTAL_STORAGE_CONTENT_PATH:-/kuzhambu-api/api/storage/object/}
       KUZHAMBU_ELASTICSEARCH_URIS: http://elasticsearch:9200
     volumes:
       - portal-storage:/app/storage
       - portal-logs:/app/logs
 
   workers:
+    image: "${KUZHAMBU_WORKERS_IMAGE:-kuzhambu/workers:dev}"
     build:
       context: ..
       dockerfile: kuzhambu-workers/Dockerfile
@@ -139,7 +144,7 @@ services:
       - workers-temp:/tmp/kuzhambu-workers
 
   mysql:
-    image: mysql:8.4
+    image: "${KUZHAMBU_MYSQL_IMAGE:-kuzhambu/mysql:8.4}"
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-kuzhambu}
       MYSQL_DATABASE: ${MYSQL_DATABASE:-kuzhambu}
@@ -149,7 +154,7 @@ services:
       - mysql-data:/var/lib/mysql
 
   redis:
-    image: redis:7.2
+    image: "${KUZHAMBU_REDIS_IMAGE:-kuzhambu/redis:7.2}"
     command:
       - redis-server
       - --requirepass
@@ -160,7 +165,7 @@ services:
       - "no"
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.3
+    image: "${KUZHAMBU_ELASTICSEARCH_IMAGE:-kuzhambu/elasticsearch:8.15.3}"
     environment:
       discovery.type: single-node
       xpack.security.enabled: "false"
@@ -169,11 +174,11 @@ services:
       - elasticsearch-data:/usr/share/elasticsearch/data
 
   rocketmq-namesrv:
-    image: apache/rocketmq:5.3.0
+    image: "${KUZHAMBU_ROCKETMQ_IMAGE:-kuzhambu/rocketmq:5.3.0}"
     command: sh mqnamesrv
 
   rocketmq-broker:
-    image: apache/rocketmq:5.3.0
+    image: "${KUZHAMBU_ROCKETMQ_IMAGE:-kuzhambu/rocketmq:5.3.0}"
     command: sh mqbroker -n rocketmq-namesrv:9876
     depends_on:
       - rocketmq-namesrv
