@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `storage upload helper`：固定服务端导出产物入库路径
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-RENDER-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/main/java/com/thundax/kuzhambu/storage/application/helper/StorageUploadStreamHelper.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/test/java/com/thundax/kuzhambu/storage/application/service/impl/StorageApplicationServiceImplTest.java`
-    - 处理动作：补齐服务端产物流入 Storage 的可测试入口，供 Classics render 结果直接写入对象存储。
-    - 验收点：给定文件流、文件名和 contentType，helper 能稳定创建 Storage 对象并返回元数据。
-    - 重要度：9/10
-
 - [ ] `classics-content export app`：打通导出任务执行闭环
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-RENDER-CLOSURE.md`
