@@ -65,12 +65,7 @@ export interface SancaiEntryImageContentUrlCommand {
     mode?: SancaiEntryImageContentMode;
 }
 
-export type SancaiShowcaseStatus =
-    | "REQUESTED"
-    | "PROCESSING"
-    | "COMPLETED"
-    | "FAILED"
-    | "EXPIRED";
+export type SancaiShowcaseStatus = "REQUESTED" | "PROCESSING" | "COMPLETED" | "FAILED" | "EXPIRED";
 
 export interface SancaiShowcaseCreateCommand {
     status?: string | null;
