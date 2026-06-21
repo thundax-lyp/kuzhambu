@@ -462,6 +462,34 @@ npm --workspace portal-web test
 - Portal `/share/{shareToken}` 能展示资源预览。
 - Portal 使用同一分享 token 读取不属于该分享快照资源对象的 `storageObjectId` 返回 404。
 
+## Readiness 记录
+
+已执行后端验证：
+
+```sh
+cd kuzhambu-servers
+mvn -pl biz/storage/kuzhambu-storage-interface,biz/classics/kuzhambu-classics-interface -am -Dtest=StorageObjectContentContractTest,WangqiDocumentAdminControllerTest,SancaiAssetAdminControllerTest,ClassicsSharingPortalControllerTest,ClassicsSharingApplicationServiceImplTest,ClassicsContentSnapshotAssemblerTest,ClassicsContentApplicationServiceImplTest,SancaiAssetApplicationServiceImplTest -Dsurefire.failIfNoSpecifiedTests=false test
+```
+
+结果：通过。覆盖 Storage 内容读取响应、Wangqi 原始文件读取、Sancai 图片上传/读取、分享资源读取、分享响应资源装配和快照资源组装。
+
+已执行前端验证：
+
+```sh
+cd kuzhambu-apps
+npm run format:check
+npm run lint
+npm run test
+npm --workspace portal-web run build
+```
+
+结果：通过。`npm run lint` 仅保留 portal-web `src/components/ui/badge.tsx`、`src/components/ui/button.tsx` 的 shadcn/ui fast-refresh warning；无 lint error。`npm run test` 结果为 admin-web 14 个测试文件、49 个用例通过，portal-web 当前无测试文件并按 `--passWithNoTests` 通过。
+
+人工冒烟记录：
+
+- 本轮未执行 Docker image 构建、compose 冒烟和 image files 导出；该闭环已按用户指令排除，后续换环境单独处理。
+- 真实浏览器人工冒烟未在本轮启动完整服务执行；资源归属、下载边界和分享快照访问由后端契约测试覆盖，Admin/Portal 资源 URL 拼接和渲染由前端测试、lint、build 覆盖。
+
 ## 完成标准
 
 - Storage、Classics Admin、Classics Portal、Admin Web、Portal Web 都使用稳定文件对象 ID 串起读取或预览。
