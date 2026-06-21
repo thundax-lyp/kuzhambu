@@ -124,6 +124,16 @@ class ClassicsContentAdminControllerTest {
         assertEquals(HttpServletResponse.SC_NOT_FOUND, notFoundResponse.getStatus());
     }
 
+    @Test
+    void controllerShouldRejectExpiredExportDownload() throws Exception {
+        ClassicsContentAdminController controller = controller();
+        MockHttpServletResponse expiredResponse = new MockHttpServletResponse();
+
+        controller.downloadExportContent(9003L, false, expiredResponse);
+
+        assertEquals(HttpServletResponse.SC_NOT_FOUND, expiredResponse.getStatus());
+    }
+
     private static ClassicsContentAdminController controller() {
         return new ClassicsContentAdminController(contentService(), storageService());
     }
@@ -166,6 +176,12 @@ class ClassicsContentAdminControllerTest {
                         if (jobId.value() == 9002L) {
                             return exportJob(ClassicsContentExportJobId.of(9002L), ClassicsExportStatus.REQUESTED);
                         }
+                        if (jobId.value() == 9003L) {
+                            return exportJob(
+                                    ClassicsContentExportJobId.of(9003L),
+                                    ClassicsExportStatus.COMPLETED,
+                                    new Date(System.currentTimeMillis() - 60_000L));
+                        }
                     }
                     throw new UnsupportedOperationException(method.getName());
                 });
@@ -185,6 +201,14 @@ class ClassicsContentAdminControllerTest {
     }
 
     private static ClassicsContentExportJob exportJob(ClassicsContentExportJobId id, ClassicsExportStatus status) {
+        return exportJob(
+                id,
+                status,
+                status == ClassicsExportStatus.COMPLETED ? new Date(System.currentTimeMillis() + 60_000L) : null);
+    }
+
+    private static ClassicsContentExportJob exportJob(
+            ClassicsContentExportJobId id, ClassicsExportStatus status, Date expiresAt) {
         return new ClassicsContentExportJob(
                 id,
                 ClassicsExportKind.CONTENT_DATASET,
@@ -193,7 +217,7 @@ class ClassicsContentAdminControllerTest {
                 ClassicsExportScopeType.CATEGORY,
                 "all",
                 new Date(),
-                status == ClassicsExportStatus.COMPLETED ? new Date(System.currentTimeMillis() + 60_000L) : null,
+                expiresAt,
                 status,
                 StorageObjectId.of(7001L),
                 1,
