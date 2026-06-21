@@ -8,6 +8,7 @@ import com.thundax.kuzhambu.classics.interfaces.portal.sharing.controller.respon
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.security.annotation.PublicApi;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
+import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,9 +18,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @WrappedApiController
 public class ClassicsSharingPortalController {
     private final ClassicsSharingApplicationService service;
+    private final StorageApplicationService storageApplicationService;
 
     public ClassicsSharingPortalController(ClassicsSharingApplicationService service) {
+        this(service, null);
+    }
+
+    public ClassicsSharingPortalController(
+            ClassicsSharingApplicationService service, StorageApplicationService storageApplicationService) {
         this.service = service;
+        this.storageApplicationService = storageApplicationService;
     }
 
     @GetMapping
@@ -36,6 +44,7 @@ public class ClassicsSharingPortalController {
 
     @GetMapping("{shareToken}")
     public ClassicsSharePortalResponse get(@PathVariable("shareToken") String shareToken) {
-        return ClassicsSharingPortalInterfaceAssembler.toResponse(service.getPortalShare(shareToken));
+        return ClassicsSharingPortalInterfaceAssembler.toResponse(
+                service.getPortalShare(shareToken), shareToken, storageApplicationService);
     }
 }

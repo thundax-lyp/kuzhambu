@@ -9,13 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics/portal/resource-enrichment`：在 Portal 分享详情响应中装配资源对象
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/portal/sharing/controller/ClassicsSharingPortalController.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/portal/sharing/assembler/ClassicsSharingPortalInterfaceAssembler.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/test/java/com/thundax/kuzhambu/classics/interfaces/portal/sharing/ClassicsSharingPortalControllerTest.java`
-    - 处理动作：解析分享快照并在响应层装配 Wangqi `storageObject` 和 Sancai `images[].storageObject`。
-    - 验收点：Portal 分享详情响应不暴露 `shareToken`，资源 URL 指向 Portal 读取接口，缺失资源置空但保留正文。
-    - 重要度：9/10
 - [ ] `classics/portal/resource-read`：接入 Portal 分享资源读取应用能力
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`
