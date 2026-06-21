@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `cleanup/storage-preview-runbook`：清理 Storage 预览闭环现场任务
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`
-    - 范围对象：`TODO.md`、`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`、`docs/40-readiness/PR-WORKFLOW.md`
-    - 处理动作：在功能、验证和文档同步完成后删除临时 RUNBOOK 并清空或收窄已完成 TODO。
-    - 验收点：PR 合并前没有已完成任务残留，临时 RUNBOOK 已删除，工作区只保留交付相关改动。
-    - 重要度：10/10
-
 ## 待审阅任务项
 
 ## 待讨论项
