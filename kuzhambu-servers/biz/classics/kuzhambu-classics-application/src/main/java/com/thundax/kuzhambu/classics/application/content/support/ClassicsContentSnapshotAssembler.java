@@ -20,6 +20,12 @@ public class ClassicsContentSnapshotAssembler {
         return toJson(SancaiEntryVersionSnapshot.from(entry, images).toMap());
     }
 
+    public String toSnapshotJsonWithImageResources(
+            SancaiEntry entry, List<SancaiEntryVersionSnapshot.ImageResource> images) {
+        return toJson(
+                SancaiEntryVersionSnapshot.fromImageResources(entry, images).toMap());
+    }
+
     private Map<String, Object> toSnapshot(Versionable content) {
         if (content.contentType() == ClassicsContentType.SANCAI_ENTRY) {
             return SancaiEntryVersionSnapshot.from((SancaiEntry) content).toMap();

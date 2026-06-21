@@ -23,6 +23,8 @@ import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiContentFormat;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.valueobject.WangqiDocumentId;
+import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import java.util.Date;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -82,10 +84,37 @@ class ClassicsContentSnapshotAssemblerTest {
                         + "\"translationStatus\":null,\"imageStatus\":null,\"visualAssetStatus\":null,"
                         + "\"refinementStatus\":null,\"priority\":7,"
                         + "\"images\":["
-                        + "{\"imageId\":23,\"storageObjectId\":803,\"imageType\":\"ORIGINAL\","
-                        + "\"title\":\"首图\",\"priority\":1},"
-                        + "{\"imageId\":22,\"storageObjectId\":802,\"imageType\":\"ORIGINAL\","
-                        + "\"title\":\"次图\",\"priority\":2}"
+                        + "{\"imageId\":23,\"storageObjectId\":803,\"originalFilename\":null,"
+                        + "\"contentType\":null,\"size\":null,\"imageType\":\"ORIGINAL\","
+                        + "\"title\":\"首图\",\"currentUsed\":true,\"priority\":1},"
+                        + "{\"imageId\":22,\"storageObjectId\":802,\"originalFilename\":null,"
+                        + "\"contentType\":null,\"size\":null,\"imageType\":\"ORIGINAL\","
+                        + "\"title\":\"次图\",\"currentUsed\":true,\"priority\":2}"
+                        + "]}",
+                snapshotJson);
+    }
+
+    @Test
+    void shouldAssembleSancaiImagesWithStorageMetadata() {
+        SancaiEntry entry = new SancaiEntry();
+        entry.setId(SancaiEntryId.of(100L));
+        entry.setTitle("三才");
+        entry.setPriority(7);
+        SancaiEntryImage image = image(22L, 802L, "次图", true, 2);
+
+        String snapshotJson = assembler.toSnapshotJsonWithImageResources(
+                entry, List.of(SancaiEntryVersionSnapshot.ImageResource.from(image, storage())));
+
+        assertEquals(
+                "{\"contentType\":\"SANCAI_ENTRY\",\"contentId\":100,\"contentUpdatedAt\":null,"
+                        + "\"volumeId\":null,\"title\":\"三才\",\"originalText\":null,\"translationText\":null,"
+                        + "\"summary\":null,\"lifecycleStatus\":null,\"visibility\":null,"
+                        + "\"translationStatus\":null,\"imageStatus\":null,\"visualAssetStatus\":null,"
+                        + "\"refinementStatus\":null,\"priority\":7,"
+                        + "\"images\":["
+                        + "{\"imageId\":22,\"storageObjectId\":802,\"originalFilename\":\"三才图.png\","
+                        + "\"contentType\":\"image/png\",\"size\":9,\"imageType\":\"ORIGINAL\","
+                        + "\"title\":\"次图\",\"currentUsed\":true,\"priority\":2}"
                         + "]}",
                 snapshotJson);
     }
@@ -151,5 +180,14 @@ class ClassicsContentSnapshotAssemblerTest {
         image.setCurrentUsed(currentUsed);
         image.setPriority(priority);
         return image;
+    }
+
+    private static StoredObject storage() {
+        StoredObject storage = new StoredObject();
+        storage.setId(StoredObjectId.of(802L));
+        storage.setOriginalFilename("三才图.png");
+        storage.setContentType("image/png");
+        storage.setSize(9L);
+        return storage;
     }
 }
