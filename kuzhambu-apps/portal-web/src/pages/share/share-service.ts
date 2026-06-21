@@ -1,4 +1,4 @@
-import { getJson } from "./http";
+import { getJson } from "@/api/http";
 import type {
     ClassicsSharePortalListResponse,
     ClassicsSharePortalResponse,

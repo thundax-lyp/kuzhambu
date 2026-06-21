@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
-import * as shareService from "@/api/share-service";
-import type { ClassicsSharePortalTarget } from "@/api/share-types";
+import * as shareService from "./share-service";
+import type { ClassicsSharePortalTarget } from "./share-types";
 
 const CONTENT_TYPE_LABELS = new Map([
     ["SANCAI_ENTRY", "三才图会"],
@@ -40,7 +40,7 @@ const formatContentType = (value?: string | null) => {
     return value ? (CONTENT_TYPE_LABELS.get(value) ?? value) : "未知分类";
 };
 
-export const SharePage = () => {
+export const ShareForm = () => {
     const { shareToken } = useParams();
     const token = shareToken ?? "";
     const shareQuery = useQuery({

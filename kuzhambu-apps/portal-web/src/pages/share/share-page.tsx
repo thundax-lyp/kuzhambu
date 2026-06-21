@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import * as shareService from "@/api/share-service";
-import type { ClassicsShareSearchQuery } from "@/api/share-types";
+import * as shareService from "./share-service";
+import type { ClassicsShareSearchQuery } from "./share-types";
 
 const CONTENT_TYPE_OPTIONS = [
     { label: "全部分类", value: "" },
@@ -41,7 +41,7 @@ const formatContentType = (value?: string | null) => {
     return value ? (CONTENT_TYPE_LABELS.get(value) ?? value) : "-";
 };
 
-export const ShareListPage = () => {
+export const SharePage = () => {
     const [title, setTitle] = useState("");
     const [contentType, setContentType] = useState("");
     const [issuedAfter, setIssuedAfter] = useState("");
