@@ -9,13 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web/sancai/image-upload-preview`：接入 Admin Sancai 图片上传预览
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-types.ts`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/services/sancai-entry-service.ts`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-model.tsx`
-    - 处理动作：让 Sancai 页面通过业务上传接口和鉴权资源 URL 完成上传、预览和下载。
-    - 验收点：Sancai 上传不使用 Storage 通用上传入口，图片预览和下载都带 token。
-    - 重要度：9/10
 - [ ] `portal-web/share/resource-types`：补齐 Portal 分享资源类型和服务
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`

@@ -102,6 +102,19 @@ vi.mock("../services/sancai-entry-service", () => ({
             versionDirty: false
         }
     ]),
+    listImages: vi.fn(async () => [
+        {
+            currentUsed: true,
+            entryId: 3001,
+            id: 8001,
+            imageType: "ORIGINAL",
+            originalFilename: "sancai.png",
+            priority: 1,
+            size: 10,
+            storageObjectId: 7001,
+            title: "sancai.png"
+        }
+    ]),
     listVersions: vi.fn(async () => [
         {
             id: 9001,
@@ -128,6 +141,13 @@ vi.mock("../services/sancai-entry-service", () => ({
         };
     }),
     sort: vi.fn(),
+    getImageContentUrl: vi.fn(
+        (request: { entryId: number; imageId: number; mode?: "download" | "preview" }) => {
+            const search = request.mode === "download" ? "?download=true" : "";
+            return `/kuzhambu-admin-api/api/classics/sancai/assets/images/${request.entryId}/${request.imageId}/content${search}`;
+        }
+    ),
+    uploadImage: vi.fn(),
     update: vi.fn()
 }));
 
