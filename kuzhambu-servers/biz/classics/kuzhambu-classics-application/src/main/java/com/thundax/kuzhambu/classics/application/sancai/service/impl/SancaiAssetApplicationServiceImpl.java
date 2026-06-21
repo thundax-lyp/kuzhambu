@@ -3,9 +3,14 @@ package com.thundax.kuzhambu.classics.application.sancai.service.impl;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiDraftCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImageSortCommand;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImageUploadCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiImageCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiShowcaseCommand;
+import com.thundax.kuzhambu.classics.application.sancai.result.SancaiEntryImageContent;
+import com.thundax.kuzhambu.classics.application.sancai.result.SancaiEntryImageResource;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiAssetApplicationService;
+import com.thundax.kuzhambu.classics.domain.common.codec.StorageObjectIdCodec;
+import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryImageIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryDraft;
@@ -24,12 +29,27 @@ import com.thundax.kuzhambu.common.core.exception.ErrorCode;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
+import com.thundax.kuzhambu.storage.application.helper.StorageUploadResult;
+import com.thundax.kuzhambu.storage.application.helper.StorageUploadStreamHelper;
+import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
+import com.thundax.kuzhambu.storage.application.service.command.AddStorageReferencesCommand;
+import com.thundax.kuzhambu.storage.application.service.command.ChangeStorageCommand;
+import com.thundax.kuzhambu.storage.application.service.command.ChangeStorageReferenceStatusCommand;
+import com.thundax.kuzhambu.storage.application.service.content.StoredObjectContent;
+import com.thundax.kuzhambu.storage.application.service.query.StorageQuery;
+import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
+import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
+import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObjectReference;
+import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
+import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,10 +58,24 @@ import org.springframework.transaction.annotation.Transactional;
 @BizExceptionBoundary
 public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplicationService {
 
-    private final SancaiAssetRepository repository;
+    private static final String IMAGE_OWNER_ID_PREFIX = "entry:";
+    private static final String IMAGE_OWNER_ID_SEPARATOR = ":image:";
+    private static final String SANCAI_IMAGE_CONTENT_PATH_PREFIX = "/api/classics/sancai/assets/images/";
+    private static final String SANCAI_IMAGE_CONTENT_PATH_SEPARATOR = "/";
+    private static final String SANCAI_IMAGE_CONTENT_PATH_SUFFIX = "/content";
+    private static final List<String> ALLOWED_IMAGE_SUFFIXES = List.of("jpg", "jpeg", "png", "gif", "webp");
 
-    public SancaiAssetApplicationServiceImpl(SancaiAssetRepository repository) {
+    private final SancaiAssetRepository repository;
+    private final StorageUploadStreamHelper storageUploadStreamHelper;
+    private final StorageApplicationService storageApplicationService;
+
+    public SancaiAssetApplicationServiceImpl(
+            SancaiAssetRepository repository,
+            StorageUploadStreamHelper storageUploadStreamHelper,
+            StorageApplicationService storageApplicationService) {
         this.repository = repository;
+        this.storageUploadStreamHelper = storageUploadStreamHelper;
+        this.storageApplicationService = storageApplicationService;
     }
 
     @Override
@@ -75,6 +109,65 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
         }
         repository.updateImage(image);
         return image.getId();
+    }
+
+    @Override
+    public SancaiEntryImage getImage(SancaiEntryImageId id) {
+        return id == null ? null : repository.getImageById(id);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public SancaiEntryImageResource uploadImage(SancaiEntryImageUploadCommand command) {
+        SancaiEntryId entryId = SancaiEntryIdCodec.toDomain(command == null ? null : command.getEntryId());
+        SancaiEntryImage replacedImage = currentImageToReplace(command, entryId);
+        validateImageUpload(command);
+
+        StorageUploadResult uploadResult = storageUploadStreamHelper.upload(
+                command.getInputStream(),
+                command.getOriginalFilename(),
+                command.getContentType(),
+                command.getSize(),
+                ALLOWED_IMAGE_SUFFIXES,
+                StorageOwnerType.CLASSICS_SANCAI_ENTRY_IMAGE,
+                null);
+        if (uploadResult.hasError()) {
+            throw new BizException(uploadResult.getError());
+        }
+
+        StoredObject storage = uploadResult.getStorage();
+        SancaiEntryImage image = new SancaiEntryImage();
+        image.setEntryId(entryId);
+        image.setStorageObjectId(StorageObjectIdCodec.toDomain(storage.getId().value()));
+        image.setImageType(command.getImageType());
+        image.setTitle(command.getTitle());
+        image.setCurrentUsed(command.isCurrentUsed());
+        image.setPriority(repository.maxPriority() + 1);
+        SancaiEntryImageId imageId = repository.insertImage(image);
+        image.setId(imageId);
+
+        if (replacedImage != null) {
+            replacedImage.setCurrentUsed(false);
+            repository.updateImage(replacedImage);
+        }
+        ensureStorageOwner(storage, entryId, imageId);
+        addStorageReference(storage.getId(), entryId, imageId);
+        return toResource(image, storage);
+    }
+
+    @Override
+    public SancaiEntryImageContent getImageContent(SancaiEntryId entryId, SancaiEntryImageId imageId) {
+        SancaiEntryImage image = requireImage(entryId, imageId);
+        StoredObjectId objectId = toStoredObjectId(image.getStorageObjectId());
+        StorageQuery query = new StorageQuery();
+        query.setId(objectId);
+        query.setOwnerType(StorageOwnerType.CLASSICS_SANCAI_ENTRY_IMAGE);
+        query.setOwnerId(imageOwnerId(entryId, imageId));
+        if (!storageApplicationService.existsReadableContent(query)) {
+            throw new BizException("三才图片不可读");
+        }
+        StoredObjectContent content = storageApplicationService.openReadableContent(objectId);
+        return new SancaiEntryImageContent(entryId.value(), imageId.value(), objectId.value(), content);
     }
 
     @Override
@@ -141,7 +234,12 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteImage(SancaiEntryImageId id) {
+        SancaiEntryImage image = getImage(id);
         repository.deleteImageById(id);
+        if (image != null && image.getStorageObjectId() != null) {
+            storageApplicationService.changeReferenceStatus(new ChangeStorageReferenceStatusCommand(
+                    toStoredObjectId(image.getStorageObjectId()), StoredObjectReferenceStatus.UNREFERENCED));
+        }
     }
 
     @Override
@@ -218,5 +316,104 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
                 ErrorCode.SORT_DB_FAILURE.getCode(),
                 ErrorCode.SORT_DB_FAILURE.getMessageKey(),
                 ErrorCode.SORT_DB_FAILURE.getMessage());
+    }
+
+    private SancaiEntryImage currentImageToReplace(SancaiEntryImageUploadCommand command, SancaiEntryId entryId) {
+        if (command == null || !command.isCurrentUsed()) {
+            return null;
+        }
+        if (command.getReplaceImageId() == null) {
+            throw new BizException("替换当前图片时必须指定 replaceImageId");
+        }
+        SancaiEntryImage image = requireImage(entryId, SancaiEntryImageIdCodec.toDomain(command.getReplaceImageId()));
+        if (!image.isCurrentUsed()) {
+            throw new BizException("被替换图片不是当前使用图");
+        }
+        return image;
+    }
+
+    private SancaiEntryImage requireImage(SancaiEntryId entryId, SancaiEntryImageId imageId) {
+        SancaiEntryImage image = getImage(imageId);
+        if (image == null) {
+            throw new BizException("三才图片不存在");
+        }
+        if (entryId == null || image.getEntryId() == null || !entryId.equals(image.getEntryId())) {
+            throw new BizException("三才图片不属于当前条目");
+        }
+        if (image.getStorageObjectId() == null) {
+            throw new BizException("三才图片未关联 Storage 对象");
+        }
+        return image;
+    }
+
+    private static void validateImageUpload(SancaiEntryImageUploadCommand command) {
+        if (command == null || command.getEntryId() == null) {
+            throw new BizException("三才条目不能为空");
+        }
+        if (!StringUtils.startsWithIgnoreCase(command.getContentType(), "image/")) {
+            throw new BizException("三才图片内容类型无效");
+        }
+    }
+
+    private void ensureStorageOwner(StoredObject storage, SancaiEntryId entryId, SancaiEntryImageId imageId) {
+        ChangeStorageCommand command = new ChangeStorageCommand();
+        command.setId(storage.getId());
+        command.setOriginalFilename(storage.getOriginalFilename());
+        command.setContentType(storage.getContentType());
+        command.setName(storage.getName());
+        command.setExtendName(storage.getExtendName());
+        command.setMimeType(storage.getMimeType());
+        command.setOwnerType(StorageOwnerType.CLASSICS_SANCAI_ENTRY_IMAGE);
+        command.setOwnerId(imageOwnerId(entryId, imageId));
+        command.setBucketName(storage.getBucketName());
+        command.setObjectKey(storage.getObjectKey());
+        command.setSize(storage.getSize());
+        command.setAccessEndpoint(storage.getAccessEndpoint());
+        command.setObjectStatus(storage.getObjectStatus());
+        command.setReferenceStatus(storage.getReferenceStatus());
+        command.setRemarks(storage.getRemarks());
+        storageApplicationService.change(command);
+    }
+
+    private void addStorageReference(StoredObjectId objectId, SancaiEntryId entryId, SancaiEntryImageId imageId) {
+        StoredObjectReference reference = new StoredObjectReference(
+                objectId,
+                imageOwnerId(entryId, imageId),
+                StorageOwnerType.CLASSICS_SANCAI_ENTRY_IMAGE,
+                "usage=SANCAI_ENTRY_IMAGE;entryId=" + entryId.value() + ";imageId=" + imageId.value(),
+                StoredObjectReferenceStatus.REFERENCED);
+        storageApplicationService.addReferences(new AddStorageReferencesCommand(List.of(reference)));
+        storageApplicationService.changeReferenceStatus(
+                new ChangeStorageReferenceStatusCommand(objectId, StoredObjectReferenceStatus.REFERENCED));
+    }
+
+    private static SancaiEntryImageResource toResource(SancaiEntryImage image, StoredObject storage) {
+        Long entryId = image.getEntryId() == null ? null : image.getEntryId().value();
+        Long imageId = image.getId() == null ? null : image.getId().value();
+        String contentUrl = SANCAI_IMAGE_CONTENT_PATH_PREFIX
+                + entryId
+                + SANCAI_IMAGE_CONTENT_PATH_SEPARATOR
+                + imageId
+                + SANCAI_IMAGE_CONTENT_PATH_SUFFIX;
+        return new SancaiEntryImageResource(
+                entryId,
+                imageId,
+                storage.getId() == null ? null : storage.getId().value(),
+                storage.getOriginalFilename(),
+                storage.getContentType(),
+                storage.getSize(),
+                contentUrl,
+                contentUrl + "?download=true");
+    }
+
+    private static StoredObjectId toStoredObjectId(StorageObjectId id) {
+        return StoredObjectIdCodec.toDomain(StorageObjectIdCodec.toValue(id));
+    }
+
+    static String imageOwnerId(SancaiEntryId entryId, SancaiEntryImageId imageId) {
+        if (entryId == null || imageId == null) {
+            return null;
+        }
+        return IMAGE_OWNER_ID_PREFIX + entryId.value() + IMAGE_OWNER_ID_SEPARATOR + imageId.value();
     }
 }

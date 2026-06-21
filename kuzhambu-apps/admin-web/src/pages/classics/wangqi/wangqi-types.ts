@@ -23,6 +23,8 @@ export interface WangqiSourceFileRecord {
     contentUrl?: string | null;
 }
 
+export type WangqiSourceFileContentMode = "preview" | "download";
+
 export interface WangqiContentVersionRecord {
     id: number;
     contentType?: string | null;

@@ -4,7 +4,9 @@ import com.thundax.kuzhambu.classics.domain.content.model.Versionable;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
+import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryImage;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
+import java.util.List;
 import java.util.Map;
 
 public class ClassicsContentSnapshotAssembler {
@@ -12,6 +14,16 @@ public class ClassicsContentSnapshotAssembler {
 
     public String toSnapshotJson(Versionable content) {
         return toJson(toSnapshot(content));
+    }
+
+    public String toSnapshotJson(SancaiEntry entry, List<SancaiEntryImage> images) {
+        return toJson(SancaiEntryVersionSnapshot.from(entry, images).toMap());
+    }
+
+    public String toSnapshotJsonWithImageResources(
+            SancaiEntry entry, List<SancaiEntryVersionSnapshot.ImageResource> images) {
+        return toJson(
+                SancaiEntryVersionSnapshot.fromImageResources(entry, images).toMap());
     }
 
     private Map<String, Object> toSnapshot(Versionable content) {
@@ -48,9 +60,43 @@ public class ClassicsContentSnapshotAssembler {
             builder.append("null");
         } else if (value instanceof Number || value instanceof Boolean) {
             builder.append(value);
+        } else if (value instanceof Map<?, ?> map) {
+            appendMap(builder, map);
+        } else if (value instanceof Iterable<?> iterable) {
+            appendIterable(builder, iterable);
         } else {
             builder.append('"').append(escape(String.valueOf(value))).append('"');
         }
+    }
+
+    private static void appendMap(StringBuilder builder, Map<?, ?> map) {
+        builder.append('{');
+        boolean first = true;
+        for (Map.Entry<?, ?> entry : map.entrySet()) {
+            if (!first) {
+                builder.append(',');
+            }
+            first = false;
+            builder.append('"')
+                    .append(escape(String.valueOf(entry.getKey())))
+                    .append('"')
+                    .append(':');
+            appendJsonValue(builder, entry.getValue());
+        }
+        builder.append('}');
+    }
+
+    private static void appendIterable(StringBuilder builder, Iterable<?> iterable) {
+        builder.append('[');
+        boolean first = true;
+        for (Object item : iterable) {
+            if (!first) {
+                builder.append(',');
+            }
+            first = false;
+            appendJsonValue(builder, item);
+        }
+        builder.append(']');
     }
 
     private static String escape(String value) {

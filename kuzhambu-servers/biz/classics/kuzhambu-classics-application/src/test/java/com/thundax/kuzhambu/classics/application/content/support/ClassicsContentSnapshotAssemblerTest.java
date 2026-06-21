@@ -8,19 +8,25 @@ import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsC
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsVisibility;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsEntryId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
+import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryImage;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryImageStatus;
+import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryImageType;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryLifecycleStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryRefinementStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryTranslationStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisibility;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisualAssetStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
+import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryImageId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVolumeId;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiContentFormat;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.valueobject.WangqiDocumentId;
+import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import java.util.Date;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class ClassicsContentSnapshotAssemblerTest {
@@ -51,7 +57,65 @@ class ClassicsContentSnapshotAssemblerTest {
                         + "\"volumeId\":2,\"title\":\"三才\",\"originalText\":\"原文\",\"translationText\":\"译文\","
                         + "\"summary\":\"摘要\",\"lifecycleStatus\":\"PUBLISHED\",\"visibility\":\"PUBLIC\","
                         + "\"translationStatus\":\"READY\",\"imageStatus\":\"READY\","
-                        + "\"visualAssetStatus\":\"PROCESSING\",\"refinementStatus\":\"COMPLETE\",\"priority\":7}",
+                        + "\"visualAssetStatus\":\"PROCESSING\",\"refinementStatus\":\"COMPLETE\",\"priority\":7,"
+                        + "\"images\":[]}",
+                snapshotJson);
+    }
+
+    @Test
+    void shouldAssembleCurrentSancaiImagesInPriorityOrder() {
+        SancaiEntry entry = new SancaiEntry();
+        entry.setId(SancaiEntryId.of(100L));
+        entry.setVolumeId(SancaiVolumeId.of(2L));
+        entry.setTitle("三才");
+        entry.setPriority(7);
+
+        String snapshotJson = assembler.toSnapshotJson(
+                entry,
+                List.of(
+                        image(21L, 801L, "旧图", false, 1),
+                        image(22L, 802L, "次图", true, 2),
+                        image(23L, 803L, "首图", true, 1)));
+
+        assertEquals(
+                "{\"contentType\":\"SANCAI_ENTRY\",\"contentId\":100,\"contentUpdatedAt\":null,"
+                        + "\"volumeId\":2,\"title\":\"三才\",\"originalText\":null,\"translationText\":null,"
+                        + "\"summary\":null,\"lifecycleStatus\":null,\"visibility\":null,"
+                        + "\"translationStatus\":null,\"imageStatus\":null,\"visualAssetStatus\":null,"
+                        + "\"refinementStatus\":null,\"priority\":7,"
+                        + "\"images\":["
+                        + "{\"imageId\":23,\"storageObjectId\":803,\"originalFilename\":null,"
+                        + "\"contentType\":null,\"size\":null,\"imageType\":\"ORIGINAL\","
+                        + "\"title\":\"首图\",\"currentUsed\":true,\"priority\":1},"
+                        + "{\"imageId\":22,\"storageObjectId\":802,\"originalFilename\":null,"
+                        + "\"contentType\":null,\"size\":null,\"imageType\":\"ORIGINAL\","
+                        + "\"title\":\"次图\",\"currentUsed\":true,\"priority\":2}"
+                        + "]}",
+                snapshotJson);
+    }
+
+    @Test
+    void shouldAssembleSancaiImagesWithStorageMetadata() {
+        SancaiEntry entry = new SancaiEntry();
+        entry.setId(SancaiEntryId.of(100L));
+        entry.setTitle("三才");
+        entry.setPriority(7);
+        SancaiEntryImage image = image(22L, 802L, "次图", true, 2);
+
+        String snapshotJson = assembler.toSnapshotJsonWithImageResources(
+                entry, List.of(SancaiEntryVersionSnapshot.ImageResource.from(image, storage())));
+
+        assertEquals(
+                "{\"contentType\":\"SANCAI_ENTRY\",\"contentId\":100,\"contentUpdatedAt\":null,"
+                        + "\"volumeId\":null,\"title\":\"三才\",\"originalText\":null,\"translationText\":null,"
+                        + "\"summary\":null,\"lifecycleStatus\":null,\"visibility\":null,"
+                        + "\"translationStatus\":null,\"imageStatus\":null,\"visualAssetStatus\":null,"
+                        + "\"refinementStatus\":null,\"priority\":7,"
+                        + "\"images\":["
+                        + "{\"imageId\":22,\"storageObjectId\":802,\"originalFilename\":\"三才图.png\","
+                        + "\"contentType\":\"image/png\",\"size\":9,\"imageType\":\"ORIGINAL\","
+                        + "\"title\":\"次图\",\"currentUsed\":true,\"priority\":2}"
+                        + "]}",
                 snapshotJson);
     }
 
@@ -103,5 +167,27 @@ class ClassicsContentSnapshotAssemblerTest {
                         + "\"summary\":\"摘要\",\"contentFormat\":\"TEXT\",\"content\":\"正文\","
                         + "\"originalExcerpts\":\"摘录\",\"visibility\":\"PUBLIC\"}",
                 snapshotJson);
+    }
+
+    private static SancaiEntryImage image(
+            Long imageId, Long storageObjectId, String title, boolean currentUsed, int priority) {
+        SancaiEntryImage image = new SancaiEntryImage();
+        image.setId(SancaiEntryImageId.of(imageId));
+        image.setEntryId(SancaiEntryId.of(100L));
+        image.setStorageObjectId(StorageObjectId.of(storageObjectId));
+        image.setImageType(SancaiEntryImageType.ORIGINAL);
+        image.setTitle(title);
+        image.setCurrentUsed(currentUsed);
+        image.setPriority(priority);
+        return image;
+    }
+
+    private static StoredObject storage() {
+        StoredObject storage = new StoredObject();
+        storage.setId(StoredObjectId.of(802L));
+        storage.setOriginalFilename("三才图.png");
+        storage.setContentType("image/png");
+        storage.setSize(9L);
+        return storage;
     }
 }

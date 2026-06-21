@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.classics.interfaces.admin.sancai.assembler;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiDraftCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiImageCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiShowcaseCommand;
+import com.thundax.kuzhambu.classics.application.sancai.result.SancaiEntryImageResource;
 import com.thundax.kuzhambu.classics.domain.common.codec.StorageObjectIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryDraft;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryImage;
@@ -65,6 +66,21 @@ public final class SancaiAssetInterfaceAssembler {
                         .title(image.getTitle())
                         .currentUsed(image.isCurrentUsed())
                         .priority(image.getPriority())
+                        .build();
+    }
+
+    public static SancaiAssetResponse toImageResourceResponse(SancaiEntryImageResource resource) {
+        return resource == null
+                ? SancaiAssetResponse.builder().build()
+                : SancaiAssetResponse.builder()
+                        .id(resource.getImageId())
+                        .entryId(resource.getEntryId())
+                        .storageObjectId(resource.getStorageObjectId())
+                        .originalFilename(resource.getOriginalFilename())
+                        .contentType(resource.getContentType())
+                        .size(resource.getSize())
+                        .previewUrl(resource.getPreviewUrl())
+                        .downloadUrl(resource.getDownloadUrl())
                         .build();
     }
 

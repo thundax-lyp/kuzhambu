@@ -32,6 +32,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.io.FilenameUtils;
@@ -188,14 +190,21 @@ public class StorageObjectController {
     @HasPermission(value = "storage:object:view")
     @SysLogger(value = "读取内容")
     @GetMapping(value = "{id}/content")
-    public void content(@PathVariable("id") String id, HttpServletResponse response) throws IOException {
+    public void content(
+            @PathVariable("id") String id,
+            @RequestParam(value = "download", required = false) Boolean download,
+            HttpServletResponse response)
+            throws IOException {
         StoredObjectContent content = storageApplicationService.openReadableContent(StoredObjectIdCodec.toDomain(id));
         StoredObject storage = content.getStorage();
         response.setContentType(
                 StringUtils.defaultIfBlank(storage.getContentType(), MediaType.APPLICATION_OCTET_STREAM_VALUE));
+        if (storage.getSize() != null) {
+            response.setContentLengthLong(storage.getSize());
+        }
         response.setHeader(
                 "Content-Disposition",
-                "inline; filename=\"" + FilenameUtils.getName(storage.getOriginalFilename()) + "\"");
+                contentDisposition(storage.getOriginalFilename(), Boolean.TRUE.equals(download)));
         try (InputStream inputStream = content.getInputStream()) {
             inputStream.transferTo(response.getOutputStream());
         }
@@ -210,5 +219,14 @@ public class StorageObjectController {
             storage.setAccessEndpoint(
                     CONTENT_PATH_PREFIX + StoredObjectIdCodec.toStringValue(storage.getId()) + CONTENT_PATH_SUFFIX);
         }
+    }
+
+    private static String contentDisposition(String originalFilename, boolean download) {
+        String disposition = download ? "attachment" : "inline";
+        String filename = StringUtils.defaultIfBlank(FilenameUtils.getName(originalFilename), "file");
+        String asciiFilename = filename.replace("\\", "").replace("\"", "");
+        String encodedFilename =
+                URLEncoder.encode(filename, StandardCharsets.UTF_8).replace("+", "%20");
+        return disposition + "; filename=\"" + asciiFilename + "\"; filename*=UTF-8''" + encodedFilename;
     }
 }

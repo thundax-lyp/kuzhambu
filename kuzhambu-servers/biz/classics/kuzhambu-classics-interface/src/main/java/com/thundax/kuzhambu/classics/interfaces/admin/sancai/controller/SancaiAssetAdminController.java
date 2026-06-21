@@ -1,9 +1,12 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller;
 
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImageSortCommand;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImageUploadCommand;
+import com.thundax.kuzhambu.classics.application.sancai.result.SancaiEntryImageContent;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiAssetApplicationService;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryImageIdCodec;
+import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryImageType;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryDraftId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryImageId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiShowcaseId;
@@ -11,21 +14,34 @@ import com.thundax.kuzhambu.classics.interfaces.admin.sancai.assembler.SancaiAss
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiAssetRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiEntryImageSortRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response.SancaiAssetResponse;
+import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.common.web.request.RequestListHelper;
+import com.thundax.kuzhambu.storage.application.service.content.StoredObjectContent;
+import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 @Tag(name = "古籍模块-三才图会资产", description = "三才图会资产")
 @SysLogger(module = {"古籍", "三才图会资产"})
@@ -68,6 +84,35 @@ public class SancaiAssetAdminController {
         return SancaiAssetResponse.builder().id(id == null ? null : id.value()).build();
     }
 
+    @Operation(summary = "上传三才图会图片", description = "classics:sancai:edit")
+    @ApiImplicitParams({})
+    @HasPermission("classics:sancai:edit")
+    @SysLogger(value = "图片上传")
+    @PostMapping(value = "images/{entryId}/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public SancaiAssetResponse uploadImage(
+            @PathVariable Long entryId,
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "title", required = false) String title,
+            @RequestParam(value = "imageType", required = false) String imageType,
+            @RequestParam(value = "currentUsed", required = false, defaultValue = "true") Boolean currentUsed,
+            @RequestParam(value = "replaceImageId", required = false) Long replaceImageId) {
+        try {
+            return SancaiAssetInterfaceAssembler.toImageResourceResponse(
+                    service.uploadImage(new SancaiEntryImageUploadCommand(
+                            entryId,
+                            file == null ? null : file.getInputStream(),
+                            file == null ? null : file.getOriginalFilename(),
+                            file == null ? null : file.getContentType(),
+                            file == null ? 0L : file.getSize(),
+                            title,
+                            StringUtils.isBlank(imageType) ? null : SancaiEntryImageType.from(imageType),
+                            Boolean.TRUE.equals(currentUsed),
+                            replaceImageId)));
+        } catch (IOException exception) {
+            throw new BizException("三才图片上传失败：" + exception.getMessage());
+        }
+    }
+
     @Operation(summary = "查询三才图会图片", description = "classics:sancai:view")
     @ApiImplicitParams({})
     @HasPermission("classics:sancai:view")
@@ -96,6 +141,40 @@ public class SancaiAssetAdminController {
         return true;
     }
 
+    @Operation(summary = "读取三才图会图片内容", description = "classics:sancai:view")
+    @ApiImplicitParams({})
+    @HasPermission("classics:sancai:view")
+    @SysLogger(value = "图片读取")
+    @GetMapping("images/{entryId}/{imageId}/content")
+    public void downloadImage(
+            @PathVariable Long entryId,
+            @PathVariable Long imageId,
+            @RequestParam(value = "download", required = false) Boolean download,
+            HttpServletResponse response)
+            throws IOException {
+        SancaiEntryImageContent imageContent;
+        try {
+            imageContent = service.getImageContent(
+                    SancaiEntryIdCodec.toDomain(entryId), SancaiEntryImageIdCodec.toDomain(imageId));
+        } catch (BizException exception) {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+        StoredObjectContent content = imageContent.getContent();
+        StoredObject storage = content.getStorage();
+        response.setContentType(
+                StringUtils.defaultIfBlank(storage.getContentType(), MediaType.APPLICATION_OCTET_STREAM_VALUE));
+        if (storage.getSize() != null) {
+            response.setContentLengthLong(storage.getSize());
+        }
+        response.setHeader(
+                "Content-Disposition",
+                contentDisposition(storage.getOriginalFilename(), Boolean.TRUE.equals(download)));
+        try (InputStream inputStream = content.getInputStream()) {
+            inputStream.transferTo(response.getOutputStream());
+        }
+    }
+
     @Operation(summary = "创建三才图会静态展示任务", description = "classics:sancai:edit")
     @ApiImplicitParams({})
     @HasPermission("classics:sancai:edit")
@@ -104,5 +183,14 @@ public class SancaiAssetAdminController {
     public SancaiAssetResponse requestShowcase(@Valid @RequestBody SancaiAssetRequest request) {
         SancaiShowcaseId id = service.requestShowcase(SancaiAssetInterfaceAssembler.toShowcaseCommand(request));
         return SancaiAssetResponse.builder().id(id == null ? null : id.value()).build();
+    }
+
+    private static String contentDisposition(String originalFilename, boolean download) {
+        String disposition = download ? "attachment" : "inline";
+        String filename = StringUtils.defaultIfBlank(FilenameUtils.getName(originalFilename), "file");
+        String asciiFilename = filename.replace("\\", "").replace("\"", "");
+        String encodedFilename =
+                URLEncoder.encode(filename, StandardCharsets.UTF_8).replace("+", "%20");
+        return disposition + "; filename=\"" + asciiFilename + "\"; filename*=UTF-8''" + encodedFilename;
     }
 }

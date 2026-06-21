@@ -31,6 +31,28 @@ export interface ClassicsSharePortalListResponse {
     totalPage: number;
 }
 
+export interface ClassicsShareResource {
+    contentType?: string | null;
+    downloadUrl?: string | null;
+    originalFilename?: string | null;
+    previewUrl?: string | null;
+    size?: number | null;
+    storageObjectId?: number | null;
+}
+
+export interface ClassicsSharePortalImage {
+    contentType?: string | null;
+    currentUsed?: boolean | null;
+    imageId?: number | null;
+    imageType?: string | null;
+    originalFilename?: string | null;
+    priority?: number | null;
+    size?: number | null;
+    storageObject?: ClassicsShareResource | null;
+    storageObjectId?: number | null;
+    title?: string | null;
+}
+
 export interface ClassicsSharePortalTarget {
     contentId?: number | null;
     contentSnapshotJson?: string | null;
@@ -39,8 +61,18 @@ export interface ClassicsSharePortalTarget {
     contentVersionNo?: number | null;
     contentVisibilitySnapshot?: string | null;
     priority?: number | null;
+    images?: ClassicsSharePortalImage[] | null;
+    storageObject?: ClassicsShareResource | null;
     targetStatus?: string | null;
     titleSnapshot?: string | null;
+}
+
+export type ClassicsShareResourceContentMode = "download" | "preview";
+
+export interface ClassicsShareResourceContentUrlCommand {
+    mode?: ClassicsShareResourceContentMode;
+    shareToken: string;
+    storageObjectId: number;
 }
 
 export interface ClassicsSharePortalResponse {

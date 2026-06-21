@@ -32,6 +32,7 @@ public final class ApiAnnotationArchitectureRuleSupport {
             "move",
             "upload",
             "download",
+            "content",
             "reset",
             "login",
             "logout",

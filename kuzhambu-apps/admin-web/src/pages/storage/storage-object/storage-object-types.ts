@@ -11,3 +11,5 @@ export interface StorageRecord {
     priority?: number | null;
     remarks?: string | null;
 }
+
+export type StorageContentMode = "preview" | "download";

@@ -1,6 +1,6 @@
-import { postFormData, postJson } from "@/api/http";
+import { ADMIN_API_BASE_URL, postFormData, postJson } from "@/api/http";
 import type { Page } from "@/types/page";
-import type { StorageRecord } from "./storage-object-types";
+import type { StorageContentMode, StorageRecord } from "./storage-object-types";
 
 export interface StoragePageQuery {
     pageNo?: number;
@@ -20,6 +20,11 @@ export interface StoragePageQuery {
 export interface StorageSortCommand {
     orderedIds: string[];
     sortDirection?: "ASC" | "DESC";
+}
+
+export interface StorageObjectContentUrlCommand {
+    mode?: StorageContentMode;
+    storageObjectId: string;
 }
 
 export const pageStorageObjects = (request: StoragePageQuery = {}) => {
@@ -44,4 +49,10 @@ export const sortStorageObjects = (request: StorageSortCommand) => {
     return postJson<boolean, StorageSortCommand>("/storage/object/sort", {
         body: request
     });
+};
+
+export const getStorageObjectContentUrl = (request: StorageObjectContentUrlCommand) => {
+    const mode = request.mode || "preview";
+    const search = mode === "download" ? "?download=true" : "";
+    return `${ADMIN_API_BASE_URL}/storage/object/${encodeURIComponent(request.storageObjectId)}/content${search}`;
 };

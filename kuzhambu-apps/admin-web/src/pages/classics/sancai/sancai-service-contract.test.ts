@@ -24,11 +24,26 @@ const readFetchUrl = (input: RequestInfo | URL) => {
     return input.url;
 };
 
+const readFetchBody = (body: BodyInit | null | undefined) => {
+    if (!body) {
+        return undefined;
+    }
+    if (body instanceof FormData) {
+        return Object.fromEntries(
+            Array.from(body.entries()).map(([key, value]) => [
+                key,
+                value instanceof File ? value.name : String(value)
+            ])
+        );
+    }
+    return JSON.parse(String(body));
+};
+
 const installFetchRecorder = () => {
     vi.spyOn(globalThis, "fetch").mockImplementation(async (input, init) => {
         const url = readFetchUrl(input);
         capturedCalls.push({
-            body: init?.body ? JSON.parse(String(init.body)) : undefined,
+            body: readFetchBody(init?.body),
             method: init?.method,
             path: url.replace(API_PREFIX, "").replace(DEV_PROXY_PREFIX, "")
         });
@@ -233,6 +248,32 @@ describe("sancai service request contracts", () => {
             orderedIds: [3001, 3002],
             sortDirection: "ASC"
         });
+
+        await entryService.listImages(3001);
+        expectLastCall("GET", "/classics/sancai/assets/images/3001", undefined);
+
+        await entryService.uploadImage({
+            currentUsed: true,
+            entryId: 3001,
+            file: new File(["image-bin"], "sancai.png", { type: "image/png" }),
+            imageType: "ORIGINAL",
+            replaceImageId: 8001,
+            title: "sancai.png"
+        });
+        expectLastCall("POST", "/classics/sancai/assets/images/3001/upload", {
+            currentUsed: "true",
+            file: "sancai.png",
+            imageType: "ORIGINAL",
+            replaceImageId: "8001",
+            title: "sancai.png"
+        });
+
+        expect(entryService.getImageContentUrl({ entryId: 3001, imageId: 8002 })).toBe(
+            `${DEV_PROXY_PREFIX}/classics/sancai/assets/images/3001/8002/content`
+        );
+        expect(
+            entryService.getImageContentUrl({ entryId: 3001, imageId: 8002, mode: "download" })
+        ).toBe(`${DEV_PROXY_PREFIX}/classics/sancai/assets/images/3001/8002/content?download=true`);
 
         await entryService.listVersions(3001);
         expectLastCall("POST", "/classics/sancai/entries/versions/list", {

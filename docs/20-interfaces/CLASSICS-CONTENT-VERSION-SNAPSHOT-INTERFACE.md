@@ -36,7 +36,20 @@
   "imageStatus": "PENDING",
   "visualAssetStatus": "PENDING",
   "refinementStatus": "PENDING",
-  "priority": 1
+  "priority": 1,
+  "images": [
+    {
+      "imageId": 8002,
+      "storageObjectId": 2001,
+      "originalFilename": "三才图.png",
+      "contentType": "image/png",
+      "size": 102400,
+      "imageType": "ORIGINAL",
+      "title": "天地图",
+      "currentUsed": true,
+      "priority": 1
+    }
+  ]
 }
 ```
 
@@ -59,6 +72,23 @@
 | `visualAssetStatus` | string/null | 视觉资产状态 |
 | `refinementStatus` | string/null | 精修状态 |
 | `priority` | number | 卷内排序值 |
+| `images` | array | 当前使用图片资源快照，只包含 `currentUsed=true` 图片，按 `priority ASC` 排序 |
+
+`images[]` 字段：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `imageId` | number/null | 三才图片记录 ID |
+| `storageObjectId` | number/null | 图片 Storage 对象 ID |
+| `originalFilename` | string/null | 创建快照时的原始文件名 |
+| `contentType` | string/null | 创建快照时的内容类型 |
+| `size` | number/null | 创建快照时的文件大小，单位字节 |
+| `imageType` | string/null | 图片类型 |
+| `title` | string/null | 图片标题 |
+| `currentUsed` | boolean | 是否当前使用图。快照内应固定为 `true` |
+| `priority` | number | 图片展示排序值 |
+
+`SANCAI_ENTRY.images` 不包含历史备选图、未启用图、`previewUrl` 或 `downloadUrl`。Portal 分享响应层会根据 `storageObjectId` 动态装配资源对象和读取 URL。
 
 ## WANGQI_DOCUMENT
 
@@ -141,3 +171,5 @@
 - `MingCustomsVersionSnapshot`
 
 Portal 分享详情只展示 `classics_share_target.content_snapshot_json` 中已经固化的快照；Portal API 不回查主内容重新组装展示数据。
+
+对外响应可以在快照稳定 ID 的基础上动态补资源对象，例如 `WANGQI_DOCUMENT.storageObjectId` 可装配为 `target.storageObject`，`SANCAI_ENTRY.images[].storageObjectId` 可装配为 `target.images[].storageObject`。该装配结果不回写 `snapshot_json`。

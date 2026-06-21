@@ -2,8 +2,11 @@ package com.thundax.kuzhambu.classics.application.sancai.service;
 
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiDraftCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImageSortCommand;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImageUploadCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiImageCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiShowcaseCommand;
+import com.thundax.kuzhambu.classics.application.sancai.result.SancaiEntryImageContent;
+import com.thundax.kuzhambu.classics.application.sancai.result.SancaiEntryImageResource;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryDraft;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryImage;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiShowcase;
@@ -24,6 +27,12 @@ public interface SancaiAssetApplicationService {
     SancaiEntryDraft getLatestDraft(SancaiEntryId entryId);
 
     SancaiEntryImageId updateImage(SancaiImageCommand command);
+
+    SancaiEntryImage getImage(SancaiEntryImageId id);
+
+    SancaiEntryImageResource uploadImage(SancaiEntryImageUploadCommand command);
+
+    SancaiEntryImageContent getImageContent(SancaiEntryId entryId, SancaiEntryImageId imageId);
 
     void sortImages(SancaiEntryImageSortCommand command);
 

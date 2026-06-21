@@ -8,8 +8,11 @@ import com.thundax.kuzhambu.classics.application.content.command.ContentTagComma
 import com.thundax.kuzhambu.classics.application.content.command.ContentTagSortCommand;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.content.support.ClassicsContentSnapshotAssembler;
+import com.thundax.kuzhambu.classics.application.content.support.SancaiEntryVersionSnapshot;
+import com.thundax.kuzhambu.classics.application.sancai.service.SancaiAssetApplicationService;
 import com.thundax.kuzhambu.classics.application.sancai.support.SancaiEntryVersionRestorer;
 import com.thundax.kuzhambu.classics.application.wangqi.support.WangqiDocumentVersionRestorer;
+import com.thundax.kuzhambu.classics.domain.common.codec.StorageObjectIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.Versionable;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentExportJob;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentQaPair;
@@ -25,6 +28,7 @@ import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsCo
 import com.thundax.kuzhambu.classics.domain.content.repository.ClassicsContentRepository;
 import com.thundax.kuzhambu.classics.domain.content.service.ClassicsContentVersioningService;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
+import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryImage;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
@@ -32,6 +36,9 @@ import com.thundax.kuzhambu.common.core.exception.ErrorCode;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
+import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
+import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
+import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -50,22 +57,35 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     private final ClassicsContentRepository repository;
     private final WangqiDocumentVersionRestorer wangqiDocumentVersionRestorer;
     private final SancaiEntryVersionRestorer sancaiEntryVersionRestorer;
+    private final SancaiAssetApplicationService sancaiAssetApplicationService;
+    private final StorageApplicationService storageApplicationService;
     private final ClassicsContentVersioningService versioningService = new ClassicsContentVersioningService();
     private final ClassicsContentSnapshotAssembler snapshotAssembler = new ClassicsContentSnapshotAssembler();
 
     public ClassicsContentApplicationServiceImpl(
             ClassicsContentRepository repository, WangqiDocumentVersionRestorer wangqiDocumentVersionRestorer) {
-        this(repository, wangqiDocumentVersionRestorer, null);
+        this(repository, wangqiDocumentVersionRestorer, null, null, null);
+    }
+
+    public ClassicsContentApplicationServiceImpl(
+            ClassicsContentRepository repository,
+            WangqiDocumentVersionRestorer wangqiDocumentVersionRestorer,
+            SancaiEntryVersionRestorer sancaiEntryVersionRestorer) {
+        this(repository, wangqiDocumentVersionRestorer, sancaiEntryVersionRestorer, null, null);
     }
 
     @Autowired
     public ClassicsContentApplicationServiceImpl(
             ClassicsContentRepository repository,
             WangqiDocumentVersionRestorer wangqiDocumentVersionRestorer,
-            SancaiEntryVersionRestorer sancaiEntryVersionRestorer) {
+            SancaiEntryVersionRestorer sancaiEntryVersionRestorer,
+            SancaiAssetApplicationService sancaiAssetApplicationService,
+            StorageApplicationService storageApplicationService) {
         this.repository = repository;
         this.wangqiDocumentVersionRestorer = wangqiDocumentVersionRestorer;
         this.sancaiEntryVersionRestorer = sancaiEntryVersionRestorer;
+        this.sancaiAssetApplicationService = sancaiAssetApplicationService;
+        this.storageApplicationService = storageApplicationService;
     }
 
     @Override
@@ -288,7 +308,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                 content,
                 versioningService.nextVersionNo(repository.latestVersionNo(content.contentType(), content.contentId())),
                 new Date(),
-                snapshotAssembler.toSnapshotJson(content),
+                snapshotJson(content),
                 changeType,
                 changeSummary);
         ClassicsContentVersionId versionId = repository.insertVersion(version);
@@ -368,13 +388,33 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                 content,
                 versioningService.nextVersionNo(repository.latestVersionNo(content.contentType(), content.contentId())),
                 new Date(),
-                snapshotAssembler.toSnapshotJson(content),
+                snapshotJson(content),
                 ClassicsContentChangeType.HISTORY_RESTORED,
                 "恢复历史版本 v" + restoredFrom.getVersionNo());
         ClassicsContentVersionId versionId = repository.insertVersion(version);
         version.setId(versionId);
         versioningService.markVersioned(content, version);
         return version;
+    }
+
+    private String snapshotJson(Versionable content) {
+        if (content instanceof SancaiEntry entry && sancaiAssetApplicationService != null) {
+            List<SancaiEntryImage> images = sancaiAssetApplicationService.listImages(entry.getId());
+            if (storageApplicationService == null) {
+                return snapshotAssembler.toSnapshotJson(entry, images);
+            }
+            return snapshotAssembler.toSnapshotJsonWithImageResources(
+                    entry, images.stream().map(this::toImageResource).toList());
+        }
+        return snapshotAssembler.toSnapshotJson(content);
+    }
+
+    private SancaiEntryVersionSnapshot.ImageResource toImageResource(SancaiEntryImage image) {
+        StoredObject storage = image == null || image.getStorageObjectId() == null
+                ? null
+                : storageApplicationService.get(
+                        StoredObjectIdCodec.toDomain(StorageObjectIdCodec.toValue(image.getStorageObjectId())));
+        return SancaiEntryVersionSnapshot.ImageResource.from(image, storage);
     }
 
     private static BizException sortEmptyInput() {

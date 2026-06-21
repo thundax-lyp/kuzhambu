@@ -33,6 +33,21 @@ public class SancaiAssetResponse implements Serializable {
     @JsonProperty("priority")
     private Integer priority;
 
+    @JsonProperty("originalFilename")
+    private String originalFilename;
+
+    @JsonProperty("contentType")
+    private String contentType;
+
+    @JsonProperty("size")
+    private Long size;
+
+    @JsonProperty("previewUrl")
+    private String previewUrl;
+
+    @JsonProperty("downloadUrl")
+    private String downloadUrl;
+
     @JsonProperty("draftJson")
     private String draftJson;
 

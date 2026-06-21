@@ -32,6 +32,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -159,7 +161,11 @@ public class WangqiDocumentAdminController {
     @HasPermission("classics:wangqi:view")
     @SysLogger(value = "原始文件读取")
     @GetMapping("{id}/source-file/content")
-    public void downloadSourceFile(@PathVariable("id") Long id, HttpServletResponse response) throws IOException {
+    public void downloadSourceFile(
+            @PathVariable("id") Long id,
+            @RequestParam(value = "download", required = false) Boolean download,
+            HttpServletResponse response)
+            throws IOException {
         StoredObjectContent content;
         try {
             content = service.getSourceFileContent(WangqiDocumentIdCodec.toDomain(id));
@@ -170,9 +176,12 @@ public class WangqiDocumentAdminController {
         StoredObject storage = content.getStorage();
         response.setContentType(
                 StringUtils.defaultIfBlank(storage.getContentType(), MediaType.APPLICATION_OCTET_STREAM_VALUE));
+        if (storage.getSize() != null) {
+            response.setContentLengthLong(storage.getSize());
+        }
         response.setHeader(
                 "Content-Disposition",
-                "inline; filename=\"" + FilenameUtils.getName(storage.getOriginalFilename()) + "\"");
+                contentDisposition(storage.getOriginalFilename(), Boolean.TRUE.equals(download)));
         try (InputStream inputStream = content.getInputStream()) {
             inputStream.transferTo(response.getOutputStream());
         }
@@ -221,5 +230,14 @@ public class WangqiDocumentAdminController {
             throw new BizException("王圻版本不属于当前文档");
         }
         return version;
+    }
+
+    private static String contentDisposition(String originalFilename, boolean download) {
+        String disposition = download ? "attachment" : "inline";
+        String filename = StringUtils.defaultIfBlank(FilenameUtils.getName(originalFilename), "file");
+        String asciiFilename = filename.replace("\\", "").replace("\"", "");
+        String encodedFilename =
+                URLEncoder.encode(filename, StandardCharsets.UTF_8).replace("+", "%20");
+        return disposition + "; filename=\"" + asciiFilename + "\"; filename*=UTF-8''" + encodedFilename;
     }
 }
