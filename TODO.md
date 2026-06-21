@@ -9,30 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics-content admin api`：补导出任务分页与下载接口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-RENDER-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/content/controller/ClassicsContentAdminController.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/content/assembler/ClassicsContentInterfaceAssembler.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/content/controller/request/ClassicsContentRequest.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/content/controller/response/ClassicsContentResponse.java`
-    - 处理动作：新增导出任务分页接口和导出产物下载接口，并返回前端所需状态字段。
-    - 验收点：后台接口可分页查看导出任务并下载成功产物。
-    - 重要度：9/10
-
-- [ ] `classics-content admin controller test`：锁定导出任务接口契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-RENDER-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/test/java/com/thundax/kuzhambu/classics/interfaces/admin/content/ClassicsContentAdminControllerTest.java`
-    - 处理动作：新增导出任务分页与下载接口的 controller 契约测试。
-    - 验收点：测试覆盖分页返回、成功下载和过期拒绝下载三条路径。
-    - 重要度：8/10
-
-- [ ] `admin-web classics export api`：新增导出任务前端服务
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-RENDER-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/api/classics/export-service.ts`、`kuzhambu-apps/admin-web/src/api/classics/export-service-contract.test.ts`
-    - 处理动作：新增 Classics 导出任务的前端 API 封装和契约测试。
-    - 验收点：前端 service 可完成创建任务、分页查询和下载 URL 组装。
-    - 重要度：8/10
-
 - [ ] `admin-web sancai export ui`：接入导出任务前端闭环
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-RENDER-CLOSURE.md`
