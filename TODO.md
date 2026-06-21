@@ -9,13 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web/storage/preview`：接入 Admin Storage 页面预览和下载
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/storage/storage-object/storage-object-page.tsx`、`kuzhambu-apps/admin-web/src/pages/storage/storage-object/storage-object-service.ts`、`kuzhambu-apps/admin-web/src/pages/storage/storage-object/storage-object-types.ts`
-    - 处理动作：增加 Storage 内容 URL helper，并用 `toAuthenticatedResourceUrl` 驱动预览和下载动作。
-    - 验收点：Storage 页面预览和下载按钮分别使用业务 URL、token 拼接和 `download` 参数。
-    - 重要度：8/10
 - [ ] `admin-web/wangqi/source-preview`：接入 Admin Wangqi 原始文件预览下载
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`

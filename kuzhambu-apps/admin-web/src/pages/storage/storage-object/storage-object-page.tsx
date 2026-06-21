@@ -1,10 +1,17 @@
-import { DeleteOutlined, FileOutlined, ReloadOutlined, UploadOutlined } from "@ant-design/icons";
+import {
+    DeleteOutlined,
+    DownloadOutlined,
+    EyeOutlined,
+    FileOutlined,
+    ReloadOutlined,
+    UploadOutlined
+} from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Button, Input, Select, Space, Typography } from "antd";
 import { useMemo, useRef, useState } from "react";
 import type { ChangeEvent, Key } from "react";
-import { ADMIN_API_BASE_URL } from "@/api/http";
 import { hasPermission } from "@/auth/permission-storage";
+import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
 import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuTag } from "@/components/kuzhambu-tag";
@@ -12,7 +19,7 @@ import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import * as service from "./storage-object-service";
 import type { StoragePageQuery } from "./storage-object-service";
-import type { StorageRecord } from "./storage-object-types";
+import type { StorageContentMode, StorageRecord } from "./storage-object-types";
 import "./storage-object-page.css";
 
 const { Text } = Typography;
@@ -72,17 +79,11 @@ const readFilename = (storage: StorageRecord) => {
     return normalizeSearch(storage.originalFilename) || `对象 ${storage.id}`;
 };
 
-const toAccessUrl = (accessEndpoint?: string | null) => {
-    if (!accessEndpoint) {
-        return null;
+const toStorageContentUrl = (storage: StorageRecord, mode: StorageContentMode) => {
+    if (!storage.id) {
+        return undefined;
     }
-    if (/^https?:\/\//i.test(accessEndpoint)) {
-        return accessEndpoint;
-    }
-    if (accessEndpoint.startsWith("/api/")) {
-        return `${ADMIN_API_BASE_URL.replace(/\/api$/, "")}${accessEndpoint}`;
-    }
-    return accessEndpoint;
+    return toAuthenticatedResourceUrl(service.getStorageObjectContentUrl(storage.id, mode));
 };
 
 const formatFileSize = (size?: number | null) => {
@@ -405,16 +406,30 @@ export const StorageObjectPage = () => {
             key: "actions",
             options: (storage) => {
                 const filename = readFilename(storage);
-                const accessUrl = toAccessUrl(storage.accessEndpoint);
+                const previewUrl = toStorageContentUrl(storage, "preview");
+                const downloadUrl = toStorageContentUrl(storage, "download");
                 return [
-                    ...(accessUrl
+                    ...(previewUrl
                         ? [
                               {
-                                  key: "content",
-                                  text: "读取",
-                                  ariaLabel: `读取 ${filename}`,
+                                  key: "preview",
+                                  text: "预览",
+                                  icon: <EyeOutlined />,
+                                  ariaLabel: `预览 ${filename}`,
                                   onClick: () =>
-                                      window.open(accessUrl, "_blank", "noopener,noreferrer")
+                                      window.open(previewUrl, "_blank", "noopener,noreferrer")
+                              }
+                          ]
+                        : []),
+                    ...(downloadUrl
+                        ? [
+                              {
+                                  key: "download",
+                                  text: "下载",
+                                  icon: <DownloadOutlined />,
+                                  ariaLabel: `下载 ${filename}`,
+                                  onClick: () =>
+                                      window.open(downloadUrl, "_blank", "noopener,noreferrer")
                               }
                           ]
                         : []),
