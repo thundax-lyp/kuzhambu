@@ -1,8 +1,12 @@
-import { DownloadOutlined, ReloadOutlined, UploadOutlined } from "@ant-design/icons";
+import { DownloadOutlined, EyeOutlined, ReloadOutlined, UploadOutlined } from "@ant-design/icons";
 import { Button, Descriptions, Empty, Space, Typography, Upload } from "antd";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
 import * as wangqiService from "../wangqi-service";
-import type { WangqiDocumentRecord, WangqiSourceFileRecord } from "../wangqi-types";
+import type {
+    WangqiDocumentRecord,
+    WangqiSourceFileContentMode,
+    WangqiSourceFileRecord
+} from "../wangqi-types";
 
 const { Text } = Typography;
 
@@ -21,14 +25,12 @@ const formatSize = (size?: number | null) => {
 
 const resolveContentUrl = (
     document?: WangqiDocumentRecord | null,
-    sourceFile?: WangqiSourceFileRecord | null
+    mode: WangqiSourceFileContentMode = "preview"
 ) => {
     if (!document?.id) {
         return undefined;
     }
-    return toAuthenticatedResourceUrl(
-        sourceFile?.contentUrl || wangqiService.getSourceFileContentUrl(document.id)
-    );
+    return toAuthenticatedResourceUrl(wangqiService.getSourceFileContentUrl(document.id, mode));
 };
 
 export interface WangqiStorageFilePanelProps {
@@ -48,7 +50,8 @@ export const WangqiStorageFilePanel = ({
     onRefresh,
     onUpload
 }: WangqiStorageFilePanelProps) => {
-    const contentUrl = resolveContentUrl(document, sourceFile);
+    const previewUrl = resolveContentUrl(document, "preview");
+    const downloadUrl = resolveContentUrl(document, "download");
     const hasSourceFile = Boolean(sourceFile?.storageObjectId || document?.storageObjectId);
 
     return (
@@ -79,11 +82,20 @@ export const WangqiStorageFilePanel = ({
                     </Button>
                 </Upload>
                 <Button
+                    aria-label="预览王圻原始文件"
+                    icon={<EyeOutlined />}
+                    href={previewUrl}
+                    target="_blank"
+                    disabled={!previewUrl || !hasSourceFile}
+                >
+                    预览
+                </Button>
+                <Button
                     aria-label="下载王圻原始文件"
                     icon={<DownloadOutlined />}
-                    href={contentUrl}
+                    href={downloadUrl}
                     target="_blank"
-                    disabled={!contentUrl || !hasSourceFile}
+                    disabled={!downloadUrl || !hasSourceFile}
                 >
                     下载
                 </Button>

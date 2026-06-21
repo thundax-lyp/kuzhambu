@@ -163,7 +163,10 @@ describe("wangqi service request contracts", () => {
         });
 
         expect(service.getSourceFileContentUrl(400000000001)).toBe(
-            "/classics/wangqi/documents/400000000001/source-file/content"
+            `${DEV_PROXY_PREFIX}/classics/wangqi/documents/400000000001/source-file/content`
+        );
+        expect(service.getSourceFileContentUrl(400000000001, "download")).toBe(
+            `${DEV_PROXY_PREFIX}/classics/wangqi/documents/400000000001/source-file/content?download=true`
         );
     });
 

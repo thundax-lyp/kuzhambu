@@ -9,13 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web/wangqi/source-preview`：接入 Admin Wangqi 原始文件预览下载
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/wangqi/components/wangqi-storage-file-panel.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/wangqi/wangqi-service.ts`、`kuzhambu-apps/admin-web/src/pages/classics/wangqi/wangqi-types.ts`、`kuzhambu-apps/admin-web/src/pages/classics/wangqi/wangqi-service-contract.test.ts`
-    - 处理动作：让 Wangqi 文件面板通过业务域接口和鉴权 URL 完成预览下载。
-    - 验收点：Wangqi 不再直连 Storage 通用读取，服务测试覆盖 `download` URL 参数。
-    - 重要度：8/10
 - [ ] `admin-web/sancai/image-upload-preview`：接入 Admin Sancai 图片上传预览
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`

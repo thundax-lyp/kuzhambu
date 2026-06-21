@@ -1,8 +1,9 @@
-import { postFormData, postJson } from "@/api/http";
+import { ADMIN_API_BASE_URL, postFormData, postJson } from "@/api/http";
 import type { Page, PageQuery } from "@/types/page";
 import type {
     WangqiContentVersionRecord,
     WangqiDocumentRecord,
+    WangqiSourceFileContentMode,
     WangqiSourceFileRecord
 } from "./wangqi-types";
 
@@ -87,8 +88,12 @@ export const getSourceFile = (documentId: number) => {
     );
 };
 
-export const getSourceFileContentUrl = (documentId: number) => {
-    return `${DOCUMENTS_PATH}/${documentId}/source-file/content`;
+export const getSourceFileContentUrl = (
+    documentId: number,
+    mode: WangqiSourceFileContentMode = "preview"
+) => {
+    const search = mode === "download" ? "?download=true" : "";
+    return `${ADMIN_API_BASE_URL}${DOCUMENTS_PATH}/${documentId}/source-file/content${search}`;
 };
 
 export const listVersions = (documentId: number) => {
