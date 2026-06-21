@@ -9,22 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web sancai showcase ui`：接入静态展示任务前端闭环
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-RENDER-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/services/sancai-entry-service.ts`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-types.ts`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-service-contract.test.ts`
-    - 处理动作：在三才图会条目页接入“生成静态展示”动作、任务列表和下载入口。
-    - 验收点：管理员能发起静态展示任务并看到任务状态与下载入口。
-    - 重要度：9/10
-
-- [ ] `classics export expiry`：补导出任务过期控制
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-RENDER-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/service/impl/ClassicsContentApplicationServiceImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/content/controller/ClassicsContentAdminController.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/test/java/com/thundax/kuzhambu/classics/interfaces/admin/content/ClassicsContentAdminControllerTest.java`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.tsx`
-    - 处理动作：固定导出任务 `7` 天过期规则，并在后端拒绝过期下载、前端展示过期状态。
-    - 验收点：过期导出任务不可下载，Admin Web 任务列表能显示已过期状态。
-    - 重要度：9/10
-
 - [ ] `render closure verification`：补联调验证与现场清理
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-RENDER-CLOSURE.md`
