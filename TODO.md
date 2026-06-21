@@ -9,13 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `portal-web/share/resource-preview`：接入 Portal 分享页资源预览
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/portal-web/src/pages/share/share-form.tsx`、`kuzhambu-apps/portal-web/src/pages/share/share-types.ts`
-    - 处理动作：渲染 Portal 已装配的 Wangqi 原始文件和 Sancai 图片资源。
-    - 验收点：Portal 分享页不以裸 JSON 作为主要内容，只有 Wangqi 原始文件显示下载按钮。
-    - 重要度：9/10
 - [ ] `readiness/storage-preview`：完成 Storage 预览闭环验证记录
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`

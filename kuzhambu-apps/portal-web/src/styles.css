@@ -403,17 +403,99 @@ a {
     font-size: 13px;
 }
 
-.portal-share-target pre {
-    max-height: 520px;
+.portal-share-copy,
+.portal-share-copy-list p {
     margin: 0;
-    overflow: auto;
-    padding: 16px;
-    border-radius: 6px;
-    background: #1f2521;
-    color: #f3eee3;
-    font-size: 13px;
-    line-height: 1.6;
+    color: var(--text-primary);
+    font-size: 15px;
+    line-height: 1.75;
     white-space: pre-wrap;
+}
+
+.portal-share-copy-list {
+    display: grid;
+    gap: 14px;
+}
+
+.portal-share-copy-list h3,
+.portal-share-images h3,
+.portal-share-resource h3 {
+    margin: 0 0 8px;
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.portal-share-resource {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px;
+    border: 1px solid var(--line-subtle);
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--surface-panel) 82%, white);
+}
+
+.portal-share-resource-actions {
+    display: flex;
+    flex: 0 0 auto;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.portal-share-resource-actions svg {
+    width: 15px;
+    height: 15px;
+}
+
+.portal-share-resource-meta {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin: 0;
+}
+
+.portal-share-images {
+    display: grid;
+    gap: 12px;
+}
+
+.portal-share-image-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+}
+
+.portal-share-image-grid figure {
+    margin: 0;
+}
+
+.portal-share-image-grid img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border: 1px solid var(--line-subtle);
+    border-radius: 8px;
+    background: var(--surface-muted);
+}
+
+.portal-share-image-grid figcaption {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 8px;
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+.portal-share-image-grid strong {
+    min-width: 0;
+    overflow: hidden;
+    color: var(--text-primary);
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 @media (max-width: 1080px) {
@@ -424,8 +506,13 @@ a {
     .portal-filter,
     .portal-list-item,
     .portal-share-meta dl,
-    .portal-share-target dl {
+    .portal-share-target dl,
+    .portal-share-resource-meta {
         grid-template-columns: 1fr;
+    }
+
+    .portal-share-resource {
+        display: grid;
     }
 }
 
