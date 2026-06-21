@@ -21,7 +21,8 @@ class StorageObjectContentContractTest {
     @Test
     void contentRouteShouldKeepReadableContentPath() throws Exception {
         GetMapping methodMapping = StorageObjectController.class
-                .getDeclaredMethod("content", String.class, jakarta.servlet.http.HttpServletResponse.class)
+                .getDeclaredMethod(
+                        "content", String.class, Boolean.class, jakarta.servlet.http.HttpServletResponse.class)
                 .getAnnotation(GetMapping.class);
 
         assertEquals("{id}/content", methodMapping.value()[0]);
@@ -32,18 +33,42 @@ class StorageObjectContentContractTest {
         StorageObjectController controller = new StorageObjectController(storageService());
         MockHttpServletResponse response = new MockHttpServletResponse();
 
-        controller.content("10", response);
+        controller.content("10", false, response);
 
         assertEquals("image/png", response.getContentType());
+        assertEquals(11, response.getContentLength());
+        assertTrue(response.getHeader("Content-Disposition").startsWith("inline;"));
         assertTrue(response.getHeader("Content-Disposition").contains("sancai.png"));
         assertEquals("image-bytes", response.getContentAsString());
+    }
+
+    @Test
+    void contentShouldSupportDownloadDisposition() throws Exception {
+        StorageObjectController controller = new StorageObjectController(storageService());
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        controller.content("10", true, response);
+
+        assertTrue(response.getHeader("Content-Disposition").startsWith("attachment;"));
+    }
+
+    @Test
+    void contentShouldWriteRfc5987Filename() throws Exception {
+        StorageObjectController controller = new StorageObjectController(storageService());
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        controller.content("11", false, response);
+
+        String disposition = response.getHeader("Content-Disposition");
+        assertTrue(disposition.contains("filename=\"三才图.png\""));
+        assertTrue(disposition.contains("filename*=UTF-8''%E4%B8%89%E6%89%8D%E5%9B%BE.png"));
     }
 
     @Test
     void contentShouldRejectDeletedOrMissingObject() {
         StorageObjectController controller = new StorageObjectController(storageService());
 
-        assertThrows(RuntimeException.class, () -> controller.content("404", new MockHttpServletResponse()));
+        assertThrows(RuntimeException.class, () -> controller.content("404", false, new MockHttpServletResponse()));
     }
 
     private static StorageApplicationService storageService() {
@@ -58,8 +83,9 @@ class StorageObjectContentContractTest {
                         }
                         StoredObject storage = new StoredObject();
                         storage.setId(id);
-                        storage.setOriginalFilename("sancai.png");
+                        storage.setOriginalFilename(id.value() == 11L ? "三才图.png" : "sancai.png");
                         storage.setContentType("image/png");
+                        storage.setSize(11L);
                         return new StoredObjectContent(storage, new ByteArrayInputStream("image-bytes".getBytes()));
                     }
                     throw new UnsupportedOperationException(method.getName());

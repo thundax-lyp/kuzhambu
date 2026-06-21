@@ -9,13 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `storage/admin/content-response`：收敛 Storage 内容读取响应头
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-interface/src/main/java/com/thundax/kuzhambu/storage/interfaces/admin/object/controller/StorageObjectController.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-interface/src/test/java/com/thundax/kuzhambu/storage/interfaces/admin/StorageObjectContentContractTest.java`
-    - 处理动作：为 Storage 内容读取补齐 inline/download、`Content-Length`、安全文件名和 `filename*` 响应头。
-    - 验收点：Storage 内容读取测试覆盖预览、下载、中文文件名和长度响应。
-    - 重要度：9/10
 - [ ] `classics/wangqi/source-content`：补齐 Wangqi 原始文件读取能力
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`
