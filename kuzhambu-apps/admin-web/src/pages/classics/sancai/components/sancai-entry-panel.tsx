@@ -13,6 +13,7 @@ import * as entryService from "../services/sancai-entry-service";
 import type {
     SancaiContentVersionRecord,
     SancaiEntryRecord,
+    SancaiShowcaseRecord,
     SancaiExportJobRecord,
     SancaiVolumeRecord
 } from "../sancai-types";
@@ -20,6 +21,7 @@ import type {
 const { Text } = Typography;
 
 const EXPORT_PAGE_SIZE = 8;
+const SHOWCASE_PAGE_SIZE = 8;
 
 const readEntryTitle = (entry: SancaiEntryRecord) => {
     return entry.title?.trim() || `条目 ${entry.id}`;
@@ -53,6 +55,20 @@ const exportStatusTagType = (status?: string | null) => {
             return "error";
         case "EXPIRED":
             return "warning";
+        default:
+            return "default";
+    }
+};
+
+const showcaseStatusTagType = (status?: string | null) => {
+    switch (status) {
+        case "COMPLETED":
+            return "success";
+        case "PROCESSING":
+        case "REQUESTED":
+            return "processing";
+        case "FAILED":
+            return "error";
         default:
             return "default";
     }
@@ -163,6 +179,16 @@ export const SancaiEntryPanel = ({
         retry: false
     });
     const exportJobs = exportsQuery.data?.records || [];
+    const showcasesQuery = useQuery({
+        queryKey: ["classics", "sancai", "showcases", "jobs"],
+        queryFn: () =>
+            entryService.pageShowcases({
+                pageNo: 1,
+                pageSize: SHOWCASE_PAGE_SIZE
+            }),
+        retry: false
+    });
+    const showcaseJobs = showcasesQuery.data?.records || [];
     let modelKey = "empty";
     if (isCreating) {
         modelKey = "create";
@@ -183,6 +209,11 @@ export const SancaiEntryPanel = ({
     const invalidateExportJobs = async () => {
         await queryClient.invalidateQueries({
             queryKey: ["classics", "sancai", "exports", "jobs"]
+        });
+    };
+    const invalidateShowcaseJobs = async () => {
+        await queryClient.invalidateQueries({
+            queryKey: ["classics", "sancai", "showcases", "jobs"]
         });
     };
     const addEntryMutation = useMutation({
@@ -285,6 +316,32 @@ export const SancaiEntryPanel = ({
             messageApi.error(error instanceof Error ? error.message : "导出提交失败");
         }
     });
+    const showcaseEntryMutation = useMutation({
+        mutationFn: (entry: SancaiEntryRecord) => {
+            const title = `${readEntryTitle(entry)} 静态展示`;
+            return entryService.requestShowcase({
+                scopeJson: JSON.stringify({
+                    title,
+                    entries: [
+                        {
+                            id: entry.id,
+                            title: entry.title,
+                            volumeId: entry.volumeId
+                        }
+                    ]
+                }),
+                entryCount: 1,
+                visibilityRiskStatus: "PUBLIC_ONLY"
+            });
+        },
+        onSuccess: async () => {
+            await invalidateShowcaseJobs();
+            messageApi.success("三才静态展示任务已提交，请到下方任务列表查看进度。");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "静态展示提交失败");
+        }
+    });
 
     const selectEntry = (entry: SancaiEntryRecord) => {
         setIsCreating(false);
@@ -367,8 +424,20 @@ export const SancaiEntryPanel = ({
     const exportEntry = (entry: SancaiEntryRecord) => {
         exportEntryMutation.mutate(entry);
     };
+    const showcaseEntry = (entry: SancaiEntryRecord) => {
+        if (!entry.id) {
+            return;
+        }
+        showcaseEntryMutation.mutate(entry);
+    };
 
     const downloadExport = (job: SancaiExportJobRecord) => {
+        if (!job.downloadUrl) {
+            return;
+        }
+        window.open(job.downloadUrl, "_blank", "noopener,noreferrer");
+    };
+    const downloadShowcase = (job: SancaiShowcaseRecord) => {
         if (!job.downloadUrl) {
             return;
         }
@@ -416,8 +485,14 @@ export const SancaiEntryPanel = ({
     const isDownloadableExport = (job: SancaiExportJobRecord) => {
         return job.status === "COMPLETED" && Boolean(job.downloadUrl) && !isExpired(job.expiresAt);
     };
-    const renderExportStatus = (status?: string | null) => {
+    const isDownloadableShowcase = (job: SancaiShowcaseRecord) => {
+        return job.status === "COMPLETED" && Boolean(job.downloadUrl);
+    };
+    const renderExportStatus = (status?: string | null, expiresAt?: string | null) => {
         const normalized = status || "UNKNOWN";
+        if (isExpired(expiresAt)) {
+            return <Tag color="warning">已过期</Tag>;
+        }
         const displayStatus =
             {
                 COMPLETED: "已完成",
@@ -427,6 +502,17 @@ export const SancaiEntryPanel = ({
                 EXPIRED: "已过期"
             }[normalized] || normalized;
         return <Tag color={exportStatusTagType(normalized)}>{displayStatus}</Tag>;
+    };
+    const renderShowcaseStatus = (status?: string | null) => {
+        const normalized = status || "UNKNOWN";
+        const displayStatus =
+            {
+                COMPLETED: "已完成",
+                REQUESTED: "排队中",
+                PROCESSING: "进行中",
+                FAILED: "失败"
+            }[normalized] || normalized;
+        return <Tag color={showcaseStatusTagType(normalized)}>{displayStatus}</Tag>;
     };
 
     return (
@@ -438,6 +524,15 @@ export const SancaiEntryPanel = ({
                     showIcon
                     message="三才图会条目加载失败"
                     description="请确认后台条目接口可用后刷新页面。"
+                />
+            ) : null}
+            {showcasesQuery.isError ? (
+                <Alert
+                    className="sancai-alert"
+                    type="warning"
+                    showIcon
+                    message="静态展示任务列表加载失败"
+                    description="请确认后台静态展示任务接口可用后刷新页面。"
                 />
             ) : null}
             {exportsQuery.isError ? (
@@ -483,7 +578,7 @@ export const SancaiEntryPanel = ({
                                 key={job.id ?? `export-job-${job.requestedAt}`}
                                 extra={
                                     <Space size={8} wrap>
-                                        {renderExportStatus(job.status)}
+                                        {renderExportStatus(job.status, job.expiresAt)}
                                         {downloadable ? (
                                             <Button
                                                 size="small"
@@ -509,12 +604,72 @@ export const SancaiEntryPanel = ({
                     }}
                 />
             </section>
+            <section className="sancai-export-section">
+                <Space align="center" className="sancai-export-section-head" size={12} wrap>
+                    <Text strong>静态展示任务</Text>
+                    <Button
+                        size="small"
+                        type="link"
+                        onClick={() => {
+                            void invalidateShowcaseJobs();
+                        }}
+                    >
+                        刷新
+                    </Button>
+                </Space>
+                <List
+                    size="small"
+                    dataSource={showcaseJobs}
+                    loading={showcasesQuery.isLoading || showcaseEntryMutation.isPending}
+                    locale={{
+                        emptyText: (
+                            <Empty
+                                description="暂无静态展示任务"
+                                image={Empty.PRESENTED_IMAGE_SIMPLE}
+                            />
+                        )
+                    }}
+                    renderItem={(job) => {
+                        const downloadable = isDownloadableShowcase(job);
+                        const statusText = formatDateTime(job.requestedAt);
+                        return (
+                            <List.Item
+                                key={job.id ?? `showcase-job-${job.requestedAt}`}
+                                extra={
+                                    <Space size={8} wrap>
+                                        {renderShowcaseStatus(job.status)}
+                                        {downloadable ? (
+                                            <Button
+                                                size="small"
+                                                type="primary"
+                                                onClick={() => downloadShowcase(job)}
+                                            >
+                                                下载
+                                            </Button>
+                                        ) : (
+                                            <Button size="small" disabled>
+                                                下载
+                                            </Button>
+                                        )}
+                                    </Space>
+                                }
+                            >
+                                <List.Item.Meta
+                                    title={`任务 #${job.id ?? "草稿"}`}
+                                    description={`${statusText} | 条目数：${job.entryCount ?? 0} | 风险：${job.visibilityRiskStatus || "未知"}`}
+                                />
+                            </List.Item>
+                        );
+                    }}
+                />
+            </section>
             <SancaiEntryList
                 entries={entries}
                 isLoading={isLoading || sortEntryMutation.isPending}
                 volumes={volumes}
                 onDelete={deleteEntry}
                 onExport={exportEntry}
+                onShowcase={showcaseEntry}
                 onShare={shareEntry}
                 onSort={sortEntry}
                 onView={selectEntry}

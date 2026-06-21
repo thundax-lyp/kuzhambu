@@ -1,13 +1,16 @@
 import { ADMIN_API_BASE_URL, getJson, postFormData, postJson } from "@/api/http";
+import type { Page } from "@/types/page";
 import type {
     SancaiContentVersionRecord,
     SancaiEntryImageContentMode,
     SancaiEntryImageRecord,
-    SancaiEntryRecord
+    SancaiEntryRecord,
+    SancaiShowcaseRecord
 } from "../sancai-types";
 
 const ENTRIES_PATH = "/classics/sancai/entries";
 const ASSET_IMAGES_PATH = "/classics/sancai/assets/images";
+const ASSET_SHOWCASES_PATH = "/classics/sancai/assets/showcases";
 
 export interface SancaiEntryQuery {
     categoryId?: number | null;
@@ -60,6 +63,27 @@ export interface SancaiEntryImageContentUrlCommand {
     entryId: number;
     imageId: number;
     mode?: SancaiEntryImageContentMode;
+}
+
+export type SancaiShowcaseStatus =
+    | "REQUESTED"
+    | "PROCESSING"
+    | "COMPLETED"
+    | "FAILED"
+    | "EXPIRED";
+
+export interface SancaiShowcaseCreateCommand {
+    status?: string | null;
+    scopeJson?: string | null;
+    storageObjectId?: number | null;
+    entryCount?: number | null;
+    visibilityRiskStatus?: string | null;
+}
+
+export interface SancaiShowcasePageQuery {
+    pageNo?: number | null;
+    pageSize?: number | null;
+    status?: SancaiShowcaseStatus | null;
 }
 
 export const list = (request: SancaiEntryQuery = {}) => {
@@ -141,6 +165,24 @@ export const getVersion = (entryId: number, versionId: number) => {
         `${ENTRIES_PATH}/versions/get`,
         {
             body: { id: entryId, versionId }
+        }
+    );
+};
+
+export const requestShowcase = (command: SancaiShowcaseCreateCommand) => {
+    return postJson<SancaiShowcaseRecord, SancaiShowcaseCreateCommand>(
+        `${ASSET_SHOWCASES_PATH}/request`,
+        {
+            body: command
+        }
+    );
+};
+
+export const pageShowcases = (query: SancaiShowcasePageQuery = {}) => {
+    return postJson<Page<SancaiShowcaseRecord>, SancaiShowcasePageQuery>(
+        `${ASSET_SHOWCASES_PATH}/page`,
+        {
+            body: query
         }
     );
 };

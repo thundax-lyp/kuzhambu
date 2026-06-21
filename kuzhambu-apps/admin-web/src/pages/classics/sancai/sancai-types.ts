@@ -62,6 +62,20 @@ export interface SancaiContentVersionRecord {
     changeSummary?: string | null;
 }
 
+export type SancaiShowcaseStatus = "REQUESTED" | "PROCESSING" | "COMPLETED" | "FAILED" | "EXPIRED";
+
+export interface SancaiShowcaseRecord {
+    id?: number | null;
+    requestedAt?: string | null;
+    status?: SancaiShowcaseStatus | null;
+    scopeJson?: string | null;
+    storageObjectId?: number | null;
+    entryCount?: number | null;
+    visibilityRiskStatus?: string | null;
+    contentUrl?: string | null;
+    downloadUrl?: string | null;
+}
+
 export interface SancaiVersionSnapshot {
     contentType?: string | null;
     contentId?: number | null;
