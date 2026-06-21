@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `sancai showcase app`：打通静态展示任务执行闭环
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-RENDER-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sancai/service/impl/SancaiAssetApplicationServiceImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sancai/command/SancaiShowcaseCommand.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sancai/result/SancaiShowcaseJobResult.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/sancai/SancaiAssetApplicationServiceImplTest.java`
-    - 处理动作：把 `requestShowcase(...)` 改成“建任务 -> 调 render -> 写 Storage -> 回写任务状态”的同步闭环。
-    - 验收点：静态展示成功时返回带 `storageObjectId` 的任务结果，失败时任务进入失败态且单测覆盖成功/失败路径。
-    - 重要度：10/10
-
 - [ ] `sancai showcase admin api`：补静态展示任务分页与下载接口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-RENDER-CLOSURE.md`
