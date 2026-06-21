@@ -80,6 +80,8 @@
 
 ### B5 Classics 导出闭环产物入库
 
-状态：进行中。
+状态：已完成。
 
 目标：在 Classics 导出任务与 Sancai 静态展示任务可执行路径上，明确 `StorageUploadStreamHelper` 的集成与产物入库字段归属；当前进度为前端导出/展示任务查询与下载入口与过期控制已接入。
+
+更新：产物已通过 `StorageUploadStreamHelper` 写入 Storage 并进入导出/静态展示下载闭环，前端查询与下载入口已可见且导出过期禁用下载。
