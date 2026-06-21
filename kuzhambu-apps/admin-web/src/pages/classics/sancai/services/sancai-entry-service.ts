@@ -65,7 +65,13 @@ export interface SancaiEntryImageContentUrlCommand {
     mode?: SancaiEntryImageContentMode;
 }
 
-export type SancaiShowcaseStatus = "REQUESTED" | "PROCESSING" | "COMPLETED" | "FAILED" | "EXPIRED";
+// prettier-ignore
+export type SancaiShowcaseStatus =
+    | "REQUESTED"
+    | "PROCESSING"
+    | "COMPLETED"
+    | "FAILED"
+    | "EXPIRED";
 
 export interface SancaiShowcaseCreateCommand {
     status?: string | null;
