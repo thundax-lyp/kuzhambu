@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `sancai showcase admin controller test`：锁定静态展示任务接口契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-RENDER-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/test/java/com/thundax/kuzhambu/classics/interfaces/admin/sancai/SancaiAssetAdminControllerTest.java`
-    - 处理动作：补齐静态展示任务分页与下载接口的 controller 契约测试。
-    - 验收点：测试覆盖分页返回和成功下载路径。
-    - 重要度：8/10
-
 - [ ] `admin-web sancai showcase ui`：接入静态展示任务前端闭环
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-RENDER-CLOSURE.md`
