@@ -36,11 +36,12 @@
 - 明代习俗闭环已完成验证：数据生成校验、后端 Maven 检查和测试、前端 format/lint/test/build、Playwright 页面闭环、dev.env 登录后分页和关键词云接口冒烟均已通过。
 - 王圻文档 Admin Web 管理闭环已完成：后台菜单和 `/classics/wangqi` 路由可进入真实页面，支持文档分页、关键词和可见性筛选、时间线视图、详情阅读、新增、编辑、删除、原始文件上传和读取、版本历史、版本字段对比和历史恢复。
 - 王圻文档初始化数据、后端接口契约、前端服务契约、页面单测、Playwright 页面闭环和 dev.env Admin API 冒烟均已通过；删除 Wangqi 文档会删除版本历史、移除 Storage reference，并释放当前原始文件对象引用状态。
+- Storage 文件读取和预览最小闭环已接入 Classics：Admin Storage/Wangqi/Sancai 使用鉴权资源 URL，Wangqi 原始文件和 Sancai 图片通过业务域接口读取，Portal 分享详情动态装配资源对象，分享资源读取会校验分享链接和快照内资源 ID。
 
 未完成：
 
-- 复杂业务闭环未接通：权限过滤、AI/Worker/Storage 跨域链路、分享联动和部分确认流程仍需联调。
-- 三才图会本轮不包含标签治理、多选批量、删除联动、复杂视觉资产生产、导出、静态展示和分享能力。
+- 复杂业务闭环未接通：权限过滤、AI/Worker 跨域链路、批量操作和部分确认流程仍需联调。
+- 三才图会仍不包含标签治理、多选批量、复杂视觉资产生产、导出和静态展示能力。
 
 ## Requirement Coverage Matrix
 
@@ -53,11 +54,11 @@
 | 门类和卷稳定排序 | 已完成 | `priority` 规则、schema 约束、service 排序参数与稳定排序 API 已支持；Admin Web 已提供门类独立排序表单，保存时提交 orderedIds | 无 | Classics, Admin Web |
 | 条目查看、创建、编辑、删除 | 部分完成 | 条目查询、详情、保存、删除接口与运行时代码已到位；Admin Web 已完成列表进入详情、编辑保存和列表刷新闭环 | 删除后分享目标状态同步、风险态重算未完成；删除不纳入本轮 Admin Web 页面闭环 | Classics, Admin Web |
 | 编辑标题、门类、卷、原文、译文和标签 | 部分完成 | 条目编辑核心字段（标题/门类/卷/正文等）与保存链路已实现；Admin Web 已支持标题、原文、译文、摘要、公开状态编辑保存 | 标签协作链路（通用标签联动）和入参校验规则待补齐；门类/卷迁移不纳入本轮页面闭环 | Classics, Admin Web, Knowledge |
-| 展示原文、译文、标签、配图和状态 | 部分完成 | 条目详情、标签列表、配图列表均已提供独立接口；Admin Web 已展示条目列表状态并支持详情编辑核心文本字段 | Admin Web 尚未聚合标签、配图和复杂视觉资产展示 | Classics, Admin Web |
-| 多张配图、缩略预览、放大浏览 | 部分完成 | 图片保存、列表、类型与 storage 对象引用链路已落地 | 文件读取、缩略图生成、放大预览相关接口未完善 | Classics, Storage |
+| 展示原文、译文、标签、配图和状态 | 部分完成 | 条目详情、标签列表、配图列表均已提供独立接口；Admin Web 已展示条目列表状态、详情编辑核心文本字段和当前使用图片预览/下载入口 | Admin Web 尚未聚合标签和复杂视觉资产展示 | Classics, Admin Web |
+| 多张配图、缩略预览、放大浏览 | 部分完成 | 图片保存、列表、类型、Storage 对象引用、业务上传、业务读取和 Admin Web 当前图预览/下载链路已落地；分享快照只带 `currentUsed=true` 图片并按 `priority ASC` 展示 | 缩略图生成、多图放大浏览交互和视觉资产图切换展示未闭环 | Classics, Storage, Admin Web |
 | 区分原始配图和视觉资产生成图 | 部分完成 | `image_type`、图片模型、资产模型与保存入口已实现 | 视觉资产生成结果识别、AI 生图与切换展示入口未闭环 | Classics |
 | 从条目上下文进入视觉资产工作流 | 部分完成 | 资产草稿、图片、展示任务接口与服务可用 | AI 生成与调用链路未形成闭环 | Classics, AI |
-| 原图上传、删除和预览 | 部分完成 | 原图保存与列表接口已实现，storage 引用字段已落地 | 删除接口未对外暴露，预览读取未完善 | Classics, Storage |
+| 原图上传、删除和预览 | 部分完成 | 原图业务上传、列表、Storage owner/reference 绑定、业务读取、inline/attachment 响应头和 Admin Web 当前图预览/下载已实现 | 删除接口虽有应用层能力但未形成 Admin Web 删除闭环；批量图片管理未完成 | Classics, Storage, Admin Web |
 | 图片理解、信息融合、权重调节、视觉描述、AI 生图入口 | 部分完成 | 视觉资产相关字段建模完成 | AI 执行、候选预览、确认应用和失败处理未实现 | Classics, AI |
 | 视觉资产历史和当前使用版本选择 | 部分完成 | 视觉资产持久化与当前版本切换服务已实现，列表查询可用 | 历史列表/切换对外接口和切换策略未打通 | Classics |
 | 多选条目批量视觉资产处理 | 部分完成 | 批处理需求与模型约束在需求和数据模型中存在 | 批量执行、失败结果模型、取消回滚策略未实现 | Classics, AI |
@@ -107,14 +108,14 @@
 
 | 需求项 | 状态 | 已完成部分 | 未完成部分 | 责任域 |
 | --- | --- | --- | --- | --- |
-| 选择三类内容生成分享链接 | 部分完成 | 分享链接创建、状态变更与目标写入服务链路已实现，目标含内容快照字段 | 内容选择与冲突校验、创建幂等性未完成 | Classics |
-| 单链接多个内容 | 部分完成 | 目标关系支持一对多，创建流程可写入多个 target | target 校验、重复去重与回写策略未实现 | Classics |
+| 选择三类内容生成分享链接 | 部分完成 | 分享链接创建、状态变更与目标写入服务链路已实现，目标含内容快照字段；Portal 分享详情可展示固化快照和资源预览 | 内容选择 UI、冲突校验和创建幂等性未完成 | Classics, Portal Web |
+| 单链接多个内容 | 部分完成 | 目标关系支持一对多，创建流程可写入多个 target；Portal 详情按 target 展示多内容快照和资源对象 | target 重复去重与回写策略未实现 | Classics, Portal Web |
 | 批量创建分享链接 | 部分完成 | 分享模型与接口需求已覆盖批量创建入口 | 批量结果模型、失败原因与回滚策略未实现 | Classics |
 | 分享链接公开或私有 | 部分完成 | 可见性字段与管理接口（创建/状态变更）已实现；Portal 公开分享访问无需登录，过期、撤销、不存在统一按 404 处理 | 私有分享访问分支、管理侧恢复策略未实现 | Classics, System |
 | 过期时间、撤销和恢复 | 部分完成 | 过期时间与状态更新字段已实现 | 过期清理、恢复/恢复到位自动流未实现 | Classics |
-| 只读访问页 | 已完成 | Portal 已提供公开分享列表和详情端点；Portal Web 已提供首页、分享列表和分享详情路由，展示固化快照 | 无 | Classics, System, Portal Web |
-| 访问统计 | 部分完成 | 访问记录实体与应用服务接口（写入/分页查询）已实现 | 访问入口统计对接与对外统计 API 未接通 | Classics |
-| 分享完整内容快照 | 已完成 | 分享创建时先确保正式内容版本，再将 `classics_content_version.snapshot_json` 固化到 `classics_share_target.content_snapshot_json`；target 记录 `content_version_id/content_version_no`；三类正式版本快照 schema 已沉淀到 `docs/20-interfaces/CLASSICS-CONTENT-VERSION-SNAPSHOT-INTERFACE.md` | 无 | Classics |
+| 只读访问页 | 已完成 | Portal 已提供公开分享列表、详情和分享资源读取端点；Portal Web 已提供首页、分享列表和分享详情路由，展示固化快照、Wangqi 原始文件资源和 Sancai 图片资源 | 无 | Classics, System, Portal Web |
+| 访问统计 | 部分完成 | 访问记录实体与应用服务接口（写入/分页查询）已实现；分享资源读取成功会写入访问记录 | 分享详情浏览统计和对外统计 API 未接通 | Classics |
+| 分享完整内容快照 | 已完成 | 分享创建时先确保正式内容版本，再将 `classics_content_version.snapshot_json` 固化到 `classics_share_target.content_snapshot_json`；target 记录 `content_version_id/content_version_no`；三类正式版本快照 schema 已沉淀到 `docs/20-interfaces/CLASSICS-CONTENT-VERSION-SNAPSHOT-INTERFACE.md`；Sancai 快照包含当前使用图片资源 ID，Portal 响应层动态补资源对象 | 无 | Classics |
 | 私有内容分享确认文案 | 已完成 | 分享创建与状态模型已支持风险状态表达，确认文案由前端按风险状态渲染 | 无 | Classics |
 | 目标被删除后占位展示 | 已完成 | 目标快照和目标状态可持久化，查询接口可返回状态供前端按状态展示 | 无 | Classics |
 
@@ -126,7 +127,7 @@
 | 批量状态修改成功数、失败数和失败原因 | 未完成 | 需求已记录 | 批处理结果模型和接口响应未形成可执行任务粒度 | Classics |
 | AI 生成候选预览、修改、确认和放弃 | 未完成 | 需求已记录 | 候选结果承载结构、接口和 AI 协作协议未设计 | Classics, AI |
 | Knowledge 标签治理 | 外部依赖 | Classics 设计了标签引用和标签名快照 | 标签合并、同义词、治理规则不属于 Classics | Knowledge |
-| Storage 对象管理 | 外部依赖 | Classics 只保存 `storage_object_id` | 上传、读取、下载、删除对象由 Storage 实现 | Storage |
+| Storage 对象管理 | 外部依赖 | Classics 只保存 `storage_object_id`，但业务域已负责 Wangqi 原始文件和 Sancai 图片的上传入口、归属校验、读取 URL 和 Portal 分享资源访问控制 | 底层对象生命周期、物理删除、清理策略和通用对象管理仍由 Storage 实现 | Classics, Storage |
 | Discovery 搜索和问答 | 外部依赖 | Classics 可提供内容上下文和入口 | 索引、召回、问答生成由 Discovery/AI 实现 | Discovery, AI |
 | System 审计 | 外部依赖 | 业务表不保存审计字段 | 操作者和关键操作日志由 System 审计系统实现 | System |
 | Worker 异步任务执行 | 外部依赖 | Classics 记录导出和静态展示任务 | 产物生成、失败重试和任务调度由 Worker 实现 | Worker, Storage |
@@ -186,13 +187,10 @@
 
 ### B6 安全渲染和内容展示策略
 
-状态：部分完成。
-
-需要补充：
-
-- 分享快照内容只读展示策略。
+状态：已完成。
 
 已补充：
 
 - 明代习俗 Admin Web 已提供独立富文本展示控件，基于 Markdown/HTML 渲染和清洗策略展示正文。
 - 王圻文档 Admin Web 已复用独立富文本展示控件，基于 Markdown/HTML 渲染和清洗策略展示正文预览。
+- Portal Web 分享详情已从固化快照渲染只读内容，并对 Wangqi 原始文件与 Sancai 图片使用分享资源读取接口展示。
