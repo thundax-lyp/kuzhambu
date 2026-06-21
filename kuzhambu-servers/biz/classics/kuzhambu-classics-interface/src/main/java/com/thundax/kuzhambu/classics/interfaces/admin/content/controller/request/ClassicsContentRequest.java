@@ -54,4 +54,7 @@ public class ClassicsContentRequest extends PageRequest {
 
     @JsonProperty("expiresAt")
     private Date expiresAt;
+
+    @JsonProperty("contentChanged")
+    private Boolean contentChanged;
 }

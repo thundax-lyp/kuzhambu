@@ -22,4 +22,18 @@ public class SancaiShowcase {
     private StorageObjectId storageObjectId;
     private int entryCount;
     private SancaiVisibilityRiskStatus visibilityRiskStatus;
+
+    public void markCompleted(StorageObjectId storageObjectId, int entryCount) {
+        this.status = SancaiShowcaseStatus.COMPLETED;
+        this.storageObjectId = storageObjectId;
+        this.entryCount = entryCount;
+    }
+
+    public void markFailed() {
+        this.status = SancaiShowcaseStatus.FAILED;
+    }
+
+    public void markExpired() {
+        this.status = SancaiShowcaseStatus.EXPIRED;
+    }
 }

@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.classics.interfaces.admin.content.assembler;
 import com.thundax.kuzhambu.classics.application.content.command.ContentExportCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentTagCommand;
+import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentExportJob;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentQaPair;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentSource;
@@ -12,6 +13,7 @@ import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsExportFo
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsExportKind;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsExportScopeType;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsExportStatus;
+import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentExportJobId;
 import com.thundax.kuzhambu.classics.interfaces.admin.content.controller.request.ClassicsContentRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.content.controller.response.ClassicsContentResponse;
 import org.apache.commons.lang3.StringUtils;
@@ -95,11 +97,60 @@ public final class ClassicsContentInterfaceAssembler {
                         .build();
     }
 
+    public static ClassicsContentResponse toExportResponse(ClassicsContentExportJob job) {
+        return job == null
+                ? ClassicsContentResponse.builder().build()
+                : ClassicsContentResponse.builder()
+                        .id(job.getId() == null ? null : job.getId().value())
+                        .contentType(
+                                job.getContentType() == null
+                                        ? null
+                                        : job.getContentType().value())
+                        .exportKind(
+                                job.getExportKind() == null
+                                        ? null
+                                        : job.getExportKind().value())
+                        .exportFormat(
+                                job.getExportFormat() == null
+                                        ? null
+                                        : job.getExportFormat().value())
+                        .scopeType(
+                                job.getScopeType() == null
+                                        ? null
+                                        : job.getScopeType().value())
+                        .scopeJson(job.getScopeJson())
+                        .requestedAt(job.getRequestedAt())
+                        .expiresAt(job.getExpiresAt())
+                        .status(job.getStatus() == null ? null : job.getStatus().name())
+                        .storageObjectId(
+                                job.getStorageObjectId() == null
+                                        ? null
+                                        : job.getStorageObjectId().value())
+                        .itemCount(job.getItemCount())
+                        .assetCount(job.getAssetCount())
+                        .visibilityRiskStatus(
+                                job.getVisibilityRiskStatus() == null
+                                        ? null
+                                        : job.getVisibilityRiskStatus().value())
+                        .contentChanged(job.isContentChanged())
+                        .contentUrl(exportContentUrl(job.getId()))
+                        .downloadUrl(exportDownloadUrl(job.getId()))
+                        .build();
+    }
+
     private static ClassicsContentType type(String value) {
         return StringUtils.isBlank(value) ? null : ClassicsContentType.from(value);
     }
 
     private static ClassicsContentSource source(String value) {
         return StringUtils.isBlank(value) ? ClassicsContentSource.MANUAL : ClassicsContentSource.from(value);
+    }
+
+    private static String exportContentUrl(ClassicsContentExportJobId jobId) {
+        return jobId == null ? null : "/api/classics/content/exports/" + jobId.value() + "/content";
+    }
+
+    private static String exportDownloadUrl(ClassicsContentExportJobId jobId) {
+        return jobId == null ? null : "/api/classics/content/exports/" + jobId.value() + "/content?download=true";
     }
 }

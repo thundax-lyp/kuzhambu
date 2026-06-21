@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.thundax.kuzhambu.common.web.request.PageRequest;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,7 +11,7 @@ import lombok.Setter;
 @Setter
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class SancaiAssetRequest {
+public class SancaiAssetRequest extends PageRequest {
     @JsonProperty("id")
     private Long id;
 

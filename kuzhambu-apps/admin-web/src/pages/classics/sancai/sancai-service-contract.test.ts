@@ -291,5 +291,29 @@ describe("sancai service request contracts", () => {
             id: 3001,
             versionId: 9001
         });
+
+        const requestShowcaseScope = JSON.stringify({
+            title: "天地静态展示",
+            entries: [{ id: 3001 }]
+        });
+        await entryService.requestShowcase({
+            scopeJson: requestShowcaseScope,
+            visibilityRiskStatus: "PUBLIC_ONLY"
+        });
+        expectLastCall("POST", "/classics/sancai/assets/showcases/request", {
+            scopeJson: requestShowcaseScope,
+            visibilityRiskStatus: "PUBLIC_ONLY"
+        });
+
+        await entryService.pageShowcases({
+            pageNo: 1,
+            pageSize: 10,
+            status: "COMPLETED"
+        });
+        expectLastCall("POST", "/classics/sancai/assets/showcases/page", {
+            pageNo: 1,
+            pageSize: 10,
+            status: "COMPLETED"
+        });
     });
 });

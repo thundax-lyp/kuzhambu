@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.thundax.kuzhambu.classics.domain.common.codec.StorageObjectIdCodec;
+import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryDraftIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryImageIdCodec;
@@ -13,6 +15,7 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryDraft
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryImage;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiShowcase;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVisualAsset;
+import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiShowcaseStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryDraftId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryImageId;
@@ -191,6 +194,21 @@ public class SancaiAssetRepositoryImpl implements SancaiAssetRepository {
     @Override
     public int updateShowcase(SancaiShowcase showcase) {
         return showcaseMapper.updateById(SancaiAssetPersistenceAssembler.toShowcaseObject(showcase));
+    }
+
+    @Override
+    public int markShowcaseCompleted(SancaiShowcaseId id, StorageObjectId storageObjectId, int entryCount) {
+        return showcaseMapper.markShowcaseCompleted(
+                SancaiShowcaseIdCodec.toValue(id),
+                SancaiShowcaseStatus.COMPLETED.value(),
+                StorageObjectIdCodec.toValue(storageObjectId),
+                entryCount);
+    }
+
+    @Override
+    public int markShowcaseFailed(SancaiShowcaseId id) {
+        return showcaseMapper.markShowcaseStatus(
+                SancaiShowcaseIdCodec.toValue(id), SancaiShowcaseStatus.FAILED.value());
     }
 
     @Override

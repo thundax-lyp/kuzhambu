@@ -4,18 +4,24 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImageUploadCommand;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiShowcaseCommand;
 import com.thundax.kuzhambu.classics.application.sancai.result.SancaiEntryImageContent;
 import com.thundax.kuzhambu.classics.application.sancai.result.SancaiEntryImageResource;
 import com.thundax.kuzhambu.classics.application.sancai.service.impl.SancaiAssetApplicationServiceImpl;
+import com.thundax.kuzhambu.classics.domain.common.client.WorkerRenderClient;
+import com.thundax.kuzhambu.classics.domain.common.client.dto.WorkerRenderDtos;
 import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryImage;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryImageType;
+import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiShowcaseStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryImageId;
+import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiShowcaseId;
 import com.thundax.kuzhambu.classics.domain.sancai.repository.SancaiAssetRepository;
 import com.thundax.kuzhambu.storage.application.helper.StorageUploadResult;
 import com.thundax.kuzhambu.storage.application.helper.StorageUploadStreamHelper;
@@ -131,6 +137,80 @@ class SancaiAssetApplicationServiceImplTest {
                 StorageOwnerType.CLASSICS_SANCAI_ENTRY_IMAGE,
                 queryCaptor.getValue().getOwnerType());
         assertEquals("entry:3001:image:8002", queryCaptor.getValue().getOwnerId());
+    }
+
+    @Test
+    void requestShowcaseShouldMarkCompletedWhenRenderAndUploadSucceed() {
+        SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
+        StorageUploadStreamHelper uploadStreamHelper = mock(StorageUploadStreamHelper.class);
+        WorkerRenderClient workerRenderClient = mock(WorkerRenderClient.class);
+        SancaiAssetApplicationServiceImpl service =
+                new SancaiAssetApplicationServiceImpl(repository, workerRenderClient, uploadStreamHelper, null, null);
+        SancaiShowcaseId showcaseId = SancaiShowcaseId.of(9001L);
+        when(repository.insertShowcase(org.mockito.ArgumentMatchers.any())).thenReturn(showcaseId);
+        when(workerRenderClient.renderSancaiShowcase(org.mockito.ArgumentMatchers.any()))
+                .thenReturn(successRenderResponse());
+        StoredObject storage = storage();
+        storage.setContentType("text/html; charset=utf-8");
+        when(uploadStreamHelper.uploadServerArtifact(
+                        org.mockito.ArgumentMatchers.any(),
+                        org.mockito.ArgumentMatchers.eq("showcase.html"),
+                        org.mockito.ArgumentMatchers.eq("text/html; charset=utf-8"),
+                        org.mockito.ArgumentMatchers.anyLong()))
+                .thenReturn(StorageUploadResult.builder().storage(storage).build());
+
+        SancaiShowcaseId result = service.requestShowcase(
+                new SancaiShowcaseCommand(null, SancaiShowcaseStatus.REQUESTED, "{\"title\":\"demo\"}", null, 0, null));
+
+        assertEquals(9001L, result.value());
+        verify(repository).markShowcaseCompleted(showcaseId, StorageObjectId.of(7001L), 2);
+    }
+
+    @Test
+    void requestShowcaseShouldMarkFailedWhenWorkerFails() {
+        SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
+        StorageUploadStreamHelper uploadStreamHelper = mock(StorageUploadStreamHelper.class);
+        WorkerRenderClient workerRenderClient = mock(WorkerRenderClient.class);
+        SancaiAssetApplicationServiceImpl service =
+                new SancaiAssetApplicationServiceImpl(repository, workerRenderClient, uploadStreamHelper, null, null);
+        SancaiShowcaseId showcaseId = SancaiShowcaseId.of(9001L);
+        when(repository.insertShowcase(org.mockito.ArgumentMatchers.any())).thenReturn(showcaseId);
+        WorkerRenderDtos.WorkerRenderResponse response = new WorkerRenderDtos.WorkerRenderResponse();
+        response.setStatus("FAILED");
+        when(workerRenderClient.renderSancaiShowcase(org.mockito.ArgumentMatchers.any()))
+                .thenReturn(response);
+
+        SancaiShowcaseId result = service.requestShowcase(
+                new SancaiShowcaseCommand(null, SancaiShowcaseStatus.REQUESTED, "{\"title\":\"demo\"}", null, 0, null));
+
+        assertEquals(9001L, result.value());
+        verify(repository).markShowcaseFailed(showcaseId);
+        verify(uploadStreamHelper, times(0))
+                .uploadServerArtifact(
+                        org.mockito.ArgumentMatchers.any(),
+                        org.mockito.ArgumentMatchers.any(),
+                        org.mockito.ArgumentMatchers.any(),
+                        org.mockito.ArgumentMatchers.anyLong());
+    }
+
+    private static WorkerRenderDtos.WorkerRenderResponse successRenderResponse() {
+        WorkerRenderDtos.WorkerRenderResponse response = new WorkerRenderDtos.WorkerRenderResponse();
+        response.setStatus("SUCCEEDED");
+        response.setArtifact(showcaseArtifact());
+        WorkerRenderDtos.Summary summary = new WorkerRenderDtos.Summary();
+        summary.setItemCount(2);
+        response.setSummary(summary);
+        return response;
+    }
+
+    private static WorkerRenderDtos.Artifact showcaseArtifact() {
+        WorkerRenderDtos.Artifact artifact = new WorkerRenderDtos.Artifact();
+        artifact.setFormat("HTML");
+        artifact.setFilename("showcase.html");
+        artifact.setContentType("text/html; charset=utf-8");
+        artifact.setEncoding("TEXT");
+        artifact.setContent("<html><body>ok</body></html>");
+        return artifact;
     }
 
     private static SancaiEntryImage image(long imageId, long entryId, long storageObjectId) {

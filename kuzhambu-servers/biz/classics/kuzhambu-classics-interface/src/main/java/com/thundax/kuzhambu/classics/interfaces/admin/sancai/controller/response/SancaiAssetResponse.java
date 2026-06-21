@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
+import java.util.Date;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -45,9 +46,6 @@ public class SancaiAssetResponse implements Serializable {
     @JsonProperty("previewUrl")
     private String previewUrl;
 
-    @JsonProperty("downloadUrl")
-    private String downloadUrl;
-
     @JsonProperty("draftJson")
     private String draftJson;
 
@@ -56,4 +54,19 @@ public class SancaiAssetResponse implements Serializable {
 
     @JsonProperty("scopeJson")
     private String scopeJson;
+
+    @JsonProperty("requestedAt")
+    private Date requestedAt;
+
+    @JsonProperty("entryCount")
+    private Integer entryCount;
+
+    @JsonProperty("visibilityRiskStatus")
+    private String visibilityRiskStatus;
+
+    @JsonProperty("contentUrl")
+    private String contentUrl;
+
+    @JsonProperty("downloadUrl")
+    private String downloadUrl;
 }

@@ -2,17 +2,33 @@ package com.thundax.kuzhambu.classics.application.content;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thundax.kuzhambu.classics.application.content.command.ContentExportCommand;
+import com.thundax.kuzhambu.classics.application.content.result.ClassicsExportJobResult;
 import com.thundax.kuzhambu.classics.application.content.service.impl.ClassicsContentApplicationServiceImpl;
 import com.thundax.kuzhambu.classics.application.sancai.support.SancaiEntryVersionRestorer;
+import com.thundax.kuzhambu.classics.domain.common.client.WorkerRenderClient;
+import com.thundax.kuzhambu.classics.domain.common.client.dto.WorkerRenderDtos;
+import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentExportJob;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentQaPair;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentChangeType;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsExportFormat;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsExportKind;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsExportScopeType;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsExportStatus;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentExportJobId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentQaPairId;
@@ -29,7 +45,13 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisual
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVolumeId;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
+import com.thundax.kuzhambu.storage.application.helper.StorageUploadResult;
+import com.thundax.kuzhambu.storage.application.helper.StorageUploadStreamHelper;
+import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
+import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -96,6 +118,96 @@ class ClassicsContentApplicationServiceImplTest {
         assertEquals(restoredVersion.getId(), sancaiRepository.restoredEntry.getCurrentVersionId());
         assertEquals(restoredVersion.getVersionNo(), sancaiRepository.restoredEntry.getCurrentVersionNo());
         assertNotNull(sancaiRepository.restoredEntry.getCurrentVersionedAt());
+    }
+
+    @Test
+    void createExportJobShouldUploadResultAndMarkCompletedWhenRenderSuccess() {
+        ClassicsContentRepository repository = mock(ClassicsContentRepository.class);
+        StorageApplicationService storageApplicationService = mock(StorageApplicationService.class);
+        WorkerRenderClient workerRenderClient = mock(WorkerRenderClient.class);
+        StorageUploadStreamHelper storageUploadStreamHelper = mock(StorageUploadStreamHelper.class);
+        ContentExportCommand command = new ContentExportCommand();
+        command.setExportKind(ClassicsExportKind.CONTENT_DATASET);
+        command.setContentType(ClassicsContentType.SANCAI_ENTRY);
+        command.setExportFormat(ClassicsExportFormat.HTML);
+        command.setScopeType(ClassicsExportScopeType.CATEGORY);
+        command.setScopeJson("{\"title\":\"export\"}");
+        when(repository.insertExportJob(any())).thenReturn(ClassicsContentExportJobId.of(900000000001L));
+        WorkerRenderDtos.WorkerRenderResponse response = renderSuccessResponse("export.zip");
+        when(workerRenderClient.renderClassicsExport(any())).thenReturn(response);
+        when(storageUploadStreamHelper.uploadServerArtifact(any(), any(), any(), anyLong()))
+                .thenReturn(storageUploadResult());
+        ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
+                repository, null, null, null, storageApplicationService, workerRenderClient, storageUploadStreamHelper);
+
+        ClassicsExportJobResult result = service.createExportJob(command);
+
+        assertEquals(ClassicsContentExportJobId.of(900000000001L), result.getJobId());
+        assertEquals(ClassicsExportStatus.COMPLETED, result.getStatus());
+        assertEquals(StorageObjectId.of(7001L), result.getStorageObjectId());
+        verify(repository).insertExportJob(any());
+        verify(repository)
+                .markExportJobCompleted(
+                        eq(ClassicsContentExportJobId.of(900000000001L)),
+                        eq(StorageObjectId.of(7001L)),
+                        any(),
+                        eq(2),
+                        eq(0));
+        verify(repository, never()).markExportJobFailed(ClassicsContentExportJobId.of(900000000001L));
+        verify(workerRenderClient).renderClassicsExport(any());
+    }
+
+    @Test
+    void createExportJobShouldMarkFailedWhenRenderFailed() {
+        ClassicsContentRepository repository = mock(ClassicsContentRepository.class);
+        StorageApplicationService storageApplicationService = mock(StorageApplicationService.class);
+        WorkerRenderClient workerRenderClient = mock(WorkerRenderClient.class);
+        StorageUploadStreamHelper storageUploadStreamHelper = mock(StorageUploadStreamHelper.class);
+        ContentExportCommand command = new ContentExportCommand();
+        command.setExportKind(ClassicsExportKind.CONTENT_DATASET);
+        command.setContentType(ClassicsContentType.WANGQI_DOCUMENT);
+        command.setExportFormat(ClassicsExportFormat.HTML);
+        command.setScopeType(ClassicsExportScopeType.FILTER_RESULT);
+        command.setScopeJson("{\"title\":\"export\"}");
+        when(repository.insertExportJob(any())).thenReturn(ClassicsContentExportJobId.of(900000000002L));
+        when(workerRenderClient.renderClassicsExport(any())).thenReturn(renderFailedResponse());
+        ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
+                repository, null, null, null, storageApplicationService, workerRenderClient, storageUploadStreamHelper);
+
+        ClassicsExportJobResult result = service.createExportJob(command);
+
+        assertEquals(ClassicsContentExportJobId.of(900000000002L), result.getJobId());
+        assertEquals(ClassicsExportStatus.FAILED, result.getStatus());
+        verify(repository).markExportJobFailed(ClassicsContentExportJobId.of(900000000002L));
+    }
+
+    private static WorkerRenderDtos.WorkerRenderResponse renderSuccessResponse(String filename) {
+        WorkerRenderDtos.WorkerRenderResponse response = new WorkerRenderDtos.WorkerRenderResponse();
+        response.setStatus("SUCCEEDED");
+        WorkerRenderDtos.Artifact artifact = new WorkerRenderDtos.Artifact();
+        byte[] payload = "<html>ok</html>".getBytes();
+        artifact.setContent(Base64.getEncoder().encodeToString(payload));
+        artifact.setEncoding("BASE64");
+        artifact.setContentType("application/zip");
+        artifact.setFilename(filename);
+        artifact.setFormat("zip");
+        response.setArtifact(artifact);
+        WorkerRenderDtos.Summary summary = new WorkerRenderDtos.Summary();
+        summary.setItemCount(2);
+        response.setSummary(summary);
+        return response;
+    }
+
+    private static WorkerRenderDtos.WorkerRenderResponse renderFailedResponse() {
+        WorkerRenderDtos.WorkerRenderResponse response = new WorkerRenderDtos.WorkerRenderResponse();
+        response.setStatus("FAILED");
+        return response;
+    }
+
+    private static StorageUploadResult storageUploadResult() {
+        StoredObject storage = new StoredObject();
+        storage.setId(StoredObjectId.of(7001L));
+        return StorageUploadResult.builder().storage(storage).build();
     }
 
     private static ClassicsContentVersion existingVersion(Long id, int versionNo, Date versionedAt) {
@@ -243,7 +355,32 @@ class ClassicsContentApplicationServiceImplTest {
         }
 
         @Override
+        public ClassicsContentExportJob getExportJobById(ClassicsContentExportJobId id) {
+            return null;
+        }
+
+        @Override
         public int updateExportJob(ClassicsContentExportJob exportJob) {
+            return 0;
+        }
+
+        @Override
+        public int markExportJobCompleted(
+                ClassicsContentExportJobId id,
+                StorageObjectId storageObjectId,
+                Date expiresAt,
+                int itemCount,
+                int assetCount) {
+            return 0;
+        }
+
+        @Override
+        public int markExportJobFailed(ClassicsContentExportJobId id) {
+            return 0;
+        }
+
+        @Override
+        public int markExportJobExpired(ClassicsContentExportJobId id) {
             return 0;
         }
 

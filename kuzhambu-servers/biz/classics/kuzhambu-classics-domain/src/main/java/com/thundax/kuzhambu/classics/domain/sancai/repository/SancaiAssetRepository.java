@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.classics.domain.sancai.repository;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryDraft;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryImage;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiShowcase;
@@ -50,6 +51,10 @@ public interface SancaiAssetRepository {
     SancaiShowcaseId insertShowcase(SancaiShowcase showcase);
 
     int updateShowcase(SancaiShowcase showcase);
+
+    int markShowcaseCompleted(SancaiShowcaseId id, StorageObjectId storageObjectId, int entryCount);
+
+    int markShowcaseFailed(SancaiShowcaseId id);
 
     Page<SancaiShowcase> pageShowcases(String status, int pageNo, int pageSize);
 }

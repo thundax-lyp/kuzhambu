@@ -1,6 +1,10 @@
 package com.thundax.kuzhambu.classics.application.sancai.service.impl;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiDraftCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImageSortCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImageUploadCommand;
@@ -9,6 +13,8 @@ import com.thundax.kuzhambu.classics.application.sancai.command.SancaiShowcaseCo
 import com.thundax.kuzhambu.classics.application.sancai.result.SancaiEntryImageContent;
 import com.thundax.kuzhambu.classics.application.sancai.result.SancaiEntryImageResource;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiAssetApplicationService;
+import com.thundax.kuzhambu.classics.domain.common.client.WorkerRenderClient;
+import com.thundax.kuzhambu.classics.domain.common.client.dto.WorkerRenderDtos;
 import com.thundax.kuzhambu.classics.domain.common.codec.StorageObjectIdCodec;
 import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
@@ -43,7 +49,9 @@ import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObjectRefer
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
+import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -60,22 +68,43 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
 
     private static final String IMAGE_OWNER_ID_PREFIX = "entry:";
     private static final String IMAGE_OWNER_ID_SEPARATOR = ":image:";
+    private static final String SHOWCASE_RENDER_OPERATION = "SANCAI_SHOWCASE";
+    private static final String SHOWCASE_RENDER_TYPE = "SANCAI_SHOWCASE";
+    private static final String SHOWCASE_RENDER_TEMPLATE_ID = "sancai-showcase-default";
+    private static final String SHOWCASE_RENDER_TEMPLATE_VERSION = "2026.06.01";
+    private static final String SHOWCASE_RENDER_OUTPUT_FORMAT = "HTML";
+    private static final String SHOWCASE_RENDER_OUTPUT_FILENAME = "showcase.html";
+    private static final String SHOWCASE_RENDER_CONTENT_TYPE = "SANCAI_SHOWCASE_SNAPSHOT";
+    private static final String SHOWCASE_RENDER_LOCALE = "zh-CN";
     private static final String SANCAI_IMAGE_CONTENT_PATH_PREFIX = "/api/classics/sancai/assets/images/";
     private static final String SANCAI_IMAGE_CONTENT_PATH_SEPARATOR = "/";
     private static final String SANCAI_IMAGE_CONTENT_PATH_SUFFIX = "/content";
     private static final List<String> ALLOWED_IMAGE_SUFFIXES = List.of("jpg", "jpeg", "png", "gif", "webp");
 
     private final SancaiAssetRepository repository;
+    private final WorkerRenderClient workerRenderClient;
     private final StorageUploadStreamHelper storageUploadStreamHelper;
     private final StorageApplicationService storageApplicationService;
+    private final ObjectMapper objectMapper;
+
+    public SancaiAssetApplicationServiceImpl(
+            SancaiAssetRepository repository,
+            WorkerRenderClient workerRenderClient,
+            StorageUploadStreamHelper storageUploadStreamHelper,
+            StorageApplicationService storageApplicationService,
+            ObjectMapper objectMapper) {
+        this.repository = repository;
+        this.workerRenderClient = workerRenderClient;
+        this.storageUploadStreamHelper = storageUploadStreamHelper;
+        this.storageApplicationService = storageApplicationService;
+        this.objectMapper = objectMapper == null ? new ObjectMapper().findAndRegisterModules() : objectMapper;
+    }
 
     public SancaiAssetApplicationServiceImpl(
             SancaiAssetRepository repository,
             StorageUploadStreamHelper storageUploadStreamHelper,
             StorageApplicationService storageApplicationService) {
-        this.repository = repository;
-        this.storageUploadStreamHelper = storageUploadStreamHelper;
-        this.storageApplicationService = storageApplicationService;
+        this(repository, null, storageUploadStreamHelper, storageApplicationService, null);
     }
 
     @Override
@@ -271,14 +300,42 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     @Override
     @Transactional(rollbackFor = Exception.class)
     public SancaiShowcaseId requestShowcase(SancaiShowcaseCommand command) {
-        SancaiShowcase showcase = new SancaiShowcase();
-        showcase.setRequestedAt(command.getRequestedAt() == null ? new Date() : command.getRequestedAt());
-        showcase.setStatus(command.getStatus());
-        showcase.setScopeJson(command.getScopeJson());
-        showcase.setStorageObjectId(command.getStorageObjectId());
-        showcase.setEntryCount(command.getEntryCount());
-        showcase.setVisibilityRiskStatus(command.getVisibilityRiskStatus());
-        return repository.insertShowcase(showcase);
+        SancaiShowcase showcase = command == null ? new SancaiShowcase() : command.toEntity();
+        SancaiShowcaseId showcaseId = repository.insertShowcase(showcase);
+        if (showcaseId == null) {
+            return null;
+        }
+        try {
+            if (workerRenderClient == null) {
+                repository.markShowcaseFailed(showcaseId);
+                return showcaseId;
+            }
+            WorkerRenderDtos.WorkerRenderRequest renderRequest = renderRequest(showcaseId, showcase);
+            WorkerRenderDtos.WorkerRenderResponse response = workerRenderClient.renderSancaiShowcase(renderRequest);
+            if (!isSuccess(response)) {
+                repository.markShowcaseFailed(showcaseId);
+                return showcaseId;
+            }
+            StorageUploadResult uploadResult = saveShowcaseArtifact(showcaseId, response);
+            if (uploadResult.hasError()) {
+                repository.markShowcaseFailed(showcaseId);
+                return showcaseId;
+            }
+            StorageObjectId storageObjectId = toStorageObjectId(uploadResult);
+            if (storageObjectId == null) {
+                repository.markShowcaseFailed(showcaseId);
+                return showcaseId;
+            }
+            int entryCount =
+                    response.getSummary() == null || response.getSummary().getItemCount() == null
+                            ? 0
+                            : response.getSummary().getItemCount();
+            repository.markShowcaseCompleted(showcaseId, storageObjectId, entryCount);
+            return showcaseId;
+        } catch (Exception ex) {
+            repository.markShowcaseFailed(showcaseId);
+            return showcaseId;
+        }
     }
 
     @Override
@@ -286,6 +343,140 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
         IPage<SancaiShowcase> dataPage = repository.pageShowcases(status, page.getPageNo(), page.getPageSize());
         return PageResult.of(
                 (int) dataPage.getCurrent(), (int) dataPage.getSize(), dataPage.getTotal(), dataPage.getRecords());
+    }
+
+    private WorkerRenderDtos.WorkerRenderRequest renderRequest(SancaiShowcaseId showcaseId, SancaiShowcase showcase) {
+        WorkerRenderDtos.WorkerRenderRequest request = new WorkerRenderDtos.WorkerRenderRequest();
+        request.setRequestId("sancai-showcase-" + (showcaseId == null ? "unknown" : showcaseId.value()));
+        request.setTraceId(request.getRequestId());
+        request.setCallerDomain("CLASSICS");
+        request.setOperation(SHOWCASE_RENDER_OPERATION);
+        request.setRenderType(SHOWCASE_RENDER_TYPE);
+        request.setTemplate(renderTemplate());
+        request.setOutput(renderOutput(showcaseId, showcase));
+        request.setInput(renderInput(showcase));
+        request.setOptions(renderOptions());
+        return request;
+    }
+
+    private WorkerRenderDtos.Template renderTemplate() {
+        WorkerRenderDtos.Template template = new WorkerRenderDtos.Template();
+        template.setTemplateId(SHOWCASE_RENDER_TEMPLATE_ID);
+        template.setTemplateVersion(SHOWCASE_RENDER_TEMPLATE_VERSION);
+        return template;
+    }
+
+    private WorkerRenderDtos.Output renderOutput(SancaiShowcaseId showcaseId, SancaiShowcase showcase) {
+        WorkerRenderDtos.Output output = new WorkerRenderDtos.Output();
+        output.setFormat(SHOWCASE_RENDER_OUTPUT_FORMAT);
+        output.setFilenameHint(showcaseOutputFilename(showcaseId, showcase));
+        output.setLocale(SHOWCASE_RENDER_LOCALE);
+        return output;
+    }
+
+    private String showcaseOutputFilename(SancaiShowcaseId showcaseId, SancaiShowcase showcase) {
+        if (showcaseId == null) {
+            return SHOWCASE_RENDER_OUTPUT_FILENAME;
+        }
+        return "sancai-showcase-" + showcaseId.value()
+                + "-"
+                + (showcase == null || showcase.getStatus() == null
+                        ? System.currentTimeMillis()
+                        : showcase.getStatus().name().toLowerCase())
+                + ".html";
+    }
+
+    private WorkerRenderDtos.Input renderInput(SancaiShowcase showcase) {
+        WorkerRenderDtos.Input input = new WorkerRenderDtos.Input();
+        input.setSnapshotId(null);
+        input.setContentType(SHOWCASE_RENDER_CONTENT_TYPE);
+        input.setPayloadJson(renderPayloadJson(showcase == null ? null : showcase.getScopeJson()));
+        return input;
+    }
+
+    private WorkerRenderDtos.Options renderOptions() {
+        WorkerRenderDtos.Options options = new WorkerRenderDtos.Options();
+        options.setStream(false);
+        options.setIncludeMetadata(true);
+        return options;
+    }
+
+    private String renderPayloadJson(String scopeJson) {
+        JsonNode payload = parsePayload(scopeJson);
+        try {
+            return objectMapper.writeValueAsString(payload);
+        } catch (JsonProcessingException ex) {
+            return null;
+        }
+    }
+
+    private JsonNode parsePayload(String scopeJson) {
+        try {
+            if (scopeJson == null || scopeJson.isBlank()) {
+                return defaultPayload();
+            }
+            JsonNode parsed = objectMapper.readTree(scopeJson);
+            return parsed == null || !parsed.isObject() ? defaultPayload() : parsed;
+        } catch (Exception ex) {
+            return defaultPayload();
+        }
+    }
+
+    private ObjectNode defaultPayload() {
+        ObjectNode defaultPayload = objectMapper.createObjectNode();
+        defaultPayload.put("title", "Sancai Showcase");
+        defaultPayload.set("catalog", objectMapper.createArrayNode());
+        defaultPayload.set("entries", objectMapper.createArrayNode());
+        defaultPayload.set("assets", objectMapper.createArrayNode());
+        defaultPayload.set("metadata", objectMapper.createObjectNode());
+        return defaultPayload;
+    }
+
+    private StorageUploadResult saveShowcaseArtifact(
+            SancaiShowcaseId showcaseId, WorkerRenderDtos.WorkerRenderResponse response) {
+        WorkerRenderDtos.Artifact artifact = response == null ? null : response.getArtifact();
+        byte[] content = artifactContent(artifact);
+        return storageUploadStreamHelper.uploadServerArtifact(
+                new ByteArrayInputStream(content),
+                filenameHint(showcaseId, artifact),
+                artifact == null ? null : artifact.getContentType(),
+                content.length);
+    }
+
+    private String filenameHint(SancaiShowcaseId showcaseId, WorkerRenderDtos.Artifact artifact) {
+        if (artifact == null
+                || artifact.getFilename() == null
+                || artifact.getFilename().isBlank()) {
+            return "sancai-showcase-" + (showcaseId == null ? "unknown" : showcaseId.value()) + ".html";
+        }
+        return artifact.getFilename();
+    }
+
+    private byte[] artifactContent(WorkerRenderDtos.Artifact artifact) {
+        if (artifact == null
+                || artifact.getContent() == null
+                || artifact.getContent().isBlank()) {
+            return new byte[0];
+        }
+        if ("TEXT".equalsIgnoreCase(artifact.getEncoding())) {
+            return artifact.getContent().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        }
+        if ("BASE64".equalsIgnoreCase(artifact.getEncoding())) {
+            return Base64.getDecoder().decode(artifact.getContent());
+        }
+        return artifact.getContent().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+    }
+
+    private StorageObjectId toStorageObjectId(StorageUploadResult uploadResult) {
+        return uploadResult == null
+                        || uploadResult.getStorage() == null
+                        || uploadResult.getStorage().getId() == null
+                ? null
+                : StorageObjectId.of(uploadResult.getStorage().getId().value());
+    }
+
+    private static boolean isSuccess(WorkerRenderDtos.WorkerRenderResponse response) {
+        return response != null && "SUCCEEDED".equalsIgnoreCase(response.getStatus()) && response.getArtifact() != null;
     }
 
     private void updatePriorityOrThrow(SancaiEntryImageId id, int priority) {

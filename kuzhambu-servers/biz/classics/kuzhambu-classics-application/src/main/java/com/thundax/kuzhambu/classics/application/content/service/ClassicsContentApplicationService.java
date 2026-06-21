@@ -5,6 +5,7 @@ import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairCo
 import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairSortCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentTagCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentTagSortCommand;
+import com.thundax.kuzhambu.classics.application.content.result.ClassicsExportJobResult;
 import com.thundax.kuzhambu.classics.domain.content.model.Versionable;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentExportJob;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentQaPair;
@@ -57,7 +58,9 @@ public interface ClassicsContentApplicationService {
 
     ClassicsContentVersion restoreHistoryVersion(ClassicsContentVersionId versionId);
 
-    ClassicsContentExportJobId createExportJob(ContentExportCommand command);
+    ClassicsExportJobResult createExportJob(ContentExportCommand command);
+
+    ClassicsContentExportJob getExportJob(ClassicsContentExportJobId id);
 
     PageResult<ClassicsContentExportJob> pageExportJobs(
             String contentType, String exportKind, String status, PageQuery page);

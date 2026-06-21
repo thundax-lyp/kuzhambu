@@ -52,6 +52,11 @@ public class StorageUploadStreamHelper {
         return StorageUploadResult.builder().storage(storage).build();
     }
 
+    public StorageUploadResult uploadServerArtifact(
+            InputStream inputStream, String originalFilename, String contentType, long size) {
+        return upload(inputStream, originalFilename, contentType, size, null, StorageOwnerType.USER, "system");
+    }
+
     private StorageUploadResult validateUploadFile(
             InputStream inputStream, String originalFilename, long size, List<String> allowedSuffixes) {
         if (inputStream == null || size <= 0L) {
