@@ -14,32 +14,6 @@
     color: var(--ming-customs-accent-color);
 }
 
-.ming-customs-keyword-cloud {
-    width: 236px;
-    padding: 14px;
-    background: rgba(255, 255, 255, 0.72);
-    border: 1px solid rgba(148, 111, 67, 0.18);
-    border-radius: 8px;
-}
-
-.ming-customs-keyword-cloud-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    margin-bottom: 12px;
-    color: #243044;
-    font-size: 14px;
-    font-weight: 700;
-}
-
-.ming-customs-keyword-cloud-loading,
-.ming-customs-keyword-cloud-empty {
-    color: #6b7b91;
-    font-size: 12px;
-    font-weight: 500;
-}
-
 .ming-customs-keyword-cloud-body {
     display: flex;
     flex-wrap: wrap;
@@ -59,18 +33,18 @@
     cursor: pointer;
 }
 
-.ming-customs-keyword-cloud-item strong {
-    color: #546179;
-    font-size: 12px;
+.ming-customs-keyword-cloud-item .ant-badge {
+    line-height: 1;
 }
 
-html[data-theme="dark"] .ming-customs-keyword-cloud {
-    background: rgba(17, 28, 46, 0.72);
-    border-color: rgba(205, 167, 112, 0.24);
-}
-
-html[data-theme="dark"] .ming-customs-keyword-cloud-header {
-    color: #f2f6fc;
+.ming-customs-keyword-cloud-item .ant-badge-count {
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 18px;
+    box-shadow: none;
 }
 
 html[data-theme="dark"] .ming-customs-keyword-cloud-item {

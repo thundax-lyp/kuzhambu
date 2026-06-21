@@ -227,6 +227,7 @@ describe("MingCustomsPage", () => {
             });
         });
 
+        await user.click(screen.getByRole("button", { name: /关键词云/ }));
         const cloud = await screen.findByLabelText("明代习俗关键词云");
         expect(within(cloud).getByText("8")).toBeInTheDocument();
         await user.click(within(cloud).getByRole("button", { name: "筛选关键词 礼制，8 次" }));
