@@ -9,13 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `docs/snapshot-interface`：同步 Classics 快照接口文档
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`
-    - 范围对象：`docs/20-interfaces/CLASSICS-CONTENT-VERSION-SNAPSHOT-INTERFACE.md`、`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`
-    - 处理动作：把 Sancai `images` 快照字段和 Wangqi 资源对象兼容口径同步到接口文档。
-    - 验收点：接口文档与实现口径一致，明确快照只存稳定 ID 和元数据。
-    - 重要度：7/10
 - [ ] `classics/portal/resource-enrichment`：在 Portal 分享详情响应中装配资源对象
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`

@@ -156,12 +156,13 @@
 
 `SANCAI_ENTRY.images` 快照只保存稳定资源 ID 和创建分享时的文件元数据，不保存 `previewUrl` 或 `downloadUrl`。Portal 分享详情响应层再根据 `shareToken` 和 `storageObjectId` 动态装配 URL。
 
-快照生成需要调整 `ClassicsContentSnapshotAssembler` 当前只接收 `Versionable` 的结构，让 Sancai 快照能够拿到当前使用图片及其 Storage 元数据。可选方案：
+快照生成已选择在 `ClassicsContentApplicationService.ensureVersioned` / 历史恢复创建新版本时做内容类型上下文组装：
 
-- 给 `ClassicsContentApplicationService.ensureVersioned` 增加内容类型上下文组装能力，由 Sancai application service 传入当前使用图片资源。
-- 或让 `ClassicsContentSnapshotAssembler` 由 Spring 管理并注入 `SancaiAssetRepository` 与 `StorageApplicationService`，但要避免 domain 层反向依赖。
+- Sancai 条目快照由 `SancaiAssetApplicationService.listImages(entryId)` 取得图片列表。
+- `ClassicsContentApplicationServiceImpl` 通过 `StorageApplicationService.get(storageObjectId)` 补齐 `originalFilename`、`contentType` 和 `size`。
+- `ClassicsContentSnapshotAssembler` 保持普通 Java helper，不改为 Spring bean，不把 Storage 查询职责塞入 assembler。
 
-当前手写 JSON 序列化只支持基本类型；新增 `images` 数组前，必须改用 `ObjectMapper` 或扩展 `ClassicsContentSnapshotAssembler` 支持 `List`/`Map`。
+当前手写 JSON 序列化已扩展支持 `List`/`Map`，用于稳定输出 `images` 数组。
 
 调整 `WANGQI_DOCUMENT` 资源响应：
 
