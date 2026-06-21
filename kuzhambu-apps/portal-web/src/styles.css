@@ -73,6 +73,7 @@ body {
     min-width: 320px;
     min-height: 100vh;
     background:
+        url("./assets/ink-landscape.svg") top right / min(1180px, 92vw) auto no-repeat,
         linear-gradient(115deg, transparent 0 47%, var(--paper-fiber) 47.2% 47.6%, transparent 48%),
         linear-gradient(8deg, transparent 0 78%, var(--paper-fiber) 78.2% 78.6%, transparent 79%),
         var(--surface-page);
@@ -217,7 +218,7 @@ a {
     box-shadow: 0 12px 32px rgba(70, 58, 38, 0.08);
 }
 
-.portal-filter label {
+.portal-filter-field {
     display: grid;
     gap: 6px;
     color: var(--text-secondary);
@@ -225,7 +226,7 @@ a {
 }
 
 .portal-filter input,
-.portal-filter select {
+.portal-filter-control {
     width: 100%;
     min-height: 40px;
     padding: 0 12px;
@@ -237,7 +238,7 @@ a {
 }
 
 .portal-filter input:focus,
-.portal-filter select:focus {
+.portal-filter-control:focus {
     border-color: color-mix(in srgb, var(--accent-blue) 46%, var(--line-strong));
     outline: 2px solid var(--accent-blue-soft);
 }
@@ -248,7 +249,7 @@ a {
     gap: 8px;
 }
 
-.portal-filter-actions button {
+.portal-filter-actions [data-slot="button"] {
     min-height: 40px;
     padding: 0 14px;
     border: 1px solid var(--line-strong);
@@ -259,17 +260,17 @@ a {
     font: inherit;
 }
 
-.portal-filter-actions button:last-child {
+.portal-filter-actions [data-slot="button"]:last-child {
     border-color: var(--accent-blue);
     background: var(--accent-blue);
     color: #ffffff;
 }
 
-.portal-filter-actions button:hover {
+.portal-filter-actions [data-slot="button"]:hover {
     background: var(--surface-hover);
 }
 
-.portal-filter-actions button:last-child:hover {
+.portal-filter-actions [data-slot="button"]:last-child:hover {
     background: color-mix(in srgb, var(--accent-blue) 88%, #000000);
 }
 
@@ -392,7 +393,7 @@ a {
     line-height: 1.35;
 }
 
-.portal-share-target header span {
+.portal-share-version {
     flex: 0 0 auto;
     padding: 4px 10px;
     border: 1px solid color-mix(in srgb, var(--accent-jade) 52%, var(--line-subtle));

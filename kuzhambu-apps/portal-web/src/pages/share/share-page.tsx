@@ -1,8 +1,21 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue
+} from "@/components/ui/select";
 import * as shareService from "./share-service";
 import type { ClassicsShareSearchQuery } from "./share-types";
+
+const ALL_CONTENT_TYPES = "ALL";
 
 const CONTENT_TYPE_OPTIONS = [
     { label: "全部分类", value: "" },
@@ -95,58 +108,68 @@ export const SharePage = () => {
                     <p className="portal-kicker">公开分享</p>
                     <h1>分享列表</h1>
                 </div>
-                <Link className="portal-action" to="/">
-                    返回首页
-                </Link>
+                <Button asChild className="portal-action" size="lg" variant="outline">
+                    <Link to="/">返回首页</Link>
+                </Button>
             </header>
 
-            <section className="portal-filter" aria-label="分享筛选">
-                <label>
+            <Card className="portal-filter" role="search" aria-label="分享筛选">
+                <Label className="portal-filter-field">
                     <span>标题</span>
-                    <input
+                    <Input
                         value={title}
                         placeholder="搜索分享标题或内容标题"
                         onChange={(event) => setTitle(event.target.value)}
                     />
-                </label>
-                <label>
+                </Label>
+                <Label className="portal-filter-field">
                     <span>分类</span>
-                    <select
-                        value={contentType}
-                        onChange={(event) => setContentType(event.target.value)}
+                    <Select
+                        value={contentType || ALL_CONTENT_TYPES}
+                        onValueChange={(value) =>
+                            setContentType(value === ALL_CONTENT_TYPES ? "" : value)
+                        }
                     >
-                        {CONTENT_TYPE_OPTIONS.map((option) => (
-                            <option key={option.value} value={option.value}>
-                                {option.label}
-                            </option>
-                        ))}
-                    </select>
-                </label>
-                <label>
+                        <SelectTrigger className="portal-filter-control" aria-label="分类">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {CONTENT_TYPE_OPTIONS.map((option) => (
+                                <SelectItem
+                                    key={option.value || ALL_CONTENT_TYPES}
+                                    value={option.value || ALL_CONTENT_TYPES}
+                                >
+                                    {option.label}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </Label>
+                <Label className="portal-filter-field">
                     <span>开始时间</span>
-                    <input
+                    <Input
                         type="date"
                         value={issuedAfter}
                         onChange={(event) => setIssuedAfter(event.target.value)}
                     />
-                </label>
-                <label>
+                </Label>
+                <Label className="portal-filter-field">
                     <span>结束时间</span>
-                    <input
+                    <Input
                         type="date"
                         value={issuedBefore}
                         onChange={(event) => setIssuedBefore(event.target.value)}
                     />
-                </label>
+                </Label>
                 <div className="portal-filter-actions">
-                    <button type="button" onClick={resetFilters}>
+                    <Button type="button" variant="outline" onClick={resetFilters}>
                         重置
-                    </button>
-                    <button type="button" onClick={applyFilters}>
+                    </Button>
+                    <Button type="button" onClick={applyFilters}>
                         查询
-                    </button>
+                    </Button>
                 </div>
-            </section>
+            </Card>
 
             <section className="portal-list" aria-label="分享列表">
                 <div className="portal-list-summary">{resultSummary}</div>
@@ -183,21 +206,17 @@ export const SharePage = () => {
                         );
 
                         return record.shareToken ? (
-                            <Link
-                                className="portal-list-item"
-                                key={itemKey}
-                                to={`/share/${record.shareToken}`}
-                            >
-                                {itemContent}
+                            <Link key={itemKey} to={`/share/${record.shareToken}`}>
+                                <Card className="portal-list-item">{itemContent}</Card>
                             </Link>
                         ) : (
-                            <article className="portal-list-item" key={itemKey}>
+                            <Card className="portal-list-item" key={itemKey}>
                                 {itemContent}
-                            </article>
+                            </Card>
                         );
                     })
                 ) : (
-                    <div className="portal-empty">暂无符合条件的公开分享。</div>
+                    <Card className="portal-empty">暂无符合条件的公开分享。</Card>
                 )}
             </section>
         </main>

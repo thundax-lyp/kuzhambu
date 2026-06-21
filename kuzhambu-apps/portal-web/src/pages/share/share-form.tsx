@@ -1,5 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import * as shareService from "./share-service";
 import type { ClassicsSharePortalTarget } from "./share-types";
 
@@ -59,26 +62,26 @@ export const ShareForm = () => {
                     <p className="portal-kicker">分享快照</p>
                     <h1>{share?.title || "分享详情"}</h1>
                 </div>
-                <Link className="portal-action" to="/shares">
-                    返回分享列表
-                </Link>
+                <Button asChild className="portal-action" size="lg" variant="outline">
+                    <Link to="/shares">返回分享列表</Link>
+                </Button>
             </header>
 
             {shareQuery.isLoading ? (
-                <section className="portal-empty" aria-label="分享加载状态">
+                <Card className="portal-empty" aria-label="分享加载状态">
                     正在加载分享内容
-                </section>
+                </Card>
             ) : null}
 
             {shareQuery.isError ? (
-                <section className="portal-empty" aria-label="分享错误状态">
+                <Card className="portal-empty" aria-label="分享错误状态">
                     分享内容不存在或已过期
-                </section>
+                </Card>
             ) : null}
 
             {share ? (
                 <>
-                    <section className="portal-share-meta" aria-label="分享信息">
+                    <Card className="portal-share-meta" aria-label="分享信息">
                         <dl>
                             <div>
                                 <dt>状态</dt>
@@ -97,12 +100,12 @@ export const ShareForm = () => {
                                 <dd>{formatDateTime(share.expiresAt)}</dd>
                             </div>
                         </dl>
-                    </section>
+                    </Card>
 
                     <section className="portal-share-targets" aria-label="分享快照">
                         {targets.length ? (
                             targets.map((target, index) => (
-                                <article
+                                <Card
                                     className="portal-share-target"
                                     key={`${target.contentType}-${target.contentId}-${target.priority}`}
                                 >
@@ -111,7 +114,9 @@ export const ShareForm = () => {
                                             <p>{formatContentType(target.contentType)}</p>
                                             <h2>{readTargetTitle(target, index)}</h2>
                                         </div>
-                                        <span>v{target.contentVersionNo ?? "-"}</span>
+                                        <Badge className="portal-share-version" variant="secondary">
+                                            v{target.contentVersionNo ?? "-"}
+                                        </Badge>
                                     </header>
                                     <dl>
                                         <div>
@@ -132,10 +137,10 @@ export const ShareForm = () => {
                                         </div>
                                     </dl>
                                     <pre>{formatSnapshot(target.contentSnapshotJson)}</pre>
-                                </article>
+                                </Card>
                             ))
                         ) : (
-                            <div className="portal-empty">暂无分享快照。</div>
+                            <Card className="portal-empty">暂无分享快照。</Card>
                         )}
                     </section>
                 </>
