@@ -9,30 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `kuzhambu-classics-infra/client`：新增 render worker 配置与签名支持
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-RENDER-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/java/com/thundax/kuzhambu/classics/infra/client/WorkerRenderProperties.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/java/com/thundax/kuzhambu/classics/infra/client/WorkerRenderSignatureSupport.java`
-    - 处理动作：新增 render worker 配置类和签名支持类，复用 AI worker 的内部签名协议。
-    - 验收点：render 基础配置可被 Spring 注入，签名输入与 `WORKERS-RENDER-INTERFACE.md` 一致。
-    - 重要度：9/10
-
-- [ ] `kuzhambu-classics-infra/client`：新增 render worker DTO
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-RENDER-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/java/com/thundax/kuzhambu/classics/infra/client/dto/WorkerRenderDtos.java`
-    - 处理动作：定义 Java 侧 render request/response/artifact DTO，字段严格对齐 workers 同步 render 协议。
-    - 验收点：DTO 可完整覆盖 `CLASSICS_EXPORT` 和 `SANCAI_SHOWCASE` 同步响应字段。
-    - 重要度：8/10
-
-- [ ] `kuzhambu-classics-infra/client`：接入 render worker HTTP client 与测试
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-RENDER-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/java/com/thundax/kuzhambu/classics/infra/client/WorkerRenderClient.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/java/com/thundax/kuzhambu/classics/infra/client/WorkerRenderHttpClient.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/test/java/com/thundax/kuzhambu/classics/infra/client/WorkerRenderHttpClientTest.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/test/java/com/thundax/kuzhambu/classics/infra/client/WorkerRenderSignatureSupportTest.java`
-    - 处理动作：实现同步 `classics-export` 和 `sancai-showcase` 两个 HTTP 调用入口并补齐协议测试。
-    - 验收点：client 能正确发送签名头，能解析成功响应和失败响应。
-    - 重要度：10/10
-
 - [ ] `classics-content export job domain`：补导出任务状态回写
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-RENDER-CLOSURE.md`
