@@ -49,3 +49,20 @@ cd deploy
 cp .env.example .env
 docker compose --env-file .env up --build
 ```
+
+## Images
+
+Compose uses project-prefixed image names by default:
+
+- `kuzhambu/admin-web:dev`
+- `kuzhambu/portal-web:dev`
+- `kuzhambu/admin-starter:dev`
+- `kuzhambu/portal-starter:dev`
+- `kuzhambu/workers:dev`
+- `kuzhambu/nginx:1.27-alpine`
+- `kuzhambu/mysql:8.4`
+- `kuzhambu/redis:7.2`
+- `kuzhambu/elasticsearch:8.15.3`
+- `kuzhambu/rocketmq:5.3.0`
+
+Override the names with `KUZHAMBU_*_IMAGE` variables in `deploy/.env`. Business images are produced by `docker compose --env-file .env build`. Foundation images must be available locally under the configured names before offline smoke tests or image export.
