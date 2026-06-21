@@ -83,7 +83,12 @@ const toStorageContentUrl = (storage: StorageRecord, mode: StorageContentMode) =
     if (!storage.id) {
         return undefined;
     }
-    return toAuthenticatedResourceUrl(service.getStorageObjectContentUrl(storage.id, mode));
+    return toAuthenticatedResourceUrl(
+        service.getStorageObjectContentUrl({
+            mode,
+            storageObjectId: storage.id
+        })
+    );
 };
 
 const formatFileSize = (size?: number | null) => {

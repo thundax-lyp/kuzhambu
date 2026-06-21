@@ -22,6 +22,11 @@ export interface StorageSortCommand {
     sortDirection?: "ASC" | "DESC";
 }
 
+export interface StorageObjectContentUrlCommand {
+    mode?: StorageContentMode;
+    storageObjectId: string;
+}
+
 export const pageStorageObjects = (request: StoragePageQuery = {}) => {
     return postJson<Page<StorageRecord>, StoragePageQuery>("/storage/object/page", {
         body: request
@@ -46,10 +51,8 @@ export const sortStorageObjects = (request: StorageSortCommand) => {
     });
 };
 
-export const getStorageObjectContentUrl = (
-    storageObjectId: string,
-    mode: StorageContentMode = "preview"
-) => {
+export const getStorageObjectContentUrl = (request: StorageObjectContentUrlCommand) => {
+    const mode = request.mode || "preview";
     const search = mode === "download" ? "?download=true" : "";
-    return `${ADMIN_API_BASE_URL}/storage/object/${encodeURIComponent(storageObjectId)}/content${search}`;
+    return `${ADMIN_API_BASE_URL}/storage/object/${encodeURIComponent(request.storageObjectId)}/content${search}`;
 };
