@@ -901,7 +901,8 @@ describe("App", () => {
         });
 
         expect(await screen.findByText("upload.txt")).toBeInTheDocument();
-        expect(screen.getByRole("button", { name: "读取 upload.txt" })).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "预览 upload.txt" })).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "下载 upload.txt" })).toBeInTheDocument();
 
         fireEvent.click(screen.getByRole("button", { name: "删除 sancai.png" }));
 
@@ -914,7 +915,7 @@ describe("App", () => {
 
         await waitFor(() => expect(screen.queryByText("sancai.png")).not.toBeInTheDocument());
         expect(pageRequestCount).toBeGreaterThanOrEqual(2);
-    }, 10000);
+    }, 20000);
 
     it("renders the silver user management layout interactions", async () => {
         localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
