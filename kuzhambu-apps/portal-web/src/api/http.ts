@@ -6,7 +6,10 @@ interface ApiResponse<T> {
     message?: string;
 }
 
-const buildUrl = (path: string, query?: Record<string, string | number | null | undefined>) => {
+export const buildApiUrl = (
+    path: string,
+    query?: Record<string, string | number | null | undefined>
+) => {
     const normalizedBaseUrl = PORTAL_API_BASE_URL.replace(/\/+$/, "");
     const normalizedPath = path.startsWith("/") ? path : `/${path}`;
     const url = new URL(`${normalizedBaseUrl}${normalizedPath}`, window.location.origin);
@@ -28,7 +31,7 @@ export const getJson = async <T>(
     path: string,
     query?: Record<string, string | number | null | undefined>
 ) => {
-    const response = await fetch(buildUrl(path, query), {
+    const response = await fetch(buildApiUrl(path, query), {
         headers: {
             Accept: "application/json"
         },

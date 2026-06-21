@@ -9,13 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `portal-web/share/resource-types`：补齐 Portal 分享资源类型和服务
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/portal-web/src/pages/share/share-types.ts`、`kuzhambu-apps/portal-web/src/pages/share/share-service.ts`
-    - 处理动作：定义 Portal 分享资源类型和分享资源 URL helper。
-    - 验收点：Portal Web 能表达 `target.storageObject` 和 `target.images[].storageObject`，资源 URL 指向分享读取接口。
-    - 重要度：8/10
 - [ ] `portal-web/share/resource-preview`：接入 Portal 分享页资源预览
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`
