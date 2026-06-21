@@ -31,6 +31,11 @@ interface WangqiVersionCommand {
     versionId?: number | null;
 }
 
+export interface WangqiSourceFileContentUrlCommand {
+    documentId: number;
+    mode?: WangqiSourceFileContentMode;
+}
+
 export const page = (request: WangqiDocumentQuery = {}) => {
     return postJson<Page<WangqiDocumentRecord>, WangqiDocumentQuery>(`${DOCUMENTS_PATH}/page`, {
         body: request
@@ -88,12 +93,10 @@ export const getSourceFile = (documentId: number) => {
     );
 };
 
-export const getSourceFileContentUrl = (
-    documentId: number,
-    mode: WangqiSourceFileContentMode = "preview"
-) => {
+export const getSourceFileContentUrl = (request: WangqiSourceFileContentUrlCommand) => {
+    const mode = request.mode || "preview";
     const search = mode === "download" ? "?download=true" : "";
-    return `${ADMIN_API_BASE_URL}${DOCUMENTS_PATH}/${documentId}/source-file/content${search}`;
+    return `${ADMIN_API_BASE_URL}${DOCUMENTS_PATH}/${request.documentId}/source-file/content${search}`;
 };
 
 export const listVersions = (documentId: number) => {

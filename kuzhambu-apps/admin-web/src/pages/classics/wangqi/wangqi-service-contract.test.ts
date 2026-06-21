@@ -162,10 +162,12 @@ describe("wangqi service request contracts", () => {
             id: 400000000001
         });
 
-        expect(service.getSourceFileContentUrl(400000000001)).toBe(
+        expect(service.getSourceFileContentUrl({ documentId: 400000000001 })).toBe(
             `${DEV_PROXY_PREFIX}/classics/wangqi/documents/400000000001/source-file/content`
         );
-        expect(service.getSourceFileContentUrl(400000000001, "download")).toBe(
+        expect(
+            service.getSourceFileContentUrl({ documentId: 400000000001, mode: "download" })
+        ).toBe(
             `${DEV_PROXY_PREFIX}/classics/wangqi/documents/400000000001/source-file/content?download=true`
         );
     });

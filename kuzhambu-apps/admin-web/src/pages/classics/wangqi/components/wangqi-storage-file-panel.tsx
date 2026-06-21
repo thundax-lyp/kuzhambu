@@ -30,7 +30,12 @@ const resolveContentUrl = (
     if (!document?.id) {
         return undefined;
     }
-    return toAuthenticatedResourceUrl(wangqiService.getSourceFileContentUrl(document.id, mode));
+    return toAuthenticatedResourceUrl(
+        wangqiService.getSourceFileContentUrl({
+            documentId: document.id,
+            mode
+        })
+    );
 };
 
 export interface WangqiStorageFilePanelProps {
