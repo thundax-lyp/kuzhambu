@@ -123,6 +123,15 @@ public class SancaiAssetRepositoryImpl implements SancaiAssetRepository {
     }
 
     @Override
+    public List<SancaiEntryImage> listCurrentImagesByEntryId(SancaiEntryId entryId, SortDirection sortDirection) {
+        LambdaQueryWrapper<SancaiEntryImageDO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(SancaiEntryImageDO::getEntryId, SancaiEntryIdCodec.toValue(entryId))
+                .eq(SancaiEntryImageDO::getCurrentUsed, true)
+                .orderBy(true, sortDirection != SortDirection.DESC, SancaiEntryImageDO::getPriority);
+        return SancaiAssetPersistenceAssembler.toImageDomainList(imageMapper.selectList(wrapper));
+    }
+
+    @Override
     public int maxPriority() {
         return maxPriority(imageMapper.selectObjs(new QueryWrapper<SancaiEntryImageDO>().select("max(priority)")));
     }

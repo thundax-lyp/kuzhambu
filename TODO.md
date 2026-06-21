@@ -9,13 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics/sancai/image-repository`：补齐 Sancai 图片引用仓储能力
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-domain/src/main/java/com/thundax/kuzhambu/classics/domain/sancai/repository/SancaiAssetRepository.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/java/com/thundax/kuzhambu/classics/infra/sancai/repository/impl/SancaiAssetRepositoryImpl.java`
-    - 处理动作：补齐按图片 ID、条目当前图和排序读取图片记录的仓储能力。
-    - 验收点：应用层能够校验 `replaceImageId` 归属和读取 `currentUsed=true` 图片列表。
-    - 重要度：9/10
 - [ ] `classics/sancai/image-upload-binding`：实现 Sancai 图片上传替换和引用绑定
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`
