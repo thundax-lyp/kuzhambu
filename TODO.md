@@ -9,13 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics/portal/resource-api`：接入 Portal 分享资源读取接口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/portal/sharing/controller/ClassicsSharingPortalController.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/test/java/com/thundax/kuzhambu/classics/interfaces/portal/sharing/ClassicsSharingPortalControllerTest.java`
-    - 处理动作：暴露 `/resources/{storageObjectId}/content` 并设置 inline/download 响应头。
-    - 验收点：接口测试覆盖成功读取、失败统一 404 和非 Wangqi 下载限制。
-    - 重要度：10/10
 - [ ] `admin-web/storage/preview`：接入 Admin Storage 页面预览和下载
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`

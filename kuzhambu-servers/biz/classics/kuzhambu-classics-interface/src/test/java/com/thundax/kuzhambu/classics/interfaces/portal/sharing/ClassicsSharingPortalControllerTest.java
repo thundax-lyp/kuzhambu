@@ -23,17 +23,22 @@ import com.thundax.kuzhambu.classics.interfaces.portal.sharing.controller.Classi
 import com.thundax.kuzhambu.classics.interfaces.portal.sharing.controller.request.ClassicsSharePortalSearchRequest;
 import com.thundax.kuzhambu.classics.interfaces.portal.sharing.controller.response.ClassicsSharePortalListResponse;
 import com.thundax.kuzhambu.classics.interfaces.portal.sharing.controller.response.ClassicsSharePortalResponse;
+import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.security.annotation.PublicApi;
 import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
+import com.thundax.kuzhambu.storage.application.service.content.StoredObjectContent;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.ByteArrayInputStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Date;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -61,6 +66,12 @@ class ClassicsSharingPortalControllerTest {
 
         Method get = ClassicsSharingPortalController.class.getDeclaredMethod("get", String.class);
         assertEquals("{shareToken}", get.getAnnotation(GetMapping.class).value()[0]);
+
+        Method content = ClassicsSharingPortalController.class.getDeclaredMethod(
+                "content", String.class, Long.class, Boolean.class, HttpServletResponse.class);
+        assertEquals(
+                "{shareToken}/resources/{storageObjectId}/content",
+                content.getAnnotation(GetMapping.class).value()[0]);
     }
 
     @Test
@@ -120,6 +131,44 @@ class ClassicsSharingPortalControllerTest {
         assertFalse(json.at("/records/0").has("tokenHash"), json::toString);
     }
 
+    @Test
+    void contentShouldWriteInlineResourceBytesAndHeaders() throws Exception {
+        ClassicsSharingPortalController controller = new ClassicsSharingPortalController(sharingService());
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        controller.content("share-token", 7001L, false, response);
+
+        assertEquals("image/png", response.getContentType());
+        assertEquals(11, response.getContentLength());
+        assertTrue(response.getHeader("Content-Disposition").startsWith("inline;"));
+        assertTrue(response.getHeader("Content-Disposition").contains("sancai.png"));
+        assertEquals("image-bytes", response.getContentAsString());
+    }
+
+    @Test
+    void contentShouldSupportWangqiDownloadDisposition() throws Exception {
+        ClassicsSharingPortalController controller = new ClassicsSharingPortalController(sharingService());
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        controller.content("share-token", 7002L, true, response);
+
+        assertTrue(response.getHeader("Content-Disposition").startsWith("attachment;"));
+        assertTrue(response.getHeader("Content-Disposition").contains("wangqi.pdf"));
+    }
+
+    @Test
+    void contentShouldReturn404ForRejectedResourceRead() throws Exception {
+        ClassicsSharingPortalController controller = new ClassicsSharingPortalController(sharingService());
+        MockHttpServletResponse missingResponse = new MockHttpServletResponse();
+        MockHttpServletResponse sancaiDownloadResponse = new MockHttpServletResponse();
+
+        controller.content("share-token", 9999L, false, missingResponse);
+        controller.content("share-token", 7001L, true, sancaiDownloadResponse);
+
+        assertEquals(404, missingResponse.getStatus());
+        assertEquals(404, sancaiDownloadResponse.getStatus());
+    }
+
     private static ClassicsSharingApplicationService sharingService() {
         return (ClassicsSharingApplicationService) Proxy.newProxyInstance(
                 ClassicsSharingApplicationService.class.getClassLoader(),
@@ -144,6 +193,18 @@ class ClassicsSharingPortalControllerTest {
                         assertEquals(1, page.getPageNo());
                         assertEquals(10, page.getPageSize());
                         return PageResult.of(1, 10, 1, List.of(listItem()));
+                    }
+                    if ("getPortalShareResourceContent".equals(method.getName())) {
+                        assertEquals("share-token", args[0]);
+                        Long storageObjectId = (Long) args[1];
+                        boolean download = (Boolean) args[2];
+                        if (storageObjectId == 7001L && !download) {
+                            return storedContent(7001L, "sancai.png", "image/png");
+                        }
+                        if (storageObjectId == 7002L && download) {
+                            return storedContent(7002L, "wangqi.pdf", "application/pdf");
+                        }
+                        throw new BizException("分享资源不存在");
                     }
                     throw new UnsupportedOperationException(method.getName());
                 });
@@ -221,6 +282,11 @@ class ClassicsSharingPortalControllerTest {
         storage.setContentType(contentType);
         storage.setSize(size);
         return storage;
+    }
+
+    private static StoredObjectContent storedContent(Long id, String originalFilename, String contentType) {
+        StoredObject storage = storage(id, originalFilename, contentType, 11L);
+        return new StoredObjectContent(storage, new ByteArrayInputStream("image-bytes".getBytes()));
     }
 
     private static String sancaiSnapshotJson() {
