@@ -103,6 +103,7 @@ class WangqiDocumentAdminControllerTest {
                 "{id}/source-file/content",
                 "classics:wangqi:view",
                 Long.class,
+                Boolean.class,
                 jakarta.servlet.http.HttpServletResponse.class);
         assertPostMapping(
                 WangqiDocumentAdminController.class,
@@ -208,10 +209,25 @@ class WangqiDocumentAdminControllerTest {
         assertEquals(7001L, controller.getSourceFile(request).getStorageObjectId());
 
         MockHttpServletResponse response = new MockHttpServletResponse();
-        controller.downloadSourceFile(400000000001L, response);
+        controller.downloadSourceFile(400000000001L, false, response);
         assertEquals("application/pdf", response.getContentType());
+        assertEquals(10, response.getContentLength());
+        Assertions.assertTrue(response.getHeader("Content-Disposition").startsWith("inline;"));
         Assertions.assertTrue(response.getHeader("Content-Disposition").contains("wangqi.pdf"));
         assertEquals("source-bin", response.getContentAsString());
+    }
+
+    @Test
+    void downloadSourceFileShouldSupportAttachmentAndRfc5987Filename() throws Exception {
+        WangqiDocumentAdminController controller = controller();
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        controller.downloadSourceFile(400000000002L, true, response);
+
+        String disposition = response.getHeader("Content-Disposition");
+        Assertions.assertTrue(disposition.startsWith("attachment;"));
+        Assertions.assertTrue(disposition.contains("filename=\"王圻原始.pdf\""));
+        Assertions.assertTrue(disposition.contains("filename*=UTF-8''%E7%8E%8B%E5%9C%BB%E5%8E%9F%E5%A7%8B.pdf"));
     }
 
     private static WangqiDocumentAdminController controller() {
@@ -266,9 +282,10 @@ class WangqiDocumentAdminControllerTest {
                         return sourceFile();
                     }
                     if ("getSourceFileContent".equals(method.getName())) {
-                        assertEquals(WangqiDocumentId.of(400000000001L), args[0]);
+                        WangqiDocumentId documentId = (WangqiDocumentId) args[0];
                         return new StoredObjectContent(
-                                sourceFileStorage(), new ByteArrayInputStream("source-bin".getBytes()));
+                                sourceFileStorage(documentId.value()),
+                                new ByteArrayInputStream("source-bin".getBytes()));
                     }
                     throw new UnsupportedOperationException(method.getName());
                 });
@@ -352,13 +369,13 @@ class WangqiDocumentAdminControllerTest {
     }
 
     private static WangqiDocumentSourceFile sourceFile() {
-        return new WangqiDocumentSourceFile(400000000001L, sourceFileStorage());
+        return new WangqiDocumentSourceFile(400000000001L, sourceFileStorage(400000000001L));
     }
 
-    private static StoredObject sourceFileStorage() {
+    private static StoredObject sourceFileStorage(Long documentId) {
         StoredObject storage = new StoredObject();
         storage.setId(com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId.of(7001L));
-        storage.setOriginalFilename("wangqi.pdf");
+        storage.setOriginalFilename(documentId == 400000000002L ? "王圻原始.pdf" : "wangqi.pdf");
         storage.setContentType("application/pdf");
         storage.setSize(10L);
         return storage;

@@ -9,13 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics/wangqi/source-content`：补齐 Wangqi 原始文件读取能力
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/wangqi/controller/WangqiDocumentAdminController.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/wangqi/service/impl/WangqiDocumentApplicationServiceImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/test/java/com/thundax/kuzhambu/classics/interfaces/admin/wangqi/WangqiDocumentAdminControllerTest.java`
-    - 处理动作：让 Wangqi 原始文件读取支持 `download` 参数并保持业务归属校验。
-    - 验收点：Wangqi controller 测试覆盖 inline、attachment、长度响应和非归属不可读。
-    - 重要度：8/10
 - [ ] `classics/sancai/image-contract`：新增 Sancai 图片上传和读取应用层契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-PREVIEW-CLOSURE.md`
