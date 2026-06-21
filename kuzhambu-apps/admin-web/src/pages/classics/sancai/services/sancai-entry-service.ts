@@ -1,7 +1,13 @@
-import { getJson, postJson } from "@/api/http";
-import type { SancaiContentVersionRecord, SancaiEntryRecord } from "../sancai-types";
+import { ADMIN_API_BASE_URL, getJson, postFormData, postJson } from "@/api/http";
+import type {
+    SancaiContentVersionRecord,
+    SancaiEntryImageContentMode,
+    SancaiEntryImageRecord,
+    SancaiEntryRecord
+} from "../sancai-types";
 
 const ENTRIES_PATH = "/classics/sancai/entries";
+const ASSET_IMAGES_PATH = "/classics/sancai/assets/images";
 
 export interface SancaiEntryQuery {
     categoryId?: number | null;
@@ -41,6 +47,21 @@ interface SancaiVersionCommand {
     versionId?: number | null;
 }
 
+export interface SancaiEntryImageUploadCommand {
+    currentUsed?: boolean;
+    entryId: number;
+    file: File;
+    imageType?: string | null;
+    replaceImageId?: number | null;
+    title?: string | null;
+}
+
+export interface SancaiEntryImageContentUrlCommand {
+    entryId: number;
+    imageId: number;
+    mode?: SancaiEntryImageContentMode;
+}
+
 export const list = (request: SancaiEntryQuery = {}) => {
     return postJson<SancaiEntryRecord[], SancaiEntryQuery>(`${ENTRIES_PATH}/list`, {
         body: request
@@ -73,6 +94,37 @@ export const sort = (request: SancaiEntrySortCommand) => {
     return postJson<boolean, SancaiEntrySortCommand>(`${ENTRIES_PATH}/sort`, {
         body: request
     });
+};
+
+export const listImages = (entryId: number) => {
+    return getJson<SancaiEntryImageRecord[]>(`${ASSET_IMAGES_PATH}/${entryId}`);
+};
+
+export const uploadImage = (command: SancaiEntryImageUploadCommand) => {
+    const body = new FormData();
+    body.append("file", command.file);
+    if (command.title) {
+        body.append("title", command.title);
+    }
+    if (command.imageType) {
+        body.append("imageType", command.imageType);
+    }
+    if (typeof command.currentUsed === "boolean") {
+        body.append("currentUsed", String(command.currentUsed));
+    }
+    if (command.replaceImageId) {
+        body.append("replaceImageId", String(command.replaceImageId));
+    }
+    return postFormData<SancaiEntryImageRecord>(
+        `${ASSET_IMAGES_PATH}/${command.entryId}/upload`,
+        body
+    );
+};
+
+export const getImageContentUrl = (request: SancaiEntryImageContentUrlCommand) => {
+    const mode = request.mode || "preview";
+    const search = mode === "download" ? "?download=true" : "";
+    return `${ADMIN_API_BASE_URL}${ASSET_IMAGES_PATH}/${request.entryId}/${request.imageId}/content${search}`;
 };
 
 export const listVersions = (entryId: number) => {

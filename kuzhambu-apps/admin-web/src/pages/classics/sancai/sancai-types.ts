@@ -34,6 +34,23 @@ export interface SancaiEntryRecord {
     versionDirty?: boolean;
 }
 
+export interface SancaiEntryImageRecord {
+    id: number;
+    entryId?: number | null;
+    storageObjectId?: number | null;
+    imageType?: string | null;
+    title?: string | null;
+    currentUsed?: boolean | null;
+    priority?: number | null;
+    originalFilename?: string | null;
+    contentType?: string | null;
+    size?: number | null;
+    previewUrl?: string | null;
+    downloadUrl?: string | null;
+}
+
+export type SancaiEntryImageContentMode = "preview" | "download";
+
 export interface SancaiContentVersionRecord {
     id: number;
     contentType?: string | null;
