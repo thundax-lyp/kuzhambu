@@ -12,6 +12,7 @@ import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContent
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentChangeType;
+import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentExportJobId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentQaPairId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentTagId;
@@ -58,6 +59,8 @@ public interface ClassicsContentApplicationService {
     ClassicsContentVersion restoreHistoryVersion(ClassicsContentVersionId versionId);
 
     ClassicsExportJobResult createExportJob(ContentExportCommand command);
+
+    ClassicsContentExportJob getExportJob(ClassicsContentExportJobId id);
 
     PageResult<ClassicsContentExportJob> pageExportJobs(
             String contentType, String exportKind, String status, PageQuery page);

@@ -426,6 +426,11 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                 (int) dataPage.getCurrent(), (int) dataPage.getSize(), dataPage.getTotal(), dataPage.getRecords());
     }
 
+    @Override
+    public ClassicsContentExportJob getExportJob(ClassicsContentExportJobId id) {
+        return repository.getExportJobById(id);
+    }
+
     private void updateTagPriorityOrThrow(ClassicsContentTagId id, int priority) {
         ClassicsContentTag tag = new ClassicsContentTag();
         tag.setId(id);

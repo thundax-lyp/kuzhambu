@@ -355,6 +355,11 @@ class ClassicsContentApplicationServiceImplTest {
         }
 
         @Override
+        public ClassicsContentExportJob getExportJobById(ClassicsContentExportJobId id) {
+            return null;
+        }
+
+        @Override
         public int updateExportJob(ClassicsContentExportJob exportJob) {
             return 0;
         }

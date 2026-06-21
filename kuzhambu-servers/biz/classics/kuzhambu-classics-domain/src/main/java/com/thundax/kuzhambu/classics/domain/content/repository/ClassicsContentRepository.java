@@ -71,6 +71,8 @@ public interface ClassicsContentRepository {
 
     ClassicsContentExportJobId insertExportJob(ClassicsContentExportJob exportJob);
 
+    ClassicsContentExportJob getExportJobById(ClassicsContentExportJobId id);
+
     int updateExportJob(ClassicsContentExportJob exportJob);
 
     int markExportJobCompleted(

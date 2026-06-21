@@ -209,6 +209,11 @@ public class ClassicsContentRepositoryImpl implements ClassicsContentRepository 
         return ClassicsContentExportJobIdCodec.toDomain(dataObject.getId());
     }
 
+    public ClassicsContentExportJob getExportJobById(ClassicsContentExportJobId id) {
+        return ClassicsContentPersistenceAssembler.toExportDomain(
+                exportMapper.selectById(ClassicsContentExportJobIdCodec.toValue(id)));
+    }
+
     public int updateExportJob(ClassicsContentExportJob exportJob) {
         return exportMapper.updateById(ClassicsContentPersistenceAssembler.toExportObject(exportJob));
     }
