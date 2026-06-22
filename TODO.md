@@ -15,14 +15,6 @@
 
 
 
-- [ ] `knowledge taxonomy commands C`：创建别名命令对象
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/command/TagAliasCreateCommand.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/command/TagAliasRemoveCommand.java`
-    - 处理动作：创建标签别名命令对象。
-    - 验收点：2 个命令类存在且字段能覆盖别名新增与删除。
-    - 重要度：7/10
-
 - [ ] `knowledge taxonomy commands D`：创建同义词命令对象
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
