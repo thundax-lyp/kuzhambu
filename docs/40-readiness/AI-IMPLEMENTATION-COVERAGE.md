@@ -1,3 +1,15 @@
+# AI Implementation Coverage
+
+## Purpose
+
+本文档记录 AI 精修与 Java/Worker 能力的交付状态，用于跟踪 usecase 闭环和下一步补齐项。
+
+## Status Definition
+
+- `implemented`：已在仓库内形成可追溯交付，且当前可走通完整调用路径。
+- `excluded`：本轮明确排除或有明确边界约束，不纳入本轮交付。
+- `not_implemented`：能力存在能力定义或 worker 能力，但 Java 调用入口未接入。
+
 ## 已实现并已接入 usecase path
 
 | domain | contentType | capability | javaEntry | operation | workerPath | status | note |

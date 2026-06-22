@@ -1,3 +1,14 @@
+# Workers Implementation Coverage
+
+## Purpose
+
+本文档记录 Worker 与 AI Registry/usecase 对接清单，用于核对 worker 侧能力覆盖与 Java 入口状态。
+
+## Status Definition
+
+- `implemented`：对应调用路径与 worker usecase 已在代码与路由层确认接通。
+- `not_implemented`：worker 能力存在但调用链、路由、权限或注册尚未闭环。
+
 ## Classics usecase
 
 | domain | contentType | capability | operation | workerPath | stream | workerEntry | status | note |
