@@ -71,7 +71,6 @@
     - 处理动作：创建 taxonomy 前端类型定义与 API 服务封装。
     - 验收点：类型文件覆盖 RUNBOOK 固定类型名且服务文件覆盖 RUNBOOK 固定方法名。
     - 重要度：9/10
-
 - [ ] `knowledge taxonomy route`：接入 taxonomy 路由
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
