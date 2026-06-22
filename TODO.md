@@ -92,7 +92,6 @@
     - 处理动作：创建标签分类表格与编辑组件。
     - 验收点：2 个组件存在且能支撑分类列表、新增、编辑、启用、禁用。
     - 重要度：8/10
-
 - [ ] `knowledge taxonomy tag components A`：创建标签表格与编辑组件
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
