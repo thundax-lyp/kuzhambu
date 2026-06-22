@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `knowledge menu seed sql`：根据 JSON 生成菜单 SQL
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
-    - 范围对象：`db/data-source/system.json`、`db/data/system.sql`
-    - 处理动作：基于更新后的菜单 JSON 重新生成 system 初始化 SQL。
-    - 验收点：`db/data/system.sql` 包含知识治理菜单数据且与 `db/data-source/system.json` 一致。
-    - 重要度：9/10
-
 - [ ] `knowledge implementation coverage`：补充 Knowledge Implementation Coverage
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
