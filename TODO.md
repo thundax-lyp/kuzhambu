@@ -29,7 +29,6 @@
     - 处理动作：创建标签详情与审核请求模型。
     - 验收点：3 个请求类存在且字段能覆盖详情读取与审核流程。
     - 重要度：8/10
-
 - [ ] `knowledge taxonomy requests D`：创建别名与同义词请求模型
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
