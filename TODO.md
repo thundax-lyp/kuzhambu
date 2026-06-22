@@ -15,14 +15,6 @@
 
 
 
-- [ ] `knowledge taxonomy value objects A`：创建分类与标签值对象
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/taxonomy/model/valueobject/TagCategoryId.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/taxonomy/model/valueobject/TagId.java`
-    - 处理动作：创建标签分类与标签强类型 ID 值对象。
-    - 验收点：2 个值对象类存在且命名、包路径与 RUNBOOK 一致。
-    - 重要度：8/10
-
 - [ ] `knowledge taxonomy value objects B`：创建别名与内容引用值对象
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
