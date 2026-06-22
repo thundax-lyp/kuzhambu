@@ -55,7 +55,8 @@ public class WorkerAiHttpClient implements WorkerAiClient {
     public AiInvokeResult invoke(AiInvokeCommand command) {
         try {
             String body = objectMapper.writeValueAsString(toRequest(command, false));
-            HttpRequest request = buildPostRequest(INVOKE_PATH, command.getRequestId(), command.getTraceId(), body);
+            String invokePath = resolveInvokePath(command);
+            HttpRequest request = buildPostRequest(invokePath, command.getRequestId(), command.getTraceId(), body);
             HttpResponse<String> response =
                     httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
             if (!isSuccessful(response.statusCode())) {
@@ -81,7 +82,8 @@ public class WorkerAiHttpClient implements WorkerAiClient {
     public void stream(AiInvokeCommand command, Consumer<AiStreamEventResult> eventConsumer) {
         try {
             String body = objectMapper.writeValueAsString(toRequest(command, true));
-            HttpRequest request = buildPostRequest(STREAM_PATH, command.getRequestId(), command.getTraceId(), body);
+            String streamPath = resolveStreamPath(command);
+            HttpRequest request = buildPostRequest(streamPath, command.getRequestId(), command.getTraceId(), body);
             HttpResponse<InputStream> response = httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());
             if (!isSuccessful(response.statusCode())) {
                 emitError(
@@ -102,6 +104,20 @@ public class WorkerAiHttpClient implements WorkerAiClient {
         } catch (RuntimeException ex) {
             emitError(eventConsumer, command, failure(command, ERROR_INTERNAL_FAILURE, ex.getMessage()));
         }
+    }
+
+    private String resolveInvokePath(AiInvokeCommand command) {
+        if (command == null || isBlank(command.getWorkerPath())) {
+            return INVOKE_PATH;
+        }
+        return command.getWorkerPath();
+    }
+
+    private String resolveStreamPath(AiInvokeCommand command) {
+        if (command == null || isBlank(command.getWorkerPath())) {
+            return STREAM_PATH;
+        }
+        return command.getWorkerPath();
     }
 
     private WorkerAiDtos.WorkerAiRequest toRequest(AiInvokeCommand command, boolean stream) {

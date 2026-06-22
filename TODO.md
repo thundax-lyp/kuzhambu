@@ -11,14 +11,6 @@
 
 
 
-- [ ] `WorkerAiHttpClient`：优先使用 `workerPath`
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKER-USECASE-CLOSURE.md` 第 `4.4` 章节
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-infra/src/main/java/com/thundax/kuzhambu/ai/infra/client/WorkerAiHttpClient.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-infra/src/test/java/com/thundax/kuzhambu/ai/infra/client/WorkerAiHttpClientTest.java`
-    - 处理动作：让 `WorkerAiHttpClient` 按 `AiInvokeCommand.workerPath` 发送请求并保留 generic fallback
-    - 验收点：usecase path 请求与 legacy generic 请求都被测试覆盖，签名使用实际发送 path
-    - 重要度：10/10
-
 - [ ] `AiWorkerInvocationApplicationServiceTest`：补 invocation 层最小回归
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKER-USECASE-CLOSURE.md` 第 `4.5` 章节
