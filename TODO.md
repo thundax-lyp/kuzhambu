@@ -15,14 +15,6 @@
 
 
 
-- [ ] `knowledge taxonomy data objects C`：创建同义词 DO 与持久化装配器
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/taxonomy/persistence/dataobject/SynonymDO.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/taxonomy/persistence/assembler/TaxonomyPersistenceAssembler.java`
-    - 处理动作：创建同义词持久化对象与 taxonomy 持久化装配器。
-    - 验收点：`SynonymDO` 存在且装配器覆盖 entity 与 DO 互转。
-    - 重要度：8/10
-
 - [ ] `knowledge taxonomy mappers A`：创建分类与标签 Mapper
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
