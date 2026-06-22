@@ -15,14 +15,6 @@
 
 
 
-- [ ] `knowledge taxonomy codecs A`：创建分类与标签 codec
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/taxonomy/codec/TagCategoryIdCodec.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/taxonomy/codec/TagIdCodec.java`
-    - 处理动作：创建分类与标签值对象 codec。
-    - 验收点：2 个 codec 类存在且分别处理对应强类型 ID 转换。
-    - 重要度：7/10
-
 - [ ] `knowledge taxonomy codecs B`：创建别名与内容引用 codec
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
