@@ -22,7 +22,6 @@
     - 处理动作：创建标签分页、创建、更新、状态请求模型。
     - 验收点：4 个请求类存在且字段能覆盖标签管理主流程。
     - 重要度：9/10
-
 - [ ] `knowledge taxonomy requests C`：创建标签详情与审核请求模型
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
