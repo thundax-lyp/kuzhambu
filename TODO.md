@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `knowledge taxonomy tag components B`：创建标签审核与详情组件
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/taxonomy/components/tag-review-table.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/taxonomy/components/tag-detail-drawer.tsx`
-    - 处理动作：创建待审核标签表格与标签详情抽屉组件。
-    - 验收点：2 个组件存在且能支撑标签审核、详情查看、内容引用只读展示。
-    - 重要度：9/10
-
 - [ ] `knowledge taxonomy tag alias component`：创建标签别名列表组件
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`

@@ -5,20 +5,24 @@ import { hasPermission } from "@/auth/permission-storage";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { CategoryEdit } from "./components/category-edit";
 import { CategoryTable } from "./components/category-table";
+import { TagDetailDrawer } from "./components/tag-detail-drawer";
 import { TagEdit } from "./components/tag-edit";
+import { TagReviewTable } from "./components/tag-review-table";
 import { TagTable } from "./components/tag-table";
 import * as service from "./taxonomy-service";
 import type {
     TagCategoryCreateCommand,
     TagCategoryUpdateCommand,
     TagCreateCommand,
+    TagReviewCommand,
     TagUpdateCommand
 } from "./taxonomy-service";
 import type {
     TagCategoryPageQuery,
     TagCategoryRecord,
     TagPageQuery,
-    TagRecord
+    TagRecord,
+    TagReviewPageQuery
 } from "./taxonomy-types";
 import "./taxonomy-page.css";
 
@@ -49,10 +53,17 @@ export const TaxonomyPage = () => {
         pageNo: DEFAULT_PAGE_NO,
         pageSize: DEFAULT_PAGE_SIZE
     });
+    const [reviewQuery, setReviewQuery] = useState<TagReviewPageQuery>({
+        pageNo: DEFAULT_PAGE_NO,
+        pageSize: DEFAULT_PAGE_SIZE
+    });
     const [editingCategory, setEditingCategory] = useState<TagCategoryRecord | null>(null);
     const [editingTag, setEditingTag] = useState<TagRecord | null>(null);
+    const [selectedTag, setSelectedTag] = useState<TagRecord | null>(null);
     const [categoryEditorOpen, setCategoryEditorOpen] = useState(false);
     const [tagEditorOpen, setTagEditorOpen] = useState(false);
+    const [tagDetailOpen, setTagDetailOpen] = useState(false);
+    const [tagDetailReviewMode, setTagDetailReviewMode] = useState(false);
 
     const categoryPageQuery = useQuery({
         queryKey: ["knowledge", "taxonomy", "categories", categoryQuery],
@@ -64,6 +75,18 @@ export const TaxonomyPage = () => {
         queryKey: ["knowledge", "taxonomy", "tags", tagQuery],
         queryFn: () => service.pageTags(tagQuery),
         enabled: canViewTaxonomy || canEditTaxonomy,
+        retry: false
+    });
+    const reviewPageQuery = useQuery({
+        queryKey: ["knowledge", "taxonomy", "reviews", reviewQuery],
+        queryFn: () => service.pagePendingTags(reviewQuery),
+        enabled: canViewTaxonomy || canEditTaxonomy,
+        retry: false
+    });
+    const tagDetailQuery = useQuery({
+        queryKey: ["knowledge", "taxonomy", "tag-detail", selectedTag?.id],
+        queryFn: () => service.getTagDetail({ tagId: selectedTag?.id || "" }),
+        enabled: tagDetailOpen && Boolean(selectedTag?.id),
         retry: false
     });
 
@@ -121,11 +144,32 @@ export const TaxonomyPage = () => {
             messageApi.error(error instanceof Error ? error.message : "统一标签状态更新失败");
         }
     });
+    const reviewTagMutation = useMutation({
+        mutationFn: service.reviewTag,
+        onSuccess: async () => {
+            setTagDetailOpen(false);
+            setTagDetailReviewMode(false);
+            setSelectedTag(null);
+            await Promise.all([
+                queryClient.invalidateQueries({ queryKey: ["knowledge", "taxonomy", "reviews"] }),
+                queryClient.invalidateQueries({ queryKey: ["knowledge", "taxonomy", "tags"] }),
+                queryClient.invalidateQueries({
+                    queryKey: ["knowledge", "taxonomy", "tag-detail"]
+                })
+            ]);
+            messageApi.success("标签审核已完成");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "标签审核失败");
+        }
+    });
 
     const categoryPage = categoryPageQuery.data;
     const tagPage = tagPageQuery.data;
+    const reviewPage = reviewPageQuery.data;
     const categories = categoryPage?.records || [];
     const tags = tagPage?.records || [];
+    const reviewTags = reviewPage?.records || [];
 
     const openCreateCategory = () => {
         setEditingCategory(null);
@@ -155,12 +199,27 @@ export const TaxonomyPage = () => {
         setTagEditorOpen(true);
     };
 
+    const openTagDetail = (tag: TagRecord, reviewMode = false) => {
+        setSelectedTag(tag);
+        setTagDetailReviewMode(reviewMode);
+        setTagDetailOpen(true);
+    };
+
     const closeTagEditor = () => {
         if (saveTagMutation.isPending) {
             return;
         }
         setTagEditorOpen(false);
         setEditingTag(null);
+    };
+
+    const closeTagDetail = () => {
+        if (reviewTagMutation.isPending) {
+            return;
+        }
+        setTagDetailOpen(false);
+        setTagDetailReviewMode(false);
+        setSelectedTag(null);
     };
 
     return (
@@ -206,8 +265,27 @@ export const TaxonomyPage = () => {
                                     onAdd={openCreateTag}
                                     onChange={setTagQuery}
                                     onEdit={openEditTag}
+                                    onOpenDetail={(tag) => openTagDetail(tag)}
                                     onRefresh={() => tagPageQuery.refetch()}
                                     onStatusChange={(request) => tagStatusMutation.mutate(request)}
+                                />
+                            )
+                        };
+                    }
+
+                    if (key === "reviews") {
+                        return {
+                            key,
+                            label,
+                            children: (
+                                <TagReviewTable
+                                    loading={reviewPageQuery.isFetching}
+                                    query={reviewQuery}
+                                    tags={reviewTags}
+                                    totalCount={readTotalCount(reviewPage)}
+                                    onChange={setReviewQuery}
+                                    onOpenReview={(tag) => openTagDetail(tag, true)}
+                                    onRefresh={() => reviewPageQuery.refetch()}
                                 />
                             )
                         };
@@ -238,6 +316,17 @@ export const TaxonomyPage = () => {
                 onClose={closeTagEditor}
                 onCreate={(request) => saveTagMutation.mutate(request)}
                 onSave={(request) => saveTagMutation.mutate(request)}
+            />
+
+            <TagDetailDrawer
+                open={tagDetailOpen}
+                loading={tagDetailQuery.isFetching}
+                reviewMode={tagDetailReviewMode}
+                reviewing={reviewTagMutation.isPending}
+                tagDetail={tagDetailQuery.data}
+                onClose={closeTagDetail}
+                onApprove={(request: TagReviewCommand) => reviewTagMutation.mutate(request)}
+                onReject={(request: TagReviewCommand) => reviewTagMutation.mutate(request)}
             />
         </div>
     );

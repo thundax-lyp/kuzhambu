@@ -3,20 +3,16 @@ import { Button, Typography } from "antd";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
-import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
 import { KuzhambuTag } from "@/components/kuzhambu-tag";
-import type { TagStatusCommand } from "../taxonomy-service";
-import type { TagPageQuery, TagRecord } from "../taxonomy-types";
+import type { TagRecord, TagReviewPageQuery } from "../taxonomy-types";
 
 const { Text } = Typography;
 
 const DEFAULT_COLUMN_WIDTHS = {
     name: 220,
     category: 160,
-    reviewStatus: 120,
-    contentRefCount: 120,
+    source: 140,
     createdAt: 180,
-    status: 120,
     actions: 140
 };
 
@@ -37,27 +33,6 @@ const formatTimestamp = (value?: number | null) => {
           });
 };
 
-const readStatusValue = (tag: TagRecord): "ENABLED" | "DISABLED" => {
-    return tag.status === "DISABLED" ? "DISABLED" : "ENABLED";
-};
-
-const readStatusLabel = (status: "ENABLED" | "DISABLED") => {
-    return status === "ENABLED" ? "启用" : "禁用";
-};
-
-const readReviewStatusLabel = (status?: string | null) => {
-    switch (status) {
-        case "APPROVED":
-            return "已通过";
-        case "REJECTED":
-            return "已拒绝";
-        case "PENDING":
-            return "待审核";
-        default:
-            return status || "-";
-    }
-};
-
 const readSourceLabel = (source?: string | null) => {
     switch (source) {
         case "MANUAL":
@@ -69,38 +44,30 @@ const readSourceLabel = (source?: string | null) => {
     }
 };
 
-interface TagTableProps {
-    canEditTag: boolean;
+interface TagReviewTableProps {
     loading: boolean;
-    query: TagPageQuery;
+    query: TagReviewPageQuery;
     tags: TagRecord[];
     totalCount: number;
-    onAdd: () => void;
-    onChange: (values: TagPageQuery) => void;
-    onEdit: (tag: TagRecord) => void;
-    onOpenDetail: (tag: TagRecord) => void;
+    onChange: (values: TagReviewPageQuery) => void;
+    onOpenReview: (tag: TagRecord) => void;
     onRefresh: () => void;
-    onStatusChange: (request: TagStatusCommand) => void;
 }
 
-export const TagTable = ({
-    canEditTag,
+export const TagReviewTable = ({
     loading,
     query,
     tags,
     totalCount,
-    onAdd,
     onChange,
-    onEdit,
-    onOpenDetail,
-    onRefresh,
-    onStatusChange
-}: TagTableProps) => {
+    onOpenReview,
+    onRefresh
+}: TagReviewTableProps) => {
     const currentPageNo = query.pageNo || DEFAULT_PAGE_NO;
     const currentPageSize = query.pageSize || DEFAULT_PAGE_SIZE;
     const hasSearch = Boolean(normalizeSearch(query.name));
 
-    const updateQuery = (nextQuery: TagPageQuery) => {
+    const updateQuery = (nextQuery: TagReviewPageQuery) => {
         onChange({
             ...query,
             ...nextQuery,
@@ -119,9 +86,9 @@ export const TagTable = ({
             render: (name: string, tag) => (
                 <Button
                     type="link"
-                    className="knowledge-taxonomy-tag-detail-trigger"
-                    aria-label={`查看统一标签 ${name || tag.id} 详情`}
-                    onClick={() => onOpenDetail(tag)}
+                    className="knowledge-taxonomy-tag-review-trigger"
+                    aria-label={`查看待审核标签 ${name || tag.id}`}
+                    onClick={() => onOpenReview(tag)}
                 >
                     {name}
                 </Button>
@@ -136,25 +103,11 @@ export const TagTable = ({
                 categoryName ? <KuzhambuTag type="info">{categoryName}</KuzhambuTag> : "-"
         },
         {
-            title: "审核状态",
-            dataIndex: "reviewStatus",
-            key: "reviewStatus",
-            width: DEFAULT_COLUMN_WIDTHS.reviewStatus,
-            render: (reviewStatus?: string | null) => readReviewStatusLabel(reviewStatus)
-        },
-        {
             title: "来源",
             dataIndex: "source",
             key: "source",
-            width: DEFAULT_COLUMN_WIDTHS.reviewStatus,
+            width: DEFAULT_COLUMN_WIDTHS.source,
             render: (source?: string | null) => readSourceLabel(source)
-        },
-        {
-            title: "内容引用",
-            dataIndex: "contentRefCount",
-            key: "contentRefCount",
-            width: DEFAULT_COLUMN_WIDTHS.contentRefCount,
-            render: (contentRefCount?: number | null) => contentRefCount ?? 0
         },
         {
             title: "创建时间",
@@ -164,38 +117,14 @@ export const TagTable = ({
             render: (createdAt?: number | null) => <Text>{formatTimestamp(createdAt)}</Text>
         },
         {
-            title: "状态",
-            key: "status",
-            width: DEFAULT_COLUMN_WIDTHS.status,
-            render: (_, tag) => {
-                const statusValue = readStatusValue(tag);
-                return (
-                    <KuzhambuSwitch
-                        checked={statusValue === "ENABLED"}
-                        checkedChildren={readStatusLabel("ENABLED")}
-                        unCheckedChildren={readStatusLabel("DISABLED")}
-                        disabled={!canEditTag}
-                        aria-label={`切换 ${tag.name || tag.id} 状态`}
-                        onChange={(checked) => {
-                            onStatusChange({
-                                id: tag.id,
-                                status: checked ? "ENABLED" : "DISABLED"
-                            });
-                        }}
-                    />
-                );
-            }
-        },
-        {
             key: "actions",
             width: DEFAULT_COLUMN_WIDTHS.actions,
             options: (tag) => [
                 {
-                    key: "edit",
-                    text: "编辑",
-                    ariaLabel: `编辑统一标签 ${tag.name || tag.id}`,
-                    disabled: !canEditTag,
-                    onClick: onEdit
+                    key: "review",
+                    text: "审核",
+                    ariaLabel: `审核标签 ${tag.name || tag.id}`,
+                    onClick: onOpenReview
                 }
             ]
         }
@@ -203,11 +132,10 @@ export const TagTable = ({
 
     return (
         <KuzhambuListPage<TagRecord>
-            pageClassName="knowledge-taxonomy-tag-page"
-            title="统一标签管理"
-            description="维护标签列表，支持分页、创建、更新、启用与禁用。"
-            subjectName="统一标签"
-            enableAdd={canEditTag}
+            pageClassName="knowledge-taxonomy-review-page"
+            title="待审核标签"
+            description="查看待审核标签详情并执行通过或拒绝。"
+            subjectName="待审核标签"
             enableSearch
             searchShortcut="⌘K"
             searchValue={query.name || ""}
@@ -217,7 +145,6 @@ export const TagTable = ({
                     pageNo: DEFAULT_PAGE_NO
                 })
             }
-            onAdd={onAdd}
             pageActions={
                 <Button icon={<ReloadOutlined />} onClick={onRefresh}>
                     刷新
@@ -232,7 +159,7 @@ export const TagTable = ({
                 current: currentPageNo,
                 pageSize: currentPageSize,
                 total: totalCount,
-                showTotal: (total) => `共 ${total} 个标签`,
+                showTotal: (total) => `共 ${total} 个待审核标签`,
                 onChange: (pageNo, pageSize) => {
                     updateQuery({
                         pageNo,
@@ -241,7 +168,7 @@ export const TagTable = ({
                 }
             }}
             locale={{
-                emptyText: loading ? "统一标签加载中..." : "暂无统一标签"
+                emptyText: loading ? "待审核标签加载中..." : "暂无待审核标签"
             }}
         />
     );
