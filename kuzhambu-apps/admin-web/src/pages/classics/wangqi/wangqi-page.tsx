@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Select } from "antd";
 import { useMemo, useState } from "react";
+import { AiCandidatePanel } from "@/components/ai/ai-candidate-panel";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
@@ -349,6 +350,14 @@ export const WangqiPage = () => {
                 afterForm={
                     editorMode === "edit" && activeDocument ? (
                         <div className="wangqi-page-drawer-panels">
+                            <AiCandidatePanel
+                                capabilities={["summary", "tags", "qa"]}
+                                contentId={activeDocument.id}
+                                contentType="WANGQI_DOCUMENT"
+                                onApplied={async () => {
+                                    await invalidateWangqi();
+                                }}
+                            />
                             <WangqiStorageFilePanel
                                 document={activeDocument}
                                 loading={sourceFileQuery.isLoading || sourceFileQuery.isFetching}

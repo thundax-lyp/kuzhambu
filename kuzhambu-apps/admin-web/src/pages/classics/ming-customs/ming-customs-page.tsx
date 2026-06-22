@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Select } from "antd";
 import { useMemo, useState } from "react";
+import { AiCandidatePanel } from "@/components/ai/ai-candidate-panel";
 import * as shareService from "@/api/classics/share-service";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
@@ -90,7 +91,8 @@ export const MingCustomsPage = () => {
     const invalidateMingCustoms = async () => {
         await Promise.all([
             queryClient.invalidateQueries({ queryKey: ["ming-customs", "page"] }),
-            queryClient.invalidateQueries({ queryKey: ["ming-customs", "keyword-cloud"] })
+            queryClient.invalidateQueries({ queryKey: ["ming-customs", "keyword-cloud"] }),
+            queryClient.invalidateQueries({ queryKey: ["ming-customs", "detail"] })
         ]);
     };
 
@@ -335,6 +337,18 @@ export const MingCustomsPage = () => {
                 saving={saveMutation.isPending}
                 onClose={closeEditor}
                 onSave={(command) => saveMutation.mutate(command)}
+                afterForm={
+                    editorMode === "edit" && editorEntry ? (
+                        <AiCandidatePanel
+                            capabilities={["summary", "tags", "qa"]}
+                            contentId={editorEntry.id}
+                            contentType="MING_CUSTOMS"
+                            onApplied={async () => {
+                                await invalidateMingCustoms();
+                            }}
+                        />
+                    ) : null
+                }
             />
         </>
     );

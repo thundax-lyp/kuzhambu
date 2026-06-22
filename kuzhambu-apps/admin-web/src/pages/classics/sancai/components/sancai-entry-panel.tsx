@@ -9,6 +9,7 @@ import { SancaiEntryList } from "./sancai-entry-list";
 import { SancaiEntryModel } from "./sancai-entry-model";
 import type { SancaiEntryFormValues } from "./sancai-form-values";
 import { SancaiVersionHistoryPanel } from "./sancai-version-history-panel";
+import { AiCandidatePanel } from "@/components/ai/ai-candidate-panel";
 import * as entryService from "../services/sancai-entry-service";
 import type {
     SancaiContentVersionRecord,
@@ -215,6 +216,19 @@ export const SancaiEntryPanel = ({
         await queryClient.invalidateQueries({
             queryKey: ["classics", "sancai", "showcases", "jobs"]
         });
+    };
+    const refreshSancaiEntryDetail = async () => {
+        if (!selectedEntry?.id) {
+            return;
+        }
+        await Promise.all([
+            queryClient.invalidateQueries({
+                queryKey: ["classics", "sancai", "entries", "detail", selectedEntry.id]
+            }),
+            queryClient.invalidateQueries({
+                queryKey: ["classics", "sancai", "entries", "versions", selectedEntry.id]
+            })
+        ]);
     };
     const addEntryMutation = useMutation({
         mutationFn: entryService.add,
@@ -684,16 +698,29 @@ export const SancaiEntryPanel = ({
                 onSubmit={submitEntry}
                 afterForm={
                     !isCreating && selectedEntry ? (
-                        <SancaiVersionHistoryPanel
-                            currentEntry={selectedEntry}
-                            detailLoading={versionDetailQuery.isLoading}
-                            listLoading={versionsQuery.isLoading}
-                            resetting={resetVersionMutation.isPending}
-                            selectedVersion={selectedVersion}
-                            versions={versions}
-                            onSelectVersion={(version) => setSelectedVersionId(version.id)}
-                            onResetVersion={resetVersion}
-                        />
+                        <>
+                            <AiCandidatePanel
+                                capabilities={["translate", "summary", "tags", "qa"]}
+                                contentId={selectedEntry.id}
+                                contentType="SANCAI_ENTRY"
+                                onApplied={async () => {
+                                    await Promise.all([
+                                        refreshSancaiEntryDetail(),
+                                        invalidateEntries()
+                                    ]);
+                                }}
+                            />
+                            <SancaiVersionHistoryPanel
+                                currentEntry={selectedEntry}
+                                detailLoading={versionDetailQuery.isLoading}
+                                listLoading={versionsQuery.isLoading}
+                                resetting={resetVersionMutation.isPending}
+                                selectedVersion={selectedVersion}
+                                versions={versions}
+                                onSelectVersion={(version) => setSelectedVersionId(version.id)}
+                                onResetVersion={resetVersion}
+                            />
+                        </>
                     ) : null
                 }
             />
