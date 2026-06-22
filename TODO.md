@@ -64,7 +64,6 @@
     - 处理动作：创建 taxonomy Admin 控制器与接口装配器并挂接固定 API 与权限码。
     - 验收点：控制器存在且 POST 路径、权限码、方法名与 RUNBOOK 完全一致。
     - 重要度：10/10
-
 - [ ] `knowledge taxonomy frontend types and service`：创建 taxonomy 前端类型与服务
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
