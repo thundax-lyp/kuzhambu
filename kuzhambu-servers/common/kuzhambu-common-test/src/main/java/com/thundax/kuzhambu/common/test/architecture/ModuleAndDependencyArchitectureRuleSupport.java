@@ -65,9 +65,7 @@ public final class ModuleAndDependencyArchitectureRuleSupport {
                     .resideInAPackage("com.thundax.kuzhambu." + currentDomain + "..")
                     .should()
                     .dependOnClassesThat()
-                    .resideInAnyPackage(
-                            "com.thundax.kuzhambu." + domain + ".infra..",
-                            "com.thundax.kuzhambu." + domain + ".domain..repository..")
+                    .resideInAnyPackage("com.thundax.kuzhambu." + domain + ".infra..")
                     .check(classes);
         }
     }

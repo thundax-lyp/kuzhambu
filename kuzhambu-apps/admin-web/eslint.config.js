@@ -506,12 +506,18 @@ const localRules = {
                     return match?.[0];
                 };
 
+                const readPageModuleRoot = (normalizedFilePath) => {
+                    const match = normalizedFilePath.match(/\/src\/pages\/[^/]+\//);
+                    return match?.[0];
+                };
+
                 return {
                     ImportDeclaration(node) {
                         const filePath = context.physicalFilename;
                         const normalizedFilePath = filePath.split(path.sep).join("/");
                         const importPath = node.source.value;
                         const pageDomainRoot = readPageDomainRoot(normalizedFilePath);
+                        const pageModuleRoot = readPageModuleRoot(normalizedFilePath);
 
                         if (
                             !pageDomainRoot ||
@@ -522,6 +528,18 @@ const localRules = {
                         }
 
                         if (importPath.startsWith("@/pages/")) {
+                            const resolvedImportPath = `/src/${importPath.slice(2)}`;
+                            const importModuleRoot = readPageModuleRoot(resolvedImportPath);
+                            const importPageDomainRoot = readPageDomainRoot(resolvedImportPath);
+                            const isModuleCommonImport =
+                                pageModuleRoot &&
+                                importModuleRoot === pageModuleRoot &&
+                                importPageDomainRoot?.endsWith("/common/");
+
+                            if (isModuleCommonImport) {
+                                return;
+                            }
+
                             context.report({
                                 node,
                                 message:
@@ -557,6 +575,11 @@ const localRules = {
                     return match?.[0];
                 };
 
+                const readPageModuleRoot = (normalizedFilePath) => {
+                    const match = normalizedFilePath.match(/\/src\/pages\/[^/]+\//);
+                    return match?.[0];
+                };
+
                 const resolveImportPath = (filePath, importPath) => {
                     if (importPath.startsWith("@/")) {
                         return `/src/${importPath.slice(2)}`;
@@ -589,8 +612,19 @@ const localRules = {
                         const normalizedPageDomainRoot = readPageDomainRoot(resolvedImportPath);
                         if (
                             !resolvedImportPath.includes("/src/pages/") ||
-                            !resolvedImportPath.endsWith("-service")
+                            !resolvedImportPath.endsWith("-service.ts")
                         ) {
+                            return;
+                        }
+
+                        const pageModuleRoot = readPageModuleRoot(normalizedFilePath);
+                        const importModuleRoot = readPageModuleRoot(resolvedImportPath);
+                        const isModuleCommonService =
+                            pageModuleRoot &&
+                            importModuleRoot === pageModuleRoot &&
+                            normalizedPageDomainRoot?.endsWith("/common/");
+
+                        if (isModuleCommonService) {
                             return;
                         }
 
@@ -1247,6 +1281,7 @@ const localRules = {
                     const normalizedFilePath = context.physicalFilename.split(path.sep).join("/");
                     return (
                         /\/src\/pages\/[^/]+\/([^/]+)\/\1-types\.ts$/.test(normalizedFilePath) ||
+                        /\/src\/pages\/[^/]+\/common\/[^/]+-types\.ts$/.test(normalizedFilePath) ||
                         /\/src\/service\/[^/]+-types\.ts$/.test(normalizedFilePath) ||
                         /\/src\/auth\/[^/]+-types\.ts$/.test(normalizedFilePath)
                     );

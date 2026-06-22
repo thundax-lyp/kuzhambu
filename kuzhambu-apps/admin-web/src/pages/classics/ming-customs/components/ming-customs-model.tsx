@@ -1,4 +1,5 @@
 import { Button, Form, Input, Select, Switch, Typography } from "antd";
+import type { ReactNode } from "react";
 import { useEffect } from "react";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import { KuzhambuRichContentViewer } from "@/components/kuzhambu-rich-content-viewer";
@@ -16,6 +17,7 @@ const { TextArea } = Input;
 
 export interface MingCustomsModelProps {
     categoryOptions: DictItem[];
+    afterForm?: ReactNode;
     entry?: MingCustomsRecord | null;
     loading?: boolean;
     mode: "create" | "edit";
@@ -27,6 +29,7 @@ export interface MingCustomsModelProps {
 
 export const MingCustomsModel = ({
     categoryOptions,
+    afterForm,
     entry,
     loading = false,
     mode,
@@ -149,6 +152,7 @@ export const MingCustomsModel = ({
                     <TextArea aria-label="明代习俗原文摘录" autoSize={{ minRows: 4, maxRows: 8 }} />
                 </Form.Item>
             </Form>
+            {afterForm}
         </KuzhambuDrawer>
     );
 };

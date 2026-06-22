@@ -4,7 +4,7 @@ import type {
     ClassicsShareRecord,
     ClassicsShareTargetRef,
     ClassicsShareVisibility
-} from "@/service/classics-share-types";
+} from "./classics-share-types";
 
 export interface ClassicsShareCreateCommand {
     expiresAt?: string | null;

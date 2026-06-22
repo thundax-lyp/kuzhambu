@@ -35,6 +35,7 @@ import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsCo
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentTagId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentVersionId;
 import com.thundax.kuzhambu.classics.domain.content.repository.ClassicsContentRepository;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryImageStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryLifecycleStatus;
@@ -44,6 +45,7 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisibi
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisualAssetStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVolumeId;
+import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import com.thundax.kuzhambu.storage.application.helper.StorageUploadResult;
 import com.thundax.kuzhambu.storage.application.helper.StorageUploadStreamHelper;
@@ -381,6 +383,46 @@ class ClassicsContentApplicationServiceImplTest {
 
         @Override
         public int markExportJobExpired(ClassicsContentExportJobId id) {
+            return 0;
+        }
+
+        @Override
+        public SancaiEntry getSancaiEntryForAiApply(ClassicsContentId contentId) {
+            return null;
+        }
+
+        @Override
+        public int updateSancaiEntryAiFields(SancaiEntry entry) {
+            return 0;
+        }
+
+        @Override
+        public WangqiDocument getWangqiDocumentForAiApply(ClassicsContentId contentId) {
+            return null;
+        }
+
+        @Override
+        public int updateWangqiDocumentAiFields(WangqiDocument document) {
+            return 0;
+        }
+
+        @Override
+        public MingCustomsEntry getMingCustomsEntryForAiApply(ClassicsContentId contentId) {
+            return null;
+        }
+
+        @Override
+        public int updateMingCustomsEntryAiFields(MingCustomsEntry entry) {
+            return 0;
+        }
+
+        @Override
+        public int deleteAiTags(String contentType, ClassicsContentId contentId) {
+            return 0;
+        }
+
+        @Override
+        public int deleteAiQaPairs(String contentType, ClassicsContentId contentId) {
             return 0;
         }
 

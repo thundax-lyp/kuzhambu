@@ -3,6 +3,7 @@ import { App, Select } from "antd";
 import { useMemo, useState } from "react";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
+import { AiCandidatePanel } from "@/pages/classics/common/components/ai-candidate-panel";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { WangqiDocumentList } from "./components/wangqi-document-list";
 import { WangqiDocumentModel } from "./components/wangqi-document-model";
@@ -349,6 +350,14 @@ export const WangqiPage = () => {
                 afterForm={
                     editorMode === "edit" && activeDocument ? (
                         <div className="wangqi-page-drawer-panels">
+                            <AiCandidatePanel
+                                capabilities={["summary", "tags", "qa"]}
+                                contentId={activeDocument.id}
+                                contentType="WANGQI_DOCUMENT"
+                                onApplied={async () => {
+                                    await invalidateWangqi();
+                                }}
+                            />
                             <WangqiStorageFilePanel
                                 document={activeDocument}
                                 loading={sourceFileQuery.isLoading || sourceFileQuery.isFetching}

@@ -1,10 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Alert, App, Button, Empty, List, Space, Tag, Typography } from "antd";
 import { useState } from "react";
-import * as shareService from "@/api/classics/share-service";
-import * as exportService from "@/api/classics/export-service";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import type { KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
+import * as exportService from "@/pages/classics/common/classics-export-service";
+import * as shareService from "@/pages/classics/common/classics-share-service";
+import { AiCandidatePanel } from "@/pages/classics/common/components/ai-candidate-panel";
 import { SancaiEntryList } from "./sancai-entry-list";
 import { SancaiEntryModel } from "./sancai-entry-model";
 import type { SancaiEntryFormValues } from "./sancai-form-values";
@@ -215,6 +216,19 @@ export const SancaiEntryPanel = ({
         await queryClient.invalidateQueries({
             queryKey: ["classics", "sancai", "showcases", "jobs"]
         });
+    };
+    const refreshSancaiEntryDetail = async () => {
+        if (!selectedEntry?.id) {
+            return;
+        }
+        await Promise.all([
+            queryClient.invalidateQueries({
+                queryKey: ["classics", "sancai", "entries", "detail", selectedEntry.id]
+            }),
+            queryClient.invalidateQueries({
+                queryKey: ["classics", "sancai", "entries", "versions", selectedEntry.id]
+            })
+        ]);
     };
     const addEntryMutation = useMutation({
         mutationFn: entryService.add,
@@ -684,16 +698,29 @@ export const SancaiEntryPanel = ({
                 onSubmit={submitEntry}
                 afterForm={
                     !isCreating && selectedEntry ? (
-                        <SancaiVersionHistoryPanel
-                            currentEntry={selectedEntry}
-                            detailLoading={versionDetailQuery.isLoading}
-                            listLoading={versionsQuery.isLoading}
-                            resetting={resetVersionMutation.isPending}
-                            selectedVersion={selectedVersion}
-                            versions={versions}
-                            onSelectVersion={(version) => setSelectedVersionId(version.id)}
-                            onResetVersion={resetVersion}
-                        />
+                        <>
+                            <AiCandidatePanel
+                                capabilities={["translate", "summary", "tags", "qa"]}
+                                contentId={selectedEntry.id}
+                                contentType="SANCAI_ENTRY"
+                                onApplied={async () => {
+                                    await Promise.all([
+                                        refreshSancaiEntryDetail(),
+                                        invalidateEntries()
+                                    ]);
+                                }}
+                            />
+                            <SancaiVersionHistoryPanel
+                                currentEntry={selectedEntry}
+                                detailLoading={versionDetailQuery.isLoading}
+                                listLoading={versionsQuery.isLoading}
+                                resetting={resetVersionMutation.isPending}
+                                selectedVersion={selectedVersion}
+                                versions={versions}
+                                onSelectVersion={(version) => setSelectedVersionId(version.id)}
+                                onResetVersion={resetVersion}
+                            />
+                        </>
                     ) : null
                 }
             />

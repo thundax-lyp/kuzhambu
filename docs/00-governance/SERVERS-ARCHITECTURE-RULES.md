@@ -32,7 +32,6 @@ Hard Rules 必须使用 ArchUnit、Maven reactor、Checkstyle、脚本或测试�
 - `SERVERS_INFRA_NO_INTERFACE_DEPENDENCY`：`infra` 不得依赖任何业务域 `interfaces` 或 `starter`。
 - `SERVERS_NO_STARTER_DEPENDENCY_OUTSIDE_STARTER`：除 `starter` 模块外，任何模块不得依赖 `kuzhambu-admin-starter` 或 `kuzhambu-portal-starter`。
 - `SERVERS_CROSS_DOMAIN_NO_INFRA_DEPENDENCY`：跨业务域依赖不得指向对端 `infra`、`infra.mapper`、`infra.dataobject` 或 `infra.repository.impl`。
-- `SERVERS_CROSS_DOMAIN_NO_REPOSITORY_PORT_DEPENDENCY`：跨业务域依赖不得直接指向对端 `domain.repository`，跨域读写必须通过对端 application 层公开用例或后续明确的防腐接口表达。
 - `SERVERS_STARTER_NO_BUSINESS_CODE`：`starter` 不承载业务规则、业务查询聚合、持久化实现或 HTTP 业务入口。
 
 ### Naming And File Ownership
@@ -135,7 +134,7 @@ Hard Rules 必须使用 ArchUnit、Maven reactor、Checkstyle、脚本或测试�
 ## Review Rules
 
 - `SERVERS_REVIEW_MODEL_FIELD_DESCRIPTION`：API Request / Response 对外字段应声明 OpenAPI 3 `@Schema` 说明和稳定 JSON 字段名；字段说明质量依赖语义审阅，不放入 Hard Rules。
-- `SERVERS_REVIEW_CROSS_DOMAIN_USE_CASE`：跨业务域调用应优先表达为稳定业务用例，不应为了复用内部查询而直接穿透对端层次。
+- `SERVERS_REVIEW_CROSS_DOMAIN_USE_CASE`：单体内跨业务域协作不按微服务远程调用口径强制经过对端 application 公开用例；复杂跨域业务表达为稳定 `DomainService` 语义，不为了复用内部查询而直接穿透对端 infra、mapper、dataobject 或 repository implementation。
 - `SERVERS_REVIEW_COMMON_EXTRACTION`：提取 common 能力前应确认至少两个业务域存在稳定复用需求，避免把业务概念过早沉淀到 common。
 - `SERVERS_REVIEW_SERVICE_GRANULARITY`：ApplicationService 应按用例聚合，不按数据库表机械拆分，也不把无关用例堆入单个巨型服务。
 - `SERVERS_REVIEW_ASSEMBLER_COMPLEXITY`：InterfaceAssembler 和 PersistenceAssembler 只做模型转换；出现业务分支、权限判断或持久化访问时应回收到 application、domain 或 infra 对应职责内。

@@ -35,14 +35,15 @@ cd starter/kuzhambu-admin-starter
 mvn spring-boot:run
 ```
 
-Before any Maven compile or package step, run formatting and static checks first:
+Before any Maven compile or package step, first run the narrowest relevant formatter on the files touched by the task, then run formatting and static checks:
 
 ```sh
+mvn -pl ... spotless:apply
 mvn spotless:check
 mvn checkstyle:check
 ```
 
-If `spotless:check` reports only formatting violations, it is acceptable to run the narrowest relevant formatter, such as module-scoped `mvn -pl ... spotless:apply`. After applying formatting, inspect `git diff` and keep only task-related file changes.
+After applying formatting, inspect `git diff` and keep only task-related file changes. If `spotless:check` still fails, treat it as an unexpected issue and inspect the formatter scope, configuration, or affected files before continuing.
 
 Frontend apps use npm workspaces under `kuzhambu-apps/`:
 
@@ -54,14 +55,15 @@ npm run test
 npm run build
 ```
 
-Before any frontend build or package step, run Prettier formatting checks and lint first:
+Before any frontend build or package step, first run the narrowest relevant formatter on the files touched by the task, then run Prettier formatting checks and lint:
 
 ```sh
+npm --workspace ... run format
 npm run format:check
 npm run lint
 ```
 
-If `format:check` reports only formatting violations, it is acceptable to run the narrowest relevant formatter, such as workspace-scoped `npm --workspace ... run format`. After applying formatting, inspect `git diff` and keep only task-related file changes.
+After applying formatting, inspect `git diff` and keep only task-related file changes. If `format:check` still fails, treat it as an unexpected issue and inspect the formatter scope, configuration, or affected files before continuing.
 
 Python workers use Python 3.10 and a repo-local virtual environment:
 
@@ -74,7 +76,15 @@ python3.10 -m venv .venv
 .venv/bin/python -m pytest -p no:capture
 ```
 
-Before any Python worker test, package, or runtime validation step, run Ruff formatting and lint checks first. If `ruff format --check` reports only formatting violations, it is acceptable to run `.venv/bin/python -m ruff format .`. After applying formatting, inspect `git diff` and keep only task-related file changes.
+Before any Python worker test, package, or runtime validation step, first run the narrowest relevant formatter on the files touched by the task, then run Ruff formatting and lint checks:
+
+```sh
+.venv/bin/python -m ruff format .
+.venv/bin/python -m ruff format --check .
+.venv/bin/python -m ruff check .
+```
+
+After applying formatting, inspect `git diff` and keep only task-related file changes. If `ruff format --check` still fails, treat it as an unexpected issue and inspect the formatter scope, configuration, or affected files before continuing.
 
 ## Coding Style & Naming Conventions
 

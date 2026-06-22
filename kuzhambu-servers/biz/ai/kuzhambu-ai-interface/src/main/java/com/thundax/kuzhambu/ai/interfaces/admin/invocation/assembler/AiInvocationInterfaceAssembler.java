@@ -98,6 +98,16 @@ public final class AiInvocationInterfaceAssembler {
                 .build();
     }
 
+    public static AiInvocationRequests.CandidateMarkAppliedRequest toMarkAppliedRequest(
+            Long candidateId, String resultFormat, String resultPayload) {
+        AiInvocationRequests.CandidateMarkAppliedRequest request =
+                new AiInvocationRequests.CandidateMarkAppliedRequest();
+        request.setCandidateId(candidateId);
+        request.setResultFormat(resultFormat);
+        request.setResultPayload(resultPayload);
+        return request;
+    }
+
     public static BigDecimal cost(AiCallRecord record) {
         return AiUsageSnapshot.orEmpty(record == null ? null : record.getUsage())
                 .getCostAmount();

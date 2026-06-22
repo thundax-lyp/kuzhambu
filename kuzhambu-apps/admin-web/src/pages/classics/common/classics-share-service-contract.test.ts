@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import * as shareService from "./share-service";
+import * as shareService from "@/pages/classics/common/classics-share-service";
 
 interface CapturedCall {
     body: unknown;

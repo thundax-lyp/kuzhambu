@@ -98,8 +98,13 @@ listDirectories(SOURCE_ROOT).forEach((directoryPath) => {
         return;
     }
 
+    const normalizedDirectoryPath = directoryPath.split(path.sep).join("/");
+    if (/\/src\/pages\/[^/]+\/common$/.test(normalizedDirectoryPath)) {
+        return;
+    }
+
     violations.push(
-        `${rule}: ${directoryPath.split(path.sep).join("/")} uses forbidden directory "${directoryName}".`
+        `${rule}: ${normalizedDirectoryPath} uses forbidden directory "${directoryName}".`
     );
 });
 

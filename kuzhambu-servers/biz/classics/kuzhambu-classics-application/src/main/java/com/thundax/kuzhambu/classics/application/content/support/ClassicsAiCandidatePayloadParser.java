@@ -1,0 +1,130 @@
+package com.thundax.kuzhambu.classics.application.content.support;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
+import com.thundax.kuzhambu.common.core.exception.BizException;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+
+public class ClassicsAiCandidatePayloadParser {
+
+    private final ObjectMapper objectMapper;
+
+    public ClassicsAiCandidatePayloadParser(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
+
+    public String parseText(String resultPayload) {
+        if (resultPayload == null || resultPayload.trim().isEmpty()) {
+            throw new BizException("AI候选内容为空");
+        }
+        return resultPayload.trim();
+    }
+
+    public List<String> parseTags(String resultPayload) {
+        JsonNode root = parseJson(resultPayload);
+        List<String> tags = new ArrayList<>();
+        if (root.isObject()) {
+            JsonNode tagsNode = ((ObjectNode) root).get("tags");
+            if (tagsNode instanceof ArrayNode) {
+                for (JsonNode item : tagsNode) {
+                    addStringValue(item, tags);
+                }
+            }
+        } else if (root.isArray()) {
+            for (JsonNode item : root) {
+                addStringValue(item, tags);
+            }
+        }
+
+        List<String> distinctTags = dedupe(tags);
+        if (distinctTags.isEmpty()) {
+            throw new BizException("AI候选标签为空");
+        }
+        return distinctTags;
+    }
+
+    public List<AiCandidateQaPairPayload> parseQaPairs(String resultPayload) {
+        JsonNode root = parseJson(resultPayload);
+        List<AiCandidateQaPairPayload> pairs = new ArrayList<>();
+        if (root.isObject()) {
+            JsonNode pairsNode = ((ObjectNode) root).get("qaPairs");
+            if (pairsNode instanceof ArrayNode) {
+                collectQaPairs(pairsNode, pairs);
+            }
+        } else if (root.isArray()) {
+            collectQaPairs(root, pairs);
+        }
+        List<AiCandidateQaPairPayload> deduped = dedupeQaPairs(pairs);
+        if (deduped.isEmpty()) {
+            throw new BizException("AI候选问答为空");
+        }
+        return deduped;
+    }
+
+    private JsonNode parseJson(String resultPayload) {
+        try {
+            return objectMapper.readTree(resultPayload);
+        } catch (Exception ex) {
+            throw new BizException("AI候选内容不是合法JSON");
+        }
+    }
+
+    private void collectQaPairs(JsonNode pairsNode, List<AiCandidateQaPairPayload> pairs) {
+        if (!pairsNode.isArray()) {
+            return;
+        }
+        for (JsonNode item : pairsNode) {
+            if (!item.isObject()) {
+                continue;
+            }
+            ObjectNode pairNode = (ObjectNode) item;
+            JsonNode questionNode = pairNode.get("question");
+            JsonNode answerNode = pairNode.get("answer");
+            if (!(questionNode instanceof TextNode) || !(answerNode instanceof TextNode)) {
+                continue;
+            }
+            String question = questionNode.asText().trim();
+            String answer = answerNode.asText().trim();
+            if (question.isEmpty() || answer.isEmpty()) {
+                continue;
+            }
+            AiCandidateQaPairPayload payload = new AiCandidateQaPairPayload();
+            payload.setQuestion(question);
+            payload.setAnswer(answer);
+            pairs.add(payload);
+        }
+    }
+
+    private void addStringValue(JsonNode item, List<String> values) {
+        if (item instanceof TextNode) {
+            String value = item.asText().trim();
+            if (!value.isEmpty()) {
+                values.add(value);
+            }
+        }
+    }
+
+    private List<String> dedupe(List<String> values) {
+        Set<String> seen = new LinkedHashSet<>();
+        seen.addAll(values);
+        return new ArrayList<>(seen);
+    }
+
+    private List<AiCandidateQaPairPayload> dedupeQaPairs(List<AiCandidateQaPairPayload> pairs) {
+        Set<String> seen = new LinkedHashSet<>();
+        List<AiCandidateQaPairPayload> deduped = new ArrayList<>();
+        for (AiCandidateQaPairPayload pair : pairs) {
+            String key = pair.getQuestion() + "\n" + pair.getAnswer();
+            if (seen.add(key)) {
+                deduped.add(pair);
+            }
+        }
+        return deduped;
+    }
+}

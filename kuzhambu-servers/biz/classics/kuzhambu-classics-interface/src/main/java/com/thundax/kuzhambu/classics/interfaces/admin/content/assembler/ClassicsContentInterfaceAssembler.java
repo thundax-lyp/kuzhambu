@@ -1,8 +1,10 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.content.assembler;
 
+import com.thundax.kuzhambu.classics.application.content.command.AiCandidateApplyContentCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentExportCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentTagCommand;
+import com.thundax.kuzhambu.classics.application.content.result.AiCandidateApplyContentResult;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentExportJob;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentQaPair;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
@@ -136,6 +138,37 @@ public final class ClassicsContentInterfaceAssembler {
                         .contentUrl(exportContentUrl(job.getId()))
                         .downloadUrl(exportDownloadUrl(job.getId()))
                         .build();
+    }
+
+    public static AiCandidateApplyContentCommand toAiCandidateApplyCommand(
+            ClassicsContentRequest.AiCandidateApplyRequest request) {
+        if (request == null) {
+            return null;
+        }
+        return new AiCandidateApplyContentCommand(
+                request.getCandidateId(),
+                type(request.getContentType()),
+                request.getContentId(),
+                request.getCapability(),
+                request.getResultFormat(),
+                request.getResultPayload(),
+                request.getChangeSummary());
+    }
+
+    public static ClassicsContentResponse.AiCandidateApplyResponse toAiCandidateApplyResponse(
+            AiCandidateApplyContentResult result) {
+        if (result == null) {
+            return ClassicsContentResponse.AiCandidateApplyResponse.builder().build();
+        }
+        return ClassicsContentResponse.AiCandidateApplyResponse.builder()
+                .contentType(
+                        result.getContentType() == null
+                                ? null
+                                : result.getContentType().value())
+                .contentId(result.getContentId())
+                .versionId(result.getVersionId())
+                .versionNo(result.getVersionNo())
+                .build();
     }
 
     private static ClassicsContentType type(String value) {
