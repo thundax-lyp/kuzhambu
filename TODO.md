@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `ClassicsContentApplicationServiceAiCandidateTest`：补 Classics 应用候选服务测试
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-CANDIDATE-CONFIRMATION.md#B3 后端接口测试`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/content/ClassicsContentApplicationServiceAiCandidateTest.java`
-    - 处理动作：覆盖 summary、tags、qa 和 REJECTED 候选应用失败。
-    - 验收点：测试证明应用会生成 `AI_APPLIED` 版本，且 tags/qa 只替换 AI 来源数据。
-    - 重要度：10/10
-
 - [ ] `ai-candidate-service`：新增 Admin Web AI 候选 API
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-CANDIDATE-CONFIRMATION.md#F1 AI 候选 API`
