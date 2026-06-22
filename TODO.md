@@ -15,14 +15,6 @@
 
 
 
-- [ ] `knowledge taxonomy results B`：创建别名内容引用与同义词结果对象
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/result/TagAliasResult.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/result/TagContentRefResult.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/result/SynonymResult.java`
-    - 处理动作：创建别名、内容引用、同义词结果对象。
-    - 验收点：3 个结果类存在且能承载 RUNBOOK 定义的响应字段。
-    - 重要度：7/10
-
 - [ ] `knowledge taxonomy service contract`：创建 taxonomy 应用服务接口与装配器
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
