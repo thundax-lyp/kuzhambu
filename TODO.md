@@ -15,14 +15,6 @@
 
 
 
-- [ ] `knowledge taxonomy enums A`：创建分类与标签状态枚举
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/taxonomy/model/enums/TagCategoryStatus.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/taxonomy/model/enums/TagStatus.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/taxonomy/model/enums/TagSource.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/taxonomy/model/enums/TagReviewStatus.java`
-    - 处理动作：创建分类、标签、来源、审核状态枚举并固定枚举值。
-    - 验收点：4 个枚举类存在且枚举值与 RUNBOOK 完全一致。
-    - 重要度：9/10
-
 - [ ] `knowledge taxonomy enums B`：创建内容类型与同义词状态枚举
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
