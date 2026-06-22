@@ -57,4 +57,31 @@ public class ClassicsContentRequest extends PageRequest {
 
     @JsonProperty("contentChanged")
     private Boolean contentChanged;
+
+    @Getter
+    @Setter
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class AiCandidateApplyRequest {
+        @JsonProperty("candidateId")
+        private Long candidateId;
+
+        @JsonProperty("contentType")
+        private String contentType;
+
+        @JsonProperty("contentId")
+        private Long contentId;
+
+        @JsonProperty("capability")
+        private String capability;
+
+        @JsonProperty("resultFormat")
+        private String resultFormat;
+
+        @JsonProperty("resultPayload")
+        private String resultPayload;
+
+        @JsonProperty("changeSummary")
+        private String changeSummary;
+    }
 }

@@ -72,4 +72,22 @@ public class ClassicsContentResponse implements Serializable {
 
     @JsonProperty("downloadUrl")
     private String downloadUrl;
+
+    @Getter
+    @Builder
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class AiCandidateApplyResponse {
+        @JsonProperty("contentType")
+        private String contentType;
+
+        @JsonProperty("contentId")
+        private Long contentId;
+
+        @JsonProperty("versionId")
+        private Long versionId;
+
+        @JsonProperty("versionNo")
+        private Integer versionNo;
+    }
 }

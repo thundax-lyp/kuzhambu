@@ -9,30 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `ClassicsContentRepository`：新增 AI 应用窄持久化方法
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-CANDIDATE-CONFIRMATION.md#B2.3 Repository 窄方法`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-domain/src/main/java/com/thundax/kuzhambu/classics/domain/content/repository/ClassicsContentRepository.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/java/com/thundax/kuzhambu/classics/infra/content/repository/impl/ClassicsContentRepositoryImpl.java`
-    - 处理动作：新增并实现 RUNBOOK 指定的 `get*ForAiApply`、`update*AiFields`、`deleteAiTags`、`deleteAiQaPairs` 方法。
-    - 验收点：更新方法只更新 RUNBOOK 指定字段，删除方法只删除 `source='AI'` 的标签或问答对。
-    - 重要度：10/10
-
-- [ ] `ClassicsContentApplicationService`：实现 AI 候选应用用例
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-CANDIDATE-CONFIRMATION.md#B2.4 ApplicationService 应用候选`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/service/ClassicsContentApplicationService.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/service/impl/ClassicsContentApplicationServiceImpl.java`
-    - 处理动作：新增并实现 `applyAiCandidate(...)`，同时让 `applyAiResult(...)` 生成 `AI_APPLIED` 版本。
-    - 验收点：Classics 写入和版本创建成功后才调用 `markApplied(...)`，写入失败不会把候选标记为 `APPLIED`。
-    - 重要度：10/10
-
-- [ ] `ClassicsContentAdminController`：新增 Classics 候选应用接口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-CANDIDATE-CONFIRMATION.md#B2.5 Interface 接口`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/content/controller/ClassicsContentAdminController.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/content/controller/request/ClassicsContentRequest.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/content/controller/response/ClassicsContentResponse.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/content/assembler/ClassicsContentInterfaceAssembler.java`
-    - 处理动作：新增 `/api/classics/content/ai-candidates/apply` 接口及 request、response、assembler 转换。
-    - 验收点：Controller 只做请求映射、assembler 转换、调用 application service、返回 response。
-    - 重要度：9/10
-
 - [ ] `AiCandidateDomainServiceTest`：补 AI 候选 DomainService 测试
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-CANDIDATE-CONFIRMATION.md#B3 后端接口测试`
@@ -56,14 +32,6 @@
     - 处理动作：覆盖 summary、tags、qa 和 REJECTED 候选应用失败。
     - 验收点：测试证明应用会生成 `AI_APPLIED` 版本，且 tags/qa 只替换 AI 来源数据。
     - 重要度：10/10
-
-- [ ] `ClassicsContentAdminControllerTest`：补 Classics 候选应用接口测试
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-CANDIDATE-CONFIRMATION.md#B3 后端接口测试`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/test/java/com/thundax/kuzhambu/classics/interfaces/admin/content/ClassicsContentAdminControllerTest.java`
-    - 处理动作：覆盖 `/api/classics/content/ai-candidates/apply` 请求体到 command 的字段映射。
-    - 验收点：接口测试证明 request、assembler、response 字段映射正确。
-    - 重要度：8/10
 
 - [ ] `ai-candidate-service`：新增 Admin Web AI 候选 API
     - 任务类型：执行任务

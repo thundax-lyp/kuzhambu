@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.classics.interfaces.admin.content.controller;
 
 import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairSortCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentTagSortCommand;
+import com.thundax.kuzhambu.classics.application.content.result.AiCandidateApplyContentResult;
 import com.thundax.kuzhambu.classics.application.content.result.ClassicsExportJobResult;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.domain.common.codec.StorageObjectIdCodec;
@@ -148,6 +149,18 @@ public class ClassicsContentAdminController {
         return ClassicsContentResponse.builder()
                 .id(id == null ? null : id.value())
                 .build();
+    }
+
+    @Operation(summary = "应用AI候选到内容", description = "classics:content:edit")
+    @ApiImplicitParams({})
+    @HasPermission("classics:content:edit")
+    @SysLogger(value = "AI候选应用")
+    @PostMapping("ai-candidates/apply")
+    public ClassicsContentResponse.AiCandidateApplyResponse applyAiCandidate(
+            @Valid @RequestBody ClassicsContentRequest.AiCandidateApplyRequest request) {
+        AiCandidateApplyContentResult result =
+                service.applyAiCandidate(ClassicsContentInterfaceAssembler.toAiCandidateApplyCommand(request));
+        return ClassicsContentInterfaceAssembler.toAiCandidateApplyResponse(result);
     }
 
     @Operation(summary = "更新古籍内容问答", description = "classics:content:edit")

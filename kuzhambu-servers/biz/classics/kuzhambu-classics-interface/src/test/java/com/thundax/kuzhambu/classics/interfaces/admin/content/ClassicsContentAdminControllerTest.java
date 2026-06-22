@@ -5,7 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thundax.kuzhambu.classics.application.content.command.AiCandidateApplyContentCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentExportCommand;
+import com.thundax.kuzhambu.classics.application.content.result.AiCandidateApplyContentResult;
 import com.thundax.kuzhambu.classics.application.content.result.ClassicsExportJobResult;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId;
@@ -58,6 +60,12 @@ class ClassicsContentAdminControllerTest {
                 "exports/page",
                 "classics:content:view",
                 ClassicsContentRequest.class);
+        assertPostMapping(
+                ClassicsContentAdminController.class,
+                "applyAiCandidate",
+                "ai-candidates/apply",
+                "classics:content:edit",
+                ClassicsContentRequest.AiCandidateApplyRequest.class);
         assertGetMapping(
                 ClassicsContentAdminController.class,
                 "downloadExportContent",
@@ -96,6 +104,25 @@ class ClassicsContentAdminControllerTest {
         assertEquals(
                 "/api/classics/content/exports/9001/content?download=true",
                 page.get("downloadUrl").asText());
+    }
+
+    @Test
+    void aiCandidateApplyRequestShouldMapToServiceCommandAndReturnResponse() {
+        ClassicsContentAdminController controller = controller();
+        ClassicsContentRequest.AiCandidateApplyRequest request = new ClassicsContentRequest.AiCandidateApplyRequest();
+        request.setCandidateId(123L);
+        request.setContentType("SANCAI_ENTRY");
+        request.setContentId(456L);
+        request.setCapability("summary");
+        request.setResultFormat("TEXT");
+        request.setResultPayload("new summary");
+        request.setChangeSummary("AI 应用：摘要");
+
+        ClassicsContentResponse.AiCandidateApplyResponse response = controller.applyAiCandidate(request);
+        assertEquals(456L, response.getContentId());
+        assertEquals("SANCAI_ENTRY", response.getContentType());
+        assertEquals(789L, response.getVersionId());
+        assertEquals(3, response.getVersionNo());
     }
 
     @Test
@@ -182,6 +209,17 @@ class ClassicsContentAdminControllerTest {
                                     ClassicsExportStatus.COMPLETED,
                                     new Date(System.currentTimeMillis() - 60_000L));
                         }
+                    }
+                    if ("applyAiCandidate".equals(method.getName())) {
+                        AiCandidateApplyContentCommand command = (AiCandidateApplyContentCommand) args[0];
+                        assertEquals(123L, command.getCandidateId());
+                        assertEquals(ClassicsContentType.SANCAI_ENTRY, command.getContentType());
+                        assertEquals(456L, command.getContentId());
+                        assertEquals("summary", command.getCapability());
+                        assertEquals("TEXT", command.getResultFormat());
+                        assertEquals("new summary", command.getResultPayload());
+                        assertEquals("AI 应用：摘要", command.getChangeSummary());
+                        return new AiCandidateApplyContentResult(ClassicsContentType.SANCAI_ENTRY, 456L, 789L, 3);
                     }
                     throw new UnsupportedOperationException(method.getName());
                 });
