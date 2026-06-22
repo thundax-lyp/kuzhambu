@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `knowledge taxonomy synonym components`：创建同义词表格与编辑组件
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/taxonomy/components/synonym-table.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/taxonomy/components/synonym-edit.tsx`
-    - 处理动作：创建同义词表格与编辑组件。
-    - 验收点：2 个组件存在且能支撑同义词分页、新增、编辑、启用、禁用、删除。
-    - 重要度：8/10
-
 - [ ] `knowledge menu seed source`：补充知识治理菜单 JSON 源
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`

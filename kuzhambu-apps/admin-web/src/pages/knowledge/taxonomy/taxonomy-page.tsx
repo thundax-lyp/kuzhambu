@@ -5,6 +5,8 @@ import { hasPermission } from "@/auth/permission-storage";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { CategoryEdit } from "./components/category-edit";
 import { CategoryTable } from "./components/category-table";
+import { SynonymEdit } from "./components/synonym-edit";
+import { SynonymTable } from "./components/synonym-table";
 import { TagDetailDrawer } from "./components/tag-detail-drawer";
 import { TagEdit } from "./components/tag-edit";
 import { TagReviewTable } from "./components/tag-review-table";
@@ -17,9 +19,14 @@ import type {
     TagCategoryUpdateCommand,
     TagCreateCommand,
     TagReviewCommand,
-    TagUpdateCommand
+    TagUpdateCommand,
+    SynonymCreateCommand,
+    SynonymRemoveCommand,
+    SynonymUpdateCommand
 } from "./taxonomy-service";
 import type {
+    SynonymPageQuery,
+    SynonymRecord,
     TagCategoryPageQuery,
     TagCategoryRecord,
     TagPageQuery,
@@ -59,11 +66,17 @@ export const TaxonomyPage = () => {
         pageNo: DEFAULT_PAGE_NO,
         pageSize: DEFAULT_PAGE_SIZE
     });
+    const [synonymQuery, setSynonymQuery] = useState<SynonymPageQuery>({
+        pageNo: DEFAULT_PAGE_NO,
+        pageSize: DEFAULT_PAGE_SIZE
+    });
     const [editingCategory, setEditingCategory] = useState<TagCategoryRecord | null>(null);
     const [editingTag, setEditingTag] = useState<TagRecord | null>(null);
+    const [editingSynonym, setEditingSynonym] = useState<SynonymRecord | null>(null);
     const [selectedTag, setSelectedTag] = useState<TagRecord | null>(null);
     const [categoryEditorOpen, setCategoryEditorOpen] = useState(false);
     const [tagEditorOpen, setTagEditorOpen] = useState(false);
+    const [synonymEditorOpen, setSynonymEditorOpen] = useState(false);
     const [tagDetailOpen, setTagDetailOpen] = useState(false);
     const [tagDetailReviewMode, setTagDetailReviewMode] = useState(false);
     const [removingAliasId, setRemovingAliasId] = useState<string | null>(null);
@@ -90,6 +103,12 @@ export const TaxonomyPage = () => {
         queryKey: ["knowledge", "taxonomy", "tag-detail", selectedTag?.id],
         queryFn: () => service.getTagDetail({ tagId: selectedTag?.id || "" }),
         enabled: tagDetailOpen && Boolean(selectedTag?.id),
+        retry: false
+    });
+    const synonymPageQuery = useQuery({
+        queryKey: ["knowledge", "taxonomy", "synonyms", synonymQuery],
+        queryFn: () => service.pageSynonyms(synonymQuery),
+        enabled: canViewTaxonomy || canEditTaxonomy,
         retry: false
     });
 
@@ -199,13 +218,56 @@ export const TaxonomyPage = () => {
             setRemovingAliasId(null);
         }
     });
+    const saveSynonymMutation = useMutation({
+        mutationFn: (request: SynonymCreateCommand | SynonymUpdateCommand) =>
+            editingSynonym
+                ? service.updateSynonym(request as SynonymUpdateCommand)
+                : service.createSynonym(request as SynonymCreateCommand),
+        onSuccess: async () => {
+            setSynonymEditorOpen(false);
+            setEditingSynonym(null);
+            await queryClient.invalidateQueries({
+                queryKey: ["knowledge", "taxonomy", "synonyms"]
+            });
+            messageApi.success("同义词已保存");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "同义词保存失败");
+        }
+    });
+    const synonymStatusMutation = useMutation({
+        mutationFn: service.changeSynonymStatus,
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({
+                queryKey: ["knowledge", "taxonomy", "synonyms"]
+            });
+            messageApi.success("同义词状态已更新");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "同义词状态更新失败");
+        }
+    });
+    const removeSynonymMutation = useMutation({
+        mutationFn: service.removeSynonym,
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({
+                queryKey: ["knowledge", "taxonomy", "synonyms"]
+            });
+            messageApi.success("同义词已删除");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "同义词删除失败");
+        }
+    });
 
     const categoryPage = categoryPageQuery.data;
     const tagPage = tagPageQuery.data;
     const reviewPage = reviewPageQuery.data;
+    const synonymPage = synonymPageQuery.data;
     const categories = categoryPage?.records || [];
     const tags = tagPage?.records || [];
     const reviewTags = reviewPage?.records || [];
+    const synonyms = synonymPage?.records || [];
 
     const openCreateCategory = () => {
         setEditingCategory(null);
@@ -241,12 +303,30 @@ export const TaxonomyPage = () => {
         setTagDetailOpen(true);
     };
 
+    const openCreateSynonym = () => {
+        setEditingSynonym(null);
+        setSynonymEditorOpen(true);
+    };
+
+    const openEditSynonym = (record: SynonymRecord) => {
+        setEditingSynonym(record);
+        setSynonymEditorOpen(true);
+    };
+
     const closeTagEditor = () => {
         if (saveTagMutation.isPending) {
             return;
         }
         setTagEditorOpen(false);
         setEditingTag(null);
+    };
+
+    const closeSynonymEditor = () => {
+        if (saveSynonymMutation.isPending) {
+            return;
+        }
+        setSynonymEditorOpen(false);
+        setEditingSynonym(null);
     };
 
     const closeTagDetail = () => {
@@ -336,6 +416,33 @@ export const TaxonomyPage = () => {
                         };
                     }
 
+                    if (key === "synonyms") {
+                        return {
+                            key,
+                            label,
+                            children: (
+                                <SynonymTable
+                                    canEditSynonym={canEditTaxonomy}
+                                    loading={synonymPageQuery.isFetching}
+                                    query={synonymQuery}
+                                    removing={removeSynonymMutation.isPending}
+                                    synonyms={synonyms}
+                                    totalCount={readTotalCount(synonymPage)}
+                                    onAdd={openCreateSynonym}
+                                    onChange={setSynonymQuery}
+                                    onEdit={openEditSynonym}
+                                    onRefresh={() => synonymPageQuery.refetch()}
+                                    onRemove={(request: SynonymRemoveCommand) =>
+                                        removeSynonymMutation.mutate(request)
+                                    }
+                                    onStatusChange={(request) =>
+                                        synonymStatusMutation.mutate(request)
+                                    }
+                                />
+                            )
+                        };
+                    }
+
                     return {
                         key,
                         label,
@@ -361,6 +468,15 @@ export const TaxonomyPage = () => {
                 onClose={closeTagEditor}
                 onCreate={(request) => saveTagMutation.mutate(request)}
                 onSave={(request) => saveTagMutation.mutate(request)}
+            />
+
+            <SynonymEdit
+                open={synonymEditorOpen}
+                saving={saveSynonymMutation.isPending}
+                synonym={editingSynonym}
+                onClose={closeSynonymEditor}
+                onCreate={(request) => saveSynonymMutation.mutate(request)}
+                onSave={(request) => saveSynonymMutation.mutate(request)}
             />
 
             <TagDetailDrawer
