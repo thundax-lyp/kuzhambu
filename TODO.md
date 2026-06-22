@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `knowledge implementation coverage`：补充 Knowledge Implementation Coverage
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
-    - 范围对象：`docs/40-readiness/KNOWLEDGE-IMPLEMENTATION-COVERAGE.md`
-    - 处理动作：新增 Knowledge Implementation Coverage 文档并记录本次 MVP 的需求覆盖矩阵与未覆盖范围。
-    - 验收点：`docs/40-readiness/KNOWLEDGE-IMPLEMENTATION-COVERAGE.md` 存在且明确标记本次已覆盖、未覆盖、超出范围项。
-    - 重要度：8/10
-
 - [ ] `knowledge mvp closeout`：清理现场
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`、`docs/00-governance/TODO-RULES.md`
