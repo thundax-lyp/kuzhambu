@@ -15,14 +15,6 @@
 
 
 
-- [ ] `knowledge taxonomy commands A`：创建分类命令对象
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/command/TagCategoryCreateCommand.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/command/TagCategoryUpdateCommand.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/command/TagCategoryStatusCommand.java`
-    - 处理动作：创建标签分类命令对象。
-    - 验收点：3 个命令类存在且字段能覆盖分类创建、更新、启用、禁用。
-    - 重要度：8/10
-
 - [ ] `knowledge taxonomy commands B`：创建标签命令对象
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
