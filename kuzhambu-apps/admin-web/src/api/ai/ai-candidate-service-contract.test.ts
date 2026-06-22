@@ -1,6 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import * as aiCandidateService from "./ai-candidate-service";
-import type { AiCandidateApplyCommand, AiCandidateRejectRequest } from "./ai-candidate-types";
+import * as aiCandidateService from "@/pages/classics/common/ai-candidate-service";
+import type {
+    AiCandidateApplyCommand,
+    AiCandidateRejectCommand
+} from "@/pages/classics/common/ai-candidate-service";
 
 interface CapturedCall {
     body: unknown;
@@ -81,7 +84,7 @@ describe("AI candidate service request contracts", () => {
     });
 
     it("lists candidates by content type and id", async () => {
-        await aiCandidateService.listCandidates({
+        await aiCandidateService.list({
             contentType: "SANCAI_ENTRY",
             contentId: 3001,
             capability: "summary",
@@ -111,7 +114,7 @@ describe("AI candidate service request contracts", () => {
             changeSummary: "AI 应用：摘要"
         };
 
-        await aiCandidateService.applyCandidate(command);
+        await aiCandidateService.updateCandidateApplied(command);
 
         expect(capturedCalls.at(-1)).toEqual({
             body: command,
@@ -121,13 +124,13 @@ describe("AI candidate service request contracts", () => {
     });
 
     it("rejects candidate with error info", async () => {
-        const request: AiCandidateRejectRequest = {
+        const request: AiCandidateRejectCommand = {
             candidateId: 7001,
             errorType: "INVALID",
             errorMessage: "invalid"
         };
 
-        await aiCandidateService.rejectCandidate(request);
+        await aiCandidateService.updateCandidateRejected(request);
 
         expect(capturedCalls.at(-1)).toEqual({
             body: request,

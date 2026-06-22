@@ -1,15 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Alert, App, Button, Empty, List, Space, Tag, Typography } from "antd";
 import { useState } from "react";
-import * as shareService from "@/api/classics/share-service";
-import * as exportService from "@/api/classics/export-service";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import type { KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
+import * as exportService from "@/pages/classics/common/classics-export-service";
+import * as shareService from "@/pages/classics/common/classics-share-service";
+import { AiCandidatePanel } from "@/pages/classics/common/components/ai-candidate-panel";
 import { SancaiEntryList } from "./sancai-entry-list";
 import { SancaiEntryModel } from "./sancai-entry-model";
 import type { SancaiEntryFormValues } from "./sancai-form-values";
 import { SancaiVersionHistoryPanel } from "./sancai-version-history-panel";
-import { AiCandidatePanel } from "@/components/ai/ai-candidate-panel";
 import * as entryService from "../services/sancai-entry-service";
 import type {
     SancaiContentVersionRecord,

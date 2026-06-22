@@ -1,9 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Select } from "antd";
 import { useMemo, useState } from "react";
-import { AiCandidatePanel } from "@/components/ai/ai-candidate-panel";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
+import { AiCandidatePanel } from "@/pages/classics/common/components/ai-candidate-panel";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { WangqiDocumentList } from "./components/wangqi-document-list";
 import { WangqiDocumentModel } from "./components/wangqi-document-model";

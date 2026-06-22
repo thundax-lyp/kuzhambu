@@ -2,8 +2,8 @@ import { cleanup, render, screen, waitFor, within } from "@testing-library/react
 import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { App as AntdApp } from "antd";
-import * as shareService from "@/api/classics/share-service";
-import * as exportService from "@/api/classics/export-service";
+import * as exportService from "@/pages/classics/common/classics-export-service";
+import * as shareService from "@/pages/classics/common/classics-share-service";
 import { SancaiEntryPanel } from "./sancai-entry-panel";
 import * as entryService from "../services/sancai-entry-service";
 
@@ -21,7 +21,7 @@ vi.mock("@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm", () => 
     })
 }));
 
-vi.mock("@/api/classics/share-service", () => ({
+vi.mock("@/pages/classics/common/classics-share-service", () => ({
     create: vi.fn(async () => ({
         id: 9001,
         shareToken: "abc123_-",
@@ -31,7 +31,7 @@ vi.mock("@/api/classics/share-service", () => ({
     }))
 }));
 
-vi.mock("@/api/classics/export-service", () => ({
+vi.mock("@/pages/classics/common/classics-export-service", () => ({
     create: vi.fn(async () => ({
         id: 1001,
         contentType: "SANCAI_ENTRY",

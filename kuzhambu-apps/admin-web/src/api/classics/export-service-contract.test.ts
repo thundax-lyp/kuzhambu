@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import * as exportService from "./export-service";
-import type { ClassicsExportCreateCommand } from "./export-service";
+import * as exportService from "@/pages/classics/common/classics-export-service";
+import type { ClassicsExportCreateCommand } from "@/pages/classics/common/classics-export-service";
 
 interface CapturedCall {
     body: unknown;

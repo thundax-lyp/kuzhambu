@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Alert, Button, Card, Empty, List, Space } from "antd";
 import { useCallback, useMemo, useState } from "react";
-import * as aiCandidateService from "@/api/ai/ai-candidate-service";
-import type { AiCandidateRecord } from "@/api/ai/ai-candidate-types";
+import * as aiCandidateService from "../ai-candidate-service";
+import type { AiCandidateRecord } from "../ai-candidate-types";
 import { AiCandidatePayloadEditor } from "./ai-candidate-payload-editor";
 
 type AiCandidateCapability = "translate" | "summary" | "tags" | "qa";
@@ -68,7 +68,7 @@ export const AiCandidatePanel = ({
     const pendingCandidatesQuery = useQuery({
         queryKey: ["ai", "candidates", contentType, contentId],
         queryFn: () =>
-            aiCandidateService.listCandidates({
+            aiCandidateService.list({
                 contentId,
                 contentType,
                 status: "PENDING"
@@ -96,7 +96,7 @@ export const AiCandidatePanel = ({
     };
 
     const applyMutation = useMutation({
-        mutationFn: aiCandidateService.applyCandidate,
+        mutationFn: aiCandidateService.updateCandidateApplied,
         onMutate: (command) => {
             setApplyingCandidateId(command.candidateId);
         },
@@ -116,7 +116,7 @@ export const AiCandidatePanel = ({
     });
 
     const rejectMutation = useMutation({
-        mutationFn: aiCandidateService.rejectCandidate,
+        mutationFn: aiCandidateService.updateCandidateRejected,
         onMutate: (command) => {
             setRejectingCandidateId(command.candidateId);
         },
@@ -222,6 +222,7 @@ export const AiCandidatePanel = ({
                                 candidateId={candidate.candidateId}
                                 capability={candidate.capability as AiCandidateCapability}
                                 initialPayload={candidate.resultPayload}
+                                key={`${candidate.candidateId}-${candidate.resultPayload ?? ""}`}
                                 onPayloadChange={updateCandidatePayload}
                                 onSubmitEnabledChange={updateCandidateSubmitEnabled}
                             />

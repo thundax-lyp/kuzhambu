@@ -75,15 +75,15 @@
 - `ADMIN_WEB_LAYER_AUTH_NO_PAGE`：`src/auth/` 不导入页面、布局或页面 service。
 - `ADMIN_WEB_LAYER_NO_DEEP_RELATIVE_IMPORT`：`src` 下禁止 `../../` 及更深相对 import。
 - `ADMIN_WEB_LAYER_PAGE_NO_PARENT_RELATIVE_IMPORT`：页面文件禁止 `../` import。
-- `ADMIN_WEB_LAYER_PAGE_COMPONENT_NO_EXTERNAL_PAGE`：页面私有组件不引用其他页面域。
-- `ADMIN_WEB_LAYER_PAGE_NO_EXTERNAL_SERVICE`：页面域代码不导入其他页面域的 service。
+- `ADMIN_WEB_LAYER_PAGE_COMPONENT_NO_EXTERNAL_PAGE`：页面私有组件不引用其他页面域；同模块 `common` 组件例外。
+- `ADMIN_WEB_LAYER_PAGE_NO_EXTERNAL_SERVICE`：页面域代码不导入其他页面域的 service；同模块 `common` service 例外。
 - `ADMIN_WEB_LAYER_SHARED_COMPONENT_CSS_LOCAL`：共享组件禁止 `../*.css` import。
 
 ### Placement
 
 - `ADMIN_WEB_PATH_PAGE_SHAPE`：页面放在 `src/pages/<module>/<domain>/<domain>-page.tsx`。
 - `ADMIN_WEB_PATH_PAGE_COMPONENTS`：页面私有组件放在同页面域 `components/`。
-- `ADMIN_WEB_PATH_PAGE_SERVICE`：页面 service 放在同页面域 `<domain>-service.ts`。
+- `ADMIN_WEB_PATH_PAGE_SERVICE`：页面 service 放在同页面域 `<domain>-service.ts`；模块内复用的共享 service 放在 `src/pages/<module>/common/*-service.ts`。
 - `ADMIN_WEB_PATH_AUTH`：认证、token、权限持久化放在 `src/auth/`。
 - `ADMIN_WEB_PATH_ROUTER`：路由放在 `src/router/`。
 - `ADMIN_WEB_PATH_QUERY`：TanStack Query 基线放在 `src/query/`。
@@ -140,7 +140,7 @@
 
 ### Forbidden Defaults
 
-- `ADMIN_WEB_FORBID_BOUNDARYLESS_DIR`：`src` 下禁止 `common`、`base`、`shared` 子目录。
+- `ADMIN_WEB_FORBID_BOUNDARYLESS_DIR`：`src` 下禁止无边界 `common`、`base`、`shared` 子目录；`src/pages/<module>/common` 作为模块内共享边界例外。
 - `ADMIN_WEB_FORBID_EXTRA_SYSTEM`：禁止新增第二套路由、请求、权限、状态或样式体系目录。
 - `ADMIN_WEB_FORBID_BACKEND_LAYER_DIR`：前端目录禁止 `controller`、`dao`、`mapper`、`repository`。
 - `ADMIN_WEB_FORBID_STYLE_SYSTEM`：禁止 CSS module、styled-components、Tailwind。
