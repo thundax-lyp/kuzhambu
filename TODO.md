@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `AiInvocationControllerTest`：补 AI 候选管理接口测试
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-CANDIDATE-CONFIRMATION.md#B3 后端接口测试`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/test/java/com/thundax/kuzhambu/ai/interfaces/admin/invocation/AiInvocationControllerTest.java`
-    - 处理动作：覆盖 reject 和 mark-applied 请求映射到 `AiCandidateDomainService`。
-    - 验收点：AI interface 测试证明两个旧管理入口仍可用且未新增 apply 入口。
-    - 重要度：7/10
-
 - [ ] `ClassicsContentApplicationServiceAiCandidateTest`：补 Classics 应用候选服务测试
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-CANDIDATE-CONFIRMATION.md#B3 后端接口测试`
