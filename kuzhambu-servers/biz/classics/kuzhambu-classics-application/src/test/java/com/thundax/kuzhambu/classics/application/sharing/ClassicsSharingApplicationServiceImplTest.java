@@ -78,7 +78,8 @@ class ClassicsSharingApplicationServiceImplTest {
                 wangqiDocumentRepository,
                 mingCustomsRepository,
                 shareTokenGenerator,
-                shareTokenHasher);
+                shareTokenHasher,
+                null);
 
         SancaiEntry entry = new SancaiEntry();
         entry.setId(SancaiEntryId.of(100L));
@@ -150,7 +151,8 @@ class ClassicsSharingApplicationServiceImplTest {
                 wangqiDocumentRepository,
                 mingCustomsRepository,
                 shareTokenGenerator,
-                shareTokenHasher);
+                shareTokenHasher,
+                null);
 
         SancaiEntry sancai = new SancaiEntry();
         sancai.setId(SancaiEntryId.of(100L));
@@ -232,7 +234,8 @@ class ClassicsSharingApplicationServiceImplTest {
                 wangqiDocumentRepository,
                 mingCustomsRepository,
                 shareTokenGenerator,
-                shareTokenHasher);
+                shareTokenHasher,
+                null);
 
         SancaiEntry entry = new SancaiEntry();
         entry.setId(SancaiEntryId.of(100L));
@@ -276,7 +279,8 @@ class ClassicsSharingApplicationServiceImplTest {
                 wangqiDocumentRepository,
                 mingCustomsRepository,
                 shareTokenGenerator,
-                shareTokenHasher);
+                shareTokenHasher,
+                null);
 
         ClassicsShareTarget target = new ClassicsShareTarget();
         target.setId(ClassicsShareTargetId.of(20L));
@@ -472,7 +476,8 @@ class ClassicsSharingApplicationServiceImplTest {
                 mock(WangqiDocumentRepository.class),
                 mock(MingCustomsRepository.class),
                 mock(ClassicsShareTokenGenerator.class),
-                shareTokenHasher);
+                shareTokenHasher,
+                null);
     }
 
     private static ClassicsSharingApplicationServiceImpl portalService(

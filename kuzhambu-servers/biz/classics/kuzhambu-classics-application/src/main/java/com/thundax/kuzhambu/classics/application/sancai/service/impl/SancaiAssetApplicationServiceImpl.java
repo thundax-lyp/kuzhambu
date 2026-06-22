@@ -100,13 +100,6 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
         this.objectMapper = objectMapper == null ? new ObjectMapper().findAndRegisterModules() : objectMapper;
     }
 
-    public SancaiAssetApplicationServiceImpl(
-            SancaiAssetRepository repository,
-            StorageUploadStreamHelper storageUploadStreamHelper,
-            StorageApplicationService storageApplicationService) {
-        this(repository, null, storageUploadStreamHelper, storageApplicationService, null);
-    }
-
     @Override
     @Transactional(rollbackFor = Exception.class)
     public SancaiEntryDraftId updateDraft(SancaiDraftCommand command) {

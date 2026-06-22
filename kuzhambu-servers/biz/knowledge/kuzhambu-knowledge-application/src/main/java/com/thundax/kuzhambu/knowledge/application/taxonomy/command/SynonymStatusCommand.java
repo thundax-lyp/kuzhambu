@@ -1,0 +1,17 @@
+package com.thundax.kuzhambu.knowledge.application.taxonomy.command;
+
+import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.SynonymStatus;
+import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.valueobject.SynonymId;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class SynonymStatusCommand {
+    private SynonymId id;
+    private SynonymStatus status;
+}

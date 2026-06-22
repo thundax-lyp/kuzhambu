@@ -47,8 +47,8 @@ class SancaiAssetApplicationServiceImplTest {
         SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
         StorageUploadStreamHelper uploadStreamHelper = mock(StorageUploadStreamHelper.class);
         StorageApplicationService storageApplicationService = mock(StorageApplicationService.class);
-        SancaiAssetApplicationServiceImpl service =
-                new SancaiAssetApplicationServiceImpl(repository, uploadStreamHelper, storageApplicationService);
+        SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(
+                repository, null, uploadStreamHelper, storageApplicationService, null);
         SancaiEntryImage replacedImage = image(8001L, 3001L, 7000L);
         when(repository.getImageById(SancaiEntryImageId.of(8001L))).thenReturn(replacedImage);
         when(repository.maxPriority()).thenReturn(5);
@@ -114,7 +114,7 @@ class SancaiAssetApplicationServiceImplTest {
         SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
         StorageApplicationService storageApplicationService = mock(StorageApplicationService.class);
         SancaiAssetApplicationServiceImpl service =
-                new SancaiAssetApplicationServiceImpl(repository, null, storageApplicationService);
+                new SancaiAssetApplicationServiceImpl(repository, null, null, storageApplicationService, null);
         SancaiEntryImage image = image(8002L, 3001L, 7001L);
         when(repository.getImageById(SancaiEntryImageId.of(8002L))).thenReturn(image);
         when(storageApplicationService.existsReadableContent(org.mockito.ArgumentMatchers.any()))

@@ -5,6 +5,7 @@ import com.thundax.kuzhambu.common.test.architecture.ApiAnnotationArchitectureRu
 import com.thundax.kuzhambu.common.test.architecture.InterfaceBoundaryArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.ModuleAndDependencyArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.NamingArchitectureRuleSupport;
+import com.thundax.kuzhambu.common.test.architecture.SpringBeanArchitectureRuleSupport;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.configure.SpringSecurityConfiguration;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import java.nio.file.Path;
@@ -30,6 +31,7 @@ class SystemInterfaceArchitectureTest extends AbstractArchitectureTest {
                 Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertValueObjectPlacement(classes, BASE_PACKAGE);
         NamingArchitectureRuleSupport.assertEntityPlacement(classes, BASE_PACKAGE);
+        SpringBeanArchitectureRuleSupport.assertDirectSpringBeansHaveSingleConstructor(classes);
         ApiAnnotationArchitectureRuleSupport.assertAdminControllersDeclareRequiredClassAnnotations(
                 Path.of("src/main/java"));
         ApiAnnotationArchitectureRuleSupport.assertAdminControllerMethodsDeclareRequiredAnnotations(

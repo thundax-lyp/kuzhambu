@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,12 +41,6 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
     private final RoleRepository dao;
     private final List<CacheChangedListener> cacheChangedListeners;
 
-    public RoleApplicationServiceImpl(RoleRepository dao) {
-        this.dao = dao;
-        this.cacheChangedListeners = Collections.emptyList();
-    }
-
-    @Autowired
     public RoleApplicationServiceImpl(
             RoleRepository dao, ObjectProvider<List<CacheChangedListener>> cacheChangedListeners) {
         this.dao = dao;

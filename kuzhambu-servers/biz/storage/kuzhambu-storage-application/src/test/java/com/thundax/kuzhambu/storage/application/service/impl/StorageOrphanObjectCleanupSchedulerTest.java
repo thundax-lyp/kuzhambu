@@ -91,7 +91,7 @@ class StorageOrphanObjectCleanupSchedulerTest {
 
     private static StorageOrphanObjectCleanupScheduler scheduler(
             StoredObjectRepository repository, StoredObjectStore store) {
-        return new StorageOrphanObjectCleanupScheduler(repository, store, Clock.fixed(NOW, ZoneOffset.UTC));
+        return new StorageOrphanObjectCleanupScheduler(repository, store).useClock(Clock.fixed(NOW, ZoneOffset.UTC));
     }
 
     private static StoredObject storage(

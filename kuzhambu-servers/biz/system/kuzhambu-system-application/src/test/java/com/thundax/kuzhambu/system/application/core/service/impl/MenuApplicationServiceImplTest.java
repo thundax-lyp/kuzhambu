@@ -20,7 +20,7 @@ class MenuApplicationServiceImplTest {
     @Test
     void listShouldNotApplyRankFilterWhenMaxRankIsAbsent() {
         CapturingMenuRepository repository = new CapturingMenuRepository();
-        MenuApplicationServiceImpl service = new MenuApplicationServiceImpl(repository);
+        MenuApplicationServiceImpl service = new MenuApplicationServiceImpl(repository, null);
 
         service.list(new MenuQuery());
 
@@ -30,7 +30,7 @@ class MenuApplicationServiceImplTest {
     @Test
     void listShouldApplyRankFilterWhenMaxRankIsPresent() {
         CapturingMenuRepository repository = new CapturingMenuRepository();
-        MenuApplicationServiceImpl service = new MenuApplicationServiceImpl(repository);
+        MenuApplicationServiceImpl service = new MenuApplicationServiceImpl(repository, null);
         MenuQuery query = new MenuQuery();
         query.setMaxRank(AccessRank.of(9));
 
@@ -42,7 +42,7 @@ class MenuApplicationServiceImplTest {
     @Test
     void pageShouldNotApplyRankFilterWhenMaxRankIsAbsent() {
         CapturingMenuRepository repository = new CapturingMenuRepository();
-        MenuApplicationServiceImpl service = new MenuApplicationServiceImpl(repository);
+        MenuApplicationServiceImpl service = new MenuApplicationServiceImpl(repository, null);
 
         service.page(new MenuQuery(), new PageQuery(1, 10));
 

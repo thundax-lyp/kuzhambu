@@ -78,7 +78,6 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
     private final StorageApplicationService storageApplicationService;
     private ClassicsShareProperties shareProperties = new ClassicsShareProperties();
 
-    @Autowired
     public ClassicsSharingApplicationServiceImpl(
             ClassicsSharingRepository repository,
             ClassicsContentApplicationService contentApplicationService,
@@ -96,25 +95,6 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
         this.shareTokenGenerator = shareTokenGenerator;
         this.shareTokenHasher = shareTokenHasher;
         this.storageApplicationService = storageApplicationService;
-    }
-
-    public ClassicsSharingApplicationServiceImpl(
-            ClassicsSharingRepository repository,
-            ClassicsContentApplicationService contentApplicationService,
-            SancaiRepository sancaiRepository,
-            WangqiDocumentRepository wangqiDocumentRepository,
-            MingCustomsRepository mingCustomsRepository,
-            ClassicsShareTokenGenerator shareTokenGenerator,
-            ClassicsShareTokenHasher shareTokenHasher) {
-        this(
-                repository,
-                contentApplicationService,
-                sancaiRepository,
-                wangqiDocumentRepository,
-                mingCustomsRepository,
-                shareTokenGenerator,
-                shareTokenHasher,
-                null);
     }
 
     @Autowired(required = false)

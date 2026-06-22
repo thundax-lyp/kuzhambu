@@ -63,7 +63,8 @@ class ClassicsContentApplicationServiceImplTest {
     @Test
     void ensureVersionedShouldInsertVersionAndBackfillContentMarker() {
         FakeRepository repository = new FakeRepository();
-        ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(repository, null);
+        ClassicsContentApplicationServiceImpl service =
+                new ClassicsContentApplicationServiceImpl(repository, null, null, null, null, null, null, null);
         SancaiEntry entry = new SancaiEntry();
         entry.setId(SancaiEntryId.of(100L));
         entry.setTitle("entry");
@@ -84,7 +85,8 @@ class ClassicsContentApplicationServiceImplTest {
         FakeRepository repository = new FakeRepository();
         ClassicsContentVersion existing = existingVersion(9L, 2, new Date(2_000L));
         repository.insertedVersions.add(existing);
-        ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(repository, null);
+        ClassicsContentApplicationServiceImpl service =
+                new ClassicsContentApplicationServiceImpl(repository, null, null, null, null, null, null, null);
         SancaiEntry entry = new SancaiEntry();
         entry.setId(SancaiEntryId.of(100L));
         entry.setCurrentVersionId(existing.getId());
@@ -109,7 +111,14 @@ class ClassicsContentApplicationServiceImplTest {
         repository.insertedVersions.add(restoredFrom);
         FakeSancaiRepository sancaiRepository = new FakeSancaiRepository();
         ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
-                repository, null, new SancaiEntryVersionRestorer(sancaiRepository, new ObjectMapper()));
+                repository,
+                null,
+                new SancaiEntryVersionRestorer(sancaiRepository, new ObjectMapper()),
+                null,
+                null,
+                null,
+                null,
+                null);
 
         ClassicsContentVersion restoredVersion = service.restoreHistoryVersion(ClassicsContentVersionId.of(9L));
 
@@ -140,7 +149,14 @@ class ClassicsContentApplicationServiceImplTest {
         when(storageUploadStreamHelper.uploadServerArtifact(any(), any(), any(), anyLong()))
                 .thenReturn(storageUploadResult());
         ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
-                repository, null, null, null, storageApplicationService, workerRenderClient, storageUploadStreamHelper);
+                repository,
+                null,
+                null,
+                null,
+                storageApplicationService,
+                workerRenderClient,
+                storageUploadStreamHelper,
+                null);
 
         ClassicsExportJobResult result = service.createExportJob(command);
 
@@ -174,7 +190,14 @@ class ClassicsContentApplicationServiceImplTest {
         when(repository.insertExportJob(any())).thenReturn(ClassicsContentExportJobId.of(900000000002L));
         when(workerRenderClient.renderClassicsExport(any())).thenReturn(renderFailedResponse());
         ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
-                repository, null, null, null, storageApplicationService, workerRenderClient, storageUploadStreamHelper);
+                repository,
+                null,
+                null,
+                null,
+                storageApplicationService,
+                workerRenderClient,
+                storageUploadStreamHelper,
+                null);
 
         ClassicsExportJobResult result = service.createExportJob(command);
 
