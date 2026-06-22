@@ -222,8 +222,7 @@ public class ClassicsContentRepositoryImpl implements ClassicsContentRepository 
     @Override
     public WangqiDocument getWangqiDocumentForAiApply(ClassicsContentId contentId) {
         return WangqiDocumentPersistenceAssembler.toDomain(
-                wangqiDocumentMapper.selectById(
-                        ClassicsContentIdCodec.toValue(contentId)));
+                wangqiDocumentMapper.selectById(ClassicsContentIdCodec.toValue(contentId)));
     }
 
     @Override
@@ -258,7 +257,9 @@ public class ClassicsContentRepositoryImpl implements ClassicsContentRepository 
     public int deleteAiTags(String contentType, ClassicsContentId contentId) {
         return tagMapper.delete(new LambdaQueryWrapper<ClassicsContentTagDO>()
                 .eq(StringUtils.isNotBlank(contentType), ClassicsContentTagDO::getContentType, contentType)
-                .eq(ClassicsContentIdCodec.toValue(contentId) != null, ClassicsContentTagDO::getContentId,
+                .eq(
+                        ClassicsContentIdCodec.toValue(contentId) != null,
+                        ClassicsContentTagDO::getContentId,
                         ClassicsContentIdCodec.toValue(contentId))
                 .eq(ClassicsContentTagDO::getSource, ClassicsContentSource.AI.value()));
     }
@@ -267,7 +268,9 @@ public class ClassicsContentRepositoryImpl implements ClassicsContentRepository 
     public int deleteAiQaPairs(String contentType, ClassicsContentId contentId) {
         return qaPairMapper.delete(new LambdaQueryWrapper<ClassicsContentQaPairDO>()
                 .eq(StringUtils.isNotBlank(contentType), ClassicsContentQaPairDO::getContentType, contentType)
-                .eq(ClassicsContentIdCodec.toValue(contentId) != null, ClassicsContentQaPairDO::getContentId,
+                .eq(
+                        ClassicsContentIdCodec.toValue(contentId) != null,
+                        ClassicsContentQaPairDO::getContentId,
                         ClassicsContentIdCodec.toValue(contentId))
                 .eq(ClassicsContentQaPairDO::getSource, ClassicsContentSource.AI.value()));
     }
