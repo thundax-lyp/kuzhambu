@@ -11,6 +11,8 @@ import { TagReviewTable } from "./components/tag-review-table";
 import { TagTable } from "./components/tag-table";
 import * as service from "./taxonomy-service";
 import type {
+    TagAliasCreateCommand,
+    TagAliasRemoveCommand,
     TagCategoryCreateCommand,
     TagCategoryUpdateCommand,
     TagCreateCommand,
@@ -64,6 +66,7 @@ export const TaxonomyPage = () => {
     const [tagEditorOpen, setTagEditorOpen] = useState(false);
     const [tagDetailOpen, setTagDetailOpen] = useState(false);
     const [tagDetailReviewMode, setTagDetailReviewMode] = useState(false);
+    const [removingAliasId, setRemovingAliasId] = useState<string | null>(null);
 
     const categoryPageQuery = useQuery({
         queryKey: ["knowledge", "taxonomy", "categories", categoryQuery],
@@ -163,6 +166,39 @@ export const TaxonomyPage = () => {
             messageApi.error(error instanceof Error ? error.message : "标签审核失败");
         }
     });
+    const createAliasMutation = useMutation({
+        mutationFn: service.createTagAlias,
+        onSuccess: async () => {
+            await Promise.all([
+                queryClient.invalidateQueries({
+                    queryKey: ["knowledge", "taxonomy", "tag-detail"]
+                }),
+                queryClient.invalidateQueries({ queryKey: ["knowledge", "taxonomy", "tags"] })
+            ]);
+            messageApi.success("标签别名已新增");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "标签别名新增失败");
+        }
+    });
+    const removeAliasMutation = useMutation({
+        mutationFn: service.removeTagAlias,
+        onMutate: (request) => {
+            setRemovingAliasId(request.id);
+        },
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({
+                queryKey: ["knowledge", "taxonomy", "tag-detail"]
+            });
+            messageApi.success("标签别名已删除");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "标签别名删除失败");
+        },
+        onSettled: () => {
+            setRemovingAliasId(null);
+        }
+    });
 
     const categoryPage = categoryPageQuery.data;
     const tagPage = tagPageQuery.data;
@@ -214,12 +250,21 @@ export const TaxonomyPage = () => {
     };
 
     const closeTagDetail = () => {
-        if (reviewTagMutation.isPending) {
+        if (reviewTagMutation.isPending || createAliasMutation.isPending) {
             return;
         }
         setTagDetailOpen(false);
         setTagDetailReviewMode(false);
         setSelectedTag(null);
+        setRemovingAliasId(null);
+    };
+
+    const createAlias = (request: TagAliasCreateCommand) => {
+        createAliasMutation.mutate(request);
+    };
+
+    const removeAlias = (request: TagAliasRemoveCommand) => {
+        removeAliasMutation.mutate(request);
     };
 
     return (
@@ -319,14 +364,19 @@ export const TaxonomyPage = () => {
             />
 
             <TagDetailDrawer
+                canEditAliases={canEditTaxonomy}
+                creatingAlias={createAliasMutation.isPending}
                 open={tagDetailOpen}
                 loading={tagDetailQuery.isFetching}
+                removingAliasId={removingAliasId}
                 reviewMode={tagDetailReviewMode}
                 reviewing={reviewTagMutation.isPending}
                 tagDetail={tagDetailQuery.data}
+                onCreateAlias={createAlias}
                 onClose={closeTagDetail}
                 onApprove={(request: TagReviewCommand) => reviewTagMutation.mutate(request)}
                 onReject={(request: TagReviewCommand) => reviewTagMutation.mutate(request)}
+                onRemoveAlias={removeAlias}
             />
         </div>
     );

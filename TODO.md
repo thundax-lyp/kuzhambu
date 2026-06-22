@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `knowledge taxonomy tag alias component`：创建标签别名列表组件
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/taxonomy/components/tag-alias-list.tsx`
-    - 处理动作：创建标签别名列表组件。
-    - 验收点：组件存在且能支撑标签详情中的别名列表、新增、删除。
-    - 重要度：7/10
-
 - [ ] `knowledge taxonomy synonym components`：创建同义词表格与编辑组件
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`

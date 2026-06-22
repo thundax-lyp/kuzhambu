@@ -1,21 +1,28 @@
 import { Button, Descriptions, Empty, Input, List, Space, Typography } from "antd";
 import { useState } from "react";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
+import { TagAliasList } from "./tag-alias-list";
 import type { TagReviewCommand } from "../taxonomy-service";
+import type { TagAliasCreateCommand, TagAliasRemoveCommand } from "../taxonomy-service";
 import type { TagDetailRecord } from "../taxonomy-types";
 
 const { Paragraph, Text, Title } = Typography;
 const { TextArea } = Input;
 
 interface TagDetailDrawerProps {
+    canEditAliases?: boolean;
+    creatingAlias?: boolean;
     loading?: boolean;
     open: boolean;
+    removingAliasId?: string | null;
     reviewMode?: boolean;
     reviewing?: boolean;
     tagDetail?: TagDetailRecord | null;
+    onCreateAlias?: (request: TagAliasCreateCommand) => void;
     onApprove?: (request: TagReviewCommand) => void;
     onClose: () => void;
     onReject?: (request: TagReviewCommand) => void;
+    onRemoveAlias?: (request: TagAliasRemoveCommand) => void;
 }
 
 const formatTimestamp = (value?: number | null) => {
@@ -68,17 +75,23 @@ const readContentTypeLabel = (contentType?: string | null) => {
 };
 
 export const TagDetailDrawer = ({
+    canEditAliases = false,
+    creatingAlias = false,
     loading = false,
     open,
+    removingAliasId,
     reviewMode = false,
     reviewing = false,
     tagDetail,
+    onCreateAlias,
     onApprove,
     onClose,
-    onReject
+    onReject,
+    onRemoveAlias
 }: TagDetailDrawerProps) => {
     const [reviewNote, setReviewNote] = useState("");
     const tag = tagDetail?.tag;
+    const aliases = tagDetail?.aliases || [];
     const contentRefs = tagDetail?.contentRefs || [];
 
     const approveTag = () => {
@@ -163,6 +176,20 @@ export const TagDetailDrawer = ({
                             </Paragraph>
                         </Descriptions.Item>
                     </Descriptions>
+
+                    <div className="knowledge-taxonomy-tag-detail-section">
+                        <Title level={5}>标签别名</Title>
+                        <TagAliasList
+                            aliases={aliases}
+                            canEdit={canEditAliases}
+                            loading={loading}
+                            removingAliasId={removingAliasId}
+                            saving={creatingAlias}
+                            tagId={tag.id}
+                            onCreate={onCreateAlias}
+                            onRemove={onRemoveAlias}
+                        />
+                    </div>
 
                     <div className="knowledge-taxonomy-tag-detail-section">
                         <Title level={5}>内容引用</Title>
