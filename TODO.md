@@ -15,12 +15,12 @@
 
 
 
-- [ ] `knowledge taxonomy mappers A`：创建分类与标签 Mapper
+- [ ] `knowledge taxonomy mappers B`：创建别名与内容引用 Mapper
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/taxonomy/persistence/mapper/TagCategoryMapper.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/taxonomy/persistence/mapper/TagMapper.java`
-    - 处理动作：创建标签分类与标签 Mapper 并声明 MVP 所需查询方法。
-    - 验收点：2 个 Mapper 存在且方法覆盖分页、唯一性查询、详情、状态修改。
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/taxonomy/persistence/mapper/TagAliasMapper.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/taxonomy/persistence/mapper/TagContentRefMapper.java`
+    - 处理动作：创建标签别名与内容引用 Mapper 并声明 MVP 所需查询方法。
+    - 验收点：2 个 Mapper 存在且方法覆盖列表、创建、删除、数量统计。
     - 重要度：9/10
 
 - [ ] `knowledge taxonomy mappers B`：创建别名与内容引用 Mapper
