@@ -24,15 +24,19 @@ class AiInvocationControllerTest {
     @Test
     void routesShouldKeepCandidateManagementApiPathsAndPermissions() throws Exception {
         assertRequestMapping(AiInvocationController.class, "/api/ai/invocation");
-        assertPostMapping(AiInvocationController.class, "rejectCandidate", "candidate/reject", CandidateRejectRequest.class);
         assertPostMapping(
-                AiInvocationController.class, "markCandidateApplied", "candidate/mark-applied", CandidateMarkAppliedRequest.class);
+                AiInvocationController.class, "rejectCandidate", "candidate/reject", CandidateRejectRequest.class);
+        assertPostMapping(
+                AiInvocationController.class,
+                "markCandidateApplied",
+                "candidate/mark-applied",
+                CandidateMarkAppliedRequest.class);
     }
 
     @Test
     void rejectCandidateShouldMapToDomainService() {
-        AiInvocationController controller = new AiInvocationController(
-                noRepository(), noBatchService(), rejectDomainService());
+        AiInvocationController controller =
+                new AiInvocationController(noRepository(), noBatchService(), rejectDomainService());
         CandidateRejectRequest request = new CandidateRejectRequest();
         request.setCandidateId(11L);
         request.setErrorType("TIMEOUT");
@@ -47,8 +51,8 @@ class AiInvocationControllerTest {
 
     @Test
     void markAppliedShouldFallbackByCurrentCandidateAndMapToDomainService() {
-        AiInvocationController controller = new AiInvocationController(
-                currentInvocationRepository(), noBatchService(), markAppliedDomainService());
+        AiInvocationController controller =
+                new AiInvocationController(currentInvocationRepository(), noBatchService(), markAppliedDomainService());
         CandidateMarkAppliedRequest request = new CandidateMarkAppliedRequest();
         request.setCandidateId(22L);
 
@@ -109,7 +113,8 @@ class AiInvocationControllerTest {
             }
 
             @Override
-            public AiCandidate markApplied(Long candidateId, String resultFormat, String resultPayload, java.time.Instant appliedAt) {
+            public AiCandidate markApplied(
+                    Long candidateId, String resultFormat, String resultPayload, java.time.Instant appliedAt) {
                 throw new UnsupportedOperationException("markApplied should not be called in this test");
             }
         };
@@ -118,7 +123,8 @@ class AiInvocationControllerTest {
     private static AiCandidateDomainService markAppliedDomainService() {
         return new AiCandidateDomainService(fakeRepository()) {
             @Override
-            public AiCandidate markApplied(Long candidateId, String resultFormat, String resultPayload, java.time.Instant appliedAt) {
+            public AiCandidate markApplied(
+                    Long candidateId, String resultFormat, String resultPayload, java.time.Instant appliedAt) {
                 assertEquals(22L, candidateId);
                 assertEquals("TEXT", resultFormat);
                 assertEquals("existing", resultPayload);

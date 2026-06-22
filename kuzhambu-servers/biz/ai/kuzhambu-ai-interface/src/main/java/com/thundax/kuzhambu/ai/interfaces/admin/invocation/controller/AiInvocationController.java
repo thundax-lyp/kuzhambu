@@ -82,8 +82,8 @@ public class AiInvocationController {
     @SysLogger(value = "候选拒绝")
     @PostMapping(value = "candidate/reject")
     public CandidateResponse rejectCandidate(@Valid @RequestBody AiInvocationRequests.CandidateRejectRequest request) {
-        return AiInvocationInterfaceAssembler.toResponse(
-                aiCandidateDomainService.reject(request.getCandidateId(), request.getErrorType(), request.getErrorMessage()));
+        return AiInvocationInterfaceAssembler.toResponse(aiCandidateDomainService.reject(
+                request.getCandidateId(), request.getErrorType(), request.getErrorMessage()));
     }
 
     @Operation(summary = "标记AI候选已应用", description = "ai:invocation:edit")
@@ -91,12 +91,15 @@ public class AiInvocationController {
     @HasPermission(value = "ai:invocation:edit")
     @SysLogger(value = "候选已应用")
     @PostMapping(value = "candidate/mark-applied")
-    public CandidateResponse markCandidateApplied(@Valid @RequestBody AiInvocationRequests.CandidateMarkAppliedRequest request) {
+    public CandidateResponse markCandidateApplied(
+            @Valid @RequestBody AiInvocationRequests.CandidateMarkAppliedRequest request) {
         AiCandidate current = invocationRepository.getCandidate(request.getCandidateId());
-        String resultFormat = defaultIfNull(request.getResultFormat(), current == null ? null : current.getResultFormat());
-        String resultPayload = defaultIfNull(request.getResultPayload(), current == null ? null : current.getResultPayload());
-        return AiInvocationInterfaceAssembler.toResponse(
-                aiCandidateDomainService.markApplied(request.getCandidateId(), resultFormat, resultPayload, Instant.now()));
+        String resultFormat =
+                defaultIfNull(request.getResultFormat(), current == null ? null : current.getResultFormat());
+        String resultPayload =
+                defaultIfNull(request.getResultPayload(), current == null ? null : current.getResultPayload());
+        return AiInvocationInterfaceAssembler.toResponse(aiCandidateDomainService.markApplied(
+                request.getCandidateId(), resultFormat, resultPayload, Instant.now()));
     }
 
     private String defaultIfNull(String requestValue, String currentValue) {
@@ -159,5 +162,4 @@ public class AiInvocationController {
     public Boolean canDispatchBatch(@Valid @RequestBody AiInvocationRequests.BatchIdRequest request) {
         return batchJobService.canDispatchNextUnit(request.getBatchId());
     }
-
 }
