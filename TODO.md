@@ -11,13 +11,7 @@
 
 ## 待审阅任务项
 
-- [ ] `db/schema/knowledge.sql`：收紧 Knowledge MVP schema
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
-    - 范围对象：`db/schema/knowledge.sql`
-    - 处理动作：将 Knowledge schema 收紧为 RUNBOOK 规定的 5 张 MVP 表并删除非 MVP DDL。
-    - 验收点：`db/schema/knowledge.sql` 仅包含 `knowledge_tag_category`、`knowledge_tag`、`knowledge_tag_alias`、`knowledge_tag_content_ref`、`knowledge_synonym` 五张表。
-    - 重要度：10/10
+
 
 - [ ] `db/data/knowledge.sql`：补齐 Knowledge MVP 初始化数据
     - 任务类型：执行任务
