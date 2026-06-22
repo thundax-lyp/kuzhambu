@@ -10,13 +10,6 @@
 ## 当前任务项
 
 
-- [ ] `Classics AI worker usecase resolver`：新增 Classics usecase 解析器与测试
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKER-USECASE-CLOSURE.md` 第 `4.2` 章节
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/refinement/support/ClassicsAiWorkerUsecaseSpec.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/refinement/support/ClassicsAiWorkerUsecaseResolver.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/test/java/com/thundax/kuzhambu/ai/application/refinement/support/ClassicsAiWorkerUsecaseResolverTest.java`
-    - 处理动作：新增固定映射的 Classics AI worker usecase 解析器和解析器测试
-    - 验收点：支持的 `contentType + capability` 组合能解析出唯一 `operation + workerPath`，不支持组合抛出 `BizException`
-    - 重要度：10/10
 
 - [ ] `AiRefinementApplicationServiceImpl`：接入 canonical usecase 解析
     - 任务类型：执行任务
