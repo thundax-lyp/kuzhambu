@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `ClassicsAiCandidatePayloadParser`：新增候选 payload 解析器
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-CANDIDATE-CONFIRMATION.md#B2.2 新增 payload 解析器`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/support/ClassicsAiCandidatePayloadParser.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/support/AiCandidateQaPairPayload.java`
-    - 处理动作：实现 text、tags、qaPairs 三类 payload 解析。
-    - 验收点：解析使用 `ObjectMapper`，空结果抛 `BizException`，tags 和 qaPairs 按首次出现顺序去重。
-    - 重要度：9/10
-
 - [ ] `ClassicsContentRepository`：新增 AI 应用窄持久化方法
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-CANDIDATE-CONFIRMATION.md#B2.3 Repository 窄方法`
