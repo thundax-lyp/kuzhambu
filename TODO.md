@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `AiCandidateDomainServiceTest`：补 AI 候选 DomainService 测试
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-CANDIDATE-CONFIRMATION.md#B3 后端接口测试`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-domain/src/test/java/com/thundax/kuzhambu/ai/domain/invocation/service/AiCandidateDomainServiceTest.java`
-    - 处理动作：覆盖 PENDING 校验、非 PENDING 失败、target mismatch 失败和成功 mark-applied。
-    - 验收点：DomainService 状态机和异常分支被单元测试锁定。
-    - 重要度：9/10
-
 - [ ] `AiInvocationControllerTest`：补 AI 候选管理接口测试
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-CANDIDATE-CONFIRMATION.md#B3 后端接口测试`
