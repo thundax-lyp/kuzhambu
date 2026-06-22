@@ -34,6 +34,8 @@ public final class TagContentRefIdCodec {
     }
 
     public static List<Long> toValues(List<TagContentRefId> ids) {
-        return ids == null ? null : ids.stream().map(TagContentRefIdCodec::toValue).collect(Collectors.toList());
+        return ids == null
+                ? null
+                : ids.stream().map(TagContentRefIdCodec::toValue).collect(Collectors.toList());
     }
 }

@@ -28,9 +28,7 @@ public final class TagIdCodec {
     }
 
     public static List<TagId> toDomains(List<Long> values) {
-        return values == null
-                ? null
-                : values.stream().map(TagIdCodec::toDomain).collect(Collectors.toList());
+        return values == null ? null : values.stream().map(TagIdCodec::toDomain).collect(Collectors.toList());
     }
 
     public static List<Long> toValues(List<TagId> ids) {

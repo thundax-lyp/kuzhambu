@@ -16,8 +16,6 @@ public enum TagSource {
                 .filter(item -> item.name().equalsIgnoreCase(value))
                 .findFirst()
                 .orElseThrow(() -> new DomainException(
-                        "KNOWLEDGE-10003",
-                        "knowledge.taxonomy.tag.source.invalid",
-                        "Unknown tag source: " + value));
+                        "KNOWLEDGE-10003", "knowledge.taxonomy.tag.source.invalid", "Unknown tag source: " + value));
     }
 }

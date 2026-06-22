@@ -16,8 +16,6 @@ public enum TagStatus {
                 .filter(item -> item.name().equalsIgnoreCase(value))
                 .findFirst()
                 .orElseThrow(() -> new DomainException(
-                        "KNOWLEDGE-10002",
-                        "knowledge.taxonomy.tag.status.invalid",
-                        "Unknown tag status: " + value));
+                        "KNOWLEDGE-10002", "knowledge.taxonomy.tag.status.invalid", "Unknown tag status: " + value));
     }
 }
