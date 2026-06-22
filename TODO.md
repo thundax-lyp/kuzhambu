@@ -15,14 +15,6 @@
 
 
 
-- [ ] `knowledge taxonomy data objects B`：创建别名与内容引用 DO
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/taxonomy/persistence/dataobject/TagAliasDO.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/taxonomy/persistence/dataobject/TagContentRefDO.java`
-    - 处理动作：创建标签别名与内容引用持久化对象。
-    - 验收点：2 个 DO 存在且字段与对应表字段完全一致。
-    - 重要度：7/10
-
 - [ ] `knowledge taxonomy data objects C`：创建同义词 DO 与持久化装配器
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
