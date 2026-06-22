@@ -39,14 +39,6 @@
     - 验收点：`SynonymMapper` 存在且方法覆盖分页、创建、更新、状态修改、删除、唯一性查询。
     - 重要度：8/10
 
-- [ ] `knowledge taxonomy repository impl A`：实现分类与标签仓储
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/taxonomy/repository/impl/TagCategoryRepositoryImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/taxonomy/repository/impl/TagRepositoryImpl.java`
-    - 处理动作：实现标签分类与标签仓储。
-    - 验收点：2 个仓储实现存在且完成 domain 与 mapper 之间的持久化桥接。
-    - 重要度：9/10
-
 - [ ] `knowledge taxonomy repository impl B`：实现别名与内容引用仓储
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
