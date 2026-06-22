@@ -11,14 +11,6 @@
 
 
 
-- [ ] `AiWorkerInvocationApplicationServiceTest`：补 invocation 层最小回归
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKER-USECASE-CLOSURE.md` 第 `4.5` 章节
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/test/java/com/thundax/kuzhambu/ai/application/invocation/AiWorkerInvocationApplicationServiceTest.java`
-    - 处理动作：新增同步调用回归测试，锁定 `workerPath` 与 canonical `operation` 不被 invocation 层覆盖
-    - 验收点：同步调用测试断言 `workerPath`、`operation`、`candidateId` 与 `saveCandidate()` 行为正确
-    - 重要度：8/10
-
 - [ ] `AI Implementation Coverage`：沉淀 Java AI 接入覆盖事实文档
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKER-USECASE-CLOSURE.md` 第 `7` 章节

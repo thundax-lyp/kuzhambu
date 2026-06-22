@@ -10,6 +10,7 @@ import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocation
 import com.thundax.kuzhambu.ai.application.invocation.service.impl.AiWorkerInvocationApplicationServiceImpl;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCallRecord;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiUsageSnapshot;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
 import java.util.Collections;
 import java.util.List;
@@ -51,6 +52,50 @@ class AiWorkerInvocationApplicationServiceTest {
         assertFalse(repository.updatedCallRecord.get().isStreamCompleted());
     }
 
+    @Test
+    void invokeShouldPreserveCanonicalOperationAndWorkerPath() {
+        RecordingInvocationRepository repository = new RecordingInvocationRepository();
+        AtomicReference<AiInvokeCommand> capturedCommand = new AtomicReference<>();
+        WorkerAiClient workerClient = new WorkerAiClient() {
+            @Override
+            public AiInvokeResult invoke(AiInvokeCommand command) {
+                capturedCommand.set(command);
+                AiInvokeResult result = new AiInvokeResult();
+                result.setRequestId(command.getRequestId());
+                result.setTraceId(command.getTraceId());
+                result.setStatus("SUCCEEDED");
+                result.setCapability(command.getCapability());
+                result.setResultFormat("text");
+                result.setResultPayload("candidate-result");
+                result.setUsage(AiUsageSnapshot.empty());
+                return result;
+            }
+
+            @Override
+            public void stream(AiInvokeCommand command, Consumer<AiStreamEventResult> eventConsumer) {
+                throw new UnsupportedOperationException("not used");
+            }
+        };
+        AiWorkerInvocationApplicationServiceImpl service =
+                new AiWorkerInvocationApplicationServiceImpl(repository, workerClient);
+
+        AiInvokeCommand command = command();
+        command.setOperation("CLASSICS_SANCAI_SUMMARY");
+        command.setWorkerPath("/internal/ai/classics/sancai/summary");
+        command.setCreateCandidate(true);
+
+        AiInvokeResult result = service.invoke(command);
+
+        assertEquals("CLASSICS_SANCAI_SUMMARY", capturedCommand.get().getOperation());
+        assertEquals(
+                "/internal/ai/classics/sancai/summary", capturedCommand.get().getWorkerPath());
+        assertFalse(capturedCommand.get().isStream());
+        assertEquals(100L, result.getCallId());
+        assertEquals(200L, result.getCandidateId());
+        assertEquals(100L, repository.savedCandidate.get().getCallId());
+        assertEquals("translate", repository.savedCandidate.get().getCapability());
+    }
+
     private AiInvokeCommand command() {
         AiInvokeCommand command = new AiInvokeCommand();
         command.setScope("classics");
@@ -71,6 +116,7 @@ class AiWorkerInvocationApplicationServiceTest {
     private static class RecordingInvocationRepository implements AiInvocationRepository {
 
         private final AtomicReference<AiCallRecord> updatedCallRecord = new AtomicReference<>();
+        private final AtomicReference<AiCandidate> savedCandidate = new AtomicReference<>();
 
         @Override
         public AiCallRecord getCallRecord(Long callId) {
@@ -95,6 +141,7 @@ class AiWorkerInvocationApplicationServiceTest {
 
         @Override
         public Long saveCandidate(AiCandidate candidate) {
+            savedCandidate.set(candidate);
             return 200L;
         }
 
