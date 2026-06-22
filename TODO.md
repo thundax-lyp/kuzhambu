@@ -86,7 +86,6 @@
     - 处理动作：创建 taxonomy 主页面与样式并搭起 4 个固定 Tabs 布局。
     - 验收点：主页面存在且渲染 `标签分类`、`统一标签`、`待审核标签`、`同义词` 四个页签。
     - 重要度：10/10
-
 - [ ] `knowledge taxonomy category components`：创建分类表格与编辑组件
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`

@@ -1,0 +1,9 @@
+.knowledge-taxonomy-page {
+    padding: 16px;
+}
+
+.knowledge-taxonomy-empty {
+    color: rgba(0, 0, 0, 0.45);
+    min-height: 220px;
+    padding: 20px 0;
+}
