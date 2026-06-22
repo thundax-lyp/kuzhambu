@@ -11,4 +11,428 @@
 
 ## 待审阅任务项
 
+- [ ] `db/schema/knowledge.sql`：收紧 Knowledge MVP schema
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`db/schema/knowledge.sql`
+    - 处理动作：将 Knowledge schema 收紧为 RUNBOOK 规定的 5 张 MVP 表并删除非 MVP DDL。
+    - 验收点：`db/schema/knowledge.sql` 仅包含 `knowledge_tag_category`、`knowledge_tag`、`knowledge_tag_alias`、`knowledge_tag_content_ref`、`knowledge_synonym` 五张表。
+    - 重要度：10/10
+
+- [ ] `db/data/knowledge.sql`：补齐 Knowledge MVP 初始化数据
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`db/data/knowledge.sql`
+    - 处理动作：写入 4 条固定标签分类初始化数据并删除无关占位内容。
+    - 验收点：`db/data/knowledge.sql` 仅初始化 `人物`、`地点`、`时代`、`主题` 四个标签分类且不包含标签、别名、内容关联、同义词种子数据。
+    - 重要度：9/10
+
+- [ ] `knowledge taxonomy entities`：创建 taxonomy 实体类
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/taxonomy/model/entity/TagCategory.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/taxonomy/model/entity/Tag.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/taxonomy/model/entity/TagAlias.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/taxonomy/model/entity/TagContentRef.java`
+    - 处理动作：创建 taxonomy 核心实体类并按 RUNBOOK 固定字段一一落盘。
+    - 验收点：4 个实体类存在且字段名与 RUNBOOK 中对应表字段映射完全一致。
+    - 重要度：10/10
+
+- [ ] `knowledge taxonomy synonym entity`：创建同义词实体
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/taxonomy/model/entity/Synonym.java`
+    - 处理动作：创建同义词实体类并按 RUNBOOK 固定字段落盘。
+    - 验收点：`Synonym` 实体存在且字段覆盖 `id`、`synonymId`、`term`、`synonym`、`status`。
+    - 重要度：8/10
+
+- [ ] `knowledge taxonomy enums A`：创建分类与标签状态枚举
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/taxonomy/model/enums/TagCategoryStatus.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/taxonomy/model/enums/TagStatus.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/taxonomy/model/enums/TagSource.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/taxonomy/model/enums/TagReviewStatus.java`
+    - 处理动作：创建分类、标签、来源、审核状态枚举并固定枚举值。
+    - 验收点：4 个枚举类存在且枚举值与 RUNBOOK 完全一致。
+    - 重要度：9/10
+
+- [ ] `knowledge taxonomy enums B`：创建内容类型与同义词状态枚举
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/taxonomy/model/enums/ContentType.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/taxonomy/model/enums/SynonymStatus.java`
+    - 处理动作：创建内容类型与同义词状态枚举并固定枚举值。
+    - 验收点：2 个枚举类存在且枚举值与 RUNBOOK 完全一致。
+    - 重要度：8/10
+
+- [ ] `knowledge taxonomy value objects A`：创建分类与标签值对象
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/taxonomy/model/valueobject/TagCategoryId.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/taxonomy/model/valueobject/TagId.java`
+    - 处理动作：创建标签分类与标签强类型 ID 值对象。
+    - 验收点：2 个值对象类存在且命名、包路径与 RUNBOOK 一致。
+    - 重要度：8/10
+
+- [ ] `knowledge taxonomy value objects B`：创建别名与内容引用值对象
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/taxonomy/model/valueobject/TagAliasId.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/taxonomy/model/valueobject/TagContentRefId.java`
+    - 处理动作：创建标签别名与内容引用强类型 ID 值对象。
+    - 验收点：2 个值对象类存在且命名、包路径与 RUNBOOK 一致。
+    - 重要度：8/10
+
+- [ ] `knowledge taxonomy value objects C`：创建同义词值对象
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/taxonomy/model/valueobject/SynonymId.java`
+    - 处理动作：创建同义词强类型 ID 值对象。
+    - 验收点：`SynonymId` 存在且命名、包路径与 RUNBOOK 一致。
+    - 重要度：7/10
+
+- [ ] `knowledge taxonomy codecs A`：创建分类与标签 codec
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/taxonomy/codec/TagCategoryIdCodec.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/taxonomy/codec/TagIdCodec.java`
+    - 处理动作：创建分类与标签值对象 codec。
+    - 验收点：2 个 codec 类存在且分别处理对应强类型 ID 转换。
+    - 重要度：7/10
+
+- [ ] `knowledge taxonomy codecs B`：创建别名与内容引用 codec
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/taxonomy/codec/TagAliasIdCodec.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/taxonomy/codec/TagContentRefIdCodec.java`
+    - 处理动作：创建标签别名与内容引用值对象 codec。
+    - 验收点：2 个 codec 类存在且分别处理对应强类型 ID 转换。
+    - 重要度：7/10
+
+- [ ] `knowledge taxonomy codecs C`：创建同义词 codec
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/taxonomy/codec/SynonymIdCodec.java`
+    - 处理动作：创建同义词值对象 codec。
+    - 验收点：`SynonymIdCodec` 存在且处理 `SynonymId` 转换。
+    - 重要度：6/10
+
+- [ ] `knowledge taxonomy repositories A`：创建分类与标签仓储接口
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/taxonomy/repository/TagCategoryRepository.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/taxonomy/repository/TagRepository.java`
+    - 处理动作：创建标签分类与标签仓储接口并声明 MVP 所需读写方法。
+    - 验收点：2 个仓储接口存在且方法覆盖分类分页、标签分页、详情、状态更新、唯一性查询等 MVP 需求。
+    - 重要度：9/10
+
+- [ ] `knowledge taxonomy repositories B`：创建别名与内容引用仓储接口
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/taxonomy/repository/TagAliasRepository.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/taxonomy/repository/TagContentRefRepository.java`
+    - 处理动作：创建标签别名与内容引用仓储接口并声明 MVP 所需读写方法。
+    - 验收点：2 个仓储接口存在且方法覆盖别名列表、创建、删除、内容引用列表与数量统计。
+    - 重要度：8/10
+
+- [ ] `knowledge taxonomy repositories C`：创建同义词仓储接口
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/taxonomy/repository/SynonymRepository.java`
+    - 处理动作：创建同义词仓储接口并声明 MVP 所需读写方法。
+    - 验收点：`SynonymRepository` 存在且方法覆盖分页、创建、更新、状态修改、删除、唯一性查询。
+    - 重要度：8/10
+
+- [ ] `knowledge taxonomy commands A`：创建分类命令对象
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/command/TagCategoryCreateCommand.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/command/TagCategoryUpdateCommand.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/command/TagCategoryStatusCommand.java`
+    - 处理动作：创建标签分类命令对象。
+    - 验收点：3 个命令类存在且字段能覆盖分类创建、更新、启用、禁用。
+    - 重要度：8/10
+
+- [ ] `knowledge taxonomy commands B`：创建标签命令对象
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/command/TagCreateCommand.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/command/TagUpdateCommand.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/command/TagStatusCommand.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/command/TagReviewCommand.java`
+    - 处理动作：创建标签创建、更新、状态与审核命令对象。
+    - 验收点：4 个命令类存在且字段能覆盖标签管理与审核规则。
+    - 重要度：9/10
+
+- [ ] `knowledge taxonomy commands C`：创建别名命令对象
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/command/TagAliasCreateCommand.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/command/TagAliasRemoveCommand.java`
+    - 处理动作：创建标签别名命令对象。
+    - 验收点：2 个命令类存在且字段能覆盖别名新增与删除。
+    - 重要度：7/10
+
+- [ ] `knowledge taxonomy commands D`：创建同义词命令对象
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/command/SynonymCreateCommand.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/command/SynonymUpdateCommand.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/command/SynonymStatusCommand.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/command/SynonymRemoveCommand.java`
+    - 处理动作：创建同义词创建、更新、状态与删除命令对象。
+    - 验收点：4 个命令类存在且字段能覆盖同义词管理规则。
+    - 重要度：8/10
+
+- [ ] `knowledge taxonomy queries`：创建 taxonomy 查询对象
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/query/TagCategoryPageQuery.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/query/TagPageQuery.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/query/TagReviewPageQuery.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/query/SynonymPageQuery.java`
+    - 处理动作：创建 taxonomy 分页查询对象。
+    - 验收点：4 个查询类存在且字段能覆盖 RUNBOOK 定义的四类列表筛选条件。
+    - 重要度：8/10
+
+- [ ] `knowledge taxonomy results A`：创建分类与标签结果对象
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/result/TagCategoryResult.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/result/TagResult.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/result/TagDetailResult.java`
+    - 处理动作：创建标签分类、标签列表、标签详情结果对象。
+    - 验收点：3 个结果类存在且能承载 RUNBOOK 定义的响应字段。
+    - 重要度：8/10
+
+- [ ] `knowledge taxonomy results B`：创建别名内容引用与同义词结果对象
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/result/TagAliasResult.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/result/TagContentRefResult.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/result/SynonymResult.java`
+    - 处理动作：创建别名、内容引用、同义词结果对象。
+    - 验收点：3 个结果类存在且能承载 RUNBOOK 定义的响应字段。
+    - 重要度：7/10
+
+- [ ] `knowledge taxonomy service contract`：创建 taxonomy 应用服务接口与装配器
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/service/TaxonomyApplicationService.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/assembler/TaxonomyApplicationAssembler.java`
+    - 处理动作：创建 taxonomy 应用服务接口与 application 装配器。
+    - 验收点：服务接口方法名与 RUNBOOK 固定方法完全一致且装配器存在。
+    - 重要度：9/10
+
+- [ ] `knowledge taxonomy service impl`：实现 taxonomy 应用服务
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/service/impl/TaxonomyApplicationServiceImpl.java`
+    - 处理动作：实现 taxonomy 应用服务并落定 RUNBOOK 规定的固定业务规则。
+    - 验收点：服务实现存在且覆盖分类、标签、审核、别名、同义词全部 MVP 用例。
+    - 重要度：10/10
+
+- [ ] `knowledge taxonomy data objects A`：创建分类与标签 DO
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/taxonomy/persistence/dataobject/TagCategoryDO.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/taxonomy/persistence/dataobject/TagDO.java`
+    - 处理动作：创建标签分类与标签持久化对象。
+    - 验收点：2 个 DO 存在且字段与对应表字段完全一致。
+    - 重要度：8/10
+
+- [ ] `knowledge taxonomy data objects B`：创建别名与内容引用 DO
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/taxonomy/persistence/dataobject/TagAliasDO.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/taxonomy/persistence/dataobject/TagContentRefDO.java`
+    - 处理动作：创建标签别名与内容引用持久化对象。
+    - 验收点：2 个 DO 存在且字段与对应表字段完全一致。
+    - 重要度：7/10
+
+- [ ] `knowledge taxonomy data objects C`：创建同义词 DO 与持久化装配器
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/taxonomy/persistence/dataobject/SynonymDO.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/taxonomy/persistence/assembler/TaxonomyPersistenceAssembler.java`
+    - 处理动作：创建同义词持久化对象与 taxonomy 持久化装配器。
+    - 验收点：`SynonymDO` 存在且装配器覆盖 entity 与 DO 互转。
+    - 重要度：8/10
+
+- [ ] `knowledge taxonomy mappers A`：创建分类与标签 Mapper
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/taxonomy/persistence/mapper/TagCategoryMapper.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/taxonomy/persistence/mapper/TagMapper.java`
+    - 处理动作：创建标签分类与标签 Mapper 并声明 MVP 所需查询方法。
+    - 验收点：2 个 Mapper 存在且方法覆盖分页、唯一性查询、详情、状态修改。
+    - 重要度：9/10
+
+- [ ] `knowledge taxonomy mappers B`：创建别名与内容引用 Mapper
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/taxonomy/persistence/mapper/TagAliasMapper.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/taxonomy/persistence/mapper/TagContentRefMapper.java`
+    - 处理动作：创建标签别名与内容引用 Mapper 并声明 MVP 所需查询方法。
+    - 验收点：2 个 Mapper 存在且方法覆盖列表、创建、删除、数量统计。
+    - 重要度：8/10
+
+- [ ] `knowledge taxonomy mappers C`：创建同义词 Mapper
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/taxonomy/persistence/mapper/SynonymMapper.java`
+    - 处理动作：创建同义词 Mapper 并声明 MVP 所需查询方法。
+    - 验收点：`SynonymMapper` 存在且方法覆盖分页、创建、更新、状态修改、删除、唯一性查询。
+    - 重要度：8/10
+
+- [ ] `knowledge taxonomy repository impl A`：实现分类与标签仓储
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/taxonomy/repository/impl/TagCategoryRepositoryImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/taxonomy/repository/impl/TagRepositoryImpl.java`
+    - 处理动作：实现标签分类与标签仓储。
+    - 验收点：2 个仓储实现存在且完成 domain 与 mapper 之间的持久化桥接。
+    - 重要度：9/10
+
+- [ ] `knowledge taxonomy repository impl B`：实现别名与内容引用仓储
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/taxonomy/repository/impl/TagAliasRepositoryImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/taxonomy/repository/impl/TagContentRefRepositoryImpl.java`
+    - 处理动作：实现标签别名与内容引用仓储。
+    - 验收点：2 个仓储实现存在且完成别名与内容引用的持久化桥接。
+    - 重要度：8/10
+
+- [ ] `knowledge taxonomy repository impl C`：实现同义词仓储
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/taxonomy/repository/impl/SynonymRepositoryImpl.java`
+    - 处理动作：实现同义词仓储。
+    - 验收点：`SynonymRepositoryImpl` 存在且完成同义词 domain 与 mapper 之间的持久化桥接。
+    - 重要度：8/10
+
+- [ ] `knowledge taxonomy requests A`：创建分类请求模型
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/taxonomy/controller/request/TagCategoryPageRequest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/taxonomy/controller/request/TagCategoryCreateRequest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/taxonomy/controller/request/TagCategoryUpdateRequest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/taxonomy/controller/request/TagCategoryStatusRequest.java`
+    - 处理动作：创建标签分类接口请求模型。
+    - 验收点：4 个请求类存在且字段能覆盖分类分页、创建、更新、状态修改。
+    - 重要度：8/10
+
+- [ ] `knowledge taxonomy requests B`：创建标签请求模型
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/taxonomy/controller/request/TagPageRequest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/taxonomy/controller/request/TagCreateRequest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/taxonomy/controller/request/TagUpdateRequest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/taxonomy/controller/request/TagStatusRequest.java`
+    - 处理动作：创建标签分页、创建、更新、状态请求模型。
+    - 验收点：4 个请求类存在且字段能覆盖标签管理主流程。
+    - 重要度：9/10
+
+- [ ] `knowledge taxonomy requests C`：创建标签详情与审核请求模型
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/taxonomy/controller/request/TagDetailRequest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/taxonomy/controller/request/TagReviewPageRequest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/taxonomy/controller/request/TagReviewRequest.java`
+    - 处理动作：创建标签详情与审核请求模型。
+    - 验收点：3 个请求类存在且字段能覆盖详情读取与审核流程。
+    - 重要度：8/10
+
+- [ ] `knowledge taxonomy requests D`：创建别名与同义词请求模型
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/taxonomy/controller/request/TagAliasCreateRequest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/taxonomy/controller/request/TagAliasRemoveRequest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/taxonomy/controller/request/SynonymPageRequest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/taxonomy/controller/request/SynonymCreateRequest.java`
+    - 处理动作：创建别名与同义词部分请求模型。
+    - 验收点：4 个请求类存在且字段能覆盖别名新增删除与同义词分页创建。
+    - 重要度：8/10
+
+- [ ] `knowledge taxonomy requests E`：补齐同义词更新删除请求模型
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/taxonomy/controller/request/SynonymUpdateRequest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/taxonomy/controller/request/SynonymStatusRequest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/taxonomy/controller/request/SynonymRemoveRequest.java`
+    - 处理动作：创建同义词更新、状态、删除请求模型。
+    - 验收点：3 个请求类存在且字段能覆盖同义词更新、启用禁用、删除。
+    - 重要度：7/10
+
+- [ ] `knowledge taxonomy responses A`：创建分类与标签响应模型
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/taxonomy/controller/response/TagCategoryResponse.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/taxonomy/controller/response/TagResponse.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/taxonomy/controller/response/TagDetailResponse.java`
+    - 处理动作：创建标签分类、标签列表、标签详情响应模型。
+    - 验收点：3 个响应类存在且字段与 RUNBOOK 响应契约一致。
+    - 重要度：8/10
+
+- [ ] `knowledge taxonomy responses B`：创建别名内容引用与同义词响应模型
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/taxonomy/controller/response/TagAliasResponse.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/taxonomy/controller/response/TagContentRefResponse.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/taxonomy/controller/response/SynonymResponse.java`
+    - 处理动作：创建别名、内容引用、同义词响应模型。
+    - 验收点：3 个响应类存在且字段与 RUNBOOK 响应契约一致。
+    - 重要度：7/10
+
+- [ ] `knowledge taxonomy controller`：创建 taxonomy 控制器与接口装配器
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/taxonomy/controller/KnowledgeTaxonomyController.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/taxonomy/assembler/KnowledgeTaxonomyInterfaceAssembler.java`
+    - 处理动作：创建 taxonomy Admin 控制器与接口装配器并挂接固定 API 与权限码。
+    - 验收点：控制器存在且 POST 路径、权限码、方法名与 RUNBOOK 完全一致。
+    - 重要度：10/10
+
+- [ ] `knowledge taxonomy frontend types and service`：创建 taxonomy 前端类型与服务
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/taxonomy/taxonomy-types.ts`、`kuzhambu-apps/admin-web/src/pages/knowledge/taxonomy/taxonomy-service.ts`
+    - 处理动作：创建 taxonomy 前端类型定义与 API 服务封装。
+    - 验收点：类型文件覆盖 RUNBOOK 固定类型名且服务文件覆盖 RUNBOOK 固定方法名。
+    - 重要度：9/10
+
+- [ ] `knowledge taxonomy route`：接入 taxonomy 路由
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`kuzhambu-apps/admin-web/src/router/index.tsx`
+    - 处理动作：注册 `/knowledge/taxonomy` 路由并指向 `TaxonomyPage`。
+    - 验收点：路由文件存在 taxonomy 页面 import 与 `/knowledge/taxonomy` 路由项。
+    - 重要度：9/10
+
+- [ ] `knowledge taxonomy page shell`：创建 taxonomy 页面壳与样式
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/taxonomy/taxonomy-page.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/taxonomy/taxonomy-page.css`
+    - 处理动作：创建 taxonomy 主页面与样式并搭起 4 个固定 Tabs 布局。
+    - 验收点：主页面存在且渲染 `标签分类`、`统一标签`、`待审核标签`、`同义词` 四个页签。
+    - 重要度：10/10
+
+- [ ] `knowledge taxonomy category components`：创建分类表格与编辑组件
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/taxonomy/components/category-table.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/taxonomy/components/category-edit.tsx`
+    - 处理动作：创建标签分类表格与编辑组件。
+    - 验收点：2 个组件存在且能支撑分类列表、新增、编辑、启用、禁用。
+    - 重要度：8/10
+
+- [ ] `knowledge taxonomy tag components A`：创建标签表格与编辑组件
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/taxonomy/components/tag-table.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/taxonomy/components/tag-edit.tsx`
+    - 处理动作：创建统一标签表格与编辑组件。
+    - 验收点：2 个组件存在且能支撑标签列表、新增、编辑、启用、禁用。
+    - 重要度：9/10
+
+- [ ] `knowledge taxonomy tag components B`：创建标签审核与详情组件
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/taxonomy/components/tag-review-table.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/taxonomy/components/tag-detail-drawer.tsx`
+    - 处理动作：创建待审核标签表格与标签详情抽屉组件。
+    - 验收点：2 个组件存在且能支撑标签审核、详情查看、内容引用只读展示。
+    - 重要度：9/10
+
+- [ ] `knowledge taxonomy tag alias component`：创建标签别名列表组件
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/taxonomy/components/tag-alias-list.tsx`
+    - 处理动作：创建标签别名列表组件。
+    - 验收点：组件存在且能支撑标签详情中的别名列表、新增、删除。
+    - 重要度：7/10
+
+- [ ] `knowledge taxonomy synonym components`：创建同义词表格与编辑组件
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/taxonomy/components/synonym-table.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/taxonomy/components/synonym-edit.tsx`
+    - 处理动作：创建同义词表格与编辑组件。
+    - 验收点：2 个组件存在且能支撑同义词分页、新增、编辑、启用、禁用、删除。
+    - 重要度：8/10
+
+- [ ] `knowledge menu seed source`：补充知识治理菜单 JSON 源
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`db/data-source/system.json`
+    - 处理动作：按现有菜单结构新增 `知识治理` 一级菜单与 `标签与同义词` 二级菜单。
+    - 验收点：`system.json` 中存在 `/knowledge` 与 `/knowledge/taxonomy` 菜单项且权限码、图标、优先级字段完整。
+    - 重要度：9/10
+
+- [ ] `knowledge menu seed sql`：根据 JSON 生成菜单 SQL
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`db/data-source/system.json`、`db/data/system.sql`
+    - 处理动作：基于更新后的菜单 JSON 重新生成 system 初始化 SQL。
+    - 验收点：`db/data/system.sql` 包含知识治理菜单数据且与 `db/data-source/system.json` 一致。
+    - 重要度：9/10
+
+- [ ] `knowledge implementation coverage`：补充 Knowledge Implementation Coverage
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 范围对象：`docs/40-readiness/KNOWLEDGE-IMPLEMENTATION-COVERAGE.md`
+    - 处理动作：新增 Knowledge Implementation Coverage 文档并记录本次 MVP 的需求覆盖矩阵与未覆盖范围。
+    - 验收点：`docs/40-readiness/KNOWLEDGE-IMPLEMENTATION-COVERAGE.md` 存在且明确标记本次已覆盖、未覆盖、超出范围项。
+    - 重要度：8/10
+
+- [ ] `knowledge mvp closeout`：清理现场
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`、`docs/00-governance/TODO-RULES.md`
+    - 范围对象：`TODO.md`、`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
+    - 处理动作：在全部实现与覆盖文档完成后删除已完成 TODO 项并清理不再有价值的 RUNBOOK。
+    - 验收点：`TODO.md` 仅保留剩余未完成任务且 `RUNBOOK-KNOWLEDGE-MVP.md` 在任务关闭时被删除或收窄为仍有残余价值的内容。
+    - 重要度：10/10
+
 ## 待讨论项
