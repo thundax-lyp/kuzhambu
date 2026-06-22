@@ -15,14 +15,6 @@
 
 
 
-- [ ] `knowledge taxonomy value objects C`：创建同义词值对象
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/taxonomy/model/valueobject/SynonymId.java`
-    - 处理动作：创建同义词强类型 ID 值对象。
-    - 验收点：`SynonymId` 存在且命名、包路径与 RUNBOOK 一致。
-    - 重要度：7/10
-
 - [ ] `knowledge taxonomy codecs A`：创建分类与标签 codec
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
