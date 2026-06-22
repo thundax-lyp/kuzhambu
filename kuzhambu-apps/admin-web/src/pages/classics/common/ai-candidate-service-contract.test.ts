@@ -119,7 +119,7 @@ describe("AI candidate service request contracts", () => {
         expect(capturedCalls.at(-1)).toEqual({
             body: command,
             method: "POST",
-            path: "/classics/content/ai-candidates/apply"
+            path: "/classics/content/ai-candidates/change"
         });
     });
 

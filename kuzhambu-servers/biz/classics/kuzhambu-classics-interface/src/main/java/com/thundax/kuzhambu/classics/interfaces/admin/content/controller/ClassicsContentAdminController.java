@@ -155,8 +155,8 @@ public class ClassicsContentAdminController {
     @ApiImplicitParams({})
     @HasPermission("classics:content:edit")
     @SysLogger(value = "AI候选应用")
-    @PostMapping("ai-candidates/apply")
-    public ClassicsContentResponse.AiCandidateApplyResponse applyAiCandidate(
+    @PostMapping("ai-candidates/change")
+    public ClassicsContentResponse.AiCandidateApplyResponse changeAiCandidate(
             @Valid @RequestBody ClassicsContentRequest.AiCandidateApplyRequest request) {
         AiCandidateApplyContentResult result =
                 service.applyAiCandidate(ClassicsContentInterfaceAssembler.toAiCandidateApplyCommand(request));

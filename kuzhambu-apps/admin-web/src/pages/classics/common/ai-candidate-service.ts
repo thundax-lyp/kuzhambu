@@ -38,7 +38,7 @@ export const list = (query: AiCandidateListQuery) => {
 
 export const updateCandidateApplied = (command: AiCandidateApplyCommand) => {
     return postJson<AiCandidateApplyRecord, AiCandidateApplyCommand>(
-        `${CLASSICS_CONTENT_CANDIDATE_PATH}/apply`,
+        `${CLASSICS_CONTENT_CANDIDATE_PATH}/change`,
         {
             body: command
         }

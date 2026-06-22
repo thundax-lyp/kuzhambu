@@ -62,8 +62,8 @@ class ClassicsContentAdminControllerTest {
                 ClassicsContentRequest.class);
         assertPostMapping(
                 ClassicsContentAdminController.class,
-                "applyAiCandidate",
-                "ai-candidates/apply",
+                "changeAiCandidate",
+                "ai-candidates/change",
                 "classics:content:edit",
                 ClassicsContentRequest.AiCandidateApplyRequest.class);
         assertGetMapping(
@@ -118,7 +118,7 @@ class ClassicsContentAdminControllerTest {
         request.setResultPayload("new summary");
         request.setChangeSummary("AI 应用：摘要");
 
-        ClassicsContentResponse.AiCandidateApplyResponse response = controller.applyAiCandidate(request);
+        ClassicsContentResponse.AiCandidateApplyResponse response = controller.changeAiCandidate(request);
         assertEquals(456L, response.getContentId());
         assertEquals("SANCAI_ENTRY", response.getContentType());
         assertEquals(789L, response.getVersionId());
