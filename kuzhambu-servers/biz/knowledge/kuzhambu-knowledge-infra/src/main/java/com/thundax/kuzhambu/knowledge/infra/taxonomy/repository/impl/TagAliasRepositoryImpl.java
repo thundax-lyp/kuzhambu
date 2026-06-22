@@ -33,7 +33,7 @@ public class TagAliasRepositoryImpl implements TagAliasRepository {
     public List<TagAlias> listByTagId(TagId tagId) {
         QueryWrapper<TagAliasDO> wrapper = new QueryWrapper<>();
         wrapper.eq("tag_id", TagIdCodec.toValue(tagId)).orderByDesc("id");
-        return TaxonomyPersistenceAssembler.toDomainListFromTagAlias(mapper.selectList(wrapper));
+        return TaxonomyPersistenceAssembler.toTagAliasDomainList(mapper.selectList(wrapper));
     }
 
     @Override

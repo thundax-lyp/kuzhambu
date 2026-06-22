@@ -46,7 +46,7 @@ public class TagCategoryRepositoryImpl implements TagCategoryRepository {
                 (int) dataObjectPage.getCurrent(),
                 (int) dataObjectPage.getSize(),
                 dataObjectPage.getTotal(),
-                TaxonomyPersistenceAssembler.toDomainList(dataObjectPage.getRecords()));
+                TaxonomyPersistenceAssembler.toTagCategoryDomainList(dataObjectPage.getRecords()));
     }
 
     @Override

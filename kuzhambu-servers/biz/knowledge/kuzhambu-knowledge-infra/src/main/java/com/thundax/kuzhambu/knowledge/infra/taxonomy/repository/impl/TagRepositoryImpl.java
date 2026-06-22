@@ -62,7 +62,7 @@ public class TagRepositoryImpl implements TagRepository {
                 (int) dataObjectPage.getCurrent(),
                 (int) dataObjectPage.getSize(),
                 dataObjectPage.getTotal(),
-                TaxonomyPersistenceAssembler.toDomainList(dataObjectPage.getRecords()));
+                TaxonomyPersistenceAssembler.toTagDomainList(dataObjectPage.getRecords()));
     }
 
     @Override
@@ -75,7 +75,7 @@ public class TagRepositoryImpl implements TagRepository {
                 (int) dataObjectPage.getCurrent(),
                 (int) dataObjectPage.getSize(),
                 dataObjectPage.getTotal(),
-                TaxonomyPersistenceAssembler.toDomainList(dataObjectPage.getRecords()));
+                TaxonomyPersistenceAssembler.toTagDomainList(dataObjectPage.getRecords()));
     }
 
     @Override

@@ -40,7 +40,7 @@ public class SynonymRepositoryImpl implements SynonymRepository {
                 (int) dataObjectPage.getCurrent(),
                 (int) dataObjectPage.getSize(),
                 dataObjectPage.getTotal(),
-                TaxonomyPersistenceAssembler.toDomainList(dataObjectPage.getRecords()));
+                TaxonomyPersistenceAssembler.toSynonymDomainList(dataObjectPage.getRecords()));
     }
 
     @Override

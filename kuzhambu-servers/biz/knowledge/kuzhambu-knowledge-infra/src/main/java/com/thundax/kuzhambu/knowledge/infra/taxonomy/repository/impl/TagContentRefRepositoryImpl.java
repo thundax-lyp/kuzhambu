@@ -29,7 +29,7 @@ public class TagContentRefRepositoryImpl implements TagContentRefRepository {
     public List<TagContentRef> listByTagId(TagId tagId) {
         QueryWrapper<TagContentRefDO> wrapper = new QueryWrapper<>();
         wrapper.eq("tag_id", TagIdCodec.toValue(tagId)).orderByDesc("id");
-        return TaxonomyPersistenceAssembler.toDomainList(mapper.selectList(wrapper));
+        return TaxonomyPersistenceAssembler.toTagContentRefDomainList(mapper.selectList(wrapper));
     }
 
     @Override

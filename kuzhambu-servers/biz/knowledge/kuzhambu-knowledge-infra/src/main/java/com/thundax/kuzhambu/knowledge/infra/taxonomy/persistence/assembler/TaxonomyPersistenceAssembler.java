@@ -54,11 +54,11 @@ public final class TaxonomyPersistenceAssembler {
         entity.setName(dataObject.getName());
         entity.setDescription(dataObject.getDescription());
         entity.setPriority(priorityOrDefault(dataObject.getPriority()));
-        entity.setStatus(statusFrom(dataObject.getStatus()));
+        entity.setStatus(tagCategoryStatusFrom(dataObject.getStatus()));
         return entity;
     }
 
-    public static List<TagCategory> toDomainList(List<TagCategoryDO> dataObjects) {
+    public static List<TagCategory> toTagCategoryDomainList(List<TagCategoryDO> dataObjects) {
         if (dataObjects == null) {
             return null;
         }
@@ -101,7 +101,7 @@ public final class TaxonomyPersistenceAssembler {
         entity.setName(dataObject.getName());
         entity.setCategoryId(TagCategoryIdCodec.toDomain(dataObject.getCategoryId()));
         entity.setDescription(dataObject.getDescription());
-        entity.setStatus(statusFrom(dataObject.getStatus()));
+        entity.setStatus(tagStatusFrom(dataObject.getStatus()));
         entity.setSource(sourceFrom(dataObject.getSource()));
         entity.setReviewStatus(reviewStatusFrom(dataObject.getReviewStatus()));
         entity.setReviewNote(dataObject.getReviewNote());
@@ -110,7 +110,7 @@ public final class TaxonomyPersistenceAssembler {
         return entity;
     }
 
-    public static List<Tag> toDomainList(List<TagDO> dataObjects) {
+    public static List<Tag> toTagDomainList(List<TagDO> dataObjects) {
         if (dataObjects == null) {
             return null;
         }
@@ -150,7 +150,7 @@ public final class TaxonomyPersistenceAssembler {
         return entity;
     }
 
-    public static List<TagAlias> toDomainListFromTagAlias(List<TagAliasDO> dataObjects) {
+    public static List<TagAlias> toTagAliasDomainList(List<TagAliasDO> dataObjects) {
         if (dataObjects == null) {
             return null;
         }
@@ -194,7 +194,7 @@ public final class TaxonomyPersistenceAssembler {
         return entity;
     }
 
-    public static List<TagContentRef> toDomainList(List<TagContentRefDO> dataObjects) {
+    public static List<TagContentRef> toTagContentRefDomainList(List<TagContentRefDO> dataObjects) {
         if (dataObjects == null) {
             return null;
         }
@@ -234,7 +234,7 @@ public final class TaxonomyPersistenceAssembler {
         return entity;
     }
 
-    public static List<Synonym> toDomainList(List<SynonymDO> dataObjects) {
+    public static List<Synonym> toSynonymDomainList(List<SynonymDO> dataObjects) {
         if (dataObjects == null) {
             return null;
         }
@@ -254,7 +254,7 @@ public final class TaxonomyPersistenceAssembler {
         return status == null ? null : status.value();
     }
 
-    private static TagCategoryStatus statusFrom(String status) {
+    private static TagCategoryStatus tagCategoryStatusFrom(String status) {
         return status == null ? null : TagCategoryStatus.from(status);
     }
 
@@ -262,7 +262,7 @@ public final class TaxonomyPersistenceAssembler {
         return status == null ? null : status.value();
     }
 
-    private static TagStatus statusFrom(String status) {
+    private static TagStatus tagStatusFrom(String status) {
         return status == null ? null : TagStatus.from(status);
     }
 
