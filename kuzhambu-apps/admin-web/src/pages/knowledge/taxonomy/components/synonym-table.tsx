@@ -78,7 +78,7 @@ export const SynonymTable = ({
             key: "term",
             width: DEFAULT_COLUMN_WIDTHS.term,
             ellipsis: true,
-            render: (term?: string | null, record) => <Text>{term || record.id}</Text>
+            render: (term: string | null | undefined, record) => <Text>{term || record.id}</Text>
         },
         {
             title: "同义词",
