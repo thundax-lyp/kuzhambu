@@ -46,7 +46,6 @@
     - 处理动作：实现标签别名与内容引用仓储。
     - 验收点：2 个仓储实现存在且完成别名与内容引用的持久化桥接。
     - 重要度：8/10
-
 - [ ] `knowledge taxonomy repository impl C`：实现同义词仓储
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
