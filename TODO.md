@@ -11,13 +11,7 @@
 
 
 
-- [ ] `Workers Implementation Coverage`：沉淀 workers 实现覆盖事实文档
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKER-USECASE-CLOSURE.md` 第 `8` 章节
-    - 范围对象：`docs/30-designs/WORKERS-IMPLEMENTATION-COVERAGE.md`
-    - 处理动作：新增 Workers Implementation Coverage 文档并按固定表头登记 workers 已实现并注册的 AI usecase
-    - 验收点：Coverage 文档只表达 workers 已实现事实，所有记录 `status` 固定为 `implemented`
-    - 重要度：8/10
+
 
 ## 待审阅任务项
 
