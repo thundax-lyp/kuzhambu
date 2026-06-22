@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `knowledge menu seed source`：补充知识治理菜单 JSON 源
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
-    - 范围对象：`db/data-source/system.json`
-    - 处理动作：按现有菜单结构新增 `知识治理` 一级菜单与 `标签与同义词` 二级菜单。
-    - 验收点：`system.json` 中存在 `/knowledge` 与 `/knowledge/taxonomy` 菜单项且权限码、图标、优先级字段完整。
-    - 重要度：9/10
-
 - [ ] `knowledge menu seed sql`：根据 JSON 生成菜单 SQL
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
