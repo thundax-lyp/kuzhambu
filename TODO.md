@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `ModuleAndDependencyArchitectureRuleSupport`：撤销跨域 repository port 架构断言
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-CANDIDATE-CONFIRMATION.md#B0 架构门禁同步`
-    - 范围对象：`kuzhambu-servers/common/kuzhambu-common-test/src/main/java/com/thundax/kuzhambu/common/test/architecture/ModuleAndDependencyArchitectureRuleSupport.java`
-    - 处理动作：修改 `assertCrossDomainDependencyBoundary(...)`，删除对 `domain..repository..` 的跨域禁止断言。
-    - 验收点：方法仍禁止跨域依赖对端 `infra..`，且不再禁止跨域依赖对端 `domain..repository..`。
-    - 重要度：9/10
-
 - [ ] `AiCandidateApplyCheck`：新增 AI 候选应用校验 DTO
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-CANDIDATE-CONFIRMATION.md#B1.1 新增校验 DTO`
