@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `ai-candidate-service`：新增 Admin Web AI 候选 API
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-CANDIDATE-CONFIRMATION.md#F1 AI 候选 API`
-    - 范围对象：`kuzhambu-apps/admin-web/src/api/ai/ai-candidate-service.ts`、`kuzhambu-apps/admin-web/src/api/ai/ai-candidate-types.ts`
-    - 处理动作：新增候选列表、应用、拒绝三个 API 方法和对应类型。
-    - 验收点：前端不新增 AI refinement API 文件，不调用 `/ai/refinement/*`。
-    - 重要度：8/10
-
 - [ ] `ai-candidate-panel`：新增 Admin Web 通用候选面板
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-CANDIDATE-CONFIRMATION.md#F2 通用候选面板`
