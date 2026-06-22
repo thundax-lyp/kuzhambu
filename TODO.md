@@ -13,13 +13,7 @@
 
 
 
-- [ ] `db/data/knowledge.sql`：补齐 Knowledge MVP 初始化数据
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
-    - 范围对象：`db/data/knowledge.sql`
-    - 处理动作：写入 4 条固定标签分类初始化数据并删除无关占位内容。
-    - 验收点：`db/data/knowledge.sql` 仅初始化 `人物`、`地点`、`时代`、`主题` 四个标签分类且不包含标签、别名、内容关联、同义词种子数据。
-    - 重要度：9/10
+
 
 - [ ] `knowledge taxonomy entities`：创建 taxonomy 实体类
     - 任务类型：执行任务
