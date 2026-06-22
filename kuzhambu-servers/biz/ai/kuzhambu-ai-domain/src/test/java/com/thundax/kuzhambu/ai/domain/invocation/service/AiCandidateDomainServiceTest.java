@@ -41,8 +41,7 @@ class AiCandidateDomainServiceTest {
         check.setContentId(2L);
         check.setCapability("summary");
 
-        DomainException exception =
-                assertThrows(DomainException.class, () -> service.requirePendingForApply(check));
+        DomainException exception = assertThrows(DomainException.class, () -> service.requirePendingForApply(check));
 
         assertEquals("AI-INVOCATION-409", exception.getCode());
         assertEquals("ai.candidate.not-pending", exception.getMessageKey());
@@ -59,8 +58,7 @@ class AiCandidateDomainServiceTest {
         check.setContentId(2L);
         check.setCapability("summary");
 
-        DomainException exception =
-                assertThrows(DomainException.class, () -> service.requirePendingForApply(check));
+        DomainException exception = assertThrows(DomainException.class, () -> service.requirePendingForApply(check));
 
         assertEquals("AI-INVOCATION-409", exception.getCode());
         assertEquals("ai.candidate.target-mismatch", exception.getMessageKey());
@@ -84,8 +82,7 @@ class AiCandidateDomainServiceTest {
         assertSame(candidate, repository.getLastUpdatedCandidate());
     }
 
-    private AiCandidate candidate(
-            Long id, String contentType, Long contentId, String capability, String status) {
+    private AiCandidate candidate(Long id, String contentType, Long contentId, String capability, String status) {
         AiCandidate candidate = new AiCandidate();
         candidate.setCandidateId(id);
         candidate.setContentType(contentType);

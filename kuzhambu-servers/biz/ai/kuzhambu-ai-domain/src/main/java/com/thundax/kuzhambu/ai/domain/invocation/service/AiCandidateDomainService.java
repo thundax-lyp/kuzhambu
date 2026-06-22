@@ -16,16 +16,20 @@ public class AiCandidateDomainService {
     public AiCandidate requirePendingForApply(AiCandidateApplyCheck check) {
         AiCandidate candidate = repository.getCandidate(check.getCandidateId());
         if (candidate == null) {
-            throw new DomainException("AI-INVOCATION-404", "ai.candidate.not-found", "AI candidate not found: " + check.getCandidateId());
+            throw new DomainException(
+                    "AI-INVOCATION-404", "ai.candidate.not-found", "AI candidate not found: " + check.getCandidateId());
         }
         if (!candidate.isPending()) {
             throw new DomainException(
-                    "AI-INVOCATION-409", "ai.candidate.not-pending", "AI candidate is not pending: " + check.getCandidateId());
+                    "AI-INVOCATION-409",
+                    "ai.candidate.not-pending",
+                    "AI candidate is not pending: " + check.getCandidateId());
         }
         if (!check.getContentType().equals(candidate.getContentType())
                 || !check.getContentId().equals(candidate.getContentId())
                 || !check.getCapability().equals(candidate.getCapability())) {
-            throw new DomainException("AI-INVOCATION-409", "ai.candidate.target-mismatch", "AI candidate target mismatch");
+            throw new DomainException(
+                    "AI-INVOCATION-409", "ai.candidate.target-mismatch", "AI candidate target mismatch");
         }
         return candidate;
     }
@@ -33,7 +37,8 @@ public class AiCandidateDomainService {
     public AiCandidate markApplied(Long candidateId, String resultFormat, String resultPayload, Instant appliedAt) {
         AiCandidate candidate = repository.getCandidate(candidateId);
         if (candidate == null) {
-            throw new DomainException("AI-INVOCATION-404", "ai.candidate.not-found", "AI candidate not found: " + candidateId);
+            throw new DomainException(
+                    "AI-INVOCATION-404", "ai.candidate.not-found", "AI candidate not found: " + candidateId);
         }
         candidate.markApplied(appliedAt);
         candidate.setResultFormat(resultFormat);
@@ -49,7 +54,8 @@ public class AiCandidateDomainService {
     public AiCandidate reject(Long candidateId, String errorType, String errorMessage) {
         AiCandidate candidate = repository.getCandidate(candidateId);
         if (candidate == null) {
-            throw new DomainException("AI-INVOCATION-404", "ai.candidate.not-found", "AI candidate not found: " + candidateId);
+            throw new DomainException(
+                    "AI-INVOCATION-404", "ai.candidate.not-found", "AI candidate not found: " + candidateId);
         }
         candidate.reject(errorType, errorMessage);
         int updated = repository.updateCandidate(candidate);
