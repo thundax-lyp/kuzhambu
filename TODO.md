@@ -15,14 +15,6 @@
 
 
 
-- [ ] `knowledge taxonomy service contract`：创建 taxonomy 应用服务接口与装配器
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/service/TaxonomyApplicationService.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/assembler/TaxonomyApplicationAssembler.java`
-    - 处理动作：创建 taxonomy 应用服务接口与 application 装配器。
-    - 验收点：服务接口方法名与 RUNBOOK 固定方法完全一致且装配器存在。
-    - 重要度：9/10
-
 - [ ] `knowledge taxonomy service impl`：实现 taxonomy 应用服务
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
