@@ -15,14 +15,6 @@
 
 
 
-- [ ] `knowledge taxonomy repositories A`：创建分类与标签仓储接口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/taxonomy/repository/TagCategoryRepository.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/taxonomy/repository/TagRepository.java`
-    - 处理动作：创建标签分类与标签仓储接口并声明 MVP 所需读写方法。
-    - 验收点：2 个仓储接口存在且方法覆盖分类分页、标签分页、详情、状态更新、唯一性查询等 MVP 需求。
-    - 重要度：9/10
-
 - [ ] `knowledge taxonomy repositories B`：创建别名与内容引用仓储接口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
