@@ -45,6 +45,10 @@ vi.mock("@/pages/classics/common/classics-export-service", () => ({
         status: "REQUESTED"
     })),
     page: vi.fn(async () => ({
+        pageNo: 1,
+        pageSize: 10,
+        totalPage: 1,
+        count: 1,
         records: [
             {
                 id: 1001,
@@ -63,7 +67,7 @@ vi.mock("@/pages/classics/common/classics-export-service", () => ({
                 downloadUrl: "/downloads/1001.zip"
             }
         ],
-        total: 1
+        totalCount: 1
     })),
     getContentUrl: vi.fn()
 }));
@@ -192,6 +196,10 @@ vi.mock("../services/sancai-entry-service", () => ({
         status: "REQUESTED"
     })),
     pageShowcases: vi.fn(async () => ({
+        pageNo: 1,
+        pageSize: 10,
+        totalPage: 1,
+        count: 1,
         records: [
             {
                 id: 2001,
@@ -202,7 +210,7 @@ vi.mock("../services/sancai-entry-service", () => ({
                 downloadUrl: "/downloads/showcase.html"
             }
         ],
-        total: 1
+        totalCount: 1
     }))
 }));
 
@@ -324,6 +332,10 @@ describe("SancaiEntryPanel sharing", () => {
 
     it("shows expired export task as disabled download", async () => {
         vi.mocked(exportService.page).mockResolvedValueOnce({
+            pageNo: 1,
+            pageSize: 10,
+            totalPage: 1,
+            count: 1,
             records: [
                 {
                     id: 1002,
@@ -343,7 +355,7 @@ describe("SancaiEntryPanel sharing", () => {
                     downloadUrl: "/downloads/1002.zip"
                 }
             ],
-            total: 1
+            totalCount: 1
         });
 
         renderEntryPanel();

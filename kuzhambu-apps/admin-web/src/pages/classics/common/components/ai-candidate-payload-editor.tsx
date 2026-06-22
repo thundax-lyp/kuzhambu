@@ -16,7 +16,7 @@ interface AiCandidateQaPair {
     question: string;
 }
 
-const parseTagsPayload = (payload?: string | null) => {
+const parseTagsPayload = (payload?: string | null): string[] => {
     if (!payload?.trim()) {
         return [""];
     }
@@ -24,10 +24,10 @@ const parseTagsPayload = (payload?: string | null) => {
     try {
         const parsed = JSON.parse(payload);
         if (Array.isArray(parsed)) {
-            return parsed.map((tag) => String(tag ?? ""));
+            return parsed.map((tag: unknown) => String(tag ?? ""));
         }
         if (Array.isArray(parsed?.tags)) {
-            return parsed.tags.map((tag) => String(tag ?? ""));
+            return parsed.tags.map((tag: unknown) => String(tag ?? ""));
         }
     } catch {
         return payload.split("\n");
@@ -45,7 +45,7 @@ const parseQaPayload = (payload?: string | null): AiCandidateQaPair[] => {
         const parsed = JSON.parse(payload);
         const qaPairs = Array.isArray(parsed) ? parsed : parsed?.qaPairs;
         if (Array.isArray(qaPairs)) {
-            return qaPairs.map((pair) => ({
+            return qaPairs.map((pair: { question?: unknown; answer?: unknown }) => ({
                 question: String(pair?.question ?? ""),
                 answer: String(pair?.answer ?? "")
             }));
@@ -57,13 +57,13 @@ const parseQaPayload = (payload?: string | null): AiCandidateQaPair[] => {
     return [{ question: "", answer: "" }];
 };
 
-const stringifyTagsPayload = (tags: string[]) => {
+const stringifyTagsPayload = (tags: string[]): string => {
     return JSON.stringify({
         tags: tags.map((tag) => tag.trim()).filter(Boolean)
     });
 };
 
-const stringifyQaPayload = (qaPairs: AiCandidateQaPair[]) => {
+const stringifyQaPayload = (qaPairs: AiCandidateQaPair[]): string => {
     return JSON.stringify({
         qaPairs: qaPairs
             .map((pair) => ({
@@ -74,7 +74,7 @@ const stringifyQaPayload = (qaPairs: AiCandidateQaPair[]) => {
     });
 };
 
-const buildTextPayload = (payload?: string | null) => {
+const buildTextPayload = (payload?: string | null): string => {
     return payload ?? "";
 };
 
@@ -134,14 +134,16 @@ export const AiCandidatePayloadEditor = ({
     };
 
     const removeTag = (index: number) => {
-        setTagsPayload((current) => {
-            const next = current.filter((_, currentIndex) => currentIndex !== index);
+        setTagsPayload((current: string[]) => {
+            const next = current.filter(
+                (_: string, currentIndex: number) => currentIndex !== index
+            );
             return next.length ? next : [""];
         });
     };
 
     const updateQaPair = (index: number, field: "question" | "answer", value: string) => {
-        setQaPayload((current) => {
+        setQaPayload((current: AiCandidateQaPair[]) => {
             const next = [...current];
             next[index] = {
                 ...next[index],
@@ -156,8 +158,10 @@ export const AiCandidatePayloadEditor = ({
     };
 
     const removeQaPair = (index: number) => {
-        setQaPayload((current) => {
-            const next = current.filter((_, currentIndex) => currentIndex !== index);
+        setQaPayload((current: AiCandidateQaPair[]) => {
+            const next = current.filter(
+                (_: AiCandidateQaPair, currentIndex: number) => currentIndex !== index
+            );
             return next.length ? next : [{ question: "", answer: "" }];
         });
     };
@@ -176,7 +180,7 @@ export const AiCandidatePayloadEditor = ({
     if (capability === "tags") {
         return (
             <div>
-                {tagsPayload.map((tag, index) => (
+                {tagsPayload.map((tag: string, index: number) => (
                     <Space key={`${index}-${tag}`} style={{ display: "flex", marginBottom: 8 }}>
                         <Input
                             aria-label={`候选标签 ${index + 1}`}
@@ -201,7 +205,7 @@ export const AiCandidatePayloadEditor = ({
 
     return (
         <div>
-            {qaPayload.map((pair, index) => (
+            {qaPayload.map((pair: AiCandidateQaPair, index: number) => (
                 <div key={`${pair.question}-${pair.answer}-${index}`} style={{ marginBottom: 12 }}>
                     <Input.TextArea
                         aria-label={`问答问题 ${index + 1}`}
