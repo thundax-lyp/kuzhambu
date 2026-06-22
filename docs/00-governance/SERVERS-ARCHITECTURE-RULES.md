@@ -130,6 +130,7 @@ Hard Rules 必须使用 ArchUnit、Maven reactor、Checkstyle、脚本或测试�
 - `SERVERS_STARTER_APPLICATION_CLASS_ONLY`：`starter` 模块中 `*Application` 启动类只能负责启动、扫描范围和运行时装配，不得声明业务用例方法。
 - `SERVERS_STARTER_CONFIGURATION_PACKAGE`：`starter` 运行时专属配置必须位于 `com.thundax.kuzhambu.starter.admin` 或 `com.thundax.kuzhambu.starter.portal` 包下。
 - `SERVERS_CONFIGURATION_NO_BUSINESS_RULE`：`*Configuration`、`*Properties` 类不得承载业务判断、业务查询或业务状态变更。
+- `SERVERS_SPRING_BEAN_SINGLE_CONSTRUCTOR`：直接标注 `@Component`、`@Service`、`@Repository`、`@Controller`、`@RestController` 或 `@Configuration` 的 Spring 管理类必须有且仅有一个构造器；不得在生产 Bean 中保留简化构造器或测试专用构造器。
 
 ## Review Rules
 
@@ -138,3 +139,5 @@ Hard Rules 必须使用 ArchUnit、Maven reactor、Checkstyle、脚本或测试�
 - `SERVERS_REVIEW_COMMON_EXTRACTION`：提取 common 能力前应确认至少两个业务域存在稳定复用需求，避免把业务概念过早沉淀到 common。
 - `SERVERS_REVIEW_SERVICE_GRANULARITY`：ApplicationService 应按用例聚合，不按数据库表机械拆分，也不把无关用例堆入单个巨型服务。
 - `SERVERS_REVIEW_ASSEMBLER_COMPLEXITY`：InterfaceAssembler 和 PersistenceAssembler 只做模型转换；出现业务分支、权限判断或持久化访问时应回收到 application、domain 或 infra 对应职责内。
+- `SERVERS_REVIEW_SPRING_META_BEAN_SINGLE_CONSTRUCTOR`：通过派生注解、组合注解或其他 Spring 语义间接注册的类级 Bean 也应有且仅有一个构造器；如框架绑定类或特殊装配方式存在约束，按框架约定单独评审。
+- `SERVERS_REVIEW_TEST_CONSTRUCTION_EXPLICIT`：当生产类收敛为单构造器后，测试应通过 mock、stub 或测试工厂显式补齐依赖，不得为了测试便利重新引入第二构造器。

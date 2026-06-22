@@ -10,7 +10,6 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -23,18 +22,18 @@ public class StorageOrphanObjectCleanupScheduler {
 
     private final StoredObjectRepository repository;
     private final StoredObjectStore storedObjectStore;
-    private final Clock clock;
+    private Clock clock = Clock.systemUTC();
 
-    @Autowired
     public StorageOrphanObjectCleanupScheduler(StoredObjectRepository repository, StoredObjectStore storedObjectStore) {
-        this(repository, storedObjectStore, Clock.systemUTC());
-    }
-
-    StorageOrphanObjectCleanupScheduler(
-            StoredObjectRepository repository, StoredObjectStore storedObjectStore, Clock clock) {
         this.repository = repository;
         this.storedObjectStore = storedObjectStore;
-        this.clock = clock;
+    }
+
+    StorageOrphanObjectCleanupScheduler useClock(Clock clock) {
+        if (clock != null) {
+            this.clock = clock;
+        }
+        return this;
     }
 
     @Scheduled(cron = "0 0 0/4 * * ?")

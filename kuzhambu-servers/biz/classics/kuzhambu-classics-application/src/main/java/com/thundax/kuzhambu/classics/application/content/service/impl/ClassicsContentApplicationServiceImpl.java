@@ -71,7 +71,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -100,38 +99,6 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     private final AiCandidateDomainService aiCandidateDomainService;
     private final ClassicsAiCandidatePayloadParser aiCandidatePayloadParser;
 
-    public ClassicsContentApplicationServiceImpl(
-            ClassicsContentRepository repository, WangqiDocumentVersionRestorer wangqiDocumentVersionRestorer) {
-        this(repository, wangqiDocumentVersionRestorer, null, null, null, null, null);
-    }
-
-    public ClassicsContentApplicationServiceImpl(
-            ClassicsContentRepository repository,
-            WangqiDocumentVersionRestorer wangqiDocumentVersionRestorer,
-            SancaiEntryVersionRestorer sancaiEntryVersionRestorer) {
-        this(repository, wangqiDocumentVersionRestorer, sancaiEntryVersionRestorer, null, null, null, null, null);
-    }
-
-    public ClassicsContentApplicationServiceImpl(
-            ClassicsContentRepository repository,
-            WangqiDocumentVersionRestorer wangqiDocumentVersionRestorer,
-            SancaiEntryVersionRestorer sancaiEntryVersionRestorer,
-            SancaiAssetApplicationService sancaiAssetApplicationService,
-            StorageApplicationService storageApplicationService,
-            WorkerRenderClient workerRenderClient,
-            StorageUploadStreamHelper storageUploadStreamHelper) {
-        this(
-                repository,
-                wangqiDocumentVersionRestorer,
-                sancaiEntryVersionRestorer,
-                sancaiAssetApplicationService,
-                storageApplicationService,
-                workerRenderClient,
-                storageUploadStreamHelper,
-                null);
-    }
-
-    @Autowired
     public ClassicsContentApplicationServiceImpl(
             ClassicsContentRepository repository,
             WangqiDocumentVersionRestorer wangqiDocumentVersionRestorer,

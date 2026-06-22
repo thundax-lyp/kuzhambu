@@ -4,6 +4,7 @@ import com.thundax.kuzhambu.common.test.architecture.AbstractArchitectureTest;
 import com.thundax.kuzhambu.common.test.architecture.AnnotationBoundaryArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.ModuleAndDependencyArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.NamingArchitectureRuleSupport;
+import com.thundax.kuzhambu.common.test.architecture.SpringBeanArchitectureRuleSupport;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
@@ -18,6 +19,7 @@ class StorageDomainArchitectureTest extends AbstractArchitectureTest {
 
         ModuleAndDependencyArchitectureRuleSupport.assertCrossDomainDependencyBoundary(classes, "storage");
         AnnotationBoundaryArchitectureRuleSupport.assertDomainSpringAndPersistenceFree(classes, BASE_PACKAGE);
+        SpringBeanArchitectureRuleSupport.assertDirectSpringBeansHaveSingleConstructor(classes);
         NamingArchitectureRuleSupport.assertCodecPlacement(classes, BASE_PACKAGE);
         NamingArchitectureRuleSupport.assertValueObjectPlacement(classes, BASE_PACKAGE);
         NamingArchitectureRuleSupport.assertBaseIdTypes(classes, BASE_PACKAGE);

@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.starter.portal;
 
 import com.thundax.kuzhambu.common.test.architecture.AbstractArchitectureTest;
+import com.thundax.kuzhambu.common.test.architecture.SpringBeanArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.StarterArchitectureRuleSupport;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import java.util.Arrays;
@@ -19,6 +20,7 @@ class PortalStarterArchitectureTest extends AbstractArchitectureTest {
         JavaClasses classes = importPackages(BASE_PACKAGE);
 
         StarterArchitectureRuleSupport.assertStarterContainsOnlyRuntimeAssembly(classes, BASE_PACKAGE);
+        SpringBeanArchitectureRuleSupport.assertDirectSpringBeansHaveSingleConstructor(classes);
     }
 
     @Test

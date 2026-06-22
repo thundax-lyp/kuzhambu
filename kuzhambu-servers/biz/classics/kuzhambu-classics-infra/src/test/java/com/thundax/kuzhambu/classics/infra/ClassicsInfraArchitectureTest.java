@@ -4,6 +4,7 @@ import com.thundax.kuzhambu.common.test.architecture.AbstractArchitectureTest;
 import com.thundax.kuzhambu.common.test.architecture.AnnotationBoundaryArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.ModuleAndDependencyArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.NamingArchitectureRuleSupport;
+import com.thundax.kuzhambu.common.test.architecture.SpringBeanArchitectureRuleSupport;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
@@ -21,6 +22,7 @@ class ClassicsInfraArchitectureTest extends AbstractArchitectureTest {
                 classes, BASE_PACKAGE);
         ModuleAndDependencyArchitectureRuleSupport.assertCrossDomainDependencyBoundary(classes, "classics");
         AnnotationBoundaryArchitectureRuleSupport.assertInfraAnnotationBoundary(classes, BASE_PACKAGE);
+        SpringBeanArchitectureRuleSupport.assertDirectSpringBeansHaveSingleConstructor(classes);
         NamingArchitectureRuleSupport.assertValueObjectPlacement(classes, BASE_PACKAGE);
         NamingArchitectureRuleSupport.assertEntityPlacement(classes, BASE_PACKAGE);
         NamingArchitectureRuleSupport.assertRepositoryImplPlacement(classes, BASE_PACKAGE);

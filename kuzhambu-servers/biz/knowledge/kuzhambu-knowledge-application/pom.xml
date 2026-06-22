@@ -39,5 +39,10 @@
       <artifactId>lombok</artifactId>
       <optional>true</optional>
     </dependency>
+    <dependency>
+      <groupId>com.thundax</groupId>
+      <artifactId>kuzhambu-common-test</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 </project>

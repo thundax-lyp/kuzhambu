@@ -17,7 +17,6 @@ import com.thundax.kuzhambu.system.domain.core.repository.MenuRepository;
 import java.util.Collections;
 import java.util.List;
 import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,12 +28,6 @@ public class MenuApplicationServiceImpl implements MenuApplicationService {
     private final MenuRepository dao;
     private final List<CacheChangedListener> cacheChangedListeners;
 
-    public MenuApplicationServiceImpl(MenuRepository dao) {
-        this.dao = dao;
-        this.cacheChangedListeners = Collections.emptyList();
-    }
-
-    @Autowired
     public MenuApplicationServiceImpl(
             MenuRepository dao, ObjectProvider<List<CacheChangedListener>> cacheChangedListeners) {
         this.dao = dao;

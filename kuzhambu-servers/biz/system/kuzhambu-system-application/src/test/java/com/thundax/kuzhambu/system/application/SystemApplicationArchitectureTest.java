@@ -5,6 +5,7 @@ import com.thundax.kuzhambu.common.test.architecture.AnnotationBoundaryArchitect
 import com.thundax.kuzhambu.common.test.architecture.LayerArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.ModuleAndDependencyArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.NamingArchitectureRuleSupport;
+import com.thundax.kuzhambu.common.test.architecture.SpringBeanArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.TransactionArchitectureRuleSupport;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import org.junit.jupiter.api.Test;
@@ -22,6 +23,7 @@ class SystemApplicationArchitectureTest extends AbstractArchitectureTest {
         AnnotationBoundaryArchitectureRuleSupport.assertApplicationNoHttpAnnotations(classes, BASE_PACKAGE);
         TransactionArchitectureRuleSupport.assertTransactionalOnlyOnApplicationServiceUseCases(classes, BASE_PACKAGE);
         LayerArchitectureRuleSupport.assertServiceBoundaryTypesClean(classes);
+        SpringBeanArchitectureRuleSupport.assertDirectSpringBeansHaveSingleConstructor(classes);
         NamingArchitectureRuleSupport.assertApplicationServicesUseApplicationServiceSuffix(classes, BASE_PACKAGE);
         NamingArchitectureRuleSupport.assertCodecPlacement(classes, BASE_PACKAGE);
         NamingArchitectureRuleSupport.assertValueObjectPlacement(classes, BASE_PACKAGE);

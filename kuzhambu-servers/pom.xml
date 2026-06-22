@@ -91,6 +91,11 @@
         <artifactId>archunit-junit5</artifactId>
         <version>${archunit.version}</version>
       </dependency>
+      <dependency>
+        <groupId>com.thundax</groupId>
+        <artifactId>kuzhambu-common-test</artifactId>
+        <version>${project.version}</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 

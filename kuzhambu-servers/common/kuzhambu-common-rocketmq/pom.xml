@@ -38,5 +38,10 @@
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>com.thundax</groupId>
+      <artifactId>kuzhambu-common-test</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 </project>
