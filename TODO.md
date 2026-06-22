@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `AiCandidateApplyContentCommand`：新增 Classics AI 候选应用命令和结果
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-CANDIDATE-CONFIRMATION.md#B2.1 新增命令和结果`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/command/AiCandidateApplyContentCommand.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/result/AiCandidateApplyContentResult.java`
-    - 处理动作：新增 RUNBOOK 指定字段的 command 和 result。
-    - 验收点：两个类的字段类型和字段名与 RUNBOOK 完全一致。
-    - 重要度：8/10
-
 - [ ] `ClassicsAiCandidatePayloadParser`：新增候选 payload 解析器
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-CANDIDATE-CONFIRMATION.md#B2.2 新增 payload 解析器`
