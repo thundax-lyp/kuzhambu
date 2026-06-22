@@ -15,14 +15,6 @@
 
 
 
-- [ ] `knowledge taxonomy synonym entity`：创建同义词实体
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/taxonomy/model/entity/Synonym.java`
-    - 处理动作：创建同义词实体类并按 RUNBOOK 固定字段落盘。
-    - 验收点：`Synonym` 实体存在且字段覆盖 `id`、`synonymId`、`term`、`synonym`、`status`。
-    - 重要度：8/10
-
 - [ ] `knowledge taxonomy enums A`：创建分类与标签状态枚举
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
