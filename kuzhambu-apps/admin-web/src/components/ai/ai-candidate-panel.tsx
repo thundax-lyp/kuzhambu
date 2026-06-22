@@ -78,7 +78,10 @@ export const AiCandidatePanel = ({
     });
 
     const pendingCandidates: AiCandidateRecord[] = useMemo(() => {
-        return (pendingCandidatesQuery.data || []).filter(
+        const candidates = Array.isArray(pendingCandidatesQuery.data)
+            ? pendingCandidatesQuery.data
+            : [];
+        return candidates.filter(
             (candidate) =>
                 candidate.status === "PENDING" &&
                 isSupportCapability(candidate.capability) &&
