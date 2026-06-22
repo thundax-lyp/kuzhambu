@@ -15,14 +15,6 @@
 
 
 
-- [ ] `knowledge taxonomy entities`：创建 taxonomy 实体类
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/taxonomy/model/entity/TagCategory.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/taxonomy/model/entity/Tag.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/taxonomy/model/entity/TagAlias.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/taxonomy/model/entity/TagContentRef.java`
-    - 处理动作：创建 taxonomy 核心实体类并按 RUNBOOK 固定字段一一落盘。
-    - 验收点：4 个实体类存在且字段名与 RUNBOOK 中对应表字段映射完全一致。
-    - 重要度：10/10
-
 - [ ] `knowledge taxonomy synonym entity`：创建同义词实体
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
