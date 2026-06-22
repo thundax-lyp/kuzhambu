@@ -17,6 +17,7 @@ public class AiInvokeCommand {
     private String scope;
     private String capability;
     private String operation;
+    private String workerPath;
     private String contentType;
     private Long contentId;
     private Long objectId;

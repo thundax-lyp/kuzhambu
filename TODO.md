@@ -9,13 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `AiInvokeCommand`：新增 `workerPath` 显式字段
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKER-USECASE-CLOSURE.md` 第 `4.1` 章节
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/invocation/command/AiInvokeCommand.java`
-    - 处理动作：给 `AiInvokeCommand` 新增 `workerPath` 字段并保持调用记录模型不扩散该字段
-    - 验收点：`AiInvokeCommand` 同时拥有 `operation` 与 `workerPath`，且 `toRunningCallRecord()` 不写入 `workerPath`
-    - 重要度：9/10
 
 - [ ] `Classics AI worker usecase resolver`：新增 Classics usecase 解析器与测试
     - 任务类型：执行任务
