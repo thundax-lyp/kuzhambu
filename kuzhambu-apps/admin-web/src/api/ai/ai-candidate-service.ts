@@ -11,9 +11,12 @@ const AI_INVOCATION_CANDIDATE_PATH = "/ai/invocation/candidate";
 const CLASSICS_CONTENT_CANDIDATE_PATH = "/classics/content/ai-candidates";
 
 export const listCandidates = (request: AiCandidateListRequest) => {
-    return postJson<AiCandidateRecord[], AiCandidateListRequest>(`${AI_INVOCATION_CANDIDATE_PATH}/list`, {
-        body: request
-    });
+    return postJson<AiCandidateRecord[], AiCandidateListRequest>(
+        `${AI_INVOCATION_CANDIDATE_PATH}/list`,
+        {
+            body: request
+        }
+    );
 };
 
 export const applyCandidate = (request: AiCandidateApplyCommand) => {

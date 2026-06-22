@@ -165,11 +165,7 @@ export const AiCandidatePayloadEditor = ({
         });
     };
 
-    const updateQaPair = (
-        index: number,
-        field: "question" | "answer",
-        value: string
-    ) => {
+    const updateQaPair = (index: number, field: "question" | "answer", value: string) => {
         setQaPayload((current) => {
             const next = [...current];
             next[index] = {
@@ -226,10 +222,7 @@ export const AiCandidatePayloadEditor = ({
     return (
         <div>
             {qaPayload.map((pair, index) => (
-                <div
-                    key={`${pair.question}-${pair.answer}-${index}`}
-                    style={{ marginBottom: 12 }}
-                >
+                <div key={`${pair.question}-${pair.answer}-${index}`} style={{ marginBottom: 12 }}>
                     <Input.TextArea
                         aria-label={`问答问题 ${index + 1}`}
                         placeholder="问题"

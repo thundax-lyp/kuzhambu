@@ -9,22 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Classics 页面候选面板接入`：接入三类 Classics 详情页
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-CANDIDATE-CONFIRMATION.md#F3 接入 Classics 页面`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/wangqi/components/wangqi-document-model.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/ming-customs/components/ming-customs-model.tsx`
-    - 处理动作：在三类详情页挂载 `AiCandidatePanel` 并传入 RUNBOOK 指定 capabilities。
-    - 验收点：页面只展示、编辑、应用、拒绝已有候选，不新增生成按钮和 AI 触发配置表单。
-    - 重要度：8/10
-
-- [ ] `AI 候选确认闭环现场清理`：清理临时 RUNBOOK 和已完成 TODO
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-CANDIDATE-CONFIRMATION.md#Validation Commands`
-    - 范围对象：`TODO.md`、`docs/30-designs/RUNBOOK-AI-CANDIDATE-CONFIRMATION.md`
-    - 处理动作：在后端和前端验证命令通过后，删除临时 RUNBOOK，并从 `TODO.md` 删除已完成的 AI 候选确认闭环任务。
-    - 验收点：`TODO.md` 不保留已完成任务，`docs/30-designs/RUNBOOK-AI-CANDIDATE-CONFIRMATION.md` 已删除。
-    - 重要度：8/10
-
 ## 待审阅任务项
 
 ## 待讨论项

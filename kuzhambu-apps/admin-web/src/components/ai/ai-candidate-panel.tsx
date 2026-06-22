@@ -149,7 +149,8 @@ export const AiCandidatePanel = ({
             contentType,
             capability: candidate.capability,
             resultFormat:
-                candidate.resultFormat?.trim() || defaultResultFormatForCapability(candidate.capability),
+                candidate.resultFormat?.trim() ||
+                defaultResultFormatForCapability(candidate.capability),
             resultPayload: payload,
             changeSummary: `AI 应用：${candidate.capability}`
         });
@@ -163,20 +164,17 @@ export const AiCandidatePanel = ({
         });
     };
 
-    const updateCandidateSubmitEnabled = useCallback(
-        (candidateId: number, canSubmit: boolean) => {
-            setSubmitEnabled((currentSubmitEnabled) => {
-                if ((currentSubmitEnabled[candidateId] ?? false) === canSubmit) {
-                    return currentSubmitEnabled;
-                }
-                return {
-                    ...currentSubmitEnabled,
-                    [candidateId]: canSubmit
-                };
-            });
-        },
-        []
-    );
+    const updateCandidateSubmitEnabled = useCallback((candidateId: number, canSubmit: boolean) => {
+        setSubmitEnabled((currentSubmitEnabled) => {
+            if ((currentSubmitEnabled[candidateId] ?? false) === canSubmit) {
+                return currentSubmitEnabled;
+            }
+            return {
+                ...currentSubmitEnabled,
+                [candidateId]: canSubmit
+            };
+        });
+    }, []);
 
     const updateCandidatePayload = useCallback((candidateId: number, payload: string) => {
         setPayloads((currentPayloads) => {
