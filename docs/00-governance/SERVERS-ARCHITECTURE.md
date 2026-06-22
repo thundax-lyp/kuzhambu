@@ -72,6 +72,15 @@
 - 配置属性：`Properties`
 - 自动配置或配置类：`Configuration`
 
+## Cross-Domain Collaboration
+
+- `ApplicationService` 是本业务域的用例入口，不作为其他业务域 application 层的直接依赖目标。
+- 一个业务域的 `ApplicationService` 依赖本域内聚的 `*Service` 或 `*DomainService` 完成编排。
+- 单体内跨业务域协作不按微服务远程调用口径强制经过对端 application 公开用例。
+- 复杂跨域业务沉淀为稳定 `DomainService` 语义，由调用方 application 通过该 `DomainService` 完成读取、校验或状态变更。
+- 跨域调用不得直接访问对端 `infra`、`mapper`、`dataobject`、`repository.impl` 或底层表。
+- 对端 `ApplicationService` 不作为默认跨域防腐接口；复杂跨域业务定义明确业务语义的 `DomainService`，再由 application 编排事务和用户用例。
+
 ## Runtime Logging
 
 - 启动模块使用 `logback-spring.xml` 配置运行时日志。
