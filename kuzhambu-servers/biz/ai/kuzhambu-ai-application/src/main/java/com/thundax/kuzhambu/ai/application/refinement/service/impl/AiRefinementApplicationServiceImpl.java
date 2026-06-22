@@ -6,6 +6,7 @@ import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocation
 import com.thundax.kuzhambu.ai.application.refinement.command.AiRefinementRequestCommand;
 import com.thundax.kuzhambu.ai.application.refinement.result.AiCandidateResult;
 import com.thundax.kuzhambu.ai.application.refinement.service.AiRefinementApplicationService;
+import com.thundax.kuzhambu.ai.application.refinement.support.ClassicsAiWorkerUsecaseResolver;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import org.springframework.stereotype.Service;
@@ -23,9 +24,13 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
     private static final String CAPABILITY_SPLIT = "split";
 
     private final AiWorkerInvocationApplicationService invocationApplicationService;
+    private final ClassicsAiWorkerUsecaseResolver classicsAiWorkerUsecaseResolver;
 
-    public AiRefinementApplicationServiceImpl(AiWorkerInvocationApplicationService invocationApplicationService) {
+    public AiRefinementApplicationServiceImpl(
+            AiWorkerInvocationApplicationService invocationApplicationService,
+            ClassicsAiWorkerUsecaseResolver classicsAiWorkerUsecaseResolver) {
         this.invocationApplicationService = invocationApplicationService;
+        this.classicsAiWorkerUsecaseResolver = classicsAiWorkerUsecaseResolver;
     }
 
     @Override
@@ -65,7 +70,16 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
 
     private AiCandidateResult invokeCandidate(AiRefinementRequestCommand command, String capability) {
         validateCommand(command);
+        String operation = command.getOperation();
+        String workerPath = null;
+        if (!CAPABILITY_IMAGE_ANALYSIS.equals(capability)) {
+            var spec = classicsAiWorkerUsecaseResolver.resolve(command.getContentType(), capability);
+            operation = spec.operation();
+            workerPath = spec.workerPath();
+        }
         AiInvokeCommand invokeCommand = command.toInvokeCommand(capability);
+        invokeCommand.setOperation(operation);
+        invokeCommand.setWorkerPath(workerPath);
         AiInvokeResult result = invocationApplicationService.invoke(invokeCommand);
         return AiCandidateResult.from(result);
     }
