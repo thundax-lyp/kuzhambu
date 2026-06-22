@@ -9,22 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `AiCandidateApplyCheck`：新增 AI 候选应用校验 DTO
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-CANDIDATE-CONFIRMATION.md#B1.1 新增校验 DTO`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-domain/src/main/java/com/thundax/kuzhambu/ai/domain/invocation/service/AiCandidateApplyCheck.java`
-    - 处理动作：新增包含 `candidateId/contentType/contentId/capability` 字段的 Java DTO。
-    - 验收点：DTO 字段、getter/setter 与 RUNBOOK 完全一致。
-    - 重要度：8/10
-
-- [ ] `AiCandidateDomainService`：新增 AI 候选状态 DomainService
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-CANDIDATE-CONFIRMATION.md#B1.2 新增 DomainService`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-domain/src/main/java/com/thundax/kuzhambu/ai/domain/invocation/service/AiCandidateDomainService.java`
-    - 处理动作：实现 `requirePendingForApply(...)`、`markApplied(...)`、`reject(...)` 三个方法。
-    - 验收点：校验失败抛 RUNBOOK 指定 `DomainException`，更新候选时只调用 `AiInvocationRepository.updateCandidate(...)`。
-    - 重要度：10/10
-
 - [ ] `AiCandidateDomainServiceConfiguration`：装配 AI 候选 DomainService Bean
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-CANDIDATE-CONFIRMATION.md#B1.3 Spring Bean 装配`
