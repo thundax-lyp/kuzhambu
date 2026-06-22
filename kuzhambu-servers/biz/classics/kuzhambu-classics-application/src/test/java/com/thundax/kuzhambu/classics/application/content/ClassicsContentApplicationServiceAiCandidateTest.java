@@ -72,7 +72,8 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                     return candidateApplied();
                 });
 
-        ClassicsContentApplicationServiceImpl service = serviceWithAiDomainService(repository, aiCandidateDomainService);
+        ClassicsContentApplicationServiceImpl service =
+                serviceWithAiDomainService(repository, aiCandidateDomainService);
         AiCandidateApplyContentCommand command =
                 applyCommand(11L, ClassicsContentType.SANCAI_ENTRY, 11L, "summary", "new summary");
 
@@ -119,7 +120,8 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                     return candidateApplied();
                 });
 
-        ClassicsContentApplicationServiceImpl service = serviceWithAiDomainService(repository, aiCandidateDomainService);
+        ClassicsContentApplicationServiceImpl service =
+                serviceWithAiDomainService(repository, aiCandidateDomainService);
         AiCandidateApplyContentCommand command =
                 applyCommand(22L, ClassicsContentType.WANGQI_DOCUMENT, 22L, "summary", "new summary");
 
@@ -160,7 +162,8 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                     return candidateApplied();
                 });
 
-        ClassicsContentApplicationServiceImpl service = serviceWithAiDomainService(repository, aiCandidateDomainService);
+        ClassicsContentApplicationServiceImpl service =
+                serviceWithAiDomainService(repository, aiCandidateDomainService);
         AiCandidateApplyContentCommand command =
                 applyCommand(33L, ClassicsContentType.MING_CUSTOMS, 33L, "summary", "new summary");
 
@@ -197,7 +200,8 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 },
                 (candidateId, resultFormat, resultPayload, markAppliedAt) -> candidateApplied());
 
-        ClassicsContentApplicationServiceImpl service = serviceWithAiDomainService(repository, aiCandidateDomainService);
+        ClassicsContentApplicationServiceImpl service =
+                serviceWithAiDomainService(repository, aiCandidateDomainService);
         AiCandidateApplyContentCommand command = applyCommand(
                 11L,
                 ClassicsContentType.SANCAI_ENTRY,
@@ -215,10 +219,22 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         assertEquals(2, repository.insertTagCount);
         assertEquals(1, repository.insertVersionCount);
         assertEquals(3, repository.tags.size());
-        assertEquals(1, repository.tags.stream().filter(tag -> tag.getSource() == ClassicsContentSource.MANUAL).count());
-        assertEquals(2, repository.tags.stream().filter(tag -> tag.getSource() == ClassicsContentSource.AI).count());
+        assertEquals(
+                1,
+                repository.tags.stream()
+                        .filter(tag -> tag.getSource() == ClassicsContentSource.MANUAL)
+                        .count());
+        assertEquals(
+                2,
+                repository.tags.stream()
+                        .filter(tag -> tag.getSource() == ClassicsContentSource.AI)
+                        .count());
         verify(aiCandidateDomainService)
-                .markApplied(eq(11L), eq("TEXT"), eq("{\"tags\":[\"ai-one\",\"ai-two\",\"ai-one\",\"\"]}"), any(Instant.class));
+                .markApplied(
+                        eq(11L),
+                        eq("TEXT"),
+                        eq("{\"tags\":[\"ai-one\",\"ai-two\",\"ai-one\",\"\"]}"),
+                        any(Instant.class));
     }
 
     @Test
@@ -240,7 +256,8 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 },
                 (candidateId, resultFormat, resultPayload, markAppliedAt) -> candidateApplied());
 
-        ClassicsContentApplicationServiceImpl service = serviceWithAiDomainService(repository, aiCandidateDomainService);
+        ClassicsContentApplicationServiceImpl service =
+                serviceWithAiDomainService(repository, aiCandidateDomainService);
         AiCandidateApplyContentCommand command = applyCommand(
                 11L,
                 ClassicsContentType.SANCAI_ENTRY,
@@ -257,13 +274,22 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         assertEquals(1, repository.deleteAiQaPairsCount);
         assertEquals(2, repository.insertQaPairCount);
         assertEquals(3, repository.qaPairs.size());
-        assertEquals(1, repository.qaPairs.stream().filter(pair -> pair.getSource() == ClassicsContentSource.MANUAL).count());
-        assertEquals(2, repository.qaPairs.stream().filter(pair -> pair.getSource() == ClassicsContentSource.AI).count());
+        assertEquals(
+                1,
+                repository.qaPairs.stream()
+                        .filter(pair -> pair.getSource() == ClassicsContentSource.MANUAL)
+                        .count());
+        assertEquals(
+                2,
+                repository.qaPairs.stream()
+                        .filter(pair -> pair.getSource() == ClassicsContentSource.AI)
+                        .count());
         verify(aiCandidateDomainService)
                 .markApplied(
                         eq(11L),
                         eq("TEXT"),
-                        eq("{\"qaPairs\":[{\"question\":\"q1\",\"answer\":\"a\"},{\"question\":\"q2\",\"answer\":\"b\"},{\"question\":\"q1\",\"answer\":\"a\"}]}"),
+                        eq(
+                                "{\"qaPairs\":[{\"question\":\"q1\",\"answer\":\"a\"},{\"question\":\"q2\",\"answer\":\"b\"},{\"question\":\"q1\",\"answer\":\"a\"}]}"),
                         any(Instant.class));
     }
 
@@ -278,13 +304,16 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         AiCandidateDomainService aiCandidateDomainService = mockAiCandidateDomainService(
                 check -> {
                     throw new DomainException(
-                            "AI-INVOCATION-409", "ai.candidate.not-pending", "AI candidate is not pending: " + check.getCandidateId());
+                            "AI-INVOCATION-409",
+                            "ai.candidate.not-pending",
+                            "AI candidate is not pending: " + check.getCandidateId());
                 },
                 (candidateId, resultFormat, resultPayload, markAppliedAt) -> {
                     throw new IllegalStateException("markApplied should not be called");
                 });
 
-        ClassicsContentApplicationServiceImpl service = serviceWithAiDomainService(repository, aiCandidateDomainService);
+        ClassicsContentApplicationServiceImpl service =
+                serviceWithAiDomainService(repository, aiCandidateDomainService);
         AiCandidateApplyContentCommand command =
                 applyCommand(11L, ClassicsContentType.SANCAI_ENTRY, 11L, "summary", "new summary");
 
@@ -299,14 +328,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
     private static ClassicsContentApplicationServiceImpl serviceWithAiDomainService(
             ClassicsContentRepository repository, AiCandidateDomainService aiCandidateDomainService) {
         return new ClassicsContentApplicationServiceImpl(
-                repository,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                aiCandidateDomainService);
+                repository, null, null, null, null, null, null, aiCandidateDomainService);
     }
 
     private static AiCandidateApplyContentCommand applyCommand(
@@ -336,21 +358,21 @@ class ClassicsContentApplicationServiceAiCandidateTest {
     }
 
     private static AiCandidateDomainService mockAiCandidateDomainService(
-            java.util.function.Function<AiCandidateApplyCheck, AiCandidate> requirePending,
-            AiMarkApplied markApplied) {
+            java.util.function.Function<AiCandidateApplyCheck, AiCandidate> requirePending, AiMarkApplied markApplied) {
         AiCandidateDomainService aiCandidateDomainService = org.mockito.Mockito.mock(AiCandidateDomainService.class);
         when(aiCandidateDomainService.requirePendingForApply(any(AiCandidateApplyCheck.class)))
                 .thenAnswer(invocation -> {
                     AiCandidateApplyCheck check = invocation.getArgument(0);
                     return requirePending.apply(check);
                 });
-        when(aiCandidateDomainService.markApplied(anyLong(), any(), any(), any(Instant.class))).thenAnswer(invocation -> {
-            Long candidateId = invocation.getArgument(0);
-            String resultFormat = invocation.getArgument(1);
-            String resultPayload = invocation.getArgument(2);
-            Instant markAppliedAt = invocation.getArgument(3);
-            return markApplied.apply(candidateId, resultFormat, resultPayload, markAppliedAt);
-        });
+        when(aiCandidateDomainService.markApplied(anyLong(), any(), any(), any(Instant.class)))
+                .thenAnswer(invocation -> {
+                    Long candidateId = invocation.getArgument(0);
+                    String resultFormat = invocation.getArgument(1);
+                    String resultPayload = invocation.getArgument(2);
+                    Instant markAppliedAt = invocation.getArgument(3);
+                    return markApplied.apply(candidateId, resultFormat, resultPayload, markAppliedAt);
+                });
         return aiCandidateDomainService;
     }
 
@@ -428,7 +450,9 @@ class ClassicsContentApplicationServiceAiCandidateTest {
 
         @Override
         public List<ClassicsContentTag> listTags(
-                String contentType, ClassicsContentId contentId, com.thundax.kuzhambu.common.core.sort.SortDirection sortDirection) {
+                String contentType,
+                ClassicsContentId contentId,
+                com.thundax.kuzhambu.common.core.sort.SortDirection sortDirection) {
             return tags;
         }
 
@@ -471,12 +495,15 @@ class ClassicsContentApplicationServiceAiCandidateTest {
 
         @Override
         public List<ClassicsContentQaPair> listQaPairs(
-                String contentType, ClassicsContentId contentId, com.thundax.kuzhambu.common.core.sort.SortDirection sortDirection) {
+                String contentType,
+                ClassicsContentId contentId,
+                com.thundax.kuzhambu.common.core.sort.SortDirection sortDirection) {
             return qaPairs;
         }
 
         @Override
-        public List<ClassicsContentQaPair> listQaPairs(com.thundax.kuzhambu.common.core.sort.SortDirection sortDirection) {
+        public List<ClassicsContentQaPair> listQaPairs(
+                com.thundax.kuzhambu.common.core.sort.SortDirection sortDirection) {
             return qaPairs;
         }
 
@@ -514,7 +541,10 @@ class ClassicsContentApplicationServiceAiCandidateTest {
 
         @Override
         public ClassicsContentVersion getVersionById(ClassicsContentVersionId id) {
-            return versions.stream().filter(version -> version.getId().equals(id)).findFirst().orElse(null);
+            return versions.stream()
+                    .filter(version -> version.getId().equals(id))
+                    .findFirst()
+                    .orElse(null);
         }
 
         @Override
