@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `AiCandidateDomainServiceConfiguration`：装配 AI 候选 DomainService Bean
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-CANDIDATE-CONFIRMATION.md#B1.3 Spring Bean 装配`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/invocation/configuration/AiCandidateDomainServiceConfiguration.java`
-    - 处理动作：新增 `@Configuration` 类并提供 `AiCandidateDomainService` 的 `@Bean` 方法。
-    - 验收点：`kuzhambu-ai-domain` 不新增 Spring 注解，Bean 由 `kuzhambu-ai-application` 装配。
-    - 重要度：8/10
-
 - [ ] `AiInvocationController`：AI 管理接口改用 DomainService
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-CANDIDATE-CONFIRMATION.md#B1.4 AI 管理接口接入 DomainService`
