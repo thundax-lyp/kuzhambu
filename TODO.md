@@ -11,14 +11,6 @@
 
 
 
-- [ ] `AiRefinementApplicationServiceImpl`：接入 canonical usecase 解析
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKER-USECASE-CLOSURE.md` 第 `4.3` 章节
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/refinement/service/impl/AiRefinementApplicationServiceImpl.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/test/java/com/thundax/kuzhambu/ai/application/refinement/service/impl/AiRefinementApplicationServiceImplTest.java`
-    - 处理动作：让同步候选型 Classics 精修能力在 application 层写入 canonical `operation + workerPath`
-    - 验收点：`translate/summary/tags/qa/visual/split` 六类能力走解析器，`analyzeImage` 保持 legacy generic 分支
-    - 重要度：10/10
-
 - [ ] `WorkerAiHttpClient`：优先使用 `workerPath`
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKER-USECASE-CLOSURE.md` 第 `4.4` 章节
