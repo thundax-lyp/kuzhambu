@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `ai-candidate-panel`：新增 Admin Web 通用候选面板
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-CANDIDATE-CONFIRMATION.md#F2 通用候选面板`
-    - 范围对象：`kuzhambu-apps/admin-web/src/components/ai/ai-candidate-panel.tsx`、`kuzhambu-apps/admin-web/src/components/ai/ai-candidate-payload-editor.tsx`
-    - 处理动作：实现 PENDING 候选列表、payload 编辑器、应用按钮和拒绝按钮。
-    - 验收点：summary/translate 使用文本框，tags 保存为 `{"tags":[...]}`，qa 保存为 `{"qaPairs":[...]}`，应用成功后刷新列表并调用 `onApplied()`。
-    - 重要度：9/10
-
 - [ ] `Classics 页面候选面板接入`：接入三类 Classics 详情页
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-CANDIDATE-CONFIRMATION.md#F3 接入 Classics 页面`
