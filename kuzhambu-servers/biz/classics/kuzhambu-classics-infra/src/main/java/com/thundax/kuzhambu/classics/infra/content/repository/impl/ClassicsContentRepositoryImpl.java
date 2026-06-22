@@ -15,6 +15,7 @@ import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContent
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentQaPair;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentSource;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsExportStatus;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentExportJobId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
@@ -22,6 +23,9 @@ import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsCo
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentTagId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentVersionId;
 import com.thundax.kuzhambu.classics.domain.content.repository.ClassicsContentRepository;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
+import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
+import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.classics.infra.content.persistence.assembler.ClassicsContentPersistenceAssembler;
 import com.thundax.kuzhambu.classics.infra.content.persistence.dataobject.ClassicsContentExportJobDO;
 import com.thundax.kuzhambu.classics.infra.content.persistence.dataobject.ClassicsContentQaPairDO;
@@ -31,6 +35,15 @@ import com.thundax.kuzhambu.classics.infra.content.persistence.mapper.ClassicsCo
 import com.thundax.kuzhambu.classics.infra.content.persistence.mapper.ClassicsContentQaPairMapper;
 import com.thundax.kuzhambu.classics.infra.content.persistence.mapper.ClassicsContentTagMapper;
 import com.thundax.kuzhambu.classics.infra.content.persistence.mapper.ClassicsContentVersionMapper;
+import com.thundax.kuzhambu.classics.infra.mingcustoms.persistence.assembler.MingCustomsPersistenceAssembler;
+import com.thundax.kuzhambu.classics.infra.mingcustoms.persistence.dataobject.MingCustomsEntryDO;
+import com.thundax.kuzhambu.classics.infra.mingcustoms.persistence.mapper.MingCustomsEntryMapper;
+import com.thundax.kuzhambu.classics.infra.sancai.persistence.assembler.SancaiPersistenceAssembler;
+import com.thundax.kuzhambu.classics.infra.sancai.persistence.dataobject.SancaiEntryDO;
+import com.thundax.kuzhambu.classics.infra.sancai.persistence.mapper.SancaiMapper;
+import com.thundax.kuzhambu.classics.infra.wangqi.persistence.assembler.WangqiDocumentPersistenceAssembler;
+import com.thundax.kuzhambu.classics.infra.wangqi.persistence.dataobject.WangqiDocumentDO;
+import com.thundax.kuzhambu.classics.infra.wangqi.persistence.mapper.WangqiDocumentMapper;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import java.util.Date;
 import java.util.List;
@@ -44,16 +57,25 @@ public class ClassicsContentRepositoryImpl implements ClassicsContentRepository 
     private final ClassicsContentQaPairMapper qaPairMapper;
     private final ClassicsContentVersionMapper versionMapper;
     private final ClassicsContentMapper exportMapper;
+    private final SancaiMapper sancaiMapper;
+    private final WangqiDocumentMapper wangqiDocumentMapper;
+    private final MingCustomsEntryMapper mingCustomsEntryMapper;
 
     public ClassicsContentRepositoryImpl(
             ClassicsContentTagMapper tagMapper,
             ClassicsContentQaPairMapper qaPairMapper,
             ClassicsContentVersionMapper versionMapper,
-            ClassicsContentMapper exportMapper) {
+            ClassicsContentMapper exportMapper,
+            SancaiMapper sancaiMapper,
+            WangqiDocumentMapper wangqiDocumentMapper,
+            MingCustomsEntryMapper mingCustomsEntryMapper) {
         this.tagMapper = tagMapper;
         this.qaPairMapper = qaPairMapper;
         this.versionMapper = versionMapper;
         this.exportMapper = exportMapper;
+        this.sancaiMapper = sancaiMapper;
+        this.wangqiDocumentMapper = wangqiDocumentMapper;
+        this.mingCustomsEntryMapper = mingCustomsEntryMapper;
     }
 
     public List<ClassicsContentTag> listTags(
@@ -176,6 +198,78 @@ public class ClassicsContentRepositoryImpl implements ClassicsContentRepository 
 
     public int deleteQaPairById(ClassicsContentQaPairId id) {
         return qaPairMapper.deleteById(ClassicsContentQaPairIdCodec.toValue(id));
+    }
+
+    @Override
+    public SancaiEntry getSancaiEntryForAiApply(ClassicsContentId contentId) {
+        return SancaiPersistenceAssembler.toEntryDomain(
+                sancaiMapper.selectById(ClassicsContentIdCodec.toValue(contentId)));
+    }
+
+    @Override
+    public int updateSancaiEntryAiFields(SancaiEntry entry) {
+        SancaiEntryDO dataObject = SancaiPersistenceAssembler.toEntryObject(entry);
+        return sancaiMapper.update(
+                null,
+                new LambdaUpdateWrapper<SancaiEntryDO>()
+                        .eq(SancaiEntryDO::getId, dataObject.getId())
+                        .set(SancaiEntryDO::getSummary, dataObject.getSummary())
+                        .set(SancaiEntryDO::getTranslationText, dataObject.getTranslationText())
+                        .set(SancaiEntryDO::getTranslationStatus, dataObject.getTranslationStatus())
+                        .set(SancaiEntryDO::getContentUpdatedAt, dataObject.getContentUpdatedAt()));
+    }
+
+    @Override
+    public WangqiDocument getWangqiDocumentForAiApply(ClassicsContentId contentId) {
+        return WangqiDocumentPersistenceAssembler.toDomain(
+                wangqiDocumentMapper.selectById(
+                        ClassicsContentIdCodec.toValue(contentId)));
+    }
+
+    @Override
+    public int updateWangqiDocumentAiFields(WangqiDocument document) {
+        WangqiDocumentDO dataObject = WangqiDocumentPersistenceAssembler.toObject(document);
+        return wangqiDocumentMapper.update(
+                null,
+                new LambdaUpdateWrapper<WangqiDocumentDO>()
+                        .eq(WangqiDocumentDO::getId, dataObject.getId())
+                        .set(WangqiDocumentDO::getSummary, dataObject.getSummary())
+                        .set(WangqiDocumentDO::getContentUpdatedAt, dataObject.getContentUpdatedAt()));
+    }
+
+    @Override
+    public MingCustomsEntry getMingCustomsEntryForAiApply(ClassicsContentId contentId) {
+        return MingCustomsPersistenceAssembler.toEntryDomain(
+                mingCustomsEntryMapper.selectById(ClassicsContentIdCodec.toValue(contentId)));
+    }
+
+    @Override
+    public int updateMingCustomsEntryAiFields(MingCustomsEntry entry) {
+        MingCustomsEntryDO dataObject = MingCustomsPersistenceAssembler.toEntryObject(entry);
+        return mingCustomsEntryMapper.update(
+                null,
+                new LambdaUpdateWrapper<MingCustomsEntryDO>()
+                        .eq(MingCustomsEntryDO::getId, dataObject.getId())
+                        .set(MingCustomsEntryDO::getSummary, dataObject.getSummary())
+                        .set(MingCustomsEntryDO::getContentUpdatedAt, dataObject.getContentUpdatedAt()));
+    }
+
+    @Override
+    public int deleteAiTags(String contentType, ClassicsContentId contentId) {
+        return tagMapper.delete(new LambdaQueryWrapper<ClassicsContentTagDO>()
+                .eq(StringUtils.isNotBlank(contentType), ClassicsContentTagDO::getContentType, contentType)
+                .eq(ClassicsContentIdCodec.toValue(contentId) != null, ClassicsContentTagDO::getContentId,
+                        ClassicsContentIdCodec.toValue(contentId))
+                .eq(ClassicsContentTagDO::getSource, ClassicsContentSource.AI.value()));
+    }
+
+    @Override
+    public int deleteAiQaPairs(String contentType, ClassicsContentId contentId) {
+        return qaPairMapper.delete(new LambdaQueryWrapper<ClassicsContentQaPairDO>()
+                .eq(StringUtils.isNotBlank(contentType), ClassicsContentQaPairDO::getContentType, contentType)
+                .eq(ClassicsContentIdCodec.toValue(contentId) != null, ClassicsContentQaPairDO::getContentId,
+                        ClassicsContentIdCodec.toValue(contentId))
+                .eq(ClassicsContentQaPairDO::getSource, ClassicsContentSource.AI.value()));
     }
 
     public List<ClassicsContentVersion> listVersions(String contentType, ClassicsContentId contentId) {

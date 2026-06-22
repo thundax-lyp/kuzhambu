@@ -6,13 +6,19 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.thundax.kuzhambu.ai.domain.invocation.service.AiCandidateApplyCheck;
+import com.thundax.kuzhambu.ai.domain.invocation.service.AiCandidateDomainService;
+import com.thundax.kuzhambu.classics.application.content.command.AiCandidateApplyContentCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentExportCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairSortCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentTagCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentTagSortCommand;
+import com.thundax.kuzhambu.classics.application.content.result.AiCandidateApplyContentResult;
 import com.thundax.kuzhambu.classics.application.content.result.ClassicsExportJobResult;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
+import com.thundax.kuzhambu.classics.application.content.support.AiCandidateQaPairPayload;
+import com.thundax.kuzhambu.classics.application.content.support.ClassicsAiCandidatePayloadParser;
 import com.thundax.kuzhambu.classics.application.content.support.ClassicsContentSnapshotAssembler;
 import com.thundax.kuzhambu.classics.application.content.support.SancaiEntryVersionSnapshot;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiAssetApplicationService;
@@ -28,6 +34,8 @@ import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContent
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentChangeType;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentSource;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentTagStatus;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsExportStatus;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentExportJobId;
@@ -37,8 +45,10 @@ import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsCo
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentVersionId;
 import com.thundax.kuzhambu.classics.domain.content.repository.ClassicsContentRepository;
 import com.thundax.kuzhambu.classics.domain.content.service.ClassicsContentVersioningService;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryImage;
+import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryTranslationStatus;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
@@ -52,6 +62,7 @@ import com.thundax.kuzhambu.storage.application.service.StorageApplicationServic
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import java.io.ByteArrayInputStream;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
@@ -59,6 +70,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -85,6 +97,8 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     private final ObjectMapper objectMapper;
     private final ClassicsContentVersioningService versioningService = new ClassicsContentVersioningService();
     private final ClassicsContentSnapshotAssembler snapshotAssembler = new ClassicsContentSnapshotAssembler();
+    private final AiCandidateDomainService aiCandidateDomainService;
+    private final ClassicsAiCandidatePayloadParser aiCandidatePayloadParser;
 
     public ClassicsContentApplicationServiceImpl(
             ClassicsContentRepository repository, WangqiDocumentVersionRestorer wangqiDocumentVersionRestorer) {
@@ -95,7 +109,26 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             ClassicsContentRepository repository,
             WangqiDocumentVersionRestorer wangqiDocumentVersionRestorer,
             SancaiEntryVersionRestorer sancaiEntryVersionRestorer) {
-        this(repository, wangqiDocumentVersionRestorer, sancaiEntryVersionRestorer, null, null, null, null);
+        this(repository, wangqiDocumentVersionRestorer, sancaiEntryVersionRestorer, null, null, null, null, null);
+    }
+
+    public ClassicsContentApplicationServiceImpl(
+            ClassicsContentRepository repository,
+            WangqiDocumentVersionRestorer wangqiDocumentVersionRestorer,
+            SancaiEntryVersionRestorer sancaiEntryVersionRestorer,
+            SancaiAssetApplicationService sancaiAssetApplicationService,
+            StorageApplicationService storageApplicationService,
+            WorkerRenderClient workerRenderClient,
+            StorageUploadStreamHelper storageUploadStreamHelper) {
+        this(
+                repository,
+                wangqiDocumentVersionRestorer,
+                sancaiEntryVersionRestorer,
+                sancaiAssetApplicationService,
+                storageApplicationService,
+                workerRenderClient,
+                storageUploadStreamHelper,
+                null);
     }
 
     @Autowired
@@ -106,7 +139,8 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             SancaiAssetApplicationService sancaiAssetApplicationService,
             StorageApplicationService storageApplicationService,
             WorkerRenderClient workerRenderClient,
-            StorageUploadStreamHelper storageUploadStreamHelper) {
+            StorageUploadStreamHelper storageUploadStreamHelper,
+            AiCandidateDomainService aiCandidateDomainService) {
         this.repository = repository;
         this.wangqiDocumentVersionRestorer = wangqiDocumentVersionRestorer;
         this.sancaiEntryVersionRestorer = sancaiEntryVersionRestorer;
@@ -114,7 +148,9 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         this.storageApplicationService = storageApplicationService;
         this.workerRenderClient = workerRenderClient;
         this.storageUploadStreamHelper = storageUploadStreamHelper;
+        this.aiCandidateDomainService = aiCandidateDomainService;
         this.objectMapper = new ObjectMapper().findAndRegisterModules();
+        this.aiCandidatePayloadParser = new ClassicsAiCandidatePayloadParser(this.objectMapper);
     }
 
     @Override
@@ -349,8 +385,200 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ClassicsContentVersion applyAiResult(Versionable content, String changeSummary) {
-        // TODO: Wire this to the future AI candidate confirmation flow before enabling AI_APPLIED versions.
-        throw new BizException("AI 结果应用流程尚未接入 Classics Versionable");
+        return ensureVersioned(content, ClassicsContentChangeType.AI_APPLIED, changeSummary);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public AiCandidateApplyContentResult applyAiCandidate(AiCandidateApplyContentCommand command) {
+        if (command == null) {
+            throw new BizException("AI候选应用参数不能为空");
+        }
+        if (command.getCandidateId() == null
+                || command.getContentType() == null
+                || command.getContentId() == null
+                || StringUtils.isBlank(command.getCapability())
+                || StringUtils.isBlank(command.getResultFormat())
+                || StringUtils.isBlank(command.getResultPayload())) {
+            throw new BizException("AI候选应用参数不完整");
+        }
+
+        if (aiCandidateDomainService == null) {
+            throw new BizException("AI候选服务未就绪");
+        }
+        AiCandidateApplyCheck check = new AiCandidateApplyCheck();
+        check.setCandidateId(command.getCandidateId());
+        check.setContentType(command.getContentType().value());
+        check.setContentId(command.getContentId());
+        check.setCapability(command.getCapability());
+        aiCandidateDomainService.requirePendingForApply(check);
+
+        ClassicsContentType contentType = command.getContentType();
+        String capability = command.getCapability();
+        ClassicsContentId contentId = ClassicsContentId.of(command.getContentId());
+        String changeSummary = resolveChangeSummary(capability, command.getChangeSummary());
+        Versionable content;
+
+        if (contentType == ClassicsContentType.SANCAI_ENTRY) {
+            SancaiEntry entry = repository.getSancaiEntryForAiApply(contentId);
+            if (entry == null) {
+                throw new BizException("三才内容不存在: " + contentId.value());
+            }
+            if ("translate".equals(capability)) {
+                entry.setTranslationText(aiCandidatePayloadParser.parseText(command.getResultPayload()));
+                entry.setTranslationStatus(SancaiEntryTranslationStatus.READY);
+                touchContentUpdatedAt(ClassicsContentType.SANCAI_ENTRY, entry);
+                ensureUpdate(repository.updateSancaiEntryAiFields(entry), "更新三才内容失败");
+            } else if ("summary".equals(capability)) {
+                entry.setSummary(aiCandidatePayloadParser.parseText(command.getResultPayload()));
+                touchContentUpdatedAt(ClassicsContentType.SANCAI_ENTRY, entry);
+                ensureUpdate(repository.updateSancaiEntryAiFields(entry), "更新三才内容失败");
+            } else if ("tags".equals(capability)) {
+                applyTags(contentType, entry, aiCandidatePayloadParser.parseTags(command.getResultPayload()));
+            } else if ("qa".equals(capability)) {
+                applyQaPairs(contentType, entry, aiCandidatePayloadParser.parseQaPairs(command.getResultPayload()));
+            } else {
+                throw new BizException("不支持的 AI 候选能力: " + capability);
+            }
+            content = entry;
+        } else if (contentType == ClassicsContentType.WANGQI_DOCUMENT) {
+            WangqiDocument document = repository.getWangqiDocumentForAiApply(contentId);
+            if (document == null) {
+                throw new BizException("王圻文档不存在: " + contentId.value());
+            }
+            if ("summary".equals(capability)) {
+                document.setSummary(aiCandidatePayloadParser.parseText(command.getResultPayload()));
+                touchContentUpdatedAt(ClassicsContentType.WANGQI_DOCUMENT, document);
+                ensureUpdate(repository.updateWangqiDocumentAiFields(document), "更新王圻文档失败");
+            } else if ("tags".equals(capability)) {
+                applyTags(contentType, document, aiCandidatePayloadParser.parseTags(command.getResultPayload()));
+            } else if ("qa".equals(capability)) {
+                applyQaPairs(contentType, document, aiCandidatePayloadParser.parseQaPairs(command.getResultPayload()));
+            } else {
+                throw new BizException("不支持的 AI 候选能力: " + capability);
+            }
+            content = document;
+        } else if (contentType == ClassicsContentType.MING_CUSTOMS) {
+            MingCustomsEntry entry = repository.getMingCustomsEntryForAiApply(contentId);
+            if (entry == null) {
+                throw new BizException("明代习俗不存在: " + contentId.value());
+            }
+            if ("summary".equals(capability)) {
+                entry.setSummary(aiCandidatePayloadParser.parseText(command.getResultPayload()));
+                touchContentUpdatedAt(ClassicsContentType.MING_CUSTOMS, entry);
+                ensureUpdate(repository.updateMingCustomsEntryAiFields(entry), "更新明代习俗失败");
+            } else if ("tags".equals(capability)) {
+                applyTags(contentType, entry, aiCandidatePayloadParser.parseTags(command.getResultPayload()));
+            } else if ("qa".equals(capability)) {
+                applyQaPairs(contentType, entry, aiCandidatePayloadParser.parseQaPairs(command.getResultPayload()));
+            } else {
+                throw new BizException("不支持的 AI 候选能力: " + capability);
+            }
+            content = entry;
+        } else {
+            throw new BizException("未知的内容类型: " + contentType);
+        }
+
+        if (content == null) {
+            throw new BizException("内容不存在");
+        }
+        ClassicsContentVersion version = applyAiResult(content, changeSummary);
+        aiCandidateDomainService.markApplied(
+                command.getCandidateId(), command.getResultFormat(), command.getResultPayload(), Instant.now());
+        return new AiCandidateApplyContentResult(
+                contentType,
+                contentId.value(),
+                version == null
+                        ? null
+                        : version.getId() == null ? null : version.getId().value(),
+                version == null ? null : version.getVersionNo());
+    }
+
+    private String resolveChangeSummary(String capability, String changeSummary) {
+        if (StringUtils.isNotBlank(changeSummary)) {
+            return changeSummary;
+        }
+        return switch (capability) {
+            case "translate" -> "AI 应用：译文";
+            case "summary" -> "AI 应用：摘要";
+            case "tags" -> "AI 应用：标签";
+            case "qa" -> "AI 应用：问答对";
+            default -> throw new BizException("不支持的 AI 候选能力: " + capability);
+        };
+    }
+
+    private void applyTags(ClassicsContentType contentType, Versionable content, List<String> tags) {
+        ClassicsContentId contentId = content == null ? null : content.contentId();
+        if (contentId == null) {
+            throw new BizException("标签应用目标内容不存在");
+        }
+        if (tags == null || tags.isEmpty()) {
+            throw new BizException("AI候选标签为空");
+        }
+        repository.deleteAiTags(contentType.value(), contentId);
+        for (String tagName : tags) {
+            if (StringUtils.isBlank(tagName)) {
+                continue;
+            }
+            addTag(new ContentTagCommand(
+                    null,
+                    contentType,
+                    contentId.value(),
+                    null,
+                    tagName.trim(),
+                    ClassicsContentSource.AI,
+                    ClassicsContentTagStatus.ACTIVE));
+        }
+        touchContentUpdatedAt(contentType, content);
+    }
+
+    private void applyQaPairs(
+            ClassicsContentType contentType, Versionable content, List<AiCandidateQaPairPayload> qaPairs) {
+        ClassicsContentId contentId = content == null ? null : content.contentId();
+        if (contentId == null) {
+            throw new BizException("问答应用目标内容不存在");
+        }
+        if (qaPairs == null || qaPairs.isEmpty()) {
+            throw new BizException("AI候选问答为空");
+        }
+        repository.deleteAiQaPairs(contentType.value(), contentId);
+        for (AiCandidateQaPairPayload pair : qaPairs) {
+            if (pair == null || StringUtils.isBlank(pair.getQuestion()) || StringUtils.isBlank(pair.getAnswer())) {
+                continue;
+            }
+            addQaPair(new ContentQaPairCommand(
+                    null,
+                    contentType,
+                    contentId.value(),
+                    pair.getQuestion(),
+                    pair.getAnswer(),
+                    ClassicsContentSource.AI));
+        }
+        touchContentUpdatedAt(contentType, content);
+    }
+
+    private void touchContentUpdatedAt(ClassicsContentType contentType, Versionable content) {
+        if (content == null) {
+            return;
+        }
+        Date now = new Date();
+        if (contentType == ClassicsContentType.SANCAI_ENTRY) {
+            ((SancaiEntry) content).setContentUpdatedAt(now);
+            return;
+        }
+        if (contentType == ClassicsContentType.WANGQI_DOCUMENT) {
+            ((WangqiDocument) content).setContentUpdatedAt(now);
+            return;
+        }
+        if (contentType == ClassicsContentType.MING_CUSTOMS) {
+            ((MingCustomsEntry) content).setContentUpdatedAt(now);
+        }
+    }
+
+    private void ensureUpdate(int updated, String message) {
+        if (updated != 1) {
+            throw new BizException(message + ": " + updated);
+        }
     }
 
     @Override

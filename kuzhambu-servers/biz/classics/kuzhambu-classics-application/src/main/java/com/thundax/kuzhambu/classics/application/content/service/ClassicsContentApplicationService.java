@@ -1,10 +1,12 @@
 package com.thundax.kuzhambu.classics.application.content.service;
 
+import com.thundax.kuzhambu.classics.application.content.command.AiCandidateApplyContentCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentExportCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairSortCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentTagCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentTagSortCommand;
+import com.thundax.kuzhambu.classics.application.content.result.AiCandidateApplyContentResult;
 import com.thundax.kuzhambu.classics.application.content.result.ClassicsExportJobResult;
 import com.thundax.kuzhambu.classics.domain.content.model.Versionable;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentExportJob;
@@ -55,6 +57,8 @@ public interface ClassicsContentApplicationService {
             Versionable content, ClassicsContentChangeType changeType, String changeSummary);
 
     ClassicsContentVersion applyAiResult(Versionable content, String changeSummary);
+
+    AiCandidateApplyContentResult applyAiCandidate(AiCandidateApplyContentCommand command);
 
     ClassicsContentVersion restoreHistoryVersion(ClassicsContentVersionId versionId);
 

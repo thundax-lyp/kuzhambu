@@ -12,6 +12,9 @@ import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsCo
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentQaPairId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentTagId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentVersionId;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
+import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
+import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import java.util.Date;
 import java.util.List;
@@ -68,6 +71,22 @@ public interface ClassicsContentRepository {
     ClassicsContentVersion getVersionById(ClassicsContentVersionId id);
 
     int deleteVersions(String contentType, ClassicsContentId contentId);
+
+    SancaiEntry getSancaiEntryForAiApply(ClassicsContentId contentId);
+
+    int updateSancaiEntryAiFields(SancaiEntry entry);
+
+    WangqiDocument getWangqiDocumentForAiApply(ClassicsContentId contentId);
+
+    int updateWangqiDocumentAiFields(WangqiDocument document);
+
+    MingCustomsEntry getMingCustomsEntryForAiApply(ClassicsContentId contentId);
+
+    int updateMingCustomsEntryAiFields(MingCustomsEntry entry);
+
+    int deleteAiTags(String contentType, ClassicsContentId contentId);
+
+    int deleteAiQaPairs(String contentType, ClassicsContentId contentId);
 
     ClassicsContentExportJobId insertExportJob(ClassicsContentExportJob exportJob);
 
