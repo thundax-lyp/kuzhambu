@@ -15,14 +15,6 @@
 
 
 
-- [ ] `knowledge taxonomy codecs C`：创建同义词 codec
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/taxonomy/codec/SynonymIdCodec.java`
-    - 处理动作：创建同义词值对象 codec。
-    - 验收点：`SynonymIdCodec` 存在且处理 `SynonymId` 转换。
-    - 重要度：6/10
-
 - [ ] `knowledge taxonomy repositories A`：创建分类与标签仓储接口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
