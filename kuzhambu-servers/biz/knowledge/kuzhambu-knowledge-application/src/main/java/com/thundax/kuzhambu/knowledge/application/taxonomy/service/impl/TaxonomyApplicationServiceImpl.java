@@ -197,8 +197,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
                         .map(tag -> TaxonomyApplicationAssembler.toResult(
                                 tag,
                                 getCategoryName(tag.getCategoryId()),
-                                tagContentRefRepository.countByTagId(tag.getTagId()),
-                                tag.getCategoryId()))
+                                tagContentRefRepository.countByTagId(tag.getTagId())))
                         .collect(Collectors.toList()));
     }
 
@@ -325,8 +324,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
                         .map(tag -> TaxonomyApplicationAssembler.toResult(
                                 tag,
                                 getCategoryName(tag.getCategoryId()),
-                                tagContentRefRepository.countByTagId(tag.getTagId()),
-                                tag.getCategoryId()))
+                                tagContentRefRepository.countByTagId(tag.getTagId())))
                         .collect(Collectors.toList()));
     }
 
