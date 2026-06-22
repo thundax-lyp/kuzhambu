@@ -15,14 +15,6 @@
 
 
 
-- [ ] `knowledge taxonomy commands D`：创建同义词命令对象
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/command/SynonymCreateCommand.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/command/SynonymUpdateCommand.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/command/SynonymStatusCommand.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/command/SynonymRemoveCommand.java`
-    - 处理动作：创建同义词创建、更新、状态与删除命令对象。
-    - 验收点：4 个命令类存在且字段能覆盖同义词管理规则。
-    - 重要度：8/10
-
 - [ ] `knowledge taxonomy queries`：创建 taxonomy 查询对象
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
