@@ -15,14 +15,6 @@
 
 
 
-- [ ] `knowledge taxonomy service impl`：实现 taxonomy 应用服务
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/service/impl/TaxonomyApplicationServiceImpl.java`
-    - 处理动作：实现 taxonomy 应用服务并落定 RUNBOOK 规定的固定业务规则。
-    - 验收点：服务实现存在且覆盖分类、标签、审核、别名、同义词全部 MVP 用例。
-    - 重要度：10/10
-
 - [ ] `knowledge taxonomy data objects A`：创建分类与标签 DO
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
