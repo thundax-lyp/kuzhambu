@@ -78,7 +78,6 @@
     - 处理动作：注册 `/knowledge/taxonomy` 路由并指向 `TaxonomyPage`。
     - 验收点：路由文件存在 taxonomy 页面 import 与 `/knowledge/taxonomy` 路由项。
     - 重要度：9/10
-
 - [ ] `knowledge taxonomy page shell`：创建 taxonomy 页面壳与样式
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`

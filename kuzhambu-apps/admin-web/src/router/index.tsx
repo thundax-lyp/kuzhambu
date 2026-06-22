@@ -6,6 +6,7 @@ import { MingCustomsPage } from "../pages/classics/ming-customs/ming-customs-pag
 import { SancaiPage } from "../pages/classics/sancai/sancai-page";
 import { WangqiPage } from "../pages/classics/wangqi/wangqi-page";
 import { DashboardPage } from "../pages/dashboard/dashboard/dashboard-page";
+import { TaxonomyPage } from "../pages/knowledge/taxonomy/taxonomy-page";
 import { StorageObjectPage } from "../pages/storage/storage-object/storage-object-page";
 import { DepartmentPage } from "../pages/system/department/department-page";
 import { DictionaryPage } from "../pages/system/dictionary/dictionary-page";
@@ -84,6 +85,10 @@ const router = createBrowserRouter(
                         {
                             path: "classics/wangqi",
                             element: <WangqiPage />
+                        },
+                        {
+                            path: "knowledge/taxonomy",
+                            element: <TaxonomyPage />
                         }
                     ]
                 }
