@@ -3,13 +3,13 @@ package com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller;
 import com.thundax.kuzhambu.ai.application.batch.service.AiBatchJobApplicationService;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
+import com.thundax.kuzhambu.ai.domain.invocation.service.AiCandidateDomainService;
 import com.thundax.kuzhambu.ai.interfaces.admin.invocation.assembler.AiInvocationInterfaceAssembler;
 import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.request.AiInvocationRequests;
 import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.response.AiInvocationResponses.BatchJobResponse;
 import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.response.AiInvocationResponses.CallRecordResponse;
 import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.response.AiInvocationResponses.CandidateResponse;
 import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.response.AiInvocationResponses.IdResponse;
-import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
@@ -32,11 +32,15 @@ public class AiInvocationController {
 
     private final AiInvocationRepository invocationRepository;
     private final AiBatchJobApplicationService batchJobService;
+    private final AiCandidateDomainService aiCandidateDomainService;
 
     public AiInvocationController(
-            AiInvocationRepository invocationRepository, AiBatchJobApplicationService batchJobService) {
+            AiInvocationRepository invocationRepository,
+            AiBatchJobApplicationService batchJobService,
+            AiCandidateDomainService aiCandidateDomainService) {
         this.invocationRepository = invocationRepository;
         this.batchJobService = batchJobService;
+        this.aiCandidateDomainService = aiCandidateDomainService;
     }
 
     @Operation(summary = "获取AI调用记录", description = "ai:invocation:view")
@@ -78,11 +82,8 @@ public class AiInvocationController {
     @SysLogger(value = "候选拒绝")
     @PostMapping(value = "candidate/reject")
     public CandidateResponse rejectCandidate(@Valid @RequestBody AiInvocationRequests.CandidateRejectRequest request) {
-        AiCandidate candidate = invocationRepository.getCandidate(request.getCandidateId());
-        assertCandidateFound(candidate, request.getCandidateId());
-        candidate.reject(request.getErrorType(), request.getErrorMessage());
-        invocationRepository.updateCandidate(candidate);
-        return AiInvocationInterfaceAssembler.toResponse(invocationRepository.getCandidate(request.getCandidateId()));
+        return AiInvocationInterfaceAssembler.toResponse(
+                aiCandidateDomainService.reject(request.getCandidateId(), request.getErrorType(), request.getErrorMessage()));
     }
 
     @Operation(summary = "标记AI候选已应用", description = "ai:invocation:edit")
@@ -90,12 +91,16 @@ public class AiInvocationController {
     @HasPermission(value = "ai:invocation:edit")
     @SysLogger(value = "候选已应用")
     @PostMapping(value = "candidate/mark-applied")
-    public CandidateResponse markCandidateApplied(@Valid @RequestBody AiInvocationRequests.CandidateIdRequest request) {
-        AiCandidate candidate = invocationRepository.getCandidate(request.getCandidateId());
-        assertCandidateFound(candidate, request.getCandidateId());
-        candidate.markApplied(Instant.now());
-        invocationRepository.updateCandidate(candidate);
-        return AiInvocationInterfaceAssembler.toResponse(invocationRepository.getCandidate(request.getCandidateId()));
+    public CandidateResponse markCandidateApplied(@Valid @RequestBody AiInvocationRequests.CandidateMarkAppliedRequest request) {
+        AiCandidate current = invocationRepository.getCandidate(request.getCandidateId());
+        String resultFormat = defaultIfNull(request.getResultFormat(), current == null ? null : current.getResultFormat());
+        String resultPayload = defaultIfNull(request.getResultPayload(), current == null ? null : current.getResultPayload());
+        return AiInvocationInterfaceAssembler.toResponse(
+                aiCandidateDomainService.markApplied(request.getCandidateId(), resultFormat, resultPayload, Instant.now()));
+    }
+
+    private String defaultIfNull(String requestValue, String currentValue) {
+        return requestValue == null ? currentValue : requestValue;
     }
 
     @Operation(summary = "获取AI批量任务", description = "ai:invocation:view")
@@ -155,9 +160,4 @@ public class AiInvocationController {
         return batchJobService.canDispatchNextUnit(request.getBatchId());
     }
 
-    private void assertCandidateFound(AiCandidate candidate, Long candidateId) {
-        if (candidate == null) {
-            throw new BizException("AI candidate not found: " + candidateId);
-        }
-    }
 }

@@ -85,6 +85,25 @@ public final class AiInvocationRequests {
 
     @Getter
     @Setter
+    @Schema(name = "AiCandidateMarkAppliedRequest", description = "AI候选标记已应用请求")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class CandidateMarkAppliedRequest implements Serializable {
+
+        @NotNull
+        @JsonProperty(value = "candidateId")
+        private Long candidateId;
+
+        @Size(max = 64)
+        @JsonProperty(value = "resultFormat")
+        private String resultFormat;
+
+        @JsonProperty(value = "resultPayload")
+        private String resultPayload;
+    }
+
+    @Getter
+    @Setter
     @Schema(name = "AiBatchIdRequest", description = "AI批量任务ID请求")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
