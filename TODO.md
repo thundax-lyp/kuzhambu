@@ -36,7 +36,6 @@
     - 处理动作：创建别名与同义词部分请求模型。
     - 验收点：4 个请求类存在且字段能覆盖别名新增删除与同义词分页创建。
     - 重要度：8/10
-
 - [ ] `knowledge taxonomy requests E`：补齐同义词更新删除请求模型
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
