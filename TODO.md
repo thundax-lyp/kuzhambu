@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `knowledge taxonomy tag components A`：创建标签表格与编辑组件
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/taxonomy/components/tag-table.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/taxonomy/components/tag-edit.tsx`
-    - 处理动作：创建统一标签表格与编辑组件。
-    - 验收点：2 个组件存在且能支撑标签列表、新增、编辑、启用、禁用。
-    - 重要度：9/10
-
 - [ ] `knowledge taxonomy tag components B`：创建标签审核与详情组件
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
