@@ -57,7 +57,6 @@
     - 处理动作：创建别名、内容引用、同义词响应模型。
     - 验收点：3 个响应类存在且字段与 RUNBOOK 响应契约一致。
     - 重要度：7/10
-
 - [ ] `knowledge taxonomy controller`：创建 taxonomy 控制器与接口装配器
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
