@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `AiInvocationController`：AI 管理接口改用 DomainService
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-CANDIDATE-CONFIRMATION.md#B1.4 AI 管理接口接入 DomainService`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/invocation/controller/AiInvocationController.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/invocation/controller/request/AiInvocationRequests.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/invocation/assembler/AiInvocationInterfaceAssembler.java`
-    - 处理动作：将 reject 和 mark-applied 接口接入 `AiCandidateDomainService`。
-    - 验收点：不新增 `/api/ai/invocation/candidate/apply`，reject 与 mark-applied 都通过 `AiCandidateDomainService` 更新候选。
-    - 重要度：8/10
-
 - [ ] `AiCandidateApplyContentCommand`：新增 Classics AI 候选应用命令和结果
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-CANDIDATE-CONFIRMATION.md#B2.1 新增命令和结果`
