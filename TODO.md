@@ -15,14 +15,6 @@
 
 
 
-- [ ] `knowledge taxonomy repositories C`：创建同义词仓储接口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/taxonomy/repository/SynonymRepository.java`
-    - 处理动作：创建同义词仓储接口并声明 MVP 所需读写方法。
-    - 验收点：`SynonymRepository` 存在且方法覆盖分页、创建、更新、状态修改、删除、唯一性查询。
-    - 重要度：8/10
-
 - [ ] `knowledge taxonomy commands A`：创建分类命令对象
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-MVP.md`
