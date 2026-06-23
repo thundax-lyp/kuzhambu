@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web/knowledge extraction service contract`：接通知识抽取前端服务契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-AI-WORKERS-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/graph-extraction-service.ts`、`graph-extraction-types.ts`、`graph-extraction-service.test.ts`
-    - 处理动作：定义前端请求响应模型与服务层调用契约
-    - 验收点：admin-web 可稳定调用知识抽取任务接口并有服务层测试约束
-    - 重要度：7/10
-
 - [ ] `admin-web/knowledge extraction page shell`：搭建抽取任务页骨架
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-AI-WORKERS-CLOSURE.md`
