@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.knowledge.infra.graph.repository.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageRelation;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeLineageRelationRepository;
@@ -41,20 +41,20 @@ public class KnowledgeLineageRelationRepositoryImpl implements KnowledgeLineageR
             }
             int updated = mapper.update(
                     null,
-                    new LambdaUpdateWrapper<KnowledgeLineageRelationDO>()
-                            .eq(KnowledgeLineageRelationDO::getRelationKey, dataObject.getRelationKey())
-                            .set(KnowledgeLineageRelationDO::getSourceNodeKey, dataObject.getSourceNodeKey())
-                            .set(KnowledgeLineageRelationDO::getTargetNodeKey, dataObject.getTargetNodeKey())
-                            .set(KnowledgeLineageRelationDO::getSourceName, dataObject.getSourceName())
-                            .set(KnowledgeLineageRelationDO::getTargetName, dataObject.getTargetName())
-                            .set(KnowledgeLineageRelationDO::getRelationType, dataObject.getRelationType())
-                            .set(KnowledgeLineageRelationDO::getEvidence, dataObject.getEvidence())
-                            .set(KnowledgeLineageRelationDO::getConfirmationStatus, dataObject.getConfirmationStatus())
-                            .set(KnowledgeLineageRelationDO::getLatestVersionId, dataObject.getLatestVersionId())
-                            .set(KnowledgeLineageRelationDO::getSourceRefsJson, dataObject.getSourceRefsJson())
-                            .set(KnowledgeLineageRelationDO::getFirstExtractedAt, dataObject.getFirstExtractedAt())
-                            .set(KnowledgeLineageRelationDO::getLastExtractedAt, dataObject.getLastExtractedAt())
-                            .set(KnowledgeLineageRelationDO::getConfirmedAt, dataObject.getConfirmedAt()));
+                    new UpdateWrapper<KnowledgeLineageRelationDO>()
+                            .eq("relation_key", dataObject.getRelationKey())
+                            .set("source_node_key", dataObject.getSourceNodeKey())
+                            .set("target_node_key", dataObject.getTargetNodeKey())
+                            .set("source_name", dataObject.getSourceName())
+                            .set("target_name", dataObject.getTargetName())
+                            .set("relation_type", dataObject.getRelationType())
+                            .set("evidence", dataObject.getEvidence())
+                            .set("confirmation_status", dataObject.getConfirmationStatus())
+                            .set("latest_version_id", dataObject.getLatestVersionId())
+                            .set("source_refs_json", dataObject.getSourceRefsJson())
+                            .set("first_extracted_at", dataObject.getFirstExtractedAt())
+                            .set("last_extracted_at", dataObject.getLastExtractedAt())
+                            .set("confirmed_at", dataObject.getConfirmedAt()));
             if (updated == 0) {
                 mapper.insert(dataObject);
             }

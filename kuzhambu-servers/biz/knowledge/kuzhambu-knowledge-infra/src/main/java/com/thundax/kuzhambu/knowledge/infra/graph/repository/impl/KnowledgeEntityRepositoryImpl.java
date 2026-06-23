@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.knowledge.infra.graph.repository.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeEntity;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeEntityRepository;
@@ -41,17 +41,17 @@ public class KnowledgeEntityRepositoryImpl implements KnowledgeEntityRepository 
             }
             int updated = mapper.update(
                     null,
-                    new LambdaUpdateWrapper<KnowledgeEntityDO>()
-                            .eq(KnowledgeEntityDO::getEntityKey, dataObject.getEntityKey())
-                            .set(KnowledgeEntityDO::getName, dataObject.getName())
-                            .set(KnowledgeEntityDO::getEntityType, dataObject.getEntityType())
-                            .set(KnowledgeEntityDO::getDescription, dataObject.getDescription())
-                            .set(KnowledgeEntityDO::getConfirmationStatus, dataObject.getConfirmationStatus())
-                            .set(KnowledgeEntityDO::getLatestVersionId, dataObject.getLatestVersionId())
-                            .set(KnowledgeEntityDO::getSourceRefsJson, dataObject.getSourceRefsJson())
-                            .set(KnowledgeEntityDO::getFirstExtractedAt, dataObject.getFirstExtractedAt())
-                            .set(KnowledgeEntityDO::getLastExtractedAt, dataObject.getLastExtractedAt())
-                            .set(KnowledgeEntityDO::getConfirmedAt, dataObject.getConfirmedAt()));
+                    new UpdateWrapper<KnowledgeEntityDO>()
+                            .eq("entity_key", dataObject.getEntityKey())
+                            .set("name", dataObject.getName())
+                            .set("entity_type", dataObject.getEntityType())
+                            .set("description", dataObject.getDescription())
+                            .set("confirmation_status", dataObject.getConfirmationStatus())
+                            .set("latest_version_id", dataObject.getLatestVersionId())
+                            .set("source_refs_json", dataObject.getSourceRefsJson())
+                            .set("first_extracted_at", dataObject.getFirstExtractedAt())
+                            .set("last_extracted_at", dataObject.getLastExtractedAt())
+                            .set("confirmed_at", dataObject.getConfirmedAt()));
             if (updated == 0) {
                 mapper.insert(dataObject);
             }

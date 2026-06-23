@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.knowledge.infra.graph.repository.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageNode;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeLineageNodeRepository;
@@ -41,18 +41,18 @@ public class KnowledgeLineageNodeRepositoryImpl implements KnowledgeLineageNodeR
             }
             int updated = mapper.update(
                     null,
-                    new LambdaUpdateWrapper<KnowledgeLineageNodeDO>()
-                            .eq(KnowledgeLineageNodeDO::getNodeKey, dataObject.getNodeKey())
-                            .set(KnowledgeLineageNodeDO::getName, dataObject.getName())
-                            .set(KnowledgeLineageNodeDO::getNodeType, dataObject.getNodeType())
-                            .set(KnowledgeLineageNodeDO::getGeneration, dataObject.getGeneration())
-                            .set(KnowledgeLineageNodeDO::getGender, dataObject.getGender())
-                            .set(KnowledgeLineageNodeDO::getConfirmationStatus, dataObject.getConfirmationStatus())
-                            .set(KnowledgeLineageNodeDO::getLatestVersionId, dataObject.getLatestVersionId())
-                            .set(KnowledgeLineageNodeDO::getSourceRefsJson, dataObject.getSourceRefsJson())
-                            .set(KnowledgeLineageNodeDO::getFirstExtractedAt, dataObject.getFirstExtractedAt())
-                            .set(KnowledgeLineageNodeDO::getLastExtractedAt, dataObject.getLastExtractedAt())
-                            .set(KnowledgeLineageNodeDO::getConfirmedAt, dataObject.getConfirmedAt()));
+                    new UpdateWrapper<KnowledgeLineageNodeDO>()
+                            .eq("node_key", dataObject.getNodeKey())
+                            .set("name", dataObject.getName())
+                            .set("node_type", dataObject.getNodeType())
+                            .set("generation", dataObject.getGeneration())
+                            .set("gender", dataObject.getGender())
+                            .set("confirmation_status", dataObject.getConfirmationStatus())
+                            .set("latest_version_id", dataObject.getLatestVersionId())
+                            .set("source_refs_json", dataObject.getSourceRefsJson())
+                            .set("first_extracted_at", dataObject.getFirstExtractedAt())
+                            .set("last_extracted_at", dataObject.getLastExtractedAt())
+                            .set("confirmed_at", dataObject.getConfirmedAt()));
             if (updated == 0) {
                 mapper.insert(dataObject);
             }
