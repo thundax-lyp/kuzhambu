@@ -14,13 +14,30 @@ import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphVersionResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeEntityResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeLineageNodeResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeLineageRelationResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeRelationResult;
 import com.thundax.kuzhambu.knowledge.application.graph.service.impl.KnowledgeGraphExtractionApplicationServiceImpl;
 import com.thundax.kuzhambu.knowledge.application.graph.support.KnowledgeGraphCandidateApplySupport;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphVersion;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeEntity;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageNode;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageRelation;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeRelation;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphExtractionTaskRepository;
+import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphVersionRepository;
+import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeEntityRepository;
+import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeLineageNodeRepository;
+import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeLineageRelationRepository;
+import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeRelationRepository;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -32,6 +49,11 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         FakeKnowledgeAiExtractionDomainService aiService = new FakeKnowledgeAiExtractionDomainService();
         KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
                 repository,
+                new FakeGraphVersionRepository(),
+                new FakeKnowledgeEntityRepository(),
+                new FakeKnowledgeRelationRepository(),
+                new FakeKnowledgeLineageNodeRepository(),
+                new FakeKnowledgeLineageRelationRepository(),
                 new FakeAiInvocationRepository(),
                 aiService,
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
@@ -58,6 +80,11 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         repository.tasks.add(task);
         KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
                 repository,
+                new FakeGraphVersionRepository(),
+                new FakeKnowledgeEntityRepository(),
+                new FakeKnowledgeRelationRepository(),
+                new FakeKnowledgeLineageNodeRepository(),
+                new FakeKnowledgeLineageRelationRepository(),
                 new FakeAiInvocationRepository(),
                 new FakeKnowledgeAiExtractionDomainService(),
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
@@ -88,6 +115,11 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         aiInvocationRepository.candidate.setAppliedAt(Instant.parse("2026-06-23T00:01:00Z"));
         KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
                 repository,
+                new FakeGraphVersionRepository(),
+                new FakeKnowledgeEntityRepository(),
+                new FakeKnowledgeRelationRepository(),
+                new FakeKnowledgeLineageNodeRepository(),
+                new FakeKnowledgeLineageRelationRepository(),
                 aiInvocationRepository,
                 new FakeKnowledgeAiExtractionDomainService(),
                 new AiCandidateDomainService(aiInvocationRepository),
@@ -98,6 +130,342 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         assertEquals("APPLIED", detail.getStatus());
         assertEquals(Instant.parse("2026-06-23T00:00:00Z").toEpochMilli(), detail.getCompletedAt());
         assertEquals(Instant.parse("2026-06-23T00:01:00Z").toEpochMilli(), detail.getAppliedAt());
+    }
+
+    @Test
+    void pageVersionsShouldMapVersionRecords() {
+        FakeGraphVersionRepository graphVersionRepository = new FakeGraphVersionRepository();
+        GraphVersion version = new GraphVersion();
+        version.setVersionId(61L);
+        version.setTaskId(GraphExtractionTaskId.of(31L));
+        version.setCandidateId(901L);
+        version.setTaskType("GRAPH");
+        version.setSourceContentType("SANCAI_ENTRY");
+        version.setSourceContentId(1001L);
+        version.setVersionNo(2);
+        version.setStatus("APPLIED");
+        version.setAppliedAt(new Date(1_719_100_800_000L));
+        graphVersionRepository.versions.add(version);
+        KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
+                new FakeRepository(),
+                graphVersionRepository,
+                new FakeKnowledgeEntityRepository(),
+                new FakeKnowledgeRelationRepository(),
+                new FakeKnowledgeLineageNodeRepository(),
+                new FakeKnowledgeLineageRelationRepository(),
+                new FakeAiInvocationRepository(),
+                new FakeKnowledgeAiExtractionDomainService(),
+                new AiCandidateDomainService(new FakeAiInvocationRepository()),
+                null);
+
+        PageResult<GraphVersionResult> page = service.pageVersions("GRAPH", "APPLIED", "SANCAI_ENTRY", 1001L, null);
+
+        assertEquals(1, page.getRecords().size());
+        assertEquals(61L, page.getRecords().get(0).getVersionId());
+        assertEquals("31", page.getRecords().get(0).getTaskId());
+        assertEquals(901L, page.getRecords().get(0).getCandidateId());
+    }
+
+    @Test
+    void getVersionDetailShouldMapSingleVersionRecord() {
+        FakeGraphVersionRepository graphVersionRepository = new FakeGraphVersionRepository();
+        GraphVersion version = new GraphVersion();
+        version.setVersionId(71L);
+        version.setTaskId(GraphExtractionTaskId.of(41L));
+        version.setCandidateId(902L);
+        version.setTaskType("LINEAGE");
+        version.setSourceContentType("SANCAI_ENTRY");
+        version.setSourceContentId(1002L);
+        version.setVersionNo(3);
+        version.setStatus("APPLIED");
+        version.setAppliedAt(new Date(1_719_187_200_000L));
+        graphVersionRepository.versions.add(version);
+        KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
+                new FakeRepository(),
+                graphVersionRepository,
+                new FakeKnowledgeEntityRepository(),
+                new FakeKnowledgeRelationRepository(),
+                new FakeKnowledgeLineageNodeRepository(),
+                new FakeKnowledgeLineageRelationRepository(),
+                new FakeAiInvocationRepository(),
+                new FakeKnowledgeAiExtractionDomainService(),
+                new AiCandidateDomainService(new FakeAiInvocationRepository()),
+                null);
+
+        GraphVersionResult detail = service.getVersionDetail(71L);
+
+        assertEquals(71L, detail.getVersionId());
+        assertEquals("41", detail.getTaskId());
+        assertEquals(902L, detail.getCandidateId());
+        assertEquals("LINEAGE", detail.getTaskType());
+    }
+
+    @Test
+    void pageEntitiesShouldMapReadableFields() {
+        FakeKnowledgeEntityRepository knowledgeEntityRepository = new FakeKnowledgeEntityRepository();
+        KnowledgeEntity entity = new KnowledgeEntity();
+        entity.setEntityId(1001L);
+        entity.setEntityKey("person:huangdi");
+        entity.setName("黄帝");
+        entity.setEntityType("PERSON");
+        entity.setDescription("始祖");
+        entity.setConfirmationStatus("CONFIRMED");
+        entity.setLatestVersionId(71L);
+        entity.setSourceRefsJson("[{\"entryId\":1}]");
+        entity.setFirstExtractedAt(new Date(1_719_100_800_000L));
+        entity.setLastExtractedAt(new Date(1_719_187_200_000L));
+        knowledgeEntityRepository.entities.add(entity);
+        KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
+                new FakeRepository(),
+                new FakeGraphVersionRepository(),
+                knowledgeEntityRepository,
+                new FakeKnowledgeRelationRepository(),
+                new FakeKnowledgeLineageNodeRepository(),
+                new FakeKnowledgeLineageRelationRepository(),
+                new FakeAiInvocationRepository(),
+                new FakeKnowledgeAiExtractionDomainService(),
+                new AiCandidateDomainService(new FakeAiInvocationRepository()),
+                null);
+
+        PageResult<KnowledgeEntityResult> page = service.pageEntities(71L, "黄帝", "PERSON", "CONFIRMED", null);
+
+        assertEquals(1, page.getRecords().size());
+        assertEquals(1001L, page.getRecords().get(0).getEntityId());
+        assertEquals("person:huangdi", page.getRecords().get(0).getEntityKey());
+        assertEquals("CONFIRMED", page.getRecords().get(0).getConfirmationStatus());
+    }
+
+    @Test
+    void getEntityDetailShouldMapSingleEntityRecord() {
+        FakeKnowledgeEntityRepository knowledgeEntityRepository = new FakeKnowledgeEntityRepository();
+        KnowledgeEntity entity = new KnowledgeEntity();
+        entity.setEntityId(1002L);
+        entity.setEntityKey("person:fuxi");
+        entity.setName("伏羲");
+        entity.setEntityType("PERSON");
+        entity.setDescription("始祖");
+        entity.setConfirmationStatus("AI_EXTRACTED");
+        entity.setLatestVersionId(72L);
+        entity.setSourceRefsJson("[{\"entryId\":2}]");
+        knowledgeEntityRepository.entities.add(entity);
+        KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
+                new FakeRepository(),
+                new FakeGraphVersionRepository(),
+                knowledgeEntityRepository,
+                new FakeKnowledgeRelationRepository(),
+                new FakeKnowledgeLineageNodeRepository(),
+                new FakeKnowledgeLineageRelationRepository(),
+                new FakeAiInvocationRepository(),
+                new FakeKnowledgeAiExtractionDomainService(),
+                new AiCandidateDomainService(new FakeAiInvocationRepository()),
+                null);
+
+        KnowledgeEntityResult detail = service.getEntityDetail(1002L);
+
+        assertEquals(1002L, detail.getEntityId());
+        assertEquals("person:fuxi", detail.getEntityKey());
+        assertEquals("伏羲", detail.getName());
+    }
+
+    @Test
+    void pageRelationsShouldMapReadableFields() {
+        FakeKnowledgeRelationRepository knowledgeRelationRepository = new FakeKnowledgeRelationRepository();
+        KnowledgeRelation relation = new KnowledgeRelation();
+        relation.setRelationId(2001L);
+        relation.setRelationKey("person:huangdi->person:fuxi:ancestor");
+        relation.setSourceName("黄帝");
+        relation.setTargetName("伏羲");
+        relation.setRelationType("ANCESTOR");
+        relation.setEvidence("谱系");
+        relation.setConfirmationStatus("CONFIRMED");
+        relation.setLatestVersionId(71L);
+        relation.setSourceRefsJson("[{\"entryId\":1}]");
+        knowledgeRelationRepository.relations.add(relation);
+        KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
+                new FakeRepository(),
+                new FakeGraphVersionRepository(),
+                new FakeKnowledgeEntityRepository(),
+                knowledgeRelationRepository,
+                new FakeKnowledgeLineageNodeRepository(),
+                new FakeKnowledgeLineageRelationRepository(),
+                new FakeAiInvocationRepository(),
+                new FakeKnowledgeAiExtractionDomainService(),
+                new AiCandidateDomainService(new FakeAiInvocationRepository()),
+                null);
+
+        PageResult<KnowledgeRelationResult> page = service.pageRelations(71L, "黄帝", "ANCESTOR", "CONFIRMED", null);
+
+        assertEquals(1, page.getRecords().size());
+        assertEquals(2001L, page.getRecords().get(0).getRelationId());
+        assertEquals("黄帝", page.getRecords().get(0).getSourceName());
+        assertEquals("ANCESTOR", page.getRecords().get(0).getRelationType());
+    }
+
+    @Test
+    void getRelationDetailShouldMapSingleRelationRecord() {
+        FakeKnowledgeRelationRepository knowledgeRelationRepository = new FakeKnowledgeRelationRepository();
+        KnowledgeRelation relation = new KnowledgeRelation();
+        relation.setRelationId(2002L);
+        relation.setRelationKey("person:fuxi->person:huangdi:ancestor");
+        relation.setSourceName("伏羲");
+        relation.setTargetName("黄帝");
+        relation.setRelationType("ANCESTOR");
+        relation.setEvidence("谱系");
+        relation.setConfirmationStatus("AI_EXTRACTED");
+        relation.setLatestVersionId(72L);
+        knowledgeRelationRepository.relations.add(relation);
+        KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
+                new FakeRepository(),
+                new FakeGraphVersionRepository(),
+                new FakeKnowledgeEntityRepository(),
+                knowledgeRelationRepository,
+                new FakeKnowledgeLineageNodeRepository(),
+                new FakeKnowledgeLineageRelationRepository(),
+                new FakeAiInvocationRepository(),
+                new FakeKnowledgeAiExtractionDomainService(),
+                new AiCandidateDomainService(new FakeAiInvocationRepository()),
+                null);
+
+        KnowledgeRelationResult detail = service.getRelationDetail(2002L);
+
+        assertEquals(2002L, detail.getRelationId());
+        assertEquals("伏羲", detail.getSourceName());
+        assertEquals("黄帝", detail.getTargetName());
+    }
+
+    @Test
+    void pageLineageNodesShouldMapReadableFields() {
+        FakeKnowledgeLineageNodeRepository knowledgeLineageNodeRepository = new FakeKnowledgeLineageNodeRepository();
+        KnowledgeLineageNode node = new KnowledgeLineageNode();
+        node.setNodeId(3001L);
+        node.setNodeKey("person:huangdi");
+        node.setName("黄帝");
+        node.setNodeType("PERSON");
+        node.setGeneration(1);
+        node.setGender("MALE");
+        node.setConfirmationStatus("CONFIRMED");
+        node.setLatestVersionId(71L);
+        node.setSourceRefsJson("[{\"entryId\":1}]");
+        knowledgeLineageNodeRepository.nodes.add(node);
+        KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
+                new FakeRepository(),
+                new FakeGraphVersionRepository(),
+                new FakeKnowledgeEntityRepository(),
+                new FakeKnowledgeRelationRepository(),
+                knowledgeLineageNodeRepository,
+                new FakeKnowledgeLineageRelationRepository(),
+                new FakeAiInvocationRepository(),
+                new FakeKnowledgeAiExtractionDomainService(),
+                new AiCandidateDomainService(new FakeAiInvocationRepository()),
+                null);
+
+        PageResult<KnowledgeLineageNodeResult> page = service.pageLineageNodes(71L, "黄帝", "PERSON", "CONFIRMED", null);
+
+        assertEquals(1, page.getRecords().size());
+        assertEquals(3001L, page.getRecords().get(0).getNodeId());
+        assertEquals("person:huangdi", page.getRecords().get(0).getNodeKey());
+        assertEquals("CONFIRMED", page.getRecords().get(0).getConfirmationStatus());
+    }
+
+    @Test
+    void getLineageNodeDetailShouldMapSingleNodeRecord() {
+        FakeKnowledgeLineageNodeRepository knowledgeLineageNodeRepository = new FakeKnowledgeLineageNodeRepository();
+        KnowledgeLineageNode node = new KnowledgeLineageNode();
+        node.setNodeId(3002L);
+        node.setNodeKey("person:fuxi");
+        node.setName("伏羲");
+        node.setNodeType("PERSON");
+        node.setGeneration(0);
+        node.setGender("MALE");
+        node.setConfirmationStatus("AI_EXTRACTED");
+        node.setLatestVersionId(72L);
+        knowledgeLineageNodeRepository.nodes.add(node);
+        KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
+                new FakeRepository(),
+                new FakeGraphVersionRepository(),
+                new FakeKnowledgeEntityRepository(),
+                new FakeKnowledgeRelationRepository(),
+                knowledgeLineageNodeRepository,
+                new FakeKnowledgeLineageRelationRepository(),
+                new FakeAiInvocationRepository(),
+                new FakeKnowledgeAiExtractionDomainService(),
+                new AiCandidateDomainService(new FakeAiInvocationRepository()),
+                null);
+
+        KnowledgeLineageNodeResult detail = service.getLineageNodeDetail(3002L);
+
+        assertEquals(3002L, detail.getNodeId());
+        assertEquals("person:fuxi", detail.getNodeKey());
+        assertEquals("伏羲", detail.getName());
+    }
+
+    @Test
+    void pageLineageRelationsShouldMapReadableFields() {
+        FakeKnowledgeLineageRelationRepository knowledgeLineageRelationRepository =
+                new FakeKnowledgeLineageRelationRepository();
+        KnowledgeLineageRelation relation = new KnowledgeLineageRelation();
+        relation.setRelationId(4001L);
+        relation.setRelationKey("person:huangdi->person:fuxi:ancestor");
+        relation.setSourceName("黄帝");
+        relation.setTargetName("伏羲");
+        relation.setRelationType("ANCESTOR");
+        relation.setEvidence("谱系");
+        relation.setConfirmationStatus("CONFIRMED");
+        relation.setLatestVersionId(71L);
+        relation.setSourceRefsJson("[{\"entryId\":1}]");
+        knowledgeLineageRelationRepository.relations.add(relation);
+        KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
+                new FakeRepository(),
+                new FakeGraphVersionRepository(),
+                new FakeKnowledgeEntityRepository(),
+                new FakeKnowledgeRelationRepository(),
+                new FakeKnowledgeLineageNodeRepository(),
+                knowledgeLineageRelationRepository,
+                new FakeAiInvocationRepository(),
+                new FakeKnowledgeAiExtractionDomainService(),
+                new AiCandidateDomainService(new FakeAiInvocationRepository()),
+                null);
+
+        PageResult<KnowledgeLineageRelationResult> page =
+                service.pageLineageRelations(71L, "黄帝", "ANCESTOR", "CONFIRMED", null);
+
+        assertEquals(1, page.getRecords().size());
+        assertEquals(4001L, page.getRecords().get(0).getRelationId());
+        assertEquals("黄帝", page.getRecords().get(0).getSourceName());
+        assertEquals("ANCESTOR", page.getRecords().get(0).getRelationType());
+    }
+
+    @Test
+    void getLineageRelationDetailShouldMapSingleRelationRecord() {
+        FakeKnowledgeLineageRelationRepository knowledgeLineageRelationRepository =
+                new FakeKnowledgeLineageRelationRepository();
+        KnowledgeLineageRelation relation = new KnowledgeLineageRelation();
+        relation.setRelationId(4002L);
+        relation.setRelationKey("person:fuxi->person:huangdi:ancestor");
+        relation.setSourceName("伏羲");
+        relation.setTargetName("黄帝");
+        relation.setRelationType("ANCESTOR");
+        relation.setEvidence("谱系");
+        relation.setConfirmationStatus("AI_EXTRACTED");
+        relation.setLatestVersionId(72L);
+        knowledgeLineageRelationRepository.relations.add(relation);
+        KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
+                new FakeRepository(),
+                new FakeGraphVersionRepository(),
+                new FakeKnowledgeEntityRepository(),
+                new FakeKnowledgeRelationRepository(),
+                new FakeKnowledgeLineageNodeRepository(),
+                knowledgeLineageRelationRepository,
+                new FakeAiInvocationRepository(),
+                new FakeKnowledgeAiExtractionDomainService(),
+                new AiCandidateDomainService(new FakeAiInvocationRepository()),
+                null);
+
+        KnowledgeLineageRelationResult detail = service.getLineageRelationDetail(4002L);
+
+        assertEquals(4002L, detail.getRelationId());
+        assertEquals("伏羲", detail.getSourceName());
+        assertEquals("黄帝", detail.getTargetName());
     }
 
     @Test
@@ -121,6 +489,11 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         FakeCandidateApplySupport candidateApplySupport = new FakeCandidateApplySupport();
         KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
                 repository,
+                new FakeGraphVersionRepository(),
+                new FakeKnowledgeEntityRepository(),
+                new FakeKnowledgeRelationRepository(),
+                new FakeKnowledgeLineageNodeRepository(),
+                new FakeKnowledgeLineageRelationRepository(),
                 aiInvocationRepository,
                 new FakeKnowledgeAiExtractionDomainService(),
                 new AiCandidateDomainService(aiInvocationRepository),
@@ -217,6 +590,242 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 int pageNo,
                 int pageSize) {
             return PageResult.of(pageNo, pageSize, tasks.size(), tasks);
+        }
+    }
+
+    private static final class FakeGraphVersionRepository implements GraphVersionRepository {
+        private final List<GraphVersion> versions = new ArrayList<>();
+
+        @Override
+        public GraphVersion findLatest(String taskType, String sourceContentType, Long sourceContentId) {
+            return versions.stream()
+                    .filter(version -> taskType.equals(version.getTaskType()))
+                    .filter(version -> sourceContentType.equals(version.getSourceContentType()))
+                    .filter(version -> sourceContentId.equals(version.getSourceContentId()))
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        @Override
+        public GraphVersion getByVersionId(Long versionId) {
+            return versions.stream()
+                    .filter(version -> versionId.equals(version.getVersionId()))
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        @Override
+        public GraphVersion getByTaskCandidate(GraphExtractionTaskId taskId, Long candidateId) {
+            return versions.stream()
+                    .filter(version ->
+                            version.getTaskId() != null && version.getTaskId().equals(taskId))
+                    .filter(version -> candidateId.equals(version.getCandidateId()))
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        @Override
+        public PageResult<GraphVersion> page(
+                String taskType,
+                String status,
+                String sourceContentType,
+                Long sourceContentId,
+                int pageNo,
+                int pageSize) {
+            return PageResult.of(
+                    pageNo,
+                    pageSize,
+                    versions.size(),
+                    versions.stream()
+                            .filter(version -> taskType == null || taskType.equals(version.getTaskType()))
+                            .filter(version -> status == null || status.equals(version.getStatus()))
+                            .filter(version -> sourceContentType == null
+                                    || sourceContentType.equals(version.getSourceContentType()))
+                            .filter(version ->
+                                    sourceContentId == null || sourceContentId.equals(version.getSourceContentId()))
+                            .toList());
+        }
+
+        @Override
+        public Long save(GraphVersion entity) {
+            versions.add(entity);
+            return entity.getVersionId();
+        }
+    }
+
+    private static final class FakeKnowledgeEntityRepository implements KnowledgeEntityRepository {
+        private final List<KnowledgeEntity> entities = new ArrayList<>();
+
+        @Override
+        public List<KnowledgeEntity> listByEntityKeys(Collection<String> entityKeys) {
+            return entityKeys == null ? List.of() : entities;
+        }
+
+        @Override
+        public KnowledgeEntity getByEntityId(Long entityId) {
+            return entities.stream()
+                    .filter(entity -> entityId.equals(entity.getEntityId()))
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        @Override
+        public PageResult<KnowledgeEntity> page(
+                Long versionId,
+                String keyword,
+                String entityType,
+                String confirmationStatus,
+                int pageNo,
+                int pageSize) {
+            return PageResult.of(
+                    pageNo,
+                    pageSize,
+                    entities.size(),
+                    entities.stream()
+                            .filter(entity -> versionId == null || versionId.equals(entity.getLatestVersionId()))
+                            .filter(entity ->
+                                    keyword == null || entity.getName().contains(keyword))
+                            .filter(entity -> entityType == null || entityType.equals(entity.getEntityType()))
+                            .filter(entity -> confirmationStatus == null
+                                    || confirmationStatus.equals(entity.getConfirmationStatus()))
+                            .toList());
+        }
+
+        @Override
+        public void saveOrUpdateBatch(List<KnowledgeEntity> entities) {
+            this.entities.clear();
+            this.entities.addAll(entities);
+        }
+    }
+
+    private static final class FakeKnowledgeRelationRepository implements KnowledgeRelationRepository {
+        private final List<KnowledgeRelation> relations = new ArrayList<>();
+
+        @Override
+        public List<KnowledgeRelation> listByRelationKeys(Collection<String> relationKeys) {
+            return relationKeys == null ? List.of() : relations;
+        }
+
+        @Override
+        public KnowledgeRelation getByRelationId(Long relationId) {
+            return relations.stream()
+                    .filter(relation -> relationId.equals(relation.getRelationId()))
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        @Override
+        public PageResult<KnowledgeRelation> page(
+                Long versionId,
+                String keyword,
+                String relationType,
+                String confirmationStatus,
+                int pageNo,
+                int pageSize) {
+            return PageResult.of(
+                    pageNo,
+                    pageSize,
+                    relations.size(),
+                    relations.stream()
+                            .filter(relation -> versionId == null || versionId.equals(relation.getLatestVersionId()))
+                            .filter(relation -> keyword == null
+                                    || relation.getSourceName().contains(keyword)
+                                    || relation.getTargetName().contains(keyword))
+                            .filter(relation -> relationType == null || relationType.equals(relation.getRelationType()))
+                            .filter(relation -> confirmationStatus == null
+                                    || confirmationStatus.equals(relation.getConfirmationStatus()))
+                            .toList());
+        }
+
+        @Override
+        public void saveOrUpdateBatch(List<KnowledgeRelation> relations) {
+            this.relations.clear();
+            this.relations.addAll(relations);
+        }
+    }
+
+    private static final class FakeKnowledgeLineageNodeRepository implements KnowledgeLineageNodeRepository {
+        private final List<KnowledgeLineageNode> nodes = new ArrayList<>();
+
+        @Override
+        public List<KnowledgeLineageNode> listByNodeKeys(Collection<String> nodeKeys) {
+            return nodeKeys == null ? List.of() : nodes;
+        }
+
+        @Override
+        public KnowledgeLineageNode getByNodeId(Long nodeId) {
+            return nodes.stream()
+                    .filter(node -> nodeId.equals(node.getNodeId()))
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        @Override
+        public PageResult<KnowledgeLineageNode> page(
+                Long versionId, String keyword, String nodeType, String confirmationStatus, int pageNo, int pageSize) {
+            return PageResult.of(
+                    pageNo,
+                    pageSize,
+                    nodes.size(),
+                    nodes.stream()
+                            .filter(node -> versionId == null || versionId.equals(node.getLatestVersionId()))
+                            .filter(node -> keyword == null || node.getName().contains(keyword))
+                            .filter(node -> nodeType == null || nodeType.equals(node.getNodeType()))
+                            .filter(node -> confirmationStatus == null
+                                    || confirmationStatus.equals(node.getConfirmationStatus()))
+                            .toList());
+        }
+
+        @Override
+        public void saveOrUpdateBatch(List<KnowledgeLineageNode> nodes) {
+            this.nodes.clear();
+            this.nodes.addAll(nodes);
+        }
+    }
+
+    private static final class FakeKnowledgeLineageRelationRepository implements KnowledgeLineageRelationRepository {
+        private final List<KnowledgeLineageRelation> relations = new ArrayList<>();
+
+        @Override
+        public List<KnowledgeLineageRelation> listByRelationKeys(Collection<String> relationKeys) {
+            return relationKeys == null ? List.of() : relations;
+        }
+
+        @Override
+        public KnowledgeLineageRelation getByRelationId(Long relationId) {
+            return relations.stream()
+                    .filter(relation -> relationId.equals(relation.getRelationId()))
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        @Override
+        public PageResult<KnowledgeLineageRelation> page(
+                Long versionId,
+                String keyword,
+                String relationType,
+                String confirmationStatus,
+                int pageNo,
+                int pageSize) {
+            return PageResult.of(
+                    pageNo,
+                    pageSize,
+                    relations.size(),
+                    relations.stream()
+                            .filter(relation -> versionId == null || versionId.equals(relation.getLatestVersionId()))
+                            .filter(relation -> keyword == null
+                                    || relation.getSourceName().contains(keyword)
+                                    || relation.getTargetName().contains(keyword))
+                            .filter(relation -> relationType == null || relationType.equals(relation.getRelationType()))
+                            .filter(relation -> confirmationStatus == null
+                                    || confirmationStatus.equals(relation.getConfirmationStatus()))
+                            .toList());
+        }
+
+        @Override
+        public void saveOrUpdateBatch(List<KnowledgeLineageRelation> relations) {
+            this.relations.clear();
+            this.relations.addAll(relations);
         }
     }
 

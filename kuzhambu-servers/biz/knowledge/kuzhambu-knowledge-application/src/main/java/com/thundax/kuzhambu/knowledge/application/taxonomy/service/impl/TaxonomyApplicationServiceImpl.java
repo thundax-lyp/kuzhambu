@@ -15,28 +15,37 @@ import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCategoryCr
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCategoryStatusCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCategoryUpdateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCreateCommand;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagDeprecateCommand;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagMergeCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagReviewCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagStatusCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagUpdateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.SynonymPageQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagCategoryPageQuery;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagGovernanceMetricsQuery;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagMergePreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagPageQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagReviewPageQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.SynonymResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagAliasResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagCategoryResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagDetailResult;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagGovernanceMetricsResult;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagMergePreviewResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.service.TaxonomyApplicationService;
+import com.thundax.kuzhambu.knowledge.domain.service.KnowledgeTagBindingDomainService;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.Synonym;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.Tag;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.TagAlias;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.TagCategory;
+import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.TagContentRef;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.SynonymStatus;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.TagCategoryStatus;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.TagReviewStatus;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.TagSource;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.TagStatus;
+import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.readmodel.TagGovernanceMetrics;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.valueobject.SynonymId;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.valueobject.TagAliasId;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.valueobject.TagCategoryId;
@@ -45,6 +54,7 @@ import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.SynonymReposito
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagAliasRepository;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagCategoryRepository;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagContentRefRepository;
+import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagGovernanceMetricsRepository;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagRepository;
 import java.util.Date;
 import java.util.List;
@@ -68,18 +78,24 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     private final TagAliasRepository tagAliasRepository;
     private final TagContentRefRepository tagContentRefRepository;
     private final SynonymRepository synonymRepository;
+    private final KnowledgeTagBindingDomainService knowledgeTagBindingDomainService;
+    private final TagGovernanceMetricsRepository tagGovernanceMetricsRepository;
 
     public TaxonomyApplicationServiceImpl(
             TagCategoryRepository tagCategoryRepository,
             TagRepository tagRepository,
             TagAliasRepository tagAliasRepository,
             TagContentRefRepository tagContentRefRepository,
-            SynonymRepository synonymRepository) {
+            SynonymRepository synonymRepository,
+            KnowledgeTagBindingDomainService knowledgeTagBindingDomainService,
+            TagGovernanceMetricsRepository tagGovernanceMetricsRepository) {
         this.tagCategoryRepository = tagCategoryRepository;
         this.tagRepository = tagRepository;
         this.tagAliasRepository = tagAliasRepository;
         this.tagContentRefRepository = tagContentRefRepository;
         this.synonymRepository = synonymRepository;
+        this.knowledgeTagBindingDomainService = knowledgeTagBindingDomainService;
+        this.tagGovernanceMetricsRepository = tagGovernanceMetricsRepository;
     }
 
     @Override
@@ -213,6 +229,50 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     }
 
     @Override
+    public TagMergePreviewResult previewTagMergeImpact(TagMergePreviewQuery query) {
+        ensureCommand(query, "标签合并影响预览查询");
+        Tag sourceTag = ensureTagExists(query.getSourceTagId());
+        Tag targetTag = ensureTagExists(query.getTargetTagId());
+        List<TagAlias> aliasesToMerge = tagAliasRepository.listByTagId(sourceTag.getTagId());
+        List<TagContentRef> impactedContentRefs = tagContentRefRepository.listByTagId(sourceTag.getTagId());
+        int pendingReviewCount = sourceTag.getReviewStatus() == TagReviewStatus.PENDING ? 1 : 0;
+        int governedRecordCount = pendingReviewCount + aliasesToMerge.size() + impactedContentRefs.size();
+
+        return new TagMergePreviewResult(
+                TaxonomyApplicationAssembler.toResult(
+                        sourceTag, getCategoryName(sourceTag.getCategoryId()), impactedContentRefs.size()),
+                TaxonomyApplicationAssembler.toResult(
+                        targetTag,
+                        getCategoryName(targetTag.getCategoryId()),
+                        tagContentRefRepository.countByTagId(targetTag.getTagId())),
+                TaxonomyApplicationAssembler.toAliasResultList(aliasesToMerge),
+                TaxonomyApplicationAssembler.toContentRefResultList(impactedContentRefs),
+                pendingReviewCount,
+                governedRecordCount);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void applyTagMerge(TagMergeCommand command) {
+        TagMergeCommand effective = ensureCommand(command, "标签合并命令");
+        Tag sourceTag = ensureTagExists(effective.getSourceTagId());
+        Tag targetTag = ensureTagExists(effective.getTargetTagId());
+        List<TagContentRef> sourceContentRefs = tagContentRefRepository.listByTagId(sourceTag.getTagId());
+        sourceTag.mergeInto(targetTag);
+        if (tagRepository.update(sourceTag) != 1) {
+            throw new BizException("标签合并状态更新失败");
+        }
+        sourceContentRefs.stream()
+                .filter(ref -> ref != null && ref.getContentType() != null && ref.getContentId() != null)
+                .forEach(ref -> knowledgeTagBindingDomainService.syncContentTagRef(
+                        targetTag.getTagId(),
+                        ref.getContentType(),
+                        ref.getContentId(),
+                        ref.getContentTitle(),
+                        ref.getSource()));
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public TagId createTag(TagCreateCommand command) {
         TagCreateCommand effective = ensureCommand(command, "标签创建命令");
@@ -305,6 +365,41 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
         if (tagRepository.updateStatus(updated) != 1) {
             throw new BizException("标签状态更新失败");
         }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deprecateTag(TagDeprecateCommand command) {
+        TagDeprecateCommand effective = ensureCommand(command, "标签废弃命令");
+        Tag tag = ensureTagExists(ensureId(effective.getId(), "tagId"));
+        tag.deprecate(new Date(), null);
+        if (tagRepository.update(tag) != 1) {
+            throw new BizException("标签废弃状态更新失败");
+        }
+    }
+
+    @Override
+    public TagGovernanceMetricsResult getTagGovernanceMetrics(TagGovernanceMetricsQuery query) {
+        TagGovernanceMetricsQuery effective = ensureCommand(query, "标签治理统计查询");
+        TagGovernanceMetrics metrics =
+                tagGovernanceMetricsRepository.getMetrics(effective.getTopLimit(), effective.getRecentMonths());
+        return new TagGovernanceMetricsResult(
+                metrics.getTopTags().stream()
+                        .map(item -> new TagGovernanceMetricsResult.TagUsageMetric(
+                                item.getTagName(), item.getContentRefCount()))
+                        .collect(Collectors.toList()),
+                metrics.getCategoryDistributions().stream()
+                        .map(item -> new TagGovernanceMetricsResult.CategoryDistributionMetric(
+                                item.getCategoryName(), item.getTagCount()))
+                        .collect(Collectors.toList()),
+                metrics.getSourceRatios().stream()
+                        .map(item ->
+                                new TagGovernanceMetricsResult.SourceRatioMetric(item.getSource(), item.getTagCount()))
+                        .collect(Collectors.toList()),
+                metrics.getMonthlyNewTags().stream()
+                        .map(item ->
+                                new TagGovernanceMetricsResult.MonthlyNewTagMetric(item.getMonth(), item.getTagCount()))
+                        .collect(Collectors.toList()));
     }
 
     @Override

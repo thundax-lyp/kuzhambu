@@ -9,6 +9,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeEntity;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.KnowledgeEntityDO;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.mapper.KnowledgeEntityMapper;
@@ -18,6 +20,41 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 class KnowledgeEntityRepositoryTest {
+
+    @Test
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    void pageShouldQueryByReadableFilters() {
+        KnowledgeEntityMapper mapper = mock(KnowledgeEntityMapper.class);
+        Page<KnowledgeEntityDO> dataObjectPage = new Page<>(1, 10, 1);
+        dataObjectPage.setRecords(List.of(new KnowledgeEntityDO()));
+        when(mapper.selectPage(any(Page.class), any())).thenReturn(dataObjectPage);
+        KnowledgeEntityRepositoryImpl repository = new KnowledgeEntityRepositoryImpl(mapper);
+
+        PageResult<KnowledgeEntity> page = repository.page(71L, "黄帝", "PERSON", "CONFIRMED", 1, 10);
+
+        ArgumentCaptor<QueryWrapper<KnowledgeEntityDO>> captor = ArgumentCaptor.forClass(QueryWrapper.class);
+        verify(mapper).selectPage(any(Page.class), captor.capture());
+        String sqlSegment = captor.getValue().getSqlSegment();
+        assertTrue(sqlSegment.contains("latest_version_id"));
+        assertTrue(sqlSegment.contains("name"));
+        assertTrue(sqlSegment.contains("entity_type"));
+        assertTrue(sqlSegment.contains("confirmation_status"));
+        assertEquals(1, page.getRecords().size());
+    }
+
+    @Test
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    void getByEntityIdShouldQueryBusinessKey() {
+        KnowledgeEntityMapper mapper = mock(KnowledgeEntityMapper.class);
+        when(mapper.selectOne(any())).thenReturn(new KnowledgeEntityDO());
+        KnowledgeEntityRepositoryImpl repository = new KnowledgeEntityRepositoryImpl(mapper);
+
+        repository.getByEntityId(1001L);
+
+        ArgumentCaptor<QueryWrapper<KnowledgeEntityDO>> captor = ArgumentCaptor.forClass(QueryWrapper.class);
+        verify(mapper).selectOne(captor.capture());
+        assertTrue(captor.getValue().getSqlSegment().contains("entity_id"));
+    }
 
     @Test
     @SuppressWarnings({"unchecked", "rawtypes"})

@@ -63,10 +63,9 @@ public class KnowledgeTagBindingDomainServiceImpl implements KnowledgeTagBinding
     @Override
     public Tag resolveTagByNameOrAlias(String name) {
         String normalizedName = normalizeName(name);
-        Tag tag = tagRepository.getByName(normalizedName);
-        if (tag != null) {
-            assertTagBindable(tag, normalizedName);
-            return tag;
+        Tag directTag = tagRepository.getByName(normalizedName);
+        if (directTag != null) {
+            return resolveBindableTag(directTag, normalizedName);
         }
 
         TagAlias alias = tagAliasRepository.getByName(normalizedName);
@@ -78,8 +77,7 @@ public class KnowledgeTagBindingDomainServiceImpl implements KnowledgeTagBinding
         if (aliasTarget == null) {
             return null;
         }
-        assertTagBindable(aliasTarget, normalizedName);
-        return aliasTarget;
+        return resolveBindableTag(aliasTarget, normalizedName);
     }
 
     @Override
@@ -179,6 +177,25 @@ public class KnowledgeTagBindingDomainServiceImpl implements KnowledgeTagBinding
                     "knowledge.taxonomy.tag.binding.disabled",
                     "Tag is disabled and cannot be bound: " + name);
         }
+    }
+
+    private Tag resolveBindableTag(Tag tag, String name) {
+        Tag current = tag;
+        while (current != null && current.getMergedToTagId() != null) {
+            Tag mergedTarget = tagRepository.getByTagId(current.getMergedToTagId());
+            if (mergedTarget == null) {
+                throw new DomainException(
+                        "KNOWLEDGE-10014",
+                        "knowledge.taxonomy.tag.binding.merge_target_missing",
+                        "Merged target is missing for tag binding: " + name);
+            }
+            current = mergedTarget;
+        }
+        if (current == null) {
+            return null;
+        }
+        assertTagBindable(current, name);
+        return current;
     }
 
     private String normalizeName(String name) {

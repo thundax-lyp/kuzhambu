@@ -4,6 +4,11 @@ import com.thundax.kuzhambu.knowledge.application.graph.command.RequestGraphExtr
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestLineageExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphVersionResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeEntityResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeLineageNodeResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeLineageRelationResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeRelationResult;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphExtractionRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.response.GraphExtractionResponses;
@@ -102,6 +107,87 @@ public final class KnowledgeGraphExtractionInterfaceAssembler {
                 .requestedAt(result == null ? null : result.getRequestedAt())
                 .completedAt(result == null ? null : result.getCompletedAt())
                 .appliedAt(result == null ? null : result.getAppliedAt())
+                .build();
+    }
+
+    public static GraphExtractionResponses.VersionResponse toResponse(GraphVersionResult result) {
+        return GraphExtractionResponses.VersionResponse.builder()
+                .versionId(result == null ? null : result.getVersionId())
+                .taskId(result == null ? null : result.getTaskId())
+                .candidateId(result == null ? null : result.getCandidateId())
+                .taskType(result == null ? null : result.getTaskType())
+                .sourceContentType(result == null ? null : result.getSourceContentType())
+                .sourceContentId(result == null ? null : result.getSourceContentId())
+                .versionNo(result == null ? null : result.getVersionNo())
+                .status(result == null ? null : result.getStatus())
+                .appliedAt(result == null ? null : result.getAppliedAt())
+                .build();
+    }
+
+    public static GraphExtractionResponses.EntityResponse toResponse(KnowledgeEntityResult result) {
+        return GraphExtractionResponses.EntityResponse.builder()
+                .entityId(result == null ? null : result.getEntityId())
+                .entityKey(result == null ? null : result.getEntityKey())
+                .name(result == null ? null : result.getName())
+                .entityType(result == null ? null : result.getEntityType())
+                .description(result == null ? null : result.getDescription())
+                .confirmationStatus(result == null ? null : result.getConfirmationStatus())
+                .latestVersionId(result == null ? null : result.getLatestVersionId())
+                .sourceRefsJson(result == null ? null : result.getSourceRefsJson())
+                .firstExtractedAt(result == null ? null : result.getFirstExtractedAt())
+                .lastExtractedAt(result == null ? null : result.getLastExtractedAt())
+                .confirmedAt(result == null ? null : result.getConfirmedAt())
+                .build();
+    }
+
+    public static GraphExtractionResponses.RelationResponse toResponse(KnowledgeRelationResult result) {
+        return GraphExtractionResponses.RelationResponse.builder()
+                .relationId(result == null ? null : result.getRelationId())
+                .relationKey(result == null ? null : result.getRelationKey())
+                .sourceName(result == null ? null : result.getSourceName())
+                .targetName(result == null ? null : result.getTargetName())
+                .relationType(result == null ? null : result.getRelationType())
+                .evidence(result == null ? null : result.getEvidence())
+                .confirmationStatus(result == null ? null : result.getConfirmationStatus())
+                .latestVersionId(result == null ? null : result.getLatestVersionId())
+                .sourceRefsJson(result == null ? null : result.getSourceRefsJson())
+                .firstExtractedAt(result == null ? null : result.getFirstExtractedAt())
+                .lastExtractedAt(result == null ? null : result.getLastExtractedAt())
+                .confirmedAt(result == null ? null : result.getConfirmedAt())
+                .build();
+    }
+
+    public static GraphExtractionResponses.LineageNodeResponse toResponse(KnowledgeLineageNodeResult result) {
+        return GraphExtractionResponses.LineageNodeResponse.builder()
+                .nodeId(result == null ? null : result.getNodeId())
+                .nodeKey(result == null ? null : result.getNodeKey())
+                .name(result == null ? null : result.getName())
+                .nodeType(result == null ? null : result.getNodeType())
+                .generation(result == null ? null : result.getGeneration())
+                .gender(result == null ? null : result.getGender())
+                .confirmationStatus(result == null ? null : result.getConfirmationStatus())
+                .latestVersionId(result == null ? null : result.getLatestVersionId())
+                .sourceRefsJson(result == null ? null : result.getSourceRefsJson())
+                .firstExtractedAt(result == null ? null : result.getFirstExtractedAt())
+                .lastExtractedAt(result == null ? null : result.getLastExtractedAt())
+                .confirmedAt(result == null ? null : result.getConfirmedAt())
+                .build();
+    }
+
+    public static GraphExtractionResponses.LineageRelationResponse toResponse(KnowledgeLineageRelationResult result) {
+        return GraphExtractionResponses.LineageRelationResponse.builder()
+                .relationId(result == null ? null : result.getRelationId())
+                .relationKey(result == null ? null : result.getRelationKey())
+                .sourceName(result == null ? null : result.getSourceName())
+                .targetName(result == null ? null : result.getTargetName())
+                .relationType(result == null ? null : result.getRelationType())
+                .evidence(result == null ? null : result.getEvidence())
+                .confirmationStatus(result == null ? null : result.getConfirmationStatus())
+                .latestVersionId(result == null ? null : result.getLatestVersionId())
+                .sourceRefsJson(result == null ? null : result.getSourceRefsJson())
+                .firstExtractedAt(result == null ? null : result.getFirstExtractedAt())
+                .lastExtractedAt(result == null ? null : result.getLastExtractedAt())
+                .confirmedAt(result == null ? null : result.getConfirmedAt())
                 .build();
     }
 }

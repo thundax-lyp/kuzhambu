@@ -6,6 +6,8 @@ import type {
     TagCategoryPageQuery,
     TagCategoryRecord,
     TagDetailRecord,
+    TagGovernanceMetricsRecord,
+    TagMergePreviewRecord,
     TagPageQuery,
     TagRecord,
     TagReviewPageQuery,
@@ -56,8 +58,22 @@ export interface TagStatusCommand {
     status: string;
 }
 
+export interface TagMergeCommand {
+    sourceTagId: string;
+    targetTagId: string;
+}
+
+export interface TagDeprecateCommand {
+    id: string;
+}
+
 export interface TagIdCommand {
     tagId: string;
+}
+
+export interface TagGovernanceMetricsQuery {
+    topLimit?: number;
+    recentMonths?: number;
 }
 
 export interface TagReviewCommand {
@@ -157,6 +173,24 @@ export const changeTagStatus = (request: TagStatusCommand) => {
     });
 };
 
+export const previewTagMergeImpact = (request: TagMergeCommand) => {
+    return postJson<TagMergePreviewRecord, TagMergeCommand>(`${API_PREFIX}/tag/merge/preview`, {
+        body: request
+    });
+};
+
+export const applyTagMerge = (request: TagMergeCommand) => {
+    return postJson<boolean, TagMergeCommand>(`${API_PREFIX}/tag/merge/apply`, {
+        body: request
+    });
+};
+
+export const deprecateTag = (request: TagDeprecateCommand) => {
+    return postJson<boolean, TagDeprecateCommand>(`${API_PREFIX}/tag/deprecate`, {
+        body: request
+    });
+};
+
 export const pagePendingTags = (request: TagReviewPageQuery = {}) => {
     return postJson<Page<TagRecord>, TagReviewPageQuery>(`${API_PREFIX}/tag/review/page`, {
         body: request
@@ -167,6 +201,15 @@ export const reviewTag = (request: TagReviewCommand) => {
     return postJson<boolean, TagReviewCommand>(`${API_PREFIX}/tag/review`, {
         body: request
     });
+};
+
+export const getTagGovernanceMetrics = (request: TagGovernanceMetricsQuery = {}) => {
+    return postJson<TagGovernanceMetricsRecord, TagGovernanceMetricsQuery>(
+        `${API_PREFIX}/tag/metrics`,
+        {
+            body: request
+        }
+    );
 };
 
 export const listTagAliases = (request: TagAliasListCommand) => {

@@ -9,15 +9,20 @@ import { SynonymEdit } from "./components/synonym-edit";
 import { SynonymTable } from "./components/synonym-table";
 import { TagDetailDrawer } from "./components/tag-detail-drawer";
 import { TagEdit } from "./components/tag-edit";
+import { TagGovernanceMetricsPanel } from "./components/tag-governance-metrics-panel";
+import { TagMergePanel } from "./components/tag-merge-panel";
 import { TagReviewTable } from "./components/tag-review-table";
 import { TagTable } from "./components/tag-table";
 import * as service from "./taxonomy-service";
 import type {
+    TagMergeCommand,
     TagAliasCreateCommand,
     TagAliasRemoveCommand,
     TagCategoryCreateCommand,
     TagCategoryUpdateCommand,
     TagCreateCommand,
+    TagDeprecateCommand,
+    TagGovernanceMetricsQuery,
     TagReviewCommand,
     TagUpdateCommand,
     SynonymCreateCommand,
@@ -29,6 +34,8 @@ import type {
     SynonymRecord,
     TagCategoryPageQuery,
     TagCategoryRecord,
+    TagGovernanceMetricsRecord,
+    TagMergePreviewRecord,
     TagPageQuery,
     TagRecord,
     TagReviewPageQuery
@@ -46,6 +53,11 @@ const readTotalCount = <TRecord,>(
     page?: { count: number; totalCount?: number; records: TRecord[] } | null
 ) => {
     return page?.count ?? page?.totalCount ?? 0;
+};
+
+const DEFAULT_GOVERNANCE_METRICS_QUERY: TagGovernanceMetricsQuery = {
+    topLimit: 10,
+    recentMonths: 6
 };
 
 export const TaxonomyPage = () => {
@@ -80,6 +92,7 @@ export const TaxonomyPage = () => {
     const [tagDetailOpen, setTagDetailOpen] = useState(false);
     const [tagDetailReviewMode, setTagDetailReviewMode] = useState(false);
     const [removingAliasId, setRemovingAliasId] = useState<string | null>(null);
+    const [tagMergePreview, setTagMergePreview] = useState<TagMergePreviewRecord | null>(null);
 
     const categoryPageQuery = useQuery({
         queryKey: ["knowledge", "taxonomy", "categories", categoryQuery],
@@ -109,6 +122,12 @@ export const TaxonomyPage = () => {
         queryKey: ["knowledge", "taxonomy", "synonyms", synonymQuery],
         queryFn: () => service.pageSynonyms(synonymQuery),
         enabled: canViewTaxonomy || canEditTaxonomy,
+        retry: false
+    });
+    const governanceMetricsQuery = useQuery({
+        queryKey: ["knowledge", "taxonomy", "metrics", DEFAULT_GOVERNANCE_METRICS_QUERY],
+        queryFn: () => service.getTagGovernanceMetrics(DEFAULT_GOVERNANCE_METRICS_QUERY),
+        enabled: (canViewTaxonomy || canEditTaxonomy) && activeTabKey === "tags",
         retry: false
     });
 
@@ -164,6 +183,56 @@ export const TaxonomyPage = () => {
         },
         onError: (error) => {
             messageApi.error(error instanceof Error ? error.message : "统一标签状态更新失败");
+        }
+    });
+    const previewTagMergeMutation = useMutation({
+        mutationFn: service.previewTagMergeImpact,
+        onSuccess: (preview) => {
+            setTagMergePreview(preview);
+            messageApi.success("标签合并影响已生成");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "标签合并预览失败");
+        }
+    });
+    const applyTagMergeMutation = useMutation({
+        mutationFn: service.applyTagMerge,
+        onSuccess: async () => {
+            setTagMergePreview(null);
+            await Promise.all([
+                queryClient.invalidateQueries({ queryKey: ["knowledge", "taxonomy", "tags"] }),
+                queryClient.invalidateQueries({
+                    queryKey: ["knowledge", "taxonomy", "metrics"]
+                }),
+                queryClient.invalidateQueries({ queryKey: ["knowledge", "taxonomy", "reviews"] }),
+                queryClient.invalidateQueries({
+                    queryKey: ["knowledge", "taxonomy", "tag-detail"]
+                })
+            ]);
+            messageApi.success("标签合并已完成");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "标签合并失败");
+        }
+    });
+    const deprecateTagMutation = useMutation({
+        mutationFn: service.deprecateTag,
+        onSuccess: async () => {
+            setTagDetailOpen(false);
+            setSelectedTag(null);
+            await Promise.all([
+                queryClient.invalidateQueries({ queryKey: ["knowledge", "taxonomy", "tags"] }),
+                queryClient.invalidateQueries({
+                    queryKey: ["knowledge", "taxonomy", "metrics"]
+                }),
+                queryClient.invalidateQueries({
+                    queryKey: ["knowledge", "taxonomy", "tag-detail"]
+                })
+            ]);
+            messageApi.success("标签已废弃");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "标签废弃失败");
         }
     });
     const reviewTagMutation = useMutation({
@@ -347,6 +416,18 @@ export const TaxonomyPage = () => {
         removeAliasMutation.mutate(request);
     };
 
+    const previewTagMergeImpact = (request: TagMergeCommand) => {
+        previewTagMergeMutation.mutate(request);
+    };
+
+    const applyTagMerge = (request: TagMergeCommand) => {
+        applyTagMergeMutation.mutate(request);
+    };
+
+    const deprecateTag = (request: TagDeprecateCommand) => {
+        deprecateTagMutation.mutate(request);
+    };
+
     return (
         <div className="taxonomy-page knowledge-taxonomy-page">
             <Tabs
@@ -381,19 +462,42 @@ export const TaxonomyPage = () => {
                             key,
                             label,
                             children: (
-                                <TagTable
-                                    canEditTag={canEditTaxonomy}
-                                    loading={tagPageQuery.isFetching}
-                                    query={tagQuery}
-                                    tags={tags}
-                                    totalCount={readTotalCount(tagPage)}
-                                    onAdd={openCreateTag}
-                                    onChange={setTagQuery}
-                                    onEdit={openEditTag}
-                                    onOpenDetail={(tag) => openTagDetail(tag)}
-                                    onRefresh={() => tagPageQuery.refetch()}
-                                    onStatusChange={(request) => tagStatusMutation.mutate(request)}
-                                />
+                                <div className="knowledge-taxonomy-tag-governance">
+                                    <TagMergePanel
+                                        applying={applyTagMergeMutation.isPending}
+                                        canEditTag={canEditTaxonomy}
+                                        preview={tagMergePreview}
+                                        previewing={previewTagMergeMutation.isPending}
+                                        tags={tags}
+                                        onApply={applyTagMerge}
+                                        onPreview={previewTagMergeImpact}
+                                    />
+                                    <TagGovernanceMetricsPanel
+                                        loading={governanceMetricsQuery.isFetching}
+                                        metrics={
+                                            governanceMetricsQuery.data as
+                                                | TagGovernanceMetricsRecord
+                                                | null
+                                                | undefined
+                                        }
+                                        onRefresh={() => governanceMetricsQuery.refetch()}
+                                    />
+                                    <TagTable
+                                        canEditTag={canEditTaxonomy}
+                                        loading={tagPageQuery.isFetching}
+                                        query={tagQuery}
+                                        tags={tags}
+                                        totalCount={readTotalCount(tagPage)}
+                                        onAdd={openCreateTag}
+                                        onChange={setTagQuery}
+                                        onEdit={openEditTag}
+                                        onOpenDetail={(tag) => openTagDetail(tag)}
+                                        onRefresh={() => tagPageQuery.refetch()}
+                                        onStatusChange={(request) =>
+                                            tagStatusMutation.mutate(request)
+                                        }
+                                    />
+                                </div>
                             )
                         };
                     }
@@ -481,7 +585,9 @@ export const TaxonomyPage = () => {
 
             <TagDetailDrawer
                 canEditAliases={canEditTaxonomy}
+                canDeprecateTag={canEditTaxonomy && selectedTag?.status !== "DISABLED"}
                 creatingAlias={createAliasMutation.isPending}
+                deprecating={deprecateTagMutation.isPending}
                 open={tagDetailOpen}
                 loading={tagDetailQuery.isFetching}
                 removingAliasId={removingAliasId}
@@ -490,6 +596,7 @@ export const TaxonomyPage = () => {
                 tagDetail={tagDetailQuery.data}
                 onCreateAlias={createAlias}
                 onClose={closeTagDetail}
+                onDeprecate={deprecateTag}
                 onApprove={(request: TagReviewCommand) => reviewTagMutation.mutate(request)}
                 onReject={(request: TagReviewCommand) => reviewTagMutation.mutate(request)}
                 onRemoveAlias={removeAlias}

@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.application.graph.support.KnowledgeGraphCandidateApplySupport;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphVersion;
@@ -78,6 +79,25 @@ class KnowledgeGraphCandidateApplySupportTest {
         }
 
         @Override
+        public GraphVersion getByVersionId(Long versionId) {
+            return versions.stream()
+                    .filter(version -> versionId.equals(version.getVersionId()))
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        @Override
+        public PageResult<GraphVersion> page(
+                String taskType,
+                String status,
+                String sourceContentType,
+                Long sourceContentId,
+                int pageNo,
+                int pageSize) {
+            return PageResult.of(pageNo, pageSize, versions.size(), versions);
+        }
+
+        @Override
         public Long save(GraphVersion entity) {
             long versionId = versions.size() + 1L;
             entity.setVersionId(versionId);
@@ -98,6 +118,25 @@ class KnowledgeGraphCandidateApplySupportTest {
                             .map(store::get)
                             .filter(item -> item != null)
                             .toList();
+        }
+
+        @Override
+        public KnowledgeEntity getByEntityId(Long entityId) {
+            return store.values().stream()
+                    .filter(item -> entityId.equals(item.getEntityId()))
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        @Override
+        public PageResult<KnowledgeEntity> page(
+                Long versionId,
+                String keyword,
+                String entityType,
+                String confirmationStatus,
+                int pageNo,
+                int pageSize) {
+            return PageResult.of(pageNo, pageSize, store.size(), saved);
         }
 
         @Override
@@ -125,6 +164,25 @@ class KnowledgeGraphCandidateApplySupportTest {
         }
 
         @Override
+        public KnowledgeRelation getByRelationId(Long relationId) {
+            return store.values().stream()
+                    .filter(item -> relationId.equals(item.getRelationId()))
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        @Override
+        public PageResult<KnowledgeRelation> page(
+                Long versionId,
+                String keyword,
+                String relationType,
+                String confirmationStatus,
+                int pageNo,
+                int pageSize) {
+            return PageResult.of(pageNo, pageSize, store.size(), saved);
+        }
+
+        @Override
         public void saveOrUpdateBatch(List<KnowledgeRelation> relations) {
             saved.clear();
             saved.addAll(relations);
@@ -142,6 +200,24 @@ class KnowledgeGraphCandidateApplySupportTest {
         }
 
         @Override
+        public com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageNode getByNodeId(Long nodeId) {
+            return null;
+        }
+
+        @Override
+        public com.thundax.kuzhambu.common.core.page.PageResult<
+                        com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageNode>
+                page(
+                        Long versionId,
+                        String keyword,
+                        String nodeType,
+                        String confirmationStatus,
+                        int pageNo,
+                        int pageSize) {
+            return com.thundax.kuzhambu.common.core.page.PageResult.of(pageNo, pageSize, 0, List.of());
+        }
+
+        @Override
         public void saveOrUpdateBatch(
                 List<com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageNode> nodes) {}
     }
@@ -151,6 +227,25 @@ class KnowledgeGraphCandidateApplySupportTest {
         public List<com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageRelation>
                 listByRelationKeys(Collection<String> relationKeys) {
             return List.of();
+        }
+
+        @Override
+        public com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageRelation getByRelationId(
+                Long relationId) {
+            return null;
+        }
+
+        @Override
+        public com.thundax.kuzhambu.common.core.page.PageResult<
+                        com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageRelation>
+                page(
+                        Long versionId,
+                        String keyword,
+                        String relationType,
+                        String confirmationStatus,
+                        int pageNo,
+                        int pageSize) {
+            return com.thundax.kuzhambu.common.core.page.PageResult.of(pageNo, pageSize, 0, List.of());
         }
 
         @Override

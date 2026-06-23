@@ -6,6 +6,11 @@ import com.thundax.kuzhambu.knowledge.application.graph.command.RequestGraphExtr
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestLineageExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphVersionResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeEntityResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeLineageNodeResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeLineageRelationResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeRelationResult;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
 
 public interface KnowledgeGraphExtractionApplicationService {
@@ -20,6 +25,31 @@ public interface KnowledgeGraphExtractionApplicationService {
             String taskType, String status, String sourceContentType, Long sourceContentId, PageQuery pageQuery);
 
     GraphExtractionTaskResult getTaskDetail(GraphExtractionTaskId taskId);
+
+    PageResult<GraphVersionResult> pageVersions(
+            String taskType, String status, String sourceContentType, Long sourceContentId, PageQuery pageQuery);
+
+    GraphVersionResult getVersionDetail(Long versionId);
+
+    PageResult<KnowledgeEntityResult> pageEntities(
+            Long versionId, String keyword, String entityType, String confirmationStatus, PageQuery pageQuery);
+
+    KnowledgeEntityResult getEntityDetail(Long entityId);
+
+    PageResult<KnowledgeRelationResult> pageRelations(
+            Long versionId, String keyword, String relationType, String confirmationStatus, PageQuery pageQuery);
+
+    KnowledgeRelationResult getRelationDetail(Long relationId);
+
+    PageResult<KnowledgeLineageNodeResult> pageLineageNodes(
+            Long versionId, String keyword, String nodeType, String confirmationStatus, PageQuery pageQuery);
+
+    KnowledgeLineageNodeResult getLineageNodeDetail(Long nodeId);
+
+    PageResult<KnowledgeLineageRelationResult> pageLineageRelations(
+            Long versionId, String keyword, String relationType, String confirmationStatus, PageQuery pageQuery);
+
+    KnowledgeLineageRelationResult getLineageRelationDetail(Long relationId);
 
     GraphExtractionTaskResult applyTaskCandidate(GraphExtractionTaskId taskId);
 }

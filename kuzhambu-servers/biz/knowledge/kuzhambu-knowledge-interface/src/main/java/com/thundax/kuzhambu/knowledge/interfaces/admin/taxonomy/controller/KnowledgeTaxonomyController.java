@@ -23,7 +23,10 @@ import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.reque
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagCategoryStatusRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagCategoryUpdateRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagCreateRequest;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagDeprecateRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagDetailRequest;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagGovernanceMetricsRequest;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagMergeRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagPageRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagReviewPageRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagReviewRequest;
@@ -33,6 +36,8 @@ import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.respo
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.response.TagAliasResponse;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.response.TagCategoryResponse;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.response.TagDetailResponse;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.response.TagGovernanceMetricsResponse;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.response.TagMergePreviewResponse;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.response.TagResponse;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -239,6 +244,71 @@ public class KnowledgeTaxonomyController {
     public Boolean reviewTag(@Valid @RequestBody TagReviewRequest request) {
         taxonomyService.reviewTag(KnowledgeTaxonomyInterfaceAssembler.toReviewCommand(request));
         return true;
+    }
+
+    @Operation(summary = "预览标签合并影响", description = "knowledge:taxonomy:view")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
+    @HasPermission("knowledge:taxonomy:view")
+    @SysLogger(value = "预览标签合并")
+    @PostMapping("tag/merge/preview")
+    public TagMergePreviewResponse previewTagMergeImpact(@Valid @RequestBody TagMergeRequest request) {
+        return KnowledgeTaxonomyInterfaceAssembler.toResponse(taxonomyService.previewTagMergeImpact(
+                KnowledgeTaxonomyInterfaceAssembler.toMergePreviewQuery(request)));
+    }
+
+    @Operation(summary = "执行标签合并", description = "knowledge:taxonomy:edit")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
+    @HasPermission("knowledge:taxonomy:edit")
+    @SysLogger(value = "执行标签合并")
+    @PostMapping("tag/merge/apply")
+    public Boolean applyTagMerge(@Valid @RequestBody TagMergeRequest request) {
+        taxonomyService.applyTagMerge(KnowledgeTaxonomyInterfaceAssembler.toMergeCommand(request));
+        return true;
+    }
+
+    @Operation(summary = "废弃标签", description = "knowledge:taxonomy:edit")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
+    @HasPermission("knowledge:taxonomy:edit")
+    @SysLogger(value = "废弃标签")
+    @PostMapping("tag/deprecate")
+    public Boolean deprecateTag(@Valid @RequestBody TagDeprecateRequest request) {
+        taxonomyService.deprecateTag(KnowledgeTaxonomyInterfaceAssembler.toDeprecateCommand(request));
+        return true;
+    }
+
+    @Operation(summary = "查询标签治理统计", description = "knowledge:taxonomy:view")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
+    @HasPermission("knowledge:taxonomy:view")
+    @SysLogger(value = "标签治理统计")
+    @PostMapping("tag/metrics")
+    public TagGovernanceMetricsResponse getTagGovernanceMetrics(
+            @Valid @RequestBody TagGovernanceMetricsRequest request) {
+        return KnowledgeTaxonomyInterfaceAssembler.toResponse(
+                taxonomyService.getTagGovernanceMetrics(KnowledgeTaxonomyInterfaceAssembler.toMetricsQuery(request)));
     }
 
     @Operation(summary = "查询标签别名", description = "knowledge:taxonomy:view")

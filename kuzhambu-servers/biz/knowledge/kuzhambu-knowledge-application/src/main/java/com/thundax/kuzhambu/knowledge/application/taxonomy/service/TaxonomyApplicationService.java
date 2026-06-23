@@ -12,17 +12,23 @@ import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCategoryCr
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCategoryStatusCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCategoryUpdateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCreateCommand;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagDeprecateCommand;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagMergeCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagReviewCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagStatusCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagUpdateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.SynonymPageQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagCategoryPageQuery;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagGovernanceMetricsQuery;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagMergePreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagPageQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagReviewPageQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.SynonymResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagAliasResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagCategoryResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagDetailResult;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagGovernanceMetricsResult;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagMergePreviewResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagResult;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.valueobject.SynonymId;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.valueobject.TagAliasId;
@@ -44,11 +50,19 @@ public interface TaxonomyApplicationService {
 
     TagDetailResult getTagDetail(TagId id);
 
+    TagMergePreviewResult previewTagMergeImpact(TagMergePreviewQuery query);
+
+    void applyTagMerge(TagMergeCommand command);
+
     TagId createTag(TagCreateCommand command);
 
     void updateTag(TagUpdateCommand command);
 
     void changeTagStatus(TagStatusCommand command);
+
+    void deprecateTag(TagDeprecateCommand command);
+
+    TagGovernanceMetricsResult getTagGovernanceMetrics(TagGovernanceMetricsQuery query);
 
     PageResult<TagResult> pagePendingTags(TagReviewPageQuery query, PageQuery page);
 

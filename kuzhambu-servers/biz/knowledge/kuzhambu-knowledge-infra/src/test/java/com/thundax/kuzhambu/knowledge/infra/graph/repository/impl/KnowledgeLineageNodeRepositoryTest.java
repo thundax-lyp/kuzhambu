@@ -9,6 +9,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageNode;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.KnowledgeLineageNodeDO;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.mapper.KnowledgeLineageNodeMapper;
@@ -18,6 +20,41 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 class KnowledgeLineageNodeRepositoryTest {
+
+    @Test
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    void pageShouldQueryByReadableFilters() {
+        KnowledgeLineageNodeMapper mapper = mock(KnowledgeLineageNodeMapper.class);
+        Page<KnowledgeLineageNodeDO> dataObjectPage = new Page<>(1, 10, 1);
+        dataObjectPage.setRecords(List.of(new KnowledgeLineageNodeDO()));
+        when(mapper.selectPage(any(Page.class), any())).thenReturn(dataObjectPage);
+        KnowledgeLineageNodeRepositoryImpl repository = new KnowledgeLineageNodeRepositoryImpl(mapper);
+
+        PageResult<KnowledgeLineageNode> page = repository.page(71L, "黄帝", "PERSON", "CONFIRMED", 1, 10);
+
+        ArgumentCaptor<QueryWrapper<KnowledgeLineageNodeDO>> captor = ArgumentCaptor.forClass(QueryWrapper.class);
+        verify(mapper).selectPage(any(Page.class), captor.capture());
+        String sqlSegment = captor.getValue().getSqlSegment();
+        assertTrue(sqlSegment.contains("latest_version_id"));
+        assertTrue(sqlSegment.contains("name"));
+        assertTrue(sqlSegment.contains("node_type"));
+        assertTrue(sqlSegment.contains("confirmation_status"));
+        assertEquals(1, page.getRecords().size());
+    }
+
+    @Test
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    void getByNodeIdShouldQueryBusinessKey() {
+        KnowledgeLineageNodeMapper mapper = mock(KnowledgeLineageNodeMapper.class);
+        when(mapper.selectOne(any())).thenReturn(new KnowledgeLineageNodeDO());
+        KnowledgeLineageNodeRepositoryImpl repository = new KnowledgeLineageNodeRepositoryImpl(mapper);
+
+        repository.getByNodeId(3001L);
+
+        ArgumentCaptor<QueryWrapper<KnowledgeLineageNodeDO>> captor = ArgumentCaptor.forClass(QueryWrapper.class);
+        verify(mapper).selectOne(captor.capture());
+        assertTrue(captor.getValue().getSqlSegment().contains("node_id"));
+    }
 
     @Test
     @SuppressWarnings({"unchecked", "rawtypes"})

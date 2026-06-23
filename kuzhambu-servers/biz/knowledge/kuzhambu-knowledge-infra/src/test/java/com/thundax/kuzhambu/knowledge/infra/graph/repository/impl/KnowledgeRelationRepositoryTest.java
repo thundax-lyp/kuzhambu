@@ -9,6 +9,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeRelation;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.KnowledgeRelationDO;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.mapper.KnowledgeRelationMapper;
@@ -18,6 +20,42 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 class KnowledgeRelationRepositoryTest {
+
+    @Test
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    void pageShouldQueryByReadableFilters() {
+        KnowledgeRelationMapper mapper = mock(KnowledgeRelationMapper.class);
+        Page<KnowledgeRelationDO> dataObjectPage = new Page<>(1, 10, 1);
+        dataObjectPage.setRecords(List.of(new KnowledgeRelationDO()));
+        when(mapper.selectPage(any(Page.class), any())).thenReturn(dataObjectPage);
+        KnowledgeRelationRepositoryImpl repository = new KnowledgeRelationRepositoryImpl(mapper);
+
+        PageResult<KnowledgeRelation> page = repository.page(71L, "黄帝", "ANCESTOR", "CONFIRMED", 1, 10);
+
+        ArgumentCaptor<QueryWrapper<KnowledgeRelationDO>> captor = ArgumentCaptor.forClass(QueryWrapper.class);
+        verify(mapper).selectPage(any(Page.class), captor.capture());
+        String sqlSegment = captor.getValue().getSqlSegment();
+        assertTrue(sqlSegment.contains("latest_version_id"));
+        assertTrue(sqlSegment.contains("source_name"));
+        assertTrue(sqlSegment.contains("target_name"));
+        assertTrue(sqlSegment.contains("relation_type"));
+        assertTrue(sqlSegment.contains("confirmation_status"));
+        assertEquals(1, page.getRecords().size());
+    }
+
+    @Test
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    void getByRelationIdShouldQueryBusinessKey() {
+        KnowledgeRelationMapper mapper = mock(KnowledgeRelationMapper.class);
+        when(mapper.selectOne(any())).thenReturn(new KnowledgeRelationDO());
+        KnowledgeRelationRepositoryImpl repository = new KnowledgeRelationRepositoryImpl(mapper);
+
+        repository.getByRelationId(2001L);
+
+        ArgumentCaptor<QueryWrapper<KnowledgeRelationDO>> captor = ArgumentCaptor.forClass(QueryWrapper.class);
+        verify(mapper).selectOne(captor.capture());
+        assertTrue(captor.getValue().getSqlSegment().contains("relation_id"));
+    }
 
     @Test
     @SuppressWarnings({"unchecked", "rawtypes"})

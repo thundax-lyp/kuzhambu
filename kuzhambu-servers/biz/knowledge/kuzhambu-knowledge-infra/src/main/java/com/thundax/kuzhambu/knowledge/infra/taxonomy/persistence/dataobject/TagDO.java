@@ -27,4 +27,7 @@ public class TagDO {
     private String reviewNote;
     private Date createdAt;
     private Date reviewedAt;
+    private Long mergedToTagId;
+    private Date deprecatedAt;
+    private Long deprecatedBy;
 }
