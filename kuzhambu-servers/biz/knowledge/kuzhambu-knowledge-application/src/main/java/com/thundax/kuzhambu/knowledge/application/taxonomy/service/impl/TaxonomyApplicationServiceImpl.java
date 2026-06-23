@@ -364,8 +364,11 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     @Transactional(rollbackFor = Exception.class)
     public void deprecateTag(TagDeprecateCommand command) {
         TagDeprecateCommand effective = ensureCommand(command, "标签废弃命令");
-        ensureId(effective.getId(), "tagId");
-        throw new BizException("标签废弃动作尚未实现");
+        Tag tag = ensureTagExists(ensureId(effective.getId(), "tagId"));
+        tag.deprecate(new Date(), null);
+        if (tagRepository.update(tag) != 1) {
+            throw new BizException("标签废弃状态更新失败");
+        }
     }
 
     @Override

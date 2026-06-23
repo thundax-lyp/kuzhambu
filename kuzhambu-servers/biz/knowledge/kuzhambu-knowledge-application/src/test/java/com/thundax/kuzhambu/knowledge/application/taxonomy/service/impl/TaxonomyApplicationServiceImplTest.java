@@ -38,19 +38,26 @@ import org.junit.jupiter.api.Test;
 class TaxonomyApplicationServiceImplTest {
 
     @Test
-    void deprecateTagShouldExposeStableActionContractBeforeOrchestration() {
+    void deprecateTagShouldDisableTagAndRejectSecondDeprecation() {
+        TagRepository tagRepository = mock(TagRepository.class);
         TaxonomyApplicationService service = new TaxonomyApplicationServiceImpl(
                 mock(TagCategoryRepository.class),
-                mock(TagRepository.class),
+                tagRepository,
                 mock(TagAliasRepository.class),
                 mock(TagContentRefRepository.class),
                 mock(SynonymRepository.class),
                 mock(KnowledgeTagBindingDomainService.class));
+        Tag tag = new Tag();
+        tag.setId(TagId.of(11L));
+        tag.setTagId(TagId.of(1L));
+        tag.setStatus(TagStatus.ENABLED);
+        when(tagRepository.getByTagId(TagId.of(1L))).thenReturn(tag);
+        when(tagRepository.update(tag)).thenReturn(1);
 
-        BizException error =
-                assertThrows(BizException.class, () -> service.deprecateTag(new TagDeprecateCommand(TagId.of(1L))));
+        service.deprecateTag(new TagDeprecateCommand(TagId.of(1L)));
 
-        assertEquals("标签废弃动作尚未实现", error.getMessage());
+        assertEquals(TagStatus.DISABLED, tag.getStatus());
+        assertThrows(BizException.class, () -> service.deprecateTag(new TagDeprecateCommand(TagId.of(1L))));
     }
 
     @Test

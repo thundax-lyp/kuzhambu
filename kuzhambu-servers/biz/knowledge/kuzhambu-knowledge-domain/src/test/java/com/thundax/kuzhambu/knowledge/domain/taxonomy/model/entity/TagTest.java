@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -36,6 +37,27 @@ class TagTest {
         assertThrows(DomainException.class, () -> sourceTag.mergeInto(sourceTag));
         assertThrows(DomainException.class, () -> sourceTag.mergeInto(disabledTargetTag));
         assertThrows(DomainException.class, () -> mergedSourceTag.mergeInto(enabledTag(1006L)));
+    }
+
+    @Test
+    void deprecateShouldDisableTagAndExcludeItFromNewBinding() {
+        Tag tag = enabledTag(1001L);
+
+        tag.deprecate(null, 99L);
+
+        assertTrue(tag.isDeprecated());
+        assertEquals(TagStatus.DISABLED, tag.getStatus());
+        assertNotNull(tag.getDeprecatedAt());
+        assertEquals(99L, tag.getDeprecatedBy());
+        assertFalse(tag.isUsableForNewBinding());
+    }
+
+    @Test
+    void deprecateShouldRejectAlreadyDeprecatedTag() {
+        Tag tag = enabledTag(1001L);
+        tag.deprecate(null, null);
+
+        assertThrows(DomainException.class, () -> tag.deprecate(null, null));
     }
 
     private static Tag enabledTag(Long tagId) {

@@ -27,6 +27,8 @@ public class Tag {
     private Date createdAt;
     private Date reviewedAt;
     private TagId mergedToTagId;
+    private Date deprecatedAt;
+    private Long deprecatedBy;
 
     public Tag(
             TagId id,
@@ -52,6 +54,8 @@ public class Tag {
                 reviewNote,
                 createdAt,
                 reviewedAt,
+                null,
+                null,
                 null);
     }
 
@@ -67,7 +71,9 @@ public class Tag {
             String reviewNote,
             Date createdAt,
             Date reviewedAt,
-            TagId mergedToTagId) {
+            TagId mergedToTagId,
+            Date deprecatedAt,
+            Long deprecatedBy) {
         this.id = id;
         this.tagId = tagId;
         this.name = name;
@@ -80,6 +86,8 @@ public class Tag {
         this.createdAt = createdAt;
         this.reviewedAt = reviewedAt;
         this.mergedToTagId = mergedToTagId;
+        this.deprecatedAt = deprecatedAt;
+        this.deprecatedBy = deprecatedBy;
     }
 
     public boolean isMerged() {
@@ -87,7 +95,11 @@ public class Tag {
     }
 
     public boolean isUsableForNewBinding() {
-        return status == TagStatus.ENABLED && !isMerged();
+        return status == TagStatus.ENABLED && !isMerged() && !isDeprecated();
+    }
+
+    public boolean isDeprecated() {
+        return deprecatedAt != null;
     }
 
     public void mergeInto(Tag targetTag) {
@@ -107,5 +119,17 @@ public class Tag {
             throw new DomainException("目标标签当前不可作为合并目标");
         }
         mergedToTagId = targetTag.getTagId();
+    }
+
+    public void deprecate(Date operatedAt, Long operatorId) {
+        if (tagId == null) {
+            throw new DomainException("待废弃标签不能为空");
+        }
+        if (isDeprecated()) {
+            throw new DomainException("标签已废弃");
+        }
+        status = TagStatus.DISABLED;
+        deprecatedAt = operatedAt == null ? new Date() : operatedAt;
+        deprecatedBy = operatorId;
     }
 }

@@ -111,7 +111,9 @@ public class TagRepositoryImpl implements TagRepository {
                         .set(TagDO::getSource, dataObject.getSource())
                         .set(TagDO::getReviewStatus, dataObject.getReviewStatus())
                         .set(TagDO::getReviewNote, dataObject.getReviewNote())
-                        .set(TagDO::getMergedToTagId, dataObject.getMergedToTagId()));
+                        .set(TagDO::getMergedToTagId, dataObject.getMergedToTagId())
+                        .set(TagDO::getDeprecatedAt, dataObject.getDeprecatedAt())
+                        .set(TagDO::getDeprecatedBy, dataObject.getDeprecatedBy()));
     }
 
     @Override

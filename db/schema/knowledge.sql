@@ -27,13 +27,16 @@ CREATE TABLE IF NOT EXISTS `knowledge_tag` (
     `created_at` datetime(3) NOT NULL,
     `reviewed_at` datetime(3) DEFAULT NULL,
     `merged_to_tag_id` bigint DEFAULT NULL,
+    `deprecated_at` datetime(3) DEFAULT NULL,
+    `deprecated_by` bigint DEFAULT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_knowledge_tag_tag_id` (`tag_id`),
     UNIQUE KEY `uk_knowledge_tag_name` (`name`),
     KEY `idx_knowledge_tag_category_status` (`category_id`, `status`),
     KEY `idx_knowledge_tag_review_status` (`review_status`, `created_at`),
     KEY `idx_knowledge_tag_source_status` (`source`, `status`),
-    KEY `idx_knowledge_tag_merged_to_tag_id` (`merged_to_tag_id`)
+    KEY `idx_knowledge_tag_merged_to_tag_id` (`merged_to_tag_id`),
+    KEY `idx_knowledge_tag_deprecated_at` (`deprecated_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='统一标签表';
 
 CREATE TABLE IF NOT EXISTS `knowledge_tag_alias` (
