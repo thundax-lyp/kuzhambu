@@ -24,10 +24,12 @@ import com.thundax.kuzhambu.knowledge.application.graph.support.KnowledgeGraphCa
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphVersion;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeEntity;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeRelation;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphExtractionTaskRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphVersionRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeEntityRepository;
+import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeRelationRepository;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
@@ -51,6 +53,7 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
     private final GraphExtractionTaskRepository repository;
     private final GraphVersionRepository graphVersionRepository;
     private final KnowledgeEntityRepository knowledgeEntityRepository;
+    private final KnowledgeRelationRepository knowledgeRelationRepository;
     private final AiInvocationRepository aiInvocationRepository;
     private final KnowledgeAiExtractionDomainService knowledgeAiExtractionDomainService;
     private final AiCandidateDomainService aiCandidateDomainService;
@@ -60,6 +63,7 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
             GraphExtractionTaskRepository repository,
             GraphVersionRepository graphVersionRepository,
             KnowledgeEntityRepository knowledgeEntityRepository,
+            KnowledgeRelationRepository knowledgeRelationRepository,
             AiInvocationRepository aiInvocationRepository,
             KnowledgeAiExtractionDomainService knowledgeAiExtractionDomainService,
             AiCandidateDomainService aiCandidateDomainService,
@@ -67,6 +71,7 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
         this.repository = repository;
         this.graphVersionRepository = graphVersionRepository;
         this.knowledgeEntityRepository = knowledgeEntityRepository;
+        this.knowledgeRelationRepository = knowledgeRelationRepository;
         this.aiInvocationRepository = aiInvocationRepository;
         this.knowledgeAiExtractionDomainService = knowledgeAiExtractionDomainService;
         this.aiCandidateDomainService = aiCandidateDomainService;
@@ -287,12 +292,31 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
     @Override
     public PageResult<KnowledgeRelationResult> pageRelations(
             Long versionId, String keyword, String relationType, String confirmationStatus, PageQuery pageQuery) {
-        throw new BizException("Knowledge relation readable is not ready");
+        PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
+        effectivePage.normalize();
+        PageResult<KnowledgeRelation> relationPage = knowledgeRelationRepository.page(
+                versionId,
+                keyword,
+                relationType,
+                confirmationStatus,
+                effectivePage.getPageNo(),
+                effectivePage.getPageSize());
+        return PageResult.of(
+                relationPage.getPageNo(),
+                relationPage.getPageSize(),
+                relationPage.getTotalCount(),
+                relationPage.getRecords().stream()
+                        .map(this::toKnowledgeRelationResult)
+                        .toList());
     }
 
     @Override
     public KnowledgeRelationResult getRelationDetail(Long relationId) {
-        throw new BizException("Knowledge relation readable is not ready");
+        KnowledgeRelation relation = knowledgeRelationRepository.getByRelationId(relationId);
+        if (relation == null) {
+            throw new BizException("Knowledge relation not found: " + relationId);
+        }
+        return toKnowledgeRelationResult(relation);
     }
 
     @Override
@@ -507,6 +531,25 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
                 timeValue(entity.getFirstExtractedAt()),
                 timeValue(entity.getLastExtractedAt()),
                 timeValue(entity.getConfirmedAt()));
+    }
+
+    private KnowledgeRelationResult toKnowledgeRelationResult(KnowledgeRelation relation) {
+        if (relation == null) {
+            return null;
+        }
+        return new KnowledgeRelationResult(
+                relation.getRelationId(),
+                relation.getRelationKey(),
+                relation.getSourceName(),
+                relation.getTargetName(),
+                relation.getRelationType(),
+                relation.getEvidence(),
+                relation.getConfirmationStatus(),
+                relation.getLatestVersionId(),
+                relation.getSourceRefsJson(),
+                timeValue(relation.getFirstExtractedAt()),
+                timeValue(relation.getLastExtractedAt()),
+                timeValue(relation.getConfirmedAt()));
     }
 
     private Long timeValue(Date value) {

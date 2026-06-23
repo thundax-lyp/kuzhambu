@@ -164,6 +164,25 @@ class KnowledgeGraphCandidateApplySupportTest {
         }
 
         @Override
+        public KnowledgeRelation getByRelationId(Long relationId) {
+            return store.values().stream()
+                    .filter(item -> relationId.equals(item.getRelationId()))
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        @Override
+        public PageResult<KnowledgeRelation> page(
+                Long versionId,
+                String keyword,
+                String relationType,
+                String confirmationStatus,
+                int pageNo,
+                int pageSize) {
+            return PageResult.of(pageNo, pageSize, store.size(), saved);
+        }
+
+        @Override
         public void saveOrUpdateBatch(List<KnowledgeRelation> relations) {
             saved.clear();
             saved.addAll(relations);
