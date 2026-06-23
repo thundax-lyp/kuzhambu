@@ -2,7 +2,10 @@ package com.thundax.kuzhambu.knowledge.infra.graph.repository.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageRelation;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeLineageRelationRepository;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.assembler.KnowledgeLineageRelationPersistenceAssembler;
@@ -10,6 +13,7 @@ import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.Knowled
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.mapper.KnowledgeLineageRelationMapper;
 import java.util.Collection;
 import java.util.List;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -27,6 +31,33 @@ public class KnowledgeLineageRelationRepositoryImpl implements KnowledgeLineageR
         QueryWrapper<KnowledgeLineageRelationDO> wrapper = new QueryWrapper<>();
         wrapper.in(relationKeys != null && !relationKeys.isEmpty(), "relation_key", relationKeys);
         return KnowledgeLineageRelationPersistenceAssembler.toDomainList(mapper.selectList(wrapper));
+    }
+
+    @Override
+    public KnowledgeLineageRelation getByRelationId(Long relationId) {
+        QueryWrapper<KnowledgeLineageRelationDO> wrapper = new QueryWrapper<>();
+        wrapper.eq("relation_id", relationId);
+        return KnowledgeLineageRelationPersistenceAssembler.toDomain(mapper.selectOne(wrapper));
+    }
+
+    @Override
+    public PageResult<KnowledgeLineageRelation> page(
+            Long versionId, String keyword, String relationType, String confirmationStatus, int pageNo, int pageSize) {
+        QueryWrapper<KnowledgeLineageRelationDO> wrapper = new QueryWrapper<>();
+        wrapper.eq(versionId != null, "latest_version_id", versionId)
+                .and(
+                        StringUtils.isNotBlank(keyword),
+                        query -> query.like("source_name", keyword).or().like("target_name", keyword))
+                .eq(StringUtils.isNotBlank(relationType), "relation_type", relationType)
+                .eq(StringUtils.isNotBlank(confirmationStatus), "confirmation_status", confirmationStatus)
+                .orderByDesc("last_extracted_at")
+                .orderByDesc("id");
+        IPage<KnowledgeLineageRelationDO> dataObjectPage = mapper.selectPage(new Page<>(pageNo, pageSize), wrapper);
+        return PageResult.of(
+                (int) dataObjectPage.getCurrent(),
+                (int) dataObjectPage.getSize(),
+                dataObjectPage.getTotal(),
+                KnowledgeLineageRelationPersistenceAssembler.toDomainList(dataObjectPage.getRecords()));
     }
 
     @Override

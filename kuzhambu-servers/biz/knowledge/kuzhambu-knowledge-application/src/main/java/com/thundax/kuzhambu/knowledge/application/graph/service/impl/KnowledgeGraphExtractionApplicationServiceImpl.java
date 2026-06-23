@@ -26,16 +26,21 @@ import com.thundax.kuzhambu.knowledge.application.graph.support.KnowledgeGraphCa
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphVersion;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeEntity;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageNode;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageRelation;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeRelation;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphExtractionTaskRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphVersionRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeEntityRepository;
+import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeLineageNodeRepository;
+import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeLineageRelationRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeRelationRepository;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,10 +61,36 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
     private final GraphVersionRepository graphVersionRepository;
     private final KnowledgeEntityRepository knowledgeEntityRepository;
     private final KnowledgeRelationRepository knowledgeRelationRepository;
+    private final KnowledgeLineageNodeRepository knowledgeLineageNodeRepository;
+    private final KnowledgeLineageRelationRepository knowledgeLineageRelationRepository;
     private final AiInvocationRepository aiInvocationRepository;
     private final KnowledgeAiExtractionDomainService knowledgeAiExtractionDomainService;
     private final AiCandidateDomainService aiCandidateDomainService;
     private final KnowledgeGraphCandidateApplySupport candidateApplySupport;
+
+    @Autowired
+    public KnowledgeGraphExtractionApplicationServiceImpl(
+            GraphExtractionTaskRepository repository,
+            GraphVersionRepository graphVersionRepository,
+            KnowledgeEntityRepository knowledgeEntityRepository,
+            KnowledgeRelationRepository knowledgeRelationRepository,
+            KnowledgeLineageNodeRepository knowledgeLineageNodeRepository,
+            KnowledgeLineageRelationRepository knowledgeLineageRelationRepository,
+            AiInvocationRepository aiInvocationRepository,
+            KnowledgeAiExtractionDomainService knowledgeAiExtractionDomainService,
+            AiCandidateDomainService aiCandidateDomainService,
+            KnowledgeGraphCandidateApplySupport candidateApplySupport) {
+        this.repository = repository;
+        this.graphVersionRepository = graphVersionRepository;
+        this.knowledgeEntityRepository = knowledgeEntityRepository;
+        this.knowledgeRelationRepository = knowledgeRelationRepository;
+        this.knowledgeLineageNodeRepository = knowledgeLineageNodeRepository;
+        this.knowledgeLineageRelationRepository = knowledgeLineageRelationRepository;
+        this.aiInvocationRepository = aiInvocationRepository;
+        this.knowledgeAiExtractionDomainService = knowledgeAiExtractionDomainService;
+        this.aiCandidateDomainService = aiCandidateDomainService;
+        this.candidateApplySupport = candidateApplySupport;
+    }
 
     public KnowledgeGraphExtractionApplicationServiceImpl(
             GraphExtractionTaskRepository repository,
@@ -70,14 +101,17 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
             KnowledgeAiExtractionDomainService knowledgeAiExtractionDomainService,
             AiCandidateDomainService aiCandidateDomainService,
             KnowledgeGraphCandidateApplySupport candidateApplySupport) {
-        this.repository = repository;
-        this.graphVersionRepository = graphVersionRepository;
-        this.knowledgeEntityRepository = knowledgeEntityRepository;
-        this.knowledgeRelationRepository = knowledgeRelationRepository;
-        this.aiInvocationRepository = aiInvocationRepository;
-        this.knowledgeAiExtractionDomainService = knowledgeAiExtractionDomainService;
-        this.aiCandidateDomainService = aiCandidateDomainService;
-        this.candidateApplySupport = candidateApplySupport;
+        this(
+                repository,
+                graphVersionRepository,
+                knowledgeEntityRepository,
+                knowledgeRelationRepository,
+                null,
+                null,
+                aiInvocationRepository,
+                knowledgeAiExtractionDomainService,
+                aiCandidateDomainService,
+                candidateApplySupport);
     }
 
     @Override
@@ -324,23 +358,61 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
     @Override
     public PageResult<KnowledgeLineageNodeResult> pageLineageNodes(
             Long versionId, String keyword, String nodeType, String confirmationStatus, PageQuery pageQuery) {
-        throw new BizException("Knowledge lineage node readable is not ready");
+        PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
+        effectivePage.normalize();
+        PageResult<KnowledgeLineageNode> nodePage = knowledgeLineageNodeRepository.page(
+                versionId,
+                keyword,
+                nodeType,
+                confirmationStatus,
+                effectivePage.getPageNo(),
+                effectivePage.getPageSize());
+        return PageResult.of(
+                nodePage.getPageNo(),
+                nodePage.getPageSize(),
+                nodePage.getTotalCount(),
+                nodePage.getRecords().stream()
+                        .map(this::toKnowledgeLineageNodeResult)
+                        .toList());
     }
 
     @Override
     public KnowledgeLineageNodeResult getLineageNodeDetail(Long nodeId) {
-        throw new BizException("Knowledge lineage node readable is not ready");
+        KnowledgeLineageNode node = knowledgeLineageNodeRepository.getByNodeId(nodeId);
+        if (node == null) {
+            throw new BizException("Knowledge lineage node not found: " + nodeId);
+        }
+        return toKnowledgeLineageNodeResult(node);
     }
 
     @Override
     public PageResult<KnowledgeLineageRelationResult> pageLineageRelations(
             Long versionId, String keyword, String relationType, String confirmationStatus, PageQuery pageQuery) {
-        throw new BizException("Knowledge lineage relation readable is not ready");
+        PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
+        effectivePage.normalize();
+        PageResult<KnowledgeLineageRelation> relationPage = knowledgeLineageRelationRepository.page(
+                versionId,
+                keyword,
+                relationType,
+                confirmationStatus,
+                effectivePage.getPageNo(),
+                effectivePage.getPageSize());
+        return PageResult.of(
+                relationPage.getPageNo(),
+                relationPage.getPageSize(),
+                relationPage.getTotalCount(),
+                relationPage.getRecords().stream()
+                        .map(this::toKnowledgeLineageRelationResult)
+                        .toList());
     }
 
     @Override
     public KnowledgeLineageRelationResult getLineageRelationDetail(Long relationId) {
-        throw new BizException("Knowledge lineage relation readable is not ready");
+        KnowledgeLineageRelation relation = knowledgeLineageRelationRepository.getByRelationId(relationId);
+        if (relation == null) {
+            throw new BizException("Knowledge lineage relation not found: " + relationId);
+        }
+        return toKnowledgeLineageRelationResult(relation);
     }
 
     @Override
@@ -562,6 +634,44 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
             return null;
         }
         return new KnowledgeRelationResult(
+                relation.getRelationId(),
+                relation.getRelationKey(),
+                relation.getSourceName(),
+                relation.getTargetName(),
+                relation.getRelationType(),
+                relation.getEvidence(),
+                relation.getConfirmationStatus(),
+                relation.getLatestVersionId(),
+                relation.getSourceRefsJson(),
+                timeValue(relation.getFirstExtractedAt()),
+                timeValue(relation.getLastExtractedAt()),
+                timeValue(relation.getConfirmedAt()));
+    }
+
+    private KnowledgeLineageNodeResult toKnowledgeLineageNodeResult(KnowledgeLineageNode node) {
+        if (node == null) {
+            return null;
+        }
+        return new KnowledgeLineageNodeResult(
+                node.getNodeId(),
+                node.getNodeKey(),
+                node.getName(),
+                node.getNodeType(),
+                node.getGeneration(),
+                node.getGender(),
+                node.getConfirmationStatus(),
+                node.getLatestVersionId(),
+                node.getSourceRefsJson(),
+                timeValue(node.getFirstExtractedAt()),
+                timeValue(node.getLastExtractedAt()),
+                timeValue(node.getConfirmedAt()));
+    }
+
+    private KnowledgeLineageRelationResult toKnowledgeLineageRelationResult(KnowledgeLineageRelation relation) {
+        if (relation == null) {
+            return null;
+        }
+        return new KnowledgeLineageRelationResult(
                 relation.getRelationId(),
                 relation.getRelationKey(),
                 relation.getSourceName(),

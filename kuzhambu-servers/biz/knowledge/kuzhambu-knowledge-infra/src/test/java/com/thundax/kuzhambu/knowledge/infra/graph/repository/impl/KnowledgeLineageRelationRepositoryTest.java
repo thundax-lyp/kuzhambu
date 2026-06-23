@@ -9,6 +9,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageRelation;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.KnowledgeLineageRelationDO;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.mapper.KnowledgeLineageRelationMapper;
@@ -18,6 +20,42 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 class KnowledgeLineageRelationRepositoryTest {
+
+    @Test
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    void pageShouldQueryByReadableFilters() {
+        KnowledgeLineageRelationMapper mapper = mock(KnowledgeLineageRelationMapper.class);
+        Page<KnowledgeLineageRelationDO> dataObjectPage = new Page<>(1, 10, 1);
+        dataObjectPage.setRecords(List.of(new KnowledgeLineageRelationDO()));
+        when(mapper.selectPage(any(Page.class), any())).thenReturn(dataObjectPage);
+        KnowledgeLineageRelationRepositoryImpl repository = new KnowledgeLineageRelationRepositoryImpl(mapper);
+
+        PageResult<KnowledgeLineageRelation> page = repository.page(71L, "黄帝", "ANCESTOR", "CONFIRMED", 1, 10);
+
+        ArgumentCaptor<QueryWrapper<KnowledgeLineageRelationDO>> captor = ArgumentCaptor.forClass(QueryWrapper.class);
+        verify(mapper).selectPage(any(Page.class), captor.capture());
+        String sqlSegment = captor.getValue().getSqlSegment();
+        assertTrue(sqlSegment.contains("latest_version_id"));
+        assertTrue(sqlSegment.contains("source_name"));
+        assertTrue(sqlSegment.contains("target_name"));
+        assertTrue(sqlSegment.contains("relation_type"));
+        assertTrue(sqlSegment.contains("confirmation_status"));
+        assertEquals(1, page.getRecords().size());
+    }
+
+    @Test
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    void getByRelationIdShouldQueryBusinessKey() {
+        KnowledgeLineageRelationMapper mapper = mock(KnowledgeLineageRelationMapper.class);
+        when(mapper.selectOne(any())).thenReturn(new KnowledgeLineageRelationDO());
+        KnowledgeLineageRelationRepositoryImpl repository = new KnowledgeLineageRelationRepositoryImpl(mapper);
+
+        repository.getByRelationId(4001L);
+
+        ArgumentCaptor<QueryWrapper<KnowledgeLineageRelationDO>> captor = ArgumentCaptor.forClass(QueryWrapper.class);
+        verify(mapper).selectOne(captor.capture());
+        assertTrue(captor.getValue().getSqlSegment().contains("relation_id"));
+    }
 
     @Test
     @SuppressWarnings({"unchecked", "rawtypes"})

@@ -2,7 +2,10 @@ package com.thundax.kuzhambu.knowledge.infra.graph.repository.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageNode;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeLineageNodeRepository;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.assembler.KnowledgeLineageNodePersistenceAssembler;
@@ -10,6 +13,7 @@ import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.Knowled
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.mapper.KnowledgeLineageNodeMapper;
 import java.util.Collection;
 import java.util.List;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -27,6 +31,31 @@ public class KnowledgeLineageNodeRepositoryImpl implements KnowledgeLineageNodeR
         QueryWrapper<KnowledgeLineageNodeDO> wrapper = new QueryWrapper<>();
         wrapper.in(nodeKeys != null && !nodeKeys.isEmpty(), "node_key", nodeKeys);
         return KnowledgeLineageNodePersistenceAssembler.toDomainList(mapper.selectList(wrapper));
+    }
+
+    @Override
+    public KnowledgeLineageNode getByNodeId(Long nodeId) {
+        QueryWrapper<KnowledgeLineageNodeDO> wrapper = new QueryWrapper<>();
+        wrapper.eq("node_id", nodeId);
+        return KnowledgeLineageNodePersistenceAssembler.toDomain(mapper.selectOne(wrapper));
+    }
+
+    @Override
+    public PageResult<KnowledgeLineageNode> page(
+            Long versionId, String keyword, String nodeType, String confirmationStatus, int pageNo, int pageSize) {
+        QueryWrapper<KnowledgeLineageNodeDO> wrapper = new QueryWrapper<>();
+        wrapper.eq(versionId != null, "latest_version_id", versionId)
+                .like(StringUtils.isNotBlank(keyword), "name", keyword)
+                .eq(StringUtils.isNotBlank(nodeType), "node_type", nodeType)
+                .eq(StringUtils.isNotBlank(confirmationStatus), "confirmation_status", confirmationStatus)
+                .orderByDesc("last_extracted_at")
+                .orderByDesc("id");
+        IPage<KnowledgeLineageNodeDO> dataObjectPage = mapper.selectPage(new Page<>(pageNo, pageSize), wrapper);
+        return PageResult.of(
+                (int) dataObjectPage.getCurrent(),
+                (int) dataObjectPage.getSize(),
+                dataObjectPage.getTotal(),
+                KnowledgeLineageNodePersistenceAssembler.toDomainList(dataObjectPage.getRecords()));
     }
 
     @Override

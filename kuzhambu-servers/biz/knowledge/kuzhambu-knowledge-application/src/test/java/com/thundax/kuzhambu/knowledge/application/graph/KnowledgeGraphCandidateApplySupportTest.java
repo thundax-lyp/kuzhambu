@@ -200,6 +200,24 @@ class KnowledgeGraphCandidateApplySupportTest {
         }
 
         @Override
+        public com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageNode getByNodeId(Long nodeId) {
+            return null;
+        }
+
+        @Override
+        public com.thundax.kuzhambu.common.core.page.PageResult<
+                        com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageNode>
+                page(
+                        Long versionId,
+                        String keyword,
+                        String nodeType,
+                        String confirmationStatus,
+                        int pageNo,
+                        int pageSize) {
+            return com.thundax.kuzhambu.common.core.page.PageResult.of(pageNo, pageSize, 0, List.of());
+        }
+
+        @Override
         public void saveOrUpdateBatch(
                 List<com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageNode> nodes) {}
     }
@@ -209,6 +227,25 @@ class KnowledgeGraphCandidateApplySupportTest {
         public List<com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageRelation>
                 listByRelationKeys(Collection<String> relationKeys) {
             return List.of();
+        }
+
+        @Override
+        public com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageRelation getByRelationId(
+                Long relationId) {
+            return null;
+        }
+
+        @Override
+        public com.thundax.kuzhambu.common.core.page.PageResult<
+                        com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageRelation>
+                page(
+                        Long versionId,
+                        String keyword,
+                        String relationType,
+                        String confirmationStatus,
+                        int pageNo,
+                        int pageSize) {
+            return com.thundax.kuzhambu.common.core.page.PageResult.of(pageNo, pageSize, 0, List.of());
         }
 
         @Override

@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `knowledge/graph`：落地正式世系读取
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GOVERNANCE-READABLE-RESULTS.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/graph/**`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/graph/**`
-    - 处理动作：基于 `knowledge_lineage_node` 和 `knowledge_lineage_relation` 落地正式世系列表与详情读取
-    - 验收点：后端可稳定返回世系节点和关系的确认状态、版本关联和来源引用
-    - 重要度：8/10
-
 - [ ] `knowledge/graph`：暴露图谱版本与正式结果后台接口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GOVERNANCE-READABLE-RESULTS.md`
