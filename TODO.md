@@ -11,12 +11,12 @@
 
 ## 待审阅任务项
 
-- [ ] `RefinementLineageRelationDraftRepositoryImpl.java,RefinementLineageNodeDraftRepositoryTest.java,RefinementLineageRelationDraftRepositoryTest.java,QualityAnnotation.java,QualityAnnotationRepository.java`：补齐世系仓储验证并引入质量标注领域端口
+- [ ] `RefinementLineageRelationDraftPersistenceAssembler.java,RefinementLineageRelationDraftRepositoryImpl.java,RefinementLineageRelationDraftRepositoryTest.java`：完成世系关系草稿仓储实现
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/refinement/repository/impl/RefinementLineageRelationDraftRepositoryImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/test/java/com/thundax/kuzhambu/knowledge/infra/refinement/repository/impl/RefinementLineageNodeDraftRepositoryTest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/test/java/com/thundax/kuzhambu/knowledge/infra/refinement/repository/impl/RefinementLineageRelationDraftRepositoryTest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/refinement/model/entity/QualityAnnotation.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/refinement/repository/QualityAnnotationRepository.java`
-    - 处理动作：补齐世系关系仓储实现与仓储测试，并引入质量标注领域对象和仓储端口
-    - 验收点：世系草稿仓储分页、读取与保存路径具备自动化验证，质量标注具备 domain 入口
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/refinement/persistence/assembler/RefinementLineageRelationDraftPersistenceAssembler.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/refinement/repository/impl/RefinementLineageRelationDraftRepositoryImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/test/java/com/thundax/kuzhambu/knowledge/infra/refinement/repository/impl/RefinementLineageRelationDraftRepositoryTest.java`
+    - 处理动作：新增世系关系草稿专属装配器并完成世系关系草稿仓储实现与测试
+    - 验收点：世系关系草稿仓储可稳定读取、保存和删除，查询条件具备自动化验证
     - 重要度：8/10
 
 - [ ] `KnowledgeEntityRepository.java,KnowledgeRelationRepository.java,KnowledgeEntityRepositoryImpl.java,KnowledgeRelationRepositoryImpl.java`：扩展正式实体与关系仓储读删能力
