@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `RefinementLineageRelationDraftPersistenceAssembler.java,RefinementLineageRelationDraftRepositoryImpl.java,RefinementLineageRelationDraftRepositoryTest.java`：完成世系关系草稿仓储实现
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/refinement/persistence/assembler/RefinementLineageRelationDraftPersistenceAssembler.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/refinement/repository/impl/RefinementLineageRelationDraftRepositoryImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/test/java/com/thundax/kuzhambu/knowledge/infra/refinement/repository/impl/RefinementLineageRelationDraftRepositoryTest.java`
-    - 处理动作：新增世系关系草稿专属装配器并完成世系关系草稿仓储实现与测试
-    - 验收点：世系关系草稿仓储可稳定读取、保存和删除，查询条件具备自动化验证
-    - 重要度：8/10
-
 - [ ] `KnowledgeEntityRepository.java,KnowledgeRelationRepository.java,KnowledgeEntityRepositoryImpl.java,KnowledgeRelationRepositoryImpl.java`：扩展正式实体与关系仓储读删能力
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
