@@ -113,6 +113,8 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_version` (
     `scope_json` json DEFAULT NULL,
     `source_content_type` varchar(32) NOT NULL,
     `source_content_id` bigint NOT NULL,
+    `source_category_code` varchar(64) NOT NULL,
+    `source_category_name` varchar(128) NOT NULL,
     `version_no` int NOT NULL,
     `status` varchar(32) NOT NULL,
     `applied_at` datetime(3) NOT NULL,

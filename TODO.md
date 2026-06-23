@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `knowledge.sql,GraphVersion.java,GraphVersionDO.java,GraphVersionPersistenceAssembler.java,GraphVersionRepositoryTest.java`：补齐图谱版本门类冗余字段闭环
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`db/schema/knowledge.sql`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/graph/model/entity/GraphVersion.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/graph/persistence/dataobject/GraphVersionDO.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/graph/persistence/assembler/GraphVersionPersistenceAssembler.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/test/java/com/thundax/kuzhambu/knowledge/infra/graph/repository/impl/GraphVersionRepositoryTest.java`
-    - 处理动作：为 `knowledge_graph_version` 增加门类冗余字段并同步 domain、持久化映射与仓储测试
-    - 验收点：`knowledge_graph_version` 的 `source_category_code`、`source_category_name` 完成落库、映射和仓储断言
-    - 重要度：10/10
-
 - [ ] `knowledge.sql,RefinementTaskDO.java,RefinementTaskMapper.java,RefinementTaskRepositoryTest.java`：新增精修任务表持久化骨架
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
