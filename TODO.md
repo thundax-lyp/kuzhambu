@@ -75,14 +75,6 @@
     - 验收点：质量标注创建、更新、删除可被 System 审计追溯
     - 重要度：7/10
 
-- [ ] `RefinementRequests.java,RefinementResponses.java,KnowledgeGraphRefinementInterfaceAssembler.java,KnowledgeGraphRefinementController.java,KnowledgeGraphRefinementControllerTest.java`：实现精修接口协议层
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/refinement/controller/request/RefinementRequests.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/refinement/controller/response/RefinementResponses.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/refinement/assembler/KnowledgeGraphRefinementInterfaceAssembler.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/refinement/controller/KnowledgeGraphRefinementController.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/test/java/com/thundax/kuzhambu/knowledge/interfaces/admin/refinement/controller/KnowledgeGraphRefinementControllerTest.java`
-    - 处理动作：实现最终版 refinement HTTP 请求、响应、协议装配、Controller 和控制器测试
-    - 验收点：`/api/knowledge/refinement` 的 Phase 1 接口和保留接口定义完整且控制器测试通过
-    - 重要度：10/10
-
 - [ ] `refinement-types.ts,refinement-service.ts,refinement-service.test.ts`：实现前端契约层
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
