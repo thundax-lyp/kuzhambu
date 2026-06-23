@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { App as AntdApp } from "antd";
@@ -12,17 +12,57 @@ vi.mock("./graph-extraction-service", () => ({
         taskId: "9001",
         taskType: request.taskType,
         status: "REQUESTED"
+    })),
+    applyTaskCandidate: vi.fn(async ({ taskId }) => ({
+        taskId: String(taskId),
+        taskType: "GRAPH",
+        status: "APPLIED",
+        aiCallId: 8001,
+        aiCandidateId: 7001,
+        appliedAt: 1710000000000
+    })),
+    getTaskDetail: vi.fn(async ({ taskId }) => ({
+        taskId: String(taskId),
+        taskType: "GRAPH",
+        status: "SUCCEEDED",
+        aiCallId: 8001,
+        aiCandidateId: 7001,
+        requestedAt: 1710000000000,
+        completedAt: 1710000600000
+    })),
+    pageTasks: vi.fn(async () => ({
+        pageNo: 1,
+        pageSize: 20,
+        totalCount: 1,
+        totalPage: 1,
+        count: 1,
+        records: [
+            {
+                taskId: "8008",
+                taskType: "GRAPH",
+                status: "SUCCEEDED",
+                sourceContentType: "SANCAI_ENTRY",
+                sourceContentId: 1001,
+                aiCandidateId: 7001
+            }
+        ]
     }))
 }));
 
 describe("GraphExtractionPage", () => {
     beforeEach(() => {
         queryClient.clear();
-        replacePermissions(["knowledge:graph:edit"]);
+        replacePermissions([
+            "knowledge:graph:view",
+            "knowledge:graph:edit",
+            "knowledge:graph:apply"
+        ]);
     });
 
     afterEach(() => {
-        vi.clearAllMocks();
+        vi.restoreAllMocks();
+        queryClient.clear();
+        cleanup();
     });
 
     it("renders the page and creates a graph extraction task", async () => {
@@ -38,13 +78,20 @@ describe("GraphExtractionPage", () => {
         expect(screen.getByRole("heading", { level: 2, name: "知识抽取任务" })).toBeInTheDocument();
         expect(screen.getByRole("heading", { level: 4, name: "创建抽取任务" })).toBeInTheDocument();
         expect(screen.getByRole("heading", { level: 4, name: "任务列表" })).toBeInTheDocument();
-        expect(screen.getByText("任务列表与详情抽屉将在下一步接入。")).toBeInTheDocument();
+        expect(await screen.findByLabelText("知识抽取任务表格")).toBeInTheDocument();
 
-        await user.type(screen.getByLabelText("来源内容类型"), "SANCAI_ENTRY");
-        await user.type(screen.getByLabelText("来源内容 ID"), "1001");
-        await user.clear(screen.getByLabelText("模型 ID"));
-        await user.type(screen.getByLabelText("模型 ID"), "5001");
-        await user.type(screen.getByLabelText("模型名"), "gpt-5.5");
+        fireEvent.change(screen.getByLabelText("来源内容类型"), {
+            target: { value: "SANCAI_ENTRY" }
+        });
+        fireEvent.change(screen.getByLabelText("来源内容 ID"), {
+            target: { value: "1001" }
+        });
+        fireEvent.change(screen.getByLabelText("模型 ID"), {
+            target: { value: "5001" }
+        });
+        fireEvent.change(screen.getByLabelText("模型名"), {
+            target: { value: "gpt-5.5" }
+        });
         fireEvent.change(screen.getByLabelText("Prompt Messages JSON"), {
             target: { value: '[{"role":"system","content":"extract"}]' }
         });
@@ -67,4 +114,5 @@ describe("GraphExtractionPage", () => {
         expect(await screen.findByText("最近创建任务")).toBeInTheDocument();
         expect(screen.getByText("任务号：9001")).toBeInTheDocument();
     });
+
 });

@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web/knowledge extraction detail apply`：支持详情查看与应用动作
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-AI-WORKERS-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/components/graph-extraction-task-table.tsx`、`graph-extraction-task-detail.tsx`、`graph-extraction-page.tsx`、组件测试文件
-    - 处理动作：接通任务列表、详情抽屉与候选结果应用动作
-    - 验收点：前端能展示 `aiCallId`、`aiCandidateId`、错误信息、时间戳并触发应用
-    - 重要度：8/10
-
 - [ ] `docs/knowledge ai workers`：同步设计与 readiness 文档
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`

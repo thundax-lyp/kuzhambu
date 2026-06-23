@@ -1,0 +1,98 @@
+import { Button, Space, Table, Tag } from "antd";
+import type { ColumnsType } from "antd/es/table";
+import type { GraphExtractionTaskRecord } from "../graph-extraction-types";
+
+interface GraphExtractionTaskTableProps {
+    applyingTaskId?: string | null;
+    canApply?: boolean;
+    loading?: boolean;
+    tasks: GraphExtractionTaskRecord[];
+    onApply: (task: GraphExtractionTaskRecord) => void;
+    onOpenDetail: (task: GraphExtractionTaskRecord) => void;
+}
+
+const readStatusColor = (status?: string | null) => {
+    switch (status) {
+        case "APPLIED":
+            return "green";
+        case "FAILED":
+            return "red";
+        case "SUCCEEDED":
+            return "blue";
+        default:
+            return "default";
+    }
+};
+
+export const GraphExtractionTaskTable = ({
+    applyingTaskId,
+    canApply = false,
+    loading = false,
+    tasks,
+    onApply,
+    onOpenDetail
+}: GraphExtractionTaskTableProps) => {
+    const columns: ColumnsType<GraphExtractionTaskRecord> = [
+        {
+            dataIndex: "taskId",
+            key: "taskId",
+            title: "任务号"
+        },
+        {
+            dataIndex: "taskType",
+            key: "taskType",
+            title: "类型"
+        },
+        {
+            dataIndex: "status",
+            key: "status",
+            render: (status?: string | null) => (
+                <Tag color={readStatusColor(status)}>{status || "-"}</Tag>
+            ),
+            title: "状态"
+        },
+        {
+            dataIndex: "sourceContentType",
+            key: "sourceContentType",
+            title: "来源类型"
+        },
+        {
+            dataIndex: "sourceContentId",
+            key: "sourceContentId",
+            title: "来源ID"
+        },
+        {
+            dataIndex: "aiCandidateId",
+            key: "aiCandidateId",
+            title: "候选ID"
+        },
+        {
+            key: "actions",
+            render: (_, task) => (
+                <Space.Compact>
+                    <Button onClick={() => onOpenDetail(task)}>查看</Button>
+                    <Button
+                        type="primary"
+                        disabled={!canApply || !task.aiCandidateId || task.status === "APPLIED"}
+                        loading={applyingTaskId === task.taskId}
+                        onClick={() => onApply(task)}
+                    >
+                        应用
+                    </Button>
+                </Space.Compact>
+            ),
+            title: "操作"
+        }
+    ];
+
+    return (
+        <Table<GraphExtractionTaskRecord>
+            aria-label="知识抽取任务表格"
+            columns={columns}
+            dataSource={tasks}
+            loading={loading}
+            pagination={false}
+            rowKey={(task) => task.taskId}
+        />
+    );
+};
