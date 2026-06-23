@@ -129,6 +129,13 @@ class KnowledgeGraphCandidateApplySupportTest {
         }
 
         @Override
+        public List<KnowledgeEntity> listByVersionId(Long versionId) {
+            return store.values().stream()
+                    .filter(item -> versionId == null || versionId.equals(item.getLatestVersionId()))
+                    .toList();
+        }
+
+        @Override
         public PageResult<KnowledgeEntity> page(
                 Long versionId,
                 String keyword,
@@ -146,6 +153,20 @@ class KnowledgeGraphCandidateApplySupportTest {
             for (KnowledgeEntity entity : entities) {
                 store.put(entity.getEntityKey(), entity);
             }
+        }
+
+        @Override
+        public int deleteByEntityKeys(Collection<String> entityKeys) {
+            if (entityKeys == null) {
+                return 0;
+            }
+            int removed = 0;
+            for (String entityKey : entityKeys) {
+                if (store.remove(entityKey) != null) {
+                    removed++;
+                }
+            }
+            return removed;
         }
     }
 
@@ -172,6 +193,13 @@ class KnowledgeGraphCandidateApplySupportTest {
         }
 
         @Override
+        public List<KnowledgeRelation> listByVersionId(Long versionId) {
+            return store.values().stream()
+                    .filter(item -> versionId == null || versionId.equals(item.getLatestVersionId()))
+                    .toList();
+        }
+
+        @Override
         public PageResult<KnowledgeRelation> page(
                 Long versionId,
                 String keyword,
@@ -190,6 +218,20 @@ class KnowledgeGraphCandidateApplySupportTest {
                 store.put(relation.getRelationKey(), relation);
             }
         }
+
+        @Override
+        public int deleteByRelationKeys(Collection<String> relationKeys) {
+            if (relationKeys == null) {
+                return 0;
+            }
+            int removed = 0;
+            for (String relationKey : relationKeys) {
+                if (store.remove(relationKey) != null) {
+                    removed++;
+                }
+            }
+            return removed;
+        }
     }
 
     private static final class FakeKnowledgeLineageNodeRepository implements KnowledgeLineageNodeRepository {
@@ -202,6 +244,12 @@ class KnowledgeGraphCandidateApplySupportTest {
         @Override
         public com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageNode getByNodeId(Long nodeId) {
             return null;
+        }
+
+        @Override
+        public List<com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageNode> listByVersionId(
+                Long versionId) {
+            return List.of();
         }
 
         @Override
@@ -220,6 +268,11 @@ class KnowledgeGraphCandidateApplySupportTest {
         @Override
         public void saveOrUpdateBatch(
                 List<com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageNode> nodes) {}
+
+        @Override
+        public int deleteByNodeKeys(Collection<String> nodeKeys) {
+            return 0;
+        }
     }
 
     private static final class FakeKnowledgeLineageRelationRepository implements KnowledgeLineageRelationRepository {
@@ -233,6 +286,12 @@ class KnowledgeGraphCandidateApplySupportTest {
         public com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageRelation getByRelationId(
                 Long relationId) {
             return null;
+        }
+
+        @Override
+        public List<com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageRelation> listByVersionId(
+                Long versionId) {
+            return List.of();
         }
 
         @Override
@@ -251,5 +310,10 @@ class KnowledgeGraphCandidateApplySupportTest {
         @Override
         public void saveOrUpdateBatch(
                 List<com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageRelation> relations) {}
+
+        @Override
+        public int deleteByRelationKeys(Collection<String> relationKeys) {
+            return 0;
+        }
     }
 }
