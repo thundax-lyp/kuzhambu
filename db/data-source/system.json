@@ -128,6 +128,8 @@
       "remarks": "负责用户、角色、部门、字典、存储和审计等后台基础配置",
       "menus": [
         "仪表盘",
+        "知识治理",
+        "知识治理/知识图谱精修",
         "审计中心",
         "审计中心/审计日志",
         "系统管理",
@@ -180,6 +182,7 @@
         "古籍管理/内容导出",
         "古籍管理/分享管理",
         "知识治理",
+        "知识治理/知识图谱精修",
         "知识治理/标签与同义词",
         "搜索问答",
         "搜索问答/跨库搜索",
@@ -707,6 +710,14 @@
       "url": "/knowledge",
       "remarks": "知识治理根菜单",
       "children": [
+        {
+          "name": "知识图谱精修",
+          "perms": ["knowledge:refinement:view", "knowledge:refinement:edit"],
+          "priority": 80,
+          "icon": "submissions",
+          "url": "/knowledge/refinement",
+          "remarks": "知识图谱精修工作台"
+        },
         {
           "name": "标签与同义词",
           "perms": [

@@ -75,14 +75,6 @@
     - 验收点：质量标注创建、更新、删除可被 System 审计追溯
     - 重要度：7/10
 
-- [ ] `system.json,system.sql`：新增精修菜单与权限种子
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`db/data-source/system.json`、`db/data/system.sql`
-    - 处理动作：新增 `知识图谱精修` 菜单和 `knowledge:refinement:view`、`knowledge:refinement:edit` 权限种子
-    - 验收点：菜单生成结果包含精修入口且权限编码与前后端一致
-    - 重要度：8/10
-
 - [ ] `KnowledgeGraphRefinementTaskOpenTest.java,KnowledgeGraphRefinementApplyTest.java,KnowledgeGraphRefinementControllerTest.java,RefinementTaskRepositoryTest.java`：补齐后端主链路最小验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
