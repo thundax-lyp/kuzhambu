@@ -187,7 +187,7 @@ Knowledge 侧为精修查询冗余以下字段：
 
 ### 8. 审计字段定义
 
-字段级 `before / after` 通过 System 审计体系承载。
+字段级 `before / after` 通过 `common-audit + system 审计编排` 承载。
 
 实体精修审计字段固定为：
 
@@ -547,7 +547,7 @@ Knowledge 侧为精修查询冗余以下字段：
 
 #### E1. 新增精修审计快照组装器
 
-- 数据结构变更：无 DB 结构变更；接入 System 审计快照体系
+- 数据结构变更：无 DB 结构变更；接入 `common-audit` 审计快照 SPI
 - 关联文件：
   - `kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/audit/RefinementEntityDraftAuditSnapshotAssembler.java`
   - `kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/audit/RefinementRelationDraftAuditSnapshotAssembler.java`
@@ -556,11 +556,11 @@ Knowledge 侧为精修查询冗余以下字段：
 
 #### E2. 新增世系精修审计快照组装器
 
-- 数据结构变更：无 DB 结构变更；接入 System 审计快照体系
+- 数据结构变更：无 DB 结构变更；接入 `common-audit` 审计快照 SPI
 - 关联文件：
   - `kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/audit/RefinementLineageNodeDraftAuditSnapshotAssembler.java`
   - `kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/audit/RefinementLineageRelationDraftAuditSnapshotAssembler.java`
-  - `kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/audit/runtime/AuditSnapshotAssemblerRegistry.java`
+  - `kuzhambu-servers/common/kuzhambu-common-audit/src/main/java/com/thundax/kuzhambu/common/audit/runtime/AuditSnapshotAssemblerRegistry.java`
   - `kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/refinement/RefinementLineageAuditSnapshotAssemblerTest.java`
 
 ### F. HTTP Interface
