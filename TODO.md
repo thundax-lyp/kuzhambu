@@ -33,14 +33,6 @@
     - 验收点：admin 接口可稳定接收三类任务请求并输出任务结果模型
     - 重要度：8/10
 
-- [ ] `ai-domain/knowledge extraction contract`：定义 Knowledge 调 AI 的稳定协作语义
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-AI-WORKERS-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-domain/.../KnowledgeAiExtractionDomainService.java`、`KnowledgeAiExtractionRequest.java`、`KnowledgeAiExtractionResult.java`
-    - 处理动作：定义 Knowledge 抽取跨域调用的 domain service 与值对象
-    - 验收点：Knowledge 侧可只依赖 AI domain 契约而不直接依赖 workers
-    - 重要度：9/10
-
 - [ ] `ai-application/knowledge usecase resolver`：收敛 Knowledge 抽取 usecase 路由规则
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-AI-WORKERS-CLOSURE.md`
