@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `knowledge/taxonomy`：定义标签合并影响预览读契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GOVERNANCE-READABLE-RESULTS.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/**`
-    - 处理动作：为标签合并影响预览补齐 application 读契约、结果模型和最小测试
-    - 验收点：后端已能稳定表达合并影响预览输入输出，但尚未执行真正合并
-    - 重要度：8/10
-
 - [ ] `knowledge/taxonomy`：落地标签合并影响读取
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GOVERNANCE-READABLE-RESULTS.md`

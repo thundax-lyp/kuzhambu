@@ -20,12 +20,14 @@ import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagStatusComm
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagUpdateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.SynonymPageQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagCategoryPageQuery;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagMergePreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagPageQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagReviewPageQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.SynonymResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagAliasResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagCategoryResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagDetailResult;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagMergePreviewResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.service.TaxonomyApplicationService;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.Synonym;
@@ -210,6 +212,14 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
                 tagAliasRepository.listByTagId(tag.getTagId()),
                 tagContentRefRepository.listByTagId(tag.getTagId()),
                 getCategoryName(tag.getCategoryId()));
+    }
+
+    @Override
+    public TagMergePreviewResult previewTagMergeImpact(TagMergePreviewQuery query) {
+        ensureCommand(query, "标签合并影响预览查询");
+        ensureId(query.getSourceTagId(), "sourceTagId");
+        ensureId(query.getTargetTagId(), "targetTagId");
+        throw new BizException("标签合并影响预览读模型尚未实现");
     }
 
     @Override
