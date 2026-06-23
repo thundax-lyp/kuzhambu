@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `knowledge-application/graph extraction orchestration`：实现知识抽取任务编排
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-AI-WORKERS-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/.../KnowledgeGraphExtractionApplicationServiceImpl.java`、`kuzhambu-knowledge-application/pom.xml`、`KnowledgeGraphExtractionApplicationServiceTest.java`
-    - 处理动作：实现三类抽取任务创建、AI 协作调用与测试覆盖
-    - 验收点：Knowledge application 能发起抽取任务并通过测试验证基础编排
-    - 重要度：10/10
-
 - [ ] `knowledge-interface/graph extraction admin api`：暴露知识抽取后台接口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-AI-WORKERS-CLOSURE.md`
