@@ -45,6 +45,7 @@ import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.TagCategorySta
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.TagReviewStatus;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.TagSource;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.TagStatus;
+import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.readmodel.TagGovernanceMetrics;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.valueobject.SynonymId;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.valueobject.TagAliasId;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.valueobject.TagCategoryId;
@@ -53,6 +54,7 @@ import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.SynonymReposito
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagAliasRepository;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagCategoryRepository;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagContentRefRepository;
+import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagGovernanceMetricsRepository;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagRepository;
 import java.util.Date;
 import java.util.List;
@@ -77,6 +79,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     private final TagContentRefRepository tagContentRefRepository;
     private final SynonymRepository synonymRepository;
     private final KnowledgeTagBindingDomainService knowledgeTagBindingDomainService;
+    private final TagGovernanceMetricsRepository tagGovernanceMetricsRepository;
 
     public TaxonomyApplicationServiceImpl(
             TagCategoryRepository tagCategoryRepository,
@@ -84,13 +87,15 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
             TagAliasRepository tagAliasRepository,
             TagContentRefRepository tagContentRefRepository,
             SynonymRepository synonymRepository,
-            KnowledgeTagBindingDomainService knowledgeTagBindingDomainService) {
+            KnowledgeTagBindingDomainService knowledgeTagBindingDomainService,
+            TagGovernanceMetricsRepository tagGovernanceMetricsRepository) {
         this.tagCategoryRepository = tagCategoryRepository;
         this.tagRepository = tagRepository;
         this.tagAliasRepository = tagAliasRepository;
         this.tagContentRefRepository = tagContentRefRepository;
         this.synonymRepository = synonymRepository;
         this.knowledgeTagBindingDomainService = knowledgeTagBindingDomainService;
+        this.tagGovernanceMetricsRepository = tagGovernanceMetricsRepository;
     }
 
     @Override
@@ -375,8 +380,26 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
 
     @Override
     public TagGovernanceMetricsResult getTagGovernanceMetrics(TagGovernanceMetricsQuery query) {
-        ensureCommand(query, "标签治理统计查询");
-        throw new BizException("标签治理统计读模型尚未实现");
+        TagGovernanceMetricsQuery effective = ensureCommand(query, "标签治理统计查询");
+        TagGovernanceMetrics metrics =
+                tagGovernanceMetricsRepository.getMetrics(effective.getTopLimit(), effective.getRecentMonths());
+        return new TagGovernanceMetricsResult(
+                metrics.getTopTags().stream()
+                        .map(item -> new TagGovernanceMetricsResult.TagUsageMetric(
+                                item.getTagName(), item.getContentRefCount()))
+                        .collect(Collectors.toList()),
+                metrics.getCategoryDistributions().stream()
+                        .map(item -> new TagGovernanceMetricsResult.CategoryDistributionMetric(
+                                item.getCategoryName(), item.getTagCount()))
+                        .collect(Collectors.toList()),
+                metrics.getSourceRatios().stream()
+                        .map(item ->
+                                new TagGovernanceMetricsResult.SourceRatioMetric(item.getSource(), item.getTagCount()))
+                        .collect(Collectors.toList()),
+                metrics.getMonthlyNewTags().stream()
+                        .map(item ->
+                                new TagGovernanceMetricsResult.MonthlyNewTagMetric(item.getMonth(), item.getTagCount()))
+                        .collect(Collectors.toList()));
     }
 
     @Override

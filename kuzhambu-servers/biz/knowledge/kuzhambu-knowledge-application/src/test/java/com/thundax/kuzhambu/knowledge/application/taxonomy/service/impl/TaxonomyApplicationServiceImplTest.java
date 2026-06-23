@@ -24,6 +24,7 @@ import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.ContentType;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.TagReviewStatus;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.TagSource;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.TagStatus;
+import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.readmodel.TagGovernanceMetrics;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.valueobject.TagAliasId;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.valueobject.TagCategoryId;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.valueobject.TagContentRefId;
@@ -32,6 +33,7 @@ import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.SynonymReposito
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagAliasRepository;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagCategoryRepository;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagContentRefRepository;
+import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagGovernanceMetricsRepository;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagRepository;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -39,19 +41,33 @@ import org.junit.jupiter.api.Test;
 class TaxonomyApplicationServiceImplTest {
 
     @Test
-    void getTagGovernanceMetricsShouldExposeStableReadContractBeforeAggregation() {
+    void getTagGovernanceMetricsShouldMapAggregatedReadModel() {
+        TagGovernanceMetricsRepository metricsRepository = mock(TagGovernanceMetricsRepository.class);
         TaxonomyApplicationService service = new TaxonomyApplicationServiceImpl(
                 mock(TagCategoryRepository.class),
                 mock(TagRepository.class),
                 mock(TagAliasRepository.class),
                 mock(TagContentRefRepository.class),
                 mock(SynonymRepository.class),
-                mock(KnowledgeTagBindingDomainService.class));
+                mock(KnowledgeTagBindingDomainService.class),
+                metricsRepository);
+        when(metricsRepository.getMetrics(10, 6))
+                .thenReturn(new TagGovernanceMetrics(
+                        List.of(new TagGovernanceMetrics.TagUsageMetric("礼制", 3L)),
+                        List.of(new TagGovernanceMetrics.CategoryDistributionMetric("礼学", 2L)),
+                        List.of(new TagGovernanceMetrics.SourceRatioMetric(TagSource.MANUAL, 4L)),
+                        List.of(new TagGovernanceMetrics.MonthlyNewTagMetric("2026-06", 5L))));
 
-        BizException error = assertThrows(
-                BizException.class, () -> service.getTagGovernanceMetrics(new TagGovernanceMetricsQuery(10, 6)));
+        var result = service.getTagGovernanceMetrics(new TagGovernanceMetricsQuery(10, 6));
 
-        assertEquals("标签治理统计读模型尚未实现", error.getMessage());
+        assertEquals("礼制", result.getTopTags().get(0).getTagName());
+        assertEquals(3L, result.getTopTags().get(0).getContentRefCount());
+        assertEquals("礼学", result.getCategoryDistributions().get(0).getCategoryName());
+        assertEquals(2L, result.getCategoryDistributions().get(0).getTagCount());
+        assertEquals(TagSource.MANUAL, result.getSourceRatios().get(0).getSource());
+        assertEquals(4L, result.getSourceRatios().get(0).getTagCount());
+        assertEquals("2026-06", result.getMonthlyNewTags().get(0).getMonth());
+        assertEquals(5L, result.getMonthlyNewTags().get(0).getTagCount());
     }
 
     @Test
@@ -63,7 +79,8 @@ class TaxonomyApplicationServiceImplTest {
                 mock(TagAliasRepository.class),
                 mock(TagContentRefRepository.class),
                 mock(SynonymRepository.class),
-                mock(KnowledgeTagBindingDomainService.class));
+                mock(KnowledgeTagBindingDomainService.class),
+                mock(TagGovernanceMetricsRepository.class));
         Tag tag = new Tag();
         tag.setId(TagId.of(11L));
         tag.setTagId(TagId.of(1L));
@@ -89,7 +106,8 @@ class TaxonomyApplicationServiceImplTest {
                 mock(TagAliasRepository.class),
                 contentRefRepository,
                 mock(SynonymRepository.class),
-                knowledgeTagBindingDomainService);
+                knowledgeTagBindingDomainService,
+                mock(TagGovernanceMetricsRepository.class));
         Tag sourceTag = new Tag();
         sourceTag.setId(TagId.of(11L));
         sourceTag.setTagId(TagId.of(1L));
@@ -132,7 +150,8 @@ class TaxonomyApplicationServiceImplTest {
                 aliasRepository,
                 contentRefRepository,
                 mock(SynonymRepository.class),
-                mock(KnowledgeTagBindingDomainService.class));
+                mock(KnowledgeTagBindingDomainService.class),
+                mock(TagGovernanceMetricsRepository.class));
 
         Tag sourceTag = new Tag(
                 TagId.of(1L),

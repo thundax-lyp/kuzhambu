@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `knowledge/taxonomy`：落地标签治理完整统计读取
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GOVERNANCE-READABLE-RESULTS.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/taxonomy/**`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/taxonomy/**`、`db/schema/knowledge.sql`
-    - 处理动作：以聚合读模型落地完整治理统计，必要时补最小时间维度索引
-    - 验收点：后端可稳定返回完整治理统计，无需新增统计快照表
-    - 重要度：7/10
-
 - [ ] `knowledge/taxonomy`：暴露合并预览、合并、废弃、统计后台接口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GOVERNANCE-READABLE-RESULTS.md`
