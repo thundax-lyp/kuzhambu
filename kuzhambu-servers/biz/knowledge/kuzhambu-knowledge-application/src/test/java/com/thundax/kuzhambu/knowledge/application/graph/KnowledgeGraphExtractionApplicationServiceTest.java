@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.knowledge.application.graph;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCallRecord;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
@@ -10,6 +11,7 @@ import com.thundax.kuzhambu.ai.domain.invocation.service.AiCandidateDomainServic
 import com.thundax.kuzhambu.ai.domain.knowledge.model.valueobject.KnowledgeAiExtractionRequest;
 import com.thundax.kuzhambu.ai.domain.knowledge.model.valueobject.KnowledgeAiExtractionResult;
 import com.thundax.kuzhambu.ai.domain.knowledge.service.KnowledgeAiExtractionDomainService;
+import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationExtractionCommand;
@@ -165,6 +167,32 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         assertEquals("41", detail.getTaskId());
         assertEquals(902L, detail.getCandidateId());
         assertEquals("LINEAGE", detail.getTaskType());
+    }
+
+    @Test
+    void pageEntitiesShouldExposeExplicitReadableNotReadyBoundary() {
+        KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
+                new FakeRepository(),
+                new FakeGraphVersionRepository(),
+                new FakeAiInvocationRepository(),
+                new FakeKnowledgeAiExtractionDomainService(),
+                new AiCandidateDomainService(new FakeAiInvocationRepository()),
+                null);
+
+        assertThrows(BizException.class, () -> service.pageEntities(71L, "黄帝", "PERSON", "CONFIRMED", null));
+    }
+
+    @Test
+    void getEntityDetailShouldExposeExplicitReadableNotReadyBoundary() {
+        KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
+                new FakeRepository(),
+                new FakeGraphVersionRepository(),
+                new FakeAiInvocationRepository(),
+                new FakeKnowledgeAiExtractionDomainService(),
+                new AiCandidateDomainService(new FakeAiInvocationRepository()),
+                null);
+
+        assertThrows(BizException.class, () -> service.getEntityDetail(1001L));
     }
 
     @Test
