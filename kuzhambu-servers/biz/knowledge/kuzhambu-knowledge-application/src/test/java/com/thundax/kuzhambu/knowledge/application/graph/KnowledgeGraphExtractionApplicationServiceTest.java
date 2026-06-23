@@ -2,7 +2,6 @@ package com.thundax.kuzhambu.knowledge.application.graph;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCallRecord;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
@@ -11,18 +10,21 @@ import com.thundax.kuzhambu.ai.domain.invocation.service.AiCandidateDomainServic
 import com.thundax.kuzhambu.ai.domain.knowledge.model.valueobject.KnowledgeAiExtractionRequest;
 import com.thundax.kuzhambu.ai.domain.knowledge.model.valueobject.KnowledgeAiExtractionResult;
 import com.thundax.kuzhambu.ai.domain.knowledge.service.KnowledgeAiExtractionDomainService;
-import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphVersionResult;
 import com.thundax.kuzhambu.knowledge.application.graph.service.impl.KnowledgeGraphExtractionApplicationServiceImpl;
 import com.thundax.kuzhambu.knowledge.application.graph.support.KnowledgeGraphCandidateApplySupport;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphVersion;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphExtractionTaskRepository;
+import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphVersionRepository;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -34,6 +36,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         FakeKnowledgeAiExtractionDomainService aiService = new FakeKnowledgeAiExtractionDomainService();
         KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
                 repository,
+                new FakeGraphVersionRepository(),
                 new FakeAiInvocationRepository(),
                 aiService,
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
@@ -60,6 +63,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         repository.tasks.add(task);
         KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
                 repository,
+                new FakeGraphVersionRepository(),
                 new FakeAiInvocationRepository(),
                 new FakeKnowledgeAiExtractionDomainService(),
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
@@ -90,6 +94,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         aiInvocationRepository.candidate.setAppliedAt(Instant.parse("2026-06-23T00:01:00Z"));
         KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
                 repository,
+                new FakeGraphVersionRepository(),
                 aiInvocationRepository,
                 new FakeKnowledgeAiExtractionDomainService(),
                 new AiCandidateDomainService(aiInvocationRepository),
@@ -103,27 +108,63 @@ class KnowledgeGraphExtractionApplicationServiceTest {
     }
 
     @Test
-    void pageVersionsShouldExposeExplicitReadableNotReadyBoundary() {
+    void pageVersionsShouldMapVersionRecords() {
+        FakeGraphVersionRepository graphVersionRepository = new FakeGraphVersionRepository();
+        GraphVersion version = new GraphVersion();
+        version.setVersionId(61L);
+        version.setTaskId(GraphExtractionTaskId.of(31L));
+        version.setCandidateId(901L);
+        version.setTaskType("GRAPH");
+        version.setSourceContentType("SANCAI_ENTRY");
+        version.setSourceContentId(1001L);
+        version.setVersionNo(2);
+        version.setStatus("APPLIED");
+        version.setAppliedAt(new Date(1_719_100_800_000L));
+        graphVersionRepository.versions.add(version);
         KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
                 new FakeRepository(),
+                graphVersionRepository,
                 new FakeAiInvocationRepository(),
                 new FakeKnowledgeAiExtractionDomainService(),
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
 
-        assertThrows(BizException.class, () -> service.pageVersions("GRAPH", "APPLIED", "SANCAI_ENTRY", 1L, null));
+        PageResult<GraphVersionResult> page = service.pageVersions("GRAPH", "APPLIED", "SANCAI_ENTRY", 1001L, null);
+
+        assertEquals(1, page.getRecords().size());
+        assertEquals(61L, page.getRecords().get(0).getVersionId());
+        assertEquals("31", page.getRecords().get(0).getTaskId());
+        assertEquals(901L, page.getRecords().get(0).getCandidateId());
     }
 
     @Test
-    void getVersionDetailShouldExposeExplicitReadableNotReadyBoundary() {
+    void getVersionDetailShouldMapSingleVersionRecord() {
+        FakeGraphVersionRepository graphVersionRepository = new FakeGraphVersionRepository();
+        GraphVersion version = new GraphVersion();
+        version.setVersionId(71L);
+        version.setTaskId(GraphExtractionTaskId.of(41L));
+        version.setCandidateId(902L);
+        version.setTaskType("LINEAGE");
+        version.setSourceContentType("SANCAI_ENTRY");
+        version.setSourceContentId(1002L);
+        version.setVersionNo(3);
+        version.setStatus("APPLIED");
+        version.setAppliedAt(new Date(1_719_187_200_000L));
+        graphVersionRepository.versions.add(version);
         KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
                 new FakeRepository(),
+                graphVersionRepository,
                 new FakeAiInvocationRepository(),
                 new FakeKnowledgeAiExtractionDomainService(),
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
 
-        assertThrows(BizException.class, () -> service.getVersionDetail(1001L));
+        GraphVersionResult detail = service.getVersionDetail(71L);
+
+        assertEquals(71L, detail.getVersionId());
+        assertEquals("41", detail.getTaskId());
+        assertEquals(902L, detail.getCandidateId());
+        assertEquals("LINEAGE", detail.getTaskType());
     }
 
     @Test
@@ -147,6 +188,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         FakeCandidateApplySupport candidateApplySupport = new FakeCandidateApplySupport();
         KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
                 repository,
+                new FakeGraphVersionRepository(),
                 aiInvocationRepository,
                 new FakeKnowledgeAiExtractionDomainService(),
                 new AiCandidateDomainService(aiInvocationRepository),
@@ -243,6 +285,66 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 int pageNo,
                 int pageSize) {
             return PageResult.of(pageNo, pageSize, tasks.size(), tasks);
+        }
+    }
+
+    private static final class FakeGraphVersionRepository implements GraphVersionRepository {
+        private final List<GraphVersion> versions = new ArrayList<>();
+
+        @Override
+        public GraphVersion findLatest(String taskType, String sourceContentType, Long sourceContentId) {
+            return versions.stream()
+                    .filter(version -> taskType.equals(version.getTaskType()))
+                    .filter(version -> sourceContentType.equals(version.getSourceContentType()))
+                    .filter(version -> sourceContentId.equals(version.getSourceContentId()))
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        @Override
+        public GraphVersion getByVersionId(Long versionId) {
+            return versions.stream()
+                    .filter(version -> versionId.equals(version.getVersionId()))
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        @Override
+        public GraphVersion getByTaskCandidate(GraphExtractionTaskId taskId, Long candidateId) {
+            return versions.stream()
+                    .filter(version ->
+                            version.getTaskId() != null && version.getTaskId().equals(taskId))
+                    .filter(version -> candidateId.equals(version.getCandidateId()))
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        @Override
+        public PageResult<GraphVersion> page(
+                String taskType,
+                String status,
+                String sourceContentType,
+                Long sourceContentId,
+                int pageNo,
+                int pageSize) {
+            return PageResult.of(
+                    pageNo,
+                    pageSize,
+                    versions.size(),
+                    versions.stream()
+                            .filter(version -> taskType == null || taskType.equals(version.getTaskType()))
+                            .filter(version -> status == null || status.equals(version.getStatus()))
+                            .filter(version -> sourceContentType == null
+                                    || sourceContentType.equals(version.getSourceContentType()))
+                            .filter(version ->
+                                    sourceContentId == null || sourceContentId.equals(version.getSourceContentId()))
+                            .toList());
+        }
+
+        @Override
+        public Long save(GraphVersion entity) {
+            versions.add(entity);
+            return entity.getVersionId();
         }
     }
 

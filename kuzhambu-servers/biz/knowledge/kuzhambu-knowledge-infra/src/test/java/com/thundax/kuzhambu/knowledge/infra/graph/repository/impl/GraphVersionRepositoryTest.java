@@ -9,15 +9,53 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphVersion;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.GraphVersionDO;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.mapper.GraphVersionMapper;
 import java.util.Date;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 class GraphVersionRepositoryTest {
+
+    @Test
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    void pageShouldQueryByReadableFilters() {
+        GraphVersionMapper mapper = mock(GraphVersionMapper.class);
+        Page<GraphVersionDO> dataObjectPage = new Page<>(1, 10, 1);
+        dataObjectPage.setRecords(List.of(new GraphVersionDO()));
+        when(mapper.selectPage(any(Page.class), any())).thenReturn(dataObjectPage);
+        GraphVersionRepositoryImpl repository = new GraphVersionRepositoryImpl(mapper);
+
+        PageResult<GraphVersion> page = repository.page("GRAPH", "APPLIED", "SANCAI_ENTRY", 100L, 1, 10);
+
+        ArgumentCaptor<QueryWrapper<GraphVersionDO>> captor = ArgumentCaptor.forClass(QueryWrapper.class);
+        verify(mapper).selectPage(any(Page.class), captor.capture());
+        String sqlSegment = captor.getValue().getSqlSegment();
+        assertTrue(sqlSegment.contains("task_type"));
+        assertTrue(sqlSegment.contains("status"));
+        assertTrue(sqlSegment.contains("source_content_type"));
+        assertTrue(sqlSegment.contains("source_content_id"));
+        assertEquals(1, page.getRecords().size());
+    }
+
+    @Test
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    void getByVersionIdShouldQueryBusinessKey() {
+        GraphVersionMapper mapper = mock(GraphVersionMapper.class);
+        when(mapper.selectOne(any())).thenReturn(new GraphVersionDO());
+        GraphVersionRepositoryImpl repository = new GraphVersionRepositoryImpl(mapper);
+
+        repository.getByVersionId(66L);
+
+        ArgumentCaptor<QueryWrapper<GraphVersionDO>> captor = ArgumentCaptor.forClass(QueryWrapper.class);
+        verify(mapper).selectOne(captor.capture());
+        assertTrue(captor.getValue().getSqlSegment().contains("version_id"));
+    }
 
     @Test
     @SuppressWarnings({"unchecked", "rawtypes"})

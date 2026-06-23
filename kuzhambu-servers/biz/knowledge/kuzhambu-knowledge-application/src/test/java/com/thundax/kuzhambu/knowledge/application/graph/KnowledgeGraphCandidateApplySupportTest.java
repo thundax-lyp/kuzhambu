@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.application.graph.support.KnowledgeGraphCandidateApplySupport;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphVersion;
@@ -75,6 +76,25 @@ class KnowledgeGraphCandidateApplySupportTest {
                             && version.getCandidateId().equals(candidateId))
                     .findFirst()
                     .orElse(null);
+        }
+
+        @Override
+        public GraphVersion getByVersionId(Long versionId) {
+            return versions.stream()
+                    .filter(version -> versionId.equals(version.getVersionId()))
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        @Override
+        public PageResult<GraphVersion> page(
+                String taskType,
+                String status,
+                String sourceContentType,
+                Long sourceContentId,
+                int pageNo,
+                int pageSize) {
+            return PageResult.of(pageNo, pageSize, versions.size(), versions);
         }
 
         @Override

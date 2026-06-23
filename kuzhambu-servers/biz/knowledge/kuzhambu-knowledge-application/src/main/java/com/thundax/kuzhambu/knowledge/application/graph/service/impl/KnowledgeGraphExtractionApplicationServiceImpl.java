@@ -20,8 +20,10 @@ import com.thundax.kuzhambu.knowledge.application.graph.result.GraphVersionResul
 import com.thundax.kuzhambu.knowledge.application.graph.service.KnowledgeGraphExtractionApplicationService;
 import com.thundax.kuzhambu.knowledge.application.graph.support.KnowledgeGraphCandidateApplySupport;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphVersion;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphExtractionTaskRepository;
+import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphVersionRepository;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
@@ -43,6 +45,7 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
     private static final String STATUS_APPLIED = "APPLIED";
 
     private final GraphExtractionTaskRepository repository;
+    private final GraphVersionRepository graphVersionRepository;
     private final AiInvocationRepository aiInvocationRepository;
     private final KnowledgeAiExtractionDomainService knowledgeAiExtractionDomainService;
     private final AiCandidateDomainService aiCandidateDomainService;
@@ -50,11 +53,13 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
 
     public KnowledgeGraphExtractionApplicationServiceImpl(
             GraphExtractionTaskRepository repository,
+            GraphVersionRepository graphVersionRepository,
             AiInvocationRepository aiInvocationRepository,
             KnowledgeAiExtractionDomainService knowledgeAiExtractionDomainService,
             AiCandidateDomainService aiCandidateDomainService,
             KnowledgeGraphCandidateApplySupport candidateApplySupport) {
         this.repository = repository;
+        this.graphVersionRepository = graphVersionRepository;
         this.aiInvocationRepository = aiInvocationRepository;
         this.knowledgeAiExtractionDomainService = knowledgeAiExtractionDomainService;
         this.aiCandidateDomainService = aiCandidateDomainService;
@@ -215,12 +220,31 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
     @Override
     public PageResult<GraphVersionResult> pageVersions(
             String taskType, String status, String sourceContentType, Long sourceContentId, PageQuery pageQuery) {
-        throw new BizException("Knowledge graph version readable is not ready");
+        PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
+        effectivePage.normalize();
+        PageResult<GraphVersion> versionPage = graphVersionRepository.page(
+                taskType,
+                status,
+                sourceContentType,
+                sourceContentId,
+                effectivePage.getPageNo(),
+                effectivePage.getPageSize());
+        return PageResult.of(
+                versionPage.getPageNo(),
+                versionPage.getPageSize(),
+                versionPage.getTotalCount(),
+                versionPage.getRecords().stream()
+                        .map(this::toGraphVersionResult)
+                        .toList());
     }
 
     @Override
     public GraphVersionResult getVersionDetail(Long versionId) {
-        throw new BizException("Knowledge graph version readable is not ready");
+        GraphVersion version = graphVersionRepository.getByVersionId(versionId);
+        if (version == null) {
+            throw new BizException("Graph version not found: " + versionId);
+        }
+        return toGraphVersionResult(version);
     }
 
     @Override
@@ -399,6 +423,24 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
             }
         }
         return result;
+    }
+
+    private GraphVersionResult toGraphVersionResult(GraphVersion version) {
+        if (version == null) {
+            return null;
+        }
+        return new GraphVersionResult(
+                version.getVersionId(),
+                version.getTaskId() == null
+                        ? null
+                        : String.valueOf(version.getTaskId().value()),
+                version.getCandidateId(),
+                version.getTaskType(),
+                version.getSourceContentType(),
+                version.getSourceContentId(),
+                version.getVersionNo(),
+                version.getStatus(),
+                version.getAppliedAt() == null ? null : version.getAppliedAt().getTime());
     }
 
     private Long timeValue(Date value) {
