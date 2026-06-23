@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `knowledge.sql,RefinementEntityDraftDO.java,RefinementRelationDraftDO.java,RefinementEntityDraftRepositoryTest.java,RefinementRelationDraftRepositoryTest.java`：新增实体与关系草稿表持久化骨架
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`db/schema/knowledge.sql`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/refinement/persistence/dataobject/RefinementEntityDraftDO.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/refinement/persistence/dataobject/RefinementRelationDraftDO.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/test/java/com/thundax/kuzhambu/knowledge/infra/refinement/repository/impl/RefinementEntityDraftRepositoryTest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/test/java/com/thundax/kuzhambu/knowledge/infra/refinement/repository/impl/RefinementRelationDraftRepositoryTest.java`
-    - 处理动作：落实体草稿表和关系草稿表结构、DO 与基础仓储测试
-    - 验收点：实体与关系草稿表按最终版字段定义完成落库并具备最小仓储验证
-    - 重要度：10/10
-
 - [ ] `knowledge.sql,RefinementLineageNodeDraftDO.java,RefinementLineageRelationDraftDO.java,RefinementLineageNodeDraftRepositoryTest.java,RefinementLineageRelationDraftRepositoryTest.java`：新增世系草稿表持久化骨架
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
@@ -51,20 +43,28 @@
     - 验收点：实体与关系草稿在 domain 和 infra 层形成可调用链路
     - 重要度：10/10
 
-- [ ] `RefinementRelationDraftRepositoryImpl.java,RefinementLineageNodeDraft.java,RefinementLineageRelationDraft.java,RefinementLineageNodeDraftRepository.java,RefinementLineageRelationDraftRepository.java`：闭合关系与世系草稿领域模型
+- [ ] `RefinementRelationDraftRepositoryImpl.java,RefinementEntityDraftRepositoryTest.java,RefinementRelationDraftRepositoryTest.java`：补齐实体与关系草稿仓储实现验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/refinement/repository/impl/RefinementRelationDraftRepositoryImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/refinement/model/entity/RefinementLineageNodeDraft.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/refinement/model/entity/RefinementLineageRelationDraft.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/refinement/repository/RefinementLineageNodeDraftRepository.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/refinement/repository/RefinementLineageRelationDraftRepository.java`
-    - 处理动作：完成关系仓储实现和世系草稿领域对象、仓储端口
-    - 验收点：关系与世系草稿的 domain 结构和首层 infra 实现闭合
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/refinement/repository/impl/RefinementRelationDraftRepositoryImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/test/java/com/thundax/kuzhambu/knowledge/infra/refinement/repository/impl/RefinementEntityDraftRepositoryTest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/test/java/com/thundax/kuzhambu/knowledge/infra/refinement/repository/impl/RefinementRelationDraftRepositoryTest.java`
+    - 处理动作：补齐关系草稿仓储实现并完成实体与关系草稿仓储测试
+    - 验收点：实体与关系草稿仓储分页、读取与保存路径具备自动化验证
+    - 重要度：9/10
+
+- [ ] `RefinementLineageNodeDraft.java,RefinementLineageRelationDraft.java,RefinementLineageNodeDraftRepository.java,RefinementLineageRelationDraftRepository.java,RefinementLineageNodeDraftRepositoryImpl.java`：闭合世系草稿领域模型首段
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/refinement/model/entity/RefinementLineageNodeDraft.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/refinement/model/entity/RefinementLineageRelationDraft.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/refinement/repository/RefinementLineageNodeDraftRepository.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/refinement/repository/RefinementLineageRelationDraftRepository.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/refinement/repository/impl/RefinementLineageNodeDraftRepositoryImpl.java`
+    - 处理动作：完成世系草稿领域对象、仓储端口和世系节点仓储实现
+    - 验收点：世系草稿的 domain 结构和世系节点 infra 实现闭合
     - 重要度：8/10
 
-- [ ] `RefinementLineageNodeDraftRepositoryImpl.java,RefinementLineageRelationDraftRepositoryImpl.java,QualityAnnotation.java,QualityAnnotationRepository.java,QualityAnnotationRepositoryImpl.java`：闭合世系与质量标注仓储链路
+- [ ] `RefinementLineageRelationDraftRepositoryImpl.java,RefinementLineageNodeDraftRepositoryTest.java,RefinementLineageRelationDraftRepositoryTest.java,QualityAnnotation.java,QualityAnnotationRepository.java`：补齐世系仓储验证并引入质量标注领域端口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/refinement/repository/impl/RefinementLineageNodeDraftRepositoryImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/refinement/repository/impl/RefinementLineageRelationDraftRepositoryImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/refinement/model/entity/QualityAnnotation.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/refinement/repository/QualityAnnotationRepository.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/refinement/repository/impl/QualityAnnotationRepositoryImpl.java`
-    - 处理动作：完成世系仓储实现和质量标注领域仓储链路
-    - 验收点：世系草稿与质量标注在 domain 和 infra 层可稳定读写
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/refinement/repository/impl/RefinementLineageRelationDraftRepositoryImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/test/java/com/thundax/kuzhambu/knowledge/infra/refinement/repository/impl/RefinementLineageNodeDraftRepositoryTest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/test/java/com/thundax/kuzhambu/knowledge/infra/refinement/repository/impl/RefinementLineageRelationDraftRepositoryTest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/refinement/model/entity/QualityAnnotation.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/refinement/repository/QualityAnnotationRepository.java`
+    - 处理动作：补齐世系关系仓储实现与仓储测试，并引入质量标注领域对象和仓储端口
+    - 验收点：世系草稿仓储分页、读取与保存路径具备自动化验证，质量标注具备 domain 入口
     - 重要度：8/10
 
 - [ ] `KnowledgeEntityRepository.java,KnowledgeRelationRepository.java,KnowledgeEntityRepositoryImpl.java,KnowledgeRelationRepositoryImpl.java`：扩展正式实体与关系仓储读删能力
