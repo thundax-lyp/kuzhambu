@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `RefinementTaskPersistenceAssembler.java,RefinementTaskRepositoryImpl.java,RefinementTaskRepositoryTest.java`：闭合精修任务仓储实现
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/refinement/persistence/assembler/RefinementTaskPersistenceAssembler.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/refinement/repository/impl/RefinementTaskRepositoryImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/test/java/com/thundax/kuzhambu/knowledge/infra/refinement/repository/impl/RefinementTaskRepositoryTest.java`
-    - 处理动作：新增精修任务专属装配器并完成仓储实现与仓储测试
-    - 验收点：精修任务仓储可稳定读取、分页和更新，分页条件具备自动化验证
-    - 重要度：10/10
-
 - [ ] `RefinementEntityDraft.java,RefinementRelationDraft.java,RefinementEntityDraftRepository.java,RefinementRelationDraftRepository.java,RefinementEntityDraftRepositoryImpl.java`：闭合实体与关系草稿领域模型
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
