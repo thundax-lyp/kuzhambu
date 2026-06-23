@@ -3,6 +3,8 @@ package com.thundax.kuzhambu.knowledge.application.graph.service.impl;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCallRecord;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
+import com.thundax.kuzhambu.ai.domain.invocation.service.AiCandidateApplyCheck;
+import com.thundax.kuzhambu.ai.domain.invocation.service.AiCandidateDomainService;
 import com.thundax.kuzhambu.ai.domain.knowledge.model.valueobject.KnowledgeAiExtractionRequest;
 import com.thundax.kuzhambu.ai.domain.knowledge.model.valueobject.KnowledgeAiExtractionResult;
 import com.thundax.kuzhambu.ai.domain.knowledge.service.KnowledgeAiExtractionDomainService;
@@ -15,9 +17,11 @@ import com.thundax.kuzhambu.knowledge.application.graph.command.RequestLineageEx
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
 import com.thundax.kuzhambu.knowledge.application.graph.service.KnowledgeGraphExtractionApplicationService;
+import com.thundax.kuzhambu.knowledge.application.graph.support.KnowledgeGraphCandidateApplySupport;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphExtractionTaskRepository;
+import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
@@ -40,14 +44,20 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
     private final GraphExtractionTaskRepository repository;
     private final AiInvocationRepository aiInvocationRepository;
     private final KnowledgeAiExtractionDomainService knowledgeAiExtractionDomainService;
+    private final AiCandidateDomainService aiCandidateDomainService;
+    private final KnowledgeGraphCandidateApplySupport candidateApplySupport;
 
     public KnowledgeGraphExtractionApplicationServiceImpl(
             GraphExtractionTaskRepository repository,
             AiInvocationRepository aiInvocationRepository,
-            KnowledgeAiExtractionDomainService knowledgeAiExtractionDomainService) {
+            KnowledgeAiExtractionDomainService knowledgeAiExtractionDomainService,
+            AiCandidateDomainService aiCandidateDomainService,
+            KnowledgeGraphCandidateApplySupport candidateApplySupport) {
         this.repository = repository;
         this.aiInvocationRepository = aiInvocationRepository;
         this.knowledgeAiExtractionDomainService = knowledgeAiExtractionDomainService;
+        this.aiCandidateDomainService = aiCandidateDomainService;
+        this.candidateApplySupport = candidateApplySupport;
     }
 
     @Override
@@ -208,6 +218,24 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
         if (task == null) {
             throw new BizException("Graph extraction task not found: " + (taskId == null ? null : taskId.value()));
         }
+        if (aiCandidateDomainService == null || candidateApplySupport == null) {
+            throw new BizException("Knowledge graph candidate apply support is not ready");
+        }
+        if (task.getAiCandidateId() == null) {
+            throw new BizException("Knowledge graph extraction task has no AI candidate");
+        }
+        AiCandidateApplyCheck check = new AiCandidateApplyCheck();
+        check.setCandidateId(task.getAiCandidateId());
+        check.setContentType(task.getSourceContentType());
+        check.setContentId(task.getSourceContentId());
+        check.setCapability(resolveCapability(task.getTaskType()));
+        AiCandidate candidate = aiCandidateDomainService.requirePendingForApply(check);
+        candidateApplySupport.apply(task, candidate);
+        aiCandidateDomainService.markApplied(
+                candidate.getCandidateId(), candidate.getResultFormat(), candidate.getResultPayload(), Instant.now());
+        task.setStatus(STATUS_APPLIED);
+        task.setAppliedAt(new Date());
+        repository.update(task);
         return syncTaskResult(task);
     }
 
@@ -363,6 +391,15 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
 
     private Long timeValue(Date value) {
         return value == null ? null : value.getTime();
+    }
+
+    private String resolveCapability(String taskType) {
+        return switch (taskType) {
+            case TASK_TYPE_RELATION -> "relation_extraction";
+            case TASK_TYPE_GRAPH -> "knowledge_graph";
+            case TASK_TYPE_LINEAGE -> "lineage_extraction";
+            default -> throw new BizException("Unsupported knowledge graph extraction task type: " + taskType);
+        };
     }
 
     private void validateCommand(

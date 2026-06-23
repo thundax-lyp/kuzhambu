@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCallRecord;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
+import com.thundax.kuzhambu.ai.domain.invocation.service.AiCandidateDomainService;
 import com.thundax.kuzhambu.ai.domain.knowledge.model.valueobject.KnowledgeAiExtractionRequest;
 import com.thundax.kuzhambu.ai.domain.knowledge.model.valueobject.KnowledgeAiExtractionResult;
 import com.thundax.kuzhambu.ai.domain.knowledge.service.KnowledgeAiExtractionDomainService;
@@ -14,6 +15,7 @@ import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
 import com.thundax.kuzhambu.knowledge.application.graph.service.impl.KnowledgeGraphExtractionApplicationServiceImpl;
+import com.thundax.kuzhambu.knowledge.application.graph.support.KnowledgeGraphCandidateApplySupport;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphExtractionTaskRepository;
@@ -29,7 +31,11 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         FakeRepository repository = new FakeRepository();
         FakeKnowledgeAiExtractionDomainService aiService = new FakeKnowledgeAiExtractionDomainService();
         KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
-                repository, new FakeAiInvocationRepository(), aiService);
+                repository,
+                new FakeAiInvocationRepository(),
+                aiService,
+                new AiCandidateDomainService(new FakeAiInvocationRepository()),
+                null);
 
         GraphExtractionTaskResult result = service.requestRelationExtraction(relationCommand());
 
@@ -51,7 +57,11 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         task.setStatus("FAILED");
         repository.tasks.add(task);
         KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
-                repository, new FakeAiInvocationRepository(), new FakeKnowledgeAiExtractionDomainService());
+                repository,
+                new FakeAiInvocationRepository(),
+                new FakeKnowledgeAiExtractionDomainService(),
+                new AiCandidateDomainService(new FakeAiInvocationRepository()),
+                null);
 
         PageResult<GraphExtractionTaskResult> page = service.pageTasks("GRAPH", null, null, null, new PageQuery(1, 10));
 
@@ -77,13 +87,49 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         aiInvocationRepository.candidate.setCandidateId(902L);
         aiInvocationRepository.candidate.setAppliedAt(Instant.parse("2026-06-23T00:01:00Z"));
         KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
-                repository, aiInvocationRepository, new FakeKnowledgeAiExtractionDomainService());
+                repository,
+                aiInvocationRepository,
+                new FakeKnowledgeAiExtractionDomainService(),
+                new AiCandidateDomainService(aiInvocationRepository),
+                null);
 
         GraphExtractionTaskResult detail = service.getTaskDetail(GraphExtractionTaskId.of(21L));
 
         assertEquals("APPLIED", detail.getStatus());
         assertEquals(Instant.parse("2026-06-23T00:00:00Z").toEpochMilli(), detail.getCompletedAt());
         assertEquals(Instant.parse("2026-06-23T00:01:00Z").toEpochMilli(), detail.getAppliedAt());
+    }
+
+    @Test
+    void applyTaskCandidateShouldMarkTaskApplied() {
+        FakeRepository repository = new FakeRepository();
+        GraphExtractionTask task = new GraphExtractionTask();
+        task.setTaskId(GraphExtractionTaskId.of(31L));
+        task.setTaskType("GRAPH");
+        task.setStatus("SUCCEEDED");
+        task.setSourceContentType("SANCAI_ENTRY");
+        task.setSourceContentId(1L);
+        task.setAiCandidateId(902L);
+        repository.tasks.add(task);
+        FakeAiInvocationRepository aiInvocationRepository = new FakeAiInvocationRepository();
+        aiInvocationRepository.candidate.setCandidateId(902L);
+        aiInvocationRepository.candidate.setContentType("SANCAI_ENTRY");
+        aiInvocationRepository.candidate.setContentId(1L);
+        aiInvocationRepository.candidate.setCapability("knowledge_graph");
+        aiInvocationRepository.candidate.setResultFormat("STRUCTURED");
+        aiInvocationRepository.candidate.setResultPayload("{\"entities\":[],\"relations\":[],\"entryRefs\":[]}");
+        FakeCandidateApplySupport candidateApplySupport = new FakeCandidateApplySupport();
+        KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
+                repository,
+                aiInvocationRepository,
+                new FakeKnowledgeAiExtractionDomainService(),
+                new AiCandidateDomainService(aiInvocationRepository),
+                candidateApplySupport);
+
+        GraphExtractionTaskResult result = service.applyTaskCandidate(GraphExtractionTaskId.of(31L));
+
+        assertEquals("APPLIED", result.getStatus());
+        assertEquals(902L, candidateApplySupport.appliedCandidateId);
     }
 
     private RequestRelationExtractionCommand relationCommand() {
@@ -208,12 +254,36 @@ class KnowledgeGraphExtractionApplicationServiceTest {
 
         @Override
         public int updateCandidate(AiCandidate candidate) {
-            return 0;
+            if (candidate == null || this.candidate.getCandidateId() == null) {
+                return 0;
+            }
+            this.candidate.setResultFormat(candidate.getResultFormat());
+            this.candidate.setResultPayload(candidate.getResultPayload());
+            this.candidate.setStatus(candidate.getStatus());
+            this.candidate.setAppliedAt(candidate.getAppliedAt());
+            this.candidate.setErrorType(candidate.getErrorType());
+            this.candidate.setErrorMessage(candidate.getErrorMessage());
+            return 1;
         }
 
         @Override
         public List<AiCandidate> listCandidates(String contentType, Long contentId, String capability, String status) {
             return List.of();
+        }
+    }
+
+    private static final class FakeCandidateApplySupport extends KnowledgeGraphCandidateApplySupport {
+        private Long appliedCandidateId;
+
+        private FakeCandidateApplySupport() {
+            super(null, null, null, null, null);
+        }
+
+        @Override
+        public com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphVersion apply(
+                GraphExtractionTask task, AiCandidate candidate) {
+            appliedCandidateId = candidate == null ? null : candidate.getCandidateId();
+            return null;
         }
     }
 }

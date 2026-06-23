@@ -9,22 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `knowledge-application/apply formal results`：应用候选结果到正式知识表
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-AI-WORKERS-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/.../KnowledgeGraphCandidateApplySupport.java`、`KnowledgeGraphExtractionApplicationServiceImpl.java`、`KnowledgeGraphCandidateApplySupportTest.java`
-    - 处理动作：实现候选结果应用逻辑并补齐支持类测试
-    - 验收点：Knowledge 能将候选实体、关系或世系结果写入正式表
-    - 重要度：10/10
-
-- [ ] `knowledge/version link`：补齐图谱版本关联落库
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-AI-WORKERS-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/.../GraphVersionRepository.java`、`kuzhambu-knowledge-infra/.../GraphVersionRepositoryImpl.java`、`kuzhambu-knowledge-application/.../KnowledgeGraphCandidateApplySupport.java`、`kuzhambu-knowledge-infra/src/test/.../GraphVersionRepositoryTest.java`
-    - 处理动作：为正式结果应用补齐图谱版本仓储与关联写入
-    - 验收点：应用正式结果时能生成或更新图谱版本关联记录
-    - 重要度：8/10
-
 - [ ] `admin-web/knowledge extraction service contract`：接通知识抽取前端服务契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-AI-WORKERS-CLOSURE.md`
