@@ -11,231 +11,255 @@
 
 ## 待审阅任务项
 
-- [ ] `db/schema/knowledge.sql,GraphVersionDO,GraphVersionPersistenceAssembler,GraphVersionRepositoryTest`：扩展图谱版本门类冗余字段
+- [ ] `knowledge.sql,GraphVersion.java,GraphVersionDO.java,GraphVersionPersistenceAssembler.java,GraphVersionRepositoryTest.java`：补齐图谱版本门类冗余字段闭环
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`db/schema/knowledge.sql`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/.../GraphVersionDO.java`、`.../GraphVersionPersistenceAssembler.java`、`.../GraphVersionRepositoryTest.java`
-    - 处理动作：为 `knowledge_graph_version` 增加 `source_category_code` 和 `source_category_name` 并同步持久化映射与测试
-    - 验收点：`knowledge_graph_version` 门类冗余字段完成落库、映射和仓储测试覆盖
+    - 范围对象：`db/schema/knowledge.sql`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/graph/model/entity/GraphVersion.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/graph/persistence/dataobject/GraphVersionDO.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/graph/persistence/assembler/GraphVersionPersistenceAssembler.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/test/java/com/thundax/kuzhambu/knowledge/infra/graph/repository/impl/GraphVersionRepositoryTest.java`
+    - 处理动作：为 `knowledge_graph_version` 增加门类冗余字段并同步 domain、持久化映射与仓储测试
+    - 验收点：`knowledge_graph_version` 的 `source_category_code`、`source_category_name` 完成落库、映射和仓储断言
     - 重要度：10/10
 
-- [ ] `db/schema/knowledge.sql,RefinementTaskDO,RefinementTaskMapper,RefinementTaskRepositoryTest`：新增精修任务表
+- [ ] `knowledge.sql,RefinementTaskDO.java,RefinementTaskMapper.java,RefinementTaskRepositoryTest.java`：新增精修任务表持久化骨架
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`db/schema/knowledge.sql`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/.../RefinementTaskDO.java`、`.../RefinementTaskMapper.java`、`.../RefinementTaskRepositoryTest.java`
-    - 处理动作：新增 `knowledge_refinement_task` 表及其持久化对象、Mapper 和仓储测试
-    - 验收点：精修任务表结构、唯一键和索引按 RUNBOOK 落地且仓储测试可运行
+    - 范围对象：`db/schema/knowledge.sql`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/refinement/persistence/dataobject/RefinementTaskDO.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/refinement/persistence/mapper/RefinementTaskMapper.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/test/java/com/thundax/kuzhambu/knowledge/infra/refinement/repository/impl/RefinementTaskRepositoryTest.java`
+    - 处理动作：落 `knowledge_refinement_task` 表结构、DO、Mapper 和仓储测试骨架
+    - 验收点：精修任务表主键、唯一键、索引和基础仓储测试完成
     - 重要度：10/10
 
-- [ ] `db/schema/knowledge.sql,RefinementEntityDraftDO,RefinementRelationDraftDO,RefinementEntityDraftRepositoryTest,RefinementRelationDraftRepositoryTest`：新增实体与关系草稿表
+- [ ] `knowledge.sql,RefinementEntityDraftDO.java,RefinementRelationDraftDO.java,RefinementEntityDraftRepositoryTest.java,RefinementRelationDraftRepositoryTest.java`：新增实体与关系草稿表持久化骨架
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`db/schema/knowledge.sql`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/.../RefinementEntityDraftDO.java`、`.../RefinementRelationDraftDO.java`、`.../RefinementEntityDraftRepositoryTest.java`、`.../RefinementRelationDraftRepositoryTest.java`
-    - 处理动作：新增 `knowledge_refinement_entity_draft` 和 `knowledge_refinement_relation_draft` 表及其持久化对象与测试
-    - 验收点：实体与关系草稿表按最终版结构落地并具备基础仓储测试
+    - 范围对象：`db/schema/knowledge.sql`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/refinement/persistence/dataobject/RefinementEntityDraftDO.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/refinement/persistence/dataobject/RefinementRelationDraftDO.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/test/java/com/thundax/kuzhambu/knowledge/infra/refinement/repository/impl/RefinementEntityDraftRepositoryTest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/test/java/com/thundax/kuzhambu/knowledge/infra/refinement/repository/impl/RefinementRelationDraftRepositoryTest.java`
+    - 处理动作：落实体草稿表和关系草稿表结构、DO 与基础仓储测试
+    - 验收点：实体与关系草稿表按最终版字段定义完成落库并具备最小仓储验证
     - 重要度：10/10
 
-- [ ] `db/schema/knowledge.sql,RefinementLineageNodeDraftDO,RefinementLineageRelationDraftDO,RefinementLineageNodeDraftRepositoryTest,RefinementLineageRelationDraftRepositoryTest`：新增世系草稿表
+- [ ] `knowledge.sql,RefinementLineageNodeDraftDO.java,RefinementLineageRelationDraftDO.java,RefinementLineageNodeDraftRepositoryTest.java,RefinementLineageRelationDraftRepositoryTest.java`：新增世系草稿表持久化骨架
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`db/schema/knowledge.sql`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/.../RefinementLineageNodeDraftDO.java`、`.../RefinementLineageRelationDraftDO.java`、`.../RefinementLineageNodeDraftRepositoryTest.java`、`.../RefinementLineageRelationDraftRepositoryTest.java`
-    - 处理动作：新增 `knowledge_refinement_lineage_node_draft` 和 `knowledge_refinement_lineage_relation_draft` 表及其持久化对象与测试
-    - 验收点：世系草稿表按最终版结构落地并具备基础仓储测试
+    - 范围对象：`db/schema/knowledge.sql`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/refinement/persistence/dataobject/RefinementLineageNodeDraftDO.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/refinement/persistence/dataobject/RefinementLineageRelationDraftDO.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/test/java/com/thundax/kuzhambu/knowledge/infra/refinement/repository/impl/RefinementLineageNodeDraftRepositoryTest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/test/java/com/thundax/kuzhambu/knowledge/infra/refinement/repository/impl/RefinementLineageRelationDraftRepositoryTest.java`
+    - 处理动作：落世系节点草稿表和世系关系草稿表结构、DO 与基础仓储测试
+    - 验收点：世系草稿表按最终版字段定义完成落库并具备最小仓储验证
     - 重要度：8/10
 
-- [ ] `db/schema/knowledge.sql,QualityAnnotationDO,QualityAnnotationMapper,QualityAnnotationRepositoryTest`：新增质量标注表
+- [ ] `knowledge.sql,QualityAnnotationDO.java,QualityAnnotationMapper.java,QualityAnnotationRepositoryTest.java`：新增质量标注表持久化骨架
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`db/schema/knowledge.sql`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/.../QualityAnnotationDO.java`、`.../QualityAnnotationMapper.java`、`.../QualityAnnotationRepositoryTest.java`
-    - 处理动作：新增 `knowledge_quality_annotation` 表及其持久化对象、Mapper 和仓储测试
-    - 验收点：质量标注表按最终版结构落地并具备基础仓储测试
+    - 范围对象：`db/schema/knowledge.sql`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/refinement/persistence/dataobject/QualityAnnotationDO.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/refinement/persistence/mapper/QualityAnnotationMapper.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/test/java/com/thundax/kuzhambu/knowledge/infra/refinement/repository/impl/QualityAnnotationRepositoryTest.java`
+    - 处理动作：落 `knowledge_quality_annotation` 表结构、DO、Mapper 与基础仓储测试
+    - 验收点：质量标注表字段、索引和基础仓储验证完成
     - 重要度：8/10
 
-- [ ] `RefinementTask.java,RefinementTaskId.java,RefinementTaskRepository.java,RefinementTaskRepositoryImpl.java`：新增精修任务领域模型与仓储端口
+- [ ] `RefinementTask.java,RefinementTaskId.java,RefinementTaskRepository.java,RefinementTaskRepositoryImpl.java`：闭合精修任务领域模型与仓储端口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/.../RefinementTask.java`、`.../RefinementTaskId.java`、`.../RefinementTaskRepository.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/.../RefinementTaskRepositoryImpl.java`
-    - 处理动作：新增精修任务领域实体、强类型 ID、仓储端口与实现
-    - 验收点：应用层可通过精修任务仓储读取和写入 `knowledge_refinement_task`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/refinement/model/entity/RefinementTask.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/refinement/model/valueobject/RefinementTaskId.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/refinement/repository/RefinementTaskRepository.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/refinement/repository/impl/RefinementTaskRepositoryImpl.java`
+    - 处理动作：完成精修任务领域对象、强类型 ID、仓储端口与仓储实现
+    - 验收点：应用层可稳定读取、分页和更新精修任务
     - 重要度：10/10
 
-- [ ] `RefinementEntityDraft.java,RefinementRelationDraft.java,RefinementEntityDraftRepository.java,RefinementRelationDraftRepository.java,RefinementEntityDraftRepositoryImpl.java`：新增实体与关系草稿领域模型与仓储端口
+- [ ] `RefinementEntityDraft.java,RefinementRelationDraft.java,RefinementEntityDraftRepository.java,RefinementRelationDraftRepository.java,RefinementEntityDraftRepositoryImpl.java`：闭合实体与关系草稿领域模型
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/.../RefinementEntityDraft.java`、`.../RefinementRelationDraft.java`、`.../RefinementEntityDraftRepository.java`、`.../RefinementRelationDraftRepository.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/.../RefinementEntityDraftRepositoryImpl.java`
-    - 处理动作：新增实体与关系草稿领域对象、仓储端口和首个仓储实现
-    - 验收点：应用层可通过领域仓储读写实体与关系草稿
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/refinement/model/entity/RefinementEntityDraft.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/refinement/model/entity/RefinementRelationDraft.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/refinement/repository/RefinementEntityDraftRepository.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/refinement/repository/RefinementRelationDraftRepository.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/refinement/repository/impl/RefinementEntityDraftRepositoryImpl.java`
+    - 处理动作：完成实体与关系草稿领域对象、仓储端口和实体仓储实现
+    - 验收点：实体与关系草稿在 domain 和 infra 层形成可调用链路
     - 重要度：10/10
 
-- [ ] `RefinementRelationDraftRepositoryImpl.java,RefinementLineageNodeDraft.java,RefinementLineageRelationDraft.java,RefinementLineageNodeDraftRepository.java,RefinementLineageRelationDraftRepository.java`：补齐关系与世系草稿仓储结构
+- [ ] `RefinementRelationDraftRepositoryImpl.java,RefinementLineageNodeDraft.java,RefinementLineageRelationDraft.java,RefinementLineageNodeDraftRepository.java,RefinementLineageRelationDraftRepository.java`：闭合关系与世系草稿领域模型
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/.../RefinementRelationDraftRepositoryImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/.../RefinementLineageNodeDraft.java`、`.../RefinementLineageRelationDraft.java`、`.../RefinementLineageNodeDraftRepository.java`、`.../RefinementLineageRelationDraftRepository.java`
-    - 处理动作：补齐关系仓储实现和世系草稿领域对象、仓储端口
-    - 验收点：关系与世系草稿结构在 domain 和 infra 层闭合
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/refinement/repository/impl/RefinementRelationDraftRepositoryImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/refinement/model/entity/RefinementLineageNodeDraft.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/refinement/model/entity/RefinementLineageRelationDraft.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/refinement/repository/RefinementLineageNodeDraftRepository.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/refinement/repository/RefinementLineageRelationDraftRepository.java`
+    - 处理动作：完成关系仓储实现和世系草稿领域对象、仓储端口
+    - 验收点：关系与世系草稿的 domain 结构和首层 infra 实现闭合
     - 重要度：8/10
 
-- [ ] `RefinementLineageNodeDraftRepositoryImpl.java,RefinementLineageRelationDraftRepositoryImpl.java,QualityAnnotation.java,QualityAnnotationRepository.java,QualityAnnotationRepositoryImpl.java`：补齐世系与质量标注仓储实现
+- [ ] `RefinementLineageNodeDraftRepositoryImpl.java,RefinementLineageRelationDraftRepositoryImpl.java,QualityAnnotation.java,QualityAnnotationRepository.java,QualityAnnotationRepositoryImpl.java`：闭合世系与质量标注仓储链路
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/.../RefinementLineageNodeDraftRepositoryImpl.java`、`.../RefinementLineageRelationDraftRepositoryImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/.../QualityAnnotation.java`、`.../QualityAnnotationRepository.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/.../QualityAnnotationRepositoryImpl.java`
-    - 处理动作：完成世系草稿仓储实现和质量标注领域仓储闭合
-    - 验收点：世系草稿与质量标注在 domain 和 infra 层形成完整仓储链路
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/refinement/repository/impl/RefinementLineageNodeDraftRepositoryImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/refinement/repository/impl/RefinementLineageRelationDraftRepositoryImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/refinement/model/entity/QualityAnnotation.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/refinement/repository/QualityAnnotationRepository.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/refinement/repository/impl/QualityAnnotationRepositoryImpl.java`
+    - 处理动作：完成世系仓储实现和质量标注领域仓储链路
+    - 验收点：世系草稿与质量标注在 domain 和 infra 层可稳定读写
     - 重要度：8/10
 
-- [ ] `KnowledgeGraphRefinementApplicationService.java,RefinementWorkbenchPageQuery.java,RefinementDetailQuery.java,RefinementDetailResult.java`：新增最终版应用服务读契约
+- [ ] `KnowledgeEntityRepository.java,KnowledgeRelationRepository.java,KnowledgeEntityRepositoryImpl.java,KnowledgeRelationRepositoryImpl.java`：扩展正式实体与关系仓储读删能力
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/.../KnowledgeGraphRefinementApplicationService.java`、`.../RefinementWorkbenchPageQuery.java`、`.../RefinementDetailQuery.java`、`.../RefinementDetailResult.java`
-    - 处理动作：定义精修工作台分页、详情和最终版服务接口读契约
-    - 验收点：应用服务接口可稳定表达精修列表、详情和质量汇总读取
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/graph/repository/KnowledgeEntityRepository.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/graph/repository/KnowledgeRelationRepository.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/graph/repository/impl/KnowledgeEntityRepositoryImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/graph/repository/impl/KnowledgeRelationRepositoryImpl.java`
+    - 处理动作：为正式实体和关系仓储补 `listByVersionId` 与按业务键删除能力
+    - 验收点：精修初始化和应用回写可读取并裁剪正式实体与关系事实
+    - 重要度：9/10
+
+- [ ] `KnowledgeLineageNodeRepository.java,KnowledgeLineageRelationRepository.java,KnowledgeLineageNodeRepositoryImpl.java,KnowledgeLineageRelationRepositoryImpl.java`：扩展正式世系仓储读删能力
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/graph/repository/KnowledgeLineageNodeRepository.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/graph/repository/KnowledgeLineageRelationRepository.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/graph/repository/impl/KnowledgeLineageNodeRepositoryImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/graph/repository/impl/KnowledgeLineageRelationRepositoryImpl.java`
+    - 处理动作：为正式世系节点和世系关系仓储补 `listByVersionId` 与按业务键删除能力
+    - 验收点：精修初始化和应用回写可读取并裁剪正式世系事实
+    - 重要度：8/10
+
+- [ ] `KnowledgeGraphRefinementApplicationService.java,RefinementWorkbenchPageQuery.java,RefinementDetailQuery.java,RefinementDetailResult.java`：定义精修应用服务读契约
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/service/KnowledgeGraphRefinementApplicationService.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/query/RefinementWorkbenchPageQuery.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/query/RefinementDetailQuery.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/result/RefinementDetailResult.java`
+    - 处理动作：定义精修列表、详情和任务读取的最终版应用服务契约
+    - 验收点：应用服务接口可稳定表达精修任务列表与详情结构
     - 重要度：10/10
 
-- [ ] `UpsertRefinementEntityCommand.java,ConfirmRefinementEntityCommand.java,UpsertRefinementRelationCommand.java,ConfirmRefinementRelationCommand.java,DeleteRefinementRelationCommand.java`：新增实体与关系命令模型
+- [ ] `UpsertRefinementEntityCommand.java,ConfirmRefinementEntityCommand.java,DeleteRefinementEntityCommand.java,UpsertRefinementRelationCommand.java,ConfirmRefinementRelationCommand.java`：定义实体与关系写入命令模型
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/.../UpsertRefinementEntityCommand.java`、`.../ConfirmRefinementEntityCommand.java`、`.../UpsertRefinementRelationCommand.java`、`.../ConfirmRefinementRelationCommand.java`、`.../DeleteRefinementRelationCommand.java`
-    - 处理动作：新增实体与关系草稿新增、更新、确认和删除命令模型
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/command/UpsertRefinementEntityCommand.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/command/ConfirmRefinementEntityCommand.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/command/DeleteRefinementEntityCommand.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/command/UpsertRefinementRelationCommand.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/command/ConfirmRefinementRelationCommand.java`
+    - 处理动作：定义实体与关系新增、更新、确认命令模型
     - 验收点：实体与关系写入口具备稳定命令契约
     - 重要度：9/10
 
-- [ ] `DeleteRefinementEntityCommand.java,UpsertRefinementLineageNodeCommand.java,UpsertRefinementLineageRelationCommand.java,UpsertQualityAnnotationCommand.java,QualitySummaryResult.java`：补齐删除、世系与标注命令模型
+- [ ] `DeleteRefinementRelationCommand.java,UpsertRefinementLineageNodeCommand.java,UpsertRefinementLineageRelationCommand.java,UpsertQualityAnnotationCommand.java,QualitySummaryResult.java`：定义删除、世系与质量结果模型
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/.../DeleteRefinementEntityCommand.java`、`.../UpsertRefinementLineageNodeCommand.java`、`.../UpsertRefinementLineageRelationCommand.java`、`.../UpsertQualityAnnotationCommand.java`、`.../QualitySummaryResult.java`
-    - 处理动作：补齐实体删除、世系草稿、质量标注和质量汇总契约模型
-    - 验收点：最终版应用层命令和结果模型完整可用
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/command/DeleteRefinementRelationCommand.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/command/UpsertRefinementLineageNodeCommand.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/command/UpsertRefinementLineageRelationCommand.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/command/UpsertQualityAnnotationCommand.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/result/QualitySummaryResult.java`
+    - 处理动作：定义删除类命令、世系写命令和质量汇总结果模型
+    - 验收点：世系、删除和质量汇总的应用层契约齐备
     - 重要度：8/10
 
-- [ ] `KnowledgeGraphRefinementApplicationServiceImpl.java,RefinementDraftBootstrapSupport.java,KnowledgeGraphRefinementTaskOpenTest.java`：实现精修任务打开与草稿初始化
+- [ ] `ConfirmRefinementLineageNodeCommand.java,ConfirmRefinementLineageRelationCommand.java,DeleteRefinementLineageNodeCommand.java,DeleteRefinementLineageRelationCommand.java,DeleteQualityAnnotationCommand.java`：定义后续开放能力命令模型
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/.../KnowledgeGraphRefinementApplicationServiceImpl.java`、`.../RefinementDraftBootstrapSupport.java`、`.../KnowledgeGraphRefinementTaskOpenTest.java`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/command/ConfirmRefinementLineageNodeCommand.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/command/ConfirmRefinementLineageRelationCommand.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/command/DeleteRefinementLineageNodeCommand.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/command/DeleteRefinementLineageRelationCommand.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/command/DeleteQualityAnnotationCommand.java`
+    - 处理动作：定义世系确认删除和标注删除命令模型
+    - 验收点：后续开放能力的命令模型补齐
+    - 重要度：7/10
+
+- [ ] `QualityAnnotationPageQuery.java,QualityAnnotationResult.java,RefinementWorkbenchItemResult.java,RefinementProgressSummaryResult.java,RefinementEntityOptionResult.java`：定义列表与标注结果模型
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/query/QualityAnnotationPageQuery.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/result/QualityAnnotationResult.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/result/RefinementWorkbenchItemResult.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/result/RefinementProgressSummaryResult.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/result/RefinementEntityOptionResult.java`
+    - 处理动作：定义任务列表、进度摘要、实体选项和标注分页查询模型
+    - 验收点：应用层读取结果模型覆盖任务列表、进度、选项和标注分页
+    - 重要度：8/10
+
+- [ ] `RefinementEntityResult.java,RefinementRelationResult.java,RefinementLineageNodeResult.java,RefinementLineageRelationResult.java`：定义草稿结果模型
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/result/RefinementEntityResult.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/result/RefinementRelationResult.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/result/RefinementLineageNodeResult.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/result/RefinementLineageRelationResult.java`
+    - 处理动作：定义实体、关系、世系节点和世系关系草稿结果模型
+    - 验收点：草稿详情结果模型覆盖四类对象
+    - 重要度：8/10
+
+- [ ] `RefinementDraftBootstrapSupport.java,KnowledgeGraphRefinementApplicationServiceImpl.java,KnowledgeGraphRefinementTaskOpenTest.java`：实现任务打开与草稿初始化
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/support/RefinementDraftBootstrapSupport.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/service/impl/KnowledgeGraphRefinementApplicationServiceImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/refinement/KnowledgeGraphRefinementTaskOpenTest.java`
     - 处理动作：实现打开精修任务并从正式事实初始化草稿
-    - 验收点：`task/open` 可创建或复用 `DRAFT` 任务并生成草稿数据
+    - 验收点：`task/open` 可创建或复用 `DRAFT` 任务并生成实体、关系和世系草稿
     - 重要度：10/10
 
-- [ ] `KnowledgeGraphRefinementApplicationServiceImpl.java,KnowledgeRefinementManualKeySupport.java,KnowledgeGraphRefinementEntityWriteTest.java,KnowledgeGraphRefinementRelationWriteTest.java`：实现实体与关系草稿写入
+- [ ] `KnowledgeRefinementManualKeySupport.java,KnowledgeGraphRefinementApplicationServiceImpl.java,KnowledgeGraphRefinementEntityWriteTest.java,KnowledgeGraphRefinementRelationWriteTest.java`：实现实体与关系草稿写入
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/.../KnowledgeGraphRefinementApplicationServiceImpl.java`、`.../KnowledgeRefinementManualKeySupport.java`、`.../KnowledgeGraphRefinementEntityWriteTest.java`、`.../KnowledgeGraphRefinementRelationWriteTest.java`
-    - 处理动作：实现实体与关系草稿的新增、更新、确认和删除写入逻辑
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/support/KnowledgeRefinementManualKeySupport.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/service/impl/KnowledgeGraphRefinementApplicationServiceImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/refinement/KnowledgeGraphRefinementEntityWriteTest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/refinement/KnowledgeGraphRefinementRelationWriteTest.java`
+    - 处理动作：实现实体与关系草稿新增、更新、确认和删除逻辑
     - 验收点：实体与关系操作只改草稿且手工新增键策略生效
     - 重要度：10/10
 
-- [ ] `KnowledgeGraphRefinementApplicationServiceImpl.java,KnowledgeGraphRefinementLineageWriteTest.java,QualityAnnotationWriteTest.java`：实现世系草稿与质量标注后端写入
+- [ ] `KnowledgeGraphRefinementApplicationServiceImpl.java,KnowledgeGraphRefinementLineageWriteTest.java,QualityAnnotationWriteTest.java`：实现世系草稿与质量标注写入
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/.../KnowledgeGraphRefinementApplicationServiceImpl.java`、`.../KnowledgeGraphRefinementLineageWriteTest.java`、`.../QualityAnnotationWriteTest.java`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/service/impl/KnowledgeGraphRefinementApplicationServiceImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/refinement/KnowledgeGraphRefinementLineageWriteTest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/refinement/QualityAnnotationWriteTest.java`
     - 处理动作：实现世系草稿和质量标注的后端写入能力
-    - 验收点：最终版世系和标注接口可在后端走通且有测试
+    - 验收点：世系与标注接口在后端走通且具备最小测试
     - 重要度：7/10
 
-- [ ] `RefinementApplySupport.java,KnowledgeGraphRefinementApplicationServiceImpl.java,KnowledgeGraphRefinementApplyTest.java`：实现草稿应用到正式事实
+- [ ] `RefinementApplySupport.java,KnowledgeGraphRefinementApplicationServiceImpl.java,KnowledgeGraphRefinementApplyTest.java`：实现草稿应用回正式事实
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/.../RefinementApplySupport.java`、`.../KnowledgeGraphRefinementApplicationServiceImpl.java`、`.../KnowledgeGraphRefinementApplyTest.java`
-    - 处理动作：实现 `task/apply` 将实体、关系和世系草稿覆盖回正式事实
-    - 验收点：精修任务应用后正式事实、任务状态和来源引用符合 RUNBOOK 口径
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/support/RefinementApplySupport.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/service/impl/KnowledgeGraphRefinementApplicationServiceImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/refinement/KnowledgeGraphRefinementApplyTest.java`
+    - 处理动作：实现 `task/apply` 将草稿覆盖回正式实体、关系和世系事实
+    - 验收点：精修应用后正式事实、任务状态和删除裁剪口径符合 RUNBOOK
     - 重要度：10/10
 
 - [ ] `QualitySummaryAggregationSupport.java,KnowledgeGraphRefinementApplicationServiceImpl.java,QualitySummaryAggregationSupportTest.java`：实现运行时质量指标聚合
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/.../QualitySummaryAggregationSupport.java`、`.../KnowledgeGraphRefinementApplicationServiceImpl.java`、`.../QualitySummaryAggregationSupportTest.java`
-    - 处理动作：实现按全量、门类和单内容运行时聚合 `entityCoverageRate`、`relationAccuracyRate`、`completenessRate`
-    - 验收点：`quality/summary` 可返回三项质量指标且具备自动化测试
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/support/QualitySummaryAggregationSupport.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/service/impl/KnowledgeGraphRefinementApplicationServiceImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/refinement/QualitySummaryAggregationSupportTest.java`
+    - 处理动作：实现按任务运行时聚合 `entityCoverageRate`、`relationAccuracyRate`、`completenessRate`
+    - 验收点：`quality/summary` 返回三项质量指标并具备自动化验证
     - 重要度：9/10
 
-- [ ] `RefinementEntityDraftAuditSnapshotAssembler.java,RefinementRelationDraftAuditSnapshotAssembler.java,QualityAnnotationAuditSnapshotAssembler.java,RefinementAuditSnapshotAssemblerTest.java`：实现实体、关系和标注审计快照
+- [ ] `RefinementEntityDraftAuditSnapshotAssembler.java,RefinementRelationDraftAuditSnapshotAssembler.java,RefinementEntityDraftAuditObjectLoader.java,RefinementRelationDraftAuditObjectLoader.java,RefinementAuditSnapshotAssemblerTest.java`：接入实体与关系审计快照
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/.../RefinementEntityDraftAuditSnapshotAssembler.java`、`.../RefinementRelationDraftAuditSnapshotAssembler.java`、`.../QualityAnnotationAuditSnapshotAssembler.java`、`.../RefinementAuditSnapshotAssemblerTest.java`
-    - 处理动作：为实体草稿、关系草稿和质量标注接入字段级 before/after 审计快照
-    - 验收点：System 审计可识别精修对象字段差异且测试通过
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/audit/RefinementEntityDraftAuditSnapshotAssembler.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/audit/RefinementRelationDraftAuditSnapshotAssembler.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/audit/RefinementEntityDraftAuditObjectLoader.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/audit/RefinementRelationDraftAuditObjectLoader.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/refinement/RefinementAuditSnapshotAssemblerTest.java`
+    - 处理动作：为实体与关系草稿接入字段级 before/after 审计快照与对象加载器
+    - 验收点：System 审计可识别实体与关系草稿字段差异
     - 重要度：9/10
 
-- [ ] `RefinementLineageNodeDraftAuditSnapshotAssembler.java,RefinementLineageRelationDraftAuditSnapshotAssembler.java,AuditSnapshotAssemblerRegistry.java,RefinementLineageAuditSnapshotAssemblerTest.java`：实现世系审计快照注册
+- [ ] `RefinementLineageNodeDraftAuditSnapshotAssembler.java,RefinementLineageRelationDraftAuditSnapshotAssembler.java,RefinementLineageNodeDraftAuditObjectLoader.java,RefinementLineageRelationDraftAuditObjectLoader.java,RefinementLineageAuditSnapshotAssemblerTest.java`：接入世系审计快照
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/.../RefinementLineageNodeDraftAuditSnapshotAssembler.java`、`.../RefinementLineageRelationDraftAuditSnapshotAssembler.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/.../AuditSnapshotAssemblerRegistry.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/.../RefinementLineageAuditSnapshotAssemblerTest.java`
-    - 处理动作：为世系草稿对象接入并注册字段级审计快照
-    - 验收点：System 审计注册表可识别世系草稿对象审计快照
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/audit/RefinementLineageNodeDraftAuditSnapshotAssembler.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/audit/RefinementLineageRelationDraftAuditSnapshotAssembler.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/audit/RefinementLineageNodeDraftAuditObjectLoader.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/audit/RefinementLineageRelationDraftAuditObjectLoader.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/refinement/RefinementLineageAuditSnapshotAssemblerTest.java`
+    - 处理动作：为世系节点与世系关系草稿接入字段级审计快照与对象加载器
+    - 验收点：System 审计可识别世系草稿字段差异
     - 重要度：7/10
 
-- [ ] `RefinementWorkbenchPageRequest.java,RefinementDetailRequest.java,UpsertRefinementEntityRequest.java,UpsertQualityAnnotationRequest.java,QualitySummaryRequest.java`：新增最终版接口请求模型
+- [ ] `QualityAnnotationAuditSnapshotAssembler.java,QualityAnnotationAuditObjectLoader.java,KnowledgeGraphRefinementApplicationServiceImpl.java,QualityAnnotationAuditTest.java`：接入质量标注审计
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/.../RefinementWorkbenchPageRequest.java`、`.../RefinementDetailRequest.java`、`.../UpsertRefinementEntityRequest.java`、`.../UpsertQualityAnnotationRequest.java`、`.../QualitySummaryRequest.java`
-    - 处理动作：新增精修列表、详情、实体写入、质量标注和质量汇总的最终版 HTTP 请求模型
-    - 验收点：HTTP 请求模型可稳定覆盖 Phase 1 和后续未开放接口
-    - 重要度：9/10
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/audit/QualityAnnotationAuditSnapshotAssembler.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/audit/QualityAnnotationAuditObjectLoader.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/service/impl/KnowledgeGraphRefinementApplicationServiceImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/refinement/QualityAnnotationAuditTest.java`
+    - 处理动作：为质量标注接入字段级审计和服务侧审计记录入口
+    - 验收点：质量标注创建、更新、删除可被 System 审计追溯
+    - 重要度：7/10
 
-- [ ] `补齐剩余接口请求模型`：补齐关系、世系与删除类请求模型
-    - 任务类型：拆解任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/refinement/controller/request/`
-    - 处理动作：将关系、世系、删除和确认类请求模型继续拆分为不超过 5 个文件的执行任务
-    - 验收点：剩余请求模型被拆成可独立验收的 TODO 项
-    - 重要度：8/10
-
-- [ ] `RefinementDetailResponse.java,RefinementEntityResponse.java,RefinementRelationResponse.java,QualityAnnotationResponse.java,QualitySummaryResponse.java`：新增最终版接口响应模型
+- [ ] `RefinementRequests.java,RefinementResponses.java,KnowledgeGraphRefinementInterfaceAssembler.java,KnowledgeGraphRefinementController.java,KnowledgeGraphRefinementControllerTest.java`：实现精修接口协议层
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/.../RefinementDetailResponse.java`、`.../RefinementEntityResponse.java`、`.../RefinementRelationResponse.java`、`.../QualityAnnotationResponse.java`、`.../QualitySummaryResponse.java`
-    - 处理动作：新增精修详情、实体、关系、标注和质量汇总响应模型
-    - 验收点：接口响应模型可直接支撑前端 Phase 1 页面和后续扩展接口
-    - 重要度：9/10
-
-- [ ] `KnowledgeGraphRefinementController.java,KnowledgeGraphRefinementInterfaceAssembler.java,KnowledgeGraphRefinementControllerTest.java`：实现精修 Controller 与协议装配
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/.../KnowledgeGraphRefinementController.java`、`.../KnowledgeGraphRefinementInterfaceAssembler.java`、`.../KnowledgeGraphRefinementControllerTest.java`
-    - 处理动作：实现 `/api/knowledge/refinement` 最终版接口入口、协议装配和控制器测试
-    - 验收点：Phase 1 开放接口和后续保留接口在控制器层定义完整且测试通过
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/refinement/controller/request/RefinementRequests.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/refinement/controller/response/RefinementResponses.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/refinement/assembler/KnowledgeGraphRefinementInterfaceAssembler.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/refinement/controller/KnowledgeGraphRefinementController.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/test/java/com/thundax/kuzhambu/knowledge/interfaces/admin/refinement/controller/KnowledgeGraphRefinementControllerTest.java`
+    - 处理动作：实现最终版 refinement HTTP 请求、响应、协议装配、Controller 和控制器测试
+    - 验收点：`/api/knowledge/refinement` 的 Phase 1 接口和保留接口定义完整且控制器测试通过
     - 重要度：10/10
 
-- [ ] `refinement-types.ts,refinement-service.ts,refinement-service.test.ts`：新增前端最终版类型与服务
+- [ ] `refinement-types.ts,refinement-service.ts,refinement-service.test.ts`：实现前端契约层
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/refinement-types.ts`、`.../refinement-service.ts`、`.../refinement-service.test.ts`
-    - 处理动作：定义前端最终版类型并实现 Phase 1 使用的精修服务和契约测试
-    - 验收点：前端类型覆盖 `GRAPH / RELATION / LINEAGE / ANNOTATION / QUALITY`，服务契约测试通过
+    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/refinement-types.ts`、`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/refinement-service.ts`、`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/refinement-service.test.ts`
+    - 处理动作：定义前端 refinement 类型、服务和服务契约测试
+    - 验收点：前端契约层覆盖 `GRAPH / RELATION / LINEAGE / ANNOTATION / QUALITY`
     - 重要度：9/10
 
-- [ ] `refinement-filter-form.tsx,refinement-workbench-table.tsx,refinement-progress-summary.tsx`：实现精修列表组件
+- [ ] `refinement-filter-form.tsx,refinement-workbench-table.tsx,refinement-progress-summary.tsx`：实现精修列表区组件
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/components/refinement-filter-form.tsx`、`.../refinement-workbench-table.tsx`、`.../refinement-progress-summary.tsx`
-    - 处理动作：实现待精修列表、门类筛选和进度汇总组件
-    - 验收点：页面可按门类和来源筛选待精修内容并展示进度统计
+    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/components/refinement-filter-form.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/components/refinement-workbench-table.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/components/refinement-progress-summary.tsx`
+    - 处理动作：实现待精修列表筛选、任务表格和进度统计组件
+    - 验收点：页面可按门类和来源筛选待精修任务并展示进度
     - 重要度：9/10
 
-- [ ] `refinement-entity-table.tsx,refinement-entity-editor.tsx,refinement-entity-delete-modal.tsx`：实现实体精修组件
+- [ ] `refinement-entity-table.tsx,refinement-entity-editor.tsx,refinement-entity-delete-modal.tsx`：实现实体精修区组件
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/components/refinement-entity-table.tsx`、`.../refinement-entity-editor.tsx`、`.../refinement-entity-delete-modal.tsx`
-    - 处理动作：实现实体草稿表、编辑抽屉和删除确认组件
-    - 验收点：用户可在页面中新增、编辑、确认和删除实体草稿
+    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/components/refinement-entity-table.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/components/refinement-entity-editor.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/components/refinement-entity-delete-modal.tsx`
+    - 处理动作：实现实体表格、编辑弹窗和删除确认弹窗
+    - 验收点：用户可新增、编辑、确认和删除实体草稿
     - 重要度：10/10
 
-- [ ] `refinement-relation-table.tsx,refinement-relation-editor.tsx,refinement-relation-delete-modal.tsx`：实现关系精修组件
+- [ ] `refinement-relation-table.tsx,refinement-relation-editor.tsx,refinement-relation-delete-modal.tsx`：实现关系精修区组件
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/components/refinement-relation-table.tsx`、`.../refinement-relation-editor.tsx`、`.../refinement-relation-delete-modal.tsx`
-    - 处理动作：实现关系草稿表、编辑抽屉和删除确认组件
-    - 验收点：用户可在页面中新增、编辑、确认和删除关系草稿
+    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/components/refinement-relation-table.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/components/refinement-relation-editor.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/components/refinement-relation-delete-modal.tsx`
+    - 处理动作：实现关系表格、编辑弹窗和删除确认弹窗
+    - 验收点：用户可新增、编辑、确认和删除关系草稿
     - 重要度：10/10
 
-- [ ] `refinement-page.tsx,refinement-page.css,refinement-page.test.tsx,router/index.tsx`：实现精修页面壳与路由
+- [ ] `refinement-page.tsx,refinement-page.css,refinement-page.test.tsx,router/index.tsx`：实现精修页面壳与路由入口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/refinement-page.tsx`、`.../refinement-page.css`、`.../refinement-page.test.tsx`、`kuzhambu-apps/admin-web/src/router/index.tsx`
-    - 处理动作：编排精修页面壳并接入 `/knowledge/refinement` 路由
-    - 验收点：页面可完成“列表筛选 -> 打开任务 -> 编辑实体/关系 -> 应用任务”的主交互
+    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/refinement-page.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/refinement-page.css`、`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/refinement-page.test.tsx`、`kuzhambu-apps/admin-web/src/router/index.tsx`
+    - 处理动作：编排精修工作台页面并接入 `/knowledge/refinement` 路由
+    - 验收点：页面完成“筛选任务 -> 打开任务 -> 编辑实体关系 -> 应用任务”的主交互
     - 重要度：10/10
 
-- [ ] `db/data-source/system.json,db/data/system.sql`：新增精修菜单与权限种子
+- [ ] `system.json,system.sql`：新增精修菜单与权限种子
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
     - 范围对象：`db/data-source/system.json`、`db/data/system.sql`
@@ -243,28 +267,20 @@
     - 验收点：菜单生成结果包含精修入口且权限编码与前后端一致
     - 重要度：8/10
 
-- [ ] `KnowledgeGraphRefinementTaskOpenTest,KnowledgeGraphRefinementApplyTest,KnowledgeGraphRefinementControllerTest,RefinementTaskRepositoryTest`：补齐后端最小验证
+- [ ] `KnowledgeGraphRefinementTaskOpenTest.java,KnowledgeGraphRefinementApplyTest.java,KnowledgeGraphRefinementControllerTest.java,RefinementTaskRepositoryTest.java`：补齐后端主链路最小验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/refinement/KnowledgeGraphRefinementTaskOpenTest.java`、`.../KnowledgeGraphRefinementApplyTest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/.../KnowledgeGraphRefinementControllerTest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/.../RefinementTaskRepositoryTest.java`
-    - 处理动作：补齐精修任务打开、应用、控制器和仓储的最小后端验证
-    - 验收点：后端 refinement 主链路具备最小自动化验证集合
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/refinement/KnowledgeGraphRefinementTaskOpenTest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/refinement/KnowledgeGraphRefinementApplyTest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/test/java/com/thundax/kuzhambu/knowledge/interfaces/admin/refinement/controller/KnowledgeGraphRefinementControllerTest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/test/java/com/thundax/kuzhambu/knowledge/infra/refinement/repository/impl/RefinementTaskRepositoryTest.java`
+    - 处理动作：补齐精修任务打开、应用、接口和仓储的最小验证集合
+    - 验收点：后端 refinement 主链路具备可运行自动化验证
     - 重要度：9/10
 
-- [ ] `refinement-service.test.ts,refinement-page.test.tsx`：补齐前端最小验证
+- [ ] `refinement-service.test.ts,refinement-page.test.tsx`：补齐前端主链路最小验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/refinement-service.test.ts`、`.../refinement-page.test.tsx`
-    - 处理动作：补齐精修服务契约和页面主交互测试
+    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/refinement-service.test.ts`、`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/refinement-page.test.tsx`
+    - 处理动作：补齐 refinement 服务契约和页面主交互测试
     - 验收点：前端 refinement 服务和页面主交互具备自动化测试
     - 重要度：8/10
-
-- [ ] `KNOWLEDGE-DESIGN.md,KNOWLEDGE-IMPLEMENTATION-COVERAGE.md,AI-IMPLEMENTATION-COVERAGE.md`：同步设计与覆盖文档
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`docs/30-designs/KNOWLEDGE-DESIGN.md`、`docs/40-readiness/KNOWLEDGE-IMPLEMENTATION-COVERAGE.md`、`docs/40-readiness/AI-IMPLEMENTATION-COVERAGE.md`
-    - 处理动作：在代码闭环后同步 Knowledge 设计和覆盖状态文档
-    - 验收点：文档口径与最终实现一致且覆盖矩阵反映 refinement 进展
-    - 重要度：7/10
 
 ## 待讨论项
