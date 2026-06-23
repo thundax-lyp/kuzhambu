@@ -139,7 +139,7 @@ describe("knowledge graph extraction service request contracts", () => {
             taskId: 9001
         });
 
-        await service.updateTaskApplied({ taskId: 9001 });
+        await service.applyTaskCandidate({ taskId: 9001 });
         expectLastCall("POST", "/knowledge/graph-extraction/task/apply", {
             taskId: 9001
         });

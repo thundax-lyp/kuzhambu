@@ -54,7 +54,7 @@ export const getTaskDetail = (request: GraphExtractionTaskIdCommand) => {
     );
 };
 
-export const updateTaskApplied = (request: GraphExtractionTaskIdCommand) => {
+export const applyTaskCandidate = (request: GraphExtractionTaskIdCommand) => {
     return postJson<GraphExtractionTaskRecord, GraphExtractionTaskIdCommand>(
         `${API_PREFIX}/task/apply`,
         {

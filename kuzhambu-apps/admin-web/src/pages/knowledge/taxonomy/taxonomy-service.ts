@@ -163,7 +163,6 @@ export const pagePendingTags = (request: TagReviewPageQuery = {}) => {
     });
 };
 
-// eslint-disable-next-line local/service-method-verb-prefix
 export const reviewTag = (request: TagReviewCommand) => {
     return postJson<boolean, TagReviewCommand>(`${API_PREFIX}/tag/review`, {
         body: request
