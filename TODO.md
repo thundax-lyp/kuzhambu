@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `RefinementRelationDraftRepositoryImpl.java,RefinementEntityDraftRepositoryTest.java,RefinementRelationDraftRepositoryTest.java`：补齐实体与关系草稿仓储实现验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/refinement/repository/impl/RefinementRelationDraftRepositoryImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/refinement/persistence/assembler/RefinementRelationDraftPersistenceAssembler.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/test/java/com/thundax/kuzhambu/knowledge/infra/refinement/repository/impl/RefinementRelationDraftRepositoryTest.java`
-    - 处理动作：补齐关系草稿专属装配器、仓储实现并完成关系草稿仓储测试
-    - 验收点：关系草稿仓储可稳定读取、保存和删除，查询条件具备自动化验证
-    - 重要度：9/10
-
 - [ ] `RefinementLineageNodeDraft.java,RefinementLineageRelationDraft.java,RefinementLineageNodeDraftRepository.java,RefinementLineageRelationDraftRepository.java,RefinementLineageNodeDraftRepositoryImpl.java`：闭合世系草稿领域模型首段
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
