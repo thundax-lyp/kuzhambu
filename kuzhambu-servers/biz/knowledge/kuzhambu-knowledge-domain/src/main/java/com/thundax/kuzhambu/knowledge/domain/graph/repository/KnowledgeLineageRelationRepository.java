@@ -9,10 +9,14 @@ public interface KnowledgeLineageRelationRepository {
 
     List<KnowledgeLineageRelation> listByRelationKeys(Collection<String> relationKeys);
 
+    List<KnowledgeLineageRelation> listByVersionId(Long versionId);
+
     KnowledgeLineageRelation getByRelationId(Long relationId);
 
     PageResult<KnowledgeLineageRelation> page(
             Long versionId, String keyword, String relationType, String confirmationStatus, int pageNo, int pageSize);
 
     void saveOrUpdateBatch(List<KnowledgeLineageRelation> relations);
+
+    int deleteByRelationKeys(Collection<String> relationKeys);
 }

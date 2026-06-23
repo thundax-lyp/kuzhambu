@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `KnowledgeLineageNodeRepository.java,KnowledgeLineageRelationRepository.java,KnowledgeLineageNodeRepositoryImpl.java,KnowledgeLineageRelationRepositoryImpl.java`：扩展正式世系仓储读删能力
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/graph/repository/KnowledgeLineageNodeRepository.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/graph/repository/KnowledgeLineageRelationRepository.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/graph/repository/impl/KnowledgeLineageNodeRepositoryImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/graph/repository/impl/KnowledgeLineageRelationRepositoryImpl.java`
-    - 处理动作：为正式世系节点和世系关系仓储补 `listByVersionId` 与按业务键删除能力
-    - 验收点：精修初始化和应用回写可读取并裁剪正式世系事实
-    - 重要度：8/10
-
 - [ ] `KnowledgeGraphRefinementApplicationService.java,RefinementWorkbenchPageQuery.java,RefinementDetailQuery.java,RefinementDetailResult.java`：定义精修应用服务读契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
