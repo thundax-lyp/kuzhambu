@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `tests/classics-tag-flow`：补 Classics 标签闭环测试
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-KNOWLEDGE-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/content/ClassicsContentApplicationServiceImplTest.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/content/ClassicsContentApplicationServiceAiCandidateTest.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/test/java/com/thundax/kuzhambu/classics/interfaces/admin/content/ClassicsContentAdminControllerTest.java`
-    - 处理动作：为手工标签、AI 标签确认、删除标签、按内容排序补齐 Classics 应用和接口测试
-    - 验收点：Classics 标签闭环核心路径均有测试覆盖，旧的全表排序和本地直写行为不再通过测试
-    - 重要度：9/10
-
 - [ ] `tests/knowledge-binding-flow`：补 Knowledge 协作与兼容测试
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-KNOWLEDGE-CLOSURE.md`

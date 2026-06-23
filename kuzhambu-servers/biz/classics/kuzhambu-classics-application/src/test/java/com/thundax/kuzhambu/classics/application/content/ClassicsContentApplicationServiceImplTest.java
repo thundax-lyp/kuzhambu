@@ -13,18 +13,23 @@ import static org.mockito.Mockito.when;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.classics.application.content.command.ContentExportCommand;
+import com.thundax.kuzhambu.classics.application.content.command.ContentTagCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentTagSortCommand;
 import com.thundax.kuzhambu.classics.application.content.result.ClassicsExportJobResult;
 import com.thundax.kuzhambu.classics.application.content.service.impl.ClassicsContentApplicationServiceImpl;
+import com.thundax.kuzhambu.classics.application.content.support.ClassicsTagBindingSupport;
 import com.thundax.kuzhambu.classics.application.sancai.support.SancaiEntryVersionRestorer;
 import com.thundax.kuzhambu.classics.domain.common.client.WorkerRenderClient;
 import com.thundax.kuzhambu.classics.domain.common.client.dto.WorkerRenderDtos;
+import com.thundax.kuzhambu.classics.domain.common.model.valueobject.KnowledgeTagId;
 import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentExportJob;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentQaPair;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentChangeType;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentSource;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentTagStatus;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsExportFormat;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsExportKind;
@@ -58,6 +63,7 @@ import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 class ClassicsContentApplicationServiceImplTest {
 
@@ -231,6 +237,103 @@ class ClassicsContentApplicationServiceImplTest {
 
         verify(repository).listTags("SANCAI_ENTRY", contentId, SortDirection.ASC);
         verify(repository).maxTagPriority("SANCAI_ENTRY", contentId);
+    }
+
+    @Test
+    void addTagShouldBindManualTagAndSyncKnowledgeRef() {
+        ClassicsContentRepository repository = mock(ClassicsContentRepository.class);
+        ClassicsTagBindingSupport tagBindingSupport = mock(ClassicsTagBindingSupport.class);
+        ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
+                repository, null, null, null, null, null, null, null, tagBindingSupport);
+        ContentTagCommand command = new ContentTagCommand(
+                null,
+                ClassicsContentType.SANCAI_ENTRY,
+                100L,
+                3001L,
+                "礼制",
+                ClassicsContentSource.MANUAL,
+                ClassicsContentTagStatus.ACTIVE);
+        ClassicsContentTag boundTag = new ClassicsContentTag();
+        boundTag.setContentType(ClassicsContentType.SANCAI_ENTRY);
+        boundTag.setContentId(ClassicsContentId.of(100L));
+        boundTag.setTagId(KnowledgeTagId.of(3001L));
+        boundTag.setTagNameSnapshot("礼制");
+        boundTag.setSource(ClassicsContentSource.MANUAL);
+        boundTag.setStatus(ClassicsContentTagStatus.ACTIVE);
+        boundTag.setPriority(3);
+        when(repository.maxTagPriority("SANCAI_ENTRY", ClassicsContentId.of(100L)))
+                .thenReturn(2);
+        when(tagBindingSupport.bindManualTag(command, 3)).thenReturn(boundTag);
+        when(repository.insertTag(boundTag)).thenReturn(ClassicsContentTagId.of(9001L));
+
+        ClassicsContentTagId id = service.addTag(command);
+
+        assertEquals(9001L, id.value());
+        verify(repository).maxTagPriority("SANCAI_ENTRY", ClassicsContentId.of(100L));
+        verify(tagBindingSupport).bindManualTag(command, 3);
+        ArgumentCaptor<ClassicsContentTag> syncCaptor = ArgumentCaptor.forClass(ClassicsContentTag.class);
+        verify(tagBindingSupport).syncTagRef(syncCaptor.capture());
+        assertEquals(9001L, syncCaptor.getValue().getId().value());
+        assertEquals(3, syncCaptor.getValue().getPriority());
+    }
+
+    @Test
+    void updateTagShouldReplaceKnowledgeRefWhenUnifiedTagChanged() {
+        ClassicsContentRepository repository = mock(ClassicsContentRepository.class);
+        ClassicsTagBindingSupport tagBindingSupport = mock(ClassicsTagBindingSupport.class);
+        ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
+                repository, null, null, null, null, null, null, null, tagBindingSupport);
+        ContentTagCommand command = new ContentTagCommand(
+                9001L,
+                ClassicsContentType.SANCAI_ENTRY,
+                100L,
+                3002L,
+                "祭祀",
+                ClassicsContentSource.MANUAL,
+                ClassicsContentTagStatus.ACTIVE);
+        ClassicsContentTag existingTag = new ClassicsContentTag();
+        existingTag.setId(ClassicsContentTagId.of(9001L));
+        existingTag.setContentType(ClassicsContentType.SANCAI_ENTRY);
+        existingTag.setContentId(ClassicsContentId.of(100L));
+        existingTag.setTagId(KnowledgeTagId.of(3001L));
+        existingTag.setPriority(5);
+        ClassicsContentTag reboundTag = new ClassicsContentTag();
+        reboundTag.setId(ClassicsContentTagId.of(9001L));
+        reboundTag.setContentType(ClassicsContentType.SANCAI_ENTRY);
+        reboundTag.setContentId(ClassicsContentId.of(100L));
+        reboundTag.setTagId(KnowledgeTagId.of(3002L));
+        reboundTag.setTagNameSnapshot("祭祀");
+        reboundTag.setSource(ClassicsContentSource.MANUAL);
+        reboundTag.setStatus(ClassicsContentTagStatus.ACTIVE);
+        reboundTag.setPriority(5);
+        when(repository.getTagById(ClassicsContentTagId.of(9001L))).thenReturn(existingTag);
+        when(tagBindingSupport.bindManualTag(command, 5)).thenReturn(reboundTag);
+
+        ClassicsContentTagId id = service.updateTag(command);
+
+        assertEquals(9001L, id.value());
+        verify(tagBindingSupport).bindManualTag(command, 5);
+        verify(repository).updateTag(reboundTag);
+        verify(tagBindingSupport).removeTagRef(existingTag);
+        verify(tagBindingSupport).syncTagRef(reboundTag);
+    }
+
+    @Test
+    void deleteTagShouldDeleteScopedRecordAndRemoveKnowledgeRef() {
+        ClassicsContentRepository repository = mock(ClassicsContentRepository.class);
+        ClassicsTagBindingSupport tagBindingSupport = mock(ClassicsTagBindingSupport.class);
+        ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
+                repository, null, null, null, null, null, null, null, tagBindingSupport);
+        ClassicsContentTag existingTag = new ClassicsContentTag();
+        existingTag.setId(ClassicsContentTagId.of(9001L));
+        existingTag.setContentType(ClassicsContentType.SANCAI_ENTRY);
+        existingTag.setContentId(ClassicsContentId.of(100L));
+        when(repository.getTagById(ClassicsContentTagId.of(9001L))).thenReturn(existingTag);
+
+        service.deleteTag(ClassicsContentTagId.of(9001L));
+
+        verify(repository).deleteTagById("SANCAI_ENTRY", ClassicsContentId.of(100L), ClassicsContentTagId.of(9001L));
+        verify(tagBindingSupport).removeTagRef(existingTag);
     }
 
     private static WorkerRenderDtos.WorkerRenderResponse renderSuccessResponse(String filename) {
