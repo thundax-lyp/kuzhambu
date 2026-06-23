@@ -75,14 +75,6 @@
     - 验收点：质量标注创建、更新、删除可被 System 审计追溯
     - 重要度：7/10
 
-- [ ] `refinement-filter-form.tsx,refinement-workbench-table.tsx,refinement-progress-summary.tsx`：实现精修列表区组件
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/components/refinement-filter-form.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/components/refinement-workbench-table.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/components/refinement-progress-summary.tsx`
-    - 处理动作：实现待精修列表筛选、任务表格和进度统计组件
-    - 验收点：页面可按门类和来源筛选待精修任务并展示进度
-    - 重要度：9/10
-
 - [ ] `refinement-entity-table.tsx,refinement-entity-editor.tsx,refinement-entity-delete-modal.tsx`：实现实体精修区组件
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
