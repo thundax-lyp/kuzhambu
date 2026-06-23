@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `knowledge-domain/graph extraction task`：补齐知识抽取任务领域模型
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-AI-WORKERS-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/.../GraphExtractionTask.java`、`GraphExtractionTaskId.java`、`GraphExtractionTaskRepository.java`
-    - 处理动作：定义 Knowledge 抽取任务实体、强类型 ID 与仓储端口
-    - 验收点：领域层能稳定表达抽取任务与 AI 关联信息且不承载正式图谱结果
-    - 重要度：9/10
-
 - [ ] `knowledge-infra/graph extraction task persistence`：落地知识抽取任务持久化
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-AI-WORKERS-CLOSURE.md`
