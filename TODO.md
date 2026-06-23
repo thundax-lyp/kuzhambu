@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `knowledge-infra/graph extraction task persistence`：落地知识抽取任务持久化
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-AI-WORKERS-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/.../GraphExtractionTaskDO.java`、`GraphExtractionTaskMapper.java`、`GraphExtractionTaskRepositoryImpl.java`、`KnowledgeGraphPersistenceAssembler.java`
-    - 处理动作：补齐抽取任务 DO、mapper、assembler 与 repository 实现
-    - 验收点：infra 层能完成抽取任务实体与持久化对象互转并提供稳定读写能力
-    - 重要度：9/10
-
 - [ ] `knowledge-application/graph extraction contract`：定义知识抽取应用层契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-AI-WORKERS-CLOSURE.md`
