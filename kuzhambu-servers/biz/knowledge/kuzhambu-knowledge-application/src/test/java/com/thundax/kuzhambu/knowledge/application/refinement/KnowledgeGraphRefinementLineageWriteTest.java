@@ -1,0 +1,504 @@
+package com.thundax.kuzhambu.knowledge.application.refinement;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.knowledge.application.refinement.command.ConfirmRefinementLineageNodeCommand;
+import com.thundax.kuzhambu.knowledge.application.refinement.command.ConfirmRefinementLineageRelationCommand;
+import com.thundax.kuzhambu.knowledge.application.refinement.command.DeleteRefinementLineageNodeCommand;
+import com.thundax.kuzhambu.knowledge.application.refinement.command.DeleteRefinementLineageRelationCommand;
+import com.thundax.kuzhambu.knowledge.application.refinement.command.UpsertRefinementLineageNodeCommand;
+import com.thundax.kuzhambu.knowledge.application.refinement.command.UpsertRefinementLineageRelationCommand;
+import com.thundax.kuzhambu.knowledge.application.refinement.result.RefinementLineageNodeResult;
+import com.thundax.kuzhambu.knowledge.application.refinement.result.RefinementLineageRelationResult;
+import com.thundax.kuzhambu.knowledge.application.refinement.service.impl.KnowledgeGraphRefinementApplicationServiceImpl;
+import com.thundax.kuzhambu.knowledge.application.refinement.support.KnowledgeRefinementManualKeySupport;
+import com.thundax.kuzhambu.knowledge.application.refinement.support.QualitySummaryAggregationSupport;
+import com.thundax.kuzhambu.knowledge.application.refinement.support.RefinementApplySupport;
+import com.thundax.kuzhambu.knowledge.application.refinement.support.RefinementDraftBootstrapSupport;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphVersion;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeEntity;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageNode;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageRelation;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeRelation;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
+import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphVersionRepository;
+import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeEntityRepository;
+import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeLineageNodeRepository;
+import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeLineageRelationRepository;
+import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeRelationRepository;
+import com.thundax.kuzhambu.knowledge.domain.refinement.model.entity.QualityAnnotation;
+import com.thundax.kuzhambu.knowledge.domain.refinement.model.entity.RefinementEntityDraft;
+import com.thundax.kuzhambu.knowledge.domain.refinement.model.entity.RefinementLineageNodeDraft;
+import com.thundax.kuzhambu.knowledge.domain.refinement.model.entity.RefinementLineageRelationDraft;
+import com.thundax.kuzhambu.knowledge.domain.refinement.model.entity.RefinementRelationDraft;
+import com.thundax.kuzhambu.knowledge.domain.refinement.model.entity.RefinementTask;
+import com.thundax.kuzhambu.knowledge.domain.refinement.model.valueobject.RefinementTaskId;
+import com.thundax.kuzhambu.knowledge.domain.refinement.repository.QualityAnnotationRepository;
+import com.thundax.kuzhambu.knowledge.domain.refinement.repository.RefinementEntityDraftRepository;
+import com.thundax.kuzhambu.knowledge.domain.refinement.repository.RefinementLineageNodeDraftRepository;
+import com.thundax.kuzhambu.knowledge.domain.refinement.repository.RefinementLineageRelationDraftRepository;
+import com.thundax.kuzhambu.knowledge.domain.refinement.repository.RefinementRelationDraftRepository;
+import com.thundax.kuzhambu.knowledge.domain.refinement.repository.RefinementTaskRepository;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import org.junit.jupiter.api.Test;
+
+class KnowledgeGraphRefinementLineageWriteTest {
+
+    @Test
+    void upsertLineageNodeShouldGenerateManualKeyForNewDraft() {
+        FakeRefinementLineageNodeDraftRepository nodeDraftRepository = new FakeRefinementLineageNodeDraftRepository();
+        KnowledgeGraphRefinementApplicationServiceImpl service =
+                service(nodeDraftRepository, new FakeRefinementLineageRelationDraftRepository());
+
+        RefinementLineageNodeResult result = service.upsertLineageNode(new UpsertRefinementLineageNodeCommand(
+                31L, null, null, "黄帝", "PERSON", 1, "MALE", "[{\"entryId\":1}]", 1, 9L));
+
+        assertTrue(result.getNodeKey().startsWith("manual:lineage-node:"));
+        assertEquals("MANUAL_CREATED", result.getOriginType());
+        assertEquals("ADDED", result.getOperationType());
+        assertEquals("PENDING", result.getConfirmationStatus());
+        assertEquals(1, nodeDraftRepository.listByTaskId(31L).size());
+    }
+
+    @Test
+    void confirmAndDeleteLineageNodeShouldUpdateDraftOnly() {
+        FakeRefinementLineageNodeDraftRepository nodeDraftRepository = new FakeRefinementLineageNodeDraftRepository();
+        nodeDraftRepository.saveOrUpdateBatch(List.of(nodeDraft(31L, 301L, "lineage:huangdi", "PENDING", "UPDATED")));
+        KnowledgeGraphRefinementApplicationServiceImpl service =
+                service(nodeDraftRepository, new FakeRefinementLineageRelationDraftRepository());
+
+        RefinementLineageNodeResult confirmed =
+                service.confirmLineageNode(new ConfirmRefinementLineageNodeCommand(31L, "lineage:huangdi", 9L));
+        service.deleteLineageNode(new DeleteRefinementLineageNodeCommand(31L, "lineage:huangdi", 9L));
+
+        assertEquals("MANUAL_CONFIRMED", confirmed.getConfirmationStatus());
+        assertEquals("DELETED", nodeDraftRepository.listByTaskId(31L).get(0).getOperationType());
+    }
+
+    @Test
+    void upsertLineageRelationShouldGenerateManualKeyForNewDraft() {
+        FakeRefinementLineageRelationDraftRepository relationDraftRepository =
+                new FakeRefinementLineageRelationDraftRepository();
+        KnowledgeGraphRefinementApplicationServiceImpl service =
+                service(new FakeRefinementLineageNodeDraftRepository(), relationDraftRepository);
+
+        RefinementLineageRelationResult result =
+                service.upsertLineageRelation(new UpsertRefinementLineageRelationCommand(
+                        31L,
+                        null,
+                        null,
+                        "lineage:huangdi",
+                        "lineage:fuxi",
+                        "黄帝",
+                        "伏羲",
+                        "ANCESTOR",
+                        "谱系",
+                        "[{\"entryId\":1}]",
+                        1,
+                        9L));
+
+        assertTrue(result.getRelationKey().startsWith("manual:lineage-relation:"));
+        assertEquals("MANUAL_CREATED", result.getOriginType());
+        assertEquals("ADDED", result.getOperationType());
+        assertEquals("PENDING", result.getConfirmationStatus());
+        assertEquals(1, relationDraftRepository.listByTaskId(31L).size());
+    }
+
+    @Test
+    void confirmAndDeleteLineageRelationShouldUpdateDraftOnly() {
+        FakeRefinementLineageRelationDraftRepository relationDraftRepository =
+                new FakeRefinementLineageRelationDraftRepository();
+        relationDraftRepository.saveOrUpdateBatch(List.of(
+                lineageRelationDraft(31L, 401L, "lineage:huangdi->lineage:fuxi:ancestor", "PENDING", "UPDATED")));
+        KnowledgeGraphRefinementApplicationServiceImpl service =
+                service(new FakeRefinementLineageNodeDraftRepository(), relationDraftRepository);
+
+        RefinementLineageRelationResult confirmed = service.confirmLineageRelation(
+                new ConfirmRefinementLineageRelationCommand(31L, "lineage:huangdi->lineage:fuxi:ancestor", 9L));
+        service.deleteLineageRelation(
+                new DeleteRefinementLineageRelationCommand(31L, "lineage:huangdi->lineage:fuxi:ancestor", 9L));
+
+        assertEquals("MANUAL_CONFIRMED", confirmed.getConfirmationStatus());
+        assertEquals("DELETED", relationDraftRepository.listByTaskId(31L).get(0).getOperationType());
+    }
+
+    private static RefinementLineageNodeDraft nodeDraft(
+            Long taskId, Long nodeId, String nodeKey, String confirmationStatus, String operationType) {
+        RefinementLineageNodeDraft draft = new RefinementLineageNodeDraft();
+        draft.setRefinementTaskId(taskId);
+        draft.setNodeId(nodeId);
+        draft.setNodeKey(nodeKey);
+        draft.setName("黄帝");
+        draft.setNodeType("PERSON");
+        draft.setGeneration(1);
+        draft.setGender("MALE");
+        draft.setConfirmationStatus(confirmationStatus);
+        draft.setOperationType(operationType);
+        draft.setOriginType("AI_EXTRACTED");
+        return draft;
+    }
+
+    private static RefinementLineageRelationDraft lineageRelationDraft(
+            Long taskId, Long relationId, String relationKey, String confirmationStatus, String operationType) {
+        RefinementLineageRelationDraft draft = new RefinementLineageRelationDraft();
+        draft.setRefinementTaskId(taskId);
+        draft.setRelationId(relationId);
+        draft.setRelationKey(relationKey);
+        draft.setSourceNodeKey("lineage:huangdi");
+        draft.setTargetNodeKey("lineage:fuxi");
+        draft.setSourceName("黄帝");
+        draft.setTargetName("伏羲");
+        draft.setRelationType("ANCESTOR");
+        draft.setEvidence("谱系");
+        draft.setConfirmationStatus(confirmationStatus);
+        draft.setOperationType(operationType);
+        draft.setOriginType("AI_EXTRACTED");
+        return draft;
+    }
+
+    private static KnowledgeGraphRefinementApplicationServiceImpl service(
+            FakeRefinementLineageNodeDraftRepository nodeDraftRepository,
+            FakeRefinementLineageRelationDraftRepository relationDraftRepository) {
+        NoopGraphVersionRepository graphVersionRepository = new NoopGraphVersionRepository();
+        NoopKnowledgeEntityRepository entityRepository = new NoopKnowledgeEntityRepository();
+        NoopKnowledgeRelationRepository relationRepository = new NoopKnowledgeRelationRepository();
+        NoopKnowledgeLineageNodeRepository lineageNodeRepository = new NoopKnowledgeLineageNodeRepository();
+        NoopKnowledgeLineageRelationRepository lineageRelationRepository = new NoopKnowledgeLineageRelationRepository();
+        return new KnowledgeGraphRefinementApplicationServiceImpl(
+                graphVersionRepository,
+                new FakeRefinementTaskRepository(),
+                new FakeRefinementEntityDraftRepository(),
+                new FakeRefinementRelationDraftRepository(),
+                nodeDraftRepository,
+                relationDraftRepository,
+                new FakeQualityAnnotationRepository(),
+                new RefinementDraftBootstrapSupport(
+                        entityRepository, relationRepository, lineageNodeRepository, lineageRelationRepository),
+                new RefinementApplySupport(
+                        entityRepository, relationRepository, lineageNodeRepository, lineageRelationRepository),
+                new QualitySummaryAggregationSupport(),
+                new KnowledgeRefinementManualKeySupport());
+    }
+
+    private static final class FakeRefinementTaskRepository implements RefinementTaskRepository {
+        @Override
+        public RefinementTask getByTaskId(RefinementTaskId taskId) {
+            return null;
+        }
+
+        @Override
+        public RefinementTask findLatestDraft(
+                String taskType, String sourceContentType, Long sourceContentId, Long graphVersionId) {
+            return null;
+        }
+
+        @Override
+        public PageResult<RefinementTask> page(
+                String taskType,
+                String sourceContentType,
+                Long sourceContentId,
+                String sourceCategoryCode,
+                String status,
+                int pageNo,
+                int pageSize) {
+            return PageResult.of(pageNo, pageSize, 0, List.of());
+        }
+
+        @Override
+        public Long save(RefinementTask entity) {
+            return 1L;
+        }
+
+        @Override
+        public int update(RefinementTask entity) {
+            return 1;
+        }
+    }
+
+    private static final class FakeRefinementEntityDraftRepository implements RefinementEntityDraftRepository {
+        @Override
+        public List<RefinementEntityDraft> listByTaskId(Long refinementTaskId) {
+            return List.of();
+        }
+
+        @Override
+        public void saveOrUpdateBatch(List<RefinementEntityDraft> drafts) {}
+
+        @Override
+        public int deleteByTaskId(Long refinementTaskId) {
+            return 0;
+        }
+    }
+
+    private static final class FakeRefinementRelationDraftRepository implements RefinementRelationDraftRepository {
+        @Override
+        public List<RefinementRelationDraft> listByTaskId(Long refinementTaskId) {
+            return List.of();
+        }
+
+        @Override
+        public void saveOrUpdateBatch(List<RefinementRelationDraft> drafts) {}
+
+        @Override
+        public int deleteByTaskId(Long refinementTaskId) {
+            return 0;
+        }
+    }
+
+    private static final class FakeRefinementLineageNodeDraftRepository implements RefinementLineageNodeDraftRepository {
+        private final Map<Long, List<RefinementLineageNodeDraft>> draftsByTaskId = new LinkedHashMap<>();
+        private long nextDraftId = 1L;
+
+        @Override
+        public List<RefinementLineageNodeDraft> listByTaskId(Long refinementTaskId) {
+            return new ArrayList<>(draftsByTaskId.getOrDefault(refinementTaskId, List.of()));
+        }
+
+        @Override
+        public void saveOrUpdateBatch(List<RefinementLineageNodeDraft> drafts) {
+            if (drafts == null || drafts.isEmpty()) {
+                return;
+            }
+            Long taskId = drafts.get(0).getRefinementTaskId();
+            List<RefinementLineageNodeDraft> stored = new ArrayList<>();
+            for (RefinementLineageNodeDraft draft : drafts) {
+                if (draft.getDraftId() == null) {
+                    draft.setDraftId(nextDraftId++);
+                }
+                stored.add(draft);
+            }
+            draftsByTaskId.put(taskId, stored);
+        }
+
+        @Override
+        public int deleteByTaskId(Long refinementTaskId) {
+            return draftsByTaskId.remove(refinementTaskId) == null ? 0 : 1;
+        }
+    }
+
+    private static final class FakeRefinementLineageRelationDraftRepository
+            implements RefinementLineageRelationDraftRepository {
+        private final Map<Long, List<RefinementLineageRelationDraft>> draftsByTaskId = new LinkedHashMap<>();
+        private long nextDraftId = 1L;
+
+        @Override
+        public List<RefinementLineageRelationDraft> listByTaskId(Long refinementTaskId) {
+            return new ArrayList<>(draftsByTaskId.getOrDefault(refinementTaskId, List.of()));
+        }
+
+        @Override
+        public void saveOrUpdateBatch(List<RefinementLineageRelationDraft> drafts) {
+            if (drafts == null || drafts.isEmpty()) {
+                return;
+            }
+            Long taskId = drafts.get(0).getRefinementTaskId();
+            List<RefinementLineageRelationDraft> stored = new ArrayList<>();
+            for (RefinementLineageRelationDraft draft : drafts) {
+                if (draft.getDraftId() == null) {
+                    draft.setDraftId(nextDraftId++);
+                }
+                stored.add(draft);
+            }
+            draftsByTaskId.put(taskId, stored);
+        }
+
+        @Override
+        public int deleteByTaskId(Long refinementTaskId) {
+            return draftsByTaskId.remove(refinementTaskId) == null ? 0 : 1;
+        }
+    }
+
+    private static final class FakeQualityAnnotationRepository implements QualityAnnotationRepository {
+        @Override
+        public List<QualityAnnotation> listBySource(
+                String objectType, String sourceContentType, Long sourceContentId, Long graphVersionId) {
+            return List.of();
+        }
+
+        @Override
+        public void saveOrUpdate(QualityAnnotation annotation) {}
+
+        @Override
+        public int deleteByAnnotationId(Long annotationId) {
+            return 0;
+        }
+    }
+
+    private static final class NoopGraphVersionRepository implements GraphVersionRepository {
+        @Override
+        public GraphVersion findLatest(String taskType, String sourceContentType, Long sourceContentId) {
+            return null;
+        }
+
+        @Override
+        public GraphVersion getByVersionId(Long versionId) {
+            return new GraphVersion();
+        }
+
+        @Override
+        public GraphVersion getByTaskCandidate(GraphExtractionTaskId taskId, Long candidateId) {
+            return null;
+        }
+
+        @Override
+        public PageResult<GraphVersion> page(
+                String taskType,
+                String status,
+                String sourceContentType,
+                Long sourceContentId,
+                int pageNo,
+                int pageSize) {
+            return PageResult.of(pageNo, pageSize, 0, List.of());
+        }
+
+        @Override
+        public Long save(GraphVersion entity) {
+            return 0L;
+        }
+    }
+
+    private static final class NoopKnowledgeEntityRepository implements KnowledgeEntityRepository {
+        @Override
+        public List<KnowledgeEntity> listByEntityKeys(Collection<String> entityKeys) {
+            return List.of();
+        }
+
+        @Override
+        public KnowledgeEntity getByEntityId(Long entityId) {
+            return null;
+        }
+
+        @Override
+        public List<KnowledgeEntity> listByVersionId(Long versionId) {
+            return List.of();
+        }
+
+        @Override
+        public PageResult<KnowledgeEntity> page(
+                Long versionId,
+                String keyword,
+                String entityType,
+                String confirmationStatus,
+                int pageNo,
+                int pageSize) {
+            return PageResult.of(pageNo, pageSize, 0, List.of());
+        }
+
+        @Override
+        public void saveOrUpdateBatch(List<KnowledgeEntity> entities) {}
+
+        @Override
+        public int deleteByEntityKeys(Collection<String> entityKeys) {
+            return 0;
+        }
+    }
+
+    private static final class NoopKnowledgeRelationRepository implements KnowledgeRelationRepository {
+        @Override
+        public List<KnowledgeRelation> listByRelationKeys(Collection<String> relationKeys) {
+            return List.of();
+        }
+
+        @Override
+        public KnowledgeRelation getByRelationId(Long relationId) {
+            return null;
+        }
+
+        @Override
+        public List<KnowledgeRelation> listByVersionId(Long versionId) {
+            return List.of();
+        }
+
+        @Override
+        public PageResult<KnowledgeRelation> page(
+                Long versionId,
+                String keyword,
+                String relationType,
+                String confirmationStatus,
+                int pageNo,
+                int pageSize) {
+            return PageResult.of(pageNo, pageSize, 0, List.of());
+        }
+
+        @Override
+        public void saveOrUpdateBatch(List<KnowledgeRelation> relations) {}
+
+        @Override
+        public int deleteByRelationKeys(Collection<String> relationKeys) {
+            return 0;
+        }
+    }
+
+    private static final class NoopKnowledgeLineageNodeRepository implements KnowledgeLineageNodeRepository {
+        @Override
+        public List<KnowledgeLineageNode> listByNodeKeys(Collection<String> nodeKeys) {
+            return List.of();
+        }
+
+        @Override
+        public KnowledgeLineageNode getByNodeId(Long nodeId) {
+            return null;
+        }
+
+        @Override
+        public List<KnowledgeLineageNode> listByVersionId(Long versionId) {
+            return List.of();
+        }
+
+        @Override
+        public PageResult<KnowledgeLineageNode> page(
+                Long versionId, String keyword, String nodeType, String confirmationStatus, int pageNo, int pageSize) {
+            return PageResult.of(pageNo, pageSize, 0, List.of());
+        }
+
+        @Override
+        public void saveOrUpdateBatch(List<KnowledgeLineageNode> nodes) {}
+
+        @Override
+        public int deleteByNodeKeys(Collection<String> nodeKeys) {
+            return 0;
+        }
+    }
+
+    private static final class NoopKnowledgeLineageRelationRepository implements KnowledgeLineageRelationRepository {
+        @Override
+        public List<KnowledgeLineageRelation> listByRelationKeys(Collection<String> relationKeys) {
+            return List.of();
+        }
+
+        @Override
+        public KnowledgeLineageRelation getByRelationId(Long relationId) {
+            return null;
+        }
+
+        @Override
+        public List<KnowledgeLineageRelation> listByVersionId(Long versionId) {
+            return List.of();
+        }
+
+        @Override
+        public PageResult<KnowledgeLineageRelation> page(
+                Long versionId,
+                String keyword,
+                String relationType,
+                String confirmationStatus,
+                int pageNo,
+                int pageSize) {
+            return PageResult.of(pageNo, pageSize, 0, List.of());
+        }
+
+        @Override
+        public void saveOrUpdateBatch(List<KnowledgeLineageRelation> relations) {}
+
+        @Override
+        public int deleteByRelationKeys(Collection<String> relationKeys) {
+            return 0;
+        }
+    }
+}
