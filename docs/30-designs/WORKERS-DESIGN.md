@@ -191,6 +191,14 @@ AI 执行流程：
 
 Workers 不得根据 `templateId`、`promptVersionId` 或业务 ID 回调 Java servers 读取提示词、模型配置或业务内容。每次请求必须包含完整执行上下文。
 
+Knowledge 抽取 usecase 的结构化输出固定为：
+
+- `/internal/ai/knowledge/relation-extraction`：`entities`、`relations`、`sourceSnippets`、`warnings`
+- `/internal/ai/knowledge/graph-extraction`：`entities`、`relations`、`entryRefs`、`warnings`
+- `/internal/ai/knowledge/lineage-extraction`：`nodes`、`relations`、`sourceSnippets`、`warnings`
+
+这些输出只作为候选 payload 返回给 AI 和 Knowledge，不包含正式表主键，也不由 workers 直接写入正式知识表。
+
 ## Render Execution
 
 Render 执行入口由 `render_routes.py` 分发到具体 renderer。
