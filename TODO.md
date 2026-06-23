@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `knowledge/taxonomy`：定义标签治理完整统计读契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GOVERNANCE-READABLE-RESULTS.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/**`
-    - 处理动作：为使用排行、知识库分布、来源占比、月度新增趋势补齐统计读契约
-    - 验收点：后端统计读取输入输出已稳定，月度趋势按首次进入正式可用集合时间统计
-    - 重要度：7/10
-
 - [ ] `knowledge/taxonomy`：落地标签治理完整统计读取
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GOVERNANCE-READABLE-RESULTS.md`

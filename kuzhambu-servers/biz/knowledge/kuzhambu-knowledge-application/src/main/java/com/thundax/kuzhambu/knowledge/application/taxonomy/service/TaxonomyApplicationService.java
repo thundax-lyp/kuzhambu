@@ -19,6 +19,7 @@ import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagStatusComm
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagUpdateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.SynonymPageQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagCategoryPageQuery;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagGovernanceMetricsQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagMergePreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagPageQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagReviewPageQuery;
@@ -26,6 +27,7 @@ import com.thundax.kuzhambu.knowledge.application.taxonomy.result.SynonymResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagAliasResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagCategoryResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagDetailResult;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagGovernanceMetricsResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagMergePreviewResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagResult;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.valueobject.SynonymId;
@@ -59,6 +61,8 @@ public interface TaxonomyApplicationService {
     void changeTagStatus(TagStatusCommand command);
 
     void deprecateTag(TagDeprecateCommand command);
+
+    TagGovernanceMetricsResult getTagGovernanceMetrics(TagGovernanceMetricsQuery query);
 
     PageResult<TagResult> pagePendingTags(TagReviewPageQuery query, PageQuery page);
 

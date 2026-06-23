@@ -22,6 +22,7 @@ import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagStatusComm
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagUpdateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.SynonymPageQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagCategoryPageQuery;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagGovernanceMetricsQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagMergePreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagPageQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagReviewPageQuery;
@@ -29,6 +30,7 @@ import com.thundax.kuzhambu.knowledge.application.taxonomy.result.SynonymResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagAliasResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagCategoryResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagDetailResult;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagGovernanceMetricsResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagMergePreviewResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.service.TaxonomyApplicationService;
@@ -369,6 +371,12 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
         if (tagRepository.update(tag) != 1) {
             throw new BizException("标签废弃状态更新失败");
         }
+    }
+
+    @Override
+    public TagGovernanceMetricsResult getTagGovernanceMetrics(TagGovernanceMetricsQuery query) {
+        ensureCommand(query, "标签治理统计查询");
+        throw new BizException("标签治理统计读模型尚未实现");
     }
 
     @Override

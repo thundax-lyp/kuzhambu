@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagDeprecateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagMergeCommand;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagGovernanceMetricsQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagMergePreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagMergePreviewResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.service.TaxonomyApplicationService;
@@ -36,6 +37,22 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class TaxonomyApplicationServiceImplTest {
+
+    @Test
+    void getTagGovernanceMetricsShouldExposeStableReadContractBeforeAggregation() {
+        TaxonomyApplicationService service = new TaxonomyApplicationServiceImpl(
+                mock(TagCategoryRepository.class),
+                mock(TagRepository.class),
+                mock(TagAliasRepository.class),
+                mock(TagContentRefRepository.class),
+                mock(SynonymRepository.class),
+                mock(KnowledgeTagBindingDomainService.class));
+
+        BizException error = assertThrows(
+                BizException.class, () -> service.getTagGovernanceMetrics(new TagGovernanceMetricsQuery(10, 6)));
+
+        assertEquals("标签治理统计读模型尚未实现", error.getMessage());
+    }
 
     @Test
     void deprecateTagShouldDisableTagAndRejectSecondDeprecation() {
