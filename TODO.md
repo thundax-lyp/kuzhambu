@@ -11,20 +11,4 @@
 
 ## 待审阅任务项
 
-- [ ] `docs/closure-sync`：同步闭环设计与覆盖文档
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-KNOWLEDGE-CLOSURE.md`
-    - 范围对象：`docs/30-designs/CLASSICS-DESIGN.md`、`docs/30-designs/KNOWLEDGE-DESIGN.md`、`docs/40-readiness/CLASSICS-IMPLEMENTATION-COVERAGE.md`、`docs/40-readiness/KNOWLEDGE-IMPLEMENTATION-COVERAGE.md`
-    - 处理动作：将闭环后的主事实、派生模型、接口口径和覆盖状态同步回正式设计与覆盖清单
-    - 验收点：正式设计与覆盖文档不再保留与闭环实现相冲突的旧口径
-    - 重要度：7/10
-
-- [ ] `cleanup/todo-runbook-scene`：收口并清理现场
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`TODO.md`、`docs/30-designs/RUNBOOK-CLASSICS-KNOWLEDGE-CLOSURE.md`、相关临时测试/脚本/重建辅助文件
-    - 处理动作：在任务真正完成后删除已完成 TODO、清理无剩余价值的 RUNBOOK 和临时现场文件
-    - 验收点：`TODO.md` 仅保留剩余未完成项，RUNBOOK 和临时现场符合收口规则且无过期残留
-    - 重要度：8/10
-
 ## 待讨论项
