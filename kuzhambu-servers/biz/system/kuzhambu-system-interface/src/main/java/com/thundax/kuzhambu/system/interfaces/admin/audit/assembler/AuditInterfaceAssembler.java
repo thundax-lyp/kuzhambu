@@ -1,20 +1,20 @@
 package com.thundax.kuzhambu.system.interfaces.admin.audit.assembler;
 
+import com.thundax.kuzhambu.common.audit.model.enums.AuditAction;
+import com.thundax.kuzhambu.common.audit.model.valueobject.AuditField;
+import com.thundax.kuzhambu.common.audit.model.valueobject.AuditSnapshot;
+import com.thundax.kuzhambu.common.audit.runtime.AuditSnapshotAssembler;
+import com.thundax.kuzhambu.common.audit.runtime.AuditSnapshotAssemblerRegistry;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.system.application.audit.query.AuditLogQuery;
 import com.thundax.kuzhambu.system.application.audit.query.AuditMetaQuery;
-import com.thundax.kuzhambu.system.application.audit.runtime.AuditSnapshotAssembler;
-import com.thundax.kuzhambu.system.application.audit.runtime.AuditSnapshotAssemblerRegistry;
 import com.thundax.kuzhambu.system.domain.audit.codec.AuditLogIdCodec;
 import com.thundax.kuzhambu.system.domain.audit.codec.AuditMetaIdCodec;
 import com.thundax.kuzhambu.system.domain.audit.model.entity.AuditLog;
 import com.thundax.kuzhambu.system.domain.audit.model.entity.AuditMeta;
-import com.thundax.kuzhambu.system.domain.audit.model.enums.AuditAction;
 import com.thundax.kuzhambu.system.domain.audit.model.enums.AuditOperatorType;
 import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditChangedField;
-import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditField;
 import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditLogId;
-import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditSnapshot;
 import com.thundax.kuzhambu.system.interfaces.admin.audit.controller.request.AuditLogDetailRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.audit.controller.request.AuditLogPageRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.audit.controller.request.AuditMetaRequest;

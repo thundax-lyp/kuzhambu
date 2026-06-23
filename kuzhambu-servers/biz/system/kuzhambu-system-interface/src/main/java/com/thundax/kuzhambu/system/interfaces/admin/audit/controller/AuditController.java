@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.system.interfaces.admin.audit.controller;
 
+import com.thundax.kuzhambu.common.audit.runtime.AuditSnapshotAssemblerRegistry;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageRules;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
@@ -10,7 +11,6 @@ import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
-import com.thundax.kuzhambu.system.application.audit.runtime.AuditSnapshotAssemblerRegistry;
 import com.thundax.kuzhambu.system.application.audit.service.AuditApplicationService;
 import com.thundax.kuzhambu.system.interfaces.admin.audit.assembler.AuditInterfaceAssembler;
 import com.thundax.kuzhambu.system.interfaces.admin.audit.controller.request.AuditLogDetailRequest;
