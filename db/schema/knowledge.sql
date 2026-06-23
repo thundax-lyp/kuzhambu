@@ -349,3 +349,24 @@ CREATE TABLE IF NOT EXISTS `knowledge_refinement_lineage_relation_draft` (
     UNIQUE KEY `uk_knowledge_refinement_lineage_relation_task_key` (`refinement_task_id`, `relation_key`),
     KEY `idx_knowledge_refinement_lineage_relation_task_sort` (`refinement_task_id`, `sort_order`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='知识精修世系关系草稿表';
+
+CREATE TABLE IF NOT EXISTS `knowledge_quality_annotation` (
+    `id` bigint NOT NULL AUTO_INCREMENT,
+    `annotation_id` bigint NOT NULL,
+    `object_type` varchar(32) NOT NULL,
+    `object_key` varchar(256) NOT NULL,
+    `source_content_type` varchar(32) NOT NULL,
+    `source_content_id` bigint NOT NULL,
+    `graph_version_id` bigint NOT NULL,
+    `annotation_status` varchar(32) NOT NULL,
+    `annotation_label` varchar(64) NOT NULL,
+    `comment` varchar(1024) DEFAULT NULL,
+    `created_by` bigint NOT NULL,
+    `created_at` datetime(3) NOT NULL,
+    `updated_by` bigint NOT NULL,
+    `updated_at` datetime(3) NOT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_knowledge_quality_annotation_id` (`annotation_id`),
+    KEY `idx_knowledge_quality_annotation_object` (`object_type`, `object_key`),
+    KEY `idx_knowledge_quality_annotation_source` (`source_content_type`, `source_content_id`, `graph_version_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='知识质量标注表';

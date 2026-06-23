@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `knowledge.sql,QualityAnnotationDO.java,QualityAnnotationMapper.java,QualityAnnotationRepositoryTest.java`：新增质量标注表持久化骨架
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`db/schema/knowledge.sql`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/refinement/persistence/dataobject/QualityAnnotationDO.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/refinement/persistence/mapper/QualityAnnotationMapper.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/test/java/com/thundax/kuzhambu/knowledge/infra/refinement/repository/impl/QualityAnnotationRepositoryTest.java`
-    - 处理动作：落 `knowledge_quality_annotation` 表结构、DO、Mapper 与基础仓储测试
-    - 验收点：质量标注表字段、索引和基础仓储验证完成
-    - 重要度：8/10
-
 - [ ] `RefinementTask.java,RefinementTaskId.java,RefinementTaskRepository.java,RefinementTaskRepositoryImpl.java,RefinementTaskRepositoryTest.java`：闭合精修任务领域模型与仓储端口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
