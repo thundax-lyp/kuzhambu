@@ -3,6 +3,9 @@ package com.thundax.kuzhambu.knowledge.application.graph;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCallRecord;
+import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
+import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
 import com.thundax.kuzhambu.ai.domain.knowledge.model.valueobject.KnowledgeAiExtractionRequest;
 import com.thundax.kuzhambu.ai.domain.knowledge.model.valueobject.KnowledgeAiExtractionResult;
 import com.thundax.kuzhambu.ai.domain.knowledge.service.KnowledgeAiExtractionDomainService;
@@ -14,6 +17,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.service.impl.KnowledgeGr
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphExtractionTaskRepository;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -24,8 +28,8 @@ class KnowledgeGraphExtractionApplicationServiceTest {
     void requestRelationExtractionShouldPersistTaskAndSyncAiResult() {
         FakeRepository repository = new FakeRepository();
         FakeKnowledgeAiExtractionDomainService aiService = new FakeKnowledgeAiExtractionDomainService();
-        KnowledgeGraphExtractionApplicationServiceImpl service =
-                new KnowledgeGraphExtractionApplicationServiceImpl(repository, aiService);
+        KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
+                repository, new FakeAiInvocationRepository(), aiService);
 
         GraphExtractionTaskResult result = service.requestRelationExtraction(relationCommand());
 
@@ -47,13 +51,39 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         task.setStatus("FAILED");
         repository.tasks.add(task);
         KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
-                repository, new FakeKnowledgeAiExtractionDomainService());
+                repository, new FakeAiInvocationRepository(), new FakeKnowledgeAiExtractionDomainService());
 
         PageResult<GraphExtractionTaskResult> page = service.pageTasks("GRAPH", null, null, null, new PageQuery(1, 10));
 
         assertEquals(1, page.getRecords().size());
         assertEquals("11", page.getRecords().get(0).getTaskId());
         assertEquals("GRAPH", page.getRecords().get(0).getTaskType());
+    }
+
+    @Test
+    void getTaskDetailShouldOverlayAiCandidateAndCallState() {
+        FakeRepository repository = new FakeRepository();
+        GraphExtractionTask task = new GraphExtractionTask();
+        task.setTaskId(GraphExtractionTaskId.of(21L));
+        task.setTaskType("LINEAGE");
+        task.setStatus("REQUESTED");
+        task.setAiCallId(901L);
+        task.setAiCandidateId(902L);
+        repository.tasks.add(task);
+        FakeAiInvocationRepository aiInvocationRepository = new FakeAiInvocationRepository();
+        aiInvocationRepository.callRecord.setCallId(901L);
+        aiInvocationRepository.callRecord.setStatus("SUCCEEDED");
+        aiInvocationRepository.callRecord.setCompletedAt(Instant.parse("2026-06-23T00:00:00Z"));
+        aiInvocationRepository.candidate.setCandidateId(902L);
+        aiInvocationRepository.candidate.setAppliedAt(Instant.parse("2026-06-23T00:01:00Z"));
+        KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
+                repository, aiInvocationRepository, new FakeKnowledgeAiExtractionDomainService());
+
+        GraphExtractionTaskResult detail = service.getTaskDetail(GraphExtractionTaskId.of(21L));
+
+        assertEquals("APPLIED", detail.getStatus());
+        assertEquals(Instant.parse("2026-06-23T00:00:00Z").toEpochMilli(), detail.getCompletedAt());
+        assertEquals(Instant.parse("2026-06-23T00:01:00Z").toEpochMilli(), detail.getAppliedAt());
     }
 
     private RequestRelationExtractionCommand relationCommand() {
@@ -141,6 +171,49 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 int pageNo,
                 int pageSize) {
             return PageResult.of(pageNo, pageSize, tasks.size(), tasks);
+        }
+    }
+
+    private static final class FakeAiInvocationRepository implements AiInvocationRepository {
+        private final AiCallRecord callRecord = new AiCallRecord();
+        private final AiCandidate candidate = new AiCandidate();
+
+        @Override
+        public AiCallRecord getCallRecord(Long callId) {
+            return callRecord.getCallId() != null && callRecord.getCallId().equals(callId) ? callRecord : null;
+        }
+
+        @Override
+        public Long saveCallRecord(AiCallRecord callRecord) {
+            return null;
+        }
+
+        @Override
+        public int updateCallRecord(AiCallRecord callRecord) {
+            return 0;
+        }
+
+        @Override
+        public AiCandidate getCandidate(Long candidateId) {
+            return candidate.getCandidateId() != null
+                            && candidate.getCandidateId().equals(candidateId)
+                    ? candidate
+                    : null;
+        }
+
+        @Override
+        public Long saveCandidate(AiCandidate candidate) {
+            return null;
+        }
+
+        @Override
+        public int updateCandidate(AiCandidate candidate) {
+            return 0;
+        }
+
+        @Override
+        public List<AiCandidate> listCandidates(String contentType, Long contentId, String capability, String status) {
+            return List.of();
         }
     }
 }

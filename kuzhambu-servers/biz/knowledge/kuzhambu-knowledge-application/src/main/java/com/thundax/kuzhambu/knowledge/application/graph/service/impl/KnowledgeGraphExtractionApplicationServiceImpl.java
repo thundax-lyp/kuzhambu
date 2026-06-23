@@ -1,5 +1,8 @@
 package com.thundax.kuzhambu.knowledge.application.graph.service.impl;
 
+import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCallRecord;
+import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
+import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
 import com.thundax.kuzhambu.ai.domain.knowledge.model.valueobject.KnowledgeAiExtractionRequest;
 import com.thundax.kuzhambu.ai.domain.knowledge.model.valueobject.KnowledgeAiExtractionResult;
 import com.thundax.kuzhambu.ai.domain.knowledge.service.KnowledgeAiExtractionDomainService;
@@ -32,14 +35,18 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
     private static final String STATUS_REQUESTED = "REQUESTED";
     private static final String STATUS_SUCCEEDED = "SUCCEEDED";
     private static final String STATUS_FAILED = "FAILED";
+    private static final String STATUS_APPLIED = "APPLIED";
 
     private final GraphExtractionTaskRepository repository;
+    private final AiInvocationRepository aiInvocationRepository;
     private final KnowledgeAiExtractionDomainService knowledgeAiExtractionDomainService;
 
     public KnowledgeGraphExtractionApplicationServiceImpl(
             GraphExtractionTaskRepository repository,
+            AiInvocationRepository aiInvocationRepository,
             KnowledgeAiExtractionDomainService knowledgeAiExtractionDomainService) {
         this.repository = repository;
+        this.aiInvocationRepository = aiInvocationRepository;
         this.knowledgeAiExtractionDomainService = knowledgeAiExtractionDomainService;
     }
 
@@ -185,13 +192,13 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
                 effectivePage.getPageNo(),
                 effectivePage.getPageSize());
         List<GraphExtractionTaskResult> records =
-                taskPage.getRecords().stream().map(this::toResult).toList();
+                taskPage.getRecords().stream().map(this::syncTaskResult).toList();
         return PageResult.of(taskPage.getPageNo(), taskPage.getPageSize(), taskPage.getTotalCount(), records);
     }
 
     @Override
     public GraphExtractionTaskResult getTaskDetail(GraphExtractionTaskId taskId) {
-        return toResult(repository.getByTaskId(taskId));
+        return syncTaskResult(repository.getByTaskId(taskId));
     }
 
     @Override
@@ -201,7 +208,7 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
         if (task == null) {
             throw new BizException("Graph extraction task not found: " + (taskId == null ? null : taskId.value()));
         }
-        return toResult(task);
+        return syncTaskResult(task);
     }
 
     private GraphExtractionTaskResult requestTask(
@@ -312,6 +319,46 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
                 timeValue(task.getRequestedAt()),
                 timeValue(task.getCompletedAt()),
                 timeValue(task.getAppliedAt()));
+    }
+
+    private GraphExtractionTaskResult syncTaskResult(GraphExtractionTask task) {
+        GraphExtractionTaskResult result = toResult(task);
+        if (result == null || aiInvocationRepository == null) {
+            return result;
+        }
+        AiCallRecord callRecord = task == null || task.getAiCallId() == null
+                ? null
+                : aiInvocationRepository.getCallRecord(task.getAiCallId());
+        AiCandidate candidate = task == null || task.getAiCandidateId() == null
+                ? null
+                : aiInvocationRepository.getCandidate(task.getAiCandidateId());
+        if (callRecord != null) {
+            result.setAiCallId(callRecord.getCallId());
+            if (result.getCompletedAt() == null && callRecord.getCompletedAt() != null) {
+                result.setCompletedAt(callRecord.getCompletedAt().toEpochMilli());
+            }
+            if (STATUS_FAILED.equals(callRecord.getStatus())) {
+                result.setStatus(STATUS_FAILED);
+                result.setErrorType(callRecord.getErrorType());
+                result.setErrorMessage(callRecord.getErrorMessage());
+            } else if (STATUS_REQUESTED.equals(result.getStatus()) && STATUS_SUCCEEDED.equals(callRecord.getStatus())) {
+                result.setStatus(STATUS_SUCCEEDED);
+            }
+        }
+        if (candidate != null) {
+            result.setAiCandidateId(candidate.getCandidateId());
+            if (candidate.getAppliedAt() != null) {
+                result.setAppliedAt(candidate.getAppliedAt().toEpochMilli());
+                result.setStatus(STATUS_APPLIED);
+            }
+            if (StringUtils.isBlank(result.getErrorType())) {
+                result.setErrorType(candidate.getErrorType());
+            }
+            if (StringUtils.isBlank(result.getErrorMessage())) {
+                result.setErrorMessage(candidate.getErrorMessage());
+            }
+        }
+        return result;
     }
 
     private Long timeValue(Date value) {

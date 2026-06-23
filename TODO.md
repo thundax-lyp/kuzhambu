@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `knowledge-application/task detail sync`：回填抽取任务状态与 AI 结果关联
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-AI-WORKERS-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/.../KnowledgeGraphExtractionApplicationServiceImpl.java`、`GraphExtractionTaskRepository.java`、`GraphExtractionTaskRepositoryImpl.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-domain/.../AiInvocationRepository.java`
-    - 处理动作：打通 `ai_call_id`、`ai_candidate_id` 到任务详情状态查询
-    - 验收点：Knowledge 能查看任务状态、候选关联、失败原因与时间戳而不回查 workers
-    - 重要度：9/10
-
 - [ ] `knowledge-application/apply formal results`：应用候选结果到正式知识表
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-AI-WORKERS-CLOSURE.md`
