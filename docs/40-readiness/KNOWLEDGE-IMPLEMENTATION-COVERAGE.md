@@ -24,11 +24,14 @@
 - Admin Web 已接入待审核标签列表、标签审核抽屉、通过和拒绝动作。
 - Admin Web 已接入标签别名列表、新增和删除能力，并复用标签详情抽屉作为治理入口。
 - Admin Web 已接入同义词分页、创建、编辑、启用、禁用和删除能力。
+- Knowledge 已补充 `KnowledgeTagBindingDomainService`，为 Classics 通用标签提供统一标签解析、手工/AI 标签自动创建、内容引用同步和内容引用删除能力。
+- Knowledge taxonomy 已补充与 Classics 协作的兼容口径：接受 `MING_CUSTOMS` 内容类型输入和 `AI` 标签来源输入，并在仓储写入时归一化为内部口径。
+- Knowledge 已补齐后端自动化测试，覆盖标签绑定协作语义和 taxonomy 兼容口径。
 - `db/data-source/system.json` 与 `db/data/system.sql` 已收敛到本次 MVP 指定的 `知识治理 / 标签与同义词` 菜单结构，并通过现有脚本重新生成。
 
 部分完成：
 
-- 当前已完成页面级 format/lint 和菜单 SQL 生成校验，但尚未补充 taxonomy 专项前端单测、Playwright 闭环或后端契约测试，运行时回归风险仍需后续验证补强。
+- 当前已完成页面级 format/lint、菜单 SQL 生成校验和 taxonomy 后端专项测试，但尚未补充前端单测、Playwright 闭环或联调冒烟记录。
 
 未完成：
 
@@ -43,9 +46,10 @@
 | 标签待审核列表与审核 | 已完成 | 后端已提供待审核分页和审核接口；Admin Web 已提供待审核列表、审核抽屉、通过/拒绝动作 | 无 | Knowledge, Admin Web |
 | 标签别名管理 | 已完成 | 后端已提供别名列表、新增、删除接口；Admin Web 已在标签详情抽屉中提供别名列表、新增和删除 | 无 | Knowledge, Admin Web |
 | 同义词管理 | 已完成 | 后端已提供分页、创建、更新、状态变更、删除接口；Admin Web 已提供分页表格、编辑抽屉、启用、禁用、删除 | 无 | Knowledge, Admin Web |
+| Classics 内容标签协作与兼容口径 | 已完成 | Knowledge 已提供统一标签绑定协作语义、内容引用同步/删除能力，并兼容 Classics 的 `MING_CUSTOMS` 与 `AI` 协作输入 | 无 | Knowledge, Classics |
 | 后台菜单与页面入口 | 已完成 | `system.json` 已新增 `知识治理 / 标签与同义词` 菜单；`system.sql` 已由脚本生成同步；Admin Web 路由已接入 `/knowledge/taxonomy` | 无 | System Data, Admin Web |
 | taxonomy 权限点 | 已完成 | `knowledge:taxonomy:view`、`knowledge:taxonomy:edit`、`knowledge:taxonomy:review` 已进入菜单种子和后端 `@HasPermission` 控制 | 无 | Knowledge, System |
-| MVP 运行时验证 | 部分完成 | 已完成前端 `format`、`lint` 以及 `node scripts/generate-system-data-sql.ts --check` | 缺少 taxonomy 专项后端测试、前端单测、Playwright 与联调冒烟记录 | Knowledge, Admin Web |
+| MVP 运行时验证 | 部分完成 | 已完成 taxonomy 后端专项测试、前端 `format`、`lint` 以及 `node scripts/generate-system-data-sql.ts --check` | 缺少前端单测、Playwright 与联调冒烟记录 | Knowledge, Admin Web |
 
 ## Out Of Scope Matrix
 
