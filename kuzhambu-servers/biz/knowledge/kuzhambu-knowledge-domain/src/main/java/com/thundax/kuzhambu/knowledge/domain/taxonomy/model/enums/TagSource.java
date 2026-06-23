@@ -12,6 +12,9 @@ public enum TagSource {
     }
 
     public static TagSource from(String value) {
+        if ("AI".equalsIgnoreCase(value)) {
+            return AI_EXTRACTED;
+        }
         return Arrays.stream(values())
                 .filter(item -> item.name().equalsIgnoreCase(value))
                 .findFirst()

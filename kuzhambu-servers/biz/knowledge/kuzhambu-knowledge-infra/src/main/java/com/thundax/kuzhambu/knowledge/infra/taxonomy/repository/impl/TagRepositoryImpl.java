@@ -88,6 +88,7 @@ public class TagRepositoryImpl implements TagRepository {
     @Override
     public TagId insert(Tag entity) {
         TagDO dataObject = TaxonomyPersistenceAssembler.toObject(entity);
+        dataObject.setSource(normalizeSourceValue(dataObject.getSource()));
         if (dataObject.getId() == null) {
             dataObject.setId(idGenerator.nextId().value());
         }
@@ -98,6 +99,7 @@ public class TagRepositoryImpl implements TagRepository {
     @Override
     public int update(Tag entity) {
         TagDO dataObject = TaxonomyPersistenceAssembler.toObject(entity);
+        dataObject.setSource(normalizeSourceValue(dataObject.getSource()));
         return mapper.update(
                 null,
                 buildIdUpdateWrapper(dataObject)
@@ -134,10 +136,10 @@ public class TagRepositoryImpl implements TagRepository {
         wrapper.eq(StringUtils.isNotBlank(name), "name", name)
                 .eq(categoryId != null, "category_id", TagCategoryIdCodec.toValue(categoryId))
                 .eq(status != null, "status", status.value())
-                .eq(source != null, "source", source.value())
                 .eq(reviewStatus != null, "review_status", reviewStatus.value())
                 .orderByDesc("created_at")
                 .orderByAsc("id");
+        applySourceFilter(wrapper, source);
         return wrapper;
     }
 
@@ -145,5 +147,24 @@ public class TagRepositoryImpl implements TagRepository {
         LambdaUpdateWrapper<TagDO> wrapper = new LambdaUpdateWrapper<>();
         wrapper.eq(TagDO::getId, dataObject.getId());
         return wrapper;
+    }
+
+    private void applySourceFilter(QueryWrapper<TagDO> wrapper, TagSource source) {
+        if (source == null) {
+            return;
+        }
+        if (source == TagSource.AI_EXTRACTED) {
+            wrapper.and(query ->
+                    query.eq("source", TagSource.AI_EXTRACTED.value()).or().eq("source", "AI"));
+            return;
+        }
+        wrapper.eq("source", source.value());
+    }
+
+    private String normalizeSourceValue(String source) {
+        if ("AI".equalsIgnoreCase(source)) {
+            return TagSource.AI_EXTRACTED.value();
+        }
+        return source;
     }
 }

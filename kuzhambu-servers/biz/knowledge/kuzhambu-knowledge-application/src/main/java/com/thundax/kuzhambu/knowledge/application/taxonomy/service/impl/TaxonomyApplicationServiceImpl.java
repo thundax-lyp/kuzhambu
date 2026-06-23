@@ -582,10 +582,10 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
         if (tag == null) {
             return false;
         }
-        if (tag.getReviewStatus() != TagReviewStatus.PENDING || tag.getSource() != TagSource.AI_EXTRACTED) {
+        if (tag.getReviewStatus() != TagReviewStatus.PENDING || !isAiGeneratedSource(tag.getSource())) {
             return false;
         }
-        if (query != null && query.getSource() != null && query.getSource() != TagSource.AI_EXTRACTED) {
+        if (query != null && query.getSource() != null && !isAiGeneratedSource(query.getSource())) {
             return false;
         }
         String name = StringUtils.trimToNull(query == null ? null : query.getName());
@@ -607,5 +607,9 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
         PageQuery effective = page == null ? new PageQuery() : page;
         effective.normalize();
         return effective;
+    }
+
+    private boolean isAiGeneratedSource(TagSource source) {
+        return source == TagSource.AI_EXTRACTED;
     }
 }

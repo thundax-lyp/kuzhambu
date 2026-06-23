@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `knowledge/taxonomy-compat`：收敛 Knowledge taxonomy 后台服务与引用兼容口径
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-KNOWLEDGE-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/service/impl/TaxonomyApplicationServiceImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/taxonomy/repository/impl/TagRepositoryImpl.java`
-    - 处理动作：在保持后台治理用例不扩张的前提下，同步调整 taxonomy 服务和标签仓储对新枚举/来源口径的兼容
-    - 验收点：Knowledge 后台 taxonomy 页面语义不变，且与新的协作枚举和绑定服务不冲突
-    - 重要度：7/10
-
 - [ ] `tests/classics-tag-flow`：补 Classics 标签闭环测试
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-KNOWLEDGE-CLOSURE.md`
