@@ -30,8 +30,18 @@ public class ClassicsTagBindingSupport {
     }
 
     public ClassicsContentTag bindManualTag(ContentTagCommand command, Integer priority) {
+        return bindTag(command, priority, false);
+    }
+
+    public ClassicsContentTag bindAiTag(ContentTagCommand command, Integer priority) {
+        return bindTag(command, priority, true);
+    }
+
+    private ClassicsContentTag bindTag(ContentTagCommand command, Integer priority, boolean aiTag) {
         ClassicsContentTag tag = command.toEntity();
-        Tag knowledgeTag = knowledgeTagBindingDomainService.resolveOrCreateManualTag(command.getTagNameSnapshot());
+        Tag knowledgeTag = aiTag
+                ? knowledgeTagBindingDomainService.resolveOrCreateAiTag(command.getTagNameSnapshot())
+                : knowledgeTagBindingDomainService.resolveOrCreateManualTag(command.getTagNameSnapshot());
         tag.setTagId(KnowledgeTagId.ofNullable(
                 knowledgeTag == null || knowledgeTag.getTagId() == null
                         ? null

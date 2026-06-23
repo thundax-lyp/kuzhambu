@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -14,8 +15,10 @@ import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
 import com.thundax.kuzhambu.ai.domain.invocation.service.AiCandidateApplyCheck;
 import com.thundax.kuzhambu.ai.domain.invocation.service.AiCandidateDomainService;
 import com.thundax.kuzhambu.classics.application.content.command.AiCandidateApplyContentCommand;
+import com.thundax.kuzhambu.classics.application.content.command.ContentTagCommand;
 import com.thundax.kuzhambu.classics.application.content.result.AiCandidateApplyContentResult;
 import com.thundax.kuzhambu.classics.application.content.service.impl.ClassicsContentApplicationServiceImpl;
+import com.thundax.kuzhambu.classics.application.content.support.ClassicsTagBindingSupport;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentExportJob;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentQaPair;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
@@ -235,6 +238,36 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                         eq("TEXT"),
                         eq("{\"tags\":[\"ai-one\",\"ai-two\",\"ai-one\",\"\"]}"),
                         any(Instant.class));
+    }
+
+    @Test
+    void applyAiCandidateTagsShouldSyncKnowledgeRefsWhenBindingSupportPresent() {
+        FakeRepository repository = new FakeRepository();
+        SancaiEntry entry = new SancaiEntry();
+        entry.setId(SancaiEntryId.of(11L));
+        repository.sancaiEntryForAiApply = entry;
+        ClassicsContentTag oldAiTag = aiTag(2L, 11L, "old-ai-tag");
+        repository.tags.add(manualTag(1L, 11L, "manual-tag"));
+        repository.tags.add(oldAiTag);
+
+        AiCandidateDomainService aiCandidateDomainService = mockAiCandidateDomainService(
+                check -> pendingCandidate(),
+                (candidateId, resultFormat, resultPayload, markAppliedAt) -> candidateApplied());
+        ClassicsTagBindingSupport tagBindingSupport = org.mockito.Mockito.mock(ClassicsTagBindingSupport.class);
+        when(tagBindingSupport.bindAiTag(any(ContentTagCommand.class), any())).thenAnswer(invocation -> {
+            ContentTagCommand command = invocation.getArgument(0);
+            return command.toEntity();
+        });
+
+        ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
+                repository, null, null, null, null, null, null, aiCandidateDomainService, tagBindingSupport);
+
+        service.applyAiCandidate(
+                applyCommand(11L, ClassicsContentType.SANCAI_ENTRY, 11L, "tags", "{\"tags\":[\"ai-one\",\"ai-two\"]}"));
+
+        verify(tagBindingSupport).removeTagRef(oldAiTag);
+        verify(tagBindingSupport, times(2)).bindAiTag(any(ContentTagCommand.class), any());
+        verify(tagBindingSupport, times(2)).syncTagRef(any(ClassicsContentTag.class));
     }
 
     @Test

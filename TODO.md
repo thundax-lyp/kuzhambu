@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `classics/ai-tag-closure`：接通 AI 标签确认到 Knowledge 的同步闭环
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-KNOWLEDGE-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/content/controller/ClassicsContentAdminController.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/content/assembler/ClassicsContentInterfaceAssembler.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/service/impl/ClassicsContentApplicationServiceImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/support/ClassicsAiCandidatePayloadParser.java`
-    - 处理动作：将 `capability=tags` 的 AI 候选确认逻辑改为先走 Knowledge 协作语义，再回写 Classics 与 Knowledge
-    - 验收点：AI 标签确认路径不再直接按名称重建本地标签，统一标签解析与引用同步完整生效
-    - 重要度：10/10
-
 - [ ] `knowledge/tag-content-ref-repo`：扩展 Knowledge 内容引用仓储能力
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-KNOWLEDGE-CLOSURE.md`

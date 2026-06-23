@@ -220,8 +220,14 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     public ClassicsContentTagId addTag(ContentTagCommand command) {
         ClassicsContentId contentId = ClassicsContentId.of(command.getContentId());
         int nextPriority = repository.maxTagPriority(command.getContentType().value(), contentId) + 1;
-        ClassicsContentTag tag =
-                tagBindingSupport == null ? command.toEntity() : tagBindingSupport.bindManualTag(command, nextPriority);
+        ClassicsContentTag tag;
+        if (tagBindingSupport == null) {
+            tag = command.toEntity();
+        } else if (command.getSource() == ClassicsContentSource.AI) {
+            tag = tagBindingSupport.bindAiTag(command, nextPriority);
+        } else {
+            tag = tagBindingSupport.bindManualTag(command, nextPriority);
+        }
         tag.setId(null);
         if (tagBindingSupport == null) {
             tag.setPriority(nextPriority);
@@ -541,6 +547,11 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         }
         if (tags == null || tags.isEmpty()) {
             throw new BizException("AI候选标签为空");
+        }
+        if (tagBindingSupport != null) {
+            repository.listTags(contentType.value(), contentId, SortDirection.ASC).stream()
+                    .filter(tag -> tag != null && tag.getSource() == ClassicsContentSource.AI)
+                    .forEach(tagBindingSupport::removeTagRef);
         }
         repository.deleteAiTags(contentType.value(), contentId);
         for (String tagName : tags) {
