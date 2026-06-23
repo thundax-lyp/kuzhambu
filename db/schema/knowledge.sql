@@ -215,3 +215,30 @@ CREATE TABLE IF NOT EXISTS `knowledge_lineage_relation` (
     KEY `idx_knowledge_lineage_relation_confirmation_status` (`confirmation_status`, `last_extracted_at`),
     KEY `idx_knowledge_lineage_relation_source_target` (`source_node_key`, `target_node_key`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='世系关系表';
+
+CREATE TABLE IF NOT EXISTS `knowledge_refinement_task` (
+    `id` bigint NOT NULL AUTO_INCREMENT,
+    `refinement_task_id` bigint NOT NULL,
+    `task_type` varchar(32) NOT NULL,
+    `source_content_type` varchar(32) NOT NULL,
+    `source_content_id` bigint NOT NULL,
+    `source_category_code` varchar(64) NOT NULL,
+    `source_category_name` varchar(128) NOT NULL,
+    `graph_version_id` bigint NOT NULL,
+    `status` varchar(32) NOT NULL,
+    `opened_by` bigint NOT NULL,
+    `opened_at` datetime(3) NOT NULL,
+    `submitted_by` bigint DEFAULT NULL,
+    `submitted_at` datetime(3) DEFAULT NULL,
+    `applied_by` bigint DEFAULT NULL,
+    `applied_at` datetime(3) DEFAULT NULL,
+    `cancelled_by` bigint DEFAULT NULL,
+    `cancelled_at` datetime(3) DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_knowledge_refinement_task_id` (`refinement_task_id`),
+    UNIQUE KEY `uk_knowledge_refinement_source_version_status` (
+        `task_type`,
+        `source_content_type`,
+        `source_content_id`,
+        `graph_version_id`,
+        `status`
