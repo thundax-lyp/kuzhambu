@@ -66,6 +66,8 @@ public final class RefinementLineageRelationDraftPersistenceAssembler {
             List<RefinementLineageRelationDraftDO> dataObjects) {
         return dataObjects == null
                 ? List.of()
-                : dataObjects.stream().map(RefinementLineageRelationDraftPersistenceAssembler::toDomain).toList();
+                : dataObjects.stream()
+                        .map(RefinementLineageRelationDraftPersistenceAssembler::toDomain)
+                        .toList();
     }
 }

@@ -53,6 +53,8 @@ public final class QualityAnnotationPersistenceAssembler {
     public static List<QualityAnnotation> toDomainList(List<QualityAnnotationDO> dataObjects) {
         return dataObjects == null
                 ? List.of()
-                : dataObjects.stream().map(QualityAnnotationPersistenceAssembler::toDomain).toList();
+                : dataObjects.stream()
+                        .map(QualityAnnotationPersistenceAssembler::toDomain)
+                        .toList();
     }
 }
