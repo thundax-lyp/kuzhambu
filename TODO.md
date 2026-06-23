@@ -43,20 +43,4 @@
     - 验收点：质量标注创建、更新、删除可被 System 审计追溯
     - 重要度：7/10
 
-- [ ] `KnowledgeGraphRefinementTaskOpenTest.java,KnowledgeGraphRefinementApplyTest.java,KnowledgeGraphRefinementControllerTest.java,RefinementTaskRepositoryTest.java`：补齐后端主链路最小验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/refinement/KnowledgeGraphRefinementTaskOpenTest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/refinement/KnowledgeGraphRefinementApplyTest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/test/java/com/thundax/kuzhambu/knowledge/interfaces/admin/refinement/controller/KnowledgeGraphRefinementControllerTest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/test/java/com/thundax/kuzhambu/knowledge/infra/refinement/repository/impl/RefinementTaskRepositoryTest.java`
-    - 处理动作：补齐精修任务打开、应用、接口和仓储的最小验证集合
-    - 验收点：后端 refinement 主链路具备可运行自动化验证
-    - 重要度：9/10
-
-- [ ] `refinement-service.test.ts,refinement-page.test.tsx`：补齐前端主链路最小验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/refinement-service.test.ts`、`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/refinement-page.test.tsx`
-    - 处理动作：补齐 refinement 服务契约和页面主交互测试
-    - 验收点：前端 refinement 服务和页面主交互具备自动化测试
-    - 重要度：8/10
-
 ## 待讨论项
