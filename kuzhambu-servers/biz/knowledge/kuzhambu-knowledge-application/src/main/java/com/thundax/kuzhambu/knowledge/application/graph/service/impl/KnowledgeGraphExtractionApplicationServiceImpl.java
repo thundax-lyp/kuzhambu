@@ -22,9 +22,11 @@ import com.thundax.kuzhambu.knowledge.application.graph.service.KnowledgeGraphEx
 import com.thundax.kuzhambu.knowledge.application.graph.support.KnowledgeGraphCandidateApplySupport;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphVersion;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeEntity;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphExtractionTaskRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphVersionRepository;
+import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeEntityRepository;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
@@ -47,6 +49,7 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
 
     private final GraphExtractionTaskRepository repository;
     private final GraphVersionRepository graphVersionRepository;
+    private final KnowledgeEntityRepository knowledgeEntityRepository;
     private final AiInvocationRepository aiInvocationRepository;
     private final KnowledgeAiExtractionDomainService knowledgeAiExtractionDomainService;
     private final AiCandidateDomainService aiCandidateDomainService;
@@ -55,12 +58,14 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
     public KnowledgeGraphExtractionApplicationServiceImpl(
             GraphExtractionTaskRepository repository,
             GraphVersionRepository graphVersionRepository,
+            KnowledgeEntityRepository knowledgeEntityRepository,
             AiInvocationRepository aiInvocationRepository,
             KnowledgeAiExtractionDomainService knowledgeAiExtractionDomainService,
             AiCandidateDomainService aiCandidateDomainService,
             KnowledgeGraphCandidateApplySupport candidateApplySupport) {
         this.repository = repository;
         this.graphVersionRepository = graphVersionRepository;
+        this.knowledgeEntityRepository = knowledgeEntityRepository;
         this.aiInvocationRepository = aiInvocationRepository;
         this.knowledgeAiExtractionDomainService = knowledgeAiExtractionDomainService;
         this.aiCandidateDomainService = aiCandidateDomainService;
@@ -251,12 +256,31 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
     @Override
     public PageResult<KnowledgeEntityResult> pageEntities(
             Long versionId, String keyword, String entityType, String confirmationStatus, PageQuery pageQuery) {
-        throw new BizException("Knowledge entity readable is not ready");
+        PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
+        effectivePage.normalize();
+        PageResult<KnowledgeEntity> entityPage = knowledgeEntityRepository.page(
+                versionId,
+                keyword,
+                entityType,
+                confirmationStatus,
+                effectivePage.getPageNo(),
+                effectivePage.getPageSize());
+        return PageResult.of(
+                entityPage.getPageNo(),
+                entityPage.getPageSize(),
+                entityPage.getTotalCount(),
+                entityPage.getRecords().stream()
+                        .map(this::toKnowledgeEntityResult)
+                        .toList());
     }
 
     @Override
     public KnowledgeEntityResult getEntityDetail(Long entityId) {
-        throw new BizException("Knowledge entity readable is not ready");
+        KnowledgeEntity entity = knowledgeEntityRepository.getByEntityId(entityId);
+        if (entity == null) {
+            throw new BizException("Knowledge entity not found: " + entityId);
+        }
+        return toKnowledgeEntityResult(entity);
     }
 
     @Override
@@ -453,6 +477,24 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
                 version.getVersionNo(),
                 version.getStatus(),
                 version.getAppliedAt() == null ? null : version.getAppliedAt().getTime());
+    }
+
+    private KnowledgeEntityResult toKnowledgeEntityResult(KnowledgeEntity entity) {
+        if (entity == null) {
+            return null;
+        }
+        return new KnowledgeEntityResult(
+                entity.getEntityId(),
+                entity.getEntityKey(),
+                entity.getName(),
+                entity.getEntityType(),
+                entity.getDescription(),
+                entity.getConfirmationStatus(),
+                entity.getLatestVersionId(),
+                entity.getSourceRefsJson(),
+                timeValue(entity.getFirstExtractedAt()),
+                timeValue(entity.getLastExtractedAt()),
+                timeValue(entity.getConfirmedAt()));
     }
 
     private Long timeValue(Date value) {

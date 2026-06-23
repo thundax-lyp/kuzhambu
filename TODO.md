@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `knowledge/graph`：落地正式实体读取
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GOVERNANCE-READABLE-RESULTS.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/graph/**`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/graph/**`
-    - 处理动作：基于 `knowledge_entity` 落地正式实体列表与详情读取
-    - 验收点：后端可稳定返回实体名称、类型、确认状态、最新版本关联和来源引用
-    - 重要度：8/10
-
 - [ ] `knowledge/graph`：定义正式关系读取契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GOVERNANCE-READABLE-RESULTS.md`

@@ -121,6 +121,25 @@ class KnowledgeGraphCandidateApplySupportTest {
         }
 
         @Override
+        public KnowledgeEntity getByEntityId(Long entityId) {
+            return store.values().stream()
+                    .filter(item -> entityId.equals(item.getEntityId()))
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        @Override
+        public PageResult<KnowledgeEntity> page(
+                Long versionId,
+                String keyword,
+                String entityType,
+                String confirmationStatus,
+                int pageNo,
+                int pageSize) {
+            return PageResult.of(pageNo, pageSize, store.size(), saved);
+        }
+
+        @Override
         public void saveOrUpdateBatch(List<KnowledgeEntity> entities) {
             saved.clear();
             saved.addAll(entities);

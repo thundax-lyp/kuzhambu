@@ -2,7 +2,6 @@ package com.thundax.kuzhambu.knowledge.application.graph;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCallRecord;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
@@ -11,21 +10,24 @@ import com.thundax.kuzhambu.ai.domain.invocation.service.AiCandidateDomainServic
 import com.thundax.kuzhambu.ai.domain.knowledge.model.valueobject.KnowledgeAiExtractionRequest;
 import com.thundax.kuzhambu.ai.domain.knowledge.model.valueobject.KnowledgeAiExtractionResult;
 import com.thundax.kuzhambu.ai.domain.knowledge.service.KnowledgeAiExtractionDomainService;
-import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphVersionResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeEntityResult;
 import com.thundax.kuzhambu.knowledge.application.graph.service.impl.KnowledgeGraphExtractionApplicationServiceImpl;
 import com.thundax.kuzhambu.knowledge.application.graph.support.KnowledgeGraphCandidateApplySupport;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphVersion;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeEntity;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphExtractionTaskRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphVersionRepository;
+import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeEntityRepository;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -39,6 +41,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
                 repository,
                 new FakeGraphVersionRepository(),
+                new FakeKnowledgeEntityRepository(),
                 new FakeAiInvocationRepository(),
                 aiService,
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
@@ -66,6 +69,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
                 repository,
                 new FakeGraphVersionRepository(),
+                new FakeKnowledgeEntityRepository(),
                 new FakeAiInvocationRepository(),
                 new FakeKnowledgeAiExtractionDomainService(),
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
@@ -97,6 +101,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
                 repository,
                 new FakeGraphVersionRepository(),
+                new FakeKnowledgeEntityRepository(),
                 aiInvocationRepository,
                 new FakeKnowledgeAiExtractionDomainService(),
                 new AiCandidateDomainService(aiInvocationRepository),
@@ -126,6 +131,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
                 new FakeRepository(),
                 graphVersionRepository,
+                new FakeKnowledgeEntityRepository(),
                 new FakeAiInvocationRepository(),
                 new FakeKnowledgeAiExtractionDomainService(),
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
@@ -156,6 +162,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
                 new FakeRepository(),
                 graphVersionRepository,
+                new FakeKnowledgeEntityRepository(),
                 new FakeAiInvocationRepository(),
                 new FakeKnowledgeAiExtractionDomainService(),
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
@@ -170,29 +177,64 @@ class KnowledgeGraphExtractionApplicationServiceTest {
     }
 
     @Test
-    void pageEntitiesShouldExposeExplicitReadableNotReadyBoundary() {
+    void pageEntitiesShouldMapReadableFields() {
+        FakeKnowledgeEntityRepository knowledgeEntityRepository = new FakeKnowledgeEntityRepository();
+        KnowledgeEntity entity = new KnowledgeEntity();
+        entity.setEntityId(1001L);
+        entity.setEntityKey("person:huangdi");
+        entity.setName("黄帝");
+        entity.setEntityType("PERSON");
+        entity.setDescription("始祖");
+        entity.setConfirmationStatus("CONFIRMED");
+        entity.setLatestVersionId(71L);
+        entity.setSourceRefsJson("[{\"entryId\":1}]");
+        entity.setFirstExtractedAt(new Date(1_719_100_800_000L));
+        entity.setLastExtractedAt(new Date(1_719_187_200_000L));
+        knowledgeEntityRepository.entities.add(entity);
         KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
                 new FakeRepository(),
                 new FakeGraphVersionRepository(),
+                knowledgeEntityRepository,
                 new FakeAiInvocationRepository(),
                 new FakeKnowledgeAiExtractionDomainService(),
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
 
-        assertThrows(BizException.class, () -> service.pageEntities(71L, "黄帝", "PERSON", "CONFIRMED", null));
+        PageResult<KnowledgeEntityResult> page = service.pageEntities(71L, "黄帝", "PERSON", "CONFIRMED", null);
+
+        assertEquals(1, page.getRecords().size());
+        assertEquals(1001L, page.getRecords().get(0).getEntityId());
+        assertEquals("person:huangdi", page.getRecords().get(0).getEntityKey());
+        assertEquals("CONFIRMED", page.getRecords().get(0).getConfirmationStatus());
     }
 
     @Test
-    void getEntityDetailShouldExposeExplicitReadableNotReadyBoundary() {
+    void getEntityDetailShouldMapSingleEntityRecord() {
+        FakeKnowledgeEntityRepository knowledgeEntityRepository = new FakeKnowledgeEntityRepository();
+        KnowledgeEntity entity = new KnowledgeEntity();
+        entity.setEntityId(1002L);
+        entity.setEntityKey("person:fuxi");
+        entity.setName("伏羲");
+        entity.setEntityType("PERSON");
+        entity.setDescription("始祖");
+        entity.setConfirmationStatus("AI_EXTRACTED");
+        entity.setLatestVersionId(72L);
+        entity.setSourceRefsJson("[{\"entryId\":2}]");
+        knowledgeEntityRepository.entities.add(entity);
         KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
                 new FakeRepository(),
                 new FakeGraphVersionRepository(),
+                knowledgeEntityRepository,
                 new FakeAiInvocationRepository(),
                 new FakeKnowledgeAiExtractionDomainService(),
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
 
-        assertThrows(BizException.class, () -> service.getEntityDetail(1001L));
+        KnowledgeEntityResult detail = service.getEntityDetail(1002L);
+
+        assertEquals(1002L, detail.getEntityId());
+        assertEquals("person:fuxi", detail.getEntityKey());
+        assertEquals("伏羲", detail.getName());
     }
 
     @Test
@@ -217,6 +259,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
                 repository,
                 new FakeGraphVersionRepository(),
+                new FakeKnowledgeEntityRepository(),
                 aiInvocationRepository,
                 new FakeKnowledgeAiExtractionDomainService(),
                 new AiCandidateDomainService(aiInvocationRepository),
@@ -373,6 +416,51 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         public Long save(GraphVersion entity) {
             versions.add(entity);
             return entity.getVersionId();
+        }
+    }
+
+    private static final class FakeKnowledgeEntityRepository implements KnowledgeEntityRepository {
+        private final List<KnowledgeEntity> entities = new ArrayList<>();
+
+        @Override
+        public List<KnowledgeEntity> listByEntityKeys(Collection<String> entityKeys) {
+            return entityKeys == null ? List.of() : entities;
+        }
+
+        @Override
+        public KnowledgeEntity getByEntityId(Long entityId) {
+            return entities.stream()
+                    .filter(entity -> entityId.equals(entity.getEntityId()))
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        @Override
+        public PageResult<KnowledgeEntity> page(
+                Long versionId,
+                String keyword,
+                String entityType,
+                String confirmationStatus,
+                int pageNo,
+                int pageSize) {
+            return PageResult.of(
+                    pageNo,
+                    pageSize,
+                    entities.size(),
+                    entities.stream()
+                            .filter(entity -> versionId == null || versionId.equals(entity.getLatestVersionId()))
+                            .filter(entity ->
+                                    keyword == null || entity.getName().contains(keyword))
+                            .filter(entity -> entityType == null || entityType.equals(entity.getEntityType()))
+                            .filter(entity -> confirmationStatus == null
+                                    || confirmationStatus.equals(entity.getConfirmationStatus()))
+                            .toList());
+        }
+
+        @Override
+        public void saveOrUpdateBatch(List<KnowledgeEntity> entities) {
+            this.entities.clear();
+            this.entities.addAll(entities);
         }
     }
 
