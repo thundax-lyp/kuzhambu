@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `tests/knowledge-binding-flow`：补 Knowledge 协作与兼容测试
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-KNOWLEDGE-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/taxonomy/KnowledgeTagBindingDomainServiceTest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/test/java/com/thundax/kuzhambu/knowledge/interfaces/admin/taxonomy/KnowledgeTaxonomyCompatibilityTest.java`
-    - 处理动作：补统一标签解析、自动创建、内容引用同步/删除/重建，以及 taxonomy 后台兼容性测试
-    - 验收点：Knowledge 绑定协作服务与 taxonomy 后台兼容行为均可自动验证
-    - 重要度：8/10
-
 - [ ] `docs/closure-sync`：同步闭环设计与覆盖文档
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-KNOWLEDGE-CLOSURE.md`
