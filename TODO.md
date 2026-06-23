@@ -19,14 +19,6 @@
     - 验收点：应用服务接口可稳定表达精修任务列表与详情结构
     - 重要度：10/10
 
-- [ ] `QualityAnnotationPageQuery.java,QualityAnnotationResult.java,RefinementWorkbenchItemResult.java,RefinementProgressSummaryResult.java,RefinementEntityOptionResult.java`：定义列表与标注结果模型
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/query/QualityAnnotationPageQuery.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/result/QualityAnnotationResult.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/result/RefinementWorkbenchItemResult.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/result/RefinementProgressSummaryResult.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/result/RefinementEntityOptionResult.java`
-    - 处理动作：定义任务列表、进度摘要、实体选项和标注分页查询模型
-    - 验收点：应用层读取结果模型覆盖任务列表、进度、选项和标注分页
-    - 重要度：8/10
-
 - [ ] `RefinementEntityResult.java,RefinementRelationResult.java,RefinementLineageNodeResult.java,RefinementLineageRelationResult.java`：定义草稿结果模型
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
