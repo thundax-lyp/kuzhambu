@@ -75,14 +75,6 @@
     - 验收点：质量标注创建、更新、删除可被 System 审计追溯
     - 重要度：7/10
 
-- [ ] `refinement-entity-table.tsx,refinement-entity-editor.tsx,refinement-entity-delete-modal.tsx`：实现实体精修区组件
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/components/refinement-entity-table.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/components/refinement-entity-editor.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/components/refinement-entity-delete-modal.tsx`
-    - 处理动作：实现实体表格、编辑弹窗和删除确认弹窗
-    - 验收点：用户可新增、编辑、确认和删除实体草稿
-    - 重要度：10/10
-
 - [ ] `refinement-relation-table.tsx,refinement-relation-editor.tsx,refinement-relation-delete-modal.tsx`：实现关系精修区组件
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`

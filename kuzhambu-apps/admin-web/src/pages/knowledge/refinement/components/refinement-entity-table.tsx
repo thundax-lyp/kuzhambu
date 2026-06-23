@@ -1,0 +1,75 @@
+import { Button, Space, Table, Tag } from "antd";
+import type { ColumnsType } from "antd/es/table";
+import type { RefinementEntityRecord } from "../refinement-types";
+
+interface RefinementEntityTableProps {
+    canEdit?: boolean;
+    entities: RefinementEntityRecord[];
+    onAdd: () => void;
+    onConfirm: (entity: RefinementEntityRecord) => void;
+    onDelete: (entity: RefinementEntityRecord) => void;
+    onEdit: (entity: RefinementEntityRecord) => void;
+}
+
+const readStatusColor = (status?: string | null) =>
+    status === "MANUAL_CONFIRMED" ? "green" : "blue";
+
+export const RefinementEntityTable = ({
+    canEdit = false,
+    entities,
+    onAdd,
+    onConfirm,
+    onDelete,
+    onEdit
+}: RefinementEntityTableProps) => {
+    const columns: ColumnsType<RefinementEntityRecord> = [
+        { title: "名称", dataIndex: "name", key: "name" },
+        { title: "类型", dataIndex: "entityType", key: "entityType" },
+        {
+            title: "确认状态",
+            dataIndex: "confirmationStatus",
+            key: "confirmationStatus",
+            render: (status?: string | null) => (
+                <Tag color={readStatusColor(status)}>{status || "-"}</Tag>
+            )
+        },
+        { title: "操作类型", dataIndex: "operationType", key: "operationType" },
+        {
+            title: "操作",
+            key: "actions",
+            render: (_, entity) => (
+                <Space.Compact>
+                    <Button disabled={!canEdit} onClick={() => onEdit(entity)}>
+                        编辑
+                    </Button>
+                    <Button
+                        disabled={!canEdit || entity.confirmationStatus === "MANUAL_CONFIRMED"}
+                        onClick={() => onConfirm(entity)}
+                    >
+                        确认
+                    </Button>
+                    <Button danger disabled={!canEdit} onClick={() => onDelete(entity)}>
+                        删除
+                    </Button>
+                </Space.Compact>
+            )
+        }
+    ];
+
+    return (
+        <>
+            <div className="knowledge-refinement-section-actions">
+                <Button disabled={!canEdit} type="primary" onClick={onAdd}>
+                    新增实体
+                </Button>
+            </div>
+            <Table<RefinementEntityRecord>
+                aria-label="知识图谱精修实体表格"
+                columns={columns}
+                dataSource={entities}
+                pagination={false}
+                rowKey={(entity) => entity.draftId || entity.entityKey || entity.name || "entity"}
+            />
+        </>
+    );
+};
