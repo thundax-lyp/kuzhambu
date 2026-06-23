@@ -33,6 +33,15 @@ public class TagContentRefRepositoryImpl implements TagContentRefRepository {
     }
 
     @Override
+    public List<TagContentRef> listByContent(ContentType contentType, Long contentId) {
+        QueryWrapper<TagContentRefDO> wrapper = new QueryWrapper<>();
+        wrapper.eq("content_type", contentType.value())
+                .eq("content_id", contentId)
+                .orderByDesc("id");
+        return TaxonomyPersistenceAssembler.toTagContentRefDomainList(mapper.selectList(wrapper));
+    }
+
+    @Override
     public int countByTagId(TagId tagId) {
         QueryWrapper<TagContentRefDO> wrapper = new QueryWrapper<>();
         wrapper.eq("tag_id", TagIdCodec.toValue(tagId));
@@ -63,5 +72,12 @@ public class TagContentRefRepositoryImpl implements TagContentRefRepository {
     @Override
     public int deleteById(TagContentRefId id) {
         return mapper.deleteById(TagContentRefIdCodec.toValue(id));
+    }
+
+    @Override
+    public int deleteByContent(ContentType contentType, Long contentId) {
+        QueryWrapper<TagContentRefDO> wrapper = new QueryWrapper<>();
+        wrapper.eq("content_type", contentType.value()).eq("content_id", contentId);
+        return mapper.delete(wrapper);
     }
 }

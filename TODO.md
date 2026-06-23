@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `knowledge/tag-content-ref-repo`：扩展 Knowledge 内容引用仓储能力
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-KNOWLEDGE-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/taxonomy/repository/TagContentRefRepository.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/taxonomy/repository/impl/TagContentRefRepositoryImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/taxonomy/persistence/assembler/TaxonomyPersistenceAssembler.java`
-    - 处理动作：为内容引用增加按内容查询、按内容删除、按内容重建所需的仓储方法和装配逻辑
-    - 验收点：Knowledge 内容引用仓储可支持单内容同步、删除和重建，不需要越层访问底表
-    - 重要度：9/10
-
 - [ ] `knowledge/taxonomy-compat`：收敛 Knowledge taxonomy 后台服务与引用兼容口径
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-KNOWLEDGE-CLOSURE.md`
