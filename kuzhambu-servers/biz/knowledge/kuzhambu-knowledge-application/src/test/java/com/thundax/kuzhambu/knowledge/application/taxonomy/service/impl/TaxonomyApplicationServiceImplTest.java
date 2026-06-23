@@ -2,11 +2,14 @@ package com.thundax.kuzhambu.knowledge.application.taxonomy.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.thundax.kuzhambu.common.core.exception.BizException;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagDeprecateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagMergeCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagMergePreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagMergePreviewResult;
@@ -33,6 +36,22 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class TaxonomyApplicationServiceImplTest {
+
+    @Test
+    void deprecateTagShouldExposeStableActionContractBeforeOrchestration() {
+        TaxonomyApplicationService service = new TaxonomyApplicationServiceImpl(
+                mock(TagCategoryRepository.class),
+                mock(TagRepository.class),
+                mock(TagAliasRepository.class),
+                mock(TagContentRefRepository.class),
+                mock(SynonymRepository.class),
+                mock(KnowledgeTagBindingDomainService.class));
+
+        BizException error =
+                assertThrows(BizException.class, () -> service.deprecateTag(new TagDeprecateCommand(TagId.of(1L))));
+
+        assertEquals("标签废弃动作尚未实现", error.getMessage());
+    }
 
     @Test
     void applyTagMergeShouldMarkSourceTagAsMergedIntoTarget() {

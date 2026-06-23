@@ -15,6 +15,7 @@ import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCategoryCr
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCategoryStatusCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCategoryUpdateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCreateCommand;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagDeprecateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagMergeCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagReviewCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagStatusCommand;
@@ -357,6 +358,14 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
         if (tagRepository.updateStatus(updated) != 1) {
             throw new BizException("标签状态更新失败");
         }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deprecateTag(TagDeprecateCommand command) {
+        TagDeprecateCommand effective = ensureCommand(command, "标签废弃命令");
+        ensureId(effective.getId(), "tagId");
+        throw new BizException("标签废弃动作尚未实现");
     }
 
     @Override
