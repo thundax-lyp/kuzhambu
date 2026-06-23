@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `knowledge-interface/graph extraction admin api`：暴露知识抽取后台接口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-AI-WORKERS-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/.../KnowledgeGraphExtractionController.java`、`GraphExtractionRequests.java`、`GraphExtractionResponses.java`、`KnowledgeGraphExtractionInterfaceAssembler.java`
-    - 处理动作：实现知识抽取任务请求、详情与应用接口的协议层转换
-    - 验收点：admin 接口可稳定接收三类任务请求并输出任务结果模型
-    - 重要度：8/10
-
 - [ ] `workers/knowledge extraction contract`：固化 workers 抽取输出契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-AI-WORKERS-CLOSURE.md`
