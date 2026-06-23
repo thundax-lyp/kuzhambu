@@ -9,6 +9,10 @@ public interface TagAliasRepository {
 
     TagAlias getById(TagAliasId id);
 
+    default TagAlias getByName(String name) {
+        return null;
+    }
+
     List<TagAlias> listByTagId(TagId tagId);
 
     int countByName(String name, TagAliasId excludedId);

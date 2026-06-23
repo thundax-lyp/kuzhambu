@@ -35,14 +35,6 @@
     - 验收点：AI 标签确认路径不再直接按名称重建本地标签，统一标签解析与引用同步完整生效
     - 重要度：10/10
 
-- [ ] `knowledge/tag-binding-service`：新增 Knowledge 标签绑定协作语义
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-KNOWLEDGE-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/service/KnowledgeTagBindingDomainService.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/service/impl/KnowledgeTagBindingDomainServiceImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/taxonomy/repository/TagRepository.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/taxonomy/repository/TagAliasRepository.java`
-    - 处理动作：在 Knowledge 领域层新增统一标签解析、自动创建和内容引用同步的稳定协作语义
-    - 验收点：Knowledge 领域层存在可被 Classics 编排调用的绑定协作服务，不依赖后台 taxonomy CRUD
-    - 重要度：10/10
-
 - [ ] `knowledge/tag-content-ref-repo`：扩展 Knowledge 内容引用仓储能力
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-KNOWLEDGE-CLOSURE.md`
