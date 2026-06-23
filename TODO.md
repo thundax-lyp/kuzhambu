@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `RefinementDraftBootstrapSupport.java,KnowledgeGraphRefinementApplicationServiceImpl.java,KnowledgeGraphRefinementTaskOpenTest.java`：实现任务打开与草稿初始化
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/support/RefinementDraftBootstrapSupport.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/service/impl/KnowledgeGraphRefinementApplicationServiceImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/refinement/KnowledgeGraphRefinementTaskOpenTest.java`
-    - 处理动作：实现打开精修任务并从正式事实初始化草稿
-    - 验收点：`task/open` 可创建或复用 `DRAFT` 任务并生成实体、关系和世系草稿
-    - 重要度：10/10
-
 - [ ] `KnowledgeRefinementManualKeySupport.java,KnowledgeGraphRefinementApplicationServiceImpl.java,KnowledgeGraphRefinementEntityWriteTest.java,KnowledgeGraphRefinementRelationWriteTest.java`：实现实体与关系草稿写入
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
