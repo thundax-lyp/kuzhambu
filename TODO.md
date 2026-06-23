@@ -19,14 +19,6 @@
     - 验收点：应用服务接口可稳定表达精修任务列表与详情结构
     - 重要度：10/10
 
-- [ ] `DeleteRefinementRelationCommand.java,UpsertRefinementLineageNodeCommand.java,UpsertRefinementLineageRelationCommand.java,UpsertQualityAnnotationCommand.java,QualitySummaryResult.java`：定义删除、世系与质量结果模型
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/command/DeleteRefinementRelationCommand.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/command/UpsertRefinementLineageNodeCommand.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/command/UpsertRefinementLineageRelationCommand.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/command/UpsertQualityAnnotationCommand.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/result/QualitySummaryResult.java`
-    - 处理动作：定义删除类命令、世系写命令和质量汇总结果模型
-    - 验收点：世系、删除和质量汇总的应用层契约齐备
-    - 重要度：8/10
-
 - [ ] `ConfirmRefinementLineageNodeCommand.java,ConfirmRefinementLineageRelationCommand.java,DeleteRefinementLineageNodeCommand.java,DeleteRefinementLineageRelationCommand.java,DeleteQualityAnnotationCommand.java`：定义后续开放能力命令模型
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
