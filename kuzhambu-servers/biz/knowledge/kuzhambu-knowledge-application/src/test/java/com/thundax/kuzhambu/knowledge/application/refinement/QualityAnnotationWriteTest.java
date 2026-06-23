@@ -49,9 +49,8 @@ class QualityAnnotationWriteTest {
         FakeQualityAnnotationRepository annotationRepository = new FakeQualityAnnotationRepository();
         KnowledgeGraphRefinementApplicationServiceImpl service = service(annotationRepository);
 
-        QualityAnnotationResult result = service.upsertAnnotation(
-                new UpsertQualityAnnotationCommand(501L, "ENTITY", "entity:huangdi", "CLASSIC", 1001L, 88L, "VALID",
-                        "ACCURATE", "人工校验通过", 9L));
+        QualityAnnotationResult result = service.upsertAnnotation(new UpsertQualityAnnotationCommand(
+                501L, "ENTITY", "entity:huangdi", "CLASSIC", 1001L, 88L, "VALID", "ACCURATE", "人工校验通过", 9L));
 
         assertEquals(501L, result.getAnnotationId());
         assertEquals("ENTITY", result.getObjectType());
@@ -72,8 +71,20 @@ class QualityAnnotationWriteTest {
     void deleteAnnotationShouldRemoveStoredRecord() {
         FakeQualityAnnotationRepository annotationRepository = new FakeQualityAnnotationRepository();
         annotationRepository.saveOrUpdate(new QualityAnnotation(
-                1L, 501L, "RELATION", "entity:huangdi->entity:fuxi:ancestor", "CLASSIC", 1001L, 88L, "VALID",
-                "ACCURATE", "人工校验通过", 9L, null, 9L, null));
+                1L,
+                501L,
+                "RELATION",
+                "entity:huangdi->entity:fuxi:ancestor",
+                "CLASSIC",
+                1001L,
+                88L,
+                "VALID",
+                "ACCURATE",
+                "人工校验通过",
+                9L,
+                null,
+                9L,
+                null));
         KnowledgeGraphRefinementApplicationServiceImpl service = service(annotationRepository);
 
         service.deleteAnnotation(new DeleteQualityAnnotationCommand(501L));
@@ -248,7 +259,12 @@ class QualityAnnotationWriteTest {
 
         @Override
         public PageResult<GraphVersion> page(
-                String taskType, String status, String sourceContentType, Long sourceContentId, int pageNo, int pageSize) {
+                String taskType,
+                String status,
+                String sourceContentType,
+                Long sourceContentId,
+                int pageNo,
+                int pageSize) {
             return PageResult.of(pageNo, pageSize, 0, List.of());
         }
 
@@ -276,7 +292,12 @@ class QualityAnnotationWriteTest {
 
         @Override
         public PageResult<KnowledgeEntity> page(
-                Long versionId, String keyword, String entityType, String confirmationStatus, int pageNo, int pageSize) {
+                Long versionId,
+                String keyword,
+                String entityType,
+                String confirmationStatus,
+                int pageNo,
+                int pageSize) {
             return PageResult.of(pageNo, pageSize, 0, List.of());
         }
 

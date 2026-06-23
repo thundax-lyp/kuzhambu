@@ -251,7 +251,8 @@ class KnowledgeGraphRefinementLineageWriteTest {
         }
     }
 
-    private static final class FakeRefinementLineageNodeDraftRepository implements RefinementLineageNodeDraftRepository {
+    private static final class FakeRefinementLineageNodeDraftRepository
+            implements RefinementLineageNodeDraftRepository {
         private final Map<Long, List<RefinementLineageNodeDraft>> draftsByTaskId = new LinkedHashMap<>();
         private long nextDraftId = 1L;
 
