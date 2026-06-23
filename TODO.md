@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web/knowledge extraction create actions`：支持三类抽取任务创建
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-AI-WORKERS-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/components/graph-extraction-create.tsx`、`graph-extraction-page.tsx`、`graph-extraction-service.ts`、组件测试文件
-    - 处理动作：接通 relation、graph、lineage 三类抽取任务创建动作
-    - 验收点：前端页面能发起三类抽取任务并反映创建结果
-    - 重要度：7/10
-
 - [ ] `admin-web/knowledge extraction detail apply`：支持详情查看与应用动作
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-AI-WORKERS-CLOSURE.md`
