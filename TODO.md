@@ -33,14 +33,6 @@
     - 验收点：admin 接口可稳定接收三类任务请求并输出任务结果模型
     - 重要度：8/10
 
-- [ ] `ai-application/knowledge usecase resolver`：收敛 Knowledge 抽取 usecase 路由规则
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-AI-WORKERS-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-application/.../KnowledgeAiWorkerUsecaseSpec.java`、`KnowledgeAiWorkerUsecaseResolver.java`、`KnowledgeAiWorkerUsecaseResolverTest.java`
-    - 处理动作：将三类 Knowledge 抽取映射到稳定的 operation、workerPath 与 capability
-    - 验收点：AI application 能按固定规则解析 relation、graph、lineage 三类 usecase
-    - 重要度：8/10
-
 - [ ] `ai-application/knowledge extraction service`：实现 Knowledge 抽取 AI 协作服务
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-AI-WORKERS-CLOSURE.md`
