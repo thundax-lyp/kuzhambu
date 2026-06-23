@@ -75,6 +75,12 @@ Workers 不拥有 AI 配置、提示词、调用记录或候选结果。Classics
 
 Application 层负责模型能力校验、提示词变量校验、主备切换、AI 调用编排、worker 请求构造、stream 转发、候选区管理、批量任务取消和统计记录。
 
+Knowledge 抽取协作语义：
+
+- `KnowledgeAiExtractionDomainService` 提供 `extractRelations`、`extractGraph`、`extractLineage` 三个明确业务动作。
+- AI application 把 Knowledge 业务动作解析为稳定的 `operation + capability + workerPath`，并统一写入 `ai_call_record` 与 `ai_candidate`。
+- `ai_candidate.result_payload` 是 Knowledge 抽取候选快照真相源；正式知识事实仍由 Knowledge 应用后写入。
+
 调用流程：
 
 1. 业务域通过 AI application 发起能力调用，并传入业务上下文快照。
@@ -124,6 +130,7 @@ Knowledge 调用入口：
 - 实体关系候选抽取。
 - 图谱候选抽取。
 - 世系图候选抽取。
+- 候选结果应用不在 AI 域执行，而由 Knowledge 读取候选并落正式结果。
 
 Discovery 调用入口：
 
@@ -135,6 +142,7 @@ Discovery 调用入口：
 
 - `WorkerAiClient` 适配 Python workers 内部 HTTP 和 SSE 接口。
 - AI 域向 workers 传入主服务或备用服务的模型配置、调用参数、渲染后 messages、结构化输出 schema 和完整上下文。
+- Knowledge 三个稳定 usecase path 为 `/internal/ai/knowledge/relation-extraction`、`/internal/ai/knowledge/graph-extraction` 和 `/internal/ai/knowledge/lineage-extraction`。
 - workers 内部执行 LangGraph；AI 域不直接依赖 workers 内部 graph 实现。
 - AI 域与 workers 的协议见 [`WORKERS-AI-INTERFACE.md`](../20-interfaces/WORKERS-AI-INTERFACE.md)。
 - Repository 持久化 AI 配置、提示词、调用记录和候选结果。
@@ -144,7 +152,7 @@ Discovery 调用入口：
 
 ## Data Ownership
 
-AI 是 `ai_*` 表的唯一写入方。正式内容写入由 Classics 在用户确认后完成。
+AI 是 `ai_*` 表的唯一写入方。正式内容写入由 Classics 或 Knowledge 在用户确认或业务编排后完成。
 
 Discovery 问答会话、消息和来源由 Discovery 写入。Knowledge 标签、实体、关系、图谱版本和质量指标由 Knowledge 写入。workers 不写入任何业务表。
 

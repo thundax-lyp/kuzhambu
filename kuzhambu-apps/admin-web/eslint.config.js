@@ -28,7 +28,17 @@ const SERVICE_METHOD_VERBS = [
     "refresh",
     "load",
     "request",
-    "latest"
+    "latest",
+    "apply",
+    "reject",
+    "review",
+    "approve",
+    "recover",
+    "submit",
+    "confirm",
+    "cancel",
+    "publish",
+    "revoke"
 ];
 
 const localRules = {

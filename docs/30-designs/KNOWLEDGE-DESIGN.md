@@ -2,7 +2,7 @@
 
 ## Purpose
 
-本文档定义 Knowledge 域设计，覆盖标签治理、同义词、实体关系精修和三才图会知识图谱。
+本文档定义 Knowledge 域当前已落地设计，覆盖标签治理、同义词和知识抽取任务闭环。
 
 ## Module
 
@@ -16,7 +16,7 @@ kuzhambu-servers/biz/knowledge/
 
 ## Business Boundary
 
-Knowledge 拥有统一标签、同义词、实体、关系、精修状态、图谱提取版本、质量报告和世系图。Knowledge 消费 Classics 内容和 AI 提取能力，但不拥有正式内容主数据。对于 Classics 通用标签，Knowledge 负责统一标签解释权、别名解析、自动创建策略和内容引用投影。
+Knowledge 拥有统一标签、同义词、知识抽取任务、图谱版本以及正式实体、关系和世系事实。Knowledge 消费 Classics 内容和 AI 提取能力，但不拥有正式内容主数据。对于 Classics 通用标签，Knowledge 负责统一标签解释权、别名解析、自动创建策略和内容引用投影；对于知识抽取候选结果，Knowledge 负责任务台账、候选应用和正式知识事实落库。
 
 ## DDD Model
 
@@ -25,13 +25,12 @@ Knowledge 拥有统一标签、同义词、实体、关系、精修状态、图�
 - `TagAlias`
 - `TagReviewItem`
 - `Synonym`
-- `Entity`
-- `Relation`
-- `RefinementTask`
 - `GraphExtractionTask`
 - `GraphVersion`
-- `GraphQualityReport`
-- `LineageGraph`
+- `KnowledgeEntity`
+- `KnowledgeRelation`
+- `KnowledgeLineageNode`
+- `KnowledgeLineageRelation`
 
 ## Data Model
 
@@ -47,10 +46,8 @@ Knowledge 拥有统一标签、同义词、实体、关系、精修状态、图�
 - `knowledge_synonym`
 - `knowledge_entity`
 - `knowledge_relation`
-- `knowledge_refinement_task`
 - `knowledge_graph_extraction_task`
 - `knowledge_graph_version`
-- `knowledge_graph_quality_report`
 - `knowledge_lineage_node`
 - `knowledge_lineage_relation`
 
@@ -58,12 +55,9 @@ Knowledge 拥有统一标签、同义词、实体、关系、精修状态、图�
 
 - `TagApplicationService`
 - `SynonymApplicationService`
-- `DataRefinementApplicationService`
-- `KnowledgeGraphApplicationService`
-- `GraphQualityApplicationService`
-- `LineageGraphApplicationService`
+- `KnowledgeGraphExtractionApplicationService`
 
-Application 层负责标签治理、同义词扩展、人工精修优先级、图谱提取任务、质量指标更新和世系图展示。
+Application 层负责标签治理、同义词扩展、知识抽取任务编排、AI 候选状态回填、候选结果应用和图谱版本关联。
 
 跨域协作语义：
 
@@ -77,18 +71,17 @@ Admin 入口：
 
 - 标签治理。
 - 同义词维护。
-- 数据精修工作台。
-- 图谱生成、质量报告和世系图管理。
+- 知识抽取任务创建、分页、详情和候选应用。
 
 Portal 入口：
 
-- 图谱浏览和标签相关只读能力按授权开放。
+- 当前仅开放标签相关只读能力；图谱浏览未在当前交付阈值内落地。
 
 ## Infrastructure Layer
 
 - Repository 持久化 `knowledge_*` 表。
-- 图谱可视化读模型由 infra 组装。
-- AI 提取通过 AI application 能力触发。
+- AI 提取通过 `KnowledgeAiExtractionDomainService` 协作语义触发。
+- `KnowledgeGraphCandidateApplySupport` 负责把候选 payload 应用到 `knowledge_entity`、`knowledge_relation`、`knowledge_graph_version`、`knowledge_lineage_node` 和 `knowledge_lineage_relation`。
 
 ## Data Ownership
 
@@ -102,9 +95,9 @@ Knowledge 是 `knowledge_*` 表的唯一写入方。Classics 删除或归档内�
 ## Observability
 
 - 标签审核、合并、废弃和精修保存通过 System 审计记录。
-- 图谱提取任务记录进度、版本、失败原因和更新时间。
+- 图谱提取任务记录 `aiCallId`、`aiCandidateId`、失败原因、完成时间和应用时间。
 
 ## Acceptance
 
-- 标签、同义词、实体关系和图谱质量在一个业务域内闭合。
-- 搜索和问答可消费 Knowledge 增强能力，但不依赖图谱作为前置。
+- 标签、同义词、知识抽取任务和正式知识事实在一个业务域内闭合。
+- 搜索和问答可消费 Knowledge 增强能力，但当前不依赖图谱浏览或质量报告作为前置。
