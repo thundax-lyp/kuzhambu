@@ -1,9 +1,9 @@
 package com.thundax.kuzhambu.system.application.audit.runtime;
 
-import com.thundax.kuzhambu.system.application.audit.annotation.AuditLog;
+import com.thundax.kuzhambu.common.audit.annotation.AuditLog;
+import com.thundax.kuzhambu.common.audit.model.valueobject.AuditSnapshot;
 import com.thundax.kuzhambu.system.application.audit.command.CreateAuditLogCommand;
 import com.thundax.kuzhambu.system.application.audit.service.AuditApplicationService;
-import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditSnapshot;
 import java.lang.reflect.Method;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
