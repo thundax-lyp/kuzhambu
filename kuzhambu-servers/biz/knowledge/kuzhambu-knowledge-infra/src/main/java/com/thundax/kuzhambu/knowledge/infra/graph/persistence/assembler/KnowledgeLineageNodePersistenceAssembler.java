@@ -53,6 +53,8 @@ public final class KnowledgeLineageNodePersistenceAssembler {
     public static List<KnowledgeLineageNode> toDomainList(List<KnowledgeLineageNodeDO> dataObjects) {
         return dataObjects == null
                 ? List.of()
-                : dataObjects.stream().map(KnowledgeLineageNodePersistenceAssembler::toDomain).toList();
+                : dataObjects.stream()
+                        .map(KnowledgeLineageNodePersistenceAssembler::toDomain)
+                        .toList();
     }
 }

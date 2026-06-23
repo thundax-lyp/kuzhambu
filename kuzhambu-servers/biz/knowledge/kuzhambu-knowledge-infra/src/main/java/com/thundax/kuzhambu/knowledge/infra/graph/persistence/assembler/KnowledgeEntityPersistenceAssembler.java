@@ -51,6 +51,8 @@ public final class KnowledgeEntityPersistenceAssembler {
     public static List<KnowledgeEntity> toDomainList(List<KnowledgeEntityDO> dataObjects) {
         return dataObjects == null
                 ? List.of()
-                : dataObjects.stream().map(KnowledgeEntityPersistenceAssembler::toDomain).toList();
+                : dataObjects.stream()
+                        .map(KnowledgeEntityPersistenceAssembler::toDomain)
+                        .toList();
     }
 }

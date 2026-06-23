@@ -15,7 +15,8 @@ public final class GraphVersionPersistenceAssembler {
         GraphVersionDO dataObject = new GraphVersionDO();
         dataObject.setId(entity.getId());
         dataObject.setVersionId(entity.getVersionId());
-        dataObject.setTaskId(entity.getTaskId() == null ? null : entity.getTaskId().value());
+        dataObject.setTaskId(
+                entity.getTaskId() == null ? null : entity.getTaskId().value());
         dataObject.setCandidateId(entity.getCandidateId());
         dataObject.setTaskType(entity.getTaskType());
         dataObject.setScopeType(entity.getScopeType());
