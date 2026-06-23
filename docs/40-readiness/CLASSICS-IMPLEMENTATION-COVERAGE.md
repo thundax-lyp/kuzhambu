@@ -23,7 +23,7 @@
 - 三才图会初始化数据 SQL 已由 JSON 生成并导入开发数据库。
 - JSON 快照和转换脚本已保留。
 - Classics 服务实现阶段已按 `domain -> application -> infra -> interface -> starter -> verification` 拆分并交付阶段结果。
-- 关键架构决策已确认：不做读写分离、Repository 统一命名、业务表不放审计字段、状态使用 `varchar`、`priority` 表内唯一且不参与 KEY、三才图会新增条目使用数据库自增主键。
+- 关键架构决策已确认：不做读写分离、Repository 统一命名、业务表不放审计字段、状态使用 `varchar`、三才图会新增条目使用数据库自增主键；其中 `classics_content_tag.priority` 已收敛为 `content_type + content_id` 作用域内唯一。
 - 导出和静态展示已打通 worker 渲染并写入 Storage；当前已接入导出任务下载门禁与过期控制（过期禁读、前端状态显示），静态展示产物支持下载，回收策略待后续定稿。
 - 分享访问首版支持正式版本绑定和快照字段入库能力（`content_version_id`、`content_version_no`、`title_snapshot`、`content_snapshot_json`）。
 - Admin/Portal starter 已扫描 Classics 的 application/infra/interface 包，启动路径与装配可用。
@@ -100,9 +100,9 @@
 | 列表浏览和关键词搜索 | 已完成 | 列表、关键词/标签/可见性筛选与分页已实现；Admin Web 已支持标题/分类/可见性/时间筛选、分页和关键词云点击筛选 | 无 | Classics, Admin Web |
 | 详情聚合查询 | 已完成 | 详情查询和关键词查询已实现；Admin Web 已组合详情、关键词和正文预览信息 | 无 | Classics, Admin Web |
 | Markdown 安全渲染 | 已完成 | `content_format` 与内容字段模型可追踪；Admin Web 已封装富文本展示控件，使用 Markdown/HTML 渲染与内容清洗策略展示正文 | 无 | Classics, Admin Web |
-| 标签云筛选 | 部分完成 | 通用标签模型、关键词云接口与状态筛选已实现；关键词云响应固定为 `List<KeywordCloudItem>`，字段为 `keyword` 和 `count` | 标签云权限过滤与输出限缩未实现 | Classics, Knowledge, System |
+| 标签云筛选 | 部分完成 | 通用标签模型、关键词云接口与状态筛选已实现；关键词云响应固定为 `List<KeywordCloudItem>`，字段为 `keyword` 和 `count` | 基于统一标签的真实标签云聚合、标签云权限过滤与输出限缩未实现 | Classics, Knowledge, System |
 | 批量修改公开或私有状态 | 部分完成 | 可见性枚举与变更能力已具备 | 批量结果、失败原因和权限过滤未实现 | Classics, System |
-| 摘要、标签和问答对维护 | 部分完成 | 通用内容 tag/qa API 已可复用，摘要字段已覆盖；通用标签写路径已接通 Knowledge 协作与内容引用同步 | 页面级内联维护链路与版本确认未完整接入 | Classics, Knowledge |
+| 摘要、标签和问答对维护 | 部分完成 | 通用内容 tag/qa API 已可复用，摘要字段已覆盖；通用标签写路径已接通 Knowledge 协作与内容引用同步 | 页面级标签/问答内联维护链路与版本确认未完整接入 | Classics, Knowledge |
 | 版本历史、版本对比和历史恢复 | 部分完成 | 通用版本模型已建 | 版本对比接口与恢复生成策略未实现 | Classics |
 | 分类、标签、筛选结果或选中条目导出 | 部分完成 | 任务创建与导出参数已支持 | 仅记录任务，产物生成与下载未完成 | Classics, Worker, Storage |
 
