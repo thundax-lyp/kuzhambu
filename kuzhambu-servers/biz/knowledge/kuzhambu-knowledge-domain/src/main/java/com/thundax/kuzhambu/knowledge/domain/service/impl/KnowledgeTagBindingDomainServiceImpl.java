@@ -22,7 +22,9 @@ import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagRepository;
 import java.util.Date;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Service;
 
+@Service
 public class KnowledgeTagBindingDomainServiceImpl implements KnowledgeTagBindingDomainService {
     private static final TagCategoryId DEFAULT_CATEGORY_ID = TagCategoryId.of(1999L);
 

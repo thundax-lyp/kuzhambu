@@ -20,6 +20,7 @@ import com.thundax.kuzhambu.classics.application.content.service.ClassicsContent
 import com.thundax.kuzhambu.classics.application.content.support.AiCandidateQaPairPayload;
 import com.thundax.kuzhambu.classics.application.content.support.ClassicsAiCandidatePayloadParser;
 import com.thundax.kuzhambu.classics.application.content.support.ClassicsContentSnapshotAssembler;
+import com.thundax.kuzhambu.classics.application.content.support.ClassicsTagBindingSupport;
 import com.thundax.kuzhambu.classics.application.content.support.SancaiEntryVersionSnapshot;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiAssetApplicationService;
 import com.thundax.kuzhambu.classics.application.sancai.support.SancaiEntryVersionRestorer;
@@ -71,6 +72,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -98,6 +100,31 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     private final ClassicsContentSnapshotAssembler snapshotAssembler = new ClassicsContentSnapshotAssembler();
     private final AiCandidateDomainService aiCandidateDomainService;
     private final ClassicsAiCandidatePayloadParser aiCandidatePayloadParser;
+    private final ClassicsTagBindingSupport tagBindingSupport;
+
+    @Autowired
+    public ClassicsContentApplicationServiceImpl(
+            ClassicsContentRepository repository,
+            WangqiDocumentVersionRestorer wangqiDocumentVersionRestorer,
+            SancaiEntryVersionRestorer sancaiEntryVersionRestorer,
+            SancaiAssetApplicationService sancaiAssetApplicationService,
+            StorageApplicationService storageApplicationService,
+            WorkerRenderClient workerRenderClient,
+            StorageUploadStreamHelper storageUploadStreamHelper,
+            AiCandidateDomainService aiCandidateDomainService,
+            ClassicsTagBindingSupport tagBindingSupport) {
+        this.repository = repository;
+        this.wangqiDocumentVersionRestorer = wangqiDocumentVersionRestorer;
+        this.sancaiEntryVersionRestorer = sancaiEntryVersionRestorer;
+        this.sancaiAssetApplicationService = sancaiAssetApplicationService;
+        this.storageApplicationService = storageApplicationService;
+        this.workerRenderClient = workerRenderClient;
+        this.storageUploadStreamHelper = storageUploadStreamHelper;
+        this.aiCandidateDomainService = aiCandidateDomainService;
+        this.tagBindingSupport = tagBindingSupport;
+        this.objectMapper = new ObjectMapper().findAndRegisterModules();
+        this.aiCandidatePayloadParser = new ClassicsAiCandidatePayloadParser(this.objectMapper);
+    }
 
     public ClassicsContentApplicationServiceImpl(
             ClassicsContentRepository repository,
@@ -108,16 +135,16 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             WorkerRenderClient workerRenderClient,
             StorageUploadStreamHelper storageUploadStreamHelper,
             AiCandidateDomainService aiCandidateDomainService) {
-        this.repository = repository;
-        this.wangqiDocumentVersionRestorer = wangqiDocumentVersionRestorer;
-        this.sancaiEntryVersionRestorer = sancaiEntryVersionRestorer;
-        this.sancaiAssetApplicationService = sancaiAssetApplicationService;
-        this.storageApplicationService = storageApplicationService;
-        this.workerRenderClient = workerRenderClient;
-        this.storageUploadStreamHelper = storageUploadStreamHelper;
-        this.aiCandidateDomainService = aiCandidateDomainService;
-        this.objectMapper = new ObjectMapper().findAndRegisterModules();
-        this.aiCandidatePayloadParser = new ClassicsAiCandidatePayloadParser(this.objectMapper);
+        this(
+                repository,
+                wangqiDocumentVersionRestorer,
+                sancaiEntryVersionRestorer,
+                sancaiAssetApplicationService,
+                storageApplicationService,
+                workerRenderClient,
+                storageUploadStreamHelper,
+                aiCandidateDomainService,
+                null);
     }
 
     @Override
@@ -189,24 +216,49 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ClassicsContentTagId addTag(ContentTagCommand command) {
-        ClassicsContentTag tag = command.toEntity();
+        ClassicsContentTag tag = tagBindingSupport == null
+                ? command.toEntity()
+                : tagBindingSupport.bindManualTag(command, repository.maxTagPriority() + 1);
         tag.setId(null);
-        tag.setPriority(repository.maxTagPriority() + 1);
-        return repository.insertTag(tag);
+        if (tagBindingSupport == null) {
+            tag.setPriority(repository.maxTagPriority() + 1);
+        }
+        ClassicsContentTagId createdId = repository.insertTag(tag);
+        if (tagBindingSupport != null) {
+            tag.setId(createdId);
+            tagBindingSupport.syncTagRef(tag);
+        }
+        return createdId;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ClassicsContentTagId updateTag(ContentTagCommand command) {
-        ClassicsContentTag tag = command.toEntity();
+        ClassicsContentTag existing =
+                repository.getTagById(command == null ? null : ClassicsContentTagId.of(command.getId()));
+        ClassicsContentTag tag = tagBindingSupport == null
+                ? command.toEntity()
+                : tagBindingSupport.bindManualTag(command, existing == null ? null : existing.getPriority());
         repository.updateTag(tag);
+        if (tagBindingSupport != null) {
+            if (existing != null
+                    && existing.getTagId() != null
+                    && (tag.getTagId() == null || !existing.getTagId().equals(tag.getTagId()))) {
+                tagBindingSupport.removeTagRef(existing);
+            }
+            tagBindingSupport.syncTagRef(tag);
+        }
         return tag.getId();
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteTag(ClassicsContentTagId id) {
+        ClassicsContentTag existing = tagBindingSupport == null ? null : repository.getTagById(id);
         repository.deleteTagById(id);
+        if (tagBindingSupport != null) {
+            tagBindingSupport.removeTagRef(existing);
+        }
     }
 
     @Override

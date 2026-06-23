@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `classics/tag-app-manual`：接通手工标签到 Knowledge 的同步闭环
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-KNOWLEDGE-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/command/ContentTagCommand.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/service/impl/ClassicsContentApplicationServiceImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/support/ClassicsTagBindingSupport.java`
-    - 处理动作：在 Classics 应用层引入统一标签绑定支撑，确保手工标签新增、更新、删除都先解析/创建统一标签再同步 Knowledge 引用
-    - 验收点：手工标签流程不再只写本地表，应用层通过统一支撑完成 Classics 主事实与 Knowledge 引用同步
-    - 重要度：10/10
-
 - [ ] `classics/tag-repo-scope`：修复 Classics 标签仓储排序和查询作用域
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-KNOWLEDGE-CLOSURE.md`
