@@ -138,16 +138,16 @@
 
 新增后端接口：
 
-- `POST /api/knowledge/graph/extraction/request-relation`
-- `POST /api/knowledge/graph/extraction/request-graph`
-- `POST /api/knowledge/graph/extraction/request-lineage`
-- `GET /api/knowledge/graph/extraction/task/detail`
-- `POST /api/knowledge/graph/extraction/task/apply`
+- `POST /api/knowledge/graph-extraction/relation/request`
+- `POST /api/knowledge/graph-extraction/graph/request`
+- `POST /api/knowledge/graph-extraction/lineage/request`
+- `POST /api/knowledge/graph-extraction/task/get`
+- `POST /api/knowledge/graph-extraction/task/apply`
 
 接口职责：
 
-- `request-*`：创建任务并触发 AI 抽取
-- `task/detail`：查看任务状态和关联 AI 候选
+- `*/request`：创建任务并触发 AI 抽取
+- `task/get`：查看任务状态和关联 AI 候选
 - `task/apply`：应用候选结果到正式 Knowledge 表
 
 ### Admin Web

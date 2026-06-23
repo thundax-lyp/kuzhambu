@@ -135,7 +135,7 @@ describe("knowledge graph extraction service request contracts", () => {
         });
 
         await service.getTaskDetail({ taskId: 9001 });
-        expectLastCall("POST", "/knowledge/graph-extraction/task/detail", {
+        expectLastCall("POST", "/knowledge/graph-extraction/task/get", {
             taskId: 9001
         });
 

@@ -116,7 +116,7 @@ public class KnowledgeGraphExtractionController {
     })
     @HasPermission("knowledge:graph:view")
     @SysLogger(value = "抽取任务详情")
-    @PostMapping("task/detail")
+    @PostMapping("task/get")
     public GraphExtractionResponses.TaskResponse getTaskDetail(
             @Valid @RequestBody GraphExtractionRequests.TaskIdRequest request) {
         return KnowledgeGraphExtractionInterfaceAssembler.toResponse(

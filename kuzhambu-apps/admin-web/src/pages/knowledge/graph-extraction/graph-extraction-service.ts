@@ -47,7 +47,7 @@ export const pageTasks = (request: GraphExtractionTaskPageQuery = {}) => {
 
 export const getTaskDetail = (request: GraphExtractionTaskIdCommand) => {
     return postJson<GraphExtractionTaskRecord, GraphExtractionTaskIdCommand>(
-        `${API_PREFIX}/task/detail`,
+        `${API_PREFIX}/task/get`,
         {
             body: request
         }
