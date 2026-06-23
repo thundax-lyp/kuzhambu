@@ -297,3 +297,55 @@ CREATE TABLE IF NOT EXISTS `knowledge_refinement_relation_draft` (
     UNIQUE KEY `uk_knowledge_refinement_relation_task_key` (`refinement_task_id`, `relation_key`),
     KEY `idx_knowledge_refinement_relation_task_sort` (`refinement_task_id`, `sort_order`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='知识精修关系草稿表';
+
+CREATE TABLE IF NOT EXISTS `knowledge_refinement_lineage_node_draft` (
+    `id` bigint NOT NULL AUTO_INCREMENT,
+    `draft_id` bigint NOT NULL,
+    `refinement_task_id` bigint NOT NULL,
+    `node_id` bigint DEFAULT NULL,
+    `node_key` varchar(160) NOT NULL,
+    `origin_type` varchar(32) NOT NULL,
+    `operation_type` varchar(32) NOT NULL,
+    `name` varchar(128) NOT NULL,
+    `node_type` varchar(64) NOT NULL,
+    `generation` int DEFAULT NULL,
+    `gender` varchar(32) DEFAULT NULL,
+    `confirmation_status` varchar(32) NOT NULL,
+    `source_refs_json` json DEFAULT NULL,
+    `sort_order` int NOT NULL,
+    `created_by` bigint NOT NULL,
+    `created_at` datetime(3) NOT NULL,
+    `updated_by` bigint NOT NULL,
+    `updated_at` datetime(3) NOT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_knowledge_refinement_lineage_node_draft_id` (`draft_id`),
+    UNIQUE KEY `uk_knowledge_refinement_lineage_node_task_key` (`refinement_task_id`, `node_key`),
+    KEY `idx_knowledge_refinement_lineage_node_task_sort` (`refinement_task_id`, `sort_order`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='知识精修世系节点草稿表';
+
+CREATE TABLE IF NOT EXISTS `knowledge_refinement_lineage_relation_draft` (
+    `id` bigint NOT NULL AUTO_INCREMENT,
+    `draft_id` bigint NOT NULL,
+    `refinement_task_id` bigint NOT NULL,
+    `relation_id` bigint DEFAULT NULL,
+    `relation_key` varchar(256) NOT NULL,
+    `origin_type` varchar(32) NOT NULL,
+    `operation_type` varchar(32) NOT NULL,
+    `source_node_key` varchar(160) NOT NULL,
+    `target_node_key` varchar(160) NOT NULL,
+    `source_name` varchar(128) NOT NULL,
+    `target_name` varchar(128) NOT NULL,
+    `relation_type` varchar(64) NOT NULL,
+    `evidence` varchar(1024) DEFAULT NULL,
+    `confirmation_status` varchar(32) NOT NULL,
+    `source_refs_json` json DEFAULT NULL,
+    `sort_order` int NOT NULL,
+    `created_by` bigint NOT NULL,
+    `created_at` datetime(3) NOT NULL,
+    `updated_by` bigint NOT NULL,
+    `updated_at` datetime(3) NOT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_knowledge_refinement_lineage_relation_draft_id` (`draft_id`),
+    UNIQUE KEY `uk_knowledge_refinement_lineage_relation_task_key` (`refinement_task_id`, `relation_key`),
+    KEY `idx_knowledge_refinement_lineage_relation_task_sort` (`refinement_task_id`, `sort_order`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='知识精修世系关系草稿表';

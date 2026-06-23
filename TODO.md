@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `knowledge.sql,RefinementLineageNodeDraftDO.java,RefinementLineageRelationDraftDO.java,RefinementLineageNodeDraftRepositoryTest.java,RefinementLineageRelationDraftRepositoryTest.java`：新增世系草稿表持久化骨架
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`db/schema/knowledge.sql`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/refinement/persistence/dataobject/RefinementLineageNodeDraftDO.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/refinement/persistence/dataobject/RefinementLineageRelationDraftDO.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/test/java/com/thundax/kuzhambu/knowledge/infra/refinement/repository/impl/RefinementLineageNodeDraftRepositoryTest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/test/java/com/thundax/kuzhambu/knowledge/infra/refinement/repository/impl/RefinementLineageRelationDraftRepositoryTest.java`
-    - 处理动作：落世系节点草稿表和世系关系草稿表结构、DO 与基础仓储测试
-    - 验收点：世系草稿表按最终版字段定义完成落库并具备最小仓储验证
-    - 重要度：8/10
-
 - [ ] `knowledge.sql,QualityAnnotationDO.java,QualityAnnotationMapper.java,QualityAnnotationRepositoryTest.java`：新增质量标注表持久化骨架
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
