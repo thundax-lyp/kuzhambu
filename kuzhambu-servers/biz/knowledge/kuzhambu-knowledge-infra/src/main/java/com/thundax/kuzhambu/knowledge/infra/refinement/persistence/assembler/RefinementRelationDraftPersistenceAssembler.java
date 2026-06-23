@@ -65,6 +65,8 @@ public final class RefinementRelationDraftPersistenceAssembler {
     public static List<RefinementRelationDraft> toDomainList(List<RefinementRelationDraftDO> dataObjects) {
         return dataObjects == null
                 ? List.of()
-                : dataObjects.stream().map(RefinementRelationDraftPersistenceAssembler::toDomain).toList();
+                : dataObjects.stream()
+                        .map(RefinementRelationDraftPersistenceAssembler::toDomain)
+                        .toList();
     }
 }

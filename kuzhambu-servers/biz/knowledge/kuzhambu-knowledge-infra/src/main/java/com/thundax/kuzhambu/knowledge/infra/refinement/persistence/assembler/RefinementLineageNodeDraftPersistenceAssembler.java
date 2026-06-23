@@ -61,6 +61,8 @@ public final class RefinementLineageNodeDraftPersistenceAssembler {
     public static List<RefinementLineageNodeDraft> toDomainList(List<RefinementLineageNodeDraftDO> dataObjects) {
         return dataObjects == null
                 ? List.of()
-                : dataObjects.stream().map(RefinementLineageNodeDraftPersistenceAssembler::toDomain).toList();
+                : dataObjects.stream()
+                        .map(RefinementLineageNodeDraftPersistenceAssembler::toDomain)
+                        .toList();
     }
 }

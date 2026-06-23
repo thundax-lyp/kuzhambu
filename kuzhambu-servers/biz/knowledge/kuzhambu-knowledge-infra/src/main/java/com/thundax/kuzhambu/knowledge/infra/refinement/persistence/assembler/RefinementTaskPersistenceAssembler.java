@@ -39,7 +39,9 @@ public final class RefinementTaskPersistenceAssembler {
         }
         return new RefinementTaskDO(
                 entity.getId(),
-                entity.getRefinementTaskId() == null ? null : entity.getRefinementTaskId().value(),
+                entity.getRefinementTaskId() == null
+                        ? null
+                        : entity.getRefinementTaskId().value(),
                 entity.getTaskType(),
                 entity.getSourceContentType(),
                 entity.getSourceContentId(),
@@ -58,6 +60,10 @@ public final class RefinementTaskPersistenceAssembler {
     }
 
     public static List<RefinementTask> toDomainList(List<RefinementTaskDO> dataObjects) {
-        return dataObjects == null ? List.of() : dataObjects.stream().map(RefinementTaskPersistenceAssembler::toDomain).toList();
+        return dataObjects == null
+                ? List.of()
+                : dataObjects.stream()
+                        .map(RefinementTaskPersistenceAssembler::toDomain)
+                        .toList();
     }
 }

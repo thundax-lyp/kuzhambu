@@ -59,6 +59,8 @@ public final class RefinementEntityDraftPersistenceAssembler {
     public static List<RefinementEntityDraft> toDomainList(List<RefinementEntityDraftDO> dataObjects) {
         return dataObjects == null
                 ? List.of()
-                : dataObjects.stream().map(RefinementEntityDraftPersistenceAssembler::toDomain).toList();
+                : dataObjects.stream()
+                        .map(RefinementEntityDraftPersistenceAssembler::toDomain)
+                        .toList();
     }
 }
