@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `knowledge/taxonomy`：收敛合并后标签解析语义
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GOVERNANCE-READABLE-RESULTS.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/service/**`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/test/java/com/thundax/kuzhambu/knowledge/domain/service/**`
-    - 处理动作：让标签名和别名解析在命中已并入标签时自动回落到目标标签
-    - 验收点：合并后源标签名和既有别名仍能解析到目标标签，不进入新的可用集合
-    - 重要度：8/10
-
 - [ ] `knowledge/taxonomy`：落地标签废弃动作
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GOVERNANCE-READABLE-RESULTS.md`

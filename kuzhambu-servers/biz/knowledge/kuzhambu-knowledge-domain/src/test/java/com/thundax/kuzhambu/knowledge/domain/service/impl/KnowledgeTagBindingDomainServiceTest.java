@@ -66,6 +66,44 @@ class KnowledgeTagBindingDomainServiceTest {
     }
 
     @Test
+    void resolveTagByNameOrAliasShouldFollowMergedDirectTag() {
+        TagRepository tagRepository = mock(TagRepository.class);
+        TagAliasRepository tagAliasRepository = mock(TagAliasRepository.class);
+        KnowledgeTagBindingDomainServiceImpl service = service(tagRepository, tagAliasRepository, null, null);
+        Tag mergedSource = enabledTag(1001L, "礼制");
+        mergedSource.setMergedToTagId(TagId.of(1002L));
+        Tag mergedTarget = enabledTag(1002L, "吉礼");
+        when(tagRepository.getByName("礼制")).thenReturn(mergedSource);
+        when(tagRepository.getByTagId(TagId.of(1002L))).thenReturn(mergedTarget);
+
+        Tag result = service.resolveTagByNameOrAlias("礼制");
+
+        assertSame(mergedTarget, result);
+    }
+
+    @Test
+    void resolveTagByNameOrAliasShouldFollowMergedAliasTarget() {
+        TagRepository tagRepository = mock(TagRepository.class);
+        TagAliasRepository tagAliasRepository = mock(TagAliasRepository.class);
+        KnowledgeTagBindingDomainServiceImpl service = service(tagRepository, tagAliasRepository, null, null);
+        TagAlias alias = new TagAlias();
+        alias.setId(TagAliasId.of(2L));
+        alias.setTagId(TagId.of(1001L));
+        alias.setName("旧别名");
+        Tag mergedSource = enabledTag(1001L, "旧礼制");
+        mergedSource.setMergedToTagId(TagId.of(1002L));
+        Tag mergedTarget = enabledTag(1002L, "新礼制");
+        when(tagRepository.getByName("旧别名")).thenReturn(null);
+        when(tagAliasRepository.getByName("旧别名")).thenReturn(alias);
+        when(tagRepository.getByTagId(TagId.of(1001L))).thenReturn(mergedSource);
+        when(tagRepository.getByTagId(TagId.of(1002L))).thenReturn(mergedTarget);
+
+        Tag result = service.resolveTagByNameOrAlias("旧别名");
+
+        assertSame(mergedTarget, result);
+    }
+
+    @Test
     void resolveOrCreateManualTagShouldCreateApprovedManualTagInDefaultCategory() {
         TagRepository tagRepository = mock(TagRepository.class);
         TagCategoryRepository tagCategoryRepository = mock(TagCategoryRepository.class);
