@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `knowledge/taxonomy`：落地标签合并影响读取
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GOVERNANCE-READABLE-RESULTS.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/taxonomy/**`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/taxonomy/**`
-    - 处理动作：基于现有 tag、alias、content ref、review item 聚合实现合并影响读取
-    - 验收点：后端可返回源标签、目标标签、别名迁移、内容引用和治理影响预览结果
-    - 重要度：8/10
-
 - [ ] `knowledge/taxonomy`：定义标签合并领域语义
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GOVERNANCE-READABLE-RESULTS.md`

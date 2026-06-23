@@ -34,6 +34,7 @@ import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.Synonym;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.Tag;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.TagAlias;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.TagCategory;
+import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.TagContentRef;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.SynonymStatus;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.TagCategoryStatus;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.TagReviewStatus;
@@ -217,9 +218,24 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     @Override
     public TagMergePreviewResult previewTagMergeImpact(TagMergePreviewQuery query) {
         ensureCommand(query, "标签合并影响预览查询");
-        ensureId(query.getSourceTagId(), "sourceTagId");
-        ensureId(query.getTargetTagId(), "targetTagId");
-        throw new BizException("标签合并影响预览读模型尚未实现");
+        Tag sourceTag = ensureTagExists(query.getSourceTagId());
+        Tag targetTag = ensureTagExists(query.getTargetTagId());
+        List<TagAlias> aliasesToMerge = tagAliasRepository.listByTagId(sourceTag.getTagId());
+        List<TagContentRef> impactedContentRefs = tagContentRefRepository.listByTagId(sourceTag.getTagId());
+        int pendingReviewCount = sourceTag.getReviewStatus() == TagReviewStatus.PENDING ? 1 : 0;
+        int governedRecordCount = pendingReviewCount + aliasesToMerge.size() + impactedContentRefs.size();
+
+        return new TagMergePreviewResult(
+                TaxonomyApplicationAssembler.toResult(
+                        sourceTag, getCategoryName(sourceTag.getCategoryId()), impactedContentRefs.size()),
+                TaxonomyApplicationAssembler.toResult(
+                        targetTag,
+                        getCategoryName(targetTag.getCategoryId()),
+                        tagContentRefRepository.countByTagId(targetTag.getTagId())),
+                TaxonomyApplicationAssembler.toAliasResultList(aliasesToMerge),
+                TaxonomyApplicationAssembler.toContentRefResultList(impactedContentRefs),
+                pendingReviewCount,
+                governedRecordCount);
     }
 
     @Override
