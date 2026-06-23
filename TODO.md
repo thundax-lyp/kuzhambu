@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `knowledge-application/graph extraction contract`：定义知识抽取应用层契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-AI-WORKERS-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/.../KnowledgeGraphExtractionApplicationService.java`、`RequestRelationExtractionCommand.java`、`RequestGraphExtractionCommand.java`、`RequestLineageExtractionCommand.java`、`GraphExtractionTaskResult.java`
-    - 处理动作：定义三类抽取任务的应用层命令、结果与服务接口
-    - 验收点：application 层输入输出能完整表达 relation、graph、lineage 三类任务
-    - 重要度：8/10
-
 - [ ] `knowledge-application/graph extraction orchestration`：实现知识抽取任务编排
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-AI-WORKERS-CLOSURE.md`
