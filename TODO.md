@@ -75,14 +75,6 @@
     - 验收点：质量标注创建、更新、删除可被 System 审计追溯
     - 重要度：7/10
 
-- [ ] `refinement-types.ts,refinement-service.ts,refinement-service.test.ts`：实现前端契约层
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/refinement-types.ts`、`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/refinement-service.ts`、`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/refinement-service.test.ts`
-    - 处理动作：定义前端 refinement 类型、服务和服务契约测试
-    - 验收点：前端契约层覆盖 `GRAPH / RELATION / LINEAGE / ANNOTATION / QUALITY`
-    - 重要度：9/10
-
 - [ ] `refinement-filter-form.tsx,refinement-workbench-table.tsx,refinement-progress-summary.tsx`：实现精修列表区组件
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
