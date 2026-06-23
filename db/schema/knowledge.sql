@@ -74,6 +74,30 @@ CREATE TABLE IF NOT EXISTS `knowledge_synonym` (
     KEY `idx_knowledge_synonym_synonym_status` (`synonym`, `status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='同义词表';
 
+CREATE TABLE IF NOT EXISTS `knowledge_graph_extraction_task` (
+    `id` bigint NOT NULL AUTO_INCREMENT,
+    `task_id` bigint NOT NULL,
+    `task_type` varchar(32) NOT NULL,
+    `scope_type` varchar(32) DEFAULT NULL,
+    `scope_json` json DEFAULT NULL,
+    `source_content_type` varchar(32) NOT NULL,
+    `source_content_id` bigint NOT NULL,
+    `ai_call_id` bigint DEFAULT NULL,
+    `ai_candidate_id` bigint DEFAULT NULL,
+    `status` varchar(32) NOT NULL,
+    `error_type` varchar(64) DEFAULT NULL,
+    `error_message` varchar(1024) DEFAULT NULL,
+    `requested_by` bigint DEFAULT NULL,
+    `requested_at` datetime(3) NOT NULL,
+    `completed_at` datetime(3) DEFAULT NULL,
+    `applied_at` datetime(3) DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_knowledge_graph_extraction_task_task_id` (`task_id`),
+    KEY `idx_knowledge_graph_extraction_task_status_requested` (`status`, `requested_at`),
+    KEY `idx_knowledge_graph_extraction_task_source` (`source_content_type`, `source_content_id`),
+    KEY `idx_knowledge_graph_extraction_task_call_candidate` (`ai_call_id`, `ai_candidate_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='图谱抽取任务表';
+
 CREATE TABLE IF NOT EXISTS `knowledge_graph_version` (
     `id` bigint NOT NULL AUTO_INCREMENT,
     `version_id` bigint NOT NULL,
@@ -88,8 +112,8 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_version` (
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_knowledge_graph_version_version_id` (`version_id`),
     UNIQUE KEY `uk_knowledge_graph_version_task_candidate` (`task_id`, `candidate_id`),
-    UNIQUE KEY `uk_knowledge_graph_version_source_version` (`source_content_type`, `source_content_id`, `version_no`),
-    KEY `idx_knowledge_graph_version_source_status` (`source_content_type`, `source_content_id`, `status`)
+    UNIQUE KEY `uk_knowledge_graph_version_source_version` (`task_type`, `source_content_type`, `source_content_id`, `version_no`),
+    KEY `idx_knowledge_graph_version_source_status` (`task_type`, `source_content_type`, `source_content_id`, `status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='图谱正式版本表';
 
 CREATE TABLE IF NOT EXISTS `knowledge_entity` (
