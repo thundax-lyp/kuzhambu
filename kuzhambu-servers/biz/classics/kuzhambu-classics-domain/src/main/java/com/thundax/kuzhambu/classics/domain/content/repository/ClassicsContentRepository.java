@@ -23,9 +23,7 @@ public interface ClassicsContentRepository {
 
     List<ClassicsContentTag> listTags(String contentType, ClassicsContentId contentId, SortDirection sortDirection);
 
-    List<ClassicsContentTag> listTags(SortDirection sortDirection);
-
-    int maxTagPriority();
+    int maxTagPriority(String contentType, ClassicsContentId contentId);
 
     ClassicsContentTagId insertTag(ClassicsContentTag tag);
 
@@ -35,7 +33,7 @@ public interface ClassicsContentRepository {
 
     int updateTag(ClassicsContentTag tag);
 
-    int deleteTagById(ClassicsContentTagId id);
+    int deleteTagById(String contentType, ClassicsContentId contentId, ClassicsContentTagId id);
 
     List<ClassicsContentQaPair> listQaPairs(
             String contentType, ClassicsContentId contentId, SortDirection sortDirection);

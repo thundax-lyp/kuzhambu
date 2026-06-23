@@ -8,7 +8,7 @@
 
 ## Business Boundary
 
-Classics 拥有古籍内容主数据和内容上下文内的维护数据。Storage、AI、Knowledge、Discovery、System 只通过应用服务协作，不直接写入 Classics 主表。
+Classics 拥有古籍内容主数据和内容上下文内的维护数据。Storage、AI、Knowledge、Discovery、System 只通过应用服务协作，不直接写入 Classics 主表。对于通用内容标签，`classics_content_tag` 是内容绑定主事实；Knowledge 只提供统一标签解析、自动创建和内容引用投影协作。
 
 ## Cross Content Identity
 
@@ -22,6 +22,7 @@ Classics 拥有古籍内容主数据和内容上下文内的维护数据。Stora
 
 - 排序字段统一为 `priority int`，并建立单列唯一约束。
 - `priority` 只作为单表内全局排序值，不参与普通 KEY 或组合 KEY。
+- 例外：`classics_content_tag.priority` 按 `content_type + content_id` 作用域排序，不再作为全表唯一值解释。
 - 状态、类型、格式、可见性等业务枚举统一使用 `varchar`。
 - 只有纯 yes/no 技术标志使用 `tinyint(1)`；业务状态、业务类型、业务快照统一使用 `varchar`。
 - 绝对时间点使用 `datetime(3)`。
@@ -220,9 +221,16 @@ Classics 拥有古籍内容主数据和内容上下文内的维护数据。Stora
 | `tag_name_snapshot` | `varchar(128)` | UK(content_type, content_id, tag_name_snapshot), KEY | 标签展示和导出快照 |
 | `source` | `varchar(16)` |  | 区分 AI 提取和人工维护 |
 | `status` | `varchar(16)` |  | 标签引用状态 |
-| `priority` | `int` | UK | 标签展示排序 |
+| `priority` | `int` | UK(content_type, content_id, priority) | 标签展示排序 |
 
-约束：`id` 主键；`(content_type, content_id, tag_name_snapshot)` 唯一；`priority` 唯一。索引：`(content_type, content_id)`、`(tag_id, content_type)`、`(tag_name_snapshot, content_type)`。
+约束：`id` 主键；`(content_type, content_id, tag_name_snapshot)` 唯一；`(content_type, content_id, priority)` 唯一。索引：`(content_type, content_id)`、`(tag_id, content_type)`、`(tag_name_snapshot, content_type)`。
+
+协作规则：
+
+- `classics_content_tag` 作为内容标签绑定主事实保存 `tag_id`、`tag_name_snapshot`、`source`、`status` 和内容内排序。
+- 手工标签新增、更新、删除必须先经过 Knowledge 统一标签协作语义，再写入 Classics 主事实。
+- AI 标签确认不再直接按本地标签名重建，而是先解析或创建 Knowledge 统一标签，再写回 Classics。
+- `tag_name_snapshot` 只由 Classics 保存，用于内容展示、历史快照和导出，不回写 Knowledge 引用投影。
 
 ### classics_content_qa_pair
 

@@ -16,7 +16,7 @@ kuzhambu-servers/biz/knowledge/
 
 ## Business Boundary
 
-Knowledge 拥有统一标签、同义词、实体、关系、精修状态、图谱提取版本、质量报告和世系图。Knowledge 消费 Classics 内容和 AI 提取能力，但不拥有正式内容主数据。
+Knowledge 拥有统一标签、同义词、实体、关系、精修状态、图谱提取版本、质量报告和世系图。Knowledge 消费 Classics 内容和 AI 提取能力，但不拥有正式内容主数据。对于 Classics 通用标签，Knowledge 负责统一标签解释权、别名解析、自动创建策略和内容引用投影。
 
 ## DDD Model
 
@@ -42,6 +42,7 @@ Knowledge 拥有统一标签、同义词、实体、关系、精修状态、图�
 - `knowledge_tag`
 - `knowledge_tag_category`
 - `knowledge_tag_alias`
+- `knowledge_tag_content_ref`
 - `knowledge_tag_review_item`
 - `knowledge_synonym`
 - `knowledge_entity`
@@ -64,6 +65,12 @@ Knowledge 拥有统一标签、同义词、实体、关系、精修状态、图�
 
 Application 层负责标签治理、同义词扩展、人工精修优先级、图谱提取任务、质量指标更新和世系图展示。
 
+跨域协作语义：
+
+- `KnowledgeTagBindingDomainService` 提供统一标签解析、手工标签自动创建、AI 标签自动创建、内容引用同步和内容引用删除。
+- `knowledge_tag_content_ref` 是 Knowledge 侧派生引用模型，不承载 Classics 内容标签排序、绑定状态和标签展示快照。
+- Classics 通过协作语义回写内容引用，Knowledge taxonomy 后台 CRUD 不作为跨域调用入口。
+
 ## Interface Layer
 
 Admin 入口：
@@ -85,7 +92,12 @@ Portal 入口：
 
 ## Data Ownership
 
-Knowledge 是 `knowledge_*` 表的唯一写入方。Classics 删除或归档内容时，Knowledge 通过 application 协作更新来源引用和质量指标。
+Knowledge 是 `knowledge_*` 表的唯一写入方。Classics 删除或归档内容时，Knowledge 通过协作语义更新 `knowledge_tag_content_ref` 等来源引用和质量指标。
+
+协作兼容口径：
+
+- Knowledge 内容类型内部仍使用 `MING_CUSTOM`，但接受 Classics 传入的 `MING_CUSTOMS` 协作值。
+- Knowledge 标签来源内部仍使用 `AI_EXTRACTED`，但接受 Classics 传入的 `AI` 协作值。
 
 ## Observability
 

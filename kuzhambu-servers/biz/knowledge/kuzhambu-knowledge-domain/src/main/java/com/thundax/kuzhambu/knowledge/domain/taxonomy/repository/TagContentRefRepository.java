@@ -10,6 +10,8 @@ public interface TagContentRefRepository {
 
     List<TagContentRef> listByTagId(TagId tagId);
 
+    List<TagContentRef> listByContent(ContentType contentType, Long contentId);
+
     int countByTagId(TagId tagId);
 
     int countByTagAndContentTypeAndContentId(
@@ -18,4 +20,6 @@ public interface TagContentRefRepository {
     TagContentRefId insert(TagContentRef entity);
 
     int deleteById(TagContentRefId id);
+
+    int deleteByContent(ContentType contentType, Long contentId);
 }

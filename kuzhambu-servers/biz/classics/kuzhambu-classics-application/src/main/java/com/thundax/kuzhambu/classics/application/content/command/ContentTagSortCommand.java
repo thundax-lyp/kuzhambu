@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.application.content.command;
 
+import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentTagId;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import java.util.List;
@@ -14,6 +15,8 @@ import lombok.Setter;
 @AllArgsConstructor
 public class ContentTagSortCommand {
 
+    private String contentType;
+    private ClassicsContentId contentId;
     private List<ClassicsContentTagId> orderedIds;
     private SortDirection sortDirection;
 }

@@ -20,6 +20,7 @@ import com.thundax.kuzhambu.classics.application.content.service.ClassicsContent
 import com.thundax.kuzhambu.classics.application.content.support.AiCandidateQaPairPayload;
 import com.thundax.kuzhambu.classics.application.content.support.ClassicsAiCandidatePayloadParser;
 import com.thundax.kuzhambu.classics.application.content.support.ClassicsContentSnapshotAssembler;
+import com.thundax.kuzhambu.classics.application.content.support.ClassicsTagBindingSupport;
 import com.thundax.kuzhambu.classics.application.content.support.SancaiEntryVersionSnapshot;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiAssetApplicationService;
 import com.thundax.kuzhambu.classics.application.sancai.support.SancaiEntryVersionRestorer;
@@ -71,6 +72,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -98,7 +100,9 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     private final ClassicsContentSnapshotAssembler snapshotAssembler = new ClassicsContentSnapshotAssembler();
     private final AiCandidateDomainService aiCandidateDomainService;
     private final ClassicsAiCandidatePayloadParser aiCandidatePayloadParser;
+    private final ClassicsTagBindingSupport tagBindingSupport;
 
+    @Autowired
     public ClassicsContentApplicationServiceImpl(
             ClassicsContentRepository repository,
             WangqiDocumentVersionRestorer wangqiDocumentVersionRestorer,
@@ -107,7 +111,8 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             StorageApplicationService storageApplicationService,
             WorkerRenderClient workerRenderClient,
             StorageUploadStreamHelper storageUploadStreamHelper,
-            AiCandidateDomainService aiCandidateDomainService) {
+            AiCandidateDomainService aiCandidateDomainService,
+            ClassicsTagBindingSupport tagBindingSupport) {
         this.repository = repository;
         this.wangqiDocumentVersionRestorer = wangqiDocumentVersionRestorer;
         this.sancaiEntryVersionRestorer = sancaiEntryVersionRestorer;
@@ -116,6 +121,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         this.workerRenderClient = workerRenderClient;
         this.storageUploadStreamHelper = storageUploadStreamHelper;
         this.aiCandidateDomainService = aiCandidateDomainService;
+        this.tagBindingSupport = tagBindingSupport;
         this.objectMapper = new ObjectMapper().findAndRegisterModules();
         this.aiCandidatePayloadParser = new ClassicsAiCandidatePayloadParser(this.objectMapper);
     }
@@ -130,13 +136,15 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     public void sortTags(ContentTagSortCommand command) {
         SortDirection effectiveDirection =
                 command == null || command.getSortDirection() == null ? SortDirection.ASC : command.getSortDirection();
+        String contentType = command == null ? null : command.getContentType();
+        ClassicsContentId contentId = command == null ? null : command.getContentId();
         List<ClassicsContentTagId> orderedIdList =
                 command == null || command.getOrderedIds() == null ? Collections.emptyList() : command.getOrderedIds();
-        if (orderedIdList.isEmpty()) {
+        if (StringUtils.isBlank(contentType) || contentId == null || orderedIdList.isEmpty()) {
             throw sortEmptyInput();
         }
 
-        List<ClassicsContentTag> currentTags = repository.listTags(effectiveDirection);
+        List<ClassicsContentTag> currentTags = repository.listTags(contentType, contentId, effectiveDirection);
         if (currentTags == null || currentTags.isEmpty() || currentTags.size() != orderedIdList.size()) {
             throw sortMissingId();
         }
@@ -161,7 +169,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             }
         }
 
-        int temporaryPriority = repository.maxTagPriority() + 1;
+        int temporaryPriority = repository.maxTagPriority(contentType, contentId) + 1;
         for (int i = 0; i < currentOrderedIds.size(); i++) {
             ClassicsContentTagId targetId = orderedIdList.get(i);
             ClassicsContentTagId currentId = currentOrderedIds.get(i);
@@ -189,24 +197,61 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ClassicsContentTagId addTag(ContentTagCommand command) {
-        ClassicsContentTag tag = command.toEntity();
+        ClassicsContentId contentId = ClassicsContentId.of(command.getContentId());
+        int nextPriority = repository.maxTagPriority(command.getContentType().value(), contentId) + 1;
+        ClassicsContentTag tag;
+        if (tagBindingSupport == null) {
+            tag = command.toEntity();
+        } else if (command.getSource() == ClassicsContentSource.AI) {
+            tag = tagBindingSupport.bindAiTag(command, nextPriority);
+        } else {
+            tag = tagBindingSupport.bindManualTag(command, nextPriority);
+        }
         tag.setId(null);
-        tag.setPriority(repository.maxTagPriority() + 1);
-        return repository.insertTag(tag);
+        if (tagBindingSupport == null) {
+            tag.setPriority(nextPriority);
+        }
+        ClassicsContentTagId createdId = repository.insertTag(tag);
+        if (tagBindingSupport != null) {
+            tag.setId(createdId);
+            tagBindingSupport.syncTagRef(tag);
+        }
+        return createdId;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ClassicsContentTagId updateTag(ContentTagCommand command) {
-        ClassicsContentTag tag = command.toEntity();
+        ClassicsContentTag existing =
+                repository.getTagById(command == null ? null : ClassicsContentTagId.of(command.getId()));
+        ClassicsContentTag tag = tagBindingSupport == null
+                ? command.toEntity()
+                : tagBindingSupport.bindManualTag(command, existing == null ? null : existing.getPriority());
         repository.updateTag(tag);
+        if (tagBindingSupport != null) {
+            if (existing != null
+                    && existing.getTagId() != null
+                    && (tag.getTagId() == null || !existing.getTagId().equals(tag.getTagId()))) {
+                tagBindingSupport.removeTagRef(existing);
+            }
+            tagBindingSupport.syncTagRef(tag);
+        }
         return tag.getId();
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteTag(ClassicsContentTagId id) {
-        repository.deleteTagById(id);
+        ClassicsContentTag existing = repository.getTagById(id);
+        repository.deleteTagById(
+                existing == null || existing.getContentType() == null
+                        ? null
+                        : existing.getContentType().value(),
+                existing == null ? null : existing.getContentId(),
+                id);
+        if (tagBindingSupport != null) {
+            tagBindingSupport.removeTagRef(existing);
+        }
     }
 
     @Override
@@ -481,6 +526,11 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         }
         if (tags == null || tags.isEmpty()) {
             throw new BizException("AI候选标签为空");
+        }
+        if (tagBindingSupport != null) {
+            repository.listTags(contentType.value(), contentId, SortDirection.ASC).stream()
+                    .filter(tag -> tag != null && tag.getSource() == ClassicsContentSource.AI)
+                    .forEach(tagBindingSupport::removeTagRef);
         }
         repository.deleteAiTags(contentType.value(), contentId);
         for (String tagName : tags) {

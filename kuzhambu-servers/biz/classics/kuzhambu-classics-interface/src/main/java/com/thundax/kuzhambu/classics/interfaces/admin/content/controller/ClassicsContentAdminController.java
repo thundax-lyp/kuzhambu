@@ -117,6 +117,8 @@ public class ClassicsContentAdminController {
     @PostMapping("tags/sort")
     public Boolean sortTags(@Valid @RequestBody ClassicsContentTagSortRequest request) {
         service.sortTags(new ContentTagSortCommand(
+                request == null ? null : request.getContentType(),
+                ClassicsContentIdCodec.toDomain(request == null ? null : request.getContentId()),
                 RequestListHelper.map(
                         RequestListHelper.presentUnique(
                                 request == null ? null : request.getOrderedIds(),

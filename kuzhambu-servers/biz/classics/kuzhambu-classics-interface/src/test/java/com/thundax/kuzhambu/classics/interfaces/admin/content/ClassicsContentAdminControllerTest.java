@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.classics.application.content.command.AiCandidateApplyContentCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentExportCommand;
+import com.thundax.kuzhambu.classics.application.content.command.ContentTagSortCommand;
 import com.thundax.kuzhambu.classics.application.content.result.AiCandidateApplyContentResult;
 import com.thundax.kuzhambu.classics.application.content.result.ClassicsExportJobResult;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
@@ -126,6 +127,41 @@ class ClassicsContentAdminControllerTest {
     }
 
     @Test
+    void tagRequestsShouldMapToServiceCommandsAndResponses() {
+        ClassicsContentAdminController controller = controller();
+        ClassicsContentRequest addRequest = new ClassicsContentRequest();
+        addRequest.setContentType("SANCAI_ENTRY");
+        addRequest.setContentId(456L);
+        addRequest.setTagId(2001L);
+        addRequest.setTagNameSnapshot("礼制");
+        addRequest.setSource("MANUAL");
+        addRequest.setStatus("ACTIVE");
+
+        ClassicsContentResponse addResponse = controller.addTag(addRequest);
+        assertEquals(3001L, addResponse.getId());
+
+        ClassicsContentRequest updateRequest = new ClassicsContentRequest();
+        updateRequest.setId(3001L);
+        updateRequest.setContentType("SANCAI_ENTRY");
+        updateRequest.setContentId(456L);
+        updateRequest.setTagId(2002L);
+        updateRequest.setTagNameSnapshot("祭祀");
+        updateRequest.setSource("MANUAL");
+        updateRequest.setStatus("ACTIVE");
+
+        ClassicsContentResponse updateResponse = controller.updateTag(updateRequest);
+        assertEquals(3001L, updateResponse.getId());
+
+        JsonNode listed = OBJECT_MAPPER.valueToTree(
+                controller.listTags("SANCAI_ENTRY", 456L).get(0));
+        assertEquals(3001L, listed.get("id").asLong());
+        assertEquals("SANCAI_ENTRY", listed.get("contentType").asText());
+        assertEquals(456L, listed.get("contentId").asLong());
+        assertEquals("礼制", listed.get("tagNameSnapshot").asText());
+        assertEquals("ACTIVE", listed.get("status").asText());
+    }
+
+    @Test
     void controllerShouldProxyExportServiceAndSupportDownloadOrNotFound() throws Exception {
         ClassicsContentAdminController controller = controller();
         ClassicsContentRequest request = new ClassicsContentRequest();
@@ -159,6 +195,19 @@ class ClassicsContentAdminControllerTest {
         controller.downloadExportContent(9003L, false, expiredResponse);
 
         assertEquals(HttpServletResponse.SC_NOT_FOUND, expiredResponse.getStatus());
+    }
+
+    @Test
+    void sortTagsShouldMapScopedRequestToCommand() {
+        ClassicsContentAdminController controller = controller();
+        var request =
+                new com.thundax.kuzhambu.classics.interfaces.admin.content.controller.request
+                        .ClassicsContentTagSortRequest();
+        request.setContentType("SANCAI_ENTRY");
+        request.setContentId(456L);
+        request.setOrderedIds(List.of(2L, 1L));
+
+        assertTrue(controller.sortTags(request));
     }
 
     private static ClassicsContentAdminController controller() {
@@ -220,6 +269,63 @@ class ClassicsContentAdminControllerTest {
                         assertEquals("new summary", command.getResultPayload());
                         assertEquals("AI 应用：摘要", command.getChangeSummary());
                         return new AiCandidateApplyContentResult(ClassicsContentType.SANCAI_ENTRY, 456L, 789L, 3);
+                    }
+                    if ("addTag".equals(method.getName())) {
+                        var command =
+                                (com.thundax.kuzhambu.classics.application.content.command.ContentTagCommand) args[0];
+                        assertEquals(ClassicsContentType.SANCAI_ENTRY, command.getContentType());
+                        assertEquals(456L, command.getContentId());
+                        assertEquals(2001L, command.getTagId());
+                        assertEquals("礼制", command.getTagNameSnapshot());
+                        assertEquals("MANUAL", command.getSource().value());
+                        assertEquals("ACTIVE", command.getStatus().value());
+                        return com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentTagId.of(
+                                3001L);
+                    }
+                    if ("updateTag".equals(method.getName())) {
+                        var command =
+                                (com.thundax.kuzhambu.classics.application.content.command.ContentTagCommand) args[0];
+                        assertEquals(3001L, command.getId());
+                        assertEquals(ClassicsContentType.SANCAI_ENTRY, command.getContentType());
+                        assertEquals(456L, command.getContentId());
+                        assertEquals(2002L, command.getTagId());
+                        assertEquals("祭祀", command.getTagNameSnapshot());
+                        assertEquals("MANUAL", command.getSource().value());
+                        assertEquals("ACTIVE", command.getStatus().value());
+                        return com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentTagId.of(
+                                3001L);
+                    }
+                    if ("listTags".equals(method.getName())) {
+                        assertEquals("SANCAI_ENTRY", args[0]);
+                        assertEquals(
+                                456L,
+                                ((com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId)
+                                                args[1])
+                                        .value());
+                        var tag = new com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag();
+                        tag.setId(
+                                com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentTagId.of(
+                                        3001L));
+                        tag.setContentType(ClassicsContentType.SANCAI_ENTRY);
+                        tag.setContentId(
+                                com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId.of(
+                                        456L));
+                        tag.setTagNameSnapshot("礼制");
+                        tag.setStatus(
+                                com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentTagStatus
+                                        .ACTIVE);
+                        return List.of(tag);
+                    }
+                    if ("sortTags".equals(method.getName())) {
+                        ContentTagSortCommand command = (ContentTagSortCommand) args[0];
+                        assertEquals("SANCAI_ENTRY", command.getContentType());
+                        assertEquals(456L, command.getContentId().value());
+                        assertEquals(
+                                List.of(2L, 1L),
+                                command.getOrderedIds().stream()
+                                        .map(id -> id.value())
+                                        .toList());
+                        return null;
                     }
                     throw new UnsupportedOperationException(method.getName());
                 });

@@ -13,6 +13,9 @@ public enum ContentType {
     }
 
     public static ContentType from(String value) {
+        if ("MING_CUSTOMS".equalsIgnoreCase(value)) {
+            return MING_CUSTOM;
+        }
         return Arrays.stream(values())
                 .filter(item -> item.name().equalsIgnoreCase(value))
                 .findFirst()
