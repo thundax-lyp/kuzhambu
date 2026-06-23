@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web/knowledge extraction page shell`：搭建抽取任务页骨架
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-AI-WORKERS-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/graph-extraction-page.tsx`、`graph-extraction-page.css`、`src/router/index.tsx`、`graph-extraction-page.test.tsx`
-    - 处理动作：创建页面壳、路由入口与页面级基础测试
-    - 验收点：后台路由可进入知识抽取任务页且页面骨架稳定可渲染
-    - 重要度：7/10
-
 - [ ] `admin-web/knowledge extraction create actions`：支持三类抽取任务创建
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-AI-WORKERS-CLOSURE.md`
