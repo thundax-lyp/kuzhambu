@@ -1,0 +1,29 @@
+package com.thundax.kuzhambu.knowledge.domain.graph.model.entity;
+
+import java.util.Date;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class KnowledgeRelation {
+    private Long id;
+    private Long relationId;
+    private String relationKey;
+    private String sourceEntityKey;
+    private String targetEntityKey;
+    private String sourceName;
+    private String targetName;
+    private String relationType;
+    private String evidence;
+    private String confirmationStatus;
+    private Long latestVersionId;
+    private String sourceRefsJson;
+    private Date firstExtractedAt;
+    private Date lastExtractedAt;
+    private Date confirmedAt;
+}
