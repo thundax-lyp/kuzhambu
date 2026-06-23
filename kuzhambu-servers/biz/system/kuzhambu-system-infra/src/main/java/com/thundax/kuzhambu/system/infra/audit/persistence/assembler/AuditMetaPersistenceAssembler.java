@@ -1,9 +1,9 @@
 package com.thundax.kuzhambu.system.infra.audit.persistence.assembler;
 
+import com.thundax.kuzhambu.common.audit.model.enums.AuditAction;
 import com.thundax.kuzhambu.system.domain.audit.codec.AuditLogIdCodec;
 import com.thundax.kuzhambu.system.domain.audit.codec.AuditMetaIdCodec;
 import com.thundax.kuzhambu.system.domain.audit.model.entity.AuditMeta;
-import com.thundax.kuzhambu.system.domain.audit.model.enums.AuditAction;
 import com.thundax.kuzhambu.system.domain.audit.model.enums.AuditOperatorType;
 import com.thundax.kuzhambu.system.infra.audit.persistence.dataobject.AuditMetaDO;
 

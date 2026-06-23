@@ -9,16 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/audit/runtime/AuditSnapshotAssembler.java,kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/audit/runtime/AuditSnapshots.java,kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/audit/runtime/AuditExpressionEvaluator.java`：切换 system-application 旧快照工具引用
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-COMMON-AUDIT-REFACTOR.md`
-    - 范围对象：`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/audit/runtime/AuditSnapshotAssembler.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/audit/runtime/AuditSnapshots.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/audit/runtime/AuditExpressionEvaluator.java`
-    - 处理动作：让剩余运行时快照工具改用 `common-audit` 快照类型
-    - 验收点：`system-application` 旧快照工具不再引用 `system-domain` 审计值对象
-    - 重要度：8/10
-
-## 待审阅任务项
-
 - [ ] `kuzhambu-servers/biz/system/kuzhambu-system-infra/pom.xml,kuzhambu-servers/biz/system/kuzhambu-system-infra/src/main/java/com/thundax/kuzhambu/system/infra/audit/persistence/assembler/AuditLogPersistenceAssembler.java,kuzhambu-servers/biz/system/kuzhambu-system-infra/src/main/java/com/thundax/kuzhambu/system/infra/audit/persistence/assembler/AuditMetaPersistenceAssembler.java,kuzhambu-servers/biz/system/kuzhambu-system-infra/src/main/java/com/thundax/kuzhambu/system/infra/audit/repository/impl/AuditLogRepositoryImpl.java`：切换 system-infra 审计持久化引用
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-COMMON-AUDIT-REFACTOR.md`
@@ -26,6 +16,8 @@
     - 处理动作：切换持久化层到 `common-audit` 审计动作与快照类型
     - 验收点：`system-infra` 不再引用旧审计动作和快照值对象
     - 重要度：8/10
+
+## 待审阅任务项
 
 - [ ] `kuzhambu-servers/biz/system/kuzhambu-system-domain/src/main/java/com/thundax/kuzhambu/system/domain/audit/model/valueobject/AuditField.java,kuzhambu-servers/biz/system/kuzhambu-system-domain/src/main/java/com/thundax/kuzhambu/system/domain/audit/model/valueobject/AuditSnapshot.java,kuzhambu-servers/biz/system/kuzhambu-system-domain/src/main/java/com/thundax/kuzhambu/system/domain/audit/model/enums/AuditAction.java`：删除 system-domain 重复审计模型
     - 任务类型：执行任务
