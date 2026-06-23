@@ -9,16 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `kuzhambu-servers/common/kuzhambu-common-audit/src/main/java/com/thundax/kuzhambu/common/audit/model/valueobject/AuditSnapshot.java,kuzhambu-servers/common/kuzhambu-common-audit/src/main/java/com/thundax/kuzhambu/common/audit/runtime/AuditObjectLoader.java,kuzhambu-servers/common/kuzhambu-common-audit/src/main/java/com/thundax/kuzhambu/common/audit/runtime/AuditSnapshotAssembler.java,kuzhambu-servers/common/kuzhambu-common-audit/src/main/java/com/thundax/kuzhambu/common/audit/runtime/AuditObjectLoaderRegistry.java,kuzhambu-servers/common/kuzhambu-common-audit/src/main/java/com/thundax/kuzhambu/common/audit/runtime/AuditSnapshotAssemblerRegistry.java`：迁移审计快照与运行时 SPI
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-COMMON-AUDIT-REFACTOR.md`
-    - 范围对象：`kuzhambu-servers/common/kuzhambu-common-audit/src/main/java/com/thundax/kuzhambu/common/audit/model/valueobject/AuditSnapshot.java`、`kuzhambu-servers/common/kuzhambu-common-audit/src/main/java/com/thundax/kuzhambu/common/audit/runtime/AuditObjectLoader.java`、`kuzhambu-servers/common/kuzhambu-common-audit/src/main/java/com/thundax/kuzhambu/common/audit/runtime/AuditSnapshotAssembler.java`、`kuzhambu-servers/common/kuzhambu-common-audit/src/main/java/com/thundax/kuzhambu/common/audit/runtime/AuditObjectLoaderRegistry.java`、`kuzhambu-servers/common/kuzhambu-common-audit/src/main/java/com/thundax/kuzhambu/common/audit/runtime/AuditSnapshotAssemblerRegistry.java`
-    - 处理动作：迁移审计快照对象与自动加载 SPI
-    - 验收点：`common-audit` 可独立编译
-    - 重要度：7/10
-
-## 待审阅任务项
-
 - [ ] `kuzhambu-servers/common/kuzhambu-common-audit/src/main/java/com/thundax/kuzhambu/common/audit/runtime/AuditSnapshots.java,kuzhambu-servers/common/kuzhambu-common-audit/pom.xml`：迁移审计快照工具类
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-COMMON-AUDIT-REFACTOR.md`
@@ -26,6 +16,8 @@
     - 处理动作：迁移快照工具类并补齐 `common-audit` 依赖
     - 验收点：`AuditSnapshots` 编译通过且不依赖业务模块
     - 重要度：6/10
+
+## 待审阅任务项
 
 - [ ] `kuzhambu-servers/biz/system/kuzhambu-system-domain/pom.xml,kuzhambu-servers/biz/system/kuzhambu-system-domain/src/main/java/com/thundax/kuzhambu/system/domain/audit/model/entity/AuditLog.java,kuzhambu-servers/biz/system/kuzhambu-system-domain/src/main/java/com/thundax/kuzhambu/system/domain/audit/model/valueobject/AuditField.java,kuzhambu-servers/biz/system/kuzhambu-system-domain/src/main/java/com/thundax/kuzhambu/system/domain/audit/model/valueobject/AuditSnapshot.java,kuzhambu-servers/biz/system/kuzhambu-system-domain/src/main/java/com/thundax/kuzhambu/system/domain/audit/model/enums/AuditAction.java`：切换 system-domain 审计模型引用
     - 任务类型：执行任务
