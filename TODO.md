@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `KnowledgeEntityRepository.java,KnowledgeRelationRepository.java,KnowledgeEntityRepositoryImpl.java,KnowledgeRelationRepositoryImpl.java`：扩展正式实体与关系仓储读删能力
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/graph/repository/KnowledgeEntityRepository.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/graph/repository/KnowledgeRelationRepository.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/graph/repository/impl/KnowledgeEntityRepositoryImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/graph/repository/impl/KnowledgeRelationRepositoryImpl.java`
-    - 处理动作：为正式实体和关系仓储补 `listByVersionId` 与按业务键删除能力
-    - 验收点：精修初始化和应用回写可读取并裁剪正式实体与关系事实
-    - 重要度：9/10
-
 - [ ] `KnowledgeLineageNodeRepository.java,KnowledgeLineageRelationRepository.java,KnowledgeLineageNodeRepositoryImpl.java,KnowledgeLineageRelationRepositoryImpl.java`：扩展正式世系仓储读删能力
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`

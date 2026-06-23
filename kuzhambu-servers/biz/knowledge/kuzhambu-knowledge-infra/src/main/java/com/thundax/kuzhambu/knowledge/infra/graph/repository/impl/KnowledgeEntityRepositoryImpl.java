@@ -34,6 +34,13 @@ public class KnowledgeEntityRepositoryImpl implements KnowledgeEntityRepository 
     }
 
     @Override
+    public List<KnowledgeEntity> listByVersionId(Long versionId) {
+        QueryWrapper<KnowledgeEntityDO> wrapper = new QueryWrapper<>();
+        wrapper.eq("latest_version_id", versionId).orderByAsc("id");
+        return KnowledgeEntityPersistenceAssembler.toDomainList(mapper.selectList(wrapper));
+    }
+
+    @Override
     public KnowledgeEntity getByEntityId(Long entityId) {
         QueryWrapper<KnowledgeEntityDO> wrapper = new QueryWrapper<>();
         wrapper.eq("entity_id", entityId);
@@ -85,5 +92,12 @@ public class KnowledgeEntityRepositoryImpl implements KnowledgeEntityRepository 
                 mapper.insert(dataObject);
             }
         }
+    }
+
+    @Override
+    public int deleteByEntityKeys(Collection<String> entityKeys) {
+        QueryWrapper<KnowledgeEntityDO> wrapper = new QueryWrapper<>();
+        wrapper.in(entityKeys != null && !entityKeys.isEmpty(), "entity_key", entityKeys);
+        return mapper.delete(wrapper);
     }
 }

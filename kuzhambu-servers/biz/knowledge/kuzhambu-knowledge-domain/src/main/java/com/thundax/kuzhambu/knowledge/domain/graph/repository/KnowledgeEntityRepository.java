@@ -9,10 +9,14 @@ public interface KnowledgeEntityRepository {
 
     List<KnowledgeEntity> listByEntityKeys(Collection<String> entityKeys);
 
+    List<KnowledgeEntity> listByVersionId(Long versionId);
+
     KnowledgeEntity getByEntityId(Long entityId);
 
     PageResult<KnowledgeEntity> page(
             Long versionId, String keyword, String entityType, String confirmationStatus, int pageNo, int pageSize);
 
     void saveOrUpdateBatch(List<KnowledgeEntity> entities);
+
+    int deleteByEntityKeys(Collection<String> entityKeys);
 }
