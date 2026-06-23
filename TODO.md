@@ -19,14 +19,6 @@
     - 验收点：应用服务接口可稳定表达精修任务列表与详情结构
     - 重要度：10/10
 
-- [ ] `UpsertRefinementEntityCommand.java,ConfirmRefinementEntityCommand.java,DeleteRefinementEntityCommand.java,UpsertRefinementRelationCommand.java,ConfirmRefinementRelationCommand.java`：定义实体与关系写入命令模型
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/command/UpsertRefinementEntityCommand.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/command/ConfirmRefinementEntityCommand.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/command/DeleteRefinementEntityCommand.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/command/UpsertRefinementRelationCommand.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/command/ConfirmRefinementRelationCommand.java`
-    - 处理动作：定义实体与关系新增、更新、确认命令模型
-    - 验收点：实体与关系写入口具备稳定命令契约
-    - 重要度：9/10
-
 - [ ] `DeleteRefinementRelationCommand.java,UpsertRefinementLineageNodeCommand.java,UpsertRefinementLineageRelationCommand.java,UpsertQualityAnnotationCommand.java,QualitySummaryResult.java`：定义删除、世系与质量结果模型
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
