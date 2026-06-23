@@ -2,7 +2,19 @@ from typing import Any, TypedDict
 
 from langgraph.graph import END, START, StateGraph
 
-from kuzhambu_workers.schemas.ai import AiCapability, AiInvokeRequest, ResultFormat
+from kuzhambu_workers.schemas.ai import (
+    AiCapability,
+    AiInvokeRequest,
+    GraphExtractionPayload,
+    KnowledgeEntityCandidate,
+    KnowledgeEntryRef,
+    KnowledgeLineageNode,
+    KnowledgeRelationCandidate,
+    KnowledgeSourceSnippet,
+    LineageExtractionPayload,
+    RelationExtractionPayload,
+    ResultFormat,
+)
 
 
 class BasicGraphState(TypedDict, total=False):
@@ -49,6 +61,89 @@ def _result_format(capability: AiCapability) -> ResultFormat:
 
 
 def _placeholder_payload(request: AiInvokeRequest) -> str | dict[str, Any]:
+    if request.capability == AiCapability.RELATION_EXTRACTION:
+        return RelationExtractionPayload(
+            entities=[
+                KnowledgeEntityCandidate(
+                    name="候选实体",
+                    entityType="CONCEPT",
+                    description="基于输入文本提取的占位候选实体",
+                )
+            ],
+            relations=[
+                KnowledgeRelationCandidate(
+                    sourceName="候选实体",
+                    targetName="目标实体",
+                    relationType="RELATED_TO",
+                    evidence="输入文本中的关系线索占位片段",
+                )
+            ],
+            sourceSnippets=[
+                KnowledgeSourceSnippet(
+                    snippet="输入文本中的关系线索占位片段",
+                    sourceRef=_source_ref(request),
+                )
+            ],
+            warnings=["placeholder_only"],
+        ).model_dump(mode="json")
+    if request.capability == AiCapability.KNOWLEDGE_GRAPH:
+        return GraphExtractionPayload(
+            entities=[
+                KnowledgeEntityCandidate(
+                    name="候选实体",
+                    entityType="CONCEPT",
+                    description="基于输入文本提取的占位图谱实体",
+                )
+            ],
+            relations=[
+                KnowledgeRelationCandidate(
+                    sourceName="候选实体",
+                    targetName="目标实体",
+                    relationType="ASSOCIATED_WITH",
+                    evidence="输入文本中的图谱关系占位片段",
+                )
+            ],
+            entryRefs=[
+                KnowledgeEntryRef(
+                    contentType=request.input.contentType,
+                    contentId=request.input.contentId,
+                    title="输入内容引用占位",
+                )
+            ],
+            warnings=["placeholder_only"],
+        ).model_dump(mode="json")
+    if request.capability == AiCapability.LINEAGE_EXTRACTION:
+        return LineageExtractionPayload(
+            nodes=[
+                KnowledgeLineageNode(
+                    name="始祖节点",
+                    nodeType="PERSON",
+                    generation=1,
+                    gender=None,
+                ),
+                KnowledgeLineageNode(
+                    name="后代节点",
+                    nodeType="PERSON",
+                    generation=2,
+                    gender=None,
+                ),
+            ],
+            relations=[
+                KnowledgeRelationCandidate(
+                    sourceName="始祖节点",
+                    targetName="后代节点",
+                    relationType="PARENT_OF",
+                    evidence="输入文本中的世系线索占位片段",
+                )
+            ],
+            sourceSnippets=[
+                KnowledgeSourceSnippet(
+                    snippet="输入文本中的世系线索占位片段",
+                    sourceRef=_source_ref(request),
+                )
+            ],
+            warnings=["placeholder_only"],
+        ).model_dump(mode="json")
     if _result_format(request.capability) == ResultFormat.STRUCTURED:
         return {"capability": request.capability.value, "placeholder": True}
     if request.capability == AiCapability.IMAGE_GEN:
@@ -60,3 +155,9 @@ def _placeholder_payload(request: AiInvokeRequest) -> str | dict[str, Any]:
             "sha256": "",
         }
     return ""
+
+
+def _source_ref(request: AiInvokeRequest) -> str:
+    if request.input.contentId:
+        return f"{request.input.contentType}:{request.input.contentId}"
+    return request.input.contentType

@@ -33,6 +33,27 @@ def test_registry_returns_structured_placeholder_for_structured_capability() -> 
     }
 
 
+@pytest.mark.parametrize(
+    ("capability", "expected_keys"),
+    [
+        ("relation_extraction", {"entities", "relations", "sourceSnippets", "warnings"}),
+        ("knowledge_graph", {"entities", "relations", "entryRefs", "warnings"}),
+        ("lineage_extraction", {"nodes", "relations", "sourceSnippets", "warnings"}),
+    ],
+)
+def test_registry_returns_stable_payload_shape_for_knowledge_capabilities(
+    capability: str,
+    expected_keys: set[str],
+) -> None:
+    registry = GraphRegistry.build_default()
+    request = AiInvokeRequest.model_validate(_request_payload(capability))
+
+    result = registry.invoke(request)
+
+    assert result["format"] == "STRUCTURED"
+    assert set(result["payload"]) == expected_keys
+
+
 def test_registry_rejects_unregistered_capability() -> None:
     registry = GraphRegistry(graphs={})
     request = AiInvokeRequest.model_validate(_request_payload("translate"))

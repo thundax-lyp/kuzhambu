@@ -31,6 +31,9 @@ def test_knowledge_usecase_routes_accept_matching_request(monkeypatch, usecase) 
     assert payload["status"] == "SUCCEEDED"
     assert payload["capability"] == usecase.capability.value
     assert payload["result"]["format"] == usecase.output.value
+    expected_keys = _expected_payload_keys(usecase.capability)
+    if expected_keys is not None:
+        assert set(payload["result"]["payload"]) == expected_keys
 
 
 def test_knowledge_usecase_route_rejects_capability_mismatch(monkeypatch) -> None:
@@ -87,3 +90,13 @@ def _headers(body: bytes, path: str) -> dict[str, str]:
         "X-Kuzhambu-Timestamp": timestamp,
         "X-Kuzhambu-Signature": signature,
     }
+
+
+def _expected_payload_keys(capability: AiCapability) -> set[str] | None:
+    if capability == AiCapability.RELATION_EXTRACTION:
+        return {"entities", "relations", "sourceSnippets", "warnings"}
+    if capability == AiCapability.KNOWLEDGE_GRAPH:
+        return {"entities", "relations", "entryRefs", "warnings"}
+    if capability == AiCapability.LINEAGE_EXTRACTION:
+        return {"nodes", "relations", "sourceSnippets", "warnings"}
+    return None

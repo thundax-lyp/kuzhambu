@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `workers/knowledge extraction contract`：固化 workers 抽取输出契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-AI-WORKERS-CLOSURE.md`
-    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/schemas/ai.py`、`kuzhambu_workers/ai/graphs/basic.py`、`tests/test_ai_usecase_routes_knowledge.py`、`tests/test_graph_registry.py`
-    - 处理动作：为三类 Knowledge 抽取补齐结构化 schema、graph 注册与路由测试
-    - 验收点：workers 返回的 `result_payload` 字段名与结构满足稳定契约
-    - 重要度：9/10
-
 - [ ] `knowledge-application/task detail sync`：回填抽取任务状态与 AI 结果关联
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-AI-WORKERS-CLOSURE.md`

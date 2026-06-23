@@ -101,6 +101,58 @@ class AiResult(BaseModel):
     payload: Any
 
 
+class KnowledgeEntityCandidate(BaseModel):
+    name: str
+    entityType: str
+    description: str | None = None
+
+
+class KnowledgeRelationCandidate(BaseModel):
+    sourceName: str
+    targetName: str
+    relationType: str
+    evidence: str | None = None
+
+
+class KnowledgeSourceSnippet(BaseModel):
+    snippet: str
+    sourceRef: str | None = None
+
+
+class KnowledgeEntryRef(BaseModel):
+    contentType: str
+    contentId: str | None = None
+    title: str | None = None
+
+
+class KnowledgeLineageNode(BaseModel):
+    name: str
+    nodeType: str
+    generation: int | None = None
+    gender: str | None = None
+
+
+class RelationExtractionPayload(BaseModel):
+    entities: list[KnowledgeEntityCandidate] = Field(default_factory=list)
+    relations: list[KnowledgeRelationCandidate] = Field(default_factory=list)
+    sourceSnippets: list[KnowledgeSourceSnippet] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
+
+
+class GraphExtractionPayload(BaseModel):
+    entities: list[KnowledgeEntityCandidate] = Field(default_factory=list)
+    relations: list[KnowledgeRelationCandidate] = Field(default_factory=list)
+    entryRefs: list[KnowledgeEntryRef] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
+
+
+class LineageExtractionPayload(BaseModel):
+    nodes: list[KnowledgeLineageNode] = Field(default_factory=list)
+    relations: list[KnowledgeRelationCandidate] = Field(default_factory=list)
+    sourceSnippets: list[KnowledgeSourceSnippet] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
+
+
 class AiInvokeResponse(BaseModel):
     requestId: str
     traceId: str
