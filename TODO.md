@@ -35,14 +35,6 @@
     - 验收点：精修应用后正式事实、任务状态和删除裁剪口径符合 RUNBOOK
     - 重要度：10/10
 
-- [ ] `QualitySummaryAggregationSupport.java,KnowledgeGraphRefinementApplicationServiceImpl.java,QualitySummaryAggregationSupportTest.java`：实现运行时质量指标聚合
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/support/QualitySummaryAggregationSupport.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/service/impl/KnowledgeGraphRefinementApplicationServiceImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/refinement/QualitySummaryAggregationSupportTest.java`
-    - 处理动作：实现按任务运行时聚合 `entityCoverageRate`、`relationAccuracyRate`、`completenessRate`
-    - 验收点：`quality/summary` 返回三项质量指标并具备自动化验证
-    - 重要度：9/10
-
 - [ ] `RefinementEntityDraftAuditSnapshotAssembler.java,RefinementRelationDraftAuditSnapshotAssembler.java,RefinementEntityDraftAuditObjectLoader.java,RefinementRelationDraftAuditObjectLoader.java,RefinementAuditSnapshotAssemblerTest.java`：接入实体与关系审计快照
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
