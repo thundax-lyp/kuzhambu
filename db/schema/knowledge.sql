@@ -73,3 +73,80 @@ CREATE TABLE IF NOT EXISTS `knowledge_synonym` (
     KEY `idx_knowledge_synonym_term_status` (`term`, `status`),
     KEY `idx_knowledge_synonym_synonym_status` (`synonym`, `status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='同义词表';
+
+CREATE TABLE IF NOT EXISTS `knowledge_graph_version` (
+    `id` bigint NOT NULL AUTO_INCREMENT,
+    `version_id` bigint NOT NULL,
+    `task_id` bigint NOT NULL,
+    `candidate_id` bigint NOT NULL,
+    `task_type` varchar(32) NOT NULL,
+    `source_content_type` varchar(32) NOT NULL,
+    `source_content_id` bigint NOT NULL,
+    `version_no` int NOT NULL,
+    `status` varchar(32) NOT NULL,
+    `applied_at` datetime(3) NOT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_knowledge_graph_version_version_id` (`version_id`),
+    UNIQUE KEY `uk_knowledge_graph_version_task_candidate` (`task_id`, `candidate_id`),
+    UNIQUE KEY `uk_knowledge_graph_version_source_version` (`source_content_type`, `source_content_id`, `version_no`),
+    KEY `idx_knowledge_graph_version_source_status` (`source_content_type`, `source_content_id`, `status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='图谱正式版本表';
+
+CREATE TABLE IF NOT EXISTS `knowledge_entity` (
+    `id` bigint NOT NULL AUTO_INCREMENT,
+    `entity_id` bigint NOT NULL,
+    `version_id` bigint NOT NULL,
+    `name` varchar(128) NOT NULL,
+    `entity_type` varchar(64) NOT NULL,
+    `description` varchar(1024) DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_knowledge_entity_entity_id` (`entity_id`),
+    UNIQUE KEY `uk_knowledge_entity_version_name_type` (`version_id`, `name`, `entity_type`),
+    KEY `idx_knowledge_entity_version` (`version_id`),
+    KEY `idx_knowledge_entity_name` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='图谱实体表';
+
+CREATE TABLE IF NOT EXISTS `knowledge_relation` (
+    `id` bigint NOT NULL AUTO_INCREMENT,
+    `relation_id` bigint NOT NULL,
+    `version_id` bigint NOT NULL,
+    `source_name` varchar(128) NOT NULL,
+    `target_name` varchar(128) NOT NULL,
+    `relation_type` varchar(64) NOT NULL,
+    `evidence` varchar(1024) DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_knowledge_relation_relation_id` (`relation_id`),
+    UNIQUE KEY `uk_knowledge_relation_version_edge` (`version_id`, `source_name`, `target_name`, `relation_type`),
+    KEY `idx_knowledge_relation_version` (`version_id`),
+    KEY `idx_knowledge_relation_source_target` (`source_name`, `target_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='图谱关系表';
+
+CREATE TABLE IF NOT EXISTS `knowledge_lineage_node` (
+    `id` bigint NOT NULL AUTO_INCREMENT,
+    `node_id` bigint NOT NULL,
+    `version_id` bigint NOT NULL,
+    `name` varchar(128) NOT NULL,
+    `node_type` varchar(64) NOT NULL,
+    `generation` int DEFAULT NULL,
+    `gender` varchar(32) DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_knowledge_lineage_node_node_id` (`node_id`),
+    UNIQUE KEY `uk_knowledge_lineage_node_version_name_type` (`version_id`, `name`, `node_type`),
+    KEY `idx_knowledge_lineage_node_version` (`version_id`),
+    KEY `idx_knowledge_lineage_node_name` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='世系节点表';
+
+CREATE TABLE IF NOT EXISTS `knowledge_lineage_relation` (
+    `id` bigint NOT NULL AUTO_INCREMENT,
+    `relation_id` bigint NOT NULL,
+    `version_id` bigint NOT NULL,
+    `source_name` varchar(128) NOT NULL,
+    `target_name` varchar(128) NOT NULL,
+    `relation_type` varchar(64) NOT NULL,
+    `evidence` varchar(1024) DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_knowledge_lineage_relation_relation_id` (`relation_id`),
+    UNIQUE KEY `uk_knowledge_lineage_relation_version_edge` (`version_id`, `source_name`, `target_name`, `relation_type`),
+    KEY `idx_knowledge_lineage_relation_version` (`version_id`),
+    KEY `idx_knowledge_lineage_relation_source_target` (`source_name`, `target_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='世系关系表';
