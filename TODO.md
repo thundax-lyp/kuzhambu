@@ -33,14 +33,6 @@
     - 验收点：admin 接口可稳定接收三类任务请求并输出任务结果模型
     - 重要度：8/10
 
-- [ ] `ai-application/knowledge extraction service`：实现 Knowledge 抽取 AI 协作服务
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-AI-WORKERS-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-application/.../KnowledgeAiExtractionDomainServiceImpl.java`、`AiWorkerInvocationApplicationServiceImpl.java`、`KnowledgeAiExtractionDomainServiceImplTest.java`
-    - 处理动作：实现 Knowledge 抽取调用、候选结果写入与调用记录编排
-    - 验收点：AI 层能为 Knowledge 抽取写入 `ai_call_record` 与 `ai_candidate`
-    - 重要度：10/10
-
 - [ ] `workers/knowledge extraction contract`：固化 workers 抽取输出契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-AI-WORKERS-CLOSURE.md`
