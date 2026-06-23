@@ -19,14 +19,6 @@
     - 验收点：应用服务接口可稳定表达精修任务列表与详情结构
     - 重要度：10/10
 
-- [ ] `RefinementEntityResult.java,RefinementRelationResult.java,RefinementLineageNodeResult.java,RefinementLineageRelationResult.java`：定义草稿结果模型
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/result/RefinementEntityResult.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/result/RefinementRelationResult.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/result/RefinementLineageNodeResult.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/result/RefinementLineageRelationResult.java`
-    - 处理动作：定义实体、关系、世系节点和世系关系草稿结果模型
-    - 验收点：草稿详情结果模型覆盖四类对象
-    - 重要度：8/10
-
 - [ ] `RefinementDraftBootstrapSupport.java,KnowledgeGraphRefinementApplicationServiceImpl.java,KnowledgeGraphRefinementTaskOpenTest.java`：实现任务打开与草稿初始化
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
