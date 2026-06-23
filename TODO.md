@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web/knowledge`：接通正式实体、关系、世系列表与详情
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GOVERNANCE-READABLE-RESULTS.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/**`
-    - 处理动作：基于版本入口接通正式实体、关系和世系列表与详情
-    - 验收点：管理员可从版本详情下钻查看正式实体、关系和世系结果
-    - 重要度：7/10
-
 - [ ] `docs/knowledge`：同步覆盖状态并收口现场
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GOVERNANCE-READABLE-RESULTS.md`

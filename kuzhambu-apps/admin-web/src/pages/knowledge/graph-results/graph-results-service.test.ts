@@ -1,6 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as service from "./graph-results-service";
-import type { GraphVersionPageQuery } from "./graph-results-types";
+import type {
+    GraphEntityPageQuery,
+    GraphLineageNodePageQuery,
+    GraphLineageRelationPageQuery,
+    GraphRelationPageQuery,
+    GraphVersionPageQuery
+} from "./graph-results-types";
 
 interface CapturedCall {
     body: unknown;
@@ -96,6 +102,100 @@ describe("knowledge graph results service request contracts", () => {
             body: { versionId: 71 },
             method: "POST",
             path: "/knowledge/graph-extraction/version/get"
+        });
+    });
+
+    it("sends entity and relation requests", async () => {
+        const entityQuery: GraphEntityPageQuery = {
+            pageNo: 1,
+            pageSize: 20,
+            versionId: 71,
+            keyword: "孙悟空",
+            entityType: "PERSON",
+            confirmationStatus: "CONFIRMED"
+        };
+        const relationQuery: GraphRelationPageQuery = {
+            pageNo: 1,
+            pageSize: 20,
+            versionId: 71,
+            keyword: "师徒",
+            relationType: "MASTER_DISCIPLE",
+            confirmationStatus: "CONFIRMED"
+        };
+
+        await service.pageEntities(entityQuery);
+        expect(capturedCalls.at(-1)).toEqual({
+            body: entityQuery,
+            method: "POST",
+            path: "/knowledge/graph-extraction/entity/page"
+        });
+
+        await service.getEntityDetail({ entityId: 101 });
+        expect(capturedCalls.at(-1)).toEqual({
+            body: { entityId: 101 },
+            method: "POST",
+            path: "/knowledge/graph-extraction/entity/get"
+        });
+
+        await service.pageRelations(relationQuery);
+        expect(capturedCalls.at(-1)).toEqual({
+            body: relationQuery,
+            method: "POST",
+            path: "/knowledge/graph-extraction/relation/page"
+        });
+
+        await service.getRelationDetail({ relationId: 202 });
+        expect(capturedCalls.at(-1)).toEqual({
+            body: { relationId: 202 },
+            method: "POST",
+            path: "/knowledge/graph-extraction/relation/get"
+        });
+    });
+
+    it("sends lineage node and relation requests", async () => {
+        const nodeQuery: GraphLineageNodePageQuery = {
+            pageNo: 1,
+            pageSize: 20,
+            versionId: 71,
+            keyword: "贾宝玉",
+            nodeType: "PERSON",
+            confirmationStatus: "CONFIRMED"
+        };
+        const relationQuery: GraphLineageRelationPageQuery = {
+            pageNo: 1,
+            pageSize: 20,
+            versionId: 71,
+            keyword: "父子",
+            relationType: "PARENT_CHILD",
+            confirmationStatus: "CONFIRMED"
+        };
+
+        await service.pageLineageNodes(nodeQuery);
+        expect(capturedCalls.at(-1)).toEqual({
+            body: nodeQuery,
+            method: "POST",
+            path: "/knowledge/graph-extraction/lineage/node/page"
+        });
+
+        await service.getLineageNodeDetail({ nodeId: 301 });
+        expect(capturedCalls.at(-1)).toEqual({
+            body: { nodeId: 301 },
+            method: "POST",
+            path: "/knowledge/graph-extraction/lineage/node/get"
+        });
+
+        await service.pageLineageRelations(relationQuery);
+        expect(capturedCalls.at(-1)).toEqual({
+            body: relationQuery,
+            method: "POST",
+            path: "/knowledge/graph-extraction/lineage/relation/page"
+        });
+
+        await service.getLineageRelationDetail({ relationId: 302 });
+        expect(capturedCalls.at(-1)).toEqual({
+            body: { relationId: 302 },
+            method: "POST",
+            path: "/knowledge/graph-extraction/lineage/relation/get"
         });
     });
 });

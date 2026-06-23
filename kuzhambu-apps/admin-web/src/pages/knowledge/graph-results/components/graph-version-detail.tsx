@@ -1,4 +1,4 @@
-import { Descriptions } from "antd";
+import { Button, Descriptions } from "antd";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import type { GraphVersionRecord } from "../graph-results-types";
 
@@ -6,6 +6,7 @@ interface GraphVersionDetailProps {
     loading?: boolean;
     open: boolean;
     version?: GraphVersionRecord | null;
+    onOpenResults?: (version: GraphVersionRecord) => void;
     onClose: () => void;
 }
 
@@ -21,6 +22,7 @@ export const GraphVersionDetail = ({
     loading = false,
     open,
     version,
+    onOpenResults,
     onClose
 }: GraphVersionDetailProps) => {
     return (
@@ -30,6 +32,19 @@ export const GraphVersionDetail = ({
             size="middle"
             loading={loading}
             onClose={onClose}
+            footer={
+                <Button
+                    type="primary"
+                    disabled={!version}
+                    onClick={() => {
+                        if (version && onOpenResults) {
+                            onOpenResults(version);
+                        }
+                    }}
+                >
+                    查看此版本正式结果
+                </Button>
+            }
         >
             <Descriptions column={1} bordered size="small">
                 <Descriptions.Item label="版本号">{version?.versionId || "-"}</Descriptions.Item>

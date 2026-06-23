@@ -23,7 +23,52 @@ vi.mock("./graph-results-service", () => ({
                 versionNo: 2
             }
         ]
-    }))
+    })),
+    getVersionDetail: vi.fn(async () => ({
+        versionId: 71,
+        taskId: "31",
+        taskType: "GRAPH",
+        status: "APPLIED",
+        sourceContentType: "SANCAI_ENTRY",
+        sourceContentId: 1001,
+        versionNo: 2
+    })),
+    pageEntities: vi.fn(async () => ({
+        pageNo: 1,
+        pageSize: 20,
+        totalCount: 0,
+        totalPage: 0,
+        count: 0,
+        records: []
+    })),
+    getEntityDetail: vi.fn(async () => null),
+    pageRelations: vi.fn(async () => ({
+        pageNo: 1,
+        pageSize: 20,
+        totalCount: 0,
+        totalPage: 0,
+        count: 0,
+        records: []
+    })),
+    getRelationDetail: vi.fn(async () => null),
+    pageLineageNodes: vi.fn(async () => ({
+        pageNo: 1,
+        pageSize: 20,
+        totalCount: 0,
+        totalPage: 0,
+        count: 0,
+        records: []
+    })),
+    getLineageNodeDetail: vi.fn(async () => null),
+    pageLineageRelations: vi.fn(async () => ({
+        pageNo: 1,
+        pageSize: 20,
+        totalCount: 0,
+        totalPage: 0,
+        count: 0,
+        records: []
+    })),
+    getLineageRelationDetail: vi.fn(async () => null)
 }));
 
 describe("GraphResultsPage", () => {
@@ -56,5 +101,10 @@ describe("GraphResultsPage", () => {
         expect(await screen.findByLabelText("知识图谱版本表格")).toBeInTheDocument();
         expect(screen.getByText("71")).toBeInTheDocument();
         expect(screen.getByRole("button", { name: "查看详情" })).toBeInTheDocument();
+        expect(
+            screen.getByText(
+                "当前页已以图谱版本作为主入口，管理员可以从版本详情下钻审阅实体、关系和世系正式结果。"
+            )
+        ).toBeInTheDocument();
     });
 });
