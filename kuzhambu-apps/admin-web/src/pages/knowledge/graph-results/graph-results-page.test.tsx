@@ -1,9 +1,10 @@
 import { cleanup, render, screen } from "@testing-library/react";
-import { QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { App as AntdApp } from "antd";
+import type { ComponentType } from "react";
 import { replacePermissions } from "@/auth/permission-storage";
-import { queryClient } from "@/query/query-client";
 import { GraphResultsPage } from "./graph-results-page";
+import type { GraphVersionRecord } from "./graph-results-types";
 
 vi.mock("./graph-results-service", () => ({
     pageVersions: vi.fn(async () => ({
@@ -71,19 +72,96 @@ vi.mock("./graph-results-service", () => ({
     getLineageRelationDetail: vi.fn(async () => null)
 }));
 
+vi.mock("./components/graph-version-table", () => ({
+    GraphVersionTable: (({
+        versions,
+        onOpenDetail
+    }: {
+        versions: GraphVersionRecord[];
+        onOpenDetail: (version: GraphVersionRecord) => void;
+    }) => (
+        <div aria-label="知识图谱版本表格">
+            {versions.map((version) => (
+                <div key={version.versionId}>
+                    <span>{version.versionId}</span>
+                    <button type="button" onClick={() => onOpenDetail(version)}>
+                        查看详情
+                    </button>
+                </div>
+            ))}
+        </div>
+    )) as ComponentType<{
+        versions: GraphVersionRecord[];
+        onOpenDetail: (version: GraphVersionRecord) => void;
+    }>
+}));
+
+vi.mock("./components/graph-version-detail", () => ({
+    GraphVersionDetail: (() => null) as ComponentType
+}));
+
+vi.mock("./components/graph-entity-table", () => ({
+    GraphEntityTable: (() => null) as ComponentType
+}));
+
+vi.mock("./components/graph-entity-detail", () => ({
+    GraphEntityDetail: (() => null) as ComponentType
+}));
+
+vi.mock("./components/graph-relation-table", () => ({
+    GraphRelationTable: (() => null) as ComponentType
+}));
+
+vi.mock("./components/graph-relation-detail", () => ({
+    GraphRelationDetail: (() => null) as ComponentType
+}));
+
+vi.mock("./components/graph-lineage-node-table", () => ({
+    GraphLineageNodeTable: (() => null) as ComponentType
+}));
+
+vi.mock("./components/graph-lineage-node-detail", () => ({
+    GraphLineageNodeDetail: (() => null) as ComponentType
+}));
+
+vi.mock("./components/graph-lineage-relation-table", () => ({
+    GraphLineageRelationTable: (() => null) as ComponentType
+}));
+
+vi.mock("./components/graph-lineage-relation-detail", () => ({
+    GraphLineageRelationDetail: (() => null) as ComponentType
+}));
+
 describe("GraphResultsPage", () => {
     beforeEach(() => {
-        queryClient.clear();
+        const originalGetComputedStyle = window.getComputedStyle.bind(window);
+        vi.spyOn(window, "getComputedStyle").mockImplementation(((
+            element: Element,
+            pseudoElt?: string
+        ) =>
+            originalGetComputedStyle(
+                element,
+                pseudoElt === undefined ? undefined : null
+            )) as typeof window.getComputedStyle);
         replacePermissions(["knowledge:graph:view"]);
     });
 
     afterEach(() => {
         vi.restoreAllMocks();
-        queryClient.clear();
         cleanup();
     });
 
     it("renders graph version list entry", async () => {
+        const queryClient = new QueryClient({
+            defaultOptions: {
+                queries: {
+                    gcTime: Infinity,
+                    refetchOnWindowFocus: false,
+                    retry: false
+                }
+            }
+        });
+
         render(
             <QueryClientProvider client={queryClient}>
                 <AntdApp>
