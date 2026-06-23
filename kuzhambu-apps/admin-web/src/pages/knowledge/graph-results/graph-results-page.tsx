@@ -1,12 +1,45 @@
+import { useQuery } from "@tanstack/react-query";
 import { Alert, Card, Empty, Space, Tabs, Typography } from "antd";
+import { useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
+import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { KuzhambuPage } from "@/components/kuzhambu-page";
+import { GraphVersionDetail } from "./components/graph-version-detail";
+import { GraphVersionTable } from "./components/graph-version-table";
+import * as service from "./graph-results-service";
+import type { GraphVersionPageQuery, GraphVersionRecord } from "./graph-results-types";
 import "./graph-results-page.css";
 
 const { Paragraph, Text, Title } = Typography;
 
 export const GraphResultsPage = () => {
     const canViewGraph = hasPermission("knowledge:graph:view");
+    const [versionQuery] = useState<GraphVersionPageQuery>({
+        pageNo: DEFAULT_PAGE_NO,
+        pageSize: DEFAULT_PAGE_SIZE
+    });
+    const [detailVersionId, setDetailVersionId] = useState<number | null>(null);
+    const [detailOpen, setDetailOpen] = useState(false);
+
+    const versionPageQuery = useQuery({
+        queryKey: ["knowledge", "graph-results", "versions", versionQuery],
+        queryFn: () => service.pageVersions(versionQuery),
+        enabled: canViewGraph,
+        retry: false
+    });
+    const versionDetailQuery = useQuery({
+        queryKey: ["knowledge", "graph-results", "version-detail", detailVersionId],
+        queryFn: () => service.getVersionDetail({ versionId: detailVersionId || 0 }),
+        enabled: detailOpen && detailVersionId !== null,
+        retry: false
+    });
+
+    const versions = versionPageQuery.data?.records || [];
+
+    const openVersionDetail = (version: GraphVersionRecord) => {
+        setDetailVersionId(version.versionId);
+        setDetailOpen(true);
+    };
 
     return (
         <KuzhambuPage
@@ -19,7 +52,7 @@ export const GraphResultsPage = () => {
                 <Alert
                     banner
                     className="knowledge-graph-results-banner"
-                    message="本页将作为正式结果审阅台，与 taxonomy 治理台和抽取任务台保持独立边界。"
+                    title="本页将作为正式结果审阅台，与 taxonomy 治理台和抽取任务台保持独立边界。"
                     type="info"
                 />
 
@@ -45,14 +78,32 @@ export const GraphResultsPage = () => {
                                 key: "versions",
                                 label: "图谱版本",
                                 children: (
-                                    <Empty
-                                        description={
-                                            canViewGraph
-                                                ? "图谱版本列表即将接入，支持按任务类型、状态和来源内容筛选。"
-                                                : "当前账号暂无知识图谱查看权限。"
-                                        }
-                                        image={Empty.PRESENTED_IMAGE_SIMPLE}
-                                    />
+                                    <>
+                                        {canViewGraph && versions.length > 0 ? (
+                                            <GraphVersionTable
+                                                loading={versionPageQuery.isLoading}
+                                                versions={versions}
+                                                onOpenDetail={openVersionDetail}
+                                            />
+                                        ) : (
+                                            <Empty
+                                                description={
+                                                    canViewGraph
+                                                        ? "当前还没有图谱版本，可先在抽取任务台应用候选结果。"
+                                                        : "当前账号暂无知识图谱查看权限。"
+                                                }
+                                                image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                            />
+                                        )}
+                                        {detailOpen ? (
+                                            <GraphVersionDetail
+                                                loading={versionDetailQuery.isLoading}
+                                                open={detailOpen}
+                                                version={versionDetailQuery.data || null}
+                                                onClose={() => setDetailOpen(false)}
+                                            />
+                                        ) : null}
+                                    </>
                                 )
                             },
                             {

@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web/knowledge`：接通图谱版本列表和详情
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GOVERNANCE-READABLE-RESULTS.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/**`
-    - 处理动作：接通图谱版本读取 service contract、列表和详情交互
-    - 验收点：管理员可从图谱版本列表进入版本详情
-    - 重要度：7/10
-
 - [ ] `admin-web/knowledge`：接通正式实体、关系、世系列表与详情
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GOVERNANCE-READABLE-RESULTS.md`
