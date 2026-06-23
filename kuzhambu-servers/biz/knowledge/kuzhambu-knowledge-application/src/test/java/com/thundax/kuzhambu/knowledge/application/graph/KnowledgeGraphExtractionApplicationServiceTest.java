@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.knowledge.application.graph;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCallRecord;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
@@ -10,6 +11,7 @@ import com.thundax.kuzhambu.ai.domain.invocation.service.AiCandidateDomainServic
 import com.thundax.kuzhambu.ai.domain.knowledge.model.valueobject.KnowledgeAiExtractionRequest;
 import com.thundax.kuzhambu.ai.domain.knowledge.model.valueobject.KnowledgeAiExtractionResult;
 import com.thundax.kuzhambu.ai.domain.knowledge.service.KnowledgeAiExtractionDomainService;
+import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationExtractionCommand;
@@ -307,6 +309,66 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         assertEquals(2002L, detail.getRelationId());
         assertEquals("伏羲", detail.getSourceName());
         assertEquals("黄帝", detail.getTargetName());
+    }
+
+    @Test
+    void pageLineageNodesShouldExposeExplicitReadableNotReadyBoundary() {
+        KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
+                new FakeRepository(),
+                new FakeGraphVersionRepository(),
+                new FakeKnowledgeEntityRepository(),
+                new FakeKnowledgeRelationRepository(),
+                new FakeAiInvocationRepository(),
+                new FakeKnowledgeAiExtractionDomainService(),
+                new AiCandidateDomainService(new FakeAiInvocationRepository()),
+                null);
+
+        assertThrows(BizException.class, () -> service.pageLineageNodes(71L, "黄帝", "PERSON", "CONFIRMED", null));
+    }
+
+    @Test
+    void getLineageNodeDetailShouldExposeExplicitReadableNotReadyBoundary() {
+        KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
+                new FakeRepository(),
+                new FakeGraphVersionRepository(),
+                new FakeKnowledgeEntityRepository(),
+                new FakeKnowledgeRelationRepository(),
+                new FakeAiInvocationRepository(),
+                new FakeKnowledgeAiExtractionDomainService(),
+                new AiCandidateDomainService(new FakeAiInvocationRepository()),
+                null);
+
+        assertThrows(BizException.class, () -> service.getLineageNodeDetail(3001L));
+    }
+
+    @Test
+    void pageLineageRelationsShouldExposeExplicitReadableNotReadyBoundary() {
+        KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
+                new FakeRepository(),
+                new FakeGraphVersionRepository(),
+                new FakeKnowledgeEntityRepository(),
+                new FakeKnowledgeRelationRepository(),
+                new FakeAiInvocationRepository(),
+                new FakeKnowledgeAiExtractionDomainService(),
+                new AiCandidateDomainService(new FakeAiInvocationRepository()),
+                null);
+
+        assertThrows(BizException.class, () -> service.pageLineageRelations(71L, "黄帝", "ANCESTOR", "CONFIRMED", null));
+    }
+
+    @Test
+    void getLineageRelationDetailShouldExposeExplicitReadableNotReadyBoundary() {
+        KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
+                new FakeRepository(),
+                new FakeGraphVersionRepository(),
+                new FakeKnowledgeEntityRepository(),
+                new FakeKnowledgeRelationRepository(),
+                new FakeAiInvocationRepository(),
+                new FakeKnowledgeAiExtractionDomainService(),
+                new AiCandidateDomainService(new FakeAiInvocationRepository()),
+                null);
+
+        assertThrows(BizException.class, () -> service.getLineageRelationDetail(4001L));
     }
 
     @Test

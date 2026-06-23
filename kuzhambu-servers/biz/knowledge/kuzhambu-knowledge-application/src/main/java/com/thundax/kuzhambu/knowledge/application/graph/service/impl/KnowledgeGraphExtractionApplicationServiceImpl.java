@@ -18,6 +18,8 @@ import com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationE
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphVersionResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeEntityResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeLineageNodeResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeLineageRelationResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeRelationResult;
 import com.thundax.kuzhambu.knowledge.application.graph.service.KnowledgeGraphExtractionApplicationService;
 import com.thundax.kuzhambu.knowledge.application.graph.support.KnowledgeGraphCandidateApplySupport;
@@ -317,6 +319,28 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
             throw new BizException("Knowledge relation not found: " + relationId);
         }
         return toKnowledgeRelationResult(relation);
+    }
+
+    @Override
+    public PageResult<KnowledgeLineageNodeResult> pageLineageNodes(
+            Long versionId, String keyword, String nodeType, String confirmationStatus, PageQuery pageQuery) {
+        throw new BizException("Knowledge lineage node readable is not ready");
+    }
+
+    @Override
+    public KnowledgeLineageNodeResult getLineageNodeDetail(Long nodeId) {
+        throw new BizException("Knowledge lineage node readable is not ready");
+    }
+
+    @Override
+    public PageResult<KnowledgeLineageRelationResult> pageLineageRelations(
+            Long versionId, String keyword, String relationType, String confirmationStatus, PageQuery pageQuery) {
+        throw new BizException("Knowledge lineage relation readable is not ready");
+    }
+
+    @Override
+    public KnowledgeLineageRelationResult getLineageRelationDetail(Long relationId) {
+        throw new BizException("Knowledge lineage relation readable is not ready");
     }
 
     @Override

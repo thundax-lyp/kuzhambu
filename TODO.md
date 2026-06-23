@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `knowledge/graph`：定义正式世系读取契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GOVERNANCE-READABLE-RESULTS.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/graph/**`
-    - 处理动作：为正式世系列表与详情补齐 application 读契约、结果模型和测试
-    - 验收点：后端已稳定表达正式世系结果读取输入输出
-    - 重要度：8/10
-
 - [ ] `knowledge/graph`：落地正式世系读取
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GOVERNANCE-READABLE-RESULTS.md`

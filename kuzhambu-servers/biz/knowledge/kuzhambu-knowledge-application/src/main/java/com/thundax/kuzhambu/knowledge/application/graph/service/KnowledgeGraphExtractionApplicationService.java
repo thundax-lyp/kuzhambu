@@ -8,6 +8,8 @@ import com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationE
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphVersionResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeEntityResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeLineageNodeResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeLineageRelationResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeRelationResult;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
 
@@ -38,6 +40,16 @@ public interface KnowledgeGraphExtractionApplicationService {
             Long versionId, String keyword, String relationType, String confirmationStatus, PageQuery pageQuery);
 
     KnowledgeRelationResult getRelationDetail(Long relationId);
+
+    PageResult<KnowledgeLineageNodeResult> pageLineageNodes(
+            Long versionId, String keyword, String nodeType, String confirmationStatus, PageQuery pageQuery);
+
+    KnowledgeLineageNodeResult getLineageNodeDetail(Long nodeId);
+
+    PageResult<KnowledgeLineageRelationResult> pageLineageRelations(
+            Long versionId, String keyword, String relationType, String confirmationStatus, PageQuery pageQuery);
+
+    KnowledgeLineageRelationResult getLineageRelationDetail(Long relationId);
 
     GraphExtractionTaskResult applyTaskCandidate(GraphExtractionTaskId taskId);
 }
