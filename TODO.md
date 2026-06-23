@@ -9,15 +9,31 @@
 
 ## 当前任务项
 
-- [ ] `kuzhambu-servers/biz/system/kuzhambu-system-domain/pom.xml,kuzhambu-servers/biz/system/kuzhambu-system-domain/src/main/java/com/thundax/kuzhambu/system/domain/audit/model/entity/AuditLog.java,kuzhambu-servers/biz/system/kuzhambu-system-domain/src/main/java/com/thundax/kuzhambu/system/domain/audit/model/valueobject/AuditField.java,kuzhambu-servers/biz/system/kuzhambu-system-domain/src/main/java/com/thundax/kuzhambu/system/domain/audit/model/valueobject/AuditSnapshot.java,kuzhambu-servers/biz/system/kuzhambu-system-domain/src/main/java/com/thundax/kuzhambu/system/domain/audit/model/enums/AuditAction.java`：切换 system-domain 审计模型引用
+- [ ] `kuzhambu-servers/biz/system/kuzhambu-system-domain/pom.xml,kuzhambu-servers/biz/system/kuzhambu-system-domain/src/main/java/com/thundax/kuzhambu/system/domain/audit/model/entity/AuditLog.java,kuzhambu-servers/biz/system/kuzhambu-system-domain/src/main/java/com/thundax/kuzhambu/system/domain/audit/model/entity/AuditMeta.java`：切换 system-domain 实体审计类型引用
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-COMMON-AUDIT-REFACTOR.md`
-    - 范围对象：`kuzhambu-servers/biz/system/kuzhambu-system-domain/pom.xml`、`kuzhambu-servers/biz/system/kuzhambu-system-domain/src/main/java/com/thundax/kuzhambu/system/domain/audit/model/entity/AuditLog.java`、`kuzhambu-servers/biz/system/kuzhambu-system-domain/src/main/java/com/thundax/kuzhambu/system/domain/audit/model/valueobject/AuditField.java`、`kuzhambu-servers/biz/system/kuzhambu-system-domain/src/main/java/com/thundax/kuzhambu/system/domain/audit/model/valueobject/AuditSnapshot.java`、`kuzhambu-servers/biz/system/kuzhambu-system-domain/src/main/java/com/thundax/kuzhambu/system/domain/audit/model/enums/AuditAction.java`
-    - 处理动作：让 System 审计领域改用 `common-audit` 类型并删除重复定义
-    - 验收点：`system-domain` 不再保留重复审计模型
+    - 范围对象：`kuzhambu-servers/biz/system/kuzhambu-system-domain/pom.xml`、`kuzhambu-servers/biz/system/kuzhambu-system-domain/src/main/java/com/thundax/kuzhambu/system/domain/audit/model/entity/AuditLog.java`、`kuzhambu-servers/biz/system/kuzhambu-system-domain/src/main/java/com/thundax/kuzhambu/system/domain/audit/model/entity/AuditMeta.java`
+    - 处理动作：让 System 审计实体先改用 `common-audit` 类型
+    - 验收点：`AuditLog` 与 `AuditMeta` 不再引用旧审计枚举和快照类型
     - 重要度：9/10
 
 ## 待审阅任务项
+
+- [ ] `kuzhambu-servers/biz/system/kuzhambu-system-domain/src/main/java/com/thundax/kuzhambu/system/domain/audit/repository/AuditLogRepository.java`：切换 system-domain 仓储审计动作类型引用
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-COMMON-AUDIT-REFACTOR.md`
+    - 范围对象：`kuzhambu-servers/biz/system/kuzhambu-system-domain/src/main/java/com/thundax/kuzhambu/system/domain/audit/repository/AuditLogRepository.java`
+    - 处理动作：让仓储分页接口改用 `common-audit` 的 `AuditAction`
+    - 验收点：`AuditLogRepository` 不再引用旧审计动作枚举
+    - 重要度：7/10
+
+- [ ] `kuzhambu-servers/biz/system/kuzhambu-system-domain/src/main/java/com/thundax/kuzhambu/system/domain/audit/model/valueobject/AuditField.java,kuzhambu-servers/biz/system/kuzhambu-system-domain/src/main/java/com/thundax/kuzhambu/system/domain/audit/model/valueobject/AuditSnapshot.java,kuzhambu-servers/biz/system/kuzhambu-system-domain/src/main/java/com/thundax/kuzhambu/system/domain/audit/model/enums/AuditAction.java`：删除 system-domain 重复审计模型
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-COMMON-AUDIT-REFACTOR.md`
+    - 范围对象：`kuzhambu-servers/biz/system/kuzhambu-system-domain/src/main/java/com/thundax/kuzhambu/system/domain/audit/model/valueobject/AuditField.java`、`kuzhambu-servers/biz/system/kuzhambu-system-domain/src/main/java/com/thundax/kuzhambu/system/domain/audit/model/valueobject/AuditSnapshot.java`、`kuzhambu-servers/biz/system/kuzhambu-system-domain/src/main/java/com/thundax/kuzhambu/system/domain/audit/model/enums/AuditAction.java`
+    - 处理动作：删除已被 `common-audit` 替代的重复类型
+    - 验收点：`system-domain` 不再保留重复审计模型定义
+    - 重要度：8/10
 
 - [ ] `kuzhambu-servers/biz/system/kuzhambu-system-application/pom.xml,kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/audit/runtime/AuditLogAspect.java,kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/audit/service/impl/AuditApplicationServiceImpl.java`：切换 system-application 核心审计引用
     - 任务类型：执行任务
