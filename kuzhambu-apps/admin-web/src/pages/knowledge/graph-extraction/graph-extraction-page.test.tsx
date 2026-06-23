@@ -114,5 +114,4 @@ describe("GraphExtractionPage", () => {
         expect(await screen.findByText("最近创建任务")).toBeInTheDocument();
         expect(screen.getByText("任务号：9001")).toBeInTheDocument();
     });
-
 });
