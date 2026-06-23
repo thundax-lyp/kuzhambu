@@ -242,3 +242,7 @@ CREATE TABLE IF NOT EXISTS `knowledge_refinement_task` (
         `source_content_id`,
         `graph_version_id`,
         `status`
+    ),
+    KEY `idx_knowledge_refinement_task_category` (`status`, `source_category_code`, `opened_at`),
+    KEY `idx_knowledge_refinement_task_source` (`source_content_type`, `source_content_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='知识精修任务表';
