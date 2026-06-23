@@ -11,12 +11,12 @@
 
 ## 待审阅任务项
 
-- [ ] `KnowledgeRefinementManualKeySupport.java,KnowledgeGraphRefinementApplicationServiceImpl.java,KnowledgeGraphRefinementEntityWriteTest.java,KnowledgeGraphRefinementRelationWriteTest.java`：实现实体与关系草稿写入
+- [ ] `KnowledgeRefinementManualKeySupport.java,KnowledgeGraphRefinementApplicationServiceImpl.java,KnowledgeGraphRefinementRelationWriteTest.java`：实现关系草稿写入
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/support/KnowledgeRefinementManualKeySupport.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/service/impl/KnowledgeGraphRefinementApplicationServiceImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/refinement/KnowledgeGraphRefinementEntityWriteTest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/refinement/KnowledgeGraphRefinementRelationWriteTest.java`
-    - 处理动作：实现实体与关系草稿新增、更新、确认和删除逻辑
-    - 验收点：实体与关系操作只改草稿且手工新增键策略生效
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/support/KnowledgeRefinementManualKeySupport.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/service/impl/KnowledgeGraphRefinementApplicationServiceImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/refinement/KnowledgeGraphRefinementRelationWriteTest.java`
+    - 处理动作：实现关系草稿新增、更新、确认和删除逻辑
+    - 验收点：关系操作只改草稿且手工新增键策略生效
     - 重要度：10/10
 
 - [ ] `KnowledgeGraphRefinementApplicationServiceImpl.java,KnowledgeGraphRefinementLineageWriteTest.java,QualityAnnotationWriteTest.java`：实现世系草稿与质量标注写入
