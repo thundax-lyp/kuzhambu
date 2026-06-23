@@ -19,14 +19,6 @@
     - 验收点：世系与标注接口在后端走通且具备最小测试
     - 重要度：7/10
 
-- [ ] `RefinementApplySupport.java,KnowledgeGraphRefinementApplicationServiceImpl.java,KnowledgeGraphRefinementApplyTest.java`：实现草稿应用回正式事实
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/support/RefinementApplySupport.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/service/impl/KnowledgeGraphRefinementApplicationServiceImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/refinement/KnowledgeGraphRefinementApplyTest.java`
-    - 处理动作：实现 `task/apply` 将草稿覆盖回正式实体、关系和世系事实
-    - 验收点：精修应用后正式事实、任务状态和删除裁剪口径符合 RUNBOOK
-    - 重要度：10/10
-
 - [ ] `RefinementEntityDraftAuditSnapshotAssembler.java,RefinementRelationDraftAuditSnapshotAssembler.java,RefinementEntityDraftAuditObjectLoader.java,RefinementRelationDraftAuditObjectLoader.java,RefinementAuditSnapshotAssemblerTest.java`：接入实体与关系审计快照
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
