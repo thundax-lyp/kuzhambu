@@ -20,7 +20,7 @@ export interface RefinementProgressSummary {
     relationConfirmedCount?: number | null;
 }
 
-export interface RefinementWorkbenchItem {
+export interface RefinementWorkbenchRecord {
     refinementTaskId: number;
     graphVersionId?: number | null;
     taskType?: RefinementTaskType | null;
@@ -248,7 +248,7 @@ export interface UpsertQualityAnnotationCommand {
     operatorId?: number | null;
 }
 
-export interface QualityAnnotationPageQuery extends PageQuery<{
+export type QualityAnnotationPageQuery = PageQuery<{
     refinementTaskId: number;
     objectType?: string | null;
-}> {}
+}>;

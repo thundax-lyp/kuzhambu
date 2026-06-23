@@ -7,32 +7,14 @@ import { queryClient } from "@/query/query-client";
 import * as service from "./refinement-service";
 import { RefinementPage } from "./refinement-page";
 
-vi.mock("./components/refinement-entity-editor", () => ({
-    RefinementEntityEditor: () => null
-}));
-
-vi.mock("./components/refinement-entity-delete-modal", () => ({
-    RefinementEntityDeleteModal: () => null
-}));
-
-vi.mock("./components/refinement-relation-editor", () => ({
-    RefinementRelationEditor: () => null
-}));
-
-vi.mock("./components/refinement-relation-delete-modal", () => ({
-    RefinementRelationDeleteModal: () => null
-}));
-
-vi.mock("./components/refinement-filter-form", () => ({
-    RefinementFilterForm: () => <div>筛选器</div>
-}));
-
-vi.mock("./components/refinement-progress-summary", () => ({
-    RefinementProgressSummaryPanel: () => <div>进度摘要</div>
-}));
-
-vi.mock("./components/refinement-workbench-table", () => ({
-    RefinementWorkbenchTable: ({
+const componentMocks = vi.hoisted(() => ({
+    MockRefinementEntityEditor: () => null,
+    MockRefinementEntityDeleteModal: () => null,
+    MockRefinementRelationEditor: () => null,
+    MockRefinementRelationDeleteModal: () => null,
+    MockRefinementFilterForm: () => <div>筛选器</div>,
+    MockRefinementProgressSummaryPanel: () => <div>进度摘要</div>,
+    MockRefinementWorkbenchTable: ({
         items,
         onOpenTask
     }: {
@@ -49,21 +31,51 @@ vi.mock("./components/refinement-workbench-table", () => ({
                 </div>
             ))}
         </div>
-    )
-}));
-
-vi.mock("./components/refinement-entity-table", () => ({
-    RefinementEntityTable: ({ entities = [] }: { entities?: Array<{ name: string }> }) => (
+    ),
+    MockRefinementEntityTable: ({ entities = [] }: { entities?: Array<{ name: string }> }) => (
         <div>{entities.map((item) => item.name).join(",")}</div>
-    )
-}));
-
-vi.mock("./components/refinement-relation-table", () => ({
-    RefinementRelationTable: ({
+    ),
+    MockRefinementRelationTable: ({
         relations = []
     }: {
         relations?: Array<{ sourceName: string; targetName: string }>;
     }) => <div>{relations.map((item) => `${item.sourceName}-${item.targetName}`).join(",")}</div>
+}));
+
+vi.mock("./components/refinement-entity-editor", () => ({
+    RefinementEntityEditor: componentMocks.MockRefinementEntityEditor
+}));
+
+vi.mock("./components/refinement-entity-delete-modal", () => ({
+    RefinementEntityDeleteModal: componentMocks.MockRefinementEntityDeleteModal
+}));
+
+vi.mock("./components/refinement-relation-editor", () => ({
+    RefinementRelationEditor: componentMocks.MockRefinementRelationEditor
+}));
+
+vi.mock("./components/refinement-relation-delete-modal", () => ({
+    RefinementRelationDeleteModal: componentMocks.MockRefinementRelationDeleteModal
+}));
+
+vi.mock("./components/refinement-filter-form", () => ({
+    RefinementFilterForm: componentMocks.MockRefinementFilterForm
+}));
+
+vi.mock("./components/refinement-progress-summary", () => ({
+    RefinementProgressSummaryPanel: componentMocks.MockRefinementProgressSummaryPanel
+}));
+
+vi.mock("./components/refinement-workbench-table", () => ({
+    RefinementWorkbenchTable: componentMocks.MockRefinementWorkbenchTable
+}));
+
+vi.mock("./components/refinement-entity-table", () => ({
+    RefinementEntityTable: componentMocks.MockRefinementEntityTable
+}));
+
+vi.mock("./components/refinement-relation-table", () => ({
+    RefinementRelationTable: componentMocks.MockRefinementRelationTable
 }));
 
 vi.mock("./refinement-service", () => ({
@@ -147,7 +159,7 @@ vi.mock("./refinement-service", () => ({
         lineageRelations: [],
         entityOptions: [{ entityKey: "person:huangdi", name: "黄帝" }]
     })),
-    openTask: vi.fn(async () => ({
+    getTaskDraft: vi.fn(async () => ({
         refinementTaskId: 31,
         graphVersionId: 71,
         taskType: "GRAPH",
@@ -214,7 +226,7 @@ vi.mock("./refinement-service", () => ({
             }
         ]
     })),
-    qualitySummary: vi.fn(async () => ({
+    getQualitySummary: vi.fn(async () => ({
         entityCoverageRate: 0.8,
         relationAccuracyRate: 0.75,
         completenessRate: 0.77
@@ -254,7 +266,7 @@ describe("RefinementPage", () => {
 
         await user.click(await screen.findByRole("button", { name: "打开任务" }));
 
-        await waitFor(() => expect(service.openTask).toHaveBeenCalled());
+        await waitFor(() => expect(service.getTaskDraft).toHaveBeenCalled());
         expect(await screen.findByText("实体草稿")).toBeInTheDocument();
         expect(screen.getByText("关系草稿")).toBeInTheDocument();
         expect(screen.getByText("黄帝")).toBeInTheDocument();

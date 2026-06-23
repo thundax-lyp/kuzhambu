@@ -52,7 +52,7 @@ export const RefinementPage = () => {
 
     const qualitySummaryQuery = useQuery({
         queryKey: ["knowledge", "refinement", "quality-summary", readDetailTaskId(detail)],
-        queryFn: () => service.qualitySummary({ refinementTaskId: readDetailTaskId(detail) }),
+        queryFn: () => service.getQualitySummary({ refinementTaskId: readDetailTaskId(detail) }),
         enabled: detail !== null,
         retry: false
     });
@@ -72,7 +72,7 @@ export const RefinementPage = () => {
     };
 
     const openTaskMutation = useMutation({
-        mutationFn: service.openTask,
+        mutationFn: service.getTaskDraft,
         onSuccess: async (nextDetail) => {
             setDetail(nextDetail);
             await queryClient.invalidateQueries({
@@ -220,7 +220,7 @@ export const RefinementPage = () => {
 
     return (
         <KuzhambuPage
-            className="knowledge-refinement-page"
+            className="knowledge-refinement-page refinement-page"
             description="围绕待精修任务完成实体、关系确认和应用回正式事实。"
             eyebrow="Knowledge / Refinement"
             title="知识图谱精修工作台"

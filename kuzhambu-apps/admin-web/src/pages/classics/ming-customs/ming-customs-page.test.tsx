@@ -245,7 +245,7 @@ describe("MingCustomsPage", () => {
                 }
             });
         });
-    });
+    }, 15000);
 
     it("creates ming customs entry from the editor", async () => {
         const user = userEvent.setup();

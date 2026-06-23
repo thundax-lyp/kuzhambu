@@ -84,7 +84,7 @@ describe("knowledge refinement service request contracts", () => {
             sourceCategoryCode: "myth"
         });
 
-        await service.openTask({ graphVersionId: 71, openedBy: 1 });
+        await service.getTaskDraft({ graphVersionId: 71, openedBy: 1 });
         expectLastCall("POST", "/knowledge/refinement/task/open", {
             graphVersionId: 71,
             openedBy: 1
@@ -129,7 +129,7 @@ describe("knowledge refinement service request contracts", () => {
             operatorId: 1
         });
 
-        await service.qualitySummary({ refinementTaskId: 31 });
+        await service.getQualitySummary({ refinementTaskId: 31 });
         expectLastCall("POST", "/knowledge/refinement/quality/summary", {
             refinementTaskId: 31
         });

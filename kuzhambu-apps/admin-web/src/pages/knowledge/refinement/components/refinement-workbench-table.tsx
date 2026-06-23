@@ -1,11 +1,11 @@
 import { Button, Space, Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import type { RefinementWorkbenchItem } from "../refinement-types";
+import type { RefinementWorkbenchRecord } from "../refinement-types";
 
 interface RefinementWorkbenchTableProps {
-    items: RefinementWorkbenchItem[];
+    items: RefinementWorkbenchRecord[];
     loading?: boolean;
-    onOpenTask: (item: RefinementWorkbenchItem) => void;
+    onOpenTask: (item: RefinementWorkbenchRecord) => void;
 }
 
 const readStatusColor = (status?: string | null) => {
@@ -24,7 +24,7 @@ export const RefinementWorkbenchTable = ({
     loading = false,
     onOpenTask
 }: RefinementWorkbenchTableProps) => {
-    const columns: ColumnsType<RefinementWorkbenchItem> = [
+    const columns: ColumnsType<RefinementWorkbenchRecord> = [
         { title: "任务号", dataIndex: "refinementTaskId", key: "refinementTaskId" },
         { title: "版本号", dataIndex: "graphVersionId", key: "graphVersionId" },
         { title: "任务类型", dataIndex: "taskType", key: "taskType" },
@@ -63,7 +63,7 @@ export const RefinementWorkbenchTable = ({
     ];
 
     return (
-        <Table<RefinementWorkbenchItem>
+        <Table<RefinementWorkbenchRecord>
             aria-label="知识图谱精修任务表格"
             columns={columns}
             dataSource={items}

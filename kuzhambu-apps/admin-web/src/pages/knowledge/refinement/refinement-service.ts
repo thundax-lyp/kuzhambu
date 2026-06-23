@@ -15,7 +15,7 @@ import type {
     RefinementTaskIdCommand,
     RefinementTaskOpenCommand,
     RefinementTaskPageQuery,
-    RefinementWorkbenchItem,
+    RefinementWorkbenchRecord,
     UpsertQualityAnnotationCommand,
     UpsertRefinementEntityCommand,
     UpsertRefinementLineageNodeCommand,
@@ -26,13 +26,13 @@ import type {
 const API_PREFIX = "/knowledge/refinement";
 
 export const pageTasks = (request: RefinementTaskPageQuery = {}) => {
-    return postJson<Page<RefinementWorkbenchItem>, RefinementTaskPageQuery>(
+    return postJson<Page<RefinementWorkbenchRecord>, RefinementTaskPageQuery>(
         `${API_PREFIX}/task/page`,
         { body: request }
     );
 };
 
-export const openTask = (request: RefinementTaskOpenCommand) => {
+export const getTaskDraft = (request: RefinementTaskOpenCommand) => {
     return postJson<RefinementDetailRecord, RefinementTaskOpenCommand>(`${API_PREFIX}/task/open`, {
         body: request
     });
@@ -105,7 +105,7 @@ export const applyTask = (request: RefinementTaskApplyCommand) => {
     );
 };
 
-export const qualitySummary = (request: RefinementTaskIdCommand) => {
+export const getQualitySummary = (request: RefinementTaskIdCommand) => {
     return postJson<QualitySummaryRecord, RefinementTaskIdCommand>(
         `${API_PREFIX}/quality/summary`,
         { body: request }
@@ -128,7 +128,7 @@ export const updateLineageRelation = (request: UpsertRefinementLineageRelationCo
     return postJson(`${API_PREFIX}/lineage-relation/update`, { body: request });
 };
 
-export const upsertAnnotation = (request: UpsertQualityAnnotationCommand) => {
+export const updateAnnotation = (request: UpsertQualityAnnotationCommand) => {
     return postJson<QualityAnnotationRecord, UpsertQualityAnnotationCommand>(
         `${API_PREFIX}/annotation/update`,
         { body: request }
