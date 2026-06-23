@@ -103,4 +103,139 @@ public final class GraphExtractionRequests {
         @JsonProperty("taskId")
         private Long taskId;
     }
+
+    @Getter
+    @Setter
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class VersionPageRequest extends PageRequest {
+        @JsonProperty("taskType")
+        private String taskType;
+
+        @JsonProperty("status")
+        private String status;
+
+        @JsonProperty("sourceContentType")
+        private String sourceContentType;
+
+        @JsonProperty("sourceContentId")
+        private Long sourceContentId;
+    }
+
+    @Getter
+    @Setter
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class VersionIdRequest {
+        @JsonProperty("versionId")
+        private Long versionId;
+    }
+
+    @Getter
+    @Setter
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class EntityPageRequest extends PageRequest {
+        @JsonProperty("versionId")
+        private Long versionId;
+
+        @JsonProperty("keyword")
+        private String keyword;
+
+        @JsonProperty("entityType")
+        private String entityType;
+
+        @JsonProperty("confirmationStatus")
+        private String confirmationStatus;
+    }
+
+    @Getter
+    @Setter
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class EntityIdRequest {
+        @JsonProperty("entityId")
+        private Long entityId;
+    }
+
+    @Getter
+    @Setter
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class RelationPageRequest extends PageRequest {
+        @JsonProperty("versionId")
+        private Long versionId;
+
+        @JsonProperty("keyword")
+        private String keyword;
+
+        @JsonProperty("relationType")
+        private String relationType;
+
+        @JsonProperty("confirmationStatus")
+        private String confirmationStatus;
+    }
+
+    @Getter
+    @Setter
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class RelationIdRequest {
+        @JsonProperty("relationId")
+        private Long relationId;
+    }
+
+    @Getter
+    @Setter
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class LineageNodePageRequest extends PageRequest {
+        @JsonProperty("versionId")
+        private Long versionId;
+
+        @JsonProperty("keyword")
+        private String keyword;
+
+        @JsonProperty("nodeType")
+        private String nodeType;
+
+        @JsonProperty("confirmationStatus")
+        private String confirmationStatus;
+    }
+
+    @Getter
+    @Setter
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class LineageNodeIdRequest {
+        @JsonProperty("nodeId")
+        private Long nodeId;
+    }
+
+    @Getter
+    @Setter
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class LineageRelationPageRequest extends PageRequest {
+        @JsonProperty("versionId")
+        private Long versionId;
+
+        @JsonProperty("keyword")
+        private String keyword;
+
+        @JsonProperty("relationType")
+        private String relationType;
+
+        @JsonProperty("confirmationStatus")
+        private String confirmationStatus;
+    }
+
+    @Getter
+    @Setter
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class LineageRelationIdRequest {
+        @JsonProperty("relationId")
+        private Long relationId;
+    }
 }

@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `knowledge/graph`：暴露图谱版本与正式结果后台接口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GOVERNANCE-READABLE-RESULTS.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/graph/**`
-    - 处理动作：补齐图谱版本、正式实体、正式关系、正式世系读取接口
-    - 验收点：后台已提供以图谱版本列表为主入口的正式结果读取接口
-    - 重要度：8/10
-
 - [ ] `admin-web/knowledge`：搭建正式结果读取页骨架和路由
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GOVERNANCE-READABLE-RESULTS.md`
