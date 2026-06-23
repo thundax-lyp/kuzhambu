@@ -87,6 +87,7 @@ public final class TaxonomyPersistenceAssembler {
         dataObject.setReviewNote(entity.getReviewNote());
         dataObject.setCreatedAt(entity.getCreatedAt());
         dataObject.setReviewedAt(entity.getReviewedAt());
+        dataObject.setMergedToTagId(TagIdCodec.toValue(entity.getMergedToTagId()));
         return dataObject;
     }
 
@@ -107,6 +108,7 @@ public final class TaxonomyPersistenceAssembler {
         entity.setReviewNote(dataObject.getReviewNote());
         entity.setCreatedAt(dataObject.getCreatedAt());
         entity.setReviewedAt(dataObject.getReviewedAt());
+        entity.setMergedToTagId(TagIdCodec.toDomain(dataObject.getMergedToTagId()));
         return entity;
     }
 

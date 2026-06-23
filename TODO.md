@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `knowledge/taxonomy`：定义标签合并领域语义
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GOVERNANCE-READABLE-RESULTS.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/taxonomy/**`、`db/schema/knowledge.sql`
-    - 处理动作：明确源标签并入目标标签所需最小字段和领域规则
-    - 验收点：已固定 merged 相关最小数据结构和领域不变量，源标签可查看但不再进入新的可用集合
-    - 重要度：8/10
-
 - [ ] `knowledge/taxonomy`：落地标签合并 application 编排
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GOVERNANCE-READABLE-RESULTS.md`
