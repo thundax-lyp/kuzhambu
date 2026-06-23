@@ -71,7 +71,7 @@ class ClassicsContentApplicationServiceImplTest {
     void ensureVersionedShouldInsertVersionAndBackfillContentMarker() {
         FakeRepository repository = new FakeRepository();
         ClassicsContentApplicationServiceImpl service =
-                new ClassicsContentApplicationServiceImpl(repository, null, null, null, null, null, null, null);
+                new ClassicsContentApplicationServiceImpl(repository, null, null, null, null, null, null, null, null);
         SancaiEntry entry = new SancaiEntry();
         entry.setId(SancaiEntryId.of(100L));
         entry.setTitle("entry");
@@ -93,7 +93,7 @@ class ClassicsContentApplicationServiceImplTest {
         ClassicsContentVersion existing = existingVersion(9L, 2, new Date(2_000L));
         repository.insertedVersions.add(existing);
         ClassicsContentApplicationServiceImpl service =
-                new ClassicsContentApplicationServiceImpl(repository, null, null, null, null, null, null, null);
+                new ClassicsContentApplicationServiceImpl(repository, null, null, null, null, null, null, null, null);
         SancaiEntry entry = new SancaiEntry();
         entry.setId(SancaiEntryId.of(100L));
         entry.setCurrentVersionId(existing.getId());
@@ -121,6 +121,7 @@ class ClassicsContentApplicationServiceImplTest {
                 repository,
                 null,
                 new SancaiEntryVersionRestorer(sancaiRepository, new ObjectMapper()),
+                null,
                 null,
                 null,
                 null,
@@ -163,6 +164,7 @@ class ClassicsContentApplicationServiceImplTest {
                 storageApplicationService,
                 workerRenderClient,
                 storageUploadStreamHelper,
+                null,
                 null);
 
         ClassicsExportJobResult result = service.createExportJob(command);
@@ -204,6 +206,7 @@ class ClassicsContentApplicationServiceImplTest {
                 storageApplicationService,
                 workerRenderClient,
                 storageUploadStreamHelper,
+                null,
                 null);
 
         ClassicsExportJobResult result = service.createExportJob(command);
@@ -217,7 +220,7 @@ class ClassicsContentApplicationServiceImplTest {
     void sortTagsShouldUseScopedTagQueryAndPriorityRange() {
         ClassicsContentRepository repository = mock(ClassicsContentRepository.class);
         ClassicsContentApplicationServiceImpl service =
-                new ClassicsContentApplicationServiceImpl(repository, null, null, null, null, null, null, null);
+                new ClassicsContentApplicationServiceImpl(repository, null, null, null, null, null, null, null, null);
         ClassicsContentId contentId = ClassicsContentId.of(100L);
         ClassicsContentTag first = new ClassicsContentTag();
         first.setId(ClassicsContentTagId.of(1L));

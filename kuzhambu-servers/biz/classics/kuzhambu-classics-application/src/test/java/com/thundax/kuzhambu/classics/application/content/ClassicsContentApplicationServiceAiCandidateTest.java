@@ -361,7 +361,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
     private static ClassicsContentApplicationServiceImpl serviceWithAiDomainService(
             ClassicsContentRepository repository, AiCandidateDomainService aiCandidateDomainService) {
         return new ClassicsContentApplicationServiceImpl(
-                repository, null, null, null, null, null, null, aiCandidateDomainService);
+                repository, null, null, null, null, null, null, aiCandidateDomainService, null);
     }
 
     private static AiCandidateApplyContentCommand applyCommand(

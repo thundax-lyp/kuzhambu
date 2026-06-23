@@ -126,27 +126,6 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         this.aiCandidatePayloadParser = new ClassicsAiCandidatePayloadParser(this.objectMapper);
     }
 
-    public ClassicsContentApplicationServiceImpl(
-            ClassicsContentRepository repository,
-            WangqiDocumentVersionRestorer wangqiDocumentVersionRestorer,
-            SancaiEntryVersionRestorer sancaiEntryVersionRestorer,
-            SancaiAssetApplicationService sancaiAssetApplicationService,
-            StorageApplicationService storageApplicationService,
-            WorkerRenderClient workerRenderClient,
-            StorageUploadStreamHelper storageUploadStreamHelper,
-            AiCandidateDomainService aiCandidateDomainService) {
-        this(
-                repository,
-                wangqiDocumentVersionRestorer,
-                sancaiEntryVersionRestorer,
-                sancaiAssetApplicationService,
-                storageApplicationService,
-                workerRenderClient,
-                storageUploadStreamHelper,
-                aiCandidateDomainService,
-                null);
-    }
-
     @Override
     public List<ClassicsContentTag> listTags(String contentType, ClassicsContentId contentId) {
         return repository.listTags(contentType, contentId, SortDirection.ASC);
