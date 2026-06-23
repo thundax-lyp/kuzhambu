@@ -23,6 +23,8 @@ public final class GraphVersionPersistenceAssembler {
         dataObject.setScopeJson(entity.getScopeJson());
         dataObject.setSourceContentType(entity.getSourceContentType());
         dataObject.setSourceContentId(entity.getSourceContentId());
+        dataObject.setSourceCategoryCode(entity.getSourceCategoryCode());
+        dataObject.setSourceCategoryName(entity.getSourceCategoryName());
         dataObject.setVersionNo(entity.getVersionNo());
         dataObject.setStatus(entity.getStatus());
         dataObject.setAppliedAt(entity.getAppliedAt());
@@ -43,6 +45,8 @@ public final class GraphVersionPersistenceAssembler {
         entity.setScopeJson(dataObject.getScopeJson());
         entity.setSourceContentType(dataObject.getSourceContentType());
         entity.setSourceContentId(dataObject.getSourceContentId());
+        entity.setSourceCategoryCode(dataObject.getSourceCategoryCode());
+        entity.setSourceCategoryName(dataObject.getSourceCategoryName());
         entity.setVersionNo(dataObject.getVersionNo());
         entity.setStatus(dataObject.getStatus());
         entity.setAppliedAt(dataObject.getAppliedAt());

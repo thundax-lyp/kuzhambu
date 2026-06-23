@@ -1,5 +1,13 @@
 import "@testing-library/jest-dom/vitest";
 
+const nativeGetComputedStyle = window.getComputedStyle.bind(window);
+
+Object.defineProperty(window, "getComputedStyle", {
+    writable: true,
+    value: (element: Element, pseudoElt?: string) =>
+        nativeGetComputedStyle(element, pseudoElt ? undefined : pseudoElt)
+});
+
 Object.defineProperty(window, "matchMedia", {
     writable: true,
     value: vi.fn().mockImplementation((query: string) => ({

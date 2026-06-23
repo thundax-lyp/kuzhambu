@@ -1,8 +1,8 @@
 package com.thundax.kuzhambu.system.domain.audit.repository;
 
+import com.thundax.kuzhambu.common.audit.model.enums.AuditAction;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.system.domain.audit.model.entity.AuditLog;
-import com.thundax.kuzhambu.system.domain.audit.model.enums.AuditAction;
 import com.thundax.kuzhambu.system.domain.audit.model.enums.AuditOperatorType;
 import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditLogId;
 import java.util.Date;

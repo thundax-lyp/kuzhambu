@@ -88,6 +88,8 @@ class GraphVersionRepositoryTest {
         version.setScopeJson("{\"entryIds\":[1]}");
         version.setSourceContentType("SANCAI_ENTRY");
         version.setSourceContentId(100L);
+        version.setSourceCategoryCode("BIRDS");
+        version.setSourceCategoryName("羽族");
         version.setVersionNo(2);
         version.setStatus("APPLIED");
         version.setAppliedAt(new Date());
@@ -100,5 +102,7 @@ class GraphVersionRepositoryTest {
         assertEquals("ENTRY", captor.getValue().getScopeType());
         assertEquals("{\"entryIds\":[1]}", captor.getValue().getScopeJson());
         assertEquals(12L, captor.getValue().getTaskId());
+        assertEquals("BIRDS", captor.getValue().getSourceCategoryCode());
+        assertEquals("羽族", captor.getValue().getSourceCategoryName());
     }
 }

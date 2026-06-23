@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.system.application.audit.runtime.sys;
 
-import com.thundax.kuzhambu.system.application.audit.runtime.AuditObjectLoader;
+import com.thundax.kuzhambu.common.audit.runtime.AuditObjectLoader;
 import com.thundax.kuzhambu.system.application.core.service.RoleApplicationService;
 import com.thundax.kuzhambu.system.domain.core.codec.RoleIdCodec;
 import org.springframework.stereotype.Component;

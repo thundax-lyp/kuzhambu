@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.system.application.audit.query;
 
-import com.thundax.kuzhambu.system.domain.audit.model.enums.AuditAction;
+import com.thundax.kuzhambu.common.audit.model.enums.AuditAction;
 import com.thundax.kuzhambu.system.domain.audit.model.enums.AuditOperatorType;
 import java.util.Date;
 import lombok.AllArgsConstructor;

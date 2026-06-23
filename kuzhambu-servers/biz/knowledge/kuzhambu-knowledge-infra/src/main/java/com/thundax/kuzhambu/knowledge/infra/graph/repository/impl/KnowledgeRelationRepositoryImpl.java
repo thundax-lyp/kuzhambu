@@ -34,6 +34,13 @@ public class KnowledgeRelationRepositoryImpl implements KnowledgeRelationReposit
     }
 
     @Override
+    public List<KnowledgeRelation> listByVersionId(Long versionId) {
+        QueryWrapper<KnowledgeRelationDO> wrapper = new QueryWrapper<>();
+        wrapper.eq("latest_version_id", versionId).orderByAsc("id");
+        return KnowledgeRelationPersistenceAssembler.toDomainList(mapper.selectList(wrapper));
+    }
+
+    @Override
     public KnowledgeRelation getByRelationId(Long relationId) {
         QueryWrapper<KnowledgeRelationDO> wrapper = new QueryWrapper<>();
         wrapper.eq("relation_id", relationId);
@@ -90,5 +97,12 @@ public class KnowledgeRelationRepositoryImpl implements KnowledgeRelationReposit
                 mapper.insert(dataObject);
             }
         }
+    }
+
+    @Override
+    public int deleteByRelationKeys(Collection<String> relationKeys) {
+        QueryWrapper<KnowledgeRelationDO> wrapper = new QueryWrapper<>();
+        wrapper.in(relationKeys != null && !relationKeys.isEmpty(), "relation_key", relationKeys);
+        return mapper.delete(wrapper);
     }
 }

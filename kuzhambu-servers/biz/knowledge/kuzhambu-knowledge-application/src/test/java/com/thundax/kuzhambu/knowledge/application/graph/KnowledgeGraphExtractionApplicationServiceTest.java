@@ -670,6 +670,13 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         }
 
         @Override
+        public List<KnowledgeEntity> listByVersionId(Long versionId) {
+            return entities.stream()
+                    .filter(entity -> versionId == null || versionId.equals(entity.getLatestVersionId()))
+                    .toList();
+        }
+
+        @Override
         public PageResult<KnowledgeEntity> page(
                 Long versionId,
                 String keyword,
@@ -696,6 +703,11 @@ class KnowledgeGraphExtractionApplicationServiceTest {
             this.entities.clear();
             this.entities.addAll(entities);
         }
+
+        @Override
+        public int deleteByEntityKeys(Collection<String> entityKeys) {
+            return 0;
+        }
     }
 
     private static final class FakeKnowledgeRelationRepository implements KnowledgeRelationRepository {
@@ -712,6 +724,13 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                     .filter(relation -> relationId.equals(relation.getRelationId()))
                     .findFirst()
                     .orElse(null);
+        }
+
+        @Override
+        public List<KnowledgeRelation> listByVersionId(Long versionId) {
+            return relations.stream()
+                    .filter(relation -> versionId == null || versionId.equals(relation.getLatestVersionId()))
+                    .toList();
         }
 
         @Override
@@ -742,6 +761,11 @@ class KnowledgeGraphExtractionApplicationServiceTest {
             this.relations.clear();
             this.relations.addAll(relations);
         }
+
+        @Override
+        public int deleteByRelationKeys(Collection<String> relationKeys) {
+            return 0;
+        }
     }
 
     private static final class FakeKnowledgeLineageNodeRepository implements KnowledgeLineageNodeRepository {
@@ -758,6 +782,13 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                     .filter(node -> nodeId.equals(node.getNodeId()))
                     .findFirst()
                     .orElse(null);
+        }
+
+        @Override
+        public List<KnowledgeLineageNode> listByVersionId(Long versionId) {
+            return nodes.stream()
+                    .filter(node -> versionId == null || versionId.equals(node.getLatestVersionId()))
+                    .toList();
         }
 
         @Override
@@ -781,6 +812,11 @@ class KnowledgeGraphExtractionApplicationServiceTest {
             this.nodes.clear();
             this.nodes.addAll(nodes);
         }
+
+        @Override
+        public int deleteByNodeKeys(Collection<String> nodeKeys) {
+            return 0;
+        }
     }
 
     private static final class FakeKnowledgeLineageRelationRepository implements KnowledgeLineageRelationRepository {
@@ -797,6 +833,13 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                     .filter(relation -> relationId.equals(relation.getRelationId()))
                     .findFirst()
                     .orElse(null);
+        }
+
+        @Override
+        public List<KnowledgeLineageRelation> listByVersionId(Long versionId) {
+            return relations.stream()
+                    .filter(relation -> versionId == null || versionId.equals(relation.getLatestVersionId()))
+                    .toList();
         }
 
         @Override
@@ -826,6 +869,11 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         public void saveOrUpdateBatch(List<KnowledgeLineageRelation> relations) {
             this.relations.clear();
             this.relations.addAll(relations);
+        }
+
+        @Override
+        public int deleteByRelationKeys(Collection<String> relationKeys) {
+            return 0;
         }
     }
 

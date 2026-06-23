@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.system.domain.audit.model.valueobject;
+package com.thundax.kuzhambu.common.audit.model.valueobject;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

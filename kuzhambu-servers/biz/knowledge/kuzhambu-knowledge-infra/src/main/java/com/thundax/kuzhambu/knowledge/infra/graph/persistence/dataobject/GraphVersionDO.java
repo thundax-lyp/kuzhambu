@@ -25,6 +25,8 @@ public class GraphVersionDO {
     private String scopeJson;
     private String sourceContentType;
     private Long sourceContentId;
+    private String sourceCategoryCode;
+    private String sourceCategoryName;
     private Integer versionNo;
     private String status;
     private Date appliedAt;

@@ -32,6 +32,11 @@
     </dependency>
     <dependency>
       <groupId>com.thundax</groupId>
+      <artifactId>kuzhambu-common-audit</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-common-security</artifactId>
       <version>${project.version}</version>
     </dependency>

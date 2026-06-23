@@ -34,6 +34,13 @@ public class KnowledgeLineageRelationRepositoryImpl implements KnowledgeLineageR
     }
 
     @Override
+    public List<KnowledgeLineageRelation> listByVersionId(Long versionId) {
+        QueryWrapper<KnowledgeLineageRelationDO> wrapper = new QueryWrapper<>();
+        wrapper.eq("latest_version_id", versionId).orderByAsc("id");
+        return KnowledgeLineageRelationPersistenceAssembler.toDomainList(mapper.selectList(wrapper));
+    }
+
+    @Override
     public KnowledgeLineageRelation getByRelationId(Long relationId) {
         QueryWrapper<KnowledgeLineageRelationDO> wrapper = new QueryWrapper<>();
         wrapper.eq("relation_id", relationId);
@@ -90,5 +97,12 @@ public class KnowledgeLineageRelationRepositoryImpl implements KnowledgeLineageR
                 mapper.insert(dataObject);
             }
         }
+    }
+
+    @Override
+    public int deleteByRelationKeys(Collection<String> relationKeys) {
+        QueryWrapper<KnowledgeLineageRelationDO> wrapper = new QueryWrapper<>();
+        wrapper.in(relationKeys != null && !relationKeys.isEmpty(), "relation_key", relationKeys);
+        return mapper.delete(wrapper);
     }
 }

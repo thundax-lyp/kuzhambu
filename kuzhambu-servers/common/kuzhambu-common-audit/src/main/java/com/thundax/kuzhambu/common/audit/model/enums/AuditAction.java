@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.system.domain.audit.model.enums;
+package com.thundax.kuzhambu.common.audit.model.enums;
 
 import com.thundax.kuzhambu.common.core.exception.DomainException;
 import java.util.Arrays;

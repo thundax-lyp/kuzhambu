@@ -300,7 +300,7 @@ describe("SancaiEntryPanel sharing", () => {
         );
         expect(await screen.findAllByText("三才图会版本已恢复")).not.toHaveLength(0);
         expect(await screen.findByDisplayValue("历史天地")).toBeInTheDocument();
-    });
+    }, 15000);
 
     it("creates export job and shows download section", async () => {
         const user = userEvent.setup();

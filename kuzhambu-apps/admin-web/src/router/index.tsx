@@ -8,6 +8,7 @@ import { WangqiPage } from "../pages/classics/wangqi/wangqi-page";
 import { DashboardPage } from "../pages/dashboard/dashboard/dashboard-page";
 import { GraphExtractionPage } from "../pages/knowledge/graph-extraction/graph-extraction-page";
 import { GraphResultsPage } from "../pages/knowledge/graph-results/graph-results-page";
+import { RefinementPage } from "../pages/knowledge/refinement/refinement-page";
 import { TaxonomyPage } from "../pages/knowledge/taxonomy/taxonomy-page";
 import { StorageObjectPage } from "../pages/storage/storage-object/storage-object-page";
 import { DepartmentPage } from "../pages/system/department/department-page";
@@ -95,6 +96,10 @@ const router = createBrowserRouter(
                         {
                             path: "knowledge/graph-results",
                             element: <GraphResultsPage />
+                        },
+                        {
+                            path: "knowledge/refinement",
+                            element: <RefinementPage />
                         },
                         {
                             path: "knowledge/taxonomy",

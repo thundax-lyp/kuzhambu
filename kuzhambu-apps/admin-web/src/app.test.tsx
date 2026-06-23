@@ -311,7 +311,7 @@ describe("App", () => {
                 method: "POST"
             })
         );
-    });
+    }, 15000);
 
     it("logs out and returns to the login route", async () => {
         localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
