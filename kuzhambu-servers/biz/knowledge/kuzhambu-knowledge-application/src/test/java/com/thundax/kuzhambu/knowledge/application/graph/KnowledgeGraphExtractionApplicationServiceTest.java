@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.knowledge.application.graph;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCallRecord;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
@@ -10,6 +11,7 @@ import com.thundax.kuzhambu.ai.domain.invocation.service.AiCandidateDomainServic
 import com.thundax.kuzhambu.ai.domain.knowledge.model.valueobject.KnowledgeAiExtractionRequest;
 import com.thundax.kuzhambu.ai.domain.knowledge.model.valueobject.KnowledgeAiExtractionResult;
 import com.thundax.kuzhambu.ai.domain.knowledge.service.KnowledgeAiExtractionDomainService;
+import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationExtractionCommand;
@@ -98,6 +100,30 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         assertEquals("APPLIED", detail.getStatus());
         assertEquals(Instant.parse("2026-06-23T00:00:00Z").toEpochMilli(), detail.getCompletedAt());
         assertEquals(Instant.parse("2026-06-23T00:01:00Z").toEpochMilli(), detail.getAppliedAt());
+    }
+
+    @Test
+    void pageVersionsShouldExposeExplicitReadableNotReadyBoundary() {
+        KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
+                new FakeRepository(),
+                new FakeAiInvocationRepository(),
+                new FakeKnowledgeAiExtractionDomainService(),
+                new AiCandidateDomainService(new FakeAiInvocationRepository()),
+                null);
+
+        assertThrows(BizException.class, () -> service.pageVersions("GRAPH", "APPLIED", "SANCAI_ENTRY", 1L, null));
+    }
+
+    @Test
+    void getVersionDetailShouldExposeExplicitReadableNotReadyBoundary() {
+        KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
+                new FakeRepository(),
+                new FakeAiInvocationRepository(),
+                new FakeKnowledgeAiExtractionDomainService(),
+                new AiCandidateDomainService(new FakeAiInvocationRepository()),
+                null);
+
+        assertThrows(BizException.class, () -> service.getVersionDetail(1001L));
     }
 
     @Test

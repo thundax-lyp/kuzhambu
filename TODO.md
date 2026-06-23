@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `knowledge/graph`：定义图谱版本读取契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GOVERNANCE-READABLE-RESULTS.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/graph/**`
-    - 处理动作：为图谱版本列表与详情补齐 application 读契约、结果模型和测试
-    - 验收点：后端已稳定表达图谱版本读取输入输出
-    - 重要度：8/10
-
 - [ ] `knowledge/graph`：落地图谱版本读取
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GOVERNANCE-READABLE-RESULTS.md`

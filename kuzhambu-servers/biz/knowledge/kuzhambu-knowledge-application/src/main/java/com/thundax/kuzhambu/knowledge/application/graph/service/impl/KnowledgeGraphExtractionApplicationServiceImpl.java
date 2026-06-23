@@ -16,6 +16,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.command.RequestGraphExtr
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestLineageExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphVersionResult;
 import com.thundax.kuzhambu.knowledge.application.graph.service.KnowledgeGraphExtractionApplicationService;
 import com.thundax.kuzhambu.knowledge.application.graph.support.KnowledgeGraphCandidateApplySupport;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
@@ -209,6 +210,17 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
     @Override
     public GraphExtractionTaskResult getTaskDetail(GraphExtractionTaskId taskId) {
         return syncTaskResult(repository.getByTaskId(taskId));
+    }
+
+    @Override
+    public PageResult<GraphVersionResult> pageVersions(
+            String taskType, String status, String sourceContentType, Long sourceContentId, PageQuery pageQuery) {
+        throw new BizException("Knowledge graph version readable is not ready");
+    }
+
+    @Override
+    public GraphVersionResult getVersionDetail(Long versionId) {
+        throw new BizException("Knowledge graph version readable is not ready");
     }
 
     @Override
