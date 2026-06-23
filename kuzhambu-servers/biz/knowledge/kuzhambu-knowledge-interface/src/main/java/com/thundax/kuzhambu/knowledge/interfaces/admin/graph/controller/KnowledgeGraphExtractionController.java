@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller;
 
+import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
@@ -26,13 +27,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @WrappedApiController
 public class KnowledgeGraphExtractionController {
 
+    private static final String TASK_TYPE_RELATION = "RELATION";
+    private static final String TASK_TYPE_GRAPH = "GRAPH";
+    private static final String TASK_TYPE_LINEAGE = "LINEAGE";
+
     private final KnowledgeGraphExtractionApplicationService extractionService;
 
     public KnowledgeGraphExtractionController(KnowledgeGraphExtractionApplicationService extractionService) {
         this.extractionService = extractionService;
     }
 
-    @Operation(summary = "发起关系抽取", description = "knowledge:graph:edit")
+    @Operation(summary = "创建抽取任务", description = "knowledge:graph:edit")
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,
@@ -41,46 +46,23 @@ public class KnowledgeGraphExtractionController {
                 dataTypeClass = String.class),
     })
     @HasPermission("knowledge:graph:edit")
-    @SysLogger(value = "发起关系抽取")
-    @PostMapping("relation/request")
-    public GraphExtractionResponses.TaskResponse requestRelationExtraction(
+    @SysLogger(value = "创建抽取任务")
+    @PostMapping("task/add")
+    public GraphExtractionResponses.TaskResponse addTask(
             @Valid @RequestBody GraphExtractionRequests.CreateRequest request) {
-        return KnowledgeGraphExtractionInterfaceAssembler.toResponse(extractionService.requestRelationExtraction(
-                KnowledgeGraphExtractionInterfaceAssembler.toRelationCommand(request)));
-    }
-
-    @Operation(summary = "发起图谱抽取", description = "knowledge:graph:edit")
-    @ApiImplicitParams({
-        @ApiImplicitParam(
-                name = AccessTokenNames.HEADER_TOKEN,
-                value = "令牌",
-                paramType = "header",
-                dataTypeClass = String.class),
-    })
-    @HasPermission("knowledge:graph:edit")
-    @SysLogger(value = "发起图谱抽取")
-    @PostMapping("graph/request")
-    public GraphExtractionResponses.TaskResponse requestGraphExtraction(
-            @Valid @RequestBody GraphExtractionRequests.CreateRequest request) {
-        return KnowledgeGraphExtractionInterfaceAssembler.toResponse(extractionService.requestGraphExtraction(
-                KnowledgeGraphExtractionInterfaceAssembler.toGraphCommand(request)));
-    }
-
-    @Operation(summary = "发起世系抽取", description = "knowledge:graph:edit")
-    @ApiImplicitParams({
-        @ApiImplicitParam(
-                name = AccessTokenNames.HEADER_TOKEN,
-                value = "令牌",
-                paramType = "header",
-                dataTypeClass = String.class),
-    })
-    @HasPermission("knowledge:graph:edit")
-    @SysLogger(value = "发起世系抽取")
-    @PostMapping("lineage/request")
-    public GraphExtractionResponses.TaskResponse requestLineageExtraction(
-            @Valid @RequestBody GraphExtractionRequests.CreateRequest request) {
-        return KnowledgeGraphExtractionInterfaceAssembler.toResponse(extractionService.requestLineageExtraction(
-                KnowledgeGraphExtractionInterfaceAssembler.toLineageCommand(request)));
+        String taskType = request == null ? null : request.getTaskType();
+        return switch (taskType) {
+            case TASK_TYPE_RELATION ->
+                KnowledgeGraphExtractionInterfaceAssembler.toResponse(extractionService.requestRelationExtraction(
+                        KnowledgeGraphExtractionInterfaceAssembler.toRelationCommand(request)));
+            case TASK_TYPE_GRAPH ->
+                KnowledgeGraphExtractionInterfaceAssembler.toResponse(extractionService.requestGraphExtraction(
+                        KnowledgeGraphExtractionInterfaceAssembler.toGraphCommand(request)));
+            case TASK_TYPE_LINEAGE ->
+                KnowledgeGraphExtractionInterfaceAssembler.toResponse(extractionService.requestLineageExtraction(
+                        KnowledgeGraphExtractionInterfaceAssembler.toLineageCommand(request)));
+            default -> throw new BizException("Unsupported knowledge graph extraction task type: " + taskType);
+        };
     }
 
     @Operation(summary = "分页查询抽取任务", description = "knowledge:graph:view")

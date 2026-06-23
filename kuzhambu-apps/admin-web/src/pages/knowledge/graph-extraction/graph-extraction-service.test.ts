@@ -84,7 +84,7 @@ describe("knowledge graph extraction service request contracts", () => {
     });
 
     it("sends create requests for all graph extraction task types", async () => {
-        const command: GraphExtractionCreateCommand = {
+        const baseCommand = {
             scopeType: "CLASSICS_ENTRY",
             scopeJson: '{"entryId":1001}',
             sourceContentType: "SANCAI_ENTRY",
@@ -106,14 +106,26 @@ describe("knowledge graph extraction service request contracts", () => {
             locale: "zh-CN"
         };
 
-        await service.requestRelationExtraction(command);
-        expectLastCall("POST", "/knowledge/graph-extraction/relation/request", command);
+        const relationCommand: GraphExtractionCreateCommand = {
+            taskType: "RELATION",
+            ...baseCommand
+        };
+        await service.addTask(relationCommand);
+        expectLastCall("POST", "/knowledge/graph-extraction/task/add", relationCommand);
 
-        await service.requestGraphExtraction(command);
-        expectLastCall("POST", "/knowledge/graph-extraction/graph/request", command);
+        const graphCommand: GraphExtractionCreateCommand = {
+            taskType: "GRAPH",
+            ...baseCommand
+        };
+        await service.addTask(graphCommand);
+        expectLastCall("POST", "/knowledge/graph-extraction/task/add", graphCommand);
 
-        await service.requestLineageExtraction(command);
-        expectLastCall("POST", "/knowledge/graph-extraction/lineage/request", command);
+        const lineageCommand: GraphExtractionCreateCommand = {
+            taskType: "LINEAGE",
+            ...baseCommand
+        };
+        await service.addTask(lineageCommand);
+        expectLastCall("POST", "/knowledge/graph-extraction/task/add", lineageCommand);
     });
 
     it("sends task query and task action requests", async () => {

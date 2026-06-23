@@ -16,6 +16,9 @@ public final class GraphExtractionRequests {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class CreateRequest {
+        @JsonProperty("taskType")
+        private String taskType;
+
         @JsonProperty("scopeType")
         private String scopeType;
 

@@ -28,6 +28,7 @@ export interface GraphExtractionTaskRecord {
 }
 
 export interface GraphExtractionCreateCommand {
+    taskType: GraphExtractionTaskType;
     scopeType?: string | null;
     scopeJson?: string | null;
     sourceContentType?: string | null;

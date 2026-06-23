@@ -9,27 +9,9 @@ import type {
 
 const API_PREFIX = "/knowledge/graph-extraction";
 
-export const requestRelationExtraction = (request: GraphExtractionCreateCommand) => {
+export const addTask = (request: GraphExtractionCreateCommand) => {
     return postJson<GraphExtractionTaskRecord, GraphExtractionCreateCommand>(
-        `${API_PREFIX}/relation/request`,
-        {
-            body: request
-        }
-    );
-};
-
-export const requestGraphExtraction = (request: GraphExtractionCreateCommand) => {
-    return postJson<GraphExtractionTaskRecord, GraphExtractionCreateCommand>(
-        `${API_PREFIX}/graph/request`,
-        {
-            body: request
-        }
-    );
-};
-
-export const requestLineageExtraction = (request: GraphExtractionCreateCommand) => {
-    return postJson<GraphExtractionTaskRecord, GraphExtractionCreateCommand>(
-        `${API_PREFIX}/lineage/request`,
+        `${API_PREFIX}/task/add`,
         {
             body: request
         }
