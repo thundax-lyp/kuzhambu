@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.knowledge.application.taxonomy.service.impl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -10,6 +11,7 @@ import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagMergeComma
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagMergePreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagMergePreviewResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.service.TaxonomyApplicationService;
+import com.thundax.kuzhambu.knowledge.domain.service.KnowledgeTagBindingDomainService;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.Tag;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.TagAlias;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.TagCategory;
@@ -35,12 +37,16 @@ class TaxonomyApplicationServiceImplTest {
     @Test
     void applyTagMergeShouldMarkSourceTagAsMergedIntoTarget() {
         TagRepository tagRepository = mock(TagRepository.class);
+        TagContentRefRepository contentRefRepository = mock(TagContentRefRepository.class);
+        KnowledgeTagBindingDomainService knowledgeTagBindingDomainService =
+                mock(KnowledgeTagBindingDomainService.class);
         TaxonomyApplicationService service = new TaxonomyApplicationServiceImpl(
                 mock(TagCategoryRepository.class),
                 tagRepository,
                 mock(TagAliasRepository.class),
-                mock(TagContentRefRepository.class),
-                mock(SynonymRepository.class));
+                contentRefRepository,
+                mock(SynonymRepository.class),
+                knowledgeTagBindingDomainService);
         Tag sourceTag = new Tag();
         sourceTag.setId(TagId.of(11L));
         sourceTag.setTagId(TagId.of(1L));
@@ -51,6 +57,15 @@ class TaxonomyApplicationServiceImplTest {
         targetTag.setStatus(TagStatus.ENABLED);
         when(tagRepository.getByTagId(TagId.of(1L))).thenReturn(sourceTag);
         when(tagRepository.getByTagId(TagId.of(2L))).thenReturn(targetTag);
+        when(contentRefRepository.listByTagId(TagId.of(1L)))
+                .thenReturn(List.of(new TagContentRef(
+                        TagContentRefId.of(31L),
+                        TagContentRefId.of(31L),
+                        TagId.of(1L),
+                        ContentType.SANCAI_ENTRY,
+                        1001L,
+                        "内容一",
+                        TagSource.AI_EXTRACTED)));
         when(tagRepository.update(sourceTag)).thenReturn(1);
 
         service.applyTagMerge(new TagMergeCommand(TagId.of(1L), TagId.of(2L)));
@@ -58,6 +73,8 @@ class TaxonomyApplicationServiceImplTest {
         assertEquals(TagId.of(2L), sourceTag.getMergedToTagId());
         assertNull(targetTag.getMergedToTagId());
         verify(tagRepository).update(sourceTag);
+        verify(knowledgeTagBindingDomainService, times(1))
+                .syncContentTagRef(TagId.of(2L), ContentType.SANCAI_ENTRY, 1001L, "内容一", TagSource.AI_EXTRACTED);
     }
 
     @Test
@@ -71,7 +88,8 @@ class TaxonomyApplicationServiceImplTest {
                 tagRepository,
                 aliasRepository,
                 contentRefRepository,
-                mock(SynonymRepository.class));
+                mock(SynonymRepository.class),
+                mock(KnowledgeTagBindingDomainService.class));
 
         Tag sourceTag = new Tag(
                 TagId.of(1L),

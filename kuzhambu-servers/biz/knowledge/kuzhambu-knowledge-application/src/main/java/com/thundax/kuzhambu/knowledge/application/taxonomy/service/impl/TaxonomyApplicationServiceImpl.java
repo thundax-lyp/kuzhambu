@@ -31,6 +31,7 @@ import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagDetailResul
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagMergePreviewResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.service.TaxonomyApplicationService;
+import com.thundax.kuzhambu.knowledge.domain.service.KnowledgeTagBindingDomainService;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.Synonym;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.Tag;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.TagAlias;
@@ -72,18 +73,21 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     private final TagAliasRepository tagAliasRepository;
     private final TagContentRefRepository tagContentRefRepository;
     private final SynonymRepository synonymRepository;
+    private final KnowledgeTagBindingDomainService knowledgeTagBindingDomainService;
 
     public TaxonomyApplicationServiceImpl(
             TagCategoryRepository tagCategoryRepository,
             TagRepository tagRepository,
             TagAliasRepository tagAliasRepository,
             TagContentRefRepository tagContentRefRepository,
-            SynonymRepository synonymRepository) {
+            SynonymRepository synonymRepository,
+            KnowledgeTagBindingDomainService knowledgeTagBindingDomainService) {
         this.tagCategoryRepository = tagCategoryRepository;
         this.tagRepository = tagRepository;
         this.tagAliasRepository = tagAliasRepository;
         this.tagContentRefRepository = tagContentRefRepository;
         this.synonymRepository = synonymRepository;
+        this.knowledgeTagBindingDomainService = knowledgeTagBindingDomainService;
     }
 
     @Override
@@ -245,10 +249,19 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
         TagMergeCommand effective = ensureCommand(command, "标签合并命令");
         Tag sourceTag = ensureTagExists(effective.getSourceTagId());
         Tag targetTag = ensureTagExists(effective.getTargetTagId());
+        List<TagContentRef> sourceContentRefs = tagContentRefRepository.listByTagId(sourceTag.getTagId());
         sourceTag.mergeInto(targetTag);
         if (tagRepository.update(sourceTag) != 1) {
             throw new BizException("标签合并状态更新失败");
         }
+        sourceContentRefs.stream()
+                .filter(ref -> ref != null && ref.getContentType() != null && ref.getContentId() != null)
+                .forEach(ref -> knowledgeTagBindingDomainService.syncContentTagRef(
+                        targetTag.getTagId(),
+                        ref.getContentType(),
+                        ref.getContentId(),
+                        ref.getContentTitle(),
+                        ref.getSource()));
     }
 
     @Override
