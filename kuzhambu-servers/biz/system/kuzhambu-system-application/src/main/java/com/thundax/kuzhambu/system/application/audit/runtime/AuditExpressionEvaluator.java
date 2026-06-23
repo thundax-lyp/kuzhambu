@@ -1,8 +1,8 @@
 package com.thundax.kuzhambu.system.application.audit.runtime;
 
+import com.thundax.kuzhambu.common.audit.model.valueobject.AuditField;
+import com.thundax.kuzhambu.common.audit.model.valueobject.AuditSnapshot;
 import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditChangedField;
-import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditField;
-import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditSnapshot;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
