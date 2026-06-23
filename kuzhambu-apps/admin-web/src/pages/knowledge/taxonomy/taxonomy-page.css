@@ -18,6 +18,11 @@
     border: 1px solid rgba(15, 23, 42, 0.08);
 }
 
+.knowledge-taxonomy-metrics-panel {
+    background: linear-gradient(135deg, rgba(250, 252, 255, 0.92), rgba(242, 248, 236, 0.96));
+    border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
 .knowledge-taxonomy-merge-header {
     align-items: flex-start;
     display: flex;
@@ -45,6 +50,12 @@
     display: grid;
     gap: 16px;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.knowledge-taxonomy-metrics-grid {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 }
 
 @media (max-width: 768px) {

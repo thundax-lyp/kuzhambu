@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { App as AntdApp } from "antd";
@@ -54,7 +54,15 @@ vi.mock("./taxonomy-service", () => ({
         records: []
     })),
     getTagDetail: vi.fn(async () => ({
-        tag: null,
+        tag: {
+            id: "1001",
+            name: "礼制",
+            categoryName: "礼学",
+            status: "ENABLED",
+            source: "MANUAL",
+            reviewStatus: "APPROVED",
+            contentRefCount: 2
+        },
         aliases: [],
         contentRefs: []
     })),
@@ -88,6 +96,13 @@ vi.mock("./taxonomy-service", () => ({
         governedRecordCount: 3
     })),
     applyTagMerge: vi.fn(async () => true),
+    deprecateTag: vi.fn(async () => true),
+    getTagGovernanceMetrics: vi.fn(async () => ({
+        topTags: [{ tagName: "礼制", contentRefCount: 4 }],
+        categoryDistributions: [{ categoryName: "礼学", tagCount: 2 }],
+        sourceRatios: [{ source: "MANUAL", tagCount: 1 }],
+        monthlyNewTags: [{ month: "2025-01", tagCount: 2 }]
+    })),
     changeTagStatus: vi.fn(async () => true),
     createTag: vi.fn(async () => true),
     updateTag: vi.fn(async () => true),
@@ -103,13 +118,6 @@ vi.mock("./taxonomy-service", () => ({
     removeSynonym: vi.fn(async () => true)
 }));
 
-const openSelectAndChoose = async (label: string, optionText: string) => {
-    const select = await screen.findByRole("combobox", { name: label });
-    fireEvent.mouseDown(select);
-    const options = await screen.findAllByText(optionText);
-    await userEvent.click(options.at(-1)!);
-};
-
 describe("TaxonomyPage", () => {
     beforeEach(() => {
         queryClient.clear();
@@ -122,7 +130,7 @@ describe("TaxonomyPage", () => {
         cleanup();
     });
 
-    it("previews and applies tag merge actions", async () => {
+    it("renders governance metrics on tags tab", async () => {
         render(
             <QueryClientProvider client={queryClient}>
                 <AntdApp>
@@ -132,35 +140,17 @@ describe("TaxonomyPage", () => {
         );
 
         await userEvent.click(screen.getByRole("tab", { name: "统一标签" }));
-        expect(
-            await screen.findByRole("heading", { level: 4, name: "标签合并治理" })
-        ).toBeInTheDocument();
-
-        await openSelectAndChoose("源标签", "礼制（1001）");
-        await openSelectAndChoose("目标标签", "祭祀（1002）");
-        await userEvent.click(screen.getByRole("button", { name: "预览合并影响" }));
-
         await waitFor(() =>
-            expect(service.previewTagMergeImpact).toHaveBeenCalledWith(
-                {
-                    sourceTagId: "1001",
-                    targetTagId: "1002"
-                },
-                expect.anything()
-            )
+            expect(service.getTagGovernanceMetrics).toHaveBeenCalledWith({
+                topLimit: 10,
+                recentMonths: 6
+            })
         );
-        expect(await screen.findByText("礼典")).toBeInTheDocument();
-        expect(screen.getByText("周礼 · CLASSICS")).toBeInTheDocument();
-
-        await userEvent.click(screen.getByRole("button", { name: "执行标签合并" }));
-        await waitFor(() =>
-            expect(service.applyTagMerge).toHaveBeenCalledWith(
-                {
-                    sourceTagId: "1001",
-                    targetTagId: "1002"
-                },
-                expect.anything()
-            )
-        );
+        expect(await screen.findByText("标签治理统计")).toBeInTheDocument();
+        expect(await screen.findByText("标签使用排行")).toBeInTheDocument();
+        expect(screen.getByText("知识库分布")).toBeInTheDocument();
+        expect(screen.getByText("来源占比")).toBeInTheDocument();
+        expect(screen.getByText("月度新增趋势")).toBeInTheDocument();
+        expect(screen.getByText("2025-01")).toBeInTheDocument();
     });
 });

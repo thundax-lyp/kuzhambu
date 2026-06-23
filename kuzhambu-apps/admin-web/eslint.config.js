@@ -31,6 +31,7 @@ const SERVICE_METHOD_VERBS = [
     "latest",
     "preview",
     "apply",
+    "deprecate",
     "reject",
     "review",
     "approve",

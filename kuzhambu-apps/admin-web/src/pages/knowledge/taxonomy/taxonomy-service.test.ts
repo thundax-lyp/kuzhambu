@@ -74,7 +74,7 @@ describe("taxonomy service merge contracts", () => {
         localStorage.clear();
     });
 
-    it("sends merge preview and apply requests", async () => {
+    it("sends merge preview, apply, deprecate and metrics requests", async () => {
         const request = {
             sourceTagId: "1001",
             targetTagId: "1002"
@@ -85,5 +85,16 @@ describe("taxonomy service merge contracts", () => {
 
         await service.applyTagMerge(request);
         expectLastCall("POST", "/knowledge/taxonomy/tag/merge/apply", request);
+
+        await service.deprecateTag({ id: "1001" });
+        expectLastCall("POST", "/knowledge/taxonomy/tag/deprecate", {
+            id: "1001"
+        });
+
+        await service.getTagGovernanceMetrics({ topLimit: 10, recentMonths: 6 });
+        expectLastCall("POST", "/knowledge/taxonomy/tag/metrics", {
+            topLimit: 10,
+            recentMonths: 6
+        });
     });
 });

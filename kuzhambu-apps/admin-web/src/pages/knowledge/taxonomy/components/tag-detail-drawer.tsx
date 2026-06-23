@@ -1,9 +1,13 @@
 import { Button, Descriptions, Empty, Input, List, Space, Typography } from "antd";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import { TagAliasList } from "./tag-alias-list";
-import type { TagReviewCommand } from "../taxonomy-service";
-import type { TagAliasCreateCommand, TagAliasRemoveCommand } from "../taxonomy-service";
+import type {
+    TagAliasCreateCommand,
+    TagAliasRemoveCommand,
+    TagDeprecateCommand,
+    TagReviewCommand
+} from "../taxonomy-service";
 import type { TagDetailRecord } from "../taxonomy-types";
 
 const { Paragraph, Text, Title } = Typography;
@@ -11,7 +15,9 @@ const { TextArea } = Input;
 
 interface TagDetailDrawerProps {
     canEditAliases?: boolean;
+    canDeprecateTag?: boolean;
     creatingAlias?: boolean;
+    deprecating?: boolean;
     loading?: boolean;
     open: boolean;
     removingAliasId?: string | null;
@@ -21,6 +27,7 @@ interface TagDetailDrawerProps {
     onCreateAlias?: (request: TagAliasCreateCommand) => void;
     onApprove?: (request: TagReviewCommand) => void;
     onClose: () => void;
+    onDeprecate?: (request: TagDeprecateCommand) => void;
     onReject?: (request: TagReviewCommand) => void;
     onRemoveAlias?: (request: TagAliasRemoveCommand) => void;
 }
@@ -76,7 +83,9 @@ const readContentTypeLabel = (contentType?: string | null) => {
 
 export const TagDetailDrawer = ({
     canEditAliases = false,
+    canDeprecateTag = false,
     creatingAlias = false,
+    deprecating = false,
     loading = false,
     open,
     removingAliasId,
@@ -86,6 +95,7 @@ export const TagDetailDrawer = ({
     onCreateAlias,
     onApprove,
     onClose,
+    onDeprecate,
     onReject,
     onRemoveAlias
 }: TagDetailDrawerProps) => {
@@ -116,10 +126,47 @@ export const TagDetailDrawer = ({
         });
     };
 
+    const deprecateTag = () => {
+        if (!tag || !onDeprecate) {
+            return;
+        }
+        onDeprecate({ id: tag.id });
+    };
+
     const closeDrawer = () => {
         setReviewNote("");
         onClose();
     };
+
+    let footer: ReactNode;
+    if (reviewMode) {
+        footer = (
+            <div className="knowledge-taxonomy-tag-detail-footer">
+                <Button disabled={reviewing} onClick={closeDrawer}>
+                    关闭
+                </Button>
+                <Space>
+                    <Button type="primary" loading={reviewing} onClick={approveTag}>
+                        通过
+                    </Button>
+                    <Button danger loading={reviewing} onClick={rejectTag}>
+                        拒绝
+                    </Button>
+                </Space>
+            </div>
+        );
+    } else if (canDeprecateTag) {
+        footer = (
+            <div className="knowledge-taxonomy-tag-detail-footer">
+                <Button disabled={deprecating} onClick={closeDrawer}>
+                    关闭
+                </Button>
+                <Button danger loading={deprecating} onClick={deprecateTag}>
+                    废弃标签
+                </Button>
+            </div>
+        );
+    }
 
     return (
         <KuzhambuDrawer
@@ -129,23 +176,7 @@ export const TagDetailDrawer = ({
             size="large"
             loading={loading}
             onClose={closeDrawer}
-            footer={
-                reviewMode ? (
-                    <div className="knowledge-taxonomy-tag-detail-footer">
-                        <Button disabled={reviewing} onClick={closeDrawer}>
-                            关闭
-                        </Button>
-                        <Space>
-                            <Button type="primary" loading={reviewing} onClick={approveTag}>
-                                通过
-                            </Button>
-                            <Button danger loading={reviewing} onClick={rejectTag}>
-                                拒绝
-                            </Button>
-                        </Space>
-                    </div>
-                ) : undefined
-            }
+            footer={footer}
         >
             {tag ? (
                 <div className="knowledge-taxonomy-tag-detail">

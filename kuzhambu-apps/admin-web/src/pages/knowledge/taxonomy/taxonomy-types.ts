@@ -37,6 +37,33 @@ export interface TagMergePreviewRecord {
     governedRecordCount?: number | null;
 }
 
+export interface TagGovernanceMetricsRecord {
+    topTags?: TagUsageMetricRecord[] | null;
+    categoryDistributions?: CategoryDistributionMetricRecord[] | null;
+    sourceRatios?: SourceRatioMetricRecord[] | null;
+    monthlyNewTags?: MonthlyNewTagMetricRecord[] | null;
+}
+
+export interface TagUsageMetricRecord {
+    tagName?: string | null;
+    contentRefCount?: number | null;
+}
+
+export interface CategoryDistributionMetricRecord {
+    categoryName?: string | null;
+    tagCount?: number | null;
+}
+
+export interface SourceRatioMetricRecord {
+    source?: string | null;
+    tagCount?: number | null;
+}
+
+export interface MonthlyNewTagMetricRecord {
+    month?: string | null;
+    tagCount?: number | null;
+}
+
 export interface TagAliasRecord {
     id: string;
     name: string;

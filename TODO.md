@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web/taxonomy`：补齐标签废弃与完整统计入口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GOVERNANCE-READABLE-RESULTS.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/taxonomy/**`
-    - 处理动作：在现有 taxonomy 页面补齐废弃动作和完整治理统计展示入口
-    - 验收点：管理员可执行废弃动作并查看使用排行、知识库分布、来源占比和月度新增趋势
-    - 重要度：8/10
-
 - [ ] `knowledge/graph`：定义图谱版本读取契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GOVERNANCE-READABLE-RESULTS.md`

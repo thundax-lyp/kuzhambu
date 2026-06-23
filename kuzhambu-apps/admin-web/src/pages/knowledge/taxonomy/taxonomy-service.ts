@@ -6,6 +6,7 @@ import type {
     TagCategoryPageQuery,
     TagCategoryRecord,
     TagDetailRecord,
+    TagGovernanceMetricsRecord,
     TagMergePreviewRecord,
     TagPageQuery,
     TagRecord,
@@ -62,8 +63,17 @@ export interface TagMergeCommand {
     targetTagId: string;
 }
 
+export interface TagDeprecateCommand {
+    id: string;
+}
+
 export interface TagIdCommand {
     tagId: string;
+}
+
+export interface TagGovernanceMetricsQuery {
+    topLimit?: number;
+    recentMonths?: number;
 }
 
 export interface TagReviewCommand {
@@ -175,6 +185,12 @@ export const applyTagMerge = (request: TagMergeCommand) => {
     });
 };
 
+export const deprecateTag = (request: TagDeprecateCommand) => {
+    return postJson<boolean, TagDeprecateCommand>(`${API_PREFIX}/tag/deprecate`, {
+        body: request
+    });
+};
+
 export const pagePendingTags = (request: TagReviewPageQuery = {}) => {
     return postJson<Page<TagRecord>, TagReviewPageQuery>(`${API_PREFIX}/tag/review/page`, {
         body: request
@@ -185,6 +201,15 @@ export const reviewTag = (request: TagReviewCommand) => {
     return postJson<boolean, TagReviewCommand>(`${API_PREFIX}/tag/review`, {
         body: request
     });
+};
+
+export const getTagGovernanceMetrics = (request: TagGovernanceMetricsQuery = {}) => {
+    return postJson<TagGovernanceMetricsRecord, TagGovernanceMetricsQuery>(
+        `${API_PREFIX}/tag/metrics`,
+        {
+            body: request
+        }
+    );
 };
 
 export const listTagAliases = (request: TagAliasListCommand) => {
