@@ -13,7 +13,7 @@ import com.thundax.kuzhambu.ai.domain.knowledge.model.valueobject.KnowledgeAiExt
 import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
 
-class KnowledgeAiExtractionDomainServiceImplTest {
+class KnowledgeAiExtractionApplicationServiceImplTest {
 
     private final KnowledgeAiWorkerUsecaseResolver resolver = new KnowledgeAiWorkerUsecaseResolver();
 
