@@ -2,7 +2,7 @@
 
 ## Purpose
 
-本文档定义 Knowledge 域当前已落地设计，覆盖标签治理、同义词和知识抽取任务闭环。
+本文档定义 Knowledge 域当前已落地设计，覆盖标签治理、同义词、知识抽取任务和正式结果读取闭环。
 
 ## Module
 
@@ -53,11 +53,11 @@ Knowledge 拥有统一标签、同义词、知识抽取任务、图谱版本以�
 
 ## Application Layer
 
-- `TagApplicationService`
+- `TaxonomyApplicationService`
 - `SynonymApplicationService`
 - `KnowledgeGraphExtractionApplicationService`
 
-Application 层负责标签治理、同义词扩展、知识抽取任务编排、AI 候选状态回填、候选结果应用和图谱版本关联。
+Application 层负责标签治理、同义词扩展、知识抽取任务编排、AI 候选状态回填、候选结果应用、图谱版本关联和正式结果读取。
 
 跨域协作语义：
 
@@ -72,6 +72,7 @@ Admin 入口：
 - 标签治理。
 - 同义词维护。
 - 知识抽取任务创建、分页、详情和候选应用。
+- 正式结果读取，包括图谱版本列表/详情，以及从版本下钻的正式实体、正式关系和正式世系结果。
 
 Portal 入口：
 
@@ -94,10 +95,10 @@ Knowledge 是 `knowledge_*` 表的唯一写入方。Classics 删除或归档内�
 
 ## Observability
 
-- 标签审核、合并、废弃和精修保存通过 System 审计记录。
+- 标签审核、合并和废弃通过 System 审计记录。
 - 图谱提取任务记录 `aiCallId`、`aiCandidateId`、失败原因、完成时间和应用时间。
 
 ## Acceptance
 
-- 标签、同义词、知识抽取任务和正式知识事实在一个业务域内闭合。
+- 标签、同义词、知识抽取任务、正式知识事实和正式结果读取在一个业务域内闭合。
 - 搜索和问答可消费 Knowledge 增强能力，但当前不依赖图谱浏览或质量报告作为前置。
