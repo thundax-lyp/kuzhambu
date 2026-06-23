@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web/knowledge`：搭建正式结果读取页骨架和路由
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GOVERNANCE-READABLE-RESULTS.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/**`、`kuzhambu-apps/admin-web/src/router/index.tsx`
-    - 处理动作：新增正式结果读取页组骨架和路由入口
-    - 验收点：Admin Web 已有独立于 taxonomy 的正式结果读取页入口
-    - 重要度：7/10
-
 - [ ] `admin-web/knowledge`：接通图谱版本列表和详情
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GOVERNANCE-READABLE-RESULTS.md`
