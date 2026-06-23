@@ -5,7 +5,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,6 +18,16 @@ import lombok.Setter;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ClassicsContentTagSortRequest {
+    @Schema(name = "contentType", description = "内容类型")
+    @JsonProperty("contentType")
+    @NotBlank(message = "contentType不能为空")
+    private String contentType;
+
+    @Schema(name = "contentId", description = "内容ID")
+    @JsonProperty("contentId")
+    @NotNull(message = "contentId不能为空")
+    private Long contentId;
+
     @Schema(name = "orderedIds", description = "排序实体ID序列")
     @JsonProperty("orderedIds")
     @NotEmpty(message = "orderedIds不能为空")

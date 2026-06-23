@@ -157,13 +157,15 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     public void sortTags(ContentTagSortCommand command) {
         SortDirection effectiveDirection =
                 command == null || command.getSortDirection() == null ? SortDirection.ASC : command.getSortDirection();
+        String contentType = command == null ? null : command.getContentType();
+        ClassicsContentId contentId = command == null ? null : command.getContentId();
         List<ClassicsContentTagId> orderedIdList =
                 command == null || command.getOrderedIds() == null ? Collections.emptyList() : command.getOrderedIds();
-        if (orderedIdList.isEmpty()) {
+        if (StringUtils.isBlank(contentType) || contentId == null || orderedIdList.isEmpty()) {
             throw sortEmptyInput();
         }
 
-        List<ClassicsContentTag> currentTags = repository.listTags(effectiveDirection);
+        List<ClassicsContentTag> currentTags = repository.listTags(contentType, contentId, effectiveDirection);
         if (currentTags == null || currentTags.isEmpty() || currentTags.size() != orderedIdList.size()) {
             throw sortMissingId();
         }
@@ -188,7 +190,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             }
         }
 
-        int temporaryPriority = repository.maxTagPriority() + 1;
+        int temporaryPriority = repository.maxTagPriority(contentType, contentId) + 1;
         for (int i = 0; i < currentOrderedIds.size(); i++) {
             ClassicsContentTagId targetId = orderedIdList.get(i);
             ClassicsContentTagId currentId = currentOrderedIds.get(i);
@@ -216,12 +218,13 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ClassicsContentTagId addTag(ContentTagCommand command) {
-        ClassicsContentTag tag = tagBindingSupport == null
-                ? command.toEntity()
-                : tagBindingSupport.bindManualTag(command, repository.maxTagPriority() + 1);
+        ClassicsContentId contentId = ClassicsContentId.of(command.getContentId());
+        int nextPriority = repository.maxTagPriority(command.getContentType().value(), contentId) + 1;
+        ClassicsContentTag tag =
+                tagBindingSupport == null ? command.toEntity() : tagBindingSupport.bindManualTag(command, nextPriority);
         tag.setId(null);
         if (tagBindingSupport == null) {
-            tag.setPriority(repository.maxTagPriority() + 1);
+            tag.setPriority(nextPriority);
         }
         ClassicsContentTagId createdId = repository.insertTag(tag);
         if (tagBindingSupport != null) {
@@ -254,8 +257,13 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteTag(ClassicsContentTagId id) {
-        ClassicsContentTag existing = tagBindingSupport == null ? null : repository.getTagById(id);
-        repository.deleteTagById(id);
+        ClassicsContentTag existing = repository.getTagById(id);
+        repository.deleteTagById(
+                existing == null || existing.getContentType() == null
+                        ? null
+                        : existing.getContentType().value(),
+                existing == null ? null : existing.getContentId(),
+                id);
         if (tagBindingSupport != null) {
             tagBindingSupport.removeTagRef(existing);
         }

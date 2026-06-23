@@ -457,12 +457,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         }
 
         @Override
-        public List<ClassicsContentTag> listTags(com.thundax.kuzhambu.common.core.sort.SortDirection sortDirection) {
-            return tags;
-        }
-
-        @Override
-        public int maxTagPriority() {
+        public int maxTagPriority(String contentType, ClassicsContentId contentId) {
             return tags.size();
         }
 
@@ -489,7 +484,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         }
 
         @Override
-        public int deleteTagById(ClassicsContentTagId id) {
+        public int deleteTagById(String contentType, ClassicsContentId contentId, ClassicsContentTagId id) {
             return 1;
         }
 

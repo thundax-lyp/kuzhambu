@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `classics/tag-repo-scope`：修复 Classics 标签仓储排序和查询作用域
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-KNOWLEDGE-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-domain/src/main/java/com/thundax/kuzhambu/classics/domain/content/repository/ClassicsContentRepository.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/command/ContentTagSortCommand.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/java/com/thundax/kuzhambu/classics/infra/content/repository/impl/ClassicsContentRepositoryImpl.java`
-    - 处理动作：移除全表标签排序依赖，改为按 `contentType + contentId` 作用域查询、排序和删除标签
-    - 验收点：仓储与排序命令均显式带内容作用域，不再存在全表标签排序输入
-    - 重要度：10/10
-
 - [ ] `classics/ai-tag-closure`：接通 AI 标签确认到 Knowledge 的同步闭环
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-KNOWLEDGE-CLOSURE.md`

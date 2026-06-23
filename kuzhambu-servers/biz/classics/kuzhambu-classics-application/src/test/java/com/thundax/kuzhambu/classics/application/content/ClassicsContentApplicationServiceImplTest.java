@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.classics.application.content.command.ContentExportCommand;
+import com.thundax.kuzhambu.classics.application.content.command.ContentTagSortCommand;
 import com.thundax.kuzhambu.classics.application.content.result.ClassicsExportJobResult;
 import com.thundax.kuzhambu.classics.application.content.service.impl.ClassicsContentApplicationServiceImpl;
 import com.thundax.kuzhambu.classics.application.sancai.support.SancaiEntryVersionRestorer;
@@ -206,6 +207,32 @@ class ClassicsContentApplicationServiceImplTest {
         verify(repository).markExportJobFailed(ClassicsContentExportJobId.of(900000000002L));
     }
 
+    @Test
+    void sortTagsShouldUseScopedTagQueryAndPriorityRange() {
+        ClassicsContentRepository repository = mock(ClassicsContentRepository.class);
+        ClassicsContentApplicationServiceImpl service =
+                new ClassicsContentApplicationServiceImpl(repository, null, null, null, null, null, null, null);
+        ClassicsContentId contentId = ClassicsContentId.of(100L);
+        ClassicsContentTag first = new ClassicsContentTag();
+        first.setId(ClassicsContentTagId.of(1L));
+        first.setPriority(1);
+        ClassicsContentTag second = new ClassicsContentTag();
+        second.setId(ClassicsContentTagId.of(2L));
+        second.setPriority(2);
+        when(repository.listTags("SANCAI_ENTRY", contentId, SortDirection.ASC)).thenReturn(List.of(first, second));
+        when(repository.maxTagPriority("SANCAI_ENTRY", contentId)).thenReturn(2);
+        when(repository.updateTagPriority(any())).thenReturn(1);
+
+        service.sortTags(new ContentTagSortCommand(
+                "SANCAI_ENTRY",
+                contentId,
+                List.of(ClassicsContentTagId.of(2L), ClassicsContentTagId.of(1L)),
+                SortDirection.ASC));
+
+        verify(repository).listTags("SANCAI_ENTRY", contentId, SortDirection.ASC);
+        verify(repository).maxTagPriority("SANCAI_ENTRY", contentId);
+    }
+
     private static WorkerRenderDtos.WorkerRenderResponse renderSuccessResponse(String filename) {
         WorkerRenderDtos.WorkerRenderResponse response = new WorkerRenderDtos.WorkerRenderResponse();
         response.setStatus("SUCCEEDED");
@@ -289,12 +316,7 @@ class ClassicsContentApplicationServiceImplTest {
         }
 
         @Override
-        public List<ClassicsContentTag> listTags(SortDirection sortDirection) {
-            return List.of();
-        }
-
-        @Override
-        public int maxTagPriority() {
+        public int maxTagPriority(String contentType, ClassicsContentId contentId) {
             return 0;
         }
 
@@ -319,7 +341,7 @@ class ClassicsContentApplicationServiceImplTest {
         }
 
         @Override
-        public int deleteTagById(ClassicsContentTagId id) {
+        public int deleteTagById(String contentType, ClassicsContentId contentId, ClassicsContentTagId id) {
             return 0;
         }
 

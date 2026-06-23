@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.classics.application.content.command.AiCandidateApplyContentCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentExportCommand;
+import com.thundax.kuzhambu.classics.application.content.command.ContentTagSortCommand;
 import com.thundax.kuzhambu.classics.application.content.result.AiCandidateApplyContentResult;
 import com.thundax.kuzhambu.classics.application.content.result.ClassicsExportJobResult;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
@@ -161,6 +162,19 @@ class ClassicsContentAdminControllerTest {
         assertEquals(HttpServletResponse.SC_NOT_FOUND, expiredResponse.getStatus());
     }
 
+    @Test
+    void sortTagsShouldMapScopedRequestToCommand() {
+        ClassicsContentAdminController controller = controller();
+        var request =
+                new com.thundax.kuzhambu.classics.interfaces.admin.content.controller.request
+                        .ClassicsContentTagSortRequest();
+        request.setContentType("SANCAI_ENTRY");
+        request.setContentId(456L);
+        request.setOrderedIds(List.of(2L, 1L));
+
+        assertTrue(controller.sortTags(request));
+    }
+
     private static ClassicsContentAdminController controller() {
         return new ClassicsContentAdminController(contentService(), storageService());
     }
@@ -220,6 +234,17 @@ class ClassicsContentAdminControllerTest {
                         assertEquals("new summary", command.getResultPayload());
                         assertEquals("AI 应用：摘要", command.getChangeSummary());
                         return new AiCandidateApplyContentResult(ClassicsContentType.SANCAI_ENTRY, 456L, 789L, 3);
+                    }
+                    if ("sortTags".equals(method.getName())) {
+                        ContentTagSortCommand command = (ContentTagSortCommand) args[0];
+                        assertEquals("SANCAI_ENTRY", command.getContentType());
+                        assertEquals(456L, command.getContentId().value());
+                        assertEquals(
+                                List.of(2L, 1L),
+                                command.getOrderedIds().stream()
+                                        .map(id -> id.value())
+                                        .toList());
+                        return null;
                     }
                     throw new UnsupportedOperationException(method.getName());
                 });

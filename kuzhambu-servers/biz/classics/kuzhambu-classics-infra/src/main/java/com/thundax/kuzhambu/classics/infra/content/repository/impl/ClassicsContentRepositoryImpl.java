@@ -88,15 +88,11 @@ public class ClassicsContentRepositoryImpl implements ClassicsContentRepository 
     }
 
     @Override
-    public List<ClassicsContentTag> listTags(SortDirection sortDirection) {
-        return ClassicsContentPersistenceAssembler.toTagDomainList(
-                tagMapper.selectList(new LambdaQueryWrapper<ClassicsContentTagDO>()
-                        .orderBy(true, sortDirection != SortDirection.DESC, ClassicsContentTagDO::getPriority)));
-    }
-
-    @Override
-    public int maxTagPriority() {
-        return maxPriority(tagMapper.selectObjs(new QueryWrapper<ClassicsContentTagDO>().select("max(priority)")));
+    public int maxTagPriority(String contentType, ClassicsContentId contentId) {
+        return maxPriority(tagMapper.selectObjs(new QueryWrapper<ClassicsContentTagDO>()
+                .select("max(priority)")
+                .eq(StringUtils.isNotBlank(contentType), "content_type", contentType)
+                .eq(contentId != null, "content_id", ClassicsContentIdCodec.toValue(contentId))));
     }
 
     public ClassicsContentTagId insertTag(ClassicsContentTag tag) {
@@ -135,8 +131,11 @@ public class ClassicsContentRepositoryImpl implements ClassicsContentRepository 
                         .set(ClassicsContentTagDO::getStatus, dataObject.getStatus()));
     }
 
-    public int deleteTagById(ClassicsContentTagId id) {
-        return tagMapper.deleteById(ClassicsContentTagIdCodec.toValue(id));
+    public int deleteTagById(String contentType, ClassicsContentId contentId, ClassicsContentTagId id) {
+        return tagMapper.delete(new LambdaUpdateWrapper<ClassicsContentTagDO>()
+                .eq(ClassicsContentTagDO::getId, ClassicsContentTagIdCodec.toValue(id))
+                .eq(StringUtils.isNotBlank(contentType), ClassicsContentTagDO::getContentType, contentType)
+                .eq(contentId != null, ClassicsContentTagDO::getContentId, ClassicsContentIdCodec.toValue(contentId)));
     }
 
     public List<ClassicsContentQaPair> listQaPairs(
