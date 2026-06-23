@@ -21,6 +21,11 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
+      <groupId>com.thundax</groupId>
+      <artifactId>kuzhambu-common-audit</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
       <optional>true</optional>

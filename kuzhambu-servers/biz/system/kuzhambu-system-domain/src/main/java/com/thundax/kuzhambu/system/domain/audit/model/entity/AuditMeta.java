@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.system.domain.audit.model.entity;
 
-import com.thundax.kuzhambu.system.domain.audit.model.enums.AuditAction;
+import com.thundax.kuzhambu.common.audit.model.enums.AuditAction;
 import com.thundax.kuzhambu.system.domain.audit.model.enums.AuditOperatorType;
 import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditLogId;
 import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditMetaId;
