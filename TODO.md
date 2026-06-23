@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `RefinementLineageNodeDraftPersistenceAssembler.java,RefinementLineageNodeDraftRepositoryImpl.java,RefinementLineageNodeDraftRepositoryTest.java`：完成世系节点草稿仓储实现
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/refinement/persistence/assembler/RefinementLineageNodeDraftPersistenceAssembler.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/refinement/repository/impl/RefinementLineageNodeDraftRepositoryImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/test/java/com/thundax/kuzhambu/knowledge/infra/refinement/repository/impl/RefinementLineageNodeDraftRepositoryTest.java`
-    - 处理动作：新增世系节点草稿专属装配器并完成世系节点草稿仓储实现与测试
-    - 验收点：世系节点草稿仓储可稳定读取、保存和删除，查询条件具备自动化验证
-    - 重要度：8/10
-
 - [ ] `RefinementLineageRelationDraftRepositoryImpl.java,RefinementLineageNodeDraftRepositoryTest.java,RefinementLineageRelationDraftRepositoryTest.java,QualityAnnotation.java,QualityAnnotationRepository.java`：补齐世系仓储验证并引入质量标注领域端口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
