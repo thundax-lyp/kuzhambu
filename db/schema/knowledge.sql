@@ -121,6 +121,7 @@ CREATE TABLE IF NOT EXISTS `knowledge_graph_version` (
 CREATE TABLE IF NOT EXISTS `knowledge_entity` (
     `id` bigint NOT NULL AUTO_INCREMENT,
     `entity_id` bigint NOT NULL,
+    `entity_key` varchar(160) NOT NULL,
     `name` varchar(128) NOT NULL,
     `entity_type` varchar(64) NOT NULL,
     `description` varchar(1024) DEFAULT NULL,
@@ -132,7 +133,7 @@ CREATE TABLE IF NOT EXISTS `knowledge_entity` (
     `confirmed_at` datetime(3) DEFAULT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_knowledge_entity_entity_id` (`entity_id`),
-    UNIQUE KEY `uk_knowledge_entity_name_type` (`name`, `entity_type`),
+    UNIQUE KEY `uk_knowledge_entity_entity_key` (`entity_key`),
     KEY `idx_knowledge_entity_latest_version` (`latest_version_id`),
     KEY `idx_knowledge_entity_confirmation_status` (`confirmation_status`, `last_extracted_at`),
     KEY `idx_knowledge_entity_name` (`name`)
@@ -141,6 +142,9 @@ CREATE TABLE IF NOT EXISTS `knowledge_entity` (
 CREATE TABLE IF NOT EXISTS `knowledge_relation` (
     `id` bigint NOT NULL AUTO_INCREMENT,
     `relation_id` bigint NOT NULL,
+    `relation_key` varchar(256) NOT NULL,
+    `source_entity_key` varchar(160) NOT NULL,
+    `target_entity_key` varchar(160) NOT NULL,
     `source_name` varchar(128) NOT NULL,
     `target_name` varchar(128) NOT NULL,
     `relation_type` varchar(64) NOT NULL,
@@ -153,15 +157,16 @@ CREATE TABLE IF NOT EXISTS `knowledge_relation` (
     `confirmed_at` datetime(3) DEFAULT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_knowledge_relation_relation_id` (`relation_id`),
-    UNIQUE KEY `uk_knowledge_relation_edge` (`source_name`, `target_name`, `relation_type`),
+    UNIQUE KEY `uk_knowledge_relation_relation_key` (`relation_key`),
     KEY `idx_knowledge_relation_latest_version` (`latest_version_id`),
     KEY `idx_knowledge_relation_confirmation_status` (`confirmation_status`, `last_extracted_at`),
-    KEY `idx_knowledge_relation_source_target` (`source_name`, `target_name`)
+    KEY `idx_knowledge_relation_source_target` (`source_entity_key`, `target_entity_key`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='图谱关系表';
 
 CREATE TABLE IF NOT EXISTS `knowledge_lineage_node` (
     `id` bigint NOT NULL AUTO_INCREMENT,
     `node_id` bigint NOT NULL,
+    `node_key` varchar(160) NOT NULL,
     `name` varchar(128) NOT NULL,
     `node_type` varchar(64) NOT NULL,
     `generation` int DEFAULT NULL,
@@ -174,7 +179,7 @@ CREATE TABLE IF NOT EXISTS `knowledge_lineage_node` (
     `confirmed_at` datetime(3) DEFAULT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_knowledge_lineage_node_node_id` (`node_id`),
-    UNIQUE KEY `uk_knowledge_lineage_node_name_type` (`name`, `node_type`),
+    UNIQUE KEY `uk_knowledge_lineage_node_node_key` (`node_key`),
     KEY `idx_knowledge_lineage_node_latest_version` (`latest_version_id`),
     KEY `idx_knowledge_lineage_node_confirmation_status` (`confirmation_status`, `last_extracted_at`),
     KEY `idx_knowledge_lineage_node_name` (`name`)
@@ -183,6 +188,9 @@ CREATE TABLE IF NOT EXISTS `knowledge_lineage_node` (
 CREATE TABLE IF NOT EXISTS `knowledge_lineage_relation` (
     `id` bigint NOT NULL AUTO_INCREMENT,
     `relation_id` bigint NOT NULL,
+    `relation_key` varchar(256) NOT NULL,
+    `source_node_key` varchar(160) NOT NULL,
+    `target_node_key` varchar(160) NOT NULL,
     `source_name` varchar(128) NOT NULL,
     `target_name` varchar(128) NOT NULL,
     `relation_type` varchar(64) NOT NULL,
@@ -195,8 +203,8 @@ CREATE TABLE IF NOT EXISTS `knowledge_lineage_relation` (
     `confirmed_at` datetime(3) DEFAULT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_knowledge_lineage_relation_relation_id` (`relation_id`),
-    UNIQUE KEY `uk_knowledge_lineage_relation_edge` (`source_name`, `target_name`, `relation_type`),
+    UNIQUE KEY `uk_knowledge_lineage_relation_relation_key` (`relation_key`),
     KEY `idx_knowledge_lineage_relation_latest_version` (`latest_version_id`),
     KEY `idx_knowledge_lineage_relation_confirmation_status` (`confirmation_status`, `last_extracted_at`),
-    KEY `idx_knowledge_lineage_relation_source_target` (`source_name`, `target_name`)
+    KEY `idx_knowledge_lineage_relation_source_target` (`source_node_key`, `target_node_key`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='世系关系表';
