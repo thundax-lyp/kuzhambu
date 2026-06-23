@@ -11,11 +11,11 @@
 
 ## 待审阅任务项
 
-- [ ] `KnowledgeGraphRefinementApplicationService.java,RefinementWorkbenchPageQuery.java,RefinementDetailQuery.java,RefinementDetailResult.java`：定义精修应用服务读契约
+- [ ] `KnowledgeGraphRefinementApplicationService.java,RefinementDetailResult.java,RefinementWorkbenchItemResult.java,RefinementProgressSummaryResult.java,RefinementEntityOptionResult.java`：定义精修应用服务读契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/service/KnowledgeGraphRefinementApplicationService.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/query/RefinementWorkbenchPageQuery.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/query/RefinementDetailQuery.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/result/RefinementDetailResult.java`
-    - 处理动作：定义精修列表、详情和任务读取的最终版应用服务契约
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/service/KnowledgeGraphRefinementApplicationService.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/result/RefinementDetailResult.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/result/RefinementWorkbenchItemResult.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/result/RefinementProgressSummaryResult.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/result/RefinementEntityOptionResult.java`
+    - 处理动作：定义精修列表、详情和任务读取的应用服务接口与核心结果模型
     - 验收点：应用服务接口可稳定表达精修任务列表与详情结构
     - 重要度：10/10
 
