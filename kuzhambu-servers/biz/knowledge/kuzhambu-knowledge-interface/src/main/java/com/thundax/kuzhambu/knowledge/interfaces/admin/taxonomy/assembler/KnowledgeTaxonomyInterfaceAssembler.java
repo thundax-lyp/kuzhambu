@@ -11,11 +11,15 @@ import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCategoryCr
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCategoryStatusCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCategoryUpdateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCreateCommand;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagDeprecateCommand;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagMergeCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagReviewCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagStatusCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagUpdateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.SynonymPageQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagCategoryPageQuery;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagGovernanceMetricsQuery;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagMergePreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagPageQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagReviewPageQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.SynonymResult;
@@ -23,6 +27,8 @@ import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagAliasResult
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagCategoryResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagContentRefResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagDetailResult;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagGovernanceMetricsResult;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagMergePreviewResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagResult;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.codec.SynonymIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.codec.TagAliasIdCodec;
@@ -45,7 +51,10 @@ import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.reque
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagCategoryStatusRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagCategoryUpdateRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagCreateRequest;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagDeprecateRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagDetailRequest;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagGovernanceMetricsRequest;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagMergeRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagPageRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagReviewPageRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagReviewRequest;
@@ -56,6 +65,8 @@ import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.respo
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.response.TagCategoryResponse;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.response.TagContentRefResponse;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.response.TagDetailResponse;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.response.TagGovernanceMetricsResponse;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.response.TagMergePreviewResponse;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.response.TagResponse;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
@@ -138,6 +149,25 @@ public final class KnowledgeTaxonomyInterfaceAssembler {
 
     public static TagStatusCommand toStatusCommand(TagStatusRequest request) {
         return new TagStatusCommand(TagIdCodec.toDomain(request.getId()), TagStatus.from(request.getStatus()));
+    }
+
+    public static TagMergePreviewQuery toMergePreviewQuery(TagMergeRequest request) {
+        return new TagMergePreviewQuery(
+                TagIdCodec.toDomain(request.getSourceTagId()), TagIdCodec.toDomain(request.getTargetTagId()));
+    }
+
+    public static TagMergeCommand toMergeCommand(TagMergeRequest request) {
+        return new TagMergeCommand(
+                TagIdCodec.toDomain(request.getSourceTagId()), TagIdCodec.toDomain(request.getTargetTagId()));
+    }
+
+    public static TagDeprecateCommand toDeprecateCommand(TagDeprecateRequest request) {
+        return new TagDeprecateCommand(TagIdCodec.toDomain(request.getId()));
+    }
+
+    public static TagGovernanceMetricsQuery toMetricsQuery(TagGovernanceMetricsRequest request) {
+        return new TagGovernanceMetricsQuery(
+                request == null ? null : request.getTopLimit(), request == null ? null : request.getRecentMonths());
     }
 
     public static TagDetailRequest toTagIdRequest(TagDetailRequest request) {
@@ -265,6 +295,93 @@ public final class KnowledgeTaxonomyInterfaceAssembler {
         response.setContentId(result == null ? null : result.getContentId());
         response.setContentTitle(result == null ? null : result.getContentTitle());
         response.setSource(result == null ? null : result.getSource());
+        return response;
+    }
+
+    public static TagMergePreviewResponse toResponse(TagMergePreviewResult result) {
+        TagMergePreviewResponse response = new TagMergePreviewResponse();
+        response.setSourceTag(result == null ? null : toResponse(result.getSourceTag()));
+        response.setTargetTag(result == null ? null : toResponse(result.getTargetTag()));
+        response.setAliasesToMerge(
+                result == null || result.getAliasesToMerge() == null
+                        ? null
+                        : result.getAliasesToMerge().stream()
+                                .map(KnowledgeTaxonomyInterfaceAssembler::toResponse)
+                                .toList());
+        response.setImpactedContentRefs(
+                result == null || result.getImpactedContentRefs() == null
+                        ? null
+                        : result.getImpactedContentRefs().stream()
+                                .map(KnowledgeTaxonomyInterfaceAssembler::toResponse)
+                                .toList());
+        response.setPendingReviewCount(result == null ? null : result.getPendingReviewCount());
+        response.setGovernedRecordCount(result == null ? null : result.getGovernedRecordCount());
+        return response;
+    }
+
+    public static TagGovernanceMetricsResponse toResponse(TagGovernanceMetricsResult result) {
+        TagGovernanceMetricsResponse response = new TagGovernanceMetricsResponse();
+        response.setTopTags(
+                result == null || result.getTopTags() == null
+                        ? null
+                        : result.getTopTags().stream()
+                                .map(KnowledgeTaxonomyInterfaceAssembler::toResponse)
+                                .toList());
+        response.setCategoryDistributions(
+                result == null || result.getCategoryDistributions() == null
+                        ? null
+                        : result.getCategoryDistributions().stream()
+                                .map(KnowledgeTaxonomyInterfaceAssembler::toResponse)
+                                .toList());
+        response.setSourceRatios(
+                result == null || result.getSourceRatios() == null
+                        ? null
+                        : result.getSourceRatios().stream()
+                                .map(KnowledgeTaxonomyInterfaceAssembler::toResponse)
+                                .toList());
+        response.setMonthlyNewTags(
+                result == null || result.getMonthlyNewTags() == null
+                        ? null
+                        : result.getMonthlyNewTags().stream()
+                                .map(KnowledgeTaxonomyInterfaceAssembler::toResponse)
+                                .toList());
+        return response;
+    }
+
+    public static TagGovernanceMetricsResponse.TagUsageMetric toResponse(
+            TagGovernanceMetricsResult.TagUsageMetric result) {
+        TagGovernanceMetricsResponse.TagUsageMetric response = new TagGovernanceMetricsResponse.TagUsageMetric();
+        response.setTagName(result == null ? null : result.getTagName());
+        response.setContentRefCount(result == null ? null : result.getContentRefCount());
+        return response;
+    }
+
+    public static TagGovernanceMetricsResponse.CategoryDistributionMetric toResponse(
+            TagGovernanceMetricsResult.CategoryDistributionMetric result) {
+        TagGovernanceMetricsResponse.CategoryDistributionMetric response =
+                new TagGovernanceMetricsResponse.CategoryDistributionMetric();
+        response.setCategoryName(result == null ? null : result.getCategoryName());
+        response.setTagCount(result == null ? null : result.getTagCount());
+        return response;
+    }
+
+    public static TagGovernanceMetricsResponse.SourceRatioMetric toResponse(
+            TagGovernanceMetricsResult.SourceRatioMetric result) {
+        TagGovernanceMetricsResponse.SourceRatioMetric response = new TagGovernanceMetricsResponse.SourceRatioMetric();
+        response.setSource(
+                result == null || result.getSource() == null
+                        ? null
+                        : result.getSource().value());
+        response.setTagCount(result == null ? null : result.getTagCount());
+        return response;
+    }
+
+    public static TagGovernanceMetricsResponse.MonthlyNewTagMetric toResponse(
+            TagGovernanceMetricsResult.MonthlyNewTagMetric result) {
+        TagGovernanceMetricsResponse.MonthlyNewTagMetric response =
+                new TagGovernanceMetricsResponse.MonthlyNewTagMetric();
+        response.setMonth(result == null ? null : result.getMonth());
+        response.setTagCount(result == null ? null : result.getTagCount());
         return response;
     }
 

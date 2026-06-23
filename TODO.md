@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `knowledge/taxonomy`：暴露合并预览、合并、废弃、统计后台接口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GOVERNANCE-READABLE-RESULTS.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/taxonomy/**`
-    - 处理动作：补齐 taxonomy 后台业务动作接口并统一命名语义
-    - 验收点：后台已提供 merge preview、merge apply、deprecate、metrics 的稳定接口
-    - 重要度：8/10
-
 - [ ] `admin-web/taxonomy`：补齐标签合并预览与合并动作
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GOVERNANCE-READABLE-RESULTS.md`
