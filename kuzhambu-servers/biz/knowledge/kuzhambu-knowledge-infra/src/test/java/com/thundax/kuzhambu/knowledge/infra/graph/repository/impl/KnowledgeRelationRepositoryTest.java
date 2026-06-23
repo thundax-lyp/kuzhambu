@@ -37,7 +37,7 @@ class KnowledgeRelationRepositoryTest {
     void saveOrUpdateBatchShouldInsertWhenRelationDoesNotExist() {
         KnowledgeRelationMapper mapper = mock(KnowledgeRelationMapper.class);
         when(mapper.update(any(), any())).thenReturn(0);
-        when(mapper.insert(any())).thenReturn(1);
+        when(mapper.insert(any(KnowledgeRelationDO.class))).thenReturn(1);
         KnowledgeRelationRepositoryImpl repository = new KnowledgeRelationRepositoryImpl(mapper);
         KnowledgeRelation relation = new KnowledgeRelation();
         relation.setRelationKey("renwu:huangdi->fuxi:ancestor");

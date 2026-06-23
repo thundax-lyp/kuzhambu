@@ -37,7 +37,7 @@ class KnowledgeEntityRepositoryTest {
     void saveOrUpdateBatchShouldInsertWhenEntityDoesNotExist() {
         KnowledgeEntityMapper mapper = mock(KnowledgeEntityMapper.class);
         when(mapper.update(any(), any())).thenReturn(0);
-        when(mapper.insert(any())).thenReturn(1);
+        when(mapper.insert(any(KnowledgeEntityDO.class))).thenReturn(1);
         KnowledgeEntityRepositoryImpl repository = new KnowledgeEntityRepositoryImpl(mapper);
         KnowledgeEntity entity = new KnowledgeEntity();
         entity.setEntityKey("renwu:huangdi");

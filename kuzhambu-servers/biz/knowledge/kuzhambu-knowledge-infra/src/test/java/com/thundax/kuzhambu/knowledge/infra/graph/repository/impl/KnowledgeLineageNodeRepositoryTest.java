@@ -37,7 +37,7 @@ class KnowledgeLineageNodeRepositoryTest {
     void saveOrUpdateBatchShouldInsertWhenNodeDoesNotExist() {
         KnowledgeLineageNodeMapper mapper = mock(KnowledgeLineageNodeMapper.class);
         when(mapper.update(any(), any())).thenReturn(0);
-        when(mapper.insert(any())).thenReturn(1);
+        when(mapper.insert(any(KnowledgeLineageNodeDO.class))).thenReturn(1);
         KnowledgeLineageNodeRepositoryImpl repository = new KnowledgeLineageNodeRepositoryImpl(mapper);
         KnowledgeLineageNode node = new KnowledgeLineageNode();
         node.setNodeKey("junzhu:huangdi");

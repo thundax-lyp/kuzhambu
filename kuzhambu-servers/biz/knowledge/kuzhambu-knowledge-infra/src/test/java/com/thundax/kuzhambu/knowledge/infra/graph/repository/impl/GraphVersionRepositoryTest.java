@@ -40,7 +40,7 @@ class GraphVersionRepositoryTest {
     @Test
     void saveShouldGenerateVersionIdAndMapScopeFields() {
         GraphVersionMapper mapper = mock(GraphVersionMapper.class);
-        when(mapper.insert(any())).thenReturn(1);
+        when(mapper.insert(any(GraphVersionDO.class))).thenReturn(1);
         GraphVersionRepositoryImpl repository = new GraphVersionRepositoryImpl(mapper);
         GraphVersion version = new GraphVersion();
         version.setTaskId(GraphExtractionTaskId.of(12L));
