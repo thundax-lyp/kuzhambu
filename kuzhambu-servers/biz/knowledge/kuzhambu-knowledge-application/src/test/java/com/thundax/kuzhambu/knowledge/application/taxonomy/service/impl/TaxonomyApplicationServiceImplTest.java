@@ -1,9 +1,12 @@
 package com.thundax.kuzhambu.knowledge.application.taxonomy.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.thundax.kuzhambu.common.core.exception.BizException;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagMergeCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagMergePreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagMergePreviewResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.service.TaxonomyApplicationService;
@@ -28,6 +31,21 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class TaxonomyApplicationServiceImplTest {
+
+    @Test
+    void applyTagMergeShouldExposeStableActionContractBeforeOrchestration() {
+        TaxonomyApplicationService service = new TaxonomyApplicationServiceImpl(
+                mock(TagCategoryRepository.class),
+                mock(TagRepository.class),
+                mock(TagAliasRepository.class),
+                mock(TagContentRefRepository.class),
+                mock(SynonymRepository.class));
+
+        BizException error = assertThrows(
+                BizException.class, () -> service.applyTagMerge(new TagMergeCommand(TagId.of(1L), TagId.of(2L))));
+
+        assertEquals("标签合并 application 编排尚未实现", error.getMessage());
+    }
 
     @Test
     void previewTagMergeImpactShouldAggregateAliasesContentRefsAndPendingReview() {

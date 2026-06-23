@@ -15,6 +15,7 @@ import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCategoryCr
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCategoryStatusCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCategoryUpdateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCreateCommand;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagMergeCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagReviewCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagStatusCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagUpdateCommand;
@@ -236,6 +237,15 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
                 TaxonomyApplicationAssembler.toContentRefResultList(impactedContentRefs),
                 pendingReviewCount,
                 governedRecordCount);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void applyTagMerge(TagMergeCommand command) {
+        TagMergeCommand effective = ensureCommand(command, "标签合并命令");
+        ensureId(effective.getSourceTagId(), "sourceTagId");
+        ensureId(effective.getTargetTagId(), "targetTagId");
+        throw new BizException("标签合并 application 编排尚未实现");
     }
 
     @Override

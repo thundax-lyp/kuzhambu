@@ -12,6 +12,7 @@ import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCategoryCr
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCategoryStatusCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCategoryUpdateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCreateCommand;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagMergeCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagReviewCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagStatusCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagUpdateCommand;
@@ -47,6 +48,8 @@ public interface TaxonomyApplicationService {
     TagDetailResult getTagDetail(TagId id);
 
     TagMergePreviewResult previewTagMergeImpact(TagMergePreviewQuery query);
+
+    void applyTagMerge(TagMergeCommand command);
 
     TagId createTag(TagCreateCommand command);
 
