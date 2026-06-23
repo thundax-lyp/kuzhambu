@@ -75,14 +75,6 @@
     - 验收点：质量标注创建、更新、删除可被 System 审计追溯
     - 重要度：7/10
 
-- [ ] `refinement-page.tsx,refinement-page.css,refinement-page.test.tsx,router/index.tsx`：实现精修页面壳与路由入口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/refinement-page.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/refinement-page.css`、`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/refinement-page.test.tsx`、`kuzhambu-apps/admin-web/src/router/index.tsx`
-    - 处理动作：编排精修工作台页面并接入 `/knowledge/refinement` 路由
-    - 验收点：页面完成“筛选任务 -> 打开任务 -> 编辑实体关系 -> 应用任务”的主交互
-    - 重要度：10/10
-
 - [ ] `system.json,system.sql`：新增精修菜单与权限种子
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
