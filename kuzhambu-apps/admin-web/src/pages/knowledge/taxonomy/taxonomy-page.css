@@ -7,3 +7,48 @@
     min-height: 220px;
     padding: 20px 0;
 }
+
+.knowledge-taxonomy-tag-governance {
+    display: grid;
+    gap: 16px;
+}
+
+.knowledge-taxonomy-merge-panel {
+    background: linear-gradient(135deg, rgba(245, 247, 255, 0.92), rgba(255, 251, 240, 0.96));
+    border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.knowledge-taxonomy-merge-header {
+    align-items: flex-start;
+    display: flex;
+    gap: 16px;
+    justify-content: space-between;
+}
+
+.knowledge-taxonomy-merge-controls {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.knowledge-taxonomy-merge-field {
+    display: grid;
+    gap: 8px;
+}
+
+.knowledge-taxonomy-merge-preview {
+    display: grid;
+    gap: 16px;
+}
+
+.knowledge-taxonomy-merge-preview-grid {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+@media (max-width: 768px) {
+    .knowledge-taxonomy-merge-header {
+        flex-direction: column;
+    }
+}

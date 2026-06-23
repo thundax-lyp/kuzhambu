@@ -29,6 +29,7 @@ const SERVICE_METHOD_VERBS = [
     "load",
     "request",
     "latest",
+    "preview",
     "apply",
     "reject",
     "review",

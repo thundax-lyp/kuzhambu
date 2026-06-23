@@ -28,6 +28,15 @@ export interface TagDetailRecord {
     contentRefs?: TagContentRefRecord[] | null;
 }
 
+export interface TagMergePreviewRecord {
+    sourceTag?: TagRecord | null;
+    targetTag?: TagRecord | null;
+    aliasesToMerge?: TagAliasRecord[] | null;
+    impactedContentRefs?: TagContentRefRecord[] | null;
+    pendingReviewCount?: number | null;
+    governedRecordCount?: number | null;
+}
+
 export interface TagAliasRecord {
     id: string;
     name: string;

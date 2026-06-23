@@ -6,6 +6,7 @@ import type {
     TagCategoryPageQuery,
     TagCategoryRecord,
     TagDetailRecord,
+    TagMergePreviewRecord,
     TagPageQuery,
     TagRecord,
     TagReviewPageQuery,
@@ -54,6 +55,11 @@ export interface TagUpdateCommand {
 export interface TagStatusCommand {
     id: string;
     status: string;
+}
+
+export interface TagMergeCommand {
+    sourceTagId: string;
+    targetTagId: string;
 }
 
 export interface TagIdCommand {
@@ -153,6 +159,18 @@ export const updateTag = (request: TagUpdateCommand) => {
 
 export const changeTagStatus = (request: TagStatusCommand) => {
     return postJson<boolean, TagStatusCommand>(`${API_PREFIX}/tag/status`, {
+        body: request
+    });
+};
+
+export const previewTagMergeImpact = (request: TagMergeCommand) => {
+    return postJson<TagMergePreviewRecord, TagMergeCommand>(`${API_PREFIX}/tag/merge/preview`, {
+        body: request
+    });
+};
+
+export const applyTagMerge = (request: TagMergeCommand) => {
+    return postJson<boolean, TagMergeCommand>(`${API_PREFIX}/tag/merge/apply`, {
         body: request
     });
 };

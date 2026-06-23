@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web/taxonomy`：补齐标签合并预览与合并动作
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GOVERNANCE-READABLE-RESULTS.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/taxonomy/**`
-    - 处理动作：在现有 taxonomy 页面补齐合并预览和合并动作入口
-    - 验收点：管理员可在 taxonomy 页面完成合并预览和合并，不混入统计视图
-    - 重要度：8/10
-
 - [ ] `admin-web/taxonomy`：补齐标签废弃与完整统计入口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GOVERNANCE-READABLE-RESULTS.md`
