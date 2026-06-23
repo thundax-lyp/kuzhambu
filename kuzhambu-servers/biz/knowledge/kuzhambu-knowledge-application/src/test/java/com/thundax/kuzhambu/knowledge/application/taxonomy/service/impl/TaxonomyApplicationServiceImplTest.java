@@ -1,11 +1,11 @@
 package com.thundax.kuzhambu.knowledge.application.taxonomy.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagMergeCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagMergePreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagMergePreviewResult;
@@ -33,18 +33,31 @@ import org.junit.jupiter.api.Test;
 class TaxonomyApplicationServiceImplTest {
 
     @Test
-    void applyTagMergeShouldExposeStableActionContractBeforeOrchestration() {
+    void applyTagMergeShouldMarkSourceTagAsMergedIntoTarget() {
+        TagRepository tagRepository = mock(TagRepository.class);
         TaxonomyApplicationService service = new TaxonomyApplicationServiceImpl(
                 mock(TagCategoryRepository.class),
-                mock(TagRepository.class),
+                tagRepository,
                 mock(TagAliasRepository.class),
                 mock(TagContentRefRepository.class),
                 mock(SynonymRepository.class));
+        Tag sourceTag = new Tag();
+        sourceTag.setId(TagId.of(11L));
+        sourceTag.setTagId(TagId.of(1L));
+        sourceTag.setStatus(TagStatus.ENABLED);
+        Tag targetTag = new Tag();
+        targetTag.setId(TagId.of(12L));
+        targetTag.setTagId(TagId.of(2L));
+        targetTag.setStatus(TagStatus.ENABLED);
+        when(tagRepository.getByTagId(TagId.of(1L))).thenReturn(sourceTag);
+        when(tagRepository.getByTagId(TagId.of(2L))).thenReturn(targetTag);
+        when(tagRepository.update(sourceTag)).thenReturn(1);
 
-        BizException error = assertThrows(
-                BizException.class, () -> service.applyTagMerge(new TagMergeCommand(TagId.of(1L), TagId.of(2L))));
+        service.applyTagMerge(new TagMergeCommand(TagId.of(1L), TagId.of(2L)));
 
-        assertEquals("标签合并 application 编排尚未实现", error.getMessage());
+        assertEquals(TagId.of(2L), sourceTag.getMergedToTagId());
+        assertNull(targetTag.getMergedToTagId());
+        verify(tagRepository).update(sourceTag);
     }
 
     @Test

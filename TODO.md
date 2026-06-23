@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `knowledge/taxonomy`：落地标签合并标签状态编排
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GOVERNANCE-READABLE-RESULTS.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/**`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/taxonomy/**`
-    - 处理动作：补齐 source tag 并入 target tag 的 application 编排和持久化更新
-    - 验收点：后端已能标记源标签并入目标标签，且源标签保留可查看历史
-    - 重要度：8/10
-
 - [ ] `knowledge/taxonomy`：落地标签合并内容引用复制
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GOVERNANCE-READABLE-RESULTS.md`

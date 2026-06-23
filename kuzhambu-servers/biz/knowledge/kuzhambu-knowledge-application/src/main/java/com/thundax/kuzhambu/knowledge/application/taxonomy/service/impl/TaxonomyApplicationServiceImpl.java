@@ -243,9 +243,12 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     @Transactional(rollbackFor = Exception.class)
     public void applyTagMerge(TagMergeCommand command) {
         TagMergeCommand effective = ensureCommand(command, "标签合并命令");
-        ensureId(effective.getSourceTagId(), "sourceTagId");
-        ensureId(effective.getTargetTagId(), "targetTagId");
-        throw new BizException("标签合并 application 编排尚未实现");
+        Tag sourceTag = ensureTagExists(effective.getSourceTagId());
+        Tag targetTag = ensureTagExists(effective.getTargetTagId());
+        sourceTag.mergeInto(targetTag);
+        if (tagRepository.update(sourceTag) != 1) {
+            throw new BizException("标签合并状态更新失败");
+        }
     }
 
     @Override
