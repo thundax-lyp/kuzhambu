@@ -19,14 +19,6 @@
     - 验收点：应用服务接口可稳定表达精修任务列表与详情结构
     - 重要度：10/10
 
-- [ ] `ConfirmRefinementLineageNodeCommand.java,ConfirmRefinementLineageRelationCommand.java,DeleteRefinementLineageNodeCommand.java,DeleteRefinementLineageRelationCommand.java,DeleteQualityAnnotationCommand.java`：定义后续开放能力命令模型
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/command/ConfirmRefinementLineageNodeCommand.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/command/ConfirmRefinementLineageRelationCommand.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/command/DeleteRefinementLineageNodeCommand.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/command/DeleteRefinementLineageRelationCommand.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/command/DeleteQualityAnnotationCommand.java`
-    - 处理动作：定义世系确认删除和标注删除命令模型
-    - 验收点：后续开放能力的命令模型补齐
-    - 重要度：7/10
-
 - [ ] `QualityAnnotationPageQuery.java,QualityAnnotationResult.java,RefinementWorkbenchItemResult.java,RefinementProgressSummaryResult.java,RefinementEntityOptionResult.java`：定义列表与标注结果模型
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-WORKBENCH.md`
