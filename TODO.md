@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `classics-application`：T2 创建事务后发送支持类
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-INDEX-SYNC.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/searchsync/support/ClassicsSearchIndexSyncPublishSupport.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/searchsync/ClassicsSearchIndexSyncPublishSupportTest.java`
-    - 处理动作：封装 `afterCommit` 发送逻辑并提供 `publishUpsertAfterCommit(...)` 和 `publishDeleteAfterCommit(...)`。
-    - 验收点：仅在事务提交后调用 publisher，且无事务上下文时抛清晰异常。
-    - 重要度：9/10
-
 - [ ] `classics-interface+starter`：T3 接入 RocketMQ producer 实现与配置
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-INDEX-SYNC.md`
