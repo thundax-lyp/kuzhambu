@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `classics-content-governance`：T10b 在内容治理写路径接入事务后消息发送
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-INDEX-SYNC.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/service/impl/ClassicsContentApplicationServiceImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/content/ClassicsContentApplicationServiceImplTest.java`
-    - 处理动作：给摘要、标签、问答、AI 应用结果等治理写路径接入事务后消息发送。
-    - 验收点：所有影响搜索面的治理变更都会推进 `currentVersionNo` 并发送索引同步消息。
-    - 重要度：9/10
-
 - [ ] `discovery-docs`：T11 更新设计与覆盖文档
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-INDEX-SYNC.md`

@@ -390,12 +390,15 @@
 
 - `kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/service/impl/ClassicsContentApplicationServiceImpl.java`
 - `kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/content/ClassicsContentApplicationServiceImplTest.java`
+- `kuzhambu-servers/biz/classics/kuzhambu-classics-domain/src/main/java/com/thundax/kuzhambu/classics/domain/content/repository/ClassicsContentRepository.java`
+- `kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/java/com/thundax/kuzhambu/classics/infra/content/repository/impl/ClassicsContentRepositoryImpl.java`
 
 完成标准：
 
 - ClassicsContentApplicationServiceImpl 内会改变摘要、标签、问答、AI 应用结果的路径接入同步
 - 所有消息都必须带 `currentVersionNo`
-- 所有会影响搜索面的字段变更都必须推进 `currentVersionNo`
+- 所有会影响搜索面的字段变更都必须推进并持久化 `currentVersionNo`
+- AI 应用 `summary/tags/qa` 和手工治理 `tag/qa` 都进入同一套版本与同步流程
 
 ### T11. 更新设计与覆盖文档
 

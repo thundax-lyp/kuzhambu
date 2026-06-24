@@ -219,6 +219,19 @@ public class ClassicsContentRepositoryImpl implements ClassicsContentRepository 
     }
 
     @Override
+    public int updateSancaiEntryVersionMarkers(SancaiEntry entry) {
+        SancaiEntryDO dataObject = SancaiPersistenceAssembler.toEntryObject(entry);
+        return sancaiMapper.update(
+                null,
+                new LambdaUpdateWrapper<SancaiEntryDO>()
+                        .eq(SancaiEntryDO::getId, dataObject.getId())
+                        .set(SancaiEntryDO::getCurrentVersionId, dataObject.getCurrentVersionId())
+                        .set(SancaiEntryDO::getCurrentVersionNo, dataObject.getCurrentVersionNo())
+                        .set(SancaiEntryDO::getCurrentVersionedAt, dataObject.getCurrentVersionedAt())
+                        .set(SancaiEntryDO::getContentUpdatedAt, dataObject.getContentUpdatedAt()));
+    }
+
+    @Override
     public WangqiDocument getWangqiDocumentForAiApply(ClassicsContentId contentId) {
         return WangqiDocumentPersistenceAssembler.toDomain(
                 wangqiDocumentMapper.selectById(ClassicsContentIdCodec.toValue(contentId)));
@@ -236,6 +249,19 @@ public class ClassicsContentRepositoryImpl implements ClassicsContentRepository 
     }
 
     @Override
+    public int updateWangqiDocumentVersionMarkers(WangqiDocument document) {
+        WangqiDocumentDO dataObject = WangqiDocumentPersistenceAssembler.toObject(document);
+        return wangqiDocumentMapper.update(
+                null,
+                new LambdaUpdateWrapper<WangqiDocumentDO>()
+                        .eq(WangqiDocumentDO::getId, dataObject.getId())
+                        .set(WangqiDocumentDO::getCurrentVersionId, dataObject.getCurrentVersionId())
+                        .set(WangqiDocumentDO::getCurrentVersionNo, dataObject.getCurrentVersionNo())
+                        .set(WangqiDocumentDO::getCurrentVersionedAt, dataObject.getCurrentVersionedAt())
+                        .set(WangqiDocumentDO::getContentUpdatedAt, dataObject.getContentUpdatedAt()));
+    }
+
+    @Override
     public MingCustomsEntry getMingCustomsEntryForAiApply(ClassicsContentId contentId) {
         return MingCustomsPersistenceAssembler.toEntryDomain(
                 mingCustomsEntryMapper.selectById(ClassicsContentIdCodec.toValue(contentId)));
@@ -249,6 +275,19 @@ public class ClassicsContentRepositoryImpl implements ClassicsContentRepository 
                 new LambdaUpdateWrapper<MingCustomsEntryDO>()
                         .eq(MingCustomsEntryDO::getId, dataObject.getId())
                         .set(MingCustomsEntryDO::getSummary, dataObject.getSummary())
+                        .set(MingCustomsEntryDO::getContentUpdatedAt, dataObject.getContentUpdatedAt()));
+    }
+
+    @Override
+    public int updateMingCustomsEntryVersionMarkers(MingCustomsEntry entry) {
+        MingCustomsEntryDO dataObject = MingCustomsPersistenceAssembler.toEntryObject(entry);
+        return mingCustomsEntryMapper.update(
+                null,
+                new LambdaUpdateWrapper<MingCustomsEntryDO>()
+                        .eq(MingCustomsEntryDO::getId, dataObject.getId())
+                        .set(MingCustomsEntryDO::getCurrentVersionId, dataObject.getCurrentVersionId())
+                        .set(MingCustomsEntryDO::getCurrentVersionNo, dataObject.getCurrentVersionNo())
+                        .set(MingCustomsEntryDO::getCurrentVersionedAt, dataObject.getCurrentVersionedAt())
                         .set(MingCustomsEntryDO::getContentUpdatedAt, dataObject.getContentUpdatedAt()));
     }
 
