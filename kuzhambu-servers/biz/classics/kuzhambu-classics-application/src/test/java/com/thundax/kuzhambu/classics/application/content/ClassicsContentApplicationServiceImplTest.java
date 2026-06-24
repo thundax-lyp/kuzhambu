@@ -12,6 +12,9 @@ import static org.mockito.Mockito.when;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
+import com.thundax.kuzhambu.ai.domain.invocation.service.AiCandidateDomainService;
+import com.thundax.kuzhambu.classics.application.content.command.AiCandidateApplyContentCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentExportCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentTagCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentTagSortCommand;
@@ -19,6 +22,7 @@ import com.thundax.kuzhambu.classics.application.content.result.ClassicsExportJo
 import com.thundax.kuzhambu.classics.application.content.service.impl.ClassicsContentApplicationServiceImpl;
 import com.thundax.kuzhambu.classics.application.content.support.ClassicsTagBindingSupport;
 import com.thundax.kuzhambu.classics.application.sancai.support.SancaiEntryVersionRestorer;
+import com.thundax.kuzhambu.classics.application.searchsync.support.ClassicsSearchIndexSyncPublishSupport;
 import com.thundax.kuzhambu.classics.domain.common.client.WorkerRenderClient;
 import com.thundax.kuzhambu.classics.domain.common.client.dto.WorkerRenderDtos;
 import com.thundax.kuzhambu.classics.domain.common.model.valueobject.KnowledgeTagId;
@@ -70,8 +74,8 @@ class ClassicsContentApplicationServiceImplTest {
     @Test
     void ensureVersionedShouldInsertVersionAndBackfillContentMarker() {
         FakeRepository repository = new FakeRepository();
-        ClassicsContentApplicationServiceImpl service =
-                new ClassicsContentApplicationServiceImpl(repository, null, null, null, null, null, null, null, null);
+        ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
+                repository, null, null, null, null, null, null, null, null, null);
         SancaiEntry entry = new SancaiEntry();
         entry.setId(SancaiEntryId.of(100L));
         entry.setTitle("entry");
@@ -92,8 +96,8 @@ class ClassicsContentApplicationServiceImplTest {
         FakeRepository repository = new FakeRepository();
         ClassicsContentVersion existing = existingVersion(9L, 2, new Date(2_000L));
         repository.insertedVersions.add(existing);
-        ClassicsContentApplicationServiceImpl service =
-                new ClassicsContentApplicationServiceImpl(repository, null, null, null, null, null, null, null, null);
+        ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
+                repository, null, null, null, null, null, null, null, null, null);
         SancaiEntry entry = new SancaiEntry();
         entry.setId(SancaiEntryId.of(100L));
         entry.setCurrentVersionId(existing.getId());
@@ -121,6 +125,7 @@ class ClassicsContentApplicationServiceImplTest {
                 repository,
                 null,
                 new SancaiEntryVersionRestorer(sancaiRepository, new ObjectMapper()),
+                null,
                 null,
                 null,
                 null,
@@ -165,6 +170,7 @@ class ClassicsContentApplicationServiceImplTest {
                 workerRenderClient,
                 storageUploadStreamHelper,
                 null,
+                null,
                 null);
 
         ClassicsExportJobResult result = service.createExportJob(command);
@@ -207,6 +213,7 @@ class ClassicsContentApplicationServiceImplTest {
                 workerRenderClient,
                 storageUploadStreamHelper,
                 null,
+                null,
                 null);
 
         ClassicsExportJobResult result = service.createExportJob(command);
@@ -219,8 +226,8 @@ class ClassicsContentApplicationServiceImplTest {
     @Test
     void sortTagsShouldUseScopedTagQueryAndPriorityRange() {
         ClassicsContentRepository repository = mock(ClassicsContentRepository.class);
-        ClassicsContentApplicationServiceImpl service =
-                new ClassicsContentApplicationServiceImpl(repository, null, null, null, null, null, null, null, null);
+        ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
+                repository, null, null, null, null, null, null, null, null, null);
         ClassicsContentId contentId = ClassicsContentId.of(100L);
         ClassicsContentTag first = new ClassicsContentTag();
         first.setId(ClassicsContentTagId.of(1L));
@@ -247,7 +254,7 @@ class ClassicsContentApplicationServiceImplTest {
         ClassicsContentRepository repository = mock(ClassicsContentRepository.class);
         ClassicsTagBindingSupport tagBindingSupport = mock(ClassicsTagBindingSupport.class);
         ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
-                repository, null, null, null, null, null, null, null, tagBindingSupport);
+                repository, null, null, null, null, null, null, null, tagBindingSupport, null);
         ContentTagCommand command = new ContentTagCommand(
                 null,
                 ClassicsContentType.SANCAI_ENTRY,
@@ -285,7 +292,7 @@ class ClassicsContentApplicationServiceImplTest {
         ClassicsContentRepository repository = mock(ClassicsContentRepository.class);
         ClassicsTagBindingSupport tagBindingSupport = mock(ClassicsTagBindingSupport.class);
         ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
-                repository, null, null, null, null, null, null, null, tagBindingSupport);
+                repository, null, null, null, null, null, null, null, tagBindingSupport, null);
         ContentTagCommand command = new ContentTagCommand(
                 9001L,
                 ClassicsContentType.SANCAI_ENTRY,
@@ -326,7 +333,7 @@ class ClassicsContentApplicationServiceImplTest {
         ClassicsContentRepository repository = mock(ClassicsContentRepository.class);
         ClassicsTagBindingSupport tagBindingSupport = mock(ClassicsTagBindingSupport.class);
         ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
-                repository, null, null, null, null, null, null, null, tagBindingSupport);
+                repository, null, null, null, null, null, null, null, tagBindingSupport, null);
         ClassicsContentTag existingTag = new ClassicsContentTag();
         existingTag.setId(ClassicsContentTagId.of(9001L));
         existingTag.setContentType(ClassicsContentType.SANCAI_ENTRY);
@@ -337,6 +344,74 @@ class ClassicsContentApplicationServiceImplTest {
 
         verify(repository).deleteTagById("SANCAI_ENTRY", ClassicsContentId.of(100L), ClassicsContentTagId.of(9001L));
         verify(tagBindingSupport).removeTagRef(existingTag);
+    }
+
+    @Test
+    void addTagShouldPersistVersionMarkersAndPublishUpsertForPublicContent() {
+        FakeRepository repository = new FakeRepository();
+        repository.sancaiEntryForAiApply = publicSancaiEntry(100L);
+        repository.nextTagPriority = 2;
+        repository.insertedTagId = ClassicsContentTagId.of(9002L);
+        ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
+        ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
+                repository, null, null, null, null, null, null, null, null, publishSupport);
+
+        service.addTag(new ContentTagCommand(
+                null,
+                ClassicsContentType.SANCAI_ENTRY,
+                100L,
+                null,
+                "礼制",
+                ClassicsContentSource.MANUAL,
+                ClassicsContentTagStatus.ACTIVE));
+
+        assertEquals(1, repository.sancaiEntryVersionMarker.getCurrentVersionNo());
+        verify(publishSupport).publishUpsertAfterCommit(ClassicsContentType.SANCAI_ENTRY, "100", 1);
+    }
+
+    @Test
+    void deleteQaPairShouldPersistVersionMarkersAndPublishDeleteForPrivateContent() {
+        FakeRepository repository = new FakeRepository();
+        repository.sancaiEntryForAiApply = privateSancaiEntry(101L);
+        ClassicsContentQaPair qaPair = new ClassicsContentQaPair();
+        qaPair.setId(ClassicsContentQaPairId.of(9010L));
+        qaPair.setContentType(ClassicsContentType.SANCAI_ENTRY);
+        qaPair.setContentId(ClassicsContentId.of(101L));
+        repository.qaPairById = qaPair;
+        ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
+        ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
+                repository, null, null, null, null, null, null, null, null, publishSupport);
+
+        service.deleteQaPair(ClassicsContentQaPairId.of(9010L));
+
+        assertEquals(1, repository.sancaiEntryVersionMarker.getCurrentVersionNo());
+        verify(publishSupport).publishDeleteAfterCommit(ClassicsContentType.SANCAI_ENTRY, "101", 1);
+    }
+
+    @Test
+    void applyAiCandidateShouldPersistVersionMarkersAndPublishSync() {
+        FakeRepository repository = new FakeRepository();
+        repository.sancaiEntryForAiApply = publicSancaiEntry(102L);
+        AiCandidateDomainService aiCandidateDomainService = mock(AiCandidateDomainService.class);
+        ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
+        AiCandidate candidate = new AiCandidate();
+        candidate.setId(7001L);
+        candidate.setCandidateId(7001L);
+        candidate.setCapability("summary");
+        candidate.setContentType(ClassicsContentType.SANCAI_ENTRY.value());
+        candidate.setContentId(102L);
+        candidate.setStatus("PENDING");
+        when(aiCandidateDomainService.requirePendingForApply(any())).thenReturn(candidate);
+        ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
+                repository, null, null, null, null, null, null, aiCandidateDomainService, null, publishSupport);
+
+        service.applyAiCandidate(new AiCandidateApplyContentCommand(
+                7001L, ClassicsContentType.SANCAI_ENTRY, 102L, "summary", "TEXT", "AI摘要", null));
+
+        assertEquals("AI摘要", repository.sancaiEntryForAiApply.getSummary());
+        assertEquals(1, repository.sancaiEntryVersionMarker.getCurrentVersionNo());
+        verify(publishSupport).publishUpsertAfterCommit(ClassicsContentType.SANCAI_ENTRY, "102", 1);
+        verify(aiCandidateDomainService).markApplied(eq(7001L), eq("TEXT"), eq("AI摘要"), any());
     }
 
     private static WorkerRenderDtos.WorkerRenderResponse renderSuccessResponse(String filename) {
@@ -398,9 +473,44 @@ class ClassicsContentApplicationServiceImplTest {
                 """;
     }
 
+    private static SancaiEntry publicSancaiEntry(Long id) {
+        SancaiEntry entry = baseSancaiEntry(id);
+        entry.setLifecycleStatus(SancaiEntryLifecycleStatus.PUBLISHED);
+        entry.setVisibility(SancaiEntryVisibility.PUBLIC);
+        return entry;
+    }
+
+    private static SancaiEntry privateSancaiEntry(Long id) {
+        SancaiEntry entry = baseSancaiEntry(id);
+        entry.setLifecycleStatus(SancaiEntryLifecycleStatus.DRAFT);
+        entry.setVisibility(SancaiEntryVisibility.PRIVATE);
+        return entry;
+    }
+
+    private static SancaiEntry baseSancaiEntry(Long id) {
+        SancaiEntry entry = new SancaiEntry();
+        entry.setId(SancaiEntryId.of(id));
+        entry.setVolumeId(SancaiVolumeId.of(10L));
+        entry.setTitle("标题");
+        entry.setSummary("旧摘要");
+        entry.setOriginalText("原文");
+        entry.setTranslationText("译文");
+        entry.setTranslationStatus(SancaiEntryTranslationStatus.READY);
+        entry.setImageStatus(SancaiEntryImageStatus.READY);
+        entry.setVisualAssetStatus(SancaiEntryVisualAssetStatus.READY);
+        entry.setRefinementStatus(SancaiEntryRefinementStatus.COMPLETE);
+        entry.setContentUpdatedAt(new Date(1_000L));
+        return entry;
+    }
+
     private static final class FakeRepository implements ClassicsContentRepository {
         private final List<ClassicsContentVersion> insertedVersions = new ArrayList<>();
         private ClassicsContentVersion versionById;
+        private SancaiEntry sancaiEntryForAiApply;
+        private SancaiEntry sancaiEntryVersionMarker;
+        private ClassicsContentTagId insertedTagId;
+        private int nextTagPriority;
+        private ClassicsContentQaPair qaPairById;
 
         @Override
         public List<ClassicsContentVersion> listVersions(String contentType, ClassicsContentId contentId) {
@@ -423,12 +533,12 @@ class ClassicsContentApplicationServiceImplTest {
 
         @Override
         public int maxTagPriority(String contentType, ClassicsContentId contentId) {
-            return 0;
+            return nextTagPriority;
         }
 
         @Override
         public ClassicsContentTagId insertTag(ClassicsContentTag tag) {
-            return null;
+            return insertedTagId;
         }
 
         @Override
@@ -474,7 +584,7 @@ class ClassicsContentApplicationServiceImplTest {
 
         @Override
         public ClassicsContentQaPair getQaPairById(ClassicsContentQaPairId id) {
-            return null;
+            return qaPairById;
         }
 
         @Override
@@ -539,12 +649,20 @@ class ClassicsContentApplicationServiceImplTest {
 
         @Override
         public SancaiEntry getSancaiEntryForAiApply(ClassicsContentId contentId) {
-            return null;
+            return sancaiEntryForAiApply;
         }
 
         @Override
         public int updateSancaiEntryAiFields(SancaiEntry entry) {
-            return 0;
+            this.sancaiEntryForAiApply = entry;
+            return 1;
+        }
+
+        @Override
+        public int updateSancaiEntryVersionMarkers(SancaiEntry entry) {
+            this.sancaiEntryVersionMarker = entry;
+            this.sancaiEntryForAiApply = entry;
+            return 1;
         }
 
         @Override

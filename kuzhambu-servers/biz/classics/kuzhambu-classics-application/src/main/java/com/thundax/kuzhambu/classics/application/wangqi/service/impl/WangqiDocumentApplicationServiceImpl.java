@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.classics.application.wangqi.service.impl;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
+import com.thundax.kuzhambu.classics.application.searchsync.support.ClassicsSearchIndexSyncPublishSupport;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentCommand;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentSourceFileCommand;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentVisibilityCommand;
@@ -15,6 +16,7 @@ import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentC
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.wangqi.codec.WangqiDocumentIdCodec;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
+import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.valueobject.WangqiDocumentId;
 import com.thundax.kuzhambu.classics.domain.wangqi.repository.WangqiDocumentRepository;
 import com.thundax.kuzhambu.common.core.exception.BizException;
@@ -51,16 +53,19 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
 
     private final WangqiDocumentRepository repository;
     private final ClassicsContentApplicationService contentApplicationService;
+    private final ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport;
     private final StorageUploadStreamHelper storageUploadStreamHelper;
     private final StorageApplicationService storageApplicationService;
 
     public WangqiDocumentApplicationServiceImpl(
             WangqiDocumentRepository repository,
             ClassicsContentApplicationService contentApplicationService,
+            ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport,
             StorageUploadStreamHelper storageUploadStreamHelper,
             StorageApplicationService storageApplicationService) {
         this.repository = repository;
         this.contentApplicationService = contentApplicationService;
+        this.searchIndexSyncPublishSupport = searchIndexSyncPublishSupport;
         this.storageUploadStreamHelper = storageUploadStreamHelper;
         this.storageApplicationService = storageApplicationService;
     }
@@ -104,6 +109,7 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
         document.setId(id);
         bindStorageObjectIfNeeded(document);
         markManualSaveVersion(document);
+        publishSearchSyncAfterCommit(document);
         return id;
     }
 
@@ -116,6 +122,7 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
         document.setContentUpdatedAt(new Date());
         repository.update(document);
         markManualSaveVersion(document);
+        publishSearchSyncAfterCommit(document);
         return document.getId();
     }
 
@@ -144,6 +151,7 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
                 StorageObjectIdCodec.toDomain(storage.getId().value()));
         document.setContentUpdatedAt(new Date());
         markVersion(document, replacing ? "替换原始文件" : "上传原始文件");
+        publishSearchSyncAfterCommit(document);
         return new WangqiDocumentSourceFile(documentId.value(), storage);
     }
 
@@ -177,9 +185,11 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void changeVisibility(WangqiDocumentVisibilityCommand command) {
-        repository.updateVisibility(
-                WangqiDocumentIdCodec.toDomain(command.getId()),
-                command.getVisibility().value());
+        WangqiDocument document = requireDocument(WangqiDocumentIdCodec.toDomain(command.getId()));
+        document.setVisibility(command.getVisibility());
+        document.setContentUpdatedAt(new Date());
+        markVersion(document, "更新可见性");
+        publishSearchSyncAfterCommit(document);
     }
 
     @Override
@@ -189,6 +199,11 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
             return;
         }
         WangqiDocument document = get(id);
+        if (document != null) {
+            document.setContentUpdatedAt(new Date());
+            contentApplicationService.ensureVersioned(document, ClassicsContentChangeType.MANUAL_SAVE, "手动删除");
+            publishDeleteAfterCommit(document);
+        }
         contentApplicationService.deleteVersions(
                 ClassicsContentType.WANGQI_DOCUMENT.value(), ClassicsContentIdCodec.toDomain(id.value()));
         storageApplicationService.removeReferences(
@@ -217,6 +232,34 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
     private void markVersion(WangqiDocument document, String changeSummary) {
         contentApplicationService.ensureVersioned(document, ClassicsContentChangeType.MANUAL_SAVE, changeSummary);
         repository.update(document);
+    }
+
+    private void publishSearchSyncAfterCommit(WangqiDocument document) {
+        if (isPublicSearchDocument(document)) {
+            searchIndexSyncPublishSupport.publishUpsertAfterCommit(
+                    ClassicsContentType.WANGQI_DOCUMENT,
+                    String.valueOf(document.getId().value()),
+                    document.getCurrentVersionNo());
+            return;
+        }
+        publishDeleteAfterCommit(document);
+    }
+
+    private void publishDeleteAfterCommit(WangqiDocument document) {
+        if (document == null || document.getId() == null || document.getCurrentVersionNo() == null) {
+            return;
+        }
+        searchIndexSyncPublishSupport.publishDeleteAfterCommit(
+                ClassicsContentType.WANGQI_DOCUMENT,
+                String.valueOf(document.getId().value()),
+                document.getCurrentVersionNo());
+    }
+
+    private boolean isPublicSearchDocument(WangqiDocument document) {
+        return document != null
+                && document.getId() != null
+                && document.getCurrentVersionNo() != null
+                && document.getVisibility() == WangqiDocumentVisibility.PUBLIC;
     }
 
     private WangqiDocument requireDocument(WangqiDocumentId id) {

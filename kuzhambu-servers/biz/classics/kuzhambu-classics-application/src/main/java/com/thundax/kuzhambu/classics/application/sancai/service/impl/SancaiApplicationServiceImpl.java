@@ -11,13 +11,17 @@ import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVolumeComm
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVolumeSortCommand;
 import com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryPageQuery;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiApplicationService;
+import com.thundax.kuzhambu.classics.application.searchsync.support.ClassicsSearchIndexSyncPublishSupport;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentChangeType;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiCategoryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiVolumeIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiCategory;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVolume;
+import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryLifecycleStatus;
+import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisibility;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiCategoryId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVolumeId;
@@ -45,11 +49,15 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
 
     private final SancaiRepository repository;
     private final ClassicsContentApplicationService contentApplicationService;
+    private final ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport;
 
     public SancaiApplicationServiceImpl(
-            SancaiRepository repository, ClassicsContentApplicationService contentApplicationService) {
+            SancaiRepository repository,
+            ClassicsContentApplicationService contentApplicationService,
+            ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport) {
         this.repository = repository;
         this.contentApplicationService = contentApplicationService;
+        this.searchIndexSyncPublishSupport = searchIndexSyncPublishSupport;
     }
 
     @Override
@@ -409,6 +417,7 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
         SancaiEntryId id = repository.insertEntry(entry);
         entry.setId(id);
         markManualSaveVersion(entry);
+        publishSearchSyncAfterCommit(entry);
         return id;
     }
 
@@ -424,6 +433,7 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
             throw new BizException("三才图会条目不存在");
         }
         markManualSaveVersion(entry);
+        publishSearchSyncAfterCommit(entry);
         return entry.getId();
     }
 
@@ -433,21 +443,39 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
         if (command == null || command.getId() == null) {
             return;
         }
-        SancaiEntry entry = new SancaiEntry();
-        entry.setId(SancaiEntryIdCodec.toDomain(command.getId()));
+        SancaiEntry entry = repository.getEntryById(SancaiEntryIdCodec.toDomain(command.getId()));
+        if (entry == null) {
+            return;
+        }
         entry.setLifecycleStatus(command.getLifecycleStatus());
-        repository.updateEntryStatus(entry);
+        entry.setContentUpdatedAt(new Date());
+        markManualSaveVersion(entry);
+        publishSearchSyncAfterCommit(entry);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void changeEntryVisibility(SancaiEntryId id, String visibility) {
-        repository.updateEntryVisibility(id, visibility);
+        SancaiEntry entry = repository.getEntryById(id);
+        if (entry == null) {
+            return;
+        }
+        entry.setVisibility(SancaiEntryVisibility.from(visibility));
+        entry.setContentUpdatedAt(new Date());
+        markManualSaveVersion(entry);
+        publishSearchSyncAfterCommit(entry);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteEntry(SancaiEntryId id) {
+        SancaiEntry entry = repository.getEntryById(id);
+        if (entry == null) {
+            return;
+        }
+        entry.setContentUpdatedAt(new Date());
+        contentApplicationService.ensureVersioned(entry, ClassicsContentChangeType.MANUAL_SAVE, "手动删除");
+        publishDeleteAfterCommit(entry);
         repository.deleteEntryById(id);
     }
 
@@ -566,5 +594,29 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
     private void markManualSaveVersion(SancaiEntry entry) {
         contentApplicationService.ensureVersioned(entry, ClassicsContentChangeType.MANUAL_SAVE, "手动保存");
         repository.updateEntry(entry);
+    }
+
+    private void publishSearchSyncAfterCommit(SancaiEntry entry) {
+        if (isPublicSearchEntry(entry)) {
+            searchIndexSyncPublishSupport.publishUpsertAfterCommit(
+                    ClassicsContentType.SANCAI_ENTRY,
+                    String.valueOf(entry.getId().value()),
+                    entry.getCurrentVersionNo());
+            return;
+        }
+        publishDeleteAfterCommit(entry);
+    }
+
+    private void publishDeleteAfterCommit(SancaiEntry entry) {
+        searchIndexSyncPublishSupport.publishDeleteAfterCommit(
+                ClassicsContentType.SANCAI_ENTRY, String.valueOf(entry.getId().value()), entry.getCurrentVersionNo());
+    }
+
+    private boolean isPublicSearchEntry(SancaiEntry entry) {
+        return entry != null
+                && entry.getId() != null
+                && entry.getCurrentVersionNo() != null
+                && entry.getLifecycleStatus() == SancaiEntryLifecycleStatus.PUBLISHED
+                && entry.getVisibility() == SancaiEntryVisibility.PUBLIC;
     }
 }

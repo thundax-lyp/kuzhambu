@@ -4,7 +4,7 @@
 
 本文档定义 Discovery 域设计，覆盖跨库搜索和智能问答。
 
-当前阶段优先落地 `Search` 子能力域骨架；问答相关能力继续保留在本设计文档中，但本轮不进入运行时代码交付范围。
+当前阶段已完成 `Search` 子能力域运行时第一阶段闭环；问答相关能力继续保留在本设计文档中，但本轮不进入运行时代码交付范围。
 
 ## Module
 
@@ -64,6 +64,24 @@ Discovery 拥有搜索查询、搜索日志、问答会话、问答消息、来�
 
 搜索索引不是业务真相源，索引结构由 infra 适配维护。
 
+### Search 索引文档结构
+
+`discovery_search_document`
+
+- 身份字段：`contentType`、`contentId`
+- 展示字段：`title`、`summary`、`bodyText`
+- 分组字段：`groupKey`、`groupTitle`
+- 过滤字段：`visibility`、`lifecycleStatus`、`tags`
+- 深链字段：`targetPath`
+- 幂等字段：`sourceVersionNo`
+- 删除态字段：`deleted`、`deletedAt`
+
+当前规则：
+
+- 索引文档是派生读模型，不承载业务真相。
+- `sourceVersionNo` 固定使用 Classics 内容表上的 `currentVersionNo`。
+- `DELETE` 不做物理删除，而是先写入删除态；物理清理由计划任务按保留期清理。
+
 ### Search 表结构
 
 `discovery_search_log`
@@ -121,6 +139,11 @@ Application 层负责权限过滤、查询理解、同义词扩展、实体增�
   - `recordClick(SearchClickCreateCommand)`
   - `pageLogs(SearchLogPageQuery)`
   - `getLog(String searchLogId)`
+- `SearchIndexApplicationService`
+  - `rebuildIndex()`
+  - `syncDocument(SearchIndexSyncCommand)`
+- `SearchIndexCleanupApplicationService`
+  - `cleanupDeletedDocumentsOlderThan(Instant threshold)`
 - `QueryUnderstandingApplicationService`
   - `understand(SearchQuery)`
 
@@ -155,6 +178,7 @@ Admin：
 
 - `POST /api/discovery/search-admin/logs/page`
 - `POST /api/discovery/search-admin/logs/get`
+- `POST /api/discovery/search-admin/index/rebuild`
 
 当前协议要求：
 
@@ -175,18 +199,41 @@ Admin：
 - `ElasticsearchSearchIndexGateway`：默认实现。
 - `DiscoverySearchDocument`：索引文档模型。
 - `DiscoverySearchIndexProperties`：索引名、别名和批量参数配置。
+- `RocketMqDiscoverySearchIndexSyncProducer` / `RocketMqDiscoverySearchIndexSyncConsumer`：索引同步消息入口。
 
 当前阶段规则：
 
 - Elasticsearch 是默认实现，不是唯一合法实现。
 - application 层只能依赖 `SearchIndexGateway`，不得直接依赖 ES 客户端。
-- `search`、`rebuildIndex`、`upsertDocuments` 当前允许在 infra 中显式抛 `UnsupportedOperationException`，用于表达“接口已定、执行未接入”。
+- Search 运行时已实现真实检索、全量 `rebuild`、增量 `upsert`、删除态写入和删除态物理清理。
+- Elasticsearch 查询必须过滤 `deleted = true` 的文档。
+
+### Search 索引同步
+
+当前阶段固定采用：
+
+- Classics 写路径事务提交后调用 `ClassicsSearchIndexSyncPublishSupport`
+- 通过 RocketMQ 发送 `UPSERT / DELETE` 消息
+- 消息体固定包含 `contentType`、`contentId`、`operation`、`currentVersionNo`
+- Discovery 消费端按 `contentType + contentId` 回查当前最新公开内容
+- `UPSERT` 以 `currentVersionNo` 和 ES 文档 `sourceVersionNo` 做幂等判定
+- `DELETE` 只把文档写成删除态，不做即时物理删除
+- 定时任务按 `deletedAt + retention` 清理过期删除态文档
+- Admin `rebuild` 继续作为全量修复兜底
+
+当前阶段不采用：
+
+- Outbox
+- 分布式事务
+- MQ exactly-once
 
 ## Data Ownership
 
 Discovery 是 `discovery_*` 表的唯一写入方。搜索索引是派生读模型，不替代 Classics 内容真相源。
 
 Search 子域的搜索日志、点击日志和查询理解记录均由 Discovery 自身写入；Classics 只提供可搜索内容，不写入 `discovery_*` 表。
+
+Search 索引同步消息由 Classics 写路径发出，但 Elasticsearch 文档写入、删除态控制和物理清理由 Discovery 独占负责。
 
 ## Observability
 
@@ -203,6 +250,7 @@ Search 子域的搜索日志、点击日志和查询理解记录均由 Discovery
 - 点击目标
 - 请求标识和链路标识
 - 失败码和失败摘要
+- 索引同步消息的内容类型、内容标识和版本号
 
 ## Acceptance
 
@@ -214,4 +262,4 @@ Search 子域的搜索日志、点击日志和查询理解记录均由 Discovery
 - Search 子域的 domain / application / infra / interface 包结构完整可落代码。
 - `discovery_search_log`、`discovery_search_click`、`discovery_query_understanding` 的字段定义已稳定。
 - Portal 搜索、点击接口与 Admin 日志分页、详情接口的路径和字段已稳定。
-- Elasticsearch 入口、检索抽象和异常占位策略已稳定。
+- Elasticsearch 入口、真实检索抽象、增量同步规则和删除态清理规则已稳定。

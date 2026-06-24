@@ -24,6 +24,7 @@ import com.thundax.kuzhambu.classics.application.content.support.ClassicsTagBind
 import com.thundax.kuzhambu.classics.application.content.support.SancaiEntryVersionSnapshot;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiAssetApplicationService;
 import com.thundax.kuzhambu.classics.application.sancai.support.SancaiEntryVersionRestorer;
+import com.thundax.kuzhambu.classics.application.searchsync.support.ClassicsSearchIndexSyncPublishSupport;
 import com.thundax.kuzhambu.classics.application.wangqi.support.WangqiDocumentVersionRestorer;
 import com.thundax.kuzhambu.classics.domain.common.client.WorkerRenderClient;
 import com.thundax.kuzhambu.classics.domain.common.client.dto.WorkerRenderDtos;
@@ -101,6 +102,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     private final AiCandidateDomainService aiCandidateDomainService;
     private final ClassicsAiCandidatePayloadParser aiCandidatePayloadParser;
     private final ClassicsTagBindingSupport tagBindingSupport;
+    private final ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport;
 
     @Autowired
     public ClassicsContentApplicationServiceImpl(
@@ -112,7 +114,8 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             WorkerRenderClient workerRenderClient,
             StorageUploadStreamHelper storageUploadStreamHelper,
             AiCandidateDomainService aiCandidateDomainService,
-            ClassicsTagBindingSupport tagBindingSupport) {
+            ClassicsTagBindingSupport tagBindingSupport,
+            ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport) {
         this.repository = repository;
         this.wangqiDocumentVersionRestorer = wangqiDocumentVersionRestorer;
         this.sancaiEntryVersionRestorer = sancaiEntryVersionRestorer;
@@ -122,6 +125,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         this.storageUploadStreamHelper = storageUploadStreamHelper;
         this.aiCandidateDomainService = aiCandidateDomainService;
         this.tagBindingSupport = tagBindingSupport;
+        this.searchIndexSyncPublishSupport = searchIndexSyncPublishSupport;
         this.objectMapper = new ObjectMapper().findAndRegisterModules();
         this.aiCandidatePayloadParser = new ClassicsAiCandidatePayloadParser(this.objectMapper);
     }
@@ -198,6 +202,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     @Transactional(rollbackFor = Exception.class)
     public ClassicsContentTagId addTag(ContentTagCommand command) {
         ClassicsContentId contentId = ClassicsContentId.of(command.getContentId());
+        ClassicsContentType contentType = command.getContentType();
         int nextPriority = repository.maxTagPriority(command.getContentType().value(), contentId) + 1;
         ClassicsContentTag tag;
         if (tagBindingSupport == null) {
@@ -216,12 +221,15 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             tag.setId(createdId);
             tagBindingSupport.syncTagRef(tag);
         }
+        versionAndPublishContentSync(contentType, contentId, "手动更新标签");
         return createdId;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ClassicsContentTagId updateTag(ContentTagCommand command) {
+        ClassicsContentType contentType = command.getContentType();
+        ClassicsContentId contentId = ClassicsContentId.of(command.getContentId());
         ClassicsContentTag existing =
                 repository.getTagById(command == null ? null : ClassicsContentTagId.of(command.getId()));
         ClassicsContentTag tag = tagBindingSupport == null
@@ -236,6 +244,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             }
             tagBindingSupport.syncTagRef(tag);
         }
+        versionAndPublishContentSync(contentType, contentId, "手动更新标签");
         return tag.getId();
     }
 
@@ -252,6 +261,9 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         if (tagBindingSupport != null) {
             tagBindingSupport.removeTagRef(existing);
         }
+        if (existing != null && existing.getContentType() != null && existing.getContentId() != null) {
+            versionAndPublishContentSync(existing.getContentType(), existing.getContentId(), "手动删除标签");
+        }
     }
 
     @Override
@@ -265,7 +277,9 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         ClassicsContentQaPair qaPair = command.toEntity();
         qaPair.setId(null);
         qaPair.setPriority(repository.maxQaPairPriority() + 1);
-        return repository.insertQaPair(qaPair);
+        ClassicsContentQaPairId createdId = repository.insertQaPair(qaPair);
+        versionAndPublishContentSync(qaPair.getContentType(), qaPair.getContentId(), "手动更新问答对");
+        return createdId;
     }
 
     @Override
@@ -273,6 +287,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     public ClassicsContentQaPairId updateQaPair(ContentQaPairCommand command) {
         ClassicsContentQaPair qaPair = command.toEntity();
         repository.updateQaPair(qaPair);
+        versionAndPublishContentSync(qaPair.getContentType(), qaPair.getContentId(), "手动更新问答对");
         return qaPair.getId();
     }
 
@@ -351,7 +366,11 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteQaPair(ClassicsContentQaPairId id) {
+        ClassicsContentQaPair existing = repository.getQaPairById(id);
         repository.deleteQaPairById(id);
+        if (existing != null && existing.getContentType() != null && existing.getContentId() != null) {
+            versionAndPublishContentSync(existing.getContentType(), existing.getContentId(), "手动删除问答对");
+        }
     }
 
     @Override
@@ -495,6 +514,8 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             throw new BizException("内容不存在");
         }
         ClassicsContentVersion version = applyAiResult(content, changeSummary);
+        persistVersionMarkers(content);
+        publishSearchSyncAfterCommit(content);
         aiCandidateDomainService.markApplied(
                 command.getCandidateId(), command.getResultFormat(), command.getResultPayload(), Instant.now());
         return new AiCandidateApplyContentResult(
@@ -537,7 +558,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             if (StringUtils.isBlank(tagName)) {
                 continue;
             }
-            addTag(new ContentTagCommand(
+            insertTagWithoutVersion(new ContentTagCommand(
                     null,
                     contentType,
                     contentId.value(),
@@ -563,7 +584,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             if (pair == null || StringUtils.isBlank(pair.getQuestion()) || StringUtils.isBlank(pair.getAnswer())) {
                 continue;
             }
-            addQaPair(new ContentQaPairCommand(
+            insertQaPairWithoutVersion(new ContentQaPairCommand(
                     null,
                     contentType,
                     contentId.value(),
@@ -572,6 +593,36 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                     ClassicsContentSource.AI));
         }
         touchContentUpdatedAt(contentType, content);
+    }
+
+    private ClassicsContentTagId insertTagWithoutVersion(ContentTagCommand command) {
+        ClassicsContentId contentId = ClassicsContentId.of(command.getContentId());
+        int nextPriority = repository.maxTagPriority(command.getContentType().value(), contentId) + 1;
+        ClassicsContentTag tag;
+        if (tagBindingSupport == null) {
+            tag = command.toEntity();
+        } else if (command.getSource() == ClassicsContentSource.AI) {
+            tag = tagBindingSupport.bindAiTag(command, nextPriority);
+        } else {
+            tag = tagBindingSupport.bindManualTag(command, nextPriority);
+        }
+        tag.setId(null);
+        if (tagBindingSupport == null) {
+            tag.setPriority(nextPriority);
+        }
+        ClassicsContentTagId createdId = repository.insertTag(tag);
+        if (tagBindingSupport != null) {
+            tag.setId(createdId);
+            tagBindingSupport.syncTagRef(tag);
+        }
+        return createdId;
+    }
+
+    private ClassicsContentQaPairId insertQaPairWithoutVersion(ContentQaPairCommand command) {
+        ClassicsContentQaPair qaPair = command.toEntity();
+        qaPair.setId(null);
+        qaPair.setPriority(repository.maxQaPairPriority() + 1);
+        return repository.insertQaPair(qaPair);
     }
 
     private void touchContentUpdatedAt(ClassicsContentType contentType, Versionable content) {
@@ -590,6 +641,80 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         if (contentType == ClassicsContentType.MING_CUSTOMS) {
             ((MingCustomsEntry) content).setContentUpdatedAt(now);
         }
+    }
+
+    private void versionAndPublishContentSync(
+            ClassicsContentType contentType, ClassicsContentId contentId, String changeSummary) {
+        Versionable content = loadContentForGovernance(contentType, contentId);
+        if (content == null) {
+            return;
+        }
+        touchContentUpdatedAt(contentType, content);
+        ensureVersioned(content, ClassicsContentChangeType.MANUAL_SAVE, changeSummary);
+        persistVersionMarkers(content);
+        publishSearchSyncAfterCommit(content);
+    }
+
+    private Versionable loadContentForGovernance(ClassicsContentType contentType, ClassicsContentId contentId) {
+        if (contentType == null || contentId == null) {
+            return null;
+        }
+        return switch (contentType) {
+            case SANCAI_ENTRY -> repository.getSancaiEntryForAiApply(contentId);
+            case WANGQI_DOCUMENT -> repository.getWangqiDocumentForAiApply(contentId);
+            case MING_CUSTOMS -> repository.getMingCustomsEntryForAiApply(contentId);
+        };
+    }
+
+    private void persistVersionMarkers(Versionable content) {
+        if (content instanceof SancaiEntry entry) {
+            repository.updateSancaiEntryVersionMarkers(entry);
+            return;
+        }
+        if (content instanceof WangqiDocument document) {
+            repository.updateWangqiDocumentVersionMarkers(document);
+            return;
+        }
+        if (content instanceof MingCustomsEntry entry) {
+            repository.updateMingCustomsEntryVersionMarkers(entry);
+        }
+    }
+
+    private void publishSearchSyncAfterCommit(Versionable content) {
+        if (searchIndexSyncPublishSupport == null || content == null || content.contentType() == null) {
+            return;
+        }
+        ClassicsContentId contentId = content.contentId();
+        Integer currentVersionNo = content.currentVersionNo();
+        if (contentId == null || contentId.value() == null || currentVersionNo == null) {
+            return;
+        }
+        if (isPublicSearchContent(content)) {
+            searchIndexSyncPublishSupport.publishUpsertAfterCommit(
+                    content.contentType(), String.valueOf(contentId.value()), currentVersionNo);
+            return;
+        }
+        searchIndexSyncPublishSupport.publishDeleteAfterCommit(
+                content.contentType(), String.valueOf(contentId.value()), currentVersionNo);
+    }
+
+    private boolean isPublicSearchContent(Versionable content) {
+        if (content instanceof SancaiEntry entry) {
+            return entry.getLifecycleStatus()
+                            == com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryLifecycleStatus
+                                    .PUBLISHED
+                    && entry.getVisibility()
+                            == com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisibility.PUBLIC;
+        }
+        if (content instanceof WangqiDocument document) {
+            return document.getVisibility()
+                    == com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility.PUBLIC;
+        }
+        if (content instanceof MingCustomsEntry entry) {
+            return entry.getVisibility()
+                    == com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsVisibility.PUBLIC;
+        }
+        return false;
     }
 
     private void ensureUpdate(int updated, String message) {

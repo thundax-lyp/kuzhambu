@@ -1,12 +1,17 @@
 package com.thundax.kuzhambu.classics.application.wangqi;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
+import com.thundax.kuzhambu.classics.application.searchsync.support.ClassicsSearchIndexSyncPublishSupport;
+import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentCommand;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentSourceFileCommand;
+import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentVisibilityCommand;
 import com.thundax.kuzhambu.classics.application.wangqi.query.WangqiDocumentPageQuery;
 import com.thundax.kuzhambu.classics.application.wangqi.result.WangqiDocumentSourceFile;
 import com.thundax.kuzhambu.classics.application.wangqi.service.impl.WangqiDocumentApplicationServiceImpl;
@@ -15,6 +20,7 @@ import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentC
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
+import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiContentFormat;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.valueobject.WangqiDocumentId;
 import com.thundax.kuzhambu.classics.domain.wangqi.repository.WangqiDocumentRepository;
@@ -40,8 +46,9 @@ class WangqiDocumentApplicationServiceImplTest {
     void listTimelineShouldPassKeywordVisibilityAndSortDirection() {
         WangqiDocumentRepository repository = mock(WangqiDocumentRepository.class);
         ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
-        WangqiDocumentApplicationServiceImpl service =
-                new WangqiDocumentApplicationServiceImpl(repository, contentApplicationService, null, null);
+        ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
+        WangqiDocumentApplicationServiceImpl service = new WangqiDocumentApplicationServiceImpl(
+                repository, contentApplicationService, publishSupport, null, null);
         WangqiDocument document = new WangqiDocument();
         when(repository.listTimeline("山川", "PUBLIC", SortDirection.DESC)).thenReturn(List.of(document));
 
@@ -56,12 +63,15 @@ class WangqiDocumentApplicationServiceImplTest {
     void changeSourceFileShouldUploadBindAndVersionDocument() {
         WangqiDocumentRepository repository = mock(WangqiDocumentRepository.class);
         ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
+        ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
         StorageUploadStreamHelper uploadStreamHelper = mock(StorageUploadStreamHelper.class);
         StorageApplicationService storageApplicationService = mock(StorageApplicationService.class);
         WangqiDocumentApplicationServiceImpl service = new WangqiDocumentApplicationServiceImpl(
-                repository, contentApplicationService, uploadStreamHelper, storageApplicationService);
+                repository, contentApplicationService, publishSupport, uploadStreamHelper, storageApplicationService);
         WangqiDocument document = new WangqiDocument();
         document.setId(WangqiDocumentId.of(400000000001L));
+        document.setVisibility(WangqiDocumentVisibility.PUBLIC);
+        versionDocumentOnEnsure(contentApplicationService, 3);
         when(repository.getById(WangqiDocumentId.of(400000000001L))).thenReturn(document);
         StoredObject storage = storage();
         when(uploadStreamHelper.upload(
@@ -88,23 +98,61 @@ class WangqiDocumentApplicationServiceImplTest {
                 .changeReferenceStatus(org.mockito.ArgumentMatchers.any(ChangeStorageReferenceStatusCommand.class));
         verify(repository).update(document);
         verify(contentApplicationService).ensureVersioned(document, ClassicsContentChangeType.MANUAL_SAVE, "上传原始文件");
+        verify(publishSupport).publishUpsertAfterCommit(ClassicsContentType.WANGQI_DOCUMENT, "400000000001", 3);
     }
 
     @Test
-    void deleteShouldReleaseSourceFileReferenceStatus() {
+    void addShouldPublishUpsertAfterCommitWhenDocumentIsPublic() {
         WangqiDocumentRepository repository = mock(WangqiDocumentRepository.class);
         ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
+        ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
+        WangqiDocumentApplicationServiceImpl service = new WangqiDocumentApplicationServiceImpl(
+                repository, contentApplicationService, publishSupport, null, null);
+        when(repository.insert(any())).thenReturn(WangqiDocumentId.of(400000000002L));
+        versionDocumentOnEnsure(contentApplicationService, 4);
+
+        service.add(publicCommand(null));
+
+        verify(publishSupport).publishUpsertAfterCommit(ClassicsContentType.WANGQI_DOCUMENT, "400000000002", 4);
+    }
+
+    @Test
+    void changeVisibilityShouldPublishDeleteAfterCommitWhenBecomingPrivate() {
+        WangqiDocumentRepository repository = mock(WangqiDocumentRepository.class);
+        ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
+        ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
+        WangqiDocumentApplicationServiceImpl service = new WangqiDocumentApplicationServiceImpl(
+                repository, contentApplicationService, publishSupport, null, null);
+        WangqiDocument document = new WangqiDocument();
+        document.setId(WangqiDocumentId.of(400000000003L));
+        document.setVisibility(WangqiDocumentVisibility.PUBLIC);
+        when(repository.getById(WangqiDocumentId.of(400000000003L))).thenReturn(document);
+        versionDocumentOnEnsure(contentApplicationService, 5);
+
+        service.changeVisibility(new WangqiDocumentVisibilityCommand(400000000003L, WangqiDocumentVisibility.PRIVATE));
+
+        verify(publishSupport).publishDeleteAfterCommit(ClassicsContentType.WANGQI_DOCUMENT, "400000000003", 5);
+    }
+
+    @Test
+    void deleteShouldReleaseSourceFileReferenceStatusAndPublishDeleteAfterCommit() {
+        WangqiDocumentRepository repository = mock(WangqiDocumentRepository.class);
+        ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
+        ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
         StorageApplicationService storageApplicationService = mock(StorageApplicationService.class);
         WangqiDocumentApplicationServiceImpl service = new WangqiDocumentApplicationServiceImpl(
-                repository, contentApplicationService, null, storageApplicationService);
+                repository, contentApplicationService, publishSupport, null, storageApplicationService);
         WangqiDocumentId documentId = WangqiDocumentId.of(400000000001L);
         WangqiDocument document = new WangqiDocument();
         document.setId(documentId);
         document.setStorageObjectId(StorageObjectId.of(7001L));
+        document.setCurrentVersionNo(7);
         when(repository.getById(documentId)).thenReturn(document);
+        versionDocumentOnEnsure(contentApplicationService, 7);
 
         service.delete(documentId);
 
+        verify(publishSupport).publishDeleteAfterCommit(ClassicsContentType.WANGQI_DOCUMENT, "400000000001", 7);
         verify(contentApplicationService)
                 .deleteVersions(ClassicsContentType.WANGQI_DOCUMENT.value(), ClassicsContentId.of(400000000001L));
         ArgumentCaptor<RemoveStorageReferencesCommand> removeCaptor =
@@ -122,6 +170,22 @@ class WangqiDocumentApplicationServiceImplTest {
                 StoredObjectReferenceStatus.UNREFERENCED,
                 statusCaptor.getValue().getReferenceStatus());
         verify(repository).deleteById(documentId);
+    }
+
+    private static void versionDocumentOnEnsure(
+            ClassicsContentApplicationService contentApplicationService, int versionNo) {
+        doAnswer(invocation -> {
+                    WangqiDocument document = invocation.getArgument(0);
+                    document.setCurrentVersionNo(versionNo);
+                    return null;
+                })
+                .when(contentApplicationService)
+                .ensureVersioned(any(), any(), any());
+    }
+
+    private static WangqiDocumentCommand publicCommand(Long id) {
+        return new WangqiDocumentCommand(
+                id, "王圻文档", "摘要", WangqiContentFormat.HTML, "<p>内容</p>", null, null, WangqiDocumentVisibility.PUBLIC);
     }
 
     private static StoredObject storage() {

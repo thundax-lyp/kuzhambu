@@ -27,6 +27,7 @@ class DiscoverySearchDocumentAssemblerTest {
                 List.of(),
                 "PUBLISHED",
                 "PUBLIC",
+                3,
                 new Date(1_718_000_000_000L),
                 new Date(1_718_100_000_000L));
 
@@ -36,6 +37,8 @@ class DiscoverySearchDocumentAssemblerTest {
         assertEquals("天文", document.getCategoryName());
         assertEquals("/classics/sancai/1001", document.getSourcePath());
         assertEquals("原文\n译文", document.getBodyText());
+        assertEquals(3, document.getSourceVersionNo());
+        assertEquals(Boolean.FALSE, document.getDeleted());
     }
 
     @Test
@@ -53,6 +56,7 @@ class DiscoverySearchDocumentAssemblerTest {
                 List.of(),
                 "PUBLISHED",
                 "PUBLIC",
+                2,
                 null,
                 null));
         DiscoverySearchDocument mingDocument = assembler.toDocument(new SearchSourceContent(
@@ -68,6 +72,7 @@ class DiscoverySearchDocumentAssemblerTest {
                 List.of(),
                 "PUBLISHED",
                 "PUBLIC",
+                4,
                 null,
                 null));
 

@@ -6,4 +6,6 @@ import java.util.List;
 public interface SearchContentProvider {
 
     List<SearchSourceContent> listPublicContents();
+
+    SearchSourceContent getPublicContent(String contentType, String contentId);
 }

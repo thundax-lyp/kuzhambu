@@ -8,13 +8,17 @@ import com.thundax.kuzhambu.classics.application.search.result.ClassicsSearchSou
 import com.thundax.kuzhambu.classics.application.search.service.ClassicsSearchContentApplicationService;
 import com.thundax.kuzhambu.classics.application.wangqi.query.WangqiDocumentPageQuery;
 import com.thundax.kuzhambu.classics.application.wangqi.service.WangqiDocumentApplicationService;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsVisibility;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiCategory;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVolume;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryLifecycleStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisibility;
+import com.thundax.kuzhambu.classics.domain.wangqi.codec.WangqiDocumentIdCodec;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
@@ -53,6 +57,22 @@ public class ClassicsSearchContentApplicationServiceImpl implements ClassicsSear
         return contents;
     }
 
+    @Override
+    public ClassicsSearchSourceContent getPublicContent(String contentType, String contentId) {
+        Long idValue = Long.valueOf(contentId);
+        return switch (ClassicsContentType.from(contentType)) {
+            case SANCAI_ENTRY ->
+                toPublicSancaiEntry(
+                        sancaiApplicationService.getEntry(SancaiEntryIdCodec.toDomain(idValue)),
+                        listSancaiCategoryMap(),
+                        listSancaiCategoryIdByVolumeId());
+            case WANGQI_DOCUMENT ->
+                toPublicWangqiDocument(wangqiDocumentApplicationService.get(WangqiDocumentIdCodec.toDomain(idValue)));
+            case MING_CUSTOMS ->
+                toPublicMingCustomsEntry(mingCustomsApplicationService.get(MingCustomsEntryIdCodec.toDomain(idValue)));
+        };
+    }
+
     private List<ClassicsSearchSourceContent> listPublicSancaiEntries() {
         Map<Long, SancaiCategory> categoryById = listSancaiCategoryMap();
         Map<Long, Long> categoryIdByVolumeId = listSancaiCategoryIdByVolumeId();
@@ -72,29 +92,10 @@ public class ClassicsSearchContentApplicationServiceImpl implements ClassicsSear
         }
         List<ClassicsSearchSourceContent> results = new ArrayList<>(entries.size());
         for (SancaiEntry entry : entries) {
-            if (entry == null || entry.getId() == null) {
-                continue;
+            ClassicsSearchSourceContent content = toPublicSancaiEntry(entry, categoryById, categoryIdByVolumeId);
+            if (content != null) {
+                results.add(content);
             }
-            Long volumeId =
-                    entry.getVolumeId() == null ? null : entry.getVolumeId().value();
-            Long categoryId = volumeId == null ? null : categoryIdByVolumeId.get(volumeId);
-            SancaiCategory category = categoryId == null ? null : categoryById.get(categoryId);
-            results.add(new ClassicsSearchSourceContent(
-                    "SANCAI_ENTRY",
-                    String.valueOf(entry.getId().value()),
-                    "SANCAI_ENTRY",
-                    categoryId == null ? null : String.valueOf(categoryId),
-                    category == null ? null : category.getTitle(),
-                    entry.getTitle(),
-                    entry.getSummary(),
-                    nonBlankSegments(entry.getOriginalText(), entry.getTranslationText(), entry.getSummary()),
-                    Collections.emptyList(),
-                    entry.getLifecycleStatus() == null
-                            ? null
-                            : entry.getLifecycleStatus().value(),
-                    entry.getVisibility() == null ? null : entry.getVisibility().value(),
-                    entry.getContentUpdatedAt(),
-                    entry.getContentUpdatedAt()));
         }
         return results;
     }
@@ -107,25 +108,10 @@ public class ClassicsSearchContentApplicationServiceImpl implements ClassicsSear
         }
         List<ClassicsSearchSourceContent> results = new ArrayList<>(documents.size());
         for (WangqiDocument document : documents) {
-            if (document == null || document.getId() == null) {
-                continue;
+            ClassicsSearchSourceContent content = toPublicWangqiDocument(document);
+            if (content != null) {
+                results.add(content);
             }
-            results.add(new ClassicsSearchSourceContent(
-                    "WANGQI_DOCUMENT",
-                    String.valueOf(document.getId().value()),
-                    "WANGQI_DOCUMENT",
-                    null,
-                    null,
-                    document.getTitle(),
-                    document.getSummary(),
-                    nonBlankSegments(document.getTitle(), document.getSummary(), document.getContent()),
-                    Collections.emptyList(),
-                    "PUBLISHED",
-                    document.getVisibility() == null
-                            ? null
-                            : document.getVisibility().value(),
-                    document.getDocumentTime() == null ? document.getContentUpdatedAt() : document.getDocumentTime(),
-                    document.getContentUpdatedAt()));
         }
         return results;
     }
@@ -143,26 +129,10 @@ public class ClassicsSearchContentApplicationServiceImpl implements ClassicsSear
                 return results;
             }
             for (MingCustomsEntry entry : pageResult.getRecords()) {
-                if (entry == null || entry.getId() == null) {
-                    continue;
+                ClassicsSearchSourceContent content = toPublicMingCustomsEntry(entry);
+                if (content != null) {
+                    results.add(content);
                 }
-                results.add(new ClassicsSearchSourceContent(
-                        "MING_CUSTOMS",
-                        String.valueOf(entry.getId().value()),
-                        "MING_CUSTOMS",
-                        entry.getCategory(),
-                        entry.getCategory(),
-                        entry.getTitle(),
-                        entry.getSummary(),
-                        nonBlankSegments(
-                                entry.getTitle(), entry.getSummary(), entry.getContent(), entry.getOriginalExcerpts()),
-                        Collections.emptyList(),
-                        "PUBLISHED",
-                        entry.getVisibility() == null
-                                ? null
-                                : entry.getVisibility().value(),
-                        entry.getContentUpdatedAt(),
-                        entry.getContentUpdatedAt()));
             }
             if (pageResult.getRecords().size() < FETCH_PAGE_SIZE) {
                 return results;
@@ -220,5 +190,77 @@ public class ClassicsSearchContentApplicationServiceImpl implements ClassicsSear
             }
         }
         return segments;
+    }
+
+    private ClassicsSearchSourceContent toPublicSancaiEntry(
+            SancaiEntry entry, Map<Long, SancaiCategory> categoryById, Map<Long, Long> categoryIdByVolumeId) {
+        if (entry == null
+                || entry.getId() == null
+                || entry.getLifecycleStatus() != SancaiEntryLifecycleStatus.PUBLISHED
+                || entry.getVisibility() != SancaiEntryVisibility.PUBLIC) {
+            return null;
+        }
+        Long volumeId = entry.getVolumeId() == null ? null : entry.getVolumeId().value();
+        Long categoryId = volumeId == null ? null : categoryIdByVolumeId.get(volumeId);
+        SancaiCategory category = categoryId == null ? null : categoryById.get(categoryId);
+        return new ClassicsSearchSourceContent(
+                "SANCAI_ENTRY",
+                String.valueOf(entry.getId().value()),
+                "SANCAI_ENTRY",
+                categoryId == null ? null : String.valueOf(categoryId),
+                category == null ? null : category.getTitle(),
+                entry.getTitle(),
+                entry.getSummary(),
+                nonBlankSegments(entry.getOriginalText(), entry.getTranslationText(), entry.getSummary()),
+                Collections.emptyList(),
+                entry.getLifecycleStatus().value(),
+                entry.getVisibility().value(),
+                entry.getCurrentVersionNo(),
+                entry.getContentUpdatedAt(),
+                entry.getContentUpdatedAt());
+    }
+
+    private ClassicsSearchSourceContent toPublicWangqiDocument(WangqiDocument document) {
+        if (document == null
+                || document.getId() == null
+                || document.getVisibility() != WangqiDocumentVisibility.PUBLIC) {
+            return null;
+        }
+        return new ClassicsSearchSourceContent(
+                "WANGQI_DOCUMENT",
+                String.valueOf(document.getId().value()),
+                "WANGQI_DOCUMENT",
+                null,
+                null,
+                document.getTitle(),
+                document.getSummary(),
+                nonBlankSegments(document.getTitle(), document.getSummary(), document.getContent()),
+                Collections.emptyList(),
+                "PUBLISHED",
+                document.getVisibility().value(),
+                document.getCurrentVersionNo(),
+                document.getDocumentTime() == null ? document.getContentUpdatedAt() : document.getDocumentTime(),
+                document.getContentUpdatedAt());
+    }
+
+    private ClassicsSearchSourceContent toPublicMingCustomsEntry(MingCustomsEntry entry) {
+        if (entry == null || entry.getId() == null || entry.getVisibility() != MingCustomsVisibility.PUBLIC) {
+            return null;
+        }
+        return new ClassicsSearchSourceContent(
+                "MING_CUSTOMS",
+                String.valueOf(entry.getId().value()),
+                "MING_CUSTOMS",
+                entry.getCategory(),
+                entry.getCategory(),
+                entry.getTitle(),
+                entry.getSummary(),
+                nonBlankSegments(entry.getTitle(), entry.getSummary(), entry.getContent(), entry.getOriginalExcerpts()),
+                Collections.emptyList(),
+                "PUBLISHED",
+                entry.getVisibility().value(),
+                entry.getCurrentVersionNo(),
+                entry.getContentUpdatedAt(),
+                entry.getContentUpdatedAt());
     }
 }

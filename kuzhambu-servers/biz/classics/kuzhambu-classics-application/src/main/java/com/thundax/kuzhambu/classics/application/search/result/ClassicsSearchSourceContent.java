@@ -23,6 +23,38 @@ public class ClassicsSearchSourceContent {
     private List<String> tagNames;
     private String status;
     private String visibility;
+    private Integer currentVersionNo;
     private Date publishedAt;
     private Date updatedAt;
+
+    public ClassicsSearchSourceContent(
+            String contentType,
+            String contentId,
+            String knowledgeBase,
+            String categoryCode,
+            String categoryName,
+            String title,
+            String summary,
+            List<String> textSegments,
+            List<String> tagNames,
+            String status,
+            String visibility,
+            Date publishedAt,
+            Date updatedAt) {
+        this(
+                contentType,
+                contentId,
+                knowledgeBase,
+                categoryCode,
+                categoryName,
+                title,
+                summary,
+                textSegments,
+                tagNames,
+                status,
+                visibility,
+                null,
+                publishedAt,
+                updatedAt);
+    }
 }

@@ -62,6 +62,10 @@ logging:
     com.thundax.kuzhambu: ${KUZHAMBU_APP_LOG_LEVEL:INFO}
 
 kuzhambu:
+  discovery:
+    search:
+      index-sync:
+        consumer-enabled: ${KUZHAMBU_DISCOVERY_SEARCH_INDEX_SYNC_CONSUMER_ENABLED:false}
   access-token-filter:
     exclude-path:
       - /api/portal/classics/shares/**

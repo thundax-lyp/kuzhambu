@@ -23,22 +23,35 @@ public class ClassicsSearchContentProvider implements SearchContentProvider {
         if (sourceContents == null || sourceContents.isEmpty()) {
             return Collections.emptyList();
         }
-        return sourceContents.stream()
-                .map(sourceContent -> new SearchSourceContent(
-                        "CLASSICS",
-                        sourceContent.getContentType(),
-                        sourceContent.getContentId(),
-                        sourceContent.getKnowledgeBase(),
-                        sourceContent.getCategoryCode(),
-                        sourceContent.getCategoryName(),
-                        sourceContent.getTitle(),
-                        sourceContent.getSummary(),
-                        sourceContent.getTextSegments(),
-                        sourceContent.getTagNames(),
-                        sourceContent.getStatus(),
-                        sourceContent.getVisibility(),
-                        sourceContent.getPublishedAt(),
-                        sourceContent.getUpdatedAt()))
-                .toList();
+        return sourceContents.stream().map(this::toSearchSourceContent).toList();
+    }
+
+    @Override
+    public SearchSourceContent getPublicContent(String contentType, String contentId) {
+        ClassicsSearchSourceContent sourceContent =
+                classicsSearchContentApplicationService.getPublicContent(contentType, contentId);
+        if (sourceContent == null) {
+            return null;
+        }
+        return toSearchSourceContent(sourceContent);
+    }
+
+    private SearchSourceContent toSearchSourceContent(ClassicsSearchSourceContent sourceContent) {
+        return new SearchSourceContent(
+                "CLASSICS",
+                sourceContent.getContentType(),
+                sourceContent.getContentId(),
+                sourceContent.getKnowledgeBase(),
+                sourceContent.getCategoryCode(),
+                sourceContent.getCategoryName(),
+                sourceContent.getTitle(),
+                sourceContent.getSummary(),
+                sourceContent.getTextSegments(),
+                sourceContent.getTagNames(),
+                sourceContent.getStatus(),
+                sourceContent.getVisibility(),
+                sourceContent.getCurrentVersionNo(),
+                sourceContent.getPublishedAt(),
+                sourceContent.getUpdatedAt());
     }
 }

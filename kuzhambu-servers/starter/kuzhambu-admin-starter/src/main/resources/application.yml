@@ -98,3 +98,13 @@ kuzhambu:
   classics:
     share:
       portal-web-base-url: ${KUZHAMBU_PORTAL_WEB_BASE_URL:http://localhost:5174}
+  discovery:
+    search:
+      index-sync:
+        topic: ${KUZHAMBU_DISCOVERY_SEARCH_INDEX_SYNC_TOPIC:kuzhambu.discovery.search.index-sync}
+        producer-tag-upsert: ${KUZHAMBU_DISCOVERY_SEARCH_INDEX_SYNC_TAG_UPSERT:UPSERT}
+        producer-tag-delete: ${KUZHAMBU_DISCOVERY_SEARCH_INDEX_SYNC_TAG_DELETE:DELETE}
+        consumer-group: ${KUZHAMBU_DISCOVERY_SEARCH_INDEX_SYNC_CONSUMER_GROUP:kuzhambu-discovery-search-index-sync-consumer}
+        consumer-enabled: ${KUZHAMBU_DISCOVERY_SEARCH_INDEX_SYNC_CONSUMER_ENABLED:true}
+        deleted-retention-days: ${KUZHAMBU_DISCOVERY_SEARCH_INDEX_SYNC_DELETED_RETENTION_DAYS:7}
+        deleted-cleanup-cron: ${KUZHAMBU_DISCOVERY_SEARCH_INDEX_SYNC_DELETED_CLEANUP_CRON:0 0 3 * * ?}

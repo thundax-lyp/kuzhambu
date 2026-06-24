@@ -74,13 +74,25 @@ public interface ClassicsContentRepository {
 
     int updateSancaiEntryAiFields(SancaiEntry entry);
 
+    default int updateSancaiEntryVersionMarkers(SancaiEntry entry) {
+        return 0;
+    }
+
     WangqiDocument getWangqiDocumentForAiApply(ClassicsContentId contentId);
 
     int updateWangqiDocumentAiFields(WangqiDocument document);
 
+    default int updateWangqiDocumentVersionMarkers(WangqiDocument document) {
+        return 0;
+    }
+
     MingCustomsEntry getMingCustomsEntryForAiApply(ClassicsContentId contentId);
 
     int updateMingCustomsEntryAiFields(MingCustomsEntry entry);
+
+    default int updateMingCustomsEntryVersionMarkers(MingCustomsEntry entry) {
+        return 0;
+    }
 
     int deleteAiTags(String contentType, ClassicsContentId contentId);
 

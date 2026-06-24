@@ -27,8 +27,11 @@ public class DiscoverySearchDocumentAssembler {
                 sourceContent.getTagNames() == null ? Collections.emptyList() : sourceContent.getTagNames(),
                 sourceContent.getStatus(),
                 sourceContent.getVisibility(),
+                sourceContent.getCurrentVersionNo(),
                 toInstant(sourceContent.getPublishedAt()),
                 toInstant(sourceContent.getUpdatedAt()),
+                Boolean.FALSE,
+                null,
                 buildSourcePath(sourceContent));
     }
 

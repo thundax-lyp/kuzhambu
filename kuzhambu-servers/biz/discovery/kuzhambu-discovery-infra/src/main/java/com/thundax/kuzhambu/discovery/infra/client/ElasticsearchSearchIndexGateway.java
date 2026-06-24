@@ -6,6 +6,7 @@ import com.thundax.kuzhambu.discovery.application.search.result.SearchSourceCont
 import com.thundax.kuzhambu.discovery.application.search.support.SearchIndexGateway;
 import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchKeyword;
 import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchScope;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -75,6 +76,62 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
         saveDocuments(operations, toDocuments(sourceContents));
     }
 
+    @Override
+    public Integer getSourceVersionNo(String documentId) {
+        ElasticsearchOperations operations = requireOperations("get-version");
+        DiscoverySearchDocument document =
+                operations.get(documentId, DiscoverySearchDocument.class, indexCoordinates());
+        return document == null ? null : document.getSourceVersionNo();
+    }
+
+    @Override
+    public void markDocumentDeleted(
+            String contentType, String contentId, Integer currentVersionNo, java.util.Date occurredAt) {
+        ElasticsearchOperations operations = requireOperations("mark-deleted");
+        String documentId = contentType + ":" + contentId;
+        DiscoverySearchDocument existing =
+                operations.get(documentId, DiscoverySearchDocument.class, indexCoordinates());
+        if (existing != null
+                && existing.getSourceVersionNo() != null
+                && currentVersionNo != null
+                && currentVersionNo < existing.getSourceVersionNo()) {
+            return;
+        }
+        DiscoverySearchDocument deletedDocument = existing == null ? new DiscoverySearchDocument() : existing;
+        deletedDocument.setDocumentId(documentId);
+        deletedDocument.setContentType(contentType);
+        deletedDocument.setContentId(contentId);
+        deletedDocument.setSourceVersionNo(currentVersionNo);
+        deletedDocument.setDeleted(Boolean.TRUE);
+        deletedDocument.setDeletedAt(occurredAt == null ? null : occurredAt.toInstant());
+        operations.save(deletedDocument, indexCoordinates());
+    }
+
+    public Integer cleanupDeletedDocumentsOlderThan(Instant threshold) {
+        ElasticsearchOperations operations = requireOperations("cleanup-deleted");
+        if (threshold == null) {
+            return 0;
+        }
+        Criteria criteria = new Criteria("deleted").is(true).and(new Criteria("deletedAt").lessThan(threshold));
+        CriteriaQuery query = new CriteriaQuery(criteria);
+        List<SearchHit<DiscoverySearchDocument>> hits = operations
+                .search(query, DiscoverySearchDocument.class, indexCoordinates())
+                .getSearchHits();
+        if (hits == null || hits.isEmpty()) {
+            return 0;
+        }
+        int deletedCount = 0;
+        for (SearchHit<DiscoverySearchDocument> hit : hits) {
+            DiscoverySearchDocument document = hit == null ? null : hit.getContent();
+            if (document == null || document.getDocumentId() == null) {
+                continue;
+            }
+            operations.delete(document.getDocumentId(), indexCoordinates());
+            deletedCount++;
+        }
+        return deletedCount;
+    }
+
     private ElasticsearchOperations requireOperations(String operation) {
         if (elasticsearchOperations == null) {
             throw new UnsupportedOperationException("Discovery search backend is not implemented for "
@@ -113,13 +170,14 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
     private Criteria buildCriteria(String keyword, SearchScope searchScope) {
         Criteria criteria = baseKeywordCriteria(keyword);
         if (searchScope == null) {
-            return criteria;
+            return criteria.and(new Criteria("deleted").is(false));
         }
         criteria = appendInFilter(criteria, "knowledgeBase", searchScope.getKnowledgeBases());
         criteria = appendInFilter(criteria, "categoryCode", searchScope.getCategoryCodes());
         criteria = appendInFilter(criteria, "tagNames", searchScope.getTagNames());
         criteria = appendInFilter(criteria, "status", searchScope.getContentStatuses());
         criteria = appendInFilter(criteria, "visibility", searchScope.getVisibilityScopes());
+        criteria = criteria.and(new Criteria("deleted").is(false));
         if (searchScope.getDateFrom() != null) {
             criteria = criteria.and(new Criteria("updatedAt")
                     .greaterThanEqual(searchScope.getDateFrom().toInstant()));
