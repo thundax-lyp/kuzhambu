@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Alert, Button, Card, Empty, List, Space } from "antd";
+import { App, Alert, Button, Card, Empty, Space } from "antd";
 import { useCallback, useMemo, useState } from "react";
+import { KuzhambuList, KuzhambuListItem } from "@/components/kuzhambu-list";
 import * as aiCandidateService from "../ai-candidate-service";
 import type { AiCandidateRecord } from "../ai-candidate-types";
 import { AiCandidatePayloadEditor } from "./ai-candidate-payload-editor";
@@ -193,11 +194,7 @@ export const AiCandidatePanel = ({
 
     if (pendingCandidatesQuery.isError) {
         return (
-            <Alert
-                type="warning"
-                message="候选列表加载失败"
-                description="请稍后重试或联系管理员。"
-            />
+            <Alert type="warning" title="候选列表加载失败" description="请稍后重试或联系管理员。" />
         );
     }
 
@@ -207,12 +204,11 @@ export const AiCandidatePanel = ({
 
     return (
         <Card size="small" title="AI 候选确认">
-            <List
+            <KuzhambuList
                 dataSource={pendingCandidates}
-                itemLayout="vertical"
                 renderItem={(candidate) => (
-                    <List.Item>
-                        <Space direction="vertical" style={{ width: "100%" }}>
+                    <KuzhambuListItem key={candidate.candidateId}>
+                        <Space orientation="vertical" style={{ width: "100%" }}>
                             <Space wrap>
                                 <span>能力：{candidate.capability}</span>
                                 <span>格式：{candidate.resultFormat || "未设置"}</span>
@@ -248,7 +244,7 @@ export const AiCandidatePanel = ({
                                 </Button>
                             </Space>
                         </Space>
-                    </List.Item>
+                    </KuzhambuListItem>
                 )}
             />
         </Card>

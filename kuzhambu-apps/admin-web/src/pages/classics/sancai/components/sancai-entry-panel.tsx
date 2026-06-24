@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Alert, App, Button, Empty, List, Space, Tag, Typography } from "antd";
+import { Alert, App, Button, Empty, Space, Tag, Typography } from "antd";
 import { useState } from "react";
+import { KuzhambuList, KuzhambuListItem, KuzhambuListMeta } from "@/components/kuzhambu-list";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import type { KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
 import * as exportService from "@/pages/classics/common/classics-export-service";
@@ -536,7 +537,7 @@ export const SancaiEntryPanel = ({
                     className="sancai-alert"
                     type="warning"
                     showIcon
-                    message="三才图会条目加载失败"
+                    title="三才图会条目加载失败"
                     description="请确认后台条目接口可用后刷新页面。"
                 />
             ) : null}
@@ -545,7 +546,7 @@ export const SancaiEntryPanel = ({
                     className="sancai-alert"
                     type="warning"
                     showIcon
-                    message="静态展示任务列表加载失败"
+                    title="静态展示任务列表加载失败"
                     description="请确认后台静态展示任务接口可用后刷新页面。"
                 />
             ) : null}
@@ -554,7 +555,7 @@ export const SancaiEntryPanel = ({
                     className="sancai-alert"
                     type="warning"
                     showIcon
-                    message="导出任务列表加载失败"
+                    title="导出任务列表加载失败"
                     description="请确认后台导出任务接口可用后刷新页面。"
                 />
             ) : null}
@@ -571,24 +572,19 @@ export const SancaiEntryPanel = ({
                         刷新
                     </Button>
                 </Space>
-                <List
+                <KuzhambuList
                     size="small"
                     dataSource={exportJobs}
                     loading={exportsQuery.isLoading || exportEntryMutation.isPending}
-                    locale={{
-                        emptyText: (
-                            <Empty
-                                description="暂无导出任务"
-                                image={Empty.PRESENTED_IMAGE_SIMPLE}
-                            />
-                        )
-                    }}
+                    empty={
+                        <Empty description="暂无导出任务" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                    }
                     renderItem={(job) => {
                         const expired = isExpired(job.expiresAt);
                         const downloadable = isDownloadableExport(job);
                         const statusText = expired ? "已过期" : formatDateTime(job.requestedAt);
                         return (
-                            <List.Item
+                            <KuzhambuListItem
                                 key={job.id ?? `export-job-${job.requestedAt}`}
                                 extra={
                                     <Space size={8} wrap>
@@ -609,11 +605,11 @@ export const SancaiEntryPanel = ({
                                     </Space>
                                 }
                             >
-                                <List.Item.Meta
+                                <KuzhambuListMeta
                                     title={`任务 #${job.id ?? "草稿"}`}
                                     description={`${statusText} | 条目数：${job.itemCount ?? 0} | 资产数：${job.assetCount ?? 0}`}
                                 />
-                            </List.Item>
+                            </KuzhambuListItem>
                         );
                     }}
                 />
@@ -631,23 +627,21 @@ export const SancaiEntryPanel = ({
                         刷新
                     </Button>
                 </Space>
-                <List
+                <KuzhambuList
                     size="small"
                     dataSource={showcaseJobs}
                     loading={showcasesQuery.isLoading || showcaseEntryMutation.isPending}
-                    locale={{
-                        emptyText: (
-                            <Empty
-                                description="暂无静态展示任务"
-                                image={Empty.PRESENTED_IMAGE_SIMPLE}
-                            />
-                        )
-                    }}
+                    empty={
+                        <Empty
+                            description="暂无静态展示任务"
+                            image={Empty.PRESENTED_IMAGE_SIMPLE}
+                        />
+                    }
                     renderItem={(job) => {
                         const downloadable = isDownloadableShowcase(job);
                         const statusText = formatDateTime(job.requestedAt);
                         return (
-                            <List.Item
+                            <KuzhambuListItem
                                 key={job.id ?? `showcase-job-${job.requestedAt}`}
                                 extra={
                                     <Space size={8} wrap>
@@ -668,11 +662,11 @@ export const SancaiEntryPanel = ({
                                     </Space>
                                 }
                             >
-                                <List.Item.Meta
+                                <KuzhambuListMeta
                                     title={`任务 #${job.id ?? "草稿"}`}
                                     description={`${statusText} | 条目数：${job.entryCount ?? 0} | 风险：${job.visibilityRiskStatus || "未知"}`}
                                 />
-                            </List.Item>
+                            </KuzhambuListItem>
                         );
                     }}
                 />

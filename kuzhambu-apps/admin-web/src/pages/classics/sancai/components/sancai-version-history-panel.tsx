@@ -1,4 +1,5 @@
-import { Alert, Button, Descriptions, Empty, List, Space, Tag, Typography } from "antd";
+import { Alert, Button, Descriptions, Empty, Space, Tag, Typography } from "antd";
+import { KuzhambuList, KuzhambuListItem, KuzhambuListMeta } from "@/components/kuzhambu-list";
 import type {
     SancaiContentVersionRecord,
     SancaiEntryRecord,
@@ -89,14 +90,17 @@ export const SancaiVersionHistoryPanel = ({
     return (
         <section className="sancai-version-history-panel" aria-label="三才图会版本历史面板">
             <div className="sancai-version-history-panel-grid">
-                <List<SancaiContentVersionRecord>
+                <KuzhambuList<SancaiContentVersionRecord>
+                    as="ol"
                     className="sancai-version-history-list"
                     aria-label="三才图会版本历史列表"
                     loading={listLoading}
                     dataSource={versions}
-                    locale={{ emptyText: "暂无版本历史" }}
+                    empty="暂无版本历史"
                     renderItem={(version) => (
-                        <List.Item
+                        <KuzhambuListItem
+                            className="sancai-version-history-list-item"
+                            key={version.id}
                             actions={[
                                 <Button
                                     key="view"
@@ -108,7 +112,7 @@ export const SancaiVersionHistoryPanel = ({
                                 </Button>
                             ]}
                         >
-                            <List.Item.Meta
+                            <KuzhambuListMeta
                                 title={
                                     <Space wrap>
                                         <Text strong>版本 {version.versionNo ?? "-"}</Text>
@@ -116,7 +120,7 @@ export const SancaiVersionHistoryPanel = ({
                                     </Space>
                                 }
                                 description={
-                                    <Space direction="vertical" size={2}>
+                                    <Space orientation="vertical" size={2}>
                                         <Text>{version.changeSummary || "未填写变更说明"}</Text>
                                         <Text type="secondary">
                                             {formatDateTime(version.versionedAt)}
@@ -124,13 +128,13 @@ export const SancaiVersionHistoryPanel = ({
                                     </Space>
                                 }
                             />
-                        </List.Item>
+                        </KuzhambuListItem>
                     )}
                 />
                 <div className="sancai-version-history-detail" aria-busy={detailLoading}>
                     {selectedVersion ? (
                         <Space
-                            direction="vertical"
+                            orientation="vertical"
                             size="middle"
                             className="sancai-version-history-detail-stack"
                         >
@@ -169,7 +173,7 @@ export const SancaiVersionHistoryPanel = ({
                                                 label={field.label}
                                                 className={changed ? "is-changed" : undefined}
                                             >
-                                                <Space direction="vertical" size={2}>
+                                                <Space orientation="vertical" size={2}>
                                                     <Text>当前：{formatValue(currentValue)}</Text>
                                                     <Text type={changed ? "warning" : "secondary"}>
                                                         历史：{formatValue(historyValue)}
@@ -180,7 +184,7 @@ export const SancaiVersionHistoryPanel = ({
                                     })}
                                 </Descriptions>
                             ) : (
-                                <Alert type="warning" showIcon message="版本快照为空或无法解析" />
+                                <Alert type="warning" showIcon title="版本快照为空或无法解析" />
                             )}
                             <Button
                                 danger

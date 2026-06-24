@@ -383,7 +383,7 @@ export const AdminLayout = () => {
                             <Alert
                                 type="warning"
                                 showIcon
-                                message="当前用户信息加载失败"
+                                title="当前用户信息加载失败"
                                 description="请确认当前登录态有效，并检查后台当前用户接口。"
                                 style={{ marginBottom: 16 }}
                             />
@@ -392,7 +392,7 @@ export const AdminLayout = () => {
                             <Alert
                                 type="warning"
                                 showIcon
-                                message="权限菜单加载失败"
+                                title="权限菜单加载失败"
                                 description="请确认当前登录态有效，并检查后台权限菜单接口。"
                                 style={{ marginBottom: 16 }}
                             />
@@ -401,7 +401,7 @@ export const AdminLayout = () => {
                             <Alert
                                 type="warning"
                                 showIcon
-                                message="权限字符串加载失败"
+                                title="权限字符串加载失败"
                                 description="请确认当前登录态有效，并检查后台当前用户权限接口。"
                                 style={{ marginBottom: 16 }}
                             />

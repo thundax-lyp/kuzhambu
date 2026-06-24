@@ -4,6 +4,7 @@ import { App, Button, Empty, Image, Input, Space, Switch, Typography, Upload } f
 import { useState } from "react";
 import type { ReactNode } from "react";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
+import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import { toEntryFormValues, type SancaiEntryFormValues } from "./sancai-form-values";
 import * as entryService from "../services/sancai-entry-service";
@@ -156,7 +157,7 @@ export const SancaiEntryModel = ({
                     <Input.TextArea
                         aria-label="三才图会原文"
                         value={form.originalText}
-                        autoSize={{ minRows: 4, maxRows: 8 }}
+                        autoSize={resolveTextAreaAutoSize({ minRows: 4, maxRows: 8 })}
                         onChange={(event) =>
                             setForm((currentForm) => ({
                                 ...currentForm,
@@ -170,7 +171,7 @@ export const SancaiEntryModel = ({
                     <Input.TextArea
                         aria-label="三才图会译文"
                         value={form.translationText}
-                        autoSize={{ minRows: 4, maxRows: 8 }}
+                        autoSize={resolveTextAreaAutoSize({ minRows: 4, maxRows: 8 })}
                         onChange={(event) =>
                             setForm((currentForm) => ({
                                 ...currentForm,
@@ -184,7 +185,7 @@ export const SancaiEntryModel = ({
                     <Input.TextArea
                         aria-label="三才图会摘要"
                         value={form.summary}
-                        autoSize={{ minRows: 3, maxRows: 6 }}
+                        autoSize={resolveTextAreaAutoSize({ minRows: 3, maxRows: 6 })}
                         onChange={(event) =>
                             setForm((currentForm) => ({
                                 ...currentForm,

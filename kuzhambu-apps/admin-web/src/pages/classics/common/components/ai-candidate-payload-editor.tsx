@@ -1,5 +1,6 @@
 import { Button, Input, Space } from "antd";
 import { useEffect, useState } from "react";
+import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
 
 type AiCandidateCapability = "translate" | "summary" | "tags" | "qa";
 
@@ -170,7 +171,7 @@ export const AiCandidatePayloadEditor = ({
         return (
             <Input.TextArea
                 aria-label={capability === "summary" ? "候选摘要内容" : "候选译文内容"}
-                autoSize={{ minRows: 4, maxRows: 10 }}
+                autoSize={resolveTextAreaAutoSize({ minRows: 4, maxRows: 10 })}
                 value={textPayload}
                 onChange={(event) => setTextPayload(event.target.value)}
             />
@@ -210,14 +211,14 @@ export const AiCandidatePayloadEditor = ({
                     <Input.TextArea
                         aria-label={`问答问题 ${index + 1}`}
                         placeholder="问题"
-                        autoSize={{ minRows: 2, maxRows: 4 }}
+                        autoSize={resolveTextAreaAutoSize({ minRows: 2, maxRows: 4 })}
                         value={pair.question}
                         onChange={(event) => updateQaPair(index, "question", event.target.value)}
                     />
                     <Input.TextArea
                         aria-label={`问答答案 ${index + 1}`}
                         placeholder="答案"
-                        autoSize={{ minRows: 2, maxRows: 4 }}
+                        autoSize={resolveTextAreaAutoSize({ minRows: 2, maxRows: 4 })}
                         style={{ marginTop: 8 }}
                         value={pair.answer}
                         onChange={(event) => updateQaPair(index, "answer", event.target.value)}

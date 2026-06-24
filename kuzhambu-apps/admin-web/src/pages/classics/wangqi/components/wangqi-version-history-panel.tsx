@@ -1,4 +1,5 @@
-import { Alert, Button, Descriptions, Empty, List, Space, Tag, Typography } from "antd";
+import { Alert, Button, Descriptions, Empty, Space, Tag, Typography } from "antd";
+import { KuzhambuList, KuzhambuListItem, KuzhambuListMeta } from "@/components/kuzhambu-list";
 import type {
     WangqiContentVersionRecord,
     WangqiDocumentRecord,
@@ -84,14 +85,16 @@ export const WangqiVersionHistoryPanel = ({
     return (
         <section className="wangqi-version-history-panel" aria-label="王圻版本历史面板">
             <div className="wangqi-version-history-panel-grid">
-                <List<WangqiContentVersionRecord>
+                <KuzhambuList<WangqiContentVersionRecord>
+                    as="ol"
                     className="wangqi-version-history-list"
                     aria-label="王圻版本历史列表"
                     loading={listLoading}
                     dataSource={versions}
-                    locale={{ emptyText: "暂无版本历史" }}
+                    empty="暂无版本历史"
                     renderItem={(version) => (
-                        <List.Item
+                        <KuzhambuListItem
+                            key={version.id}
                             actions={[
                                 <Button
                                     key="view"
@@ -103,7 +106,7 @@ export const WangqiVersionHistoryPanel = ({
                                 </Button>
                             ]}
                         >
-                            <List.Item.Meta
+                            <KuzhambuListMeta
                                 title={
                                     <Space wrap>
                                         <Text strong>版本 {version.versionNo ?? "-"}</Text>
@@ -111,7 +114,7 @@ export const WangqiVersionHistoryPanel = ({
                                     </Space>
                                 }
                                 description={
-                                    <Space direction="vertical" size={2}>
+                                    <Space orientation="vertical" size={2}>
                                         <Text>{version.changeSummary || "未填写变更说明"}</Text>
                                         <Text type="secondary">
                                             {formatDateTime(version.versionedAt)}
@@ -119,13 +122,13 @@ export const WangqiVersionHistoryPanel = ({
                                     </Space>
                                 }
                             />
-                        </List.Item>
+                        </KuzhambuListItem>
                     )}
                 />
                 <div className="wangqi-version-history-detail" aria-busy={detailLoading}>
                     {selectedVersion ? (
                         <Space
-                            direction="vertical"
+                            orientation="vertical"
                             size="middle"
                             className="wangqi-version-history-detail-stack"
                         >
@@ -164,7 +167,7 @@ export const WangqiVersionHistoryPanel = ({
                                                 label={field.label}
                                                 className={changed ? "is-changed" : undefined}
                                             >
-                                                <Space direction="vertical" size={2}>
+                                                <Space orientation="vertical" size={2}>
                                                     <Text>当前：{formatValue(currentValue)}</Text>
                                                     <Text type={changed ? "warning" : "secondary"}>
                                                         历史：{formatValue(historyValue)}
@@ -175,7 +178,7 @@ export const WangqiVersionHistoryPanel = ({
                                     })}
                                 </Descriptions>
                             ) : (
-                                <Alert type="warning" showIcon message="版本快照为空或无法解析" />
+                                <Alert type="warning" showIcon title="版本快照为空或无法解析" />
                             )}
                             <Button
                                 danger

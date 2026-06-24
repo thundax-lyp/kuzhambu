@@ -1,5 +1,6 @@
-import { Alert, Button, Card, Descriptions, Empty, List, Select, Space, Typography } from "antd";
+import { Alert, Button, Card, Descriptions, Empty, Select, Space, Typography } from "antd";
 import { useState } from "react";
+import { KuzhambuList, KuzhambuListItem } from "@/components/kuzhambu-list";
 import type { TagMergeCommand } from "../taxonomy-service";
 import type {
     TagAliasRecord,
@@ -84,15 +85,15 @@ export const TagMergePanel = ({
             return <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="无待迁移别名" />;
         }
         return (
-            <List
+            <KuzhambuList
                 dataSource={aliases}
                 renderItem={(alias) => (
-                    <List.Item key={alias.id}>
+                    <KuzhambuListItem key={alias.id}>
                         <Space orientation="vertical" size={0}>
                             <Text strong>{alias.name}</Text>
                             <Text type="secondary">来源：{readSourceLabel(alias.source)}</Text>
                         </Space>
-                    </List.Item>
+                    </KuzhambuListItem>
                 )}
                 size="small"
             />
@@ -104,15 +105,15 @@ export const TagMergePanel = ({
             return <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="无受影响内容引用" />;
         }
         return (
-            <List
+            <KuzhambuList
                 dataSource={contentRefs}
                 renderItem={(contentRef) => (
-                    <List.Item key={contentRef.id}>
+                    <KuzhambuListItem key={contentRef.id}>
                         <Space orientation="vertical" size={0}>
                             <Text>{readContentSummary(contentRef)}</Text>
                             <Text type="secondary">来源：{readSourceLabel(contentRef.source)}</Text>
                         </Space>
-                    </List.Item>
+                    </KuzhambuListItem>
                 )}
                 size="small"
             />
@@ -121,7 +122,7 @@ export const TagMergePanel = ({
 
     return (
         <Card className="knowledge-taxonomy-merge-panel" variant="borderless">
-            <Space direction="vertical" size={16} style={{ width: "100%" }}>
+            <Space orientation="vertical" size={16} style={{ width: "100%" }}>
                 <div className="knowledge-taxonomy-merge-header">
                     <div>
                         <Title level={4}>标签合并治理</Title>
@@ -187,7 +188,7 @@ export const TagMergePanel = ({
                 </div>
 
                 {sourceTagId && targetTagId && sourceTagId === targetTagId ? (
-                    <Alert message="源标签和目标标签不能相同" type="warning" showIcon />
+                    <Alert title="源标签和目标标签不能相同" type="warning" showIcon />
                 ) : null}
 
                 {preview ? (

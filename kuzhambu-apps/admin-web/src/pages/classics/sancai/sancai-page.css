@@ -314,7 +314,7 @@ html[data-theme="dark"] .sancai-page {
     border-radius: 8px;
 }
 
-.sancai-version-history-list .ant-list-item {
+.sancai-version-history-list-item {
     align-items: flex-start;
     padding-inline: 0;
 }

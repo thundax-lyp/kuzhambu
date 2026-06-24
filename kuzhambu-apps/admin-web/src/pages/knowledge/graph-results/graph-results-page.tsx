@@ -240,14 +240,14 @@ export const GraphResultsPage = () => {
                                 label: "正式实体",
                                 children: (
                                     <Space
-                                        direction="vertical"
+                                        orientation="vertical"
                                         size={16}
                                         className="knowledge-graph-results-layout"
                                     >
                                         <Alert
                                             showIcon
                                             type="info"
-                                            message={
+                                            title={
                                                 selectedVersion
                                                     ? `当前查看版本 #${selectedVersion.versionId} 的正式实体`
                                                     : "请先从图谱版本详情中选择一个版本"
@@ -286,14 +286,14 @@ export const GraphResultsPage = () => {
                                 label: "正式关系",
                                 children: (
                                     <Space
-                                        direction="vertical"
+                                        orientation="vertical"
                                         size={16}
                                         className="knowledge-graph-results-layout"
                                     >
                                         <Alert
                                             showIcon
                                             type="info"
-                                            message={
+                                            title={
                                                 selectedVersion
                                                     ? `当前查看版本 #${selectedVersion.versionId} 的正式关系`
                                                     : "请先从图谱版本详情中选择一个版本"
@@ -332,14 +332,14 @@ export const GraphResultsPage = () => {
                                 label: "正式世系",
                                 children: (
                                     <Space
-                                        direction="vertical"
+                                        orientation="vertical"
                                         size={16}
                                         className="knowledge-graph-results-layout"
                                     >
                                         <Alert
                                             showIcon
                                             type="info"
-                                            message={
+                                            title={
                                                 selectedVersion
                                                     ? `当前查看版本 #${selectedVersion.versionId} 的正式世系`
                                                     : "请先从图谱版本详情中选择一个版本"
@@ -356,7 +356,7 @@ export const GraphResultsPage = () => {
                                             <>
                                                 <section aria-labelledby="graph-results-lineage-nodes">
                                                     <Space
-                                                        direction="vertical"
+                                                        orientation="vertical"
                                                         size={12}
                                                         className="knowledge-graph-results-layout"
                                                     >
@@ -378,7 +378,7 @@ export const GraphResultsPage = () => {
                                                 </section>
                                                 <section aria-labelledby="graph-results-lineage-relations">
                                                     <Space
-                                                        direction="vertical"
+                                                        orientation="vertical"
                                                         size={12}
                                                         className="knowledge-graph-results-layout"
                                                     >
