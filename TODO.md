@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Admin 日志详情真实化`：返回真实范围和失败信息
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-RUNTIME.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-interface/src/main/java/com/thundax/kuzhambu/discovery/interfaces/admin/search/assembler/DiscoverySearchAdminInterfaceAssembler.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-interface/src/main/java/com/thundax/kuzhambu/discovery/interfaces/admin/search/controller/response/DiscoverySearchLogDetailResponse.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-interface/src/test/java/com/thundax/kuzhambu/discovery/interfaces/admin/search/controller/DiscoverySearchAdminControllerTest.java`
-    - 处理动作：确保详情接口直接返回真实落库的 searchScopesJson、failureCode、failureMessage、requestId、traceId
-    - 验收点：管理端详情响应与落库内容一致，不在接口层拼装伪 JSON
-    - 重要度：8/10
-
 - [ ] `Starter 装配验证`：确认 Discovery Search 运行时 bean 和扫描路径完整
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-RUNTIME.md`

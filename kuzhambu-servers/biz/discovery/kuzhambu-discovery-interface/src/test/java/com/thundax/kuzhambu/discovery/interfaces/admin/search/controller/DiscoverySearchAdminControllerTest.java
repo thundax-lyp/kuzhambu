@@ -154,6 +154,46 @@ class DiscoverySearchAdminControllerTest {
         assertEquals("s-1", response.getSearchLogId());
         assertEquals("ENTITY", response.getIntentType());
         assertTrue(response.getSearchScopesJson().contains("SANCAI_ENTRY"));
+        assertEquals("req-1", response.getRequestId());
+        assertEquals("trace-1", response.getTraceId());
+    }
+
+    @Test
+    void getLogShouldExposeFailureFieldsFromStoredLog() {
+        SearchApplicationService service = mock(SearchApplicationService.class);
+        SearchIndexApplicationService searchIndexApplicationService = mock(SearchIndexApplicationService.class);
+        DiscoverySearchAdminController controller =
+                new DiscoverySearchAdminController(service, searchIndexApplicationService);
+        DiscoverySearchLogGetRequest request = new DiscoverySearchLogGetRequest();
+        request.setSearchLogId("s-2");
+        when(service.getLog("s-2"))
+                .thenReturn(new SearchLogResult(
+                        "s-2",
+                        "黄帝",
+                        "黄帝",
+                        "黄帝",
+                        "KEYWORD_SEARCH",
+                        "{\"knowledgeBases\":[\"SANCAI_ENTRY\"],\"visibilityScopes\":[\"PUBLIC\"]}",
+                        0,
+                        0,
+                        "FAILED",
+                        "DISCOVERY-20001",
+                        "Search backend is not implemented",
+                        "user-2",
+                        "req-2",
+                        "trace-2",
+                        1_718_000_100_000L,
+                        List.of()));
+
+        var response = controller.getLog(request);
+
+        verify(service).getLog("s-2");
+        assertEquals("FAILED", response.getSearchStatus());
+        assertEquals("DISCOVERY-20001", response.getFailureCode());
+        assertEquals("Search backend is not implemented", response.getFailureMessage());
+        assertTrue(response.getSearchScopesJson().contains("visibilityScopes"));
+        assertEquals("req-2", response.getRequestId());
+        assertEquals("trace-2", response.getTraceId());
     }
 
     @Test
