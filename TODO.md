@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `classics-search+discovery-search`：T4 为公开内容查询补充单条读取能力
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-INDEX-SYNC.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/search/service/ClassicsSearchContentApplicationService.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/search/service/impl/ClassicsSearchContentApplicationServiceImpl.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/search/support/SearchContentProvider.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/search/support/ClassicsSearchContentProvider.java`
-    - 处理动作：增加“按 `contentType + contentId` 读取当前公开内容”的 application 能力并暴露给 Discovery。
-    - 验收点：Discovery application 可通过 provider 读取三类内容的当前公开单条结果，且不直接依赖 Classics mapper/DO。
-    - 重要度：9/10
-
 - [ ] `classics-search+discovery-search`：T5 传播 `currentVersionNo` 到搜索内容结果对象
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-INDEX-SYNC.md`

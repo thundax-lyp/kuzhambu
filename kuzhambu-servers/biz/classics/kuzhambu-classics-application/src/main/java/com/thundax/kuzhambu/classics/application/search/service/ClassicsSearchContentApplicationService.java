@@ -6,4 +6,6 @@ import java.util.List;
 public interface ClassicsSearchContentApplicationService {
 
     List<ClassicsSearchSourceContent> listPublicContents();
+
+    ClassicsSearchSourceContent getPublicContent(String contentType, String contentId);
 }
