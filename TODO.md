@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `classics-application`：T1 定义索引同步消息契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-INDEX-SYNC.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/searchsync/model/ClassicsSearchIndexSyncEventType.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/searchsync/model/ClassicsSearchIndexSyncMessage.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/searchsync/service/ClassicsSearchIndexSyncPublisher.java`
-    - 处理动作：定义 `UPSERT / DELETE` 枚举、标准消息体和只接受标准消息体的 publisher 契约。
-    - 验收点：消息字段固定为 `eventId / eventType / contentType / contentId / currentVersionNo / occurredAt`，且 `eventType` 只允许 `UPSERT / DELETE`。
-    - 重要度：9/10
-
 - [ ] `classics-application`：T2 创建事务后发送支持类
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-INDEX-SYNC.md`
