@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.discovery.interfaces.portal.search.controller;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -152,11 +153,15 @@ class DiscoverySearchPortalControllerTest {
         request.setResultGroupKey("SANCAI_ENTRY");
         request.setResultRank(1);
         request.setGroupRank(1);
+        request.setTargetPath("/classics/sancai/1001");
         when(service.recordClick(any())).thenReturn(Boolean.TRUE);
 
         Boolean result = controller.click(request);
 
-        verify(service).recordClick(any());
+        verify(service)
+                .recordClick(argThat(command -> "s-1".equals(command.getSearchLogId())
+                        && "SANCAI_ENTRY".equals(command.getResultGroupKey())
+                        && "/classics/sancai/1001".equals(command.getTargetPath())));
         assertTrue(result);
     }
 

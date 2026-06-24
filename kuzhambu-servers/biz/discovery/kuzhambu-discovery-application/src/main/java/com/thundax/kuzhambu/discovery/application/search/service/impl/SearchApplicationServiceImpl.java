@@ -80,6 +80,11 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
     @Override
     public Boolean recordClick(SearchClickCreateCommand command) {
         validateClickCommand(command);
+        SearchLog searchLog = searchLogRepository.getBySearchLogId(command.getSearchLogId());
+        if (searchLog == null) {
+            throw new BizException(
+                    "DISCOVERY-20002", "discovery.search.click.search-log-not-found", "Search log does not exist");
+        }
         searchClickRepository.save(new SearchClick(
                 null,
                 null,

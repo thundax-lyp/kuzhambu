@@ -132,6 +132,25 @@ class SearchApplicationServiceImplTest {
                 new SearchDomainService(),
                 searchIndexGateway,
                 new DefaultSearchPermissionFilter());
+        when(searchLogRepository.getBySearchLogId("s-1"))
+                .thenReturn(new SearchLog(
+                        1L,
+                        "s-1",
+                        "黄帝",
+                        "黄帝",
+                        "黄帝",
+                        SearchIntentType.KEYWORD_SEARCH,
+                        null,
+                        1,
+                        1,
+                        "SUCCEEDED",
+                        null,
+                        null,
+                        "ANONYMOUS",
+                        null,
+                        null,
+                        null,
+                        new Date()));
 
         Boolean result = service.recordClick(new SearchClickCreateCommand(
                 "s-1",
@@ -150,6 +169,39 @@ class SearchApplicationServiceImplTest {
 
         verify(searchClickRepository).save(any());
         assertTrue(result);
+    }
+
+    @Test
+    void recordClickShouldRejectUnknownSearchLogId() {
+        SearchLogRepository searchLogRepository = mock(SearchLogRepository.class);
+        SearchClickRepository searchClickRepository = mock(SearchClickRepository.class);
+        SearchIndexGateway searchIndexGateway = mock(SearchIndexGateway.class);
+        SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
+                searchLogRepository,
+                searchClickRepository,
+                new SearchDomainService(),
+                searchIndexGateway,
+                new DefaultSearchPermissionFilter());
+        when(searchLogRepository.getBySearchLogId("missing")).thenReturn(null);
+
+        BizException exception = assertThrows(
+                BizException.class,
+                () -> service.recordClick(new SearchClickCreateCommand(
+                        "missing",
+                        "CLASSICS",
+                        "SANCAI_ENTRY",
+                        "1001",
+                        "黄帝",
+                        "SANCAI_ENTRY",
+                        1,
+                        1,
+                        "/classics/sancai/1001",
+                        "ANONYMOUS",
+                        null,
+                        null,
+                        null)));
+
+        assertEquals("DISCOVERY-20002", exception.getCode());
     }
 
     @Test

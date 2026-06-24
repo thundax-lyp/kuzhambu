@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `点击日志串联`：校准 click 接口与真实 searchLogId
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-RUNTIME.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/search/service/impl/SearchApplicationServiceImpl.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-interface/src/main/java/com/thundax/kuzhambu/discovery/interfaces/portal/search/assembler/DiscoverySearchPortalInterfaceAssembler.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-interface/src/test/java/com/thundax/kuzhambu/discovery/interfaces/portal/search/controller/DiscoverySearchPortalControllerTest.java`
-    - 处理动作：确保点击日志与真实 searchLogId 串联，必要时补点击前校验
-    - 验收点：Search 和 Click 能通过 searchLogId 稳定串联
-    - 重要度：8/10
-
 - [ ] `索引重建管理入口`：新增 Admin index rebuild 接口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-RUNTIME.md`
