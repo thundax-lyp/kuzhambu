@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Discovery infra 仓储实现`：创建 Search PersistenceAssembler 与 RepositoryImpl
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-SKELETON.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/search/persistence/assembler/SearchLogPersistenceAssembler.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/search/persistence/assembler/SearchClickPersistenceAssembler.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/search/persistence/assembler/QueryUnderstandingPersistenceAssembler.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/search/repository/impl/SearchLogRepositoryImpl.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/search/repository/impl/SearchClickRepositoryImpl.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/search/repository/impl/QueryUnderstandingRepositoryImpl.java`
-    - 处理动作：实现 domain 与 DO 的双向转换，并完成三类 Repository 的最小持久化实现
-    - 验收点：RepositoryImpl 只做转换和 Mapper 调用，不混入查询理解、权限过滤和检索逻辑
-    - 重要度：9/10
-
 - [ ] `Discovery ES 适配`：创建 Search 索引文档与默认 Gateway
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-SKELETON.md`
