@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.discovery.infra.client;
 
 import com.thundax.kuzhambu.discovery.application.search.result.SearchGroupResult;
+import com.thundax.kuzhambu.discovery.application.search.result.SearchSourceContent;
 import com.thundax.kuzhambu.discovery.application.search.support.SearchIndexGateway;
 import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchKeyword;
 import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchScope;
@@ -27,13 +28,13 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
     }
 
     @Override
-    public void rebuildIndex() {
+    public void rebuildIndex(List<SearchSourceContent> sourceContents) {
         throw new UnsupportedOperationException(
                 "Discovery index rebuild is not implemented for index " + properties.getIndexName());
     }
 
     @Override
-    public void upsertDocuments(List<String> documentIds) {
+    public void upsertDocuments(List<SearchSourceContent> sourceContents) {
         throw new UnsupportedOperationException(
                 "Discovery document upsert is not implemented for index " + properties.getIndexName());
     }

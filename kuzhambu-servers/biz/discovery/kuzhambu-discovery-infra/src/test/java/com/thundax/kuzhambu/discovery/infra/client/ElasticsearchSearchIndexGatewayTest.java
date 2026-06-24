@@ -3,7 +3,8 @@ package com.thundax.kuzhambu.discovery.infra.client;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.List;
+import com.thundax.kuzhambu.discovery.application.search.result.SearchSourceContent;
+import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
 class ElasticsearchSearchIndexGatewayTest {
@@ -27,9 +28,10 @@ class ElasticsearchSearchIndexGatewayTest {
         ElasticsearchSearchIndexGateway gateway = new ElasticsearchSearchIndexGateway(properties);
 
         UnsupportedOperationException rebuildException =
-                assertThrows(UnsupportedOperationException.class, gateway::rebuildIndex);
-        UnsupportedOperationException upsertException =
-                assertThrows(UnsupportedOperationException.class, () -> gateway.upsertDocuments(List.of("doc-1")));
+                assertThrows(UnsupportedOperationException.class, () -> gateway.rebuildIndex(Collections.emptyList()));
+        UnsupportedOperationException upsertException = assertThrows(
+                UnsupportedOperationException.class,
+                () -> gateway.upsertDocuments(Collections.<SearchSourceContent>emptyList()));
 
         assertTrue(rebuildException.getMessage().contains("discovery-search-test"));
         assertTrue(upsertException.getMessage().contains("discovery-search-test"));

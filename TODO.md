@@ -17,14 +17,6 @@
     - 验收点：Application 层存在明确索引重建用例入口，且单元测试不依赖真实 ES
     - 重要度：10/10
 
-- [ ] `Gateway 重建签名`：扩展 SearchIndexGateway 正式重建能力
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-RUNTIME.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/search/support/SearchIndexGateway.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/client/ElasticsearchSearchIndexGateway.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/test/java/com/thundax/kuzhambu/discovery/infra/client/ElasticsearchSearchIndexGatewayTest.java`
-    - 处理动作：扩展 Gateway 的批量重建和批量写入正式签名，删除无意义旧签名
-    - 验收点：Application 不需要私有写入通道，Gateway 拥有稳定正式的重建能力
-    - 重要度：9/10
-
 - [ ] `关键词检索实现`：实现 ES search 的真实结果项返回
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-RUNTIME.md`
