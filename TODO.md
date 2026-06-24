@@ -9,22 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `关键词检索实现`：实现 ES search 的真实结果项返回
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-RUNTIME.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/client/ElasticsearchSearchIndexGateway.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/client/DiscoverySearchDocument.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/test/java/com/thundax/kuzhambu/discovery/infra/client/ElasticsearchSearchIndexGatewayTest.java`
-    - 处理动作：实现关键词检索、分页和 SearchResult 映射，保证返回真实内容项
-    - 验收点：search 不再抛未实现异常，结果项包含 contentType、contentId、title、summary、targetPath
-    - 重要度：10/10
-
-- [ ] `过滤与分组出参`：补齐基础过滤和 SearchGroupResult
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-RUNTIME.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/client/ElasticsearchSearchIndexGateway.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/search/result/SearchGroupResult.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/test/java/com/thundax/kuzhambu/discovery/infra/client/ElasticsearchSearchIndexGatewayTest.java`
-    - 处理动作：在真实检索基础上增加 knowledgeBases、categoryCodes、contentStatuses、visibilityScopes 过滤，并按 contentType 分组
-    - 验收点：Search 接口返回真实分组结果，过滤条件能影响命中结果
-    - 重要度：10/10
-
 - [ ] `真实搜索日志`：在 SearchApplicationServiceImpl 中落成功与失败日志
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-RUNTIME.md`

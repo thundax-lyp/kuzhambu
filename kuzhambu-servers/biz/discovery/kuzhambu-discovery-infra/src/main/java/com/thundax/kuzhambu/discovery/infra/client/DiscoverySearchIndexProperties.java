@@ -12,4 +12,6 @@ public class DiscoverySearchIndexProperties {
     private int shardCount = 1;
 
     private int replicaCount = 1;
+
+    private int batchSize = 200;
 }
