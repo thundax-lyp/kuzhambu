@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `discovery-infra`：T7 扩展 ES 文档字段与 Gateway 幂等更新能力
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-INDEX-SYNC.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/client/DiscoverySearchDocument.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/client/DiscoverySearchDocumentAssembler.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/client/ElasticsearchSearchIndexGateway.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/test/java/com/thundax/kuzhambu/discovery/infra/client/ElasticsearchSearchIndexGatewayTest.java`
-    - 处理动作：给 ES 文档增加 `sourceVersionNo / deleted / deletedAt` 并实现按版本 `upsert`、删除态更新和超时墓碑清理。
-    - 验收点：assembler 正确映射 `currentVersionNo`，gateway 支持按 `documentId` 写删除态并按 `deletedAt` 阈值清理超时墓碑文档。
-    - 重要度：10/10
-
 - [ ] `discovery-interface+starter`：T8 接入 Discovery MQ consumer 与开关配置
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-INDEX-SYNC.md`

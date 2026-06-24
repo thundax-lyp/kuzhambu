@@ -5,13 +5,16 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.discovery.application.search.result.SearchSourceContent;
 import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchKeyword;
 import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchScope;
+import java.time.Instant;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
@@ -72,7 +75,10 @@ class ElasticsearchSearchIndexGatewayTest {
                 List.of(),
                 "PUBLISHED",
                 "PUBLIC",
+                3,
                 null,
+                null,
+                false,
                 null,
                 "/classics/sancai/1001");
         when(searchHit.getContent()).thenReturn(document);
@@ -119,10 +125,57 @@ class ElasticsearchSearchIndexGatewayTest {
                 List.of(),
                 "PUBLISHED",
                 "PUBLIC",
+                3,
                 null,
                 null)));
 
         verify(operations)
                 .save(any(List.class), any(org.springframework.data.elasticsearch.core.mapping.IndexCoordinates.class));
+    }
+
+    @Test
+    void markDocumentDeletedShouldSkipWhenExistingVersionIsNewer() {
+        DiscoverySearchIndexProperties properties = new DiscoverySearchIndexProperties();
+        ElasticsearchOperations operations = mock(ElasticsearchOperations.class);
+        DiscoverySearchDocument existing = new DiscoverySearchDocument();
+        existing.setDocumentId("SANCAI_ENTRY:1001");
+        existing.setSourceVersionNo(5);
+        when(operations.get(eq("SANCAI_ENTRY:1001"), eq(DiscoverySearchDocument.class), any()))
+                .thenReturn(existing);
+        ElasticsearchSearchIndexGateway gateway =
+                new ElasticsearchSearchIndexGateway(properties, operations, new DiscoverySearchDocumentAssembler());
+
+        gateway.markDocumentDeleted("SANCAI_ENTRY", "1001", 4, new Date());
+
+        verify(operations, never()).save(any(DiscoverySearchDocument.class), any());
+    }
+
+    @Test
+    void cleanupDeletedDocumentsOlderThanShouldDeleteOnlyMatchedDocuments() {
+        DiscoverySearchIndexProperties properties = new DiscoverySearchIndexProperties();
+        ElasticsearchOperations operations = mock(ElasticsearchOperations.class);
+        @SuppressWarnings("unchecked")
+        SearchHits<DiscoverySearchDocument> searchHits = mock(SearchHits.class);
+        @SuppressWarnings("unchecked")
+        SearchHit<DiscoverySearchDocument> searchHit = mock(SearchHit.class);
+        DiscoverySearchDocument deletedDocument = new DiscoverySearchDocument();
+        deletedDocument.setDocumentId("SANCAI_ENTRY:1001");
+        when(searchHit.getContent()).thenReturn(deletedDocument);
+        when(searchHits.getSearchHits()).thenReturn(List.of(searchHit));
+        when(operations.search(
+                        any(org.springframework.data.elasticsearch.core.query.CriteriaQuery.class),
+                        eq(DiscoverySearchDocument.class),
+                        any(org.springframework.data.elasticsearch.core.mapping.IndexCoordinates.class)))
+                .thenReturn(searchHits);
+        ElasticsearchSearchIndexGateway gateway =
+                new ElasticsearchSearchIndexGateway(properties, operations, new DiscoverySearchDocumentAssembler());
+
+        int deletedCount = gateway.cleanupDeletedDocumentsOlderThan(Instant.parse("2026-06-24T00:00:00Z"));
+
+        assertTrue(deletedCount == 1);
+        verify(operations)
+                .delete(
+                        eq("SANCAI_ENTRY:1001"),
+                        any(org.springframework.data.elasticsearch.core.mapping.IndexCoordinates.class));
     }
 }

@@ -58,11 +58,20 @@ public class DiscoverySearchDocument {
     @Field(type = FieldType.Keyword)
     private String visibility;
 
+    @Field(type = FieldType.Integer)
+    private Integer sourceVersionNo;
+
     @Field(type = FieldType.Date, format = DateFormat.date_time)
     private Instant publishedAt;
 
     @Field(type = FieldType.Date, format = DateFormat.date_time)
     private Instant updatedAt;
+
+    @Field(type = FieldType.Boolean)
+    private Boolean deleted;
+
+    @Field(type = FieldType.Date, format = DateFormat.date_time)
+    private Instant deletedAt;
 
     @Field(type = FieldType.Keyword)
     private String sourcePath;
