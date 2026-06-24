@@ -24,7 +24,7 @@ class AdminStarterArchitectureTest extends AbstractArchitectureTest {
     }
 
     @Test
-    void adminStarterShouldScanSystemAndStorageRuntimePackages() {
+    void adminStarterShouldScanSystemStorageAndDiscoveryRuntimePackages() {
         SpringBootApplication application = KuzhambuAdminApplication.class.getAnnotation(SpringBootApplication.class);
         MapperScan mapperScan = KuzhambuAdminApplication.class.getAnnotation(MapperScan.class);
 
@@ -35,13 +35,17 @@ class AdminStarterArchitectureTest extends AbstractArchitectureTest {
                         "com.thundax.kuzhambu.system.interfaces.admin",
                         "com.thundax.kuzhambu.storage.application",
                         "com.thundax.kuzhambu.storage.infra",
-                        "com.thundax.kuzhambu.storage.interfaces.admin");
+                        "com.thundax.kuzhambu.storage.interfaces.admin",
+                        "com.thundax.kuzhambu.discovery.application",
+                        "com.thundax.kuzhambu.discovery.infra",
+                        "com.thundax.kuzhambu.discovery.interfaces.admin");
         Assertions.assertThat(Arrays.asList(mapperScan.value()))
                 .contains(
                         "com.thundax.kuzhambu.system.infra.core.persistence.mapper",
                         "com.thundax.kuzhambu.system.infra.auth.persistence.mapper",
                         "com.thundax.kuzhambu.system.infra.audit.persistence.mapper",
-                        "com.thundax.kuzhambu.storage.infra.object.persistence.mapper");
+                        "com.thundax.kuzhambu.storage.infra.object.persistence.mapper",
+                        "com.thundax.kuzhambu.discovery.infra.search.persistence.mapper");
     }
 
     @Test

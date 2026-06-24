@@ -1,0 +1,181 @@
+package com.thundax.kuzhambu.discovery.interfaces.portal.search.controller;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thundax.kuzhambu.discovery.application.search.result.SearchGroupResult;
+import com.thundax.kuzhambu.discovery.application.search.result.SearchLogResult;
+import com.thundax.kuzhambu.discovery.application.search.result.SearchResult;
+import com.thundax.kuzhambu.discovery.application.search.service.SearchApplicationService;
+import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.request.DiscoverySearchClickRequest;
+import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.request.DiscoverySearchRequest;
+import java.lang.reflect.Method;
+import java.util.List;
+import org.junit.jupiter.api.Test;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+class DiscoverySearchPortalControllerTest {
+
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
+    @Test
+    void routesShouldKeepPortalApiPaths() throws Exception {
+        assertRequestMapping(DiscoverySearchPortalController.class, "/api/portal/discovery/search");
+        assertPostMapping(DiscoverySearchPortalController.class, "search", "search", DiscoverySearchRequest.class);
+        assertPostMapping(DiscoverySearchPortalController.class, "click", "click", DiscoverySearchClickRequest.class);
+    }
+
+    @Test
+    void requestAndResponseJsonFieldsShouldRemainStable() throws Exception {
+        DiscoverySearchRequest request = OBJECT_MAPPER.readValue(
+                """
+                {
+                  "queryText": "黄帝",
+                  "knowledgeBases": ["SANCAI_ENTRY"],
+                  "categoryCodes": ["PERSON"],
+                  "tagNames": ["上古"],
+                  "contentStatuses": ["PUBLISHED"],
+                  "visibilityScopes": ["PUBLIC"],
+                  "dateFrom": "2026-01-01T00:00:00Z",
+                  "dateTo": "2026-01-02T00:00:00Z",
+                  "pageNo": 1,
+                  "pageSize": 20
+                }
+                """,
+                DiscoverySearchRequest.class);
+        assertEquals("黄帝", request.getQueryText());
+        assertJsonFields(
+                request,
+                "queryText",
+                "knowledgeBases",
+                "categoryCodes",
+                "tagNames",
+                "contentStatuses",
+                "visibilityScopes",
+                "dateFrom",
+                "dateTo",
+                "pageNo",
+                "pageSize");
+
+        DiscoverySearchClickRequest clickRequest = OBJECT_MAPPER.readValue(
+                """
+                {
+                  "searchLogId": "s-1",
+                  "contentDomain": "CLASSICS",
+                  "contentType": "SANCAI_ENTRY",
+                  "contentId": "1001",
+                  "contentTitle": "黄帝",
+                  "resultGroupKey": "SANCAI_ENTRY",
+                  "resultRank": 1,
+                  "groupRank": 1,
+                  "targetPath": "/classics/sancai/1001"
+                }
+                """,
+                DiscoverySearchClickRequest.class);
+        assertEquals("s-1", clickRequest.getSearchLogId());
+        assertJsonFields(
+                clickRequest,
+                "searchLogId",
+                "contentDomain",
+                "contentType",
+                "contentId",
+                "contentTitle",
+                "resultGroupKey",
+                "resultRank",
+                "groupRank",
+                "targetPath");
+    }
+
+    @Test
+    void searchShouldMapGroupedResults() {
+        SearchApplicationService service = mock(SearchApplicationService.class);
+        DiscoverySearchPortalController controller = new DiscoverySearchPortalController(service);
+        DiscoverySearchRequest request = new DiscoverySearchRequest();
+        request.setQueryText("黄帝");
+        request.setPageNo(1);
+        request.setPageSize(20);
+        when(service.search(any()))
+                .thenReturn(new SearchLogResult(
+                        "s-1",
+                        "黄帝",
+                        "黄帝",
+                        "黄帝",
+                        "ENTITY",
+                        null,
+                        1,
+                        1,
+                        "SUCCEEDED",
+                        null,
+                        null,
+                        null,
+                        "req-1",
+                        "trace-1",
+                        1_718_000_000_000L,
+                        List.of(new SearchGroupResult(
+                                "SANCAI_ENTRY",
+                                "三才图会",
+                                1,
+                                List.of(new SearchResult(
+                                        "CLASSICS",
+                                        "SANCAI_ENTRY",
+                                        "1001",
+                                        "黄帝",
+                                        "上古帝王",
+                                        null,
+                                        1,
+                                        1,
+                                        "/classics/sancai/1001"))))));
+
+        var response = controller.search(request);
+
+        verify(service).search(any());
+        assertEquals("s-1", response.getSearchLogId());
+        assertEquals(1, response.getGroups().size());
+        assertEquals("1001", response.getGroups().get(0).getItems().get(0).getContentId());
+    }
+
+    @Test
+    void clickShouldDelegateToApplicationService() {
+        SearchApplicationService service = mock(SearchApplicationService.class);
+        DiscoverySearchPortalController controller = new DiscoverySearchPortalController(service);
+        DiscoverySearchClickRequest request = new DiscoverySearchClickRequest();
+        request.setSearchLogId("s-1");
+        request.setContentDomain("CLASSICS");
+        request.setContentType("SANCAI_ENTRY");
+        request.setContentId("1001");
+        request.setResultGroupKey("SANCAI_ENTRY");
+        request.setResultRank(1);
+        request.setGroupRank(1);
+        when(service.recordClick(any())).thenReturn(Boolean.TRUE);
+
+        Boolean result = controller.click(request);
+
+        verify(service).recordClick(any());
+        assertTrue(result);
+    }
+
+    private void assertRequestMapping(Class<?> type, String expectedPath) {
+        RequestMapping mapping = type.getAnnotation(RequestMapping.class);
+        assertEquals(expectedPath, mapping.value()[0]);
+    }
+
+    private void assertPostMapping(Class<?> type, String methodName, String expectedPath, Class<?>... parameters)
+            throws Exception {
+        Method method = type.getDeclaredMethod(methodName, parameters);
+        PostMapping mapping = method.getAnnotation(PostMapping.class);
+        assertEquals(expectedPath, mapping.value()[0]);
+    }
+
+    private void assertJsonFields(Object value, String... fieldNames) throws Exception {
+        var node = OBJECT_MAPPER.valueToTree(value);
+        for (String fieldName : fieldNames) {
+            assertTrue(node.has(fieldName), "missing field " + fieldName);
+        }
+    }
+}

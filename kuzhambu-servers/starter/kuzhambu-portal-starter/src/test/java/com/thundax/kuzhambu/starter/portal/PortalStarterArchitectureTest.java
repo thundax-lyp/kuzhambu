@@ -37,12 +37,16 @@ class PortalStarterArchitectureTest extends AbstractArchitectureTest {
                         "com.thundax.kuzhambu.storage.infra",
                         "com.thundax.kuzhambu.classics.application",
                         "com.thundax.kuzhambu.classics.infra",
-                        "com.thundax.kuzhambu.classics.interfaces.portal");
+                        "com.thundax.kuzhambu.classics.interfaces.portal",
+                        "com.thundax.kuzhambu.discovery.application",
+                        "com.thundax.kuzhambu.discovery.infra",
+                        "com.thundax.kuzhambu.discovery.interfaces.portal");
         Assertions.assertThat(Arrays.asList(mapperScan.value()))
                 .contains(
                         "com.thundax.kuzhambu.system.infra.core.persistence.mapper",
                         "com.thundax.kuzhambu.system.infra.auth.persistence.mapper",
                         "com.thundax.kuzhambu.storage.infra.object.persistence.mapper",
-                        "com.thundax.kuzhambu.classics.infra.sharing.persistence.mapper");
+                        "com.thundax.kuzhambu.classics.infra.sharing.persistence.mapper",
+                        "com.thundax.kuzhambu.discovery.infra.search.persistence.mapper");
     }
 }
