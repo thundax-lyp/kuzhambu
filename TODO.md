@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `classics-search+discovery-search`：T5 传播 `currentVersionNo` 到搜索内容结果对象
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-INDEX-SYNC.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/search/result/ClassicsSearchSourceContent.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/search/service/impl/ClassicsSearchContentApplicationServiceImpl.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/search/result/SearchSourceContent.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/search/support/ClassicsSearchContentProvider.java`
-    - 处理动作：把 `currentVersionNo` 从 Classics 搜索结果一路传到 Discovery 搜索结果。
-    - 验收点：三类内容构造搜索结果时都写入 `currentVersionNo`，且 Discovery 侧 `SearchSourceContent` 保留该字段。
-    - 重要度：8/10
-
 - [ ] `discovery-application`：T6 扩展 Discovery 索引同步应用服务契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-INDEX-SYNC.md`

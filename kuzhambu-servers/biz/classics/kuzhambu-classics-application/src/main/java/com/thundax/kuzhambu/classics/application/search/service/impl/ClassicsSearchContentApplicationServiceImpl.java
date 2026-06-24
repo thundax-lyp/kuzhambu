@@ -215,6 +215,7 @@ public class ClassicsSearchContentApplicationServiceImpl implements ClassicsSear
                 Collections.emptyList(),
                 entry.getLifecycleStatus().value(),
                 entry.getVisibility().value(),
+                entry.getCurrentVersionNo(),
                 entry.getContentUpdatedAt(),
                 entry.getContentUpdatedAt());
     }
@@ -237,6 +238,7 @@ public class ClassicsSearchContentApplicationServiceImpl implements ClassicsSear
                 Collections.emptyList(),
                 "PUBLISHED",
                 document.getVisibility().value(),
+                document.getCurrentVersionNo(),
                 document.getDocumentTime() == null ? document.getContentUpdatedAt() : document.getDocumentTime(),
                 document.getContentUpdatedAt());
     }
@@ -257,6 +259,7 @@ public class ClassicsSearchContentApplicationServiceImpl implements ClassicsSear
                 Collections.emptyList(),
                 "PUBLISHED",
                 entry.getVisibility().value(),
+                entry.getCurrentVersionNo(),
                 entry.getContentUpdatedAt(),
                 entry.getContentUpdatedAt());
     }
