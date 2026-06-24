@@ -74,8 +74,8 @@ class ClassicsContentApplicationServiceImplTest {
     @Test
     void ensureVersionedShouldInsertVersionAndBackfillContentMarker() {
         FakeRepository repository = new FakeRepository();
-        ClassicsContentApplicationServiceImpl service =
-                new ClassicsContentApplicationServiceImpl(repository, null, null, null, null, null, null, null, null);
+        ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
+                repository, null, null, null, null, null, null, null, null, null);
         SancaiEntry entry = new SancaiEntry();
         entry.setId(SancaiEntryId.of(100L));
         entry.setTitle("entry");
@@ -96,8 +96,8 @@ class ClassicsContentApplicationServiceImplTest {
         FakeRepository repository = new FakeRepository();
         ClassicsContentVersion existing = existingVersion(9L, 2, new Date(2_000L));
         repository.insertedVersions.add(existing);
-        ClassicsContentApplicationServiceImpl service =
-                new ClassicsContentApplicationServiceImpl(repository, null, null, null, null, null, null, null, null);
+        ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
+                repository, null, null, null, null, null, null, null, null, null);
         SancaiEntry entry = new SancaiEntry();
         entry.setId(SancaiEntryId.of(100L));
         entry.setCurrentVersionId(existing.getId());
@@ -125,6 +125,7 @@ class ClassicsContentApplicationServiceImplTest {
                 repository,
                 null,
                 new SancaiEntryVersionRestorer(sancaiRepository, new ObjectMapper()),
+                null,
                 null,
                 null,
                 null,
@@ -169,6 +170,7 @@ class ClassicsContentApplicationServiceImplTest {
                 workerRenderClient,
                 storageUploadStreamHelper,
                 null,
+                null,
                 null);
 
         ClassicsExportJobResult result = service.createExportJob(command);
@@ -211,6 +213,7 @@ class ClassicsContentApplicationServiceImplTest {
                 workerRenderClient,
                 storageUploadStreamHelper,
                 null,
+                null,
                 null);
 
         ClassicsExportJobResult result = service.createExportJob(command);
@@ -223,8 +226,8 @@ class ClassicsContentApplicationServiceImplTest {
     @Test
     void sortTagsShouldUseScopedTagQueryAndPriorityRange() {
         ClassicsContentRepository repository = mock(ClassicsContentRepository.class);
-        ClassicsContentApplicationServiceImpl service =
-                new ClassicsContentApplicationServiceImpl(repository, null, null, null, null, null, null, null, null);
+        ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
+                repository, null, null, null, null, null, null, null, null, null);
         ClassicsContentId contentId = ClassicsContentId.of(100L);
         ClassicsContentTag first = new ClassicsContentTag();
         first.setId(ClassicsContentTagId.of(1L));
@@ -251,7 +254,7 @@ class ClassicsContentApplicationServiceImplTest {
         ClassicsContentRepository repository = mock(ClassicsContentRepository.class);
         ClassicsTagBindingSupport tagBindingSupport = mock(ClassicsTagBindingSupport.class);
         ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
-                repository, null, null, null, null, null, null, null, tagBindingSupport);
+                repository, null, null, null, null, null, null, null, tagBindingSupport, null);
         ContentTagCommand command = new ContentTagCommand(
                 null,
                 ClassicsContentType.SANCAI_ENTRY,
@@ -289,7 +292,7 @@ class ClassicsContentApplicationServiceImplTest {
         ClassicsContentRepository repository = mock(ClassicsContentRepository.class);
         ClassicsTagBindingSupport tagBindingSupport = mock(ClassicsTagBindingSupport.class);
         ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
-                repository, null, null, null, null, null, null, null, tagBindingSupport);
+                repository, null, null, null, null, null, null, null, tagBindingSupport, null);
         ContentTagCommand command = new ContentTagCommand(
                 9001L,
                 ClassicsContentType.SANCAI_ENTRY,
@@ -330,7 +333,7 @@ class ClassicsContentApplicationServiceImplTest {
         ClassicsContentRepository repository = mock(ClassicsContentRepository.class);
         ClassicsTagBindingSupport tagBindingSupport = mock(ClassicsTagBindingSupport.class);
         ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
-                repository, null, null, null, null, null, null, null, tagBindingSupport);
+                repository, null, null, null, null, null, null, null, tagBindingSupport, null);
         ClassicsContentTag existingTag = new ClassicsContentTag();
         existingTag.setId(ClassicsContentTagId.of(9001L));
         existingTag.setContentType(ClassicsContentType.SANCAI_ENTRY);

@@ -104,29 +104,6 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     private final ClassicsTagBindingSupport tagBindingSupport;
     private final ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport;
 
-    public ClassicsContentApplicationServiceImpl(
-            ClassicsContentRepository repository,
-            WangqiDocumentVersionRestorer wangqiDocumentVersionRestorer,
-            SancaiEntryVersionRestorer sancaiEntryVersionRestorer,
-            SancaiAssetApplicationService sancaiAssetApplicationService,
-            StorageApplicationService storageApplicationService,
-            WorkerRenderClient workerRenderClient,
-            StorageUploadStreamHelper storageUploadStreamHelper,
-            AiCandidateDomainService aiCandidateDomainService,
-            ClassicsTagBindingSupport tagBindingSupport) {
-        this(
-                repository,
-                wangqiDocumentVersionRestorer,
-                sancaiEntryVersionRestorer,
-                sancaiAssetApplicationService,
-                storageApplicationService,
-                workerRenderClient,
-                storageUploadStreamHelper,
-                aiCandidateDomainService,
-                tagBindingSupport,
-                null);
-    }
-
     @Autowired
     public ClassicsContentApplicationServiceImpl(
             ClassicsContentRepository repository,
@@ -581,7 +558,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             if (StringUtils.isBlank(tagName)) {
                 continue;
             }
-            addTag(new ContentTagCommand(
+            insertTagWithoutVersion(new ContentTagCommand(
                     null,
                     contentType,
                     contentId.value(),
@@ -607,7 +584,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             if (pair == null || StringUtils.isBlank(pair.getQuestion()) || StringUtils.isBlank(pair.getAnswer())) {
                 continue;
             }
-            addQaPair(new ContentQaPairCommand(
+            insertQaPairWithoutVersion(new ContentQaPairCommand(
                     null,
                     contentType,
                     contentId.value(),
@@ -616,6 +593,36 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                     ClassicsContentSource.AI));
         }
         touchContentUpdatedAt(contentType, content);
+    }
+
+    private ClassicsContentTagId insertTagWithoutVersion(ContentTagCommand command) {
+        ClassicsContentId contentId = ClassicsContentId.of(command.getContentId());
+        int nextPriority = repository.maxTagPriority(command.getContentType().value(), contentId) + 1;
+        ClassicsContentTag tag;
+        if (tagBindingSupport == null) {
+            tag = command.toEntity();
+        } else if (command.getSource() == ClassicsContentSource.AI) {
+            tag = tagBindingSupport.bindAiTag(command, nextPriority);
+        } else {
+            tag = tagBindingSupport.bindManualTag(command, nextPriority);
+        }
+        tag.setId(null);
+        if (tagBindingSupport == null) {
+            tag.setPriority(nextPriority);
+        }
+        ClassicsContentTagId createdId = repository.insertTag(tag);
+        if (tagBindingSupport != null) {
+            tag.setId(createdId);
+            tagBindingSupport.syncTagRef(tag);
+        }
+        return createdId;
+    }
+
+    private ClassicsContentQaPairId insertQaPairWithoutVersion(ContentQaPairCommand command) {
+        ClassicsContentQaPair qaPair = command.toEntity();
+        qaPair.setId(null);
+        qaPair.setPriority(repository.maxQaPairPriority() + 1);
+        return repository.insertQaPair(qaPair);
     }
 
     private void touchContentUpdatedAt(ClassicsContentType contentType, Versionable content) {
