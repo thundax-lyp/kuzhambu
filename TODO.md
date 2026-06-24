@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Discovery ES 适配`：创建 Search 索引文档与默认 Gateway
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-SKELETON.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/client/DiscoverySearchDocument.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/client/ElasticsearchSearchIndexGateway.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/client/DiscoverySearchIndexProperties.java`
-    - 处理动作：创建 Elasticsearch 文档模型、索引配置和默认 Gateway，占位方法统一抛未实现异常
-    - 验收点：ES 代码只位于 `infra.client`，`search/rebuildIndex/upsertDocuments` 都有清晰异常出口
-    - 重要度：9/10
-
 - [ ] `Discovery portal 接口`：创建 Search Portal Controller 与协议模型
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-SKELETON.md`

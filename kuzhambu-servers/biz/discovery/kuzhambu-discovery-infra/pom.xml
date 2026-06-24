@@ -17,6 +17,11 @@
   <dependencies>
     <dependency>
       <groupId>com.thundax</groupId>
+      <artifactId>kuzhambu-discovery-application</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-discovery-domain</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -28,6 +33,11 @@
     <dependency>
       <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-common-cache</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thundax</groupId>
+      <artifactId>kuzhambu-common-elasticsearch</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
