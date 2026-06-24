@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `索引重建应用服务`：新增 SearchIndexApplicationService
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-RUNTIME.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/search/service/SearchIndexApplicationService.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/search/service/impl/SearchIndexApplicationServiceImpl.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/search/support/SearchContentProvider.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/test/java/com/thundax/kuzhambu/discovery/application/search/service/impl/SearchIndexApplicationServiceImplTest.java`
-    - 处理动作：新增 application 层索引重建入口，串联内容读取和索引文档生成，不引入增量同步或后台调度
-    - 验收点：Application 层存在明确索引重建用例入口，且单元测试不依赖真实 ES
-    - 重要度：10/10
-
 - [ ] `关键词检索实现`：实现 ES search 的真实结果项返回
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-RUNTIME.md`
