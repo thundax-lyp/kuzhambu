@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `classics-wangqi`：T9b 在 Wangqi 写路径接入事务后消息发送
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-INDEX-SYNC.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/wangqi/service/impl/WangqiDocumentApplicationServiceImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/wangqi/WangqiDocumentApplicationServiceImplTest.java`
-    - 处理动作：在 Wangqi 会影响公开检索面的主写路径接入事务后消息发送。
-    - 验收点：创建、更新、发布、转私有等路径会按公开性发送 `UPSERT / DELETE`，测试校验 `contentType / contentId / currentVersionNo / eventType`。
-    - 重要度：8/10
-
 - [ ] `classics-mingcustoms`：T10a 在 MingCustoms 写路径接入事务后消息发送
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-INDEX-SYNC.md`
