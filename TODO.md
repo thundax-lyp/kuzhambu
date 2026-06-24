@@ -17,14 +17,6 @@
     - 验收点：Discovery application 不感知 Classics 内部 entity/DO，infra 能返回三类内容源的统一搜索内容对象
     - 重要度：10/10
 
-- [ ] `Classics 搜索读取能力`：补齐可公开消费内容的 application 读取入口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-RUNTIME.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/search/service/ClassicsSearchContentApplicationService.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/search/service/impl/ClassicsSearchContentApplicationServiceImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/search/result/ClassicsSearchSourceContent.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/search/ClassicsSearchContentApplicationServiceImplTest.java`
-    - 处理动作：在 Classics application 新增统一 facade，组合现有 Sancai/Wangqi/MingCustoms service，只返回当前可公开消费内容
-    - 验收点：Discovery 无需直接读 mapper，三类内容源都能稳定读取到当前可公开消费内容
-    - 重要度：9/10
-
 - [ ] `索引文档转换器`：建立 DiscoverySearchDocumentAssembler
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-RUNTIME.md`
