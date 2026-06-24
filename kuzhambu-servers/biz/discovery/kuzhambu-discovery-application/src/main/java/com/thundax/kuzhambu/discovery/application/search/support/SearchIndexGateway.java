@@ -13,4 +13,8 @@ public interface SearchIndexGateway {
     void rebuildIndex(List<SearchSourceContent> sourceContents);
 
     void upsertDocuments(List<SearchSourceContent> sourceContents);
+
+    Integer getSourceVersionNo(String documentId);
+
+    void markDocumentDeleted(String contentType, String contentId, Integer currentVersionNo, java.util.Date occurredAt);
 }

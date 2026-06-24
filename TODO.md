@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `discovery-application`：T6 扩展 Discovery 索引同步应用服务契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-INDEX-SYNC.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/search/service/SearchIndexSyncApplicationService.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/search/service/impl/SearchIndexSyncApplicationServiceImpl.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/search/support/SearchIndexGateway.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/test/java/com/thundax/kuzhambu/discovery/application/search/service/impl/SearchIndexSyncApplicationServiceImplTest.java`
-    - 处理动作：新增 `syncUpsert(...)` 和 `syncDelete(...)`，并在 application 层固定版本判定与删除态更新入口。
-    - 验收点：`syncUpsert(...)` 会回查当前公开内容，`syncDelete(...)` 只驱动删除态更新，测试覆盖旧版本丢弃、同版本幂等和新版本更新。
-    - 重要度：10/10
-
 - [ ] `discovery-infra`：T7 扩展 ES 文档字段与 Gateway 幂等更新能力
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-INDEX-SYNC.md`
