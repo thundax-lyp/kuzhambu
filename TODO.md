@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Discovery infra 持久化对象`：创建 Search DO 与 Mapper
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-SKELETON.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/search/persistence/dataobject/SearchLogDO.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/search/persistence/dataobject/SearchClickDO.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/search/persistence/dataobject/QueryUnderstandingDO.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/search/persistence/mapper/SearchLogMapper.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/search/persistence/mapper/SearchClickMapper.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/search/persistence/mapper/QueryUnderstandingMapper.java`
-    - 处理动作：按 RUNBOOK 表定义创建三张表的 DO 和最小 Mapper 方法签名
-    - 验收点：DO 字段与 RUNBOOK 表定义一致，Mapper 只保留持久化访问方法与 `@Mapper`
-    - 重要度：10/10
-
 - [ ] `Discovery infra 仓储实现`：创建 Search PersistenceAssembler 与 RepositoryImpl
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-SKELETON.md`
