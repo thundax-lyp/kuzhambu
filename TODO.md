@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `discovery-cleanup`：T8b 接入删除态文档计划清理任务
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-INDEX-SYNC.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/search/service/SearchIndexCleanupApplicationService.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/search/service/impl/SearchIndexCleanupApplicationServiceImpl.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-interface/src/main/java/com/thundax/kuzhambu/discovery/interfaces/admin/search/task/DiscoverySearchDeletedDocumentCleanupTask.java`、`kuzhambu-servers/starter/kuzhambu-admin-starter/src/main/resources/application.yml`
-    - 处理动作：新增按保留期清理删除态索引文档的 application service 和定时 task。
-    - 验收点：task 按 cron 触发 cleanup，只清理 `deleted = true` 且 `deletedAt` 超过保留期的文档，并且 task 不直接操作 ES client。
-    - 重要度：8/10
-
 - [ ] `classics-sancai`：T9a 在 Sancai 写路径接入事务后消息发送
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-INDEX-SYNC.md`

@@ -4,6 +4,7 @@ import com.thundax.kuzhambu.discovery.application.search.result.SearchGroupResul
 import com.thundax.kuzhambu.discovery.application.search.result.SearchSourceContent;
 import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchKeyword;
 import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchScope;
+import java.time.Instant;
 import java.util.List;
 
 public interface SearchIndexGateway {
@@ -17,4 +18,6 @@ public interface SearchIndexGateway {
     Integer getSourceVersionNo(String documentId);
 
     void markDocumentDeleted(String contentType, String contentId, Integer currentVersionNo, java.util.Date occurredAt);
+
+    Integer cleanupDeletedDocumentsOlderThan(Instant threshold);
 }
