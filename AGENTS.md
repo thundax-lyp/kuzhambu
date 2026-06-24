@@ -23,7 +23,7 @@ mvn checkstyle:check
 mvn test
 ```
 
-Java servers currently use Maven under `kuzhambu-servers/`. Local starter runs default to repo-root `dev.env`; load it before running Maven. Install reactor dependencies first when needed, then run from the starter module so Maven does not execute `spring-boot:run` on the root aggregator:
+Java servers currently use Maven under `kuzhambu-servers/`. Local starter runs default to a repo-root local `dev.env`; create it from `.env.example` and keep it untracked, then load it before running Maven. Install reactor dependencies first when needed, then run from the starter module so Maven does not execute `spring-boot:run` on the root aggregator:
 
 ```sh
 set -a

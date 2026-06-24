@@ -94,9 +94,10 @@
 ## Runtime Environment
 
 - 仓库根目录 `.env.example` 是 Java servers 本地启动环境变量样例。
+- 本地调试使用的 `dev.env` 必须由开发者基于 `.env.example` 自行创建，并保持未跟踪状态。
 - `deploy/.env.example` 是部署支撑样例，必须包含基础设施变量和 Java starter 运行时变量。
 - 新增 `application.yml` 环境变量占位符时，同步更新 `.env.example` 和 `deploy/.env.example`。
-- 真实 `.env` 和 `deploy/.env` 不得提交。
+- 真实 `.env`、`dev.env` 和 `deploy/.env` 不得提交。
 
 ## Default Domain Structure
 

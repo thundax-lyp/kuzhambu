@@ -1,4 +1,5 @@
-import { Button, Card, Empty, List, Space, Typography } from "antd";
+import { Button, Card, Empty, Space, Typography } from "antd";
+import { KuzhambuList, KuzhambuListItem } from "@/components/kuzhambu-list";
 import type { TagGovernanceMetricsRecord } from "../taxonomy-types";
 
 const { Paragraph, Text } = Typography;
@@ -48,17 +49,17 @@ export const TagGovernanceMetricsPanel = ({
                 <div className="knowledge-taxonomy-metrics-grid">
                     <Card size="small" title="标签使用排行">
                         {metrics?.topTags?.length ? (
-                            <List
+                            <KuzhambuList
                                 dataSource={metrics.topTags}
                                 renderItem={(item) => (
-                                    <List.Item>
+                                    <KuzhambuListItem>
                                         <Space orientation="vertical" size={0}>
                                             <Text strong>{item.tagName || "-"}</Text>
                                             <Text type="secondary">
                                                 内容引用：{item.contentRefCount ?? 0}
                                             </Text>
                                         </Space>
-                                    </List.Item>
+                                    </KuzhambuListItem>
                                 )}
                                 size="small"
                             />
@@ -69,17 +70,17 @@ export const TagGovernanceMetricsPanel = ({
 
                     <Card size="small" title="知识库分布">
                         {metrics?.categoryDistributions?.length ? (
-                            <List
+                            <KuzhambuList
                                 dataSource={metrics.categoryDistributions}
                                 renderItem={(item) => (
-                                    <List.Item>
+                                    <KuzhambuListItem>
                                         <Space orientation="vertical" size={0}>
                                             <Text strong>{item.categoryName || "未分类"}</Text>
                                             <Text type="secondary">
                                                 标签数量：{item.tagCount ?? 0}
                                             </Text>
                                         </Space>
-                                    </List.Item>
+                                    </KuzhambuListItem>
                                 )}
                                 size="small"
                             />
@@ -90,17 +91,17 @@ export const TagGovernanceMetricsPanel = ({
 
                     <Card size="small" title="来源占比">
                         {metrics?.sourceRatios?.length ? (
-                            <List
+                            <KuzhambuList
                                 dataSource={metrics.sourceRatios}
                                 renderItem={(item) => (
-                                    <List.Item>
+                                    <KuzhambuListItem>
                                         <Space orientation="vertical" size={0}>
                                             <Text strong>{readSourceLabel(item.source)}</Text>
                                             <Text type="secondary">
                                                 标签数量：{item.tagCount ?? 0}
                                             </Text>
                                         </Space>
-                                    </List.Item>
+                                    </KuzhambuListItem>
                                 )}
                                 size="small"
                             />
@@ -111,17 +112,17 @@ export const TagGovernanceMetricsPanel = ({
 
                     <Card size="small" title="月度新增趋势">
                         {metrics?.monthlyNewTags?.length ? (
-                            <List
+                            <KuzhambuList
                                 dataSource={metrics.monthlyNewTags}
                                 renderItem={(item) => (
-                                    <List.Item>
+                                    <KuzhambuListItem>
                                         <Space orientation="vertical" size={0}>
                                             <Text strong>{item.month || "-"}</Text>
                                             <Text type="secondary">
                                                 新增标签：{item.tagCount ?? 0}
                                             </Text>
                                         </Space>
-                                    </List.Item>
+                                    </KuzhambuListItem>
                                 )}
                                 size="small"
                             />

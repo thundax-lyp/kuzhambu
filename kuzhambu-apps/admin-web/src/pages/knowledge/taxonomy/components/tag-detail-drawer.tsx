@@ -1,5 +1,6 @@
-import { Button, Descriptions, Empty, Input, List, Space, Typography } from "antd";
+import { Button, Descriptions, Empty, Input, Space, Typography } from "antd";
 import { useState, type ReactNode } from "react";
+import { KuzhambuList, KuzhambuListItem, KuzhambuListMeta } from "@/components/kuzhambu-list";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import { TagAliasList } from "./tag-alias-list";
 import type {
@@ -225,11 +226,11 @@ export const TagDetailDrawer = ({
                     <div className="knowledge-taxonomy-tag-detail-section">
                         <Title level={5}>内容引用</Title>
                         {contentRefs.length > 0 ? (
-                            <List
+                            <KuzhambuList
                                 dataSource={contentRefs}
                                 renderItem={(contentRef) => (
-                                    <List.Item key={contentRef.id}>
-                                        <List.Item.Meta
+                                    <KuzhambuListItem key={contentRef.id}>
+                                        <KuzhambuListMeta
                                             title={contentRef.contentTitle || contentRef.id}
                                             description={
                                                 <Space wrap>
@@ -248,7 +249,7 @@ export const TagDetailDrawer = ({
                                                 </Space>
                                             }
                                         />
-                                    </List.Item>
+                                    </KuzhambuListItem>
                                 )}
                             />
                         ) : (

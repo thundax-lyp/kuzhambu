@@ -28,16 +28,19 @@
 - Discovery Search 当前固定只接 `SANCAI_ENTRY`、`WANGQI_DOCUMENT`、`MING_CUSTOMS` 三类内容源。
 - Discovery Search 已固定采用“数据库主键 + 业务号”双轨数据模型。
 - Discovery Search 已固定 Portal 搜索、Portal 点击、Admin 搜索日志分页和详情接口路径与字段口径。
+- Discovery Search 已落地 Java `application / infra / interface` 运行时代码，并完成 starter 装配。
+- Discovery Search 已通过 Classics application facade 读取三类“当前可公开消费内容”，不直接依赖 Classics mapper 或 DO。
+- Discovery Search 已完成 `DiscoverySearchDocument` 映射、Elasticsearch 默认 Gateway 实现、全量索引重建应用入口和真实检索链路。
+- Discovery Search 已完成成功 / 失败搜索日志写入、点击日志写入、Admin 手动重建索引入口，以及 Portal 搜索结果真实分组返回。
+- Discovery Search 已补齐 `search / click / rebuild` 共享动作白名单，并完成最小 Maven 运行时测试闭环。
 
 部分完成：
 
-- Discovery Search 已完成 Search 子域骨架 RUNBOOK 和 TODO 拆解，但运行时代码、数据库脚本、测试和前端入口尚未落地。
-- Discovery 设计文档已明确 Elasticsearch 默认适配和复杂能力占位异常策略，但当前仓库还没有 Discovery Java 实现代码。
+- Discovery Search 已完成后端运行时闭环，但 Portal 搜索页面、Admin 搜索分析页面和最终前台深链路由仍未落地。
+- Discovery 设计文档已明确 Elasticsearch 默认适配和复杂能力占位异常策略；当前仅实现 Search 运行时主链路，复杂增强能力仍保留未实现状态。
 
 未完成：
 
-- Discovery Java domain / application / infra / interface 四层代码尚未创建。
-- Discovery Search 表结构、Mapper、Repository、ApplicationService、Controller、测试和 starter 接入尚未落地。
 - Portal 搜索页面、Admin 搜索分析页面、问答会话、多轮上下文、来源引用和调试信息仍未形成可执行交付物。
 
 ## Requirement Coverage Matrix
@@ -46,22 +49,22 @@
 
 | 需求项 | 状态 | 已完成部分 | 未完成部分 | 责任域 |
 | --- | --- | --- | --- | --- |
-| 跨库搜索三才图会、王圻文档和明代习俗 | 部分完成 | Search 子域设计已固定内容源范围为 `SANCAI_ENTRY`、`WANGQI_DOCUMENT`、`MING_CUSTOMS` | 运行时代码、索引构建和结果返回未实现 | Discovery, Classics |
-| 结果按知识库分组展示 | 部分完成 | 设计文档已固定 `SearchResultGroup` 和 Portal 返回分组结构 | 分组检索与出参实现未完成 | Discovery |
-| 组内相关性排序 | 部分完成 | 设计文档已保留相关性排序责任在 Search 检索链路 | 实际排序策略和 ES DSL 未实现 | Discovery |
-| 关键词高亮 | 部分完成 | Portal 结果项已固定保留 `highlightText` 字段 | 高亮生成未实现 | Discovery |
-| 按知识库、门类、标签、状态、时间筛选 | 部分完成 | `SearchScope` 与搜索请求字段已在设计文档固定 | 实际筛选执行未实现 | Discovery |
-| 权限过滤 | 部分完成 | 需求和设计文档都已固定“结果出参前完成权限过滤” | 权限过滤实现未完成 | Discovery, System |
-| 搜索日志记录 | 部分完成 | `discovery_search_log` 字段和 Admin 日志接口口径已固定 | 数据库、写入逻辑和查询接口未实现 | Discovery |
-| 点击日志记录 | 部分完成 | `discovery_search_click` 字段和 Portal 点击接口口径已固定 | 数据库、写入逻辑和查询接口未实现 | Discovery |
-| 搜索深链与状态保留 | 部分完成 | 设计文档已为结果项保留 `targetPath` | Portal 页面和状态恢复未实现 | Discovery, Portal Web |
+| 跨库搜索三才图会、王圻文档和明代习俗 | 已完成 | Search 已通过 Classics application facade 读取 `SANCAI_ENTRY`、`WANGQI_DOCUMENT`、`MING_CUSTOMS` 三类内容，完成索引文档生成、Elasticsearch 检索和 Portal 结果返回 | Portal 页面仍未接入 | Discovery, Classics |
+| 结果按知识库分组展示 | 已完成 | Search 返回固定按 `contentType` 分组，并映射为 Portal `groups/items` 结构 | Admin/Portal 页面展示层仍未实现 | Discovery |
+| 组内相关性排序 | 部分完成 | Elasticsearch 检索已形成真实查询链路并返回结果顺序 | 高级相关性调优、复杂排序策略仍未实现 | Discovery |
+| 关键词高亮 | 部分完成 | Portal 结果项继续保留 `highlightText` 字段 | 本轮允许返回 `null`，高亮文本生成仍未实现 | Discovery |
+| 按知识库、门类、标签、状态、时间筛选 | 部分完成 | `SearchScope`、请求字段和 Search Gateway 真实检索入口已形成 | 当前筛选能力仍偏基础，复杂条件与标签增强未完成 | Discovery |
+| 权限过滤 | 部分完成 | 本轮固定只返回当前可公开消费内容，避免把不可前台消费内容暴露到结果中 | 通用权限过滤策略和与 System 的深度整合仍未完成 | Discovery, System |
+| 搜索日志记录 | 已完成 | 搜索成功 / 失败都会写入 `discovery_search_log`，Admin 已可分页和查看详情 | 搜索分析报表、热词与失败率统计未实现 | Discovery |
+| 点击日志记录 | 已完成 | Portal 点击接口已真实写入 `discovery_search_click`，并校验 `searchLogId` 存在 | 点击分析、聚合统计未实现 | Discovery |
+| 搜索深链与状态保留 | 部分完成 | 结果项已返回稳定占位 `targetPath` | Portal 页面深链消费和搜索状态恢复未实现 | Discovery, Portal Web |
 | 无结果空状态提示 | 未完成 | 需求已沉淀 | 前端页面和接口联调未实现 | Discovery, Portal Web |
 
 ### 查询理解与增强
 
 | 需求项 | 状态 | 已完成部分 | 未完成部分 | 责任域 |
 | --- | --- | --- | --- | --- |
-| 查询理解和意图识别 | 部分完成 | `QueryUnderstanding`、`SearchIntentType` 和 `discovery_query_understanding` 字段已在设计文档固定 | 实际理解链路未实现 | Discovery |
+| 查询理解和意图识别 | 部分完成 | `QueryUnderstanding`、`SearchIntentType`、`discovery_query_understanding` 数据结构与应用服务骨架已存在 | 实际理解链路仍未实现，主搜索链路未接入 | Discovery |
 | 同义词扩展 | 部分完成 | 需求和设计已固定依赖 Knowledge 同义词词典，数据结构已预留 `expanded_synonyms_json` | 实际扩展逻辑未实现 | Discovery, Knowledge |
 | 查询清洗和停用词过滤 | 部分完成 | 数据结构已预留 `normalized_query_text` | 清洗规则未实现 | Discovery |
 | 查询改写 | 部分完成 | 数据结构已预留 `rewritten_query_text` | 改写执行未实现 | Discovery, AI |
@@ -82,20 +85,21 @@
 
 | 需求项 | 状态 | 已完成部分 | 未完成部分 | 责任域 |
 | --- | --- | --- | --- | --- |
-| 当前阶段运行时验证 | 未完成 | 已形成 Discovery Search RUNBOOK 和 TODO 拆解，可直接指导后续实现 | Discovery 模块代码、测试、Maven 验证和 starter 扫描验证均未执行 | Discovery |
+| 当前阶段运行时验证 | 已完成 | 已完成 Search runtime RUNBOOK 执行，starter 扫描、Admin/Portal controller 测试、application 测试和最小 Maven 验证均已跑通；本地 Elasticsearch HTTPS 连通和认证已用 `curl` 验证 | 全量 PR workflow、真实前端页面联调和 ES 集群健康治理仍未完成 | Discovery |
 
 ## Unfinished Focus
 
 | 能力项 | 状态 | 说明 |
 | --- | --- | --- |
-| Search 子域骨架代码 | 未完成 | 当前仅完成需求、设计、RUNBOOK 和 TODO 拆解，尚未创建 Java 代码 |
-| Elasticsearch 默认适配 | 部分完成 | 设计文档已固定默认适配方向，尚无 infra 实现 |
-| Portal 搜索入口 | 未完成 | 仅固定接口协议，Portal 页面未实现 |
-| Admin 搜索分析入口 | 未完成 | 仅固定接口协议，Admin 页面未实现 |
+| Search 子域骨架代码 | 已完成 | Search 相关 application、infra、interface 代码、测试和 starter 装配已落地 |
+| Elasticsearch 默认适配 | 已完成 | 已在 infra 内实现 `ElasticsearchSearchIndexGateway`，并接入 starter 运行时配置 |
+| Portal 搜索入口 | 部分完成 | Portal 搜索和点击接口已可运行，Portal 页面未实现 |
+| Admin 搜索分析入口 | 部分完成 | Admin 搜索日志分页、详情和索引重建入口已落地，分析页面未实现 |
 | QA 子域 | 未完成 | 当前阶段未进入实现范围 |
 
 ## Residual Risks
 
-- Discovery 当前仍无 Java 代码，后续若在实现时调整包结构、命名或接口路径，需要同步更新本覆盖文档和设计文档。
-- Search 当前明确只接 Classics 三类内容源；后续若扩大到其他业务域，需要重新确认 SearchScope、索引文档和权限过滤模型。
-- Search 当前已固定“数据库主键 + 业务号”双轨；后续若统一 ID 口径变化，需要同步 `SERVERS-UNIFIED-ID-DESIGN.md` 与 Discovery 数据模型。
+- Search 当前明确只接 Classics 三类内容源；后续若扩大到其他业务域，需要重新确认 `SearchScope`、索引文档和权限过滤模型。
+- Search 当前仅完成“找得到”的基础闭环；高亮、同义词、实体增强、复杂排序和搜索分析仍缺运行时代码。
+- 本地 Elasticsearch 虽已验证 HTTPS 地址和认证可达，但当前集群健康状态不是绿态；若后续索引重建或检索异常，需要继续排查未分配分片与证书信任配置。
+- `dev.env` 已按治理规则转为本地未跟踪文件；本分支若要彻底完成现场治理，还需要在后续提交中同步移除其历史跟踪状态。

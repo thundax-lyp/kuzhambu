@@ -59,8 +59,8 @@ export const WangqiTimeline = ({
                     <Timeline
                         items={dataSource.map((record) => ({
                             key: record.id,
-                            label: formatDateTime(record.documentTime),
-                            children: (
+                            title: formatDateTime(record.documentTime),
+                            content: (
                                 <Button
                                     type="text"
                                     className="wangqi-timeline-item"

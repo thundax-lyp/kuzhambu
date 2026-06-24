@@ -1,6 +1,7 @@
 import { Button, Form, Input, Select, Switch, Typography } from "antd";
 import type { ReactNode } from "react";
 import { useEffect } from "react";
+import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import { KuzhambuRichContentViewer } from "@/components/kuzhambu-rich-content-viewer";
 import type { DictItem } from "@/types/dict";
@@ -113,7 +114,7 @@ export const MingCustomsModel = ({
                 <Form.Item name="summary" label="概述">
                     <TextArea
                         aria-label="明代习俗概述"
-                        autoSize={{ minRows: 3, maxRows: 6 }}
+                        autoSize={resolveTextAreaAutoSize({ minRows: 3, maxRows: 6 })}
                         maxLength={500}
                         showCount
                     />
@@ -138,7 +139,10 @@ export const MingCustomsModel = ({
                     </Form.Item>
                 </div>
                 <Form.Item name="content" label="正文">
-                    <TextArea aria-label="明代习俗正文" autoSize={{ minRows: 8, maxRows: 14 }} />
+                    <TextArea
+                        aria-label="明代习俗正文"
+                        autoSize={resolveTextAreaAutoSize({ minRows: 8, maxRows: 14 })}
+                    />
                 </Form.Item>
                 <section className="ming-customs-model-preview" aria-label="明代习俗正文预览">
                     <Text strong>正文预览</Text>
@@ -149,7 +153,10 @@ export const MingCustomsModel = ({
                     />
                 </section>
                 <Form.Item name="originalExcerpts" label="原文摘录">
-                    <TextArea aria-label="明代习俗原文摘录" autoSize={{ minRows: 4, maxRows: 8 }} />
+                    <TextArea
+                        aria-label="明代习俗原文摘录"
+                        autoSize={resolveTextAreaAutoSize({ minRows: 4, maxRows: 8 })}
+                    />
                 </Form.Item>
             </Form>
             {afterForm}

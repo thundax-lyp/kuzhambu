@@ -322,7 +322,7 @@ export const SancaiPage = () => {
                     className="sancai-alert"
                     type="warning"
                     showIcon
-                    message="三才图会数据加载失败"
+                    title="三才图会数据加载失败"
                     description="请确认后台三才图会接口可用后刷新页面。"
                 />
             ) : null}

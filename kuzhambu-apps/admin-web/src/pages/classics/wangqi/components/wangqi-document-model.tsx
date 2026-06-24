@@ -1,6 +1,7 @@
 import { Button, DatePicker, Form, Input, InputNumber, Select, Switch, Typography } from "antd";
 import { useEffect } from "react";
 import type { ReactNode } from "react";
+import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import { KuzhambuRichContentViewer } from "@/components/kuzhambu-rich-content-viewer";
 import {
@@ -89,7 +90,7 @@ export const WangqiDocumentModel = ({
                 <Form.Item name="summary" label="摘要">
                     <TextArea
                         aria-label="王圻文档摘要"
-                        autoSize={{ minRows: 3, maxRows: 6 }}
+                        autoSize={resolveTextAreaAutoSize({ minRows: 3, maxRows: 6 })}
                         maxLength={500}
                         showCount
                     />
@@ -120,7 +121,10 @@ export const WangqiDocumentModel = ({
                     </Form.Item>
                 </div>
                 <Form.Item name="content" label="正文">
-                    <TextArea aria-label="王圻文档正文" autoSize={{ minRows: 10, maxRows: 18 }} />
+                    <TextArea
+                        aria-label="王圻文档正文"
+                        autoSize={resolveTextAreaAutoSize({ minRows: 10, maxRows: 18 })}
+                    />
                 </Form.Item>
                 <section className="wangqi-document-model-preview" aria-label="王圻文档正文预览">
                     <Text strong>正文预览</Text>
