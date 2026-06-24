@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `classics-mingcustoms`：T10a 在 MingCustoms 写路径接入事务后消息发送
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-INDEX-SYNC.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/mingcustoms/service/impl/MingCustomsApplicationServiceImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/mingcustoms/MingCustomsApplicationServiceImplTest.java`
-    - 处理动作：在 MingCustoms 主内容编辑路径接入事务后消息发送。
-    - 验收点：公开状态发送 `UPSERT`、不可公开状态发送 `DELETE`，且所有消息都带 `currentVersionNo`。
-    - 重要度：8/10
-
 - [ ] `classics-content-governance`：T10b 在内容治理写路径接入事务后消息发送
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-INDEX-SYNC.md`

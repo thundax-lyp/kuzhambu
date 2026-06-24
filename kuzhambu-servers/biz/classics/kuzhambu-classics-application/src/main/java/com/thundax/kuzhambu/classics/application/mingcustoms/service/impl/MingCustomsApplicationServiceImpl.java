@@ -7,9 +7,12 @@ import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustoms
 import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsKeywordSortCommand;
 import com.thundax.kuzhambu.classics.application.mingcustoms.query.MingCustomsPageQuery;
 import com.thundax.kuzhambu.classics.application.mingcustoms.service.MingCustomsApplicationService;
+import com.thundax.kuzhambu.classics.application.searchsync.support.ClassicsSearchIndexSyncPublishSupport;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentChangeType;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsKeyword;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsVisibility;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsEntryId;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsKeywordCloudItem;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsKeywordId;
@@ -36,11 +39,15 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
 
     private final MingCustomsRepository repository;
     private final ClassicsContentApplicationService contentApplicationService;
+    private final ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport;
 
     public MingCustomsApplicationServiceImpl(
-            MingCustomsRepository repository, ClassicsContentApplicationService contentApplicationService) {
+            MingCustomsRepository repository,
+            ClassicsContentApplicationService contentApplicationService,
+            ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport) {
         this.repository = repository;
         this.contentApplicationService = contentApplicationService;
+        this.searchIndexSyncPublishSupport = searchIndexSyncPublishSupport;
     }
 
     @Override
@@ -76,6 +83,7 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
         MingCustomsEntryId id = repository.insert(entry);
         entry.setId(id);
         markManualSaveVersion(entry);
+        publishSearchSyncAfterCommit(entry);
         return id;
     }
 
@@ -89,18 +97,33 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
         entry.setContentUpdatedAt(new Date());
         repository.update(entry);
         markManualSaveVersion(entry);
+        publishSearchSyncAfterCommit(entry);
         return entry.getId();
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void changeVisibility(MingCustomsEntryId id, String visibility) {
-        repository.updateVisibility(id, visibility);
+        MingCustomsEntry entry = repository.getById(id);
+        if (entry == null) {
+            return;
+        }
+        entry.setVisibility(MingCustomsVisibility.from(visibility));
+        entry.setContentUpdatedAt(new Date());
+        markManualSaveVersion(entry);
+        publishSearchSyncAfterCommit(entry);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void delete(MingCustomsEntryId id) {
+        MingCustomsEntry entry = repository.getById(id);
+        if (entry == null) {
+            return;
+        }
+        entry.setContentUpdatedAt(new Date());
+        contentApplicationService.ensureVersioned(entry, ClassicsContentChangeType.MANUAL_SAVE, "手动删除");
+        publishDeleteAfterCommit(entry);
         repository.deleteById(id);
     }
 
@@ -245,5 +268,31 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
     private void markManualSaveVersion(MingCustomsEntry entry) {
         contentApplicationService.ensureVersioned(entry, ClassicsContentChangeType.MANUAL_SAVE, "手动保存");
         repository.update(entry);
+    }
+
+    private void publishSearchSyncAfterCommit(MingCustomsEntry entry) {
+        if (isPublicSearchEntry(entry)) {
+            searchIndexSyncPublishSupport.publishUpsertAfterCommit(
+                    ClassicsContentType.MING_CUSTOMS,
+                    String.valueOf(entry.getId().value()),
+                    entry.getCurrentVersionNo());
+            return;
+        }
+        publishDeleteAfterCommit(entry);
+    }
+
+    private void publishDeleteAfterCommit(MingCustomsEntry entry) {
+        if (entry == null || entry.getId() == null || entry.getCurrentVersionNo() == null) {
+            return;
+        }
+        searchIndexSyncPublishSupport.publishDeleteAfterCommit(
+                ClassicsContentType.MING_CUSTOMS, String.valueOf(entry.getId().value()), entry.getCurrentVersionNo());
+    }
+
+    private boolean isPublicSearchEntry(MingCustomsEntry entry) {
+        return entry != null
+                && entry.getId() != null
+                && entry.getCurrentVersionNo() != null
+                && entry.getVisibility() == MingCustomsVisibility.PUBLIC;
     }
 }
