@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Discovery application 协议`：创建 Search 查询命令与结果模型
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-SKELETON.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/search/query/SearchQuery.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/search/query/SearchLogPageQuery.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/search/command/SearchClickCreateCommand.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/search/result/SearchResult.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/search/result/SearchGroupResult.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/search/result/SearchLogResult.java`
-    - 处理动作：按 RUNBOOK 固定 Portal 搜索、Admin 日志查询和搜索结果的 application 输入输出模型
-    - 验收点：application 模型可承载高亮、分组、来源跳转字段且不依赖 interface request/response
-    - 重要度：10/10
-
 - [ ] `Discovery application 服务`：创建 Search 用例服务与检索抽象
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-SKELETON.md`
