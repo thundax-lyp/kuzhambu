@@ -7,7 +7,9 @@ import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
 import com.thundax.kuzhambu.discovery.application.search.service.SearchApplicationService;
+import com.thundax.kuzhambu.discovery.application.search.service.SearchIndexApplicationService;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.assembler.DiscoverySearchAdminInterfaceAssembler;
+import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchIndexRebuildRequest;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchLogGetRequest;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchLogPageRequest;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.response.DiscoverySearchLogDetailResponse;
@@ -26,9 +28,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class DiscoverySearchAdminController {
 
     private final SearchApplicationService searchApplicationService;
+    private final SearchIndexApplicationService searchIndexApplicationService;
 
-    public DiscoverySearchAdminController(SearchApplicationService searchApplicationService) {
+    public DiscoverySearchAdminController(
+            SearchApplicationService searchApplicationService,
+            SearchIndexApplicationService searchIndexApplicationService) {
         this.searchApplicationService = searchApplicationService;
+        this.searchIndexApplicationService = searchIndexApplicationService;
     }
 
     @Operation(summary = "分页查询搜索日志", description = "Discovery 搜索日志分页")
@@ -49,5 +55,13 @@ public class DiscoverySearchAdminController {
     public DiscoverySearchLogDetailResponse getLog(@Valid @RequestBody DiscoverySearchLogGetRequest request) {
         return DiscoverySearchAdminInterfaceAssembler.toDetailResponse(
                 searchApplicationService.getLog(request.getSearchLogId()));
+    }
+
+    @Operation(summary = "手动重建搜索索引", description = "Discovery 搜索索引全量重建")
+    @HasPermission("discovery:search:edit")
+    @IgnoreSysLogger
+    @PostMapping("index/rebuild")
+    public Integer rebuildIndex(@Valid @RequestBody DiscoverySearchIndexRebuildRequest request) {
+        return searchIndexApplicationService.rebuildIndex();
     }
 }

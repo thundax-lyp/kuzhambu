@@ -11,6 +11,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchLogResult;
 import com.thundax.kuzhambu.discovery.application.search.service.SearchApplicationService;
+import com.thundax.kuzhambu.discovery.application.search.service.SearchIndexApplicationService;
+import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchIndexRebuildRequest;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchLogGetRequest;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchLogPageRequest;
 import java.lang.reflect.Method;
@@ -30,6 +32,11 @@ class DiscoverySearchAdminControllerTest {
                 DiscoverySearchAdminController.class, "pageLogs", "logs/page", DiscoverySearchLogPageRequest.class);
         assertPostMapping(
                 DiscoverySearchAdminController.class, "getLog", "logs/get", DiscoverySearchLogGetRequest.class);
+        assertPostMapping(
+                DiscoverySearchAdminController.class,
+                "rebuildIndex",
+                "index/rebuild",
+                DiscoverySearchIndexRebuildRequest.class);
     }
 
     @Test
@@ -66,12 +73,21 @@ class DiscoverySearchAdminControllerTest {
                 """, DiscoverySearchLogGetRequest.class);
         assertEquals("s-1", getRequest.getSearchLogId());
         assertJsonFields(getRequest, "searchLogId");
+
+        DiscoverySearchIndexRebuildRequest rebuildRequest = OBJECT_MAPPER.readValue(
+                """
+                {"confirm": true}
+                """, DiscoverySearchIndexRebuildRequest.class);
+        assertEquals(Boolean.TRUE, rebuildRequest.getConfirm());
+        assertJsonFields(rebuildRequest, "confirm");
     }
 
     @Test
     void pageLogsShouldMapPageResponse() {
         SearchApplicationService service = mock(SearchApplicationService.class);
-        DiscoverySearchAdminController controller = new DiscoverySearchAdminController(service);
+        SearchIndexApplicationService searchIndexApplicationService = mock(SearchIndexApplicationService.class);
+        DiscoverySearchAdminController controller =
+                new DiscoverySearchAdminController(service, searchIndexApplicationService);
         DiscoverySearchLogPageRequest request = new DiscoverySearchLogPageRequest();
         request.setPageNo(1);
         request.setPageSize(20);
@@ -108,7 +124,9 @@ class DiscoverySearchAdminControllerTest {
     @Test
     void getLogShouldMapDetailResponse() {
         SearchApplicationService service = mock(SearchApplicationService.class);
-        DiscoverySearchAdminController controller = new DiscoverySearchAdminController(service);
+        SearchIndexApplicationService searchIndexApplicationService = mock(SearchIndexApplicationService.class);
+        DiscoverySearchAdminController controller =
+                new DiscoverySearchAdminController(service, searchIndexApplicationService);
         DiscoverySearchLogGetRequest request = new DiscoverySearchLogGetRequest();
         request.setSearchLogId("s-1");
         when(service.getLog("s-1"))
@@ -136,6 +154,21 @@ class DiscoverySearchAdminControllerTest {
         assertEquals("s-1", response.getSearchLogId());
         assertEquals("ENTITY", response.getIntentType());
         assertTrue(response.getSearchScopesJson().contains("SANCAI_ENTRY"));
+    }
+
+    @Test
+    void rebuildIndexShouldDelegateToIndexApplicationService() {
+        SearchApplicationService service = mock(SearchApplicationService.class);
+        SearchIndexApplicationService searchIndexApplicationService = mock(SearchIndexApplicationService.class);
+        DiscoverySearchAdminController controller =
+                new DiscoverySearchAdminController(service, searchIndexApplicationService);
+        DiscoverySearchIndexRebuildRequest request = new DiscoverySearchIndexRebuildRequest(Boolean.TRUE);
+        when(searchIndexApplicationService.rebuildIndex()).thenReturn(12);
+
+        Integer result = controller.rebuildIndex(request);
+
+        verify(searchIndexApplicationService).rebuildIndex();
+        assertEquals(12, result);
     }
 
     private void assertRequestMapping(Class<?> type, String expectedPath) {

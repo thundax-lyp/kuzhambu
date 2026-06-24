@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `索引重建管理入口`：新增 Admin index rebuild 接口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-RUNTIME.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-interface/src/main/java/com/thundax/kuzhambu/discovery/interfaces/admin/search/controller/DiscoverySearchAdminController.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-interface/src/main/java/com/thundax/kuzhambu/discovery/interfaces/admin/search/controller/request/DiscoverySearchIndexRebuildRequest.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-interface/src/test/java/com/thundax/kuzhambu/discovery/interfaces/admin/search/controller/DiscoverySearchAdminControllerTest.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/search/service/SearchIndexApplicationService.java`
-    - 处理动作：新增 Admin 手动重建入口，权限码固定为 discovery:search:edit
-    - 验收点：可通过后端接口手动触发一次全量重建，接口定位为运维入口
-    - 重要度：9/10
-
 - [ ] `Admin 日志详情真实化`：返回真实范围和失败信息
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-RUNTIME.md`
