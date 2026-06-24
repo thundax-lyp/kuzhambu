@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Discovery 内容读取抽象`：建立 SearchContentProvider 与统一内容模型
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-RUNTIME.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/search/support/SearchContentProvider.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/search/result/SearchSourceContent.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/search/provider/ClassicsSearchContentProvider.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/pom.xml`
-    - 处理动作：定义 Discovery 侧内容读取抽象和统一内容模型，并提供基于 Classics application 的默认 provider
-    - 验收点：Discovery application 不感知 Classics 内部 entity/DO，infra 能返回三类内容源的统一搜索内容对象
-    - 重要度：10/10
-
 - [ ] `索引文档转换器`：建立 DiscoverySearchDocumentAssembler
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-RUNTIME.md`

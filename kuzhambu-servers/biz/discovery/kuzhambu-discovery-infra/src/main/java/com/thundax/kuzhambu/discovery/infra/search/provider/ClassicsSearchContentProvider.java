@@ -1,0 +1,45 @@
+package com.thundax.kuzhambu.discovery.infra.search.provider;
+
+import com.thundax.kuzhambu.classics.application.search.service.ClassicsSearchContentApplicationService;
+import com.thundax.kuzhambu.discovery.application.search.result.SearchSourceContent;
+import com.thundax.kuzhambu.discovery.application.search.support.SearchContentProvider;
+import java.util.Collections;
+import java.util.List;
+import org.springframework.stereotype.Component;
+
+@Component
+public class ClassicsSearchContentProvider implements SearchContentProvider {
+
+    private final ClassicsSearchContentApplicationService classicsSearchContentApplicationService;
+
+    public ClassicsSearchContentProvider(
+            ClassicsSearchContentApplicationService classicsSearchContentApplicationService) {
+        this.classicsSearchContentApplicationService = classicsSearchContentApplicationService;
+    }
+
+    @Override
+    public List<SearchSourceContent> listPublicContents() {
+        List<com.thundax.kuzhambu.classics.application.search.result.ClassicsSearchSourceContent> sourceContents =
+                classicsSearchContentApplicationService.listPublicContents();
+        if (sourceContents == null || sourceContents.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return sourceContents.stream()
+                .map(sourceContent -> new SearchSourceContent(
+                        "CLASSICS",
+                        sourceContent.getContentType(),
+                        sourceContent.getContentId(),
+                        sourceContent.getKnowledgeBase(),
+                        sourceContent.getCategoryCode(),
+                        sourceContent.getCategoryName(),
+                        sourceContent.getTitle(),
+                        sourceContent.getSummary(),
+                        sourceContent.getTextSegments(),
+                        sourceContent.getTagNames(),
+                        sourceContent.getStatus(),
+                        sourceContent.getVisibility(),
+                        sourceContent.getPublishedAt(),
+                        sourceContent.getUpdatedAt()))
+                .toList();
+    }
+}
