@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `索引文档转换器`：建立 DiscoverySearchDocumentAssembler
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-RUNTIME.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/client/DiscoverySearchDocumentAssembler.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/search/result/SearchSourceContent.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/test/java/com/thundax/kuzhambu/discovery/infra/client/DiscoverySearchDocumentAssemblerTest.java`
-    - 处理动作：实现三类内容源到 DiscoverySearchDocument 的稳定字段映射和纯文本 bodyText 拼接规则
-    - 验收点：三类内容源都能稳定得到 documentId、title、bodyText、sourcePath，bodyText 不包含 HTML 原文
-    - 重要度：10/10
-
 - [ ] `索引重建应用服务`：新增 SearchIndexApplicationService
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-RUNTIME.md`
