@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Discovery 文档基线`：补齐 Search 子域设计与覆盖文档
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-SKELETON.md`
-    - 范围对象：`docs/30-designs/DISCOVERY-DESIGN.md`、`docs/40-readiness/DISCOVERY-IMPLEMENTATION-COVERAGE.md`
-    - 处理动作：按 RUNBOOK 写入 Search 子域边界、数据结构、接口口径和实现覆盖基线
-    - 验收点：两个文档都能独立说明 Discovery Search 当前骨架范围和未实现边界
-    - 重要度：9/10
-
 - [ ] `Discovery domain 模型`：创建 Search 实体与值对象骨架
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-SKELETON.md`
