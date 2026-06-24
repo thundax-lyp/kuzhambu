@@ -89,7 +89,7 @@
 
 | 需求项 | 状态 | 已完成部分 | 未完成部分 | 责任域 |
 | --- | --- | --- | --- | --- |
-| 当前阶段运行时验证 | 已完成 | 已完成 Search runtime 与 index sync RUNBOOK 执行，starter 扫描、Admin/Portal controller 测试、application 测试和最小 Maven 验证均已跑通；本地 Elasticsearch HTTPS 连通和认证已用 `curl` 验证 | 全量 PR workflow、真实前端页面联调和 ES 集群健康治理仍未完成 | Discovery |
+| 当前阶段运行时验证 | 已完成 | 已完成 Search runtime 与索引同步执行闭环，starter 扫描、Admin/Portal controller 测试、application 测试和最小 Maven 验证均已跑通；本地 Elasticsearch HTTPS 连通和认证已用 `curl` 验证 | 全量 PR workflow、真实前端页面联调和 ES 集群健康治理仍未完成 | Discovery |
 
 ## Unfinished Focus
 
