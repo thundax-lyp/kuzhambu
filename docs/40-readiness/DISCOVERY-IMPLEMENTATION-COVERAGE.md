@@ -32,12 +32,14 @@
 - Discovery Search 已通过 Classics application facade 读取三类“当前可公开消费内容”，不直接依赖 Classics mapper 或 DO。
 - Discovery Search 已完成 `DiscoverySearchDocument` 映射、Elasticsearch 默认 Gateway 实现、全量索引重建应用入口和真实检索链路。
 - Discovery Search 已完成成功 / 失败搜索日志写入、点击日志写入、Admin 手动重建索引入口，以及 Portal 搜索结果真实分组返回。
+- Discovery Search 已完成 `afterCommit + RocketMQ` 增量同步链路，覆盖三类 Classics 内容的新增、更新、可见性变化、删除和内容治理写路径。
+- Discovery Search 已完成 `currentVersionNo` 幂等控制、删除态写入、删除态定时物理清理和 `rebuild` 全量兜底闭环。
 - Discovery Search 已补齐 `search / click / rebuild` 共享动作白名单，并完成最小 Maven 运行时测试闭环。
 
 部分完成：
 
 - Discovery Search 已完成后端运行时闭环，但 Portal 搜索页面、Admin 搜索分析页面和最终前台深链路由仍未落地。
-- Discovery 设计文档已明确 Elasticsearch 默认适配和复杂能力占位异常策略；当前仅实现 Search 运行时主链路，复杂增强能力仍保留未实现状态。
+- Discovery 设计文档已明确 Elasticsearch 默认适配、增量同步和删除态清理规则；复杂增强能力仍保留未实现状态。
 
 未完成：
 
@@ -59,6 +61,8 @@
 | 点击日志记录 | 已完成 | Portal 点击接口已真实写入 `discovery_search_click`，并校验 `searchLogId` 存在 | 点击分析、聚合统计未实现 | Discovery |
 | 搜索深链与状态保留 | 部分完成 | 结果项已返回稳定占位 `targetPath` | Portal 页面深链消费和搜索状态恢复未实现 | Discovery, Portal Web |
 | 无结果空状态提示 | 未完成 | 需求已沉淀 | 前端页面和接口联调未实现 | Discovery, Portal Web |
+| 索引增量同步 | 已完成 | Classics 写路径已在事务提交后发送 RocketMQ 索引同步消息，Discovery 消费端按 `currentVersionNo` 幂等更新 ES 文档 | Outbox、复杂重试编排未实现 | Discovery, Classics |
+| 索引删除态清理 | 已完成 | `DELETE` 先写删除态，定时任务按保留期物理清理，Admin `rebuild` 继续兜底 | 删除态保留期策略仍需线上观测优化 | Discovery |
 
 ### 查询理解与增强
 
@@ -85,7 +89,7 @@
 
 | 需求项 | 状态 | 已完成部分 | 未完成部分 | 责任域 |
 | --- | --- | --- | --- | --- |
-| 当前阶段运行时验证 | 已完成 | 已完成 Search runtime RUNBOOK 执行，starter 扫描、Admin/Portal controller 测试、application 测试和最小 Maven 验证均已跑通；本地 Elasticsearch HTTPS 连通和认证已用 `curl` 验证 | 全量 PR workflow、真实前端页面联调和 ES 集群健康治理仍未完成 | Discovery |
+| 当前阶段运行时验证 | 已完成 | 已完成 Search runtime 与 index sync RUNBOOK 执行，starter 扫描、Admin/Portal controller 测试、application 测试和最小 Maven 验证均已跑通；本地 Elasticsearch HTTPS 连通和认证已用 `curl` 验证 | 全量 PR workflow、真实前端页面联调和 ES 集群健康治理仍未完成 | Discovery |
 
 ## Unfinished Focus
 
@@ -93,6 +97,7 @@
 | --- | --- | --- |
 | Search 子域骨架代码 | 已完成 | Search 相关 application、infra、interface 代码、测试和 starter 装配已落地 |
 | Elasticsearch 默认适配 | 已完成 | 已在 infra 内实现 `ElasticsearchSearchIndexGateway`，并接入 starter 运行时配置 |
+| 索引增量同步 | 已完成 | 已实现 `afterCommit + RocketMQ` 发送、Discovery 消费、`currentVersionNo` 幂等和删除态清理 |
 | Portal 搜索入口 | 部分完成 | Portal 搜索和点击接口已可运行，Portal 页面未实现 |
 | Admin 搜索分析入口 | 部分完成 | Admin 搜索日志分页、详情和索引重建入口已落地，分析页面未实现 |
 | QA 子域 | 未完成 | 当前阶段未进入实现范围 |
@@ -101,5 +106,5 @@
 
 - Search 当前明确只接 Classics 三类内容源；后续若扩大到其他业务域，需要重新确认 `SearchScope`、索引文档和权限过滤模型。
 - Search 当前仅完成“找得到”的基础闭环；高亮、同义词、实体增强、复杂排序和搜索分析仍缺运行时代码。
+- Search 当前增量同步采用 `afterCommit` 直接发 MQ，不采用 outbox；当数据库提交成功但 MQ 发送失败时，仍需依赖重试或 Admin `rebuild` 做恢复。
 - 本地 Elasticsearch 虽已验证 HTTPS 地址和认证可达，但当前集群健康状态不是绿态；若后续索引重建或检索异常，需要继续排查未分配分片与证书信任配置。
-- `dev.env` 已按治理规则转为本地未跟踪文件；本分支若要彻底完成现场治理，还需要在后续提交中同步移除其历史跟踪状态。
