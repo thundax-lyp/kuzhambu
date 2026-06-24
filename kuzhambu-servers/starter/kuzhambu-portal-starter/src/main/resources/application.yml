@@ -18,6 +18,10 @@ spring:
       url: ${KUZHAMBU_REDIS_URI:redis://127.0.0.1:6379/0}
       password: ${KUZHAMBU_REDIS_PASSWORD:}
       timeout: ${KUZHAMBU_REDIS_TIMEOUT:5s}
+  elasticsearch:
+    uris: ${KUZHAMBU_ELASTICSEARCH_URIS:https://127.0.0.1:9200}
+    username: ${KUZHAMBU_ELASTICSEARCH_USERNAME:elastic}
+    password: ${KUZHAMBU_ELASTICSEARCH_PASSWORD:elastic}
 rocketmq:
   name-server: ${KUZHAMBU_ROCKETMQ_NAME_SERVER:127.0.0.1:9876}
   producer:
@@ -81,8 +85,6 @@ kuzhambu:
       access-key: ${KUZHAMBU_OSS_S3_ACCESS_KEY:}
       secret-key: ${KUZHAMBU_OSS_S3_SECRET_KEY:}
       path-style-access: ${KUZHAMBU_OSS_S3_PATH_STYLE_ACCESS:true}
-  elasticsearch:
-    uris: ${KUZHAMBU_ELASTICSEARCH_URIS:http://127.0.0.1:9200}
   storage:
     bucket-name: ${KUZHAMBU_STORAGE_BUCKET_NAME:local}
     content-path: ${KUZHAMBU_STORAGE_CONTENT_PATH:/kuzhambu-api/api/storage/object/}
