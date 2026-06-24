@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Discovery domain 端口`：创建 Search Repository 与领域规则入口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-SKELETON.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-domain/src/main/java/com/thundax/kuzhambu/discovery/domain/search/repository/SearchLogRepository.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-domain/src/main/java/com/thundax/kuzhambu/discovery/domain/search/repository/SearchClickRepository.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-domain/src/main/java/com/thundax/kuzhambu/discovery/domain/search/repository/QueryUnderstandingRepository.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-domain/src/main/java/com/thundax/kuzhambu/discovery/domain/service/SearchDomainService.java`
-    - 处理动作：定义 Search 持久化端口、基础参数归一化规则和复杂增强能力占位异常出口
-    - 验收点：Repository 方法命名与后续 infra 实现一一对应，复杂规则方法显式抛 `DomainException`
-    - 重要度：9/10
-
 - [ ] `Discovery application 协议`：创建 Search 查询命令与结果模型
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-SKELETON.md`
