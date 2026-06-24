@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.discovery.application.search.result;
 
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,4 +26,5 @@ public class SearchLogResult {
     private String requestId;
     private String traceId;
     private Long createdAt;
+    private List<SearchGroupResult> groups;
 }
