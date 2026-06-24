@@ -15,7 +15,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
     "com.thundax.kuzhambu.classics.infra.mingcustoms.persistence.mapper",
     "com.thundax.kuzhambu.classics.infra.sancai.persistence.mapper",
     "com.thundax.kuzhambu.classics.infra.content.persistence.mapper",
-    "com.thundax.kuzhambu.classics.infra.sharing.persistence.mapper"
+    "com.thundax.kuzhambu.classics.infra.sharing.persistence.mapper",
+    "com.thundax.kuzhambu.discovery.infra.search.persistence.mapper"
 })
 @SpringBootApplication(
         scanBasePackages = {
@@ -28,7 +29,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
             "com.thundax.kuzhambu.storage.interfaces.admin",
             "com.thundax.kuzhambu.classics.application",
             "com.thundax.kuzhambu.classics.infra",
-            "com.thundax.kuzhambu.classics.interfaces.admin"
+            "com.thundax.kuzhambu.classics.interfaces.admin",
+            "com.thundax.kuzhambu.discovery.application",
+            "com.thundax.kuzhambu.discovery.infra",
+            "com.thundax.kuzhambu.discovery.interfaces.admin"
         })
 public class KuzhambuAdminApplication {
 

@@ -14,7 +14,8 @@ import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfi
     "com.thundax.kuzhambu.classics.infra.mingcustoms.persistence.mapper",
     "com.thundax.kuzhambu.classics.infra.sancai.persistence.mapper",
     "com.thundax.kuzhambu.classics.infra.content.persistence.mapper",
-    "com.thundax.kuzhambu.classics.infra.sharing.persistence.mapper"
+    "com.thundax.kuzhambu.classics.infra.sharing.persistence.mapper",
+    "com.thundax.kuzhambu.discovery.infra.search.persistence.mapper"
 })
 @SpringBootApplication(
         exclude = SecurityAutoConfiguration.class,
@@ -27,7 +28,10 @@ import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfi
             "com.thundax.kuzhambu.storage.infra",
             "com.thundax.kuzhambu.classics.application",
             "com.thundax.kuzhambu.classics.infra",
-            "com.thundax.kuzhambu.classics.interfaces.portal"
+            "com.thundax.kuzhambu.classics.interfaces.portal",
+            "com.thundax.kuzhambu.discovery.application",
+            "com.thundax.kuzhambu.discovery.infra",
+            "com.thundax.kuzhambu.discovery.interfaces.portal"
         })
 public class KuzhambuPortalApplication {
 

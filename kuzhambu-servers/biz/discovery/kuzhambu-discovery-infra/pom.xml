@@ -17,6 +17,11 @@
   <dependencies>
     <dependency>
       <groupId>com.thundax</groupId>
+      <artifactId>kuzhambu-discovery-application</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-discovery-domain</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -31,9 +36,19 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
+      <groupId>com.thundax</groupId>
+      <artifactId>kuzhambu-common-elasticsearch</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
       <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 </project>
