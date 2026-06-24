@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `真实搜索日志`：在 SearchApplicationServiceImpl 中落成功与失败日志
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-RUNTIME.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/search/service/impl/SearchApplicationServiceImpl.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-domain/src/main/java/com/thundax/kuzhambu/discovery/domain/search/model/entity/SearchLog.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/search/repository/impl/SearchLogRepositoryImpl.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/test/java/com/thundax/kuzhambu/discovery/application/search/service/impl/SearchApplicationServiceImplTest.java`
-    - 处理动作：实现搜索成功与失败路径的真实日志写入，并写入 searchScopesJson
-    - 验收点：search 返回的 searchLogId 来自真实落库对象，成功/失败日志都有测试覆盖
-    - 重要度：10/10
-
 - [ ] `点击日志串联`：校准 click 接口与真实 searchLogId
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-RUNTIME.md`

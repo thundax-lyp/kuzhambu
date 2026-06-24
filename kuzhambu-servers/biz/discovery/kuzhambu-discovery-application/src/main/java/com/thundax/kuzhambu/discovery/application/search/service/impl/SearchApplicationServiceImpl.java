@@ -1,5 +1,7 @@
 package com.thundax.kuzhambu.discovery.application.search.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.page.PageResult;
@@ -13,6 +15,7 @@ import com.thundax.kuzhambu.discovery.application.search.support.SearchIndexGate
 import com.thundax.kuzhambu.discovery.application.search.support.SearchPermissionFilter;
 import com.thundax.kuzhambu.discovery.domain.search.model.entity.SearchClick;
 import com.thundax.kuzhambu.discovery.domain.search.model.entity.SearchLog;
+import com.thundax.kuzhambu.discovery.domain.search.model.enums.SearchIntentType;
 import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchScope;
 import com.thundax.kuzhambu.discovery.domain.search.repository.SearchClickRepository;
 import com.thundax.kuzhambu.discovery.domain.search.repository.SearchLogRepository;
@@ -20,11 +23,14 @@ import com.thundax.kuzhambu.discovery.domain.service.SearchDomainService;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 @Service
 @BizExceptionBoundary
 public class SearchApplicationServiceImpl implements SearchApplicationService {
+
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private final SearchLogRepository searchLogRepository;
     private final SearchClickRepository searchClickRepository;
@@ -55,8 +61,14 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
         try {
             List<SearchGroupResult> groups = searchIndexGateway.search(keyword, scope, pageNo, pageSize);
             List<SearchGroupResult> filteredGroups = searchPermissionFilter.filter(query, groups);
-            return buildSearchResult(query, filteredGroups);
+            SearchLog searchLog = buildSucceededSearchLog(query, keyword.getNormalizedText(), scope, filteredGroups);
+            searchLogRepository.save(searchLog);
+            return toSearchResult(searchLog, filteredGroups);
+        } catch (BizException exception) {
+            searchLogRepository.save(buildFailedSearchLog(query, keyword.getNormalizedText(), scope, exception));
+            throw exception;
         } catch (UnsupportedOperationException exception) {
+            searchLogRepository.save(buildFailedSearchLog(query, keyword.getNormalizedText(), scope, exception));
             throw new BizException(
                     "DISCOVERY-20001",
                     "discovery.search.backend.not-implemented",
@@ -113,26 +125,77 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
         return toSearchLogResult(searchLogRepository.getBySearchLogId(searchLogId));
     }
 
-    private SearchLogResult buildSearchResult(SearchQuery query, List<SearchGroupResult> groups) {
+    private SearchLog buildSucceededSearchLog(
+            SearchQuery query, String normalizedQueryText, SearchScope searchScope, List<SearchGroupResult> groups) {
         int totalCount = groups == null
                 ? 0
                 : groups.stream().mapToInt(SearchGroupResult::getCount).sum();
-        return new SearchLogResult(
-                query.getRequestId(),
+        return new SearchLog(
+                null,
+                newSearchLogId(),
                 query.getQueryText(),
-                query.getQueryText() == null ? null : query.getQueryText().trim(),
-                query.getQueryText() == null ? null : query.getQueryText().trim(),
-                null,
-                null,
+                normalizedQueryText,
+                normalizedQueryText,
+                SearchIntentType.KEYWORD_SEARCH,
+                searchScope,
                 totalCount,
                 groups == null ? 0 : groups.size(),
                 "SUCCEEDED",
                 null,
                 null,
+                query.getOperatorType(),
                 query.getOperatorId(),
                 query.getRequestId(),
                 query.getTraceId(),
-                System.currentTimeMillis(),
+                new Date());
+    }
+
+    private SearchLog buildFailedSearchLog(
+            SearchQuery query, String normalizedQueryText, SearchScope searchScope, RuntimeException exception) {
+        String failureCode = exception instanceof BizException bizException && !isBlank(bizException.getCode())
+                ? bizException.getCode()
+                : "DISCOVERY-20001";
+        return new SearchLog(
+                null,
+                newSearchLogId(),
+                query.getQueryText(),
+                normalizedQueryText,
+                normalizedQueryText,
+                SearchIntentType.KEYWORD_SEARCH,
+                searchScope,
+                0,
+                0,
+                "FAILED",
+                failureCode,
+                exception.getMessage(),
+                query.getOperatorType(),
+                query.getOperatorId(),
+                query.getRequestId(),
+                query.getTraceId(),
+                new Date());
+    }
+
+    private SearchLogResult toSearchResult(SearchLog searchLog, List<SearchGroupResult> groups) {
+        return new SearchLogResult(
+                searchLog.getSearchLogId(),
+                searchLog.getQueryText(),
+                searchLog.getNormalizedQueryText(),
+                searchLog.getDisplayQueryText(),
+                searchLog.getIntentType() == null
+                        ? null
+                        : searchLog.getIntentType().value(),
+                writeScope(searchLog.getSearchScope()),
+                searchLog.getResultTotalCount() == null ? 0 : searchLog.getResultTotalCount(),
+                searchLog.getGroupTotalCount() == null ? 0 : searchLog.getGroupTotalCount(),
+                searchLog.getSearchStatus(),
+                searchLog.getFailureCode(),
+                searchLog.getFailureMessage(),
+                searchLog.getOperatorId(),
+                searchLog.getRequestId(),
+                searchLog.getTraceId(),
+                searchLog.getCreatedAt() == null
+                        ? null
+                        : searchLog.getCreatedAt().getTime(),
                 groups);
     }
 
@@ -157,7 +220,7 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
                 entity.getNormalizedQueryText(),
                 entity.getDisplayQueryText(),
                 entity.getIntentType() == null ? null : entity.getIntentType().value(),
-                null,
+                writeScope(entity.getSearchScope()),
                 entity.getResultTotalCount() == null ? 0 : entity.getResultTotalCount(),
                 entity.getGroupTotalCount() == null ? 0 : entity.getGroupTotalCount(),
                 entity.getSearchStatus(),
@@ -196,5 +259,20 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
 
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
+    }
+
+    private String newSearchLogId() {
+        return UUID.randomUUID().toString();
+    }
+
+    private String writeScope(SearchScope searchScope) {
+        if (searchScope == null) {
+            return null;
+        }
+        try {
+            return OBJECT_MAPPER.writeValueAsString(searchScope);
+        } catch (JsonProcessingException exception) {
+            return null;
+        }
     }
 }
