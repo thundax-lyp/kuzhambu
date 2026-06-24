@@ -4,9 +4,17 @@
 
 ## 适用范围
 
-- 本地 `dev.env` 环境。
+- 基于仓库根目录 `.env.example` 复制得到的本地 `dev.env` 环境。
 - `kuzhambu-servers/starter/kuzhambu-admin-starter` 启动的 admin API。
 - 仅用于开发和冒烟测试，不用于生产环境。
+
+## 本地环境准备
+
+如本地还没有 `dev.env`，先在仓库根目录创建：
+
+```sh
+cp .env.example dev.env
+```
 
 ## 默认账号来源
 
