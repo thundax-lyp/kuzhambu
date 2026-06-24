@@ -170,20 +170,20 @@ Search 返回分组键固定按 `contentType` 分组：
 
 - `kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/search/support/SearchContentProvider.java`
 - `kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/search/result/SearchSourceContent.java`
-- `kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/search/provider/ClassicsSearchContentProvider.java`
-- `kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/pom.xml`
+- `kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/search/support/ClassicsSearchContentProvider.java`
+- `kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/pom.xml`
 
 执行动作：
 
 - 定义 `SearchContentProvider`，提供三类内容源的读取能力。
 - 定义统一结果模型 `SearchSourceContent`，屏蔽 Classics 各对象差异。
-- 在 `infra` 提供 `ClassicsSearchContentProvider` 默认实现，通过 Classics application 能力组装读取。
+- 在 `application` 提供 `ClassicsSearchContentProvider` 默认实现，通过 Classics application 能力组装读取。
 - 如需新增依赖，只允许增加 Classics application 依赖，不允许直接依赖 Classics persistence mapper。
 
 验收点：
 
 - Discovery application 不感知 Classics 内部 entity/DO。
-- Discovery infra 能拿到三类内容源的统一搜索内容对象。
+- Discovery application 能拿到三类内容源的统一搜索内容对象。
 
 ### T1b 补齐 Classics 可搜索内容读取能力
 
