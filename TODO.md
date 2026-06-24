@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `discovery-interface+starter`：T8 接入 Discovery MQ consumer 与开关配置
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-INDEX-SYNC.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-interface/src/main/java/com/thundax/kuzhambu/discovery/interfaces/admin/search/mq/RocketMqDiscoverySearchIndexSyncConsumer.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-interface/src/test/java/com/thundax/kuzhambu/discovery/interfaces/admin/search/mq/RocketMqDiscoverySearchIndexSyncConsumerTest.java`、`kuzhambu-servers/starter/kuzhambu-admin-starter/src/main/resources/application.yml`、`kuzhambu-servers/starter/kuzhambu-portal-starter/src/main/resources/application.yml`
-    - 处理动作：在 admin 侧接入索引同步消息消费，并用 starter 配置明确 admin 开启、portal 关闭。
-    - 验收点：consumer 只消费 Discovery 索引同步 topic 并调用 `SearchIndexSyncApplicationService`，portal starter 不会误启动 consumer。
-    - 重要度：9/10
-
 - [ ] `discovery-cleanup`：T8b 接入删除态文档计划清理任务
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-INDEX-SYNC.md`

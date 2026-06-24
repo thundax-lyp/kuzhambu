@@ -288,6 +288,7 @@
 
 文件：
 
+- `kuzhambu-servers/biz/discovery/kuzhambu-discovery-interface/pom.xml`
 - `kuzhambu-servers/biz/discovery/kuzhambu-discovery-interface/src/main/java/com/thundax/kuzhambu/discovery/interfaces/admin/search/mq/RocketMqDiscoverySearchIndexSyncConsumer.java`
 - `kuzhambu-servers/biz/discovery/kuzhambu-discovery-interface/src/test/java/com/thundax/kuzhambu/discovery/interfaces/admin/search/mq/RocketMqDiscoverySearchIndexSyncConsumerTest.java`
 - `kuzhambu-servers/starter/kuzhambu-admin-starter/src/main/resources/application.yml`
