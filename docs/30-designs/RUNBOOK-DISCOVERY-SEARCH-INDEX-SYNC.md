@@ -176,6 +176,7 @@
 文件：
 
 - `kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/searchsync/mq/RocketMqClassicsSearchIndexSyncPublisher.java`
+- `kuzhambu-servers/biz/classics/kuzhambu-classics-interface/pom.xml`
 - `kuzhambu-servers/starter/kuzhambu-admin-starter/src/main/resources/application.yml`
 - `.env.example`
 - `deploy/.env.example`

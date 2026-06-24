@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `classics-interface+starter`：T3 接入 RocketMQ producer 实现与配置
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-INDEX-SYNC.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/searchsync/mq/RocketMqClassicsSearchIndexSyncPublisher.java`、`kuzhambu-servers/starter/kuzhambu-admin-starter/src/main/resources/application.yml`、`.env.example`、`deploy/.env.example`
-    - 处理动作：用现有 `KuzhambuMqSender` 实现 producer，并补齐 topic、tag、retention、cleanup cron 的配置和环境变量。
-    - 验收点：producer 使用固定 topic、`UPSERT / DELETE` tag、`contentType:contentId:currentVersionNo` key，且配置键与环境变量名与 RUNBOOK 一致。
-    - 重要度：8/10
-
 - [ ] `classics-search+discovery-search`：T4 为公开内容查询补充单条读取能力
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-INDEX-SYNC.md`
