@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Knowledge portal home api`：暴露首页 Portal API
-    - 任务类型：设计转执行
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-READONLY.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interfaces/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/portal/home/controller/KnowledgePortalHomeController.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interfaces/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/portal/home/assembler/KnowledgePortalHomeInterfaceAssembler.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interfaces/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/portal/home/request/KnowledgePortalHomeQuery.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interfaces/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/portal/home/response/KnowledgePortalHomeResponse.java`
-    - 处理动作：新增首页 Portal controller、assembler、query、response
-    - 验收点：`GET /portal/knowledge/home` 路径稳定且只返回 Portal read DTO
-    - 重要度：8/10
-
 - [ ] `Knowledge portal atlas read model`：定义浏览页只读结果与服务骨架
     - 任务类型：设计转执行
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-READONLY.md`
