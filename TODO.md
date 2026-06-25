@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Discovery QA domain trace`：补齐 source 与 retrieval trace repository contract
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-CENTRIC-LOOP.md`
-    - 范围对象：`.../repository/QaSourceRepository.java`、`.../QaRetrievalTraceRepository.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-domain/src/test/java/com/thundax/kuzhambu/discovery/domain/DiscoveryDomainArchitectureTest.java`
-    - 处理动作：补全来源和检索追溯的领域仓储契约并补架构测试
-    - 验收点：domain 层 QA 子域通过架构约束校验
-    - 重要度：9/10
-
 - [ ] `Discovery QA infra do-mapper`：新增 QA dataobject 与 mapper
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-CENTRIC-LOOP.md`
