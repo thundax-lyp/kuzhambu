@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Admin Discovery debug service`：新增 qa-admin 与 search-admin service、types
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-CENTRIC-LOOP.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/discovery/qa-admin/qa-admin-service.ts`、`.../qa-admin-types.ts`、`.../search-admin/search-admin-service.ts`、`.../search-admin-types.ts`
-    - 处理动作：为 Admin Discovery 调试页面提供数据读取口径
-    - 验收点：service/types 与后端 controller 协议一一对应
-    - 重要度：7/10
-
 - [ ] `Admin Discovery debug page`：新增 qa-admin 与 search-admin 页面和测试
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-CENTRIC-LOOP.md`
