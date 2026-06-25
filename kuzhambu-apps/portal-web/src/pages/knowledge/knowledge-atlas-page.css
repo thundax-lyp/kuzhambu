@@ -137,6 +137,103 @@
     margin-top: 18px;
 }
 
+.knowledge-atlas-overview-stage {
+    display: grid;
+    gap: 18px;
+    margin-top: 18px;
+}
+
+.knowledge-atlas-overview-hero {
+    display: grid;
+    gap: 8px;
+    padding: 20px;
+    border: 1px solid rgba(58, 94, 82, 0.18);
+    border-radius: 22px;
+    background:
+        linear-gradient(140deg, rgba(32, 66, 56, 0.94), rgba(86, 111, 98, 0.72)),
+        radial-gradient(circle at top right, rgba(255, 245, 220, 0.16), transparent 38%);
+    color: #f7f0e2;
+}
+
+.knowledge-atlas-overview-hero span,
+.knowledge-atlas-overview-hero small {
+    color: rgba(247, 240, 226, 0.76);
+}
+
+.knowledge-atlas-overview-hero strong {
+    font-size: clamp(1.5rem, 2vw, 2.1rem);
+}
+
+.knowledge-atlas-overview-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.knowledge-atlas-overview-card {
+    display: grid;
+    gap: 12px;
+    padding: 18px;
+    border: 1px solid rgba(88, 78, 58, 0.14);
+    border-radius: 20px;
+    background:
+        linear-gradient(180deg, rgba(255, 252, 247, 0.96), rgba(247, 241, 231, 0.92)),
+        radial-gradient(circle at top right, rgba(76, 109, 97, 0.08), transparent 26%);
+}
+
+.knowledge-atlas-overview-card-head {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #4c6d61;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.knowledge-atlas-overview-card h3 {
+    margin: 0;
+    color: #213029;
+    font-size: 1.2rem;
+}
+
+.knowledge-atlas-overview-card p,
+.knowledge-atlas-overview-card a {
+    margin: 0;
+}
+
+.knowledge-atlas-overview-card a {
+    color: #25483d;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.knowledge-atlas-overview-meta {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin: 0;
+}
+
+.knowledge-atlas-overview-meta div {
+    padding: 10px 12px;
+    border-radius: 16px;
+    background: rgba(240, 234, 223, 0.85);
+}
+
+.knowledge-atlas-overview-meta dt {
+    color: #6a6458;
+    font-size: 11px;
+    text-transform: uppercase;
+}
+
+.knowledge-atlas-overview-meta dd {
+    margin: 6px 0 0;
+    color: #213029;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
 .knowledge-atlas-band {
     display: grid;
     grid-template-columns: 20px 1fr;
@@ -168,5 +265,9 @@
 
     .knowledge-atlas-header {
         align-items: flex-start;
+    }
+
+    .knowledge-atlas-overview-grid {
+        grid-template-columns: 1fr;
     }
 }

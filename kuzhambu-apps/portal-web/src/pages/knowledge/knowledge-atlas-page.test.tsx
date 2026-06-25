@@ -120,7 +120,10 @@ describe("KnowledgeAtlasPage", () => {
         await flushQuery();
 
         expect(container.textContent).toContain("图谱浏览台");
+        expect(container.textContent).toContain("总览卷宗");
         expect(container.textContent).toContain("十四门类知识鸟瞰");
+        expect(container.textContent).toContain("应用版本");
+        expect(container.textContent).toContain("进入门类");
         expect(getKnowledgeAtlas).toHaveBeenCalledWith({
             categoryCode: null,
             entityId: null,

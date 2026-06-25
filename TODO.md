@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Portal atlas overview page`：实现 overview 层页面
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-ATLAS-HIERARCHY.md`
-    - 范围对象：`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-atlas-page.tsx`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-atlas-page.css`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-atlas-page.test.tsx`
-    - 处理动作：渲染 overview 标题区、门类卡片区和门类入口跳转
-    - 验收点：overview 不再直接复用 detail 骨架布局
-    - 重要度：9/10
-
 - [ ] `Portal atlas category page`：实现 category 层页面
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-ATLAS-HIERARCHY.md`

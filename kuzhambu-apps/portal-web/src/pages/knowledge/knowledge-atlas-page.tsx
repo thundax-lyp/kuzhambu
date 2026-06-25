@@ -85,25 +85,40 @@ export const KnowledgeAtlasPage = () => {
                     </div>
 
                     {content.currentLevel === "overview" && content.overviewView ? (
-                        <div className="knowledge-atlas-bands">
-                            <div className="knowledge-atlas-focus">
-                                <span>{content.overviewView.summaryTitle}</span>
-                                <strong>overview</strong>
+                        <div className="knowledge-atlas-overview-stage">
+                            <div className="knowledge-atlas-overview-hero">
+                                <span>总览卷宗</span>
+                                <strong>{content.overviewView.summaryTitle}</strong>
                                 <small>{content.overviewView.summarySubtitle}</small>
                             </div>
-                            {content.overviewView.categoryCards.map((card) => (
-                                <article key={card.categoryCode} className="knowledge-atlas-band">
-                                    <Orbit size={18} />
-                                    <div>
+                            <div className="knowledge-atlas-overview-grid">
+                                {content.overviewView.categoryCards.map((card) => (
+                                    <article
+                                        key={card.categoryCode}
+                                        className="knowledge-atlas-overview-card"
+                                    >
+                                        <div className="knowledge-atlas-overview-card-head">
+                                            <Orbit size={18} />
+                                            <span>{card.categoryCode}</span>
+                                        </div>
                                         <h3>{card.categoryName}</h3>
                                         <p>
-                                            实体 {card.entityCount} · 关系 {card.relationCount} ·
-                                            版本 {card.latestVersionNo}
+                                            实体 {card.entityCount} · 关系 {card.relationCount}
                                         </p>
+                                        <dl className="knowledge-atlas-overview-meta">
+                                            <div>
+                                                <dt>应用版本</dt>
+                                                <dd>{card.appliedVersionCount}</dd>
+                                            </div>
+                                            <div>
+                                                <dt>最新批次</dt>
+                                                <dd>V{card.latestVersionNo}</dd>
+                                            </div>
+                                        </dl>
                                         <Link to={card.entryHref}>进入门类</Link>
-                                    </div>
-                                </article>
-                            ))}
+                                    </article>
+                                ))}
+                            </div>
                         </div>
                     ) : null}
 
@@ -171,7 +186,7 @@ export const KnowledgeAtlasPage = () => {
                         <h3>{content.breadcrumbItems.map((item) => item.label).join(" / ")}</h3>
                         <p>
                             {content.currentLevel === "overview"
-                                ? "当前停留在图谱总览层，下一步可以进入任一门类继续浏览。"
+                                ? "当前停留在图谱总览层，先从门类密度和版本新鲜度判断下一步要进入哪一卷。"
                                 : content.currentLevel === "category"
                                   ? "当前停留在门类层，可继续选择门类中的代表实体进入 detail。"
                                   : `${content.detailView?.focusNode.summary}。详情栏会承接实体摘要、来源说明、时间线和相关标签。`}
