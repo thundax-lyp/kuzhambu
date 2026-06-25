@@ -38,6 +38,7 @@
 - Knowledge 已新增 `knowledge_graph_extraction_task` 任务台账，并通过 `KnowledgeGraphExtractionApplicationService` 支持 `RELATION`、`GRAPH`、`LINEAGE` 三类抽取任务创建、分页、详情和候选应用动作。
 - Knowledge 已补充 `KnowledgeAiExtractionDomainService` 协作链路，经 AI 域解析稳定 `operation + capability + workerPath` 后调用 workers 三个 Knowledge usecase，并写入 `ai_call_record` 与 `ai_candidate`。
 - Knowledge 已补齐候选结果应用链路，可将 `ai_candidate.result_payload` 应用到 `knowledge_entity`、`knowledge_relation`、`knowledge_graph_version`、`knowledge_lineage_node`、`knowledge_lineage_relation`，并生成或续增图谱版本号。
+- Knowledge 已补充面向 Discovery 的 taxonomy 读协作服务，`expandSynonyms`、`getTagHint` 和 `listEntityHints` 可直接为搜索与问答提供同义词、标签和实体提示。
 - Admin Web 已接入 `/knowledge/graph-extraction` 页面，支持三类抽取任务创建、任务分页、任务详情抽屉和候选应用动作。
 - Admin Web 已接入 `/knowledge/graph-results` 页面，支持图谱版本列表、版本详情，以及从版本下钻查看正式实体、正式关系和正式世系结果。
 
@@ -121,7 +122,7 @@
 | 世系图浏览                          | 未完成 | 当前只交付世系抽取、正式结果落库和后台读取，不含可视化页面                                             |
 | Portal 页面                         | 未完成 | 当前 Knowledge 能力仍主要落在 Admin 端，Portal 侧未形成可执行交付物                                    |
 | 数据精修与图谱联动                  | 部分完成 | 精修应用已回写正式事实并被正式结果读取链路消费，但尚未接入门类级质量报告、批量重生成或可视化浏览链路 |
-| Discovery 搜索或问答接入            | 未完成 | 当前仅完成 taxonomy 治理和标签解析链路，未形成 Discovery 消费闭环                                      |
+| Discovery 搜索或问答接入            | 已完成 | taxonomy 治理、同义词扩展、标签提示和实体提示已被 Discovery 搜索 / 问答消费，形成最小闭环             |
 | 标签批量操作                        | 未完成 | 当前只交付单条治理动作，未支持批量合并、批量废弃或批量审核                                             |
 | Classics 内容编辑页内联知识治理入口 | 未完成 | 当前只提供独立 taxonomy 页面，未内联到 Classics 内容编辑页                                             |
 
@@ -129,5 +130,5 @@
 
 - 菜单种子重生成后 `system_menu` 的树编号和自增值已随节点数收缩变化，后续若依赖固定菜单 ID，需要以当前生成结果为准重新校对。
 - taxonomy 页面、精修工作台和正式结果页目前以页面级查询和抽屉交互为主；后续再改权限、字段或接口返回时，建议补前端契约测试和 Playwright 冒烟。
-- 同义词对搜索和问答的下游消费链路仍未联调，当前 coverage 只确认治理侧数据源已具备。
+- 同义词、标签和实体提示已接通 Discovery 搜索 / 问答主链路，后续主要关注命中质量与提示规则调优。
 - 当前已补齐精修工作台和正式结果后台读取页，但仍未提供图可视化浏览、独立质量报告或 Portal 消费入口；后续若继续扩展，需要先明确读模型和展示边界。
