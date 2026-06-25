@@ -1,19 +1,83 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { MemoryRouter } from "react-router-dom";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { KnowledgeHomePage } from "./knowledge-home-page";
+
+vi.mock("./knowledge-home-service", () => ({
+    KNOWLEDGE_HOME_FALLBACK: {
+        featureCollections: [],
+        heroSubtitle:
+            "把古籍中的人物、器物、礼制与来源脉络组织成可阅读的知识展陈。这里不是治理后台，而是面向浏览与理解的知识入口。",
+        heroTitle: "古籍知识图谱馆",
+        quickLinks: [
+            {
+                description: "进入关系画布，沿实体、关系与时间线展开阅读。",
+                href: "/knowledge/atlas",
+                key: "atlas",
+                label: "图谱浏览",
+                type: "atlas"
+            },
+            {
+                description: "查看确认率、来源构成与当前待处理事项。",
+                href: "/knowledge/quality",
+                key: "quality",
+                label: "质量总览",
+                type: "quality"
+            }
+        ],
+        recentUpdates: [],
+        searchPlaceholder: "人物 · 器物 · 礼制 · 典故 · 版本",
+        stats: []
+    },
+    getKnowledgeHome: async () => ({
+        featureCollections: [],
+        heroSubtitle:
+            "把古籍中的人物、器物、礼制与来源脉络组织成可阅读的知识展陈。这里不是治理后台，而是面向浏览与理解的知识入口。",
+        heroTitle: "古籍知识图谱馆",
+        quickLinks: [
+            {
+                description: "进入关系画布，沿实体、关系与时间线展开阅读。",
+                href: "/knowledge/atlas",
+                key: "atlas",
+                label: "图谱浏览",
+                type: "atlas"
+            },
+            {
+                description: "查看确认率、来源构成与当前待处理事项。",
+                href: "/knowledge/quality",
+                key: "quality",
+                label: "质量总览",
+                type: "quality"
+            }
+        ],
+        recentUpdates: [],
+        searchPlaceholder: "人物 · 器物 · 礼制 · 典故 · 版本",
+        stats: []
+    })
+}));
 
 const renderPage = () => {
     const container = document.createElement("div");
     document.body.appendChild(container);
     const root = createRoot(container);
+    const queryClient = new QueryClient({
+        defaultOptions: {
+            queries: {
+                gcTime: 0,
+                retry: false
+            }
+        }
+    });
 
     act(() => {
         root.render(
-            <MemoryRouter>
-                <KnowledgeHomePage />
-            </MemoryRouter>
+            <QueryClientProvider client={queryClient}>
+                <MemoryRouter>
+                    <KnowledgeHomePage />
+                </MemoryRouter>
+            </QueryClientProvider>
         );
     });
 

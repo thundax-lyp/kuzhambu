@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Portal knowledge home data adapter`：首页服务与类型
-    - 任务类型：设计转执行
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-READONLY.md`
-    - 范围对象：`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-home-service.ts`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-home-types.ts`
-    - 处理动作：抽离首页页面服务与类型定义
-    - 验收点：首页不依赖硬编码字符串，后续可平滑接 `/portal/knowledge/home`
-    - 重要度：7/10
-
 - [ ] `Portal knowledge atlas shell`：实现浏览页页面骨架
     - 任务类型：设计转执行
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-READONLY.md`
