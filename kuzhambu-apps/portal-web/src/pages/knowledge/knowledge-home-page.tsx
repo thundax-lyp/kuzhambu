@@ -3,16 +3,16 @@ import { ArrowRight, Binary, ChartSpline, ScrollText, Sparkles } from "lucide-re
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { KNOWLEDGE_HOME_FALLBACK, getKnowledgeHome } from "./knowledge-home-service";
+import * as KnowledgeHomeService from "./knowledge-home-service";
 
 import "./knowledge-home-page.css";
 
 export const KnowledgeHomePage = () => {
     const homeQuery = useQuery({
-        queryFn: getKnowledgeHome,
+        queryFn: KnowledgeHomeService.getKnowledgeHome,
         queryKey: ["knowledge-home"]
     });
-    const content = homeQuery.data ?? KNOWLEDGE_HOME_FALLBACK;
+    const content = homeQuery.data ?? KnowledgeHomeService.KNOWLEDGE_HOME_FALLBACK;
 
     return (
         <main className="knowledge-shell">

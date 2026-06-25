@@ -2,16 +2,16 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, Binary, Filter, Orbit, ScrollText } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
-import { KNOWLEDGE_ATLAS_FALLBACK, getKnowledgeAtlas } from "./knowledge-atlas-service";
+import * as KnowledgeAtlasService from "./knowledge-atlas-service";
 
 import "./knowledge-atlas-page.css";
 
 export const KnowledgeAtlasPage = () => {
     const atlasQuery = useQuery({
-        queryFn: getKnowledgeAtlas,
+        queryFn: KnowledgeAtlasService.getKnowledgeAtlas,
         queryKey: ["knowledge-atlas"]
     });
-    const content = atlasQuery.data ?? KNOWLEDGE_ATLAS_FALLBACK;
+    const content = atlasQuery.data ?? KnowledgeAtlasService.KNOWLEDGE_ATLAS_FALLBACK;
     const filterGroups = [
         { label: "知识库", values: content.availableFilters.knowledgeBases },
         { label: "实体类型", values: content.availableFilters.entityTypes },

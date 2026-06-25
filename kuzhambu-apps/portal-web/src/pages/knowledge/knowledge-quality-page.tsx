@@ -2,13 +2,13 @@ import { useQuery } from "@tanstack/react-query";
 import { Activity, AlertTriangle, ArrowRight, GalleryVerticalEnd, ShieldCheck } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
-import { KNOWLEDGE_QUALITY_FALLBACK, getKnowledgeQuality } from "./knowledge-quality-service";
+import * as KnowledgeQualityService from "./knowledge-quality-service";
 
 import "./knowledge-quality-page.css";
 
 export const KnowledgeQualityPage = () => {
-    const { data = KNOWLEDGE_QUALITY_FALLBACK } = useQuery({
-        queryFn: getKnowledgeQuality,
+    const { data = KnowledgeQualityService.KNOWLEDGE_QUALITY_FALLBACK } = useQuery({
+        queryFn: KnowledgeQualityService.getKnowledgeQuality,
         queryKey: ["knowledge-quality"]
     });
 
@@ -56,7 +56,7 @@ export const KnowledgeQualityPage = () => {
                         {data.trendSeries.map((card) => (
                             <article key={card.seriesKey} className="knowledge-quality-trend-card">
                                 <span>{card.seriesLabel}</span>
-                                <strong>{card.points.at(-1)?.value ?? 0}</strong>
+                                <strong>{card.points[card.points.length - 1]?.value ?? 0}</strong>
                             </article>
                         ))}
                     </div>
