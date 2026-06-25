@@ -325,6 +325,70 @@ class KnowledgePortalReadApplicationServiceImplTest {
     }
 
     @Test
+    void getAtlasShouldAssembleCategoryViewFromCategoryCode() {
+        GraphVersionRepository graphVersionRepository = mock(GraphVersionRepository.class);
+        KnowledgeEntityRepository knowledgeEntityRepository = mock(KnowledgeEntityRepository.class);
+        KnowledgeRelationRepository knowledgeRelationRepository = mock(KnowledgeRelationRepository.class);
+        when(graphVersionRepository.findLatestAppliedByCategoryCode("BIRDS"))
+                .thenReturn(new GraphVersion(
+                        1L,
+                        71L,
+                        null,
+                        901L,
+                        "GRAPH",
+                        null,
+                        null,
+                        "SANCAI_ENTRY",
+                        1001L,
+                        "BIRDS",
+                        "羽族",
+                        3,
+                        "APPLIED",
+                        new Date(1_700_000_000_000L)));
+        when(knowledgeEntityRepository.listByVersionId(71L))
+                .thenReturn(List.of(new KnowledgeEntity(
+                        1L, 3001L, "bird:luan", "鸾", "CREATURE", "神鸟", "CONFIRMED", 71L, "[]", null, null, null)));
+        when(knowledgeRelationRepository.listByVersionId(71L))
+                .thenReturn(List.of(new KnowledgeRelation(
+                        1L,
+                        4001L,
+                        "rel:bird",
+                        "bird:luan",
+                        "bird:feng",
+                        "鸾",
+                        "凤",
+                        "KIN",
+                        "图谱证据",
+                        "CONFIRMED",
+                        71L,
+                        "[]",
+                        null,
+                        null,
+                        null)));
+
+        KnowledgePortalReadApplicationServiceImpl service = new KnowledgePortalReadApplicationServiceImpl(
+                mock(TagRepository.class),
+                graphVersionRepository,
+                knowledgeEntityRepository,
+                knowledgeRelationRepository,
+                mock(TagGovernanceMetricsRepository.class),
+                mock(RefinementTaskRepository.class));
+
+        KnowledgePortalAtlasQuery query = new KnowledgePortalAtlasQuery();
+        query.setLevel("category");
+        query.setCategoryCode("BIRDS");
+        KnowledgePortalAtlasResult result = service.getAtlas(query);
+
+        assertEquals("category", result.getCurrentLevel());
+        assertEquals("羽族", result.getBreadcrumbItems().get(1).getLabel());
+        assertEquals("BIRDS", result.getCategoryView().getCategoryCode());
+        assertEquals("羽族", result.getCategoryView().getCategoryName());
+        assertEquals(1, result.getCategoryView().getEntityHighlights().size());
+        assertEquals("鸾", result.getCategoryView().getEntityHighlights().get(0).getEntityName());
+        assertEquals("KIN", result.getCategoryView().getRelationGroups().get(0).getGroupKey());
+    }
+
+    @Test
     void getQualityShouldAggregateRatiosMetricsAndRecentSources() {
         GraphVersionRepository graphVersionRepository = mock(GraphVersionRepository.class);
         KnowledgeEntityRepository knowledgeEntityRepository = mock(KnowledgeEntityRepository.class);

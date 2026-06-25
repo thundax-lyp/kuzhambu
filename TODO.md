@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Knowledge atlas category aggregation`：实现 category 门类层聚合
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-ATLAS-HIERARCHY.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/portal/KnowledgePortalReadApplicationServiceImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/portal/KnowledgePortalReadApplicationServiceImplTest.java`
-    - 处理动作：按 `categoryCode` 聚合 category 层版本、实体高亮、关系分组和来源摘要
-    - 验收点：`level=category` 返回真实门类层数据块
-    - 重要度：9/10
-
 - [ ] `Knowledge atlas detail aggregation`：实现 detail 实体层聚合
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-ATLAS-HIERARCHY.md`
