@@ -11,4 +11,132 @@
 
 ## 待审阅任务项
 
+- [ ] `Knowledge portal home read model`：定义首页只读结果与服务骨架
+    - 任务类型：设计转执行
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-READONLY.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/portal/KnowledgePortalHomeResult.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/portal/KnowledgePortalReadApplicationService.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/portal/KnowledgePortalReadApplicationServiceImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/portal/KnowledgePortalReadApplicationServiceImplTest.java`
+    - 处理动作：补首页 read model、服务接口、实现与测试
+    - 验收点：Service 能返回首页只读结果，且不依赖 Admin 写模型
+    - 重要度：8/10
+
+- [ ] `Knowledge portal home api`：暴露首页 Portal API
+    - 任务类型：设计转执行
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-READONLY.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interfaces/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/portal/home/controller/KnowledgePortalHomeController.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interfaces/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/portal/home/assembler/KnowledgePortalHomeInterfaceAssembler.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interfaces/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/portal/home/request/KnowledgePortalHomeQuery.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interfaces/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/portal/home/response/KnowledgePortalHomeResponse.java`
+    - 处理动作：新增首页 Portal controller、assembler、query、response
+    - 验收点：`GET /portal/knowledge/home` 路径稳定且只返回 Portal read DTO
+    - 重要度：8/10
+
+- [ ] `Knowledge portal atlas read model`：定义浏览页只读结果与服务骨架
+    - 任务类型：设计转执行
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-READONLY.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/portal/KnowledgePortalAtlasResult.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/portal/KnowledgePortalReadApplicationService.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/portal/KnowledgePortalReadApplicationServiceImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/portal/KnowledgePortalReadApplicationServiceImplTest.java`
+    - 处理动作：补浏览页 read model、服务接口、实现与测试
+    - 验收点：Service 能返回浏览页只读结果，且可由单一入口查询
+    - 重要度：8/10
+
+- [ ] `Knowledge portal atlas api`：暴露浏览页 Portal API
+    - 任务类型：设计转执行
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-READONLY.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interfaces/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/portal/atlas/controller/KnowledgePortalAtlasController.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interfaces/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/portal/atlas/assembler/KnowledgePortalAtlasInterfaceAssembler.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interfaces/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/portal/atlas/request/KnowledgePortalAtlasQuery.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interfaces/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/portal/atlas/response/KnowledgePortalAtlasResponse.java`
+    - 处理动作：新增浏览页 Portal controller、assembler、query、response
+    - 验收点：`GET /portal/knowledge/atlas` 路径稳定，查询参数与页面筛选一致
+    - 重要度：8/10
+
+- [ ] `Knowledge portal quality read model`：定义质量页只读结果与服务骨架
+    - 任务类型：设计转执行
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-READONLY.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/portal/KnowledgePortalQualityResult.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/portal/KnowledgePortalReadApplicationService.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/portal/KnowledgePortalReadApplicationServiceImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/portal/KnowledgePortalReadApplicationServiceImplTest.java`
+    - 处理动作：补质量页 read model、服务接口、实现与测试
+    - 验收点：Service 能返回质量页只读结果，且可被页面直接消费
+    - 重要度：8/10
+
+- [ ] `Knowledge portal quality api`：暴露质量页 Portal API
+    - 任务类型：设计转执行
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-READONLY.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interfaces/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/portal/quality/controller/KnowledgePortalQualityController.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interfaces/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/portal/quality/assembler/KnowledgePortalQualityInterfaceAssembler.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interfaces/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/portal/quality/request/KnowledgePortalQualityQuery.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interfaces/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/portal/quality/response/KnowledgePortalQualityResponse.java`
+    - 处理动作：新增质量页 Portal controller、assembler、query、response
+    - 验收点：`GET /portal/knowledge/quality` 路径稳定，查询参数与页面筛选一致
+    - 重要度：8/10
+
+- [ ] `Portal knowledge entry routing`：接入门户入口与首页跳转
+    - 任务类型：设计转执行
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-READONLY.md`
+    - 范围对象：`kuzhambu-apps/portal-web/src/app.tsx`、`kuzhambu-apps/portal-web/src/pages/home/home-page.tsx`、`kuzhambu-apps/portal-web/src/pages/home/home-page.test.tsx`
+    - 处理动作：接入 `/knowledge` 路由并在现有 Portal 首页增加入口
+    - 验收点：Portal 首页能跳到 Knowledge 首页，`/knowledge` 可打开
+    - 重要度：7/10
+
+- [ ] `Portal knowledge home shell`：实现首页页面骨架
+    - 任务类型：设计转执行
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-READONLY.md`
+    - 范围对象：`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-home-page.tsx`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-home-page.css`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-home-page.test.tsx`
+    - 处理动作：实现首页首屏布局、概览卡、快捷入口、最近更新区
+    - 验收点：首页首屏只有主标题与搜索入口，下方可见统计卡与入口卡
+    - 重要度：8/10
+
+- [ ] `Portal knowledge home data adapter`：首页服务与类型
+    - 任务类型：设计转执行
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-READONLY.md`
+    - 范围对象：`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-home-service.ts`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-home-types.ts`
+    - 处理动作：抽离首页页面服务与类型定义
+    - 验收点：首页不依赖硬编码字符串，后续可平滑接 `/portal/knowledge/home`
+    - 重要度：7/10
+
+- [ ] `Portal knowledge atlas shell`：实现浏览页页面骨架
+    - 任务类型：设计转执行
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-READONLY.md`
+    - 范围对象：`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-atlas-page.tsx`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-atlas-page.css`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-atlas-page.test.tsx`
+    - 处理动作：实现左中右三栏布局、关系画布区、详情栏
+    - 验收点：页面能表达“筛选 - 浏览 - 详情”三层关系
+    - 重要度：8/10
+
+- [ ] `Portal knowledge atlas data adapter`：浏览页服务与类型
+    - 任务类型：设计转执行
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-READONLY.md`
+    - 范围对象：`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-atlas-service.ts`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-atlas-types.ts`
+    - 处理动作：抽离浏览页页面服务与类型定义
+    - 验收点：页面内容可先静态适配，后续可平滑接 `/portal/knowledge/atlas`
+    - 重要度：7/10
+
+- [ ] `Portal knowledge quality shell`：实现质量页页面骨架
+    - 任务类型：设计转执行
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-READONLY.md`
+    - 范围对象：`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-quality-page.tsx`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-quality-page.css`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-quality-page.test.tsx`
+    - 处理动作：实现指标区、趋势区、问题卡片、来源表格
+    - 验收点：页面能表达覆盖率、置信度、来源总数、待处理项
+    - 重要度：8/10
+
+- [ ] `Portal knowledge quality data adapter`：质量页服务与类型
+    - 任务类型：设计转执行
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-READONLY.md`
+    - 范围对象：`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-quality-service.ts`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-quality-types.ts`
+    - 处理动作：抽离质量页页面服务与类型定义
+    - 验收点：页面内容可先静态适配，后续可平滑接 `/portal/knowledge/quality`
+    - 重要度：7/10
+
+- [ ] `Portal knowledge shared visual baseline`：建立知识门户共享样式基线
+    - 任务类型：设计转执行
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-READONLY.md`
+    - 范围对象：`kuzhambu-apps/portal-web/src/styles.css`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-page.css`
+    - 处理动作：建立知识门户专属背景、卡片、边框、阴影与色彩基线
+    - 验收点：视觉风格与 Discovery 明显区分，整体更偏博物馆导览
+    - 重要度：8/10
+
+- [ ] `Portal knowledge verify`：完成门户前端验证
+    - 任务类型：执行任务
+    - 依据文档：`docs/00-governance/TODO-RULES.md`
+    - 范围对象：本轮新增或修改的 `portal-web` 文件
+    - 处理动作：运行 `format:check`、`lint`、`test`、`build`
+    - 验收点：相关前端验证全部通过
+    - 重要度：8/10
+
+- [ ] `Portal knowledge cleanup`：清理 RUNBOOK 与效果图
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-READONLY.md`
+    - 范围对象：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-READONLY.md`、`docs/30-designs/assets/knowledge-portal-readonly/*`
+    - 处理动作：任务结束时同步清理 RUNBOOK 与效果图
+    - 验收点：不残留项目外或项目内孤立样稿
+    - 重要度：6/10
+
 ## 待讨论项
