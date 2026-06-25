@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Knowledge atlas overview aggregation`：实现 overview 门类卡片聚合
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-ATLAS-HIERARCHY.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/portal/KnowledgePortalReadApplicationServiceImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/portal/KnowledgePortalReadApplicationServiceImplTest.java`
-    - 处理动作：聚合 `overviewView`、门类卡片与 overview 面包屑
-    - 验收点：`level=overview` 返回真实门类卡片与跳转 href
-    - 重要度：9/10
-
 - [ ] `Knowledge atlas category aggregation`：实现 category 门类层聚合
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-ATLAS-HIERARCHY.md`

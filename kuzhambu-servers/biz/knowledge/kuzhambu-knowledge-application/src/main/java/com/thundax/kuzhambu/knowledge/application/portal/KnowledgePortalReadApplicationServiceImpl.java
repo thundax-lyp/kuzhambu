@@ -91,6 +91,9 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
     @Override
     public KnowledgePortalAtlasResult getAtlas(KnowledgePortalAtlasQuery query) {
         KnowledgePortalAtlasQuery effectiveQuery = normalizeAtlasQuery(query);
+        if ("overview".equalsIgnoreCase(effectiveQuery.getLevel())) {
+            return buildOverviewAtlas();
+        }
         GraphVersion latestVersion = latestAppliedVersion();
         if (latestVersion == null || latestVersion.getVersionId() == null) {
             return new KnowledgePortalAtlasResult(
@@ -123,6 +126,55 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
                                 .toList()),
                         List.of(),
                         defaultTimeRanges()));
+    }
+
+    private KnowledgePortalAtlasResult buildOverviewAtlas() {
+        List<GraphVersion> appliedVersions = defaultList(graphVersionRepository.listAppliedByCategoryCode(null));
+        LinkedHashMap<String, List<GraphVersion>> versionsByCategory = appliedVersions.stream()
+                .filter(version -> version.getSourceCategoryCode() != null
+                        && !version.getSourceCategoryCode().isBlank())
+                .collect(Collectors.groupingBy(
+                        GraphVersion::getSourceCategoryCode, LinkedHashMap::new, Collectors.toList()));
+        List<KnowledgePortalAtlasResult.OverviewCategoryCard> categoryCards = versionsByCategory.entrySet().stream()
+                .map(entry -> toOverviewCategoryCard(entry.getKey(), entry.getValue()))
+                .filter(Objects::nonNull)
+                .toList();
+        return new KnowledgePortalAtlasResult(
+                "overview",
+                List.of(new KnowledgePortalAtlasResult.BreadcrumbItem(
+                        "overview", "图谱总览", "/knowledge/atlas?level=overview")),
+                new KnowledgePortalAtlasResult.OverviewView("十四门类知识鸟瞰", "先看门类分布，再进入单门类浏览与单实体详情。", categoryCards),
+                null,
+                null,
+                new KnowledgePortalAtlasResult.AvailableFilters(
+                        distinctValues(appliedVersions.stream()
+                                .map(GraphVersion::getSourceContentType)
+                                .toList()),
+                        List.of(),
+                        List.of(),
+                        List.of(),
+                        defaultTimeRanges()));
+    }
+
+    private KnowledgePortalAtlasResult.OverviewCategoryCard toOverviewCategoryCard(
+            String categoryCode, List<GraphVersion> versions) {
+        if (versions == null || versions.isEmpty()) {
+            return null;
+        }
+        GraphVersion latestVersion = versions.get(0);
+        Long versionId = latestVersion.getVersionId();
+        List<KnowledgeEntity> entities =
+                versionId == null ? List.of() : defaultList(knowledgeEntityRepository.listByVersionId(versionId));
+        List<KnowledgeRelation> relations =
+                versionId == null ? List.of() : defaultList(knowledgeRelationRepository.listByVersionId(versionId));
+        return new KnowledgePortalAtlasResult.OverviewCategoryCard(
+                categoryCode,
+                latestVersion.getSourceCategoryName(),
+                (long) entities.size(),
+                (long) relations.size(),
+                (long) versions.size(),
+                latestVersion.getVersionNo(),
+                "/knowledge/atlas?level=category&categoryCode=" + categoryCode);
     }
 
     private KnowledgePortalAtlasQuery normalizeAtlasQuery(KnowledgePortalAtlasQuery query) {
