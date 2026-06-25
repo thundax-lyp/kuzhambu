@@ -2,6 +2,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { DiscoverySearchPage } from "@/pages/discovery/search-page";
 import { DiscoveryQaPage } from "@/pages/discovery/qa-page";
 import { HomePage } from "@/pages/home/home-page";
+import { KnowledgeAtlasPage } from "@/pages/knowledge/knowledge-atlas-page";
 import { KnowledgeHomePage } from "@/pages/knowledge/knowledge-home-page";
 import { ShareForm } from "@/pages/share/share-form";
 import { SharePage } from "@/pages/share/share-page";
@@ -19,6 +20,7 @@ export const App = () => {
             <Routes>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/knowledge" element={<KnowledgeHomePage />} />
+                <Route path="/knowledge/atlas" element={<KnowledgeAtlasPage />} />
                 <Route path="/discovery/search" element={<DiscoverySearchPage />} />
                 <Route path="/discovery/qa" element={<DiscoveryQaPage />} />
                 <Route path="/shares" element={<SharePage />} />

@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Portal knowledge atlas shell`：实现浏览页页面骨架
-    - 任务类型：设计转执行
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-READONLY.md`
-    - 范围对象：`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-atlas-page.tsx`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-atlas-page.css`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-atlas-page.test.tsx`
-    - 处理动作：实现左中右三栏布局、关系画布区、详情栏
-    - 验收点：页面能表达“筛选 - 浏览 - 详情”三层关系
-    - 重要度：8/10
-
 - [ ] `Portal knowledge atlas data adapter`：浏览页服务与类型
     - 任务类型：设计转执行
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-READONLY.md`
