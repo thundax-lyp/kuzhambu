@@ -1,4 +1,4 @@
-import { BookOpen, Network, Search, Share2 } from "lucide-react";
+import { BookOpen, LibraryBig, Network, Search, Share2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -9,6 +9,12 @@ const sections = [
         description: "浏览公开分享的古籍版本快照",
         href: "/shares",
         icon: Share2
+    },
+    {
+        title: "知识图谱馆",
+        description: "进入知识首页，查看图谱、质量与来源导览",
+        href: "/knowledge",
+        icon: LibraryBig
     },
     {
         title: "知识检索",
@@ -39,6 +45,9 @@ export const HomePage = () => {
                     <h1>古籍知识门户</h1>
                 </div>
                 <div className="portal-header-actions">
+                    <Button asChild className="portal-action" size="lg" variant="outline">
+                        <Link to="/knowledge">进入知识馆</Link>
+                    </Button>
                     <Button asChild className="portal-action" size="lg" variant="outline">
                         <Link to="/discovery/search">进入检索</Link>
                     </Button>
