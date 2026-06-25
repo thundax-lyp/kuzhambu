@@ -9,12 +9,20 @@
 
 ## 当前任务项
 
-- [ ] `Discovery QA infra repository`：新增 QA assembler 与 repository impl
+- [ ] `Discovery QA infra session-message repository`：新增 session 与 message repository impl 和测试
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-CENTRIC-LOOP.md`
-    - 范围对象：`.../infra/qa/persistence/assembler/QaPersistenceAssembler.java`、`.../repository/impl/QaSessionRepositoryImpl.java`、`.../QaMessageRepositoryImpl.java`、`.../QaSourceRepositoryImpl.java`、`.../QaRetrievalTraceRepositoryImpl.java`、`.../infra/qa/*RepositoryImplTest.java`
-    - 处理动作：完成 QA domain 与持久化桥接并补最小仓储测试
-    - 验收点：repository 能完成最小写入与读取
+    - 范围对象：`.../repository/impl/QaSessionRepositoryImpl.java`、`.../QaMessageRepositoryImpl.java`、`.../QaSessionRepositoryImplTest.java`、`.../QaMessageRepositoryImplTest.java`
+    - 处理动作：完成 session 与 message 仓储实现和最小读写测试
+    - 验收点：session/message repository 能完成最小写入与读取
+    - 重要度：9/10
+
+- [ ] `Discovery QA infra source-trace repository`：新增 source 与 retrieval trace repository impl 和测试
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-CENTRIC-LOOP.md`
+    - 范围对象：`.../repository/impl/QaSourceRepositoryImpl.java`、`.../QaRetrievalTraceRepositoryImpl.java`、`.../QaSourceRepositoryImplTest.java`、`.../QaRetrievalTraceRepositoryImplTest.java`
+    - 处理动作：完成 source 与 retrieval trace 仓储实现和最小读写测试
+    - 验收点：source/trace repository 能完成最小写入与读取
     - 重要度：9/10
 
 - [ ] `Discovery QA contract`：新增 QA application command、query 与 result
