@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Portal knowledge home shell`：实现首页页面骨架
-    - 任务类型：设计转执行
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-READONLY.md`
-    - 范围对象：`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-home-page.tsx`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-home-page.css`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-home-page.test.tsx`
-    - 处理动作：实现首页首屏布局、概览卡、快捷入口、最近更新区
-    - 验收点：首页首屏只有主标题与搜索入口，下方可见统计卡与入口卡
-    - 重要度：8/10
-
 - [ ] `Portal knowledge home data adapter`：首页服务与类型
     - 任务类型：设计转执行
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-READONLY.md`
