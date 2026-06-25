@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Portal Discovery navigation`：补首页或导航入口与最小样式收口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-CENTRIC-LOOP.md`
-    - 范围对象：`kuzhambu-apps/portal-web/src/pages/home/home-page.tsx`、`kuzhambu-apps/portal-web/src/styles.css`、`kuzhambu-apps/portal-web/src/components/ui/*`
-    - 处理动作：把 Discovery search 和 qa 页面接入 portal 导航
-    - 验收点：首页或导航可以进入 search 与 qa 页面
-    - 重要度：7/10
-
 - [ ] `Admin Discovery debug service`：新增 qa-admin 与 search-admin service、types
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-CENTRIC-LOOP.md`

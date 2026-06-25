@@ -122,6 +122,12 @@ a {
     border-bottom: 1px solid var(--line-subtle);
 }
 
+.portal-header-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
 .portal-kicker {
     margin: 0 0 8px;
     color: var(--text-secondary);
@@ -1054,6 +1060,10 @@ a.portal-discovery-hit:hover {
         flex-direction: column;
     }
 
+    .portal-header-actions {
+        width: 100%;
+    }
+
     .portal-grid {
         grid-template-columns: 1fr;
     }
@@ -1065,6 +1075,11 @@ a.portal-discovery-hit:hover {
 
     .portal-discovery-samples [data-slot="button"],
     .portal-discovery-actions [data-slot="button"] {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .portal-header-actions [data-slot="button"] {
         width: 100%;
         justify-content: center;
     }

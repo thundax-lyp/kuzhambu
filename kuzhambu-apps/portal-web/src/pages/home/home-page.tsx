@@ -10,14 +10,24 @@ const sections = [
         href: "/shares",
         icon: Share2
     },
-    { title: "典籍浏览", description: "面向读者的古籍内容入口", href: "/shares", icon: BookOpen },
     {
         title: "知识检索",
         description: "围绕实体、标签和关系组织检索",
-        href: "/shares",
+        href: "/discovery/search",
         icon: Search
     },
-    { title: "关系探索", description: "承接知识图谱与问答场景", href: "/shares", icon: Network }
+    {
+        title: "问答工作台",
+        description: "先建会话，再看来源、轨迹与回答",
+        href: "/discovery/qa",
+        icon: BookOpen
+    },
+    {
+        title: "关系探索",
+        description: "承接知识图谱与问答场景",
+        href: "/discovery/search",
+        icon: Network
+    }
 ];
 
 export const HomePage = () => {
@@ -28,9 +38,14 @@ export const HomePage = () => {
                     <p className="portal-kicker">三才翰典 Portal</p>
                     <h1>古籍知识门户</h1>
                 </div>
-                <Button asChild className="portal-action" size="lg" variant="outline">
-                    <Link to="/shares">进入分享</Link>
-                </Button>
+                <div className="portal-header-actions">
+                    <Button asChild className="portal-action" size="lg" variant="outline">
+                        <Link to="/discovery/search">进入检索</Link>
+                    </Button>
+                    <Button asChild className="portal-action" size="lg" variant="outline">
+                        <Link to="/discovery/qa">进入问答</Link>
+                    </Button>
+                </div>
             </header>
 
             <section className="portal-grid" aria-label="门户能力">
