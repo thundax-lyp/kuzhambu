@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `AI Discovery application`：补齐 application service 并校验 AiInvokeCommand 映射
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-CENTRIC-LOOP.md`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/discovery/service/DiscoveryAiApplicationService.java`、`.../impl/DiscoveryAiApplicationServiceImpl.java`、`.../DiscoveryAiApplicationServiceImplTest.java`、`.../invocation/command/AiInvokeCommand.java`
-    - 处理动作：复用 AiWorkerInvocationApplicationService 执行 Discovery usecase 并补测试
-    - 验收点：Discovery AI application service 能组装同步调用命令并返回 DiscoveryAiResult
-    - 重要度：10/10
-
 - [ ] `Knowledge taxonomy read model`：新增 Discovery 可消费的只读结果模型
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-CENTRIC-LOOP.md`
