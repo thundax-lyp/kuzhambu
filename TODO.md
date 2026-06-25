@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Portal Discovery search page`：新增搜索页、service、types 与页面测试
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-CENTRIC-LOOP.md`
-    - 范围对象：`kuzhambu-apps/portal-web/src/pages/discovery/search-page.tsx`、`.../search-service.ts`、`.../search-types.ts`、`.../search-page.test.tsx`、`kuzhambu-apps/portal-web/src/app.tsx`
-    - 处理动作：为 Portal 提供真实 Discovery 搜索入口
-    - 验收点：页面能提交 query 并渲染搜索分组结果
-    - 重要度：8/10
-
 - [ ] `Portal Discovery qa page`：新增问答页、service、types 与页面测试
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-CENTRIC-LOOP.md`
