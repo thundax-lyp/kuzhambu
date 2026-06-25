@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Knowledge coverage sync`：同步 Knowledge 覆盖文档
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-ATLAS-HIERARCHY.md`
-    - 范围对象：`docs/40-readiness/KNOWLEDGE-IMPLEMENTATION-COVERAGE.md`
-    - 处理动作：把 Portal 页面与图谱浏览分层状态更新为当前实现口径
-    - 验收点：覆盖文档不再保留与本轮实现冲突的未完成表述
-    - 重要度：7/10
-
 - [ ] `Portal atlas verify`：完成 portal-web 图谱分层验证
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`
