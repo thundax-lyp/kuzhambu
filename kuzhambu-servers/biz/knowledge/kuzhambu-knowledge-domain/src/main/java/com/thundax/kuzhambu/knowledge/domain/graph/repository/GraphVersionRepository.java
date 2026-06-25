@@ -8,6 +8,10 @@ public interface GraphVersionRepository {
 
     GraphVersion findLatest(String taskType, String sourceContentType, Long sourceContentId);
 
+    GraphVersion findLatestAppliedByCategoryCode(String sourceCategoryCode);
+
+    java.util.List<GraphVersion> listAppliedByCategoryCode(String sourceCategoryCode);
+
     GraphVersion getByVersionId(Long versionId);
 
     GraphVersion getByTaskCandidate(GraphExtractionTaskId taskId, Long candidateId);

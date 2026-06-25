@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -73,6 +74,40 @@ class GraphVersionRepositoryTest {
         assertTrue(sqlSegment.contains("source_content_type"));
         assertTrue(sqlSegment.contains("source_content_id"));
         assertTrue(sqlSegment.contains("version_no"));
+    }
+
+    @Test
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    void findLatestAppliedByCategoryCodeShouldQueryAppliedCategoryScope() {
+        GraphVersionMapper mapper = mock(GraphVersionMapper.class);
+        when(mapper.selectOne(any())).thenReturn(new GraphVersionDO());
+        GraphVersionRepositoryImpl repository = new GraphVersionRepositoryImpl(mapper);
+
+        repository.findLatestAppliedByCategoryCode("BIRDS");
+
+        ArgumentCaptor<QueryWrapper<GraphVersionDO>> captor = ArgumentCaptor.forClass(QueryWrapper.class);
+        verify(mapper, times(1)).selectOne(captor.capture());
+        String sqlSegment = captor.getValue().getSqlSegment();
+        assertTrue(sqlSegment.contains("status"));
+        assertTrue(sqlSegment.contains("source_category_code"));
+        assertTrue(sqlSegment.contains("version_no"));
+    }
+
+    @Test
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    void listAppliedByCategoryCodeShouldQueryAppliedList() {
+        GraphVersionMapper mapper = mock(GraphVersionMapper.class);
+        when(mapper.selectList(any())).thenReturn(List.of(new GraphVersionDO()));
+        GraphVersionRepositoryImpl repository = new GraphVersionRepositoryImpl(mapper);
+
+        List<GraphVersion> result = repository.listAppliedByCategoryCode("BIRDS");
+
+        ArgumentCaptor<QueryWrapper<GraphVersionDO>> captor = ArgumentCaptor.forClass(QueryWrapper.class);
+        verify(mapper).selectList(captor.capture());
+        String sqlSegment = captor.getValue().getSqlSegment();
+        assertTrue(sqlSegment.contains("status"));
+        assertTrue(sqlSegment.contains("source_category_code"));
+        assertEquals(1, result.size());
     }
 
     @Test
