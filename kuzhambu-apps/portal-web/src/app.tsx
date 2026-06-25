@@ -17,6 +17,7 @@ export const App = () => {
         <BrowserRouter basename={normalizeRouterBasename(import.meta.env.BASE_URL)}>
             <Routes>
                 <Route path="/" element={<HomePage />} />
+                <Route path="/knowledge" element={<HomePage />} />
                 <Route path="/discovery/search" element={<DiscoverySearchPage />} />
                 <Route path="/discovery/qa" element={<DiscoveryQaPage />} />
                 <Route path="/shares" element={<SharePage />} />

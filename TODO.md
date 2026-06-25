@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Portal knowledge entry routing`：接入门户入口与首页跳转
-    - 任务类型：设计转执行
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-READONLY.md`
-    - 范围对象：`kuzhambu-apps/portal-web/src/app.tsx`、`kuzhambu-apps/portal-web/src/pages/home/home-page.tsx`、`kuzhambu-apps/portal-web/src/pages/home/home-page.test.tsx`
-    - 处理动作：接入 `/knowledge` 路由并在现有 Portal 首页增加入口
-    - 验收点：Portal 首页能跳到 Knowledge 首页，`/knowledge` 可打开
-    - 重要度：7/10
-
 - [ ] `Portal knowledge home shell`：实现首页页面骨架
     - 任务类型：设计转执行
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-READONLY.md`

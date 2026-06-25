@@ -35,8 +35,13 @@ describe("HomePage", () => {
 
         expect(links).toEqual(
             expect.arrayContaining([
+                expect.objectContaining({ href: "/knowledge", text: "进入知识馆" }),
                 expect.objectContaining({ href: "/discovery/search", text: "进入检索" }),
                 expect.objectContaining({ href: "/discovery/qa", text: "进入问答" }),
+                expect.objectContaining({
+                    href: "/knowledge",
+                    text: "知识图谱馆进入知识首页，查看图谱、质量与来源导览"
+                }),
                 expect.objectContaining({
                     href: "/discovery/search",
                     text: "知识检索围绕实体、标签和关系组织检索"
