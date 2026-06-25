@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `operations-domain/restore`：生成 Restore Domain 核心
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DOMAIN-INFRA.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-domain/src/main/java/com/thundax/kuzhambu/operations/domain/restore/`
-    - 处理动作：创建 `RestoreId`、`RestoreIdCodec`、`RestoreRecord` 和 `RestoreRepository`
-    - 验收点：`operations_restore` 对应的领域标识、实体和仓储端口完整落地
-    - 重要度：9/10
-
 - [ ] `operations-infra/restore`：生成 Restore Infra 落表映射
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DOMAIN-INFRA.md`
