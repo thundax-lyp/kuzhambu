@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Knowledge taxonomy read service`：新增 Discovery 协作只读 application service
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-CENTRIC-LOOP.md`
-    - 范围对象：`.../KnowledgeTaxonomyReadApplicationService.java`、`.../impl/KnowledgeTaxonomyReadApplicationServiceImpl.java`、`.../KnowledgeTaxonomyReadApplicationServiceImplTest.java`、`kuzhambu-servers/biz/knowledge/.../SynonymRepository.java`、`.../TagRepository.java`
-    - 处理动作：向 Discovery 暴露稳定的 taxonomy 增强读取口径
-    - 验收点：Discovery 可通过 application service 获取同义词扩展与标签提示且不直接依赖 mapper 或 repository impl
-    - 重要度：10/10
-
 - [ ] `Discovery query understanding contract`：扩展 application contract 为结构化结果
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-CENTRIC-LOOP.md`
