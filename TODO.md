@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Portal knowledge quality shell`：实现质量页页面骨架
-    - 任务类型：设计转执行
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-READONLY.md`
-    - 范围对象：`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-quality-page.tsx`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-quality-page.css`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-quality-page.test.tsx`
-    - 处理动作：实现指标区、趋势区、问题卡片、来源表格
-    - 验收点：页面能表达覆盖率、置信度、来源总数、待处理项
-    - 重要度：8/10
-
 - [ ] `Portal knowledge quality data adapter`：质量页服务与类型
     - 任务类型：设计转执行
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-READONLY.md`
