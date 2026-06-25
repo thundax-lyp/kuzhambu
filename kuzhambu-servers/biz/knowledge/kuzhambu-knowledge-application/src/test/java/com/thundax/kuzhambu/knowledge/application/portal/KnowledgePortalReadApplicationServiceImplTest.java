@@ -196,17 +196,24 @@ class KnowledgePortalReadApplicationServiceImplTest {
 
         KnowledgePortalAtlasResult result = service.getAtlas(new KnowledgePortalAtlasQuery());
 
-        assertEquals("3001", result.getFocusNode().getId());
-        assertEquals("黄帝", result.getFocusNode().getTitle());
-        assertEquals(1, result.getRelationGroups().size());
-        assertEquals("ANCESTOR", result.getRelationGroups().get(0).getGroupKey());
+        assertEquals("detail", result.getCurrentLevel());
+        assertEquals("3001", result.getDetailView().getFocusNode().getId());
+        assertEquals("黄帝", result.getDetailView().getFocusNode().getTitle());
+        assertEquals(1, result.getDetailView().getRelationGroups().size());
+        assertEquals(
+                "ANCESTOR", result.getDetailView().getRelationGroups().get(0).getGroupKey());
         assertEquals(
                 "person:shaodian",
-                result.getRelationGroups().get(0).getRelations().get(0).getTargetId());
+                result.getDetailView()
+                        .getRelationGroups()
+                        .get(0)
+                        .getRelations()
+                        .get(0)
+                        .getTargetId());
         assertEquals(
                 "SANCAI_ENTRY", result.getAvailableFilters().getKnowledgeBases().get(0));
         assertEquals("PERSON", result.getAvailableFilters().getEntityTypes().get(0));
-        assertEquals(3, result.getTimelineItems().size());
+        assertEquals(3, result.getDetailView().getTimelineItems().size());
     }
 
     @Test
