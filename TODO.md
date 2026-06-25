@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `operations-domain/health`：生成 Health Domain 核心
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DOMAIN-INFRA.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-domain/src/main/java/com/thundax/kuzhambu/operations/domain/health/`
-    - 处理动作：创建 `HealthCheckId`、`HealthCheckRecord` 和 `HealthCheckRepository`
-    - 验收点：`operations_health_check` 对应的领域标识、实体和仓储端口完整落地
-    - 重要度：7/10
-
 - [ ] `operations-infra/health`：生成 Health Infra 落表映射
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DOMAIN-INFRA.md`
