@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Discovery query understanding runtime`：实现规则归一化、Knowledge 增强、AI 改写与落库主链路
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-CENTRIC-LOOP.md`
-    - 范围对象：`.../QueryUnderstandingApplicationServiceImpl.java`、`.../DiscoveryKnowledgeEnhancementProvider.java`、`.../QueryUnderstandingPayloadBuilder.java`、`.../QueryUnderstandingApplicationServiceImplTest.java`、`.../domain/search/model/entity/QueryUnderstanding.java`、`.../domain/search/repository/QueryUnderstandingRepository.java`
-    - 处理动作：实现 QueryUnderstanding 运行时主链路并补测试
-    - 验收点：不再抛未实现异常，且能持久化 QueryUnderstanding 记录
-    - 重要度：10/10
-
 - [ ] `Discovery search consume understanding`：让 Search 主链路消费 QueryUnderstanding 结果
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-CENTRIC-LOOP.md`
