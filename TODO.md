@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Knowledge entity detail read`：增补焦点实体详情读取仓储能力
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-ATLAS-HIERARCHY.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/graph/repository/KnowledgeEntityRepository.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/repository/impl/KnowledgeEntityRepositoryImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/resources/mapper/knowledge/KnowledgeEntityMapper.xml`
-    - 处理动作：新增按 `entityId/entityKey` 读取 detail 层所需实体详情的只读方法
-    - 验收点：detail 层可稳定读取单实体正式事实
-    - 重要度：8/10
-
 - [ ] `Knowledge relation adjacency read`：增补焦点实体关系邻接读取仓储能力
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-ATLAS-HIERARCHY.md`

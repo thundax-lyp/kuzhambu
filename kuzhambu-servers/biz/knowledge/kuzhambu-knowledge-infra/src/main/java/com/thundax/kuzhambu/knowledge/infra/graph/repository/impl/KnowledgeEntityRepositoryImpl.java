@@ -48,6 +48,13 @@ public class KnowledgeEntityRepositoryImpl implements KnowledgeEntityRepository 
     }
 
     @Override
+    public KnowledgeEntity getByEntityKey(String entityKey) {
+        QueryWrapper<KnowledgeEntityDO> wrapper = new QueryWrapper<>();
+        wrapper.eq("entity_key", entityKey);
+        return KnowledgeEntityPersistenceAssembler.toDomain(mapper.selectOne(wrapper));
+    }
+
+    @Override
     public PageResult<KnowledgeEntity> page(
             Long versionId, String keyword, String entityType, String confirmationStatus, int pageNo, int pageSize) {
         QueryWrapper<KnowledgeEntityDO> wrapper = new QueryWrapper<>();
