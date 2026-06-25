@@ -11,12 +11,4 @@
 
 ## 待审阅任务项
 
-- [ ] `Portal knowledge cleanup`：清理 RUNBOOK 与效果图
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-READONLY.md`
-    - 范围对象：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-READONLY.md`、`docs/30-designs/assets/knowledge-portal-readonly/*`
-    - 处理动作：任务结束时同步清理 RUNBOOK 与效果图
-    - 验收点：不残留项目外或项目内孤立样稿
-    - 重要度：6/10
-
 ## 待讨论项
