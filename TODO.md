@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Portal knowledge quality data adapter`：质量页服务与类型
-    - 任务类型：设计转执行
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-READONLY.md`
-    - 范围对象：`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-quality-service.ts`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-quality-types.ts`
-    - 处理动作：抽离质量页页面服务与类型定义
-    - 验收点：页面内容可先静态适配，后续可平滑接 `/portal/knowledge/quality`
-    - 重要度：7/10
-
 - [ ] `Portal knowledge shared visual baseline`：建立知识门户共享样式基线
     - 任务类型：设计转执行
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-READONLY.md`
