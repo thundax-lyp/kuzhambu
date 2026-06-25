@@ -97,38 +97,10 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
         if ("category".equalsIgnoreCase(effectiveQuery.getLevel())) {
             return buildCategoryAtlas(effectiveQuery.getCategoryCode());
         }
-        GraphVersion latestVersion = latestAppliedVersion();
-        if (latestVersion == null || latestVersion.getVersionId() == null) {
-            return new KnowledgePortalAtlasResult(
-                    null,
-                    List.of(),
-                    List.of(),
-                    List.of(),
-                    List.of(),
-                    new KnowledgePortalAtlasResult.AvailableFilters(
-                            List.of(), List.of(), List.of(), List.of(), defaultTimeRanges()));
+        if ("detail".equalsIgnoreCase(effectiveQuery.getLevel())) {
+            return buildDetailAtlas(effectiveQuery.getEntityId());
         }
-        List<KnowledgeEntity> entities =
-                defaultList(knowledgeEntityRepository.listByVersionId(latestVersion.getVersionId()));
-        List<KnowledgeRelation> relations =
-                defaultList(knowledgeRelationRepository.listByVersionId(latestVersion.getVersionId()));
-        KnowledgeEntity focusEntity = entities.isEmpty() ? null : entities.get(0);
-        return new KnowledgePortalAtlasResult(
-                toFocusNode(focusEntity),
-                buildRelationGroups(focusEntity, relations),
-                buildSourceReferences(latestVersion),
-                List.of(),
-                buildTimelineItems(focusEntity),
-                new KnowledgePortalAtlasResult.AvailableFilters(
-                        distinctValues(List.of(latestVersion.getSourceContentType())),
-                        distinctValues(entities.stream()
-                                .map(KnowledgeEntity::getEntityType)
-                                .toList()),
-                        distinctValues(relations.stream()
-                                .map(KnowledgeRelation::getRelationType)
-                                .toList()),
-                        List.of(),
-                        defaultTimeRanges()));
+        return buildOverviewAtlas();
     }
 
     private KnowledgePortalAtlasResult buildOverviewAtlas() {
@@ -215,6 +187,52 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
                         distinctValues(entities.stream()
                                 .map(KnowledgeEntity::getEntityType)
                                 .toList()),
+                        distinctValues(relations.stream()
+                                .map(KnowledgeRelation::getRelationType)
+                                .toList()),
+                        List.of(),
+                        defaultTimeRanges()));
+    }
+
+    private KnowledgePortalAtlasResult buildDetailAtlas(Long entityId) {
+        if (entityId == null) {
+            return buildOverviewAtlas();
+        }
+        KnowledgeEntity focusEntity = knowledgeEntityRepository.getByEntityId(entityId);
+        if (focusEntity == null) {
+            return buildOverviewAtlas();
+        }
+        List<KnowledgeRelation> relations =
+                defaultList(knowledgeRelationRepository.listByEntityKey(focusEntity.getEntityKey()));
+        GraphVersion latestVersion = latestAppliedVersion();
+        String categoryCode = latestVersion == null ? null : latestVersion.getSourceCategoryCode();
+        String categoryName = latestVersion == null || latestVersion.getSourceCategoryName() == null
+                ? "门类详情"
+                : latestVersion.getSourceCategoryName();
+        return new KnowledgePortalAtlasResult(
+                "detail",
+                List.of(
+                        new KnowledgePortalAtlasResult.BreadcrumbItem(
+                                "overview", "图谱总览", "/knowledge/atlas?level=overview"),
+                        new KnowledgePortalAtlasResult.BreadcrumbItem(
+                                "category",
+                                categoryName,
+                                categoryCode == null || categoryCode.isBlank()
+                                        ? "/knowledge/atlas?level=overview"
+                                        : "/knowledge/atlas?level=category&categoryCode=" + categoryCode),
+                        new KnowledgePortalAtlasResult.BreadcrumbItem(
+                                "detail", focusEntity.getName(), "/knowledge/atlas?level=detail&entityId=" + entityId)),
+                null,
+                null,
+                new KnowledgePortalAtlasResult.DetailView(
+                        toFocusNode(focusEntity),
+                        buildRelationGroups(focusEntity, relations),
+                        buildSourceReferences(latestVersion),
+                        buildTimelineItems(focusEntity),
+                        List.of()),
+                new KnowledgePortalAtlasResult.AvailableFilters(
+                        distinctValues(List.of(latestVersion == null ? null : latestVersion.getSourceContentType())),
+                        distinctValues(List.of(focusEntity.getEntityType())),
                         distinctValues(relations.stream()
                                 .map(KnowledgeRelation::getRelationType)
                                 .toList()),

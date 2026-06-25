@@ -140,35 +140,21 @@ class KnowledgePortalReadApplicationServiceImplTest {
                                 2,
                                 "APPLIED",
                                 new Date(1_700_000_000_000L)))));
-        when(knowledgeEntityRepository.listByVersionId(71L))
-                .thenReturn(List.of(
-                        new KnowledgeEntity(
-                                1L,
-                                3001L,
-                                "person:huangdi",
-                                "黄帝",
-                                "PERSON",
-                                "上古始祖",
-                                "CONFIRMED",
-                                71L,
-                                "[]",
-                                new Date(1_700_000_000_000L),
-                                new Date(1_700_000_100_000L),
-                                new Date(1_700_000_200_000L)),
-                        new KnowledgeEntity(
-                                2L,
-                                3002L,
-                                "person:shaodian",
-                                "少典",
-                                "PERSON",
-                                "黄帝之父",
-                                "CONFIRMED",
-                                71L,
-                                "[]",
-                                null,
-                                null,
-                                null)));
-        when(knowledgeRelationRepository.listByVersionId(71L))
+        when(knowledgeEntityRepository.getByEntityId(3001L))
+                .thenReturn(new KnowledgeEntity(
+                        1L,
+                        3001L,
+                        "person:huangdi",
+                        "黄帝",
+                        "PERSON",
+                        "上古始祖",
+                        "CONFIRMED",
+                        71L,
+                        "[]",
+                        new Date(1_700_000_000_000L),
+                        new Date(1_700_000_100_000L),
+                        new Date(1_700_000_200_000L)));
+        when(knowledgeRelationRepository.listByEntityKey("person:huangdi"))
                 .thenReturn(List.of(new KnowledgeRelation(
                         1L,
                         4001L,
@@ -196,9 +182,12 @@ class KnowledgePortalReadApplicationServiceImplTest {
 
         KnowledgePortalAtlasQuery query = new KnowledgePortalAtlasQuery();
         query.setLevel("detail");
+        query.setEntityId(3001L);
         KnowledgePortalAtlasResult result = service.getAtlas(query);
 
         assertEquals("detail", result.getCurrentLevel());
+        assertEquals("三才图会", result.getBreadcrumbItems().get(1).getLabel());
+        assertEquals("黄帝", result.getBreadcrumbItems().get(2).getLabel());
         assertEquals("3001", result.getDetailView().getFocusNode().getId());
         assertEquals("黄帝", result.getDetailView().getFocusNode().getTitle());
         assertEquals(1, result.getDetailView().getRelationGroups().size());
