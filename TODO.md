@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Discovery portal qa controller`：新增 Portal QA controller 与协议模型
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-CENTRIC-LOOP.md`
-    - 范围对象：`.../interfaces/portal/qa/controller/DiscoveryQaPortalController.java`、`.../request/DiscoveryQaRequests.java`、`.../response/DiscoveryQaResponses.java`、`.../assembler/DiscoveryQaPortalInterfaceAssembler.java`、`.../DiscoveryQaPortalControllerTest.java`
-    - 处理动作：开放 Portal 问答最小接口
-    - 验收点：Portal 可通过 HTTP 触发 QA 主链路
-    - 重要度：9/10
-
 - [ ] `Discovery admin qa controller`：新增 Admin QA controller 与协议模型
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-CENTRIC-LOOP.md`
