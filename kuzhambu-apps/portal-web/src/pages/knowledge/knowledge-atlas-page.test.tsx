@@ -128,6 +128,10 @@ describe("KnowledgeAtlasPage", () => {
         expect(container.textContent).toContain("十四门类知识鸟瞰");
         expect(container.textContent).toContain("应用版本");
         expect(container.textContent).toContain("进入门类");
+        const overviewLinks = Array.from(container.querySelectorAll("a")).map((link) =>
+            link.getAttribute("href")
+        );
+        expect(overviewLinks).toContain("/knowledge/atlas?level=overview");
         expect(getKnowledgeAtlas).toHaveBeenCalledWith({
             categoryCode: null,
             entityId: null,
@@ -213,6 +217,11 @@ describe("KnowledgeAtlasPage", () => {
         expect(container.textContent).toContain("羽族关联");
         expect(container.textContent).toContain("当前门类来自最近一次已应用图谱版本");
         expect(container.textContent).toContain("进入详情");
+        const categoryLinks = Array.from(container.querySelectorAll("a")).map((link) =>
+            link.getAttribute("href")
+        );
+        expect(categoryLinks).toContain("/knowledge/atlas?level=overview");
+        expect(categoryLinks).toContain("/knowledge/atlas?level=category&categoryCode=BIRDS");
         expect(getKnowledgeAtlas).toHaveBeenCalledWith({
             categoryCode: "BIRDS",
             entityId: null,
@@ -307,6 +316,12 @@ describe("KnowledgeAtlasPage", () => {
         expect(container.textContent).toContain("帝系关系");
         expect(container.textContent).toContain("三才图会");
         expect(container.textContent).toContain("相关标签：");
+        const detailLinks = Array.from(container.querySelectorAll("a")).map((link) =>
+            link.getAttribute("href")
+        );
+        expect(detailLinks).toContain("/knowledge/atlas?level=overview");
+        expect(detailLinks).toContain("/knowledge/atlas?level=category&categoryCode=BIRDS");
+        expect(detailLinks).toContain("/knowledge/atlas?level=detail&entityId=3001");
         expect(getKnowledgeAtlas).toHaveBeenCalledWith({
             categoryCode: null,
             entityId: 3001,

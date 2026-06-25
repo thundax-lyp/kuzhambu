@@ -51,6 +51,17 @@ export const KnowledgeAtlasPage = () => {
                 </Link>
             </header>
 
+            <nav className="knowledge-atlas-breadcrumb" aria-label="Atlas breadcrumb">
+                {content.breadcrumbItems.map((item, index) => (
+                    <span key={item.href} className="knowledge-atlas-breadcrumb-item">
+                        <Link to={item.href}>{item.label}</Link>
+                        {index < content.breadcrumbItems.length - 1 ? (
+                            <span className="knowledge-atlas-breadcrumb-separator">/</span>
+                        ) : null}
+                    </span>
+                ))}
+            </nav>
+
             <section className="knowledge-atlas-layout">
                 <Card className="knowledge-atlas-filter-panel">
                     <div className="knowledge-atlas-panel-heading">

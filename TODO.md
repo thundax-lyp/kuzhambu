@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Portal atlas breadcrumb`：接入三层面包屑导航
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-ATLAS-HIERARCHY.md`
-    - 范围对象：`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-atlas-page.tsx`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-atlas-page.css`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-atlas-page.test.tsx`
-    - 处理动作：用后端 breadcrumb 驱动 overview/category/detail 返回导航
-    - 验收点：点击 breadcrumb 能返回上一层或 overview
-    - 重要度：8/10
-
 - [ ] `Knowledge coverage sync`：同步 Knowledge 覆盖文档
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-ATLAS-HIERARCHY.md`

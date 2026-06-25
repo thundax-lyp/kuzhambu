@@ -47,6 +47,34 @@
     color: #2c4339;
 }
 
+.knowledge-atlas-breadcrumb {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 18px;
+    padding: 10px 14px;
+    border: 1px solid rgba(88, 78, 58, 0.14);
+    border-radius: 999px;
+    background: rgba(255, 251, 245, 0.9);
+}
+
+.knowledge-atlas-breadcrumb-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #5f594d;
+    font-size: 13px;
+}
+
+.knowledge-atlas-breadcrumb-item a {
+    color: #25483d;
+}
+
+.knowledge-atlas-breadcrumb-separator {
+    color: rgba(95, 89, 77, 0.55);
+}
+
 .knowledge-atlas-layout {
     display: grid;
     grid-template-columns: minmax(220px, 0.78fr) minmax(0, 1.4fr) minmax(260px, 0.9fr);
