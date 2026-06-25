@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `AI Discovery support`：补齐 usecase spec 与 resolver
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-CENTRIC-LOOP.md`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/discovery/support/DiscoveryAiWorkerUsecaseSpec.java`、`.../DiscoveryAiWorkerUsecaseResolver.java`、`.../DiscoveryAiWorkerUsecaseResolverTest.java`
-    - 处理动作：定义 Discovery usecase 到 worker path 的稳定映射并补测试
-    - 验收点：四个 Discovery usecase 能稳定解析到 operation、capability、workerPath 和 stream
-    - 重要度：10/10
-
 - [ ] `AI Discovery domain`：补齐 request、result 与 domain service
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-CENTRIC-LOOP.md`
