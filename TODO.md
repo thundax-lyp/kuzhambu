@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Knowledge portal atlas api`：暴露浏览页 Portal API
-    - 任务类型：设计转执行
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-READONLY.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interfaces/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/portal/atlas/controller/KnowledgePortalAtlasController.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interfaces/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/portal/atlas/assembler/KnowledgePortalAtlasInterfaceAssembler.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interfaces/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/portal/atlas/request/KnowledgePortalAtlasQuery.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interfaces/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/portal/atlas/response/KnowledgePortalAtlasResponse.java`
-    - 处理动作：新增浏览页 Portal controller、assembler、query、response
-    - 验收点：`GET /portal/knowledge/atlas` 路径稳定，查询参数与页面筛选一致
-    - 重要度：8/10
-
 - [ ] `Knowledge portal quality read model`：定义质量页只读结果与服务骨架
     - 任务类型：设计转执行
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-READONLY.md`
