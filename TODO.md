@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Portal Discovery qa page`：新增问答页、service、types 与页面测试
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-CENTRIC-LOOP.md`
-    - 范围对象：`kuzhambu-apps/portal-web/src/pages/discovery/qa-page.tsx`、`.../qa-service.ts`、`.../qa-types.ts`、`.../qa-page.test.tsx`、`kuzhambu-apps/portal-web/src/app.tsx`
-    - 处理动作：为 Portal 提供最小问答入口
-    - 验收点：页面能提问并展示 answer 与 cited sources
-    - 重要度：8/10
-
 - [ ] `Portal Discovery navigation`：补首页或导航入口与最小样式收口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-CENTRIC-LOOP.md`
