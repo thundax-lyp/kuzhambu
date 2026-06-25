@@ -11,20 +11,4 @@
 
 ## 待审阅任务项
 
-- [ ] `Portal atlas verify`：完成 portal-web 图谱分层验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`
-    - 范围对象：本轮新增或修改的 `kuzhambu-apps/portal-web` 文件
-    - 处理动作：运行 `format:check`、`lint`、`test`、`build`
-    - 验收点：`portal-web` 四项验证全部通过
-    - 重要度：8/10
-
-- [ ] `Knowledge atlas hierarchy cleanup`：清理 Atlas 分层 RUNBOOK
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-ATLAS-HIERARCHY.md`
-    - 范围对象：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-ATLAS-HIERARCHY.md`
-    - 处理动作：任务关闭时删除本轮 RUNBOOK
-    - 验收点：PR 收口前不残留无剩余用途的 RUNBOOK
-    - 重要度：6/10
-
 ## 待讨论项

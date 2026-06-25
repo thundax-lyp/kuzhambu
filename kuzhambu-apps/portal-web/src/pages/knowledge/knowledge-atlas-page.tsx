@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, Binary, Filter, Orbit, ScrollText } from "lucide-react";
+import type { ReactNode } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import * as KnowledgeAtlasService from "./knowledge-atlas-service";
@@ -36,6 +37,44 @@ export const KnowledgeAtlasPage = () => {
         { label: "实体类型", values: content.availableFilters.entityTypes },
         { label: "时间范围", values: content.availableFilters.timeRanges }
     ];
+    let detailDescription = `${content.detailView?.focusNode.summary}。详情栏会承接实体摘要、来源说明、时间线和相关标签。`;
+    if (content.currentLevel === "overview") {
+        detailDescription =
+            "当前停留在图谱总览层，先从门类密度和版本新鲜度判断下一步要进入哪一卷。";
+    } else if (content.currentLevel === "category") {
+        detailDescription =
+            "当前停留在门类层，可先读版本摘要与关系分组，再选择代表实体进入 detail。";
+    }
+    let clueItems: ReactNode;
+    if (content.currentLevel === "category") {
+        clueItems = content.categoryView?.sourceReferences.map((source) => (
+            <li key={source.sourceTitle}>
+                {source.sourceTitle}：{source.snippet}
+            </li>
+        ));
+    } else if (content.currentLevel === "detail") {
+        clueItems = [
+            ...(content.detailView?.sourceReferences.map((source) => (
+                <li key={source.sourceTitle}>
+                    {source.sourceTitle}：{source.snippet}
+                </li>
+            )) ?? []),
+            ...(content.detailView?.timelineItems.map((note) => (
+                <li key={note.timeLabel}>
+                    {note.timeLabel}：{note.title}
+                </li>
+            )) ?? []),
+            ...(content.detailView?.relatedTags.map((tag) => (
+                <li key={tag.tagId}>相关标签：{tag.tagName}</li>
+            )) ?? [])
+        ];
+    } else {
+        clueItems = content.breadcrumbItems.map((item) => (
+            <li key={item.href}>
+                {item.level}：{item.label}
+            </li>
+        ));
+    }
 
     return (
         <main className="knowledge-atlas-shell">
@@ -237,46 +276,12 @@ export const KnowledgeAtlasPage = () => {
 
                     <section className="knowledge-atlas-detail-block">
                         <h3>{content.breadcrumbItems.map((item) => item.label).join(" / ")}</h3>
-                        <p>
-                            {content.currentLevel === "overview"
-                                ? "当前停留在图谱总览层，先从门类密度和版本新鲜度判断下一步要进入哪一卷。"
-                                : content.currentLevel === "category"
-                                  ? "当前停留在门类层，可先读版本摘要与关系分组，再选择代表实体进入 detail。"
-                                  : `${content.detailView?.focusNode.summary}。详情栏会承接实体摘要、来源说明、时间线和相关标签。`}
-                        </p>
+                        <p>{detailDescription}</p>
                     </section>
 
                     <section className="knowledge-atlas-detail-block">
                         <h3>当前线索</h3>
-                        <ul>
-                            {content.currentLevel === "category"
-                                ? content.categoryView?.sourceReferences.map((source) => (
-                                      <li key={source.sourceTitle}>
-                                          {source.sourceTitle}：{source.snippet}
-                                      </li>
-                                  ))
-                                : content.currentLevel === "detail"
-                                  ? [
-                                        ...(content.detailView?.sourceReferences.map((source) => (
-                                            <li key={source.sourceTitle}>
-                                                {source.sourceTitle}：{source.snippet}
-                                            </li>
-                                        )) ?? []),
-                                        ...(content.detailView?.timelineItems.map((note) => (
-                                            <li key={note.timeLabel}>
-                                                {note.timeLabel}：{note.title}
-                                            </li>
-                                        )) ?? []),
-                                        ...(content.detailView?.relatedTags.map((tag) => (
-                                            <li key={tag.tagId}>相关标签：{tag.tagName}</li>
-                                        )) ?? [])
-                                    ]
-                                  : content.breadcrumbItems.map((item) => (
-                                        <li key={item.href}>
-                                            {item.level}：{item.label}
-                                        </li>
-                                    ))}
-                        </ul>
+                        <ul>{clueItems}</ul>
                     </section>
                 </Card>
             </section>
