@@ -186,6 +186,7 @@
         "知识治理/标签与同义词",
         "搜索问答",
         "搜索问答/跨库搜索",
+        "搜索问答/搜索日志",
         "搜索问答/智能问答",
         "搜索问答/问答调试",
         "运营运维",
@@ -749,6 +750,14 @@
           "remarks": "三类古籍跨库搜索"
         },
         {
+          "name": "搜索日志",
+          "perms": ["discovery:search:view"],
+          "priority": 78,
+          "icon": "logs",
+          "url": "/discovery/search-admin",
+          "remarks": "跨库搜索日志和索引重建"
+        },
+        {
           "name": "智能问答",
           "perms": ["discovery:qa:view", "discovery:qa:edit"],
           "priority": 75,
@@ -758,10 +767,10 @@
         },
         {
           "name": "问答调试",
-          "perms": ["discovery:debug:view"],
+          "perms": ["discovery:qa:view"],
           "priority": 70,
           "icon": "logs",
-          "url": "/discovery/debug",
+          "url": "/discovery/qa-admin",
           "remarks": "问答上下文调试"
         }
       ]

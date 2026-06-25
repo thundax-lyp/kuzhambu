@@ -17,14 +17,6 @@
     - 验收点：本地库能支撑 search 与 qa 联调
     - 重要度：8/10
 
-- [ ] `System menu seed`：补 Discovery Admin 菜单与权限 seed
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-CENTRIC-LOOP.md`
-    - 范围对象：`db/data-source/system.json`、`db/data/system.sql`、相关生成脚本
-    - 处理动作：补齐 Discovery Admin 页面入口所需菜单和权限配置
-    - 验收点：登录后台后可见 Discovery 调试页面入口
-    - 重要度：7/10
-
 - [ ] `Backend verify`：按模块补 Java 验证并收口
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`
