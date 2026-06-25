@@ -149,6 +149,52 @@
     margin-top: 18px;
 }
 
+.knowledge-atlas-detail-stage {
+    display: grid;
+    gap: 16px;
+    margin-top: 18px;
+}
+
+.knowledge-atlas-detail-hero {
+    display: grid;
+    gap: 8px;
+    padding: 20px;
+    border-radius: 22px;
+    background:
+        linear-gradient(145deg, rgba(43, 47, 74, 0.94), rgba(92, 86, 132, 0.8)),
+        radial-gradient(circle at top right, rgba(229, 222, 255, 0.16), transparent 34%);
+    color: #f5efff;
+}
+
+.knowledge-atlas-detail-hero span,
+.knowledge-atlas-detail-hero small {
+    color: rgba(245, 239, 255, 0.8);
+}
+
+.knowledge-atlas-detail-hero strong {
+    font-size: clamp(1.45rem, 2vw, 2rem);
+}
+
+.knowledge-atlas-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.knowledge-atlas-detail-card {
+    display: grid;
+    gap: 12px;
+    padding: 18px;
+    border: 1px solid rgba(88, 78, 58, 0.14);
+    border-radius: 20px;
+    background: rgba(248, 244, 255, 0.94);
+}
+
+.knowledge-atlas-detail-card h3,
+.knowledge-atlas-detail-card p {
+    margin: 0;
+}
+
 .knowledge-atlas-category-hero {
     display: grid;
     gap: 8px;
@@ -355,7 +401,8 @@
     }
 
     .knowledge-atlas-category-grid,
-    .knowledge-atlas-category-meta {
+    .knowledge-atlas-category-meta,
+    .knowledge-atlas-detail-grid {
         grid-template-columns: 1fr;
     }
 }

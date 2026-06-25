@@ -181,9 +181,9 @@ export const KnowledgeAtlasPage = () => {
                     ) : null}
 
                     {content.currentLevel === "detail" && content.detailView ? (
-                        <div className="knowledge-atlas-bands">
-                            <div className="knowledge-atlas-focus">
-                                <span>当前焦点</span>
+                        <div className="knowledge-atlas-detail-stage">
+                            <div className="knowledge-atlas-detail-hero">
+                                <span>实体卷宗</span>
                                 <strong>{content.detailView.focusNode.title}</strong>
                                 <small>
                                     {content.detailView.focusNode.type} ·{" "}
@@ -192,19 +192,25 @@ export const KnowledgeAtlasPage = () => {
                                 </small>
                             </div>
 
-                            {content.detailView.relationGroups.map((band) => (
-                                <article key={band.groupKey} className="knowledge-atlas-band">
-                                    <Orbit size={18} />
-                                    <div>
+                            <div className="knowledge-atlas-detail-grid">
+                                {content.detailView.relationGroups.map((band) => (
+                                    <article
+                                        key={band.groupKey}
+                                        className="knowledge-atlas-detail-card"
+                                    >
+                                        <div className="knowledge-atlas-overview-card-head">
+                                            <Orbit size={18} />
+                                            <span>{band.groupKey}</span>
+                                        </div>
                                         <h3>{band.groupLabel}</h3>
                                         <p>
                                             {band.relations[0]?.sourceLabel} →{" "}
                                             {band.relations[0]?.targetLabel} ·{" "}
                                             {band.relations[0]?.relationLabel}
                                         </p>
-                                    </div>
-                                </article>
-                            ))}
+                                    </article>
+                                ))}
+                            </div>
                         </div>
                     ) : null}
                 </Card>
@@ -239,11 +245,21 @@ export const KnowledgeAtlasPage = () => {
                                       </li>
                                   ))
                                 : content.currentLevel === "detail"
-                                  ? content.detailView?.timelineItems.map((note) => (
-                                        <li key={note.timeLabel}>
-                                            {note.timeLabel}：{note.title}
-                                        </li>
-                                    ))
+                                  ? [
+                                        ...(content.detailView?.sourceReferences.map((source) => (
+                                            <li key={source.sourceTitle}>
+                                                {source.sourceTitle}：{source.snippet}
+                                            </li>
+                                        )) ?? []),
+                                        ...(content.detailView?.timelineItems.map((note) => (
+                                            <li key={note.timeLabel}>
+                                                {note.timeLabel}：{note.title}
+                                            </li>
+                                        )) ?? []),
+                                        ...(content.detailView?.relatedTags.map((tag) => (
+                                            <li key={tag.tagId}>相关标签：{tag.tagName}</li>
+                                        )) ?? [])
+                                    ]
                                   : content.breadcrumbItems.map((item) => (
                                         <li key={item.href}>
                                             {item.level}：{item.label}

@@ -75,6 +75,10 @@ const flushQuery = async () => {
         await new Promise((resolve) => {
             window.setTimeout(resolve, 0);
         });
+        await Promise.resolve();
+        await new Promise((resolve) => {
+            window.setTimeout(resolve, 0);
+        });
     });
 };
 
@@ -254,7 +258,7 @@ describe("KnowledgeAtlasPage", () => {
                     title: "黄帝",
                     type: "PERSON"
                 },
-                relatedTags: [],
+                relatedTags: [{ score: 0.92, tagCategory: "时代", tagId: "11", tagName: "上古" }],
                 relationGroups: [
                     {
                         groupKey: "ANCESTOR",
@@ -272,7 +276,17 @@ describe("KnowledgeAtlasPage", () => {
                         ]
                     }
                 ],
-                sourceReferences: [],
+                sourceReferences: [
+                    {
+                        href: "/knowledge/atlas",
+                        snippet:
+                            "当前展示的是最新已应用图谱版本，可继续查看关联实体、来源与时间线。",
+                        sourceId: "1001",
+                        sourceTitle: "三才图会",
+                        sourceType: "SANCAI_ENTRY",
+                        updatedAt: null
+                    }
+                ],
                 timelineItems: [
                     {
                         description: "该实体在图谱中首次被抽取并登记。",
@@ -289,7 +303,10 @@ describe("KnowledgeAtlasPage", () => {
         await flushQuery();
 
         expect(container.textContent).toContain("黄帝");
+        expect(container.textContent).toContain("实体卷宗");
         expect(container.textContent).toContain("帝系关系");
+        expect(container.textContent).toContain("三才图会");
+        expect(container.textContent).toContain("相关标签：");
         expect(getKnowledgeAtlas).toHaveBeenCalledWith({
             categoryCode: null,
             entityId: 3001,

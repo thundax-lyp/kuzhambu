@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Portal atlas detail page`：实现 detail 层页面
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-ATLAS-HIERARCHY.md`
-    - 范围对象：`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-atlas-page.tsx`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-atlas-page.css`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-atlas-page.test.tsx`
-    - 处理动作：渲染实体摘要、关联关系、来源条目和时间线
-    - 验收点：detail 层具备单实体完整阅读信息
-    - 重要度：9/10
-
 - [ ] `Portal atlas breadcrumb`：接入三层面包屑导航
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-ATLAS-HIERARCHY.md`
