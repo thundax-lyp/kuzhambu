@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `operations-infra/health`：生成 Health Infra 落表映射
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DOMAIN-INFRA.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-infra/src/main/java/com/thundax/kuzhambu/operations/infra/health/`
-    - 处理动作：创建 `HealthCheckDO`、`HealthCheckMapper`、`HealthCheckPersistenceAssembler` 和 `HealthCheckRepositoryImpl`
-    - 验收点：`HealthCheckRecord` 已能映射到 `operations_health_check` 表结构
-    - 重要度：7/10
-
 - [ ] `operations-domain/task`：生成 Long Task Domain 核心
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DOMAIN-INFRA.md`
