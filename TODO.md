@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Discovery QA infra do-mapper`：新增 QA dataobject 与 mapper
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-CENTRIC-LOOP.md`
-    - 范围对象：`.../infra/qa/persistence/dataobject/QaSessionDO.java`、`.../QaMessageDO.java`、`.../QaSourceDO.java`、`.../QaRetrievalTraceDO.java`、`.../mapper/QaSessionMapper.java`、`.../QaMessageMapper.java`
-    - 处理动作：为既有 discovery_qa 表建立持久化对象和 mapper
-    - 验收点：DO 和 mapper 完整覆盖既有 QA 表的核心字段
-    - 重要度：9/10
-
 - [ ] `Discovery QA infra repository`：新增 QA assembler 与 repository impl
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-CENTRIC-LOOP.md`
