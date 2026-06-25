@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `operations-infra/backup`：生成 Backup Infra 落表映射
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DOMAIN-INFRA.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-infra/src/main/java/com/thundax/kuzhambu/operations/infra/backup/`
-    - 处理动作：创建 `BackupDO`、`BackupMapper`、`BackupPersistenceAssembler` 和 `BackupRepositoryImpl`
-    - 验收点：`BackupRecord` 已能映射到 `operations_backup` 表结构
-    - 重要度：9/10
-
 - [ ] `operations-domain/restore`：生成 Restore Domain 核心
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DOMAIN-INFRA.md`
