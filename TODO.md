@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Knowledge taxonomy read model`：新增 Discovery 可消费的只读结果模型
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-CENTRIC-LOOP.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/result/DiscoverySynonymExpandResult.java`、`.../DiscoveryTagHintResult.java`、`.../DiscoveryEntityHintResult.java`
-    - 处理动作：定义供 Discovery 消费的 taxonomy 只读结果模型
-    - 验收点：读模型不携带 Admin 分页页面专用字段
-    - 重要度：9/10
-
 - [ ] `Knowledge taxonomy read service`：新增 Discovery 协作只读 application service
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-CENTRIC-LOOP.md`
