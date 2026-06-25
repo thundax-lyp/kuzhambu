@@ -7,6 +7,8 @@ import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphVersion;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeEntity;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeRelation;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphVersionRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeEntityRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeRelationRepository;
@@ -95,5 +97,96 @@ class KnowledgePortalReadApplicationServiceImplTest {
         assertEquals(1, result.getRecentUpdates().size());
         assertEquals("等待首批知识版本", result.getRecentUpdates().get(0).getTitle());
         assertNull(result.getRecentUpdates().get(0).getUpdatedAt());
+    }
+
+    @Test
+    void getAtlasShouldAssembleFocusNodeAndRelationGroupsFromLatestVersion() {
+        TagRepository tagRepository = mock(TagRepository.class);
+        GraphVersionRepository graphVersionRepository = mock(GraphVersionRepository.class);
+        KnowledgeEntityRepository knowledgeEntityRepository = mock(KnowledgeEntityRepository.class);
+        KnowledgeRelationRepository knowledgeRelationRepository = mock(KnowledgeRelationRepository.class);
+
+        when(graphVersionRepository.page(null, "APPLIED", null, null, 1, 1))
+                .thenReturn(PageResult.of(
+                        1,
+                        1,
+                        1,
+                        List.of(new GraphVersion(
+                                1L,
+                                71L,
+                                null,
+                                901L,
+                                "GRAPH",
+                                null,
+                                null,
+                                "SANCAI_ENTRY",
+                                1001L,
+                                "SANCAI",
+                                "三才图会",
+                                2,
+                                "APPLIED",
+                                new Date(1_700_000_000_000L)))));
+        when(knowledgeEntityRepository.listByVersionId(71L))
+                .thenReturn(List.of(
+                        new KnowledgeEntity(
+                                1L,
+                                3001L,
+                                "person:huangdi",
+                                "黄帝",
+                                "PERSON",
+                                "上古始祖",
+                                "CONFIRMED",
+                                71L,
+                                "[]",
+                                new Date(1_700_000_000_000L),
+                                new Date(1_700_000_100_000L),
+                                new Date(1_700_000_200_000L)),
+                        new KnowledgeEntity(
+                                2L,
+                                3002L,
+                                "person:shaodian",
+                                "少典",
+                                "PERSON",
+                                "黄帝之父",
+                                "CONFIRMED",
+                                71L,
+                                "[]",
+                                null,
+                                null,
+                                null)));
+        when(knowledgeRelationRepository.listByVersionId(71L))
+                .thenReturn(List.of(new KnowledgeRelation(
+                        1L,
+                        4001L,
+                        "rel:1",
+                        "person:huangdi",
+                        "person:shaodian",
+                        "黄帝",
+                        "少典",
+                        "ANCESTOR",
+                        "史料证据",
+                        "CONFIRMED",
+                        71L,
+                        "[]",
+                        null,
+                        null,
+                        null)));
+
+        KnowledgePortalReadApplicationServiceImpl service = new KnowledgePortalReadApplicationServiceImpl(
+                tagRepository, graphVersionRepository, knowledgeEntityRepository, knowledgeRelationRepository);
+
+        KnowledgePortalAtlasResult result = service.getAtlas();
+
+        assertEquals("3001", result.getFocusNode().getId());
+        assertEquals("黄帝", result.getFocusNode().getTitle());
+        assertEquals(1, result.getRelationGroups().size());
+        assertEquals("ANCESTOR", result.getRelationGroups().get(0).getGroupKey());
+        assertEquals(
+                "person:shaodian",
+                result.getRelationGroups().get(0).getRelations().get(0).getTargetId());
+        assertEquals(
+                "SANCAI_ENTRY", result.getAvailableFilters().getKnowledgeBases().get(0));
+        assertEquals("PERSON", result.getAvailableFilters().getEntityTypes().get(0));
+        assertEquals(3, result.getTimelineItems().size());
     }
 }

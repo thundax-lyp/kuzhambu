@@ -2,11 +2,17 @@ package com.thundax.kuzhambu.knowledge.application.portal;
 
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphVersion;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeEntity;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeRelation;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphVersionRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeEntityRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeRelationRepository;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagRepository;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -69,6 +75,42 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
                         featureCollection("quality-brief", "质量摘要", "用阅读型摘要理解当前知识资产状态。", "/knowledge/quality", "质量洞察")));
     }
 
+    @Override
+    public KnowledgePortalAtlasResult getAtlas() {
+        GraphVersion latestVersion = latestAppliedVersion();
+        if (latestVersion == null || latestVersion.getVersionId() == null) {
+            return new KnowledgePortalAtlasResult(
+                    null,
+                    List.of(),
+                    List.of(),
+                    List.of(),
+                    List.of(),
+                    new KnowledgePortalAtlasResult.AvailableFilters(
+                            List.of(), List.of(), List.of(), List.of(), defaultTimeRanges()));
+        }
+        List<KnowledgeEntity> entities =
+                defaultList(knowledgeEntityRepository.listByVersionId(latestVersion.getVersionId()));
+        List<KnowledgeRelation> relations =
+                defaultList(knowledgeRelationRepository.listByVersionId(latestVersion.getVersionId()));
+        KnowledgeEntity focusEntity = entities.isEmpty() ? null : entities.get(0);
+        return new KnowledgePortalAtlasResult(
+                toFocusNode(focusEntity),
+                buildRelationGroups(focusEntity, relations),
+                buildSourceReferences(latestVersion),
+                List.of(),
+                buildTimelineItems(focusEntity),
+                new KnowledgePortalAtlasResult.AvailableFilters(
+                        distinctValues(List.of(latestVersion.getSourceContentType())),
+                        distinctValues(entities.stream()
+                                .map(KnowledgeEntity::getEntityType)
+                                .toList()),
+                        distinctValues(relations.stream()
+                                .map(KnowledgeRelation::getRelationType)
+                                .toList()),
+                        List.of(),
+                        defaultTimeRanges()));
+    }
+
     private List<KnowledgePortalHomeResult.PortalRecentUpdateItem> buildRecentUpdates() {
         PageResult<GraphVersion> page = graphVersionRepository.page(
                 null, GRAPH_VERSION_APPLIED_STATUS, null, null, FIRST_PAGE_NO, RECENT_UPDATE_LIMIT);
@@ -112,5 +154,118 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
     private KnowledgePortalHomeResult.PortalFeatureCollectionItem featureCollection(
             String key, String label, String description, String href, String badgeText) {
         return new KnowledgePortalHomeResult.PortalFeatureCollectionItem(key, label, description, href, badgeText);
+    }
+
+    private GraphVersion latestAppliedVersion() {
+        PageResult<GraphVersion> page = graphVersionRepository.page(
+                null, GRAPH_VERSION_APPLIED_STATUS, null, null, FIRST_PAGE_NO, COUNT_PAGE_SIZE);
+        if (page.getRecords() == null || page.getRecords().isEmpty()) {
+            return null;
+        }
+        return page.getRecords().get(0);
+    }
+
+    private KnowledgePortalAtlasResult.FocusNode toFocusNode(KnowledgeEntity entity) {
+        if (entity == null) {
+            return null;
+        }
+        return new KnowledgePortalAtlasResult.FocusNode(
+                String.valueOf(entity.getEntityId()),
+                entity.getName(),
+                entity.getEntityType(),
+                entity.getDescription(),
+                entity.getConfirmationStatus(),
+                confidenceOf(entity.getConfirmationStatus()),
+                null);
+    }
+
+    private List<KnowledgePortalAtlasResult.RelationGroup> buildRelationGroups(
+            KnowledgeEntity focusEntity, List<KnowledgeRelation> relations) {
+        if (focusEntity == null || relations == null || relations.isEmpty()) {
+            return List.of();
+        }
+        return relations.stream()
+                .filter(relation -> touchesFocusEntity(focusEntity, relation))
+                .collect(Collectors.groupingBy(
+                        KnowledgeRelation::getRelationType, LinkedHashMap::new, Collectors.toList()))
+                .entrySet()
+                .stream()
+                .map(entry -> new KnowledgePortalAtlasResult.RelationGroup(
+                        entry.getKey(),
+                        entry.getKey(),
+                        entry.getValue().stream().map(this::toRelationItem).toList()))
+                .toList();
+    }
+
+    private KnowledgePortalAtlasResult.RelationItem toRelationItem(KnowledgeRelation relation) {
+        return new KnowledgePortalAtlasResult.RelationItem(
+                relation.getSourceEntityKey(),
+                relation.getSourceName(),
+                relation.getRelationType(),
+                relation.getTargetEntityKey(),
+                relation.getTargetName(),
+                relation.getRelationType(),
+                confidenceOf(relation.getConfirmationStatus()));
+    }
+
+    private List<KnowledgePortalAtlasResult.SourceReference> buildSourceReferences(GraphVersion latestVersion) {
+        if (latestVersion == null) {
+            return List.of();
+        }
+        return List.of(new KnowledgePortalAtlasResult.SourceReference(
+                latestVersion.getSourceContentId() == null ? null : String.valueOf(latestVersion.getSourceContentId()),
+                latestVersion.getSourceCategoryName() == null
+                        ? latestVersion.getSourceContentType()
+                        : latestVersion.getSourceCategoryName(),
+                latestVersion.getSourceContentType(),
+                "当前展示的是最新已应用图谱版本，可继续查看关联实体、来源与时间线。",
+                latestVersion.getAppliedAt() == null
+                        ? null
+                        : latestVersion.getAppliedAt().getTime(),
+                "/knowledge/atlas"));
+    }
+
+    private List<KnowledgePortalAtlasResult.TimelineItem> buildTimelineItems(KnowledgeEntity focusEntity) {
+        if (focusEntity == null) {
+            return List.of();
+        }
+        List<KnowledgePortalAtlasResult.TimelineItem> items = new java.util.ArrayList<>();
+        if (focusEntity.getFirstExtractedAt() != null) {
+            items.add(new KnowledgePortalAtlasResult.TimelineItem(
+                    "首次抽取", "知识首次进入图谱", "该实体在图谱中首次被抽取并登记。", "/knowledge/atlas"));
+        }
+        if (focusEntity.getLastExtractedAt() != null) {
+            items.add(new KnowledgePortalAtlasResult.TimelineItem(
+                    "最近抽取", "知识最近一次刷新", "该实体在最近一次图谱应用中被重新刷新。", "/knowledge/atlas"));
+        }
+        if (focusEntity.getConfirmedAt() != null) {
+            items.add(new KnowledgePortalAtlasResult.TimelineItem(
+                    "人工确认", "知识已完成人工确认", "该实体已经过人工确认，可用于更稳定的展示。", "/knowledge/atlas"));
+        }
+        return items;
+    }
+
+    private boolean touchesFocusEntity(KnowledgeEntity focusEntity, KnowledgeRelation relation) {
+        return Objects.equals(focusEntity.getEntityKey(), relation.getSourceEntityKey())
+                || Objects.equals(focusEntity.getEntityKey(), relation.getTargetEntityKey());
+    }
+
+    private Double confidenceOf(String confirmationStatus) {
+        return "MANUAL_CONFIRMED".equals(confirmationStatus) || "CONFIRMED".equals(confirmationStatus) ? 0.95D : 0.70D;
+    }
+
+    private List<String> distinctValues(List<String> values) {
+        if (values == null || values.isEmpty()) {
+            return List.of();
+        }
+        return values.stream().filter(Objects::nonNull).distinct().toList();
+    }
+
+    private List<String> defaultTimeRanges() {
+        return List.of("30d", "90d", "all");
+    }
+
+    private <T> List<T> defaultList(List<T> values) {
+        return values == null ? Collections.emptyList() : values;
     }
 }
