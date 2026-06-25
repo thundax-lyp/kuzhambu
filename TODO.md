@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `AI Discovery domain`：补齐 request、result 与 domain service
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-CENTRIC-LOOP.md`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-domain/src/main/java/com/thundax/kuzhambu/ai/domain/discovery/model/valueobject/DiscoveryAiRequest.java`、`.../DiscoveryAiResult.java`、`.../DiscoveryAiDomainService.java`
-    - 处理动作：建立 Discovery AI 调用的领域值对象和服务契约
-    - 验收点：Discovery AI request/result 字段口径与 Knowledge AI 调用保持一致
-    - 重要度：10/10
-
 - [ ] `AI Discovery application`：补齐 application service 并校验 AiInvokeCommand 映射
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-CENTRIC-LOOP.md`
