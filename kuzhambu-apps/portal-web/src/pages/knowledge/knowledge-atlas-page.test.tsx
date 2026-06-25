@@ -166,8 +166,33 @@ describe("KnowledgeAtlasPage", () => {
                 ],
                 latestVersionId: 71,
                 latestVersionNo: 3,
-                relationGroups: [],
-                sourceReferences: []
+                relationGroups: [
+                    {
+                        groupKey: "KIN",
+                        groupLabel: "羽族关联",
+                        relations: [
+                            {
+                                relationLabel: "KIN",
+                                relationType: "KIN",
+                                sourceId: "bird:luan",
+                                sourceLabel: "鸾",
+                                targetId: "bird:feng",
+                                targetLabel: "凤",
+                                weight: 0.92
+                            }
+                        ]
+                    }
+                ],
+                sourceReferences: [
+                    {
+                        href: "/knowledge/atlas",
+                        snippet: "当前门类来自最近一次已应用图谱版本，可继续进入单实体详情。",
+                        sourceId: "1001",
+                        sourceTitle: "羽族",
+                        sourceType: "SANCAI_ENTRY",
+                        updatedAt: null
+                    }
+                ]
             },
             currentLevel: "category",
             detailView: null,
@@ -180,6 +205,9 @@ describe("KnowledgeAtlasPage", () => {
         await flushQuery();
 
         expect(container.textContent).toContain("羽族");
+        expect(container.textContent).toContain("版本编号");
+        expect(container.textContent).toContain("羽族关联");
+        expect(container.textContent).toContain("当前门类来自最近一次已应用图谱版本");
         expect(container.textContent).toContain("进入详情");
         expect(getKnowledgeAtlas).toHaveBeenCalledWith({
             categoryCode: "BIRDS",

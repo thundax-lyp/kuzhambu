@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Portal atlas category page`：实现 category 层页面
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-ATLAS-HIERARCHY.md`
-    - 范围对象：`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-atlas-page.tsx`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-atlas-page.css`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-atlas-page.test.tsx`
-    - 处理动作：渲染单门类版本信息、实体高亮、关系分组和来源摘要
-    - 验收点：category 层能稳定进入 detail 层
-    - 重要度：9/10
-
 - [ ] `Portal atlas detail page`：实现 detail 层页面
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-ATLAS-HIERARCHY.md`

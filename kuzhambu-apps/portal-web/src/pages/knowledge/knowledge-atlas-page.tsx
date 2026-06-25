@@ -123,21 +123,57 @@ export const KnowledgeAtlasPage = () => {
                     ) : null}
 
                     {content.currentLevel === "category" && content.categoryView ? (
-                        <div className="knowledge-atlas-bands">
-                            <div className="knowledge-atlas-focus">
+                        <div className="knowledge-atlas-category-stage">
+                            <div className="knowledge-atlas-category-hero">
                                 <span>{content.categoryView.categoryCode}</span>
                                 <strong>{content.categoryView.categoryName}</strong>
-                                <small>版本 {content.categoryView.latestVersionNo}</small>
+                                <small>
+                                    版本 {content.categoryView.latestVersionNo} · 门类层浏览
+                                </small>
                             </div>
-                            {content.categoryView.entityHighlights.map((entity) => (
-                                <article key={entity.entityId} className="knowledge-atlas-band">
+
+                            <div className="knowledge-atlas-category-meta">
+                                <div>
+                                    <dt>版本编号</dt>
+                                    <dd>{content.categoryView.latestVersionId}</dd>
+                                </div>
+                                <div>
+                                    <dt>代表实体</dt>
+                                    <dd>{content.categoryView.entityHighlights.length}</dd>
+                                </div>
+                                <div>
+                                    <dt>关系分组</dt>
+                                    <dd>{content.categoryView.relationGroups.length}</dd>
+                                </div>
+                            </div>
+
+                            <div className="knowledge-atlas-category-grid">
+                                {content.categoryView.entityHighlights.map((entity) => (
+                                    <article
+                                        key={entity.entityId}
+                                        className="knowledge-atlas-category-card"
+                                    >
+                                        <div className="knowledge-atlas-overview-card-head">
+                                            <Orbit size={18} />
+                                            <span>{entity.entityType}</span>
+                                        </div>
+                                        <h3>{entity.entityName}</h3>
+                                        <p>{entity.confirmationStatus}</p>
+                                        <Link to={entity.entryHref}>进入详情</Link>
+                                    </article>
+                                ))}
+                            </div>
+
+                            {content.categoryView.relationGroups.map((group) => (
+                                <article key={group.groupKey} className="knowledge-atlas-band">
                                     <Orbit size={18} />
                                     <div>
-                                        <h3>{entity.entityName}</h3>
+                                        <h3>{group.groupLabel}</h3>
                                         <p>
-                                            {entity.entityType} · {entity.confirmationStatus}
+                                            {group.relations[0]?.sourceLabel} →{" "}
+                                            {group.relations[0]?.targetLabel} ·{" "}
+                                            {group.relations[0]?.relationLabel}
                                         </p>
-                                        <Link to={entity.entryHref}>进入详情</Link>
                                     </div>
                                 </article>
                             ))}
@@ -188,7 +224,7 @@ export const KnowledgeAtlasPage = () => {
                             {content.currentLevel === "overview"
                                 ? "当前停留在图谱总览层，先从门类密度和版本新鲜度判断下一步要进入哪一卷。"
                                 : content.currentLevel === "category"
-                                  ? "当前停留在门类层，可继续选择门类中的代表实体进入 detail。"
+                                  ? "当前停留在门类层，可先读版本摘要与关系分组，再选择代表实体进入 detail。"
                                   : `${content.detailView?.focusNode.summary}。详情栏会承接实体摘要、来源说明、时间线和相关标签。`}
                         </p>
                     </section>
@@ -196,17 +232,23 @@ export const KnowledgeAtlasPage = () => {
                     <section className="knowledge-atlas-detail-block">
                         <h3>当前线索</h3>
                         <ul>
-                            {content.currentLevel === "detail"
-                                ? content.detailView?.timelineItems.map((note) => (
-                                      <li key={note.timeLabel}>
-                                          {note.timeLabel}：{note.title}
+                            {content.currentLevel === "category"
+                                ? content.categoryView?.sourceReferences.map((source) => (
+                                      <li key={source.sourceTitle}>
+                                          {source.sourceTitle}：{source.snippet}
                                       </li>
                                   ))
-                                : content.breadcrumbItems.map((item) => (
-                                      <li key={item.href}>
-                                          {item.level}：{item.label}
-                                      </li>
-                                  ))}
+                                : content.currentLevel === "detail"
+                                  ? content.detailView?.timelineItems.map((note) => (
+                                        <li key={note.timeLabel}>
+                                            {note.timeLabel}：{note.title}
+                                        </li>
+                                    ))
+                                  : content.breadcrumbItems.map((item) => (
+                                        <li key={item.href}>
+                                            {item.level}：{item.label}
+                                        </li>
+                                    ))}
                         </ul>
                     </section>
                 </Card>

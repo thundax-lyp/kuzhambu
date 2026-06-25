@@ -143,6 +143,89 @@
     margin-top: 18px;
 }
 
+.knowledge-atlas-category-stage {
+    display: grid;
+    gap: 16px;
+    margin-top: 18px;
+}
+
+.knowledge-atlas-category-hero {
+    display: grid;
+    gap: 8px;
+    padding: 20px;
+    border-radius: 22px;
+    background:
+        linear-gradient(145deg, rgba(69, 48, 26, 0.94), rgba(119, 89, 60, 0.8)),
+        radial-gradient(circle at top right, rgba(255, 240, 214, 0.16), transparent 34%);
+    color: #f9efe0;
+}
+
+.knowledge-atlas-category-hero span,
+.knowledge-atlas-category-hero small {
+    color: rgba(249, 239, 224, 0.8);
+}
+
+.knowledge-atlas-category-hero strong {
+    font-size: clamp(1.45rem, 2vw, 2rem);
+}
+
+.knowledge-atlas-category-meta {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.knowledge-atlas-category-meta div {
+    padding: 12px 14px;
+    border-radius: 16px;
+    background: rgba(244, 238, 228, 0.9);
+}
+
+.knowledge-atlas-category-meta dt {
+    color: #6a6458;
+    font-size: 11px;
+    text-transform: uppercase;
+}
+
+.knowledge-atlas-category-meta dd {
+    margin: 6px 0 0;
+    color: #213029;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.knowledge-atlas-category-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.knowledge-atlas-category-card {
+    display: grid;
+    gap: 12px;
+    padding: 18px;
+    border: 1px solid rgba(88, 78, 58, 0.14);
+    border-radius: 20px;
+    background: rgba(255, 250, 243, 0.94);
+}
+
+.knowledge-atlas-category-card h3 {
+    margin: 0;
+    color: #213029;
+    font-size: 1.15rem;
+}
+
+.knowledge-atlas-category-card p,
+.knowledge-atlas-category-card a {
+    margin: 0;
+}
+
+.knowledge-atlas-category-card a {
+    color: #25483d;
+    font-size: 14px;
+    font-weight: 600;
+}
+
 .knowledge-atlas-overview-hero {
     display: grid;
     gap: 8px;
@@ -268,6 +351,11 @@
     }
 
     .knowledge-atlas-overview-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .knowledge-atlas-category-grid,
+    .knowledge-atlas-category-meta {
         grid-template-columns: 1fr;
     }
 }
