@@ -1,24 +1,23 @@
+import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, Binary, Filter, Orbit, ScrollText } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
+import { KNOWLEDGE_ATLAS_FALLBACK, getKnowledgeAtlas } from "./knowledge-atlas-service";
 
 import "./knowledge-atlas-page.css";
 
-const filterGroups = [
-    { label: "知识库", values: ["三才图会", "明代习俗", "王圻文档"] },
-    { label: "实体类型", values: ["人物", "器物", "礼制", "典故"] },
-    { label: "时间范围", values: ["最近 30 天", "最近 90 天", "全部版本"] }
-];
-
-const relationBands = [
-    { title: "帝系关系", note: "从亲缘关系切入，查看上下代和配偶脉络。" },
-    { title: "礼制关联", note: "围绕制度、器物和场景形成关联阅读路径。" },
-    { title: "来源脉络", note: "回到版本与来源，理解知识如何被整理出来。" }
-];
-
-const sideNotes = ["确认状态：已人工确认", "来源快照：三才图会第 2 版", "最近整理：今日更新"];
-
 export const KnowledgeAtlasPage = () => {
+    const atlasQuery = useQuery({
+        queryFn: getKnowledgeAtlas,
+        queryKey: ["knowledge-atlas"]
+    });
+    const content = atlasQuery.data ?? KNOWLEDGE_ATLAS_FALLBACK;
+    const filterGroups = [
+        { label: "知识库", values: content.availableFilters.knowledgeBases },
+        { label: "实体类型", values: content.availableFilters.entityTypes },
+        { label: "时间范围", values: content.availableFilters.timeRanges }
+    ];
+
     return (
         <main className="knowledge-atlas-shell">
             <header className="knowledge-atlas-header">
@@ -71,17 +70,24 @@ export const KnowledgeAtlasPage = () => {
 
                     <div className="knowledge-atlas-focus">
                         <span>当前焦点</span>
-                        <strong>黄帝</strong>
-                        <small>人物 · 上古始祖 · 已确认</small>
+                        <strong>{content.focusNode.title}</strong>
+                        <small>
+                            {content.focusNode.type} · {content.focusNode.summary} ·{" "}
+                            {content.focusNode.status}
+                        </small>
                     </div>
 
                     <div className="knowledge-atlas-bands">
-                        {relationBands.map((band) => (
-                            <article key={band.title} className="knowledge-atlas-band">
+                        {content.relationGroups.map((band) => (
+                            <article key={band.groupKey} className="knowledge-atlas-band">
                                 <Orbit size={18} />
                                 <div>
-                                    <h3>{band.title}</h3>
-                                    <p>{band.note}</p>
+                                    <h3>{band.groupLabel}</h3>
+                                    <p>
+                                        {band.relations[0]?.sourceLabel} →{" "}
+                                        {band.relations[0]?.targetLabel} ·{" "}
+                                        {band.relations[0]?.relationLabel}
+                                    </p>
                                 </div>
                             </article>
                         ))}
@@ -98,18 +104,22 @@ export const KnowledgeAtlasPage = () => {
                     </div>
 
                     <section className="knowledge-atlas-detail-block">
-                        <h3>黄帝 · 人物卡</h3>
+                        <h3>
+                            {content.focusNode.title} · {content.focusNode.type}
+                        </h3>
                         <p>
-                            详情栏会承接实体摘要、来源说明、时间线和相关标签，
-                            帮助用户不离开页面就理解当前焦点。
+                            {content.focusNode.summary}
+                            。详情栏会承接实体摘要、来源说明、时间线和相关标签，帮助用户不离开页面就理解当前焦点。
                         </p>
                     </section>
 
                     <section className="knowledge-atlas-detail-block">
                         <h3>当前线索</h3>
                         <ul>
-                            {sideNotes.map((note) => (
-                                <li key={note}>{note}</li>
+                            {content.timelineItems.map((note) => (
+                                <li key={note.timeLabel}>
+                                    {note.timeLabel}：{note.title}
+                                </li>
                             ))}
                         </ul>
                     </section>
