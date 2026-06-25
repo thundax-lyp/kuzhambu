@@ -27,6 +27,14 @@ public class KnowledgePortalAtlasController {
     @Operation(summary = "获取知识门户浏览页数据", description = "Portal 浏览页")
     @GetMapping
     public KnowledgePortalAtlasResponse getAtlas(@Valid KnowledgePortalAtlasQuery request) {
-        return KnowledgePortalAtlasInterfaceAssembler.toResponse(knowledgePortalReadApplicationService.getAtlas());
+        return KnowledgePortalAtlasInterfaceAssembler.toResponse(knowledgePortalReadApplicationService.getAtlas(
+                new com.thundax.kuzhambu.knowledge.application.portal.KnowledgePortalAtlasQuery(
+                        request.getLevel(),
+                        request.getCategoryCode(),
+                        request.getEntityId(),
+                        request.getKnowledgeBase(),
+                        request.getKeyword(),
+                        request.getTag(),
+                        request.getTimeRange())));
     }
 }

@@ -13,6 +13,10 @@ public interface KnowledgeEntityRepository {
 
     KnowledgeEntity getByEntityId(Long entityId);
 
+    default KnowledgeEntity getByEntityKey(String entityKey) {
+        return null;
+    }
+
     PageResult<KnowledgeEntity> page(
             Long versionId, String keyword, String entityType, String confirmationStatus, int pageNo, int pageSize);
 

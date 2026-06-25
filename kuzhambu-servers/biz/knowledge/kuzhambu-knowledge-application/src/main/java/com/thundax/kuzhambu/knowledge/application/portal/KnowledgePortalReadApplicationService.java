@@ -4,7 +4,7 @@ public interface KnowledgePortalReadApplicationService {
 
     KnowledgePortalHomeResult getHome();
 
-    KnowledgePortalAtlasResult getAtlas();
+    KnowledgePortalAtlasResult getAtlas(KnowledgePortalAtlasQuery query);
 
     KnowledgePortalQualityResult getQuality();
 }

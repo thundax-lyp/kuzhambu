@@ -1,3 +1,43 @@
+export interface KnowledgeAtlasQuery {
+    level?: "overview" | "category" | "detail";
+    categoryCode?: string | null;
+    entityId?: number | null;
+    knowledgeBase?: string | null;
+    keyword?: string | null;
+    tag?: string | null;
+    timeRange?: string | null;
+}
+
+export interface KnowledgeAtlasBreadcrumbItem {
+    level: string;
+    label: string;
+    href: string;
+}
+
+export interface KnowledgeAtlasOverviewCategoryCard {
+    categoryCode: string;
+    categoryName: string;
+    entityCount: number;
+    relationCount: number;
+    appliedVersionCount: number;
+    latestVersionNo: number;
+    entryHref: string;
+}
+
+export interface KnowledgeAtlasOverviewView {
+    summaryTitle: string;
+    summarySubtitle: string;
+    categoryCards: KnowledgeAtlasOverviewCategoryCard[];
+}
+
+export interface KnowledgeAtlasCategoryEntityHighlight {
+    entityId: string;
+    entityName: string;
+    entityType: string;
+    confirmationStatus: string;
+    entryHref: string;
+}
+
 export interface KnowledgeAtlasFocusNode {
     id: string;
     title: string;
@@ -25,7 +65,7 @@ export interface KnowledgeAtlasRelationGroup {
 }
 
 export interface KnowledgeAtlasSourceReference {
-    sourceId: string;
+    sourceId: string | null;
     sourceTitle: string;
     sourceType: string;
     snippet: string;
@@ -47,6 +87,24 @@ export interface KnowledgeAtlasTimelineItem {
     href: string;
 }
 
+export interface KnowledgeAtlasCategoryView {
+    categoryCode: string;
+    categoryName: string;
+    latestVersionId: number;
+    latestVersionNo: number;
+    entityHighlights: KnowledgeAtlasCategoryEntityHighlight[];
+    relationGroups: KnowledgeAtlasRelationGroup[];
+    sourceReferences: KnowledgeAtlasSourceReference[];
+}
+
+export interface KnowledgeAtlasDetailView {
+    focusNode: KnowledgeAtlasFocusNode;
+    relationGroups: KnowledgeAtlasRelationGroup[];
+    sourceReferences: KnowledgeAtlasSourceReference[];
+    timelineItems: KnowledgeAtlasTimelineItem[];
+    relatedTags: KnowledgeAtlasRelatedTag[];
+}
+
 export interface KnowledgeAtlasAvailableFilters {
     knowledgeBases: string[];
     entityTypes: string[];
@@ -56,10 +114,10 @@ export interface KnowledgeAtlasAvailableFilters {
 }
 
 export interface KnowledgeAtlasResponse {
-    focusNode: KnowledgeAtlasFocusNode;
-    relationGroups: KnowledgeAtlasRelationGroup[];
-    sourceReferences: KnowledgeAtlasSourceReference[];
-    relatedTags: KnowledgeAtlasRelatedTag[];
-    timelineItems: KnowledgeAtlasTimelineItem[];
+    currentLevel: "overview" | "category" | "detail";
+    breadcrumbItems: KnowledgeAtlasBreadcrumbItem[];
+    overviewView: KnowledgeAtlasOverviewView | null;
+    categoryView: KnowledgeAtlasCategoryView | null;
+    detailView: KnowledgeAtlasDetailView | null;
     availableFilters: KnowledgeAtlasAvailableFilters;
 }

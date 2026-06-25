@@ -72,6 +72,23 @@ class KnowledgeRelationRepositoryTest {
     }
 
     @Test
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    void listByEntityKeyShouldQueryRelationAdjacency() {
+        KnowledgeRelationMapper mapper = mock(KnowledgeRelationMapper.class);
+        when(mapper.selectList(any())).thenReturn(List.of(new KnowledgeRelationDO()));
+        KnowledgeRelationRepositoryImpl repository = new KnowledgeRelationRepositoryImpl(mapper);
+
+        List<KnowledgeRelation> result = repository.listByEntityKey("person:huangdi");
+
+        ArgumentCaptor<QueryWrapper<KnowledgeRelationDO>> captor = ArgumentCaptor.forClass(QueryWrapper.class);
+        verify(mapper).selectList(captor.capture());
+        String sqlSegment = captor.getValue().getSqlSegment();
+        assertTrue(sqlSegment.contains("source_entity_key"));
+        assertTrue(sqlSegment.contains("target_entity_key"));
+        assertEquals(1, result.size());
+    }
+
+    @Test
     void saveOrUpdateBatchShouldInsertWhenRelationDoesNotExist() {
         KnowledgeRelationMapper mapper = mock(KnowledgeRelationMapper.class);
         when(mapper.update(any(), any())).thenReturn(0);

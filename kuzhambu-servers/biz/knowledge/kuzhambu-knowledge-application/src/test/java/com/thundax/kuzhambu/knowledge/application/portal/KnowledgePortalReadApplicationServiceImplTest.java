@@ -140,35 +140,21 @@ class KnowledgePortalReadApplicationServiceImplTest {
                                 2,
                                 "APPLIED",
                                 new Date(1_700_000_000_000L)))));
-        when(knowledgeEntityRepository.listByVersionId(71L))
-                .thenReturn(List.of(
-                        new KnowledgeEntity(
-                                1L,
-                                3001L,
-                                "person:huangdi",
-                                "黄帝",
-                                "PERSON",
-                                "上古始祖",
-                                "CONFIRMED",
-                                71L,
-                                "[]",
-                                new Date(1_700_000_000_000L),
-                                new Date(1_700_000_100_000L),
-                                new Date(1_700_000_200_000L)),
-                        new KnowledgeEntity(
-                                2L,
-                                3002L,
-                                "person:shaodian",
-                                "少典",
-                                "PERSON",
-                                "黄帝之父",
-                                "CONFIRMED",
-                                71L,
-                                "[]",
-                                null,
-                                null,
-                                null)));
-        when(knowledgeRelationRepository.listByVersionId(71L))
+        when(knowledgeEntityRepository.getByEntityId(3001L))
+                .thenReturn(new KnowledgeEntity(
+                        1L,
+                        3001L,
+                        "person:huangdi",
+                        "黄帝",
+                        "PERSON",
+                        "上古始祖",
+                        "CONFIRMED",
+                        71L,
+                        "[]",
+                        new Date(1_700_000_000_000L),
+                        new Date(1_700_000_100_000L),
+                        new Date(1_700_000_200_000L)));
+        when(knowledgeRelationRepository.listByEntityKey("person:huangdi"))
                 .thenReturn(List.of(new KnowledgeRelation(
                         1L,
                         4001L,
@@ -194,19 +180,201 @@ class KnowledgePortalReadApplicationServiceImplTest {
                 mock(TagGovernanceMetricsRepository.class),
                 mock(RefinementTaskRepository.class));
 
-        KnowledgePortalAtlasResult result = service.getAtlas();
+        KnowledgePortalAtlasQuery query = new KnowledgePortalAtlasQuery();
+        query.setLevel("detail");
+        query.setEntityId(3001L);
+        KnowledgePortalAtlasResult result = service.getAtlas(query);
 
-        assertEquals("3001", result.getFocusNode().getId());
-        assertEquals("黄帝", result.getFocusNode().getTitle());
-        assertEquals(1, result.getRelationGroups().size());
-        assertEquals("ANCESTOR", result.getRelationGroups().get(0).getGroupKey());
+        assertEquals("detail", result.getCurrentLevel());
+        assertEquals("三才图会", result.getBreadcrumbItems().get(1).getLabel());
+        assertEquals("黄帝", result.getBreadcrumbItems().get(2).getLabel());
+        assertEquals("3001", result.getDetailView().getFocusNode().getId());
+        assertEquals("黄帝", result.getDetailView().getFocusNode().getTitle());
+        assertEquals(1, result.getDetailView().getRelationGroups().size());
+        assertEquals(
+                "ANCESTOR", result.getDetailView().getRelationGroups().get(0).getGroupKey());
         assertEquals(
                 "person:shaodian",
-                result.getRelationGroups().get(0).getRelations().get(0).getTargetId());
+                result.getDetailView()
+                        .getRelationGroups()
+                        .get(0)
+                        .getRelations()
+                        .get(0)
+                        .getTargetId());
         assertEquals(
                 "SANCAI_ENTRY", result.getAvailableFilters().getKnowledgeBases().get(0));
         assertEquals("PERSON", result.getAvailableFilters().getEntityTypes().get(0));
-        assertEquals(3, result.getTimelineItems().size());
+        assertEquals(3, result.getDetailView().getTimelineItems().size());
+    }
+
+    @Test
+    void getAtlasShouldAssembleOverviewCategoryCardsFromAppliedVersions() {
+        GraphVersionRepository graphVersionRepository = mock(GraphVersionRepository.class);
+        KnowledgeEntityRepository knowledgeEntityRepository = mock(KnowledgeEntityRepository.class);
+        KnowledgeRelationRepository knowledgeRelationRepository = mock(KnowledgeRelationRepository.class);
+        when(graphVersionRepository.listAppliedByCategoryCode(null))
+                .thenReturn(List.of(
+                        new GraphVersion(
+                                1L,
+                                71L,
+                                null,
+                                901L,
+                                "GRAPH",
+                                null,
+                                null,
+                                "SANCAI_ENTRY",
+                                1001L,
+                                "BIRDS",
+                                "羽族",
+                                3,
+                                "APPLIED",
+                                new Date(1_700_000_000_000L)),
+                        new GraphVersion(
+                                2L,
+                                72L,
+                                null,
+                                902L,
+                                "GRAPH",
+                                null,
+                                null,
+                                "SANCAI_ENTRY",
+                                1002L,
+                                "BIRDS",
+                                "羽族",
+                                2,
+                                "APPLIED",
+                                new Date(1_699_000_000_000L))));
+        when(knowledgeEntityRepository.listByVersionId(71L))
+                .thenReturn(List.of(
+                        new KnowledgeEntity(
+                                1L,
+                                3001L,
+                                "bird:luan",
+                                "鸾",
+                                "CREATURE",
+                                "神鸟",
+                                "CONFIRMED",
+                                71L,
+                                "[]",
+                                null,
+                                null,
+                                null),
+                        new KnowledgeEntity(
+                                2L,
+                                3002L,
+                                "bird:feng",
+                                "凤",
+                                "CREATURE",
+                                "瑞鸟",
+                                "CONFIRMED",
+                                71L,
+                                "[]",
+                                null,
+                                null,
+                                null)));
+        when(knowledgeRelationRepository.listByVersionId(71L))
+                .thenReturn(List.of(new KnowledgeRelation(
+                        1L,
+                        4001L,
+                        "rel:bird",
+                        "bird:luan",
+                        "bird:feng",
+                        "鸾",
+                        "凤",
+                        "KIN",
+                        "图谱证据",
+                        "CONFIRMED",
+                        71L,
+                        "[]",
+                        null,
+                        null,
+                        null)));
+
+        KnowledgePortalReadApplicationServiceImpl service = new KnowledgePortalReadApplicationServiceImpl(
+                mock(TagRepository.class),
+                graphVersionRepository,
+                knowledgeEntityRepository,
+                knowledgeRelationRepository,
+                mock(TagGovernanceMetricsRepository.class),
+                mock(RefinementTaskRepository.class));
+
+        KnowledgePortalAtlasQuery query = new KnowledgePortalAtlasQuery();
+        query.setLevel("overview");
+        KnowledgePortalAtlasResult result = service.getAtlas(query);
+
+        assertEquals("overview", result.getCurrentLevel());
+        assertEquals("图谱总览", result.getBreadcrumbItems().get(0).getLabel());
+        assertEquals("十四门类知识鸟瞰", result.getOverviewView().getSummaryTitle());
+        assertEquals(1, result.getOverviewView().getCategoryCards().size());
+        assertEquals("BIRDS", result.getOverviewView().getCategoryCards().get(0).getCategoryCode());
+        assertEquals("羽族", result.getOverviewView().getCategoryCards().get(0).getCategoryName());
+        assertEquals(2L, result.getOverviewView().getCategoryCards().get(0).getEntityCount());
+        assertEquals(1L, result.getOverviewView().getCategoryCards().get(0).getRelationCount());
+        assertEquals(2L, result.getOverviewView().getCategoryCards().get(0).getAppliedVersionCount());
+    }
+
+    @Test
+    void getAtlasShouldAssembleCategoryViewFromCategoryCode() {
+        GraphVersionRepository graphVersionRepository = mock(GraphVersionRepository.class);
+        KnowledgeEntityRepository knowledgeEntityRepository = mock(KnowledgeEntityRepository.class);
+        KnowledgeRelationRepository knowledgeRelationRepository = mock(KnowledgeRelationRepository.class);
+        when(graphVersionRepository.findLatestAppliedByCategoryCode("BIRDS"))
+                .thenReturn(new GraphVersion(
+                        1L,
+                        71L,
+                        null,
+                        901L,
+                        "GRAPH",
+                        null,
+                        null,
+                        "SANCAI_ENTRY",
+                        1001L,
+                        "BIRDS",
+                        "羽族",
+                        3,
+                        "APPLIED",
+                        new Date(1_700_000_000_000L)));
+        when(knowledgeEntityRepository.listByVersionId(71L))
+                .thenReturn(List.of(new KnowledgeEntity(
+                        1L, 3001L, "bird:luan", "鸾", "CREATURE", "神鸟", "CONFIRMED", 71L, "[]", null, null, null)));
+        when(knowledgeRelationRepository.listByVersionId(71L))
+                .thenReturn(List.of(new KnowledgeRelation(
+                        1L,
+                        4001L,
+                        "rel:bird",
+                        "bird:luan",
+                        "bird:feng",
+                        "鸾",
+                        "凤",
+                        "KIN",
+                        "图谱证据",
+                        "CONFIRMED",
+                        71L,
+                        "[]",
+                        null,
+                        null,
+                        null)));
+
+        KnowledgePortalReadApplicationServiceImpl service = new KnowledgePortalReadApplicationServiceImpl(
+                mock(TagRepository.class),
+                graphVersionRepository,
+                knowledgeEntityRepository,
+                knowledgeRelationRepository,
+                mock(TagGovernanceMetricsRepository.class),
+                mock(RefinementTaskRepository.class));
+
+        KnowledgePortalAtlasQuery query = new KnowledgePortalAtlasQuery();
+        query.setLevel("category");
+        query.setCategoryCode("BIRDS");
+        KnowledgePortalAtlasResult result = service.getAtlas(query);
+
+        assertEquals("category", result.getCurrentLevel());
+        assertEquals("羽族", result.getBreadcrumbItems().get(1).getLabel());
+        assertEquals("BIRDS", result.getCategoryView().getCategoryCode());
+        assertEquals("羽族", result.getCategoryView().getCategoryName());
+        assertEquals(1, result.getCategoryView().getEntityHighlights().size());
+        assertEquals("鸾", result.getCategoryView().getEntityHighlights().get(0).getEntityName());
+        assertEquals("KIN", result.getCategoryView().getRelationGroups().get(0).getGroupKey());
     }
 
     @Test

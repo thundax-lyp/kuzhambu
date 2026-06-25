@@ -14,13 +14,93 @@ public final class KnowledgePortalAtlasInterfaceAssembler {
             return null;
         }
         KnowledgePortalAtlasResponse response = new KnowledgePortalAtlasResponse();
-        response.setFocusNode(toFocusNode(result.getFocusNode()));
-        response.setRelationGroups(toRelationGroups(result.getRelationGroups()));
-        response.setSourceReferences(toSourceReferences(result.getSourceReferences()));
-        response.setRelatedTags(toRelatedTags(result.getRelatedTags()));
-        response.setTimelineItems(toTimelineItems(result.getTimelineItems()));
+        response.setCurrentLevel(result.getCurrentLevel());
+        response.setBreadcrumbItems(toBreadcrumbItems(result.getBreadcrumbItems()));
+        response.setOverviewView(toOverviewView(result.getOverviewView()));
+        response.setCategoryView(toCategoryView(result.getCategoryView()));
+        response.setDetailView(toDetailView(result.getDetailView()));
         response.setAvailableFilters(toAvailableFilters(result.getAvailableFilters()));
         return response;
+    }
+
+    private static List<KnowledgePortalAtlasResponse.BreadcrumbItemResponse> toBreadcrumbItems(
+            List<KnowledgePortalAtlasResult.BreadcrumbItem> items) {
+        if (items == null || items.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return items.stream()
+                .map(item -> new KnowledgePortalAtlasResponse.BreadcrumbItemResponse(
+                        item.getLevel(), item.getLabel(), item.getHref()))
+                .toList();
+    }
+
+    private static KnowledgePortalAtlasResponse.OverviewViewResponse toOverviewView(
+            KnowledgePortalAtlasResult.OverviewView view) {
+        if (view == null) {
+            return null;
+        }
+        return new KnowledgePortalAtlasResponse.OverviewViewResponse(
+                view.getSummaryTitle(), view.getSummarySubtitle(), toOverviewCategoryCards(view.getCategoryCards()));
+    }
+
+    private static List<KnowledgePortalAtlasResponse.OverviewCategoryCardResponse> toOverviewCategoryCards(
+            List<KnowledgePortalAtlasResult.OverviewCategoryCard> cards) {
+        if (cards == null || cards.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return cards.stream()
+                .map(card -> new KnowledgePortalAtlasResponse.OverviewCategoryCardResponse(
+                        card.getCategoryCode(),
+                        card.getCategoryName(),
+                        card.getEntityCount(),
+                        card.getRelationCount(),
+                        card.getAppliedVersionCount(),
+                        card.getLatestVersionNo(),
+                        card.getEntryHref()))
+                .toList();
+    }
+
+    private static KnowledgePortalAtlasResponse.CategoryViewResponse toCategoryView(
+            KnowledgePortalAtlasResult.CategoryView view) {
+        if (view == null) {
+            return null;
+        }
+        return new KnowledgePortalAtlasResponse.CategoryViewResponse(
+                view.getCategoryCode(),
+                view.getCategoryName(),
+                view.getLatestVersionId(),
+                view.getLatestVersionNo(),
+                toCategoryEntityHighlights(view.getEntityHighlights()),
+                toRelationGroups(view.getRelationGroups()),
+                toSourceReferences(view.getSourceReferences()));
+    }
+
+    private static List<KnowledgePortalAtlasResponse.CategoryEntityHighlightResponse> toCategoryEntityHighlights(
+            List<KnowledgePortalAtlasResult.CategoryEntityHighlight> highlights) {
+        if (highlights == null || highlights.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return highlights.stream()
+                .map(item -> new KnowledgePortalAtlasResponse.CategoryEntityHighlightResponse(
+                        item.getEntityId(),
+                        item.getEntityName(),
+                        item.getEntityType(),
+                        item.getConfirmationStatus(),
+                        item.getEntryHref()))
+                .toList();
+    }
+
+    private static KnowledgePortalAtlasResponse.DetailViewResponse toDetailView(
+            KnowledgePortalAtlasResult.DetailView view) {
+        if (view == null) {
+            return null;
+        }
+        return new KnowledgePortalAtlasResponse.DetailViewResponse(
+                toFocusNode(view.getFocusNode()),
+                toRelationGroups(view.getRelationGroups()),
+                toSourceReferences(view.getSourceReferences()),
+                toTimelineItems(view.getTimelineItems()),
+                toRelatedTags(view.getRelatedTags()));
     }
 
     private static KnowledgePortalAtlasResponse.FocusNodeResponse toFocusNode(

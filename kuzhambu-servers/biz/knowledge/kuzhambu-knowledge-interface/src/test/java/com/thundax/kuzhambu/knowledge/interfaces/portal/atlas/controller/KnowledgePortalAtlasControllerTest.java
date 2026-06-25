@@ -2,14 +2,15 @@ package com.thundax.kuzhambu.knowledge.interfaces.portal.atlas.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thundax.kuzhambu.knowledge.application.portal.KnowledgePortalAtlasQuery;
 import com.thundax.kuzhambu.knowledge.application.portal.KnowledgePortalAtlasResult;
 import com.thundax.kuzhambu.knowledge.application.portal.KnowledgePortalReadApplicationService;
-import com.thundax.kuzhambu.knowledge.interfaces.portal.atlas.controller.request.KnowledgePortalAtlasQuery;
 import com.thundax.kuzhambu.knowledge.interfaces.portal.atlas.controller.response.KnowledgePortalAtlasResponse;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -24,72 +25,53 @@ class KnowledgePortalAtlasControllerTest {
     @Test
     void routesShouldKeepPortalApiPaths() throws Exception {
         assertRequestMapping(KnowledgePortalAtlasController.class, "/api/portal/knowledge/atlas");
-        assertGetMapping(KnowledgePortalAtlasController.class, "getAtlas", KnowledgePortalAtlasQuery.class);
+        assertGetMapping(
+                KnowledgePortalAtlasController.class,
+                "getAtlas",
+                com.thundax.kuzhambu.knowledge.interfaces.portal.atlas.controller.request.KnowledgePortalAtlasQuery
+                        .class);
     }
 
     @Test
     void queryAndResponseJsonFieldsShouldRemainStable() throws Exception {
-        KnowledgePortalAtlasQuery query = OBJECT_MAPPER.readValue(
-                """
-                {
-                  "focusId": "3001",
-                  "focusType": "PERSON",
-                  "knowledgeBase": "SANCAI_ENTRY",
-                  "keyword": "黄帝",
-                  "tag": "上古",
-                  "timeRange": "90d"
-                }
-                """,
-                KnowledgePortalAtlasQuery.class);
-        assertEquals("3001", query.getFocusId());
+        com.thundax.kuzhambu.knowledge.interfaces.portal.atlas.controller.request.KnowledgePortalAtlasQuery query =
+                OBJECT_MAPPER.readValue(
+                        """
+                        {
+                          "level": "detail",
+                          "categoryCode": "BIRDS",
+                          "entityId": 3001,
+                          "knowledgeBase": "SANCAI_ENTRY",
+                          "keyword": "黄帝",
+                          "tag": "上古",
+                          "timeRange": "90d"
+                        }
+                        """,
+                        com.thundax.kuzhambu.knowledge.interfaces.portal.atlas.controller.request
+                                .KnowledgePortalAtlasQuery.class);
+        assertEquals("detail", query.getLevel());
         var queryNode = OBJECT_MAPPER.valueToTree(query);
-        assertTrue(queryNode.has("focusId"));
-        assertTrue(queryNode.has("focusType"));
+        assertTrue(queryNode.has("level"));
+        assertTrue(queryNode.has("categoryCode"));
+        assertTrue(queryNode.has("entityId"));
         assertTrue(queryNode.has("knowledgeBase"));
         assertTrue(queryNode.has("keyword"));
         assertTrue(queryNode.has("tag"));
         assertTrue(queryNode.has("timeRange"));
 
         var response = new KnowledgePortalAtlasResponse(
-                new KnowledgePortalAtlasResponse.FocusNodeResponse(
-                        "3001", "黄帝", "PERSON", "上古始祖", "CONFIRMED", 0.95D, null),
-                List.of(new KnowledgePortalAtlasResponse.RelationGroupResponse(
-                        "ANCESTOR",
-                        "ANCESTOR",
-                        List.of(new KnowledgePortalAtlasResponse.RelationItemResponse(
-                                "person:huangdi", "黄帝", "ANCESTOR", "person:shaodian", "少典", "ANCESTOR", 0.95D)))),
-                List.of(new KnowledgePortalAtlasResponse.SourceReferenceResponse(
-                        "1001", "三才图会", "SANCAI_ENTRY", "摘要", 1L, "/knowledge/atlas")),
-                List.of(new KnowledgePortalAtlasResponse.RelatedTagResponse("11", "上古", "时代", 0.88D)),
-                List.of(new KnowledgePortalAtlasResponse.TimelineItemResponse(
-                        "首次抽取", "知识首次进入图谱", "说明", "/knowledge/atlas")),
-                new KnowledgePortalAtlasResponse.AvailableFiltersResponse(
-                        List.of("SANCAI_ENTRY"),
-                        List.of("PERSON"),
-                        List.of("ANCESTOR"),
-                        List.of("上古"),
-                        List.of("30d")));
-        var node = OBJECT_MAPPER.valueToTree(response);
-        assertTrue(node.has("focusNode"));
-        assertTrue(node.has("relationGroups"));
-        assertTrue(node.has("sourceReferences"));
-        assertTrue(node.has("relatedTags"));
-        assertTrue(node.has("timelineItems"));
-        assertTrue(node.has("availableFilters"));
-    }
-
-    @Test
-    void getAtlasShouldMapPortalReadModel() {
-        KnowledgePortalReadApplicationService service = mock(KnowledgePortalReadApplicationService.class);
-        KnowledgePortalAtlasController controller = new KnowledgePortalAtlasController(service);
-        when(service.getAtlas())
-                .thenReturn(new KnowledgePortalAtlasResult(
-                        new KnowledgePortalAtlasResult.FocusNode(
+                "detail",
+                List.of(new KnowledgePortalAtlasResponse.BreadcrumbItemResponse(
+                        "detail", "黄帝", "/knowledge/atlas?level=detail&entityId=3001")),
+                null,
+                null,
+                new KnowledgePortalAtlasResponse.DetailViewResponse(
+                        new KnowledgePortalAtlasResponse.FocusNodeResponse(
                                 "3001", "黄帝", "PERSON", "上古始祖", "CONFIRMED", 0.95D, null),
-                        List.of(new KnowledgePortalAtlasResult.RelationGroup(
+                        List.of(new KnowledgePortalAtlasResponse.RelationGroupResponse(
                                 "ANCESTOR",
                                 "ANCESTOR",
-                                List.of(new KnowledgePortalAtlasResult.RelationItem(
+                                List.of(new KnowledgePortalAtlasResponse.RelationItemResponse(
                                         "person:huangdi",
                                         "黄帝",
                                         "ANCESTOR",
@@ -97,11 +79,151 @@ class KnowledgePortalAtlasControllerTest {
                                         "少典",
                                         "ANCESTOR",
                                         0.95D)))),
-                        List.of(new KnowledgePortalAtlasResult.SourceReference(
+                        List.of(new KnowledgePortalAtlasResponse.SourceReferenceResponse(
                                 "1001", "三才图会", "SANCAI_ENTRY", "摘要", 1L, "/knowledge/atlas")),
-                        List.of(),
-                        List.of(new KnowledgePortalAtlasResult.TimelineItem(
+                        List.of(new KnowledgePortalAtlasResponse.TimelineItemResponse(
                                 "首次抽取", "知识首次进入图谱", "说明", "/knowledge/atlas")),
+                        List.of(new KnowledgePortalAtlasResponse.RelatedTagResponse("11", "上古", "时代", 0.88D))),
+                new KnowledgePortalAtlasResponse.AvailableFiltersResponse(
+                        List.of("SANCAI_ENTRY"),
+                        List.of("PERSON"),
+                        List.of("ANCESTOR"),
+                        List.of("上古"),
+                        List.of("30d")));
+        var node = OBJECT_MAPPER.valueToTree(response);
+        assertTrue(node.has("currentLevel"));
+        assertTrue(node.has("breadcrumbItems"));
+        assertTrue(node.has("detailView"));
+        assertTrue(node.has("availableFilters"));
+    }
+
+    @Test
+    void getAtlasShouldMapOverviewPortalReadModel() {
+        KnowledgePortalReadApplicationService service = mock(KnowledgePortalReadApplicationService.class);
+        KnowledgePortalAtlasController controller = new KnowledgePortalAtlasController(service);
+        when(service.getAtlas(any(KnowledgePortalAtlasQuery.class)))
+                .thenReturn(new KnowledgePortalAtlasResult(
+                        "overview",
+                        List.of(new KnowledgePortalAtlasResult.BreadcrumbItem(
+                                "overview", "图谱总览", "/knowledge/atlas?level=overview")),
+                        new KnowledgePortalAtlasResult.OverviewView(
+                                "十四门类知识鸟瞰",
+                                "先看门类分布，再进入单门类浏览与单实体详情。",
+                                List.of(new KnowledgePortalAtlasResult.OverviewCategoryCard(
+                                        "BIRDS",
+                                        "羽族",
+                                        2L,
+                                        1L,
+                                        2L,
+                                        3,
+                                        "/knowledge/atlas?level=category&categoryCode=BIRDS"))),
+                        null,
+                        null,
+                        new KnowledgePortalAtlasResult.AvailableFilters(
+                                List.of("SANCAI_ENTRY"), List.of(), List.of(), List.of(), List.of("30d"))));
+
+        var response = controller.getAtlas(
+                new com.thundax.kuzhambu.knowledge.interfaces.portal.atlas.controller.request
+                        .KnowledgePortalAtlasQuery());
+
+        verify(service).getAtlas(any(KnowledgePortalAtlasQuery.class));
+        assertEquals("overview", response.getCurrentLevel());
+        assertEquals(
+                "BIRDS", response.getOverviewView().getCategoryCards().get(0).getCategoryCode());
+        assertEquals(
+                "SANCAI_ENTRY",
+                response.getAvailableFilters().getKnowledgeBases().get(0));
+    }
+
+    @Test
+    void getAtlasShouldMapCategoryPortalReadModel() {
+        KnowledgePortalReadApplicationService service = mock(KnowledgePortalReadApplicationService.class);
+        KnowledgePortalAtlasController controller = new KnowledgePortalAtlasController(service);
+        when(service.getAtlas(any(KnowledgePortalAtlasQuery.class)))
+                .thenReturn(new KnowledgePortalAtlasResult(
+                        "category",
+                        List.of(
+                                new KnowledgePortalAtlasResult.BreadcrumbItem(
+                                        "overview", "图谱总览", "/knowledge/atlas?level=overview"),
+                                new KnowledgePortalAtlasResult.BreadcrumbItem(
+                                        "category", "羽族", "/knowledge/atlas?level=category&categoryCode=BIRDS")),
+                        null,
+                        new KnowledgePortalAtlasResult.CategoryView(
+                                "BIRDS",
+                                "羽族",
+                                71L,
+                                3,
+                                List.of(new KnowledgePortalAtlasResult.CategoryEntityHighlight(
+                                        "3001",
+                                        "鸾",
+                                        "CREATURE",
+                                        "CONFIRMED",
+                                        "/knowledge/atlas?level=detail&entityId=3001")),
+                                List.of(new KnowledgePortalAtlasResult.RelationGroup(
+                                        "KIN",
+                                        "KIN",
+                                        List.of(new KnowledgePortalAtlasResult.RelationItem(
+                                                "bird:luan", "鸾", "KIN", "bird:feng", "凤", "KIN", 0.95D)))),
+                                List.of(new KnowledgePortalAtlasResult.SourceReference(
+                                        "1001", "羽族", "SANCAI_ENTRY", "摘要", 1L, "/knowledge/atlas"))),
+                        null,
+                        new KnowledgePortalAtlasResult.AvailableFilters(
+                                List.of("SANCAI_ENTRY"),
+                                List.of("CREATURE"),
+                                List.of("KIN"),
+                                List.of(),
+                                List.of("30d"))));
+
+        var request =
+                new com.thundax.kuzhambu.knowledge.interfaces.portal.atlas.controller.request
+                        .KnowledgePortalAtlasQuery();
+        request.setLevel("category");
+        request.setCategoryCode("BIRDS");
+        var response = controller.getAtlas(request);
+
+        verify(service).getAtlas(any(KnowledgePortalAtlasQuery.class));
+        assertEquals("category", response.getCurrentLevel());
+        assertEquals(
+                "鸾", response.getCategoryView().getEntityHighlights().get(0).getEntityName());
+        assertEquals(
+                "KIN", response.getCategoryView().getRelationGroups().get(0).getGroupKey());
+    }
+
+    @Test
+    void getAtlasShouldMapDetailPortalReadModel() {
+        KnowledgePortalReadApplicationService service = mock(KnowledgePortalReadApplicationService.class);
+        KnowledgePortalAtlasController controller = new KnowledgePortalAtlasController(service);
+        when(service.getAtlas(any(KnowledgePortalAtlasQuery.class)))
+                .thenReturn(new KnowledgePortalAtlasResult(
+                        "detail",
+                        List.of(
+                                new KnowledgePortalAtlasResult.BreadcrumbItem(
+                                        "overview", "图谱总览", "/knowledge/atlas?level=overview"),
+                                new KnowledgePortalAtlasResult.BreadcrumbItem(
+                                        "category", "三才图会", "/knowledge/atlas?level=category&categoryCode=BIRDS"),
+                                new KnowledgePortalAtlasResult.BreadcrumbItem(
+                                        "detail", "黄帝", "/knowledge/atlas?level=detail&entityId=3001")),
+                        null,
+                        null,
+                        new KnowledgePortalAtlasResult.DetailView(
+                                new KnowledgePortalAtlasResult.FocusNode(
+                                        "3001", "黄帝", "PERSON", "上古始祖", "CONFIRMED", 0.95D, null),
+                                List.of(new KnowledgePortalAtlasResult.RelationGroup(
+                                        "ANCESTOR",
+                                        "ANCESTOR",
+                                        List.of(new KnowledgePortalAtlasResult.RelationItem(
+                                                "person:huangdi",
+                                                "黄帝",
+                                                "ANCESTOR",
+                                                "person:shaodian",
+                                                "少典",
+                                                "ANCESTOR",
+                                                0.95D)))),
+                                List.of(new KnowledgePortalAtlasResult.SourceReference(
+                                        "1001", "三才图会", "SANCAI_ENTRY", "摘要", 1L, "/knowledge/atlas")),
+                                List.of(new KnowledgePortalAtlasResult.TimelineItem(
+                                        "首次抽取", "知识首次进入图谱", "说明", "/knowledge/atlas")),
+                                List.of()),
                         new KnowledgePortalAtlasResult.AvailableFilters(
                                 List.of("SANCAI_ENTRY"),
                                 List.of("PERSON"),
@@ -109,16 +231,24 @@ class KnowledgePortalAtlasControllerTest {
                                 List.of(),
                                 List.of("30d"))));
 
-        var response = controller.getAtlas(new KnowledgePortalAtlasQuery());
+        var request =
+                new com.thundax.kuzhambu.knowledge.interfaces.portal.atlas.controller.request
+                        .KnowledgePortalAtlasQuery();
+        request.setLevel("detail");
+        request.setEntityId(3001L);
+        var response = controller.getAtlas(request);
 
-        verify(service).getAtlas();
-        assertEquals("3001", response.getFocusNode().getId());
+        verify(service).getAtlas(any(KnowledgePortalAtlasQuery.class));
+        assertEquals("detail", response.getCurrentLevel());
+        assertEquals("3001", response.getDetailView().getFocusNode().getId());
         assertEquals(
                 "person:shaodian",
-                response.getRelationGroups().get(0).getRelations().get(0).getTargetId());
-        assertEquals(
-                "SANCAI_ENTRY",
-                response.getAvailableFilters().getKnowledgeBases().get(0));
+                response.getDetailView()
+                        .getRelationGroups()
+                        .get(0)
+                        .getRelations()
+                        .get(0)
+                        .getTargetId());
     }
 
     private void assertRequestMapping(Class<?> type, String expectedPath) {

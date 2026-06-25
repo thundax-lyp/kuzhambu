@@ -58,6 +58,20 @@ class KnowledgeEntityRepositoryTest {
 
     @Test
     @SuppressWarnings({"unchecked", "rawtypes"})
+    void getByEntityKeyShouldQueryReadableKey() {
+        KnowledgeEntityMapper mapper = mock(KnowledgeEntityMapper.class);
+        when(mapper.selectOne(any())).thenReturn(new KnowledgeEntityDO());
+        KnowledgeEntityRepositoryImpl repository = new KnowledgeEntityRepositoryImpl(mapper);
+
+        repository.getByEntityKey("person:huangdi");
+
+        ArgumentCaptor<QueryWrapper<KnowledgeEntityDO>> captor = ArgumentCaptor.forClass(QueryWrapper.class);
+        verify(mapper).selectOne(captor.capture());
+        assertTrue(captor.getValue().getSqlSegment().contains("entity_key"));
+    }
+
+    @Test
+    @SuppressWarnings({"unchecked", "rawtypes"})
     void listByEntityKeysShouldQueryByBusinessKey() {
         KnowledgeEntityMapper mapper = mock(KnowledgeEntityMapper.class);
         when(mapper.selectList(any())).thenReturn(List.of());

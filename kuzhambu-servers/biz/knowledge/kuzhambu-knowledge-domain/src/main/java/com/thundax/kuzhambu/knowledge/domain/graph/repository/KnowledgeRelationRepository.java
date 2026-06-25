@@ -11,6 +11,10 @@ public interface KnowledgeRelationRepository {
 
     List<KnowledgeRelation> listByVersionId(Long versionId);
 
+    default List<KnowledgeRelation> listByEntityKey(String entityKey) {
+        return List.of();
+    }
+
     KnowledgeRelation getByRelationId(Long relationId);
 
     PageResult<KnowledgeRelation> page(

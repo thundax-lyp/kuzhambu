@@ -11,12 +11,99 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class KnowledgePortalAtlasResult {
-    private FocusNode focusNode;
-    private List<RelationGroup> relationGroups;
-    private List<SourceReference> sourceReferences;
-    private List<RelatedTag> relatedTags;
-    private List<TimelineItem> timelineItems;
+    private String currentLevel;
+    private List<BreadcrumbItem> breadcrumbItems;
+    private OverviewView overviewView;
+    private CategoryView categoryView;
+    private DetailView detailView;
     private AvailableFilters availableFilters;
+
+    public KnowledgePortalAtlasResult(
+            FocusNode focusNode,
+            List<RelationGroup> relationGroups,
+            List<SourceReference> sourceReferences,
+            List<RelatedTag> relatedTags,
+            List<TimelineItem> timelineItems,
+            AvailableFilters availableFilters) {
+        this.currentLevel = "detail";
+        this.breadcrumbItems = List.of();
+        this.overviewView = null;
+        this.categoryView = null;
+        this.detailView = new DetailView(focusNode, relationGroups, sourceReferences, timelineItems, relatedTags);
+        this.availableFilters = availableFilters;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class BreadcrumbItem {
+        private String level;
+        private String label;
+        private String href;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class OverviewView {
+        private String summaryTitle;
+        private String summarySubtitle;
+        private List<OverviewCategoryCard> categoryCards;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class OverviewCategoryCard {
+        private String categoryCode;
+        private String categoryName;
+        private Long entityCount;
+        private Long relationCount;
+        private Long appliedVersionCount;
+        private Integer latestVersionNo;
+        private String entryHref;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CategoryView {
+        private String categoryCode;
+        private String categoryName;
+        private Long latestVersionId;
+        private Integer latestVersionNo;
+        private List<CategoryEntityHighlight> entityHighlights;
+        private List<RelationGroup> relationGroups;
+        private List<SourceReference> sourceReferences;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CategoryEntityHighlight {
+        private String entityId;
+        private String entityName;
+        private String entityType;
+        private String confirmationStatus;
+        private String entryHref;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class DetailView {
+        private FocusNode focusNode;
+        private List<RelationGroup> relationGroups;
+        private List<SourceReference> sourceReferences;
+        private List<TimelineItem> timelineItems;
+        private List<RelatedTag> relatedTags;
+    }
 
     @Getter
     @Setter
