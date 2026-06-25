@@ -9,13 +9,6 @@
 
 ## 当前任务项
 
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-CENTRIC-LOOP.md`
-    - 范围对象：`.../qa-admin/qa-admin-page.tsx`、`.../search-admin/search-admin-page.tsx`、`.../qa-admin-page.test.tsx`、`.../search-admin-page.test.tsx`、路由注册文件
-    - 处理动作：补最小 Discovery Admin 调试页面
-    - 验收点：Admin 可查看 query understanding、session、source 和 trace
-    - 重要度：7/10
-
 - [ ] `Cross-domain seed data`：补最小联调 seed
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-CENTRIC-LOOP.md`
