@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Knowledge relation adjacency read`：增补焦点实体关系邻接读取仓储能力
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-ATLAS-HIERARCHY.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/graph/repository/KnowledgeRelationRepository.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/repository/impl/KnowledgeRelationRepositoryImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/resources/mapper/knowledge/KnowledgeRelationMapper.xml`
-    - 处理动作：新增按焦点实体聚合 detail 层相关关系的只读方法
-    - 验收点：detail 层可完整读取单实体关联关系
-    - 重要度：8/10
-
 - [ ] `Knowledge atlas overview aggregation`：实现 overview 门类卡片聚合
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-ATLAS-HIERARCHY.md`

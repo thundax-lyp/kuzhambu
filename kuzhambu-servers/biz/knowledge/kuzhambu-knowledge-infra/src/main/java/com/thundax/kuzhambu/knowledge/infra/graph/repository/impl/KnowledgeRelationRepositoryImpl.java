@@ -41,6 +41,17 @@ public class KnowledgeRelationRepositoryImpl implements KnowledgeRelationReposit
     }
 
     @Override
+    public List<KnowledgeRelation> listByEntityKey(String entityKey) {
+        QueryWrapper<KnowledgeRelationDO> wrapper = new QueryWrapper<>();
+        wrapper.and(
+                        StringUtils.isNotBlank(entityKey),
+                        query -> query.eq("source_entity_key", entityKey).or().eq("target_entity_key", entityKey))
+                .orderByDesc("last_extracted_at")
+                .orderByDesc("id");
+        return KnowledgeRelationPersistenceAssembler.toDomainList(mapper.selectList(wrapper));
+    }
+
+    @Override
     public KnowledgeRelation getByRelationId(Long relationId) {
         QueryWrapper<KnowledgeRelationDO> wrapper = new QueryWrapper<>();
         wrapper.eq("relation_id", relationId);
