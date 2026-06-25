@@ -1,4 +1,6 @@
-package com.thundax.kuzhambu.operations.domain.health.model.valueobject;
+package com.thundax.kuzhambu.operations.domain.health.codec;
+
+import com.thundax.kuzhambu.operations.domain.health.model.valueobject.HealthCheckId;
 
 public final class HealthCheckIdCodec {
 
