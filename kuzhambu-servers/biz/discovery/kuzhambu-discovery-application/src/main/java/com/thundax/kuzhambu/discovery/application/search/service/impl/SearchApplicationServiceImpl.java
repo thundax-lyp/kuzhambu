@@ -8,8 +8,10 @@ import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.discovery.application.search.command.SearchClickCreateCommand;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchLogPageQuery;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchQuery;
+import com.thundax.kuzhambu.discovery.application.search.result.QueryUnderstandingResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchGroupResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchLogResult;
+import com.thundax.kuzhambu.discovery.application.search.service.QueryUnderstandingApplicationService;
 import com.thundax.kuzhambu.discovery.application.search.service.SearchApplicationService;
 import com.thundax.kuzhambu.discovery.application.search.support.SearchIndexGateway;
 import com.thundax.kuzhambu.discovery.application.search.support.SearchPermissionFilter;
@@ -37,38 +39,45 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
     private final SearchDomainService searchDomainService;
     private final SearchIndexGateway searchIndexGateway;
     private final SearchPermissionFilter searchPermissionFilter;
+    private final QueryUnderstandingApplicationService queryUnderstandingApplicationService;
 
     public SearchApplicationServiceImpl(
             SearchLogRepository searchLogRepository,
             SearchClickRepository searchClickRepository,
             SearchDomainService searchDomainService,
             SearchIndexGateway searchIndexGateway,
-            SearchPermissionFilter searchPermissionFilter) {
+            SearchPermissionFilter searchPermissionFilter,
+            QueryUnderstandingApplicationService queryUnderstandingApplicationService) {
         this.searchLogRepository = searchLogRepository;
         this.searchClickRepository = searchClickRepository;
         this.searchDomainService = searchDomainService;
         this.searchIndexGateway = searchIndexGateway;
         this.searchPermissionFilter = searchPermissionFilter;
+        this.queryUnderstandingApplicationService = queryUnderstandingApplicationService;
     }
 
     @Override
     public SearchLogResult search(SearchQuery query) {
         validateSearchQuery(query);
-        var keyword = searchDomainService.normalizeKeyword(query.getQueryText());
+        QueryUnderstandingResult understandingResult = queryUnderstandingApplicationService.understand(query);
+        var keyword = searchDomainService.normalizeKeyword(resolveSearchText(query, understandingResult));
         var scope = searchDomainService.normalizeScope(toSearchScope(query));
         int pageNo = searchDomainService.normalizePageNo(query.getPageNo());
         int pageSize = searchDomainService.normalizePageSize(query.getPageSize());
         try {
             List<SearchGroupResult> groups = searchIndexGateway.search(keyword, scope, pageNo, pageSize);
             List<SearchGroupResult> filteredGroups = searchPermissionFilter.filter(query, groups);
-            SearchLog searchLog = buildSucceededSearchLog(query, keyword.getNormalizedText(), scope, filteredGroups);
+            SearchLog searchLog = buildSucceededSearchLog(
+                    query, understandingResult, keyword.getNormalizedText(), scope, filteredGroups);
             searchLogRepository.save(searchLog);
             return toSearchResult(searchLog, filteredGroups);
         } catch (BizException exception) {
-            searchLogRepository.save(buildFailedSearchLog(query, keyword.getNormalizedText(), scope, exception));
+            searchLogRepository.save(
+                    buildFailedSearchLog(query, understandingResult, keyword.getNormalizedText(), scope, exception));
             throw exception;
         } catch (UnsupportedOperationException exception) {
-            searchLogRepository.save(buildFailedSearchLog(query, keyword.getNormalizedText(), scope, exception));
+            searchLogRepository.save(
+                    buildFailedSearchLog(query, understandingResult, keyword.getNormalizedText(), scope, exception));
             throw new BizException(
                     "DISCOVERY-20001",
                     "discovery.search.backend.not-implemented",
@@ -131,7 +140,11 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
     }
 
     private SearchLog buildSucceededSearchLog(
-            SearchQuery query, String normalizedQueryText, SearchScope searchScope, List<SearchGroupResult> groups) {
+            SearchQuery query,
+            QueryUnderstandingResult understandingResult,
+            String normalizedQueryText,
+            SearchScope searchScope,
+            List<SearchGroupResult> groups) {
         int totalCount = groups == null
                 ? 0
                 : groups.stream().mapToInt(SearchGroupResult::getCount).sum();
@@ -140,8 +153,8 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
                 newSearchLogId(),
                 query.getQueryText(),
                 normalizedQueryText,
-                normalizedQueryText,
-                SearchIntentType.KEYWORD_SEARCH,
+                resolveDisplayQueryText(understandingResult, normalizedQueryText),
+                resolveIntentType(understandingResult),
                 searchScope,
                 totalCount,
                 groups == null ? 0 : groups.size(),
@@ -156,7 +169,11 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
     }
 
     private SearchLog buildFailedSearchLog(
-            SearchQuery query, String normalizedQueryText, SearchScope searchScope, RuntimeException exception) {
+            SearchQuery query,
+            QueryUnderstandingResult understandingResult,
+            String normalizedQueryText,
+            SearchScope searchScope,
+            RuntimeException exception) {
         String failureCode = exception instanceof BizException bizException && !isBlank(bizException.getCode())
                 ? bizException.getCode()
                 : "DISCOVERY-20001";
@@ -165,8 +182,8 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
                 newSearchLogId(),
                 query.getQueryText(),
                 normalizedQueryText,
-                normalizedQueryText,
-                SearchIntentType.KEYWORD_SEARCH,
+                resolveDisplayQueryText(understandingResult, normalizedQueryText),
+                resolveIntentType(understandingResult),
                 searchScope,
                 0,
                 0,
@@ -213,6 +230,43 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
                 query.getVisibilityScopes(),
                 query.getDateFrom(),
                 query.getDateTo());
+    }
+
+    private String resolveSearchText(SearchQuery query, QueryUnderstandingResult understandingResult) {
+        if (understandingResult == null) {
+            return query.getQueryText();
+        }
+        if (!isBlank(understandingResult.getRewrittenQueryText())) {
+            return understandingResult.getRewrittenQueryText();
+        }
+        if (!isBlank(understandingResult.getNormalizedQueryText())) {
+            return understandingResult.getNormalizedQueryText();
+        }
+        return query.getQueryText();
+    }
+
+    private String resolveDisplayQueryText(QueryUnderstandingResult understandingResult, String fallbackText) {
+        if (understandingResult == null) {
+            return fallbackText;
+        }
+        if (!isBlank(understandingResult.getRewrittenQueryText())) {
+            return understandingResult.getRewrittenQueryText();
+        }
+        if (!isBlank(understandingResult.getNormalizedQueryText())) {
+            return understandingResult.getNormalizedQueryText();
+        }
+        return fallbackText;
+    }
+
+    private SearchIntentType resolveIntentType(QueryUnderstandingResult understandingResult) {
+        if (understandingResult == null || isBlank(understandingResult.getIntent())) {
+            return SearchIntentType.KEYWORD_SEARCH;
+        }
+        try {
+            return SearchIntentType.from(understandingResult.getIntent());
+        } catch (RuntimeException exception) {
+            return SearchIntentType.UNKNOWN;
+        }
     }
 
     private SearchLogResult toSearchLogResult(SearchLog entity) {

@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Discovery search consume understanding`：让 Search 主链路消费 QueryUnderstanding 结果
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-CENTRIC-LOOP.md`
-    - 范围对象：`.../SearchApplicationServiceImpl.java`、`.../result/SearchResult.java`、`.../SearchApplicationServiceImplTest.java`
-    - 处理动作：对接 QueryUnderstanding 结果到 Search 检索主链路
-    - 验收点：Search 能使用 rewrittenQueryText 或 normalizedQueryText 继续检索
-    - 重要度：9/10
-
 - [ ] `Discovery QA domain core`：新增 QA domain entity 与 session、message repository contract
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-CENTRIC-LOOP.md`
