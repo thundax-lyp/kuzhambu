@@ -11,14 +11,41 @@
 
 ## 待审阅任务项
 
-- [ ] `Portal knowledge shared visual baseline`：建立知识门户共享样式基线
+<<<<<<< HEAD
+=======
+- [ ] `Portal knowledge atlas shell`：实现浏览页页面骨架
     - 任务类型：设计转执行
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-READONLY.md`
-    - 范围对象：`kuzhambu-apps/portal-web/src/styles.css`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-page.css`
-    - 处理动作：建立知识门户专属背景、卡片、边框、阴影与色彩基线
-    - 验收点：视觉风格与 Discovery 明显区分，整体更偏博物馆导览
+    - 范围对象：`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-atlas-page.tsx`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-atlas-page.css`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-atlas-page.test.tsx`
+    - 处理动作：实现左中右三栏布局、关系画布区、详情栏
+    - 验收点：页面能表达“筛选 - 浏览 - 详情”三层关系
     - 重要度：8/10
 
+- [ ] `Portal knowledge atlas data adapter`：浏览页服务与类型
+    - 任务类型：设计转执行
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-READONLY.md`
+    - 范围对象：`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-atlas-service.ts`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-atlas-types.ts`
+    - 处理动作：抽离浏览页页面服务与类型定义
+    - 验收点：页面内容可先静态适配，后续可平滑接 `/portal/knowledge/atlas`
+    - 重要度：7/10
+
+- [ ] `Portal knowledge quality shell`：实现质量页页面骨架
+    - 任务类型：设计转执行
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-READONLY.md`
+    - 范围对象：`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-quality-page.tsx`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-quality-page.css`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-quality-page.test.tsx`
+    - 处理动作：实现指标区、趋势区、问题卡片、来源表格
+    - 验收点：页面能表达覆盖率、置信度、来源总数、待处理项
+    - 重要度：8/10
+
+- [ ] `Portal knowledge quality data adapter`：质量页服务与类型
+    - 任务类型：设计转执行
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-READONLY.md`
+    - 范围对象：`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-quality-service.ts`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-quality-types.ts`
+    - 处理动作：抽离质量页页面服务与类型定义
+    - 验收点：页面内容可先静态适配，后续可平滑接 `/portal/knowledge/quality`
+    - 重要度：7/10
+
+>>>>>>> origin/feat/knowledge-portal-readonly
 - [ ] `Portal knowledge verify`：完成门户前端验证
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`
