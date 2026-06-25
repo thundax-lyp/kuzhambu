@@ -9,30 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Discovery QA contract`：新增 QA application command、query 与 result
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-CENTRIC-LOOP.md`
-    - 范围对象：`.../application/qa/command/OpenQaSessionCommand.java`、`.../AskQuestionCommand.java`、`.../query/QaSessionPageQuery.java`、`.../result/QaSessionResult.java`、`.../QaAnswerResult.java`、`.../QaSourceResult.java`
-    - 处理动作：定义 QA application 输入输出模型
-    - 验收点：application contract 能完整表达一次问答所需 session、question、answer、sources 和 traceSummary
-    - 重要度：10/10
-
-- [ ] `Discovery QA service`：新增 QA application service 与 support
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-CENTRIC-LOOP.md`
-    - 范围对象：`.../application/qa/service/QaApplicationService.java`、`.../impl/QaApplicationServiceImpl.java`、`.../support/QaContextAssembler.java`、`.../QaSourceAssembler.java`、`.../QaTraceAssembler.java`、`.../QaApplicationServiceImplTest.java`
-    - 处理动作：编排来源检索、AI 回答生成和结果落库
-    - 验收点：能创建 session、保存 user/assistant message、保存 source 与 retrieval trace
-    - 重要度：10/10
-
-- [ ] `Discovery QA integrate AI-Classics`：接入 AI 与 Classics 内容来源
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-CENTRIC-LOOP.md`
-    - 范围对象：`.../QaApplicationServiceImpl.java`、`kuzhambu-servers/biz/discovery/.../ClassicsSearchContentProvider.java`、`.../SearchSourceContent.java`、`kuzhambu-servers/biz/classics/.../ClassicsSearchContentApplicationService.java`、`kuzhambu-servers/biz/ai/.../DiscoveryAiDomainService.java`
-    - 处理动作：让 QA application service 组装来源上下文并调 AI 回答生成
-    - 验收点：QA 主链路能拿到来源并生成带来源回答
-    - 重要度：10/10
-
 - [ ] `Discovery portal qa controller`：新增 Portal QA controller 与协议模型
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-CENTRIC-LOOP.md`
