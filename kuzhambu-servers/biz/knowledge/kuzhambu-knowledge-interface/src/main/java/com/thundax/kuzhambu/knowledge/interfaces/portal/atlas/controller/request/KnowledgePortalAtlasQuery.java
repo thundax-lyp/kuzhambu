@@ -8,8 +8,9 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class KnowledgePortalAtlasQuery {
-    private String focusId;
-    private String focusType;
+    private String level;
+    private String categoryCode;
+    private Long entityId;
     private String knowledgeBase;
     private String keyword;
     private String tag;
