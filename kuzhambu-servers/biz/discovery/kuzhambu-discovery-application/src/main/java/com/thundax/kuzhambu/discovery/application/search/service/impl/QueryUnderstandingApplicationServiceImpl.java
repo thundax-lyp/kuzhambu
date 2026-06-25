@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.discovery.application.search.service.impl;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchQuery;
+import com.thundax.kuzhambu.discovery.application.search.result.QueryUnderstandingResult;
 import com.thundax.kuzhambu.discovery.application.search.service.QueryUnderstandingApplicationService;
 import org.springframework.stereotype.Service;
 
@@ -11,7 +12,7 @@ import org.springframework.stereotype.Service;
 public class QueryUnderstandingApplicationServiceImpl implements QueryUnderstandingApplicationService {
 
     @Override
-    public String understand(SearchQuery query) {
+    public QueryUnderstandingResult understand(SearchQuery query) {
         if (query == null
                 || query.getQueryText() == null
                 || query.getQueryText().isBlank()) {

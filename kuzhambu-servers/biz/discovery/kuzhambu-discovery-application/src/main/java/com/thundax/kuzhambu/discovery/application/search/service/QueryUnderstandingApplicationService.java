@@ -1,8 +1,9 @@
 package com.thundax.kuzhambu.discovery.application.search.service;
 
 import com.thundax.kuzhambu.discovery.application.search.query.SearchQuery;
+import com.thundax.kuzhambu.discovery.application.search.result.QueryUnderstandingResult;
 
 public interface QueryUnderstandingApplicationService {
 
-    String understand(SearchQuery query);
+    QueryUnderstandingResult understand(SearchQuery query);
 }

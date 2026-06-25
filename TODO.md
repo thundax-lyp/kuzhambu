@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Discovery query understanding contract`：扩展 application contract 为结构化结果
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-CENTRIC-LOOP.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/.../QueryUnderstandingApplicationService.java`、`.../result/QueryUnderstandingResult.java`、`.../query/SearchQuery.java`
-    - 处理动作：把 QueryUnderstanding application contract 从字符串升级为结构化结果
-    - 验收点：application contract 能表达 normalized、rewritten、intent、expandedSynonyms、recognizedEntities、requestId 和 traceId
-    - 重要度：10/10
-
 - [ ] `Discovery query understanding runtime`：实现规则归一化、Knowledge 增强、AI 改写与落库主链路
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-CENTRIC-LOOP.md`
