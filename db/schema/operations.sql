@@ -10,13 +10,14 @@ CREATE TABLE IF NOT EXISTS `operations_report` (
     `storage_object_id` bigint DEFAULT NULL,
     `report_status` varchar(16) NOT NULL DEFAULT 'PENDING',
     `failure_reason` varchar(1024) DEFAULT NULL,
-    `requester_user_id` bigint NOT NULL,
+    `requester_user_id` bigint DEFAULT NULL,
     `requested_at` datetime(3) NOT NULL,
     `completed_at` datetime(3) DEFAULT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_operations_report_id` (`report_id`),
     KEY `idx_operations_report_period` (`report_type`, `period_start`, `period_end`),
-    KEY `idx_operations_report_status` (`report_status`, `requested_at`)
+    KEY `idx_operations_report_status` (`report_status`, `requested_at`),
+    KEY `idx_operations_report_requester` (`requester_user_id`, `requested_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='运维报表记录表';
 
 CREATE TABLE IF NOT EXISTS `operations_backup` (
@@ -36,7 +37,8 @@ CREATE TABLE IF NOT EXISTS `operations_backup` (
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_operations_backup_id` (`backup_id`),
     KEY `idx_operations_backup_status` (`backup_status`, `started_at`),
-    KEY `idx_operations_backup_expires` (`expires_at`)
+    KEY `idx_operations_backup_expires` (`expires_at`),
+    KEY `idx_operations_backup_requester` (`requester_user_id`, `started_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='运维备份记录表';
 
 CREATE TABLE IF NOT EXISTS `operations_restore` (
@@ -53,7 +55,8 @@ CREATE TABLE IF NOT EXISTS `operations_restore` (
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_operations_restore_id` (`restore_id`),
     KEY `idx_operations_restore_backup` (`backup_id`),
-    KEY `idx_operations_restore_status` (`restore_status`, `started_at`)
+    KEY `idx_operations_restore_status` (`restore_status`, `started_at`),
+    KEY `idx_operations_restore_requester` (`requester_user_id`, `started_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='运维恢复记录表';
 
 CREATE TABLE IF NOT EXISTS `operations_cleanup_job` (
@@ -64,13 +67,15 @@ CREATE TABLE IF NOT EXISTS `operations_cleanup_job` (
     `total_count` int NOT NULL DEFAULT 0,
     `success_count` int NOT NULL DEFAULT 0,
     `failed_count` int NOT NULL DEFAULT 0,
+    `failure_reason` varchar(1024) DEFAULT NULL,
     `requester_user_id` bigint DEFAULT NULL,
     `started_at` datetime(3) NOT NULL,
     `completed_at` datetime(3) DEFAULT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_operations_cleanup_job_id` (`cleanup_id`),
     KEY `idx_operations_cleanup_job_type` (`cleanup_type`, `started_at`),
-    KEY `idx_operations_cleanup_job_status` (`cleanup_status`, `started_at`)
+    KEY `idx_operations_cleanup_job_status` (`cleanup_status`, `started_at`),
+    KEY `idx_operations_cleanup_job_requester` (`requester_user_id`, `started_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='运维清理任务表';
 
 CREATE TABLE IF NOT EXISTS `operations_cleanup_item` (
@@ -101,3 +106,25 @@ CREATE TABLE IF NOT EXISTS `operations_health_check` (
     KEY `idx_operations_health_component` (`component`, `checked_at`),
     KEY `idx_operations_health_status` (`health_status`, `checked_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='运维健康检查记录表';
+
+CREATE TABLE IF NOT EXISTS `operations_long_task_snapshot` (
+    `id` bigint NOT NULL AUTO_INCREMENT,
+    `snapshot_id` bigint NOT NULL,
+    `source_domain` varchar(32) NOT NULL,
+    `task_type` varchar(32) NOT NULL,
+    `task_key` varchar(64) NOT NULL,
+    `task_status` varchar(16) NOT NULL,
+    `total_count` int NOT NULL DEFAULT 0,
+    `success_count` int NOT NULL DEFAULT 0,
+    `failed_count` int NOT NULL DEFAULT 0,
+    `failure_reason` varchar(1024) DEFAULT NULL,
+    `requested_by_user_id` bigint DEFAULT NULL,
+    `started_at` datetime(3) DEFAULT NULL,
+    `completed_at` datetime(3) DEFAULT NULL,
+    `snapshot_at` datetime(3) NOT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_operations_long_task_snapshot_id` (`snapshot_id`),
+    KEY `idx_operations_long_task_snapshot_task` (`source_domain`, `task_type`, `snapshot_at`),
+    KEY `idx_operations_long_task_snapshot_status` (`task_status`, `snapshot_at`),
+    KEY `idx_operations_long_task_snapshot_key` (`task_key`, `snapshot_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='运维长任务状态快照表';
