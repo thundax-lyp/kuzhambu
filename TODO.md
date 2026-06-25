@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Discovery QA infra session-message repository`：新增 session 与 message repository impl 和测试
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-CENTRIC-LOOP.md`
-    - 范围对象：`.../repository/impl/QaSessionRepositoryImpl.java`、`.../QaMessageRepositoryImpl.java`、`.../QaSessionRepositoryImplTest.java`、`.../QaMessageRepositoryImplTest.java`
-    - 处理动作：完成 session 与 message 仓储实现和最小读写测试
-    - 验收点：session/message repository 能完成最小写入与读取
-    - 重要度：9/10
-
 - [ ] `Discovery QA infra source-trace repository`：新增 source 与 retrieval trace repository impl 和测试
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-CENTRIC-LOOP.md`

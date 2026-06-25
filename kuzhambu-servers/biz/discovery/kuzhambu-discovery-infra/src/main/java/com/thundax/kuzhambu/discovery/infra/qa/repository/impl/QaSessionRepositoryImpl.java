@@ -1,0 +1,61 @@
+package com.thundax.kuzhambu.discovery.infra.qa.repository.impl;
+
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
+import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSession;
+import com.thundax.kuzhambu.discovery.domain.qa.repository.QaSessionRepository;
+import com.thundax.kuzhambu.discovery.infra.qa.persistence.assembler.QaPersistenceAssembler;
+import com.thundax.kuzhambu.discovery.infra.qa.persistence.dataobject.QaSessionDO;
+import com.thundax.kuzhambu.discovery.infra.qa.persistence.mapper.QaSessionMapper;
+import java.util.List;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public class QaSessionRepositoryImpl implements QaSessionRepository {
+
+    private final QaSessionMapper mapper;
+    private final SnowflakeIdGenerator idGenerator = new SnowflakeIdGenerator();
+
+    public QaSessionRepositoryImpl(QaSessionMapper mapper) {
+        this.mapper = mapper;
+    }
+
+    @Override
+    public QaSession getBySessionId(Long sessionId) {
+        if (sessionId == null) {
+            return null;
+        }
+        return QaPersistenceAssembler.toSessionDomain(mapper.selectOne(
+                new QueryWrapper<QaSessionDO>().eq("session_id", sessionId).last("limit 1")));
+    }
+
+    @Override
+    public List<QaSession> listByOwnerUserId(Long ownerUserId, Integer limit) {
+        if (ownerUserId == null) {
+            return List.of();
+        }
+        QueryWrapper<QaSessionDO> wrapper =
+                new QueryWrapper<QaSessionDO>().eq("owner_user_id", ownerUserId).orderByDesc("last_message_at");
+        if (limit != null && limit > 0) {
+            wrapper.last("limit " + limit);
+        }
+        return QaPersistenceAssembler.toSessionDomainList(mapper.selectList(wrapper));
+    }
+
+    @Override
+    public Long save(QaSession entity) {
+        QaSessionDO dataObject = QaPersistenceAssembler.toObject(entity);
+        long nextId = idGenerator.nextId().value();
+        dataObject.setId(nextId);
+        if (dataObject.getSessionId() == null) {
+            dataObject.setSessionId(nextId);
+        }
+        mapper.insert(dataObject);
+        return dataObject.getId();
+    }
+
+    @Override
+    public int update(QaSession entity) {
+        return mapper.updateById(QaPersistenceAssembler.toObject(entity));
+    }
+}
