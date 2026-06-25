@@ -11,22 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Portal atlas service types`：同步前端 Atlas 三层类型与服务
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-ATLAS-HIERARCHY.md`
-    - 范围对象：`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-atlas-types.ts`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-atlas-service.ts`
-    - 处理动作：把 atlas types 和 fallback service 改造成三层结构
-    - 验收点：前端 service 与后端 atlas response 同构
-    - 重要度：8/10
-
-- [ ] `Portal atlas url state`：建立 URL 驱动的 Atlas 页面状态
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-ATLAS-HIERARCHY.md`
-    - 范围对象：`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-atlas-page.tsx`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-atlas-page.test.tsx`
-    - 处理动作：从 URL 解析 `level/categoryCode/entityId` 并纳入 queryKey
-    - 验收点：刷新后可恢复当前 atlas 层级
-    - 重要度：9/10
-
 - [ ] `Portal atlas overview page`：实现 overview 层页面
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-ATLAS-HIERARCHY.md`
