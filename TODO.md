@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Discovery QA domain core`：新增 QA domain entity 与 session、message repository contract
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-CENTRIC-LOOP.md`
-    - 范围对象：`.../domain/qa/model/entity/QaSession.java`、`.../QaMessage.java`、`.../QaSource.java`、`.../QaRetrievalTrace.java`、`.../repository/QaSessionRepository.java`、`.../QaMessageRepository.java`
-    - 处理动作：建立 Discovery QA 核心领域模型和仓储契约
-    - 验收点：entity 与 repository 命名及字段口径对齐既有 discovery_qa 表
-    - 重要度：10/10
-
 - [ ] `Discovery QA domain trace`：补齐 source 与 retrieval trace repository contract
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-CENTRIC-LOOP.md`
