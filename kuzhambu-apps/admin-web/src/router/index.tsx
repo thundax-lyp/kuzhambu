@@ -2,6 +2,8 @@ import { Navigate, RouterProvider, createBrowserRouter } from "react-router-dom"
 import { AdminLayout } from "../layouts/admin-layout";
 import { AuditLogPage } from "../pages/audit/audit-log/audit-log-page";
 import { LoginPage } from "../pages/auth/login/login-page";
+import { QaAdminPage } from "../pages/discovery/qa-admin/qa-admin-page";
+import { SearchAdminPage } from "../pages/discovery/search-admin/search-admin-page";
 import { MingCustomsPage } from "../pages/classics/ming-customs/ming-customs-page";
 import { SancaiPage } from "../pages/classics/sancai/sancai-page";
 import { WangqiPage } from "../pages/classics/wangqi/wangqi-page";
@@ -104,6 +106,14 @@ const router = createBrowserRouter(
                         {
                             path: "knowledge/taxonomy",
                             element: <TaxonomyPage />
+                        },
+                        {
+                            path: "discovery/qa-admin",
+                            element: <QaAdminPage />
+                        },
+                        {
+                            path: "discovery/search-admin",
+                            element: <SearchAdminPage />
                         }
                     ]
                 }

@@ -1,0 +1,7 @@
+.search-admin-page {
+    display: block;
+}
+
+.search-admin-page .ant-card + .ant-card {
+    margin-top: 12px;
+}

@@ -9,7 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Admin Discovery debug page`：新增 qa-admin 与 search-admin 页面和测试
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-CENTRIC-LOOP.md`
     - 范围对象：`.../qa-admin/qa-admin-page.tsx`、`.../search-admin/search-admin-page.tsx`、`.../qa-admin-page.test.tsx`、`.../search-admin-page.test.tsx`、路由注册文件

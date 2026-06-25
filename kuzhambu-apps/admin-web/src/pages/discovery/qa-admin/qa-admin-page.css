@@ -1,0 +1,7 @@
+.qa-admin-page {
+    display: block;
+}
+
+.qa-admin-page .ant-card + .ant-card {
+    margin-top: 12px;
+}
