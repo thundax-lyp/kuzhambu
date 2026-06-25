@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Knowledge portal quality read model`：定义质量页只读结果与服务骨架
-    - 任务类型：设计转执行
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-READONLY.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/portal/KnowledgePortalQualityResult.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/portal/KnowledgePortalReadApplicationService.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/portal/KnowledgePortalReadApplicationServiceImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/portal/KnowledgePortalReadApplicationServiceImplTest.java`
-    - 处理动作：补质量页 read model、服务接口、实现与测试
-    - 验收点：Service 能返回质量页只读结果，且可被页面直接消费
-    - 重要度：8/10
-
 - [ ] `Knowledge portal quality api`：暴露质量页 Portal API
     - 任务类型：设计转执行
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-READONLY.md`

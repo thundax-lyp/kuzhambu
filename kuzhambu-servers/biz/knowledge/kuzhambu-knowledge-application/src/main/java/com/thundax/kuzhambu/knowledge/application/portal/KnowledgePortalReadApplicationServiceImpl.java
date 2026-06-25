@@ -7,10 +7,14 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeRelatio
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphVersionRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeEntityRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeRelationRepository;
+import com.thundax.kuzhambu.knowledge.domain.refinement.repository.RefinementTaskRepository;
+import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.readmodel.TagGovernanceMetrics;
+import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagGovernanceMetricsRepository;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagRepository;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
@@ -23,22 +27,31 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
     private static final int FIRST_PAGE_NO = 1;
     private static final int COUNT_PAGE_SIZE = 1;
     private static final int RECENT_UPDATE_LIMIT = 3;
+    private static final int DEFAULT_METRICS_TOP_LIMIT = 5;
+    private static final int DEFAULT_METRICS_MONTHS = 6;
     private static final String GRAPH_VERSION_APPLIED_STATUS = "APPLIED";
+    private static final String REFINEMENT_DRAFT_STATUS = "DRAFT";
 
     private final TagRepository tagRepository;
     private final GraphVersionRepository graphVersionRepository;
     private final KnowledgeEntityRepository knowledgeEntityRepository;
     private final KnowledgeRelationRepository knowledgeRelationRepository;
+    private final TagGovernanceMetricsRepository tagGovernanceMetricsRepository;
+    private final RefinementTaskRepository refinementTaskRepository;
 
     public KnowledgePortalReadApplicationServiceImpl(
             TagRepository tagRepository,
             GraphVersionRepository graphVersionRepository,
             KnowledgeEntityRepository knowledgeEntityRepository,
-            KnowledgeRelationRepository knowledgeRelationRepository) {
+            KnowledgeRelationRepository knowledgeRelationRepository,
+            TagGovernanceMetricsRepository tagGovernanceMetricsRepository,
+            RefinementTaskRepository refinementTaskRepository) {
         this.tagRepository = tagRepository;
         this.graphVersionRepository = graphVersionRepository;
         this.knowledgeEntityRepository = knowledgeEntityRepository;
         this.knowledgeRelationRepository = knowledgeRelationRepository;
+        this.tagGovernanceMetricsRepository = tagGovernanceMetricsRepository;
+        this.refinementTaskRepository = refinementTaskRepository;
     }
 
     @Override
@@ -109,6 +122,66 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
                                 .toList()),
                         List.of(),
                         defaultTimeRanges()));
+    }
+
+    @Override
+    public KnowledgePortalQualityResult getQuality() {
+        GraphVersion latestVersion = latestAppliedVersion();
+        List<KnowledgeEntity> entities = latestVersion == null || latestVersion.getVersionId() == null
+                ? List.of()
+                : defaultList(knowledgeEntityRepository.listByVersionId(latestVersion.getVersionId()));
+        List<KnowledgeRelation> relations = latestVersion == null || latestVersion.getVersionId() == null
+                ? List.of()
+                : defaultList(knowledgeRelationRepository.listByVersionId(latestVersion.getVersionId()));
+        TagGovernanceMetrics metrics =
+                tagGovernanceMetricsRepository.getMetrics(DEFAULT_METRICS_TOP_LIMIT, DEFAULT_METRICS_MONTHS);
+        long draftTaskCount = refinementTaskRepository
+                .page(null, null, null, null, REFINEMENT_DRAFT_STATUS, FIRST_PAGE_NO, COUNT_PAGE_SIZE)
+                .getTotalCount();
+        double entityConfirmedRate = ratio(confirmedEntities(entities), entities.size());
+        double relationConfirmedRate = ratio(confirmedRelations(relations), relations.size());
+        return new KnowledgePortalQualityResult(
+                List.of(
+                        qualityStat(
+                                "entity-confirmed-rate",
+                                "实体确认率",
+                                toPercent(entityConfirmedRate),
+                                "ratio",
+                                "已确认实体 / 全部实体",
+                                entityConfirmedRate >= 0.8D ? "good" : "watch"),
+                        qualityStat(
+                                "relation-confirmed-rate",
+                                "关系确认率",
+                                toPercent(relationConfirmedRate),
+                                "ratio",
+                                "已确认关系 / 全部关系",
+                                relationConfirmedRate >= 0.8D ? "good" : "watch"),
+                        qualityStat(
+                                "applied-version-count",
+                                "已应用版本",
+                                String.valueOf(graphVersionRepository
+                                        .page(
+                                                null,
+                                                GRAPH_VERSION_APPLIED_STATUS,
+                                                null,
+                                                null,
+                                                FIRST_PAGE_NO,
+                                                COUNT_PAGE_SIZE)
+                                        .getTotalCount()),
+                                "count",
+                                "当前可用于门户浏览的知识快照",
+                                "steady"),
+                        qualityStat(
+                                "draft-task-count",
+                                "待处理任务",
+                                String.valueOf(draftTaskCount),
+                                "count",
+                                "仍需治理确认的 refinement 任务",
+                                draftTaskCount > 0 ? "watch" : "good")),
+                buildTrendSeries(metrics),
+                buildSourceBreakdowns(metrics),
+                buildFocusIssues(latestVersion, entityConfirmedRate, relationConfirmedRate, draftTaskCount),
+                buildSourceDetails());
     }
 
     private List<KnowledgePortalHomeResult.PortalRecentUpdateItem> buildRecentUpdates() {
@@ -267,5 +340,100 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
 
     private <T> List<T> defaultList(List<T> values) {
         return values == null ? Collections.emptyList() : values;
+    }
+
+    private List<KnowledgePortalQualityResult.TrendSeries> buildTrendSeries(TagGovernanceMetrics metrics) {
+        List<TagGovernanceMetrics.MonthlyNewTagMetric> monthlyNewTags =
+                metrics == null ? List.of() : defaultList(metrics.getMonthlyNewTags());
+        return List.of(new KnowledgePortalQualityResult.TrendSeries(
+                "monthly-new-tags",
+                "月度新增标签",
+                monthlyNewTags.stream()
+                        .map(item -> new KnowledgePortalQualityResult.TrendPoint(item.getMonth(), item.getTagCount()))
+                        .toList()));
+    }
+
+    private List<KnowledgePortalQualityResult.SourceBreakdownItem> buildSourceBreakdowns(TagGovernanceMetrics metrics) {
+        List<TagGovernanceMetrics.SourceRatioMetric> sourceRatios =
+                metrics == null ? List.of() : defaultList(metrics.getSourceRatios());
+        if (sourceRatios.isEmpty()) {
+            return List.of();
+        }
+        return sourceRatios.stream()
+                .map(item -> new KnowledgePortalQualityResult.SourceBreakdownItem(
+                        item.getSource() == null ? "UNKNOWN" : item.getSource().name(),
+                        item.getSource() == null ? "未知来源" : item.getSource().name(),
+                        item.getTagCount(),
+                        "标签来源分布，用于理解当前知识资产的治理来源构成。"))
+                .toList();
+    }
+
+    private List<KnowledgePortalQualityResult.FocusIssueItem> buildFocusIssues(
+            GraphVersion latestVersion, double entityConfirmedRate, double relationConfirmedRate, long draftTaskCount) {
+        List<KnowledgePortalQualityResult.FocusIssueItem> issues = new java.util.ArrayList<>();
+        if (latestVersion == null) {
+            issues.add(new KnowledgePortalQualityResult.FocusIssueItem(
+                    "缺少已应用图谱版本", "当前还没有可供浏览的已应用知识快照。", "high", "/knowledge/atlas"));
+        }
+        if (draftTaskCount > 0) {
+            issues.add(new KnowledgePortalQualityResult.FocusIssueItem(
+                    "存在待处理治理任务", "仍有 refinement 草稿任务尚未进入最终应用，建议优先清理。", "medium", "/knowledge/quality"));
+        }
+        if (entityConfirmedRate < 0.8D) {
+            issues.add(new KnowledgePortalQualityResult.FocusIssueItem(
+                    "实体确认率偏低", "当前实体确认率低于 80%，建议优先补齐高频实体确认。", "medium", "/knowledge/atlas"));
+        }
+        if (relationConfirmedRate < 0.8D) {
+            issues.add(new KnowledgePortalQualityResult.FocusIssueItem(
+                    "关系确认率偏低", "当前关系确认率低于 80%，建议重点检查核心关系链。", "medium", "/knowledge/atlas"));
+        }
+        return issues;
+    }
+
+    private List<KnowledgePortalQualityResult.SourceDetailItem> buildSourceDetails() {
+        PageResult<GraphVersion> recentVersions = graphVersionRepository.page(
+                null, GRAPH_VERSION_APPLIED_STATUS, null, null, FIRST_PAGE_NO, RECENT_UPDATE_LIMIT);
+        if (recentVersions.getRecords() == null || recentVersions.getRecords().isEmpty()) {
+            return List.of();
+        }
+        return recentVersions.getRecords().stream()
+                .map(version -> new KnowledgePortalQualityResult.SourceDetailItem(
+                        version.getSourceContentType(),
+                        version.getSourceCategoryName() == null
+                                ? version.getSourceContentType()
+                                : version.getSourceCategoryName(),
+                        version.getAppliedAt() == null
+                                ? null
+                                : version.getAppliedAt().getTime(),
+                        version.getStatus(),
+                        "/knowledge/atlas"))
+                .toList();
+    }
+
+    private KnowledgePortalQualityResult.QualityStatItem qualityStat(
+            String key, String label, String value, String unit, String deltaText, String statusTone) {
+        return new KnowledgePortalQualityResult.QualityStatItem(key, label, value, unit, deltaText, statusTone);
+    }
+
+    private int confirmedEntities(List<KnowledgeEntity> entities) {
+        return (int) entities.stream()
+                .filter(entity -> "CONFIRMED".equals(entity.getConfirmationStatus())
+                        || "MANUAL_CONFIRMED".equals(entity.getConfirmationStatus()))
+                .count();
+    }
+
+    private int confirmedRelations(List<KnowledgeRelation> relations) {
+        return (int) relations.stream()
+                .filter(relation -> "CONFIRMED".equals(relation.getConfirmationStatus())
+                        || "MANUAL_CONFIRMED".equals(relation.getConfirmationStatus()))
+                .count();
+    }
+
+    private double ratio(int numerator, int denominator) {
+        return denominator <= 0 ? 0D : (double) numerator / denominator;
+    }
+
+    private String toPercent(double value) {
+        return String.format(Locale.ROOT, "%.0f%%", value * 100D);
     }
 }
