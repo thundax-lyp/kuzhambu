@@ -14,8 +14,10 @@ import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.discovery.application.search.command.SearchClickCreateCommand;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchLogPageQuery;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchQuery;
+import com.thundax.kuzhambu.discovery.application.search.result.QueryUnderstandingResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchGroupResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchResult;
+import com.thundax.kuzhambu.discovery.application.search.service.QueryUnderstandingApplicationService;
 import com.thundax.kuzhambu.discovery.application.search.support.DefaultSearchPermissionFilter;
 import com.thundax.kuzhambu.discovery.application.search.support.SearchIndexGateway;
 import com.thundax.kuzhambu.discovery.domain.search.model.entity.SearchLog;
@@ -35,12 +37,15 @@ class SearchApplicationServiceImplTest {
         SearchLogRepository searchLogRepository = mock(SearchLogRepository.class);
         SearchClickRepository searchClickRepository = mock(SearchClickRepository.class);
         SearchIndexGateway searchIndexGateway = mock(SearchIndexGateway.class);
+        QueryUnderstandingApplicationService queryUnderstandingApplicationService =
+                mock(QueryUnderstandingApplicationService.class);
         SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
                 searchLogRepository,
                 searchClickRepository,
                 new SearchDomainService(),
                 searchIndexGateway,
-                new DefaultSearchPermissionFilter());
+                new DefaultSearchPermissionFilter(),
+                queryUnderstandingApplicationService);
         SearchQuery query = new SearchQuery(
                 "黄帝",
                 List.of("SANCAI_ENTRY"),
@@ -56,6 +61,9 @@ class SearchApplicationServiceImplTest {
                 null,
                 null,
                 null);
+        when(queryUnderstandingApplicationService.understand(query))
+                .thenReturn(
+                        new QueryUnderstandingResult("黄帝", "黄帝", "KEYWORD_SEARCH", List.of(), List.of(), null, null));
         when(searchIndexGateway.search(any(), any(), any(Integer.class), any(Integer.class)))
                 .thenThrow(new UnsupportedOperationException("not ready"));
 
@@ -73,12 +81,15 @@ class SearchApplicationServiceImplTest {
         SearchLogRepository searchLogRepository = mock(SearchLogRepository.class);
         SearchClickRepository searchClickRepository = mock(SearchClickRepository.class);
         SearchIndexGateway searchIndexGateway = mock(SearchIndexGateway.class);
+        QueryUnderstandingApplicationService queryUnderstandingApplicationService =
+                mock(QueryUnderstandingApplicationService.class);
         SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
                 searchLogRepository,
                 searchClickRepository,
                 new SearchDomainService(),
                 searchIndexGateway,
-                new DefaultSearchPermissionFilter());
+                new DefaultSearchPermissionFilter(),
+                queryUnderstandingApplicationService);
         when(searchIndexGateway.search(any(), any(), any(Integer.class), any(Integer.class)))
                 .thenReturn(List.of(new SearchGroupResult(
                         "SANCAI_ENTRY",
@@ -94,8 +105,7 @@ class SearchApplicationServiceImplTest {
                                 1,
                                 1,
                                 "/classics/sancai/1001")))));
-
-        var result = service.search(new SearchQuery(
+        SearchQuery query = new SearchQuery(
                 "黄帝",
                 List.of("SANCAI_ENTRY"),
                 List.of(),
@@ -109,14 +119,21 @@ class SearchApplicationServiceImplTest {
                 "ANONYMOUS",
                 null,
                 "req-1",
-                "trace-1"));
+                "trace-1");
+        when(queryUnderstandingApplicationService.understand(query))
+                .thenReturn(new QueryUnderstandingResult(
+                        "黄帝", "黄帝 传说", "NATURAL_LANGUAGE_SEARCH", List.of("轩辕"), List.of(), "req-1", "trace-1"));
+
+        var result = service.search(query);
         ArgumentCaptor<SearchLog> searchLogCaptor = ArgumentCaptor.forClass(SearchLog.class);
 
         verify(searchLogRepository).save(searchLogCaptor.capture());
         assertEquals(1, result.getGroups().size());
         assertEquals(1, result.getResultTotalCount());
-        assertEquals("黄帝", result.getDisplayQueryText());
+        assertEquals("黄帝 传说", result.getDisplayQueryText());
+        assertEquals("NATURAL_LANGUAGE_SEARCH", result.getIntentType());
         assertEquals("SUCCEEDED", searchLogCaptor.getValue().getSearchStatus());
+        assertEquals("黄帝 传说", searchLogCaptor.getValue().getDisplayQueryText());
         assertEquals(searchLogCaptor.getValue().getSearchLogId(), result.getSearchLogId());
         assertTrue(result.getSearchScopesJson().contains("SANCAI_ENTRY"));
     }
@@ -126,12 +143,15 @@ class SearchApplicationServiceImplTest {
         SearchLogRepository searchLogRepository = mock(SearchLogRepository.class);
         SearchClickRepository searchClickRepository = mock(SearchClickRepository.class);
         SearchIndexGateway searchIndexGateway = mock(SearchIndexGateway.class);
+        QueryUnderstandingApplicationService queryUnderstandingApplicationService =
+                mock(QueryUnderstandingApplicationService.class);
         SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
                 searchLogRepository,
                 searchClickRepository,
                 new SearchDomainService(),
                 searchIndexGateway,
-                new DefaultSearchPermissionFilter());
+                new DefaultSearchPermissionFilter(),
+                queryUnderstandingApplicationService);
         when(searchLogRepository.getBySearchLogId("s-1"))
                 .thenReturn(new SearchLog(
                         1L,
@@ -176,12 +196,15 @@ class SearchApplicationServiceImplTest {
         SearchLogRepository searchLogRepository = mock(SearchLogRepository.class);
         SearchClickRepository searchClickRepository = mock(SearchClickRepository.class);
         SearchIndexGateway searchIndexGateway = mock(SearchIndexGateway.class);
+        QueryUnderstandingApplicationService queryUnderstandingApplicationService =
+                mock(QueryUnderstandingApplicationService.class);
         SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
                 searchLogRepository,
                 searchClickRepository,
                 new SearchDomainService(),
                 searchIndexGateway,
-                new DefaultSearchPermissionFilter());
+                new DefaultSearchPermissionFilter(),
+                queryUnderstandingApplicationService);
         when(searchLogRepository.getBySearchLogId("missing")).thenReturn(null);
 
         BizException exception = assertThrows(
@@ -209,12 +232,15 @@ class SearchApplicationServiceImplTest {
         SearchLogRepository searchLogRepository = mock(SearchLogRepository.class);
         SearchClickRepository searchClickRepository = mock(SearchClickRepository.class);
         SearchIndexGateway searchIndexGateway = mock(SearchIndexGateway.class);
+        QueryUnderstandingApplicationService queryUnderstandingApplicationService =
+                mock(QueryUnderstandingApplicationService.class);
         SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
                 searchLogRepository,
                 searchClickRepository,
                 new SearchDomainService(),
                 searchIndexGateway,
-                new DefaultSearchPermissionFilter());
+                new DefaultSearchPermissionFilter(),
+                queryUnderstandingApplicationService);
         when(searchLogRepository.page("黄帝", "ENTITY", "SUCCEEDED", "user-1", 1, 20))
                 .thenReturn(PageResult.of(
                         1,
@@ -252,12 +278,15 @@ class SearchApplicationServiceImplTest {
         SearchLogRepository searchLogRepository = mock(SearchLogRepository.class);
         SearchClickRepository searchClickRepository = mock(SearchClickRepository.class);
         SearchIndexGateway searchIndexGateway = mock(SearchIndexGateway.class);
+        QueryUnderstandingApplicationService queryUnderstandingApplicationService =
+                mock(QueryUnderstandingApplicationService.class);
         SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
                 searchLogRepository,
                 searchClickRepository,
                 new SearchDomainService(),
                 searchIndexGateway,
-                new DefaultSearchPermissionFilter());
+                new DefaultSearchPermissionFilter(),
+                queryUnderstandingApplicationService);
         SearchQuery query = new SearchQuery(
                 "黄帝",
                 List.of("SANCAI_ENTRY"),
@@ -273,6 +302,9 @@ class SearchApplicationServiceImplTest {
                 "user-1",
                 "req-2",
                 "trace-2");
+        when(queryUnderstandingApplicationService.understand(query))
+                .thenReturn(new QueryUnderstandingResult(
+                        "黄帝", "黄帝", "KEYWORD_SEARCH", List.of(), List.of(), "req-2", "trace-2"));
         when(searchIndexGateway.search(any(), any(), any(Integer.class), any(Integer.class)))
                 .thenThrow(new BizException("DISCOVERY-29999", "discovery.search.test", "boom"));
 

@@ -161,3 +161,99 @@ ON DUPLICATE KEY UPDATE
     `required` = VALUES(`required`),
     `description` = VALUES(`description`),
     `priority` = VALUES(`priority`);
+
+INSERT INTO `ai_capability_mapping` (
+    `mapping_id`, `scope`, `capability`, `model_id`, `enabled`, `configured_at`
+) VALUES
+    (910105, 'discovery', 'query_understanding', 900102, 1, '2026-02-27 04:00:00.000'),
+    (910106, 'discovery', 'answer_generation', 900102, 1, '2026-02-27 04:00:00.000')
+ON DUPLICATE KEY UPDATE
+    `model_id` = VALUES(`model_id`),
+    `enabled` = VALUES(`enabled`),
+    `configured_at` = VALUES(`configured_at`);
+
+INSERT INTO `ai_action_status` (
+    `action_status_id`, `scope`, `capability`, `available`, `unavailable_reason`, `checked_at`
+) VALUES
+    (920105, 'discovery', 'query_understanding', 1, NULL, '2026-02-27 04:00:00.000'),
+    (920106, 'discovery', 'answer_generation', 1, NULL, '2026-02-27 04:00:00.000')
+ON DUPLICATE KEY UPDATE
+    `available` = VALUES(`available`),
+    `unavailable_reason` = VALUES(`unavailable_reason`),
+    `checked_at` = VALUES(`checked_at`);
+
+INSERT INTO `ai_prompt_template` (
+    `template_id`, `scope`, `capability`, `name`, `description`, `status`,
+    `current_version_no`, `registered_at`
+) VALUES
+    (
+        930104,
+        'discovery',
+        'query_understanding',
+        'Discovery 查询理解',
+        '用于将用户检索词规范化并扩展同义词。',
+        'ACTIVE',
+        1,
+        '2026-02-27 04:00:00.000'
+    ),
+    (
+        930105,
+        'discovery',
+        'answer_generation',
+        'Discovery 回答生成',
+        '用于将检索到的来源与问句融合为最终回答。',
+        'ACTIVE',
+        1,
+        '2026-02-27 04:00:00.000'
+    )
+ON DUPLICATE KEY UPDATE
+    `name` = VALUES(`name`),
+    `description` = VALUES(`description`),
+    `status` = VALUES(`status`),
+    `current_version_no` = VALUES(`current_version_no`),
+    `registered_at` = VALUES(`registered_at`);
+
+INSERT INTO `ai_prompt_version` (
+    `prompt_version_id`, `template_id`, `version_no`, `message_templates_json`,
+    `variables_snapshot_json`, `output_schema_json`, `current_key`, `change_summary`, `registered_at`
+) VALUES
+    (
+        940104,
+        930104,
+        1,
+        '[{"role":"system","content":"你是熟悉古籍检索的中文查询理解助手。"},{"role":"user","content":"请将用户查询规范化、扩展同义词，并识别可能的实体。查询：{{query}}"}]',
+        '[{"name":"query","required":true,"description":"用户原始查询"}]',
+        '{"type":"object","properties":{"normalizedQueryText":{"type":"string"},"rewrittenQueryText":{"type":"string"},"expandedSynonyms":{"type":"array","items":{"type":"string"}},"recognizedEntities":{"type":"array","items":{"type":"string"}},"intentType":{"type":"string"}},"required":["normalizedQueryText","rewrittenQueryText","expandedSynonyms","recognizedEntities","intentType"]}',
+        '930104:current',
+        'Imported for discovery query understanding seed.',
+        '2026-02-27 04:00:00.000'
+    ),
+    (
+        940105,
+        930105,
+        1,
+        '[{"role":"system","content":"你是熟悉古籍来源引用的中文问答助手。"},{"role":"user","content":"请根据下列来源与问题生成简洁、带来源意识的回答。问题：{{question}}；来源：{{sources}}"}]',
+        '[{"name":"question","required":true,"description":"用户问句"},{"name":"sources","required":true,"description":"来源列表"}]',
+        '{"type":"object","properties":{"answer":{"type":"string"},"answerStatus":{"type":"string"},"sourceSummaries":{"type":"array","items":{"type":"string"}}},"required":["answer","answerStatus","sourceSummaries"]}',
+        '930105:current',
+        'Imported for discovery answer generation seed.',
+        '2026-02-27 04:00:00.000'
+    )
+ON DUPLICATE KEY UPDATE
+    `message_templates_json` = VALUES(`message_templates_json`),
+    `variables_snapshot_json` = VALUES(`variables_snapshot_json`),
+    `output_schema_json` = VALUES(`output_schema_json`),
+    `current_key` = VALUES(`current_key`),
+    `change_summary` = VALUES(`change_summary`),
+    `registered_at` = VALUES(`registered_at`);
+
+INSERT INTO `ai_prompt_variable` (
+    `variable_id`, `template_id`, `variable_name`, `required`, `description`, `priority`
+) VALUES
+    (950104, 930104, 'query', 1, '用户原始查询', 1030),
+    (950105, 930105, 'question', 1, '用户问句', 1040),
+    (950106, 930105, 'sources', 1, '来源列表', 1050)
+ON DUPLICATE KEY UPDATE
+    `required` = VALUES(`required`),
+    `description` = VALUES(`description`),
+    `priority` = VALUES(`priority`);

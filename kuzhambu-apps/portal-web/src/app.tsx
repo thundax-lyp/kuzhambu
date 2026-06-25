@@ -1,4 +1,6 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { DiscoverySearchPage } from "@/pages/discovery/search-page";
+import { DiscoveryQaPage } from "@/pages/discovery/qa-page";
 import { HomePage } from "@/pages/home/home-page";
 import { ShareForm } from "@/pages/share/share-form";
 import { SharePage } from "@/pages/share/share-page";
@@ -15,6 +17,8 @@ export const App = () => {
         <BrowserRouter basename={normalizeRouterBasename(import.meta.env.BASE_URL)}>
             <Routes>
                 <Route path="/" element={<HomePage />} />
+                <Route path="/discovery/search" element={<DiscoverySearchPage />} />
+                <Route path="/discovery/qa" element={<DiscoveryQaPage />} />
                 <Route path="/shares" element={<SharePage />} />
                 <Route path="/share/:shareToken" element={<ShareForm />} />
             </Routes>

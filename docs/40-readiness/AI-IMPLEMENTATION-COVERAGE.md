@@ -24,7 +24,7 @@
 未完成：
 
 - Classics 的批处理、融合、图像生成类能力（`translate-batch-item/fusion/image-gen`）在 worker 存在但未接入 Java 精修 resolver。
-- Discovery、Knowledge、Platform 的五类能力在 worker 表内存在，但当前 Java AI 精修尚未提供对应调用入口。
+- Knowledge、Platform 的五类能力在 worker 表内存在，但当前 Java AI 精修尚未提供对应调用入口。
 
 ## 已完成
 
@@ -42,6 +42,10 @@
 | classics | MING_CUSTOMS | summary | AiRefinementController#summarize | CLASSICS_MING_CUSTOMS_SUMMARY | /internal/ai/classics/ming-customs/summary | 已完成 | 六类同步候选型精修能力接入 usecase path |
 | classics | MING_CUSTOMS | tags | AiRefinementController#generateTags | CLASSICS_MING_CUSTOMS_TAGS | /internal/ai/classics/ming-customs/tags | 已完成 | 六类同步候选型精修能力接入 usecase path |
 | classics | MING_CUSTOMS | qa | AiRefinementController#generateQa | CLASSICS_MING_CUSTOMS_QA | /internal/ai/classics/ming-customs/qa | 已完成 | 六类同步候选型精修能力接入 usecase path |
+| discovery | - | query_understanding | DiscoveryAiApplicationService#understandQuery | DISCOVERY_QUERY_UNDERSTANDING | /internal/ai/discovery/query-understanding | 已完成 | Discovery query understanding 已接入 worker usecase path |
+| discovery | - | query_understanding | DiscoveryAiApplicationService#rewriteQuery | DISCOVERY_QUERY_REWRITE | /internal/ai/discovery/query-rewrite | 已完成 | Discovery query rewrite 已接入 worker usecase path |
+| discovery | - | answer_generation | DiscoveryAiApplicationService#generateAnswer | DISCOVERY_ANSWER_GENERATION | /internal/ai/discovery/answer-generation | 已完成 | Discovery answer generation 已接入 worker usecase path |
+| discovery | - | answer_generation | DiscoveryAiApplicationService#streamAnswer | DISCOVERY_ANSWER_GENERATION_STREAM | /internal/ai/discovery/answer-generation/stream | 已完成 | Discovery answer stream usecase 已接入 worker usecase path |
 
 ## 部分完成
 
@@ -56,10 +60,6 @@
 | classics | SANCAI_ENTRY | translate | - | CLASSICS_SANCAI_TRANSLATE_BATCH_ITEM | /internal/ai/classics/sancai/translate-batch-item | 未完成 | 对应 usecase 未在 Classics 精修 resolver 中配置 |
 | classics | SANCAI_ENTRY | fusion | - | CLASSICS_SANCAI_FUSION | /internal/ai/classics/sancai/fusion | 未完成 | 对应 usecase 未在 Java 精修入口中接入 |
 | classics | SANCAI_ENTRY | image_gen | - | CLASSICS_SANCAI_IMAGE_GEN | /internal/ai/classics/sancai/image-gen | 未完成 | 对应 usecase 未在 Java 精修入口中接入 |
-| discovery | - | query_understanding | - | DISCOVERY_QUERY_UNDERSTANDING | /internal/ai/discovery/query-understanding | 未完成 | 当前 Java AI 精修未提供该域的调用入口 |
-| discovery | - | query_understanding | - | DISCOVERY_QUERY_REWRITE | /internal/ai/discovery/query-rewrite | 未完成 | 当前 Java AI 精修未提供该域的调用入口 |
-| discovery | - | answer_generation | - | DISCOVERY_ANSWER_GENERATION | /internal/ai/discovery/answer-generation | 未完成 | 当前 Java AI 精修未提供该域的调用入口 |
-| discovery | - | answer_generation | - | DISCOVERY_ANSWER_GENERATION_STREAM | /internal/ai/discovery/answer-generation/stream | 未完成 | 当前 Java AI 精修未提供该域的调用入口 |
 | knowledge | - | relation_extraction | - | KNOWLEDGE_RELATION_EXTRACTION | /internal/ai/knowledge/relation-extraction | 未完成 | 当前 Java AI 精修未提供该域的调用入口 |
 | knowledge | - | knowledge_graph | - | KNOWLEDGE_GRAPH_EXTRACTION | /internal/ai/knowledge/graph-extraction | 未完成 | 当前 Java AI 精修未提供该域的调用入口 |
 | knowledge | - | lineage_extraction | - | KNOWLEDGE_LINEAGE_EXTRACTION | /internal/ai/knowledge/lineage-extraction | 未完成 | 当前 Java AI 精修未提供该域的调用入口 |

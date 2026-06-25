@@ -45,3 +45,21 @@ export const getJson = async <T>(
     const payload = (await response.json()) as ApiResponse<T>;
     return payload.data as T;
 };
+
+export const postJson = async <T, P extends object = object>(path: string, body: P) => {
+    const response = await fetch(buildApiUrl(path), {
+        body: JSON.stringify(body),
+        headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json"
+        },
+        method: "POST"
+    });
+
+    if (!response.ok) {
+        throw new Error("Portal API request failed");
+    }
+
+    const payload = (await response.json()) as ApiResponse<T>;
+    return payload.data as T;
+};

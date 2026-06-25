@@ -35,15 +35,18 @@
 - Discovery Search 已完成 `afterCommit + RocketMQ` 增量同步链路，覆盖三类 Classics 内容的新增、更新、可见性变化、删除和内容治理写路径。
 - Discovery Search 已完成 `currentVersionNo` 幂等控制、删除态写入、删除态定时物理清理和 `rebuild` 全量兜底闭环。
 - Discovery Search 已补齐 `search / click / rebuild` 共享动作白名单，并完成最小 Maven 运行时测试闭环。
+- Discovery Query Understanding 已接通 Knowledge 同义词、标签和实体提示读协作，并通过 AI 域完成 query-understanding / query-rewrite 调度。
+- Discovery QA 已接通 Portal / Admin 双端入口、会话持久化、来源引用和调试 trace 读取，形成最小问答闭环。
 
 部分完成：
 
-- Discovery Search 已完成后端运行时闭环，但 Portal 搜索页面、Admin 搜索分析页面和最终前台深链路由仍未落地。
-- Discovery 设计文档已明确 Elasticsearch 默认适配、增量同步和删除态清理规则；复杂增强能力仍保留未实现状态。
+- Discovery Search 已完成后端运行时闭环，Portal 搜索页面和 Admin 搜索分析页面已落地，但高亮、复杂排序与分析深化仍需继续完善。
+- Discovery QA 已完成最小闭环，但会话列表、删除和导出能力仍未形成交付。
+- Discovery 设计文档已明确 Elasticsearch 默认适配、增量同步和删除态清理规则；高级增强能力仍保留未实现状态。
 
 未完成：
 
-- Portal 搜索页面、Admin 搜索分析页面、问答会话、多轮上下文、来源引用和调试信息仍未形成可执行交付物。
+- 会话列表、删除和导出，以及更细粒度的搜索分析和 QA 生命周期能力仍未形成完整交付物。
 
 ## Requirement Coverage Matrix
 
@@ -68,28 +71,28 @@
 
 | 需求项 | 状态 | 已完成部分 | 未完成部分 | 责任域 |
 | --- | --- | --- | --- | --- |
-| 查询理解和意图识别 | 部分完成 | `QueryUnderstanding`、`SearchIntentType`、`discovery_query_understanding` 数据结构与应用服务骨架已存在 | 实际理解链路仍未实现，主搜索链路未接入 | Discovery |
-| 同义词扩展 | 部分完成 | 需求和设计已固定依赖 Knowledge 同义词词典，数据结构已预留 `expanded_synonyms_json` | 实际扩展逻辑未实现 | Discovery, Knowledge |
-| 查询清洗和停用词过滤 | 部分完成 | 数据结构已预留 `normalized_query_text` | 清洗规则未实现 | Discovery |
-| 查询改写 | 部分完成 | 数据结构已预留 `rewritten_query_text` | 改写执行未实现 | Discovery, AI |
-| 实体识别和实体链接 | 部分完成 | 数据结构已预留 `recognized_entities_json` | 实体增强执行未实现 | Discovery, Knowledge, AI |
+| 查询理解和意图识别 | 已完成 | `QueryUnderstanding`、`SearchIntentType`、`discovery_query_understanding` 数据结构、应用服务和 AI 调度链路已接通 | 无 | Discovery |
+| 同义词扩展 | 已完成 | 需求和设计已固定依赖 Knowledge 同义词词典，Discovery 已通过知识治理读协作消费扩展结果 | 无 | Discovery, Knowledge |
+| 查询清洗和停用词过滤 | 已完成 | `normalized_query_text`、清洗规则和查询标准化结果已落地 | 无 | Discovery |
+| 查询改写 | 已完成 | `rewritten_query_text`、AI 调度和改写结果落库已落地 | 无 | Discovery, AI |
+| 实体识别和实体链接 | 已完成 | `recognized_entities_json`、实体提示和知识读协作链路已落地 | 无 | Discovery, Knowledge, AI |
 
 ### 智能问答
 
 | 需求项 | 状态 | 已完成部分 | 未完成部分 | 责任域 |
 | --- | --- | --- | --- | --- |
-| 多库自然语言问答 | 未完成 | 需求和设计文档已沉淀问答边界 | QA 运行时代码未实现 | Discovery, AI |
-| 王圻单文档追加式问答 | 未完成 | 需求和设计文档已定义 | 运行时代码未实现 | Discovery, Classics, AI |
-| 多轮会话 | 未完成 | 需求和设计文档已定义 `QaSession`、`QaMessage` | 运行时代码未实现 | Discovery |
-| 来源引用 | 未完成 | 需求和设计文档已定义 `QaSource` | 运行时代码未实现 | Discovery |
-| 会话列表、删除和导出 | 未完成 | 需求和设计文档已沉淀 | 运行时代码未实现 | Discovery |
-| 管理员调试信息 | 未完成 | 需求和设计文档已定义 `QaDebugContext` | 运行时代码未实现 | Discovery |
+| 多库自然语言问答 | 已完成 | Portal QA 页面、`QaApplicationService`、AI answer generation 调度和会话持久化已落地 | 无 | Discovery, AI |
+| 王圻单文档追加式问答 | 部分完成 | 通用 QA 已接通 `knowledgeBase` 维度和内容源上下文 | 专用单文档追加式入口尚未单独拆分 | Discovery, Classics, AI |
+| 多轮会话 | 已完成 | `QaSession`、`QaMessage`、`openSession`、`askQuestion` 和会话详情读取已落地 | 无 | Discovery |
+| 来源引用 | 已完成 | `QaSource`、来源写入与按消息查询接口已落地 | 无 | Discovery |
+| 会话列表、删除和导出 | 未完成 | 需求和设计文档已沉淀 | 列表、删除和导出运行时代码未实现 | Discovery |
+| 管理员调试信息 | 已完成 | `QaDebugContext`、trace 读取和 Admin QA 调试页已落地 | 无 | Discovery |
 
 ### 运行时验证
 
 | 需求项 | 状态 | 已完成部分 | 未完成部分 | 责任域 |
 | --- | --- | --- | --- | --- |
-| 当前阶段运行时验证 | 已完成 | 已完成 Search runtime 与索引同步执行闭环，starter 扫描、Admin/Portal controller 测试、application 测试和最小 Maven 验证均已跑通；本地 Elasticsearch HTTPS 连通和认证已用 `curl` 验证 | 全量 PR workflow、真实前端页面联调和 ES 集群健康治理仍未完成 | Discovery |
+| 当前阶段运行时验证 | 已完成 | 已完成 Search / QA runtime 与索引同步执行闭环，starter 扫描、Admin / Portal controller 测试、application 测试和最小 Maven 验证均已跑通；本地 Elasticsearch HTTPS 连通和认证已用 `curl` 验证 | 全量 PR workflow、真实前端页面联调和 ES 集群健康治理仍未完成 | Discovery |
 
 ## Unfinished Focus
 
@@ -98,13 +101,13 @@
 | Search 子域骨架代码 | 已完成 | Search 相关 application、infra、interface 代码、测试和 starter 装配已落地 |
 | Elasticsearch 默认适配 | 已完成 | 已在 infra 内实现 `ElasticsearchSearchIndexGateway`，并接入 starter 运行时配置 |
 | 索引增量同步 | 已完成 | 已实现 `afterCommit + RocketMQ` 发送、Discovery 消费、`currentVersionNo` 幂等和删除态清理 |
-| Portal 搜索入口 | 部分完成 | Portal 搜索和点击接口已可运行，Portal 页面未实现 |
-| Admin 搜索分析入口 | 部分完成 | Admin 搜索日志分页、详情和索引重建入口已落地，分析页面未实现 |
-| QA 子域 | 未完成 | 当前阶段未进入实现范围 |
+| Portal 搜索入口 | 已完成 | Portal 搜索和点击接口已可运行，Portal 搜索页面已落地 |
+| Admin 搜索分析入口 | 已完成 | Admin 搜索日志分页、详情和索引重建入口已落地，搜索分析页面已落地 |
+| QA 子域 | 部分完成 | QA 核心运行时、Portal 页面和 Admin 调试页已落地，但会话列表 / 删除 / 导出仍未实现 |
 
 ## Residual Risks
 
 - Search 当前明确只接 Classics 三类内容源；后续若扩大到其他业务域，需要重新确认 `SearchScope`、索引文档和权限过滤模型。
-- Search 当前仅完成“找得到”的基础闭环；高亮、同义词、实体增强、复杂排序和搜索分析仍缺运行时代码。
+- Search 当前已形成基础闭环；高亮、复杂排序和搜索分析深度优化仍需后续迭代。
 - Search 当前增量同步采用 `afterCommit` 直接发 MQ，不采用 outbox；当数据库提交成功但 MQ 发送失败时，仍需依赖重试或 Admin `rebuild` 做恢复。
 - 本地 Elasticsearch 虽已验证 HTTPS 地址和认证可达，但当前集群健康状态不是绿态；若后续索引重建或检索异常，需要继续排查未分配分片与证书信任配置。

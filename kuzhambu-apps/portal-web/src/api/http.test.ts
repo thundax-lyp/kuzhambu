@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { buildApiUrl, getJson } from "./http";
+import { buildApiUrl, getJson, postJson } from "./http";
 
 describe("portal web http utilities", () => {
     afterEach(() => {
@@ -65,6 +65,51 @@ describe("portal web http utilities", () => {
 
         await expect(getJson("/portal/classics/shares", {})).rejects.toThrow(
             "Portal API request failed"
+        );
+    });
+
+    it("postJson uses POST and sends a json body", async () => {
+        vi.spyOn(globalThis, "fetch").mockImplementation(
+            async () =>
+                new Response(
+                    JSON.stringify({
+                        code: "COMMON-00000",
+                        data: {
+                            accepted: true
+                        },
+                        message: "ok"
+                    }),
+                    {
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        status: 200
+                    }
+                )
+        );
+
+        const data = await postJson<{ accepted: boolean }, { queryText: string }>(
+            "/portal/discovery/search/search",
+            {
+                queryText: "古籍"
+            }
+        );
+
+        expect(data).toEqual({
+            accepted: true
+        });
+        expect(globalThis.fetch).toHaveBeenCalledWith(
+            "/kuzhambu-api/api/portal/discovery/search/search",
+            {
+                body: JSON.stringify({
+                    queryText: "古籍"
+                }),
+                headers: {
+                    Accept: "application/json",
+                    "Content-Type": "application/json"
+                },
+                method: "POST"
+            }
         );
     });
 });
