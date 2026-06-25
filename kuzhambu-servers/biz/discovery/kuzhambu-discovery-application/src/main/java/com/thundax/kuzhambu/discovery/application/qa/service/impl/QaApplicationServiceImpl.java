@@ -10,7 +10,11 @@ import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.discovery.application.qa.command.AskQuestionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.command.OpenQaSessionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaAnswerResult;
+import com.thundax.kuzhambu.discovery.application.qa.result.QaMessageResult;
+import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionDetailResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionResult;
+import com.thundax.kuzhambu.discovery.application.qa.result.QaSourceResult;
+import com.thundax.kuzhambu.discovery.application.qa.result.QaTraceResult;
 import com.thundax.kuzhambu.discovery.application.qa.service.QaApplicationService;
 import com.thundax.kuzhambu.discovery.application.qa.support.QaContextAssembler;
 import com.thundax.kuzhambu.discovery.application.qa.support.QaSourceAssembler;
@@ -199,6 +203,52 @@ public class QaApplicationServiceImpl implements QaApplicationService {
                 qaTraceAssembler.toTraceSummary(traceEntity, understandingResult, qaContext));
     }
 
+    @Override
+    public QaSessionDetailResult getSessionDetail(Long sessionId) {
+        if (sessionId == null) {
+            throw new BizException("DISCOVERY-30006", "discovery.qa.session-id.required", "Session id is required");
+        }
+        QaSession session = qaSessionRepository.getBySessionId(sessionId);
+        if (session == null) {
+            throw new BizException("DISCOVERY-30001", "discovery.qa.session.not-found", "QA session does not exist");
+        }
+        QaSessionDetailResult result = new QaSessionDetailResult();
+        result.setSessionId(session.getSessionId());
+        result.setOwnerUserId(session.getOwnerUserId());
+        result.setTitle(session.getTitle());
+        result.setScope(session.getScope());
+        result.setContextMode(session.getContextMode());
+        result.setContextContentType(session.getContextContentType());
+        result.setContextContentId(session.getContextContentId());
+        result.setStatus(session.getStatus());
+        result.setOpenedAt(
+                session.getOpenedAt() == null ? null : session.getOpenedAt().getTime());
+        result.setLastMessageAt(
+                session.getLastMessageAt() == null
+                        ? null
+                        : session.getLastMessageAt().getTime());
+        result.setMessages(qaMessageRepository.listBySessionId(sessionId).stream()
+                .map(this::toMessageResult)
+                .toList());
+        return result;
+    }
+
+    @Override
+    public List<QaSourceResult> listSourcesByMessageId(Long messageId) {
+        if (messageId == null) {
+            throw new BizException("DISCOVERY-30007", "discovery.qa.message-id.required", "Message id is required");
+        }
+        return qaSourceAssembler.toResultList(qaSourceRepository.listByMessageId(messageId));
+    }
+
+    @Override
+    public QaTraceResult getTraceByTraceId(Long traceId) {
+        if (traceId == null) {
+            throw new BizException("DISCOVERY-30008", "discovery.qa.trace-id.required", "Trace id is required");
+        }
+        return qaTraceAssembler.toTraceResult(qaRetrievalTraceRepository.getByTraceId(traceId));
+    }
+
     private DiscoveryAiRequest toAiRequest(AskQuestionCommand command, QaContextAssembler.QaContext qaContext) {
         return new DiscoveryAiRequest(
                 DEFAULT_SERVICE_ID,
@@ -246,5 +296,21 @@ public class QaApplicationServiceImpl implements QaApplicationService {
             throw new BizException(
                     "DISCOVERY-30003", "discovery.qa.ask-question.invalid", "Ask question command is invalid");
         }
+    }
+
+    private QaMessageResult toMessageResult(QaMessage message) {
+        if (message == null) {
+            return null;
+        }
+        return new QaMessageResult(
+                message.getMessageId(),
+                message.getSessionId(),
+                message.getRole(),
+                message.getContent(),
+                message.getMessageStatus(),
+                message.getContextTurnCount(),
+                message.getFailureReason(),
+                message.getSentAt(),
+                message.getAnsweredAt());
     }
 }

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.discovery.application.qa.command.AskQuestionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaAnswerResult;
+import com.thundax.kuzhambu.discovery.application.qa.result.QaTraceResult;
 import com.thundax.kuzhambu.discovery.application.search.result.QueryUnderstandingResult;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaRetrievalTrace;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSession;
@@ -50,6 +51,24 @@ public class QaTraceAssembler {
                 trace.getCandidateCount(),
                 trace.getExpandedTermsJson(),
                 trace.getLinkedEntitiesJson());
+    }
+
+    public QaTraceResult toTraceResult(QaRetrievalTrace trace) {
+        if (trace == null) {
+            return null;
+        }
+        return new QaTraceResult(
+                trace.getTraceId(),
+                trace.getMessageId(),
+                trace.getRawQuestion(),
+                trace.getRewrittenQuestion(),
+                trace.getScope(),
+                trace.getFiltersJson(),
+                trace.getExpandedTermsJson(),
+                trace.getLinkedEntitiesJson(),
+                trace.getCandidateCount(),
+                trace.getContextSnapshot(),
+                trace.getRetrievedAt());
     }
 
     private Map<String, Object> buildFilters(

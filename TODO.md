@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Discovery admin qa controller`：新增 Admin QA controller 与协议模型
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-CENTRIC-LOOP.md`
-    - 范围对象：`.../interfaces/admin/qa/controller/DiscoveryQaAdminController.java`、`.../request/DiscoveryQaAdminRequests.java`、`.../response/DiscoveryQaAdminResponses.java`、`.../assembler/DiscoveryQaAdminInterfaceAssembler.java`、`.../DiscoveryQaAdminControllerTest.java`
-    - 处理动作：提供最小调试和查看入口
-    - 验收点：Admin 至少能查看 session、source 和 retrieval trace
-    - 重要度：8/10
-
 - [ ] `Portal Discovery search page`：新增搜索页、service、types 与页面测试
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-CENTRIC-LOOP.md`
