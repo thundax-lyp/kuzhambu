@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `operations-infra/cleanup`：生成 Cleanup Infra 落表映射
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DOMAIN-INFRA.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-infra/src/main/java/com/thundax/kuzhambu/operations/infra/cleanup/`
-    - 处理动作：创建清理任务与清理单项的 DO、Mapper 和 `CleanupJobRepositoryImpl`
-    - 验收点：`CleanupJob` 聚合已能同时映射 `operations_cleanup_job` 与 `operations_cleanup_item`
-    - 重要度：8/10
-
 - [ ] `operations-domain/health`：生成 Health Domain 核心
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DOMAIN-INFRA.md`
