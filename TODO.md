@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Knowledge portal quality api`：暴露质量页 Portal API
-    - 任务类型：设计转执行
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-READONLY.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interfaces/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/portal/quality/controller/KnowledgePortalQualityController.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interfaces/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/portal/quality/assembler/KnowledgePortalQualityInterfaceAssembler.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interfaces/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/portal/quality/request/KnowledgePortalQualityQuery.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interfaces/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/portal/quality/response/KnowledgePortalQualityResponse.java`
-    - 处理动作：新增质量页 Portal controller、assembler、query、response
-    - 验收点：`GET /portal/knowledge/quality` 路径稳定，查询参数与页面筛选一致
-    - 重要度：8/10
-
 - [ ] `Portal knowledge entry routing`：接入门户入口与首页跳转
     - 任务类型：设计转执行
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-PORTAL-READONLY.md`
