@@ -89,7 +89,8 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
     }
 
     @Override
-    public KnowledgePortalAtlasResult getAtlas() {
+    public KnowledgePortalAtlasResult getAtlas(KnowledgePortalAtlasQuery query) {
+        KnowledgePortalAtlasQuery effectiveQuery = normalizeAtlasQuery(query);
         GraphVersion latestVersion = latestAppliedVersion();
         if (latestVersion == null || latestVersion.getVersionId() == null) {
             return new KnowledgePortalAtlasResult(
@@ -122,6 +123,16 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
                                 .toList()),
                         List.of(),
                         defaultTimeRanges()));
+    }
+
+    private KnowledgePortalAtlasQuery normalizeAtlasQuery(KnowledgePortalAtlasQuery query) {
+        if (query == null) {
+            return new KnowledgePortalAtlasQuery("overview", null, null, null, null, null, null);
+        }
+        if (query.getLevel() == null || query.getLevel().isBlank()) {
+            query.setLevel("overview");
+        }
+        return query;
     }
 
     @Override

@@ -194,7 +194,7 @@ class KnowledgePortalReadApplicationServiceImplTest {
                 mock(TagGovernanceMetricsRepository.class),
                 mock(RefinementTaskRepository.class));
 
-        KnowledgePortalAtlasResult result = service.getAtlas();
+        KnowledgePortalAtlasResult result = service.getAtlas(new KnowledgePortalAtlasQuery());
 
         assertEquals("3001", result.getFocusNode().getId());
         assertEquals("黄帝", result.getFocusNode().getTitle());
