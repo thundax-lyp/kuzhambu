@@ -46,17 +46,7 @@ const SERVICE_METHOD_VERBS = [
     "revoke"
 ];
 
-const ANTD_SPACE_DIRECT_IMPORT_ALLOWLIST = [
-    "/src/pages/classics/common/components/ai-candidate-panel.tsx",
-    "/src/pages/classics/common/components/ai-candidate-payload-editor.tsx",
-    "/src/pages/classics/sancai/components/sancai-catalog-tree-panel.tsx",
-    "/src/pages/classics/sancai/components/sancai-entry-model.tsx",
-    "/src/pages/classics/sancai/components/sancai-entry-panel.tsx",
-    "/src/pages/classics/sancai/components/sancai-version-history-panel.tsx",
-    "/src/pages/classics/sancai/sancai-page.tsx",
-    "/src/pages/classics/wangqi/components/wangqi-storage-file-panel.tsx",
-    "/src/pages/classics/wangqi/components/wangqi-version-history-panel.tsx"
-];
+const ANTD_SPACE_DIRECT_IMPORT_ALLOWLIST = [];
 
 const localRules = {
     rules: {

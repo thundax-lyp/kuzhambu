@@ -1,8 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Alert, App, Button, Empty, Space, Tag, Typography } from "antd";
+import { Alert, App, Button, Empty, Tag, Typography } from "antd";
 import { useState } from "react";
 import { KuzhambuList, KuzhambuListItem, KuzhambuListMeta } from "@/components/kuzhambu-list";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
+import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import type { KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
 import * as exportService from "@/pages/classics/common/classics-export-service";
 import * as shareService from "@/pages/classics/common/classics-share-service";
@@ -560,7 +561,7 @@ export const SancaiEntryPanel = ({
                 />
             ) : null}
             <section className="sancai-export-section">
-                <Space align="center" className="sancai-export-section-head" size={12} wrap>
+                <KuzhambuSpace align="center" className="sancai-export-section-head" size={12} wrap>
                     <Text strong>导出任务</Text>
                     <Button
                         size="small"
@@ -571,7 +572,7 @@ export const SancaiEntryPanel = ({
                     >
                         刷新
                     </Button>
-                </Space>
+                </KuzhambuSpace>
                 <KuzhambuList
                     size="small"
                     dataSource={exportJobs}
@@ -587,7 +588,7 @@ export const SancaiEntryPanel = ({
                             <KuzhambuListItem
                                 key={job.id ?? `export-job-${job.requestedAt}`}
                                 extra={
-                                    <Space size={8} wrap>
+                                    <KuzhambuSpace size={8} wrap>
                                         {renderExportStatus(job.status, job.expiresAt)}
                                         {downloadable ? (
                                             <Button
@@ -602,7 +603,7 @@ export const SancaiEntryPanel = ({
                                                 下载
                                             </Button>
                                         )}
-                                    </Space>
+                                    </KuzhambuSpace>
                                 }
                             >
                                 <KuzhambuListMeta
@@ -615,7 +616,7 @@ export const SancaiEntryPanel = ({
                 />
             </section>
             <section className="sancai-export-section">
-                <Space align="center" className="sancai-export-section-head" size={12} wrap>
+                <KuzhambuSpace align="center" className="sancai-export-section-head" size={12} wrap>
                     <Text strong>静态展示任务</Text>
                     <Button
                         size="small"
@@ -626,7 +627,7 @@ export const SancaiEntryPanel = ({
                     >
                         刷新
                     </Button>
-                </Space>
+                </KuzhambuSpace>
                 <KuzhambuList
                     size="small"
                     dataSource={showcaseJobs}
@@ -644,7 +645,7 @@ export const SancaiEntryPanel = ({
                             <KuzhambuListItem
                                 key={job.id ?? `showcase-job-${job.requestedAt}`}
                                 extra={
-                                    <Space size={8} wrap>
+                                    <KuzhambuSpace size={8} wrap>
                                         {renderShowcaseStatus(job.status)}
                                         {downloadable ? (
                                             <Button
@@ -659,7 +660,7 @@ export const SancaiEntryPanel = ({
                                                 下载
                                             </Button>
                                         )}
-                                    </Space>
+                                    </KuzhambuSpace>
                                 }
                             >
                                 <KuzhambuListMeta

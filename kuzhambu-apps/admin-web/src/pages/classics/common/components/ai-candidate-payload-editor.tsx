@@ -1,6 +1,7 @@
-import { Button, Input, Space } from "antd";
+import { Button, Input } from "antd";
 import { useEffect, useState } from "react";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
+import { KuzhambuSpace } from "@/components/kuzhambu-space";
 
 type AiCandidateCapability = "translate" | "summary" | "tags" | "qa";
 
@@ -182,7 +183,10 @@ export const AiCandidatePayloadEditor = ({
         return (
             <div>
                 {tagsPayload.map((tag: string, index: number) => (
-                    <Space key={`${index}-${tag}`} style={{ display: "flex", marginBottom: 8 }}>
+                    <KuzhambuSpace
+                        key={`${index}-${tag}`}
+                        style={{ display: "flex", marginBottom: 8 }}
+                    >
                         <Input
                             aria-label={`候选标签 ${index + 1}`}
                             placeholder="标签"
@@ -195,7 +199,7 @@ export const AiCandidatePayloadEditor = ({
                         >
                             删除
                         </Button>
-                    </Space>
+                    </KuzhambuSpace>
                 ))}
                 <Button aria-label="新增候选标签" onClick={appendTag}>
                     新增标签

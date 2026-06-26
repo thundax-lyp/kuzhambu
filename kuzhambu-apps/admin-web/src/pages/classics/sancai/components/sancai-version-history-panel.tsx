@@ -1,5 +1,6 @@
-import { Alert, Button, Descriptions, Empty, Space, Tag, Typography } from "antd";
+import { Alert, Button, Descriptions, Empty, Tag, Typography } from "antd";
 import { KuzhambuList, KuzhambuListItem, KuzhambuListMeta } from "@/components/kuzhambu-list";
+import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import type {
     SancaiContentVersionRecord,
     SancaiEntryRecord,
@@ -114,18 +115,18 @@ export const SancaiVersionHistoryPanel = ({
                         >
                             <KuzhambuListMeta
                                 title={
-                                    <Space wrap>
+                                    <KuzhambuSpace wrap>
                                         <Text strong>版本 {version.versionNo ?? "-"}</Text>
                                         <Tag>{version.changeType || "UNKNOWN"}</Tag>
-                                    </Space>
+                                    </KuzhambuSpace>
                                 }
                                 description={
-                                    <Space orientation="vertical" size={2}>
+                                    <KuzhambuSpace orientation="vertical" size={2}>
                                         <Text>{version.changeSummary || "未填写变更说明"}</Text>
                                         <Text type="secondary">
                                             {formatDateTime(version.versionedAt)}
                                         </Text>
-                                    </Space>
+                                    </KuzhambuSpace>
                                 }
                             />
                         </KuzhambuListItem>
@@ -133,7 +134,7 @@ export const SancaiVersionHistoryPanel = ({
                 />
                 <div className="sancai-version-history-detail" aria-busy={detailLoading}>
                     {selectedVersion ? (
-                        <Space
+                        <KuzhambuSpace
                             orientation="vertical"
                             size="middle"
                             className="sancai-version-history-detail-stack"
@@ -173,12 +174,12 @@ export const SancaiVersionHistoryPanel = ({
                                                 label={field.label}
                                                 className={changed ? "is-changed" : undefined}
                                             >
-                                                <Space orientation="vertical" size={2}>
+                                                <KuzhambuSpace orientation="vertical" size={2}>
                                                     <Text>当前：{formatValue(currentValue)}</Text>
                                                     <Text type={changed ? "warning" : "secondary"}>
                                                         历史：{formatValue(historyValue)}
                                                     </Text>
-                                                </Space>
+                                                </KuzhambuSpace>
                                             </Descriptions.Item>
                                         );
                                     })}
@@ -195,7 +196,7 @@ export const SancaiVersionHistoryPanel = ({
                             >
                                 恢复此版本
                             </Button>
-                        </Space>
+                        </KuzhambuSpace>
                     ) : (
                         <Empty
                             image={Empty.PRESENTED_IMAGE_SIMPLE}

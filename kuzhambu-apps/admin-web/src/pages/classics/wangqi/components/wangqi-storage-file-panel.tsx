@@ -1,5 +1,6 @@
 import { DownloadOutlined, EyeOutlined, ReloadOutlined, UploadOutlined } from "@ant-design/icons";
-import { Button, Descriptions, Empty, Space, Typography, Upload } from "antd";
+import { Button, Descriptions, Empty, Typography, Upload } from "antd";
+import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
 import * as wangqiService from "../wangqi-service";
 import type {
@@ -61,7 +62,7 @@ export const WangqiStorageFilePanel = ({
 
     return (
         <section className="wangqi-storage-file-panel" aria-label="王圻原始文件面板">
-            <Space className="wangqi-storage-file-panel-actions" wrap>
+            <KuzhambuSpace className="wangqi-storage-file-panel-actions" wrap>
                 <Button
                     aria-label="刷新王圻原始文件元数据"
                     icon={<ReloadOutlined />}
@@ -104,7 +105,7 @@ export const WangqiStorageFilePanel = ({
                 >
                     下载
                 </Button>
-            </Space>
+            </KuzhambuSpace>
             {hasSourceFile ? (
                 <Descriptions
                     className="wangqi-storage-file-panel-meta"

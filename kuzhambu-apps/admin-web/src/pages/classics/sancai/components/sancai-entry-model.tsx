@@ -1,11 +1,12 @@
 import { DownloadOutlined, EyeOutlined, UploadOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Button, Empty, Image, Input, Space, Switch, Typography, Upload } from "antd";
+import { App, Button, Empty, Image, Input, Switch, Typography, Upload } from "antd";
 import { useState } from "react";
 import type { ReactNode } from "react";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
+import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { toEntryFormValues, type SancaiEntryFormValues } from "./sancai-form-values";
 import * as entryService from "../services/sancai-entry-service";
 import type {
@@ -212,7 +213,7 @@ export const SancaiEntryModel = ({
                 {entryId ? (
                     <section className="sancai-form-field" aria-label="三才图会图片面板">
                         <Text strong>当前图片</Text>
-                        <Space wrap>
+                        <KuzhambuSpace wrap>
                             <Upload
                                 aria-label="上传三才图会图片"
                                 accept={imageAccept}
@@ -247,7 +248,7 @@ export const SancaiEntryModel = ({
                             >
                                 下载
                             </Button>
-                        </Space>
+                        </KuzhambuSpace>
                         {currentImage && previewUrl ? (
                             <>
                                 <Image

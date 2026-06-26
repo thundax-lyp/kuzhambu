@@ -1,8 +1,9 @@
 import { BookOutlined, FolderOutlined, ReloadOutlined } from "@ant-design/icons";
-import { Button, Empty, Skeleton, Space, Tree, Typography } from "antd";
+import { Button, Empty, Skeleton, Tree, Typography } from "antd";
 import type { DataNode } from "antd/es/tree";
 import type { Key, ReactNode } from "react";
 import { useMemo } from "react";
+import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import type { SancaiCatalogNodeType, SancaiCatalogTreeNode } from "../sancai-types";
 
 const { Text } = Typography;
@@ -83,10 +84,10 @@ export const SancaiCatalogTreePanel = ({
     return (
         <div className="sancai-catalog-tree-panel" aria-label="三才图会目录树">
             <div className="sancai-catalog-panel-head">
-                <Space size={8}>
+                <KuzhambuSpace size={8}>
                     <FolderOutlined />
                     <Text strong>{title}</Text>
-                </Space>
+                </KuzhambuSpace>
                 <Button
                     aria-label="刷新三才图会目录树"
                     className="sancai-catalog-refresh"
