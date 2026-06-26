@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `kuzhambu-operations-application/report`：建立报表 application 入口骨架
-    - 任务类型：拆解任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-REPORT-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/report/`
-    - 处理动作：新增 report application service、command、query 和 generate result 骨架
-    - 验收点：`generate`、`page`、`detail` 对应的 application 入口与模型可编译
-    - 重要度：9/10
-
 - [ ] `operations_report domain/infra`：补齐报表台账已确认字段
     - 任务类型：拆解任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-REPORT-CLOSURE.md`
