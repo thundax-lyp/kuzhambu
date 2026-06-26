@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `operations_report domain/infra`：补齐报表台账已确认字段
-    - 任务类型：拆解任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-REPORT-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-domain/src/main/java/com/thundax/kuzhambu/operations/domain/report/`、`kuzhambu-servers/biz/operations/kuzhambu-operations-infra/src/main/java/com/thundax/kuzhambu/operations/infra/report/`
-    - 处理动作：将 `requestId`、`traceId`、`templateVersion`、`artifactFilename` 和最终 `reportStatus` 状态集落实到 report 持久化模型
-    - 验收点：`ReportRecord`、`ReportDO`、assembler、repository 实现字段一致
-    - 重要度：10/10
-
 - [ ] `operations report repository`：补齐报表分页与详情查询能力
     - 任务类型：拆解任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-REPORT-CLOSURE.md`
