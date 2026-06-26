@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `admin-web knowledge compact batch-1`：替换第一批 `Space.Compact` 表格
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-WEB-KUZHAMBU-SPACE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/components/refinement-workbench-table.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/components/refinement-entity-table.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/components/refinement-relation-table.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/components/graph-extraction-task-table.tsx`
-    - 处理动作：把第一批高频表格操作列替换为 `KuzhambuSpaceCompact`
-    - 验收点：该批文件不再直连 `Space.Compact`
-    - 重要度：7/10
-
 - [ ] `admin-web knowledge compact batch-2`：替换第二批图谱结果表格
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-WEB-KUZHAMBU-SPACE.md`

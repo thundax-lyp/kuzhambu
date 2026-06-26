@@ -1,4 +1,5 @@
-import { Button, Space, Table, Tag } from "antd";
+import { Button, Table, Tag } from "antd";
+import { KuzhambuSpaceCompact } from "@/components/kuzhambu-space";
 import type { ColumnsType } from "antd/es/table";
 import type { RefinementWorkbenchRecord } from "../refinement-types";
 
@@ -55,9 +56,9 @@ export const RefinementWorkbenchTable = ({
             title: "操作",
             key: "actions",
             render: (_, item) => (
-                <Space.Compact>
+                <KuzhambuSpaceCompact>
                     <Button onClick={() => onOpenTask(item)}>打开任务</Button>
-                </Space.Compact>
+                </KuzhambuSpaceCompact>
             )
         }
     ];

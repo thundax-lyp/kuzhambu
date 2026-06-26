@@ -1,4 +1,5 @@
-import { Button, Space, Table, Tag } from "antd";
+import { Button, Table, Tag } from "antd";
+import { KuzhambuSpaceCompact } from "@/components/kuzhambu-space";
 import type { ColumnsType } from "antd/es/table";
 import type { GraphExtractionTaskRecord } from "../graph-extraction-types";
 
@@ -69,7 +70,7 @@ export const GraphExtractionTaskTable = ({
         {
             key: "actions",
             render: (_, task) => (
-                <Space.Compact>
+                <KuzhambuSpaceCompact>
                     <Button onClick={() => onOpenDetail(task)}>查看</Button>
                     <Button
                         type="primary"
@@ -79,7 +80,7 @@ export const GraphExtractionTaskTable = ({
                     >
                         应用
                     </Button>
-                </Space.Compact>
+                </KuzhambuSpaceCompact>
             ),
             title: "操作"
         }
