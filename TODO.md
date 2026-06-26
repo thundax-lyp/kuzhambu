@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `operations worker client`：补齐 Operations 专属 render worker client
-    - 任务类型：拆解任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-REPORT-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-domain/src/main/java/com/thundax/kuzhambu/operations/domain/report/client/`、`kuzhambu-servers/biz/operations/kuzhambu-operations-infra/src/main/java/com/thundax/kuzhambu/operations/infra/report/client/`
-    - 处理动作：新增 Operations render worker client、DTO 和 HTTP 实现
-    - 验收点：Operations 可按 `WORKERS-RENDER-INTERFACE.md` 契约调用 `/internal/render/operations-report`
-    - 重要度：8/10
-
 - [ ] `operations report task`：建立报表快照装配与后台执行单元
     - 任务类型：拆解任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-REPORT-CLOSURE.md`
