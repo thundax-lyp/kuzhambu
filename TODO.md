@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `knowledge graph interface dto`：扩展图谱抽取接口请求响应模型
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-KNOWLEDGE-CLOSURE.md`
-    - 范围对象：`GraphExtractionRequests.java`、`GraphExtractionResponses.java`
-    - 处理动作：补齐 `CreateRequest / PageTaskRequest / RegenerateRequest / BatchCancelRequest` 与 `TaskResponse / BatchCancelResponse`
-    - 验收点：接口 request/response 与 application result 对齐且不复用 AI controller response
-    - 重要度：9/10
-
 - [ ] `knowledge graph batch create`：增加批量创建与重生成编排入口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-KNOWLEDGE-CLOSURE.md`
