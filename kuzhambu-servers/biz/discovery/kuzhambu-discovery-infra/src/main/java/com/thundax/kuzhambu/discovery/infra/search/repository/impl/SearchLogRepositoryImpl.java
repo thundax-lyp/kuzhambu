@@ -10,6 +10,8 @@ import com.thundax.kuzhambu.discovery.domain.search.repository.SearchLogReposito
 import com.thundax.kuzhambu.discovery.infra.search.persistence.assembler.SearchLogPersistenceAssembler;
 import com.thundax.kuzhambu.discovery.infra.search.persistence.dataobject.SearchLogDO;
 import com.thundax.kuzhambu.discovery.infra.search.persistence.mapper.SearchLogMapper;
+import java.util.Date;
+import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Repository;
 
@@ -39,6 +41,11 @@ public class SearchLogRepositoryImpl implements SearchLogRepository {
         }
         mapper.insert(dataObject);
         return dataObject.getId();
+    }
+
+    @Override
+    public List<SearchLog> listByCreatedAtRange(Date createdAtStart, Date createdAtEnd) {
+        return SearchLogPersistenceAssembler.toDomainList(mapper.selectByCreatedAtRange(createdAtStart, createdAtEnd));
     }
 
     @Override

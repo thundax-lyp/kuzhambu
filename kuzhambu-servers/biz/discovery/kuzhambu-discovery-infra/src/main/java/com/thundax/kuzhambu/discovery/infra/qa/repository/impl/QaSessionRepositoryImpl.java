@@ -7,6 +7,7 @@ import com.thundax.kuzhambu.discovery.domain.qa.repository.QaSessionRepository;
 import com.thundax.kuzhambu.discovery.infra.qa.persistence.assembler.QaPersistenceAssembler;
 import com.thundax.kuzhambu.discovery.infra.qa.persistence.dataobject.QaSessionDO;
 import com.thundax.kuzhambu.discovery.infra.qa.persistence.mapper.QaSessionMapper;
+import java.util.Date;
 import java.util.List;
 import org.springframework.stereotype.Repository;
 
@@ -27,6 +28,11 @@ public class QaSessionRepositoryImpl implements QaSessionRepository {
         }
         return QaPersistenceAssembler.toSessionDomain(mapper.selectOne(
                 new QueryWrapper<QaSessionDO>().eq("session_id", sessionId).last("limit 1")));
+    }
+
+    @Override
+    public List<QaSession> listByOpenedAtRange(Date openedAtStart, Date openedAtEnd) {
+        return QaPersistenceAssembler.toSessionDomainList(mapper.selectByOpenedAtRange(openedAtStart, openedAtEnd));
     }
 
     @Override

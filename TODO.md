@@ -11,21 +11,6 @@
 
 ## 待审阅任务项
 
-    - 任务类型：拆解任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-REPORT-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/report/`
-    - 处理动作：提供 AI 调用量、失败量、平均延迟和总成本的 summary 只读入口
-    - 验收点：Operations 可一次读取 AI 报表所需统计
-    - 重要度：8/10
-
-- [ ] `kuzhambu-discovery-application/report`：新增 Discovery 报表统计读接口
-    - 任务类型：拆解任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-REPORT-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/report/`
-    - 处理动作：提供搜索量、问答量、趋势和热门查询的 summary 只读入口
-    - 验收点：Operations 不再直接查询 Discovery 日志明细
-    - 重要度：8/10
-
 - [ ] `kuzhambu-knowledge-application/report`：新增 Knowledge 报表统计读接口
     - 任务类型：拆解任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-REPORT-CLOSURE.md`
