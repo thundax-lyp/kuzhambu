@@ -194,11 +194,75 @@ class KnowledgeGraphExtractionApplicationServiceTest {
     }
 
     @Test
+    void regenerateTaskShouldReuseStoredRequestSnapshot() {
+        FakeRepository repository = new FakeRepository();
+        GraphExtractionTask sourceTask = new GraphExtractionTask();
+        sourceTask.setTaskId(GraphExtractionTaskId.of(88L));
+        sourceTask.setTaskType("RELATION");
+        sourceTask.setScopeType("CLASSICS_ENTRY");
+        sourceTask.setScopeJson("{\"entryId\":88}");
+        sourceTask.setTriggerSource("QUALITY_REPORT");
+        sourceTask.setSelectionScopeJson("{\"sourceContentIds\":[88,89]}");
+        sourceTask.setReplaceUnconfirmedOnly(Boolean.TRUE);
+        sourceTask.setSourceContentType("SANCAI_ENTRY");
+        sourceTask.setSourceContentId(88L);
+        sourceTask.setRequestedBy(7L);
+        sourceTask.setModelId(5001L);
+        sourceTask.setModelName("gpt-5.5");
+        sourceTask.setPromptVersionId(61L);
+        sourceTask.setRequestId("req-source");
+        sourceTask.setTraceId("trace-source");
+        sourceTask.setPromptMessagesJson("[{\"role\":\"system\",\"content\":\"extract\"}]");
+        sourceTask.setPromptVariablesJson("{\"locale\":\"zh-CN\"}");
+        sourceTask.setPromptHash("hash-source");
+        sourceTask.setInputPayloadJson("{\"content\":\"天地玄黄\"}");
+        sourceTask.setOutputSchemaJson("{\"type\":\"object\"}");
+        sourceTask.setForceJson(Boolean.TRUE);
+        sourceTask.setLocale("zh-CN");
+        repository.tasks.add(sourceTask);
+        FakeKnowledgeAiExtractionDomainService aiService = new FakeKnowledgeAiExtractionDomainService();
+        FakeAiBatchJobApplicationService batchService = new FakeAiBatchJobApplicationService();
+        KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
+                repository,
+                new FakeGraphVersionRepository(),
+                new FakeKnowledgeEntityRepository(),
+                new FakeKnowledgeRelationRepository(),
+                new FakeKnowledgeLineageNodeRepository(),
+                new FakeKnowledgeLineageRelationRepository(),
+                new FakeAiInvocationRepository(),
+                batchService,
+                aiService,
+                new AiCandidateDomainService(new FakeAiInvocationRepository()),
+                null);
+
+        GraphExtractionTaskResult result =
+                service.regenerateTask("RELATION", GraphExtractionTaskId.of(88L), null, Boolean.FALSE, 99L);
+
+        assertNotNull(result);
+        assertEquals("REGENERATE", result.getTriggerSource());
+        assertEquals(Long.valueOf(1001L), result.getBatchJobId());
+        assertEquals(4, repository.tasks.size());
+        GraphExtractionTask parentTask = repository.tasks.get(1);
+        assertEquals(Long.valueOf(88L), parentTask.getParentTaskId().value());
+        assertEquals("REGENERATE", parentTask.getTriggerSource());
+        assertEquals(Boolean.FALSE, parentTask.getReplaceUnconfirmedOnly());
+        GraphExtractionTask childTask = repository.tasks.get(2);
+        assertEquals(Long.valueOf(5001L), childTask.getModelId());
+        assertEquals("gpt-5.5", childTask.getModelName());
+        assertEquals("[{\"role\":\"system\",\"content\":\"extract\"}]", childTask.getPromptMessagesJson());
+        assertEquals("{\"content\":\"天地玄黄\"}", childTask.getInputPayloadJson());
+        assertEquals(Long.valueOf(99L), childTask.getRequestedBy());
+        assertEquals("RELATION", aiService.lastTaskType);
+    }
+
+    @Test
     void pageTasksShouldMapPersistedTasks() {
         FakeRepository repository = new FakeRepository();
         GraphExtractionTask task = new GraphExtractionTask();
         task.setTaskId(GraphExtractionTaskId.of(11L));
+        task.setBatchJobId(1001L);
         task.setTaskType("GRAPH");
+        task.setTriggerSource("QUALITY_REPORT");
         task.setStatus("FAILED");
         repository.tasks.add(task);
         KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
@@ -213,11 +277,14 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
 
-        PageResult<GraphExtractionTaskResult> page = service.pageTasks("GRAPH", null, null, null, new PageQuery(1, 10));
+        PageResult<GraphExtractionTaskResult> page =
+                service.pageTasks("GRAPH", 1001L, "QUALITY_REPORT", null, null, null, new PageQuery(1, 10));
 
         assertEquals(1, page.getRecords().size());
         assertEquals("11", page.getRecords().get(0).getTaskId());
+        assertEquals(Long.valueOf(1001L), page.getRecords().get(0).getBatchJobId());
         assertEquals("GRAPH", page.getRecords().get(0).getTaskType());
+        assertEquals("QUALITY_REPORT", page.getRecords().get(0).getTriggerSource());
     }
 
     @Test
@@ -813,12 +880,22 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         @Override
         public PageResult<GraphExtractionTask> page(
                 String taskType,
+                Long batchJobId,
+                String triggerSource,
                 String status,
                 String sourceContentType,
                 Long sourceContentId,
                 int pageNo,
                 int pageSize) {
-            return PageResult.of(pageNo, pageSize, tasks.size(), tasks);
+            List<GraphExtractionTask> filteredTasks = tasks.stream()
+                    .filter(task -> taskType == null || taskType.equals(task.getTaskType()))
+                    .filter(task -> batchJobId == null || batchJobId.equals(task.getBatchJobId()))
+                    .filter(task -> triggerSource == null || triggerSource.equals(task.getTriggerSource()))
+                    .filter(task -> status == null || status.equals(task.getStatus()))
+                    .filter(task -> sourceContentType == null || sourceContentType.equals(task.getSourceContentType()))
+                    .filter(task -> sourceContentId == null || sourceContentId.equals(task.getSourceContentId()))
+                    .toList();
+            return PageResult.of(pageNo, pageSize, filteredTasks.size(), filteredTasks);
         }
     }
 

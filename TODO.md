@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `ai knowledge backend tests`：补齐 AI × Knowledge 后端测试覆盖
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-KNOWLEDGE-CLOSURE.md`
-    - 范围对象：`KnowledgeAiExtractionApplicationServiceImplTest.java`、`KnowledgeGraphExtractionApplicationServiceTest.java`、`KnowledgeGraphExtractionControllerTest.java`、`GraphExtractionTaskRepositoryImplTest.java`
-    - 处理动作：覆盖批量创建、重生成、质量触发、取消批任务与 `batchJobId` 追踪
-    - 验收点：application、interface、repository 测试通过
-    - 重要度：9/10
-
 - [ ] `ai knowledge closure cleanup`：清理 TODO 与 RUNBOOK 现场
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-KNOWLEDGE-CLOSURE.md`

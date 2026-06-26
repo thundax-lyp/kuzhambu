@@ -46,6 +46,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -249,11 +250,19 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
 
     @Override
     public PageResult<GraphExtractionTaskResult> pageTasks(
-            String taskType, String status, String sourceContentType, Long sourceContentId, PageQuery pageQuery) {
+            String taskType,
+            Long batchJobId,
+            String triggerSource,
+            String status,
+            String sourceContentType,
+            Long sourceContentId,
+            PageQuery pageQuery) {
         PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
         effectivePage.normalize();
         PageResult<GraphExtractionTask> taskPage = repository.page(
                 taskType,
+                batchJobId,
+                triggerSource,
                 status,
                 sourceContentType,
                 sourceContentId,
@@ -267,6 +276,54 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
     @Override
     public GraphExtractionTaskResult getTaskDetail(GraphExtractionTaskId taskId) {
         return syncTaskResult(repository.getByTaskId(taskId));
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public GraphExtractionTaskResult regenerateTask(
+            String taskType,
+            GraphExtractionTaskId sourceTaskId,
+            String selectionScopeJson,
+            Boolean replaceUnconfirmedOnly,
+            Long requestedBy) {
+        GraphExtractionTask sourceTask = repository.getByTaskId(sourceTaskId);
+        if (sourceTask == null) {
+            throw new BizException(
+                    "Knowledge graph source task not found: " + (sourceTaskId == null ? null : sourceTaskId.value()));
+        }
+        validateRegenerateSourceTask(sourceTask);
+        String resolvedTaskType = StringUtils.defaultIfBlank(taskType, sourceTask.getTaskType());
+        if (!StringUtils.equals(resolvedTaskType, sourceTask.getTaskType())) {
+            throw new BizException("Knowledge graph regenerate task type does not match source task");
+        }
+        String requestId = nextEventId("graph-regenerate");
+        String traceId = nextEventId("graph-trace");
+        return requestTasks(
+                resolvedTaskType,
+                sourceTask.getScopeType(),
+                sourceTask.getScopeJson(),
+                "REGENERATE",
+                StringUtils.defaultIfBlank(selectionScopeJson, sourceTask.getSelectionScopeJson()),
+                replaceUnconfirmedOnly != null ? replaceUnconfirmedOnly : sourceTask.getReplaceUnconfirmedOnly(),
+                sourceTaskId == null ? null : sourceTaskId.value(),
+                sourceTask.getSourceContentType(),
+                sourceTask.getSourceContentId(),
+                requestedBy == null ? sourceTask.getRequestedBy() : requestedBy,
+                null,
+                null,
+                sourceTask.getModelId(),
+                sourceTask.getModelName(),
+                sourceTask.getPromptVersionId(),
+                requestId,
+                traceId,
+                sourceTask.getPromptMessagesJson(),
+                sourceTask.getPromptVariablesJson(),
+                sourceTask.getPromptHash(),
+                sourceTask.getInputPayloadJson(),
+                sourceTask.getOutputSchemaJson(),
+                Boolean.TRUE.equals(sourceTask.getForceJson()),
+                StringUtils.defaultIfBlank(sourceTask.getLocale(), "zh-CN"),
+                resolveOperation(resolvedTaskType));
     }
 
     @Override
@@ -573,6 +630,20 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
         parentTask.setRequestedBy(requestedBy);
         parentTask.setStatus(STATUS_REQUESTED);
         parentTask.setRequestedAt(new Date());
+        fillRequestSnapshot(
+                parentTask,
+                modelId,
+                modelName,
+                promptVersionId,
+                requestId,
+                traceId,
+                promptMessagesJson,
+                promptVariablesJson,
+                promptHash,
+                inputPayloadJson,
+                outputSchemaJson,
+                forceJson,
+                locale);
         GraphExtractionTaskId parentId = repository.save(parentTask);
         parentTask.setTaskId(parentId);
         for (ExtractionTarget target : targets) {
@@ -714,6 +785,7 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
                         sourceContentId,
                         requestedBy)
                 : preparedTask;
+        fillRequestSnapshot(task, aiRequest);
         if (task.getTaskId() == null) {
             GraphExtractionTaskId taskId = repository.save(task);
             task.setTaskId(taskId);
@@ -772,6 +844,57 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
         task.setStatus(STATUS_REQUESTED);
         task.setRequestedAt(new Date());
         return task;
+    }
+
+    private void fillRequestSnapshot(GraphExtractionTask task, KnowledgeAiExtractionRequest request) {
+        if (task == null || request == null) {
+            return;
+        }
+        fillRequestSnapshot(
+                task,
+                request.getModelId(),
+                request.getModelName(),
+                request.getPromptVersionId(),
+                request.getRequestId(),
+                request.getTraceId(),
+                request.getPromptMessagesJson(),
+                request.getPromptVariablesJson(),
+                request.getPromptHash(),
+                request.getInputPayloadJson(),
+                request.getOutputSchemaJson(),
+                request.isForceJson(),
+                request.getLocale());
+    }
+
+    private void fillRequestSnapshot(
+            GraphExtractionTask task,
+            Long modelId,
+            String modelName,
+            Long promptVersionId,
+            String requestId,
+            String traceId,
+            String promptMessagesJson,
+            String promptVariablesJson,
+            String promptHash,
+            String inputPayloadJson,
+            String outputSchemaJson,
+            boolean forceJson,
+            String locale) {
+        if (task == null) {
+            return;
+        }
+        task.setModelId(modelId);
+        task.setModelName(modelName);
+        task.setPromptVersionId(promptVersionId);
+        task.setRequestId(requestId);
+        task.setTraceId(traceId);
+        task.setPromptMessagesJson(promptMessagesJson);
+        task.setPromptVariablesJson(promptVariablesJson);
+        task.setPromptHash(promptHash);
+        task.setInputPayloadJson(inputPayloadJson);
+        task.setOutputSchemaJson(outputSchemaJson);
+        task.setForceJson(forceJson);
+        task.setLocale(locale);
     }
 
     private KnowledgeAiExtractionRequest toAiRequest(
@@ -1003,6 +1126,33 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
             case TASK_TYPE_LINEAGE -> "lineage_extraction";
             default -> throw new BizException("Unsupported knowledge graph extraction task type: " + taskType);
         };
+    }
+
+    private KnowledgeInvokeOperation resolveOperation(String taskType) {
+        return switch (taskType) {
+            case TASK_TYPE_RELATION -> knowledgeAiExtractionDomainService::extractRelations;
+            case TASK_TYPE_GRAPH -> knowledgeAiExtractionDomainService::extractGraph;
+            case TASK_TYPE_LINEAGE -> knowledgeAiExtractionDomainService::extractLineage;
+            default -> throw new BizException("Unsupported knowledge graph extraction task type: " + taskType);
+        };
+    }
+
+    private void validateRegenerateSourceTask(GraphExtractionTask sourceTask) {
+        if (sourceTask == null) {
+            throw new BizException("Knowledge graph source task is required");
+        }
+        validateCommandBase(
+                sourceTask.getSourceContentType(),
+                sourceTask.getModelId(),
+                sourceTask.getModelName(),
+                sourceTask.getRequestId(),
+                sourceTask.getTraceId(),
+                sourceTask.getPromptMessagesJson(),
+                sourceTask.getInputPayloadJson());
+    }
+
+    private String nextEventId(String prefix) {
+        return prefix + "-" + UUID.randomUUID();
     }
 
     private void validateCommandBase(

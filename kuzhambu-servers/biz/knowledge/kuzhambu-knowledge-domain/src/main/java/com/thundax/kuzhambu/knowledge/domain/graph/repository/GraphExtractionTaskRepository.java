@@ -15,5 +15,12 @@ public interface GraphExtractionTaskRepository {
     java.util.List<GraphExtractionTask> listByBatchJobId(Long batchJobId);
 
     PageResult<GraphExtractionTask> page(
-            String taskType, String status, String sourceContentType, Long sourceContentId, int pageNo, int pageSize);
+            String taskType,
+            Long batchJobId,
+            String triggerSource,
+            String status,
+            String sourceContentType,
+            Long sourceContentId,
+            int pageNo,
+            int pageSize);
 }

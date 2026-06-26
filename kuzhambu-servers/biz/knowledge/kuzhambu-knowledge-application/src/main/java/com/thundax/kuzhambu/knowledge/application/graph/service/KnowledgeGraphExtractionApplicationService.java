@@ -22,8 +22,21 @@ public interface KnowledgeGraphExtractionApplicationService {
 
     GraphExtractionTaskResult requestLineageExtraction(RequestLineageExtractionCommand command);
 
+    GraphExtractionTaskResult regenerateTask(
+            String taskType,
+            GraphExtractionTaskId sourceTaskId,
+            String selectionScopeJson,
+            Boolean replaceUnconfirmedOnly,
+            Long requestedBy);
+
     PageResult<GraphExtractionTaskResult> pageTasks(
-            String taskType, String status, String sourceContentType, Long sourceContentId, PageQuery pageQuery);
+            String taskType,
+            Long batchJobId,
+            String triggerSource,
+            String status,
+            String sourceContentType,
+            Long sourceContentId,
+            PageQuery pageQuery);
 
     GraphExtractionTaskResult getTaskDetail(GraphExtractionTaskId taskId);
 

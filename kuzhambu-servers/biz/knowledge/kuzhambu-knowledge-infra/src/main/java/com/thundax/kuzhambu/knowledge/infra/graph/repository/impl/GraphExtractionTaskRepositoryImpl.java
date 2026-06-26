@@ -63,6 +63,18 @@ public class GraphExtractionTaskRepositoryImpl implements GraphExtractionTaskRep
                         .set(GraphExtractionTaskDO::getParentTaskId, dataObject.getParentTaskId())
                         .set(GraphExtractionTaskDO::getSourceContentType, dataObject.getSourceContentType())
                         .set(GraphExtractionTaskDO::getSourceContentId, dataObject.getSourceContentId())
+                        .set(GraphExtractionTaskDO::getModelId, dataObject.getModelId())
+                        .set(GraphExtractionTaskDO::getModelName, dataObject.getModelName())
+                        .set(GraphExtractionTaskDO::getPromptVersionId, dataObject.getPromptVersionId())
+                        .set(GraphExtractionTaskDO::getRequestId, dataObject.getRequestId())
+                        .set(GraphExtractionTaskDO::getTraceId, dataObject.getTraceId())
+                        .set(GraphExtractionTaskDO::getPromptMessagesJson, dataObject.getPromptMessagesJson())
+                        .set(GraphExtractionTaskDO::getPromptVariablesJson, dataObject.getPromptVariablesJson())
+                        .set(GraphExtractionTaskDO::getPromptHash, dataObject.getPromptHash())
+                        .set(GraphExtractionTaskDO::getInputPayloadJson, dataObject.getInputPayloadJson())
+                        .set(GraphExtractionTaskDO::getOutputSchemaJson, dataObject.getOutputSchemaJson())
+                        .set(GraphExtractionTaskDO::getForceJson, dataObject.getForceJson())
+                        .set(GraphExtractionTaskDO::getLocale, dataObject.getLocale())
                         .set(GraphExtractionTaskDO::getAiCallId, dataObject.getAiCallId())
                         .set(GraphExtractionTaskDO::getAiCandidateId, dataObject.getAiCandidateId())
                         .set(GraphExtractionTaskDO::getStatus, dataObject.getStatus())
@@ -85,9 +97,18 @@ public class GraphExtractionTaskRepositoryImpl implements GraphExtractionTaskRep
 
     @Override
     public PageResult<GraphExtractionTask> page(
-            String taskType, String status, String sourceContentType, Long sourceContentId, int pageNo, int pageSize) {
+            String taskType,
+            Long batchJobId,
+            String triggerSource,
+            String status,
+            String sourceContentType,
+            Long sourceContentId,
+            int pageNo,
+            int pageSize) {
         QueryWrapper<GraphExtractionTaskDO> wrapper = new QueryWrapper<>();
         wrapper.eq(StringUtils.isNotBlank(taskType), "task_type", taskType)
+                .eq(batchJobId != null, "batch_job_id", batchJobId)
+                .eq(StringUtils.isNotBlank(triggerSource), "trigger_source", triggerSource)
                 .eq(StringUtils.isNotBlank(status), "status", status)
                 .eq(StringUtils.isNotBlank(sourceContentType), "source_content_type", sourceContentType)
                 .eq(sourceContentId != null, "source_content_id", sourceContentId)

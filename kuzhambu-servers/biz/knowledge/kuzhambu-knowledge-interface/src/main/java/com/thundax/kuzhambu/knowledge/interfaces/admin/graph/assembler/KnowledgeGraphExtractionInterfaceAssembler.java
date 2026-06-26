@@ -103,6 +103,10 @@ public final class KnowledgeGraphExtractionInterfaceAssembler {
         return request == null ? null : GraphExtractionTaskId.ofNullable(request.getTaskId());
     }
 
+    public static GraphExtractionTaskId toSourceTaskId(GraphExtractionRequests.RegenerateRequest request) {
+        return request == null ? null : GraphExtractionTaskId.ofNullable(request.getSourceTaskId());
+    }
+
     public static GraphExtractionResponses.TaskResponse toResponse(GraphExtractionTaskResult result) {
         return GraphExtractionResponses.TaskResponse.builder()
                 .taskId(result == null ? null : result.getTaskId())
