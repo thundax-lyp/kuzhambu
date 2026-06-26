@@ -115,6 +115,7 @@ describe("knowledge graph extraction service request contracts", () => {
 
         const graphCommand: GraphExtractionCreateCommand = {
             taskType: "GRAPH",
+            triggerSource: "QUALITY_REPORT",
             ...baseCommand
         };
         await service.addTask(graphCommand);

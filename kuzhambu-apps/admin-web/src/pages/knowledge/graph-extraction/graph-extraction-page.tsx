@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Alert, App, Card, Empty, Typography } from "antd";
+import { Alert, App, Button, Card, Empty, Typography } from "antd";
 import { useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
@@ -11,12 +11,16 @@ import { GraphExtractionTaskTable } from "./components/graph-extraction-task-tab
 import * as service from "./graph-extraction-service";
 import type {
     GraphExtractionCreateCommand,
+    GraphExtractionTriggerSource,
     GraphExtractionTaskPageQuery,
     GraphExtractionTaskRecord
 } from "./graph-extraction-types";
 import "./graph-extraction-page.css";
 
 const { Paragraph, Text, Title } = Typography;
+
+const QUALITY_TRIGGER_SOURCE: GraphExtractionTriggerSource = "QUALITY_REPORT";
+const MANUAL_TRIGGER_SOURCE: GraphExtractionTriggerSource = "MANUAL";
 
 export const GraphExtractionPage = () => {
     const { message: messageApi } = App.useApp();
@@ -27,6 +31,8 @@ export const GraphExtractionPage = () => {
     const [latestCreatedTask, setLatestCreatedTask] = useState<GraphExtractionTaskRecord | null>(
         null
     );
+    const [createTriggerSource, setCreateTriggerSource] =
+        useState<GraphExtractionTriggerSource>(MANUAL_TRIGGER_SOURCE);
     const [taskQuery] = useState<GraphExtractionTaskPageQuery>({
         pageNo: DEFAULT_PAGE_NO,
         pageSize: DEFAULT_PAGE_SIZE
@@ -47,7 +53,11 @@ export const GraphExtractionPage = () => {
         retry: false
     });
     const createTaskMutation = useMutation({
-        mutationFn: (request: GraphExtractionCreateCommand) => service.addTask(request),
+        mutationFn: (request: GraphExtractionCreateCommand) =>
+            service.addTask({
+                ...request,
+                triggerSource: createTriggerSource
+            }),
         onSuccess: async (task) => {
             setLatestCreatedTask(task);
             await queryClient.invalidateQueries({
@@ -124,8 +134,28 @@ export const GraphExtractionPage = () => {
                         <Text type="secondary">三类抽取任务共用统一任务台账和候选应用链路。</Text>
                     </div>
                     <Paragraph className="knowledge-graph-extraction-helper">
-                        三类抽取任务共用统一任务台账，支持从同一页面发起任务、查看执行详情并应用候选结果。
+                        当前可切换手工触发或质量结果触发。质量模式下，创建请求会统一写入
+                        `QUALITY_REPORT`，便于后端任务台账追溯触发来源。
                     </Paragraph>
+                    <KuzhambuSpace wrap>
+                        <Alert
+                            message={
+                                createTriggerSource === QUALITY_TRIGGER_SOURCE
+                                    ? "当前为质量结果触发模式"
+                                    : "当前为手工触发模式"
+                            }
+                            type={
+                                createTriggerSource === QUALITY_TRIGGER_SOURCE ? "warning" : "info"
+                            }
+                            showIcon
+                        />
+                        <Button onClick={() => setCreateTriggerSource(MANUAL_TRIGGER_SOURCE)}>
+                            切换为手工触发
+                        </Button>
+                        <Button onClick={() => setCreateTriggerSource(QUALITY_TRIGGER_SOURCE)}>
+                            切换为质量结果触发
+                        </Button>
+                    </KuzhambuSpace>
                     <GraphExtractionCreate
                         canEdit={canEditGraph}
                         creatingTaskType={createTaskMutation.variables?.taskType || null}

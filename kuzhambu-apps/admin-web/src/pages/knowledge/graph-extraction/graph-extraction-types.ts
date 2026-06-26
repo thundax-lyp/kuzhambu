@@ -1,6 +1,7 @@
 /* eslint-disable local/service-input-type-location */
 
 export type GraphExtractionTaskType = "RELATION" | "GRAPH" | "LINEAGE" | string;
+export type GraphExtractionTriggerSource = "MANUAL" | "QUALITY_REPORT" | "REGENERATE" | string;
 export type GraphExtractionTaskStatus =
     | "PENDING"
     | "RUNNING"
@@ -11,6 +12,7 @@ export type GraphExtractionTaskStatus =
 
 export interface GraphExtractionTaskRecord {
     taskId: string;
+    triggerSource?: GraphExtractionTriggerSource | null;
     taskType?: GraphExtractionTaskType | null;
     scopeType?: string | null;
     scopeJson?: string | null;
@@ -29,6 +31,7 @@ export interface GraphExtractionTaskRecord {
 
 export interface GraphExtractionCreateCommand {
     taskType: GraphExtractionTaskType;
+    triggerSource?: GraphExtractionTriggerSource | null;
     scopeType?: string | null;
     scopeJson?: string | null;
     sourceContentType?: string | null;

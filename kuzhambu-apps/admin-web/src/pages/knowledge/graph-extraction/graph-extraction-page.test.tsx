@@ -114,4 +114,48 @@ describe("GraphExtractionPage", () => {
         expect(await screen.findByText("最近创建任务")).toBeInTheDocument();
         expect(screen.getByText("任务号：9001")).toBeInTheDocument();
     });
+
+    it("creates a quality-triggered graph extraction task", async () => {
+        const user = userEvent.setup();
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <GraphExtractionPage />
+                </AntdApp>
+            </QueryClientProvider>
+        );
+
+        await user.click(screen.getByRole("button", { name: "切换为质量结果触发" }));
+        expect(screen.getByText("当前为质量结果触发模式")).toBeInTheDocument();
+
+        fireEvent.change(screen.getByLabelText("来源内容类型"), {
+            target: { value: "SANCAI_ENTRY" }
+        });
+        fireEvent.change(screen.getByLabelText("来源内容 ID"), {
+            target: { value: "1002" }
+        });
+        fireEvent.change(screen.getByLabelText("模型 ID"), {
+            target: { value: "6001" }
+        });
+        fireEvent.change(screen.getByLabelText("模型名"), {
+            target: { value: "gpt-5.5" }
+        });
+        fireEvent.change(screen.getByLabelText("Prompt Messages JSON"), {
+            target: { value: '[{"role":"system","content":"extract quality"}]' }
+        });
+        fireEvent.change(screen.getByLabelText("输入 Payload JSON"), {
+            target: { value: '{"content":"质量待抽取正文"}' }
+        });
+        await user.click(screen.getByRole("button", { name: "创建关系抽取任务" }));
+
+        await waitFor(() =>
+            expect(service.addTask).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    taskType: "RELATION",
+                    triggerSource: "QUALITY_REPORT",
+                    sourceContentId: 1002
+                })
+            )
+        );
+    });
 });

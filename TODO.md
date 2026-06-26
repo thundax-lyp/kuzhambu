@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `knowledge graph quality trigger`：收口质量触发图谱抽取入口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-KNOWLEDGE-CLOSURE.md`
-    - 范围对象：`KnowledgeGraphExtractionApplicationServiceImpl.java`、`KnowledgeGraphExtractionController.java`、`graph-extraction-service.ts`、`graph-extraction-page.tsx`
-    - 处理动作：增加从质量筛选结果触发抽取的入口参数并统一写入 `triggerSource=QUALITY_REPORT`
-    - 验收点：前端可从质量相关场景发起图谱抽取且后端任务记录可追溯触发来源
-    - 重要度：8/10
-
 - [ ] `admin graph extraction service`：扩展前端 service 与类型契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-KNOWLEDGE-CLOSURE.md`
