@@ -1,5 +1,7 @@
 package com.thundax.kuzhambu.operations.application.report.support;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.operations.application.report.support.OperationsReportSupportModels.OperationsReportSection;
 import com.thundax.kuzhambu.operations.application.report.support.OperationsReportSupportModels.OperationsReportSnapshot;
 import com.thundax.kuzhambu.operations.domain.report.client.dto.OperationsWorkerRenderDtos;
@@ -7,7 +9,6 @@ import com.thundax.kuzhambu.operations.domain.report.model.entity.ReportRecord;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.StringJoiner;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -19,10 +20,30 @@ public class OperationsReportSnapshotAssembler {
     private static final String CONTENT_TYPE = "OPERATIONS_REPORT_SNAPSHOT";
     private static final String LOCALE = "zh-CN";
 
+    private final OperationsReportMetricsGateway operationsReportMetricsGateway;
+    private final ObjectMapper objectMapper;
+
+    public OperationsReportSnapshotAssembler(
+            OperationsReportMetricsGateway operationsReportMetricsGateway, ObjectMapper objectMapper) {
+        this.operationsReportMetricsGateway = operationsReportMetricsGateway;
+        this.objectMapper = objectMapper;
+    }
+
     public OperationsReportSnapshot assemble(ReportRecord record) {
         if (record == null) {
             return null;
         }
+        List<OperationsReportSection> sections = new java.util.ArrayList<>();
+        sections.add(new OperationsReportSection(
+                "reportMeta",
+                "报表任务元信息",
+                Map.of(
+                        "reportType", record.getReportType(),
+                        "format", record.getFormat(),
+                        "requesterUserId", record.getRequesterUserId(),
+                        "periodStart", record.getPeriodStart(),
+                        "periodEnd", record.getPeriodEnd())));
+        sections.addAll(operationsReportMetricsGateway.loadSections(record));
         return new OperationsReportSnapshot(
                 record.getId() == null ? null : record.getId().value(),
                 record.getRequestId(),
@@ -34,15 +55,7 @@ public class OperationsReportSnapshotAssembler {
                 record.getTemplateVersion(),
                 record.getRequesterUserId(),
                 new Date(),
-                List.of(new OperationsReportSection(
-                        "reportMeta",
-                        "报表任务元信息",
-                        Map.of(
-                                "reportType", record.getReportType(),
-                                "format", record.getFormat(),
-                                "requesterUserId", record.getRequesterUserId(),
-                                "periodStart", record.getPeriodStart(),
-                                "periodEnd", record.getPeriodEnd()))));
+                sections);
     }
 
     public OperationsWorkerRenderDtos.WorkerRenderRequest toWorkerRequest(
@@ -93,61 +106,14 @@ public class OperationsReportSnapshotAssembler {
     }
 
     private String toPayloadJson(OperationsReportSnapshot snapshot) {
-        StringJoiner sectionsJoiner = new StringJoiner(",", "[", "]");
-        if (snapshot.getSections() != null) {
-            for (OperationsReportSection section : snapshot.getSections()) {
-                sectionsJoiner.add("{"
-                        + "\"sectionKey\":\"" + json(section.getSectionKey()) + "\","
-                        + "\"sectionTitle\":\"" + json(section.getSectionTitle()) + "\","
-                        + "\"payload\":" + toPayloadJson(section.getPayload())
-                        + "}");
-            }
+        try {
+            return objectMapper.writeValueAsString(snapshot);
+        } catch (JsonProcessingException exception) {
+            throw new IllegalStateException("Failed to serialize operations report snapshot.", exception);
         }
-        return "{"
-                + "\"reportId\":" + number(snapshot.getReportId()) + ","
-                + "\"requestId\":\"" + json(snapshot.getRequestId()) + "\","
-                + "\"traceId\":\"" + json(snapshot.getTraceId()) + "\","
-                + "\"reportType\":\"" + json(snapshot.getReportType()) + "\","
-                + "\"format\":\"" + json(snapshot.getFormat()) + "\","
-                + "\"periodStart\":\"" + json(snapshot.getPeriodStart()) + "\","
-                + "\"periodEnd\":\"" + json(snapshot.getPeriodEnd()) + "\","
-                + "\"templateVersion\":\"" + json(snapshot.getTemplateVersion()) + "\","
-                + "\"requesterUserId\":" + number(snapshot.getRequesterUserId()) + ","
-                + "\"generatedAt\":\"" + json(snapshot.getGeneratedAt()) + "\","
-                + "\"sections\":" + sectionsJoiner
-                + "}";
     }
 
     private String lower(String value) {
         return value == null ? "unknown" : value.toLowerCase();
-    }
-
-    private String toPayloadJson(Map<String, Object> payload) {
-        StringJoiner joiner = new StringJoiner(",", "{", "}");
-        for (Map.Entry<String, Object> entry : payload.entrySet()) {
-            joiner.add("\"" + json(entry.getKey()) + "\":" + value(entry.getValue()));
-        }
-        return joiner.toString();
-    }
-
-    private String value(Object value) {
-        if (value == null) {
-            return "null";
-        }
-        if (value instanceof Number || value instanceof Boolean) {
-            return String.valueOf(value);
-        }
-        return "\"" + json(value) + "\"";
-    }
-
-    private String number(Number value) {
-        return value == null ? "null" : String.valueOf(value);
-    }
-
-    private String json(Object value) {
-        if (value == null) {
-            return "";
-        }
-        return String.valueOf(value).replace("\\", "\\\\").replace("\"", "\\\"");
     }
 }
