@@ -14,9 +14,14 @@ import lombok.Setter;
 public class GraphExtractionTask {
     private GraphExtractionTaskId id;
     private GraphExtractionTaskId taskId;
+    private Long batchJobId;
     private String taskType;
     private String scopeType;
     private String scopeJson;
+    private String triggerSource;
+    private String selectionScopeJson;
+    private Boolean replaceUnconfirmedOnly;
+    private GraphExtractionTaskId parentTaskId;
     private String sourceContentType;
     private Long sourceContentId;
     private Long aiCallId;

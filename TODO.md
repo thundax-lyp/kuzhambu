@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `knowledge graph task model`：扩展图谱抽取任务模型承载批量与重生成语义
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-KNOWLEDGE-CLOSURE.md`
-    - 范围对象：`GraphExtractionTask.java`、`GraphExtractionTaskDO.java`、`GraphExtractionTaskRepository.java`、`GraphExtractionTaskRepositoryImpl.java`、`GraphExtractionTaskPersistenceAssembler.java`
-    - 处理动作：为 `knowledge_graph_extraction_task` 增加 `batchJobId / triggerSource / selectionScopeJson / replaceUnconfirmedOnly / parentTaskId` 并保持单任务兼容
-    - 验收点：单任务读写不回归且新增字段可正常入库读回
-    - 重要度：10/10
-
 - [ ] `knowledge graph command/result`：扩展抽取 command 与 application result 字段
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-KNOWLEDGE-CLOSURE.md`
