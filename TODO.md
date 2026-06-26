@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `operations report storage`：打通报表产物入库与状态回写
-    - 任务类型：拆解任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-REPORT-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/report/`、`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/main/java/com/thundax/kuzhambu/storage/application/helper/StorageUploadStreamHelper.java`
-    - 处理动作：将 worker 报表产物写入 Storage 并回写 `storageObjectId`、`artifactFilename`、最终状态和失败原因
-    - 验收点：成功可下载，失败可追溯，`generate` 不同步等待
-    - 重要度：10/10
-
 - [ ] `kuzhambu-classics-application/report`：新增 Classics 报表统计读接口
     - 任务类型：拆解任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-REPORT-CLOSURE.md`

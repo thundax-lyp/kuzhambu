@@ -8,6 +8,9 @@ import com.thundax.kuzhambu.operations.domain.report.model.entity.ReportRecord;
 import com.thundax.kuzhambu.operations.domain.report.model.enums.ReportStatus;
 import com.thundax.kuzhambu.operations.domain.report.model.valueobject.ReportId;
 import com.thundax.kuzhambu.operations.domain.report.repository.ReportRepository;
+import com.thundax.kuzhambu.storage.application.helper.StorageUploadResult;
+import com.thundax.kuzhambu.storage.application.helper.StorageUploadStreamHelper;
+import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.concurrent.CompletableFuture;
@@ -20,14 +23,17 @@ public class DefaultOperationsReportTaskExecutor implements OperationsReportTask
     private final ReportRepository reportRepository;
     private final OperationsWorkerRenderClient operationsWorkerRenderClient;
     private final OperationsReportSnapshotAssembler snapshotAssembler;
+    private final StorageUploadStreamHelper storageUploadStreamHelper;
 
     public DefaultOperationsReportTaskExecutor(
             ReportRepository reportRepository,
             OperationsWorkerRenderClient operationsWorkerRenderClient,
-            OperationsReportSnapshotAssembler snapshotAssembler) {
+            OperationsReportSnapshotAssembler snapshotAssembler,
+            StorageUploadStreamHelper storageUploadStreamHelper) {
         this.reportRepository = reportRepository;
         this.operationsWorkerRenderClient = operationsWorkerRenderClient;
         this.snapshotAssembler = snapshotAssembler;
+        this.storageUploadStreamHelper = storageUploadStreamHelper;
     }
 
     @Override
@@ -49,6 +55,7 @@ public class DefaultOperationsReportTaskExecutor implements OperationsReportTask
             OperationsWorkerRenderDtos.WorkerRenderResponse workerResponse =
                     operationsWorkerRenderClient.renderOperationsReport(workerRequest);
             OperationsReportArtifactResult artifactResult = toArtifactResult(workerResponse);
+            saveArtifact(artifactResult);
             markSucceeded(record, artifactResult);
             return artifactResult;
         } catch (Exception exception) {
@@ -66,6 +73,7 @@ public class DefaultOperationsReportTaskExecutor implements OperationsReportTask
 
     private void markSucceeded(ReportRecord record, OperationsReportArtifactResult artifactResult) {
         record.setArtifactFilename(artifactResult == null ? null : artifactResult.getFilename());
+        record.setStorageObjectId(artifactResult == null ? null : artifactResult.getStorageObjectId());
         record.setReportStatus(ReportStatus.SUCCEEDED);
         record.setFailureReason(null);
         record.setCompletedAt(new Date());
@@ -97,7 +105,8 @@ public class DefaultOperationsReportTaskExecutor implements OperationsReportTask
                 artifact.getContentType(),
                 contentBytes,
                 artifact.getSizeBytes() == null ? (long) contentBytes.length : artifact.getSizeBytes(),
-                artifact.getSha256());
+                artifact.getSha256(),
+                null);
     }
 
     private byte[] decodeArtifactBytes(OperationsWorkerRenderDtos.Artifact artifact) {
@@ -115,5 +124,40 @@ public class DefaultOperationsReportTaskExecutor implements OperationsReportTask
         String errorCode = StringUtils.defaultIfBlank(error.getCode(), error.getType());
         return StringUtils.defaultIfBlank(errorCode, "WORKER_RENDER_FAILED") + ": "
                 + StringUtils.defaultIfBlank(error.getMessage(), "Operations report worker execution failed.");
+    }
+
+    private void saveArtifact(OperationsReportArtifactResult artifactResult) {
+        if (artifactResult == null
+                || artifactResult.getContentBytes() == null
+                || artifactResult.getContentBytes().length == 0) {
+            throw new IllegalStateException("Operations report artifact content is empty.");
+        }
+        StorageUploadResult uploadResult = storageUploadStreamHelper.uploadServerArtifact(
+                new ByteArrayInputStream(artifactResult.getContentBytes()),
+                filenameHint(artifactResult),
+                artifactResult.getContentType(),
+                artifactResult.getSizeBytes() == null
+                        ? artifactResult.getContentBytes().length
+                        : artifactResult.getSizeBytes());
+        if (uploadResult == null || uploadResult.hasError()) {
+            throw new IllegalStateException("Operations report storage upload failed: "
+                    + (uploadResult == null ? "unknown error" : uploadResult.getError()));
+        }
+        if (uploadResult.getStorage() == null || uploadResult.getStorage().getId() == null) {
+            throw new IllegalStateException("Operations report storage upload returned empty storage object.");
+        }
+        artifactResult.setStorageObjectId(uploadResult.getStorage().getId().value());
+    }
+
+    private String filenameHint(OperationsReportArtifactResult artifactResult) {
+        if (artifactResult != null && StringUtils.isNotBlank(artifactResult.getFilename())) {
+            return artifactResult.getFilename();
+        }
+        String format = artifactResult == null ? null : artifactResult.getFormat();
+        return "operations-report-" + System.currentTimeMillis() + "." + safeSuffix(format);
+    }
+
+    private String safeSuffix(String format) {
+        return StringUtils.isBlank(format) ? "html" : format.toLowerCase();
     }
 }

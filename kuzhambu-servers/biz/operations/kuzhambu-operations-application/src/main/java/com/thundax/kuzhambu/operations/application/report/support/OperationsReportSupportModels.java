@@ -54,5 +54,6 @@ public final class OperationsReportSupportModels {
         private byte[] contentBytes;
         private Long sizeBytes;
         private String sha256;
+        private Long storageObjectId;
     }
 }
