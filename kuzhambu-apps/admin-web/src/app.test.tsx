@@ -2,6 +2,7 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-li
 import userEvent from "@testing-library/user-event";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { App as AntdApp } from "antd";
+import type { ReactNode } from "react";
 import App from "./app";
 import { clearPermissions, hasPermission, replacePermissions } from "./auth/permission-storage";
 import { KuzhambuTable } from "./components/kuzhambu-table";
@@ -20,6 +21,18 @@ vi.mock("sm-crypto", () => ({
 }));
 
 describe("App", () => {
+    const renderWithQueryClient = (node: ReactNode) => {
+        render(<QueryClientProvider client={queryClient}>{node}</QueryClientProvider>);
+    };
+
+    const renderWithQueryClientAndApp = (node: ReactNode) => {
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>{node}</AntdApp>
+            </QueryClientProvider>
+        );
+    };
+
     beforeEach(() => {
         localStorage.clear();
         clearPermissions();
@@ -445,11 +458,7 @@ describe("App", () => {
             );
         });
 
-        render(
-            <QueryClientProvider client={queryClient}>
-                <DepartmentPage />
-            </QueryClientProvider>
-        );
+        renderWithQueryClientAndApp(<DepartmentPage />);
 
         expect(await screen.findByRole("heading", { name: "部门管理" })).toBeInTheDocument();
         expect((await screen.findAllByText("总部")).length).toBeGreaterThan(0);
@@ -525,11 +534,7 @@ describe("App", () => {
             );
         });
 
-        render(
-            <QueryClientProvider client={queryClient}>
-                <DictionaryPage />
-            </QueryClientProvider>
-        );
+        renderWithQueryClientAndApp(<DictionaryPage />);
 
         expect(await screen.findByRole("heading", { name: "字典管理" })).toBeInTheDocument();
         expect(await screen.findByText("启用")).toBeInTheDocument();
@@ -699,11 +704,7 @@ describe("App", () => {
             );
         });
 
-        render(
-            <QueryClientProvider client={queryClient}>
-                <AuditLogPage />
-            </QueryClientProvider>
-        );
+        renderWithQueryClient(<AuditLogPage />);
 
         expect(await screen.findByRole("heading", { name: "审计日志" })).toBeInTheDocument();
         expect(await screen.findByText("产品反馈")).toBeInTheDocument();
@@ -880,13 +881,7 @@ describe("App", () => {
             );
         });
 
-        render(
-            <QueryClientProvider client={queryClient}>
-                <AntdApp>
-                    <StorageObjectPage />
-                </AntdApp>
-            </QueryClientProvider>
-        );
+        renderWithQueryClientAndApp(<StorageObjectPage />);
 
         expect(await screen.findByRole("heading", { name: "存储对象" })).toBeInTheDocument();
         expect(await screen.findByText("sancai.png")).toBeInTheDocument();
@@ -1083,11 +1078,7 @@ describe("App", () => {
             );
         });
 
-        render(
-            <QueryClientProvider client={queryClient}>
-                <UserPage />
-            </QueryClientProvider>
-        );
+        renderWithQueryClientAndApp(<UserPage />);
 
         expect(screen.getByRole("heading", { name: "用户管理" })).toBeInTheDocument();
         expect(await screen.findByText("Ethan Chen")).toBeInTheDocument();
