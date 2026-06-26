@@ -22,6 +22,9 @@ public interface MingCustomsRepository {
             int pageNo,
             int pageSize);
 
+    List<MingCustomsEntry> list(
+            String category, String keyword, String tagName, String visibility, SortDirection sortDirection);
+
     MingCustomsEntryId insert(MingCustomsEntry entry);
 
     int update(MingCustomsEntry entry);
