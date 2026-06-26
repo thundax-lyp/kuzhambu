@@ -13,6 +13,8 @@ import com.thundax.kuzhambu.knowledge.infra.taxonomy.persistence.dataobject.TagD
 import com.thundax.kuzhambu.knowledge.infra.taxonomy.persistence.mapper.TagCategoryMapper;
 import com.thundax.kuzhambu.knowledge.infra.taxonomy.persistence.mapper.TagContentRefMapper;
 import com.thundax.kuzhambu.knowledge.infra.taxonomy.persistence.mapper.TagMapper;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.YearMonth;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -58,6 +60,27 @@ public class TagGovernanceMetricsRepositoryImpl implements TagGovernanceMetricsR
                 buildCategoryDistributions(activeTags, categories),
                 buildSourceRatios(activeTags),
                 buildMonthlyNewTags(approvedTags, effectiveRecentMonths));
+    }
+
+    @Override
+    public BigDecimal getTagCoverageRate() {
+        List<Tag> activeTags = TaxonomyPersistenceAssembler.toTagDomainList(tagMapper.selectList(activeTagQuery()));
+        if (activeTags.isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+        List<TagContentRefDO> contentRefs = tagContentRefMapper.selectList(new QueryWrapper<>());
+        Map<Long, Long> contentRefCountByTagId = contentRefs.stream()
+                .filter(Objects::nonNull)
+                .filter(ref -> ref.getTagId() != null)
+                .collect(Collectors.groupingBy(TagContentRefDO::getTagId, Collectors.counting()));
+        long coveredTagCount = activeTags.stream()
+                .filter(Objects::nonNull)
+                .filter(tag -> tag.getTagId() != null)
+                .filter(tag ->
+                        contentRefCountByTagId.getOrDefault(tag.getTagId().value(), 0L) > 0)
+                .count();
+        return BigDecimal.valueOf(coveredTagCount)
+                .divide(BigDecimal.valueOf(activeTags.size()), 4, RoundingMode.HALF_UP);
     }
 
     private QueryWrapper<TagDO> activeTagQuery() {
