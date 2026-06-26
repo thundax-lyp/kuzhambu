@@ -18,11 +18,28 @@ public class GraphExtractionTaskDO {
     private Long id;
 
     private Long taskId;
+    private Long batchJobId;
     private String taskType;
     private String scopeType;
     private String scopeJson;
+    private String triggerSource;
+    private String selectionScopeJson;
+    private Boolean replaceUnconfirmedOnly;
+    private Long parentTaskId;
     private String sourceContentType;
     private Long sourceContentId;
+    private Long modelId;
+    private String modelName;
+    private Long promptVersionId;
+    private String requestId;
+    private String traceId;
+    private String promptMessagesJson;
+    private String promptVariablesJson;
+    private String promptHash;
+    private String inputPayloadJson;
+    private String outputSchemaJson;
+    private Boolean forceJson;
+    private String locale;
     private Long aiCallId;
     private Long aiCandidateId;
     private String status;

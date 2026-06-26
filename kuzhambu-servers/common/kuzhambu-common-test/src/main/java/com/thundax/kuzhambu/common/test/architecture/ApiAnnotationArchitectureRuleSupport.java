@@ -42,7 +42,8 @@ public final class ApiAnnotationArchitectureRuleSupport {
             "latest",
             "search",
             "click",
-            "rebuild");
+            "rebuild",
+            "regenerate");
 
     private static final Pattern REST_CONTROLLER_CLASS_PATTERN = Pattern.compile(
             "((?:@[A-Za-z0-9_.]+(?:\\([^)]*\\))?\\s+)*)public\\s+class\\s+([A-Za-z0-9_]+Controller)\\b");

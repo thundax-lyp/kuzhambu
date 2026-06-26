@@ -81,6 +81,8 @@ public class KnowledgeGraphExtractionController {
         return PageResponseHelper.fromPageResult(
                 extractionService.pageTasks(
                         request == null ? null : request.getTaskType(),
+                        request == null ? null : request.getBatchJobId(),
+                        request == null ? null : request.getTriggerSource(),
                         request == null ? null : request.getStatus(),
                         request == null ? null : request.getSourceContentType(),
                         request == null ? null : request.getSourceContentId(),
@@ -103,6 +105,44 @@ public class KnowledgeGraphExtractionController {
             @Valid @RequestBody GraphExtractionRequests.TaskIdRequest request) {
         return KnowledgeGraphExtractionInterfaceAssembler.toResponse(
                 extractionService.getTaskDetail(KnowledgeGraphExtractionInterfaceAssembler.toTaskId(request)));
+    }
+
+    @Operation(summary = "重生成抽取任务", description = "knowledge:graph:edit")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
+    @HasPermission("knowledge:graph:edit")
+    @SysLogger(value = "重生成抽取任务")
+    @PostMapping("task/regenerate")
+    public GraphExtractionResponses.TaskResponse regenerateTask(
+            @Valid @RequestBody GraphExtractionRequests.RegenerateRequest request) {
+        return KnowledgeGraphExtractionInterfaceAssembler.toResponse(extractionService.regenerateTask(
+                request == null ? null : request.getTaskType(),
+                KnowledgeGraphExtractionInterfaceAssembler.toSourceTaskId(request),
+                request == null ? null : request.getSelectionScopeJson(),
+                request == null ? null : request.getReplaceUnconfirmedOnly(),
+                request == null ? null : request.getRequestedBy()));
+    }
+
+    @Operation(summary = "取消批量抽取任务", description = "knowledge:graph:edit")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
+    @HasPermission("knowledge:graph:edit")
+    @SysLogger(value = "取消批量抽取任务")
+    @PostMapping("task/cancel-batch")
+    public GraphExtractionResponses.BatchCancelResponse cancelBatchTask(
+            @Valid @RequestBody GraphExtractionRequests.BatchCancelRequest request) {
+        return KnowledgeGraphExtractionInterfaceAssembler.toResponse(extractionService.cancelBatch(
+                request == null ? null : request.getBatchJobId(), request == null ? null : request.getRequestedBy()));
     }
 
     @Operation(summary = "应用抽取候选结果", description = "knowledge:graph:apply")

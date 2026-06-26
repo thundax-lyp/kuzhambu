@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.knowledge.interfaces.admin.graph.assembler;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestGraphExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestLineageExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationExtractionCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionBatchCancelResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphVersionResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeEntityResult;
@@ -18,7 +19,7 @@ public final class KnowledgeGraphExtractionInterfaceAssembler {
     private KnowledgeGraphExtractionInterfaceAssembler() {}
 
     public static RequestRelationExtractionCommand toRelationCommand(GraphExtractionRequests.CreateRequest request) {
-        return new RequestRelationExtractionCommand(
+        RequestRelationExtractionCommand command = new RequestRelationExtractionCommand(
                 request == null ? null : request.getScopeType(),
                 request == null ? null : request.getScopeJson(),
                 request == null ? null : request.getSourceContentType(),
@@ -38,10 +39,14 @@ public final class KnowledgeGraphExtractionInterfaceAssembler {
                 request == null ? null : request.getOutputSchemaJson(),
                 request != null && Boolean.TRUE.equals(request.getForceJson()),
                 request == null ? null : request.getLocale());
+        command.setTriggerSource(request == null ? null : request.getTriggerSource());
+        command.setSelectionScopeJson(request == null ? null : request.getSelectionScopeJson());
+        command.setReplaceUnconfirmedOnly(request == null ? null : request.getReplaceUnconfirmedOnly());
+        return command;
     }
 
     public static RequestGraphExtractionCommand toGraphCommand(GraphExtractionRequests.CreateRequest request) {
-        return new RequestGraphExtractionCommand(
+        RequestGraphExtractionCommand command = new RequestGraphExtractionCommand(
                 request == null ? null : request.getScopeType(),
                 request == null ? null : request.getScopeJson(),
                 request == null ? null : request.getSourceContentType(),
@@ -61,10 +66,14 @@ public final class KnowledgeGraphExtractionInterfaceAssembler {
                 request == null ? null : request.getOutputSchemaJson(),
                 request != null && Boolean.TRUE.equals(request.getForceJson()),
                 request == null ? null : request.getLocale());
+        command.setTriggerSource(request == null ? null : request.getTriggerSource());
+        command.setSelectionScopeJson(request == null ? null : request.getSelectionScopeJson());
+        command.setReplaceUnconfirmedOnly(request == null ? null : request.getReplaceUnconfirmedOnly());
+        return command;
     }
 
     public static RequestLineageExtractionCommand toLineageCommand(GraphExtractionRequests.CreateRequest request) {
-        return new RequestLineageExtractionCommand(
+        RequestLineageExtractionCommand command = new RequestLineageExtractionCommand(
                 request == null ? null : request.getScopeType(),
                 request == null ? null : request.getScopeJson(),
                 request == null ? null : request.getSourceContentType(),
@@ -84,18 +93,31 @@ public final class KnowledgeGraphExtractionInterfaceAssembler {
                 request == null ? null : request.getOutputSchemaJson(),
                 request != null && Boolean.TRUE.equals(request.getForceJson()),
                 request == null ? null : request.getLocale());
+        command.setTriggerSource(request == null ? null : request.getTriggerSource());
+        command.setSelectionScopeJson(request == null ? null : request.getSelectionScopeJson());
+        command.setReplaceUnconfirmedOnly(request == null ? null : request.getReplaceUnconfirmedOnly());
+        return command;
     }
 
     public static GraphExtractionTaskId toTaskId(GraphExtractionRequests.TaskIdRequest request) {
         return request == null ? null : GraphExtractionTaskId.ofNullable(request.getTaskId());
     }
 
+    public static GraphExtractionTaskId toSourceTaskId(GraphExtractionRequests.RegenerateRequest request) {
+        return request == null ? null : GraphExtractionTaskId.ofNullable(request.getSourceTaskId());
+    }
+
     public static GraphExtractionResponses.TaskResponse toResponse(GraphExtractionTaskResult result) {
         return GraphExtractionResponses.TaskResponse.builder()
                 .taskId(result == null ? null : result.getTaskId())
+                .batchJobId(result == null ? null : result.getBatchJobId())
                 .taskType(result == null ? null : result.getTaskType())
                 .scopeType(result == null ? null : result.getScopeType())
                 .scopeJson(result == null ? null : result.getScopeJson())
+                .triggerSource(result == null ? null : result.getTriggerSource())
+                .selectionScopeJson(result == null ? null : result.getSelectionScopeJson())
+                .replaceUnconfirmedOnly(result == null ? null : result.getReplaceUnconfirmedOnly())
+                .parentTaskId(result == null ? null : result.getParentTaskId())
                 .sourceContentType(result == null ? null : result.getSourceContentType())
                 .sourceContentId(result == null ? null : result.getSourceContentId())
                 .aiCallId(result == null ? null : result.getAiCallId())
@@ -107,6 +129,16 @@ public final class KnowledgeGraphExtractionInterfaceAssembler {
                 .requestedAt(result == null ? null : result.getRequestedAt())
                 .completedAt(result == null ? null : result.getCompletedAt())
                 .appliedAt(result == null ? null : result.getAppliedAt())
+                .build();
+    }
+
+    public static GraphExtractionResponses.BatchCancelResponse toResponse(GraphExtractionBatchCancelResult result) {
+        return GraphExtractionResponses.BatchCancelResponse.builder()
+                .batchJobId(result == null ? null : result.getBatchJobId())
+                .status(result == null ? null : result.getStatus())
+                .cancelledCount(result == null ? null : result.getCancelledCount())
+                .completedCount(result == null ? null : result.getCompletedCount())
+                .failedCount(result == null ? null : result.getFailedCount())
                 .build();
     }
 

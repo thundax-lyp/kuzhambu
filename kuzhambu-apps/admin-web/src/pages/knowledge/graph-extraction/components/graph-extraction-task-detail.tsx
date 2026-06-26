@@ -20,6 +20,13 @@ const formatTimestamp = (value?: number | null) => {
     return Number.isNaN(date.getTime()) ? "-" : date.toLocaleString("zh-CN", { hour12: false });
 };
 
+const formatReplaceUnconfirmedOnly = (value?: boolean | null) => {
+    if (value === undefined || value === null) {
+        return "-";
+    }
+    return value ? "是" : "否";
+};
+
 export const GraphExtractionTaskDetail = ({
     applying = false,
     canApply = false,
@@ -49,8 +56,17 @@ export const GraphExtractionTaskDetail = ({
         >
             <Descriptions column={1} bordered size="small">
                 <Descriptions.Item label="任务号">{task?.taskId || "-"}</Descriptions.Item>
+                <Descriptions.Item label="批次号">{task?.batchJobId || "-"}</Descriptions.Item>
                 <Descriptions.Item label="任务类型">{task?.taskType || "-"}</Descriptions.Item>
+                <Descriptions.Item label="触发来源">{task?.triggerSource || "-"}</Descriptions.Item>
+                <Descriptions.Item label="父任务号">{task?.parentTaskId || "-"}</Descriptions.Item>
                 <Descriptions.Item label="任务状态">{task?.status || "-"}</Descriptions.Item>
+                <Descriptions.Item label="批量范围 JSON">
+                    {task?.selectionScopeJson || "-"}
+                </Descriptions.Item>
+                <Descriptions.Item label="仅替换未确认结果">
+                    {formatReplaceUnconfirmedOnly(task?.replaceUnconfirmedOnly)}
+                </Descriptions.Item>
                 <Descriptions.Item label="AI Call ID">{task?.aiCallId || "-"}</Descriptions.Item>
                 <Descriptions.Item label="AI Candidate ID">
                     {task?.aiCandidateId || "-"}

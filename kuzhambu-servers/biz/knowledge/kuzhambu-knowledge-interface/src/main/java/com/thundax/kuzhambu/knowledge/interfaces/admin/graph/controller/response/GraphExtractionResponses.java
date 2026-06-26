@@ -19,6 +19,9 @@ public final class GraphExtractionResponses {
         @JsonProperty("taskId")
         private String taskId;
 
+        @JsonProperty("batchJobId")
+        private Long batchJobId;
+
         @JsonProperty("taskType")
         private String taskType;
 
@@ -27,6 +30,18 @@ public final class GraphExtractionResponses {
 
         @JsonProperty("scopeJson")
         private String scopeJson;
+
+        @JsonProperty("triggerSource")
+        private String triggerSource;
+
+        @JsonProperty("selectionScopeJson")
+        private String selectionScopeJson;
+
+        @JsonProperty("replaceUnconfirmedOnly")
+        private Boolean replaceUnconfirmedOnly;
+
+        @JsonProperty("parentTaskId")
+        private Long parentTaskId;
 
         @JsonProperty("sourceContentType")
         private String sourceContentType;
@@ -60,6 +75,27 @@ public final class GraphExtractionResponses {
 
         @JsonProperty("appliedAt")
         private Long appliedAt;
+    }
+
+    @Getter
+    @Builder
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class BatchCancelResponse implements Serializable {
+        @JsonProperty("batchJobId")
+        private Long batchJobId;
+
+        @JsonProperty("status")
+        private String status;
+
+        @JsonProperty("cancelledCount")
+        private Integer cancelledCount;
+
+        @JsonProperty("completedCount")
+        private Integer completedCount;
+
+        @JsonProperty("failedCount")
+        private Integer failedCount;
     }
 
     @Getter

@@ -2,11 +2,14 @@ package com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionBatchCancelResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphVersionResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeEntityResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeLineageNodeResult;
@@ -17,6 +20,112 @@ import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.
 import org.junit.jupiter.api.Test;
 
 class KnowledgeGraphExtractionControllerTest {
+
+    @Test
+    void cancelBatchTaskShouldMapBatchCancelResponse() {
+        KnowledgeGraphExtractionApplicationService service = mock(KnowledgeGraphExtractionApplicationService.class);
+        KnowledgeGraphExtractionController controller = new KnowledgeGraphExtractionController(service);
+        GraphExtractionRequests.BatchCancelRequest request = new GraphExtractionRequests.BatchCancelRequest();
+        request.setBatchJobId(1001L);
+        request.setRequestedBy(99L);
+        when(service.cancelBatch(1001L, 99L))
+                .thenReturn(new GraphExtractionBatchCancelResult(1001L, "CANCELLED", 1, 1, 0));
+
+        var response = controller.cancelBatchTask(request);
+
+        verify(service).cancelBatch(eq(1001L), eq(99L));
+        assertEquals(1001L, response.getBatchJobId());
+        assertEquals("CANCELLED", response.getStatus());
+        assertEquals(1, response.getCancelledCount());
+    }
+
+    @Test
+    void regenerateTaskShouldMapTaskResponse() {
+        KnowledgeGraphExtractionApplicationService service = mock(KnowledgeGraphExtractionApplicationService.class);
+        KnowledgeGraphExtractionController controller = new KnowledgeGraphExtractionController(service);
+        GraphExtractionRequests.RegenerateRequest request = new GraphExtractionRequests.RegenerateRequest();
+        request.setTaskType("GRAPH");
+        request.setSourceTaskId(88L);
+        request.setSelectionScopeJson("{\"sourceContentIds\":[88,89]}");
+        request.setReplaceUnconfirmedOnly(Boolean.TRUE);
+        request.setRequestedBy(99L);
+        when(service.regenerateTask(
+                        eq("GRAPH"), any(), eq("{\"sourceContentIds\":[88,89]}"), eq(Boolean.TRUE), eq(99L)))
+                .thenReturn(new GraphExtractionTaskResult(
+                        "9001",
+                        1001L,
+                        "GRAPH",
+                        "CLASSICS_ENTRY",
+                        "{\"entryId\":88}",
+                        "REGENERATE",
+                        "{\"sourceContentIds\":[88,89]}",
+                        Boolean.TRUE,
+                        88L,
+                        "SANCAI_ENTRY",
+                        88L,
+                        null,
+                        null,
+                        "REQUESTED",
+                        null,
+                        null,
+                        99L,
+                        1710000000000L,
+                        null,
+                        null));
+
+        var response = controller.regenerateTask(request);
+
+        verify(service)
+                .regenerateTask(eq("GRAPH"), any(), eq("{\"sourceContentIds\":[88,89]}"), eq(Boolean.TRUE), eq(99L));
+        assertEquals("9001", response.getTaskId());
+        assertEquals(1001L, response.getBatchJobId());
+        assertEquals("REGENERATE", response.getTriggerSource());
+    }
+
+    @Test
+    void pageTasksShouldForwardBatchAndTriggerFilters() {
+        KnowledgeGraphExtractionApplicationService service = mock(KnowledgeGraphExtractionApplicationService.class);
+        KnowledgeGraphExtractionController controller = new KnowledgeGraphExtractionController(service);
+        GraphExtractionRequests.PageTaskRequest request = new GraphExtractionRequests.PageTaskRequest();
+        request.setPageNo(1);
+        request.setPageSize(10);
+        request.setTaskType("GRAPH");
+        request.setBatchJobId(1001L);
+        request.setTriggerSource("QUALITY_REPORT");
+        when(service.pageTasks(eq("GRAPH"), eq(1001L), eq("QUALITY_REPORT"), any(), any(), any(), any()))
+                .thenReturn(PageResult.of(
+                        1,
+                        10,
+                        1,
+                        java.util.List.of(new GraphExtractionTaskResult(
+                                "11",
+                                1001L,
+                                "GRAPH",
+                                null,
+                                null,
+                                "QUALITY_REPORT",
+                                null,
+                                Boolean.TRUE,
+                                null,
+                                "SANCAI_ENTRY",
+                                1001L,
+                                null,
+                                null,
+                                "SUCCEEDED",
+                                null,
+                                null,
+                                1L,
+                                1710000000000L,
+                                1710000001000L,
+                                null))));
+
+        var response = controller.pageTasks(request);
+
+        verify(service).pageTasks(eq("GRAPH"), eq(1001L), eq("QUALITY_REPORT"), any(), any(), any(), any());
+        assertEquals(1, response.getRecords().size());
+        assertEquals(1001L, response.getRecords().get(0).getBatchJobId());
+        assertEquals("QUALITY_REPORT", response.getRecords().get(0).getTriggerSource());
+    }
 
     @Test
     void pageVersionsShouldMapReadableVersionPage() {

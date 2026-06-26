@@ -25,6 +25,15 @@ public final class GraphExtractionRequests {
         @JsonProperty("scopeJson")
         private String scopeJson;
 
+        @JsonProperty("triggerSource")
+        private String triggerSource;
+
+        @JsonProperty("selectionScopeJson")
+        private String selectionScopeJson;
+
+        @JsonProperty("replaceUnconfirmedOnly")
+        private Boolean replaceUnconfirmedOnly;
+
         @JsonProperty("sourceContentType")
         private String sourceContentType;
 
@@ -85,6 +94,12 @@ public final class GraphExtractionRequests {
         @JsonProperty("taskType")
         private String taskType;
 
+        @JsonProperty("batchJobId")
+        private Long batchJobId;
+
+        @JsonProperty("triggerSource")
+        private String triggerSource;
+
         @JsonProperty("status")
         private String status;
 
@@ -102,6 +117,39 @@ public final class GraphExtractionRequests {
     public static class TaskIdRequest {
         @JsonProperty("taskId")
         private Long taskId;
+    }
+
+    @Getter
+    @Setter
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class RegenerateRequest {
+        @JsonProperty("taskType")
+        private String taskType;
+
+        @JsonProperty("sourceTaskId")
+        private Long sourceTaskId;
+
+        @JsonProperty("selectionScopeJson")
+        private String selectionScopeJson;
+
+        @JsonProperty("replaceUnconfirmedOnly")
+        private Boolean replaceUnconfirmedOnly;
+
+        @JsonProperty("requestedBy")
+        private Long requestedBy;
+    }
+
+    @Getter
+    @Setter
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class BatchCancelRequest {
+        @JsonProperty("batchJobId")
+        private Long batchJobId;
+
+        @JsonProperty("requestedBy")
+        private Long requestedBy;
     }
 
     @Getter

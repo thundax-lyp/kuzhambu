@@ -1,4 +1,4 @@
-import { Button, Card, Form, Input, InputNumber } from "antd";
+import { Button, Card, Checkbox, Form, Input, InputNumber } from "antd";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import type {
     GraphExtractionCreateCommand,
@@ -21,6 +21,8 @@ interface GraphExtractionCreateFormValues {
     modelId: number;
     modelName: string;
     promptMessagesJson: string;
+    replaceUnconfirmedOnly?: boolean;
+    selectionScopeJson?: string;
     scopeJson?: string;
     scopeType?: string;
     sourceContentId: number;
@@ -50,6 +52,8 @@ const toCreateRequest = (
     values: GraphExtractionCreateFormValues
 ): GraphExtractionCreateCommand => ({
     taskType,
+    selectionScopeJson: normalizeValue(values.selectionScopeJson),
+    replaceUnconfirmedOnly: values.replaceUnconfirmedOnly ?? undefined,
     scopeType: normalizeValue(values.scopeType),
     scopeJson: normalizeValue(values.scopeJson),
     sourceContentType: values.sourceContentType.trim(),
@@ -84,7 +88,8 @@ export const GraphExtractionCreate = ({
                     layout="vertical"
                     initialValues={{
                         locale: "zh-CN",
-                        modelId: 1
+                        modelId: 1,
+                        replaceUnconfirmedOnly: true
                     }}
                 >
                     <div className="graph-extraction-create-grid">
@@ -127,6 +132,16 @@ export const GraphExtractionCreate = ({
                     <Form.Item name="scopeJson" label="作用域 JSON">
                         <TextArea rows={3} placeholder='例如：{"entryId":1001}' />
                     </Form.Item>
+                    <Form.Item name="selectionScopeJson" label="批量范围 JSON">
+                        <TextArea rows={3} placeholder='例如：{"sourceContentIds":[1001,1002]}' />
+                    </Form.Item>
+                    <Form.Item
+                        name="replaceUnconfirmedOnly"
+                        valuePropName="checked"
+                        label="重生成策略"
+                    >
+                        <Checkbox>仅替换未人工确认结果</Checkbox>
+                    </Form.Item>
                     <Form.Item
                         name="promptMessagesJson"
                         label="Prompt Messages JSON"
@@ -168,6 +183,8 @@ export const GraphExtractionCreate = ({
                         <span>任务号：{latestCreatedTask.taskId || "-"}</span>
                         <span>任务类型：{latestCreatedTask.taskType || "-"}</span>
                         <span>状态：{latestCreatedTask.status || "-"}</span>
+                        <span>批次号：{latestCreatedTask.batchJobId || "-"}</span>
+                        <span>触发来源：{latestCreatedTask.triggerSource || "-"}</span>
                     </KuzhambuSpace>
                 </Card>
             ) : null}

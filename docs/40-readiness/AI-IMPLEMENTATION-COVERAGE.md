@@ -16,6 +16,7 @@
 已完成：
 
 - Classics 精修入口已对接六类同步候选能力（`translate/summary/tags/qa/visual/split`）的 Java → Worker 调用链路（Sancai、Wangqi、Ming Customs）。
+- Knowledge 图谱抽取已对接三类候选能力（`relation_extraction/knowledge_graph/lineage_extraction`）的 Knowledge → AI → Worker 调用链路，并补齐批量任务、取消和重生成所需的 AI 协作台账。
 
 部分完成：
 
@@ -24,7 +25,7 @@
 未完成：
 
 - Classics 的批处理、融合、图像生成类能力（`translate-batch-item/fusion/image-gen`）在 worker 存在但未接入 Java 精修 resolver。
-- Knowledge、Platform 的五类能力在 worker 表内存在，但当前 Java AI 精修尚未提供对应调用入口。
+- Knowledge `tag_extraction` 与 Platform 两类能力在 worker 表内存在，但当前 Java 侧尚未提供对应调用入口。
 
 ## 已完成
 
@@ -46,6 +47,9 @@
 | discovery | - | query_understanding | DiscoveryAiApplicationService#rewriteQuery | DISCOVERY_QUERY_REWRITE | /internal/ai/discovery/query-rewrite | 已完成 | Discovery query rewrite 已接入 worker usecase path |
 | discovery | - | answer_generation | DiscoveryAiApplicationService#generateAnswer | DISCOVERY_ANSWER_GENERATION | /internal/ai/discovery/answer-generation | 已完成 | Discovery answer generation 已接入 worker usecase path |
 | discovery | - | answer_generation | DiscoveryAiApplicationService#streamAnswer | DISCOVERY_ANSWER_GENERATION_STREAM | /internal/ai/discovery/answer-generation/stream | 已完成 | Discovery answer stream usecase 已接入 worker usecase path |
+| knowledge | SANCAI_ENTRY | relation_extraction | KnowledgeGraphExtractionApplicationService#requestRelationExtraction | KNOWLEDGE_RELATION_EXTRACTION | /internal/ai/knowledge/relation-extraction | 已完成 | 已形成任务台账、AI 调用、候选应用、批量与重生成闭环 |
+| knowledge | SANCAI_ENTRY | knowledge_graph | KnowledgeGraphExtractionApplicationService#requestGraphExtraction | KNOWLEDGE_GRAPH_EXTRACTION | /internal/ai/knowledge/graph-extraction | 已完成 | 已形成任务台账、AI 调用、候选应用、批量与重生成闭环 |
+| knowledge | SANCAI_ENTRY | lineage_extraction | KnowledgeGraphExtractionApplicationService#requestLineageExtraction | KNOWLEDGE_LINEAGE_EXTRACTION | /internal/ai/knowledge/lineage-extraction | 已完成 | 已形成任务台账、AI 调用、候选应用、批量与重生成闭环 |
 
 ## 部分完成
 
@@ -60,9 +64,6 @@
 | classics | SANCAI_ENTRY | translate | - | CLASSICS_SANCAI_TRANSLATE_BATCH_ITEM | /internal/ai/classics/sancai/translate-batch-item | 未完成 | 对应 usecase 未在 Classics 精修 resolver 中配置 |
 | classics | SANCAI_ENTRY | fusion | - | CLASSICS_SANCAI_FUSION | /internal/ai/classics/sancai/fusion | 未完成 | 对应 usecase 未在 Java 精修入口中接入 |
 | classics | SANCAI_ENTRY | image_gen | - | CLASSICS_SANCAI_IMAGE_GEN | /internal/ai/classics/sancai/image-gen | 未完成 | 对应 usecase 未在 Java 精修入口中接入 |
-| knowledge | - | relation_extraction | - | KNOWLEDGE_RELATION_EXTRACTION | /internal/ai/knowledge/relation-extraction | 未完成 | 当前 Java AI 精修未提供该域的调用入口 |
-| knowledge | - | knowledge_graph | - | KNOWLEDGE_GRAPH_EXTRACTION | /internal/ai/knowledge/graph-extraction | 未完成 | 当前 Java AI 精修未提供该域的调用入口 |
-| knowledge | - | lineage_extraction | - | KNOWLEDGE_LINEAGE_EXTRACTION | /internal/ai/knowledge/lineage-extraction | 未完成 | 当前 Java AI 精修未提供该域的调用入口 |
 | knowledge | - | tags | - | KNOWLEDGE_TAG_EXTRACTION | /internal/ai/knowledge/tag-extraction | 未完成 | 当前 Java AI 精修未提供该域的调用入口 |
 | platform | - | prompt_suggestion | - | PLATFORM_PROMPT_SUGGESTION | /internal/ai/platform/prompt-suggestion | 未完成 | 当前 Java AI 精修未提供该域的调用入口 |
 | platform | - | version_summary | - | PLATFORM_VERSION_SUMMARY | /internal/ai/platform/version-summary | 未完成 | 当前 Java AI 精修未提供该域的调用入口 |

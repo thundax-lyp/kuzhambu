@@ -121,7 +121,7 @@
 
 ### Service
 
-- `ADMIN_WEB_NAME_SERVICE_METHOD`：service 方法必须使用固定动词前缀。
+- `ADMIN_WEB_NAME_SERVICE_METHOD`：service 方法必须使用固定动词前缀。当前共享动作白名单已包含 `regenerate`，因此重生成类前端 service 方法必须显式使用 `regenerate*`，不得退回 `update`、`change` 或其他别名。
 - `ADMIN_WEB_NAME_SERVICE_METHOD_INPUT`：service 方法入参固定为无入参、单个 `XxxQuery`、单个 `XxxCommand` 或最多 3 个 plain parameters。
 - `ADMIN_WEB_NAME_SERVICE_HELPER_TYPE`：service helper 泛型固定为 `XxxQuery`、`XxxCommand`、inline payload、plain value、`XxxRecord`、`XxxNode`、`OptionsRecord<...>`、`Page<XxxRecord/XxxNode>` 或数组。
 - `ADMIN_WEB_NAME_SERVICE_TYPE_EXPOSURE`：页面和组件只从 service 引用 `XxxQuery` / `XxxCommand`；`XxxRecord` / `XxxNode` 从 `*-types.ts` 引用。

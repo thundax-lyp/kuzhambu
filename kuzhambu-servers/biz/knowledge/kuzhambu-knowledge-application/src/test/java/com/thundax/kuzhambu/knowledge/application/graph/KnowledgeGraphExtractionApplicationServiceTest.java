@@ -2,7 +2,11 @@ package com.thundax.kuzhambu.knowledge.application.graph;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.thundax.kuzhambu.ai.application.batch.command.AiBatchJobCreateCommand;
+import com.thundax.kuzhambu.ai.application.batch.result.AiBatchJobResult;
+import com.thundax.kuzhambu.ai.application.batch.service.AiBatchJobApplicationService;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCallRecord;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
@@ -10,9 +14,11 @@ import com.thundax.kuzhambu.ai.domain.invocation.service.AiCandidateDomainServic
 import com.thundax.kuzhambu.ai.domain.knowledge.model.valueobject.KnowledgeAiExtractionRequest;
 import com.thundax.kuzhambu.ai.domain.knowledge.model.valueobject.KnowledgeAiExtractionResult;
 import com.thundax.kuzhambu.ai.domain.knowledge.service.KnowledgeAiExtractionDomainService;
+import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationExtractionCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionBatchCancelResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphVersionResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeEntityResult;
@@ -55,6 +61,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new FakeKnowledgeLineageNodeRepository(),
                 new FakeKnowledgeLineageRelationRepository(),
                 new FakeAiInvocationRepository(),
+                null,
                 aiService,
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
@@ -71,11 +78,192 @@ class KnowledgeGraphExtractionApplicationServiceTest {
     }
 
     @Test
+    void requestRelationExtractionShouldCreateBatchTasksWhenSelectionScopeContainsManyTargets() {
+        FakeRepository repository = new FakeRepository();
+        FakeKnowledgeAiExtractionDomainService aiService = new FakeKnowledgeAiExtractionDomainService();
+        FakeAiBatchJobApplicationService batchService = new FakeAiBatchJobApplicationService();
+        KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
+                repository,
+                new FakeGraphVersionRepository(),
+                new FakeKnowledgeEntityRepository(),
+                new FakeKnowledgeRelationRepository(),
+                new FakeKnowledgeLineageNodeRepository(),
+                new FakeKnowledgeLineageRelationRepository(),
+                new FakeAiInvocationRepository(),
+                batchService,
+                aiService,
+                new AiCandidateDomainService(new FakeAiInvocationRepository()),
+                null);
+        RequestRelationExtractionCommand command = relationCommand();
+        command.setSelectionScopeJson("{\"sourceContentIds\":[11,12]}");
+        command.setTriggerSource("QUALITY_REPORT");
+        command.setReplaceUnconfirmedOnly(Boolean.TRUE);
+
+        GraphExtractionTaskResult result = service.requestRelationExtraction(command);
+
+        assertNotNull(result);
+        assertEquals(Long.valueOf(1001L), result.getBatchJobId());
+        assertEquals("SUCCEEDED", result.getStatus());
+        assertEquals(3, repository.tasks.size());
+        GraphExtractionTask parentTask = repository.tasks.get(0);
+        assertEquals(Long.valueOf(1001L), parentTask.getBatchJobId());
+        assertEquals("QUALITY_REPORT", parentTask.getTriggerSource());
+        assertEquals(Boolean.TRUE, parentTask.getReplaceUnconfirmedOnly());
+        assertEquals("SUCCEEDED", parentTask.getStatus());
+        GraphExtractionTask firstChild = repository.tasks.get(1);
+        GraphExtractionTask secondChild = repository.tasks.get(2);
+        assertEquals(parentTask.getTaskId(), firstChild.getParentTaskId());
+        assertEquals(parentTask.getTaskId(), secondChild.getParentTaskId());
+        assertEquals(Long.valueOf(11L), firstChild.getSourceContentId());
+        assertEquals(Long.valueOf(12L), secondChild.getSourceContentId());
+        assertEquals(2, batchService.recordSuccessCalls);
+        assertEquals(0, batchService.recordFailureCalls);
+        assertEquals(2, batchService.lastResult.getSuccessCount());
+        assertEquals("RELATION", aiService.lastTaskType);
+    }
+
+    @Test
+    void requestRelationExtractionShouldRejectInvalidSelectionScopeJson() {
+        KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
+                new FakeRepository(),
+                new FakeGraphVersionRepository(),
+                new FakeKnowledgeEntityRepository(),
+                new FakeKnowledgeRelationRepository(),
+                new FakeKnowledgeLineageNodeRepository(),
+                new FakeKnowledgeLineageRelationRepository(),
+                new FakeAiInvocationRepository(),
+                new FakeAiBatchJobApplicationService(),
+                new FakeKnowledgeAiExtractionDomainService(),
+                new AiCandidateDomainService(new FakeAiInvocationRepository()),
+                null);
+        RequestRelationExtractionCommand command = relationCommand();
+        command.setSelectionScopeJson("{bad-json");
+
+        BizException exception = assertThrows(BizException.class, () -> service.requestRelationExtraction(command));
+
+        assertEquals("Knowledge graph selectionScopeJson is invalid", exception.getMessage());
+    }
+
+    @Test
+    void cancelBatchShouldMarkPendingChildrenCancelled() {
+        FakeRepository repository = new FakeRepository();
+        GraphExtractionTask parentTask = new GraphExtractionTask();
+        parentTask.setTaskId(GraphExtractionTaskId.of(1L));
+        parentTask.setBatchJobId(1001L);
+        parentTask.setTaskType("RELATION");
+        parentTask.setStatus("RUNNING");
+        repository.tasks.add(parentTask);
+        GraphExtractionTask pendingChild = new GraphExtractionTask();
+        pendingChild.setTaskId(GraphExtractionTaskId.of(2L));
+        pendingChild.setBatchJobId(1001L);
+        pendingChild.setParentTaskId(GraphExtractionTaskId.of(1L));
+        pendingChild.setTaskType("RELATION");
+        pendingChild.setStatus("REQUESTED");
+        repository.tasks.add(pendingChild);
+        GraphExtractionTask finishedChild = new GraphExtractionTask();
+        finishedChild.setTaskId(GraphExtractionTaskId.of(3L));
+        finishedChild.setBatchJobId(1001L);
+        finishedChild.setParentTaskId(GraphExtractionTaskId.of(1L));
+        finishedChild.setTaskType("RELATION");
+        finishedChild.setStatus("SUCCEEDED");
+        repository.tasks.add(finishedChild);
+        FakeAiBatchJobApplicationService batchService = new FakeAiBatchJobApplicationService();
+        batchService.create(new AiBatchJobCreateCommand("{}", "relation_extraction", "SANCAI_ENTRY", 2, null));
+        batchService.recordSuccess(1001L);
+        KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
+                repository,
+                new FakeGraphVersionRepository(),
+                new FakeKnowledgeEntityRepository(),
+                new FakeKnowledgeRelationRepository(),
+                new FakeKnowledgeLineageNodeRepository(),
+                new FakeKnowledgeLineageRelationRepository(),
+                new FakeAiInvocationRepository(),
+                batchService,
+                new FakeKnowledgeAiExtractionDomainService(),
+                new AiCandidateDomainService(new FakeAiInvocationRepository()),
+                null);
+
+        GraphExtractionBatchCancelResult result = service.cancelBatch(1001L, 99L);
+
+        assertEquals(Long.valueOf(1001L), result.getBatchJobId());
+        assertEquals("CANCELLED", result.getStatus());
+        assertEquals(Integer.valueOf(1), result.getCancelledCount());
+        assertEquals(Integer.valueOf(1), result.getCompletedCount());
+        assertEquals("CANCELLED", pendingChild.getStatus());
+        assertEquals(Long.valueOf(99L), pendingChild.getRequestedBy());
+        assertEquals("CANCELLED", parentTask.getStatus());
+    }
+
+    @Test
+    void regenerateTaskShouldReuseStoredRequestSnapshot() {
+        FakeRepository repository = new FakeRepository();
+        GraphExtractionTask sourceTask = new GraphExtractionTask();
+        sourceTask.setTaskId(GraphExtractionTaskId.of(88L));
+        sourceTask.setTaskType("RELATION");
+        sourceTask.setScopeType("CLASSICS_ENTRY");
+        sourceTask.setScopeJson("{\"entryId\":88}");
+        sourceTask.setTriggerSource("QUALITY_REPORT");
+        sourceTask.setSelectionScopeJson("{\"sourceContentIds\":[88,89]}");
+        sourceTask.setReplaceUnconfirmedOnly(Boolean.TRUE);
+        sourceTask.setSourceContentType("SANCAI_ENTRY");
+        sourceTask.setSourceContentId(88L);
+        sourceTask.setRequestedBy(7L);
+        sourceTask.setModelId(5001L);
+        sourceTask.setModelName("gpt-5.5");
+        sourceTask.setPromptVersionId(61L);
+        sourceTask.setRequestId("req-source");
+        sourceTask.setTraceId("trace-source");
+        sourceTask.setPromptMessagesJson("[{\"role\":\"system\",\"content\":\"extract\"}]");
+        sourceTask.setPromptVariablesJson("{\"locale\":\"zh-CN\"}");
+        sourceTask.setPromptHash("hash-source");
+        sourceTask.setInputPayloadJson("{\"content\":\"天地玄黄\"}");
+        sourceTask.setOutputSchemaJson("{\"type\":\"object\"}");
+        sourceTask.setForceJson(Boolean.TRUE);
+        sourceTask.setLocale("zh-CN");
+        repository.tasks.add(sourceTask);
+        FakeKnowledgeAiExtractionDomainService aiService = new FakeKnowledgeAiExtractionDomainService();
+        FakeAiBatchJobApplicationService batchService = new FakeAiBatchJobApplicationService();
+        KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
+                repository,
+                new FakeGraphVersionRepository(),
+                new FakeKnowledgeEntityRepository(),
+                new FakeKnowledgeRelationRepository(),
+                new FakeKnowledgeLineageNodeRepository(),
+                new FakeKnowledgeLineageRelationRepository(),
+                new FakeAiInvocationRepository(),
+                batchService,
+                aiService,
+                new AiCandidateDomainService(new FakeAiInvocationRepository()),
+                null);
+
+        GraphExtractionTaskResult result =
+                service.regenerateTask("RELATION", GraphExtractionTaskId.of(88L), null, Boolean.FALSE, 99L);
+
+        assertNotNull(result);
+        assertEquals("REGENERATE", result.getTriggerSource());
+        assertEquals(Long.valueOf(1001L), result.getBatchJobId());
+        assertEquals(4, repository.tasks.size());
+        GraphExtractionTask parentTask = repository.tasks.get(1);
+        assertEquals(Long.valueOf(88L), parentTask.getParentTaskId().value());
+        assertEquals("REGENERATE", parentTask.getTriggerSource());
+        assertEquals(Boolean.FALSE, parentTask.getReplaceUnconfirmedOnly());
+        GraphExtractionTask childTask = repository.tasks.get(2);
+        assertEquals(Long.valueOf(5001L), childTask.getModelId());
+        assertEquals("gpt-5.5", childTask.getModelName());
+        assertEquals("[{\"role\":\"system\",\"content\":\"extract\"}]", childTask.getPromptMessagesJson());
+        assertEquals("{\"content\":\"天地玄黄\"}", childTask.getInputPayloadJson());
+        assertEquals(Long.valueOf(99L), childTask.getRequestedBy());
+        assertEquals("RELATION", aiService.lastTaskType);
+    }
+
+    @Test
     void pageTasksShouldMapPersistedTasks() {
         FakeRepository repository = new FakeRepository();
         GraphExtractionTask task = new GraphExtractionTask();
         task.setTaskId(GraphExtractionTaskId.of(11L));
+        task.setBatchJobId(1001L);
         task.setTaskType("GRAPH");
+        task.setTriggerSource("QUALITY_REPORT");
         task.setStatus("FAILED");
         repository.tasks.add(task);
         KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
@@ -86,15 +274,19 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new FakeKnowledgeLineageNodeRepository(),
                 new FakeKnowledgeLineageRelationRepository(),
                 new FakeAiInvocationRepository(),
+                null,
                 new FakeKnowledgeAiExtractionDomainService(),
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
 
-        PageResult<GraphExtractionTaskResult> page = service.pageTasks("GRAPH", null, null, null, new PageQuery(1, 10));
+        PageResult<GraphExtractionTaskResult> page =
+                service.pageTasks("GRAPH", 1001L, "QUALITY_REPORT", null, null, null, new PageQuery(1, 10));
 
         assertEquals(1, page.getRecords().size());
         assertEquals("11", page.getRecords().get(0).getTaskId());
+        assertEquals(Long.valueOf(1001L), page.getRecords().get(0).getBatchJobId());
         assertEquals("GRAPH", page.getRecords().get(0).getTaskType());
+        assertEquals("QUALITY_REPORT", page.getRecords().get(0).getTriggerSource());
     }
 
     @Test
@@ -121,6 +313,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new FakeKnowledgeLineageNodeRepository(),
                 new FakeKnowledgeLineageRelationRepository(),
                 aiInvocationRepository,
+                null,
                 new FakeKnowledgeAiExtractionDomainService(),
                 new AiCandidateDomainService(aiInvocationRepository),
                 null);
@@ -154,6 +347,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new FakeKnowledgeLineageNodeRepository(),
                 new FakeKnowledgeLineageRelationRepository(),
                 new FakeAiInvocationRepository(),
+                null,
                 new FakeKnowledgeAiExtractionDomainService(),
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
@@ -188,6 +382,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new FakeKnowledgeLineageNodeRepository(),
                 new FakeKnowledgeLineageRelationRepository(),
                 new FakeAiInvocationRepository(),
+                null,
                 new FakeKnowledgeAiExtractionDomainService(),
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
@@ -223,6 +418,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new FakeKnowledgeLineageNodeRepository(),
                 new FakeKnowledgeLineageRelationRepository(),
                 new FakeAiInvocationRepository(),
+                null,
                 new FakeKnowledgeAiExtractionDomainService(),
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
@@ -256,6 +452,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new FakeKnowledgeLineageNodeRepository(),
                 new FakeKnowledgeLineageRelationRepository(),
                 new FakeAiInvocationRepository(),
+                null,
                 new FakeKnowledgeAiExtractionDomainService(),
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
@@ -289,6 +486,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new FakeKnowledgeLineageNodeRepository(),
                 new FakeKnowledgeLineageRelationRepository(),
                 new FakeAiInvocationRepository(),
+                null,
                 new FakeKnowledgeAiExtractionDomainService(),
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
@@ -322,6 +520,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new FakeKnowledgeLineageNodeRepository(),
                 new FakeKnowledgeLineageRelationRepository(),
                 new FakeAiInvocationRepository(),
+                null,
                 new FakeKnowledgeAiExtractionDomainService(),
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
@@ -355,6 +554,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 knowledgeLineageNodeRepository,
                 new FakeKnowledgeLineageRelationRepository(),
                 new FakeAiInvocationRepository(),
+                null,
                 new FakeKnowledgeAiExtractionDomainService(),
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
@@ -388,6 +588,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 knowledgeLineageNodeRepository,
                 new FakeKnowledgeLineageRelationRepository(),
                 new FakeAiInvocationRepository(),
+                null,
                 new FakeKnowledgeAiExtractionDomainService(),
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
@@ -422,6 +623,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new FakeKnowledgeLineageNodeRepository(),
                 knowledgeLineageRelationRepository,
                 new FakeAiInvocationRepository(),
+                null,
                 new FakeKnowledgeAiExtractionDomainService(),
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
@@ -457,6 +659,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new FakeKnowledgeLineageNodeRepository(),
                 knowledgeLineageRelationRepository,
                 new FakeAiInvocationRepository(),
+                null,
                 new FakeKnowledgeAiExtractionDomainService(),
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
@@ -495,6 +698,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new FakeKnowledgeLineageNodeRepository(),
                 new FakeKnowledgeLineageRelationRepository(),
                 aiInvocationRepository,
+                null,
                 new FakeKnowledgeAiExtractionDomainService(),
                 new AiCandidateDomainService(aiInvocationRepository),
                 candidateApplySupport);
@@ -557,6 +761,105 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         }
     }
 
+    private static final class FakeAiBatchJobApplicationService implements AiBatchJobApplicationService {
+        private AiBatchJobResult lastResult;
+        private int recordSuccessCalls;
+        private int recordFailureCalls;
+
+        @Override
+        public AiBatchJobResult get(Long batchId) {
+            return lastResult;
+        }
+
+        @Override
+        public Long create(AiBatchJobCreateCommand command) {
+            lastResult = new AiBatchJobResult(
+                    1001L,
+                    command.getScope(),
+                    command.getCapability(),
+                    command.getContentType(),
+                    "RUNNING",
+                    command.getTotalCount(),
+                    0,
+                    0,
+                    0,
+                    command.getFailureSummaryJson(),
+                    Instant.parse("2026-06-26T00:00:00Z"),
+                    null,
+                    null);
+            return lastResult.getBatchId();
+        }
+
+        @Override
+        public boolean canDispatchNextUnit(Long batchId) {
+            return lastResult != null && !"CANCELLED".equals(lastResult.getStatus());
+        }
+
+        @Override
+        public AiBatchJobResult recordSuccess(Long batchId) {
+            recordSuccessCalls++;
+            lastResult = new AiBatchJobResult(
+                    batchId,
+                    lastResult.getScope(),
+                    lastResult.getCapability(),
+                    lastResult.getContentType(),
+                    recordSuccessCalls + recordFailureCalls >= lastResult.getTotalCount() ? "SUCCEEDED" : "RUNNING",
+                    lastResult.getTotalCount(),
+                    lastResult.getSuccessCount() + 1,
+                    lastResult.getFailedCount(),
+                    lastResult.getCancelledCount(),
+                    lastResult.getFailureSummaryJson(),
+                    lastResult.getRequestedAt(),
+                    lastResult.getCancelledAt(),
+                    recordSuccessCalls + recordFailureCalls >= lastResult.getTotalCount()
+                            ? Instant.parse("2026-06-26T00:10:00Z")
+                            : null);
+            return lastResult;
+        }
+
+        @Override
+        public AiBatchJobResult recordFailure(Long batchId, String failureSummaryJson) {
+            recordFailureCalls++;
+            lastResult = new AiBatchJobResult(
+                    batchId,
+                    lastResult.getScope(),
+                    lastResult.getCapability(),
+                    lastResult.getContentType(),
+                    "PARTIAL",
+                    lastResult.getTotalCount(),
+                    lastResult.getSuccessCount(),
+                    lastResult.getFailedCount() + 1,
+                    lastResult.getCancelledCount(),
+                    failureSummaryJson,
+                    lastResult.getRequestedAt(),
+                    lastResult.getCancelledAt(),
+                    recordSuccessCalls + recordFailureCalls >= lastResult.getTotalCount()
+                            ? Instant.parse("2026-06-26T00:10:00Z")
+                            : null);
+            return lastResult;
+        }
+
+        @Override
+        public AiBatchJobResult cancel(Long batchId) {
+            lastResult = new AiBatchJobResult(
+                    batchId,
+                    lastResult.getScope(),
+                    lastResult.getCapability(),
+                    lastResult.getContentType(),
+                    "CANCELLED",
+                    lastResult.getTotalCount(),
+                    lastResult.getSuccessCount(),
+                    lastResult.getFailedCount(),
+                    Math.max(
+                            0, lastResult.getTotalCount() - lastResult.getSuccessCount() - lastResult.getFailedCount()),
+                    lastResult.getFailureSummaryJson(),
+                    lastResult.getRequestedAt(),
+                    Instant.parse("2026-06-26T00:05:00Z"),
+                    null);
+            return lastResult;
+        }
+    }
+
     private static final class FakeRepository implements GraphExtractionTaskRepository {
         private final List<GraphExtractionTask> tasks = new ArrayList<>();
 
@@ -582,14 +885,31 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         }
 
         @Override
+        public List<GraphExtractionTask> listByBatchJobId(Long batchJobId) {
+            return tasks.stream()
+                    .filter(task -> batchJobId != null && batchJobId.equals(task.getBatchJobId()))
+                    .toList();
+        }
+
+        @Override
         public PageResult<GraphExtractionTask> page(
                 String taskType,
+                Long batchJobId,
+                String triggerSource,
                 String status,
                 String sourceContentType,
                 Long sourceContentId,
                 int pageNo,
                 int pageSize) {
-            return PageResult.of(pageNo, pageSize, tasks.size(), tasks);
+            List<GraphExtractionTask> filteredTasks = tasks.stream()
+                    .filter(task -> taskType == null || taskType.equals(task.getTaskType()))
+                    .filter(task -> batchJobId == null || batchJobId.equals(task.getBatchJobId()))
+                    .filter(task -> triggerSource == null || triggerSource.equals(task.getTriggerSource()))
+                    .filter(task -> status == null || status.equals(task.getStatus()))
+                    .filter(task -> sourceContentType == null || sourceContentType.equals(task.getSourceContentType()))
+                    .filter(task -> sourceContentId == null || sourceContentId.equals(task.getSourceContentId()))
+                    .toList();
+            return PageResult.of(pageNo, pageSize, filteredTasks.size(), filteredTasks);
         }
     }
 
