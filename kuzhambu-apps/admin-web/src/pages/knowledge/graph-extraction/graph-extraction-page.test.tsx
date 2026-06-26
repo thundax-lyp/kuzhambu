@@ -9,8 +9,10 @@ import { GraphExtractionPage } from "./graph-extraction-page";
 
 vi.mock("./graph-extraction-service", () => ({
     addTask: vi.fn(async (request) => ({
+        batchJobId: request.selectionScopeJson ? 1001 : undefined,
         taskId: "9001",
         taskType: request.taskType,
+        triggerSource: request.triggerSource,
         status: "REQUESTED"
     })),
     applyTaskCandidate: vi.fn(async ({ taskId }) => ({
@@ -30,6 +32,13 @@ vi.mock("./graph-extraction-service", () => ({
         requestedAt: 1710000000000,
         completedAt: 1710000600000
     })),
+    cancelBatchTask: vi.fn(async ({ batchJobId }) => ({
+        batchJobId,
+        cancelledCount: 1,
+        completedCount: 1,
+        failedCount: 0,
+        status: "CANCELLED"
+    })),
     pageTasks: vi.fn(async () => ({
         pageNo: 1,
         pageSize: 20,
@@ -38,6 +47,10 @@ vi.mock("./graph-extraction-service", () => ({
         count: 1,
         records: [
             {
+                batchJobId: 1001,
+                triggerSource: "QUALITY_REPORT",
+                selectionScopeJson: '{"sourceContentIds":[1001,1002]}',
+                replaceUnconfirmedOnly: true,
                 taskId: "8008",
                 taskType: "GRAPH",
                 status: "SUCCEEDED",
@@ -46,6 +59,13 @@ vi.mock("./graph-extraction-service", () => ({
                 aiCandidateId: 7001
             }
         ]
+    })),
+    regenerateTask: vi.fn(async (request) => ({
+        batchJobId: 1002,
+        taskId: "9002",
+        taskType: request.taskType,
+        triggerSource: "REGENERATE",
+        status: "REQUESTED"
     }))
 }));
 
@@ -157,5 +177,49 @@ describe("GraphExtractionPage", () => {
                 })
             )
         );
+    });
+
+    it("creates batch task with selection scope", async () => {
+        const user = userEvent.setup();
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <GraphExtractionPage />
+                </AntdApp>
+            </QueryClientProvider>
+        );
+
+        fireEvent.change(screen.getByLabelText("来源内容类型"), {
+            target: { value: "SANCAI_ENTRY" }
+        });
+        fireEvent.change(screen.getByLabelText("来源内容 ID"), {
+            target: { value: "1001" }
+        });
+        fireEvent.change(screen.getByLabelText("模型 ID"), {
+            target: { value: "5001" }
+        });
+        fireEvent.change(screen.getByLabelText("模型名"), {
+            target: { value: "gpt-5.5" }
+        });
+        fireEvent.change(screen.getByLabelText("批量范围 JSON"), {
+            target: { value: '{"sourceContentIds":[1001,1002]}' }
+        });
+        fireEvent.change(screen.getByLabelText("Prompt Messages JSON"), {
+            target: { value: '[{"role":"system","content":"extract batch"}]' }
+        });
+        fireEvent.change(screen.getByLabelText("输入 Payload JSON"), {
+            target: { value: '{"content":"批量待抽取正文"}' }
+        });
+        await user.click(screen.getByRole("button", { name: "创建图谱抽取任务" }));
+
+        await waitFor(() =>
+            expect(service.addTask).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    selectionScopeJson: '{"sourceContentIds":[1001,1002]}',
+                    replaceUnconfirmedOnly: true
+                })
+            )
+        );
+        expect(await screen.findByText("批次号：1001")).toBeInTheDocument();
     });
 });

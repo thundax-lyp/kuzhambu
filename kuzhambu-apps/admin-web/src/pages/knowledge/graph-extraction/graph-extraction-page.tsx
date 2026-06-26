@@ -87,6 +87,47 @@ export const GraphExtractionPage = () => {
             messageApi.error(error instanceof Error ? error.message : "候选结果应用失败");
         }
     });
+    const regenerateTaskMutation = useMutation({
+        mutationFn: (task: GraphExtractionTaskRecord) =>
+            service.regenerateTask({
+                taskType: task.taskType || "GRAPH",
+                sourceTaskId: Number(task.taskId),
+                selectionScopeJson: task.selectionScopeJson,
+                replaceUnconfirmedOnly: task.replaceUnconfirmedOnly ?? true,
+                requestedBy: task.requestedBy
+            }),
+        onSuccess: async (task) => {
+            setLatestCreatedTask(task);
+            await queryClient.invalidateQueries({
+                queryKey: ["knowledge", "graph-extraction", "tasks"]
+            });
+            messageApi.success("重生成任务已创建");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "重生成任务创建失败");
+        }
+    });
+    const cancelBatchTaskMutation = useMutation({
+        mutationFn: (task: GraphExtractionTaskRecord) =>
+            service.cancelBatchTask({
+                batchJobId: task.batchJobId || 0,
+                requestedBy: task.requestedBy
+            }),
+        onSuccess: async () => {
+            await Promise.all([
+                queryClient.invalidateQueries({
+                    queryKey: ["knowledge", "graph-extraction", "tasks"]
+                }),
+                queryClient.invalidateQueries({
+                    queryKey: ["knowledge", "graph-extraction", "task-detail", detailTaskId]
+                })
+            ]);
+            messageApi.success("批任务已取消");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "批任务取消失败");
+        }
+    });
 
     const tasks = taskPageQuery.data?.records || [];
 
@@ -105,6 +146,21 @@ export const GraphExtractionPage = () => {
             return;
         }
         applyTaskMutation.mutate(taskId);
+    };
+
+    const regenerateTask = (task: GraphExtractionTaskRecord) => {
+        const taskId = Number(task.taskId);
+        if (Number.isNaN(taskId)) {
+            return;
+        }
+        regenerateTaskMutation.mutate(task);
+    };
+
+    const cancelBatchTask = (task: GraphExtractionTaskRecord) => {
+        if (!task.batchJobId) {
+            return;
+        }
+        cancelBatchTaskMutation.mutate(task);
     };
 
     return (
@@ -139,7 +195,7 @@ export const GraphExtractionPage = () => {
                     </Paragraph>
                     <KuzhambuSpace wrap>
                         <Alert
-                            message={
+                            title={
                                 createTriggerSource === QUALITY_TRIGGER_SOURCE
                                     ? "当前为质量结果触发模式"
                                     : "当前为手工触发模式"
@@ -178,10 +234,19 @@ export const GraphExtractionPage = () => {
                             <GraphExtractionTaskTable
                                 applyingTaskId={applyTaskMutation.variables?.toString() || null}
                                 canApply={canApplyGraph}
+                                canEdit={canEditGraph}
+                                cancellingBatchId={
+                                    cancelBatchTaskMutation.variables?.batchJobId || null
+                                }
                                 loading={taskPageQuery.isLoading}
+                                regeneratingTaskId={
+                                    regenerateTaskMutation.variables?.taskId || null
+                                }
                                 tasks={tasks}
                                 onApply={applyTask}
+                                onCancelBatch={cancelBatchTask}
                                 onOpenDetail={openTaskDetail}
+                                onRegenerate={regenerateTask}
                             />
                         ) : (
                             <Empty

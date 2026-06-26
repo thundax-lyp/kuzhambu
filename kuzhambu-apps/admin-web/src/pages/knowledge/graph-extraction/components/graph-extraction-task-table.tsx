@@ -5,11 +5,16 @@ import type { GraphExtractionTaskRecord } from "../graph-extraction-types";
 
 interface GraphExtractionTaskTableProps {
     applyingTaskId?: string | null;
+    cancellingBatchId?: number | null;
     canApply?: boolean;
+    canEdit?: boolean;
     loading?: boolean;
+    regeneratingTaskId?: string | null;
     tasks: GraphExtractionTaskRecord[];
     onApply: (task: GraphExtractionTaskRecord) => void;
+    onCancelBatch: (task: GraphExtractionTaskRecord) => void;
     onOpenDetail: (task: GraphExtractionTaskRecord) => void;
+    onRegenerate: (task: GraphExtractionTaskRecord) => void;
 }
 
 const readStatusColor = (status?: string | null) => {
@@ -27,11 +32,16 @@ const readStatusColor = (status?: string | null) => {
 
 export const GraphExtractionTaskTable = ({
     applyingTaskId,
+    cancellingBatchId = null,
     canApply = false,
+    canEdit = false,
     loading = false,
+    regeneratingTaskId = null,
     tasks,
     onApply,
-    onOpenDetail
+    onCancelBatch,
+    onOpenDetail,
+    onRegenerate
 }: GraphExtractionTaskTableProps) => {
     const columns: ColumnsType<GraphExtractionTaskRecord> = [
         {
@@ -43,6 +53,16 @@ export const GraphExtractionTaskTable = ({
             dataIndex: "taskType",
             key: "taskType",
             title: "类型"
+        },
+        {
+            dataIndex: "batchJobId",
+            key: "batchJobId",
+            title: "批次号"
+        },
+        {
+            dataIndex: "triggerSource",
+            key: "triggerSource",
+            title: "触发来源"
         },
         {
             dataIndex: "status",
@@ -72,6 +92,20 @@ export const GraphExtractionTaskTable = ({
             render: (_, task) => (
                 <KuzhambuSpaceCompact>
                     <Button onClick={() => onOpenDetail(task)}>查看</Button>
+                    <Button
+                        disabled={!canEdit}
+                        loading={regeneratingTaskId === task.taskId}
+                        onClick={() => onRegenerate(task)}
+                    >
+                        重生成
+                    </Button>
+                    <Button
+                        disabled={!canEdit || !task.batchJobId}
+                        loading={cancellingBatchId === task.batchJobId}
+                        onClick={() => onCancelBatch(task)}
+                    >
+                        取消批任务
+                    </Button>
                     <Button
                         type="primary"
                         disabled={!canApply || !task.aiCandidateId || task.status === "APPLIED"}

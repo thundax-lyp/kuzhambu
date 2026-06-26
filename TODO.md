@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `admin graph extraction page`：扩展批量任务、重生成与取消页面交互
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-KNOWLEDGE-CLOSURE.md`
-    - 范围对象：`graph-extraction-create.tsx`、`graph-extraction-task-table.tsx`、`graph-extraction-task-detail.tsx`、`graph-extraction-page.tsx`、`graph-extraction-page.test.tsx`
-    - 处理动作：增加批量范围输入、重生成动作、取消批任务动作与批次字段展示
-    - 验收点：页面可创建批量任务、取消未完成批任务并区分普通抽取与重生成
-    - 重要度：8/10
-
 - [ ] `ai knowledge backend tests`：补齐 AI × Knowledge 后端测试覆盖
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-KNOWLEDGE-CLOSURE.md`
