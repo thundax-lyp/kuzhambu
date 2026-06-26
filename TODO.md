@@ -11,22 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `knowledge graph batch create`：增加批量创建与重生成编排入口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-KNOWLEDGE-CLOSURE.md`
-    - 范围对象：`KnowledgeGraphExtractionApplicationService.java`、`KnowledgeGraphExtractionApplicationServiceImpl.java`、`KnowledgeGraphExtractionInterfaceAssembler.java`、`KnowledgeGraphExtractionController.java`
-    - 处理动作：新增批量创建与重生成入口并复用 AI 域 `batchId` 组织同批任务
-    - 验收点：单条创建不回归且批量创建、重生成都能返回可追踪批次信息
-    - 重要度：10/10
-
-- [ ] `ai batch linkage`：打通 Knowledge 任务与 AI 批量台账关联
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-KNOWLEDGE-CLOSURE.md`
-    - 范围对象：`AiBatchJobApplicationService.java`、`AiBatchJobApplicationServiceImpl.java`、`KnowledgeGraphExtractionApplicationServiceImpl.java`
-    - 处理动作：复用 AI 批量任务能力并在 Knowledge 图谱任务中稳定回写 `batchJobId`
-    - 验收点：一个批量图谱抽取请求能稳定生成 AI batch 关联并可查询批次状态
-    - 重要度：10/10
-
 - [ ] `knowledge graph batch cancel`：增加取消批任务后端入口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-KNOWLEDGE-CLOSURE.md`

@@ -2,7 +2,11 @@ package com.thundax.kuzhambu.knowledge.application.graph;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.thundax.kuzhambu.ai.application.batch.command.AiBatchJobCreateCommand;
+import com.thundax.kuzhambu.ai.application.batch.result.AiBatchJobResult;
+import com.thundax.kuzhambu.ai.application.batch.service.AiBatchJobApplicationService;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCallRecord;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
@@ -10,6 +14,7 @@ import com.thundax.kuzhambu.ai.domain.invocation.service.AiCandidateDomainServic
 import com.thundax.kuzhambu.ai.domain.knowledge.model.valueobject.KnowledgeAiExtractionRequest;
 import com.thundax.kuzhambu.ai.domain.knowledge.model.valueobject.KnowledgeAiExtractionResult;
 import com.thundax.kuzhambu.ai.domain.knowledge.service.KnowledgeAiExtractionDomainService;
+import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationExtractionCommand;
@@ -68,6 +73,73 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         assertEquals(302L, result.getAiCandidateId());
         assertEquals("RELATION", aiService.lastTaskType);
         assertEquals("SANCAI_ENTRY", aiService.lastRequest.getSourceContentType());
+    }
+
+    @Test
+    void requestRelationExtractionShouldCreateBatchTasksWhenSelectionScopeContainsManyTargets() {
+        FakeRepository repository = new FakeRepository();
+        FakeKnowledgeAiExtractionDomainService aiService = new FakeKnowledgeAiExtractionDomainService();
+        FakeAiBatchJobApplicationService batchService = new FakeAiBatchJobApplicationService();
+        KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
+                repository,
+                new FakeGraphVersionRepository(),
+                new FakeKnowledgeEntityRepository(),
+                new FakeKnowledgeRelationRepository(),
+                new FakeKnowledgeLineageNodeRepository(),
+                new FakeKnowledgeLineageRelationRepository(),
+                new FakeAiInvocationRepository(),
+                batchService,
+                aiService,
+                new AiCandidateDomainService(new FakeAiInvocationRepository()),
+                null);
+        RequestRelationExtractionCommand command = relationCommand();
+        command.setSelectionScopeJson("{\"sourceContentIds\":[11,12]}");
+        command.setTriggerSource("QUALITY_REPORT");
+        command.setReplaceUnconfirmedOnly(Boolean.TRUE);
+
+        GraphExtractionTaskResult result = service.requestRelationExtraction(command);
+
+        assertNotNull(result);
+        assertEquals(Long.valueOf(1001L), result.getBatchJobId());
+        assertEquals("SUCCEEDED", result.getStatus());
+        assertEquals(3, repository.tasks.size());
+        GraphExtractionTask parentTask = repository.tasks.get(0);
+        assertEquals(Long.valueOf(1001L), parentTask.getBatchJobId());
+        assertEquals("QUALITY_REPORT", parentTask.getTriggerSource());
+        assertEquals(Boolean.TRUE, parentTask.getReplaceUnconfirmedOnly());
+        assertEquals("SUCCEEDED", parentTask.getStatus());
+        GraphExtractionTask firstChild = repository.tasks.get(1);
+        GraphExtractionTask secondChild = repository.tasks.get(2);
+        assertEquals(parentTask.getTaskId(), firstChild.getParentTaskId());
+        assertEquals(parentTask.getTaskId(), secondChild.getParentTaskId());
+        assertEquals(Long.valueOf(11L), firstChild.getSourceContentId());
+        assertEquals(Long.valueOf(12L), secondChild.getSourceContentId());
+        assertEquals(2, batchService.recordSuccessCalls);
+        assertEquals(0, batchService.recordFailureCalls);
+        assertEquals(2, batchService.lastResult.getSuccessCount());
+        assertEquals("RELATION", aiService.lastTaskType);
+    }
+
+    @Test
+    void requestRelationExtractionShouldRejectInvalidSelectionScopeJson() {
+        KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
+                new FakeRepository(),
+                new FakeGraphVersionRepository(),
+                new FakeKnowledgeEntityRepository(),
+                new FakeKnowledgeRelationRepository(),
+                new FakeKnowledgeLineageNodeRepository(),
+                new FakeKnowledgeLineageRelationRepository(),
+                new FakeAiInvocationRepository(),
+                new FakeAiBatchJobApplicationService(),
+                new FakeKnowledgeAiExtractionDomainService(),
+                new AiCandidateDomainService(new FakeAiInvocationRepository()),
+                null);
+        RequestRelationExtractionCommand command = relationCommand();
+        command.setSelectionScopeJson("{bad-json");
+
+        BizException exception = assertThrows(BizException.class, () -> service.requestRelationExtraction(command));
+
+        assertEquals("Knowledge graph selectionScopeJson is invalid", exception.getMessage());
     }
 
     @Test
@@ -554,6 +626,105 @@ class KnowledgeGraphExtractionApplicationServiceTest {
             lastTaskType = "LINEAGE";
             return new KnowledgeAiExtractionResult(
                     501L, 502L, "SUCCEEDED", "lineage_extraction", "STRUCTURED", "{}", null, null);
+        }
+    }
+
+    private static final class FakeAiBatchJobApplicationService implements AiBatchJobApplicationService {
+        private AiBatchJobResult lastResult;
+        private int recordSuccessCalls;
+        private int recordFailureCalls;
+
+        @Override
+        public AiBatchJobResult get(Long batchId) {
+            return lastResult;
+        }
+
+        @Override
+        public Long create(AiBatchJobCreateCommand command) {
+            lastResult = new AiBatchJobResult(
+                    1001L,
+                    command.getScope(),
+                    command.getCapability(),
+                    command.getContentType(),
+                    "RUNNING",
+                    command.getTotalCount(),
+                    0,
+                    0,
+                    0,
+                    command.getFailureSummaryJson(),
+                    Instant.parse("2026-06-26T00:00:00Z"),
+                    null,
+                    null);
+            return lastResult.getBatchId();
+        }
+
+        @Override
+        public boolean canDispatchNextUnit(Long batchId) {
+            return lastResult != null && !"CANCELLED".equals(lastResult.getStatus());
+        }
+
+        @Override
+        public AiBatchJobResult recordSuccess(Long batchId) {
+            recordSuccessCalls++;
+            lastResult = new AiBatchJobResult(
+                    batchId,
+                    lastResult.getScope(),
+                    lastResult.getCapability(),
+                    lastResult.getContentType(),
+                    recordSuccessCalls + recordFailureCalls >= lastResult.getTotalCount() ? "SUCCEEDED" : "RUNNING",
+                    lastResult.getTotalCount(),
+                    lastResult.getSuccessCount() + 1,
+                    lastResult.getFailedCount(),
+                    lastResult.getCancelledCount(),
+                    lastResult.getFailureSummaryJson(),
+                    lastResult.getRequestedAt(),
+                    lastResult.getCancelledAt(),
+                    recordSuccessCalls + recordFailureCalls >= lastResult.getTotalCount()
+                            ? Instant.parse("2026-06-26T00:10:00Z")
+                            : null);
+            return lastResult;
+        }
+
+        @Override
+        public AiBatchJobResult recordFailure(Long batchId, String failureSummaryJson) {
+            recordFailureCalls++;
+            lastResult = new AiBatchJobResult(
+                    batchId,
+                    lastResult.getScope(),
+                    lastResult.getCapability(),
+                    lastResult.getContentType(),
+                    "PARTIAL",
+                    lastResult.getTotalCount(),
+                    lastResult.getSuccessCount(),
+                    lastResult.getFailedCount() + 1,
+                    lastResult.getCancelledCount(),
+                    failureSummaryJson,
+                    lastResult.getRequestedAt(),
+                    lastResult.getCancelledAt(),
+                    recordSuccessCalls + recordFailureCalls >= lastResult.getTotalCount()
+                            ? Instant.parse("2026-06-26T00:10:00Z")
+                            : null);
+            return lastResult;
+        }
+
+        @Override
+        public AiBatchJobResult cancel(Long batchId) {
+            lastResult = new AiBatchJobResult(
+                    batchId,
+                    lastResult.getScope(),
+                    lastResult.getCapability(),
+                    lastResult.getContentType(),
+                    "CANCELLED",
+                    lastResult.getTotalCount(),
+                    lastResult.getSuccessCount(),
+                    lastResult.getFailedCount(),
+                    Math.max(
+                            0, lastResult.getTotalCount() - lastResult.getSuccessCount() - lastResult.getFailedCount()),
+                    lastResult.getFailureSummaryJson(),
+                    lastResult.getRequestedAt(),
+                    Instant.parse("2026-06-26T00:05:00Z"),
+                    null);
+            return lastResult;
         }
     }
 

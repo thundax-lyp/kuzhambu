@@ -1,5 +1,10 @@
 package com.thundax.kuzhambu.knowledge.application.graph.service.impl;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thundax.kuzhambu.ai.application.batch.command.AiBatchJobCreateCommand;
+import com.thundax.kuzhambu.ai.application.batch.result.AiBatchJobResult;
+import com.thundax.kuzhambu.ai.application.batch.service.AiBatchJobApplicationService;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCallRecord;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
@@ -37,6 +42,7 @@ import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeLineageNo
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeLineageRelationRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeRelationRepository;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
@@ -56,6 +62,8 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
     private static final String STATUS_SUCCEEDED = "SUCCEEDED";
     private static final String STATUS_FAILED = "FAILED";
     private static final String STATUS_APPLIED = "APPLIED";
+    private static final String STATUS_CANCELLED = "CANCELLED";
+    private static final String STATUS_PARTIAL = "PARTIAL";
 
     private final GraphExtractionTaskRepository repository;
     private final GraphVersionRepository graphVersionRepository;
@@ -64,11 +72,38 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
     private final KnowledgeLineageNodeRepository knowledgeLineageNodeRepository;
     private final KnowledgeLineageRelationRepository knowledgeLineageRelationRepository;
     private final AiInvocationRepository aiInvocationRepository;
+    private final AiBatchJobApplicationService aiBatchJobApplicationService;
     private final KnowledgeAiExtractionDomainService knowledgeAiExtractionDomainService;
     private final AiCandidateDomainService aiCandidateDomainService;
     private final KnowledgeGraphCandidateApplySupport candidateApplySupport;
+    private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 
     @Autowired
+    public KnowledgeGraphExtractionApplicationServiceImpl(
+            GraphExtractionTaskRepository repository,
+            GraphVersionRepository graphVersionRepository,
+            KnowledgeEntityRepository knowledgeEntityRepository,
+            KnowledgeRelationRepository knowledgeRelationRepository,
+            KnowledgeLineageNodeRepository knowledgeLineageNodeRepository,
+            KnowledgeLineageRelationRepository knowledgeLineageRelationRepository,
+            AiInvocationRepository aiInvocationRepository,
+            AiBatchJobApplicationService aiBatchJobApplicationService,
+            KnowledgeAiExtractionDomainService knowledgeAiExtractionDomainService,
+            AiCandidateDomainService aiCandidateDomainService,
+            KnowledgeGraphCandidateApplySupport candidateApplySupport) {
+        this.repository = repository;
+        this.graphVersionRepository = graphVersionRepository;
+        this.knowledgeEntityRepository = knowledgeEntityRepository;
+        this.knowledgeRelationRepository = knowledgeRelationRepository;
+        this.knowledgeLineageNodeRepository = knowledgeLineageNodeRepository;
+        this.knowledgeLineageRelationRepository = knowledgeLineageRelationRepository;
+        this.aiInvocationRepository = aiInvocationRepository;
+        this.aiBatchJobApplicationService = aiBatchJobApplicationService;
+        this.knowledgeAiExtractionDomainService = knowledgeAiExtractionDomainService;
+        this.aiCandidateDomainService = aiCandidateDomainService;
+        this.candidateApplySupport = candidateApplySupport;
+    }
+
     public KnowledgeGraphExtractionApplicationServiceImpl(
             GraphExtractionTaskRepository repository,
             GraphVersionRepository graphVersionRepository,
@@ -80,31 +115,32 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
             KnowledgeAiExtractionDomainService knowledgeAiExtractionDomainService,
             AiCandidateDomainService aiCandidateDomainService,
             KnowledgeGraphCandidateApplySupport candidateApplySupport) {
-        this.repository = repository;
-        this.graphVersionRepository = graphVersionRepository;
-        this.knowledgeEntityRepository = knowledgeEntityRepository;
-        this.knowledgeRelationRepository = knowledgeRelationRepository;
-        this.knowledgeLineageNodeRepository = knowledgeLineageNodeRepository;
-        this.knowledgeLineageRelationRepository = knowledgeLineageRelationRepository;
-        this.aiInvocationRepository = aiInvocationRepository;
-        this.knowledgeAiExtractionDomainService = knowledgeAiExtractionDomainService;
-        this.aiCandidateDomainService = aiCandidateDomainService;
-        this.candidateApplySupport = candidateApplySupport;
+        this(
+                repository,
+                graphVersionRepository,
+                knowledgeEntityRepository,
+                knowledgeRelationRepository,
+                knowledgeLineageNodeRepository,
+                knowledgeLineageRelationRepository,
+                aiInvocationRepository,
+                null,
+                knowledgeAiExtractionDomainService,
+                aiCandidateDomainService,
+                candidateApplySupport);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public GraphExtractionTaskResult requestRelationExtraction(RequestRelationExtractionCommand command) {
-        validateCommand(
+        validateCommandBase(
                 command == null ? null : command.getSourceContentType(),
-                command == null ? null : command.getSourceContentId(),
                 command == null ? null : command.getModelId(),
                 command == null ? null : command.getModelName(),
                 command == null ? null : command.getRequestId(),
                 command == null ? null : command.getTraceId(),
                 command == null ? null : command.getPromptMessagesJson(),
                 command == null ? null : command.getInputPayloadJson());
-        return requestTask(
+        return requestTasks(
                 TASK_TYPE_RELATION,
                 command == null ? null : command.getScopeType(),
                 command == null ? null : command.getScopeJson(),
@@ -115,43 +151,35 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
                 command == null ? null : command.getSourceContentType(),
                 command == null ? null : command.getSourceContentId(),
                 command == null ? null : command.getRequestedBy(),
-                toAiRequest(
-                        TASK_TYPE_RELATION,
-                        command == null ? null : command.getScopeType(),
-                        command == null ? null : command.getScopeJson(),
-                        command == null ? null : command.getSourceContentType(),
-                        command == null ? null : command.getSourceContentId(),
-                        command == null ? null : command.getRequestedBy(),
-                        command == null ? null : command.getServiceId(),
-                        command == null ? null : command.getServiceRole(),
-                        command == null ? null : command.getModelId(),
-                        command == null ? null : command.getModelName(),
-                        command == null ? null : command.getPromptVersionId(),
-                        command == null ? null : command.getRequestId(),
-                        command == null ? null : command.getTraceId(),
-                        command == null ? null : command.getPromptMessagesJson(),
-                        command == null ? null : command.getPromptVariablesJson(),
-                        command == null ? null : command.getPromptHash(),
-                        command == null ? null : command.getInputPayloadJson(),
-                        command == null ? null : command.getOutputSchemaJson(),
-                        command != null && command.isForceJson(),
-                        command == null ? null : command.getLocale()),
+                command == null ? null : command.getServiceId(),
+                command == null ? null : command.getServiceRole(),
+                command == null ? null : command.getModelId(),
+                command == null ? null : command.getModelName(),
+                command == null ? null : command.getPromptVersionId(),
+                command == null ? null : command.getRequestId(),
+                command == null ? null : command.getTraceId(),
+                command == null ? null : command.getPromptMessagesJson(),
+                command == null ? null : command.getPromptVariablesJson(),
+                command == null ? null : command.getPromptHash(),
+                command == null ? null : command.getInputPayloadJson(),
+                command == null ? null : command.getOutputSchemaJson(),
+                command != null && command.isForceJson(),
+                command == null ? null : command.getLocale(),
                 knowledgeAiExtractionDomainService::extractRelations);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public GraphExtractionTaskResult requestGraphExtraction(RequestGraphExtractionCommand command) {
-        validateCommand(
+        validateCommandBase(
                 command == null ? null : command.getSourceContentType(),
-                command == null ? null : command.getSourceContentId(),
                 command == null ? null : command.getModelId(),
                 command == null ? null : command.getModelName(),
                 command == null ? null : command.getRequestId(),
                 command == null ? null : command.getTraceId(),
                 command == null ? null : command.getPromptMessagesJson(),
                 command == null ? null : command.getInputPayloadJson());
-        return requestTask(
+        return requestTasks(
                 TASK_TYPE_GRAPH,
                 command == null ? null : command.getScopeType(),
                 command == null ? null : command.getScopeJson(),
@@ -162,43 +190,35 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
                 command == null ? null : command.getSourceContentType(),
                 command == null ? null : command.getSourceContentId(),
                 command == null ? null : command.getRequestedBy(),
-                toAiRequest(
-                        TASK_TYPE_GRAPH,
-                        command == null ? null : command.getScopeType(),
-                        command == null ? null : command.getScopeJson(),
-                        command == null ? null : command.getSourceContentType(),
-                        command == null ? null : command.getSourceContentId(),
-                        command == null ? null : command.getRequestedBy(),
-                        command == null ? null : command.getServiceId(),
-                        command == null ? null : command.getServiceRole(),
-                        command == null ? null : command.getModelId(),
-                        command == null ? null : command.getModelName(),
-                        command == null ? null : command.getPromptVersionId(),
-                        command == null ? null : command.getRequestId(),
-                        command == null ? null : command.getTraceId(),
-                        command == null ? null : command.getPromptMessagesJson(),
-                        command == null ? null : command.getPromptVariablesJson(),
-                        command == null ? null : command.getPromptHash(),
-                        command == null ? null : command.getInputPayloadJson(),
-                        command == null ? null : command.getOutputSchemaJson(),
-                        command != null && command.isForceJson(),
-                        command == null ? null : command.getLocale()),
+                command == null ? null : command.getServiceId(),
+                command == null ? null : command.getServiceRole(),
+                command == null ? null : command.getModelId(),
+                command == null ? null : command.getModelName(),
+                command == null ? null : command.getPromptVersionId(),
+                command == null ? null : command.getRequestId(),
+                command == null ? null : command.getTraceId(),
+                command == null ? null : command.getPromptMessagesJson(),
+                command == null ? null : command.getPromptVariablesJson(),
+                command == null ? null : command.getPromptHash(),
+                command == null ? null : command.getInputPayloadJson(),
+                command == null ? null : command.getOutputSchemaJson(),
+                command != null && command.isForceJson(),
+                command == null ? null : command.getLocale(),
                 knowledgeAiExtractionDomainService::extractGraph);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public GraphExtractionTaskResult requestLineageExtraction(RequestLineageExtractionCommand command) {
-        validateCommand(
+        validateCommandBase(
                 command == null ? null : command.getSourceContentType(),
-                command == null ? null : command.getSourceContentId(),
                 command == null ? null : command.getModelId(),
                 command == null ? null : command.getModelName(),
                 command == null ? null : command.getRequestId(),
                 command == null ? null : command.getTraceId(),
                 command == null ? null : command.getPromptMessagesJson(),
                 command == null ? null : command.getInputPayloadJson());
-        return requestTask(
+        return requestTasks(
                 TASK_TYPE_LINEAGE,
                 command == null ? null : command.getScopeType(),
                 command == null ? null : command.getScopeJson(),
@@ -209,27 +229,20 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
                 command == null ? null : command.getSourceContentType(),
                 command == null ? null : command.getSourceContentId(),
                 command == null ? null : command.getRequestedBy(),
-                toAiRequest(
-                        TASK_TYPE_LINEAGE,
-                        command == null ? null : command.getScopeType(),
-                        command == null ? null : command.getScopeJson(),
-                        command == null ? null : command.getSourceContentType(),
-                        command == null ? null : command.getSourceContentId(),
-                        command == null ? null : command.getRequestedBy(),
-                        command == null ? null : command.getServiceId(),
-                        command == null ? null : command.getServiceRole(),
-                        command == null ? null : command.getModelId(),
-                        command == null ? null : command.getModelName(),
-                        command == null ? null : command.getPromptVersionId(),
-                        command == null ? null : command.getRequestId(),
-                        command == null ? null : command.getTraceId(),
-                        command == null ? null : command.getPromptMessagesJson(),
-                        command == null ? null : command.getPromptVariablesJson(),
-                        command == null ? null : command.getPromptHash(),
-                        command == null ? null : command.getInputPayloadJson(),
-                        command == null ? null : command.getOutputSchemaJson(),
-                        command != null && command.isForceJson(),
-                        command == null ? null : command.getLocale()),
+                command == null ? null : command.getServiceId(),
+                command == null ? null : command.getServiceRole(),
+                command == null ? null : command.getModelId(),
+                command == null ? null : command.getModelName(),
+                command == null ? null : command.getPromptVersionId(),
+                command == null ? null : command.getRequestId(),
+                command == null ? null : command.getTraceId(),
+                command == null ? null : command.getPromptMessagesJson(),
+                command == null ? null : command.getPromptVariablesJson(),
+                command == null ? null : command.getPromptHash(),
+                command == null ? null : command.getInputPayloadJson(),
+                command == null ? null : command.getOutputSchemaJson(),
+                command != null && command.isForceJson(),
+                command == null ? null : command.getLocale(),
                 knowledgeAiExtractionDomainService::extractLineage);
     }
 
@@ -433,7 +446,172 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
         return syncTaskResult(task);
     }
 
+    private GraphExtractionTaskResult requestTasks(
+            String taskType,
+            String scopeType,
+            String scopeJson,
+            String triggerSource,
+            String selectionScopeJson,
+            Boolean replaceUnconfirmedOnly,
+            Long parentTaskId,
+            String sourceContentType,
+            Long sourceContentId,
+            Long requestedBy,
+            Long serviceId,
+            String serviceRole,
+            Long modelId,
+            String modelName,
+            Long promptVersionId,
+            String requestId,
+            String traceId,
+            String promptMessagesJson,
+            String promptVariablesJson,
+            String promptHash,
+            String inputPayloadJson,
+            String outputSchemaJson,
+            boolean forceJson,
+            String locale,
+            KnowledgeInvokeOperation operation) {
+        List<ExtractionTarget> targets = resolveTargets(sourceContentId, scopeJson, selectionScopeJson);
+        if (targets.size() <= 1) {
+            ExtractionTarget target = targets.get(0);
+            validateTarget(sourceContentType, target.sourceContentId());
+            return requestTask(
+                    null,
+                    null,
+                    taskType,
+                    scopeType,
+                    target.scopeJson(),
+                    triggerSource,
+                    selectionScopeJson,
+                    replaceUnconfirmedOnly,
+                    parentTaskId,
+                    sourceContentType,
+                    target.sourceContentId(),
+                    requestedBy,
+                    toAiRequest(
+                            taskType,
+                            scopeType,
+                            target.scopeJson(),
+                            sourceContentType,
+                            target.sourceContentId(),
+                            requestedBy,
+                            serviceId,
+                            serviceRole,
+                            modelId,
+                            modelName,
+                            promptVersionId,
+                            requestId,
+                            traceId,
+                            promptMessagesJson,
+                            promptVariablesJson,
+                            promptHash,
+                            inputPayloadJson,
+                            outputSchemaJson,
+                            forceJson,
+                            locale),
+                    operation,
+                    true);
+        }
+        if (aiBatchJobApplicationService == null) {
+            throw new BizException("AI batch job service is not ready");
+        }
+        Long batchJobId = aiBatchJobApplicationService.create(new AiBatchJobCreateCommand(
+                StringUtils.defaultIfBlank(selectionScopeJson, scopeJson),
+                resolveCapability(taskType),
+                sourceContentType,
+                targets.size(),
+                null));
+        GraphExtractionTask parentTask = new GraphExtractionTask();
+        parentTask.setBatchJobId(batchJobId);
+        parentTask.setTaskType(taskType);
+        parentTask.setScopeType(scopeType);
+        parentTask.setScopeJson(scopeJson);
+        parentTask.setTriggerSource(triggerSource);
+        parentTask.setSelectionScopeJson(selectionScopeJson);
+        parentTask.setReplaceUnconfirmedOnly(replaceUnconfirmedOnly);
+        parentTask.setParentTaskId(GraphExtractionTaskId.ofNullable(parentTaskId));
+        parentTask.setSourceContentType(sourceContentType);
+        parentTask.setSourceContentId(sourceContentId);
+        parentTask.setRequestedBy(requestedBy);
+        parentTask.setStatus(STATUS_REQUESTED);
+        parentTask.setRequestedAt(new Date());
+        GraphExtractionTaskId parentId = repository.save(parentTask);
+        parentTask.setTaskId(parentId);
+        for (ExtractionTarget target : targets) {
+            validateTarget(sourceContentType, target.sourceContentId());
+            GraphExtractionTask childTask = buildTask(
+                    batchJobId,
+                    parentId,
+                    taskType,
+                    scopeType,
+                    target.scopeJson(),
+                    triggerSource,
+                    selectionScopeJson,
+                    replaceUnconfirmedOnly,
+                    sourceContentType,
+                    target.sourceContentId(),
+                    requestedBy);
+            GraphExtractionTaskId childId = repository.save(childTask);
+            childTask.setTaskId(childId);
+            if (!aiBatchJobApplicationService.canDispatchNextUnit(batchJobId)) {
+                childTask.setStatus(STATUS_CANCELLED);
+                childTask.setCompletedAt(new Date());
+                repository.update(childTask);
+                continue;
+            }
+            requestTask(
+                    batchJobId,
+                    parentId,
+                    taskType,
+                    scopeType,
+                    target.scopeJson(),
+                    triggerSource,
+                    selectionScopeJson,
+                    replaceUnconfirmedOnly,
+                    null,
+                    sourceContentType,
+                    target.sourceContentId(),
+                    requestedBy,
+                    toAiRequest(
+                            taskType,
+                            scopeType,
+                            target.scopeJson(),
+                            sourceContentType,
+                            target.sourceContentId(),
+                            requestedBy,
+                            serviceId,
+                            serviceRole,
+                            modelId,
+                            modelName,
+                            promptVersionId,
+                            requestId,
+                            traceId,
+                            promptMessagesJson,
+                            promptVariablesJson,
+                            promptHash,
+                            inputPayloadJson,
+                            outputSchemaJson,
+                            forceJson,
+                            locale),
+                    operation,
+                    false,
+                    childTask);
+        }
+        AiBatchJobResult batchResult = aiBatchJobApplicationService.get(batchJobId);
+        parentTask.setStatus(batchResult == null ? STATUS_REQUESTED : batchResult.getStatus());
+        if (batchResult != null && batchResult.getCompletedAt() != null) {
+            parentTask.setCompletedAt(Date.from(batchResult.getCompletedAt()));
+        } else if (STATUS_CANCELLED.equals(parentTask.getStatus())) {
+            parentTask.setCompletedAt(new Date());
+        }
+        repository.update(parentTask);
+        return syncTaskResult(parentTask);
+    }
+
     private GraphExtractionTaskResult requestTask(
+            Long batchJobId,
+            GraphExtractionTaskId resolvedParentTaskId,
             String taskType,
             String scopeType,
             String scopeJson,
@@ -445,22 +623,64 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
             Long sourceContentId,
             Long requestedBy,
             KnowledgeAiExtractionRequest aiRequest,
-            KnowledgeInvokeOperation operation) {
-        GraphExtractionTask task = new GraphExtractionTask();
-        task.setTaskType(taskType);
-        task.setScopeType(scopeType);
-        task.setScopeJson(scopeJson);
-        task.setTriggerSource(triggerSource);
-        task.setSelectionScopeJson(selectionScopeJson);
-        task.setReplaceUnconfirmedOnly(replaceUnconfirmedOnly);
-        task.setParentTaskId(GraphExtractionTaskId.ofNullable(parentTaskId));
-        task.setSourceContentType(sourceContentType);
-        task.setSourceContentId(sourceContentId);
-        task.setRequestedBy(requestedBy);
-        task.setStatus(STATUS_REQUESTED);
-        task.setRequestedAt(new Date());
-        GraphExtractionTaskId taskId = repository.save(task);
-        task.setTaskId(taskId);
+            KnowledgeInvokeOperation operation,
+            boolean rethrowOnFailure) {
+        return requestTask(
+                batchJobId,
+                resolvedParentTaskId,
+                taskType,
+                scopeType,
+                scopeJson,
+                triggerSource,
+                selectionScopeJson,
+                replaceUnconfirmedOnly,
+                parentTaskId,
+                sourceContentType,
+                sourceContentId,
+                requestedBy,
+                aiRequest,
+                operation,
+                rethrowOnFailure,
+                null);
+    }
+
+    private GraphExtractionTaskResult requestTask(
+            Long batchJobId,
+            GraphExtractionTaskId resolvedParentTaskId,
+            String taskType,
+            String scopeType,
+            String scopeJson,
+            String triggerSource,
+            String selectionScopeJson,
+            Boolean replaceUnconfirmedOnly,
+            Long parentTaskId,
+            String sourceContentType,
+            Long sourceContentId,
+            Long requestedBy,
+            KnowledgeAiExtractionRequest aiRequest,
+            KnowledgeInvokeOperation operation,
+            boolean rethrowOnFailure,
+            GraphExtractionTask preparedTask) {
+        GraphExtractionTask task = preparedTask == null
+                ? buildTask(
+                        batchJobId,
+                        resolvedParentTaskId == null
+                                ? GraphExtractionTaskId.ofNullable(parentTaskId)
+                                : resolvedParentTaskId,
+                        taskType,
+                        scopeType,
+                        scopeJson,
+                        triggerSource,
+                        selectionScopeJson,
+                        replaceUnconfirmedOnly,
+                        sourceContentType,
+                        sourceContentId,
+                        requestedBy)
+                : preparedTask;
+        if (task.getTaskId() == null) {
+            GraphExtractionTaskId taskId = repository.save(task);
+            task.setTaskId(taskId);
+        }
         try {
             KnowledgeAiExtractionResult result = operation.invoke(aiRequest);
             task.setAiCallId(result == null ? null : result.getCallId());
@@ -472,6 +692,7 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
                     result == null ? "Knowledge AI extraction returned empty result" : result.getErrorMessage());
             task.setCompletedAt(new Date());
             repository.update(task);
+            updateBatchOnTaskFinished(batchJobId, task);
             return toResult(task);
         } catch (RuntimeException ex) {
             task.setStatus(STATUS_FAILED);
@@ -479,8 +700,41 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
             task.setErrorMessage(ex.getMessage());
             task.setCompletedAt(new Date());
             repository.update(task);
-            throw ex;
+            updateBatchOnTaskFinished(batchJobId, task);
+            if (rethrowOnFailure) {
+                throw ex;
+            }
+            return toResult(task);
         }
+    }
+
+    private GraphExtractionTask buildTask(
+            Long batchJobId,
+            GraphExtractionTaskId parentTaskId,
+            String taskType,
+            String scopeType,
+            String scopeJson,
+            String triggerSource,
+            String selectionScopeJson,
+            Boolean replaceUnconfirmedOnly,
+            String sourceContentType,
+            Long sourceContentId,
+            Long requestedBy) {
+        GraphExtractionTask task = new GraphExtractionTask();
+        task.setBatchJobId(batchJobId);
+        task.setTaskType(taskType);
+        task.setScopeType(scopeType);
+        task.setScopeJson(scopeJson);
+        task.setTriggerSource(triggerSource);
+        task.setSelectionScopeJson(selectionScopeJson);
+        task.setReplaceUnconfirmedOnly(replaceUnconfirmedOnly);
+        task.setParentTaskId(parentTaskId);
+        task.setSourceContentType(sourceContentType);
+        task.setSourceContentId(sourceContentId);
+        task.setRequestedBy(requestedBy);
+        task.setStatus(STATUS_REQUESTED);
+        task.setRequestedAt(new Date());
+        return task;
     }
 
     private KnowledgeAiExtractionRequest toAiRequest(
@@ -702,9 +956,8 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
         };
     }
 
-    private void validateCommand(
+    private void validateCommandBase(
             String sourceContentType,
-            Long sourceContentId,
             Long modelId,
             String modelName,
             String requestId,
@@ -712,7 +965,6 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
             String promptMessagesJson,
             String inputPayloadJson) {
         if (StringUtils.isBlank(sourceContentType)
-                || sourceContentId == null
                 || modelId == null
                 || StringUtils.isBlank(modelName)
                 || StringUtils.isBlank(requestId)
@@ -723,8 +975,111 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
         }
     }
 
+    private void validateTarget(String sourceContentType, Long sourceContentId) {
+        if (StringUtils.isBlank(sourceContentType) || sourceContentId == null) {
+            throw new BizException("Knowledge graph extraction target is incomplete");
+        }
+    }
+
+    private List<ExtractionTarget> resolveTargets(Long sourceContentId, String scopeJson, String selectionScopeJson) {
+        List<Long> ids = parseSelectionIds(selectionScopeJson);
+        if (ids.isEmpty()) {
+            return List.of(new ExtractionTarget(sourceContentId, scopeJson));
+        }
+        List<ExtractionTarget> targets = new ArrayList<>();
+        for (Long id : ids) {
+            targets.add(new ExtractionTarget(id, buildTargetScopeJson(scopeJson, id)));
+        }
+        return targets;
+    }
+
+    private List<Long> parseSelectionIds(String selectionScopeJson) {
+        if (StringUtils.isBlank(selectionScopeJson)) {
+            return List.of();
+        }
+        try {
+            JsonNode root = objectMapper.readTree(selectionScopeJson);
+            List<Long> ids = new ArrayList<>();
+            collectIds(root, ids);
+            return ids;
+        } catch (Exception ex) {
+            throw new BizException("Knowledge graph selectionScopeJson is invalid");
+        }
+    }
+
+    private void collectIds(JsonNode root, List<Long> ids) {
+        if (root == null || ids == null) {
+            return;
+        }
+        if (root.isArray()) {
+            for (JsonNode node : root) {
+                if (node != null && node.canConvertToLong()) {
+                    ids.add(node.longValue());
+                } else if (node != null
+                        && node.has("sourceContentId")
+                        && node.get("sourceContentId").canConvertToLong()) {
+                    ids.add(node.get("sourceContentId").longValue());
+                }
+            }
+            return;
+        }
+        JsonNode sourceContentIds = root.get("sourceContentIds");
+        if (sourceContentIds != null && sourceContentIds.isArray()) {
+            for (JsonNode node : sourceContentIds) {
+                if (node != null && node.canConvertToLong()) {
+                    ids.add(node.longValue());
+                }
+            }
+            return;
+        }
+        JsonNode contentIds = root.get("contentIds");
+        if (contentIds != null && contentIds.isArray()) {
+            for (JsonNode node : contentIds) {
+                if (node != null && node.canConvertToLong()) {
+                    ids.add(node.longValue());
+                }
+            }
+            return;
+        }
+        JsonNode sourceContentIdNode = root.get("sourceContentId");
+        if (sourceContentIdNode != null && sourceContentIdNode.canConvertToLong()) {
+            ids.add(sourceContentIdNode.longValue());
+        }
+    }
+
+    private String buildTargetScopeJson(String scopeJson, Long sourceContentId) {
+        if (StringUtils.isNotBlank(scopeJson)) {
+            return scopeJson;
+        }
+        return "{\"sourceContentId\":" + sourceContentId + "}";
+    }
+
+    private void updateBatchOnTaskFinished(Long batchJobId, GraphExtractionTask task) {
+        if (batchJobId == null || aiBatchJobApplicationService == null || task == null) {
+            return;
+        }
+        if (STATUS_SUCCEEDED.equals(task.getStatus())) {
+            aiBatchJobApplicationService.recordSuccess(batchJobId);
+            return;
+        }
+        if (STATUS_FAILED.equals(task.getStatus())) {
+            aiBatchJobApplicationService.recordFailure(batchJobId, summarizeFailure(task));
+        }
+    }
+
+    private String summarizeFailure(GraphExtractionTask task) {
+        if (task == null) {
+            return null;
+        }
+        String type = StringUtils.defaultIfBlank(task.getErrorType(), "KNOWLEDGE_AI_EXTRACTION_FAILED");
+        String message = StringUtils.defaultIfBlank(task.getErrorMessage(), "Knowledge graph extraction failed");
+        return type + ": " + message;
+    }
+
     @FunctionalInterface
     private interface KnowledgeInvokeOperation {
         KnowledgeAiExtractionResult invoke(KnowledgeAiExtractionRequest request);
     }
+
+    private record ExtractionTarget(Long sourceContentId, String scopeJson) {}
 }
