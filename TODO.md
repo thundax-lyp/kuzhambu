@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `admin-web shared entry`：替换共享骨架中的 `Space`
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-WEB-KUZHAMBU-SPACE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/layouts/admin-layout.tsx`、`kuzhambu-apps/admin-web/src/components/kuzhambu-list-page/kuzhambu-list-page.tsx`、`kuzhambu-apps/admin-web/src/components/placeholder-page.tsx`
-    - 处理动作：把共享骨架和布局入口改为使用 `KuzhambuSpace`
-    - 验收点：高复用入口不再导入 `antd Space`
-    - 重要度：8/10
-
 - [ ] `admin-web discovery pages`：替换已知 `direction` warning 页面
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-WEB-KUZHAMBU-SPACE.md`

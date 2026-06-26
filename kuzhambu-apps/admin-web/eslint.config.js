@@ -47,9 +47,6 @@ const SERVICE_METHOD_VERBS = [
 ];
 
 const ANTD_SPACE_DIRECT_IMPORT_ALLOWLIST = [
-    "/src/components/kuzhambu-list-page/kuzhambu-list-page.tsx",
-    "/src/components/placeholder-page.tsx",
-    "/src/layouts/admin-layout.tsx",
     "/src/pages/audit/audit-log/audit-log-page.tsx",
     "/src/pages/audit/audit-log/components/audit-log-detail.tsx",
     "/src/pages/auth/login/login-page.tsx",
