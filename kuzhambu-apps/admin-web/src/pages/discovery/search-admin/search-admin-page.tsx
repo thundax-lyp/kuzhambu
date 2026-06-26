@@ -1,7 +1,8 @@
 import { useMutation } from "@tanstack/react-query";
-import { Button, Card, Checkbox, Descriptions, Input, Space, Table, Typography } from "antd";
+import { Button, Card, Checkbox, Descriptions, Input, Table, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useState } from "react";
+import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import * as service from "./search-admin-service";
 import type {
     DiscoverySearchLogDetailRecord,
@@ -88,10 +89,10 @@ export const SearchAdminPage = () => {
                     </div>
                 </header>
 
-                <Space direction="vertical" size={16} style={{ width: "100%" }}>
+                <KuzhambuSpace orientation="vertical" size={16} style={{ width: "100%" }}>
                     <Card title="搜索日志分页" size="small">
-                        <Space direction="vertical" size={12} style={{ width: "100%" }}>
-                            <Space wrap>
+                        <KuzhambuSpace orientation="vertical" size={12} style={{ width: "100%" }}>
+                            <KuzhambuSpace wrap>
                                 <label>
                                     <Text type="secondary">搜索词</Text>
                                     <Input
@@ -164,9 +165,9 @@ export const SearchAdminPage = () => {
                                         style={{ width: 100 }}
                                     />
                                 </label>
-                            </Space>
+                            </KuzhambuSpace>
 
-                            <Space wrap>
+                            <KuzhambuSpace wrap>
                                 <Button
                                     loading={pageMutation.isPending}
                                     onClick={() =>
@@ -192,8 +193,8 @@ export const SearchAdminPage = () => {
                                     查询日志
                                 </Button>
                                 <Button onClick={() => setPageResult(null)}>清空结果</Button>
-                            </Space>
-                        </Space>
+                            </KuzhambuSpace>
+                        </KuzhambuSpace>
 
                         <Table
                             aria-label="搜索日志表格"
@@ -214,7 +215,7 @@ export const SearchAdminPage = () => {
                     </Card>
 
                     <Card title="日志详情" size="small">
-                        <Space wrap>
+                        <KuzhambuSpace wrap>
                             <label>
                                 <Text type="secondary">日志号</Text>
                                 <Input
@@ -235,7 +236,7 @@ export const SearchAdminPage = () => {
                             >
                                 查看详情
                             </Button>
-                        </Space>
+                        </KuzhambuSpace>
 
                         <Descriptions
                             bordered
@@ -295,8 +296,8 @@ export const SearchAdminPage = () => {
                             size="small"
                             style={{ marginTop: 16 }}
                         />
-                        <Space
-                            direction="vertical"
+                        <KuzhambuSpace
+                            orientation="vertical"
                             size={8}
                             style={{ marginTop: 16, width: "100%" }}
                         >
@@ -306,11 +307,11 @@ export const SearchAdminPage = () => {
                             <Text code style={{ whiteSpace: "pre-wrap" }}>
                                 {detailResult?.searchScopesJson ?? "-"}
                             </Text>
-                        </Space>
+                        </KuzhambuSpace>
                     </Card>
 
                     <Card title="索引重建" size="small">
-                        <Space align="center" wrap>
+                        <KuzhambuSpace align="center" wrap>
                             <Checkbox
                                 checked={confirmRebuild}
                                 onChange={(event) => setConfirmRebuild(event.target.checked)}
@@ -328,14 +329,14 @@ export const SearchAdminPage = () => {
                             >
                                 触发重建
                             </Button>
-                        </Space>
+                        </KuzhambuSpace>
                         <Text type="secondary">
                             {rebuildResult !== null
                                 ? `重建结果：${rebuildResult}`
                                 : "尚未触发重建。"}
                         </Text>
                     </Card>
-                </Space>
+                </KuzhambuSpace>
             </section>
         </main>
     );

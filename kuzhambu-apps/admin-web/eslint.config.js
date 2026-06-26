@@ -59,8 +59,6 @@ const ANTD_SPACE_DIRECT_IMPORT_ALLOWLIST = [
     "/src/pages/classics/sancai/sancai-page.tsx",
     "/src/pages/classics/wangqi/components/wangqi-storage-file-panel.tsx",
     "/src/pages/classics/wangqi/components/wangqi-version-history-panel.tsx",
-    "/src/pages/discovery/qa-admin/qa-admin-page.tsx",
-    "/src/pages/discovery/search-admin/search-admin-page.tsx",
     "/src/pages/knowledge/graph-extraction/components/graph-extraction-create.tsx",
     "/src/pages/knowledge/graph-extraction/components/graph-extraction-task-table.tsx",
     "/src/pages/knowledge/graph-extraction/graph-extraction-page.tsx",

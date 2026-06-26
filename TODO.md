@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `admin-web discovery pages`：替换已知 `direction` warning 页面
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-WEB-KUZHAMBU-SPACE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/discovery/search-admin/search-admin-page.tsx`、`kuzhambu-apps/admin-web/src/pages/discovery/qa-admin/qa-admin-page.tsx`
-    - 处理动作：将 discovery admin 页面中的 `Space` 改为共享组件并统一使用 `orientation`
-    - 验收点：当前已知 `direction` 废弃 warning 页面完成替换
-    - 重要度：9/10
-
 - [ ] `admin-web knowledge compact batch-1`：替换第一批 `Space.Compact` 表格
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-WEB-KUZHAMBU-SPACE.md`
