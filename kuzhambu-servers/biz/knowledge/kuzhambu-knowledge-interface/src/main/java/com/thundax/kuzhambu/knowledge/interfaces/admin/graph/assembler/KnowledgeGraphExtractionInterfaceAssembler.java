@@ -18,7 +18,7 @@ public final class KnowledgeGraphExtractionInterfaceAssembler {
     private KnowledgeGraphExtractionInterfaceAssembler() {}
 
     public static RequestRelationExtractionCommand toRelationCommand(GraphExtractionRequests.CreateRequest request) {
-        return new RequestRelationExtractionCommand(
+        RequestRelationExtractionCommand command = new RequestRelationExtractionCommand(
                 request == null ? null : request.getScopeType(),
                 request == null ? null : request.getScopeJson(),
                 request == null ? null : request.getSourceContentType(),
@@ -38,10 +38,14 @@ public final class KnowledgeGraphExtractionInterfaceAssembler {
                 request == null ? null : request.getOutputSchemaJson(),
                 request != null && Boolean.TRUE.equals(request.getForceJson()),
                 request == null ? null : request.getLocale());
+        command.setTriggerSource(request == null ? null : request.getTriggerSource());
+        command.setSelectionScopeJson(request == null ? null : request.getSelectionScopeJson());
+        command.setReplaceUnconfirmedOnly(request == null ? null : request.getReplaceUnconfirmedOnly());
+        return command;
     }
 
     public static RequestGraphExtractionCommand toGraphCommand(GraphExtractionRequests.CreateRequest request) {
-        return new RequestGraphExtractionCommand(
+        RequestGraphExtractionCommand command = new RequestGraphExtractionCommand(
                 request == null ? null : request.getScopeType(),
                 request == null ? null : request.getScopeJson(),
                 request == null ? null : request.getSourceContentType(),
@@ -61,10 +65,14 @@ public final class KnowledgeGraphExtractionInterfaceAssembler {
                 request == null ? null : request.getOutputSchemaJson(),
                 request != null && Boolean.TRUE.equals(request.getForceJson()),
                 request == null ? null : request.getLocale());
+        command.setTriggerSource(request == null ? null : request.getTriggerSource());
+        command.setSelectionScopeJson(request == null ? null : request.getSelectionScopeJson());
+        command.setReplaceUnconfirmedOnly(request == null ? null : request.getReplaceUnconfirmedOnly());
+        return command;
     }
 
     public static RequestLineageExtractionCommand toLineageCommand(GraphExtractionRequests.CreateRequest request) {
-        return new RequestLineageExtractionCommand(
+        RequestLineageExtractionCommand command = new RequestLineageExtractionCommand(
                 request == null ? null : request.getScopeType(),
                 request == null ? null : request.getScopeJson(),
                 request == null ? null : request.getSourceContentType(),
@@ -84,6 +92,10 @@ public final class KnowledgeGraphExtractionInterfaceAssembler {
                 request == null ? null : request.getOutputSchemaJson(),
                 request != null && Boolean.TRUE.equals(request.getForceJson()),
                 request == null ? null : request.getLocale());
+        command.setTriggerSource(request == null ? null : request.getTriggerSource());
+        command.setSelectionScopeJson(request == null ? null : request.getSelectionScopeJson());
+        command.setReplaceUnconfirmedOnly(request == null ? null : request.getReplaceUnconfirmedOnly());
+        return command;
     }
 
     public static GraphExtractionTaskId toTaskId(GraphExtractionRequests.TaskIdRequest request) {
@@ -93,9 +105,14 @@ public final class KnowledgeGraphExtractionInterfaceAssembler {
     public static GraphExtractionResponses.TaskResponse toResponse(GraphExtractionTaskResult result) {
         return GraphExtractionResponses.TaskResponse.builder()
                 .taskId(result == null ? null : result.getTaskId())
+                .batchJobId(result == null ? null : result.getBatchJobId())
                 .taskType(result == null ? null : result.getTaskType())
                 .scopeType(result == null ? null : result.getScopeType())
                 .scopeJson(result == null ? null : result.getScopeJson())
+                .triggerSource(result == null ? null : result.getTriggerSource())
+                .selectionScopeJson(result == null ? null : result.getSelectionScopeJson())
+                .replaceUnconfirmedOnly(result == null ? null : result.getReplaceUnconfirmedOnly())
+                .parentTaskId(result == null ? null : result.getParentTaskId())
                 .sourceContentType(result == null ? null : result.getSourceContentType())
                 .sourceContentId(result == null ? null : result.getSourceContentId())
                 .aiCallId(result == null ? null : result.getAiCallId())

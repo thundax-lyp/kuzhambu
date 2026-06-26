@@ -108,6 +108,10 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
                 TASK_TYPE_RELATION,
                 command == null ? null : command.getScopeType(),
                 command == null ? null : command.getScopeJson(),
+                command == null ? null : command.getTriggerSource(),
+                command == null ? null : command.getSelectionScopeJson(),
+                command == null ? null : command.getReplaceUnconfirmedOnly(),
+                command == null ? null : command.getParentTaskId(),
                 command == null ? null : command.getSourceContentType(),
                 command == null ? null : command.getSourceContentId(),
                 command == null ? null : command.getRequestedBy(),
@@ -151,6 +155,10 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
                 TASK_TYPE_GRAPH,
                 command == null ? null : command.getScopeType(),
                 command == null ? null : command.getScopeJson(),
+                command == null ? null : command.getTriggerSource(),
+                command == null ? null : command.getSelectionScopeJson(),
+                command == null ? null : command.getReplaceUnconfirmedOnly(),
+                command == null ? null : command.getParentTaskId(),
                 command == null ? null : command.getSourceContentType(),
                 command == null ? null : command.getSourceContentId(),
                 command == null ? null : command.getRequestedBy(),
@@ -194,6 +202,10 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
                 TASK_TYPE_LINEAGE,
                 command == null ? null : command.getScopeType(),
                 command == null ? null : command.getScopeJson(),
+                command == null ? null : command.getTriggerSource(),
+                command == null ? null : command.getSelectionScopeJson(),
+                command == null ? null : command.getReplaceUnconfirmedOnly(),
+                command == null ? null : command.getParentTaskId(),
                 command == null ? null : command.getSourceContentType(),
                 command == null ? null : command.getSourceContentId(),
                 command == null ? null : command.getRequestedBy(),
@@ -425,6 +437,10 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
             String taskType,
             String scopeType,
             String scopeJson,
+            String triggerSource,
+            String selectionScopeJson,
+            Boolean replaceUnconfirmedOnly,
+            Long parentTaskId,
             String sourceContentType,
             Long sourceContentId,
             Long requestedBy,
@@ -434,6 +450,10 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
         task.setTaskType(taskType);
         task.setScopeType(scopeType);
         task.setScopeJson(scopeJson);
+        task.setTriggerSource(triggerSource);
+        task.setSelectionScopeJson(selectionScopeJson);
+        task.setReplaceUnconfirmedOnly(replaceUnconfirmedOnly);
+        task.setParentTaskId(GraphExtractionTaskId.ofNullable(parentTaskId));
         task.setSourceContentType(sourceContentType);
         task.setSourceContentId(sourceContentId);
         task.setRequestedBy(requestedBy);
@@ -515,9 +535,14 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
                 task.getTaskId() == null
                         ? null
                         : String.valueOf(task.getTaskId().value()),
+                task.getBatchJobId(),
                 task.getTaskType(),
                 task.getScopeType(),
                 task.getScopeJson(),
+                task.getTriggerSource(),
+                task.getSelectionScopeJson(),
+                task.getReplaceUnconfirmedOnly(),
+                task.getParentTaskId() == null ? null : task.getParentTaskId().value(),
                 task.getSourceContentType(),
                 task.getSourceContentId(),
                 task.getAiCallId(),
