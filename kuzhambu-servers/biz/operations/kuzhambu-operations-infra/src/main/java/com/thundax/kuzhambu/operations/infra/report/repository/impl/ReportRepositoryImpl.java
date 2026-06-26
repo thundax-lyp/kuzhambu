@@ -1,7 +1,11 @@
 package com.thundax.kuzhambu.operations.infra.report.repository.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.operations.domain.report.codec.ReportIdCodec;
 import com.thundax.kuzhambu.operations.domain.report.model.entity.ReportRecord;
 import com.thundax.kuzhambu.operations.domain.report.model.valueobject.ReportId;
@@ -9,6 +13,8 @@ import com.thundax.kuzhambu.operations.domain.report.repository.ReportRepository
 import com.thundax.kuzhambu.operations.infra.report.persistence.assembler.ReportPersistenceAssembler;
 import com.thundax.kuzhambu.operations.infra.report.persistence.dataobject.ReportDO;
 import com.thundax.kuzhambu.operations.infra.report.persistence.mapper.ReportMapper;
+import java.util.Date;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -24,6 +30,26 @@ public class ReportRepositoryImpl implements ReportRepository {
     public ReportRecord getById(ReportId id) {
         return ReportPersistenceAssembler.toDomain(mapper.selectOne(
                 new LambdaQueryWrapper<ReportDO>().eq(ReportDO::getReportId, ReportIdCodec.toValue(id))));
+    }
+
+    @Override
+    public PageResult<ReportRecord> page(
+            String reportType,
+            String format,
+            String reportStatus,
+            Long requesterUserId,
+            Date periodStart,
+            Date periodEnd,
+            int pageNo,
+            int pageSize) {
+        Page<ReportDO> page = new Page<>(pageNo, pageSize);
+        IPage<ReportDO> dataObjectPage = mapper.selectPage(
+                page, buildPageWrapper(reportType, format, reportStatus, requesterUserId, periodStart, periodEnd));
+        return PageResult.of(
+                (int) dataObjectPage.getCurrent(),
+                (int) dataObjectPage.getSize(),
+                dataObjectPage.getTotal(),
+                ReportPersistenceAssembler.toDomainList(dataObjectPage.getRecords()));
     }
 
     @Override
@@ -59,5 +85,35 @@ public class ReportRepositoryImpl implements ReportRepository {
     @Override
     public int deleteById(ReportId id) {
         return mapper.delete(new LambdaQueryWrapper<ReportDO>().eq(ReportDO::getReportId, ReportIdCodec.toValue(id)));
+    }
+
+    private QueryWrapper<ReportDO> buildPageWrapper(
+            String reportType,
+            String format,
+            String reportStatus,
+            Long requesterUserId,
+            Date periodStart,
+            Date periodEnd) {
+        QueryWrapper<ReportDO> wrapper = new QueryWrapper<>();
+        if (StringUtils.isNotBlank(reportType)) {
+            wrapper.eq("report_type", reportType);
+        }
+        if (StringUtils.isNotBlank(format)) {
+            wrapper.eq("format", format);
+        }
+        if (StringUtils.isNotBlank(reportStatus)) {
+            wrapper.eq("report_status", reportStatus);
+        }
+        if (requesterUserId != null) {
+            wrapper.eq("requester_user_id", requesterUserId);
+        }
+        if (periodStart != null) {
+            wrapper.ge("period_start", periodStart);
+        }
+        if (periodEnd != null) {
+            wrapper.le("period_end", periodEnd);
+        }
+        wrapper.orderByDesc("requested_at");
+        return wrapper;
     }
 }

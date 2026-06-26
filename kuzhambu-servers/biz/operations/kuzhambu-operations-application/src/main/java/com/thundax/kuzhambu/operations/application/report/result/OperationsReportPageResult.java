@@ -19,6 +19,7 @@ public class OperationsReportPageResult {
     private Date periodStart;
     private Date periodEnd;
     private Long storageObjectId;
+    private String artifactFilename;
     private String reportStatus;
     private String failureReason;
     private Long requesterUserId;

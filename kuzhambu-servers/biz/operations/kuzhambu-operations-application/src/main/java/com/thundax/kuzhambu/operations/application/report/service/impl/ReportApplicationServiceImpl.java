@@ -10,11 +10,21 @@ import com.thundax.kuzhambu.operations.application.report.result.OperationsRepor
 import com.thundax.kuzhambu.operations.application.report.result.OperationsReportGenerateResult;
 import com.thundax.kuzhambu.operations.application.report.result.OperationsReportPageResult;
 import com.thundax.kuzhambu.operations.application.report.service.ReportApplicationService;
+import com.thundax.kuzhambu.operations.domain.report.model.entity.ReportRecord;
+import com.thundax.kuzhambu.operations.domain.report.repository.ReportRepository;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 @Service
 @BizExceptionBoundary
 public class ReportApplicationServiceImpl implements ReportApplicationService {
+
+    private final ReportRepository reportRepository;
+
+    public ReportApplicationServiceImpl(ReportRepository reportRepository) {
+        this.reportRepository = reportRepository;
+    }
 
     @Override
     public OperationsReportGenerateResult generate(OperationsReportGenerateCommand command) {
@@ -23,11 +33,70 @@ public class ReportApplicationServiceImpl implements ReportApplicationService {
 
     @Override
     public PageResult<OperationsReportPageResult> page(OperationsReportPageQuery query, PageQuery pageQuery) {
-        throw new UnsupportedOperationException("Operations report page flow is not implemented yet.");
+        PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
+        effectivePage.normalize();
+        PageResult<ReportRecord> recordPage = reportRepository.page(
+                query == null ? null : query.getReportType(),
+                query == null ? null : query.getFormat(),
+                query == null ? null : query.getReportStatus(),
+                query == null ? null : query.getRequesterUserId(),
+                query == null ? null : query.getPeriodStart(),
+                query == null ? null : query.getPeriodEnd(),
+                effectivePage.getPageNo(),
+                effectivePage.getPageSize());
+        List<OperationsReportPageResult> results =
+                recordPage.getRecords().stream().map(this::toPageResult).collect(Collectors.toList());
+        return PageResult.of(recordPage.getPageNo(), recordPage.getPageSize(), recordPage.getTotalCount(), results);
     }
 
     @Override
     public OperationsReportDetailResult detail(OperationsReportDetailQuery query) {
-        throw new UnsupportedOperationException("Operations report detail flow is not implemented yet.");
+        ReportRecord record = reportRepository.getById(query == null ? null : query.getReportId());
+        return toDetailResult(record);
+    }
+
+    private OperationsReportPageResult toPageResult(ReportRecord record) {
+        if (record == null) {
+            return null;
+        }
+        return new OperationsReportPageResult(
+                record.getId(),
+                record.getReportType(),
+                record.getFormat(),
+                record.getPeriodStart(),
+                record.getPeriodEnd(),
+                record.getStorageObjectId(),
+                record.getArtifactFilename(),
+                record.getReportStatus() == null
+                        ? null
+                        : record.getReportStatus().value(),
+                record.getFailureReason(),
+                record.getRequesterUserId(),
+                record.getRequestedAt(),
+                record.getCompletedAt());
+    }
+
+    private OperationsReportDetailResult toDetailResult(ReportRecord record) {
+        if (record == null) {
+            return null;
+        }
+        return new OperationsReportDetailResult(
+                record.getId(),
+                record.getReportType(),
+                record.getFormat(),
+                record.getPeriodStart(),
+                record.getPeriodEnd(),
+                record.getRequestId(),
+                record.getTraceId(),
+                record.getTemplateVersion(),
+                record.getStorageObjectId(),
+                record.getArtifactFilename(),
+                record.getReportStatus() == null
+                        ? null
+                        : record.getReportStatus().value(),
+                record.getFailureReason(),
+                record.getRequesterUserId(),
+                record.getRequestedAt(),
+                record.getCompletedAt());
     }
 }

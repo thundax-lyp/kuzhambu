@@ -18,7 +18,11 @@ public class OperationsReportDetailResult {
     private String format;
     private Date periodStart;
     private Date periodEnd;
+    private String requestId;
+    private String traceId;
+    private String templateVersion;
     private Long storageObjectId;
+    private String artifactFilename;
     private String reportStatus;
     private String failureReason;
     private Long requesterUserId;
