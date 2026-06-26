@@ -12,7 +12,9 @@ import com.thundax.kuzhambu.operations.domain.report.model.valueobject.ReportId;
 import com.thundax.kuzhambu.operations.interfaces.admin.report.controller.request.OperationsReportDetailRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.report.controller.request.OperationsReportGenerateRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.report.controller.request.OperationsReportPageRequest;
-import com.thundax.kuzhambu.operations.interfaces.admin.report.controller.response.OperationsReportAdminResponses;
+import com.thundax.kuzhambu.operations.interfaces.admin.report.controller.response.OperationsReportDetailResponse;
+import com.thundax.kuzhambu.operations.interfaces.admin.report.controller.response.OperationsReportGenerateResponse;
+import com.thundax.kuzhambu.operations.interfaces.admin.report.controller.response.OperationsReportPageResponse;
 
 public final class OperationsReportInterfaceAssembler {
 
@@ -50,11 +52,11 @@ public final class OperationsReportInterfaceAssembler {
         return new OperationsReportDetailQuery(ReportId.of(request.getReportId()));
     }
 
-    public static OperationsReportAdminResponses.GenerateResponse toResponse(OperationsReportGenerateResult result) {
+    public static OperationsReportGenerateResponse toResponse(OperationsReportGenerateResult result) {
         if (result == null) {
             return null;
         }
-        return OperationsReportAdminResponses.GenerateResponse.builder()
+        return OperationsReportGenerateResponse.builder()
                 .reportId(
                         result.getReportId() == null
                                 ? null
@@ -63,11 +65,11 @@ public final class OperationsReportInterfaceAssembler {
                 .build();
     }
 
-    public static OperationsReportAdminResponses.PageResponse toResponse(OperationsReportPageResult result) {
+    public static OperationsReportPageResponse toResponse(OperationsReportPageResult result) {
         if (result == null) {
             return null;
         }
-        return OperationsReportAdminResponses.PageResponse.builder()
+        return OperationsReportPageResponse.builder()
                 .reportId(
                         result.getReportId() == null
                                 ? null
@@ -86,11 +88,11 @@ public final class OperationsReportInterfaceAssembler {
                 .build();
     }
 
-    public static OperationsReportAdminResponses.DetailResponse toDetailResponse(OperationsReportDetailResult result) {
+    public static OperationsReportDetailResponse toDetailResponse(OperationsReportDetailResult result) {
         if (result == null) {
             return null;
         }
-        return OperationsReportAdminResponses.DetailResponse.builder()
+        return OperationsReportDetailResponse.builder()
                 .reportId(
                         result.getReportId() == null
                                 ? null

@@ -12,7 +12,9 @@ import com.thundax.kuzhambu.operations.interfaces.admin.report.assembler.Operati
 import com.thundax.kuzhambu.operations.interfaces.admin.report.controller.request.OperationsReportDetailRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.report.controller.request.OperationsReportGenerateRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.report.controller.request.OperationsReportPageRequest;
-import com.thundax.kuzhambu.operations.interfaces.admin.report.controller.response.OperationsReportAdminResponses;
+import com.thundax.kuzhambu.operations.interfaces.admin.report.controller.response.OperationsReportDetailResponse;
+import com.thundax.kuzhambu.operations.interfaces.admin.report.controller.response.OperationsReportGenerateResponse;
+import com.thundax.kuzhambu.operations.interfaces.admin.report.controller.response.OperationsReportPageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -36,8 +38,7 @@ public class OperationsReportAdminController {
     @HasPermission("operations:report:generate")
     @IgnoreSysLogger
     @PostMapping("generate")
-    public OperationsReportAdminResponses.GenerateResponse generate(
-            @Valid @RequestBody OperationsReportGenerateRequest request) {
+    public OperationsReportGenerateResponse generate(@Valid @RequestBody OperationsReportGenerateRequest request) {
         return OperationsReportInterfaceAssembler.toResponse(
                 reportApplicationService.generate(OperationsReportInterfaceAssembler.toCommand(request)));
     }
@@ -46,8 +47,7 @@ public class OperationsReportAdminController {
     @HasPermission("operations:report:view")
     @IgnoreSysLogger
     @PostMapping("page")
-    public PageResponse<OperationsReportAdminResponses.PageResponse> page(
-            @Valid @RequestBody OperationsReportPageRequest request) {
+    public PageResponse<OperationsReportPageResponse> page(@Valid @RequestBody OperationsReportPageRequest request) {
         return PageResponseHelper.fromPageResult(
                 reportApplicationService.page(
                         OperationsReportInterfaceAssembler.toQuery(request),
@@ -59,8 +59,7 @@ public class OperationsReportAdminController {
     @HasPermission("operations:report:view")
     @IgnoreSysLogger
     @PostMapping("detail")
-    public OperationsReportAdminResponses.DetailResponse detail(
-            @Valid @RequestBody OperationsReportDetailRequest request) {
+    public OperationsReportDetailResponse detail(@Valid @RequestBody OperationsReportDetailRequest request) {
         return OperationsReportInterfaceAssembler.toDetailResponse(
                 reportApplicationService.detail(OperationsReportInterfaceAssembler.toQuery(request)));
     }
