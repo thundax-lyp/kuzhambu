@@ -253,7 +253,8 @@ class ClassicsSharingPortalControllerTest {
                 "正式标题",
                 ClassicsSharedContentVisibility.PUBLIC,
                 ClassicsShareTargetStatus.AVAILABLE,
-                1);
+                1,
+                0L);
     }
 
     private static StorageApplicationService storageService() {

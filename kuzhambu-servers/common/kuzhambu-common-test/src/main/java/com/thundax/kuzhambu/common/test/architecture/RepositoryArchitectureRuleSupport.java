@@ -37,7 +37,7 @@ public final class RepositoryArchitectureRuleSupport {
 
         try (Stream<Path> paths = Files.list(servers)) {
             paths.filter(Files::isDirectory)
-                    .filter(path -> !"target".equals(path.getFileName().toString()))
+                    .filter(path -> !isIgnoredRootDirectory(path))
                     .forEach(path -> {
                         String name = path.getFileName().toString();
                         if (!SERVER_GROUPS.contains(name)) {
@@ -47,6 +47,11 @@ public final class RepositoryArchitectureRuleSupport {
         }
 
         assertTrue("Server module groups must be common, biz, starter: " + violations, violations.isEmpty());
+    }
+
+    private static boolean isIgnoredRootDirectory(Path path) {
+        String name = path.getFileName().toString();
+        return "target".equals(name) || name.startsWith(".");
     }
 
     public static void assertMavenModuleNames() throws IOException {
