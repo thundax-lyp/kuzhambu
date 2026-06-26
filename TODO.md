@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `operations report task`：建立报表快照装配与后台执行单元
-    - 任务类型：拆解任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-REPORT-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/report/support/`、`.../result/`
-    - 处理动作：新增 report snapshot assembler、artifact result 和基于 `reportId` 的 task executor
-    - 验收点：后台执行单元能按 `reportId` 聚合统计、组装快照并触发 worker 调用
-    - 重要度：9/10
-
 - [ ] `operations report storage`：打通报表产物入库与状态回写
     - 任务类型：拆解任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-REPORT-CLOSURE.md`

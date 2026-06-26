@@ -10,10 +10,16 @@ import com.thundax.kuzhambu.operations.application.report.result.OperationsRepor
 import com.thundax.kuzhambu.operations.application.report.result.OperationsReportGenerateResult;
 import com.thundax.kuzhambu.operations.application.report.result.OperationsReportPageResult;
 import com.thundax.kuzhambu.operations.application.report.service.ReportApplicationService;
+import com.thundax.kuzhambu.operations.application.report.support.OperationsReportTaskExecutor;
 import com.thundax.kuzhambu.operations.domain.report.model.entity.ReportRecord;
+import com.thundax.kuzhambu.operations.domain.report.model.enums.ReportStatus;
+import com.thundax.kuzhambu.operations.domain.report.model.valueobject.ReportId;
 import com.thundax.kuzhambu.operations.domain.report.repository.ReportRepository;
+import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -21,14 +27,36 @@ import org.springframework.stereotype.Service;
 public class ReportApplicationServiceImpl implements ReportApplicationService {
 
     private final ReportRepository reportRepository;
+    private final OperationsReportTaskExecutor taskExecutor;
 
-    public ReportApplicationServiceImpl(ReportRepository reportRepository) {
+    public ReportApplicationServiceImpl(ReportRepository reportRepository, OperationsReportTaskExecutor taskExecutor) {
         this.reportRepository = reportRepository;
+        this.taskExecutor = taskExecutor;
     }
 
     @Override
     public OperationsReportGenerateResult generate(OperationsReportGenerateCommand command) {
-        throw new UnsupportedOperationException("Operations report generate flow is not implemented yet.");
+        validateGenerateCommand(command);
+        Date now = new Date();
+        ReportRecord record = new ReportRecord(
+                null,
+                command.getReportType(),
+                command.getFormat(),
+                command.getPeriodStart(),
+                command.getPeriodEnd(),
+                requestId(),
+                traceId(),
+                "2026.06.26",
+                null,
+                null,
+                ReportStatus.PENDING,
+                null,
+                command.getRequesterUserId(),
+                now,
+                null);
+        ReportId reportId = reportRepository.insert(record);
+        taskExecutor.executeAsync(reportId);
+        return new OperationsReportGenerateResult(reportId, ReportStatus.PENDING.value());
     }
 
     @Override
@@ -98,5 +126,31 @@ public class ReportApplicationServiceImpl implements ReportApplicationService {
                 record.getRequesterUserId(),
                 record.getRequestedAt(),
                 record.getCompletedAt());
+    }
+
+    private void validateGenerateCommand(OperationsReportGenerateCommand command) {
+        if (command == null) {
+            throw new IllegalArgumentException("Operations report generate command must not be null.");
+        }
+        if (StringUtils.isBlank(command.getReportType())) {
+            throw new IllegalArgumentException("Operations report type must not be blank.");
+        }
+        if (StringUtils.isBlank(command.getFormat())) {
+            throw new IllegalArgumentException("Operations report format must not be blank.");
+        }
+        if (command.getPeriodStart() == null || command.getPeriodEnd() == null) {
+            throw new IllegalArgumentException("Operations report period must not be null.");
+        }
+        if (command.getPeriodStart().after(command.getPeriodEnd())) {
+            throw new IllegalArgumentException("Operations report periodStart must not be after periodEnd.");
+        }
+    }
+
+    private String requestId() {
+        return "operations-report-" + UUID.randomUUID();
+    }
+
+    private String traceId() {
+        return "operations-trace-" + UUID.randomUUID();
     }
 }
