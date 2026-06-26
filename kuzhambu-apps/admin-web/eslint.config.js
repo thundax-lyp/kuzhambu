@@ -46,6 +46,54 @@ const SERVICE_METHOD_VERBS = [
     "revoke"
 ];
 
+const ANTD_SPACE_DIRECT_IMPORT_ALLOWLIST = [
+    "/src/components/kuzhambu-list-page/kuzhambu-list-page.tsx",
+    "/src/components/placeholder-page.tsx",
+    "/src/layouts/admin-layout.tsx",
+    "/src/pages/audit/audit-log/audit-log-page.tsx",
+    "/src/pages/audit/audit-log/components/audit-log-detail.tsx",
+    "/src/pages/auth/login/login-page.tsx",
+    "/src/pages/classics/common/components/ai-candidate-panel.tsx",
+    "/src/pages/classics/common/components/ai-candidate-payload-editor.tsx",
+    "/src/pages/classics/sancai/components/sancai-catalog-tree-panel.tsx",
+    "/src/pages/classics/sancai/components/sancai-entry-model.tsx",
+    "/src/pages/classics/sancai/components/sancai-entry-panel.tsx",
+    "/src/pages/classics/sancai/components/sancai-version-history-panel.tsx",
+    "/src/pages/classics/sancai/sancai-page.tsx",
+    "/src/pages/classics/wangqi/components/wangqi-storage-file-panel.tsx",
+    "/src/pages/classics/wangqi/components/wangqi-version-history-panel.tsx",
+    "/src/pages/discovery/qa-admin/qa-admin-page.tsx",
+    "/src/pages/discovery/search-admin/search-admin-page.tsx",
+    "/src/pages/knowledge/graph-extraction/components/graph-extraction-create.tsx",
+    "/src/pages/knowledge/graph-extraction/components/graph-extraction-task-table.tsx",
+    "/src/pages/knowledge/graph-extraction/graph-extraction-page.tsx",
+    "/src/pages/knowledge/graph-results/components/graph-entity-table.tsx",
+    "/src/pages/knowledge/graph-results/components/graph-lineage-node-table.tsx",
+    "/src/pages/knowledge/graph-results/components/graph-lineage-relation-table.tsx",
+    "/src/pages/knowledge/graph-results/components/graph-relation-table.tsx",
+    "/src/pages/knowledge/graph-results/components/graph-version-table.tsx",
+    "/src/pages/knowledge/graph-results/graph-results-page.tsx",
+    "/src/pages/knowledge/refinement/components/refinement-entity-table.tsx",
+    "/src/pages/knowledge/refinement/components/refinement-filter-form.tsx",
+    "/src/pages/knowledge/refinement/components/refinement-relation-table.tsx",
+    "/src/pages/knowledge/refinement/components/refinement-workbench-table.tsx",
+    "/src/pages/knowledge/refinement/refinement-page.tsx",
+    "/src/pages/knowledge/taxonomy/components/tag-alias-list.tsx",
+    "/src/pages/knowledge/taxonomy/components/tag-detail-drawer.tsx",
+    "/src/pages/knowledge/taxonomy/components/tag-governance-metrics-panel.tsx",
+    "/src/pages/knowledge/taxonomy/components/tag-merge-panel.tsx",
+    "/src/pages/storage/storage-object/storage-object-page.tsx",
+    "/src/pages/system/department/department-page.tsx",
+    "/src/pages/system/dictionary/dictionary-page.tsx",
+    "/src/pages/system/menu/menu-page.tsx",
+    "/src/pages/system/role/role-page.tsx",
+    "/src/pages/system/system-log/system-log-page.tsx",
+    "/src/pages/system/user/components/user-batch-actions.tsx",
+    "/src/pages/system/user/components/user-department-tree.tsx",
+    "/src/pages/system/user/components/user-page-actions.tsx",
+    "/src/pages/system/user/components/user-table.tsx"
+];
+
 const localRules = {
     rules: {
         "kebab-case-file-name": {
@@ -251,6 +299,55 @@ const localRules = {
                             node,
                             message:
                                 "ADMIN_WEB_CODE_NO_EXPLICIT_ANY: explicit any is forbidden; use a focused eslint-disable comment with a reason only when the boundary cannot be typed."
+                        });
+                    }
+                };
+            }
+        },
+        "no-antd-space-direct": {
+            create(context) {
+                const readNormalizedFilePath = () => {
+                    return context.physicalFilename.split(path.sep).join("/");
+                };
+
+                const isKuzhambuSpaceImplementation = (normalizedFilePath) => {
+                    return normalizedFilePath.endsWith(
+                        "/src/components/kuzhambu-space/kuzhambu-space.tsx"
+                    );
+                };
+
+                const isAllowlistedDirectImportFile = (normalizedFilePath) => {
+                    return ANTD_SPACE_DIRECT_IMPORT_ALLOWLIST.some((suffix) =>
+                        normalizedFilePath.endsWith(suffix)
+                    );
+                };
+
+                return {
+                    ImportDeclaration(node) {
+                        const normalizedFilePath = readNormalizedFilePath();
+
+                        if (
+                            isKuzhambuSpaceImplementation(normalizedFilePath) ||
+                            isAllowlistedDirectImportFile(normalizedFilePath) ||
+                            node.source.value !== "antd"
+                        ) {
+                            return;
+                        }
+
+                        node.specifiers.forEach((specifier) => {
+                            if (
+                                specifier.type !== "ImportSpecifier" ||
+                                (specifier.imported.name !== "Space" &&
+                                    specifier.imported.name !== "SpaceProps")
+                            ) {
+                                return;
+                            }
+
+                            context.report({
+                                node: specifier,
+                                message:
+                                    "ADMIN_WEB_UI_NO_ANTD_SPACE_DIRECT: import KuzhambuSpace or KuzhambuSpaceCompact from src/components/kuzhambu-space/ instead of importing Space or SpaceProps from antd."
+                            });
                         });
                     }
                 };
@@ -1766,6 +1863,7 @@ export default tseslint.config(
             "local/service-namespace-import": "error",
             "local/no-console-log": "error",
             "local/no-explicit-any": "error",
+            "local/no-antd-space-direct": "error",
             "@typescript-eslint/no-explicit-any": "off",
             "local/confirm-hook-only": "error",
             "local/table-action-column-shape": "error",

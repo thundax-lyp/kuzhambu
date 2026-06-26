@@ -11,22 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `admin-web shared component`：新增 `KuzhambuSpace` 共享组件
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-WEB-KUZHAMBU-SPACE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/components/kuzhambu-space/index.ts`、`kuzhambu-apps/admin-web/src/components/kuzhambu-space/kuzhambu-space.tsx`、`kuzhambu-apps/admin-web/src/components/kuzhambu-space/kuzhambu-space.test.tsx`
-    - 处理动作：新增 `KuzhambuSpace` 和 `KuzhambuSpaceCompact`，并在类型层排除 `direction`
-    - 验收点：业务代码可用共享组件替代 `antd Space`，且 `direction` 无法通过类型检查
-    - 重要度：9/10
-
-- [ ] `admin-web lint boundary`：增加禁止直连 `antd Space` 的 hard rule
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-WEB-KUZHAMBU-SPACE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/eslint.config.js`、`docs/00-governance/ADMIN-WEB-RULES.md`
-    - 处理动作：增加 `ADMIN_WEB_UI_NO_ANTD_SPACE_DIRECT` 门禁并同步治理文档
-    - 验收点：直接从 `antd` 导入 `Space` 或 `SpaceProps` 会被 ESLint 拦截，规则标签与文档一致
-    - 重要度：10/10
-
 - [ ] `admin-web shared entry`：替换共享骨架中的 `Space`
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-WEB-KUZHAMBU-SPACE.md`

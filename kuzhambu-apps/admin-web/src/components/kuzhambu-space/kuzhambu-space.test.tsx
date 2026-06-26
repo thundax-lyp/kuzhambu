@@ -8,8 +8,9 @@ import {
     type KuzhambuSpaceProps
 } from "./kuzhambu-space";
 
-const acceptsKuzhambuSpaceProps = (_props: KuzhambuSpaceProps) => undefined;
-const acceptsKuzhambuSpaceCompactProps = (_props: KuzhambuSpaceCompactProps) => undefined;
+const acceptsKuzhambuSpaceProps: (_props: KuzhambuSpaceProps) => void = () => undefined;
+const acceptsKuzhambuSpaceCompactProps: (_props: KuzhambuSpaceCompactProps) => void = () =>
+    undefined;
 
 // @ts-expect-error `direction` is deprecated in antd and forbidden in KuzhambuSpace.
 acceptsKuzhambuSpaceProps({ direction: "vertical" });
