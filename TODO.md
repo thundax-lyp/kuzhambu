@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `operations interface tests`：补齐报表接口契约测试
-    - 任务类型：拆解任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-REPORT-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/test/java/com/thundax/kuzhambu/operations/interfaces/admin/report/controller/`
-    - 处理动作：锁定 `generate`、`page`、`detail` 的路由、权限和响应模型契约
-    - 验收点：Operations 报表接口 contract 可回归
-    - 重要度：7/10
-
 - [ ] `operations app/infra tests`：补齐报表应用与基础设施测试
     - 任务类型：拆解任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-REPORT-CLOSURE.md`
