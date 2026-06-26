@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `operations app/infra tests`：补齐报表应用与基础设施测试
-    - 任务类型：拆解任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-REPORT-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/test/java/com/thundax/kuzhambu/operations/application/report/`、`kuzhambu-servers/biz/operations/kuzhambu-operations-infra/src/test/java/com/thundax/kuzhambu/operations/infra/report/`
-    - 处理动作：锁定发起任务、状态流转、worker 协议解析和 report repository 行为
-    - 验收点：成功回写、失败回写和查询行为有最小自动化保障
-    - 重要度：7/10
-
 - [ ] `关联域 report tests`：补齐关联域 summary 统计测试
     - 任务类型：拆解任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-REPORT-CLOSURE.md`
