@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `kuzhambu-operations-interface/report`：补齐报表 admin 接口层
-    - 任务类型：拆解任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-REPORT-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/report/`
-    - 处理动作：新增 report controller、request 和 interface assembler
-    - 验收点：存在 `generate`、`page`、`detail` 接口且权限编码使用 `operations:report:view` 与 `operations:report:generate`
-    - 重要度：9/10
-
 - [ ] `kuzhambu-operations-interface/report/response`：建立 Operations 独立响应模型
     - 任务类型：拆解任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-REPORT-CLOSURE.md`
