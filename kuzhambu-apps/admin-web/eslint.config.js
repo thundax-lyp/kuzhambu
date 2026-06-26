@@ -55,13 +55,7 @@ const ANTD_SPACE_DIRECT_IMPORT_ALLOWLIST = [
     "/src/pages/classics/sancai/components/sancai-version-history-panel.tsx",
     "/src/pages/classics/sancai/sancai-page.tsx",
     "/src/pages/classics/wangqi/components/wangqi-storage-file-panel.tsx",
-    "/src/pages/classics/wangqi/components/wangqi-version-history-panel.tsx",
-    "/src/pages/storage/storage-object/storage-object-page.tsx",
-    "/src/pages/system/department/department-page.tsx",
-    "/src/pages/system/dictionary/dictionary-page.tsx",
-    "/src/pages/system/menu/menu-page.tsx",
-    "/src/pages/system/role/role-page.tsx",
-    "/src/pages/system/system-log/system-log-page.tsx"
+    "/src/pages/classics/wangqi/components/wangqi-version-history-panel.tsx"
 ];
 
 const localRules = {

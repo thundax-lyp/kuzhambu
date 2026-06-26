@@ -1,11 +1,12 @@
 import { MenuOutlined, PlusOutlined, ReloadOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Button, Space, Typography } from "antd";
+import { App, Button, Typography } from "antd";
 import { useMemo, useState } from "react";
 import type { Key } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
+import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
 import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
 import { MenuEdit } from "./components/menu-edit";
@@ -243,12 +244,12 @@ export const MenuPage = () => {
             width: DEFAULT_COLUMN_WIDTHS.name,
             ellipsis: true,
             render: (name: string) => (
-                <Space size={8} className="menu-name-cell">
+                <KuzhambuSpace size={8} className="menu-name-cell">
                     <MenuOutlined className="menu-name-icon" />
                     <span className="menu-name-text" title={name}>
                         {name}
                     </span>
-                </Space>
+                </KuzhambuSpace>
             )
         },
         {
@@ -374,10 +375,10 @@ export const MenuPage = () => {
                     emptyText: menuQuery.isError ? (
                         "菜单列表加载失败，请确认权限和接口状态。"
                     ) : (
-                        <Space orientation="vertical" size={8}>
+                        <KuzhambuSpace orientation="vertical" size={8}>
                             <MenuOutlined className="menu-empty-icon" />
                             <Text type="secondary">暂无菜单数据</Text>
-                        </Space>
+                        </KuzhambuSpace>
                     )
                 }}
                 onSort={sortMenu}
