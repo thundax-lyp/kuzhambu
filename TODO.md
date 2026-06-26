@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `knowledge graph batch cancel`：增加取消批任务后端入口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-KNOWLEDGE-CLOSURE.md`
-    - 范围对象：`GraphExtractionRequests.java`、`GraphExtractionResponses.java`、`KnowledgeGraphExtractionApplicationService.java`、`KnowledgeGraphExtractionApplicationServiceImpl.java`、`KnowledgeGraphExtractionController.java`
-    - 处理动作：新增 `task/cancel-batch` 接口并实现仅取消未开始单元的批任务取消能力
-    - 验收点：用户可按 `batchJobId` 取消批任务且已完成结果仍可查看和应用
-    - 重要度：10/10
-
 - [ ] `knowledge graph quality trigger`：收口质量触发图谱抽取入口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-KNOWLEDGE-CLOSURE.md`

@@ -2,11 +2,13 @@ package com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionBatchCancelResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphVersionResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeEntityResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeLineageNodeResult;
@@ -17,6 +19,24 @@ import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.
 import org.junit.jupiter.api.Test;
 
 class KnowledgeGraphExtractionControllerTest {
+
+    @Test
+    void cancelBatchTaskShouldMapBatchCancelResponse() {
+        KnowledgeGraphExtractionApplicationService service = mock(KnowledgeGraphExtractionApplicationService.class);
+        KnowledgeGraphExtractionController controller = new KnowledgeGraphExtractionController(service);
+        GraphExtractionRequests.BatchCancelRequest request = new GraphExtractionRequests.BatchCancelRequest();
+        request.setBatchJobId(1001L);
+        request.setRequestedBy(99L);
+        when(service.cancelBatch(1001L, 99L))
+                .thenReturn(new GraphExtractionBatchCancelResult(1001L, "CANCELLED", 1, 1, 0));
+
+        var response = controller.cancelBatchTask(request);
+
+        verify(service).cancelBatch(eq(1001L), eq(99L));
+        assertEquals(1001L, response.getBatchJobId());
+        assertEquals("CANCELLED", response.getStatus());
+        assertEquals(1, response.getCancelledCount());
+    }
 
     @Test
     void pageVersionsShouldMapReadableVersionPage() {

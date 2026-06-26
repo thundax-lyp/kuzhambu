@@ -5,6 +5,7 @@ import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestGraphExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestLineageExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationExtractionCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionBatchCancelResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphVersionResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeEntityResult;
@@ -25,6 +26,8 @@ public interface KnowledgeGraphExtractionApplicationService {
             String taskType, String status, String sourceContentType, Long sourceContentId, PageQuery pageQuery);
 
     GraphExtractionTaskResult getTaskDetail(GraphExtractionTaskId taskId);
+
+    GraphExtractionBatchCancelResult cancelBatch(Long batchJobId, Long requestedBy);
 
     PageResult<GraphVersionResult> pageVersions(
             String taskType, String status, String sourceContentType, Long sourceContentId, PageQuery pageQuery);

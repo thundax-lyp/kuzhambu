@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.knowledge.interfaces.admin.graph.assembler;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestGraphExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestLineageExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationExtractionCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionBatchCancelResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphVersionResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeEntityResult;
@@ -124,6 +125,16 @@ public final class KnowledgeGraphExtractionInterfaceAssembler {
                 .requestedAt(result == null ? null : result.getRequestedAt())
                 .completedAt(result == null ? null : result.getCompletedAt())
                 .appliedAt(result == null ? null : result.getAppliedAt())
+                .build();
+    }
+
+    public static GraphExtractionResponses.BatchCancelResponse toResponse(GraphExtractionBatchCancelResult result) {
+        return GraphExtractionResponses.BatchCancelResponse.builder()
+                .batchJobId(result == null ? null : result.getBatchJobId())
+                .status(result == null ? null : result.getStatus())
+                .cancelledCount(result == null ? null : result.getCancelledCount())
+                .completedCount(result == null ? null : result.getCompletedCount())
+                .failedCount(result == null ? null : result.getFailedCount())
                 .build();
     }
 

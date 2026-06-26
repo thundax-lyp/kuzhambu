@@ -12,6 +12,7 @@ import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphExtractionTas
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.assembler.KnowledgeGraphPersistenceAssembler;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.GraphExtractionTaskDO;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.mapper.GraphExtractionTaskMapper;
+import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Repository;
 
@@ -71,6 +72,15 @@ public class GraphExtractionTaskRepositoryImpl implements GraphExtractionTaskRep
                         .set(GraphExtractionTaskDO::getRequestedAt, dataObject.getRequestedAt())
                         .set(GraphExtractionTaskDO::getCompletedAt, dataObject.getCompletedAt())
                         .set(GraphExtractionTaskDO::getAppliedAt, dataObject.getAppliedAt()));
+    }
+
+    @Override
+    public List<GraphExtractionTask> listByBatchJobId(Long batchJobId) {
+        QueryWrapper<GraphExtractionTaskDO> wrapper = new QueryWrapper<>();
+        wrapper.eq(batchJobId != null, "batch_job_id", batchJobId)
+                .orderByAsc("requested_at")
+                .orderByAsc("id");
+        return KnowledgeGraphPersistenceAssembler.toDomainList(mapper.selectList(wrapper));
     }
 
     @Override

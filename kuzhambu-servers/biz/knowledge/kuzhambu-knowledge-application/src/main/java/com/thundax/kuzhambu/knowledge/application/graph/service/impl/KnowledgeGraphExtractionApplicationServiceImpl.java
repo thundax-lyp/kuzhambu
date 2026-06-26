@@ -20,6 +20,7 @@ import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestGraphExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestLineageExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationExtractionCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionBatchCancelResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphVersionResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeEntityResult;
@@ -266,6 +267,42 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
     @Override
     public GraphExtractionTaskResult getTaskDetail(GraphExtractionTaskId taskId) {
         return syncTaskResult(repository.getByTaskId(taskId));
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public GraphExtractionBatchCancelResult cancelBatch(Long batchJobId, Long requestedBy) {
+        if (batchJobId == null) {
+            throw new BizException("Knowledge graph batchJobId is required");
+        }
+        if (aiBatchJobApplicationService == null) {
+            throw new BizException("AI batch job service is not ready");
+        }
+        List<GraphExtractionTask> tasks = repository.listByBatchJobId(batchJobId);
+        if (tasks.isEmpty()) {
+            throw new BizException("Knowledge graph batch task not found: " + batchJobId);
+        }
+        Date cancelledAt = new Date();
+        for (GraphExtractionTask task : tasks) {
+            if (!isBatchChildTask(task) || !STATUS_REQUESTED.equals(task.getStatus())) {
+                continue;
+            }
+            task.setStatus(STATUS_CANCELLED);
+            task.setRequestedBy(requestedBy == null ? task.getRequestedBy() : requestedBy);
+            task.setCompletedAt(cancelledAt);
+            repository.update(task);
+        }
+        AiBatchJobResult batchResult = aiBatchJobApplicationService.cancel(batchJobId);
+        for (GraphExtractionTask task : tasks) {
+            if (!isBatchParentTask(task)) {
+                continue;
+            }
+            task.setStatus(batchResult == null ? STATUS_CANCELLED : batchResult.getStatus());
+            task.setCompletedAt(resolveBatchCompletedAt(batchResult, cancelledAt));
+            repository.update(task);
+            break;
+        }
+        return toBatchCancelResult(batchJobId, batchResult);
     }
 
     @Override
@@ -810,6 +847,18 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
                 timeValue(task.getAppliedAt()));
     }
 
+    private GraphExtractionBatchCancelResult toBatchCancelResult(Long batchJobId, AiBatchJobResult batchResult) {
+        if (batchResult == null) {
+            return new GraphExtractionBatchCancelResult(batchJobId, STATUS_CANCELLED, 0, 0, 0);
+        }
+        return new GraphExtractionBatchCancelResult(
+                batchResult.getBatchId(),
+                batchResult.getStatus(),
+                batchResult.getCancelledCount(),
+                batchResult.getSuccessCount(),
+                batchResult.getFailedCount());
+    }
+
     private GraphExtractionTaskResult syncTaskResult(GraphExtractionTask task) {
         GraphExtractionTaskResult result = toResult(task);
         if (result == null || aiInvocationRepository == null) {
@@ -1074,6 +1123,27 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
         String type = StringUtils.defaultIfBlank(task.getErrorType(), "KNOWLEDGE_AI_EXTRACTION_FAILED");
         String message = StringUtils.defaultIfBlank(task.getErrorMessage(), "Knowledge graph extraction failed");
         return type + ": " + message;
+    }
+
+    private boolean isBatchParentTask(GraphExtractionTask task) {
+        return task != null && task.getBatchJobId() != null && task.getParentTaskId() == null;
+    }
+
+    private boolean isBatchChildTask(GraphExtractionTask task) {
+        return task != null && task.getBatchJobId() != null && task.getParentTaskId() != null;
+    }
+
+    private Date resolveBatchCompletedAt(AiBatchJobResult batchResult, Date fallback) {
+        if (batchResult == null) {
+            return fallback;
+        }
+        if (batchResult.getCompletedAt() != null) {
+            return Date.from(batchResult.getCompletedAt());
+        }
+        if (batchResult.getCancelledAt() != null) {
+            return Date.from(batchResult.getCancelledAt());
+        }
+        return fallback;
     }
 
     @FunctionalInterface

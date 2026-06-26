@@ -105,6 +105,23 @@ public class KnowledgeGraphExtractionController {
                 extractionService.getTaskDetail(KnowledgeGraphExtractionInterfaceAssembler.toTaskId(request)));
     }
 
+    @Operation(summary = "取消批量抽取任务", description = "knowledge:graph:edit")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
+    @HasPermission("knowledge:graph:edit")
+    @SysLogger(value = "取消批量抽取任务")
+    @PostMapping("task/cancel-batch")
+    public GraphExtractionResponses.BatchCancelResponse cancelBatchTask(
+            @Valid @RequestBody GraphExtractionRequests.BatchCancelRequest request) {
+        return KnowledgeGraphExtractionInterfaceAssembler.toResponse(extractionService.cancelBatch(
+                request == null ? null : request.getBatchJobId(), request == null ? null : request.getRequestedBy()));
+    }
+
     @Operation(summary = "应用抽取候选结果", description = "knowledge:graph:apply")
     @ApiImplicitParams({
         @ApiImplicitParam(

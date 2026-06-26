@@ -18,6 +18,7 @@ import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationExtractionCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionBatchCancelResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphVersionResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeEntityResult;
@@ -140,6 +141,56 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         BizException exception = assertThrows(BizException.class, () -> service.requestRelationExtraction(command));
 
         assertEquals("Knowledge graph selectionScopeJson is invalid", exception.getMessage());
+    }
+
+    @Test
+    void cancelBatchShouldMarkPendingChildrenCancelled() {
+        FakeRepository repository = new FakeRepository();
+        GraphExtractionTask parentTask = new GraphExtractionTask();
+        parentTask.setTaskId(GraphExtractionTaskId.of(1L));
+        parentTask.setBatchJobId(1001L);
+        parentTask.setTaskType("RELATION");
+        parentTask.setStatus("RUNNING");
+        repository.tasks.add(parentTask);
+        GraphExtractionTask pendingChild = new GraphExtractionTask();
+        pendingChild.setTaskId(GraphExtractionTaskId.of(2L));
+        pendingChild.setBatchJobId(1001L);
+        pendingChild.setParentTaskId(GraphExtractionTaskId.of(1L));
+        pendingChild.setTaskType("RELATION");
+        pendingChild.setStatus("REQUESTED");
+        repository.tasks.add(pendingChild);
+        GraphExtractionTask finishedChild = new GraphExtractionTask();
+        finishedChild.setTaskId(GraphExtractionTaskId.of(3L));
+        finishedChild.setBatchJobId(1001L);
+        finishedChild.setParentTaskId(GraphExtractionTaskId.of(1L));
+        finishedChild.setTaskType("RELATION");
+        finishedChild.setStatus("SUCCEEDED");
+        repository.tasks.add(finishedChild);
+        FakeAiBatchJobApplicationService batchService = new FakeAiBatchJobApplicationService();
+        batchService.create(new AiBatchJobCreateCommand("{}", "relation_extraction", "SANCAI_ENTRY", 2, null));
+        batchService.recordSuccess(1001L);
+        KnowledgeGraphExtractionApplicationServiceImpl service = new KnowledgeGraphExtractionApplicationServiceImpl(
+                repository,
+                new FakeGraphVersionRepository(),
+                new FakeKnowledgeEntityRepository(),
+                new FakeKnowledgeRelationRepository(),
+                new FakeKnowledgeLineageNodeRepository(),
+                new FakeKnowledgeLineageRelationRepository(),
+                new FakeAiInvocationRepository(),
+                batchService,
+                new FakeKnowledgeAiExtractionDomainService(),
+                new AiCandidateDomainService(new FakeAiInvocationRepository()),
+                null);
+
+        GraphExtractionBatchCancelResult result = service.cancelBatch(1001L, 99L);
+
+        assertEquals(Long.valueOf(1001L), result.getBatchJobId());
+        assertEquals("CANCELLED", result.getStatus());
+        assertEquals(Integer.valueOf(1), result.getCancelledCount());
+        assertEquals(Integer.valueOf(1), result.getCompletedCount());
+        assertEquals("CANCELLED", pendingChild.getStatus());
+        assertEquals(Long.valueOf(99L), pendingChild.getRequestedBy());
+        assertEquals("CANCELLED", parentTask.getStatus());
     }
 
     @Test
@@ -750,6 +801,13 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         @Override
         public int update(GraphExtractionTask entity) {
             return 1;
+        }
+
+        @Override
+        public List<GraphExtractionTask> listByBatchJobId(Long batchJobId) {
+            return tasks.stream()
+                    .filter(task -> batchJobId != null && batchJobId.equals(task.getBatchJobId()))
+                    .toList();
         }
 
         @Override
