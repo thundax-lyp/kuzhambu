@@ -1,11 +1,12 @@
 import { ClockCircleOutlined, ReloadOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { Avatar, Button, Space, Tag, Typography } from "antd";
+import { Avatar, Button, Tag, Typography } from "antd";
 import { useMemo, useState } from "react";
 import { useCurrentAccessToken } from "@/auth/hooks/use-current-access-token";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
 import { ADMIN_API_BASE_URL } from "@/api/http";
 import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
+import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { KuzhambuTag } from "@/components/kuzhambu-tag";
 import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
@@ -99,12 +100,12 @@ const renderOperator = (log: AuditLogRecord, accessToken: string | null) => {
     const user = readOperatorUser(log);
     const avatarUrl = toAuthenticatedResourceUrl(user.avatarUrl, accessToken);
     return (
-        <Space size={8} className="audit-log-operator-cell">
+        <KuzhambuSpace size={8} className="audit-log-operator-cell">
             <Avatar size={28} src={avatarUrl}>
                 {getInitials(user.name)}
             </Avatar>
             <Text ellipsis>{user.name}</Text>
-        </Space>
+        </KuzhambuSpace>
     );
 };
 
@@ -214,10 +215,10 @@ export const AuditLogPage = () => {
             key: "occurredAt",
             width: DEFAULT_COLUMN_WIDTHS.occurredAt,
             render: (occurredAt?: string | null) => (
-                <Space size={7}>
+                <KuzhambuSpace size={7}>
                     <ClockCircleOutlined className="audit-log-time-icon" />
                     <span>{formatDateTime(occurredAt)}</span>
-                </Space>
+                </KuzhambuSpace>
             )
         },
         {
@@ -228,10 +229,10 @@ export const AuditLogPage = () => {
             render: (_, log) => (
                 <div className="audit-log-object-cell">
                     <Text strong>{readObjectDisplay(log)}</Text>
-                    <Space size={6} wrap>
+                    <KuzhambuSpace size={6} wrap>
                         <KuzhambuTag type="accent">{readObjectTypeLabel(log)}</KuzhambuTag>
                         {log.version ? <Tag>v{log.version}</Tag> : null}
-                    </Space>
+                    </KuzhambuSpace>
                 </div>
             )
         },

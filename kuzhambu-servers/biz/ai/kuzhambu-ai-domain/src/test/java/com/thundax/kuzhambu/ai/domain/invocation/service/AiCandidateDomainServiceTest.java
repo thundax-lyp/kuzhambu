@@ -118,6 +118,12 @@ class AiCandidateDomainServiceTest {
         }
 
         @Override
+        public List<com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCallRecord> listCallRecords(
+                java.time.Instant requestedAtStart, java.time.Instant requestedAtEnd) {
+            return Collections.emptyList();
+        }
+
+        @Override
         public AiCandidate getCandidate(Long candidateId) {
             return candidateId.equals(candidate.getCandidateId()) ? candidate : null;
         }

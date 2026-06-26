@@ -51,6 +51,16 @@ Discovery 可被标签、同义词、实体识别和知识图谱增强，但搜�
 - 必须支持会话列表、删除和导出。
 - 管理员必须能查看问答调试信息。
 - 必须支持同义词扩展和实体识别增强问答检索。
+- 必须为 Operations 周报和月报提供聚合后的 summary 只读结果。
+- Operations summary 结果必须显式返回 `periodStart` 和 `periodEnd`。
+- 周报趋势序列必须按日聚合，月报趋势序列必须按周聚合。
+- Operations summary 结果必须包含：
+  - `searchCount`
+  - `qaCount`
+  - `avgSearchLatencyMs`
+  - `topQueries`：`queryText`、`count`
+  - `searchTrendSeries`：`bucket`、`searchCount`
+  - `qaTrendSeries`：`bucket`、`qaCount`
 
 ## Business Rules
 
@@ -70,6 +80,7 @@ Discovery 可被标签、同义词、实体识别和知识图谱增强，但搜�
 - Discovery 不得直接调用 workers 的 AI 接口。
 - Discovery 需要查询理解、查询改写、回答生成或流式回答时，必须通过 AI 域发起 AI 能力调用。
 - Discovery 调用 AI 域前必须完成权限过滤、检索上下文组装和来源候选准备。
+- 面向 Operations 的 summary 输出必须以 application result 或 read model 暴露，不得直接复用 Discovery admin controller response。
 - AI 域或 workers 返回的回答文本不得绕过 Discovery 的会话、消息、来源引用和调试信息记录。
 - 回答生成失败时必须保留用户问题，并允许用户重试。
 

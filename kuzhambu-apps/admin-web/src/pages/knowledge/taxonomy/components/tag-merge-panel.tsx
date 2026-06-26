@@ -1,6 +1,7 @@
-import { Alert, Button, Card, Descriptions, Empty, Select, Space, Typography } from "antd";
+import { Alert, Button, Card, Descriptions, Empty, Select, Typography } from "antd";
 import { useState } from "react";
 import { KuzhambuList, KuzhambuListItem } from "@/components/kuzhambu-list";
+import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import type { TagMergeCommand } from "../taxonomy-service";
 import type {
     TagAliasRecord,
@@ -89,10 +90,10 @@ export const TagMergePanel = ({
                 dataSource={aliases}
                 renderItem={(alias) => (
                     <KuzhambuListItem key={alias.id}>
-                        <Space orientation="vertical" size={0}>
+                        <KuzhambuSpace orientation="vertical" size={0}>
                             <Text strong>{alias.name}</Text>
                             <Text type="secondary">来源：{readSourceLabel(alias.source)}</Text>
-                        </Space>
+                        </KuzhambuSpace>
                     </KuzhambuListItem>
                 )}
                 size="small"
@@ -109,10 +110,10 @@ export const TagMergePanel = ({
                 dataSource={contentRefs}
                 renderItem={(contentRef) => (
                     <KuzhambuListItem key={contentRef.id}>
-                        <Space orientation="vertical" size={0}>
+                        <KuzhambuSpace orientation="vertical" size={0}>
                             <Text>{readContentSummary(contentRef)}</Text>
                             <Text type="secondary">来源：{readSourceLabel(contentRef.source)}</Text>
-                        </Space>
+                        </KuzhambuSpace>
                     </KuzhambuListItem>
                 )}
                 size="small"
@@ -122,7 +123,7 @@ export const TagMergePanel = ({
 
     return (
         <Card className="knowledge-taxonomy-merge-panel" variant="borderless">
-            <Space orientation="vertical" size={16} style={{ width: "100%" }}>
+            <KuzhambuSpace orientation="vertical" size={16} style={{ width: "100%" }}>
                 <div className="knowledge-taxonomy-merge-header">
                     <div>
                         <Title level={4}>标签合并治理</Title>
@@ -130,7 +131,7 @@ export const TagMergePanel = ({
                             先预览别名和内容引用影响，再执行源标签并入目标标签。
                         </Paragraph>
                     </div>
-                    <Space wrap>
+                    <KuzhambuSpace wrap>
                         <Button
                             onClick={previewMerge}
                             loading={previewing}
@@ -147,7 +148,7 @@ export const TagMergePanel = ({
                         >
                             执行标签合并
                         </Button>
-                    </Space>
+                    </KuzhambuSpace>
                 </div>
 
                 <div className="knowledge-taxonomy-merge-controls">
@@ -223,7 +224,7 @@ export const TagMergePanel = ({
                         description="选择源标签和目标标签后，可先预览治理影响。"
                     />
                 )}
-            </Space>
+            </KuzhambuSpace>
         </Card>
     );
 };

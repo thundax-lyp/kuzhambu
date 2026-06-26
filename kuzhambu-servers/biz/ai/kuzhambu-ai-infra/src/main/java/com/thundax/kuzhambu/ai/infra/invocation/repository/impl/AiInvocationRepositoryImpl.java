@@ -66,6 +66,11 @@ public class AiInvocationRepositoryImpl implements AiInvocationRepository {
     }
 
     @Override
+    public List<AiCallRecord> listCallRecords(Instant requestedAtStart, Instant requestedAtEnd) {
+        return toCallDomainList(aiInvocationMapper.selectCallRecords(requestedAtStart, requestedAtEnd));
+    }
+
+    @Override
     public AiCandidate getCandidate(Long candidateId) {
         return toCandidateDomain(aiInvocationMapper.selectCandidate(candidateId));
     }
@@ -214,6 +219,17 @@ public class AiInvocationRepositoryImpl implements AiInvocationRepository {
                 dataObject.getErrorMessage(),
                 dataObject.getRequestedAt(),
                 dataObject.getAppliedAt());
+    }
+
+    private List<AiCallRecord> toCallDomainList(List<AiCallRecordDO> dataObjects) {
+        List<AiCallRecord> records = new ArrayList<>();
+        if (dataObjects == null) {
+            return records;
+        }
+        for (AiCallRecordDO dataObject : dataObjects) {
+            records.add(toCallDomain(dataObject));
+        }
+        return records;
     }
 
     private List<AiCandidate> toCandidateDomainList(List<AiCandidateDO> dataObjects) {

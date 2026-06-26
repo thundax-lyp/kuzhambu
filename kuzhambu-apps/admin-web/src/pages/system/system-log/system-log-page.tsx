@@ -6,9 +6,10 @@ import {
     UserOutlined
 } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { Button, Input, Space, Typography } from "antd";
+import { Button, Input, Typography } from "antd";
 import { useMemo, useState } from "react";
 import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
+import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { KuzhambuTag } from "@/components/kuzhambu-tag";
 import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
@@ -154,10 +155,10 @@ export const SystemLogPage = () => {
             key: "createDate",
             width: DEFAULT_COLUMN_WIDTHS.createDate,
             render: (createDate?: string | null) => (
-                <Space size={7}>
+                <KuzhambuSpace size={7}>
                     <ClockCircleOutlined className="system-log-time-icon" />
                     <span>{createDate}</span>
-                </Space>
+                </KuzhambuSpace>
             )
         },
         {

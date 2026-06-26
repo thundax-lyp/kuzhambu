@@ -897,6 +897,11 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         }
 
         @Override
+        public List<AiCallRecord> listCallRecords(Instant requestedAtStart, Instant requestedAtEnd) {
+            return List.of();
+        }
+
+        @Override
         public AiCandidate getCandidate(Long candidateId) {
             return candidate.getCandidateId() != null
                             && candidate.getCandidateId().equals(candidateId)

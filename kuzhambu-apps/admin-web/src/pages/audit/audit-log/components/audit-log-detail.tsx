@@ -1,7 +1,8 @@
-import { Avatar, Descriptions, Empty, Space, Typography } from "antd";
+import { Avatar, Descriptions, Empty, Typography } from "antd";
 import { ADMIN_API_BASE_URL } from "@/api/http";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
+import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { KuzhambuTag } from "@/components/kuzhambu-tag";
 import type {
     AuditFieldRecord,
@@ -64,12 +65,12 @@ const renderOperator = (log: AuditLogDetailRecord, accessToken: string | null) =
     const user = readOperatorUser(log);
     const avatarUrl = toAuthenticatedResourceUrl(user.avatarUrl, accessToken);
     return (
-        <Space size={8} className="audit-log-operator-cell">
+        <KuzhambuSpace size={8} className="audit-log-operator-cell">
             <Avatar size={28} src={avatarUrl}>
                 {getInitials(user.name)}
             </Avatar>
             <span>{user.name}</span>
-        </Space>
+        </KuzhambuSpace>
     );
 };
 

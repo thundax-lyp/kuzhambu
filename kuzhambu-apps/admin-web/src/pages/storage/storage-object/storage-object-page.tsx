@@ -7,13 +7,14 @@ import {
     UploadOutlined
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Button, Input, Select, Space, Typography } from "antd";
+import { App, Button, Input, Select, Typography } from "antd";
 import { useMemo, useRef, useState } from "react";
 import type { ChangeEvent, Key } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
 import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
+import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { KuzhambuTag } from "@/components/kuzhambu-tag";
 import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
@@ -326,7 +327,7 @@ export const StorageObjectPage = () => {
             width: DEFAULT_COLUMN_WIDTHS.name,
             ellipsis: true,
             render: (_, storage) => (
-                <Space size={10}>
+                <KuzhambuSpace size={10}>
                     <FileOutlined className="storage-object-file-icon" />
                     <div className="storage-object-name-cell">
                         <Text strong>{readFilename(storage)}</Text>
@@ -334,7 +335,7 @@ export const StorageObjectPage = () => {
                             <Text type="secondary">{formatFileSize(storage.size)}</Text>
                         ) : null}
                     </div>
-                </Space>
+                </KuzhambuSpace>
             )
         },
         {
@@ -545,7 +546,7 @@ export const StorageObjectPage = () => {
                 onFilterApply={applyFilters}
                 onFilterReset={resetFilters}
                 pageActions={
-                    <Space wrap>
+                    <KuzhambuSpace wrap>
                         <input
                             ref={uploadInputRef}
                             aria-label="选择上传文件"
@@ -569,12 +570,12 @@ export const StorageObjectPage = () => {
                         >
                             刷新
                         </Button>
-                    </Space>
+                    </KuzhambuSpace>
                 }
                 batchClassName="storage-object-table-toolbar"
                 selectedCount={selectedRowKeys.length}
                 batchActions={
-                    <Space wrap>
+                    <KuzhambuSpace wrap>
                         <Button
                             danger
                             icon={<DeleteOutlined />}
@@ -584,7 +585,7 @@ export const StorageObjectPage = () => {
                         >
                             批量删除
                         </Button>
-                    </Space>
+                    </KuzhambuSpace>
                 }
                 rowKey="id"
                 className="storage-object-table"

@@ -23,6 +23,8 @@ public interface ClassicsSharingRepository {
     Page<ClassicsSharePortalListItem> pagePortalShares(
             String contentType, String title, Date issuedAfter, Date issuedBefore, int pageNo, int pageSize);
 
+    List<ClassicsSharePortalListItem> listTopPortalShares(String visibility, int limit);
+
     ClassicsShareLinkId insertLink(ClassicsShareLink link);
 
     int updateLink(ClassicsShareLink link);

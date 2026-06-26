@@ -1,6 +1,7 @@
 import { DeleteOutlined, PoweroffOutlined } from "@ant-design/icons";
-import { Button, Space } from "antd";
+import { Button } from "antd";
 import { KuzhambuBatchActionBar } from "@/components/kuzhambu-batch-action-bar";
+import { KuzhambuSpace } from "@/components/kuzhambu-space";
 
 interface UserBatchActionsProps {
     canEditUser: boolean;
@@ -28,7 +29,7 @@ export const UserBatchActions = ({
             className="user-table-toolbar"
             selectedCount={selectedCount}
             actions={
-                <Space wrap>
+                <KuzhambuSpace wrap>
                     <Button
                         className="user-batch-neutral"
                         icon={<PoweroffOutlined />}
@@ -56,7 +57,7 @@ export const UserBatchActions = ({
                     >
                         批量删除
                     </Button>
-                </Space>
+                </KuzhambuSpace>
             }
         />
     );

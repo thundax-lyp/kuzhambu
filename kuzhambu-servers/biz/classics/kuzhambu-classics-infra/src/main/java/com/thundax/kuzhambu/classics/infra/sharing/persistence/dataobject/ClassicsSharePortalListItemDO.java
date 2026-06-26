@@ -22,4 +22,5 @@ public class ClassicsSharePortalListItemDO {
     private String contentVisibilitySnapshot;
     private String targetStatus;
     private Integer priority;
+    private Long accessCount;
 }

@@ -135,6 +135,12 @@ class AiWorkerInvocationApplicationServiceTest {
         }
 
         @Override
+        public List<AiCallRecord> listCallRecords(
+                java.time.Instant requestedAtStart, java.time.Instant requestedAtEnd) {
+            return Collections.emptyList();
+        }
+
+        @Override
         public AiCandidate getCandidate(Long candidateId) {
             return null;
         }

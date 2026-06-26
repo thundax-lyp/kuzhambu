@@ -198,6 +198,12 @@ class AiInvocationControllerTest {
         }
 
         @Override
+        public List<com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCallRecord> listCallRecords(
+                java.time.Instant requestedAtStart, java.time.Instant requestedAtEnd) {
+            return java.util.Collections.emptyList();
+        }
+
+        @Override
         public AiCandidate getCandidate(Long candidateId) {
             return null;
         }

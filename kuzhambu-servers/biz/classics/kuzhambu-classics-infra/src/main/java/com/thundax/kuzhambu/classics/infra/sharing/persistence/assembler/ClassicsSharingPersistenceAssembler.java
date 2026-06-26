@@ -153,7 +153,8 @@ public final class ClassicsSharingPersistenceAssembler {
                         dataObject.getTargetStatus() == null
                                 ? null
                                 : ClassicsShareTargetStatus.from(dataObject.getTargetStatus()),
-                        dataObject.getPriority() == null ? 0 : dataObject.getPriority());
+                        dataObject.getPriority() == null ? 0 : dataObject.getPriority(),
+                        dataObject.getAccessCount() == null ? 0L : dataObject.getAccessCount());
     }
 
     public static List<ClassicsSharePortalListItem> toPortalListItemDomainList(

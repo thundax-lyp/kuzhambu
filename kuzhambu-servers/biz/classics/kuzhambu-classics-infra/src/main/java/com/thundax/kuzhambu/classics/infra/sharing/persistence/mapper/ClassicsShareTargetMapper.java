@@ -58,4 +58,34 @@ public interface ClassicsShareTargetMapper extends BaseMapper<ClassicsShareTarge
             @Param("title") String title,
             @Param("issuedAfter") Date issuedAfter,
             @Param("issuedBefore") Date issuedBefore);
+
+    @Select({
+        "<script>",
+        "select",
+        "  t.share_link_id as shareLinkId,",
+        "  l.share_token as shareToken,",
+        "  l.title as shareTitle,",
+        "  l.issued_at as issuedAt,",
+        "  l.expires_at as expiresAt,",
+        "  t.content_type as contentType,",
+        "  t.content_id as contentId,",
+        "  t.content_version_id as contentVersionId,",
+        "  t.content_version_no as contentVersionNo,",
+        "  t.title_snapshot as titleSnapshot,",
+        "  t.content_visibility_snapshot as contentVisibilitySnapshot,",
+        "  t.target_status as targetStatus,",
+        "  t.priority as priority,",
+        "  l.access_count as accessCount",
+        "from classics_share_target t",
+        "inner join classics_share_link l on l.id = t.share_link_id",
+        "where l.visibility = #{visibility}",
+        "  and l.status = 'ACTIVE'",
+        "  and t.target_status in ('AVAILABLE', 'ACTIVE')",
+        "  and (l.expires_at is null or l.expires_at &gt; now())",
+        "order by l.access_count desc, l.issued_at desc, t.priority asc",
+        "limit #{limit}",
+        "</script>"
+    })
+    java.util.List<ClassicsSharePortalListItemDO> listTopPortalShares(
+            @Param("visibility") String visibility, @Param("limit") int limit);
 }

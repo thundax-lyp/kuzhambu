@@ -46,6 +46,8 @@ const SERVICE_METHOD_VERBS = [
     "revoke"
 ];
 
+const ANTD_SPACE_DIRECT_IMPORT_ALLOWLIST = [];
+
 const localRules = {
     rules: {
         "kebab-case-file-name": {
@@ -251,6 +253,55 @@ const localRules = {
                             node,
                             message:
                                 "ADMIN_WEB_CODE_NO_EXPLICIT_ANY: explicit any is forbidden; use a focused eslint-disable comment with a reason only when the boundary cannot be typed."
+                        });
+                    }
+                };
+            }
+        },
+        "no-antd-space-direct": {
+            create(context) {
+                const readNormalizedFilePath = () => {
+                    return context.physicalFilename.split(path.sep).join("/");
+                };
+
+                const isKuzhambuSpaceImplementation = (normalizedFilePath) => {
+                    return normalizedFilePath.endsWith(
+                        "/src/components/kuzhambu-space/kuzhambu-space.tsx"
+                    );
+                };
+
+                const isAllowlistedDirectImportFile = (normalizedFilePath) => {
+                    return ANTD_SPACE_DIRECT_IMPORT_ALLOWLIST.some((suffix) =>
+                        normalizedFilePath.endsWith(suffix)
+                    );
+                };
+
+                return {
+                    ImportDeclaration(node) {
+                        const normalizedFilePath = readNormalizedFilePath();
+
+                        if (
+                            isKuzhambuSpaceImplementation(normalizedFilePath) ||
+                            isAllowlistedDirectImportFile(normalizedFilePath) ||
+                            node.source.value !== "antd"
+                        ) {
+                            return;
+                        }
+
+                        node.specifiers.forEach((specifier) => {
+                            if (
+                                specifier.type !== "ImportSpecifier" ||
+                                (specifier.imported.name !== "Space" &&
+                                    specifier.imported.name !== "SpaceProps")
+                            ) {
+                                return;
+                            }
+
+                            context.report({
+                                node: specifier,
+                                message:
+                                    "ADMIN_WEB_UI_NO_ANTD_SPACE_DIRECT: import KuzhambuSpace or KuzhambuSpaceCompact from src/components/kuzhambu-space/ instead of importing Space or SpaceProps from antd."
+                            });
                         });
                     }
                 };
@@ -1766,6 +1817,7 @@ export default tseslint.config(
             "local/service-namespace-import": "error",
             "local/no-console-log": "error",
             "local/no-explicit-any": "error",
+            "local/no-antd-space-direct": "error",
             "@typescript-eslint/no-explicit-any": "off",
             "local/confirm-hook-only": "error",
             "local/table-action-column-shape": "error",

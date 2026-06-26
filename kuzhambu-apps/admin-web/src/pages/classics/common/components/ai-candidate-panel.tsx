@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Alert, Button, Card, Empty, Space } from "antd";
+import { App, Alert, Button, Card, Empty } from "antd";
 import { useCallback, useMemo, useState } from "react";
 import { KuzhambuList, KuzhambuListItem } from "@/components/kuzhambu-list";
+import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import * as aiCandidateService from "../ai-candidate-service";
 import type { AiCandidateRecord } from "../ai-candidate-types";
 import { AiCandidatePayloadEditor } from "./ai-candidate-payload-editor";
@@ -208,12 +209,12 @@ export const AiCandidatePanel = ({
                 dataSource={pendingCandidates}
                 renderItem={(candidate) => (
                     <KuzhambuListItem key={candidate.candidateId}>
-                        <Space orientation="vertical" style={{ width: "100%" }}>
-                            <Space wrap>
+                        <KuzhambuSpace orientation="vertical" style={{ width: "100%" }}>
+                            <KuzhambuSpace wrap>
                                 <span>能力：{candidate.capability}</span>
                                 <span>格式：{candidate.resultFormat || "未设置"}</span>
                                 <span>时间：{formatDateTime(candidate.requestedAt)}</span>
-                            </Space>
+                            </KuzhambuSpace>
                             <AiCandidatePayloadEditor
                                 candidateId={candidate.candidateId}
                                 capability={candidate.capability as AiCandidateCapability}
@@ -222,7 +223,7 @@ export const AiCandidatePanel = ({
                                 onPayloadChange={updateCandidatePayload}
                                 onSubmitEnabledChange={updateCandidateSubmitEnabled}
                             />
-                            <Space wrap>
+                            <KuzhambuSpace wrap>
                                 <Button
                                     disabled={
                                         applyingCandidateId === candidate.candidateId ||
@@ -242,8 +243,8 @@ export const AiCandidatePanel = ({
                                 >
                                     拒绝
                                 </Button>
-                            </Space>
-                        </Space>
+                            </KuzhambuSpace>
+                        </KuzhambuSpace>
                     </KuzhambuListItem>
                 )}
             />

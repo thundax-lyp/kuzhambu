@@ -30,4 +30,5 @@ public class ClassicsSharePortalListItem {
     private ClassicsSharedContentVisibility contentVisibilitySnapshot;
     private ClassicsShareTargetStatus targetStatus;
     private int priority;
+    private long accessCount;
 }

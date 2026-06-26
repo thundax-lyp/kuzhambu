@@ -1,11 +1,12 @@
 import { BookOutlined, DeleteOutlined, ReloadOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Button, Input, Space, Typography } from "antd";
+import { App, Button, Input, Typography } from "antd";
 import { useMemo, useState } from "react";
 import type { Key } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
+import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { KuzhambuTag } from "@/components/kuzhambu-tag";
 import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
@@ -276,7 +277,7 @@ export const DictionaryPage = () => {
                 batchClassName="dictionary-table-toolbar"
                 selectedCount={selectedRowKeys.length}
                 batchActions={
-                    <Space wrap>
+                    <KuzhambuSpace wrap>
                         <Button
                             danger
                             icon={<DeleteOutlined />}
@@ -286,7 +287,7 @@ export const DictionaryPage = () => {
                         >
                             批量删除
                         </Button>
-                    </Space>
+                    </KuzhambuSpace>
                 }
                 rowKey="id"
                 className="dictionary-table"

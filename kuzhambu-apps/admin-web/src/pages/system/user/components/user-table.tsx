@@ -1,5 +1,6 @@
-import { Space, Typography } from "antd";
+import { Typography } from "antd";
 import type { Key } from "react";
+import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
 import { KuzhambuTag } from "@/components/kuzhambu-tag";
 import { KuzhambuTable } from "@/components/kuzhambu-table";
@@ -131,13 +132,13 @@ export const UserTable = ({
             render: (_, user) => {
                 const userName = readUserName(user);
                 return (
-                    <Space size={10}>
+                    <KuzhambuSpace size={10}>
                         <UserAvatar user={user} />
                         <div className="user-name-cell">
                             <Text strong>{userName}</Text>
                             {user.email ? <Text type="secondary">{user.email}</Text> : null}
                         </div>
-                    </Space>
+                    </KuzhambuSpace>
                 );
             }
         },
@@ -164,13 +165,13 @@ export const UserTable = ({
                     return null;
                 }
                 return (
-                    <Space size={[4, 4]} wrap>
+                    <KuzhambuSpace size={[4, 4]} wrap>
                         {roleNames.map((roleName, index) => (
                             <KuzhambuTag key={roleName} type={roleTagType(user, index)}>
                                 {roleName}
                             </KuzhambuTag>
                         ))}
-                    </Space>
+                    </KuzhambuSpace>
                 );
             }
         },

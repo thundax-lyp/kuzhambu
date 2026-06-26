@@ -1,4 +1,5 @@
-import { Button, Space, Table, Tag } from "antd";
+import { Button, Table, Tag } from "antd";
+import { KuzhambuSpaceCompact } from "@/components/kuzhambu-space";
 import type { ColumnsType } from "antd/es/table";
 import type { RefinementEntityRecord } from "../refinement-types";
 
@@ -38,7 +39,7 @@ export const RefinementEntityTable = ({
             title: "操作",
             key: "actions",
             render: (_, entity) => (
-                <Space.Compact>
+                <KuzhambuSpaceCompact>
                     <Button disabled={!canEdit} onClick={() => onEdit(entity)}>
                         编辑
                     </Button>
@@ -51,7 +52,7 @@ export const RefinementEntityTable = ({
                     <Button danger disabled={!canEdit} onClick={() => onDelete(entity)}>
                         删除
                     </Button>
-                </Space.Compact>
+                </KuzhambuSpaceCompact>
             )
         }
     ];

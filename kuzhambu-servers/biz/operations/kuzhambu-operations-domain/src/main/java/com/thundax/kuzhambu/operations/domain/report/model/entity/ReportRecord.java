@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.operations.domain.report.model.entity;
 
+import com.thundax.kuzhambu.operations.domain.report.model.enums.ReportStatus;
 import com.thundax.kuzhambu.operations.domain.report.model.valueobject.ReportId;
 import java.util.Date;
 import lombok.AllArgsConstructor;
@@ -18,8 +19,12 @@ public class ReportRecord {
     private String format;
     private Date periodStart;
     private Date periodEnd;
+    private String requestId;
+    private String traceId;
+    private String templateVersion;
     private Long storageObjectId;
-    private String reportStatus;
+    private String artifactFilename;
+    private ReportStatus reportStatus;
     private String failureReason;
     private Long requesterUserId;
     private Date requestedAt;

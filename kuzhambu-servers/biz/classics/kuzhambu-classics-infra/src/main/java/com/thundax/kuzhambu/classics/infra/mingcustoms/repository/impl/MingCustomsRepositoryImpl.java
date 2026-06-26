@@ -70,6 +70,13 @@ public class MingCustomsRepositoryImpl implements MingCustomsRepository {
     }
 
     @Override
+    public List<MingCustomsEntry> list(
+            String category, String keyword, String tagName, String visibility, SortDirection sortDirection) {
+        return MingCustomsPersistenceAssembler.toEntryDomainList(
+                entryMapper.selectList(entryWrapper(category, keyword, tagName, visibility, sortDirection)));
+    }
+
+    @Override
     public MingCustomsEntryId insert(MingCustomsEntry entry) {
         MingCustomsEntryDO dataObject = MingCustomsPersistenceAssembler.toEntryObject(entry);
         entryMapper.insert(dataObject);
@@ -182,6 +189,22 @@ public class MingCustomsRepositoryImpl implements MingCustomsRepository {
 
     private static MingCustomsKeywordCloudItem toKeywordCloudItem(Map<String, Object> row) {
         return new MingCustomsKeywordCloudItem(String.valueOf(row.get("keyword")), toLong(row.get("count")));
+    }
+
+    private LambdaQueryWrapper<MingCustomsEntryDO> entryWrapper(
+            String category, String keyword, String tagName, String visibility, SortDirection sortDirection) {
+        LambdaQueryWrapper<MingCustomsEntryDO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(StringUtils.isNotBlank(category), MingCustomsEntryDO::getCategory, category)
+                .eq(StringUtils.isNotBlank(visibility), MingCustomsEntryDO::getVisibility, visibility)
+                .and(StringUtils.isNotBlank(keyword), item -> item.like(MingCustomsEntryDO::getTitle, keyword)
+                        .or()
+                        .like(MingCustomsEntryDO::getSummary, keyword)
+                        .or()
+                        .like(MingCustomsEntryDO::getContent, keyword)
+                        .or()
+                        .like(MingCustomsEntryDO::getOriginalExcerpts, keyword))
+                .orderBy(true, sortDirection != SortDirection.DESC, MingCustomsEntryDO::getId);
+        return wrapper;
     }
 
     private static Long toLong(Object value) {

@@ -7,6 +7,8 @@ public interface QaSessionRepository {
 
     QaSession getBySessionId(Long sessionId);
 
+    List<QaSession> listByOpenedAtRange(java.util.Date openedAtStart, java.util.Date openedAtEnd);
+
     List<QaSession> listByOwnerUserId(Long ownerUserId, Integer limit);
 
     Long save(QaSession entity);

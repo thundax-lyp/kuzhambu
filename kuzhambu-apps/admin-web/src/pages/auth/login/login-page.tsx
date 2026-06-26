@@ -1,6 +1,6 @@
 import { LockOutlined, ReloadOutlined, UserOutlined } from "@ant-design/icons";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Alert, App, Button, Card, Form, Input, Space, Typography } from "antd";
+import { Alert, App, Button, Card, Form, Input, Typography } from "antd";
 import { sm2 } from "sm-crypto";
 import { useState } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
@@ -8,6 +8,7 @@ import { createLoginForm, getCaptchaUrl, refreshCaptcha } from "@/auth/auth-serv
 import { loginWithPermissions } from "@/auth/auth-session-service";
 import { getAccessToken } from "@/auth/token-storage";
 import { KuzhambuLogo } from "@/components/kuzhambu-logo";
+import { KuzhambuSpace, KuzhambuSpaceCompact } from "@/components/kuzhambu-space";
 import "./login-page.css";
 
 const { Title, Text, Paragraph } = Typography;
@@ -95,7 +96,7 @@ export const LoginPage = () => {
                 </section>
 
                 <Card className="login-card">
-                    <Space orientation="vertical" size={24} className="login-card-content">
+                    <KuzhambuSpace orientation="vertical" size={24} className="login-card-content">
                         <div>
                             <Title level={2}>登录</Title>
                             <Text type="secondary">请输入后台账号信息</Text>
@@ -151,7 +152,7 @@ export const LoginPage = () => {
                                 name="captcha"
                                 rules={[{ required: true, message: "请输入验证码" }]}
                             >
-                                <Space.Compact className="login-captcha-row">
+                                <KuzhambuSpaceCompact className="login-captcha-row">
                                     <Input size="large" placeholder="验证码" autoComplete="off" />
                                     <button
                                         className="login-captcha-image-button"
@@ -166,7 +167,7 @@ export const LoginPage = () => {
                                             <ReloadOutlined />
                                         )}
                                     </button>
-                                </Space.Compact>
+                                </KuzhambuSpaceCompact>
                             </Form.Item>
 
                             <Button
@@ -180,7 +181,7 @@ export const LoginPage = () => {
                                 登录
                             </Button>
                         </Form>
-                    </Space>
+                    </KuzhambuSpace>
                 </Card>
             </main>
         </>

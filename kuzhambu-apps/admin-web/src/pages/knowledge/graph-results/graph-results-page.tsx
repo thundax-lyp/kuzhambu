@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import { Alert, Card, Empty, Space, Tabs, Typography } from "antd";
+import { Alert, Card, Empty, Tabs, Typography } from "antd";
 import { useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
+import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { KuzhambuPage } from "@/components/kuzhambu-page";
 import { GraphEntityDetail } from "./components/graph-entity-detail";
@@ -175,7 +176,11 @@ export const GraphResultsPage = () => {
             eyebrow="Knowledge / Graph Results"
             title="正式结果读取"
         >
-            <Space orientation="vertical" size={16} className="knowledge-graph-results-layout">
+            <KuzhambuSpace
+                orientation="vertical"
+                size={16}
+                className="knowledge-graph-results-layout"
+            >
                 <Alert
                     banner
                     className="knowledge-graph-results-banner"
@@ -239,7 +244,7 @@ export const GraphResultsPage = () => {
                                 key: "entities",
                                 label: "正式实体",
                                 children: (
-                                    <Space
+                                    <KuzhambuSpace
                                         orientation="vertical"
                                         size={16}
                                         className="knowledge-graph-results-layout"
@@ -278,14 +283,14 @@ export const GraphResultsPage = () => {
                                                 />
                                             </>
                                         )}
-                                    </Space>
+                                    </KuzhambuSpace>
                                 )
                             },
                             {
                                 key: "relations",
                                 label: "正式关系",
                                 children: (
-                                    <Space
+                                    <KuzhambuSpace
                                         orientation="vertical"
                                         size={16}
                                         className="knowledge-graph-results-layout"
@@ -324,14 +329,14 @@ export const GraphResultsPage = () => {
                                                 />
                                             </>
                                         )}
-                                    </Space>
+                                    </KuzhambuSpace>
                                 )
                             },
                             {
                                 key: "lineage",
                                 label: "正式世系",
                                 children: (
-                                    <Space
+                                    <KuzhambuSpace
                                         orientation="vertical"
                                         size={16}
                                         className="knowledge-graph-results-layout"
@@ -355,7 +360,7 @@ export const GraphResultsPage = () => {
                                         ) || (
                                             <>
                                                 <section aria-labelledby="graph-results-lineage-nodes">
-                                                    <Space
+                                                    <KuzhambuSpace
                                                         orientation="vertical"
                                                         size={12}
                                                         className="knowledge-graph-results-layout"
@@ -374,10 +379,10 @@ export const GraphResultsPage = () => {
                                                                 setLineageNodeDetailOpen(true);
                                                             }}
                                                         />
-                                                    </Space>
+                                                    </KuzhambuSpace>
                                                 </section>
                                                 <section aria-labelledby="graph-results-lineage-relations">
-                                                    <Space
+                                                    <KuzhambuSpace
                                                         orientation="vertical"
                                                         size={12}
                                                         className="knowledge-graph-results-layout"
@@ -400,7 +405,7 @@ export const GraphResultsPage = () => {
                                                             }}
                                                             relations={lineageRelations}
                                                         />
-                                                    </Space>
+                                                    </KuzhambuSpace>
                                                 </section>
                                                 <GraphLineageNodeDetail
                                                     loading={lineageNodeDetailQuery.isLoading}
@@ -420,13 +425,13 @@ export const GraphResultsPage = () => {
                                                 />
                                             </>
                                         )}
-                                    </Space>
+                                    </KuzhambuSpace>
                                 )
                             }
                         ]}
                     />
                 </Card>
-            </Space>
+            </KuzhambuSpace>
         </KuzhambuPage>
     );
 };

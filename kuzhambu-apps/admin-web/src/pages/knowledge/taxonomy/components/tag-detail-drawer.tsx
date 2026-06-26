@@ -1,7 +1,8 @@
-import { Button, Descriptions, Empty, Input, Space, Typography } from "antd";
+import { Button, Descriptions, Empty, Input, Typography } from "antd";
 import { useState, type ReactNode } from "react";
 import { KuzhambuList, KuzhambuListItem, KuzhambuListMeta } from "@/components/kuzhambu-list";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
+import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { TagAliasList } from "./tag-alias-list";
 import type {
     TagAliasCreateCommand,
@@ -146,14 +147,14 @@ export const TagDetailDrawer = ({
                 <Button disabled={reviewing} onClick={closeDrawer}>
                     关闭
                 </Button>
-                <Space>
+                <KuzhambuSpace>
                     <Button type="primary" loading={reviewing} onClick={approveTag}>
                         通过
                     </Button>
                     <Button danger loading={reviewing} onClick={rejectTag}>
                         拒绝
                     </Button>
-                </Space>
+                </KuzhambuSpace>
             </div>
         );
     } else if (canDeprecateTag) {
@@ -233,7 +234,7 @@ export const TagDetailDrawer = ({
                                         <KuzhambuListMeta
                                             title={contentRef.contentTitle || contentRef.id}
                                             description={
-                                                <Space wrap>
+                                                <KuzhambuSpace wrap>
                                                     <Text type="secondary">
                                                         类型：
                                                         {readContentTypeLabel(
@@ -246,7 +247,7 @@ export const TagDetailDrawer = ({
                                                     <Text type="secondary">
                                                         来源：{readSourceLabel(contentRef.source)}
                                                     </Text>
-                                                </Space>
+                                                </KuzhambuSpace>
                                             }
                                         />
                                     </KuzhambuListItem>

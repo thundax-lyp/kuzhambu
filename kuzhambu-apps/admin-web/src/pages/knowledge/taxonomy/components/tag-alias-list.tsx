@@ -1,6 +1,7 @@
-import { Button, Empty, Form, Input, Popconfirm, Space, Typography } from "antd";
+import { Button, Empty, Form, Input, Popconfirm, Typography } from "antd";
 import { useMemo } from "react";
 import { KuzhambuList, KuzhambuListItem } from "@/components/kuzhambu-list";
+import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import type { TagAliasCreateCommand, TagAliasRemoveCommand } from "../taxonomy-service";
 import type { TagAliasRecord } from "../taxonomy-types";
 
@@ -77,7 +78,7 @@ export const TagAliasList = ({
     };
 
     return (
-        <Space orientation="vertical" size={12} style={{ width: "100%" }}>
+        <KuzhambuSpace orientation="vertical" size={12} style={{ width: "100%" }}>
             {canEdit ? (
                 <Form<TagAliasFormValues> form={form} layout="inline">
                     <Form.Item
@@ -154,16 +155,16 @@ export const TagAliasList = ({
                                     : undefined
                             }
                         >
-                            <Space split={<Text type="secondary">|</Text>} wrap>
+                            <KuzhambuSpace split={<Text type="secondary">|</Text>} wrap>
                                 <Text>{alias.name || alias.id}</Text>
                                 <Text type="secondary">来源：{readSourceLabel(alias.source)}</Text>
-                            </Space>
+                            </KuzhambuSpace>
                         </KuzhambuListItem>
                     )}
                 />
             ) : (
                 <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无标签别名" />
             )}
-        </Space>
+        </KuzhambuSpace>
     );
 };

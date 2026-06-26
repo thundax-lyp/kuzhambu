@@ -1,4 +1,5 @@
-import { Button, Space, Table, Tag } from "antd";
+import { Button, Table, Tag } from "antd";
+import { KuzhambuSpaceCompact } from "@/components/kuzhambu-space";
 import type { ColumnsType } from "antd/es/table";
 import type { GraphVersionRecord } from "../graph-results-types";
 
@@ -63,9 +64,9 @@ export const GraphVersionTable = ({
         {
             key: "actions",
             render: (_, version) => (
-                <Space.Compact>
+                <KuzhambuSpaceCompact>
                     <Button onClick={() => onOpenDetail(version)}>查看详情</Button>
-                </Space.Compact>
+                </KuzhambuSpaceCompact>
             ),
             title: "操作"
         }

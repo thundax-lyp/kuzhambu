@@ -1,12 +1,13 @@
 import { DeleteOutlined, ReloadOutlined, SafetyCertificateOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Button, Select, Space, Typography } from "antd";
+import { App, Button, Select, Typography } from "antd";
 import type { DataNode } from "antd/es/tree";
 import { useMemo, useState } from "react";
 import type { Key } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
+import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
 import { KuzhambuTag } from "@/components/kuzhambu-tag";
 import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
@@ -74,10 +75,10 @@ const toTreeData = (menus: RoleMenuTreeNode[]): DataNode[] => {
     return menus.map((menu) => ({
         key: menu.id,
         title: (
-            <Space size={8}>
+            <KuzhambuSpace size={8}>
                 <span>{menu.name}</span>
                 {menu.perms ? <Text type="secondary">{menu.perms}</Text> : null}
-            </Space>
+            </KuzhambuSpace>
         ),
         children: menu.children ? toTreeData(menu.children) : undefined
     }));
@@ -310,10 +311,10 @@ export const RolePage = () => {
             key: "name",
             width: DEFAULT_COLUMN_WIDTHS.name,
             render: (name: string) => (
-                <Space size={8}>
+                <KuzhambuSpace size={8}>
                     <SafetyCertificateOutlined className="role-name-icon" />
                     <Text strong>{name}</Text>
-                </Space>
+                </KuzhambuSpace>
             )
         },
         {
@@ -431,7 +432,7 @@ export const RolePage = () => {
                 batchClassName="role-table-toolbar"
                 selectedCount={selectedRowKeys.length}
                 batchActions={
-                    <Space wrap>
+                    <KuzhambuSpace wrap>
                         <Button
                             disabled={!canEditRole || !hasSelectedRoles}
                             loading={statusMutation.isPending}
@@ -455,7 +456,7 @@ export const RolePage = () => {
                         >
                             批量删除
                         </Button>
-                    </Space>
+                    </KuzhambuSpace>
                 }
                 rowKey="id"
                 className="role-table"

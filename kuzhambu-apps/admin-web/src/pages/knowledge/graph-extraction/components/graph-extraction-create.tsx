@@ -1,4 +1,5 @@
-import { Button, Card, Form, Input, InputNumber, Space } from "antd";
+import { Button, Card, Form, Input, InputNumber } from "antd";
+import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import type {
     GraphExtractionCreateCommand,
     GraphExtractionTaskRecord,
@@ -76,7 +77,7 @@ export const GraphExtractionCreate = ({
     };
 
     return (
-        <Space orientation="vertical" size={16} className="graph-extraction-create">
+        <KuzhambuSpace orientation="vertical" size={16} className="graph-extraction-create">
             <Card className="graph-extraction-create-card" variant="borderless">
                 <Form<GraphExtractionCreateFormValues>
                     form={form}
@@ -144,7 +145,7 @@ export const GraphExtractionCreate = ({
                         <TextArea rows={5} placeholder='例如：{"content":"待抽取正文"}' />
                     </Form.Item>
 
-                    <Space wrap>
+                    <KuzhambuSpace wrap>
                         {CREATE_ACTIONS.map((action) => (
                             <Button
                                 key={action.key}
@@ -156,20 +157,20 @@ export const GraphExtractionCreate = ({
                                 {action.label}
                             </Button>
                         ))}
-                    </Space>
+                    </KuzhambuSpace>
                 </Form>
             </Card>
 
             {latestCreatedTask ? (
                 <Card className="graph-extraction-create-result" variant="borderless">
-                    <Space orientation="vertical" size={4}>
+                    <KuzhambuSpace orientation="vertical" size={4}>
                         <strong>最近创建任务</strong>
                         <span>任务号：{latestCreatedTask.taskId || "-"}</span>
                         <span>任务类型：{latestCreatedTask.taskType || "-"}</span>
                         <span>状态：{latestCreatedTask.status || "-"}</span>
-                    </Space>
+                    </KuzhambuSpace>
                 </Card>
             ) : null}
-        </Space>
+        </KuzhambuSpace>
     );
 };

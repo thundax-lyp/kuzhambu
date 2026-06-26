@@ -17,7 +17,7 @@ import {
     TeamOutlined,
     UserOutlined
 } from "@ant-design/icons";
-import { Alert, App, Avatar, Button, Dropdown, Layout, Menu, Space, Typography } from "antd";
+import { Alert, App, Avatar, Button, Dropdown, Layout, Menu, Typography } from "antd";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import type { MenuProps } from "antd";
 import { useEffect, useState } from "react";
@@ -30,6 +30,7 @@ import { replacePermissions } from "../auth/permission-storage";
 import { toAuthenticatedResourceUrl } from "../auth/resource-url";
 import { clearAccessToken, getAccessToken } from "../auth/token-storage";
 import { KuzhambuLogo } from "../components/kuzhambu-logo";
+import { KuzhambuSpace } from "../components/kuzhambu-space";
 import {
     getCurrentUserInfo,
     listCurrentUserMenus,
@@ -339,7 +340,7 @@ export const AdminLayout = () => {
                             <Text className="topbar-path">Kuzhambu Console</Text>
                         </div>
                     </div>
-                    <Space className="topbar-actions">
+                    <KuzhambuSpace className="topbar-actions">
                         <Button
                             shape="circle"
                             aria-label={themeName === "dark" ? "切换为浅色主题" : "切换为深色主题"}
@@ -374,7 +375,7 @@ export const AdminLayout = () => {
                                 <DownOutlined />
                             </Button>
                         </Dropdown>
-                    </Space>
+                    </KuzhambuSpace>
                 </Header>
 
                 <div className="admin-content-grid">

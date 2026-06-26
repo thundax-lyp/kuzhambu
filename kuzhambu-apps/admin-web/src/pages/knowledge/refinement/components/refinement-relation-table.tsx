@@ -1,4 +1,5 @@
-import { Button, Space, Table, Tag } from "antd";
+import { Button, Table, Tag } from "antd";
+import { KuzhambuSpaceCompact } from "@/components/kuzhambu-space";
 import type { ColumnsType } from "antd/es/table";
 import type { RefinementRelationRecord } from "../refinement-types";
 
@@ -39,7 +40,7 @@ export const RefinementRelationTable = ({
             title: "操作",
             key: "actions",
             render: (_, relation) => (
-                <Space.Compact>
+                <KuzhambuSpaceCompact>
                     <Button disabled={!canEdit} onClick={() => onEdit(relation)}>
                         编辑
                     </Button>
@@ -52,7 +53,7 @@ export const RefinementRelationTable = ({
                     <Button danger disabled={!canEdit} onClick={() => onDelete(relation)}>
                         删除
                     </Button>
-                </Space.Compact>
+                </KuzhambuSpaceCompact>
             )
         }
     ];

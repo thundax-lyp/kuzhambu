@@ -1,6 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
-import { Button, Card, Descriptions, Input, Space, Typography } from "antd";
+import { Button, Card, Descriptions, Input, Typography } from "antd";
 import { useState } from "react";
+import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import * as service from "./qa-admin-service";
 import type {
     DiscoveryQaSessionDetailRecord,
@@ -65,9 +66,9 @@ export const QaAdminPage = () => {
                     </div>
                 </header>
 
-                <Space direction="vertical" size={16} style={{ width: "100%" }}>
+                <KuzhambuSpace orientation="vertical" size={16} style={{ width: "100%" }}>
                     <Card title="会话详情" size="small">
-                        <Space align="end" style={{ flexWrap: "wrap", width: "100%" }}>
+                        <KuzhambuSpace align="end" style={{ flexWrap: "wrap", width: "100%" }}>
                             <label>
                                 <Text type="secondary">会话号</Text>
                                 <Input
@@ -88,7 +89,7 @@ export const QaAdminPage = () => {
                             >
                                 加载会话
                             </Button>
-                        </Space>
+                        </KuzhambuSpace>
 
                         <Descriptions
                             bordered
@@ -129,8 +130,8 @@ export const QaAdminPage = () => {
                             style={{ marginTop: 16 }}
                         />
 
-                        <Space
-                            direction="vertical"
+                        <KuzhambuSpace
+                            orientation="vertical"
                             size={8}
                             style={{ marginTop: 16, width: "100%" }}
                         >
@@ -144,8 +145,8 @@ export const QaAdminPage = () => {
                                         }
                                         size="small"
                                     >
-                                        <Space
-                                            direction="vertical"
+                                        <KuzhambuSpace
+                                            orientation="vertical"
                                             size={4}
                                             style={{ width: "100%" }}
                                         >
@@ -159,17 +160,17 @@ export const QaAdminPage = () => {
                                                 {formatTime(message.sentAt)} · 回答
                                                 {formatTime(message.answeredAt)}
                                             </Text>
-                                        </Space>
+                                        </KuzhambuSpace>
                                     </Card>
                                 ))
                             ) : (
                                 <Text type="secondary">暂无消息。</Text>
                             )}
-                        </Space>
+                        </KuzhambuSpace>
                     </Card>
 
                     <Card title="来源列表" size="small">
-                        <Space align="end" style={{ flexWrap: "wrap", width: "100%" }}>
+                        <KuzhambuSpace align="end" style={{ flexWrap: "wrap", width: "100%" }}>
                             <label>
                                 <Text type="secondary">消息号</Text>
                                 <Input
@@ -190,10 +191,10 @@ export const QaAdminPage = () => {
                             >
                                 加载来源
                             </Button>
-                        </Space>
+                        </KuzhambuSpace>
 
-                        <Space
-                            direction="vertical"
+                        <KuzhambuSpace
+                            orientation="vertical"
                             size={8}
                             style={{ marginTop: 16, width: "100%" }}
                         >
@@ -206,8 +207,8 @@ export const QaAdminPage = () => {
                                         }
                                         size="small"
                                     >
-                                        <Space
-                                            direction="vertical"
+                                        <KuzhambuSpace
+                                            orientation="vertical"
                                             size={4}
                                             style={{ width: "100%" }}
                                         >
@@ -219,17 +220,17 @@ export const QaAdminPage = () => {
                                                 {source.score ?? "-"}
                                             </Text>
                                             <Text>{source.snippet ?? "-"}</Text>
-                                        </Space>
+                                        </KuzhambuSpace>
                                     </Card>
                                 ))
                             ) : (
                                 <Text type="secondary">暂无来源。</Text>
                             )}
-                        </Space>
+                        </KuzhambuSpace>
                     </Card>
 
                     <Card title="检索轨迹" size="small">
-                        <Space align="end" style={{ flexWrap: "wrap", width: "100%" }}>
+                        <KuzhambuSpace align="end" style={{ flexWrap: "wrap", width: "100%" }}>
                             <label>
                                 <Text type="secondary">轨迹号</Text>
                                 <Input
@@ -250,7 +251,7 @@ export const QaAdminPage = () => {
                             >
                                 加载轨迹
                             </Button>
-                        </Space>
+                        </KuzhambuSpace>
 
                         <Descriptions
                             bordered
@@ -311,7 +312,7 @@ export const QaAdminPage = () => {
                             style={{ marginTop: 16 }}
                         />
                     </Card>
-                </Space>
+                </KuzhambuSpace>
             </section>
         </main>
     );

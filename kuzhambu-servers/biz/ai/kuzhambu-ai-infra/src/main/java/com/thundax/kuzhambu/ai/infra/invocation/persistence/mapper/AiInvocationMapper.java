@@ -12,6 +12,15 @@ import org.apache.ibatis.annotations.Update;
 @Mapper
 public interface AiInvocationMapper extends BaseMapper<AiCallRecordDO> {
 
+    @Select(
+            """
+            select * from ai_call_record
+            where (#{requestedAtStart} is null or requested_at >= #{requestedAtStart})
+              and (#{requestedAtEnd} is null or requested_at <= #{requestedAtEnd})
+            order by requested_at desc
+            """)
+    List<AiCallRecordDO> selectCallRecords(java.time.Instant requestedAtStart, java.time.Instant requestedAtEnd);
+
     @Select("select * from ai_candidate where candidate_id = #{candidateId}")
     AiCandidateDO selectCandidate(Long candidateId);
 

@@ -1,9 +1,10 @@
 import { FilterOutlined, PlusOutlined, ReloadOutlined, SearchOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { Alert, Button, Input, Select, Space, Splitter } from "antd";
+import { Alert, Button, Input, Select, Splitter } from "antd";
 import { useMemo, useState } from "react";
 import { KuzhambuFilterPanel } from "@/components/kuzhambu-filter-panel";
 import { KuzhambuPage } from "@/components/kuzhambu-page";
+import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { SancaiCatalogTreePanel } from "./components/sancai-catalog-tree-panel";
 import { SancaiCategoryPanel } from "./components/sancai-category-panel";
 import { SancaiEntryPanel } from "./components/sancai-entry-panel";
@@ -249,7 +250,7 @@ export const SancaiPage = () => {
             title="三才图会"
             description="按门类、卷目和条目组织三才图会后台治理入口。"
             actions={
-                <Space className="sancai-page-actions">
+                <KuzhambuSpace className="sancai-page-actions">
                     {enableEntryFilter ? (
                         <Input
                             allowClear
@@ -289,7 +290,7 @@ export const SancaiPage = () => {
                             {addText}
                         </Button>
                     ) : null}
-                </Space>
+                </KuzhambuSpace>
             }
         >
             {enableEntryFilter ? (

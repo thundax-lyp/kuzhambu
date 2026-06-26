@@ -45,6 +45,14 @@ Knowledge 负责把古籍内容组织成可治理、可检索、可增强问答�
 - 必须支持同义词正向和反向查询。
 - 搜索和问答必须能使用同义词扩展。
 - 必须记录标签审核、合并和废弃操作，记录由 System 审计承载。
+- 必须为 Operations 周报和月报提供聚合后的 summary 只读结果。
+- Operations summary 结果必须显式返回 `periodStart` 和 `periodEnd`。
+- 周报趋势序列必须按日聚合，月报趋势序列必须按周聚合。
+- Operations summary 结果必须包含：
+  - `tagCoverageRate`
+  - `topTags`：`tagName`、`contentRefCount`
+  - `categoryDistributions`：`categoryName`、`tagCount`
+  - `monthlyNewTags`：`bucket`、`tagCount`
 
 ### 数据精修
 
@@ -93,6 +101,7 @@ Knowledge 负责把古籍内容组织成可治理、可检索、可增强问答�
 - 摘要和问答对精修应在对应内容的编辑页或详情页内联完成。
 - 实体和关系精修保存后，应触发知识图谱质量相关信息更新。
 - 精修保存必须可追溯。
+- 面向 Operations 的 summary 输出必须以 application result 或 read model 暴露，不得直接复用 Knowledge admin controller response。
 - 知识图谱只覆盖三才图会。
 - 搜索和问答不得以知识图谱为必需前置。
 - 未被人工确认的实体和关系可在重生成时替换。

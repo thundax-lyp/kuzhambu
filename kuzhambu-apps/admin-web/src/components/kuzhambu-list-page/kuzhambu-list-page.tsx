@@ -1,11 +1,12 @@
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { FilterOutlined, PlusOutlined, SearchOutlined } from "@ant-design/icons";
-import { Button, Input, Space } from "antd";
+import { Button, Input } from "antd";
 import { KuzhambuBatchActionBar } from "@/components/kuzhambu-batch-action-bar";
 import { KuzhambuFilterPanel } from "@/components/kuzhambu-filter-panel";
 import type { KuzhambuFilterPanelField } from "@/components/kuzhambu-filter-panel";
 import { KuzhambuPage } from "@/components/kuzhambu-page";
+import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { KuzhambuTable } from "@/components/kuzhambu-table";
 import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
 import { KuzhambuListPageTableArea } from "./kuzhambu-list-page-table-area";
@@ -118,7 +119,7 @@ export const KuzhambuListPage = <RecordType extends object = object>({
     const resolvedAddText = addText ?? (subjectName ? `新增${subjectName}` : undefined);
     const resolvedTableAriaLabel = tableProps.ariaLabel ?? `${subjectName ?? "数据"}列表`;
     const headerActions = (
-        <Space className="kuzhambu-list-page-actions">
+        <KuzhambuSpace className="kuzhambu-list-page-actions">
             {enableSearch ? (
                 <Input
                     allowClear
@@ -162,7 +163,7 @@ export const KuzhambuListPage = <RecordType extends object = object>({
                     {resolvedAddText}
                 </Button>
             ) : null}
-        </Space>
+        </KuzhambuSpace>
     );
     const renderBody = () => {
         if (content && tableAside) {

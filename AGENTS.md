@@ -16,6 +16,8 @@ Use `kuzhambu-servers/` for Java backend modules, `kuzhambu-apps/` for frontend 
 
 Java servers use Maven under `kuzhambu-servers/`. Use Java 17 for compile, test, and local runs:
 
+`kuzhambu-servers/.mvn/maven.config` 默认启用 Maven 并行构建 `-T 4`，在 `kuzhambu-servers/` 下执行 `mvn` 会自动使用 4 线程。
+
 ```sh
 cd kuzhambu-servers
 mvn spotless:check

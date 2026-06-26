@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.ai.domain.invocation.repository;
 
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCallRecord;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
+import java.time.Instant;
 import java.util.List;
 
 public interface AiInvocationRepository {
@@ -11,6 +12,8 @@ public interface AiInvocationRepository {
     Long saveCallRecord(AiCallRecord callRecord);
 
     int updateCallRecord(AiCallRecord callRecord);
+
+    List<AiCallRecord> listCallRecords(Instant requestedAtStart, Instant requestedAtEnd);
 
     AiCandidate getCandidate(Long candidateId);
 

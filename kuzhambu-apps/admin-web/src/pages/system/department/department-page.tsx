@@ -5,12 +5,13 @@ import {
     ReloadOutlined
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Button, Space, Tag, Typography } from "antd";
+import { App, Button, Tag, Typography } from "antd";
 import { useMemo, useState } from "react";
 import type { Key } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
+import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
 import { DepartmentEdit } from "./components/department-edit";
 import * as service from "./department-service";
@@ -244,13 +245,13 @@ export const DepartmentPage = () => {
             width: DEFAULT_COLUMN_WIDTHS.name,
             ellipsis: true,
             render: (name: string, department) => (
-                <Space size={8} className="department-name-cell">
+                <KuzhambuSpace size={8} className="department-name-cell">
                     <ApartmentOutlined className="department-name-icon" />
                     <span className="department-name-text" title={name}>
                         {name}
                     </span>
                     {department.shortName ? <Tag>{department.shortName}</Tag> : null}
-                </Space>
+                </KuzhambuSpace>
             )
         },
         {
@@ -357,10 +358,10 @@ export const DepartmentPage = () => {
                     emptyText: departmentQuery.isError ? (
                         "部门列表加载失败，请确认权限和接口状态。"
                     ) : (
-                        <Space orientation="vertical" size={8}>
+                        <KuzhambuSpace orientation="vertical" size={8}>
                             <BranchesOutlined className="department-empty-icon" />
                             <Text type="secondary">暂无部门数据</Text>
-                        </Space>
+                        </KuzhambuSpace>
                     )
                 }}
                 onSort={sortDepartment}

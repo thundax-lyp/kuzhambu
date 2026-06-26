@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Alert, App, Card, Empty, Space, Typography } from "antd";
+import { Alert, App, Card, Empty, Typography } from "antd";
 import { useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
+import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { KuzhambuPage } from "@/components/kuzhambu-page";
 import { GraphExtractionCreate } from "./components/graph-extraction-create";
@@ -103,7 +104,11 @@ export const GraphExtractionPage = () => {
             eyebrow="Knowledge / Graph Extraction"
             title="知识抽取任务"
         >
-            <Space orientation="vertical" size={16} className="knowledge-graph-extraction-layout">
+            <KuzhambuSpace
+                orientation="vertical"
+                size={16}
+                className="knowledge-graph-extraction-layout"
+            >
                 <Alert
                     banner
                     className="knowledge-graph-extraction-banner"
@@ -169,7 +174,7 @@ export const GraphExtractionPage = () => {
                         onClose={() => setDetailOpen(false)}
                     />
                 </section>
-            </Space>
+            </KuzhambuSpace>
         </KuzhambuPage>
     );
 };
