@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `admin graph extraction service`：扩展前端 service 与类型契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-KNOWLEDGE-CLOSURE.md`
-    - 范围对象：`graph-extraction-types.ts`、`graph-extraction-service.ts`、`graph-extraction-service.test.ts`
-    - 处理动作：补齐批次相关字段并新增 `regenerateTask / cancelBatchTask` service 方法
-    - 验收点：前端 contract 与后端接口一致且 service 测试通过
-    - 重要度：8/10
-
 - [ ] `admin graph extraction page`：扩展批量任务、重生成与取消页面交互
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-KNOWLEDGE-CLOSURE.md`

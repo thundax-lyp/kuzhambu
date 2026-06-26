@@ -133,6 +133,8 @@ describe("knowledge graph extraction service request contracts", () => {
         await service.pageTasks({
             pageNo: 1,
             pageSize: 20,
+            batchJobId: 1001,
+            triggerSource: "QUALITY_REPORT",
             taskType: "GRAPH",
             status: "PENDING",
             sourceContentType: "SANCAI_ENTRY",
@@ -141,6 +143,8 @@ describe("knowledge graph extraction service request contracts", () => {
         expectLastCall("POST", "/knowledge/graph-extraction/task/page", {
             pageNo: 1,
             pageSize: 20,
+            batchJobId: 1001,
+            triggerSource: "QUALITY_REPORT",
             taskType: "GRAPH",
             status: "PENDING",
             sourceContentType: "SANCAI_ENTRY",
@@ -155,6 +159,30 @@ describe("knowledge graph extraction service request contracts", () => {
         await service.applyTaskCandidate({ taskId: 9001 });
         expectLastCall("POST", "/knowledge/graph-extraction/task/apply", {
             taskId: 9001
+        });
+
+        await service.regenerateTask({
+            taskType: "GRAPH",
+            sourceTaskId: 9001,
+            selectionScopeJson: '{"sourceContentIds":[1001,1002]}',
+            replaceUnconfirmedOnly: true,
+            requestedBy: 2001
+        });
+        expectLastCall("POST", "/knowledge/graph-extraction/task/regenerate", {
+            taskType: "GRAPH",
+            sourceTaskId: 9001,
+            selectionScopeJson: '{"sourceContentIds":[1001,1002]}',
+            replaceUnconfirmedOnly: true,
+            requestedBy: 2001
+        });
+
+        await service.cancelBatchTask({
+            batchJobId: 1001,
+            requestedBy: 2001
+        });
+        expectLastCall("POST", "/knowledge/graph-extraction/task/cancel-batch", {
+            batchJobId: 1001,
+            requestedBy: 2001
         });
     });
 });

@@ -1,7 +1,10 @@
 import { postJson } from "@/api/http";
 import type { Page } from "@/types/page";
 import type {
+    GraphExtractionBatchCancelCommand,
+    GraphExtractionBatchCancelResult,
     GraphExtractionCreateCommand,
+    GraphExtractionRegenerateCommand,
     GraphExtractionTaskIdCommand,
     GraphExtractionTaskPageQuery,
     GraphExtractionTaskRecord
@@ -39,6 +42,24 @@ export const getTaskDetail = (request: GraphExtractionTaskIdCommand) => {
 export const applyTaskCandidate = (request: GraphExtractionTaskIdCommand) => {
     return postJson<GraphExtractionTaskRecord, GraphExtractionTaskIdCommand>(
         `${API_PREFIX}/task/apply`,
+        {
+            body: request
+        }
+    );
+};
+
+export const regenerateTask = (request: GraphExtractionRegenerateCommand) => {
+    return postJson<GraphExtractionTaskRecord, GraphExtractionRegenerateCommand>(
+        `${API_PREFIX}/task/regenerate`,
+        {
+            body: request
+        }
+    );
+};
+
+export const cancelBatchTask = (request: GraphExtractionBatchCancelCommand) => {
+    return postJson<GraphExtractionBatchCancelResult, GraphExtractionBatchCancelCommand>(
+        `${API_PREFIX}/task/cancel-batch`,
         {
             body: request
         }

@@ -12,10 +12,14 @@ export type GraphExtractionTaskStatus =
 
 export interface GraphExtractionTaskRecord {
     taskId: string;
+    batchJobId?: number | null;
     triggerSource?: GraphExtractionTriggerSource | null;
     taskType?: GraphExtractionTaskType | null;
     scopeType?: string | null;
     scopeJson?: string | null;
+    selectionScopeJson?: string | null;
+    replaceUnconfirmedOnly?: boolean | null;
+    parentTaskId?: number | null;
     sourceContentType?: string | null;
     sourceContentId?: number | null;
     aiCallId?: number | null;
@@ -34,6 +38,8 @@ export interface GraphExtractionCreateCommand {
     triggerSource?: GraphExtractionTriggerSource | null;
     scopeType?: string | null;
     scopeJson?: string | null;
+    selectionScopeJson?: string | null;
+    replaceUnconfirmedOnly?: boolean | null;
     sourceContentType?: string | null;
     sourceContentId?: number | null;
     requestedBy?: number | null;
@@ -56,6 +62,8 @@ export interface GraphExtractionCreateCommand {
 export interface GraphExtractionTaskPageQuery {
     pageNo?: number;
     pageSize?: number;
+    batchJobId?: number | null;
+    triggerSource?: GraphExtractionTriggerSource | null;
     taskType?: GraphExtractionTaskType | null;
     status?: GraphExtractionTaskStatus | null;
     sourceContentType?: string | null;
@@ -64,4 +72,25 @@ export interface GraphExtractionTaskPageQuery {
 
 export interface GraphExtractionTaskIdCommand {
     taskId: number;
+}
+
+export interface GraphExtractionRegenerateCommand {
+    taskType: GraphExtractionTaskType;
+    sourceTaskId?: number | null;
+    selectionScopeJson?: string | null;
+    replaceUnconfirmedOnly?: boolean | null;
+    requestedBy?: number | null;
+}
+
+export interface GraphExtractionBatchCancelCommand {
+    batchJobId: number;
+    requestedBy?: number | null;
+}
+
+export interface GraphExtractionBatchCancelResult {
+    batchJobId: number;
+    status?: GraphExtractionTaskStatus | null;
+    cancelledCount?: number | null;
+    completedCount?: number | null;
+    failedCount?: number | null;
 }
