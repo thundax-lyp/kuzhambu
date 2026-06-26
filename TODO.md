@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `kuzhambu-classics-application/report`：新增 Classics 报表统计读接口
-    - 任务类型：拆解任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-REPORT-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/report/`、`kuzhambu-servers/biz/classics/kuzhambu-classics-domain/src/main/java/com/thundax/kuzhambu/classics/domain/content/repository/`
-    - 处理动作：提供内容数量、覆盖率、热门内容和增长趋势的 summary 只读入口
-    - 验收点：Operations 不再直接拼 Classics 多处统计来源
-    - 重要度：8/10
-
 - [ ] `kuzhambu-ai-application/report`：新增 AI 报表统计读接口
     - 任务类型：拆解任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-REPORT-CLOSURE.md`

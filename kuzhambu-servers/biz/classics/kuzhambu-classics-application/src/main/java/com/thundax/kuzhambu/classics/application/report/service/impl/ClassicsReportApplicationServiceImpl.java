@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.classics.application.report.service.impl;
 
 import com.thundax.kuzhambu.classics.application.report.result.ClassicsReportSummaryResult;
 import com.thundax.kuzhambu.classics.application.report.result.ClassicsReportSummaryResult.ContentGrowthPointResult;
+import com.thundax.kuzhambu.classics.application.report.result.ClassicsReportSummaryResult.TopContentResult;
 import com.thundax.kuzhambu.classics.application.report.service.ClassicsReportApplicationService;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsVisibility;
@@ -102,7 +103,17 @@ public class ClassicsReportApplicationServiceImpl implements ClassicsReportAppli
                 imageReadyContentCount,
                 visualAssetReadyContentCount,
                 shareVisitCount,
-                List.of(),
+                classicsSharingRepository.listTopPortalShares(ClassicsShareVisibility.PUBLIC.value(), 10).stream()
+                        .map(item -> new TopContentResult(
+                                item.getContentId() == null
+                                        ? null
+                                        : item.getContentId().value(),
+                                item.getContentType() == null
+                                        ? null
+                                        : item.getContentType().value(),
+                                item.getTitleSnapshot(),
+                                item.getAccessCount()))
+                        .toList(),
                 buildGrowthSeries(periodStart, periodEnd, bucketType, growthDates));
     }
 

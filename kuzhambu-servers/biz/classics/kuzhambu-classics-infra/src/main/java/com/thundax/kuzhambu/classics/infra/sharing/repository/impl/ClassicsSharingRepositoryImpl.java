@@ -89,6 +89,12 @@ public class ClassicsSharingRepositoryImpl implements ClassicsSharingRepository 
         return entityPage;
     }
 
+    @Override
+    public List<ClassicsSharePortalListItem> listTopPortalShares(String visibility, int limit) {
+        return ClassicsSharingPersistenceAssembler.toPortalListItemDomainList(
+                targetMapper.listTopPortalShares(visibility, limit));
+    }
+
     public ClassicsShareLinkId insertLink(ClassicsShareLink link) {
         ClassicsShareLinkDO dataObject = ClassicsSharingPersistenceAssembler.toLinkObject(link);
         linkMapper.insert(dataObject);
