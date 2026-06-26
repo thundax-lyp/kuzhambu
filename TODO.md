@@ -11,7 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `kuzhambu-ai-application/report`：新增 AI 报表统计读接口
     - 任务类型：拆解任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-REPORT-CLOSURE.md`
     - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/report/`
