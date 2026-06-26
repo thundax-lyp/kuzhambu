@@ -20,6 +20,13 @@ const formatTimestamp = (value?: number | null) => {
     return Number.isNaN(date.getTime()) ? "-" : date.toLocaleString("zh-CN", { hour12: false });
 };
 
+const formatReplaceUnconfirmedOnly = (value?: boolean | null) => {
+    if (value === undefined || value === null) {
+        return "-";
+    }
+    return value ? "是" : "否";
+};
+
 export const GraphExtractionTaskDetail = ({
     applying = false,
     canApply = false,
@@ -58,12 +65,7 @@ export const GraphExtractionTaskDetail = ({
                     {task?.selectionScopeJson || "-"}
                 </Descriptions.Item>
                 <Descriptions.Item label="仅替换未确认结果">
-                    {task?.replaceUnconfirmedOnly === undefined ||
-                    task?.replaceUnconfirmedOnly === null
-                        ? "-"
-                        : task.replaceUnconfirmedOnly
-                          ? "是"
-                          : "否"}
+                    {formatReplaceUnconfirmedOnly(task?.replaceUnconfirmedOnly)}
                 </Descriptions.Item>
                 <Descriptions.Item label="AI Call ID">{task?.aiCallId || "-"}</Descriptions.Item>
                 <Descriptions.Item label="AI Candidate ID">

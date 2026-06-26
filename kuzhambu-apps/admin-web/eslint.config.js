@@ -43,7 +43,8 @@ const SERVICE_METHOD_VERBS = [
     "confirm",
     "cancel",
     "publish",
-    "revoke"
+    "revoke",
+    "regenerate"
 ];
 
 const ANTD_SPACE_DIRECT_IMPORT_ALLOWLIST = [];

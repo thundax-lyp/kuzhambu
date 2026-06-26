@@ -106,31 +106,6 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
         this.candidateApplySupport = candidateApplySupport;
     }
 
-    public KnowledgeGraphExtractionApplicationServiceImpl(
-            GraphExtractionTaskRepository repository,
-            GraphVersionRepository graphVersionRepository,
-            KnowledgeEntityRepository knowledgeEntityRepository,
-            KnowledgeRelationRepository knowledgeRelationRepository,
-            KnowledgeLineageNodeRepository knowledgeLineageNodeRepository,
-            KnowledgeLineageRelationRepository knowledgeLineageRelationRepository,
-            AiInvocationRepository aiInvocationRepository,
-            KnowledgeAiExtractionDomainService knowledgeAiExtractionDomainService,
-            AiCandidateDomainService aiCandidateDomainService,
-            KnowledgeGraphCandidateApplySupport candidateApplySupport) {
-        this(
-                repository,
-                graphVersionRepository,
-                knowledgeEntityRepository,
-                knowledgeRelationRepository,
-                knowledgeLineageNodeRepository,
-                knowledgeLineageRelationRepository,
-                aiInvocationRepository,
-                null,
-                knowledgeAiExtractionDomainService,
-                aiCandidateDomainService,
-                candidateApplySupport);
-    }
-
     @Override
     @Transactional(rollbackFor = Exception.class)
     public GraphExtractionTaskResult requestRelationExtraction(RequestRelationExtractionCommand command) {

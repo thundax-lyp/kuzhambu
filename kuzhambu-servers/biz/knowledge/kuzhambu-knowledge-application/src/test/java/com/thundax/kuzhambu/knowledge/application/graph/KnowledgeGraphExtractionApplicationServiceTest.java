@@ -61,6 +61,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new FakeKnowledgeLineageNodeRepository(),
                 new FakeKnowledgeLineageRelationRepository(),
                 new FakeAiInvocationRepository(),
+                null,
                 aiService,
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
@@ -273,6 +274,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new FakeKnowledgeLineageNodeRepository(),
                 new FakeKnowledgeLineageRelationRepository(),
                 new FakeAiInvocationRepository(),
+                null,
                 new FakeKnowledgeAiExtractionDomainService(),
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
@@ -311,6 +313,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new FakeKnowledgeLineageNodeRepository(),
                 new FakeKnowledgeLineageRelationRepository(),
                 aiInvocationRepository,
+                null,
                 new FakeKnowledgeAiExtractionDomainService(),
                 new AiCandidateDomainService(aiInvocationRepository),
                 null);
@@ -344,6 +347,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new FakeKnowledgeLineageNodeRepository(),
                 new FakeKnowledgeLineageRelationRepository(),
                 new FakeAiInvocationRepository(),
+                null,
                 new FakeKnowledgeAiExtractionDomainService(),
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
@@ -378,6 +382,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new FakeKnowledgeLineageNodeRepository(),
                 new FakeKnowledgeLineageRelationRepository(),
                 new FakeAiInvocationRepository(),
+                null,
                 new FakeKnowledgeAiExtractionDomainService(),
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
@@ -413,6 +418,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new FakeKnowledgeLineageNodeRepository(),
                 new FakeKnowledgeLineageRelationRepository(),
                 new FakeAiInvocationRepository(),
+                null,
                 new FakeKnowledgeAiExtractionDomainService(),
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
@@ -446,6 +452,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new FakeKnowledgeLineageNodeRepository(),
                 new FakeKnowledgeLineageRelationRepository(),
                 new FakeAiInvocationRepository(),
+                null,
                 new FakeKnowledgeAiExtractionDomainService(),
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
@@ -479,6 +486,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new FakeKnowledgeLineageNodeRepository(),
                 new FakeKnowledgeLineageRelationRepository(),
                 new FakeAiInvocationRepository(),
+                null,
                 new FakeKnowledgeAiExtractionDomainService(),
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
@@ -512,6 +520,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new FakeKnowledgeLineageNodeRepository(),
                 new FakeKnowledgeLineageRelationRepository(),
                 new FakeAiInvocationRepository(),
+                null,
                 new FakeKnowledgeAiExtractionDomainService(),
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
@@ -545,6 +554,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 knowledgeLineageNodeRepository,
                 new FakeKnowledgeLineageRelationRepository(),
                 new FakeAiInvocationRepository(),
+                null,
                 new FakeKnowledgeAiExtractionDomainService(),
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
@@ -578,6 +588,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 knowledgeLineageNodeRepository,
                 new FakeKnowledgeLineageRelationRepository(),
                 new FakeAiInvocationRepository(),
+                null,
                 new FakeKnowledgeAiExtractionDomainService(),
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
@@ -612,6 +623,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new FakeKnowledgeLineageNodeRepository(),
                 knowledgeLineageRelationRepository,
                 new FakeAiInvocationRepository(),
+                null,
                 new FakeKnowledgeAiExtractionDomainService(),
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
@@ -647,6 +659,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new FakeKnowledgeLineageNodeRepository(),
                 knowledgeLineageRelationRepository,
                 new FakeAiInvocationRepository(),
+                null,
                 new FakeKnowledgeAiExtractionDomainService(),
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
@@ -685,6 +698,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new FakeKnowledgeLineageNodeRepository(),
                 new FakeKnowledgeLineageRelationRepository(),
                 aiInvocationRepository,
+                null,
                 new FakeKnowledgeAiExtractionDomainService(),
                 new AiCandidateDomainService(aiInvocationRepository),
                 candidateApplySupport);

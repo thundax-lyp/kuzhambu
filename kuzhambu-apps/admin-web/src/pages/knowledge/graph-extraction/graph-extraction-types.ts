@@ -87,7 +87,7 @@ export interface GraphExtractionBatchCancelCommand {
     requestedBy?: number | null;
 }
 
-export interface GraphExtractionBatchCancelResult {
+export interface GraphExtractionBatchCancelRecord {
     batchJobId: number;
     status?: GraphExtractionTaskStatus | null;
     cancelledCount?: number | null;
