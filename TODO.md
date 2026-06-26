@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `knowledge graph command/result`：扩展抽取 command 与 application result 字段
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-KNOWLEDGE-CLOSURE.md`
-    - 范围对象：`RequestRelationExtractionCommand.java`、`RequestGraphExtractionCommand.java`、`RequestLineageExtractionCommand.java`、`GraphExtractionTaskResult.java`
-    - 处理动作：补齐批量范围、触发来源、重生成与取消批任务所需字段并保持 application result 独立
-    - 验收点：command/result 字段语义一致且不透传 AI 域 response
-    - 重要度：9/10
-
 - [ ] `knowledge graph interface dto`：扩展图谱抽取接口请求响应模型
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-KNOWLEDGE-CLOSURE.md`
