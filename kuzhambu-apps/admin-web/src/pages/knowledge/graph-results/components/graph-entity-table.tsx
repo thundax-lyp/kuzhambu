@@ -1,4 +1,5 @@
-import { Button, Space, Table, Tag } from "antd";
+import { Button, Table, Tag } from "antd";
+import { KuzhambuSpaceCompact } from "@/components/kuzhambu-space";
 import type { ColumnsType } from "antd/es/table";
 import type { GraphEntityRecord } from "../graph-results-types";
 
@@ -40,9 +41,9 @@ export const GraphEntityTable = ({
         {
             key: "actions",
             render: (_, entity) => (
-                <Space.Compact>
+                <KuzhambuSpaceCompact>
                     <Button onClick={() => onOpenDetail(entity)}>查看详情</Button>
-                </Space.Compact>
+                </KuzhambuSpaceCompact>
             ),
             title: "操作"
         }

@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `admin-web knowledge compact batch-2`：替换第二批图谱结果表格
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-WEB-KUZHAMBU-SPACE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/graph-results/components/graph-version-table.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/graph-results/components/graph-entity-table.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/graph-results/components/graph-relation-table.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/graph-results/components/graph-lineage-node-table.tsx`
-    - 处理动作：把图谱结果表格中的 `Space.Compact` 替换为共享 compact 入口
-    - 验收点：该批图谱结果表格不再直连 `Space.Compact`
-    - 重要度：7/10
-
 - [ ] `admin-web final verify`：收尾 lineage 表格并完成最终验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-WEB-KUZHAMBU-SPACE.md`
