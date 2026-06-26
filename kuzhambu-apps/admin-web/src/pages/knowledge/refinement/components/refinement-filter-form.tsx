@@ -1,4 +1,5 @@
-import { Button, Form, Input, Select, Space } from "antd";
+import { Button, Form, Input, Select } from "antd";
+import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import type { RefinementTaskPageQuery } from "../refinement-types";
 
 interface RefinementFilterFormProps {
@@ -52,7 +53,7 @@ export const RefinementFilterForm = ({
                 />
             </Form.Item>
             <Form.Item>
-                <Space>
+                <KuzhambuSpace>
                     <Button htmlType="submit" loading={loading} type="primary">
                         筛选
                     </Button>
@@ -66,7 +67,7 @@ export const RefinementFilterForm = ({
                     >
                         重置
                     </Button>
-                </Space>
+                </KuzhambuSpace>
             </Form.Item>
         </Form>
     );

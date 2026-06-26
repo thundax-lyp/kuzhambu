@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Alert, App, Card, Col, Empty, Row, Space, Typography } from "antd";
+import { Alert, App, Card, Col, Empty, Row, Typography } from "antd";
 import { useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
+import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { KuzhambuPage } from "@/components/kuzhambu-page";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { RefinementEntityDeleteModal } from "./components/refinement-entity-delete-modal";
@@ -225,7 +226,7 @@ export const RefinementPage = () => {
             eyebrow="Knowledge / Refinement"
             title="知识图谱精修工作台"
         >
-            <Space className="knowledge-refinement-layout" orientation="vertical" size={16}>
+            <KuzhambuSpace className="knowledge-refinement-layout" orientation="vertical" size={16}>
                 <Alert
                     banner
                     title="本页支持打开精修任务、修订实体关系草稿并应用回正式事实。世系结构已打通后端契约，但当前页面暂不开放交互。"
@@ -240,7 +241,7 @@ export const RefinementPage = () => {
                         <Text type="secondary">按门类、来源和状态筛选后打开任务进入精修。</Text>
                     </div>
                     <Card className="knowledge-refinement-card" variant="borderless">
-                        <Space orientation="vertical" size={16} style={{ width: "100%" }}>
+                        <KuzhambuSpace orientation="vertical" size={16} style={{ width: "100%" }}>
                             <RefinementFilterForm
                                 loading={taskPageQuery.isLoading}
                                 value={taskQuery}
@@ -256,7 +257,7 @@ export const RefinementPage = () => {
                                     })
                                 }
                             />
-                        </Space>
+                        </KuzhambuSpace>
                     </Card>
                 </section>
 
@@ -268,7 +269,7 @@ export const RefinementPage = () => {
                         <Text type="secondary">{detailEyebrow}</Text>
                     </div>
                     {detailReady ? (
-                        <Space orientation="vertical" size={16} style={{ width: "100%" }}>
+                        <KuzhambuSpace orientation="vertical" size={16} style={{ width: "100%" }}>
                             <RefinementProgressSummaryPanel summary={progressSummary} />
                             <Row gutter={[16, 16]}>
                                 <Col xs={24} lg={16}>
@@ -367,7 +368,7 @@ export const RefinementPage = () => {
                                     relations={detail?.relations || []}
                                 />
                             </Card>
-                        </Space>
+                        </KuzhambuSpace>
                     ) : (
                         <Card className="knowledge-refinement-card" variant="borderless">
                             <Empty
@@ -377,7 +378,7 @@ export const RefinementPage = () => {
                         </Card>
                     )}
                 </section>
-            </Space>
+            </KuzhambuSpace>
 
             <RefinementEntityEditor
                 entity={editingEntity}
