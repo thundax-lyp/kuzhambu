@@ -57,6 +57,15 @@ AI 负责配置、调用、候选结果、确认、失败反馈和统计；不�
 - 必须支持接收 workers 的流式片段并转发给调用方展示。
 - 必须在流式输出完成后保存最终 AI 调用结果；流式片段不得直接作为正式内容写入依据。
 - 必须记录 worker 调用的模型、服务、提示词版本、请求追踪标识、耗时、用量、失败类型和降级状态。
+- 必须为 Operations 周报和月报提供聚合后的 summary 只读结果。
+- Operations summary 结果必须显式返回 `periodStart` 和 `periodEnd`。
+- Operations summary 结果必须包含：
+  - `invocationCount`
+  - `succeededInvocationCount`
+  - `failedInvocationCount`
+  - `avgLatencyMs`
+  - `totalCostAmount`
+  - `topCapabilities`：`capability`、`invocationCount`
 - 必须支持三才图会单条和批量古文翻译，翻译结果必须是白话译文文本。
 - 必须支持三才图会、王圻文档和明代习俗的标签提取，标签结果应包含 5-8 个关键词并覆盖主题、人物、地点、时代等维度。
 - 必须支持摘要生成，摘要应适合人工继续编辑。
@@ -95,6 +104,7 @@ AI 负责配置、调用、候选结果、确认、失败反馈和统计；不�
 - workers 流式输出中断时，AI 域必须将调用标记为失败或部分失败，并允许用户重新发起完整调用。
 - AI 语义层失败不得自动重试，应提示用户手动重试。
 - 网络传输层失败允许触发主备切换。
+- 面向 Operations 的 summary 输出必须以 application result 或 read model 暴露，不得直接复用 AI admin controller response。
 - AI 结果不得直接覆盖正式内容。
 - 用户确认后才写入正式内容或产物。
 - 翻译功能不得要求 AI 返回 JSON；若 AI 意外返回结构化内容，系统应尽量提取译文，无法提取时按格式异常处理。

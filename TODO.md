@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `docs/10-requirements 与 RUNBOOK`：统一 Operations 报表 summary 统计规格
-    - 任务类型：拆解任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-REPORT-CLOSURE.md`
-    - 范围对象：`docs/30-designs/RUNBOOK-OPERATIONS-REPORT-CLOSURE.md`、`docs/10-requirements/OPERATIONS-REQUIREMENTS.md`、`docs/10-requirements/CLASSICS-REQUIREMENTS.md`、`docs/10-requirements/AI-REQUIREMENTS.md`、`docs/10-requirements/DISCOVERY-REQUIREMENTS.md`
-    - 处理动作：统一 Classics、AI、Discovery、Knowledge 面向 Operations 的 summary 字段、时间范围和趋势 bucket 口径
-    - 验收点：文档中明确周报按日、月报按周，关联域统计字段不再悬空
-    - 重要度：10/10
-
 - [ ] `kuzhambu-operations-application/report`：建立报表 application 入口骨架
     - 任务类型：拆解任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-REPORT-CLOSURE.md`

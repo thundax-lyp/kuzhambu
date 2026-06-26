@@ -44,6 +44,42 @@ Operations 是独立业务域，不属于 System 基础域，也不承载其他�
 - 必须支持统计结果图表化展示。
 - 必须支持按权限展示聚合结果，不得向未授权管理员暴露运营运维细节。
 
+### 跨域报表统计规格
+
+- Operations 面向周报和月报读取其他业务域统计时，必须使用聚合后的 application result 或 read model，不得直接复用其他业务域 controller response。
+- Operations admin 对外接口必须只返回本域独立响应模型，不得透传其他业务域 response 结构。
+- 统计结果必须显式返回 `periodStart` 和 `periodEnd`。
+- 周报趋势序列必须按日聚合。
+- 月报趋势序列必须按周聚合。
+- 趋势序列结果必须显式返回 `bucket`，不得由 Operations 在聚合后自行推导。
+- Classics 必须提供以下 summary 字段：
+  - `contentCount`
+  - `translatedContentCount`
+  - `imageReadyContentCount`
+  - `visualAssetReadyContentCount`
+  - `shareVisitCount`
+  - `topContents`：`contentId`、`contentType`、`title`、`visitCount`
+  - `contentGrowthSeries`：`bucket`、`createdCount`
+- AI 必须提供以下 summary 字段：
+  - `invocationCount`
+  - `succeededInvocationCount`
+  - `failedInvocationCount`
+  - `avgLatencyMs`
+  - `totalCostAmount`
+  - `topCapabilities`：`capability`、`invocationCount`
+- Discovery 必须提供以下 summary 字段：
+  - `searchCount`
+  - `qaCount`
+  - `avgSearchLatencyMs`
+  - `topQueries`：`queryText`、`count`
+  - `searchTrendSeries`：`bucket`、`searchCount`
+  - `qaTrendSeries`：`bucket`、`qaCount`
+- Knowledge 必须提供以下 summary 字段：
+  - `tagCoverageRate`
+  - `topTags`：`tagName`、`contentRefCount`
+  - `categoryDistributions`：`categoryName`、`tagCount`
+  - `monthlyNewTags`：`bucket`、`tagCount`
+
 ### 报表
 
 - 必须支持生成周报和月报。

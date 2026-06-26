@@ -121,6 +121,20 @@ Classics 古籍域承载平台三类古籍知识库内容和跨知识库在线�
 - 分享访问页必须只读展示。
 - 必须支持访问统计。
 
+### Operations 统计输出
+
+- 必须为 Operations 周报和月报提供聚合后的 summary 只读结果。
+- summary 结果必须显式返回 `periodStart` 和 `periodEnd`。
+- 周报趋势序列必须按日聚合，月报趋势序列必须按周聚合。
+- summary 结果必须包含：
+  - `contentCount`
+  - `translatedContentCount`
+  - `imageReadyContentCount`
+  - `visualAssetReadyContentCount`
+  - `shareVisitCount`
+  - `topContents`：`contentId`、`contentType`、`title`、`visitCount`
+  - `contentGrowthSeries`：`bucket`、`createdCount`
+
 ## Business Rules
 
 ### 三才图会规则
@@ -193,6 +207,7 @@ Classics 古籍域承载平台三类古籍知识库内容和跨知识库在线�
 - 过期导出记录不可继续下载。
 - HTML 设定集导出模板是随系统发布的静态资源，不属于提示词模块或用户上传内容。
 - HTML 设定集模板必须支持数据集元信息、目录、内容正文、离线打开、浏览器打印和 PDF 生成。
+- 面向 Operations 的 summary 输出必须以 application result 或 read model 暴露，不得直接复用 Classics admin controller response。
 - 公开和私有状态、分享链接公开状态、静态展示页面发布状态相互独立，修改其中一个状态不得隐式修改另外两个状态。
 - 公开和私有状态变更不得改变已创建分享链接的访问性。
 
