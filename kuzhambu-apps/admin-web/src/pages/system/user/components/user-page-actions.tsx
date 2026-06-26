@@ -1,5 +1,6 @@
 import { FilterOutlined, PlusOutlined, ReloadOutlined, SearchOutlined } from "@ant-design/icons";
-import { Button, Input, Space } from "antd";
+import { Button, Input } from "antd";
+import { KuzhambuSpace } from "@/components/kuzhambu-space";
 
 interface UserPageActionsProps {
     canCreateUser: boolean;
@@ -24,7 +25,7 @@ export const UserPageActions = ({
     onSearch,
     onToggleFilter
 }: UserPageActionsProps) => (
-    <Space className="user-page-actions">
+    <KuzhambuSpace className="user-page-actions">
         <Input
             allowClear
             aria-label="搜索用户"
@@ -51,5 +52,5 @@ export const UserPageActions = ({
                 新增
             </Button>
         ) : null}
-    </Space>
+    </KuzhambuSpace>
 );

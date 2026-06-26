@@ -47,9 +47,6 @@ const SERVICE_METHOD_VERBS = [
 ];
 
 const ANTD_SPACE_DIRECT_IMPORT_ALLOWLIST = [
-    "/src/pages/audit/audit-log/audit-log-page.tsx",
-    "/src/pages/audit/audit-log/components/audit-log-detail.tsx",
-    "/src/pages/auth/login/login-page.tsx",
     "/src/pages/classics/common/components/ai-candidate-panel.tsx",
     "/src/pages/classics/common/components/ai-candidate-payload-editor.tsx",
     "/src/pages/classics/sancai/components/sancai-catalog-tree-panel.tsx",
@@ -61,8 +58,6 @@ const ANTD_SPACE_DIRECT_IMPORT_ALLOWLIST = [
     "/src/pages/classics/wangqi/components/wangqi-version-history-panel.tsx",
     "/src/pages/knowledge/graph-extraction/components/graph-extraction-create.tsx",
     "/src/pages/knowledge/graph-extraction/graph-extraction-page.tsx",
-    "/src/pages/knowledge/graph-results/components/graph-lineage-relation-table.tsx",
-    "/src/pages/knowledge/graph-results/graph-results-page.tsx",
     "/src/pages/knowledge/refinement/components/refinement-filter-form.tsx",
     "/src/pages/knowledge/refinement/refinement-page.tsx",
     "/src/pages/knowledge/taxonomy/components/tag-alias-list.tsx",
@@ -74,11 +69,7 @@ const ANTD_SPACE_DIRECT_IMPORT_ALLOWLIST = [
     "/src/pages/system/dictionary/dictionary-page.tsx",
     "/src/pages/system/menu/menu-page.tsx",
     "/src/pages/system/role/role-page.tsx",
-    "/src/pages/system/system-log/system-log-page.tsx",
-    "/src/pages/system/user/components/user-batch-actions.tsx",
-    "/src/pages/system/user/components/user-department-tree.tsx",
-    "/src/pages/system/user/components/user-page-actions.tsx",
-    "/src/pages/system/user/components/user-table.tsx"
+    "/src/pages/system/system-log/system-log-page.tsx"
 ];
 
 const localRules = {

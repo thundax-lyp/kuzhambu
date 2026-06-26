@@ -1,9 +1,10 @@
 import { ApartmentOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { Space, Tree, Typography } from "antd";
+import { Tree, Typography } from "antd";
 import type { DataNode } from "antd/es/tree";
 import { useEffect, useMemo } from "react";
 import type { Key } from "react";
+import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import * as service from "../user-service";
 import type { UserDepartmentNode } from "../user-types";
 
@@ -99,10 +100,10 @@ export const UserDepartmentTree = ({
     return (
         <div className="user-department-panel">
             <div className="user-department-panel-head">
-                <Space size={8}>
+                <KuzhambuSpace size={8}>
                     <ApartmentOutlined />
                     <Text strong>部门</Text>
-                </Space>
+                </KuzhambuSpace>
             </div>
             <Tree
                 key={departmentTreeKeys.join(",")}
