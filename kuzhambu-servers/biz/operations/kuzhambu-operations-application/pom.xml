@@ -47,7 +47,7 @@
     </dependency>
     <dependency>
       <groupId>com.thundax</groupId>
-      <artifactId>kuzhambu-discovery-application</artifactId>
+      <artifactId>kuzhambu-discovery-facade</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
