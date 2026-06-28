@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `classics readable-content to storage-facade`：首批迁移 `classics-application` 的最小只读内容入口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sharing/service/impl/ClassicsSharingApplicationServiceImpl.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-facade/src/main/java/com/thundax/kuzhambu/storage/facade/StorageReadableContentFacade.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/sharing/service/impl/ClassicsSharingApplicationServiceImplTest.java`
-    - 处理动作：将分享只读内容调用改为依赖 `StorageReadableContentFacade`。
-    - 验收点：`ClassicsSharingApplicationServiceImpl` 不再直接使用 storage application 的只读内容入口。
-    - 重要度：8/10
-
 - [ ] `system avatar to storage-facade`：首批迁移 `system-application` 的最小头像入口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FACADE-ISOLATION.md`

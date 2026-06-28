@@ -47,16 +47,22 @@ import com.thundax.kuzhambu.common.core.exception.ErrorCode;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
-import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
 import com.thundax.kuzhambu.storage.application.service.content.StoredObjectContent;
-import com.thundax.kuzhambu.storage.application.service.query.StorageQuery;
+import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
+import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
+import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
+import com.thundax.kuzhambu.storage.facade.StorageReadableContentFacade;
+import com.thundax.kuzhambu.storage.facade.dto.ReadableStoredObjectFacadeDto;
+import com.thundax.kuzhambu.storage.facade.request.GetReadableContentFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.response.GetReadableContentFacadeResponse;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -75,7 +81,7 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
     private final MingCustomsRepository mingCustomsRepository;
     private final ClassicsShareTokenGenerator shareTokenGenerator;
     private final ClassicsShareTokenHasher shareTokenHasher;
-    private final StorageApplicationService storageApplicationService;
+    private final StorageReadableContentFacade storageReadableContentFacade;
     private ClassicsShareProperties shareProperties = new ClassicsShareProperties();
 
     public ClassicsSharingApplicationServiceImpl(
@@ -86,7 +92,7 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
             MingCustomsRepository mingCustomsRepository,
             ClassicsShareTokenGenerator shareTokenGenerator,
             ClassicsShareTokenHasher shareTokenHasher,
-            StorageApplicationService storageApplicationService) {
+            StorageReadableContentFacade storageReadableContentFacade) {
         this.repository = repository;
         this.contentApplicationService = contentApplicationService;
         this.sancaiRepository = sancaiRepository;
@@ -94,7 +100,7 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
         this.mingCustomsRepository = mingCustomsRepository;
         this.shareTokenGenerator = shareTokenGenerator;
         this.shareTokenHasher = shareTokenHasher;
-        this.storageApplicationService = storageApplicationService;
+        this.storageReadableContentFacade = storageReadableContentFacade;
     }
 
     @Autowired(required = false)
@@ -182,7 +188,7 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
     @Transactional(rollbackFor = Exception.class)
     public StoredObjectContent getPortalShareResourceContent(
             String shareToken, Long storageObjectId, boolean download) {
-        if (storageObjectId == null || storageApplicationService == null) {
+        if (storageObjectId == null || storageReadableContentFacade == null) {
             throw shareContentNotFound();
         }
         ClassicsShareLink link = repository.getLinkByTokenHash(shareTokenHasher.hash(shareToken));
@@ -193,13 +199,13 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
         if (matchedTarget == null) {
             throw shareContentNotFound();
         }
-        StoredObjectId objectId = StoredObjectId.of(storageObjectId);
-        StorageQuery query = new StorageQuery();
-        query.setId(objectId);
-        if (!storageApplicationService.existsReadableContent(query)) {
+        GetReadableContentFacadeRequest request = GetReadableContentFacadeRequest.builder()
+                .storageObjectId(storageObjectId)
+                .build();
+        if (!storageReadableContentFacade.existsReadableContent(request)) {
             throw shareContentNotFound();
         }
-        StoredObjectContent content = storageApplicationService.openReadableContent(objectId);
+        StoredObjectContent content = toStoredObjectContent(storageReadableContentFacade.getReadableContent(request));
         if (content == null) {
             throw shareContentNotFound();
         }
@@ -216,6 +222,35 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
             return false;
         }
         return link.getExpiresAt() == null || link.getExpiresAt().after(new Date());
+    }
+
+    private static StoredObjectContent toStoredObjectContent(GetReadableContentFacadeResponse response) {
+        if (response == null || response.getInputStream() == null) {
+            return null;
+        }
+        return new StoredObjectContent(toStoredObject(response.getStoredObject()), response.getInputStream());
+    }
+
+    private static StoredObject toStoredObject(ReadableStoredObjectFacadeDto storedObject) {
+        if (storedObject == null) {
+            return null;
+        }
+        StoredObject storage = new StoredObject();
+        storage.setId(storedObject.getId() == null ? null : StoredObjectId.of(storedObject.getId()));
+        storage.setOriginalFilename(storedObject.getOriginalFilename());
+        storage.setContentType(storedObject.getContentType());
+        storage.setOwnerId(storedObject.getOwnerId());
+        storage.setSize(storedObject.getSize());
+        storage.setObjectStatus(
+                StringUtils.isBlank(storedObject.getObjectStatus())
+                        ? null
+                        : StoredObjectStatus.from(storedObject.getObjectStatus()));
+        storage.setReferenceStatus(
+                StringUtils.isBlank(storedObject.getReferenceStatus())
+                        ? null
+                        : StoredObjectReferenceStatus.from(storedObject.getReferenceStatus()));
+        storage.setRemarks(storedObject.getRemarks());
+        return storage;
     }
 
     @Override
