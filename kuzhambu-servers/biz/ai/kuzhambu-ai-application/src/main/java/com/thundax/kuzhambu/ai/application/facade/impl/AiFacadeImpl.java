@@ -2,8 +2,11 @@ package com.thundax.kuzhambu.ai.application.facade.impl;
 
 import com.thundax.kuzhambu.ai.application.batch.command.AiBatchJobCreateCommand;
 import com.thundax.kuzhambu.ai.application.batch.service.AiBatchJobApplicationService;
+import com.thundax.kuzhambu.ai.application.discovery.service.DiscoveryAiApplicationService;
 import com.thundax.kuzhambu.ai.application.facade.assembler.AiFacadeAssembler;
+import com.thundax.kuzhambu.ai.application.knowledge.service.impl.KnowledgeAiExtractionApplicationServiceImpl;
 import com.thundax.kuzhambu.ai.application.report.service.AiReportApplicationService;
+import com.thundax.kuzhambu.ai.domain.knowledge.service.KnowledgeAiExtractionDomainService;
 import com.thundax.kuzhambu.ai.facade.AiFacade;
 import com.thundax.kuzhambu.ai.facade.dto.AiCallRecordFacadeDto;
 import com.thundax.kuzhambu.ai.facade.dto.AiCandidateFacadeDto;
@@ -29,14 +32,20 @@ public class AiFacadeImpl implements AiFacade {
 
     private final AiReportApplicationService aiReportApplicationService;
     private final AiBatchJobApplicationService aiBatchJobApplicationService;
+    private final DiscoveryAiApplicationService discoveryAiApplicationService;
+    private final KnowledgeAiExtractionDomainService knowledgeAiExtractionDomainService;
     private final AiFacadeAssembler aiFacadeAssembler;
 
     public AiFacadeImpl(
             AiReportApplicationService aiReportApplicationService,
             AiBatchJobApplicationService aiBatchJobApplicationService,
+            DiscoveryAiApplicationService discoveryAiApplicationService,
+            KnowledgeAiExtractionApplicationServiceImpl knowledgeAiExtractionApplicationService,
             AiFacadeAssembler aiFacadeAssembler) {
         this.aiReportApplicationService = aiReportApplicationService;
         this.aiBatchJobApplicationService = aiBatchJobApplicationService;
+        this.discoveryAiApplicationService = discoveryAiApplicationService;
+        this.knowledgeAiExtractionDomainService = knowledgeAiExtractionApplicationService;
         this.aiFacadeAssembler = aiFacadeAssembler;
     }
 
@@ -52,27 +61,32 @@ public class AiFacadeImpl implements AiFacade {
 
     @Override
     public DiscoveryAiFacadeResponse understandDiscoveryQuery(DiscoveryAiFacadeRequest request) {
-        throw unsupported();
+        return aiFacadeAssembler.toFacadeResponse(
+                discoveryAiApplicationService.understandQuery(aiFacadeAssembler.toDomainRequest(request)));
     }
 
     @Override
     public DiscoveryAiFacadeResponse generateDiscoveryAnswer(DiscoveryAiFacadeRequest request) {
-        throw unsupported();
+        return aiFacadeAssembler.toFacadeResponse(
+                discoveryAiApplicationService.generateAnswer(aiFacadeAssembler.toDomainRequest(request)));
     }
 
     @Override
     public KnowledgeAiExtractionFacadeResponse extractKnowledgeRelations(KnowledgeAiExtractionFacadeRequest request) {
-        throw unsupported();
+        return aiFacadeAssembler.toFacadeResponse(
+                knowledgeAiExtractionDomainService.extractRelations(aiFacadeAssembler.toDomainRequest(request)));
     }
 
     @Override
     public KnowledgeAiExtractionFacadeResponse extractKnowledgeGraph(KnowledgeAiExtractionFacadeRequest request) {
-        throw unsupported();
+        return aiFacadeAssembler.toFacadeResponse(
+                knowledgeAiExtractionDomainService.extractGraph(aiFacadeAssembler.toDomainRequest(request)));
     }
 
     @Override
     public KnowledgeAiExtractionFacadeResponse extractKnowledgeLineage(KnowledgeAiExtractionFacadeRequest request) {
-        throw unsupported();
+        return aiFacadeAssembler.toFacadeResponse(
+                knowledgeAiExtractionDomainService.extractLineage(aiFacadeAssembler.toDomainRequest(request)));
     }
 
     @Override

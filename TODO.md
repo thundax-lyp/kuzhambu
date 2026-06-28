@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `ai-application/discovery-knowledge-bridge`：把 discovery AI 与 knowledge 抽取能力接入 AiFacade
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/facade/impl/AiFacadeImpl.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/facade/assembler/AiFacadeAssembler.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/discovery/service/impl/DiscoveryAiApplicationServiceImpl.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/knowledge/service/impl/KnowledgeAiExtractionApplicationServiceImpl.java`
-    - 处理动作：把 discovery AI 与 knowledge 抽取 provider 能力桥接到 `AiFacadeImpl`。
-    - 验收点：`AiFacadeImpl` 暴露 `understandDiscoveryQuery/generateDiscoveryAnswer/extractKnowledgeRelations/extractKnowledgeGraph/extractKnowledgeLineage`，并完成 `DiscoveryAiFacadeRequest/Response` 与 `KnowledgeAiExtractionFacadeRequest/Response` 的字段映射。
-    - 重要度：9/10
-
 - [ ] `ai-application/invocation-bridge`：把候选与调用记录能力接入 AiFacade
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-FACADE-ISOLATION.md`
