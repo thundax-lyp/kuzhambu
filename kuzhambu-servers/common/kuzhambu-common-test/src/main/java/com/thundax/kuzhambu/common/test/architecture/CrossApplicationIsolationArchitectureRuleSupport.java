@@ -64,10 +64,8 @@ public final class CrossApplicationIsolationArchitectureRuleSupport {
         Map<String, Set<String>> allowlist = new HashMap<String, Set<String>>();
         put(allowlist, "operations", "storage");
         put(allowlist, "discovery", "classics");
-        put(allowlist, "discovery", "knowledge");
         put(allowlist, "operations", "classics");
         put(allowlist, "operations", "discovery");
-        put(allowlist, "operations", "knowledge");
         return allowlist;
     }
 

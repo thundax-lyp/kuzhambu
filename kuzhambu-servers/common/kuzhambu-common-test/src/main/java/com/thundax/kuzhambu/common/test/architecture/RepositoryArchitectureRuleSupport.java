@@ -312,12 +312,9 @@ public final class RepositoryArchitectureRuleSupport {
 
     private static Map<String, Set<String>> legacyApplicationPomDependencyAllowlist() {
         Map<String, Set<String>> allowlist = new HashMap<String, Set<String>>();
-        put(allowlist, "classics", "kuzhambu-knowledge-domain");
         put(allowlist, "discovery", "kuzhambu-classics-application");
-        put(allowlist, "discovery", "kuzhambu-knowledge-application");
         put(allowlist, "operations", "kuzhambu-classics-application");
         put(allowlist, "operations", "kuzhambu-discovery-application");
-        put(allowlist, "operations", "kuzhambu-knowledge-application");
         return allowlist;
     }
 
