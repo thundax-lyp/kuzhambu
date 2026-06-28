@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `knowledge-facade-summary-provider`：补齐 summary 剩余 dto 与 provider 映射
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/facade/impl/KnowledgeFacadeImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/facade/assembler/KnowledgeFacadeAssembler.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/pom.xml`
-    - 处理动作：让 provider 通过 `KnowledgeFacadeImpl` 返回完整 summary response
-    - 验收点：`KnowledgeFacadeImpl.summary(...)` 已返回完整 facade response 并完成 `topTags/categoryDistributions/monthlyNewTags` 映射
-    - 重要度：9/10
-
 - [ ] `knowledge-facade-discovery-contract`：定义 discovery taxonomy facade 协议
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-FACADE-ISOLATION.md`
