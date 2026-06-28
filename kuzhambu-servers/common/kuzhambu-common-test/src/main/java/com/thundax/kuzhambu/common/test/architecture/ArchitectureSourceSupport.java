@@ -48,6 +48,10 @@ final class ArchitectureSourceSupport {
         }
     }
 
+    static boolean isEnumSource(String source) {
+        return source.contains(" enum ");
+    }
+
     private static String removeJavaComments(String content) {
         StringBuilder builder = new StringBuilder(content.length());
         boolean inLineComment = false;

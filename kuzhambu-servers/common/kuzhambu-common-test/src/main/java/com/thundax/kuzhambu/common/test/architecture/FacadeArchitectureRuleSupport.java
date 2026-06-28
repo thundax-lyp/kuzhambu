@@ -98,6 +98,10 @@ public final class FacadeArchitectureRuleSupport {
         String relativePath =
                 ArchitectureSourceSupport.repositoryPath(ArchitectureSourceSupport.repositoryRoot(), path);
 
+        if (ArchitectureSourceSupport.isEnumSource(source)) {
+            return;
+        }
+
         if (!annotations.contains("Getter")
                 || !annotations.contains("Builder")
                 || !annotations.contains("AllArgsConstructor")) {

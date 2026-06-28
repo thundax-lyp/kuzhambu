@@ -1,10 +1,14 @@
 package com.thundax.kuzhambu.classics.facade.dto;
 
 import java.util.Date;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
 @Getter
+@Builder
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ClassicsSearchIndexSyncMessageFacadeDto {
 
     private final String eventId;
@@ -13,20 +17,4 @@ public class ClassicsSearchIndexSyncMessageFacadeDto {
     private final String contentId;
     private final Integer currentVersionNo;
     private final Date occurredAt;
-
-    @Builder
-    private ClassicsSearchIndexSyncMessageFacadeDto(
-            String eventId,
-            ClassicsSearchIndexSyncEventFacadeDto eventType,
-            String contentType,
-            String contentId,
-            Integer currentVersionNo,
-            Date occurredAt) {
-        this.eventId = eventId;
-        this.eventType = eventType;
-        this.contentType = contentType;
-        this.contentId = contentId;
-        this.currentVersionNo = currentVersionNo;
-        this.occurredAt = occurredAt;
-    }
 }

@@ -4,10 +4,14 @@ import com.thundax.kuzhambu.classics.facade.dto.ClassicsContentGrowthPointFacade
 import com.thundax.kuzhambu.classics.facade.dto.ClassicsTopContentFacadeDto;
 import java.util.Date;
 import java.util.List;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
 @Getter
+@Builder
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ClassicsSummaryFacadeResponse {
 
     private final Date periodStart;
@@ -19,26 +23,4 @@ public class ClassicsSummaryFacadeResponse {
     private final Long shareVisitCount;
     private final List<ClassicsTopContentFacadeDto> topContents;
     private final List<ClassicsContentGrowthPointFacadeDto> contentGrowthSeries;
-
-    @Builder
-    private ClassicsSummaryFacadeResponse(
-            Date periodStart,
-            Date periodEnd,
-            Long contentCount,
-            Long translatedContentCount,
-            Long imageReadyContentCount,
-            Long visualAssetReadyContentCount,
-            Long shareVisitCount,
-            List<ClassicsTopContentFacadeDto> topContents,
-            List<ClassicsContentGrowthPointFacadeDto> contentGrowthSeries) {
-        this.periodStart = periodStart;
-        this.periodEnd = periodEnd;
-        this.contentCount = contentCount;
-        this.translatedContentCount = translatedContentCount;
-        this.imageReadyContentCount = imageReadyContentCount;
-        this.visualAssetReadyContentCount = visualAssetReadyContentCount;
-        this.shareVisitCount = shareVisitCount;
-        this.topContents = topContents;
-        this.contentGrowthSeries = contentGrowthSeries;
-    }
 }
