@@ -9,30 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `discovery-search-classics-facade`：discovery search provider 改用 ClassicsFacade 读取公开内容
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/search/support/ClassicsSearchContentProvider.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/test/java/com/thundax/kuzhambu/discovery/application/search/service/impl/SearchApplicationServiceImplTest.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/pom.xml`
-    - 处理动作：将 `discovery` 搜索内容提供方改为通过 `ClassicsFacade`
-    - 验收点：`ClassicsSearchContentProvider` 已消费 `ClassicsPublicContentFacadeDto`
-    - 重要度：8/10
-
-- [ ] `discovery-qa-classics-facade`：discovery QA provider 接口切换
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/qa/service/impl/QaApplicationServiceImpl.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/test/java/com/thundax/kuzhambu/discovery/application/qa/service/impl/QaApplicationServiceImplTest.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/test/java/com/thundax/kuzhambu/discovery/application/qa/service/impl/QaApplicationServiceImplAdminReadTest.java`
-    - 处理动作：将 `QaApplicationServiceImpl` 的 classics 公开内容读取改为通过 `ClassicsFacade`
-    - 验收点：`QaApplicationServiceImpl` 不再依赖 `ClassicsSearchContentApplicationService`
-    - 重要度：8/10
-
-- [ ] `discovery-qa-classics-facade-model`：discovery QA assembler 模型切换
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/qa/support/QaContextAssembler.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/qa/support/QaSourceAssembler.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/test/java/com/thundax/kuzhambu/discovery/application/qa/service/impl/QaApplicationServiceImplTest.java`
-    - 处理动作：将 QA assembler 输入模型从 `ClassicsSearchSourceContent` 改为 `ClassicsPublicContentFacadeDto`
-    - 验收点：QA 组装链不再依赖 `classics-application` result 类型
-    - 重要度：7/10
-
 - [ ] `discovery-interface-classics-facade`：discovery-interface 改用 classics-facade 检索同步消息协议
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-FACADE-ISOLATION.md`

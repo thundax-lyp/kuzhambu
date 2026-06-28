@@ -1,7 +1,8 @@
 package com.thundax.kuzhambu.discovery.application.search.support;
 
-import com.thundax.kuzhambu.classics.application.search.result.ClassicsSearchSourceContent;
-import com.thundax.kuzhambu.classics.application.search.service.ClassicsSearchContentApplicationService;
+import com.thundax.kuzhambu.classics.facade.ClassicsFacade;
+import com.thundax.kuzhambu.classics.facade.dto.ClassicsPublicContentFacadeDto;
+import com.thundax.kuzhambu.classics.facade.request.ClassicsPublicContentFacadeRequest;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchSourceContent;
 import java.util.Collections;
 import java.util.List;
@@ -10,16 +11,16 @@ import org.springframework.stereotype.Component;
 @Component
 public class ClassicsSearchContentProvider implements SearchContentProvider {
 
-    private final ClassicsSearchContentApplicationService classicsSearchContentApplicationService;
+    private final ClassicsFacade classicsFacade;
 
-    public ClassicsSearchContentProvider(
-            ClassicsSearchContentApplicationService classicsSearchContentApplicationService) {
-        this.classicsSearchContentApplicationService = classicsSearchContentApplicationService;
+    public ClassicsSearchContentProvider(ClassicsFacade classicsFacade) {
+        this.classicsFacade = classicsFacade;
     }
 
     @Override
     public List<SearchSourceContent> listPublicContents() {
-        List<ClassicsSearchSourceContent> sourceContents = classicsSearchContentApplicationService.listPublicContents();
+        List<ClassicsPublicContentFacadeDto> sourceContents =
+                classicsFacade.listPublicContents().getContents();
         if (sourceContents == null || sourceContents.isEmpty()) {
             return Collections.emptyList();
         }
@@ -28,15 +29,19 @@ public class ClassicsSearchContentProvider implements SearchContentProvider {
 
     @Override
     public SearchSourceContent getPublicContent(String contentType, String contentId) {
-        ClassicsSearchSourceContent sourceContent =
-                classicsSearchContentApplicationService.getPublicContent(contentType, contentId);
+        ClassicsPublicContentFacadeDto sourceContent = classicsFacade
+                .getPublicContent(ClassicsPublicContentFacadeRequest.builder()
+                        .contentType(contentType)
+                        .contentId(contentId)
+                        .build())
+                .getContent();
         if (sourceContent == null) {
             return null;
         }
         return toSearchSourceContent(sourceContent);
     }
 
-    private SearchSourceContent toSearchSourceContent(ClassicsSearchSourceContent sourceContent) {
+    private SearchSourceContent toSearchSourceContent(ClassicsPublicContentFacadeDto sourceContent) {
         return new SearchSourceContent(
                 "CLASSICS",
                 sourceContent.getContentType(),
