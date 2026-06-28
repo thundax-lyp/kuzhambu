@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `operations-knowledge-facade`：operations 改用 KnowledgeFacade
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/report/support/DefaultOperationsReportMetricsGateway.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/test/java/com/thundax/kuzhambu/operations/application/report/support/DefaultOperationsReportMetricsGatewayTest.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/pom.xml`
-    - 处理动作：将 operations 报表 summary 读取改为通过 `KnowledgeFacade`
-    - 验收点：`operations-application` 不再依赖 `kuzhambu-knowledge-application`，并已消费 `KnowledgeSummaryFacadeResponse`
-    - 重要度：8/10
-
 - [ ] `discovery-knowledge-facade`：discovery 改用 KnowledgeFacade
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-FACADE-ISOLATION.md`

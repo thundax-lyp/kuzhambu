@@ -52,7 +52,7 @@
     </dependency>
     <dependency>
       <groupId>com.thundax</groupId>
-      <artifactId>kuzhambu-knowledge-application</artifactId>
+      <artifactId>kuzhambu-knowledge-facade</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

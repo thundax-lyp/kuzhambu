@@ -12,7 +12,7 @@ import com.thundax.kuzhambu.ai.facade.request.AiReportSummaryFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.response.AiReportSummaryFacadeResponse;
 import com.thundax.kuzhambu.classics.application.report.service.ClassicsReportApplicationService;
 import com.thundax.kuzhambu.discovery.application.report.service.DiscoveryReportApplicationService;
-import com.thundax.kuzhambu.knowledge.application.report.service.KnowledgeReportApplicationService;
+import com.thundax.kuzhambu.knowledge.facade.KnowledgeFacade;
 import com.thundax.kuzhambu.operations.application.report.support.OperationsReportSupportModels.OperationsReportSection;
 import com.thundax.kuzhambu.operations.domain.report.model.entity.ReportRecord;
 import com.thundax.kuzhambu.operations.domain.report.model.enums.ReportStatus;
@@ -32,8 +32,7 @@ class DefaultOperationsReportMetricsGatewayTest {
                 mock(ClassicsReportApplicationService.class);
         DiscoveryReportApplicationService discoveryReportApplicationService =
                 mock(DiscoveryReportApplicationService.class);
-        KnowledgeReportApplicationService knowledgeReportApplicationService =
-                mock(KnowledgeReportApplicationService.class);
+        KnowledgeFacade knowledgeFacade = mock(KnowledgeFacade.class);
         AiFacade aiFacade = mock(AiFacade.class);
         AiReportSummaryFacadeResponse aiSummary = AiReportSummaryFacadeResponse.builder()
                 .periodStart(Date.from(Instant.parse("2026-06-01T00:00:00Z")))
@@ -46,10 +45,7 @@ class DefaultOperationsReportMetricsGatewayTest {
                 .build();
         when(aiFacade.summary(any())).thenReturn(aiSummary);
         DefaultOperationsReportMetricsGateway gateway = new DefaultOperationsReportMetricsGateway(
-                classicsReportApplicationService,
-                aiFacade,
-                discoveryReportApplicationService,
-                knowledgeReportApplicationService);
+                classicsReportApplicationService, aiFacade, discoveryReportApplicationService, knowledgeFacade);
 
         List<OperationsReportSection> sections = gateway.loadSections(monthlyRecord());
 
@@ -78,7 +74,7 @@ class DefaultOperationsReportMetricsGatewayTest {
                 mock(ClassicsReportApplicationService.class),
                 aiFacade,
                 mock(DiscoveryReportApplicationService.class),
-                mock(KnowledgeReportApplicationService.class));
+                mock(KnowledgeFacade.class));
 
         gateway.loadSections(weeklyRecord());
 
