@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `ai-application/invocation-bridge`：把候选与调用记录能力接入 AiFacade
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/facade/impl/AiFacadeImpl.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/facade/assembler/AiFacadeAssembler.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-domain/src/main/java/com/thundax/kuzhambu/ai/domain/invocation/service/AiCandidateDomainService.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-domain/src/main/java/com/thundax/kuzhambu/ai/domain/invocation/repository/AiInvocationRepository.java`
-    - 处理动作：把调用记录读取和候选应用能力桥接到 `AiFacadeImpl`。
-    - 验收点：`AiFacadeImpl` 暴露 `getCallRecord/getCandidate/requirePendingCandidate/markCandidateApplied`，并通过 assembler 把 `AiCallRecord/AiCandidate` 映射为 facade dto 字段。
-    - 重要度：9/10
-
 - [ ] `operations-ai-facade`：迁移 operations 报表指标读取到 AiFacade
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-FACADE-ISOLATION.md`

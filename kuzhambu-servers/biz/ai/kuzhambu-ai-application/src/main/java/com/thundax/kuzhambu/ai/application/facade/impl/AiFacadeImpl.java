@@ -6,6 +6,8 @@ import com.thundax.kuzhambu.ai.application.discovery.service.DiscoveryAiApplicat
 import com.thundax.kuzhambu.ai.application.facade.assembler.AiFacadeAssembler;
 import com.thundax.kuzhambu.ai.application.knowledge.service.impl.KnowledgeAiExtractionApplicationServiceImpl;
 import com.thundax.kuzhambu.ai.application.report.service.AiReportApplicationService;
+import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
+import com.thundax.kuzhambu.ai.domain.invocation.service.AiCandidateDomainService;
 import com.thundax.kuzhambu.ai.domain.knowledge.service.KnowledgeAiExtractionDomainService;
 import com.thundax.kuzhambu.ai.facade.AiFacade;
 import com.thundax.kuzhambu.ai.facade.dto.AiCallRecordFacadeDto;
@@ -34,6 +36,8 @@ public class AiFacadeImpl implements AiFacade {
     private final AiBatchJobApplicationService aiBatchJobApplicationService;
     private final DiscoveryAiApplicationService discoveryAiApplicationService;
     private final KnowledgeAiExtractionDomainService knowledgeAiExtractionDomainService;
+    private final AiInvocationRepository aiInvocationRepository;
+    private final AiCandidateDomainService aiCandidateDomainService;
     private final AiFacadeAssembler aiFacadeAssembler;
 
     public AiFacadeImpl(
@@ -41,11 +45,15 @@ public class AiFacadeImpl implements AiFacade {
             AiBatchJobApplicationService aiBatchJobApplicationService,
             DiscoveryAiApplicationService discoveryAiApplicationService,
             KnowledgeAiExtractionApplicationServiceImpl knowledgeAiExtractionApplicationService,
+            AiInvocationRepository aiInvocationRepository,
+            AiCandidateDomainService aiCandidateDomainService,
             AiFacadeAssembler aiFacadeAssembler) {
         this.aiReportApplicationService = aiReportApplicationService;
         this.aiBatchJobApplicationService = aiBatchJobApplicationService;
         this.discoveryAiApplicationService = discoveryAiApplicationService;
         this.knowledgeAiExtractionDomainService = knowledgeAiExtractionApplicationService;
+        this.aiInvocationRepository = aiInvocationRepository;
+        this.aiCandidateDomainService = aiCandidateDomainService;
         this.aiFacadeAssembler = aiFacadeAssembler;
     }
 
@@ -139,23 +147,41 @@ public class AiFacadeImpl implements AiFacade {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public AiCallRecordFacadeDto getCallRecord(GetAiCallRecordFacadeRequest request) {
-        throw unsupported();
+        if (request == null) {
+            return null;
+        }
+        return aiFacadeAssembler.toFacadeDto(aiInvocationRepository.getCallRecord(request.getCallId()));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public AiCandidateFacadeDto getCandidate(GetAiCandidateFacadeRequest request) {
-        throw unsupported();
+        if (request == null) {
+            return null;
+        }
+        return aiFacadeAssembler.toFacadeDto(aiInvocationRepository.getCandidate(request.getCandidateId()));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public AiCandidateFacadeDto requirePendingCandidate(RequirePendingAiCandidateFacadeRequest request) {
-        throw unsupported();
+        return aiFacadeAssembler.toFacadeDto(
+                aiCandidateDomainService.requirePendingForApply(aiFacadeAssembler.toDomainCheck(request)));
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public AiCandidateFacadeDto markCandidateApplied(MarkAiCandidateAppliedFacadeRequest request) {
-        throw unsupported();
+        if (request == null) {
+            return null;
+        }
+        return aiFacadeAssembler.toFacadeDto(aiCandidateDomainService.markApplied(
+                aiFacadeAssembler.toCandidateId(request),
+                request.getResultFormat(),
+                request.getResultPayload(),
+                request.getAppliedAt()));
     }
 
     private UnsupportedOperationException unsupported() {
