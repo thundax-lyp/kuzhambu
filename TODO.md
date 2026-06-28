@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `operations切换discovery facade`：operations 改用 discovery facade
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-application/pom.xml`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/report/support/DefaultOperationsReportMetricsGateway.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/test/java/com/thundax/kuzhambu/operations/application/report/support/DefaultOperationsReportMetricsGatewayTest.java`
-    - 处理动作：将 operations 报表摘要读取从 `DiscoveryReportApplicationService` 切换到 `DiscoveryFacade`
-    - 验收点：operations 不再直接依赖 `discovery-application`，测试使用 facade 协议
-    - 重要度：10/10
-
 - [ ] `Discovery facade测试覆盖`：补齐 facade 协议与 provider 测试
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-FACADE-ISOLATION.md`

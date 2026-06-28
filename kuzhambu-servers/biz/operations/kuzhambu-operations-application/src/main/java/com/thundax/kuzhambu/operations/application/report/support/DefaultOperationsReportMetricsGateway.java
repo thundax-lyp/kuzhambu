@@ -4,7 +4,8 @@ import com.thundax.kuzhambu.ai.facade.AiFacade;
 import com.thundax.kuzhambu.ai.facade.request.AiReportSummaryFacadeRequest;
 import com.thundax.kuzhambu.classics.facade.ClassicsFacade;
 import com.thundax.kuzhambu.classics.facade.request.ClassicsSummaryFacadeRequest;
-import com.thundax.kuzhambu.discovery.application.report.service.DiscoveryReportApplicationService;
+import com.thundax.kuzhambu.discovery.facade.DiscoveryFacade;
+import com.thundax.kuzhambu.discovery.facade.request.DiscoverySummaryFacadeRequest;
 import com.thundax.kuzhambu.knowledge.facade.KnowledgeFacade;
 import com.thundax.kuzhambu.knowledge.facade.request.KnowledgeSummaryFacadeRequest;
 import com.thundax.kuzhambu.operations.application.report.support.OperationsReportSupportModels.OperationsReportSection;
@@ -21,17 +22,17 @@ public class DefaultOperationsReportMetricsGateway implements OperationsReportMe
 
     private final ClassicsFacade classicsFacade;
     private final AiFacade aiFacade;
-    private final DiscoveryReportApplicationService discoveryReportApplicationService;
+    private final DiscoveryFacade discoveryFacade;
     private final KnowledgeFacade knowledgeFacade;
 
     public DefaultOperationsReportMetricsGateway(
             ClassicsFacade classicsFacade,
             AiFacade aiFacade,
-            DiscoveryReportApplicationService discoveryReportApplicationService,
+            DiscoveryFacade discoveryFacade,
             KnowledgeFacade knowledgeFacade) {
         this.classicsFacade = classicsFacade;
         this.aiFacade = aiFacade;
-        this.discoveryReportApplicationService = discoveryReportApplicationService;
+        this.discoveryFacade = discoveryFacade;
         this.knowledgeFacade = knowledgeFacade;
     }
 
@@ -61,7 +62,11 @@ public class DefaultOperationsReportMetricsGateway implements OperationsReportMe
         sections.add(section(
                 "discoverySummary",
                 "Discovery 统计摘要",
-                discoveryReportApplicationService.summary(record.getPeriodStart(), record.getPeriodEnd(), bucketType)));
+                discoveryFacade.summary(DiscoverySummaryFacadeRequest.builder()
+                        .periodStart(record.getPeriodStart())
+                        .periodEnd(record.getPeriodEnd())
+                        .bucketType(bucketType)
+                        .build())));
         sections.add(section(
                 "knowledgeSummary",
                 "Knowledge 统计摘要",
