@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics-ai-facade`：迁移 classics AI 候选应用到 AiFacade
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/pom.xml`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/service/impl/ClassicsContentApplicationServiceImpl.java`
-    - 处理动作：把 `AiCandidateDomainService/AiCandidateApplyCheck/AiCandidate` 全部切到 `AiFacade` 协议。
-    - 验收点：`classics-application` 删除 `kuzhambu-ai-domain` 依赖，新增 `kuzhambu-ai-facade` 依赖，生产代码不再导入 `ai.domain.invocation.*`。
-    - 重要度：9/10
-
 - [ ] `knowledge-ai-facade-stage1`：迁移 knowledge 图谱抽取与批任务到 AiFacade
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-FACADE-ISOLATION.md`
