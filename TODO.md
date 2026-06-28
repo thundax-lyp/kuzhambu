@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics-search-sync-facade-dto`：classics provider 改用 classics-facade 检索同步消息协议
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/searchsync/service/ClassicsSearchIndexSyncPublisher.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/searchsync/support/ClassicsSearchIndexSyncPublishSupport.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/searchsync/mq/RocketMqClassicsSearchIndexSyncPublisher.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/searchsync/ClassicsSearchIndexSyncPublishSupportTest.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/pom.xml`
-    - 处理动作：将 classics provider 发布链的检索同步消息改为使用 facade dto
-    - 验收点：provider 发布链与 MQ publisher 已统一使用 `classics-facade` 同步消息协议
-    - 重要度：7/10
-
 - [ ] `classics-facade-test`：补齐 classics facade 架构与 provider 测试
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-FACADE-ISOLATION.md`

@@ -1,8 +1,8 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.searchsync.mq;
 
-import com.thundax.kuzhambu.classics.application.searchsync.model.ClassicsSearchIndexSyncEventType;
-import com.thundax.kuzhambu.classics.application.searchsync.model.ClassicsSearchIndexSyncMessage;
 import com.thundax.kuzhambu.classics.application.searchsync.service.ClassicsSearchIndexSyncPublisher;
+import com.thundax.kuzhambu.classics.facade.dto.ClassicsSearchIndexSyncEventFacadeDto;
+import com.thundax.kuzhambu.classics.facade.dto.ClassicsSearchIndexSyncMessageFacadeDto;
 import com.thundax.kuzhambu.common.rocketmq.KuzhambuMqMessage;
 import com.thundax.kuzhambu.common.rocketmq.KuzhambuMqSender;
 import lombok.RequiredArgsConstructor;
@@ -25,20 +25,20 @@ public class RocketMqClassicsSearchIndexSyncPublisher implements ClassicsSearchI
     private String deleteTag;
 
     @Override
-    public void publish(ClassicsSearchIndexSyncMessage message) {
+    public void publish(ClassicsSearchIndexSyncMessageFacadeDto message) {
         mqSender.send(
                 KuzhambuMqMessage.forTopicWithTag(topic, resolveTag(message.getEventType()), buildKey(message), message)
                         .withHeader("kuzhambu-message-type", "classics-search-index-sync"));
     }
 
-    private String resolveTag(ClassicsSearchIndexSyncEventType eventType) {
+    private String resolveTag(ClassicsSearchIndexSyncEventFacadeDto eventType) {
         return switch (eventType) {
             case UPSERT -> upsertTag;
             case DELETE -> deleteTag;
         };
     }
 
-    private String buildKey(ClassicsSearchIndexSyncMessage message) {
+    private String buildKey(ClassicsSearchIndexSyncMessageFacadeDto message) {
         return message.getContentType() + ":" + message.getContentId() + ":" + message.getCurrentVersionNo();
     }
 }
