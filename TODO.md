@@ -9,20 +9,12 @@
 
 ## 当前任务项
 
-- [ ] `knowledge-facade-summary-contract`：定义 knowledge summary facade 协议
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-facade/src/main/java/com/thundax/kuzhambu/knowledge/facade/KnowledgeFacade.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-facade/src/main/java/com/thundax/kuzhambu/knowledge/facade/request/KnowledgeSummaryFacadeRequest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-facade/src/main/java/com/thundax/kuzhambu/knowledge/facade/response/KnowledgeSummaryFacadeResponse.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-facade/src/main/java/com/thundax/kuzhambu/knowledge/facade/dto/KnowledgeTopTagFacadeDto.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-facade/src/main/java/com/thundax/kuzhambu/knowledge/facade/dto/KnowledgeCategoryDistributionFacadeDto.java`
-    - 处理动作：定义 `summary(...)` 协议以及首批 summary request/response/dto
-    - 验收点：summary 协议已明确 `periodStart`、`periodEnd`、`bucketType`、`tagCoverageRate`、`topTags`、`categoryDistributions` 字段
-    - 重要度：9/10
-
 - [ ] `knowledge-facade-summary-provider`：补齐 summary 剩余 dto 与 provider 映射
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-facade/src/main/java/com/thundax/kuzhambu/knowledge/facade/dto/KnowledgeMonthlyNewTagFacadeDto.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/facade/impl/KnowledgeFacadeImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/facade/assembler/KnowledgeFacadeAssembler.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/pom.xml`
-    - 处理动作：让 provider 通过 `KnowledgeFacadeImpl` 返回完整 summary response 并补齐 `monthlyNewTags` 映射
-    - 验收点：`KnowledgeFacadeImpl.summary(...)` 已返回完整 facade response 且 `monthlyNewTags.bucket/tagCount` 已落地
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/facade/impl/KnowledgeFacadeImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/facade/assembler/KnowledgeFacadeAssembler.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/pom.xml`
+    - 处理动作：让 provider 通过 `KnowledgeFacadeImpl` 返回完整 summary response
+    - 验收点：`KnowledgeFacadeImpl.summary(...)` 已返回完整 facade response 并完成 `topTags/categoryDistributions/monthlyNewTags` 映射
     - 重要度：9/10
 
 - [ ] `knowledge-facade-discovery-contract`：定义 discovery taxonomy facade 协议
