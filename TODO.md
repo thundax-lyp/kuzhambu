@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `discovery-interface-classics-facade`：discovery-interface 改用 classics-facade 检索同步消息协议
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-interface/src/main/java/com/thundax/kuzhambu/discovery/interfaces/admin/search/mq/RocketMqDiscoverySearchIndexSyncConsumer.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-interface/src/test/java/com/thundax/kuzhambu/discovery/interfaces/admin/search/mq/RocketMqDiscoverySearchIndexSyncConsumerTest.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-interface/pom.xml`
-    - 处理动作：将 `discovery-interface` 检索同步消息改为依赖 `classics-facade` dto
-    - 验收点：`discovery-interface` 不再依赖 `classics.application.searchsync.model`
-    - 重要度：8/10
-
 - [ ] `classics-search-sync-facade-dto`：classics provider 改用 classics-facade 检索同步消息协议
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-FACADE-ISOLATION.md`

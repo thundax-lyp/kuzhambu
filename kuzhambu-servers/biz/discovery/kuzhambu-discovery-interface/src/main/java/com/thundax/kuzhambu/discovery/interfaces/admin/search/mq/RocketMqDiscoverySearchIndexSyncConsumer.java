@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.discovery.interfaces.admin.search.mq;
 
-import com.thundax.kuzhambu.classics.application.searchsync.model.ClassicsSearchIndexSyncEventType;
-import com.thundax.kuzhambu.classics.application.searchsync.model.ClassicsSearchIndexSyncMessage;
+import com.thundax.kuzhambu.classics.facade.dto.ClassicsSearchIndexSyncEventFacadeDto;
+import com.thundax.kuzhambu.classics.facade.dto.ClassicsSearchIndexSyncMessageFacadeDto;
 import com.thundax.kuzhambu.discovery.application.search.service.SearchIndexSyncApplicationService;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
@@ -15,7 +15,8 @@ import org.springframework.stereotype.Component;
         consumerGroup =
                 "${kuzhambu.discovery.search.index-sync.consumer-group:kuzhambu-discovery-search-index-sync-consumer}",
         selectorExpression = "*")
-public class RocketMqDiscoverySearchIndexSyncConsumer implements RocketMQListener<ClassicsSearchIndexSyncMessage> {
+public class RocketMqDiscoverySearchIndexSyncConsumer
+        implements RocketMQListener<ClassicsSearchIndexSyncMessageFacadeDto> {
 
     private final SearchIndexSyncApplicationService searchIndexSyncApplicationService;
 
@@ -25,11 +26,11 @@ public class RocketMqDiscoverySearchIndexSyncConsumer implements RocketMQListene
     }
 
     @Override
-    public void onMessage(ClassicsSearchIndexSyncMessage message) {
+    public void onMessage(ClassicsSearchIndexSyncMessageFacadeDto message) {
         if (message == null || message.getEventType() == null) {
             return;
         }
-        if (message.getEventType() == ClassicsSearchIndexSyncEventType.DELETE) {
+        if (message.getEventType() == ClassicsSearchIndexSyncEventFacadeDto.DELETE) {
             searchIndexSyncApplicationService.syncDelete(
                     message.getContentType(),
                     message.getContentId(),

@@ -3,8 +3,8 @@ package com.thundax.kuzhambu.discovery.interfaces.admin.search.mq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import com.thundax.kuzhambu.classics.application.searchsync.model.ClassicsSearchIndexSyncEventType;
-import com.thundax.kuzhambu.classics.application.searchsync.model.ClassicsSearchIndexSyncMessage;
+import com.thundax.kuzhambu.classics.facade.dto.ClassicsSearchIndexSyncEventFacadeDto;
+import com.thundax.kuzhambu.classics.facade.dto.ClassicsSearchIndexSyncMessageFacadeDto;
 import com.thundax.kuzhambu.discovery.application.search.service.SearchIndexSyncApplicationService;
 import java.util.Date;
 import org.junit.jupiter.api.Test;
@@ -15,8 +15,14 @@ class RocketMqDiscoverySearchIndexSyncConsumerTest {
     void onMessageShouldDelegateUpsertEvent() {
         SearchIndexSyncApplicationService service = mock(SearchIndexSyncApplicationService.class);
         RocketMqDiscoverySearchIndexSyncConsumer consumer = new RocketMqDiscoverySearchIndexSyncConsumer(service);
-        ClassicsSearchIndexSyncMessage message = new ClassicsSearchIndexSyncMessage(
-                "event-1", ClassicsSearchIndexSyncEventType.UPSERT, "SANCAI_ENTRY", "1001", 3, new Date());
+        ClassicsSearchIndexSyncMessageFacadeDto message = ClassicsSearchIndexSyncMessageFacadeDto.builder()
+                .eventId("event-1")
+                .eventType(ClassicsSearchIndexSyncEventFacadeDto.UPSERT)
+                .contentType("SANCAI_ENTRY")
+                .contentId("1001")
+                .currentVersionNo(3)
+                .occurredAt(new Date())
+                .build();
 
         consumer.onMessage(message);
 
@@ -28,8 +34,14 @@ class RocketMqDiscoverySearchIndexSyncConsumerTest {
         SearchIndexSyncApplicationService service = mock(SearchIndexSyncApplicationService.class);
         RocketMqDiscoverySearchIndexSyncConsumer consumer = new RocketMqDiscoverySearchIndexSyncConsumer(service);
         Date occurredAt = new Date();
-        ClassicsSearchIndexSyncMessage message = new ClassicsSearchIndexSyncMessage(
-                "event-2", ClassicsSearchIndexSyncEventType.DELETE, "WANGQI_DOCUMENT", "2002", 5, occurredAt);
+        ClassicsSearchIndexSyncMessageFacadeDto message = ClassicsSearchIndexSyncMessageFacadeDto.builder()
+                .eventId("event-2")
+                .eventType(ClassicsSearchIndexSyncEventFacadeDto.DELETE)
+                .contentType("WANGQI_DOCUMENT")
+                .contentId("2002")
+                .currentVersionNo(5)
+                .occurredAt(occurredAt)
+                .build();
 
         consumer.onMessage(message);
 
