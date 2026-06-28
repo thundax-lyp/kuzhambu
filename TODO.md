@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `ai-application/report-batch-bridge`：把报表摘要与批任务能力接入 AiFacade
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/facade/impl/AiFacadeImpl.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/facade/assembler/AiFacadeAssembler.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/report/service/impl/AiReportApplicationServiceImpl.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/batch/service/impl/AiBatchJobApplicationServiceImpl.java`
-    - 处理动作：把报表摘要和批任务 provider 能力桥接到 `AiFacadeImpl`。
-    - 验收点：`AiFacadeImpl` 可通过 assembler 完成 `AiReportSummaryResult -> AiReportSummaryFacadeResponse`、`AiBatchJobResult -> AiBatchJobFacadeResponse` 字段映射，并暴露 `summary/createBatchJob/getBatchJob/canDispatchNextBatchUnit/recordBatchSuccess/recordBatchFailure/cancelBatchJob`。
-    - 重要度：9/10
-
 - [ ] `ai-application/discovery-knowledge-bridge`：把 discovery AI 与 knowledge 抽取能力接入 AiFacade
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-FACADE-ISOLATION.md`
