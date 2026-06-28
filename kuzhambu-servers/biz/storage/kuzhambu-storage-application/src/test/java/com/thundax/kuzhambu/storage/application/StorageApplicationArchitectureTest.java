@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.storage.application;
 
 import com.thundax.kuzhambu.common.test.architecture.AbstractArchitectureTest;
 import com.thundax.kuzhambu.common.test.architecture.AnnotationBoundaryArchitectureRuleSupport;
+import com.thundax.kuzhambu.common.test.architecture.CrossApplicationIsolationArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.ModuleAndDependencyArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.NamingArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.SpringBeanArchitectureRuleSupport;
@@ -19,6 +20,8 @@ class StorageApplicationArchitectureTest extends AbstractArchitectureTest {
 
         ModuleAndDependencyArchitectureRuleSupport.assertApplicationLayerBoundary(classes, BASE_PACKAGE);
         ModuleAndDependencyArchitectureRuleSupport.assertCrossDomainDependencyBoundary(classes, "storage");
+        CrossApplicationIsolationArchitectureRuleSupport.assertNoUnexpectedCrossApplicationDependency(
+                classes, "storage");
         AnnotationBoundaryArchitectureRuleSupport.assertApplicationNoHttpAnnotations(classes, BASE_PACKAGE);
         TransactionArchitectureRuleSupport.assertTransactionalOnlyOnApplicationServiceUseCases(classes, BASE_PACKAGE);
         SpringBeanArchitectureRuleSupport.assertDirectSpringBeansHaveSingleConstructor(classes);

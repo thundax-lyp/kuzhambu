@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `cross-application isolation rule`：引入 cross-application isolation rule 与迁移白名单
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/common/kuzhambu-common-test/src/main/java/com/thundax/kuzhambu/common/test/architecture/CrossApplicationIsolationArchitectureRuleSupport.java`、`kuzhambu-servers/common/kuzhambu-common-test/src/main/java/com/thundax/kuzhambu/common/test/architecture/ArchitectureSourceSupport.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/test/java/com/thundax/kuzhambu/storage/application/StorageApplicationArchitectureTest.java`
-    - 处理动作：新增跨 application 隔离门禁并按模块级粒度引入 legacy allowlist。
-    - 验收点：ArchUnit 默认禁止新的业务域 `application -> application` 横向依赖且仅对白名单中的历史模块依赖暂时放行。
-    - 重要度：10/10
-
 - [ ] `facade placement rule`：引入 facade placement rule 与 facade 协议门禁
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FACADE-ISOLATION.md`
