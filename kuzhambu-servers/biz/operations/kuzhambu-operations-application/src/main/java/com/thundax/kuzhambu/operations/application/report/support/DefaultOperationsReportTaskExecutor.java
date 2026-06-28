@@ -8,7 +8,6 @@ import com.thundax.kuzhambu.operations.domain.report.model.entity.ReportRecord;
 import com.thundax.kuzhambu.operations.domain.report.model.enums.ReportStatus;
 import com.thundax.kuzhambu.operations.domain.report.model.valueobject.ReportId;
 import com.thundax.kuzhambu.operations.domain.report.repository.ReportRepository;
-import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.facade.StorageFacade;
 import com.thundax.kuzhambu.storage.facade.request.UploadStorageFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.response.UploadStorageFacadeResponse;
@@ -21,6 +20,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class DefaultOperationsReportTaskExecutor implements OperationsReportTaskExecutor {
+
+    private static final String STORAGE_OWNER_TYPE_USER = "USER";
 
     private final ReportRepository reportRepository;
     private final OperationsWorkerRenderClient operationsWorkerRenderClient;
@@ -142,7 +143,7 @@ public class DefaultOperationsReportTaskExecutor implements OperationsReportTask
                         artifactResult.getSizeBytes() == null
                                 ? (long) artifactResult.getContentBytes().length
                                 : artifactResult.getSizeBytes())
-                .ownerType(StorageOwnerType.USER.value())
+                .ownerType(STORAGE_OWNER_TYPE_USER)
                 .ownerId("system")
                 .build());
         if (storedResult == null || storedResult.getStorageObjectId() == null) {
