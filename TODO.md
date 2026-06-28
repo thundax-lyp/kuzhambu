@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics-facade-public-content-provider`：桥接 public search content facade provider
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/facade/impl/ClassicsFacadeImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/facade/assembler/ClassicsFacadeAssembler.java`
-    - 处理动作：在 provider 侧实现 `listPublicContents/getPublicContent` facade 桥接与内容映射
-    - 验收点：`ClassicsFacadeImpl` 已可返回 `ClassicsPublicContentFacadeDto`
-    - 重要度：8/10
-
 - [ ] `classics-facade-search-sync-contract`：定义 search index sync facade 协议
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-FACADE-ISOLATION.md`
