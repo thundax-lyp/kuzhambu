@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `knowledge-facade-tag-binding-contract`：定义 classics tag binding facade 协议
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-facade/src/main/java/com/thundax/kuzhambu/knowledge/facade/KnowledgeFacade.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-facade/src/main/java/com/thundax/kuzhambu/knowledge/facade/request/KnowledgeResolveTagFacadeRequest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-facade/src/main/java/com/thundax/kuzhambu/knowledge/facade/request/KnowledgeContentTagRefFacadeRequest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-facade/src/main/java/com/thundax/kuzhambu/knowledge/facade/request/KnowledgeRemoveContentTagRefFacadeRequest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-facade/src/main/java/com/thundax/kuzhambu/knowledge/facade/response/KnowledgeTagFacadeResponse.java`
-    - 处理动作：定义 classics tag binding 场景的 resolve、sync、remove 协议
-    - 验收点：tag binding 协议已明确 `tagName`、`tagId`、`contentType`、`contentId`、`contentTitle`、`tagSource` 字段，且不再暴露 `Tag/TagId/ContentType/TagSource`
-    - 重要度：9/10
-
 - [ ] `knowledge-facade-tag-binding-provider`：落 classics tag binding provider 映射
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-FACADE-ISOLATION.md`
