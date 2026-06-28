@@ -24,8 +24,7 @@ public class StorageOwnerBindingFacadeAssembler {
         }
         List<Long> storageObjectIds =
                 request.getStorageObjectIds() == null ? Collections.emptyList() : request.getStorageObjectIds();
-        StorageOwnerType ownerType =
-                isBlank(request.getOwnerType()) ? null : StorageOwnerType.from(request.getOwnerType());
+        StorageOwnerType ownerType = toOwnerType(request);
         List<StoredObjectReference> references = storageObjectIds.stream()
                 .map(storageObjectId -> new StoredObjectReference(
                         storageObjectId == null ? null : StoredObjectId.of(storageObjectId),
@@ -44,6 +43,13 @@ public class StorageOwnerBindingFacadeAssembler {
         return new RemoveStorageReferencesCommand(
                 isBlank(request.getOwnerType()) ? null : StorageOwnerType.from(request.getOwnerType()),
                 request.getOwnerId());
+    }
+
+    public StorageOwnerType toOwnerType(BindStorageOwnerFacadeRequest request) {
+        if (request == null || isBlank(request.getOwnerType())) {
+            return null;
+        }
+        return StorageOwnerType.from(request.getOwnerType());
     }
 
     public ChangeStorageReferenceStatusCommand toReferencedCommand(MarkStorageUsageFacadeRequest request) {
