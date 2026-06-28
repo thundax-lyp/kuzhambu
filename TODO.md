@@ -9,22 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `DiscoveryFacade入口与request`：定义 summary facade 入口与 request
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-facade/src/main/java/com/thundax/kuzhambu/discovery/facade/DiscoveryFacade.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-facade/src/main/java/com/thundax/kuzhambu/discovery/facade/request/DiscoverySummaryFacadeRequest.java`
-    - 处理动作：新增 `DiscoveryFacade.summary(...)` 和 `DiscoverySummaryFacadeRequest(periodStart, periodEnd, bucketType)`
-    - 验收点：facade 模块已具备 `summary` 入口和 request 协议类
-    - 重要度：9/10
-
-- [ ] `Discovery summary response与dto`：定义 summary facade response 与 dto
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-facade/src/main/java/com/thundax/kuzhambu/discovery/facade/response/DiscoverySummaryFacadeResponse.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-facade/src/main/java/com/thundax/kuzhambu/discovery/facade/dto/DiscoveryTopQueryFacadeDto.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-facade/src/main/java/com/thundax/kuzhambu/discovery/facade/dto/DiscoverySearchTrendPointFacadeDto.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-facade/src/main/java/com/thundax/kuzhambu/discovery/facade/dto/DiscoveryQaTrendPointFacadeDto.java`
-    - 处理动作：新增 summary response 与 top query、search trend、qa trend 三组 dto 协议
-    - 验收点：response 与 dto 字段和 RUNBOOK 定义一致
-    - 重要度：9/10
-
 - [ ] `DiscoveryFacade provider骨架`：新增 provider facade 入口骨架
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-FACADE-ISOLATION.md`
