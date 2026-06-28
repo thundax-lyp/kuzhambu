@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.application.sancai.service;
 
+import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiDraftCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImageSortCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImageUploadCommand;
@@ -7,6 +8,7 @@ import com.thundax.kuzhambu.classics.application.sancai.command.SancaiImageComma
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiShowcaseCommand;
 import com.thundax.kuzhambu.classics.application.sancai.result.SancaiEntryImageContent;
 import com.thundax.kuzhambu.classics.application.sancai.result.SancaiEntryImageResource;
+import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryDraft;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryImage;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiShowcase;
@@ -47,6 +49,8 @@ public interface SancaiAssetApplicationService {
     List<SancaiVisualAsset> listVisualAssets(SancaiEntryId entryId);
 
     SancaiShowcaseId requestShowcase(SancaiShowcaseCommand command);
+
+    ClassicsStoredContentResult getShowcaseContent(StorageObjectId storageObjectId);
 
     PageResult<SancaiShowcase> pageShowcases(String status, PageQuery page);
 }

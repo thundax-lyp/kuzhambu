@@ -8,6 +8,7 @@ import com.thundax.kuzhambu.classics.application.content.command.ContentTagComma
 import com.thundax.kuzhambu.classics.application.content.command.ContentTagSortCommand;
 import com.thundax.kuzhambu.classics.application.content.result.AiCandidateApplyContentResult;
 import com.thundax.kuzhambu.classics.application.content.result.ClassicsExportJobResult;
+import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
 import com.thundax.kuzhambu.classics.domain.content.model.Versionable;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentExportJob;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentQaPair;
@@ -65,6 +66,8 @@ public interface ClassicsContentApplicationService {
     ClassicsExportJobResult createExportJob(ContentExportCommand command);
 
     ClassicsContentExportJob getExportJob(ClassicsContentExportJobId id);
+
+    ClassicsStoredContentResult getExportJobContent(ClassicsContentExportJobId id);
 
     PageResult<ClassicsContentExportJob> pageExportJobs(
             String contentType, String exportKind, String status, PageQuery page);

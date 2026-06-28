@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.application.sharing.service;
 
+import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
 import com.thundax.kuzhambu.classics.application.sharing.command.ClassicsShareTargetSortCommand;
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkCreateCommand;
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkStatusCommand;
@@ -13,7 +14,6 @@ import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareTa
 import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareLinkId;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
-import com.thundax.kuzhambu.storage.application.service.content.StoredObjectContent;
 import java.util.Date;
 import java.util.List;
 
@@ -32,7 +32,8 @@ public interface ClassicsSharingApplicationService {
 
     SharePortalResult getPortalShare(String shareToken);
 
-    StoredObjectContent getPortalShareResourceContent(String shareToken, Long storageObjectId, boolean download);
+    ClassicsStoredContentResult getPortalShareResourceContent(
+            String shareToken, Long storageObjectId, boolean download);
 
     void changeStatus(ShareLinkStatusCommand command);
 

@@ -314,7 +314,6 @@ public final class RepositoryArchitectureRuleSupport {
         Map<String, Set<String>> allowlist = new HashMap<String, Set<String>>();
         put(allowlist, "classics", "kuzhambu-ai-domain");
         put(allowlist, "classics", "kuzhambu-knowledge-domain");
-        put(allowlist, "classics", "kuzhambu-storage-application");
         put(allowlist, "discovery", "kuzhambu-classics-application");
         put(allowlist, "discovery", "kuzhambu-ai-domain");
         put(allowlist, "discovery", "kuzhambu-knowledge-application");

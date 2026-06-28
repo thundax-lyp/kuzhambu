@@ -2,12 +2,12 @@ package com.thundax.kuzhambu.classics.application.sancai;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImageUploadCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiShowcaseCommand;
 import com.thundax.kuzhambu.classics.application.sancai.result.SancaiEntryImageContent;
@@ -23,18 +23,13 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntry
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryImageId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiShowcaseId;
 import com.thundax.kuzhambu.classics.domain.sancai.repository.SancaiAssetRepository;
-import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
-import com.thundax.kuzhambu.storage.application.service.command.AddStorageReferencesCommand;
-import com.thundax.kuzhambu.storage.application.service.command.ChangeStorageCommand;
-import com.thundax.kuzhambu.storage.application.service.command.ChangeStorageReferenceStatusCommand;
-import com.thundax.kuzhambu.storage.application.service.content.StoredObjectContent;
-import com.thundax.kuzhambu.storage.application.service.query.StorageQuery;
-import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
-import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
-import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
-import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import com.thundax.kuzhambu.storage.facade.StorageFacade;
+import com.thundax.kuzhambu.storage.facade.dto.StorageObjectFacadeDto;
+import com.thundax.kuzhambu.storage.facade.request.BindStorageOwnerFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.MarkStorageUsageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.OpenStorageFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.UploadStorageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.response.OpenStorageFacadeResponse;
 import com.thundax.kuzhambu.storage.facade.response.UploadStorageFacadeResponse;
 import java.io.ByteArrayInputStream;
 import java.util.List;
@@ -47,9 +42,8 @@ class SancaiAssetApplicationServiceImplTest {
     void uploadImageShouldCreateReplacementAndBindStorageReference() {
         SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
         StorageFacade storageFacade = mock(StorageFacade.class);
-        StorageApplicationService storageApplicationService = mock(StorageApplicationService.class);
         SancaiAssetApplicationServiceImpl service =
-                new SancaiAssetApplicationServiceImpl(repository, null, storageFacade, storageApplicationService, null);
+                new SancaiAssetApplicationServiceImpl(repository, null, storageFacade, null);
         SancaiEntryImage replacedImage = image(8001L, 3001L, 7000L);
         when(repository.getImageById(SancaiEntryImageId.of(8001L))).thenReturn(replacedImage);
         when(repository.maxPriority()).thenReturn(5);
@@ -87,60 +81,64 @@ class SancaiAssetApplicationServiceImplTest {
         assertEquals(
                 List.of("jpg", "jpeg", "png", "gif", "webp"),
                 uploadCaptor.getValue().getAllowedSuffixes());
+        assertEquals("CLASSICS_SANCAI_ENTRY_IMAGE", uploadCaptor.getValue().getOwnerType());
+        ArgumentCaptor<BindStorageOwnerFacadeRequest> bindOwnerCaptor =
+                ArgumentCaptor.forClass(BindStorageOwnerFacadeRequest.class);
+        verify(storageFacade).bindOwner(bindOwnerCaptor.capture());
+        assertEquals(List.of(7001L), bindOwnerCaptor.getValue().getStorageObjectIds());
+        assertEquals("CLASSICS_SANCAI_ENTRY_IMAGE", bindOwnerCaptor.getValue().getOwnerType());
+        assertEquals("entry:3001:image:8002", bindOwnerCaptor.getValue().getOwnerId());
         assertEquals(
-                StorageOwnerType.CLASSICS_SANCAI_ENTRY_IMAGE.value(),
-                uploadCaptor.getValue().getOwnerType());
-        ArgumentCaptor<ChangeStorageCommand> changeCaptor = ArgumentCaptor.forClass(ChangeStorageCommand.class);
-        verify(storageApplicationService).change(changeCaptor.capture());
-        assertEquals(
-                StorageOwnerType.CLASSICS_SANCAI_ENTRY_IMAGE,
-                changeCaptor.getValue().getOwnerType());
-        assertEquals("entry:3001:image:8002", changeCaptor.getValue().getOwnerId());
-        ArgumentCaptor<AddStorageReferencesCommand> referencesCaptor =
-                ArgumentCaptor.forClass(AddStorageReferencesCommand.class);
-        verify(storageApplicationService).addReferences(referencesCaptor.capture());
-        assertEquals(
-                "entry:3001:image:8002",
-                referencesCaptor.getValue().getReferences().get(0).getOwnerId());
-        assertEquals(
-                StoredObjectReferenceStatus.REFERENCED,
-                referencesCaptor.getValue().getReferences().get(0).getReferenceStatus());
-        ArgumentCaptor<ChangeStorageReferenceStatusCommand> statusCaptor =
-                ArgumentCaptor.forClass(ChangeStorageReferenceStatusCommand.class);
-        verify(storageApplicationService).changeReferenceStatus(statusCaptor.capture());
-        assertEquals(StoredObjectId.of(7001L), statusCaptor.getValue().getId());
-        assertEquals(
-                StoredObjectReferenceStatus.REFERENCED, statusCaptor.getValue().getReferenceStatus());
+                "usage=SANCAI_ENTRY_IMAGE;entryId=3001;imageId=8002",
+                bindOwnerCaptor.getValue().getOwnerParams());
     }
 
     @Test
     void getImageContentShouldUseImageOwnerQuery() {
         SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
-        StorageApplicationService storageApplicationService = mock(StorageApplicationService.class);
+        StorageFacade storageFacade = mock(StorageFacade.class);
         SancaiAssetApplicationServiceImpl service =
-                new SancaiAssetApplicationServiceImpl(repository, null, null, storageApplicationService, null);
+                new SancaiAssetApplicationServiceImpl(repository, null, storageFacade, null);
         SancaiEntryImage image = image(8002L, 3001L, 7001L);
         when(repository.getImageById(SancaiEntryImageId.of(8002L))).thenReturn(image);
-        when(storageApplicationService.existsReadableContent(org.mockito.ArgumentMatchers.any()))
-                .thenReturn(true);
-        StoredObjectContent storedContent =
-                new StoredObjectContent(storage(), new ByteArrayInputStream(new byte[] {1}));
-        when(storageApplicationService.openReadableContent(StoredObjectId.of(7001L)))
-                .thenReturn(storedContent);
+        when(storageFacade.exists(org.mockito.ArgumentMatchers.any())).thenReturn(true);
+        when(storageFacade.open(org.mockito.ArgumentMatchers.any()))
+                .thenReturn(OpenStorageFacadeResponse.builder()
+                        .storedObject(storageDto())
+                        .inputStream(new ByteArrayInputStream(new byte[] {1}))
+                        .build());
 
         SancaiEntryImageContent result = service.getImageContent(SancaiEntryId.of(3001L), SancaiEntryImageId.of(8002L));
 
         assertEquals(3001L, result.getEntryId());
         assertEquals(8002L, result.getImageId());
         assertEquals(7001L, result.getStorageObjectId());
-        assertSame(storedContent, result.getContent());
-        ArgumentCaptor<StorageQuery> queryCaptor = ArgumentCaptor.forClass(StorageQuery.class);
-        verify(storageApplicationService).existsReadableContent(queryCaptor.capture());
-        assertEquals(StoredObjectId.of(7001L), queryCaptor.getValue().getId());
-        assertEquals(
-                StorageOwnerType.CLASSICS_SANCAI_ENTRY_IMAGE,
-                queryCaptor.getValue().getOwnerType());
+        ClassicsStoredContentResult storedContent = result.getContent();
+        assertEquals("sancai.png", storedContent.getOriginalFilename());
+        assertEquals("image/png", storedContent.getContentType());
+        ArgumentCaptor<OpenStorageFacadeRequest> queryCaptor = ArgumentCaptor.forClass(OpenStorageFacadeRequest.class);
+        verify(storageFacade).exists(queryCaptor.capture());
+        assertEquals(7001L, queryCaptor.getValue().getStorageObjectId());
+        assertEquals("CLASSICS_SANCAI_ENTRY_IMAGE", queryCaptor.getValue().getOwnerType());
         assertEquals("entry:3001:image:8002", queryCaptor.getValue().getOwnerId());
+    }
+
+    @Test
+    void deleteImageShouldMarkStorageUnused() {
+        SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
+        StorageFacade storageFacade = mock(StorageFacade.class);
+        SancaiAssetApplicationServiceImpl service =
+                new SancaiAssetApplicationServiceImpl(repository, null, storageFacade, null);
+        SancaiEntryImage image = image(8002L, 3001L, 7001L);
+        when(repository.getImageById(SancaiEntryImageId.of(8002L))).thenReturn(image);
+
+        service.deleteImage(SancaiEntryImageId.of(8002L));
+
+        verify(repository).deleteImageById(SancaiEntryImageId.of(8002L));
+        ArgumentCaptor<MarkStorageUsageFacadeRequest> usageCaptor =
+                ArgumentCaptor.forClass(MarkStorageUsageFacadeRequest.class);
+        verify(storageFacade).markUnused(usageCaptor.capture());
+        assertEquals(7001L, usageCaptor.getValue().getStorageObjectId());
     }
 
     @Test
@@ -149,7 +147,7 @@ class SancaiAssetApplicationServiceImplTest {
         WorkerRenderClient workerRenderClient = mock(WorkerRenderClient.class);
         StorageFacade storageFacade = mock(StorageFacade.class);
         SancaiAssetApplicationServiceImpl service =
-                new SancaiAssetApplicationServiceImpl(repository, workerRenderClient, storageFacade, null, null);
+                new SancaiAssetApplicationServiceImpl(repository, workerRenderClient, storageFacade, null);
         SancaiShowcaseId showcaseId = SancaiShowcaseId.of(9001L);
         when(repository.insertShowcase(org.mockito.ArgumentMatchers.any())).thenReturn(showcaseId);
         when(workerRenderClient.renderSancaiShowcase(org.mockito.ArgumentMatchers.any()))
@@ -167,7 +165,7 @@ class SancaiAssetApplicationServiceImplTest {
         assertEquals("showcase.html", uploadCaptor.getValue().getOriginalFilename());
         assertEquals("text/html; charset=utf-8", uploadCaptor.getValue().getContentType());
         assertEquals(28L, uploadCaptor.getValue().getSizeBytes());
-        assertEquals(StorageOwnerType.USER.value(), uploadCaptor.getValue().getOwnerType());
+        assertEquals("USER", uploadCaptor.getValue().getOwnerType());
         assertEquals("system", uploadCaptor.getValue().getOwnerId());
     }
 
@@ -177,7 +175,7 @@ class SancaiAssetApplicationServiceImplTest {
         WorkerRenderClient workerRenderClient = mock(WorkerRenderClient.class);
         StorageFacade storageFacade = mock(StorageFacade.class);
         SancaiAssetApplicationServiceImpl service =
-                new SancaiAssetApplicationServiceImpl(repository, workerRenderClient, storageFacade, null, null);
+                new SancaiAssetApplicationServiceImpl(repository, workerRenderClient, storageFacade, null);
         SancaiShowcaseId showcaseId = SancaiShowcaseId.of(9001L);
         when(repository.insertShowcase(org.mockito.ArgumentMatchers.any())).thenReturn(showcaseId);
         WorkerRenderDtos.WorkerRenderResponse response = new WorkerRenderDtos.WorkerRenderResponse();
@@ -222,34 +220,18 @@ class SancaiAssetApplicationServiceImplTest {
         return image;
     }
 
-    private static StoredObject storage() {
-        StoredObject storage = new StoredObject();
-        storage.setId(StoredObjectId.of(7001L));
-        storage.setOriginalFilename("sancai.png");
-        storage.setContentType("image/png");
-        storage.setName("sancai");
-        storage.setExtendName("png");
-        storage.setMimeType("image/png");
-        storage.setBucketName("bucket");
-        storage.setObjectKey("storage/sancai.png");
-        storage.setSize(4L);
-        storage.setAccessEndpoint("https://storage.test");
-        return storage;
-    }
-
     private static UploadStorageFacadeResponse uploadResponse() {
-        StoredObject storage = storage();
         return UploadStorageFacadeResponse.builder()
-                .storageObjectId(storage.getId().value())
-                .originalFilename(storage.getOriginalFilename())
-                .contentType(storage.getContentType())
-                .name(storage.getName())
-                .extendName(storage.getExtendName())
-                .mimeType(storage.getMimeType())
-                .bucketName(storage.getBucketName())
-                .objectKey(storage.getObjectKey())
-                .sizeBytes(storage.getSize())
-                .accessEndpoint(storage.getAccessEndpoint())
+                .storageObjectId(7001L)
+                .originalFilename("sancai.png")
+                .contentType("image/png")
+                .name("sancai")
+                .extendName("png")
+                .mimeType("image/png")
+                .bucketName("bucket")
+                .objectKey("storage/sancai.png")
+                .sizeBytes(4L)
+                .accessEndpoint("https://storage.test")
                 .build();
     }
 
@@ -265,6 +247,17 @@ class SancaiAssetApplicationServiceImplTest {
                 .objectKey("storage/showcase.html")
                 .sizeBytes(28L)
                 .accessEndpoint("https://storage.test")
+                .build();
+    }
+
+    private static StorageObjectFacadeDto storageDto() {
+        return StorageObjectFacadeDto.builder()
+                .id(7001L)
+                .originalFilename("sancai.png")
+                .contentType("image/png")
+                .ownerId("entry:3001:image:8002")
+                .ownerType("CLASSICS_SANCAI_ENTRY_IMAGE")
+                .size(4L)
                 .build();
     }
 }

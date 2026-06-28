@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.classics.application.wangqi.service.impl;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
+import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
 import com.thundax.kuzhambu.classics.application.searchsync.support.ClassicsSearchIndexSyncPublishSupport;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentCommand;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentSourceFileCommand;
@@ -24,26 +25,17 @@ import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
-import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
-import com.thundax.kuzhambu.storage.application.service.command.AddStorageReferencesCommand;
-import com.thundax.kuzhambu.storage.application.service.command.ChangeStorageCommand;
-import com.thundax.kuzhambu.storage.application.service.command.ChangeStorageReferenceStatusCommand;
-import com.thundax.kuzhambu.storage.application.service.command.RemoveStorageReferencesCommand;
-import com.thundax.kuzhambu.storage.application.service.content.StoredObjectContent;
-import com.thundax.kuzhambu.storage.application.service.query.StorageQuery;
-import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
-import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
-import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObjectReference;
-import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
-import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
-import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import com.thundax.kuzhambu.storage.facade.StorageFacade;
+import com.thundax.kuzhambu.storage.facade.dto.StorageObjectFacadeDto;
+import com.thundax.kuzhambu.storage.facade.request.BindStorageOwnerFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.MarkStorageUsageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.OpenStorageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.UnbindStorageOwnerFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.UploadStorageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.response.OpenStorageFacadeResponse;
 import com.thundax.kuzhambu.storage.facade.response.UploadStorageFacadeResponse;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,24 +43,22 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 @BizExceptionBoundary
 public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentApplicationService {
+    private static final String DOCUMENT_OWNER_TYPE = "CLASSICS_WANGQI_DOCUMENT";
 
     private final WangqiDocumentRepository repository;
     private final ClassicsContentApplicationService contentApplicationService;
     private final ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport;
     private final StorageFacade storageFacade;
-    private final StorageApplicationService storageApplicationService;
 
     public WangqiDocumentApplicationServiceImpl(
             WangqiDocumentRepository repository,
             ClassicsContentApplicationService contentApplicationService,
             ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport,
-            StorageFacade storageFacade,
-            StorageApplicationService storageApplicationService) {
+            StorageFacade storageFacade) {
         this.repository = repository;
         this.contentApplicationService = contentApplicationService;
         this.searchIndexSyncPublishSupport = searchIndexSyncPublishSupport;
         this.storageFacade = storageFacade;
-        this.storageApplicationService = storageApplicationService;
     }
 
     @Override
@@ -139,41 +129,49 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
                 .originalFilename(command.getOriginalFilename())
                 .contentType(command.getContentType())
                 .sizeBytes(command.getSize())
-                .ownerType(StorageOwnerType.CLASSICS_WANGQI_DOCUMENT.value())
+                .ownerType(DOCUMENT_OWNER_TYPE)
                 .ownerId(ownerId(documentId))
                 .build());
-        StoredObject storage = toStoredObject(uploadResponse);
-        if (storage == null || storage.getId() == null) {
+        if (uploadResponse == null || uploadResponse.getStorageObjectId() == null) {
             throw new BizException("王圻原始文件上传失败");
         }
-        addStorageReference(storage.getId(), documentId);
-        document.setStorageObjectId(
-                StorageObjectIdCodec.toDomain(storage.getId().value()));
+        bindStorageOwner(uploadResponse.getStorageObjectId(), documentId);
+        document.setStorageObjectId(StorageObjectId.of(uploadResponse.getStorageObjectId()));
         document.setContentUpdatedAt(new Date());
         markVersion(document, replacing ? "替换原始文件" : "上传原始文件");
         publishSearchSyncAfterCommit(document);
-        return new WangqiDocumentSourceFile(documentId.value(), storage);
+        return toSourceFile(documentId, uploadResponse.getStorageObjectId(), uploadResponse);
     }
 
     @Override
     public WangqiDocumentSourceFile getSourceFile(WangqiDocumentId id) {
         WangqiDocument document = requireDocument(id);
-        StoredObject storage = requireSourceFile(document);
-        return new WangqiDocumentSourceFile(id.value(), storage);
+        StorageObjectFacadeDto storage = requireSourceFile(document);
+        return toSourceFile(id, storage);
     }
 
     @Override
-    public StoredObjectContent getSourceFileContent(WangqiDocumentId id) {
+    public ClassicsStoredContentResult getSourceFileContent(WangqiDocumentId id) {
         WangqiDocument document = requireDocument(id);
-        StoredObject storage = requireSourceFile(document);
-        StorageQuery query = new StorageQuery();
-        query.setId(storage.getId());
-        query.setOwnerType(StorageOwnerType.CLASSICS_WANGQI_DOCUMENT);
-        query.setOwnerId(ownerId(id));
-        if (!storageApplicationService.existsReadableContent(query)) {
+        StorageObjectFacadeDto storage = requireSourceFile(document);
+        OpenStorageFacadeRequest request = OpenStorageFacadeRequest.builder()
+                .storageObjectId(storage.getId())
+                .ownerType(DOCUMENT_OWNER_TYPE)
+                .ownerId(ownerId(id))
+                .build();
+        if (!storageFacade.exists(request)) {
             throw new BizException("王圻原始文件不可读");
         }
-        return storageApplicationService.openReadableContent(storage.getId());
+        OpenStorageFacadeResponse response = storageFacade.open(request);
+        if (response == null || response.getStoredObject() == null || response.getInputStream() == null) {
+            throw new BizException("王圻原始文件不可读");
+        }
+        return new ClassicsStoredContentResult(
+                storage.getId(),
+                storage.getOriginalFilename(),
+                storage.getContentType(),
+                storage.getSize(),
+                response.getInputStream());
     }
 
     @Override
@@ -206,8 +204,10 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
         }
         contentApplicationService.deleteVersions(
                 ClassicsContentType.WANGQI_DOCUMENT.value(), ClassicsContentIdCodec.toDomain(id.value()));
-        storageApplicationService.removeReferences(
-                new RemoveStorageReferencesCommand(StorageOwnerType.CLASSICS_WANGQI_DOCUMENT, ownerId(id)));
+        storageFacade.unbindOwner(UnbindStorageOwnerFacadeRequest.builder()
+                .ownerType(DOCUMENT_OWNER_TYPE)
+                .ownerId(ownerId(id))
+                .build());
         releaseSourceFile(document);
         repository.deleteById(id);
     }
@@ -270,11 +270,14 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
         return document;
     }
 
-    private StoredObject requireSourceFile(WangqiDocument document) {
+    private StorageObjectFacadeDto requireSourceFile(WangqiDocument document) {
         if (document.getStorageObjectId() == null) {
             throw new BizException("王圻文档未关联原始文件");
         }
-        StoredObject storage = storageApplicationService.get(toStoredObjectId(document.getStorageObjectId()));
+        OpenStorageFacadeResponse response = storageFacade.open(OpenStorageFacadeRequest.builder()
+                .storageObjectId(StorageObjectIdCodec.toValue(document.getStorageObjectId()))
+                .build());
+        StorageObjectFacadeDto storage = response == null ? null : response.getStoredObject();
         if (storage == null) {
             throw new BizException("王圻原始文件不存在");
         }
@@ -285,114 +288,44 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
         if (document.getStorageObjectId() == null) {
             return;
         }
-        StoredObjectId objectId = toStoredObjectId(document.getStorageObjectId());
-        StoredObject storage = storageApplicationService.get(objectId);
-        if (storage == null) {
-            throw new BizException("Storage 对象不存在");
-        }
-        assertBindable(storage, document.getId());
-        ensureStorageOwner(storage, document.getId());
-        addStorageReference(objectId, document.getId());
-    }
-
-    private void assertBindable(StoredObject storage, WangqiDocumentId documentId) {
-        String ownerId = ownerId(documentId);
-        if (storage.getOwnerType() != null && storage.getOwnerType() != StorageOwnerType.CLASSICS_WANGQI_DOCUMENT) {
-            throw new BizException("Storage 对象已绑定其他业务对象");
-        }
-        if (StringUtils.isNotBlank(storage.getOwnerId()) && !StringUtils.equals(storage.getOwnerId(), ownerId)) {
-            throw new BizException("Storage 对象已绑定其他王圻文档");
-        }
-        StorageQuery query = new StorageQuery();
-        query.setId(storage.getId());
-        List<StoredObjectReference> references = listReferences(query);
-        boolean hasOtherReference = references.stream()
-                .anyMatch(reference -> reference.getOwnerType() != StorageOwnerType.CLASSICS_WANGQI_DOCUMENT
-                        || !StringUtils.equals(reference.getOwnerId(), ownerId));
-        if (hasOtherReference) {
-            throw new BizException("Storage 对象已存在其他引用");
-        }
-    }
-
-    private void ensureStorageOwner(StoredObject storage, WangqiDocumentId documentId) {
-        String ownerId = ownerId(documentId);
-        if (storage.getOwnerType() == StorageOwnerType.CLASSICS_WANGQI_DOCUMENT
-                && StringUtils.equals(storage.getOwnerId(), ownerId)) {
-            return;
-        }
-        ChangeStorageCommand command = new ChangeStorageCommand();
-        command.setId(storage.getId());
-        command.setOriginalFilename(storage.getOriginalFilename());
-        command.setContentType(storage.getContentType());
-        command.setName(storage.getName());
-        command.setExtendName(storage.getExtendName());
-        command.setMimeType(storage.getMimeType());
-        command.setOwnerType(StorageOwnerType.CLASSICS_WANGQI_DOCUMENT);
-        command.setOwnerId(ownerId);
-        command.setBucketName(storage.getBucketName());
-        command.setObjectKey(storage.getObjectKey());
-        command.setSize(storage.getSize());
-        command.setAccessEndpoint(storage.getAccessEndpoint());
-        command.setObjectStatus(storage.getObjectStatus());
-        command.setReferenceStatus(storage.getReferenceStatus());
-        command.setRemarks(storage.getRemarks());
-        storageApplicationService.change(command);
-    }
-
-    private void addStorageReference(StoredObjectId objectId, WangqiDocumentId documentId) {
-        StorageQuery query = new StorageQuery();
-        query.setId(objectId);
-        String ownerId = ownerId(documentId);
-        boolean exists = listReferences(query).stream()
-                .anyMatch(reference -> reference.getOwnerType() == StorageOwnerType.CLASSICS_WANGQI_DOCUMENT
-                        && StringUtils.equals(reference.getOwnerId(), ownerId));
-        if (!exists) {
-            StoredObjectReference reference = new StoredObjectReference(
-                    objectId,
-                    ownerId,
-                    StorageOwnerType.CLASSICS_WANGQI_DOCUMENT,
-                    "usage=WANGQI_SOURCE_FILE;documentId=" + ownerId,
-                    StoredObjectReferenceStatus.REFERENCED);
-            storageApplicationService.addReferences(new AddStorageReferencesCommand(List.of(reference)));
-        }
-        storageApplicationService.changeReferenceStatus(
-                new ChangeStorageReferenceStatusCommand(objectId, StoredObjectReferenceStatus.REFERENCED));
+        bindStorageOwner(StorageObjectIdCodec.toValue(document.getStorageObjectId()), document.getId());
     }
 
     private void releaseSourceFile(WangqiDocument document) {
         if (document == null || document.getStorageObjectId() == null) {
             return;
         }
-        storageApplicationService.changeReferenceStatus(new ChangeStorageReferenceStatusCommand(
-                toStoredObjectId(document.getStorageObjectId()), StoredObjectReferenceStatus.UNREFERENCED));
+        storageFacade.markUnused(MarkStorageUsageFacadeRequest.builder()
+                .storageObjectId(StorageObjectIdCodec.toValue(document.getStorageObjectId()))
+                .build());
     }
 
-    private static StoredObjectId toStoredObjectId(StorageObjectId id) {
-        return StoredObjectIdCodec.toDomain(StorageObjectIdCodec.toValue(id));
+    private void bindStorageOwner(Long storageObjectId, WangqiDocumentId documentId) {
+        storageFacade.bindOwner(BindStorageOwnerFacadeRequest.builder()
+                .storageObjectIds(storageObjectId == null ? List.of() : List.of(storageObjectId))
+                .ownerType(DOCUMENT_OWNER_TYPE)
+                .ownerId(ownerId(documentId))
+                .ownerParams("usage=WANGQI_SOURCE_FILE;documentId=" + ownerId(documentId))
+                .build());
     }
 
-    private static StoredObject toStoredObject(UploadStorageFacadeResponse response) {
-        if (response == null) {
-            return null;
-        }
-        StoredObject storage = new StoredObject();
-        storage.setId(response.getStorageObjectId() == null ? null : StoredObjectId.of(response.getStorageObjectId()));
-        storage.setOriginalFilename(response.getOriginalFilename());
-        storage.setContentType(response.getContentType());
-        storage.setName(response.getName());
-        storage.setExtendName(response.getExtendName());
-        storage.setMimeType(response.getMimeType());
-        storage.setBucketName(response.getBucketName());
-        storage.setObjectKey(response.getObjectKey());
-        storage.setSize(response.getSizeBytes());
-        storage.setAccessEndpoint(response.getAccessEndpoint());
-        storage.setRemarks(response.getRemarks());
-        return storage;
+    private static WangqiDocumentSourceFile toSourceFile(WangqiDocumentId documentId, StorageObjectFacadeDto storage) {
+        return new WangqiDocumentSourceFile(
+                documentId == null ? null : documentId.value(),
+                storage == null ? null : storage.getId(),
+                storage == null ? null : storage.getOriginalFilename(),
+                storage == null ? null : storage.getContentType(),
+                storage == null ? null : storage.getSize());
     }
 
-    private List<StoredObjectReference> listReferences(StorageQuery query) {
-        List<StoredObjectReference> references = storageApplicationService.listReferences(query);
-        return references == null ? Collections.emptyList() : references;
+    private static WangqiDocumentSourceFile toSourceFile(
+            WangqiDocumentId documentId, Long storageObjectId, UploadStorageFacadeResponse response) {
+        return new WangqiDocumentSourceFile(
+                documentId == null ? null : documentId.value(),
+                storageObjectId,
+                response == null ? null : response.getOriginalFilename(),
+                response == null ? null : response.getContentType(),
+                response == null ? null : response.getSizeBytes());
     }
 
     private static String ownerId(WangqiDocumentId documentId) {

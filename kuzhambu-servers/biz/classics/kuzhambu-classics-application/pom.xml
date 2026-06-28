@@ -42,11 +42,6 @@
     </dependency>
     <dependency>
       <groupId>com.thundax</groupId>
-      <artifactId>kuzhambu-storage-application</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-storage-facade</artifactId>
       <version>${project.version}</version>
     </dependency>

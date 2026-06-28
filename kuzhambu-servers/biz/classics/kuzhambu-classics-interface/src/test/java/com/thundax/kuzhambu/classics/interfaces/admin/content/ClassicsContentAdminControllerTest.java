@@ -11,6 +11,7 @@ import com.thundax.kuzhambu.classics.application.content.command.ContentTagSortC
 import com.thundax.kuzhambu.classics.application.content.result.AiCandidateApplyContentResult;
 import com.thundax.kuzhambu.classics.application.content.result.ClassicsExportJobResult;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
+import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
 import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentExportJob;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
@@ -26,10 +27,6 @@ import com.thundax.kuzhambu.classics.interfaces.admin.content.controller.respons
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
-import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
-import com.thundax.kuzhambu.storage.application.service.content.StoredObjectContent;
-import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
-import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.lang.reflect.Method;
@@ -211,7 +208,7 @@ class ClassicsContentAdminControllerTest {
     }
 
     private static ClassicsContentAdminController controller() {
-        return new ClassicsContentAdminController(contentService(), storageService());
+        return new ClassicsContentAdminController(contentService());
     }
 
     private static ClassicsContentApplicationService contentService() {
@@ -258,6 +255,13 @@ class ClassicsContentAdminControllerTest {
                                     ClassicsExportStatus.COMPLETED,
                                     new Date(System.currentTimeMillis() - 60_000L));
                         }
+                    }
+                    if ("getExportJobContent".equals(method.getName())) {
+                        ClassicsContentExportJobId jobId = (ClassicsContentExportJobId) args[0];
+                        if (jobId != null && jobId.value() == 9001L) {
+                            return storedContent(7001L, "export.zip", "application/zip", "zip-data");
+                        }
+                        return null;
                     }
                     if ("applyAiCandidate".equals(method.getName())) {
                         AiCandidateApplyContentCommand command = (AiCandidateApplyContentCommand) args[0];
@@ -331,19 +335,6 @@ class ClassicsContentAdminControllerTest {
                 });
     }
 
-    private static StorageApplicationService storageService() {
-        return (StorageApplicationService) Proxy.newProxyInstance(
-                StorageApplicationService.class.getClassLoader(),
-                new Class<?>[] {StorageApplicationService.class},
-                (proxy, method, args) -> {
-                    if ("openReadableContent".equals(method.getName())) {
-                        return new StoredObjectContent(
-                                exportStorage(), new ByteArrayInputStream("zip-data".getBytes()));
-                    }
-                    throw new UnsupportedOperationException(method.getName());
-                });
-    }
-
     private static ClassicsContentExportJob exportJob(ClassicsContentExportJobId id, ClassicsExportStatus status) {
         return exportJob(
                 id,
@@ -370,13 +361,11 @@ class ClassicsContentAdminControllerTest {
                 false);
     }
 
-    private static StoredObject exportStorage() {
-        StoredObject storage = new StoredObject();
-        storage.setId(StoredObjectId.of(7001L));
-        storage.setOriginalFilename("export.zip");
-        storage.setContentType("application/zip");
-        storage.setSize(8L);
-        return storage;
+    private static ClassicsStoredContentResult storedContent(
+            Long storageObjectId, String originalFilename, String contentType, String body) {
+        byte[] bytes = body == null ? new byte[0] : body.getBytes();
+        return new ClassicsStoredContentResult(
+                storageObjectId, originalFilename, contentType, (long) bytes.length, new ByteArrayInputStream(bytes));
     }
 
     private static void assertRequestMapping(Class<?> controllerType, String expectedPath) {

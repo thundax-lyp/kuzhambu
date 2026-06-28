@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller;
 
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
+import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentSourceFileCommand;
 import com.thundax.kuzhambu.classics.application.wangqi.result.WangqiDocumentSourceFile;
 import com.thundax.kuzhambu.classics.application.wangqi.service.WangqiDocumentApplicationService;
@@ -23,8 +24,6 @@ import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
-import com.thundax.kuzhambu.storage.application.service.content.StoredObjectContent;
-import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -35,7 +34,6 @@ import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -166,22 +164,21 @@ public class WangqiDocumentAdminController {
             @RequestParam(value = "download", required = false) Boolean download,
             HttpServletResponse response)
             throws IOException {
-        StoredObjectContent content;
+        ClassicsStoredContentResult content;
         try {
             content = service.getSourceFileContent(WangqiDocumentIdCodec.toDomain(id));
         } catch (BizException exception) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
-        StoredObject storage = content.getStorage();
         response.setContentType(
-                StringUtils.defaultIfBlank(storage.getContentType(), MediaType.APPLICATION_OCTET_STREAM_VALUE));
-        if (storage.getSize() != null) {
-            response.setContentLengthLong(storage.getSize());
+                StringUtils.defaultIfBlank(content.getContentType(), MediaType.APPLICATION_OCTET_STREAM_VALUE));
+        if (content.getSize() != null) {
+            response.setContentLengthLong(content.getSize());
         }
         response.setHeader(
                 "Content-Disposition",
-                contentDisposition(storage.getOriginalFilename(), Boolean.TRUE.equals(download)));
+                contentDisposition(content.getOriginalFilename(), Boolean.TRUE.equals(download)));
         try (InputStream inputStream = content.getInputStream()) {
             inputStream.transferTo(response.getOutputStream());
         }
@@ -234,10 +231,19 @@ public class WangqiDocumentAdminController {
 
     private static String contentDisposition(String originalFilename, boolean download) {
         String disposition = download ? "attachment" : "inline";
-        String filename = StringUtils.defaultIfBlank(FilenameUtils.getName(originalFilename), "file");
+        String filename = StringUtils.defaultIfBlank(fileName(originalFilename), "file");
         String asciiFilename = filename.replace("\\", "").replace("\"", "");
         String encodedFilename =
                 URLEncoder.encode(filename, StandardCharsets.UTF_8).replace("+", "%20");
         return disposition + "; filename=\"" + asciiFilename + "\"; filename*=UTF-8''" + encodedFilename;
+    }
+
+    private static String fileName(String path) {
+        if (StringUtils.isBlank(path)) {
+            return null;
+        }
+        String normalized = path.replace('\\', '/');
+        int index = normalized.lastIndexOf('/');
+        return index >= 0 ? normalized.substring(index + 1) : normalized;
     }
 }

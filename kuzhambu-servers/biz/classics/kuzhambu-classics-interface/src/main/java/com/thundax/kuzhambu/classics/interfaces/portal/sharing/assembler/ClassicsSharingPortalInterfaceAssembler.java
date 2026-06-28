@@ -11,9 +11,6 @@ import com.thundax.kuzhambu.classics.interfaces.portal.sharing.controller.respon
 import com.thundax.kuzhambu.classics.interfaces.portal.sharing.controller.response.ClassicsSharePortalResponse;
 import com.thundax.kuzhambu.classics.interfaces.portal.sharing.controller.response.ClassicsSharePortalTargetResponse;
 import com.thundax.kuzhambu.common.core.page.PageResult;
-import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
-import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
-import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import java.util.Collections;
 import java.util.List;
 
@@ -27,11 +24,10 @@ public final class ClassicsSharingPortalInterfaceAssembler {
     private ClassicsSharingPortalInterfaceAssembler() {}
 
     public static ClassicsSharePortalResponse toResponse(SharePortalResult result) {
-        return toResponse(result, null, null);
+        return toResponse(result, null);
     }
 
-    public static ClassicsSharePortalResponse toResponse(
-            SharePortalResult result, String shareToken, StorageApplicationService storageApplicationService) {
+    public static ClassicsSharePortalResponse toResponse(SharePortalResult result, String shareToken) {
         if (result == null) {
             return null;
         }
@@ -41,7 +37,7 @@ public final class ClassicsSharingPortalInterfaceAssembler {
                 .status(value(result.getStatus()))
                 .issuedAt(result.getIssuedAt())
                 .expiresAt(result.getExpiresAt())
-                .targets(toTargetResponses(result.getTargets(), shareToken, storageApplicationService))
+                .targets(toTargetResponses(result.getTargets(), shareToken))
                 .build();
     }
 
@@ -59,17 +55,16 @@ public final class ClassicsSharingPortalInterfaceAssembler {
     }
 
     private static List<ClassicsSharePortalTargetResponse> toTargetResponses(
-            List<ClassicsShareTarget> targets, String shareToken, StorageApplicationService storageApplicationService) {
+            List<ClassicsShareTarget> targets, String shareToken) {
         if (targets == null || targets.isEmpty()) {
             return Collections.emptyList();
         }
         return targets.stream()
-                .map(target -> toTargetResponse(target, shareToken, storageApplicationService))
+                .map(target -> toTargetResponse(target, shareToken))
                 .toList();
     }
 
-    private static ClassicsSharePortalTargetResponse toTargetResponse(
-            ClassicsShareTarget target, String shareToken, StorageApplicationService storageApplicationService) {
+    private static ClassicsSharePortalTargetResponse toTargetResponse(ClassicsShareTarget target, String shareToken) {
         if (target == null) {
             return null;
         }
@@ -87,8 +82,8 @@ public final class ClassicsSharingPortalInterfaceAssembler {
                 .contentVersionNo(target.getContentVersionNo())
                 .titleSnapshot(target.getTitleSnapshot())
                 .contentSnapshotJson(target.getContentSnapshotJson())
-                .storageObject(toStorageObject(target, snapshot, shareToken, storageApplicationService))
-                .images(toImageResponses(target, snapshot, shareToken, storageApplicationService))
+                .storageObject(toStorageObject(target, snapshot, shareToken))
+                .images(toImageResponses(target, snapshot, shareToken))
                 .contentVisibilitySnapshot(value(target.getContentVisibilitySnapshot()))
                 .targetStatus(value(target.getTargetStatus()))
                 .priority(target.getPriority())
@@ -96,21 +91,20 @@ public final class ClassicsSharingPortalInterfaceAssembler {
     }
 
     private static ClassicsSharePortalTargetResponse.ResourceResponse toStorageObject(
-            ClassicsShareTarget target,
-            JsonNode snapshot,
-            String shareToken,
-            StorageApplicationService storageApplicationService) {
+            ClassicsShareTarget target, JsonNode snapshot, String shareToken) {
         if (target == null || target.getContentType() != ClassicsContentType.WANGQI_DOCUMENT || snapshot == null) {
             return null;
         }
-        return toResourceResponse(longValue(snapshot.get("storageObjectId")), shareToken, storageApplicationService);
+        return toResourceResponse(
+                longValue(snapshot.get("storageObjectId")),
+                textValue(snapshot.get("originalFilename")),
+                textValue(snapshot.get("contentType")),
+                longValue(snapshot.get("size")),
+                shareToken);
     }
 
     private static List<ClassicsSharePortalTargetResponse.ImageResponse> toImageResponses(
-            ClassicsShareTarget target,
-            JsonNode snapshot,
-            String shareToken,
-            StorageApplicationService storageApplicationService) {
+            ClassicsShareTarget target, JsonNode snapshot, String shareToken) {
         if (target == null || target.getContentType() != ClassicsContentType.SANCAI_ENTRY || snapshot == null) {
             return null;
         }
@@ -119,12 +113,11 @@ public final class ClassicsSharingPortalInterfaceAssembler {
             return Collections.emptyList();
         }
         return java.util.stream.StreamSupport.stream(images.spliterator(), false)
-                .map(image -> toImageResponse(image, shareToken, storageApplicationService))
+                .map(image -> toImageResponse(image, shareToken))
                 .toList();
     }
 
-    private static ClassicsSharePortalTargetResponse.ImageResponse toImageResponse(
-            JsonNode image, String shareToken, StorageApplicationService storageApplicationService) {
+    private static ClassicsSharePortalTargetResponse.ImageResponse toImageResponse(JsonNode image, String shareToken) {
         Long storageObjectId = longValue(image.get("storageObjectId"));
         return ClassicsSharePortalTargetResponse.ImageResponse.builder()
                 .imageId(longValue(image.get("imageId")))
@@ -136,17 +129,18 @@ public final class ClassicsSharingPortalInterfaceAssembler {
                 .title(textValue(image.get("title")))
                 .currentUsed(booleanValue(image.get("currentUsed")))
                 .priority(intValue(image.get("priority")))
-                .storageObject(toResourceResponse(storageObjectId, shareToken, storageApplicationService))
+                .storageObject(toResourceResponse(
+                        storageObjectId,
+                        textValue(image.get("originalFilename")),
+                        textValue(image.get("contentType")),
+                        longValue(image.get("size")),
+                        shareToken))
                 .build();
     }
 
     private static ClassicsSharePortalTargetResponse.ResourceResponse toResourceResponse(
-            Long storageObjectId, String shareToken, StorageApplicationService storageApplicationService) {
-        if (storageObjectId == null || shareToken == null || storageApplicationService == null) {
-            return null;
-        }
-        StoredObject storage = storageApplicationService.get(StoredObjectId.of(storageObjectId));
-        if (storage == null) {
+            Long storageObjectId, String originalFilename, String contentType, Long size, String shareToken) {
+        if (storageObjectId == null || shareToken == null) {
             return null;
         }
         String contentUrl = PORTAL_RESOURCE_PATH_PREFIX
@@ -156,9 +150,9 @@ public final class ClassicsSharingPortalInterfaceAssembler {
                 + PORTAL_RESOURCE_PATH_SUFFIX;
         return ClassicsSharePortalTargetResponse.ResourceResponse.builder()
                 .storageObjectId(storageObjectId)
-                .originalFilename(storage.getOriginalFilename())
-                .contentType(storage.getContentType())
-                .size(storage.getSize())
+                .originalFilename(originalFilename)
+                .contentType(contentType)
+                .size(size)
                 .previewUrl(contentUrl)
                 .downloadUrl(contentUrl + DOWNLOAD_QUERY)
                 .build();

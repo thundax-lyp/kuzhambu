@@ -4,7 +4,9 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
+import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
 import com.thundax.kuzhambu.classics.application.sharing.command.ClassicsShareTargetSortCommand;
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkCreateCommand;
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkStatusCommand;
@@ -47,11 +49,6 @@ import com.thundax.kuzhambu.common.core.exception.ErrorCode;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
-import com.thundax.kuzhambu.storage.application.service.content.StoredObjectContent;
-import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
-import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
-import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
-import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import com.thundax.kuzhambu.storage.facade.StorageFacade;
 import com.thundax.kuzhambu.storage.facade.dto.StorageObjectFacadeDto;
 import com.thundax.kuzhambu.storage.facade.request.OpenStorageFacadeRequest;
@@ -62,7 +59,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -181,12 +177,12 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
                 link.getStatus(),
                 link.getIssuedAt(),
                 link.getExpiresAt(),
-                listTargets(link.getId()));
+                enrichPortalTargets(listTargets(link.getId())));
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public StoredObjectContent getPortalShareResourceContent(
+    public ClassicsStoredContentResult getPortalShareResourceContent(
             String shareToken, Long storageObjectId, boolean download) {
         if (storageObjectId == null || storageFacade == null) {
             throw shareContentNotFound();
@@ -205,7 +201,7 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
         if (!storageFacade.exists(request)) {
             throw shareContentNotFound();
         }
-        StoredObjectContent content = toStoredObjectContent(storageFacade.open(request));
+        ClassicsStoredContentResult content = toStoredContentResult(storageFacade.open(request));
         if (content == null) {
             throw shareContentNotFound();
         }
@@ -224,33 +220,81 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
         return link.getExpiresAt() == null || link.getExpiresAt().after(new Date());
     }
 
-    private static StoredObjectContent toStoredObjectContent(OpenStorageFacadeResponse response) {
-        if (response == null || response.getInputStream() == null) {
-            return null;
+    private List<ClassicsShareTarget> enrichPortalTargets(List<ClassicsShareTarget> targets) {
+        if (targets == null || targets.isEmpty()) {
+            return Collections.emptyList();
         }
-        return new StoredObjectContent(toStoredObject(response.getStoredObject()), response.getInputStream());
+        return targets.stream().map(this::enrichPortalTarget).toList();
     }
 
-    private static StoredObject toStoredObject(StorageObjectFacadeDto storedObject) {
+    private ClassicsShareTarget enrichPortalTarget(ClassicsShareTarget target) {
+        if (target == null || target.getContentType() != ClassicsContentType.WANGQI_DOCUMENT) {
+            return target;
+        }
+        JsonNode snapshot = readSnapshot(target.getContentSnapshotJson());
+        Long storageObjectId = longValue(snapshot == null ? null : snapshot.get("storageObjectId"));
+        if (storageObjectId == null || snapshot == null) {
+            return target;
+        }
+        StorageObjectFacadeDto storedObject = openStoredObject(storageObjectId);
         if (storedObject == null) {
+            return target;
+        }
+        ObjectNode snapshotNode = snapshot.deepCopy();
+        snapshotNode.put("originalFilename", storedObject.getOriginalFilename());
+        snapshotNode.put("contentType", storedObject.getContentType());
+        if (storedObject.getSize() != null) {
+            snapshotNode.put("size", storedObject.getSize());
+        } else {
+            snapshotNode.putNull("size");
+        }
+        return new ClassicsShareTarget(
+                target.getId(),
+                target.getShareLinkId(),
+                target.getContentType(),
+                target.getContentId(),
+                target.getContentVersionId(),
+                target.getContentVersionNo(),
+                target.getTitleSnapshot(),
+                snapshotNode.toString(),
+                target.getContentVisibilitySnapshot(),
+                target.getTargetStatus(),
+                target.getPriority(),
+                target.getCurrentContentVersionId(),
+                target.getCurrentContentVersionNo(),
+                target.getContentChangedAfterShare());
+    }
+
+    private StorageObjectFacadeDto openStoredObject(Long storageObjectId) {
+        if (storageFacade == null || storageObjectId == null) {
             return null;
         }
-        StoredObject storage = new StoredObject();
-        storage.setId(storedObject.getId() == null ? null : StoredObjectId.of(storedObject.getId()));
-        storage.setOriginalFilename(storedObject.getOriginalFilename());
-        storage.setContentType(storedObject.getContentType());
-        storage.setOwnerId(storedObject.getOwnerId());
-        storage.setSize(storedObject.getSize());
-        storage.setObjectStatus(
-                StringUtils.isBlank(storedObject.getObjectStatus())
-                        ? null
-                        : StoredObjectStatus.from(storedObject.getObjectStatus()));
-        storage.setReferenceStatus(
-                StringUtils.isBlank(storedObject.getReferenceStatus())
-                        ? null
-                        : StoredObjectReferenceStatus.from(storedObject.getReferenceStatus()));
-        storage.setRemarks(storedObject.getRemarks());
-        return storage;
+        OpenStorageFacadeResponse response = storageFacade.open(OpenStorageFacadeRequest.builder()
+                .storageObjectId(storageObjectId)
+                .build());
+        if (response == null || response.getStoredObject() == null) {
+            return null;
+        }
+        if (response.getInputStream() != null) {
+            try {
+                response.getInputStream().close();
+            } catch (java.io.IOException ignored) {
+            }
+        }
+        return response.getStoredObject();
+    }
+
+    private static ClassicsStoredContentResult toStoredContentResult(OpenStorageFacadeResponse response) {
+        if (response == null || response.getStoredObject() == null || response.getInputStream() == null) {
+            return null;
+        }
+        StorageObjectFacadeDto storedObject = response.getStoredObject();
+        return new ClassicsStoredContentResult(
+                storedObject.getId(),
+                storedObject.getOriginalFilename(),
+                storedObject.getContentType(),
+                storedObject.getSize(),
+                response.getInputStream());
     }
 
     @Override

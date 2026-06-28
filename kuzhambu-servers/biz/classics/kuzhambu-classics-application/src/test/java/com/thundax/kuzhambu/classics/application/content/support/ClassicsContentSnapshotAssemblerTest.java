@@ -23,8 +23,7 @@ import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiContentFormat;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.valueobject.WangqiDocumentId;
-import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
-import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
+import com.thundax.kuzhambu.storage.facade.dto.StorageObjectFacadeDto;
 import java.util.Date;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -182,12 +181,12 @@ class ClassicsContentSnapshotAssemblerTest {
         return image;
     }
 
-    private static StoredObject storage() {
-        StoredObject storage = new StoredObject();
-        storage.setId(StoredObjectId.of(802L));
-        storage.setOriginalFilename("三才图.png");
-        storage.setContentType("image/png");
-        storage.setSize(9L);
-        return storage;
+    private static StorageObjectFacadeDto storage() {
+        return StorageObjectFacadeDto.builder()
+                .id(802L)
+                .originalFilename("三才图.png")
+                .contentType("image/png")
+                .size(9L)
+                .build();
     }
 }

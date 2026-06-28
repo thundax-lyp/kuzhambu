@@ -12,6 +12,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
+import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkCreateCommand;
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareTargetCreateCommand;
 import com.thundax.kuzhambu.classics.application.sharing.result.ShareLinkCreateResult;
@@ -49,8 +50,6 @@ import com.thundax.kuzhambu.classics.domain.wangqi.model.valueobject.WangqiDocum
 import com.thundax.kuzhambu.classics.domain.wangqi.repository.WangqiDocumentRepository;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
-import com.thundax.kuzhambu.storage.application.service.content.StoredObjectContent;
-import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import com.thundax.kuzhambu.storage.facade.StorageFacade;
 import com.thundax.kuzhambu.storage.facade.dto.StorageObjectFacadeDto;
 import com.thundax.kuzhambu.storage.facade.request.OpenStorageFacadeRequest;
@@ -354,9 +353,9 @@ class ClassicsSharingApplicationServiceImplTest {
         when(storageFacade.exists(any(OpenStorageFacadeRequest.class))).thenReturn(true);
         when(storageFacade.open(any(OpenStorageFacadeRequest.class))).thenReturn(content);
 
-        StoredObjectContent result = service.getPortalShareResourceContent("share-token", 7002L, true);
+        ClassicsStoredContentResult result = service.getPortalShareResourceContent("share-token", 7002L, true);
 
-        assertEquals(StoredObjectId.of(7002L), result.getStorage().getId());
+        assertEquals(7002L, result.getStorageObjectId());
         assertSame(content.getInputStream(), result.getInputStream());
         ArgumentCaptor<OpenStorageFacadeRequest> queryCaptor = ArgumentCaptor.forClass(OpenStorageFacadeRequest.class);
         verify(storageFacade).exists(queryCaptor.capture());
@@ -390,9 +389,9 @@ class ClassicsSharingApplicationServiceImplTest {
         when(storageFacade.exists(any(OpenStorageFacadeRequest.class))).thenReturn(true);
         when(storageFacade.open(any(OpenStorageFacadeRequest.class))).thenReturn(content);
 
-        StoredObjectContent result = service.getPortalShareResourceContent("share-token", 7003L, false);
+        ClassicsStoredContentResult result = service.getPortalShareResourceContent("share-token", 7003L, false);
 
-        assertEquals(StoredObjectId.of(7003L), result.getStorage().getId());
+        assertEquals(7003L, result.getStorageObjectId());
         assertSame(content.getInputStream(), result.getInputStream());
         verify(sharingRepository).insertAccessRecord(any(ClassicsShareAccessRecord.class));
     }

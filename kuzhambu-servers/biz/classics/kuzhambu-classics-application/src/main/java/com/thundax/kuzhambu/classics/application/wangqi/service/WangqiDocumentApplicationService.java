@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.application.wangqi.service;
 
+import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentCommand;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentSourceFileCommand;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentVisibilityCommand;
@@ -10,7 +11,6 @@ import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.valueobject.WangqiDocumentId;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
-import com.thundax.kuzhambu.storage.application.service.content.StoredObjectContent;
 import java.util.List;
 
 public interface WangqiDocumentApplicationService {
@@ -29,7 +29,7 @@ public interface WangqiDocumentApplicationService {
 
     WangqiDocumentSourceFile getSourceFile(WangqiDocumentId id);
 
-    StoredObjectContent getSourceFileContent(WangqiDocumentId id);
+    ClassicsStoredContentResult getSourceFileContent(WangqiDocumentId id);
 
     void changeStorageObject(WangqiDocumentId id, StorageObjectId storageObjectId);
 

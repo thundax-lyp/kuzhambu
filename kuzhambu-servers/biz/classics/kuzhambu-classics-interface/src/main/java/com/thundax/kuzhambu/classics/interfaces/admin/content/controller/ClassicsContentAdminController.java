@@ -5,14 +5,11 @@ import com.thundax.kuzhambu.classics.application.content.command.ContentTagSortC
 import com.thundax.kuzhambu.classics.application.content.result.AiCandidateApplyContentResult;
 import com.thundax.kuzhambu.classics.application.content.result.ClassicsExportJobResult;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
-import com.thundax.kuzhambu.classics.domain.common.codec.StorageObjectIdCodec;
-import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId;
+import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentExportJobIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentQaPairIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentTagIdCodec;
-import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentExportJob;
-import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsExportStatus;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentQaPairId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentTagId;
@@ -30,11 +27,6 @@ import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.common.web.request.RequestListHelper;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
-import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
-import com.thundax.kuzhambu.storage.application.service.content.StoredObjectContent;
-import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
-import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
-import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -44,9 +36,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Date;
 import java.util.List;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -62,16 +52,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 @WrappedApiController
 public class ClassicsContentAdminController {
     private final ClassicsContentApplicationService service;
-    private final StorageApplicationService storageApplicationService;
 
     public ClassicsContentAdminController(ClassicsContentApplicationService service) {
-        this(service, null);
-    }
-
-    public ClassicsContentAdminController(
-            ClassicsContentApplicationService service, StorageApplicationService storageApplicationService) {
         this.service = service;
-        this.storageApplicationService = storageApplicationService;
     }
 
     @Operation(summary = "查询古籍内容标签", description = "classics:content:view")
@@ -237,26 +220,20 @@ public class ClassicsContentAdminController {
             @RequestParam(value = "download", required = false) Boolean download,
             HttpServletResponse response)
             throws IOException {
-        ClassicsContentExportJob job = service.getExportJob(ClassicsContentExportJobIdCodec.toDomain(jobId));
-        if (job == null
-                || job.getStorageObjectId() == null
-                || job.getStatus() != ClassicsExportStatus.COMPLETED
-                || job.getExpiresAt() == null
-                || job.getExpiresAt().before(new Date())) {
+        ClassicsStoredContentResult content =
+                service.getExportJobContent(ClassicsContentExportJobIdCodec.toDomain(jobId));
+        if (content == null) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
-        StoredObjectContent content =
-                storageApplicationService.openReadableContent(toStoredObjectId(job.getStorageObjectId()));
-        StoredObject storage = content.getStorage();
         response.setContentType(
-                StringUtils.defaultIfBlank(storage.getContentType(), MediaType.APPLICATION_OCTET_STREAM_VALUE));
-        if (storage.getSize() != null) {
-            response.setContentLengthLong(storage.getSize());
+                StringUtils.defaultIfBlank(content.getContentType(), MediaType.APPLICATION_OCTET_STREAM_VALUE));
+        if (content.getSize() != null) {
+            response.setContentLengthLong(content.getSize());
         }
         response.setHeader(
                 "Content-Disposition",
-                contentDisposition(storage.getOriginalFilename(), Boolean.TRUE.equals(download)));
+                contentDisposition(content.getOriginalFilename(), Boolean.TRUE.equals(download)));
         try (InputStream inputStream = content.getInputStream()) {
             inputStream.transferTo(response.getOutputStream());
         }
@@ -264,14 +241,19 @@ public class ClassicsContentAdminController {
 
     private static String contentDisposition(String originalFilename, boolean download) {
         String disposition = download ? "attachment" : "inline";
-        String filename = StringUtils.defaultIfBlank(FilenameUtils.getName(originalFilename), "file");
+        String filename = StringUtils.defaultIfBlank(fileName(originalFilename), "file");
         String asciiFilename = filename.replace("\\", "").replace("\"", "");
         String encodedFilename =
                 URLEncoder.encode(filename, StandardCharsets.UTF_8).replace("+", "%20");
         return disposition + "; filename=\"" + asciiFilename + "\"; filename*=UTF-8''" + encodedFilename;
     }
 
-    private static StoredObjectId toStoredObjectId(StorageObjectId id) {
-        return StoredObjectIdCodec.toDomain(StorageObjectIdCodec.toValue(id));
+    private static String fileName(String path) {
+        if (StringUtils.isBlank(path)) {
+            return null;
+        }
+        String normalized = path.replace('\\', '/');
+        int index = normalized.lastIndexOf('/');
+        return index >= 0 ? normalized.substring(index + 1) : normalized;
     }
 }

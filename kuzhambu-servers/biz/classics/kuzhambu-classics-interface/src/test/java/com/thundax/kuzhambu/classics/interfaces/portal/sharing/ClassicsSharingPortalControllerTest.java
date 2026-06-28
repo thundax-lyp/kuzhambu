@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
 import com.thundax.kuzhambu.classics.application.sharing.result.SharePortalResult;
 import com.thundax.kuzhambu.classics.application.sharing.service.ClassicsSharingApplicationService;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
@@ -27,10 +28,6 @@ import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.security.annotation.PublicApi;
-import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
-import com.thundax.kuzhambu.storage.application.service.content.StoredObjectContent;
-import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
-import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.lang.reflect.Method;
@@ -76,8 +73,7 @@ class ClassicsSharingPortalControllerTest {
 
     @Test
     void detailResponseShouldUseShareTokenAndExposeSnapshotDto() throws Exception {
-        ClassicsSharingPortalController controller =
-                new ClassicsSharingPortalController(sharingService(), storageService());
+        ClassicsSharingPortalController controller = new ClassicsSharingPortalController(sharingService());
 
         ClassicsSharePortalResponse response = controller.get("share-token");
 
@@ -231,8 +227,8 @@ class ClassicsSharingPortalControllerTest {
         target.setContentVersionId(ClassicsContentVersionId.of(40L));
         target.setContentVersionNo(1);
         target.setTitleSnapshot("王圻文档");
-        target.setContentSnapshotJson(
-                "{\"contentType\":\"WANGQI_DOCUMENT\",\"contentId\":200,\"storageObjectId\":7002}");
+        target.setContentSnapshotJson("{\"contentType\":\"WANGQI_DOCUMENT\",\"contentId\":200,\"storageObjectId\":7002,"
+                + "\"originalFilename\":\"wangqi.pdf\",\"contentType\":\"application/pdf\",\"size\":10}");
         target.setContentVisibilitySnapshot(ClassicsSharedContentVisibility.PUBLIC);
         target.setTargetStatus(ClassicsShareTargetStatus.AVAILABLE);
         target.setPriority(2);
@@ -257,37 +253,9 @@ class ClassicsSharingPortalControllerTest {
                 0L);
     }
 
-    private static StorageApplicationService storageService() {
-        return (StorageApplicationService) Proxy.newProxyInstance(
-                StorageApplicationService.class.getClassLoader(),
-                new Class<?>[] {StorageApplicationService.class},
-                (proxy, method, args) -> {
-                    if ("get".equals(method.getName())) {
-                        StoredObjectId id = (StoredObjectId) args[0];
-                        if (StoredObjectId.of(7001L).equals(id)) {
-                            return storage(7001L, "三才图.png", "image/png", 9L);
-                        }
-                        if (StoredObjectId.of(7002L).equals(id)) {
-                            return storage(7002L, "wangqi.pdf", "application/pdf", 10L);
-                        }
-                        return null;
-                    }
-                    throw new UnsupportedOperationException(method.getName());
-                });
-    }
-
-    private static StoredObject storage(Long id, String originalFilename, String contentType, Long size) {
-        StoredObject storage = new StoredObject();
-        storage.setId(StoredObjectId.of(id));
-        storage.setOriginalFilename(originalFilename);
-        storage.setContentType(contentType);
-        storage.setSize(size);
-        return storage;
-    }
-
-    private static StoredObjectContent storedContent(Long id, String originalFilename, String contentType) {
-        StoredObject storage = storage(id, originalFilename, contentType, 11L);
-        return new StoredObjectContent(storage, new ByteArrayInputStream("image-bytes".getBytes()));
+    private static ClassicsStoredContentResult storedContent(Long id, String originalFilename, String contentType) {
+        return new ClassicsStoredContentResult(
+                id, originalFilename, contentType, 11L, new ByteArrayInputStream("image-bytes".getBytes()));
     }
 
     private static String sancaiSnapshotJson() {
