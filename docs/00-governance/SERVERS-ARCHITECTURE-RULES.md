@@ -28,7 +28,12 @@ Hard Rules 必须使用 ArchUnit、Maven reactor、Checkstyle、脚本或测试�
 - `SERVERS_DOMAIN_LAYER_DEPENDENCY`：同一业务域内依赖方向固定为 `interface -> application -> domain`、`infra -> domain`；`starter` 只做运行时装配。
 - `SERVERS_DOMAIN_NO_OUTER_DEPENDENCY`：`domain` 不得依赖 `application`、`interfaces`、`infra` 或 `starter`。
 - `SERVERS_APPLICATION_NO_OUTER_DEPENDENCY`：`application` 不得依赖 `interfaces`、`infra` 或 `starter`。
+- `SERVERS_INTERFACE_POM_DEPENDENCY_WHITELIST`：`kuzhambu-<domain>-interface` 在 Maven POM 层只能依赖 `kuzhambu-<domain>-application` 与 `kuzhambu-common-*`；不得直接依赖任何 `*-domain`、`*-facade`、他域 `*-application`、`*-infra` 或 `starter` 模块。
+- `SERVERS_APPLICATION_POM_DEPENDENCY_WHITELIST`：`kuzhambu-<domain>-application` 在 Maven POM 层只能依赖 `kuzhambu-<domain>-domain`、任意 `kuzhambu-*-facade` 与 `kuzhambu-common-*`；不得直接依赖任何 `*-application`、他域 `*-domain`、`*-interface`、`*-infra` 或 `starter` 模块。
+- `SERVERS_FACADE_POM_DEPENDENCY_WHITELIST`：`kuzhambu-<domain>-facade` 在 Maven POM 层只能依赖 `kuzhambu-common-*`；不得依赖任何 `*-application`、`*-domain`、`*-interface`、`*-infra` 或 `starter` 模块。
+- `SERVERS_DOMAIN_POM_DEPENDENCY_WHITELIST`：`kuzhambu-<domain>-domain` 在 Maven POM 层只能依赖 `kuzhambu-common-*`；不得依赖任何 `*-application`、`*-facade`、他域 `*-domain`、`*-interface`、`*-infra` 或 `starter` 模块。
 - `SERVERS_INTERFACE_NO_INFRA_DEPENDENCY`：`interface` 不得依赖任何业务域 `infra`。
+- `SERVERS_INFRA_POM_DEPENDENCY_WHITELIST`：`kuzhambu-<domain>-infra` 在 Maven POM 层只能依赖 `kuzhambu-<domain>-domain` 与 `kuzhambu-common-*`；不得直接依赖任何 `*-application`、`*-facade`、他域 `*-domain`、`*-interface`、他域 `*-infra` 或 `starter` 模块。
 - `SERVERS_INFRA_NO_INTERFACE_DEPENDENCY`：`infra` 不得依赖任何业务域 `interfaces` 或 `starter`。
 - `SERVERS_NO_STARTER_DEPENDENCY_OUTSIDE_STARTER`：除 `starter` 模块外，任何模块不得依赖 `kuzhambu-admin-starter` 或 `kuzhambu-portal-starter`。
 - `SERVERS_CROSS_DOMAIN_NO_INFRA_DEPENDENCY`：跨业务域依赖不得指向对端 `infra`、`infra.mapper`、`infra.dataobject` 或 `infra.repository.impl`。
