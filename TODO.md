@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `ai-facade/report-protocol`：定义 AI 报表摘要 facade 协议
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-facade/src/main/java/com/thundax/kuzhambu/ai/facade/AiFacade.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-facade/src/main/java/com/thundax/kuzhambu/ai/facade/request/AiReportSummaryFacadeRequest.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-facade/src/main/java/com/thundax/kuzhambu/ai/facade/response/AiReportSummaryFacadeResponse.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-facade/src/main/java/com/thundax/kuzhambu/ai/facade/dto/AiTopCapabilityFacadeDto.java`
-    - 处理动作：为 `summary(...)` 建立报表摘要 request/response/dto 协议。
-    - 验收点：`AiReportSummaryFacadeRequest` 包含 `periodStart/periodEnd/bucketType`，`AiReportSummaryFacadeResponse` 包含 `periodStart/periodEnd/invocationCount/succeededInvocationCount/failedInvocationCount/avgLatencyMs/totalCostAmount/topCapabilities`，`AiTopCapabilityFacadeDto` 包含 `capability/invocationCount`。
-    - 重要度：8/10
-
 - [ ] `ai-facade/discovery-protocol`：定义 discovery AI facade 协议
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-FACADE-ISOLATION.md`
