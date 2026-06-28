@@ -311,9 +311,7 @@ public final class RepositoryArchitectureRuleSupport {
     }
 
     private static Map<String, Set<String>> legacyApplicationPomDependencyAllowlist() {
-        Map<String, Set<String>> allowlist = new HashMap<String, Set<String>>();
-        put(allowlist, "operations", "kuzhambu-discovery-application");
-        return allowlist;
+        return new HashMap<String, Set<String>>();
     }
 
     private static Map<String, Set<String>> legacyInterfacePomDependencyAllowlist() {
