@@ -24,8 +24,6 @@ import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
-import com.thundax.kuzhambu.storage.application.helper.StorageUploadResult;
-import com.thundax.kuzhambu.storage.application.helper.StorageUploadStreamHelper;
 import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
 import com.thundax.kuzhambu.storage.application.service.command.AddStorageReferencesCommand;
 import com.thundax.kuzhambu.storage.application.service.command.ChangeStorageCommand;
@@ -39,6 +37,9 @@ import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObjectRefer
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
+import com.thundax.kuzhambu.storage.facade.StorageFacade;
+import com.thundax.kuzhambu.storage.facade.request.UploadStorageObjectFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.response.UploadStorageObjectFacadeResponse;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -54,19 +55,19 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
     private final WangqiDocumentRepository repository;
     private final ClassicsContentApplicationService contentApplicationService;
     private final ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport;
-    private final StorageUploadStreamHelper storageUploadStreamHelper;
+    private final StorageFacade storageFacade;
     private final StorageApplicationService storageApplicationService;
 
     public WangqiDocumentApplicationServiceImpl(
             WangqiDocumentRepository repository,
             ClassicsContentApplicationService contentApplicationService,
             ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport,
-            StorageUploadStreamHelper storageUploadStreamHelper,
+            StorageFacade storageFacade,
             StorageApplicationService storageApplicationService) {
         this.repository = repository;
         this.contentApplicationService = contentApplicationService;
         this.searchIndexSyncPublishSupport = searchIndexSyncPublishSupport;
-        this.storageUploadStreamHelper = storageUploadStreamHelper;
+        this.storageFacade = storageFacade;
         this.storageApplicationService = storageApplicationService;
     }
 
@@ -133,19 +134,19 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
         WangqiDocument document = requireDocument(documentId);
         boolean replacing = document.getStorageObjectId() != null;
 
-        StorageUploadResult uploadResult = storageUploadStreamHelper.upload(
-                command.getInputStream(),
-                command.getOriginalFilename(),
-                command.getContentType(),
-                command.getSize(),
-                null,
-                StorageOwnerType.CLASSICS_WANGQI_DOCUMENT,
-                ownerId(documentId));
-        if (uploadResult.hasError()) {
-            throw new BizException(uploadResult.getError());
+        UploadStorageObjectFacadeResponse uploadResponse =
+                storageFacade.upload(UploadStorageObjectFacadeRequest.builder()
+                        .inputStream(command.getInputStream())
+                        .originalFilename(command.getOriginalFilename())
+                        .contentType(command.getContentType())
+                        .sizeBytes(command.getSize())
+                        .ownerType(StorageOwnerType.CLASSICS_WANGQI_DOCUMENT.value())
+                        .ownerId(ownerId(documentId))
+                        .build());
+        StoredObject storage = toStoredObject(uploadResponse);
+        if (storage == null || storage.getId() == null) {
+            throw new BizException("王圻原始文件上传失败");
         }
-
-        StoredObject storage = uploadResult.getStorage();
         addStorageReference(storage.getId(), documentId);
         document.setStorageObjectId(
                 StorageObjectIdCodec.toDomain(storage.getId().value()));
@@ -369,6 +370,25 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
 
     private static StoredObjectId toStoredObjectId(StorageObjectId id) {
         return StoredObjectIdCodec.toDomain(StorageObjectIdCodec.toValue(id));
+    }
+
+    private static StoredObject toStoredObject(UploadStorageObjectFacadeResponse response) {
+        if (response == null) {
+            return null;
+        }
+        StoredObject storage = new StoredObject();
+        storage.setId(response.getStorageObjectId() == null ? null : StoredObjectId.of(response.getStorageObjectId()));
+        storage.setOriginalFilename(response.getOriginalFilename());
+        storage.setContentType(response.getContentType());
+        storage.setName(response.getName());
+        storage.setExtendName(response.getExtendName());
+        storage.setMimeType(response.getMimeType());
+        storage.setBucketName(response.getBucketName());
+        storage.setObjectKey(response.getObjectKey());
+        storage.setSize(response.getSizeBytes());
+        storage.setAccessEndpoint(response.getAccessEndpoint());
+        storage.setRemarks(response.getRemarks());
+        return storage;
     }
 
     private List<StoredObjectReference> listReferences(StorageQuery query) {

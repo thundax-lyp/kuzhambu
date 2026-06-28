@@ -35,8 +35,6 @@ import com.thundax.kuzhambu.common.core.exception.ErrorCode;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
-import com.thundax.kuzhambu.storage.application.helper.StorageUploadResult;
-import com.thundax.kuzhambu.storage.application.helper.StorageUploadStreamHelper;
 import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
 import com.thundax.kuzhambu.storage.application.service.command.AddStorageReferencesCommand;
 import com.thundax.kuzhambu.storage.application.service.command.ChangeStorageCommand;
@@ -88,7 +86,6 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     private final SancaiAssetRepository repository;
     private final WorkerRenderClient workerRenderClient;
     private final StorageFacade storageFacade;
-    private final StorageUploadStreamHelper storageUploadStreamHelper;
     private final StorageApplicationService storageApplicationService;
     private final ObjectMapper objectMapper;
 
@@ -96,13 +93,11 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
             SancaiAssetRepository repository,
             WorkerRenderClient workerRenderClient,
             StorageFacade storageFacade,
-            StorageUploadStreamHelper storageUploadStreamHelper,
             StorageApplicationService storageApplicationService,
             ObjectMapper objectMapper) {
         this.repository = repository;
         this.workerRenderClient = workerRenderClient;
         this.storageFacade = storageFacade;
-        this.storageUploadStreamHelper = storageUploadStreamHelper;
         this.storageApplicationService = storageApplicationService;
         this.objectMapper = objectMapper == null ? new ObjectMapper().findAndRegisterModules() : objectMapper;
     }
@@ -313,12 +308,12 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
                 repository.markShowcaseFailed(showcaseId);
                 return showcaseId;
             }
-            StorageUploadResult uploadResult = saveShowcaseArtifact(showcaseId, response);
-            if (uploadResult.hasError()) {
+            UploadStorageObjectFacadeResponse uploadResponse = saveShowcaseArtifact(showcaseId, response);
+            if (uploadResponse == null) {
                 repository.markShowcaseFailed(showcaseId);
                 return showcaseId;
             }
-            StorageObjectId storageObjectId = toStorageObjectId(uploadResult);
+            StorageObjectId storageObjectId = toStorageObjectId(uploadResponse);
             if (storageObjectId == null) {
                 repository.markShowcaseFailed(showcaseId);
                 return showcaseId;
@@ -429,15 +424,21 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
         return defaultPayload;
     }
 
-    private StorageUploadResult saveShowcaseArtifact(
+    private UploadStorageObjectFacadeResponse saveShowcaseArtifact(
             SancaiShowcaseId showcaseId, WorkerRenderDtos.WorkerRenderResponse response) {
+        if (storageFacade == null) {
+            return null;
+        }
         WorkerRenderDtos.Artifact artifact = response == null ? null : response.getArtifact();
         byte[] content = artifactContent(artifact);
-        return storageUploadStreamHelper.uploadServerArtifact(
-                new ByteArrayInputStream(content),
-                filenameHint(showcaseId, artifact),
-                artifact == null ? null : artifact.getContentType(),
-                content.length);
+        return storageFacade.upload(UploadStorageObjectFacadeRequest.builder()
+                .inputStream(new ByteArrayInputStream(content))
+                .originalFilename(filenameHint(showcaseId, artifact))
+                .contentType(artifact == null ? null : artifact.getContentType())
+                .sizeBytes((long) content.length)
+                .ownerType(StorageOwnerType.USER.value())
+                .ownerId("system")
+                .build());
     }
 
     private String filenameHint(SancaiShowcaseId showcaseId, WorkerRenderDtos.Artifact artifact) {
@@ -464,12 +465,10 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
         return artifact.getContent().getBytes(java.nio.charset.StandardCharsets.UTF_8);
     }
 
-    private StorageObjectId toStorageObjectId(StorageUploadResult uploadResult) {
-        return uploadResult == null
-                        || uploadResult.getStorage() == null
-                        || uploadResult.getStorage().getId() == null
+    private StorageObjectId toStorageObjectId(UploadStorageObjectFacadeResponse uploadResponse) {
+        return uploadResponse == null || uploadResponse.getStorageObjectId() == null
                 ? null
-                : StorageObjectId.of(uploadResult.getStorage().getId().value());
+                : StorageObjectId.of(uploadResponse.getStorageObjectId());
     }
 
     private static StoredObject toStoredObject(UploadStorageObjectFacadeResponse response) {

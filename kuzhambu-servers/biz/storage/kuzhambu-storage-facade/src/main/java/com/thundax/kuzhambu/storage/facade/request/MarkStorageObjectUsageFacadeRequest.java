@@ -8,8 +8,7 @@ import lombok.Getter;
 @Getter
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class RemoveStorageReferencesFacadeRequest {
+public class MarkStorageObjectUsageFacadeRequest {
 
-    private final String ownerId;
-    private final String ownerType;
+    private final Long storageObjectId;
 }

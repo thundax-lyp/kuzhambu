@@ -3,7 +3,6 @@ package com.thundax.kuzhambu.classics.application.content;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -57,11 +56,12 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntry
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVolumeId;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
-import com.thundax.kuzhambu.storage.application.helper.StorageUploadResult;
-import com.thundax.kuzhambu.storage.application.helper.StorageUploadStreamHelper;
 import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
-import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
-import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
+import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
+import com.thundax.kuzhambu.storage.facade.StorageFacade;
+import com.thundax.kuzhambu.storage.facade.request.BindStorageObjectOwnerFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.UploadStorageObjectFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.response.UploadStorageObjectFacadeResponse;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
@@ -149,7 +149,7 @@ class ClassicsContentApplicationServiceImplTest {
         ClassicsContentRepository repository = mock(ClassicsContentRepository.class);
         StorageApplicationService storageApplicationService = mock(StorageApplicationService.class);
         WorkerRenderClient workerRenderClient = mock(WorkerRenderClient.class);
-        StorageUploadStreamHelper storageUploadStreamHelper = mock(StorageUploadStreamHelper.class);
+        StorageFacade storageFacade = mock(StorageFacade.class);
         ContentExportCommand command = new ContentExportCommand();
         command.setExportKind(ClassicsExportKind.CONTENT_DATASET);
         command.setContentType(ClassicsContentType.SANCAI_ENTRY);
@@ -159,8 +159,7 @@ class ClassicsContentApplicationServiceImplTest {
         when(repository.insertExportJob(any())).thenReturn(ClassicsContentExportJobId.of(900000000001L));
         WorkerRenderDtos.WorkerRenderResponse response = renderSuccessResponse("export.zip");
         when(workerRenderClient.renderClassicsExport(any())).thenReturn(response);
-        when(storageUploadStreamHelper.uploadServerArtifact(any(), any(), any(), anyLong()))
-                .thenReturn(storageUploadResult());
+        when(storageFacade.upload(any(UploadStorageObjectFacadeRequest.class))).thenReturn(uploadResponse());
         ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
                 repository,
                 null,
@@ -168,7 +167,7 @@ class ClassicsContentApplicationServiceImplTest {
                 null,
                 storageApplicationService,
                 workerRenderClient,
-                storageUploadStreamHelper,
+                storageFacade,
                 null,
                 null,
                 null);
@@ -188,6 +187,22 @@ class ClassicsContentApplicationServiceImplTest {
                         eq(0));
         verify(repository, never()).markExportJobFailed(ClassicsContentExportJobId.of(900000000001L));
         verify(workerRenderClient).renderClassicsExport(any());
+        ArgumentCaptor<UploadStorageObjectFacadeRequest> uploadCaptor =
+                ArgumentCaptor.forClass(UploadStorageObjectFacadeRequest.class);
+        verify(storageFacade).upload(uploadCaptor.capture());
+        assertEquals("export.zip", uploadCaptor.getValue().getOriginalFilename());
+        assertEquals("application/zip", uploadCaptor.getValue().getContentType());
+        assertEquals(StorageOwnerType.USER.value(), uploadCaptor.getValue().getOwnerType());
+        assertEquals("system", uploadCaptor.getValue().getOwnerId());
+        ArgumentCaptor<BindStorageObjectOwnerFacadeRequest> bindOwnerCaptor =
+                ArgumentCaptor.forClass(BindStorageObjectOwnerFacadeRequest.class);
+        verify(storageFacade).bindOwner(bindOwnerCaptor.capture());
+        assertEquals(List.of(7001L), bindOwnerCaptor.getValue().getStorageObjectIds());
+        assertEquals("system", bindOwnerCaptor.getValue().getOwnerId());
+        assertEquals(StorageOwnerType.USER.value(), bindOwnerCaptor.getValue().getOwnerType());
+        assertEquals(
+                "usage=CLASSICS_EXPORT_JOB;jobId=900000000001",
+                bindOwnerCaptor.getValue().getOwnerParams());
     }
 
     @Test
@@ -195,7 +210,7 @@ class ClassicsContentApplicationServiceImplTest {
         ClassicsContentRepository repository = mock(ClassicsContentRepository.class);
         StorageApplicationService storageApplicationService = mock(StorageApplicationService.class);
         WorkerRenderClient workerRenderClient = mock(WorkerRenderClient.class);
-        StorageUploadStreamHelper storageUploadStreamHelper = mock(StorageUploadStreamHelper.class);
+        StorageFacade storageFacade = mock(StorageFacade.class);
         ContentExportCommand command = new ContentExportCommand();
         command.setExportKind(ClassicsExportKind.CONTENT_DATASET);
         command.setContentType(ClassicsContentType.WANGQI_DOCUMENT);
@@ -211,7 +226,7 @@ class ClassicsContentApplicationServiceImplTest {
                 null,
                 storageApplicationService,
                 workerRenderClient,
-                storageUploadStreamHelper,
+                storageFacade,
                 null,
                 null,
                 null);
@@ -437,10 +452,10 @@ class ClassicsContentApplicationServiceImplTest {
         return response;
     }
 
-    private static StorageUploadResult storageUploadResult() {
-        StoredObject storage = new StoredObject();
-        storage.setId(StoredObjectId.of(7001L));
-        return StorageUploadResult.builder().storage(storage).build();
+    private static UploadStorageObjectFacadeResponse uploadResponse() {
+        return UploadStorageObjectFacadeResponse.builder()
+                .storageObjectId(7001L)
+                .build();
     }
 
     private static ClassicsContentVersion existingVersion(Long id, int versionNo, Date versionedAt) {

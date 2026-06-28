@@ -25,8 +25,6 @@ import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVis
 import com.thundax.kuzhambu.classics.domain.wangqi.model.valueobject.WangqiDocumentId;
 import com.thundax.kuzhambu.classics.domain.wangqi.repository.WangqiDocumentRepository;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
-import com.thundax.kuzhambu.storage.application.helper.StorageUploadResult;
-import com.thundax.kuzhambu.storage.application.helper.StorageUploadStreamHelper;
 import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
 import com.thundax.kuzhambu.storage.application.service.command.AddStorageReferencesCommand;
 import com.thundax.kuzhambu.storage.application.service.command.ChangeStorageReferenceStatusCommand;
@@ -35,6 +33,9 @@ import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
+import com.thundax.kuzhambu.storage.facade.StorageFacade;
+import com.thundax.kuzhambu.storage.facade.request.UploadStorageObjectFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.response.UploadStorageObjectFacadeResponse;
 import java.io.ByteArrayInputStream;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -64,25 +65,16 @@ class WangqiDocumentApplicationServiceImplTest {
         WangqiDocumentRepository repository = mock(WangqiDocumentRepository.class);
         ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
         ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
-        StorageUploadStreamHelper uploadStreamHelper = mock(StorageUploadStreamHelper.class);
+        StorageFacade storageFacade = mock(StorageFacade.class);
         StorageApplicationService storageApplicationService = mock(StorageApplicationService.class);
         WangqiDocumentApplicationServiceImpl service = new WangqiDocumentApplicationServiceImpl(
-                repository, contentApplicationService, publishSupport, uploadStreamHelper, storageApplicationService);
+                repository, contentApplicationService, publishSupport, storageFacade, storageApplicationService);
         WangqiDocument document = new WangqiDocument();
         document.setId(WangqiDocumentId.of(400000000001L));
         document.setVisibility(WangqiDocumentVisibility.PUBLIC);
         versionDocumentOnEnsure(contentApplicationService, 3);
         when(repository.getById(WangqiDocumentId.of(400000000001L))).thenReturn(document);
-        StoredObject storage = storage();
-        when(uploadStreamHelper.upload(
-                        org.mockito.ArgumentMatchers.any(),
-                        org.mockito.ArgumentMatchers.eq("source.pdf"),
-                        org.mockito.ArgumentMatchers.eq("application/pdf"),
-                        org.mockito.ArgumentMatchers.eq(4L),
-                        org.mockito.ArgumentMatchers.isNull(),
-                        org.mockito.ArgumentMatchers.eq(StorageOwnerType.CLASSICS_WANGQI_DOCUMENT),
-                        org.mockito.ArgumentMatchers.eq("400000000001")))
-                .thenReturn(StorageUploadResult.builder().storage(storage).build());
+        when(storageFacade.upload(org.mockito.ArgumentMatchers.any())).thenReturn(uploadResponse());
         when(storageApplicationService.listReferences(org.mockito.ArgumentMatchers.any()))
                 .thenReturn(List.of());
 
@@ -92,6 +84,16 @@ class WangqiDocumentApplicationServiceImplTest {
         assertEquals(400000000001L, result.getDocumentId());
         assertEquals(7001L, result.getStorageObjectId());
         assertEquals(StorageObjectId.of(7001L), document.getStorageObjectId());
+        ArgumentCaptor<UploadStorageObjectFacadeRequest> uploadCaptor =
+                ArgumentCaptor.forClass(UploadStorageObjectFacadeRequest.class);
+        verify(storageFacade).upload(uploadCaptor.capture());
+        assertEquals("source.pdf", uploadCaptor.getValue().getOriginalFilename());
+        assertEquals("application/pdf", uploadCaptor.getValue().getContentType());
+        assertEquals(4L, uploadCaptor.getValue().getSizeBytes());
+        assertEquals(
+                StorageOwnerType.CLASSICS_WANGQI_DOCUMENT.value(),
+                uploadCaptor.getValue().getOwnerType());
+        assertEquals("400000000001", uploadCaptor.getValue().getOwnerId());
         verify(storageApplicationService)
                 .addReferences(org.mockito.ArgumentMatchers.any(AddStorageReferencesCommand.class));
         verify(storageApplicationService)
@@ -197,5 +199,15 @@ class WangqiDocumentApplicationServiceImplTest {
         storage.setOwnerId("400000000001");
         storage.setSize(4L);
         return storage;
+    }
+
+    private static UploadStorageObjectFacadeResponse uploadResponse() {
+        StoredObject storage = storage();
+        return UploadStorageObjectFacadeResponse.builder()
+                .storageObjectId(storage.getId().value())
+                .originalFilename(storage.getOriginalFilename())
+                .contentType(storage.getContentType())
+                .sizeBytes(storage.getSize())
+                .build();
     }
 }

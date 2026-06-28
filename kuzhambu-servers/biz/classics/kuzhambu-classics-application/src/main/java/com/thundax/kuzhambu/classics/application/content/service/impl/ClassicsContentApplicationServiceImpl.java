@@ -58,11 +58,14 @@ import com.thundax.kuzhambu.common.core.exception.ErrorCode;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
-import com.thundax.kuzhambu.storage.application.helper.StorageUploadResult;
-import com.thundax.kuzhambu.storage.application.helper.StorageUploadStreamHelper;
 import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
+import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
+import com.thundax.kuzhambu.storage.facade.StorageFacade;
+import com.thundax.kuzhambu.storage.facade.request.BindStorageObjectOwnerFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.UploadStorageObjectFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.response.UploadStorageObjectFacadeResponse;
 import java.io.ByteArrayInputStream;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -88,6 +91,8 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     private static final String DEFAULT_RENDER_OPERATION = "CLASSICS_EXPORT";
     private static final String DEFAULT_RENDER_TYPE = "CLASSICS_EXPORT";
     private static final String DEFAULT_TITLE = "classics-export";
+    private static final String SYSTEM_OWNER_ID = "system";
+    private static final String EXPORT_REFERENCE_USAGE = "CLASSICS_EXPORT_JOB";
 
     private final ClassicsContentRepository repository;
     private final WangqiDocumentVersionRestorer wangqiDocumentVersionRestorer;
@@ -95,7 +100,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     private final SancaiAssetApplicationService sancaiAssetApplicationService;
     private final StorageApplicationService storageApplicationService;
     private final WorkerRenderClient workerRenderClient;
-    private final StorageUploadStreamHelper storageUploadStreamHelper;
+    private final StorageFacade storageFacade;
     private final ObjectMapper objectMapper;
     private final ClassicsContentVersioningService versioningService = new ClassicsContentVersioningService();
     private final ClassicsContentSnapshotAssembler snapshotAssembler = new ClassicsContentSnapshotAssembler();
@@ -112,7 +117,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             SancaiAssetApplicationService sancaiAssetApplicationService,
             StorageApplicationService storageApplicationService,
             WorkerRenderClient workerRenderClient,
-            StorageUploadStreamHelper storageUploadStreamHelper,
+            StorageFacade storageFacade,
             AiCandidateDomainService aiCandidateDomainService,
             ClassicsTagBindingSupport tagBindingSupport,
             ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport) {
@@ -122,7 +127,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         this.sancaiAssetApplicationService = sancaiAssetApplicationService;
         this.storageApplicationService = storageApplicationService;
         this.workerRenderClient = workerRenderClient;
-        this.storageUploadStreamHelper = storageUploadStreamHelper;
+        this.storageFacade = storageFacade;
         this.aiCandidateDomainService = aiCandidateDomainService;
         this.tagBindingSupport = tagBindingSupport;
         this.searchIndexSyncPublishSupport = searchIndexSyncPublishSupport;
@@ -764,12 +769,13 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                 repository.markExportJobFailed(jobId);
                 return new ClassicsExportJobResult(jobId, ClassicsExportStatus.FAILED, null);
             }
-            StorageUploadResult uploadResult = saveRenderArtifact(jobId, response);
-            if (uploadResult.hasError()) {
+            UploadStorageObjectFacadeResponse uploadResponse = saveRenderArtifact(jobId, response);
+            if (uploadResponse == null || uploadResponse.getStorageObjectId() == null) {
                 repository.markExportJobFailed(jobId);
                 return new ClassicsExportJobResult(jobId, ClassicsExportStatus.FAILED, null);
             }
-            StorageObjectId storageObjectId = toStorageObjectId(uploadResult);
+            bindRenderArtifactOwner(jobId, uploadResponse.getStorageObjectId());
+            StorageObjectId storageObjectId = toStorageObjectId(uploadResponse);
             int itemCount =
                     response.getSummary() == null || response.getSummary().getItemCount() == null
                             ? 0
@@ -946,15 +952,20 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         return defaultPayload;
     }
 
-    private StorageUploadResult saveRenderArtifact(
+    private UploadStorageObjectFacadeResponse saveRenderArtifact(
             ClassicsContentExportJobId jobId, WorkerRenderDtos.WorkerRenderResponse response) throws Exception {
         WorkerRenderDtos.Artifact artifact = response.getArtifact();
         byte[] content = artifactContent(artifact);
-        return storageUploadStreamHelper.uploadServerArtifact(
-                new ByteArrayInputStream(content),
-                filenameHint(artifact.getFilename(), response),
-                artifact.getContentType(),
-                content.length);
+        return storageFacade == null
+                ? null
+                : storageFacade.upload(UploadStorageObjectFacadeRequest.builder()
+                        .inputStream(new ByteArrayInputStream(content))
+                        .originalFilename(filenameHint(artifact.getFilename(), response))
+                        .contentType(artifact.getContentType())
+                        .sizeBytes((long) content.length)
+                        .ownerType(StorageOwnerType.USER.value())
+                        .ownerId(SYSTEM_OWNER_ID)
+                        .build());
     }
 
     private String filenameHint(String originalFilename, WorkerRenderDtos.WorkerRenderResponse response) {
@@ -966,12 +977,22 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         return "classics-export-" + System.currentTimeMillis() + "." + formatSafeSuffix(format);
     }
 
-    private StorageObjectId toStorageObjectId(StorageUploadResult uploadResult) {
-        return uploadResult == null
-                        || uploadResult.getStorage() == null
-                        || uploadResult.getStorage().getId() == null
+    private void bindRenderArtifactOwner(ClassicsContentExportJobId jobId, Long storageObjectId) {
+        if (storageFacade == null || storageObjectId == null) {
+            return;
+        }
+        storageFacade.bindOwner(BindStorageObjectOwnerFacadeRequest.builder()
+                .storageObjectIds(List.of(storageObjectId))
+                .ownerId(SYSTEM_OWNER_ID)
+                .ownerType(StorageOwnerType.USER.value())
+                .ownerParams("usage=" + EXPORT_REFERENCE_USAGE + ";jobId=" + jobId.value())
+                .build());
+    }
+
+    private StorageObjectId toStorageObjectId(UploadStorageObjectFacadeResponse uploadResponse) {
+        return uploadResponse == null || uploadResponse.getStorageObjectId() == null
                 ? null
-                : StorageObjectId.of(uploadResult.getStorage().getId().value());
+                : StorageObjectId.of(uploadResponse.getStorageObjectId());
     }
 
     private byte[] artifactContent(WorkerRenderDtos.Artifact artifact) {

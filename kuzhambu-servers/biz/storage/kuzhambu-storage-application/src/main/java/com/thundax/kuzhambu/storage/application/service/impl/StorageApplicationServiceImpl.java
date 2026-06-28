@@ -15,8 +15,10 @@ import com.thundax.kuzhambu.storage.application.service.command.ChangeStorageRef
 import com.thundax.kuzhambu.storage.application.service.command.CreateStorageCommand;
 import com.thundax.kuzhambu.storage.application.service.command.RemoveStorageReferencesCommand;
 import com.thundax.kuzhambu.storage.application.service.command.StorageSortCommand;
+import com.thundax.kuzhambu.storage.application.service.command.UploadStorageObjectCommand;
 import com.thundax.kuzhambu.storage.application.service.content.StoredObjectContent;
 import com.thundax.kuzhambu.storage.application.service.query.StorageQuery;
+import com.thundax.kuzhambu.storage.application.service.result.StorageUploadResult;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObjectReference;
@@ -26,11 +28,13 @@ import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectContent
 import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectReferenceRepository;
 import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectRepository;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,6 +44,7 @@ import org.springframework.transaction.annotation.Transactional;
 @BizExceptionBoundary
 public class StorageApplicationServiceImpl implements StorageApplicationService {
 
+    private static final long MAX_UPLOAD_SIZE = 20L * 1024L * 1024L;
     private static final int PRIORITY_STEP = 1;
 
     private final StoredObjectRepository dao;
@@ -266,6 +271,31 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
+    public StorageUploadResult upload(UploadStorageObjectCommand command) {
+        StorageUploadResult validatedResult = validateUploadFile(
+                command == null ? null : command.getInputStream(),
+                command == null ? null : command.getOriginalFilename(),
+                command == null ? 0L : command.getSize(),
+                command == null ? null : command.getAllowedSuffixes());
+        if (validatedResult.hasError()) {
+            return validatedResult;
+        }
+
+        StoredObject storage = new StoredObject();
+        storage.setOwnerType(command.getOwnerType());
+        storage.setOwnerId(command.getOwnerId());
+        applyFileMetadata(command.getOriginalFilename(), command.getContentType(), storage);
+        try {
+            applyStoredObject(storage, storedObjectContentRepository.save(storage, command.getInputStream()));
+        } catch (IOException exception) {
+            return StorageUploadResult.builder().error(exception.getMessage()).build();
+        }
+        storage.setId(create(toCreateStorageCommand(storage)));
+        return StorageUploadResult.builder().storage(storage).build();
+    }
+
+    @Override
     public List<StoredObjectReference> listReferences(StorageQuery query) {
         StoredObject entity = new StoredObject();
         entity.setId(query.getId());
@@ -309,6 +339,57 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
             throw new BizException(
                     ErrorCode.SORT_DB_FAILURE.getCode(), ErrorCode.SORT_DB_FAILURE.getMessageKey(), message);
         }
+    }
+
+    private StorageUploadResult validateUploadFile(
+            InputStream inputStream, String originalFilename, long size, List<String> allowedSuffixes) {
+        if (inputStream == null || size <= 0L) {
+            return StorageUploadResult.builder().error("文件不能为空").build();
+        }
+        if (size > MAX_UPLOAD_SIZE) {
+            return StorageUploadResult.builder().error("文件大小超过限制").build();
+        }
+        String extendName = StringUtils.lowerCase(FilenameUtils.getExtension(originalFilename));
+        if (allowedSuffixes != null && !allowedSuffixes.isEmpty() && !allowedSuffixes.contains(extendName)) {
+            return StorageUploadResult.builder().error("无效的后缀名").build();
+        }
+        return StorageUploadResult.builder().build();
+    }
+
+    private void applyFileMetadata(String originalFilename, String contentType, StoredObject storage) {
+        storage.setOriginalFilename(originalFilename);
+        storage.setName(FilenameUtils.getBaseName(originalFilename));
+        String extendName = StringUtils.lowerCase(FilenameUtils.getExtension(originalFilename));
+        storage.setExtendName(extendName);
+        storage.setContentType(contentType);
+        storage.setMimeType(contentType);
+    }
+
+    private void applyStoredObject(StoredObject storage, StoredObject object) {
+        storage.setBucketName(object.getBucketName());
+        storage.setObjectKey(object.getObjectKey());
+        storage.setSize(object.getSize());
+        storage.setAccessEndpoint(object.getAccessEndpoint());
+    }
+
+    private CreateStorageCommand toCreateStorageCommand(StoredObject storage) {
+        CreateStorageCommand command = new CreateStorageCommand();
+        command.setId(storage.getId());
+        command.setOriginalFilename(storage.getOriginalFilename());
+        command.setContentType(storage.getContentType());
+        command.setName(storage.getName());
+        command.setExtendName(storage.getExtendName());
+        command.setMimeType(storage.getMimeType());
+        command.setOwnerId(storage.getOwnerId());
+        command.setOwnerType(storage.getOwnerType());
+        command.setBucketName(storage.getBucketName());
+        command.setObjectKey(storage.getObjectKey());
+        command.setSize(storage.getSize());
+        command.setAccessEndpoint(storage.getAccessEndpoint());
+        command.setObjectStatus(storage.getObjectStatus());
+        command.setReferenceStatus(storage.getReferenceStatus());
+        command.setRemarks(storage.getRemarks());
+        return command;
     }
 
     private StoredObject toStoredObject(CreateStorageCommand command) {

@@ -13,7 +13,10 @@ import com.thundax.kuzhambu.operations.domain.report.model.enums.ReportStatus;
 import com.thundax.kuzhambu.operations.domain.report.model.valueobject.ReportId;
 import com.thundax.kuzhambu.operations.domain.report.repository.ReportRepository;
 import com.thundax.kuzhambu.storage.facade.StorageFacade;
+import com.thundax.kuzhambu.storage.facade.request.BindStorageObjectOwnerFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.GetReadableContentFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.MarkStorageObjectUsageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.UnbindStorageObjectOwnerFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.UploadStorageObjectFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.response.GetReadableContentFacadeResponse;
 import com.thundax.kuzhambu.storage.facade.response.UploadStorageObjectFacadeResponse;
@@ -176,6 +179,18 @@ class DefaultOperationsReportTaskExecutorTest {
                     .sizeBytes(command.getSizeBytes())
                     .build();
         }
+
+        @Override
+        public void bindOwner(BindStorageObjectOwnerFacadeRequest request) {}
+
+        @Override
+        public void unbindOwner(UnbindStorageObjectOwnerFacadeRequest request) {}
+
+        @Override
+        public void markInUse(MarkStorageObjectUsageFacadeRequest request) {}
+
+        @Override
+        public void markUnused(MarkStorageObjectUsageFacadeRequest request) {}
     }
 
     private static String read(InputStream inputStream) {

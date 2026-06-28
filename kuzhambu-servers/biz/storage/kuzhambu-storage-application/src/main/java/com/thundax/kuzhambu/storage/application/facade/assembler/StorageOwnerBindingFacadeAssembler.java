@@ -7,19 +7,18 @@ import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObjectRefer
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
-import com.thundax.kuzhambu.storage.facade.request.AddStorageReferencesFacadeRequest;
-import com.thundax.kuzhambu.storage.facade.request.ChangeStorageReferenceStatusFacadeRequest;
-import com.thundax.kuzhambu.storage.facade.request.RemoveStorageReferencesFacadeRequest;
-import com.thundax.kuzhambu.storage.facade.response.StorageReferenceFacadeResponse;
+import com.thundax.kuzhambu.storage.facade.request.BindStorageObjectOwnerFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.MarkStorageObjectUsageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.UnbindStorageObjectOwnerFacadeRequest;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 
 @Component
-public class StorageReferenceFacadeAssembler {
+public class StorageOwnerBindingFacadeAssembler {
 
-    public AddStorageReferencesCommand toCommand(AddStorageReferencesFacadeRequest request) {
+    public AddStorageReferencesCommand toAddReferencesCommand(BindStorageObjectOwnerFacadeRequest request) {
         if (request == null) {
             return null;
         }
@@ -27,21 +26,18 @@ public class StorageReferenceFacadeAssembler {
                 request.getStorageObjectIds() == null ? Collections.emptyList() : request.getStorageObjectIds();
         StorageOwnerType ownerType =
                 isBlank(request.getOwnerType()) ? null : StorageOwnerType.from(request.getOwnerType());
-        StoredObjectReferenceStatus referenceStatus = isBlank(request.getReferenceStatus())
-                ? null
-                : StoredObjectReferenceStatus.from(request.getReferenceStatus());
         List<StoredObjectReference> references = storageObjectIds.stream()
                 .map(storageObjectId -> new StoredObjectReference(
                         storageObjectId == null ? null : StoredObjectId.of(storageObjectId),
                         request.getOwnerId(),
                         ownerType,
                         request.getOwnerParams(),
-                        referenceStatus))
+                        StoredObjectReferenceStatus.REFERENCED))
                 .collect(Collectors.toList());
         return new AddStorageReferencesCommand(references);
     }
 
-    public RemoveStorageReferencesCommand toCommand(RemoveStorageReferencesFacadeRequest request) {
+    public RemoveStorageReferencesCommand toRemoveReferencesCommand(UnbindStorageObjectOwnerFacadeRequest request) {
         if (request == null) {
             return null;
         }
@@ -50,21 +46,22 @@ public class StorageReferenceFacadeAssembler {
                 request.getOwnerId());
     }
 
-    public ChangeStorageReferenceStatusCommand toCommand(ChangeStorageReferenceStatusFacadeRequest request) {
+    public ChangeStorageReferenceStatusCommand toReferencedCommand(MarkStorageObjectUsageFacadeRequest request) {
         if (request == null) {
             return null;
         }
         return new ChangeStorageReferenceStatusCommand(
                 request.getStorageObjectId() == null ? null : StoredObjectId.of(request.getStorageObjectId()),
-                isBlank(request.getReferenceStatus())
-                        ? null
-                        : StoredObjectReferenceStatus.from(request.getReferenceStatus()));
+                StoredObjectReferenceStatus.REFERENCED);
     }
 
-    public StorageReferenceFacadeResponse toResponse(Integer affectedCount) {
-        return StorageReferenceFacadeResponse.builder()
-                .affectedCount(affectedCount)
-                .build();
+    public ChangeStorageReferenceStatusCommand toUnreferencedCommand(MarkStorageObjectUsageFacadeRequest request) {
+        if (request == null) {
+            return null;
+        }
+        return new ChangeStorageReferenceStatusCommand(
+                request.getStorageObjectId() == null ? null : StoredObjectId.of(request.getStorageObjectId()),
+                StoredObjectReferenceStatus.UNREFERENCED);
     }
 
     private boolean isBlank(String value) {
