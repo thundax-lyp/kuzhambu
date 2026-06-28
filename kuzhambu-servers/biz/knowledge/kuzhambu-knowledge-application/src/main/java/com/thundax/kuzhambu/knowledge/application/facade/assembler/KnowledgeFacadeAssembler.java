@@ -7,13 +7,20 @@ import com.thundax.kuzhambu.knowledge.application.report.result.KnowledgeReportS
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.DiscoveryEntityHintResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.DiscoverySynonymExpandResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.DiscoveryTagHintResult;
+import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.Tag;
+import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.ContentType;
+import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.TagSource;
+import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.valueobject.TagId;
 import com.thundax.kuzhambu.knowledge.facade.dto.KnowledgeCategoryDistributionFacadeDto;
 import com.thundax.kuzhambu.knowledge.facade.dto.KnowledgeEntityHintFacadeDto;
 import com.thundax.kuzhambu.knowledge.facade.dto.KnowledgeMonthlyNewTagFacadeDto;
 import com.thundax.kuzhambu.knowledge.facade.dto.KnowledgeTopTagFacadeDto;
+import com.thundax.kuzhambu.knowledge.facade.request.KnowledgeContentTagRefFacadeRequest;
+import com.thundax.kuzhambu.knowledge.facade.request.KnowledgeRemoveContentTagRefFacadeRequest;
 import com.thundax.kuzhambu.knowledge.facade.response.KnowledgeEntityHintsFacadeResponse;
 import com.thundax.kuzhambu.knowledge.facade.response.KnowledgeSummaryFacadeResponse;
 import com.thundax.kuzhambu.knowledge.facade.response.KnowledgeSynonymExpandFacadeResponse;
+import com.thundax.kuzhambu.knowledge.facade.response.KnowledgeTagFacadeResponse;
 import com.thundax.kuzhambu.knowledge.facade.response.KnowledgeTagHintFacadeResponse;
 import java.util.Collections;
 import java.util.List;
@@ -64,6 +71,36 @@ public class KnowledgeFacadeAssembler {
         return KnowledgeEntityHintsFacadeResponse.builder()
                 .entityHints(toEntityHintFacadeDtos(results))
                 .build();
+    }
+
+    public KnowledgeTagFacadeResponse toTagResponse(Tag tag) {
+        if (tag == null) {
+            return null;
+        }
+        return KnowledgeTagFacadeResponse.builder()
+                .tagId(tag.getTagId() == null ? null : tag.getTagId().value())
+                .tagName(tag.getName())
+                .build();
+    }
+
+    public TagId toTagId(KnowledgeContentTagRefFacadeRequest request) {
+        return request == null || request.getTagId() == null ? null : TagId.of(request.getTagId());
+    }
+
+    public TagId toTagId(KnowledgeRemoveContentTagRefFacadeRequest request) {
+        return request == null || request.getTagId() == null ? null : TagId.of(request.getTagId());
+    }
+
+    public ContentType toContentType(KnowledgeContentTagRefFacadeRequest request) {
+        return request == null ? null : ContentType.from(request.getContentType());
+    }
+
+    public ContentType toContentType(KnowledgeRemoveContentTagRefFacadeRequest request) {
+        return request == null ? null : ContentType.from(request.getContentType());
+    }
+
+    public TagSource toTagSource(KnowledgeContentTagRefFacadeRequest request) {
+        return request == null ? null : TagSource.from(request.getTagSource());
     }
 
     private List<KnowledgeTopTagFacadeDto> toTopTagFacadeDtos(List<TopTagResult> results) {

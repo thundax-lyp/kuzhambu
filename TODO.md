@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `knowledge-facade-tag-binding-provider`：落 classics tag binding provider 映射
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/facade/impl/KnowledgeFacadeImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/facade/assembler/KnowledgeFacadeAssembler.java`
-    - 处理动作：实现 tag resolve、content tag ref sync、content tag ref remove 的 provider 映射
-    - 验收点：provider 内已完成 `Tag -> KnowledgeTagFacadeResponse` 和 request string 到 domain enum 的映射
-    - 重要度：9/10
-
 - [ ] `operations-knowledge-facade`：operations 改用 KnowledgeFacade
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-FACADE-ISOLATION.md`
