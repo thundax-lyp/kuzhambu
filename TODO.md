@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `ai-facade/pom`：建立 ai-facade 模块骨架
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/ai/pom.xml`、`kuzhambu-servers/biz/ai/kuzhambu-ai-facade/pom.xml`、`kuzhambu-servers/biz/ai/kuzhambu-ai-facade/src/main/java/com/thundax/kuzhambu/ai/facade/AiFacade.java`
-    - 处理动作：新增 `kuzhambu-ai-facade` 模块并建立 `AiFacade` 协议入口。
-    - 验收点：`biz/ai` reactor 包含 `kuzhambu-ai-facade`，且 `AiFacade` 可被 `ai-facade` 模块编译识别。
-    - 重要度：10/10
-
 - [ ] `ai-facade/report-protocol`：定义 AI 报表摘要 facade 协议
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-FACADE-ISOLATION.md`
