@@ -11,8 +11,10 @@ import static org.mockito.Mockito.when;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
-import com.thundax.kuzhambu.ai.domain.invocation.service.AiCandidateDomainService;
+import com.thundax.kuzhambu.ai.facade.AiFacade;
+import com.thundax.kuzhambu.ai.facade.dto.AiCandidateFacadeDto;
+import com.thundax.kuzhambu.ai.facade.request.MarkAiCandidateAppliedFacadeRequest;
+import com.thundax.kuzhambu.ai.facade.request.RequirePendingAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.classics.application.content.command.AiCandidateApplyContentCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentExportCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentTagCommand;
@@ -384,18 +386,19 @@ class ClassicsContentApplicationServiceImplTest {
     void applyAiCandidateShouldPersistVersionMarkersAndPublishSync() {
         FakeRepository repository = new FakeRepository();
         repository.sancaiEntryForAiApply = publicSancaiEntry(102L);
-        AiCandidateDomainService aiCandidateDomainService = mock(AiCandidateDomainService.class);
+        AiFacade aiFacade = mock(AiFacade.class);
         ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
-        AiCandidate candidate = new AiCandidate();
-        candidate.setId(7001L);
-        candidate.setCandidateId(7001L);
-        candidate.setCapability("summary");
-        candidate.setContentType(ClassicsContentType.SANCAI_ENTRY.value());
-        candidate.setContentId(102L);
-        candidate.setStatus("PENDING");
-        when(aiCandidateDomainService.requirePendingForApply(any())).thenReturn(candidate);
+        AiCandidateFacadeDto candidate = AiCandidateFacadeDto.builder()
+                .candidateId(7001L)
+                .capability("summary")
+                .contentType(ClassicsContentType.SANCAI_ENTRY.value())
+                .contentId(102L)
+                .status("PENDING")
+                .build();
+        when(aiFacade.requirePendingCandidate(any(RequirePendingAiCandidateFacadeRequest.class)))
+                .thenReturn(candidate);
         ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
-                repository, null, null, null, null, null, aiCandidateDomainService, null, publishSupport);
+                repository, null, null, null, null, null, aiFacade, null, publishSupport);
 
         service.applyAiCandidate(new AiCandidateApplyContentCommand(
                 7001L, ClassicsContentType.SANCAI_ENTRY, 102L, "summary", "TEXT", "AI摘要", null));
@@ -403,7 +406,7 @@ class ClassicsContentApplicationServiceImplTest {
         assertEquals("AI摘要", repository.sancaiEntryForAiApply.getSummary());
         assertEquals(1, repository.sancaiEntryVersionMarker.getCurrentVersionNo());
         verify(publishSupport).publishUpsertAfterCommit(ClassicsContentType.SANCAI_ENTRY, "102", 1);
-        verify(aiCandidateDomainService).markApplied(eq(7001L), eq("TEXT"), eq("AI摘要"), any());
+        verify(aiFacade).markCandidateApplied(any(MarkAiCandidateAppliedFacadeRequest.class));
     }
 
     private static WorkerRenderDtos.WorkerRenderResponse renderSuccessResponse(String filename) {

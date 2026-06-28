@@ -65,9 +65,7 @@ public final class CrossApplicationIsolationArchitectureRuleSupport {
         put(allowlist, "operations", "storage");
         put(allowlist, "discovery", "classics");
         put(allowlist, "discovery", "knowledge");
-        put(allowlist, "knowledge", "ai");
         put(allowlist, "operations", "classics");
-        put(allowlist, "operations", "ai");
         put(allowlist, "operations", "discovery");
         put(allowlist, "operations", "knowledge");
         return allowlist;

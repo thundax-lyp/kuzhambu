@@ -1,8 +1,8 @@
 package com.thundax.kuzhambu.discovery.application.qa.service.impl;
 
-import com.thundax.kuzhambu.ai.domain.discovery.model.valueobject.DiscoveryAiRequest;
-import com.thundax.kuzhambu.ai.domain.discovery.model.valueobject.DiscoveryAiResult;
-import com.thundax.kuzhambu.ai.domain.discovery.service.DiscoveryAiDomainService;
+import com.thundax.kuzhambu.ai.facade.AiFacade;
+import com.thundax.kuzhambu.ai.facade.request.DiscoveryAiFacadeRequest;
+import com.thundax.kuzhambu.ai.facade.response.DiscoveryAiFacadeResponse;
 import com.thundax.kuzhambu.classics.application.search.result.ClassicsSearchSourceContent;
 import com.thundax.kuzhambu.classics.application.search.service.ClassicsSearchContentApplicationService;
 import com.thundax.kuzhambu.common.core.exception.BizException;
@@ -55,7 +55,7 @@ public class QaApplicationServiceImpl implements QaApplicationService {
     private final QaRetrievalTraceRepository qaRetrievalTraceRepository;
     private final QueryUnderstandingApplicationService queryUnderstandingApplicationService;
     private final ClassicsSearchContentApplicationService classicsSearchContentApplicationService;
-    private final DiscoveryAiDomainService discoveryAiDomainService;
+    private final AiFacade aiFacade;
     private final QaContextAssembler qaContextAssembler;
     private final QaSourceAssembler qaSourceAssembler;
     private final QaTraceAssembler qaTraceAssembler;
@@ -67,7 +67,7 @@ public class QaApplicationServiceImpl implements QaApplicationService {
             QaRetrievalTraceRepository qaRetrievalTraceRepository,
             QueryUnderstandingApplicationService queryUnderstandingApplicationService,
             ClassicsSearchContentApplicationService classicsSearchContentApplicationService,
-            DiscoveryAiDomainService discoveryAiDomainService,
+            AiFacade aiFacade,
             QaContextAssembler qaContextAssembler,
             QaSourceAssembler qaSourceAssembler,
             QaTraceAssembler qaTraceAssembler) {
@@ -77,7 +77,7 @@ public class QaApplicationServiceImpl implements QaApplicationService {
         this.qaRetrievalTraceRepository = qaRetrievalTraceRepository;
         this.queryUnderstandingApplicationService = queryUnderstandingApplicationService;
         this.classicsSearchContentApplicationService = classicsSearchContentApplicationService;
-        this.discoveryAiDomainService = discoveryAiDomainService;
+        this.aiFacade = aiFacade;
         this.qaContextAssembler = qaContextAssembler;
         this.qaSourceAssembler = qaSourceAssembler;
         this.qaTraceAssembler = qaTraceAssembler;
@@ -150,7 +150,7 @@ public class QaApplicationServiceImpl implements QaApplicationService {
         List<ClassicsSearchSourceContent> publicContents = classicsSearchContentApplicationService.listPublicContents();
         QaContextAssembler.QaContext qaContext =
                 qaContextAssembler.assemble(command.getQuestion(), understandingResult, publicContents);
-        DiscoveryAiResult aiResult = discoveryAiDomainService.generateAnswer(toAiRequest(command, qaContext));
+        DiscoveryAiFacadeResponse aiResult = aiFacade.generateDiscoveryAnswer(toAiRequest(command, qaContext));
 
         String answerText = aiResult == null ? null : aiResult.getResultPayload();
         if (StringUtils.isBlank(answerText)) {
@@ -249,23 +249,22 @@ public class QaApplicationServiceImpl implements QaApplicationService {
         return qaTraceAssembler.toTraceResult(qaRetrievalTraceRepository.getByTraceId(traceId));
     }
 
-    private DiscoveryAiRequest toAiRequest(AskQuestionCommand command, QaContextAssembler.QaContext qaContext) {
-        return new DiscoveryAiRequest(
-                DEFAULT_SERVICE_ID,
-                DEFAULT_SERVICE_ROLE,
-                DEFAULT_MODEL_ID,
-                DEFAULT_MODEL_NAME,
-                DEFAULT_PROMPT_VERSION_ID,
-                command.getRequestId(),
-                command.getTraceId(),
-                qaContext.promptMessagesJson(),
-                null,
-                null,
-                qaContext.inputPayloadJson(),
-                qaContext.outputSchemaJson(),
-                false,
-                true,
-                DEFAULT_LOCALE);
+    private DiscoveryAiFacadeRequest toAiRequest(AskQuestionCommand command, QaContextAssembler.QaContext qaContext) {
+        return DiscoveryAiFacadeRequest.builder()
+                .serviceId(DEFAULT_SERVICE_ID)
+                .serviceRole(DEFAULT_SERVICE_ROLE)
+                .modelId(DEFAULT_MODEL_ID)
+                .modelName(DEFAULT_MODEL_NAME)
+                .promptVersionId(DEFAULT_PROMPT_VERSION_ID)
+                .requestId(command.getRequestId())
+                .traceId(command.getTraceId())
+                .promptMessagesJson(qaContext.promptMessagesJson())
+                .inputPayloadJson(qaContext.inputPayloadJson())
+                .outputSchemaJson(qaContext.outputSchemaJson())
+                .stream(false)
+                .forceJson(true)
+                .locale(DEFAULT_LOCALE)
+                .build();
     }
 
     private QaSessionResult toSessionResult(QaSession session) {

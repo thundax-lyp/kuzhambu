@@ -4,9 +4,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.thundax.kuzhambu.ai.domain.discovery.model.valueobject.DiscoveryAiRequest;
-import com.thundax.kuzhambu.ai.domain.discovery.model.valueobject.DiscoveryAiResult;
-import com.thundax.kuzhambu.ai.domain.discovery.service.DiscoveryAiDomainService;
+import com.thundax.kuzhambu.ai.facade.AiFacade;
+import com.thundax.kuzhambu.ai.facade.request.DiscoveryAiFacadeRequest;
+import com.thundax.kuzhambu.ai.facade.response.DiscoveryAiFacadeResponse;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchQuery;
@@ -39,17 +39,17 @@ public class QueryUnderstandingApplicationServiceImpl implements QueryUnderstand
     private final QueryUnderstandingRepository queryUnderstandingRepository;
     private final DiscoveryKnowledgeEnhancementProvider knowledgeEnhancementProvider;
     private final QueryUnderstandingPayloadBuilder payloadBuilder;
-    private final DiscoveryAiDomainService discoveryAiDomainService;
+    private final AiFacade aiFacade;
 
     public QueryUnderstandingApplicationServiceImpl(
             QueryUnderstandingRepository queryUnderstandingRepository,
             DiscoveryKnowledgeEnhancementProvider knowledgeEnhancementProvider,
             QueryUnderstandingPayloadBuilder payloadBuilder,
-            DiscoveryAiDomainService discoveryAiDomainService) {
+            AiFacade aiFacade) {
         this.queryUnderstandingRepository = queryUnderstandingRepository;
         this.knowledgeEnhancementProvider = knowledgeEnhancementProvider;
         this.payloadBuilder = payloadBuilder;
-        this.discoveryAiDomainService = discoveryAiDomainService;
+        this.aiFacade = aiFacade;
     }
 
     @Override
@@ -63,23 +63,22 @@ public class QueryUnderstandingApplicationServiceImpl implements QueryUnderstand
                 searchDomainService.normalizeKeyword(query.getQueryText()).getNormalizedText();
         var enhancement = knowledgeEnhancementProvider.enhance(normalizedQueryText);
         try {
-            DiscoveryAiRequest aiRequest = new DiscoveryAiRequest(
-                    DEFAULT_SERVICE_ID,
-                    DEFAULT_SERVICE_ROLE,
-                    DEFAULT_MODEL_ID,
-                    DEFAULT_MODEL_NAME,
-                    DEFAULT_PROMPT_VERSION_ID,
-                    query.getRequestId(),
-                    query.getTraceId(),
-                    payloadBuilder.buildPromptMessagesJson(query, normalizedQueryText, enhancement),
-                    null,
-                    null,
-                    payloadBuilder.buildInputPayloadJson(query, normalizedQueryText, enhancement),
-                    payloadBuilder.buildOutputSchemaJson(),
-                    false,
-                    true,
-                    DEFAULT_LOCALE);
-            DiscoveryAiResult aiResult = discoveryAiDomainService.understandQuery(aiRequest);
+            DiscoveryAiFacadeRequest aiRequest = DiscoveryAiFacadeRequest.builder()
+                    .serviceId(DEFAULT_SERVICE_ID)
+                    .serviceRole(DEFAULT_SERVICE_ROLE)
+                    .modelId(DEFAULT_MODEL_ID)
+                    .modelName(DEFAULT_MODEL_NAME)
+                    .promptVersionId(DEFAULT_PROMPT_VERSION_ID)
+                    .requestId(query.getRequestId())
+                    .traceId(query.getTraceId())
+                    .promptMessagesJson(payloadBuilder.buildPromptMessagesJson(query, normalizedQueryText, enhancement))
+                    .inputPayloadJson(payloadBuilder.buildInputPayloadJson(query, normalizedQueryText, enhancement))
+                    .outputSchemaJson(payloadBuilder.buildOutputSchemaJson())
+                    .stream(false)
+                    .forceJson(true)
+                    .locale(DEFAULT_LOCALE)
+                    .build();
+            DiscoveryAiFacadeResponse aiResult = aiFacade.understandDiscoveryQuery(aiRequest);
             QueryUnderstandingResult result = toResult(
                     normalizedQueryText,
                     enhancement.expandedSynonyms(),
@@ -99,7 +98,7 @@ public class QueryUnderstandingApplicationServiceImpl implements QueryUnderstand
             List<String> expandedSynonyms,
             List<QueryUnderstandingResult.RecognizedEntityResult> defaultRecognizedEntities,
             SearchQuery query,
-            DiscoveryAiResult aiResult) {
+            DiscoveryAiFacadeResponse aiResult) {
         if (aiResult == null
                 || aiResult.getResultPayload() == null
                 || aiResult.getResultPayload().isBlank()) {

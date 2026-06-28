@@ -6,8 +6,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.thundax.kuzhambu.ai.domain.invocation.service.AiCandidateApplyCheck;
-import com.thundax.kuzhambu.ai.domain.invocation.service.AiCandidateDomainService;
+import com.thundax.kuzhambu.ai.facade.AiFacade;
+import com.thundax.kuzhambu.ai.facade.request.MarkAiCandidateAppliedFacadeRequest;
+import com.thundax.kuzhambu.ai.facade.request.RequirePendingAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.classics.application.content.command.AiCandidateApplyContentCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentExportCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairCommand;
@@ -104,7 +105,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     private final ObjectMapper objectMapper;
     private final ClassicsContentVersioningService versioningService = new ClassicsContentVersioningService();
     private final ClassicsContentSnapshotAssembler snapshotAssembler = new ClassicsContentSnapshotAssembler();
-    private final AiCandidateDomainService aiCandidateDomainService;
+    private final AiFacade aiFacade;
     private final ClassicsAiCandidatePayloadParser aiCandidatePayloadParser;
     private final ClassicsTagBindingSupport tagBindingSupport;
     private final ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport;
@@ -117,7 +118,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             SancaiAssetApplicationService sancaiAssetApplicationService,
             WorkerRenderClient workerRenderClient,
             StorageFacade storageFacade,
-            AiCandidateDomainService aiCandidateDomainService,
+            AiFacade aiFacade,
             ClassicsTagBindingSupport tagBindingSupport,
             ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport) {
         this.repository = repository;
@@ -126,7 +127,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         this.sancaiAssetApplicationService = sancaiAssetApplicationService;
         this.workerRenderClient = workerRenderClient;
         this.storageFacade = storageFacade;
-        this.aiCandidateDomainService = aiCandidateDomainService;
+        this.aiFacade = aiFacade;
         this.tagBindingSupport = tagBindingSupport;
         this.searchIndexSyncPublishSupport = searchIndexSyncPublishSupport;
         this.objectMapper = new ObjectMapper().findAndRegisterModules();
@@ -437,15 +438,15 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             throw new BizException("AI候选应用参数不完整");
         }
 
-        if (aiCandidateDomainService == null) {
+        if (aiFacade == null) {
             throw new BizException("AI候选服务未就绪");
         }
-        AiCandidateApplyCheck check = new AiCandidateApplyCheck();
-        check.setCandidateId(command.getCandidateId());
-        check.setContentType(command.getContentType().value());
-        check.setContentId(command.getContentId());
-        check.setCapability(command.getCapability());
-        aiCandidateDomainService.requirePendingForApply(check);
+        aiFacade.requirePendingCandidate(RequirePendingAiCandidateFacadeRequest.builder()
+                .candidateId(command.getCandidateId())
+                .contentType(command.getContentType().value())
+                .contentId(command.getContentId())
+                .capability(command.getCapability())
+                .build());
 
         ClassicsContentType contentType = command.getContentType();
         String capability = command.getCapability();
@@ -519,8 +520,12 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         ClassicsContentVersion version = applyAiResult(content, changeSummary);
         persistVersionMarkers(content);
         publishSearchSyncAfterCommit(content);
-        aiCandidateDomainService.markApplied(
-                command.getCandidateId(), command.getResultFormat(), command.getResultPayload(), Instant.now());
+        aiFacade.markCandidateApplied(MarkAiCandidateAppliedFacadeRequest.builder()
+                .candidateId(command.getCandidateId())
+                .resultFormat(command.getResultFormat())
+                .resultPayload(command.getResultPayload())
+                .appliedAt(Instant.now())
+                .build());
         return new AiCandidateApplyContentResult(
                 contentType,
                 contentId.value(),

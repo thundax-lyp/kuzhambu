@@ -7,8 +7,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.thundax.kuzhambu.ai.domain.discovery.model.valueobject.DiscoveryAiResult;
-import com.thundax.kuzhambu.ai.domain.discovery.service.DiscoveryAiDomainService;
+import com.thundax.kuzhambu.ai.facade.AiFacade;
+import com.thundax.kuzhambu.ai.facade.response.DiscoveryAiFacadeResponse;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchQuery;
 import com.thundax.kuzhambu.discovery.application.search.result.QueryUnderstandingResult;
@@ -28,7 +28,7 @@ class QueryUnderstandingApplicationServiceImplTest {
                 mock(QueryUnderstandingRepository.class),
                 mock(DiscoveryKnowledgeEnhancementProvider.class),
                 mock(QueryUnderstandingPayloadBuilder.class),
-                mock(DiscoveryAiDomainService.class));
+                mock(AiFacade.class));
 
         BizException exception = assertThrows(BizException.class, () -> service.understand(new SearchQuery()));
         assertEquals("Search query is required", exception.getMessage());
@@ -39,7 +39,7 @@ class QueryUnderstandingApplicationServiceImplTest {
         QueryUnderstandingRepository repository = mock(QueryUnderstandingRepository.class);
         DiscoveryKnowledgeEnhancementProvider enhancementProvider = mock(DiscoveryKnowledgeEnhancementProvider.class);
         QueryUnderstandingPayloadBuilder payloadBuilder = mock(QueryUnderstandingPayloadBuilder.class);
-        DiscoveryAiDomainService discoveryAiDomainService = mock(DiscoveryAiDomainService.class);
+        AiFacade aiFacade = mock(AiFacade.class);
         when(enhancementProvider.enhance("礼制"))
                 .thenReturn(new DiscoveryKnowledgeEnhancementProvider.KnowledgeEnhancementResult(
                         List.of("礼学"),
@@ -48,20 +48,18 @@ class QueryUnderstandingApplicationServiceImplTest {
         when(payloadBuilder.buildPromptMessagesJson(any(), any(), any())).thenReturn("[]");
         when(payloadBuilder.buildInputPayloadJson(any(), any(), any())).thenReturn("{\"query\":\"礼制\"}");
         when(payloadBuilder.buildOutputSchemaJson()).thenReturn("{\"type\":\"object\"}");
-        when(discoveryAiDomainService.understandQuery(any()))
-                .thenReturn(new DiscoveryAiResult(
-                        101L,
-                        null,
-                        "SUCCEEDED",
-                        "query_understanding",
-                        "STRUCTURED",
-                        "{\"intent\":\"NATURAL_LANGUAGE_SEARCH\",\"rewrittenQueryText\":\"礼制 礼学\"}",
-                        null,
-                        null));
+        when(aiFacade.understandDiscoveryQuery(any()))
+                .thenReturn(DiscoveryAiFacadeResponse.builder()
+                        .callId(101L)
+                        .status("SUCCEEDED")
+                        .capability("query_understanding")
+                        .resultFormat("STRUCTURED")
+                        .resultPayload("{\"intent\":\"NATURAL_LANGUAGE_SEARCH\",\"rewrittenQueryText\":\"礼制 礼学\"}")
+                        .build());
         when(repository.save(any())).thenReturn(1L);
 
-        QueryUnderstandingApplicationServiceImpl service = new QueryUnderstandingApplicationServiceImpl(
-                repository, enhancementProvider, payloadBuilder, discoveryAiDomainService);
+        QueryUnderstandingApplicationServiceImpl service =
+                new QueryUnderstandingApplicationServiceImpl(repository, enhancementProvider, payloadBuilder, aiFacade);
         SearchQuery query = new SearchQuery(
                 " 礼制 ",
                 List.of(),
@@ -95,20 +93,20 @@ class QueryUnderstandingApplicationServiceImplTest {
         QueryUnderstandingRepository repository = mock(QueryUnderstandingRepository.class);
         DiscoveryKnowledgeEnhancementProvider enhancementProvider = mock(DiscoveryKnowledgeEnhancementProvider.class);
         QueryUnderstandingPayloadBuilder payloadBuilder = mock(QueryUnderstandingPayloadBuilder.class);
-        DiscoveryAiDomainService discoveryAiDomainService = mock(DiscoveryAiDomainService.class);
+        AiFacade aiFacade = mock(AiFacade.class);
         when(enhancementProvider.enhance("礼制"))
                 .thenReturn(new DiscoveryKnowledgeEnhancementProvider.KnowledgeEnhancementResult(
                         List.of("礼学"), null, List.of()));
         when(payloadBuilder.buildPromptMessagesJson(any(), any(), any())).thenReturn("[]");
         when(payloadBuilder.buildInputPayloadJson(any(), any(), any())).thenReturn("{\"query\":\"礼制\"}");
         when(payloadBuilder.buildOutputSchemaJson()).thenReturn("{\"type\":\"object\"}");
-        when(discoveryAiDomainService.understandQuery(any()))
+        when(aiFacade.understandDiscoveryQuery(any()))
                 .thenThrow(new BizException(
                         "DISCOVERY-29999", "discovery.search.query-understanding.ai-failed", "AI failed"));
         when(repository.save(any())).thenReturn(1L);
 
-        QueryUnderstandingApplicationServiceImpl service = new QueryUnderstandingApplicationServiceImpl(
-                repository, enhancementProvider, payloadBuilder, discoveryAiDomainService);
+        QueryUnderstandingApplicationServiceImpl service =
+                new QueryUnderstandingApplicationServiceImpl(repository, enhancementProvider, payloadBuilder, aiFacade);
         SearchQuery query = new SearchQuery(
                 "礼制",
                 List.of(),

@@ -3,17 +3,16 @@ package com.thundax.kuzhambu.classics.application.content;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
-import com.thundax.kuzhambu.ai.domain.invocation.service.AiCandidateApplyCheck;
-import com.thundax.kuzhambu.ai.domain.invocation.service.AiCandidateDomainService;
+import com.thundax.kuzhambu.ai.facade.AiFacade;
+import com.thundax.kuzhambu.ai.facade.dto.AiCandidateFacadeDto;
+import com.thundax.kuzhambu.ai.facade.request.MarkAiCandidateAppliedFacadeRequest;
+import com.thundax.kuzhambu.ai.facade.request.RequirePendingAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.classics.application.content.command.AiCandidateApplyContentCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentTagCommand;
 import com.thundax.kuzhambu.classics.application.content.result.AiCandidateApplyContentResult;
@@ -59,24 +58,23 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         entry.setContentUpdatedAt(new Date(1L));
         repository.sancaiEntryForAiApply = entry;
 
-        AiCandidateDomainService aiCandidateDomainService = mockAiCandidateDomainService(
-                check -> {
-                    assertEquals(11L, check.getCandidateId());
-                    assertEquals("SANCAI_ENTRY", check.getContentType());
-                    assertEquals(11L, check.getContentId());
-                    assertEquals("summary", check.getCapability());
+        AiFacade aiFacade = mockAiFacade(
+                request -> {
+                    assertEquals(11L, request.getCandidateId());
+                    assertEquals("SANCAI_ENTRY", request.getContentType());
+                    assertEquals(11L, request.getContentId());
+                    assertEquals("summary", request.getCapability());
                     return pendingCandidate();
                 },
-                (candidateId, resultFormat, resultPayload, markAppliedAt) -> {
-                    assertEquals(11L, candidateId);
-                    assertEquals("TEXT", resultFormat);
-                    assertEquals("new summary", resultPayload);
-                    assertEquals(Instant.class, markAppliedAt.getClass());
+                request -> {
+                    assertEquals(11L, request.getCandidateId());
+                    assertEquals("TEXT", request.getResultFormat());
+                    assertEquals("new summary", request.getResultPayload());
+                    assertEquals(Instant.class, request.getAppliedAt().getClass());
                     return candidateApplied();
                 });
 
-        ClassicsContentApplicationServiceImpl service =
-                serviceWithAiDomainService(repository, aiCandidateDomainService);
+        ClassicsContentApplicationServiceImpl service = serviceWithAiFacade(repository, aiFacade);
         AiCandidateApplyContentCommand command =
                 applyCommand(11L, ClassicsContentType.SANCAI_ENTRY, 11L, "summary", "new summary");
 
@@ -91,7 +89,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         assertEquals("AI 应用：摘要", repository.lastInsertedVersion.getChangeSummary());
         assertEquals(1, repository.insertVersionCount);
         assertEquals(1, repository.updateSancaiEntryAiCount);
-        verify(aiCandidateDomainService).markApplied(eq(11L), eq("TEXT"), eq("new summary"), any(Instant.class));
+        verify(aiFacade).markCandidateApplied(any(MarkAiCandidateAppliedFacadeRequest.class));
     }
 
     @Test
@@ -108,23 +106,22 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 WangqiDocumentVisibility.PUBLIC);
         repository.wangqiDocumentForAiApply = document;
 
-        AiCandidateDomainService aiCandidateDomainService = mockAiCandidateDomainService(
-                check -> {
-                    assertEquals(22L, check.getCandidateId());
-                    assertEquals("WANGQI_DOCUMENT", check.getContentType());
-                    assertEquals(22L, check.getContentId());
-                    assertEquals("summary", check.getCapability());
+        AiFacade aiFacade = mockAiFacade(
+                request -> {
+                    assertEquals(22L, request.getCandidateId());
+                    assertEquals("WANGQI_DOCUMENT", request.getContentType());
+                    assertEquals(22L, request.getContentId());
+                    assertEquals("summary", request.getCapability());
                     return pendingCandidate();
                 },
-                (candidateId, resultFormat, resultPayload, markAppliedAt) -> {
-                    assertEquals(22L, candidateId);
-                    assertEquals("TEXT", resultFormat);
-                    assertEquals("new summary", resultPayload);
+                request -> {
+                    assertEquals(22L, request.getCandidateId());
+                    assertEquals("TEXT", request.getResultFormat());
+                    assertEquals("new summary", request.getResultPayload());
                     return candidateApplied();
                 });
 
-        ClassicsContentApplicationServiceImpl service =
-                serviceWithAiDomainService(repository, aiCandidateDomainService);
+        ClassicsContentApplicationServiceImpl service = serviceWithAiFacade(repository, aiFacade);
         AiCandidateApplyContentCommand command =
                 applyCommand(22L, ClassicsContentType.WANGQI_DOCUMENT, 22L, "summary", "new summary");
 
@@ -139,7 +136,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         assertEquals("AI 应用：摘要", repository.lastInsertedVersion.getChangeSummary());
         assertEquals(1, repository.insertVersionCount);
         assertEquals(1, repository.updateWangqiDocumentAiCount);
-        verify(aiCandidateDomainService).markApplied(eq(22L), eq("TEXT"), eq("new summary"), any(Instant.class));
+        verify(aiFacade).markCandidateApplied(any(MarkAiCandidateAppliedFacadeRequest.class));
     }
 
     @Test
@@ -150,23 +147,22 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         entry.setSummary("old summary");
         repository.mingCustomsEntryForAiApply = entry;
 
-        AiCandidateDomainService aiCandidateDomainService = mockAiCandidateDomainService(
-                check -> {
-                    assertEquals(33L, check.getCandidateId());
-                    assertEquals("MING_CUSTOMS", check.getContentType());
-                    assertEquals(33L, check.getContentId());
-                    assertEquals("summary", check.getCapability());
+        AiFacade aiFacade = mockAiFacade(
+                request -> {
+                    assertEquals(33L, request.getCandidateId());
+                    assertEquals("MING_CUSTOMS", request.getContentType());
+                    assertEquals(33L, request.getContentId());
+                    assertEquals("summary", request.getCapability());
                     return pendingCandidate();
                 },
-                (candidateId, resultFormat, resultPayload, markAppliedAt) -> {
-                    assertEquals(33L, candidateId);
-                    assertEquals("TEXT", resultFormat);
-                    assertEquals("new summary", resultPayload);
+                request -> {
+                    assertEquals(33L, request.getCandidateId());
+                    assertEquals("TEXT", request.getResultFormat());
+                    assertEquals("new summary", request.getResultPayload());
                     return candidateApplied();
                 });
 
-        ClassicsContentApplicationServiceImpl service =
-                serviceWithAiDomainService(repository, aiCandidateDomainService);
+        ClassicsContentApplicationServiceImpl service = serviceWithAiFacade(repository, aiFacade);
         AiCandidateApplyContentCommand command =
                 applyCommand(33L, ClassicsContentType.MING_CUSTOMS, 33L, "summary", "new summary");
 
@@ -181,7 +177,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         assertEquals("AI 应用：摘要", repository.lastInsertedVersion.getChangeSummary());
         assertEquals(1, repository.insertVersionCount);
         assertEquals(1, repository.updateMingCustomsEntryAiCount);
-        verify(aiCandidateDomainService).markApplied(eq(33L), eq("TEXT"), eq("new summary"), any(Instant.class));
+        verify(aiFacade).markCandidateApplied(any(MarkAiCandidateAppliedFacadeRequest.class));
     }
 
     @Test
@@ -193,18 +189,17 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         repository.tags.add(manualTag(1L, 11L, "manual-tag"));
         repository.tags.add(aiTag(2L, 11L, "old-ai-tag"));
 
-        AiCandidateDomainService aiCandidateDomainService = mockAiCandidateDomainService(
-                check -> {
-                    assertEquals(11L, check.getCandidateId());
-                    assertEquals("SANCAI_ENTRY", check.getContentType());
-                    assertEquals(11L, check.getContentId());
-                    assertEquals("tags", check.getCapability());
+        AiFacade aiFacade = mockAiFacade(
+                request -> {
+                    assertEquals(11L, request.getCandidateId());
+                    assertEquals("SANCAI_ENTRY", request.getContentType());
+                    assertEquals(11L, request.getContentId());
+                    assertEquals("tags", request.getCapability());
                     return pendingCandidate();
                 },
-                (candidateId, resultFormat, resultPayload, markAppliedAt) -> candidateApplied());
+                request -> candidateApplied());
 
-        ClassicsContentApplicationServiceImpl service =
-                serviceWithAiDomainService(repository, aiCandidateDomainService);
+        ClassicsContentApplicationServiceImpl service = serviceWithAiFacade(repository, aiFacade);
         AiCandidateApplyContentCommand command = applyCommand(
                 11L,
                 ClassicsContentType.SANCAI_ENTRY,
@@ -232,12 +227,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 repository.tags.stream()
                         .filter(tag -> tag.getSource() == ClassicsContentSource.AI)
                         .count());
-        verify(aiCandidateDomainService)
-                .markApplied(
-                        eq(11L),
-                        eq("TEXT"),
-                        eq("{\"tags\":[\"ai-one\",\"ai-two\",\"ai-one\",\"\"]}"),
-                        any(Instant.class));
+        verify(aiFacade).markCandidateApplied(any(MarkAiCandidateAppliedFacadeRequest.class));
     }
 
     @Test
@@ -250,9 +240,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         repository.tags.add(manualTag(1L, 11L, "manual-tag"));
         repository.tags.add(oldAiTag);
 
-        AiCandidateDomainService aiCandidateDomainService = mockAiCandidateDomainService(
-                check -> pendingCandidate(),
-                (candidateId, resultFormat, resultPayload, markAppliedAt) -> candidateApplied());
+        AiFacade aiFacade = mockAiFacade(request -> pendingCandidate(), request -> candidateApplied());
         ClassicsTagBindingSupport tagBindingSupport = org.mockito.Mockito.mock(ClassicsTagBindingSupport.class);
         when(tagBindingSupport.bindAiTag(any(ContentTagCommand.class), any())).thenAnswer(invocation -> {
             ContentTagCommand command = invocation.getArgument(0);
@@ -260,7 +248,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         });
 
         ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
-                repository, null, null, null, null, null, aiCandidateDomainService, tagBindingSupport, null);
+                repository, null, null, null, null, null, aiFacade, tagBindingSupport, null);
 
         service.applyAiCandidate(
                 applyCommand(11L, ClassicsContentType.SANCAI_ENTRY, 11L, "tags", "{\"tags\":[\"ai-one\",\"ai-two\"]}"));
@@ -279,18 +267,17 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         repository.qaPairs.add(manualQaPair(1L, 11L, "manual-q", "manual-a"));
         repository.qaPairs.add(aiQaPair(2L, 11L, "old-q", "old-a"));
 
-        AiCandidateDomainService aiCandidateDomainService = mockAiCandidateDomainService(
-                check -> {
-                    assertEquals(11L, check.getCandidateId());
-                    assertEquals("SANCAI_ENTRY", check.getContentType());
-                    assertEquals(11L, check.getContentId());
-                    assertEquals("qa", check.getCapability());
+        AiFacade aiFacade = mockAiFacade(
+                request -> {
+                    assertEquals(11L, request.getCandidateId());
+                    assertEquals("SANCAI_ENTRY", request.getContentType());
+                    assertEquals(11L, request.getContentId());
+                    assertEquals("qa", request.getCapability());
                     return pendingCandidate();
                 },
-                (candidateId, resultFormat, resultPayload, markAppliedAt) -> candidateApplied());
+                request -> candidateApplied());
 
-        ClassicsContentApplicationServiceImpl service =
-                serviceWithAiDomainService(repository, aiCandidateDomainService);
+        ClassicsContentApplicationServiceImpl service = serviceWithAiFacade(repository, aiFacade);
         AiCandidateApplyContentCommand command = applyCommand(
                 11L,
                 ClassicsContentType.SANCAI_ENTRY,
@@ -317,13 +304,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 repository.qaPairs.stream()
                         .filter(pair -> pair.getSource() == ClassicsContentSource.AI)
                         .count());
-        verify(aiCandidateDomainService)
-                .markApplied(
-                        eq(11L),
-                        eq("TEXT"),
-                        eq(
-                                "{\"qaPairs\":[{\"question\":\"q1\",\"answer\":\"a\"},{\"question\":\"q2\",\"answer\":\"b\"},{\"question\":\"q1\",\"answer\":\"a\"}]}"),
-                        any(Instant.class));
+        verify(aiFacade).markCandidateApplied(any(MarkAiCandidateAppliedFacadeRequest.class));
     }
 
     @Test
@@ -334,19 +315,18 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         entry.setSummary("old summary");
         repository.sancaiEntryForAiApply = entry;
 
-        AiCandidateDomainService aiCandidateDomainService = mockAiCandidateDomainService(
-                check -> {
+        AiFacade aiFacade = mockAiFacade(
+                request -> {
                     throw new DomainException(
                             "AI-INVOCATION-409",
                             "ai.candidate.not-pending",
-                            "AI candidate is not pending: " + check.getCandidateId());
+                            "AI candidate is not pending: " + request.getCandidateId());
                 },
-                (candidateId, resultFormat, resultPayload, markAppliedAt) -> {
+                request -> {
                     throw new IllegalStateException("markApplied should not be called");
                 });
 
-        ClassicsContentApplicationServiceImpl service =
-                serviceWithAiDomainService(repository, aiCandidateDomainService);
+        ClassicsContentApplicationServiceImpl service = serviceWithAiFacade(repository, aiFacade);
         AiCandidateApplyContentCommand command =
                 applyCommand(11L, ClassicsContentType.SANCAI_ENTRY, 11L, "summary", "new summary");
 
@@ -355,13 +335,13 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         assertEquals("old summary", entry.getSummary());
         assertEquals(0, repository.insertVersionCount);
         assertEquals(0, repository.updateSancaiEntryAiCount);
-        verify(aiCandidateDomainService, never()).markApplied(anyLong(), any(), any(), any(Instant.class));
+        verify(aiFacade, never()).markCandidateApplied(any(MarkAiCandidateAppliedFacadeRequest.class));
     }
 
-    private static ClassicsContentApplicationServiceImpl serviceWithAiDomainService(
-            ClassicsContentRepository repository, AiCandidateDomainService aiCandidateDomainService) {
+    private static ClassicsContentApplicationServiceImpl serviceWithAiFacade(
+            ClassicsContentRepository repository, AiFacade aiFacade) {
         return new ClassicsContentApplicationServiceImpl(
-                repository, null, null, null, null, null, aiCandidateDomainService, null, null);
+                repository, null, null, null, null, null, aiFacade, null, null);
     }
 
     private static AiCandidateApplyContentCommand applyCommand(
@@ -376,42 +356,33 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         return command;
     }
 
-    private static AiCandidate pendingCandidate() {
-        AiCandidate candidate = new AiCandidate();
-        candidate.setCandidateId(11L);
-        candidate.setStatus("PENDING");
-        return candidate;
+    private static AiCandidateFacadeDto pendingCandidate() {
+        return AiCandidateFacadeDto.builder().candidateId(11L).status("PENDING").build();
     }
 
-    private static AiCandidate candidateApplied() {
-        AiCandidate candidate = new AiCandidate();
-        candidate.setCandidateId(11L);
-        candidate.setStatus("APPLIED");
-        return candidate;
+    private static AiCandidateFacadeDto candidateApplied() {
+        return AiCandidateFacadeDto.builder()
+                .candidateId(11L)
+                .status("APPLIED")
+                .appliedAt(Instant.now())
+                .build();
     }
 
-    private static AiCandidateDomainService mockAiCandidateDomainService(
-            java.util.function.Function<AiCandidateApplyCheck, AiCandidate> requirePending, AiMarkApplied markApplied) {
-        AiCandidateDomainService aiCandidateDomainService = org.mockito.Mockito.mock(AiCandidateDomainService.class);
-        when(aiCandidateDomainService.requirePendingForApply(any(AiCandidateApplyCheck.class)))
+    private static AiFacade mockAiFacade(
+            java.util.function.Function<RequirePendingAiCandidateFacadeRequest, AiCandidateFacadeDto> requirePending,
+            java.util.function.Function<MarkAiCandidateAppliedFacadeRequest, AiCandidateFacadeDto> markApplied) {
+        AiFacade aiFacade = org.mockito.Mockito.mock(AiFacade.class);
+        when(aiFacade.requirePendingCandidate(any(RequirePendingAiCandidateFacadeRequest.class)))
                 .thenAnswer(invocation -> {
-                    AiCandidateApplyCheck check = invocation.getArgument(0);
+                    RequirePendingAiCandidateFacadeRequest check = invocation.getArgument(0);
                     return requirePending.apply(check);
                 });
-        when(aiCandidateDomainService.markApplied(anyLong(), any(), any(), any(Instant.class)))
+        when(aiFacade.markCandidateApplied(any(MarkAiCandidateAppliedFacadeRequest.class)))
                 .thenAnswer(invocation -> {
-                    Long candidateId = invocation.getArgument(0);
-                    String resultFormat = invocation.getArgument(1);
-                    String resultPayload = invocation.getArgument(2);
-                    Instant markAppliedAt = invocation.getArgument(3);
-                    return markApplied.apply(candidateId, resultFormat, resultPayload, markAppliedAt);
+                    MarkAiCandidateAppliedFacadeRequest request = invocation.getArgument(0);
+                    return markApplied.apply(request);
                 });
-        return aiCandidateDomainService;
-    }
-
-    @FunctionalInterface
-    private interface AiMarkApplied {
-        AiCandidate apply(Long candidateId, String resultFormat, String resultPayload, Instant markAppliedAt);
+        return aiFacade;
     }
 
     private static ClassicsContentTag manualTag(Long id, Long contentId, String tagName) {

@@ -17,6 +17,7 @@
   <modules>
     <module>kuzhambu-ai-domain</module>
     <module>kuzhambu-ai-application</module>
+    <module>kuzhambu-ai-facade</module>
     <module>kuzhambu-ai-interface</module>
     <module>kuzhambu-ai-infra</module>
   </modules>

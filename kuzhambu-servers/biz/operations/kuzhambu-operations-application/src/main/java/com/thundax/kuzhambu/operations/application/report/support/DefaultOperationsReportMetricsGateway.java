@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.operations.application.report.support;
 
-import com.thundax.kuzhambu.ai.application.report.service.AiReportApplicationService;
+import com.thundax.kuzhambu.ai.facade.AiFacade;
+import com.thundax.kuzhambu.ai.facade.request.AiReportSummaryFacadeRequest;
 import com.thundax.kuzhambu.classics.application.report.service.ClassicsReportApplicationService;
 import com.thundax.kuzhambu.discovery.application.report.service.DiscoveryReportApplicationService;
 import com.thundax.kuzhambu.knowledge.application.report.service.KnowledgeReportApplicationService;
@@ -17,17 +18,17 @@ import org.springframework.stereotype.Component;
 public class DefaultOperationsReportMetricsGateway implements OperationsReportMetricsGateway {
 
     private final ClassicsReportApplicationService classicsReportApplicationService;
-    private final AiReportApplicationService aiReportApplicationService;
+    private final AiFacade aiFacade;
     private final DiscoveryReportApplicationService discoveryReportApplicationService;
     private final KnowledgeReportApplicationService knowledgeReportApplicationService;
 
     public DefaultOperationsReportMetricsGateway(
             ClassicsReportApplicationService classicsReportApplicationService,
-            AiReportApplicationService aiReportApplicationService,
+            AiFacade aiFacade,
             DiscoveryReportApplicationService discoveryReportApplicationService,
             KnowledgeReportApplicationService knowledgeReportApplicationService) {
         this.classicsReportApplicationService = classicsReportApplicationService;
-        this.aiReportApplicationService = aiReportApplicationService;
+        this.aiFacade = aiFacade;
         this.discoveryReportApplicationService = discoveryReportApplicationService;
         this.knowledgeReportApplicationService = knowledgeReportApplicationService;
     }
@@ -46,7 +47,11 @@ public class DefaultOperationsReportMetricsGateway implements OperationsReportMe
         sections.add(section(
                 "aiSummary",
                 "AI 调用摘要",
-                aiReportApplicationService.summary(record.getPeriodStart(), record.getPeriodEnd(), bucketType)));
+                aiFacade.summary(AiReportSummaryFacadeRequest.builder()
+                        .periodStart(record.getPeriodStart())
+                        .periodEnd(record.getPeriodEnd())
+                        .bucketType(bucketType)
+                        .build())));
         sections.add(section(
                 "discoverySummary",
                 "Discovery 统计摘要",

@@ -22,12 +22,7 @@
     </dependency>
     <dependency>
       <groupId>com.thundax</groupId>
-      <artifactId>kuzhambu-ai-domain</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.thundax</groupId>
-      <artifactId>kuzhambu-ai-application</artifactId>
+      <artifactId>kuzhambu-ai-facade</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

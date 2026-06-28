@@ -6,7 +6,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.thundax.kuzhambu.ai.domain.discovery.service.DiscoveryAiDomainService;
+import com.thundax.kuzhambu.ai.facade.AiFacade;
 import com.thundax.kuzhambu.classics.application.search.service.ClassicsSearchContentApplicationService;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaMessageResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionDetailResult;
@@ -39,7 +39,7 @@ class QaApplicationServiceImplAdminReadTest {
                 mock(QueryUnderstandingApplicationService.class);
         ClassicsSearchContentApplicationService classicsSearchContentApplicationService =
                 mock(ClassicsSearchContentApplicationService.class);
-        DiscoveryAiDomainService discoveryAiDomainService = mock(DiscoveryAiDomainService.class);
+        AiFacade aiFacade = mock(AiFacade.class);
         QaApplicationServiceImpl service = new QaApplicationServiceImpl(
                 sessionRepository,
                 messageRepository,
@@ -47,7 +47,7 @@ class QaApplicationServiceImplAdminReadTest {
                 traceRepository,
                 queryUnderstandingApplicationService,
                 classicsSearchContentApplicationService,
-                discoveryAiDomainService,
+                aiFacade,
                 new QaContextAssembler(),
                 new QaSourceAssembler(),
                 new QaTraceAssembler());

@@ -8,8 +8,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.thundax.kuzhambu.ai.domain.discovery.model.valueobject.DiscoveryAiResult;
-import com.thundax.kuzhambu.ai.domain.discovery.service.DiscoveryAiDomainService;
+import com.thundax.kuzhambu.ai.facade.AiFacade;
+import com.thundax.kuzhambu.ai.facade.response.DiscoveryAiFacadeResponse;
 import com.thundax.kuzhambu.classics.application.search.result.ClassicsSearchSourceContent;
 import com.thundax.kuzhambu.classics.application.search.service.ClassicsSearchContentApplicationService;
 import com.thundax.kuzhambu.discovery.application.qa.command.AskQuestionCommand;
@@ -45,7 +45,7 @@ class QaApplicationServiceImplTest {
                 mock(QueryUnderstandingApplicationService.class);
         ClassicsSearchContentApplicationService classicsSearchContentApplicationService =
                 mock(ClassicsSearchContentApplicationService.class);
-        DiscoveryAiDomainService discoveryAiDomainService = mock(DiscoveryAiDomainService.class);
+        AiFacade aiFacade = mock(AiFacade.class);
         QaApplicationServiceImpl service = new QaApplicationServiceImpl(
                 sessionRepository,
                 messageRepository,
@@ -53,7 +53,7 @@ class QaApplicationServiceImplTest {
                 traceRepository,
                 queryUnderstandingApplicationService,
                 classicsSearchContentApplicationService,
-                discoveryAiDomainService,
+                aiFacade,
                 new QaContextAssembler(),
                 new QaSourceAssembler(),
                 new QaTraceAssembler());
@@ -77,7 +77,7 @@ class QaApplicationServiceImplTest {
                 mock(QueryUnderstandingApplicationService.class);
         ClassicsSearchContentApplicationService classicsSearchContentApplicationService =
                 mock(ClassicsSearchContentApplicationService.class);
-        DiscoveryAiDomainService discoveryAiDomainService = mock(DiscoveryAiDomainService.class);
+        AiFacade aiFacade = mock(AiFacade.class);
         QaApplicationServiceImpl service = new QaApplicationServiceImpl(
                 sessionRepository,
                 messageRepository,
@@ -85,7 +85,7 @@ class QaApplicationServiceImplTest {
                 traceRepository,
                 queryUnderstandingApplicationService,
                 classicsSearchContentApplicationService,
-                discoveryAiDomainService,
+                aiFacade,
                 new QaContextAssembler(),
                 new QaSourceAssembler(),
                 new QaTraceAssembler());
@@ -130,9 +130,14 @@ class QaApplicationServiceImplTest {
                         1,
                         new Date(),
                         new Date())));
-        when(discoveryAiDomainService.generateAnswer(any()))
-                .thenReturn(new DiscoveryAiResult(
-                        1L, null, "SUCCEEDED", "answer_generation", "TEXT", "黄帝是上古帝王", null, null));
+        when(aiFacade.generateDiscoveryAnswer(any()))
+                .thenReturn(DiscoveryAiFacadeResponse.builder()
+                        .callId(1L)
+                        .status("SUCCEEDED")
+                        .capability("answer_generation")
+                        .resultFormat("TEXT")
+                        .resultPayload("黄帝是上古帝王")
+                        .build());
         when(sourceRepository.save(any(QaSource.class))).thenReturn(9001L);
         when(traceRepository.save(any(QaRetrievalTrace.class))).thenReturn(8001L);
 
