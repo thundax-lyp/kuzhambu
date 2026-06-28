@@ -787,6 +787,15 @@ public final class NamingArchitectureRuleSupport {
         return !ENTITY_REQUIRED_ANNOTATIONS.equals(classAnnotationSimpleNames(classDeclaration.group(1)));
     }
 
+    static Set<String> sourceClassAnnotationSimpleNames(Path path) {
+        String source = ArchitectureSourceSupport.readSourceWithoutComments(path);
+        Matcher classDeclaration = ENTITY_CLASS_DECLARATION_PATTERN.matcher(source);
+        if (!classDeclaration.find()) {
+            return new LinkedHashSet<String>();
+        }
+        return classAnnotationSimpleNames(classDeclaration.group(1));
+    }
+
     private static Set<String> classAnnotationSimpleNames(String sourceBeforeClass) {
         Matcher annotation = SOURCE_ANNOTATION_PATTERN.matcher(sourceBeforeClass);
         Set<String> annotations = new LinkedHashSet<String>();

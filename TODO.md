@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `facade placement rule`：引入 facade placement rule 与 facade 协议门禁
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/common/kuzhambu-common-test/src/main/java/com/thundax/kuzhambu/common/test/architecture/FacadeArchitectureRuleSupport.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-facade/src/test/java/com/thundax/kuzhambu/storage/facade/StorageFacadeArchitectureTest.java`、`kuzhambu-servers/common/kuzhambu-common-test/src/main/java/com/thundax/kuzhambu/common/test/architecture/NamingArchitectureRuleSupport.java`
-    - 处理动作：新增 facade 包归位、命名与 `request/response/dto` 协议门禁。
-    - 验收点：ArchUnit 能检查 `Facade`、`FacadeRequest`、`FacadeResponse` 与 `FacadeDto` 的包路径和命名是否满足 RUNBOOK hard rule。
-    - 重要度：10/10
-
 - [ ] `operations to storage-facade`：首批迁移 `operations-application -> storage-facade`
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FACADE-ISOLATION.md`
