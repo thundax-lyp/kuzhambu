@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `knowledge-facade-module`：新增 knowledge facade 模块骨架
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/pom.xml`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-facade/pom.xml`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-facade/src/main/java/com/thundax/kuzhambu/knowledge/facade/KnowledgeFacade.java`
-    - 处理动作：新增 `kuzhambu-knowledge-facade` 模块并建立空的 `KnowledgeFacade` 入口
-    - 验收点：`biz/knowledge/kuzhambu-knowledge-facade` 可单独参与 Maven reactor 构建且 `KnowledgeFacade` 已落到 facade 包位
-    - 重要度：10/10
-
 - [ ] `knowledge-facade-summary-contract`：定义 knowledge summary facade 协议
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-FACADE-ISOLATION.md`

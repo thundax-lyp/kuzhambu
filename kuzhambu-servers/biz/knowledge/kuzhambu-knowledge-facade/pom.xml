@@ -4,21 +4,21 @@
 
   <parent>
     <groupId>com.thundax</groupId>
-    <artifactId>kuzhambu-biz</artifactId>
+    <artifactId>kuzhambu-knowledge</artifactId>
     <version>0.0.1-dev</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>kuzhambu-knowledge</artifactId>
-  <packaging>pom</packaging>
+  <artifactId>kuzhambu-knowledge-facade</artifactId>
+  <packaging>jar</packaging>
 
-  <name>kuzhambu-knowledge</name>
+  <name>kuzhambu-knowledge-facade</name>
 
-  <modules>
-    <module>kuzhambu-knowledge-facade</module>
-    <module>kuzhambu-knowledge-domain</module>
-    <module>kuzhambu-knowledge-application</module>
-    <module>kuzhambu-knowledge-interface</module>
-    <module>kuzhambu-knowledge-infra</module>
-  </modules>
+  <dependencies>
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <optional>true</optional>
+    </dependency>
+  </dependencies>
 </project>
