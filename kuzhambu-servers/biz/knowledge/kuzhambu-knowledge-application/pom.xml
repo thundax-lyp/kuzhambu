@@ -27,18 +27,6 @@
     </dependency>
     <dependency>
       <groupId>com.thundax</groupId>
-      <artifactId>kuzhambu-ai-domain</artifactId>
-      <version>${project.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.thundax</groupId>
-      <artifactId>kuzhambu-ai-application</artifactId>
-      <version>${project.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-common-core</artifactId>
       <version>${project.version}</version>
     </dependency>

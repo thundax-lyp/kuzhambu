@@ -4,16 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import com.thundax.kuzhambu.ai.application.batch.command.AiBatchJobCreateCommand;
-import com.thundax.kuzhambu.ai.application.batch.result.AiBatchJobResult;
-import com.thundax.kuzhambu.ai.application.batch.service.AiBatchJobApplicationService;
-import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCallRecord;
-import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
-import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
-import com.thundax.kuzhambu.ai.domain.invocation.service.AiCandidateDomainService;
-import com.thundax.kuzhambu.ai.domain.knowledge.model.valueobject.KnowledgeAiExtractionRequest;
-import com.thundax.kuzhambu.ai.domain.knowledge.model.valueobject.KnowledgeAiExtractionResult;
-import com.thundax.kuzhambu.ai.domain.knowledge.service.KnowledgeAiExtractionDomainService;
 import com.thundax.kuzhambu.ai.facade.AiFacade;
 import com.thundax.kuzhambu.ai.facade.dto.AiCallRecordFacadeDto;
 import com.thundax.kuzhambu.ai.facade.dto.AiCandidateFacadeDto;
@@ -62,6 +52,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.junit.jupiter.api.Test;
 
 class KnowledgeGraphExtractionApplicationServiceTest {
@@ -776,6 +770,213 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 "zh-CN");
     }
 
+    @Getter
+    @AllArgsConstructor
+    private static final class AiBatchJobCreateCommand {
+        private final String scope;
+        private final String capability;
+        private final String contentType;
+        private final int totalCount;
+        private final String failureSummaryJson;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    private static final class AiBatchJobResult {
+        private final Long batchId;
+        private final String scope;
+        private final String capability;
+        private final String contentType;
+        private final String status;
+        private final int totalCount;
+        private final int successCount;
+        private final int failedCount;
+        private final int cancelledCount;
+        private final String failureSummaryJson;
+        private final Instant requestedAt;
+        private final Instant cancelledAt;
+        private final Instant completedAt;
+    }
+
+    private interface AiBatchJobApplicationService {
+        AiBatchJobResult get(Long batchId);
+
+        Long create(AiBatchJobCreateCommand command);
+
+        boolean canDispatchNextUnit(Long batchId);
+
+        AiBatchJobResult recordSuccess(Long batchId);
+
+        AiBatchJobResult recordFailure(Long batchId, String failureSummaryJson);
+
+        AiBatchJobResult cancel(Long batchId);
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    private static final class AiCallRecord {
+        private Long callId;
+        private Long batchId;
+        private String scope;
+        private String capability;
+        private String contentType;
+        private Long contentId;
+        private Long objectId;
+        private Long serviceId;
+        private String serviceRole;
+        private Long modelId;
+        private String modelName;
+        private Long promptVersionId;
+        private String requestId;
+        private String traceId;
+        private String status;
+        private boolean streamUsed;
+        private boolean streamCompleted;
+        private boolean fallbackUsed;
+        private String errorType;
+        private String errorMessage;
+        private String warningsJson;
+        private Instant requestedAt;
+        private Instant completedAt;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    private static final class AiCandidate {
+        private Long candidateId;
+        private Long callId;
+        private Long batchId;
+        private String capability;
+        private String contentType;
+        private Long contentId;
+        private Long objectId;
+        private String resultFormat;
+        private String resultPayload;
+        private String status = "PENDING";
+        private Long promptVersionId;
+        private String modelName;
+        private String errorType;
+        private String errorMessage;
+        private Instant requestedAt;
+        private Instant appliedAt;
+    }
+
+    private interface AiInvocationRepository {
+        AiCallRecord getCallRecord(Long callId);
+
+        Long saveCallRecord(AiCallRecord callRecord);
+
+        int updateCallRecord(AiCallRecord callRecord);
+
+        List<AiCallRecord> listCallRecords(Instant requestedAtStart, Instant requestedAtEnd);
+
+        AiCandidate getCandidate(Long candidateId);
+
+        Long saveCandidate(AiCandidate candidate);
+
+        int updateCandidate(AiCandidate candidate);
+
+        List<AiCandidate> listCandidates(String contentType, Long contentId, String capability, String status);
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    private static final class AiCandidateApplyCheck {
+        private Long candidateId;
+        private String contentType;
+        private Long contentId;
+        private String capability;
+    }
+
+    private static final class AiCandidateDomainService {
+        private final AiInvocationRepository repository;
+
+        private AiCandidateDomainService(AiInvocationRepository repository) {
+            this.repository = repository;
+        }
+
+        private AiCandidate requirePendingForApply(AiCandidateApplyCheck check) {
+            AiCandidate candidate = repository.getCandidate(check.getCandidateId());
+            if (candidate == null) {
+                throw new BizException("AI candidate not found: " + check.getCandidateId());
+            }
+            if (!"PENDING".equals(candidate.getStatus())) {
+                throw new BizException("AI candidate is not pending: " + check.getCandidateId());
+            }
+            if (!java.util.Objects.equals(check.getContentType(), candidate.getContentType())
+                    || !java.util.Objects.equals(check.getContentId(), candidate.getContentId())
+                    || !java.util.Objects.equals(check.getCapability(), candidate.getCapability())) {
+                throw new BizException("AI candidate scope does not match apply target");
+            }
+            return candidate;
+        }
+
+        private AiCandidate markApplied(
+                Long candidateId, String resultFormat, String resultPayload, Instant appliedAt) {
+            AiCandidate candidate = repository.getCandidate(candidateId);
+            if (candidate == null) {
+                throw new BizException("AI candidate not found: " + candidateId);
+            }
+            candidate.setResultFormat(resultFormat);
+            candidate.setResultPayload(resultPayload);
+            candidate.setStatus("APPLIED");
+            candidate.setAppliedAt(appliedAt);
+            repository.updateCandidate(candidate);
+            return candidate;
+        }
+    }
+
+    @Getter
+    @AllArgsConstructor
+    private static final class KnowledgeAiExtractionRequest {
+        private final String taskType;
+        private final String scopeType;
+        private final String scopeJson;
+        private final String sourceContentType;
+        private final Long sourceContentId;
+        private final Long requestedBy;
+        private final Long serviceId;
+        private final String serviceRole;
+        private final Long modelId;
+        private final String modelName;
+        private final Long promptVersionId;
+        private final String requestId;
+        private final String traceId;
+        private final String promptMessagesJson;
+        private final String promptVariablesJson;
+        private final String promptHash;
+        private final String inputPayloadJson;
+        private final String outputSchemaJson;
+        private final boolean forceJson;
+        private final String locale;
+    }
+
+    @Getter
+    @AllArgsConstructor
+    private static final class KnowledgeAiExtractionResult {
+        private final Long callId;
+        private final Long candidateId;
+        private final String status;
+        private final String capability;
+        private final String resultFormat;
+        private final String resultPayload;
+        private final String errorType;
+        private final String errorMessage;
+    }
+
+    private interface KnowledgeAiExtractionDomainService {
+        KnowledgeAiExtractionResult extractRelations(KnowledgeAiExtractionRequest request);
+
+        KnowledgeAiExtractionResult extractGraph(KnowledgeAiExtractionRequest request);
+
+        KnowledgeAiExtractionResult extractLineage(KnowledgeAiExtractionRequest request);
+    }
+
     private static final class FakeKnowledgeAiExtractionDomainService implements KnowledgeAiExtractionDomainService {
         private KnowledgeAiExtractionRequest lastRequest;
         private String lastTaskType;
@@ -926,7 +1127,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
             if (aiCandidateDomainService == null) {
                 return null;
             }
-            var check = new com.thundax.kuzhambu.ai.domain.invocation.service.AiCandidateApplyCheck();
+            var check = new AiCandidateApplyCheck();
             check.setCandidateId(request.getCandidateId());
             check.setContentType(request.getContentType());
             check.setContentId(request.getContentId());
