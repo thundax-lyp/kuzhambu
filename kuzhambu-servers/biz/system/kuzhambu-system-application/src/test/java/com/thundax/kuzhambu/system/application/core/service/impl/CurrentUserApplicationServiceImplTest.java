@@ -10,11 +10,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
-import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
-import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
-import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import com.thundax.kuzhambu.storage.facade.StorageFacade;
+import com.thundax.kuzhambu.storage.facade.dto.StorageObjectFacadeDto;
 import com.thundax.kuzhambu.storage.facade.request.ListStorageFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.OpenStorageFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.RemoveStorageFacadeRequest;
@@ -25,6 +22,7 @@ import com.thundax.kuzhambu.storage.facade.response.UploadStorageFacadeResponse;
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalCredentialApplicationService;
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalIdentityApplicationService;
 import com.thundax.kuzhambu.system.application.core.command.ChangeCurrentUserAvatarCommand;
+import com.thundax.kuzhambu.system.application.core.result.UserAvatarResult;
 import com.thundax.kuzhambu.system.application.core.service.MenuApplicationService;
 import com.thundax.kuzhambu.system.application.core.service.RoleApplicationService;
 import com.thundax.kuzhambu.system.application.core.service.UserApplicationService;
@@ -45,12 +43,12 @@ class CurrentUserApplicationServiceImplTest {
     void getAvatarInputStreamShouldUseStorageFacade() throws Exception {
         StorageFacade storageFacade = mock(StorageFacade.class);
         CurrentUserApplicationServiceImpl service = service(storageFacade);
-        StoredObject avatar = avatar(100L, 7001L);
+        StorageObjectFacadeDto avatar = avatar(100L, 7001L);
         InputStream inputStream = new ByteArrayInputStream(new byte[] {1});
 
         when(storageFacade.list(any(ListStorageFacadeRequest.class)))
                 .thenReturn(ListStorageFacadeResponse.builder()
-                        .storedObjects(List.of(readableAvatar(avatar)))
+                        .storedObjects(List.of(avatar))
                         .build());
         when(storageFacade.exists(any(OpenStorageFacadeRequest.class))).thenReturn(true);
         when(storageFacade.open(any(OpenStorageFacadeRequest.class)))
@@ -66,7 +64,7 @@ class CurrentUserApplicationServiceImplTest {
         verify(storageFacade).exists(requestCaptor.capture());
         assertEquals(7001L, requestCaptor.getValue().getStorageObjectId());
         assertEquals("100", requestCaptor.getValue().getOwnerId());
-        assertEquals(StorageOwnerType.USER.value(), requestCaptor.getValue().getOwnerType());
+        assertEquals("USER", requestCaptor.getValue().getOwnerType());
         verify(storageFacade).open(any(OpenStorageFacadeRequest.class));
     }
 
@@ -77,7 +75,7 @@ class CurrentUserApplicationServiceImplTest {
 
         when(storageFacade.list(any(ListStorageFacadeRequest.class)))
                 .thenReturn(ListStorageFacadeResponse.builder()
-                        .storedObjects(List.of(readableAvatar(avatar(100L, 7001L))))
+                        .storedObjects(List.of(avatar(100L, 7001L)))
                         .build());
         when(storageFacade.exists(any(OpenStorageFacadeRequest.class))).thenReturn(false);
 
@@ -99,20 +97,20 @@ class CurrentUserApplicationServiceImplTest {
                         .storageObjectId(9001L)
                         .originalFilename("avatar.jpg")
                         .contentType("image/jpeg")
-                        .objectStatus(StoredObjectStatus.ACTIVE.value())
+                        .objectStatus("ACTIVE")
                         .remarks("avatar")
                         .build());
 
-        StoredObject avatar = service.changeAvatar(
+        UserAvatarResult avatar = service.changeAvatar(
                 new ChangeCurrentUserAvatarCommand(UserId.of(100L), validAvatarInputStream(), "avatar.png"));
 
-        assertEquals(9001L, avatar.getId().value());
+        assertEquals(9001L, avatar.getStorageObjectId());
         ArgumentCaptor<UploadStorageFacadeRequest> uploadCaptor =
                 ArgumentCaptor.forClass(UploadStorageFacadeRequest.class);
         verify(storageFacade).upload(uploadCaptor.capture());
-        assertEquals(StorageOwnerType.USER.value(), uploadCaptor.getValue().getOwnerType());
+        assertEquals("USER", uploadCaptor.getValue().getOwnerType());
         assertEquals("100", uploadCaptor.getValue().getOwnerId());
-        assertEquals(StoredObjectStatus.ACTIVE.value(), uploadCaptor.getValue().getObjectStatus());
+        assertEquals("ACTIVE", uploadCaptor.getValue().getObjectStatus());
         assertEquals("avatar", uploadCaptor.getValue().getRemarks());
     }
 
@@ -123,7 +121,7 @@ class CurrentUserApplicationServiceImplTest {
 
         when(storageFacade.list(any(ListStorageFacadeRequest.class)))
                 .thenReturn(ListStorageFacadeResponse.builder()
-                        .storedObjects(List.of(readableAvatar(avatar(100L, 7001L))))
+                        .storedObjects(List.of(avatar(100L, 7001L)))
                         .build());
         doNothing().when(storageFacade).remove(any(RemoveStorageFacadeRequest.class));
 
@@ -146,36 +144,13 @@ class CurrentUserApplicationServiceImplTest {
                 storageFacade);
     }
 
-    private static StoredObject avatar(long userId, long storageObjectId) {
-        StoredObject avatar = new StoredObject();
-        avatar.setId(StoredObjectId.of(storageObjectId));
-        avatar.setOwnerId(String.valueOf(userId));
-        avatar.setOwnerType(StorageOwnerType.USER);
-        avatar.setObjectStatus(StoredObjectStatus.ACTIVE);
-        avatar.setRemarks("avatar");
-        return avatar;
-    }
-
-    private static com.thundax.kuzhambu.storage.facade.dto.StorageObjectFacadeDto readableAvatar(StoredObject avatar) {
-        return com.thundax.kuzhambu.storage.facade.dto.StorageObjectFacadeDto.builder()
-                .id(avatar.getId() == null ? null : avatar.getId().value())
-                .originalFilename(avatar.getOriginalFilename())
-                .contentType(avatar.getContentType())
-                .ownerId(avatar.getOwnerId())
-                .ownerType(
-                        avatar.getOwnerType() == null
-                                ? null
-                                : avatar.getOwnerType().value())
-                .size(avatar.getSize())
-                .objectStatus(
-                        avatar.getObjectStatus() == null
-                                ? null
-                                : avatar.getObjectStatus().value())
-                .referenceStatus(
-                        avatar.getReferenceStatus() == null
-                                ? null
-                                : avatar.getReferenceStatus().value())
-                .remarks(avatar.getRemarks())
+    private static StorageObjectFacadeDto avatar(long userId, long storageObjectId) {
+        return StorageObjectFacadeDto.builder()
+                .id(storageObjectId)
+                .ownerId(String.valueOf(userId))
+                .ownerType("USER")
+                .objectStatus("ACTIVE")
+                .remarks("avatar")
                 .build();
     }
 

@@ -2,11 +2,6 @@ package com.thundax.kuzhambu.system.application.core.service.impl;
 
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
-import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
-import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
-import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
-import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
-import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import com.thundax.kuzhambu.storage.facade.StorageFacade;
 import com.thundax.kuzhambu.storage.facade.dto.StorageObjectFacadeDto;
 import com.thundax.kuzhambu.storage.facade.request.ListStorageFacadeRequest;
@@ -32,6 +27,7 @@ import com.thundax.kuzhambu.system.application.core.query.CurrentUserQuery;
 import com.thundax.kuzhambu.system.application.core.query.MenuQuery;
 import com.thundax.kuzhambu.system.application.core.query.RoleQuery;
 import com.thundax.kuzhambu.system.application.core.query.UserQuery;
+import com.thundax.kuzhambu.system.application.core.result.UserAvatarResult;
 import com.thundax.kuzhambu.system.application.core.service.CurrentUserApplicationService;
 import com.thundax.kuzhambu.system.application.core.service.MenuApplicationService;
 import com.thundax.kuzhambu.system.application.core.service.RoleApplicationService;
@@ -75,6 +71,9 @@ public class CurrentUserApplicationServiceImpl implements CurrentUserApplication
     private static final int DEFAULT_PASSWORD_FAILED_LIMIT = 0;
     private static final String AVATAR_REMARKS = "avatar";
     private static final String AVATAR_FILENAME = "avatar.jpg";
+    private static final String STORAGE_OWNER_TYPE_USER = "USER";
+    private static final String STORAGE_OBJECT_STATUS_ACTIVE = "ACTIVE";
+    private static final String STORAGE_REFERENCE_STATUS_UNREFERENCED = "UNREFERENCED";
     private static final String JPG = "jpg";
     private static final String IMAGE_JPEG = "image/jpeg";
     private static final int MAX_AVATAR_WIDTH = 400;
@@ -147,7 +146,7 @@ public class CurrentUserApplicationServiceImpl implements CurrentUserApplication
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public StoredObject changeAvatar(ChangeCurrentUserAvatarCommand command) {
+    public UserAvatarResult changeAvatar(ChangeCurrentUserAvatarCommand command) {
         if (command == null || command.getUserId() == null || command.getInputStream() == null) {
             throw invalidParameter("avatar");
         }
@@ -160,13 +159,13 @@ public class CurrentUserApplicationServiceImpl implements CurrentUserApplication
                 .originalFilename(originalFilename(command.getOriginalFilename()))
                 .contentType(IMAGE_JPEG)
                 .sizeBytes((long) avatarBytes.length)
-                .ownerType(StorageOwnerType.USER.value())
+                .ownerType(STORAGE_OWNER_TYPE_USER)
                 .ownerId(String.valueOf(command.getUserId().value()))
-                .objectStatus(StoredObjectStatus.ACTIVE.value())
-                .referenceStatus(StoredObjectReferenceStatus.UNREFERENCED.value())
+                .objectStatus(STORAGE_OBJECT_STATUS_ACTIVE)
+                .referenceStatus(STORAGE_REFERENCE_STATUS_UNREFERENCED)
                 .remarks(AVATAR_REMARKS)
                 .build());
-        return toStoredObject(uploaded);
+        return toAvatarResult(uploaded);
     }
 
     @Override
@@ -179,14 +178,17 @@ public class CurrentUserApplicationServiceImpl implements CurrentUserApplication
     }
 
     @Override
-    public StoredObject getAvatar(UserId userId) {
-        List<StoredObject> avatars = listAvatars(userId);
-        return avatars.isEmpty() ? null : avatars.get(avatars.size() - 1);
+    public UserAvatarResult getAvatar(UserId userId) {
+        List<StorageObjectFacadeDto> avatars = listAvatarDtos(userId);
+        if (avatars.isEmpty()) {
+            return null;
+        }
+        return toAvatarResult(avatars.get(avatars.size() - 1));
     }
 
     @Override
     public InputStream getAvatarInputStream(UserId userId) {
-        StoredObject avatar = getAvatar(userId);
+        UserAvatarResult avatar = latestAvatar(userId);
         if (avatar == null || storageFacade == null) {
             return null;
         }
@@ -200,7 +202,7 @@ public class CurrentUserApplicationServiceImpl implements CurrentUserApplication
 
     @Override
     public boolean existsAvatar(UserId userId) {
-        StoredObject avatar = getAvatar(userId);
+        UserAvatarResult avatar = latestAvatar(userId);
         return avatar != null && storageFacade.exists(toReadableContentRequest(avatar));
     }
 
@@ -249,27 +251,26 @@ public class CurrentUserApplicationServiceImpl implements CurrentUserApplication
         return query;
     }
 
-    private List<StoredObject> listAvatars(UserId userId) {
+    private List<StorageObjectFacadeDto> listAvatarDtos(UserId userId) {
         if (userId == null) {
             return Collections.emptyList();
         }
         ListStorageFacadeResponse response = storageFacade.list(ListStorageFacadeRequest.builder()
-                .ownerType(StorageOwnerType.USER.value())
+                .ownerType(STORAGE_OWNER_TYPE_USER)
                 .ownerId(String.valueOf(userId.value()))
-                .objectStatus(StoredObjectStatus.ACTIVE.value())
+                .objectStatus(STORAGE_OBJECT_STATUS_ACTIVE)
                 .remarks(AVATAR_REMARKS)
                 .build());
         if (response == null || response.getStoredObjects() == null) {
             return Collections.emptyList();
         }
-        return response.getStoredObjects().stream().map(this::toStoredObject).collect(Collectors.toList());
+        return response.getStoredObjects();
     }
 
     private void removeAvatar(UserId userId) {
-        for (StoredObject storage : listAvatars(userId)) {
+        for (StorageObjectFacadeDto storage : listAvatarDtos(userId)) {
             storageFacade.remove(RemoveStorageFacadeRequest.builder()
-                    .storageObjectId(
-                            storage.getId() == null ? null : storage.getId().value())
+                    .storageObjectId(storage.getId())
                     .build());
         }
     }
@@ -371,67 +372,53 @@ public class CurrentUserApplicationServiceImpl implements CurrentUserApplication
         return originalFilename;
     }
 
-    private OpenStorageFacadeRequest toReadableContentRequest(StoredObject avatar) {
+    private UserAvatarResult latestAvatar(UserId userId) {
+        List<StorageObjectFacadeDto> avatars = listAvatarDtos(userId);
+        return avatars.isEmpty() ? null : toAvatarResult(avatars.get(avatars.size() - 1));
+    }
+
+    private OpenStorageFacadeRequest toReadableContentRequest(UserAvatarResult avatar) {
         if (avatar == null) {
             return null;
         }
         return OpenStorageFacadeRequest.builder()
-                .storageObjectId(avatar.getId() == null ? null : avatar.getId().value())
+                .storageObjectId(avatar.getStorageObjectId())
                 .ownerId(avatar.getOwnerId())
-                .ownerType(
-                        avatar.getOwnerType() == null
-                                ? null
-                                : avatar.getOwnerType().value())
+                .ownerType(avatar.getOwnerType())
                 .build();
     }
 
-    private StoredObject toStoredObject(UploadStorageFacadeResponse response) {
+    private UserAvatarResult toAvatarResult(UploadStorageFacadeResponse response) {
         if (response == null) {
             return null;
         }
-        StoredObject storage = new StoredObject();
-        storage.setId(response.getStorageObjectId() == null ? null : StoredObjectId.of(response.getStorageObjectId()));
-        storage.setOriginalFilename(response.getOriginalFilename());
-        storage.setContentType(response.getContentType());
-        storage.setName(response.getName());
-        storage.setExtendName(response.getExtendName());
-        storage.setMimeType(response.getMimeType());
-        storage.setBucketName(response.getBucketName());
-        storage.setObjectKey(response.getObjectKey());
-        storage.setSize(response.getSizeBytes());
-        storage.setAccessEndpoint(response.getAccessEndpoint());
-        storage.setObjectStatus(
-                StringUtils.isBlank(response.getObjectStatus())
-                        ? null
-                        : StoredObjectStatus.from(response.getObjectStatus()));
-        storage.setReferenceStatus(
-                StringUtils.isBlank(response.getReferenceStatus())
-                        ? null
-                        : StoredObjectReferenceStatus.from(response.getReferenceStatus()));
-        storage.setRemarks(response.getRemarks());
-        return storage;
+        return UserAvatarResult.builder()
+                .storageObjectId(response.getStorageObjectId())
+                .originalFilename(response.getOriginalFilename())
+                .contentType(response.getContentType())
+                .mimeType(response.getMimeType())
+                .sizeBytes(response.getSizeBytes())
+                .objectStatus(response.getObjectStatus())
+                .referenceStatus(response.getReferenceStatus())
+                .remarks(response.getRemarks())
+                .build();
     }
 
-    private StoredObject toStoredObject(StorageObjectFacadeDto dto) {
+    private UserAvatarResult toAvatarResult(StorageObjectFacadeDto dto) {
         if (dto == null) {
             return null;
         }
-        StoredObject storage = new StoredObject();
-        storage.setId(dto.getId() == null ? null : StoredObjectId.of(dto.getId()));
-        storage.setOriginalFilename(dto.getOriginalFilename());
-        storage.setContentType(dto.getContentType());
-        storage.setOwnerId(dto.getOwnerId());
-        storage.setOwnerType(
-                StringUtils.isBlank(dto.getOwnerType()) ? null : StorageOwnerType.from(dto.getOwnerType()));
-        storage.setSize(dto.getSize());
-        storage.setObjectStatus(
-                StringUtils.isBlank(dto.getObjectStatus()) ? null : StoredObjectStatus.from(dto.getObjectStatus()));
-        storage.setReferenceStatus(
-                StringUtils.isBlank(dto.getReferenceStatus())
-                        ? null
-                        : StoredObjectReferenceStatus.from(dto.getReferenceStatus()));
-        storage.setRemarks(dto.getRemarks());
-        return storage;
+        return UserAvatarResult.builder()
+                .storageObjectId(dto.getId())
+                .originalFilename(dto.getOriginalFilename())
+                .contentType(dto.getContentType())
+                .sizeBytes(dto.getSize())
+                .ownerId(dto.getOwnerId())
+                .ownerType(dto.getOwnerType())
+                .objectStatus(dto.getObjectStatus())
+                .referenceStatus(dto.getReferenceStatus())
+                .remarks(dto.getRemarks())
+                .build();
     }
 
     private BizException invalidParameter(String name) {

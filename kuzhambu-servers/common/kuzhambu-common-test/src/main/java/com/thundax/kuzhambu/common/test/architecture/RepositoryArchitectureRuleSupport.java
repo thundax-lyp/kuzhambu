@@ -324,14 +324,12 @@ public final class RepositoryArchitectureRuleSupport {
         put(allowlist, "operations", "kuzhambu-ai-application");
         put(allowlist, "operations", "kuzhambu-discovery-application");
         put(allowlist, "operations", "kuzhambu-knowledge-application");
-        put(allowlist, "system", "kuzhambu-storage-application");
         return allowlist;
     }
 
     private static Map<String, Set<String>> legacyInterfacePomDependencyAllowlist() {
         Map<String, Set<String>> allowlist = new HashMap<String, Set<String>>();
         put(allowlist, "discovery", "kuzhambu-classics-application");
-        put(allowlist, "system", "kuzhambu-storage-application");
         return allowlist;
     }
 

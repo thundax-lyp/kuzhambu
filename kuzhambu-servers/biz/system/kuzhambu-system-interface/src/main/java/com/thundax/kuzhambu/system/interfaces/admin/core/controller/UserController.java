@@ -13,7 +13,6 @@ import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.common.web.request.RequestListHelper;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
-import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.system.application.auth.command.PrincipalCredentialCommand;
 import com.thundax.kuzhambu.system.application.auth.command.PrincipalIdentityCommand;
 import com.thundax.kuzhambu.system.application.auth.query.PreAuthSessionValueQuery;
@@ -30,6 +29,7 @@ import com.thundax.kuzhambu.system.application.core.query.DepartmentQuery;
 import com.thundax.kuzhambu.system.application.core.query.DictQuery;
 import com.thundax.kuzhambu.system.application.core.query.RoleQuery;
 import com.thundax.kuzhambu.system.application.core.query.UserQuery;
+import com.thundax.kuzhambu.system.application.core.result.UserAvatarResult;
 import com.thundax.kuzhambu.system.application.core.service.CurrentUserApplicationService;
 import com.thundax.kuzhambu.system.application.core.service.DepartmentApplicationService;
 import com.thundax.kuzhambu.system.application.core.service.DictApplicationService;
@@ -530,7 +530,7 @@ public class UserController {
             return;
         }
 
-        StoredObject avatar = currentUserService.getAvatar(UserIdCodec.toDomain(Long.valueOf(userId)));
+        UserAvatarResult avatar = currentUserService.getAvatar(UserIdCodec.toDomain(Long.valueOf(userId)));
         InputStream inputStream = currentUserService.getAvatarInputStream(UserIdCodec.toDomain(Long.valueOf(userId)));
         if (avatar == null || inputStream == null) {
             response.sendError(HttpStatus.NOT_FOUND.value());
