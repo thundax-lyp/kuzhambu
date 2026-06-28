@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `readable-content facade contract`：定义 `StorageReadableContentFacade` 协议骨架
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-facade/src/main/java/com/thundax/kuzhambu/storage/facade/StorageReadableContentFacade.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-facade/src/main/java/com/thundax/kuzhambu/storage/facade/request/GetReadableContentFacadeRequest.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-facade/src/main/java/com/thundax/kuzhambu/storage/facade/response/GetReadableContentFacadeResponse.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-facade/src/main/java/com/thundax/kuzhambu/storage/facade/dto/ReadableStoredObjectFacadeDto.java`
-    - 处理动作：定义只读内容 facade 及其 `request/response/dto` 协议并固定不可变对象风格。
-    - 验收点：只读内容 facade 协议类全部位于规定包路径且 `dto` 命名与包归位满足 RUNBOOK hard rule。
-    - 重要度：9/10
-
 - [ ] `reference facade contract`：定义 `StorageReferenceFacade` 协议骨架
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FACADE-ISOLATION.md`
