@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `server-artifact facade contract`：定义 `ServerArtifactStorageFacade` 协议骨架
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-facade/src/main/java/com/thundax/kuzhambu/storage/facade/ServerArtifactStorageFacade.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-facade/src/main/java/com/thundax/kuzhambu/storage/facade/request/StoreServerArtifactFacadeRequest.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-facade/src/main/java/com/thundax/kuzhambu/storage/facade/response/StoreServerArtifactFacadeResponse.java`
-    - 处理动作：定义 `ServerArtifactStorageFacade` 及其 `request/response` 协议并固定不可变对象风格。
-    - 验收点：服务端产物存储 facade 协议类全部位于规定包路径且只暴露 `Getter + Builder + private constructor` 形态。
-    - 重要度：9/10
-
 - [ ] `readable-content facade contract`：定义 `StorageReadableContentFacade` 协议骨架
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FACADE-ISOLATION.md`
