@@ -8,9 +8,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.storage.application.helper.StorageUploadStreamHelper;
 import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
 import com.thundax.kuzhambu.storage.application.service.command.CreateStorageCommand;
-import com.thundax.kuzhambu.storage.application.store.StoredObjectStore;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
+import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectContentRepository;
 import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.StorageObjectController;
 import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.response.StorageObjectResponse;
 import java.io.ByteArrayInputStream;
@@ -70,7 +70,7 @@ class StorageObjectUploadContractTest {
     private static StorageObjectController controller() {
         StorageApplicationService service = storageApplicationService();
         return new StorageObjectController(
-                service, new StorageUploadStreamHelper(service, new MemoryStoredObjectStore()));
+                service, new StorageUploadStreamHelper(service, new MemoryStoredObjectContentRepository()));
     }
 
     private static StorageApplicationService storageApplicationService() {
@@ -89,7 +89,7 @@ class StorageObjectUploadContractTest {
                 });
     }
 
-    private static final class MemoryStoredObjectStore implements StoredObjectStore {
+    private static final class MemoryStoredObjectContentRepository implements StoredObjectContentRepository {
 
         @Override
         public StoredObject save(StoredObject storage, InputStream inputStream) throws IOException {

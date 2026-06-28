@@ -23,7 +23,7 @@ public final class RepositoryArchitectureRuleSupport {
 
     private static final Set<String> SERVER_GROUPS = new HashSet<String>(Arrays.asList("common", "biz", "starter"));
     private static final Set<String> DOMAIN_LAYERS =
-            new HashSet<String>(Arrays.asList("interface", "application", "domain", "infra"));
+            new HashSet<String>(Arrays.asList("interface", "application", "domain", "infra", "facade"));
     private static final Set<String> STARTER_MODULES =
             new HashSet<String>(Arrays.asList("kuzhambu-admin-starter", "kuzhambu-portal-starter"));
     private static final Pattern PACKAGE_PATTERN = Pattern.compile("(?m)^\\s*package\\s+([A-Za-z0-9_.]+)\\s*;");

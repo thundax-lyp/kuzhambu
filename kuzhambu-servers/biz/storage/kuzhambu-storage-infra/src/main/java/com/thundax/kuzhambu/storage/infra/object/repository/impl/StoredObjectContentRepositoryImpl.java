@@ -1,10 +1,10 @@
-package com.thundax.kuzhambu.storage.infra.store;
+package com.thundax.kuzhambu.storage.infra.object.repository.impl;
 
 import com.thundax.kuzhambu.common.oss.client.ObjectStorageClient;
 import com.thundax.kuzhambu.common.oss.model.ObjectStorageWriteResult;
-import com.thundax.kuzhambu.storage.application.store.StoredObjectStore;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
+import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectContentRepository;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
@@ -12,7 +12,7 @@ import java.util.Date;
 import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 
-public class ObjectStorageStoredObjectStore implements StoredObjectStore {
+public class StoredObjectContentRepositoryImpl implements StoredObjectContentRepository {
 
     private static final String PATH_FORMAT = "yyyyMM";
 
@@ -20,7 +20,7 @@ public class ObjectStorageStoredObjectStore implements StoredObjectStore {
     private final String bucketName;
     private final String contentPath;
 
-    public ObjectStorageStoredObjectStore(
+    public StoredObjectContentRepositoryImpl(
             ObjectStorageClient objectStorageClient, String bucketName, String contentPath) {
         this.objectStorageClient = objectStorageClient;
         this.bucketName = bucketName;

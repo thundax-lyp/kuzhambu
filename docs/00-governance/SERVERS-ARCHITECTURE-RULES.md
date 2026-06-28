@@ -51,6 +51,8 @@ Hard Rules 必须使用 ArchUnit、Maven reactor、Checkstyle、脚本或测试�
 - `SERVERS_DOMAIN_ENUM_MODEL_PACKAGE`：对应业务域 `{module}-domain` 模块内所有 enum 必须位于 `com.thundax.kuzhambu.{module}.domain.{domain}.model.enums`。
 - `SERVERS_NAMING_DOMAIN_SERVICE`：领域服务必须以 `DomainService` 结尾，并位于 `domain/service/` 包。
 - `SERVERS_NAMING_REPOSITORY`：领域仓储端口必须以 `Repository` 结尾，并位于 `domain/{domain}/repository/` 包；仓储实现必须以 `RepositoryImpl` 结尾，并位于 `infra/{domain}/repository/impl/` 包。
+- `SERVERS_REPOSITORY_METHOD_VERB_WHITELIST`：`Repository` 接口方法名必须使用稳定仓储动作白名单；通用读写继续使用 `getBy*`、`list*`、`page*`、`count*`、`insert*`、`update*`、`deleteBy*`、`batch*`，内容仓储端口允许使用精确动作 `save`、`exists`、`open`、`delete`。
+- `SERVERS_NAMING_FACADE`：跨域 facade 协议接口必须以 `Facade` 结尾，并位于独立 `*-facade` 模块的 `facade/` 包；facade 协议对象继续使用 `FacadeRequest`、`FacadeResponse`、`FacadeDto` 后缀与对应子包。
 - `SERVERS_NAMING_MAPPER_DO`：MyBatis Mapper 必须以 `Mapper` 结尾并位于 `infra/{domain}/persistence/mapper/` 包；持久化对象必须以 `DO` 结尾并位于 `infra/{domain}/persistence/dataobject/` 包。
 - `SERVERS_NAMING_PERSISTENCE_ASSEMBLER`：持久化转换类必须以 `PersistenceAssembler` 结尾，并位于 `infra/{domain}/persistence/assembler/` 包。
 - `SERVERS_NAMING_CODEC`：基础类型和值对象互转类必须以 `Codec` 结尾，并位于对应业务域 `{module}-domain` 模块下的 `com.thundax.kuzhambu.{module}.domain.{domain}.codec`；通用基础 codec 必须位于明确的 common 基础能力包。
@@ -138,6 +140,7 @@ Hard Rules 必须使用 ArchUnit、Maven reactor、Checkstyle、脚本或测试�
 - `SERVERS_REVIEW_CROSS_DOMAIN_USE_CASE`：单体内跨业务域协作不按微服务远程调用口径强制经过对端 application 公开用例；复杂跨域业务表达为稳定 `DomainService` 语义，不为了复用内部查询而直接穿透对端 infra、mapper、dataobject 或 repository implementation。
 - `SERVERS_REVIEW_COMMON_EXTRACTION`：提取 common 能力前应确认至少两个业务域存在稳定复用需求，避免把业务概念过早沉淀到 common。
 - `SERVERS_REVIEW_SERVICE_GRANULARITY`：ApplicationService 应按用例聚合，不按数据库表机械拆分，也不把无关用例堆入单个巨型服务。
+- `SERVERS_REVIEW_FACADE_EXTERNAL_BOUNDARY`：`*Facade` 是提供方业务域给外域暴露的统一跨域边界，只供外域调用；提供方本域内部默认继续使用本域 application/domain 分层对象，不把 facade 当成本域内部复用入口。
 - `SERVERS_REVIEW_ASSEMBLER_COMPLEXITY`：InterfaceAssembler 和 PersistenceAssembler 只做模型转换；出现业务分支、权限判断或持久化访问时应回收到 application、domain 或 infra 对应职责内。
 - `SERVERS_REVIEW_SPRING_META_BEAN_SINGLE_CONSTRUCTOR`：通过派生注解、组合注解或其他 Spring 语义间接注册的类级 Bean 也应有且仅有一个构造器；如框架绑定类或特殊装配方式存在约束，按框架约定单独评审。
 - `SERVERS_REVIEW_TEST_CONSTRUCTION_EXPLICIT`：当生产类收敛为单构造器后，测试应通过 mock、stub 或测试工厂显式补齐依赖，不得为了测试便利重新引入第二构造器。

@@ -12,8 +12,10 @@ import com.thundax.kuzhambu.operations.domain.report.model.entity.ReportRecord;
 import com.thundax.kuzhambu.operations.domain.report.model.enums.ReportStatus;
 import com.thundax.kuzhambu.operations.domain.report.model.valueobject.ReportId;
 import com.thundax.kuzhambu.operations.domain.report.repository.ReportRepository;
-import com.thundax.kuzhambu.storage.facade.StorageUploadFacade;
+import com.thundax.kuzhambu.storage.facade.StorageFacade;
+import com.thundax.kuzhambu.storage.facade.request.GetReadableContentFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.UploadStorageObjectFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.response.GetReadableContentFacadeResponse;
 import com.thundax.kuzhambu.storage.facade.response.UploadStorageObjectFacadeResponse;
 import java.io.IOException;
 import java.io.InputStream;
@@ -151,11 +153,21 @@ class DefaultOperationsReportTaskExecutorTest {
         }
     }
 
-    private static final class RecordingArtifactStorage implements StorageUploadFacade {
+    private static final class RecordingArtifactStorage implements StorageFacade {
         private UploadStorageObjectFacadeRequest lastCommand;
 
         @Override
-        public UploadStorageObjectFacadeResponse uploadStorageObject(UploadStorageObjectFacadeRequest command) {
+        public boolean exists(GetReadableContentFacadeRequest request) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public GetReadableContentFacadeResponse open(GetReadableContentFacadeRequest request) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public UploadStorageObjectFacadeResponse upload(UploadStorageObjectFacadeRequest command) {
             this.lastCommand = command;
             return UploadStorageObjectFacadeResponse.builder()
                     .storageObjectId(3001L)

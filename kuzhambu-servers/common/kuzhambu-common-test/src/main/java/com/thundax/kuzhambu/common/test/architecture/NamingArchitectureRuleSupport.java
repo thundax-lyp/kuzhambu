@@ -399,8 +399,8 @@ public final class NamingArchitectureRuleSupport {
         }
 
         assertTrue(
-                "Repository interface methods should use getById/getByXxx/list/listByIds/page/count/deleteById/batchXxx "
-                        + "naming: "
+                "Repository interface methods should use getByXxx/list/page/count/insert/update/deleteBy/batchXxx "
+                        + "naming; content repositories may also use save/exists/open/delete: "
                         + violations,
                 violations.isEmpty());
     }
@@ -703,6 +703,10 @@ public final class NamingArchitectureRuleSupport {
         return name.equals("count")
                 || name.equals("list")
                 || name.equals("page")
+                || name.equals("save")
+                || name.equals("exists")
+                || name.equals("open")
+                || name.equals("delete")
                 || name.equals("deleteAll")
                 || name.startsWith("getBy")
                 || name.startsWith("max")

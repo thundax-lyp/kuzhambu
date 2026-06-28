@@ -5,11 +5,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
-import com.thundax.kuzhambu.storage.application.store.StoredObjectStore;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
+import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectContentRepository;
 import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectRepository;
 import java.io.IOException;
 import java.io.InputStream;
@@ -90,7 +90,7 @@ class StorageOrphanObjectCleanupSchedulerTest {
     }
 
     private static StorageOrphanObjectCleanupScheduler scheduler(
-            StoredObjectRepository repository, StoredObjectStore store) {
+            StoredObjectRepository repository, StoredObjectContentRepository store) {
         return new StorageOrphanObjectCleanupScheduler(repository, store).useClock(Clock.fixed(NOW, ZoneOffset.UTC));
     }
 
@@ -107,7 +107,7 @@ class StorageOrphanObjectCleanupSchedulerTest {
         return storage;
     }
 
-    private static final class RecordingStore implements StoredObjectStore {
+    private static final class RecordingStore implements StoredObjectContentRepository {
         private final List<StoredObject> deletedObjects = new ArrayList<>();
         private IOException deleteFailure;
 

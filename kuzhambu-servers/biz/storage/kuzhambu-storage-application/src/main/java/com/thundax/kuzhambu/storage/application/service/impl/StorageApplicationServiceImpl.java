@@ -17,12 +17,12 @@ import com.thundax.kuzhambu.storage.application.service.command.RemoveStorageRef
 import com.thundax.kuzhambu.storage.application.service.command.StorageSortCommand;
 import com.thundax.kuzhambu.storage.application.service.content.StoredObjectContent;
 import com.thundax.kuzhambu.storage.application.service.query.StorageQuery;
-import com.thundax.kuzhambu.storage.application.store.StoredObjectStore;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObjectReference;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
+import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectContentRepository;
 import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectReferenceRepository;
 import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectRepository;
 import java.io.IOException;
@@ -44,15 +44,15 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
 
     private final StoredObjectRepository dao;
     private final StoredObjectReferenceRepository businessRepository;
-    private final StoredObjectStore storedObjectStore;
+    private final StoredObjectContentRepository storedObjectContentRepository;
 
     public StorageApplicationServiceImpl(
             StoredObjectRepository dao,
             StoredObjectReferenceRepository businessRepository,
-            StoredObjectStore storedObjectStore) {
+            StoredObjectContentRepository storedObjectContentRepository) {
         this.dao = dao;
         this.businessRepository = businessRepository;
-        this.storedObjectStore = storedObjectStore;
+        this.storedObjectContentRepository = storedObjectContentRepository;
     }
 
     @Override
@@ -297,7 +297,7 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
             throw new BizException("Storage object not found: " + StoredObjectIdCodec.toStringValue(id));
         }
         try {
-            return new StoredObjectContent(storage, storedObjectStore.open(storage));
+            return new StoredObjectContent(storage, storedObjectContentRepository.open(storage));
         } catch (IOException exception) {
             throw new BizException("Storage object content open failed: " + exception.getMessage());
         }

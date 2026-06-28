@@ -1,10 +1,10 @@
-package com.thundax.kuzhambu.storage.application.store;
+package com.thundax.kuzhambu.storage.domain.object.repository;
 
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import java.io.IOException;
 import java.io.InputStream;
 
-public interface StoredObjectStore {
+public interface StoredObjectContentRepository {
 
     StoredObject save(StoredObject storage, InputStream inputStream) throws IOException;
 

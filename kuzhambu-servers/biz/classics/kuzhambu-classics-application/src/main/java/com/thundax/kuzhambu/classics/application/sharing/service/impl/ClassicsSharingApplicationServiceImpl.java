@@ -52,7 +52,7 @@ import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
-import com.thundax.kuzhambu.storage.facade.StorageReadableContentFacade;
+import com.thundax.kuzhambu.storage.facade.StorageFacade;
 import com.thundax.kuzhambu.storage.facade.dto.ReadableStoredObjectFacadeDto;
 import com.thundax.kuzhambu.storage.facade.request.GetReadableContentFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.response.GetReadableContentFacadeResponse;
@@ -81,7 +81,7 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
     private final MingCustomsRepository mingCustomsRepository;
     private final ClassicsShareTokenGenerator shareTokenGenerator;
     private final ClassicsShareTokenHasher shareTokenHasher;
-    private final StorageReadableContentFacade storageReadableContentFacade;
+    private final StorageFacade storageFacade;
     private ClassicsShareProperties shareProperties = new ClassicsShareProperties();
 
     public ClassicsSharingApplicationServiceImpl(
@@ -92,7 +92,7 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
             MingCustomsRepository mingCustomsRepository,
             ClassicsShareTokenGenerator shareTokenGenerator,
             ClassicsShareTokenHasher shareTokenHasher,
-            StorageReadableContentFacade storageReadableContentFacade) {
+            StorageFacade storageFacade) {
         this.repository = repository;
         this.contentApplicationService = contentApplicationService;
         this.sancaiRepository = sancaiRepository;
@@ -100,7 +100,7 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
         this.mingCustomsRepository = mingCustomsRepository;
         this.shareTokenGenerator = shareTokenGenerator;
         this.shareTokenHasher = shareTokenHasher;
-        this.storageReadableContentFacade = storageReadableContentFacade;
+        this.storageFacade = storageFacade;
     }
 
     @Autowired(required = false)
@@ -188,7 +188,7 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
     @Transactional(rollbackFor = Exception.class)
     public StoredObjectContent getPortalShareResourceContent(
             String shareToken, Long storageObjectId, boolean download) {
-        if (storageObjectId == null || storageReadableContentFacade == null) {
+        if (storageObjectId == null || storageFacade == null) {
             throw shareContentNotFound();
         }
         ClassicsShareLink link = repository.getLinkByTokenHash(shareTokenHasher.hash(shareToken));
@@ -202,10 +202,10 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
         GetReadableContentFacadeRequest request = GetReadableContentFacadeRequest.builder()
                 .storageObjectId(storageObjectId)
                 .build();
-        if (!storageReadableContentFacade.existsReadableContent(request)) {
+        if (!storageFacade.exists(request)) {
             throw shareContentNotFound();
         }
-        StoredObjectContent content = toStoredObjectContent(storageReadableContentFacade.getReadableContent(request));
+        StoredObjectContent content = toStoredObjectContent(storageFacade.open(request));
         if (content == null) {
             throw shareContentNotFound();
         }

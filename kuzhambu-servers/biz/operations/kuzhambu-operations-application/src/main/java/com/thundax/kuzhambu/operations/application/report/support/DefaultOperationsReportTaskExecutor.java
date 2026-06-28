@@ -9,7 +9,7 @@ import com.thundax.kuzhambu.operations.domain.report.model.enums.ReportStatus;
 import com.thundax.kuzhambu.operations.domain.report.model.valueobject.ReportId;
 import com.thundax.kuzhambu.operations.domain.report.repository.ReportRepository;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
-import com.thundax.kuzhambu.storage.facade.StorageUploadFacade;
+import com.thundax.kuzhambu.storage.facade.StorageFacade;
 import com.thundax.kuzhambu.storage.facade.request.UploadStorageObjectFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.response.UploadStorageObjectFacadeResponse;
 import java.io.ByteArrayInputStream;
@@ -25,17 +25,17 @@ public class DefaultOperationsReportTaskExecutor implements OperationsReportTask
     private final ReportRepository reportRepository;
     private final OperationsWorkerRenderClient operationsWorkerRenderClient;
     private final OperationsReportSnapshotAssembler snapshotAssembler;
-    private final StorageUploadFacade storageUploadFacade;
+    private final StorageFacade storageFacade;
 
     public DefaultOperationsReportTaskExecutor(
             ReportRepository reportRepository,
             OperationsWorkerRenderClient operationsWorkerRenderClient,
             OperationsReportSnapshotAssembler snapshotAssembler,
-            StorageUploadFacade storageUploadFacade) {
+            StorageFacade storageFacade) {
         this.reportRepository = reportRepository;
         this.operationsWorkerRenderClient = operationsWorkerRenderClient;
         this.snapshotAssembler = snapshotAssembler;
-        this.storageUploadFacade = storageUploadFacade;
+        this.storageFacade = storageFacade;
     }
 
     @Override
@@ -134,18 +134,17 @@ public class DefaultOperationsReportTaskExecutor implements OperationsReportTask
                 || artifactResult.getContentBytes().length == 0) {
             throw new IllegalStateException("Operations report artifact content is empty.");
         }
-        UploadStorageObjectFacadeResponse storedResult =
-                storageUploadFacade.uploadStorageObject(UploadStorageObjectFacadeRequest.builder()
-                        .inputStream(new ByteArrayInputStream(artifactResult.getContentBytes()))
-                        .originalFilename(filenameHint(artifactResult))
-                        .contentType(artifactResult.getContentType())
-                        .sizeBytes(
-                                artifactResult.getSizeBytes() == null
-                                        ? (long) artifactResult.getContentBytes().length
-                                        : artifactResult.getSizeBytes())
-                        .ownerType(StorageOwnerType.USER.value())
-                        .ownerId("system")
-                        .build());
+        UploadStorageObjectFacadeResponse storedResult = storageFacade.upload(UploadStorageObjectFacadeRequest.builder()
+                .inputStream(new ByteArrayInputStream(artifactResult.getContentBytes()))
+                .originalFilename(filenameHint(artifactResult))
+                .contentType(artifactResult.getContentType())
+                .sizeBytes(
+                        artifactResult.getSizeBytes() == null
+                                ? (long) artifactResult.getContentBytes().length
+                                : artifactResult.getSizeBytes())
+                .ownerType(StorageOwnerType.USER.value())
+                .ownerId("system")
+                .build());
         if (storedResult == null || storedResult.getStorageObjectId() == null) {
             throw new IllegalStateException("Operations report storage upload returned empty storage object.");
         }

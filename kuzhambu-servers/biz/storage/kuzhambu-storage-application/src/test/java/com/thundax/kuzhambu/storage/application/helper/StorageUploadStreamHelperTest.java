@@ -17,13 +17,13 @@ import com.thundax.kuzhambu.storage.application.service.command.RemoveStorageRef
 import com.thundax.kuzhambu.storage.application.service.command.StorageSortCommand;
 import com.thundax.kuzhambu.storage.application.service.content.StoredObjectContent;
 import com.thundax.kuzhambu.storage.application.service.query.StorageQuery;
-import com.thundax.kuzhambu.storage.application.store.StoredObjectStore;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObjectReference;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
+import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectContentRepository;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -183,7 +183,7 @@ class StorageUploadStreamHelperTest {
         }
     }
 
-    private static final class FakeStore implements StoredObjectStore {
+    private static final class FakeStore implements StoredObjectContentRepository {
         private final List<StoredObject> savedStorages = new ArrayList<>();
         private IOException saveFailure;
 

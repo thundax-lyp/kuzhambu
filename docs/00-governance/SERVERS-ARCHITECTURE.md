@@ -77,6 +77,9 @@
 - `ApplicationService` 是本业务域的用例入口，不作为其他业务域 application 层的直接依赖目标。
 - 一个业务域的 `ApplicationService` 依赖本域内聚的 `*Service` 或 `*DomainService` 完成编排。
 - 单体内跨业务域协作不按微服务远程调用口径强制经过对端 application 公开用例。
+- 当某个业务域需要为其他业务域暴露稳定的单体内跨域接口时，应新增独立 `*-facade` 模块；该模块扮演微服务 `interface` 的等价物，对外提供统一 `*Facade` 边界。
+- `*Facade` 只服务外域调用；提供方本域内部继续直接使用本域 `ApplicationService`、`DomainService`、`Repository` 等分层对象，不把 facade 当作本域内部默认入口。
+- `*Facade` 按外域视角收敛成统一门面；不要把同一业务域对外边界机械拆成多个按内部 helper 或 use case 命名的 facade。
 - 复杂跨域业务沉淀为稳定 `DomainService` 语义，由调用方 application 通过该 `DomainService` 完成读取、校验或状态变更。
 - 跨域调用不得直接访问对端 `infra`、`mapper`、`dataobject`、`repository.impl` 或底层表。
 - 对端 `ApplicationService` 不作为默认跨域防腐接口；复杂跨域业务定义明确业务语义的 `DomainService`，再由 application 编排事务和用户用例。

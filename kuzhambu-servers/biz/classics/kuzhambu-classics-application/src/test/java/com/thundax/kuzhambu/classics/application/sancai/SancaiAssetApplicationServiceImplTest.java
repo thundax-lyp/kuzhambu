@@ -35,7 +35,7 @@ import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
-import com.thundax.kuzhambu.storage.facade.StorageUploadFacade;
+import com.thundax.kuzhambu.storage.facade.StorageFacade;
 import com.thundax.kuzhambu.storage.facade.request.UploadStorageObjectFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.response.UploadStorageObjectFacadeResponse;
 import java.io.ByteArrayInputStream;
@@ -48,16 +48,15 @@ class SancaiAssetApplicationServiceImplTest {
     @Test
     void uploadImageShouldCreateReplacementAndBindStorageReference() {
         SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
-        StorageUploadFacade storageUploadFacade = mock(StorageUploadFacade.class);
+        StorageFacade storageFacade = mock(StorageFacade.class);
         StorageApplicationService storageApplicationService = mock(StorageApplicationService.class);
         SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(
-                repository, null, storageUploadFacade, null, storageApplicationService, null);
+                repository, null, storageFacade, null, storageApplicationService, null);
         SancaiEntryImage replacedImage = image(8001L, 3001L, 7000L);
         when(repository.getImageById(SancaiEntryImageId.of(8001L))).thenReturn(replacedImage);
         when(repository.maxPriority()).thenReturn(5);
         when(repository.insertImage(org.mockito.ArgumentMatchers.any())).thenReturn(SancaiEntryImageId.of(8002L));
-        when(storageUploadFacade.uploadStorageObject(org.mockito.ArgumentMatchers.any()))
-                .thenReturn(uploadResponse());
+        when(storageFacade.upload(org.mockito.ArgumentMatchers.any())).thenReturn(uploadResponse());
 
         SancaiEntryImageResource result = service.uploadImage(new SancaiEntryImageUploadCommand(
                 3001L,
@@ -83,7 +82,7 @@ class SancaiAssetApplicationServiceImplTest {
         verify(repository).updateImage(replacedImage);
         ArgumentCaptor<UploadStorageObjectFacadeRequest> uploadCaptor =
                 ArgumentCaptor.forClass(UploadStorageObjectFacadeRequest.class);
-        verify(storageUploadFacade).uploadStorageObject(uploadCaptor.capture());
+        verify(storageFacade).upload(uploadCaptor.capture());
         assertEquals("sancai.png", uploadCaptor.getValue().getOriginalFilename());
         assertEquals("image/png", uploadCaptor.getValue().getContentType());
         assertEquals(4L, uploadCaptor.getValue().getSizeBytes());

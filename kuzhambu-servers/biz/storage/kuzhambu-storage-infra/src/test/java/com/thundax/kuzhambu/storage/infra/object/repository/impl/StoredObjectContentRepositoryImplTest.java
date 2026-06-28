@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.storage.infra.store;
+package com.thundax.kuzhambu.storage.infra.object.repository.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -10,12 +10,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import org.junit.jupiter.api.Test;
 
-class ObjectStorageStoredObjectStoreTest {
+class StoredObjectContentRepositoryImplTest {
 
     @Test
     void deleteShouldRemoveObjectByStoredObjectKey() throws Exception {
         RecordingObjectStorageClient client = new RecordingObjectStorageClient();
-        ObjectStorageStoredObjectStore store = new ObjectStorageStoredObjectStore(client, "bucket", "/content/");
+        StoredObjectContentRepositoryImpl store = new StoredObjectContentRepositoryImpl(client, "bucket", "/content/");
         StoredObject storage = new StoredObject();
         storage.setObjectKey("202601/source.pdf");
 
@@ -28,7 +28,7 @@ class ObjectStorageStoredObjectStoreTest {
     void deleteShouldExposeClientFailure() {
         RecordingObjectStorageClient client = new RecordingObjectStorageClient();
         client.deleteFailure = new IOException("delete failed");
-        ObjectStorageStoredObjectStore store = new ObjectStorageStoredObjectStore(client, "bucket", "/content/");
+        StoredObjectContentRepositoryImpl store = new StoredObjectContentRepositoryImpl(client, "bucket", "/content/");
         StoredObject storage = new StoredObject();
         storage.setObjectKey("202601/source.pdf");
 

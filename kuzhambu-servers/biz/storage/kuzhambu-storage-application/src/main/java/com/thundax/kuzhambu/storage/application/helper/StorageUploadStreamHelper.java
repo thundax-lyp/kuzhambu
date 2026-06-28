@@ -2,9 +2,9 @@ package com.thundax.kuzhambu.storage.application.helper;
 
 import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
 import com.thundax.kuzhambu.storage.application.service.command.CreateStorageCommand;
-import com.thundax.kuzhambu.storage.application.store.StoredObjectStore;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
+import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectContentRepository;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -18,12 +18,13 @@ public class StorageUploadStreamHelper {
     private static final long MAX_UPLOAD_SIZE = 20L * 1024L * 1024L;
 
     private final StorageApplicationService storageApplicationService;
-    private final StoredObjectStore storedObjectStore;
+    private final StoredObjectContentRepository storedObjectContentRepository;
 
     public StorageUploadStreamHelper(
-            StorageApplicationService storageApplicationService, StoredObjectStore storedObjectStore) {
+            StorageApplicationService storageApplicationService,
+            StoredObjectContentRepository storedObjectContentRepository) {
         this.storageApplicationService = storageApplicationService;
-        this.storedObjectStore = storedObjectStore;
+        this.storedObjectContentRepository = storedObjectContentRepository;
     }
 
     public StorageUploadResult upload(
@@ -44,7 +45,7 @@ public class StorageUploadStreamHelper {
         storage.setOwnerId(ownerId);
         applyFileMetadata(originalFilename, contentType, storage);
         try {
-            applyStoredObject(storage, storedObjectStore.save(storage, inputStream));
+            applyStoredObject(storage, storedObjectContentRepository.save(storage, inputStream));
         } catch (IOException e) {
             return StorageUploadResult.builder().error(e.getMessage()).build();
         }

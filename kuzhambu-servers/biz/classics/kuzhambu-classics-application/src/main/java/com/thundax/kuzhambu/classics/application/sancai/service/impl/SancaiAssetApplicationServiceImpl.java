@@ -50,7 +50,7 @@ import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
-import com.thundax.kuzhambu.storage.facade.StorageUploadFacade;
+import com.thundax.kuzhambu.storage.facade.StorageFacade;
 import com.thundax.kuzhambu.storage.facade.request.UploadStorageObjectFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.response.UploadStorageObjectFacadeResponse;
 import java.io.ByteArrayInputStream;
@@ -87,7 +87,7 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
 
     private final SancaiAssetRepository repository;
     private final WorkerRenderClient workerRenderClient;
-    private final StorageUploadFacade storageUploadFacade;
+    private final StorageFacade storageFacade;
     private final StorageUploadStreamHelper storageUploadStreamHelper;
     private final StorageApplicationService storageApplicationService;
     private final ObjectMapper objectMapper;
@@ -95,13 +95,13 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     public SancaiAssetApplicationServiceImpl(
             SancaiAssetRepository repository,
             WorkerRenderClient workerRenderClient,
-            StorageUploadFacade storageUploadFacade,
+            StorageFacade storageFacade,
             StorageUploadStreamHelper storageUploadStreamHelper,
             StorageApplicationService storageApplicationService,
             ObjectMapper objectMapper) {
         this.repository = repository;
         this.workerRenderClient = workerRenderClient;
-        this.storageUploadFacade = storageUploadFacade;
+        this.storageFacade = storageFacade;
         this.storageUploadStreamHelper = storageUploadStreamHelper;
         this.storageApplicationService = storageApplicationService;
         this.objectMapper = objectMapper == null ? new ObjectMapper().findAndRegisterModules() : objectMapper;
@@ -153,7 +153,7 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
         validateImageUpload(command);
 
         UploadStorageObjectFacadeResponse uploadResponse =
-                storageUploadFacade.uploadStorageObject(UploadStorageObjectFacadeRequest.builder()
+                storageFacade.upload(UploadStorageObjectFacadeRequest.builder()
                         .inputStream(command.getInputStream())
                         .originalFilename(command.getOriginalFilename())
                         .contentType(command.getContentType())
