@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `reference facade contract`：定义 `StorageReferenceFacade` 协议骨架
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-facade/src/main/java/com/thundax/kuzhambu/storage/facade/StorageReferenceFacade.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-facade/src/main/java/com/thundax/kuzhambu/storage/facade/request/AddStorageReferencesFacadeRequest.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-facade/src/main/java/com/thundax/kuzhambu/storage/facade/request/RemoveStorageReferencesFacadeRequest.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-facade/src/main/java/com/thundax/kuzhambu/storage/facade/request/ChangeStorageReferenceStatusFacadeRequest.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-facade/src/main/java/com/thundax/kuzhambu/storage/facade/response/StorageReferenceFacadeResponse.java`
-    - 处理动作：定义引用关系 facade 及其 `request/response` 协议并固定不可变对象风格。
-    - 验收点：引用关系 facade 协议可独立表达新增引用、删除引用和变更引用状态三类跨域动作。
-    - 重要度：9/10
-
 - [ ] `server-artifact facade impl`：实现 `ServerArtifactStorageFacadeImpl` 与 `FacadeAssembler`
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FACADE-ISOLATION.md`
