@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `ai-facade/knowledge-protocol`：定义 knowledge 抽取 facade 协议
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-facade/src/main/java/com/thundax/kuzhambu/ai/facade/AiFacade.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-facade/src/main/java/com/thundax/kuzhambu/ai/facade/request/KnowledgeAiExtractionFacadeRequest.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-facade/src/main/java/com/thundax/kuzhambu/ai/facade/response/KnowledgeAiExtractionFacadeResponse.java`
-    - 处理动作：为 `extractKnowledgeRelations/Graph/Lineage` 建立 knowledge 抽取协议。
-    - 验收点：`KnowledgeAiExtractionFacadeRequest` 包含 `taskType/scopeType/scopeJson/sourceContentType/sourceContentId/requestedBy/serviceId/serviceRole/modelId/modelName/promptVersionId/requestId/traceId/promptMessagesJson/promptVariablesJson/promptHash/inputPayloadJson/outputSchemaJson/forceJson/locale`，`KnowledgeAiExtractionFacadeResponse` 包含 `callId/candidateId/status/capability/resultFormat/resultPayload/errorType/errorMessage`。
-    - 重要度：9/10
-
 - [ ] `ai-facade/batch-protocol`：定义 AI 批任务 facade 协议
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-FACADE-ISOLATION.md`
