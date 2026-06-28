@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics-facade-search-sync-contract`：定义 search index sync facade 协议
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-facade/src/main/java/com/thundax/kuzhambu/classics/facade/dto/ClassicsSearchIndexSyncMessageFacadeDto.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-facade/src/main/java/com/thundax/kuzhambu/classics/facade/dto/ClassicsSearchIndexSyncEventFacadeDto.java`
-    - 处理动作：定义检索同步消息 facade dto 和事件枚举
-    - 验收点：同步消息字段与事件枚举值与 RUNBOOK 一致
-    - 重要度：7/10
-
 - [ ] `operations-classics-facade`：operations 改用 ClassicsFacade 读取 summary
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-FACADE-ISOLATION.md`
