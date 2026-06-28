@@ -4,7 +4,7 @@ import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentT
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryImage;
 import com.thundax.kuzhambu.common.core.id.Identifier;
-import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
+import com.thundax.kuzhambu.storage.facade.dto.StorageObjectFacadeDto;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -136,7 +136,7 @@ public record SancaiEntryVersionSnapshot(
             return from(image, null);
         }
 
-        public static ImageResource from(SancaiEntryImage image, StoredObject storage) {
+        public static ImageResource from(SancaiEntryImage image, StorageObjectFacadeDto storage) {
             return new ImageResource(
                     id(image.getId()),
                     id(image.getStorageObjectId()),

@@ -1,9 +1,9 @@
 package com.thundax.kuzhambu.storage.application.service.impl;
 
 import com.thundax.kuzhambu.common.core.exception.BizException;
-import com.thundax.kuzhambu.storage.application.store.StoredObjectStore;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
+import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectContentRepository;
 import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectRepository;
 import java.io.IOException;
 import java.time.Clock;
@@ -21,12 +21,13 @@ public class StorageOrphanObjectCleanupScheduler {
     private static final Duration ORPHAN_ALIVE_TIME = Duration.ofHours(12);
 
     private final StoredObjectRepository repository;
-    private final StoredObjectStore storedObjectStore;
+    private final StoredObjectContentRepository storedObjectContentRepository;
     private Clock clock = Clock.systemUTC();
 
-    public StorageOrphanObjectCleanupScheduler(StoredObjectRepository repository, StoredObjectStore storedObjectStore) {
+    public StorageOrphanObjectCleanupScheduler(
+            StoredObjectRepository repository, StoredObjectContentRepository storedObjectContentRepository) {
         this.repository = repository;
-        this.storedObjectStore = storedObjectStore;
+        this.storedObjectContentRepository = storedObjectContentRepository;
     }
 
     StorageOrphanObjectCleanupScheduler useClock(Clock clock) {
@@ -50,7 +51,7 @@ public class StorageOrphanObjectCleanupScheduler {
 
     private void delete(StoredObject storage) {
         try {
-            storedObjectStore.delete(storage);
+            storedObjectContentRepository.delete(storage);
         } catch (IOException exception) {
             StoredObjectId id = storage == null ? null : storage.getId();
             String message = "Storage orphan object delete failed: " + id;

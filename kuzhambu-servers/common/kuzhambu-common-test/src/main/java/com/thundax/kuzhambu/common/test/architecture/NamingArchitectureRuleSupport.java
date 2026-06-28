@@ -399,8 +399,8 @@ public final class NamingArchitectureRuleSupport {
         }
 
         assertTrue(
-                "Repository interface methods should use getById/getByXxx/list/listByIds/page/count/deleteById/batchXxx "
-                        + "naming: "
+                "Repository interface methods should use getByXxx/list/page/count/insert/update/deleteBy/batchXxx "
+                        + "naming; content repositories may also use save/exists/open/delete: "
                         + violations,
                 violations.isEmpty());
     }
@@ -703,6 +703,10 @@ public final class NamingArchitectureRuleSupport {
         return name.equals("count")
                 || name.equals("list")
                 || name.equals("page")
+                || name.equals("save")
+                || name.equals("exists")
+                || name.equals("open")
+                || name.equals("delete")
                 || name.equals("deleteAll")
                 || name.startsWith("getBy")
                 || name.startsWith("max")
@@ -785,6 +789,15 @@ public final class NamingArchitectureRuleSupport {
             return true;
         }
         return !ENTITY_REQUIRED_ANNOTATIONS.equals(classAnnotationSimpleNames(classDeclaration.group(1)));
+    }
+
+    static Set<String> sourceClassAnnotationSimpleNames(Path path) {
+        String source = ArchitectureSourceSupport.readSourceWithoutComments(path);
+        Matcher classDeclaration = ENTITY_CLASS_DECLARATION_PATTERN.matcher(source);
+        if (!classDeclaration.find()) {
+            return new LinkedHashSet<String>();
+        }
+        return classAnnotationSimpleNames(classDeclaration.group(1));
     }
 
     private static Set<String> classAnnotationSimpleNames(String sourceBeforeClass) {

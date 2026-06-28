@@ -260,7 +260,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         });
 
         ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
-                repository, null, null, null, null, null, null, aiCandidateDomainService, tagBindingSupport, null);
+                repository, null, null, null, null, null, aiCandidateDomainService, tagBindingSupport, null);
 
         service.applyAiCandidate(
                 applyCommand(11L, ClassicsContentType.SANCAI_ENTRY, 11L, "tags", "{\"tags\":[\"ai-one\",\"ai-two\"]}"));
@@ -361,7 +361,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
     private static ClassicsContentApplicationServiceImpl serviceWithAiDomainService(
             ClassicsContentRepository repository, AiCandidateDomainService aiCandidateDomainService) {
         return new ClassicsContentApplicationServiceImpl(
-                repository, null, null, null, null, null, null, aiCandidateDomainService, null, null);
+                repository, null, null, null, null, null, aiCandidateDomainService, null, null);
     }
 
     private static AiCandidateApplyContentCommand applyCommand(

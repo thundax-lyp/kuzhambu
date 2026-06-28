@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiDraftCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImageSortCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImageUploadCommand;
@@ -35,20 +36,14 @@ import com.thundax.kuzhambu.common.core.exception.ErrorCode;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
-import com.thundax.kuzhambu.storage.application.helper.StorageUploadResult;
-import com.thundax.kuzhambu.storage.application.helper.StorageUploadStreamHelper;
-import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
-import com.thundax.kuzhambu.storage.application.service.command.AddStorageReferencesCommand;
-import com.thundax.kuzhambu.storage.application.service.command.ChangeStorageCommand;
-import com.thundax.kuzhambu.storage.application.service.command.ChangeStorageReferenceStatusCommand;
-import com.thundax.kuzhambu.storage.application.service.content.StoredObjectContent;
-import com.thundax.kuzhambu.storage.application.service.query.StorageQuery;
-import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
-import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
-import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObjectReference;
-import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
-import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
-import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
+import com.thundax.kuzhambu.storage.facade.StorageFacade;
+import com.thundax.kuzhambu.storage.facade.dto.StorageObjectFacadeDto;
+import com.thundax.kuzhambu.storage.facade.request.BindStorageOwnerFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.MarkStorageUsageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.OpenStorageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.UploadStorageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.response.OpenStorageFacadeResponse;
+import com.thundax.kuzhambu.storage.facade.response.UploadStorageFacadeResponse;
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -79,24 +74,23 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     private static final String SANCAI_IMAGE_CONTENT_PATH_PREFIX = "/api/classics/sancai/assets/images/";
     private static final String SANCAI_IMAGE_CONTENT_PATH_SEPARATOR = "/";
     private static final String SANCAI_IMAGE_CONTENT_PATH_SUFFIX = "/content";
+    private static final String IMAGE_OWNER_TYPE = "CLASSICS_SANCAI_ENTRY_IMAGE";
+    private static final String USER_OWNER_TYPE = "USER";
     private static final List<String> ALLOWED_IMAGE_SUFFIXES = List.of("jpg", "jpeg", "png", "gif", "webp");
 
     private final SancaiAssetRepository repository;
     private final WorkerRenderClient workerRenderClient;
-    private final StorageUploadStreamHelper storageUploadStreamHelper;
-    private final StorageApplicationService storageApplicationService;
+    private final StorageFacade storageFacade;
     private final ObjectMapper objectMapper;
 
     public SancaiAssetApplicationServiceImpl(
             SancaiAssetRepository repository,
             WorkerRenderClient workerRenderClient,
-            StorageUploadStreamHelper storageUploadStreamHelper,
-            StorageApplicationService storageApplicationService,
+            StorageFacade storageFacade,
             ObjectMapper objectMapper) {
         this.repository = repository;
         this.workerRenderClient = workerRenderClient;
-        this.storageUploadStreamHelper = storageUploadStreamHelper;
-        this.storageApplicationService = storageApplicationService;
+        this.storageFacade = storageFacade;
         this.objectMapper = objectMapper == null ? new ObjectMapper().findAndRegisterModules() : objectMapper;
     }
 
@@ -145,22 +139,20 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
         SancaiEntryImage replacedImage = currentImageToReplace(command, entryId);
         validateImageUpload(command);
 
-        StorageUploadResult uploadResult = storageUploadStreamHelper.upload(
-                command.getInputStream(),
-                command.getOriginalFilename(),
-                command.getContentType(),
-                command.getSize(),
-                ALLOWED_IMAGE_SUFFIXES,
-                StorageOwnerType.CLASSICS_SANCAI_ENTRY_IMAGE,
-                null);
-        if (uploadResult.hasError()) {
-            throw new BizException(uploadResult.getError());
-        }
-
-        StoredObject storage = uploadResult.getStorage();
+        UploadStorageFacadeResponse uploadResponse = storageFacade.upload(UploadStorageFacadeRequest.builder()
+                .inputStream(command.getInputStream())
+                .originalFilename(command.getOriginalFilename())
+                .contentType(command.getContentType())
+                .sizeBytes(command.getSize())
+                .allowedSuffixes(ALLOWED_IMAGE_SUFFIXES)
+                .ownerType(IMAGE_OWNER_TYPE)
+                .build());
         SancaiEntryImage image = new SancaiEntryImage();
         image.setEntryId(entryId);
-        image.setStorageObjectId(StorageObjectIdCodec.toDomain(storage.getId().value()));
+        image.setStorageObjectId(
+                uploadResponse == null || uploadResponse.getStorageObjectId() == null
+                        ? null
+                        : StorageObjectId.of(uploadResponse.getStorageObjectId()));
         image.setImageType(command.getImageType());
         image.setTitle(command.getTitle());
         image.setCurrentUsed(command.isCurrentUsed());
@@ -172,24 +164,28 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
             replacedImage.setCurrentUsed(false);
             repository.updateImage(replacedImage);
         }
-        ensureStorageOwner(storage, entryId, imageId);
-        addStorageReference(storage.getId(), entryId, imageId);
-        return toResource(image, storage);
+        bindStorageOwner(uploadResponse == null ? null : uploadResponse.getStorageObjectId(), entryId, imageId);
+        return toResource(image, uploadResponse);
     }
 
     @Override
     public SancaiEntryImageContent getImageContent(SancaiEntryId entryId, SancaiEntryImageId imageId) {
         SancaiEntryImage image = requireImage(entryId, imageId);
-        StoredObjectId objectId = toStoredObjectId(image.getStorageObjectId());
-        StorageQuery query = new StorageQuery();
-        query.setId(objectId);
-        query.setOwnerType(StorageOwnerType.CLASSICS_SANCAI_ENTRY_IMAGE);
-        query.setOwnerId(imageOwnerId(entryId, imageId));
-        if (!storageApplicationService.existsReadableContent(query)) {
+        OpenStorageFacadeRequest request = OpenStorageFacadeRequest.builder()
+                .storageObjectId(StorageObjectIdCodec.toValue(image.getStorageObjectId()))
+                .ownerType(IMAGE_OWNER_TYPE)
+                .ownerId(imageOwnerId(entryId, imageId))
+                .build();
+        if (storageFacade == null || !storageFacade.exists(request)) {
             throw new BizException("三才图片不可读");
         }
-        StoredObjectContent content = storageApplicationService.openReadableContent(objectId);
-        return new SancaiEntryImageContent(entryId.value(), imageId.value(), objectId.value(), content);
+        OpenStorageFacadeResponse response = storageFacade.open(request);
+        ClassicsStoredContentResult content = toStoredContentResult(response);
+        if (content == null) {
+            throw new BizException("三才图片不可读");
+        }
+        return new SancaiEntryImageContent(
+                entryId.value(), imageId.value(), StorageObjectIdCodec.toValue(image.getStorageObjectId()), content);
     }
 
     @Override
@@ -258,9 +254,10 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     public void deleteImage(SancaiEntryImageId id) {
         SancaiEntryImage image = getImage(id);
         repository.deleteImageById(id);
-        if (image != null && image.getStorageObjectId() != null) {
-            storageApplicationService.changeReferenceStatus(new ChangeStorageReferenceStatusCommand(
-                    toStoredObjectId(image.getStorageObjectId()), StoredObjectReferenceStatus.UNREFERENCED));
+        if (storageFacade != null && image != null && image.getStorageObjectId() != null) {
+            storageFacade.markUnused(MarkStorageUsageFacadeRequest.builder()
+                    .storageObjectId(image.getStorageObjectId().value())
+                    .build());
         }
     }
 
@@ -309,12 +306,12 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
                 repository.markShowcaseFailed(showcaseId);
                 return showcaseId;
             }
-            StorageUploadResult uploadResult = saveShowcaseArtifact(showcaseId, response);
-            if (uploadResult.hasError()) {
+            UploadStorageFacadeResponse uploadResponse = saveShowcaseArtifact(showcaseId, response);
+            if (uploadResponse == null) {
                 repository.markShowcaseFailed(showcaseId);
                 return showcaseId;
             }
-            StorageObjectId storageObjectId = toStorageObjectId(uploadResult);
+            StorageObjectId storageObjectId = toStorageObjectId(uploadResponse);
             if (storageObjectId == null) {
                 repository.markShowcaseFailed(showcaseId);
                 return showcaseId;
@@ -329,6 +326,20 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
             repository.markShowcaseFailed(showcaseId);
             return showcaseId;
         }
+    }
+
+    @Override
+    public ClassicsStoredContentResult getShowcaseContent(StorageObjectId storageObjectId) {
+        OpenStorageFacadeResponse response = storageFacade == null
+                ? null
+                : storageFacade.open(OpenStorageFacadeRequest.builder()
+                        .storageObjectId(StorageObjectIdCodec.toValue(storageObjectId))
+                        .build());
+        ClassicsStoredContentResult content = toStoredContentResult(response);
+        if (content == null) {
+            throw new BizException("三才展示产物不存在");
+        }
+        return content;
     }
 
     @Override
@@ -425,15 +436,21 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
         return defaultPayload;
     }
 
-    private StorageUploadResult saveShowcaseArtifact(
+    private UploadStorageFacadeResponse saveShowcaseArtifact(
             SancaiShowcaseId showcaseId, WorkerRenderDtos.WorkerRenderResponse response) {
+        if (storageFacade == null) {
+            return null;
+        }
         WorkerRenderDtos.Artifact artifact = response == null ? null : response.getArtifact();
         byte[] content = artifactContent(artifact);
-        return storageUploadStreamHelper.uploadServerArtifact(
-                new ByteArrayInputStream(content),
-                filenameHint(showcaseId, artifact),
-                artifact == null ? null : artifact.getContentType(),
-                content.length);
+        return storageFacade.upload(UploadStorageFacadeRequest.builder()
+                .inputStream(new ByteArrayInputStream(content))
+                .originalFilename(filenameHint(showcaseId, artifact))
+                .contentType(artifact == null ? null : artifact.getContentType())
+                .sizeBytes((long) content.length)
+                .ownerType(USER_OWNER_TYPE)
+                .ownerId("system")
+                .build());
     }
 
     private String filenameHint(SancaiShowcaseId showcaseId, WorkerRenderDtos.Artifact artifact) {
@@ -460,12 +477,10 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
         return artifact.getContent().getBytes(java.nio.charset.StandardCharsets.UTF_8);
     }
 
-    private StorageObjectId toStorageObjectId(StorageUploadResult uploadResult) {
-        return uploadResult == null
-                        || uploadResult.getStorage() == null
-                        || uploadResult.getStorage().getId() == null
+    private StorageObjectId toStorageObjectId(UploadStorageFacadeResponse uploadResponse) {
+        return uploadResponse == null || uploadResponse.getStorageObjectId() == null
                 ? null
-                : StorageObjectId.of(uploadResult.getStorage().getId().value());
+                : StorageObjectId.of(uploadResponse.getStorageObjectId());
     }
 
     private static boolean isSuccess(WorkerRenderDtos.WorkerRenderResponse response) {
@@ -539,39 +554,19 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
         }
     }
 
-    private void ensureStorageOwner(StoredObject storage, SancaiEntryId entryId, SancaiEntryImageId imageId) {
-        ChangeStorageCommand command = new ChangeStorageCommand();
-        command.setId(storage.getId());
-        command.setOriginalFilename(storage.getOriginalFilename());
-        command.setContentType(storage.getContentType());
-        command.setName(storage.getName());
-        command.setExtendName(storage.getExtendName());
-        command.setMimeType(storage.getMimeType());
-        command.setOwnerType(StorageOwnerType.CLASSICS_SANCAI_ENTRY_IMAGE);
-        command.setOwnerId(imageOwnerId(entryId, imageId));
-        command.setBucketName(storage.getBucketName());
-        command.setObjectKey(storage.getObjectKey());
-        command.setSize(storage.getSize());
-        command.setAccessEndpoint(storage.getAccessEndpoint());
-        command.setObjectStatus(storage.getObjectStatus());
-        command.setReferenceStatus(storage.getReferenceStatus());
-        command.setRemarks(storage.getRemarks());
-        storageApplicationService.change(command);
+    private void bindStorageOwner(Long storageObjectId, SancaiEntryId entryId, SancaiEntryImageId imageId) {
+        if (storageFacade == null || storageObjectId == null) {
+            return;
+        }
+        storageFacade.bindOwner(BindStorageOwnerFacadeRequest.builder()
+                .storageObjectIds(List.of(storageObjectId))
+                .ownerId(imageOwnerId(entryId, imageId))
+                .ownerType(IMAGE_OWNER_TYPE)
+                .ownerParams("usage=SANCAI_ENTRY_IMAGE;entryId=" + entryId.value() + ";imageId=" + imageId.value())
+                .build());
     }
 
-    private void addStorageReference(StoredObjectId objectId, SancaiEntryId entryId, SancaiEntryImageId imageId) {
-        StoredObjectReference reference = new StoredObjectReference(
-                objectId,
-                imageOwnerId(entryId, imageId),
-                StorageOwnerType.CLASSICS_SANCAI_ENTRY_IMAGE,
-                "usage=SANCAI_ENTRY_IMAGE;entryId=" + entryId.value() + ";imageId=" + imageId.value(),
-                StoredObjectReferenceStatus.REFERENCED);
-        storageApplicationService.addReferences(new AddStorageReferencesCommand(List.of(reference)));
-        storageApplicationService.changeReferenceStatus(
-                new ChangeStorageReferenceStatusCommand(objectId, StoredObjectReferenceStatus.REFERENCED));
-    }
-
-    private static SancaiEntryImageResource toResource(SancaiEntryImage image, StoredObject storage) {
+    private static SancaiEntryImageResource toResource(SancaiEntryImage image, UploadStorageFacadeResponse response) {
         Long entryId = image.getEntryId() == null ? null : image.getEntryId().value();
         Long imageId = image.getId() == null ? null : image.getId().value();
         String contentUrl = SANCAI_IMAGE_CONTENT_PATH_PREFIX
@@ -582,16 +577,21 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
         return new SancaiEntryImageResource(
                 entryId,
                 imageId,
-                storage.getId() == null ? null : storage.getId().value(),
-                storage.getOriginalFilename(),
-                storage.getContentType(),
-                storage.getSize(),
+                response == null ? null : response.getStorageObjectId(),
+                response == null ? null : response.getOriginalFilename(),
+                response == null ? null : response.getContentType(),
+                response == null ? null : response.getSizeBytes(),
                 contentUrl,
                 contentUrl + "?download=true");
     }
 
-    private static StoredObjectId toStoredObjectId(StorageObjectId id) {
-        return StoredObjectIdCodec.toDomain(StorageObjectIdCodec.toValue(id));
+    private static ClassicsStoredContentResult toStoredContentResult(OpenStorageFacadeResponse response) {
+        if (response == null || response.getStoredObject() == null || response.getInputStream() == null) {
+            return null;
+        }
+        StorageObjectFacadeDto dto = response.getStoredObject();
+        return new ClassicsStoredContentResult(
+                dto.getId(), dto.getOriginalFilename(), dto.getContentType(), dto.getSize(), response.getInputStream());
     }
 
     static String imageOwnerId(SancaiEntryId entryId, SancaiEntryImageId imageId) {

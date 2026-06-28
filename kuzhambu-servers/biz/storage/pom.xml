@@ -16,6 +16,7 @@
 
   <modules>
     <module>kuzhambu-storage-domain</module>
+    <module>kuzhambu-storage-facade</module>
     <module>kuzhambu-storage-application</module>
     <module>kuzhambu-storage-interface</module>
     <module>kuzhambu-storage-infra</module>

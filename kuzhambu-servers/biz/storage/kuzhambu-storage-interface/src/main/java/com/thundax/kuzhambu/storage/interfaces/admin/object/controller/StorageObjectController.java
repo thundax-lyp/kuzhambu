@@ -9,12 +9,12 @@ import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.common.web.request.RequestListHelper;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
-import com.thundax.kuzhambu.storage.application.helper.StorageUploadResult;
-import com.thundax.kuzhambu.storage.application.helper.StorageUploadStreamHelper;
 import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
 import com.thundax.kuzhambu.storage.application.service.command.StorageSortCommand;
+import com.thundax.kuzhambu.storage.application.service.command.UploadStorageObjectCommand;
 import com.thundax.kuzhambu.storage.application.service.content.StoredObjectContent;
 import com.thundax.kuzhambu.storage.application.service.query.StorageQuery;
+import com.thundax.kuzhambu.storage.application.service.result.StorageUploadResult;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
@@ -38,7 +38,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -61,17 +60,9 @@ public class StorageObjectController {
             "pptx");
 
     private final StorageApplicationService storageApplicationService;
-    private final StorageUploadStreamHelper storageUploadStreamHelper;
 
     public StorageObjectController(StorageApplicationService storageApplicationService) {
-        this(storageApplicationService, null);
-    }
-
-    @Autowired
-    public StorageObjectController(
-            StorageApplicationService storageApplicationService, StorageUploadStreamHelper storageUploadStreamHelper) {
         this.storageApplicationService = storageApplicationService;
-        this.storageUploadStreamHelper = storageUploadStreamHelper;
     }
 
     @Operation(summary = "获取存储对象分页列表", description = "storage:object:view")
@@ -156,18 +147,18 @@ public class StorageObjectController {
             @RequestParam("file") MultipartFile file,
             @RequestParam(value = "ownerType", required = false) String ownerType,
             @RequestParam(value = "ownerId", required = false) String ownerId) {
-        if (storageUploadStreamHelper == null) {
-            throw AdminResponseExceptions.system("storage upload helper is not configured");
-        }
         try {
-            StorageUploadResult result = storageUploadStreamHelper.upload(
+            StorageUploadResult result = storageApplicationService.upload(new UploadStorageObjectCommand(
                     file == null ? null : file.getInputStream(),
                     file == null ? null : file.getOriginalFilename(),
                     file == null ? null : file.getContentType(),
                     file == null ? 0L : file.getSize(),
                     ALLOWED_UPLOAD_SUFFIXES,
                     ownerTypeFrom(ownerType),
-                    StringUtils.trimToNull(ownerId));
+                    StringUtils.trimToNull(ownerId),
+                    null,
+                    null,
+                    null));
             if (result.hasError()) {
                 throw AdminResponseExceptions.invalidParameter(result.getError());
             }

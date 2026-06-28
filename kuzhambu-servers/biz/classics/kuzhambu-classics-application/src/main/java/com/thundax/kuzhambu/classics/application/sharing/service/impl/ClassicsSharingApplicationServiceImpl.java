@@ -4,7 +4,9 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
+import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
 import com.thundax.kuzhambu.classics.application.sharing.command.ClassicsShareTargetSortCommand;
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkCreateCommand;
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkStatusCommand;
@@ -47,10 +49,10 @@ import com.thundax.kuzhambu.common.core.exception.ErrorCode;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
-import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
-import com.thundax.kuzhambu.storage.application.service.content.StoredObjectContent;
-import com.thundax.kuzhambu.storage.application.service.query.StorageQuery;
-import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
+import com.thundax.kuzhambu.storage.facade.StorageFacade;
+import com.thundax.kuzhambu.storage.facade.dto.StorageObjectFacadeDto;
+import com.thundax.kuzhambu.storage.facade.request.OpenStorageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.response.OpenStorageFacadeResponse;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -75,7 +77,7 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
     private final MingCustomsRepository mingCustomsRepository;
     private final ClassicsShareTokenGenerator shareTokenGenerator;
     private final ClassicsShareTokenHasher shareTokenHasher;
-    private final StorageApplicationService storageApplicationService;
+    private final StorageFacade storageFacade;
     private ClassicsShareProperties shareProperties = new ClassicsShareProperties();
 
     public ClassicsSharingApplicationServiceImpl(
@@ -86,7 +88,7 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
             MingCustomsRepository mingCustomsRepository,
             ClassicsShareTokenGenerator shareTokenGenerator,
             ClassicsShareTokenHasher shareTokenHasher,
-            StorageApplicationService storageApplicationService) {
+            StorageFacade storageFacade) {
         this.repository = repository;
         this.contentApplicationService = contentApplicationService;
         this.sancaiRepository = sancaiRepository;
@@ -94,7 +96,7 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
         this.mingCustomsRepository = mingCustomsRepository;
         this.shareTokenGenerator = shareTokenGenerator;
         this.shareTokenHasher = shareTokenHasher;
-        this.storageApplicationService = storageApplicationService;
+        this.storageFacade = storageFacade;
     }
 
     @Autowired(required = false)
@@ -175,14 +177,14 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
                 link.getStatus(),
                 link.getIssuedAt(),
                 link.getExpiresAt(),
-                listTargets(link.getId()));
+                enrichPortalTargets(listTargets(link.getId())));
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public StoredObjectContent getPortalShareResourceContent(
+    public ClassicsStoredContentResult getPortalShareResourceContent(
             String shareToken, Long storageObjectId, boolean download) {
-        if (storageObjectId == null || storageApplicationService == null) {
+        if (storageObjectId == null || storageFacade == null) {
             throw shareContentNotFound();
         }
         ClassicsShareLink link = repository.getLinkByTokenHash(shareTokenHasher.hash(shareToken));
@@ -193,13 +195,13 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
         if (matchedTarget == null) {
             throw shareContentNotFound();
         }
-        StoredObjectId objectId = StoredObjectId.of(storageObjectId);
-        StorageQuery query = new StorageQuery();
-        query.setId(objectId);
-        if (!storageApplicationService.existsReadableContent(query)) {
+        OpenStorageFacadeRequest request = OpenStorageFacadeRequest.builder()
+                .storageObjectId(storageObjectId)
+                .build();
+        if (!storageFacade.exists(request)) {
             throw shareContentNotFound();
         }
-        StoredObjectContent content = storageApplicationService.openReadableContent(objectId);
+        ClassicsStoredContentResult content = toStoredContentResult(storageFacade.open(request));
         if (content == null) {
             throw shareContentNotFound();
         }
@@ -216,6 +218,83 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
             return false;
         }
         return link.getExpiresAt() == null || link.getExpiresAt().after(new Date());
+    }
+
+    private List<ClassicsShareTarget> enrichPortalTargets(List<ClassicsShareTarget> targets) {
+        if (targets == null || targets.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return targets.stream().map(this::enrichPortalTarget).toList();
+    }
+
+    private ClassicsShareTarget enrichPortalTarget(ClassicsShareTarget target) {
+        if (target == null || target.getContentType() != ClassicsContentType.WANGQI_DOCUMENT) {
+            return target;
+        }
+        JsonNode snapshot = readSnapshot(target.getContentSnapshotJson());
+        Long storageObjectId = longValue(snapshot == null ? null : snapshot.get("storageObjectId"));
+        if (storageObjectId == null || snapshot == null) {
+            return target;
+        }
+        StorageObjectFacadeDto storedObject = openStoredObject(storageObjectId);
+        if (storedObject == null) {
+            return target;
+        }
+        ObjectNode snapshotNode = snapshot.deepCopy();
+        snapshotNode.put("originalFilename", storedObject.getOriginalFilename());
+        snapshotNode.put("contentType", storedObject.getContentType());
+        if (storedObject.getSize() != null) {
+            snapshotNode.put("size", storedObject.getSize());
+        } else {
+            snapshotNode.putNull("size");
+        }
+        return new ClassicsShareTarget(
+                target.getId(),
+                target.getShareLinkId(),
+                target.getContentType(),
+                target.getContentId(),
+                target.getContentVersionId(),
+                target.getContentVersionNo(),
+                target.getTitleSnapshot(),
+                snapshotNode.toString(),
+                target.getContentVisibilitySnapshot(),
+                target.getTargetStatus(),
+                target.getPriority(),
+                target.getCurrentContentVersionId(),
+                target.getCurrentContentVersionNo(),
+                target.getContentChangedAfterShare());
+    }
+
+    private StorageObjectFacadeDto openStoredObject(Long storageObjectId) {
+        if (storageFacade == null || storageObjectId == null) {
+            return null;
+        }
+        OpenStorageFacadeResponse response = storageFacade.open(OpenStorageFacadeRequest.builder()
+                .storageObjectId(storageObjectId)
+                .build());
+        if (response == null || response.getStoredObject() == null) {
+            return null;
+        }
+        if (response.getInputStream() != null) {
+            try {
+                response.getInputStream().close();
+            } catch (java.io.IOException ignored) {
+            }
+        }
+        return response.getStoredObject();
+    }
+
+    private static ClassicsStoredContentResult toStoredContentResult(OpenStorageFacadeResponse response) {
+        if (response == null || response.getStoredObject() == null || response.getInputStream() == null) {
+            return null;
+        }
+        StorageObjectFacadeDto storedObject = response.getStoredObject();
+        return new ClassicsStoredContentResult(
+                storedObject.getId(),
+                storedObject.getOriginalFilename(),
+                storedObject.getContentType(),
+                storedObject.getSize(),
+                response.getInputStream());
     }
 
     @Override

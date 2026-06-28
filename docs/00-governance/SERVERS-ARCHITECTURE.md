@@ -59,7 +59,7 @@
 - 接口层协议转换：`InterfaceAssembler`
 - 用例编排入口：`ApplicationService`
 - 应用层输入：`Command` / `Query` / `PageQuery`
-- 应用层输出：`Result` / `PageResult`
+- 应用层输出：`Result` / `DTO` / `PageResult`
 - 应用层内部复用：`Helper` / `Factory` / `Resolver` / `Executor`
 - 核心领域规则：`DomainService`
 - 领域读写端口：`Repository`
@@ -77,6 +77,9 @@
 - `ApplicationService` 是本业务域的用例入口，不作为其他业务域 application 层的直接依赖目标。
 - 一个业务域的 `ApplicationService` 依赖本域内聚的 `*Service` 或 `*DomainService` 完成编排。
 - 单体内跨业务域协作不按微服务远程调用口径强制经过对端 application 公开用例。
+- 当某个业务域需要为其他业务域暴露稳定的单体内跨域接口时，应新增独立 `*-facade` 模块；该模块扮演微服务 `interface` 的等价物，对外提供统一 `*Facade` 边界。
+- `*Facade` 只服务外域调用；提供方本域内部继续直接使用本域 `ApplicationService`、`DomainService`、`Repository` 等分层对象，不把 facade 当作本域内部默认入口。
+- `*Facade` 按外域视角收敛成统一门面；不要把同一业务域对外边界机械拆成多个按内部 helper 或 use case 命名的 facade。
 - 复杂跨域业务沉淀为稳定 `DomainService` 语义，由调用方 application 通过该 `DomainService` 完成读取、校验或状态变更。
 - 跨域调用不得直接访问对端 `infra`、`mapper`、`dataobject`、`repository.impl` 或底层表。
 - 对端 `ApplicationService` 不作为默认跨域防腐接口；复杂跨域业务定义明确业务语义的 `DomainService`，再由 application 编排事务和用户用例。
@@ -178,6 +181,8 @@ com/thundax/kuzhambu/<domain>/interfaces/portal/
 路径用途：
 
 - `application/`：用例编排、事务边界、跨域协调、命令、查询和结果对象。
+- `application` 层公开方法输入默认使用 `*Command` / `*Query` / `PageQuery`。
+- `application` 层公开方法输出默认使用 `*Result`；仅在稳定通用传输对象场景下使用 `*DTO`；分页输出统一使用 `PageResult<...>`。
 - `application/<subdomain>/service/`：应用用例入口接口，命名为 `*ApplicationService`。
 - `application/<subdomain>/service/impl/`：应用用例入口实现，命名为 `*ApplicationServiceImpl`。
 - `application/<subdomain>/command/`：写入用例输入模型。

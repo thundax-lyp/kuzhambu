@@ -7,8 +7,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -23,10 +25,19 @@ public final class RepositoryArchitectureRuleSupport {
 
     private static final Set<String> SERVER_GROUPS = new HashSet<String>(Arrays.asList("common", "biz", "starter"));
     private static final Set<String> DOMAIN_LAYERS =
-            new HashSet<String>(Arrays.asList("interface", "application", "domain", "infra"));
+            new HashSet<String>(Arrays.asList("interface", "application", "domain", "infra", "facade"));
     private static final Set<String> STARTER_MODULES =
             new HashSet<String>(Arrays.asList("kuzhambu-admin-starter", "kuzhambu-portal-starter"));
     private static final Pattern PACKAGE_PATTERN = Pattern.compile("(?m)^\\s*package\\s+([A-Za-z0-9_.]+)\\s*;");
+    private static final Set<String> COMMON_ONLY_LAYERS = new HashSet<String>(Arrays.asList("domain", "facade"));
+    // Legacy allowlists are the explicit debt register for pre-rule modules. New dependencies must fit
+    // the whitelist rules directly; cleanup work should only shrink these allowlists until they reach zero.
+    private static final Map<String, Set<String>> LEGACY_APPLICATION_POM_DEPENDENCY_ALLOWLIST =
+            legacyApplicationPomDependencyAllowlist();
+    private static final Map<String, Set<String>> LEGACY_INTERFACE_POM_DEPENDENCY_ALLOWLIST =
+            legacyInterfacePomDependencyAllowlist();
+    private static final Map<String, Set<String>> LEGACY_INFRA_POM_DEPENDENCY_ALLOWLIST =
+            legacyInfraPomDependencyAllowlist();
 
     private RepositoryArchitectureRuleSupport() {}
 
@@ -195,11 +206,11 @@ public final class RepositoryArchitectureRuleSupport {
     }
 
     private static void collectPomDependencyViolations(Path root, Path pom, List<String> violations) {
+        String normalizedPomPath = ArchitectureSourceSupport.normalizePath(root.relativize(pom));
         PomModel model = readPom(pom);
-        boolean commonModule = ArchitectureSourceSupport.normalizePath(root.relativize(pom))
-                .startsWith("kuzhambu-servers/common/kuzhambu-common-");
-        boolean starterModule =
-                ArchitectureSourceSupport.normalizePath(root.relativize(pom)).startsWith("kuzhambu-servers/starter/");
+        boolean commonModule = normalizedPomPath.startsWith("kuzhambu-servers/common/kuzhambu-common-");
+        boolean starterModule = normalizedPomPath.startsWith("kuzhambu-servers/starter/");
+        DomainModule domainModule = domainModule(normalizedPomPath);
         for (Dependency dependency : model.dependencies) {
             if (!"com.thundax".equals(dependency.groupId)) {
                 continue;
@@ -214,6 +225,133 @@ public final class RepositoryArchitectureRuleSupport {
                 violations.add(
                         ArchitectureSourceSupport.repositoryPath(root, pom) + " dependency=" + dependency.artifactId);
             }
+            if (domainModule != null
+                    && !isAllowedDomainModuleDependency(domainModule, dependency.artifactId)
+                    && !isAllowlistedDomainModuleDependency(domainModule, dependency.artifactId)) {
+                violations.add(ArchitectureSourceSupport.repositoryPath(root, pom)
+                        + " "
+                        + domainModule.layer
+                        + "-dependency="
+                        + dependency.artifactId
+                        + " allowed="
+                        + allowedDependenciesDescription(domainModule));
+            }
+        }
+    }
+
+    private static DomainModule domainModule(String normalizedPomPath) {
+        String[] segments = normalizedPomPath.split("/");
+        if (segments.length < 5 || !"kuzhambu-servers".equals(segments[0]) || !"biz".equals(segments[1])) {
+            return null;
+        }
+        String domain = segments[2];
+        String module = segments[3];
+        String prefix = "kuzhambu-" + domain + "-";
+        if (!module.startsWith(prefix)) {
+            return null;
+        }
+        String layer = module.substring(prefix.length());
+        return DOMAIN_LAYERS.contains(layer) ? new DomainModule(domain, layer) : null;
+    }
+
+    private static boolean isAllowedDomainModuleDependency(DomainModule module, String artifactId) {
+        if (artifactId.startsWith("kuzhambu-common-")) {
+            return true;
+        }
+        if (COMMON_ONLY_LAYERS.contains(module.layer)) {
+            return false;
+        }
+        if ("application".equals(module.layer)) {
+            return ("kuzhambu-" + module.domain + "-domain").equals(artifactId) || artifactId.endsWith("-facade");
+        }
+        if ("interface".equals(module.layer)) {
+            return ("kuzhambu-" + module.domain + "-application").equals(artifactId);
+        }
+        if ("infra".equals(module.layer)) {
+            return ("kuzhambu-" + module.domain + "-domain").equals(artifactId);
+        }
+        return false;
+    }
+
+    private static boolean isAllowlistedDomainModuleDependency(DomainModule module, String artifactId) {
+        Set<String> dependencies = legacyPomDependencyAllowlist(module.layer).get(module.domain);
+        return dependencies != null && dependencies.contains(artifactId);
+    }
+
+    private static Map<String, Set<String>> legacyPomDependencyAllowlist(String layer) {
+        if ("application".equals(layer)) {
+            return LEGACY_APPLICATION_POM_DEPENDENCY_ALLOWLIST;
+        }
+        if ("interface".equals(layer)) {
+            return LEGACY_INTERFACE_POM_DEPENDENCY_ALLOWLIST;
+        }
+        if ("infra".equals(layer)) {
+            return LEGACY_INFRA_POM_DEPENDENCY_ALLOWLIST;
+        }
+        return java.util.Collections.emptyMap();
+    }
+
+    private static String allowedDependenciesDescription(DomainModule module) {
+        if ("application".equals(module.layer)) {
+            return "[kuzhambu-" + module.domain + "-domain, kuzhambu-*-facade, kuzhambu-common-*]";
+        }
+        if ("interface".equals(module.layer)) {
+            return "[kuzhambu-" + module.domain + "-application, kuzhambu-common-*]";
+        }
+        if ("facade".equals(module.layer)) {
+            return "[kuzhambu-common-*]";
+        }
+        if ("domain".equals(module.layer)) {
+            return "[kuzhambu-common-*]";
+        }
+        if ("infra".equals(module.layer)) {
+            return "[kuzhambu-" + module.domain + "-domain, kuzhambu-common-*]";
+        }
+        return "[]";
+    }
+
+    private static Map<String, Set<String>> legacyApplicationPomDependencyAllowlist() {
+        Map<String, Set<String>> allowlist = new HashMap<String, Set<String>>();
+        put(allowlist, "classics", "kuzhambu-ai-domain");
+        put(allowlist, "classics", "kuzhambu-knowledge-domain");
+        put(allowlist, "discovery", "kuzhambu-classics-application");
+        put(allowlist, "discovery", "kuzhambu-ai-domain");
+        put(allowlist, "discovery", "kuzhambu-knowledge-application");
+        put(allowlist, "knowledge", "kuzhambu-ai-domain");
+        put(allowlist, "knowledge", "kuzhambu-ai-application");
+        put(allowlist, "operations", "kuzhambu-classics-application");
+        put(allowlist, "operations", "kuzhambu-ai-application");
+        put(allowlist, "operations", "kuzhambu-discovery-application");
+        put(allowlist, "operations", "kuzhambu-knowledge-application");
+        return allowlist;
+    }
+
+    private static Map<String, Set<String>> legacyInterfacePomDependencyAllowlist() {
+        Map<String, Set<String>> allowlist = new HashMap<String, Set<String>>();
+        put(allowlist, "discovery", "kuzhambu-classics-application");
+        return allowlist;
+    }
+
+    private static Map<String, Set<String>> legacyInfraPomDependencyAllowlist() {
+        Map<String, Set<String>> allowlist = new HashMap<String, Set<String>>();
+        put(allowlist, "ai", "kuzhambu-ai-application");
+        put(allowlist, "discovery", "kuzhambu-discovery-application");
+        put(allowlist, "storage", "kuzhambu-storage-application");
+        put(allowlist, "system", "kuzhambu-system-application");
+        return allowlist;
+    }
+
+    private static void put(Map<String, Set<String>> allowlist, String domain, String dependencyArtifactId) {
+        allowlist.computeIfAbsent(domain, key -> new HashSet<String>()).add(dependencyArtifactId);
+    }
+
+    private static final class DomainModule {
+        private final String domain;
+        private final String layer;
+
+        private DomainModule(String domain, String layer) {
+            this.domain = domain;
+            this.layer = layer;
         }
     }
 

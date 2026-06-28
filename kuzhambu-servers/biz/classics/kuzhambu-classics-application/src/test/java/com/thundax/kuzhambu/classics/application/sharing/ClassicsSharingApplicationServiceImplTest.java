@@ -12,6 +12,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
+import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkCreateCommand;
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareTargetCreateCommand;
 import com.thundax.kuzhambu.classics.application.sharing.result.ShareLinkCreateResult;
@@ -49,11 +50,10 @@ import com.thundax.kuzhambu.classics.domain.wangqi.model.valueobject.WangqiDocum
 import com.thundax.kuzhambu.classics.domain.wangqi.repository.WangqiDocumentRepository;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
-import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
-import com.thundax.kuzhambu.storage.application.service.content.StoredObjectContent;
-import com.thundax.kuzhambu.storage.application.service.query.StorageQuery;
-import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
-import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
+import com.thundax.kuzhambu.storage.facade.StorageFacade;
+import com.thundax.kuzhambu.storage.facade.dto.StorageObjectFacadeDto;
+import com.thundax.kuzhambu.storage.facade.request.OpenStorageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.response.OpenStorageFacadeResponse;
 import java.io.ByteArrayInputStream;
 import java.util.Date;
 import java.util.List;
@@ -338,29 +338,28 @@ class ClassicsSharingApplicationServiceImplTest {
     void getPortalShareResourceContentShouldReadWangqiSnapshotResourceAndRecordAccess() {
         ClassicsSharingRepository sharingRepository = mock(ClassicsSharingRepository.class);
         ClassicsShareTokenHasher shareTokenHasher = mock(ClassicsShareTokenHasher.class);
-        StorageApplicationService storageApplicationService = mock(StorageApplicationService.class);
+        StorageFacade storageFacade = mock(StorageFacade.class);
         ClassicsSharingApplicationServiceImpl service =
-                portalService(sharingRepository, shareTokenHasher, storageApplicationService);
+                portalService(sharingRepository, shareTokenHasher, storageFacade);
         ClassicsShareLink link = link(ClassicsShareVisibility.PUBLIC, ClassicsShareLinkStatus.ACTIVE, futureDate());
         ClassicsShareTarget target = target(
                 ClassicsContentType.WANGQI_DOCUMENT, "{\"documentId\":12,\"storageObjectId\":7002,\"title\":\"王圻\"}");
-        StoredObjectContent content = storedContent(7002L);
+        OpenStorageFacadeResponse content = storedContentResponse(7002L);
 
         when(shareTokenHasher.hash("share-token")).thenReturn("hashed-share-token");
         when(sharingRepository.getLinkByTokenHash("hashed-share-token")).thenReturn(link);
         when(sharingRepository.listTargetsByLinkId(ClassicsShareLinkId.of(10L), SortDirection.ASC))
                 .thenReturn(List.of(target));
-        when(storageApplicationService.existsReadableContent(any(StorageQuery.class)))
-                .thenReturn(true);
-        when(storageApplicationService.openReadableContent(StoredObjectId.of(7002L)))
-                .thenReturn(content);
+        when(storageFacade.exists(any(OpenStorageFacadeRequest.class))).thenReturn(true);
+        when(storageFacade.open(any(OpenStorageFacadeRequest.class))).thenReturn(content);
 
-        StoredObjectContent result = service.getPortalShareResourceContent("share-token", 7002L, true);
+        ClassicsStoredContentResult result = service.getPortalShareResourceContent("share-token", 7002L, true);
 
-        assertSame(content, result);
-        ArgumentCaptor<StorageQuery> queryCaptor = ArgumentCaptor.forClass(StorageQuery.class);
-        verify(storageApplicationService).existsReadableContent(queryCaptor.capture());
-        assertEquals(StoredObjectId.of(7002L), queryCaptor.getValue().getId());
+        assertEquals(7002L, result.getStorageObjectId());
+        assertSame(content.getInputStream(), result.getInputStream());
+        ArgumentCaptor<OpenStorageFacadeRequest> queryCaptor = ArgumentCaptor.forClass(OpenStorageFacadeRequest.class);
+        verify(storageFacade).exists(queryCaptor.capture());
+        assertEquals(7002L, queryCaptor.getValue().getStorageObjectId());
         ArgumentCaptor<ClassicsShareAccessRecord> accessCaptor =
                 ArgumentCaptor.forClass(ClassicsShareAccessRecord.class);
         verify(sharingRepository).insertAccessRecord(accessCaptor.capture());
@@ -374,27 +373,26 @@ class ClassicsSharingApplicationServiceImplTest {
     void getPortalShareResourceContentShouldReadSancaiImageInlineOnly() {
         ClassicsSharingRepository sharingRepository = mock(ClassicsSharingRepository.class);
         ClassicsShareTokenHasher shareTokenHasher = mock(ClassicsShareTokenHasher.class);
-        StorageApplicationService storageApplicationService = mock(StorageApplicationService.class);
+        StorageFacade storageFacade = mock(StorageFacade.class);
         ClassicsSharingApplicationServiceImpl service =
-                portalService(sharingRepository, shareTokenHasher, storageApplicationService);
+                portalService(sharingRepository, shareTokenHasher, storageFacade);
         ClassicsShareLink link = link(ClassicsShareVisibility.PUBLIC, ClassicsShareLinkStatus.ACTIVE, futureDate());
         ClassicsShareTarget target = target(
                 ClassicsContentType.SANCAI_ENTRY,
                 "{\"entryId\":1,\"images\":[{\"imageId\":3,\"storageObjectId\":7003}]}");
-        StoredObjectContent content = storedContent(7003L);
+        OpenStorageFacadeResponse content = storedContentResponse(7003L);
 
         when(shareTokenHasher.hash("share-token")).thenReturn("hashed-share-token");
         when(sharingRepository.getLinkByTokenHash("hashed-share-token")).thenReturn(link);
         when(sharingRepository.listTargetsByLinkId(ClassicsShareLinkId.of(10L), SortDirection.ASC))
                 .thenReturn(List.of(target));
-        when(storageApplicationService.existsReadableContent(any(StorageQuery.class)))
-                .thenReturn(true);
-        when(storageApplicationService.openReadableContent(StoredObjectId.of(7003L)))
-                .thenReturn(content);
+        when(storageFacade.exists(any(OpenStorageFacadeRequest.class))).thenReturn(true);
+        when(storageFacade.open(any(OpenStorageFacadeRequest.class))).thenReturn(content);
 
-        StoredObjectContent result = service.getPortalShareResourceContent("share-token", 7003L, false);
+        ClassicsStoredContentResult result = service.getPortalShareResourceContent("share-token", 7003L, false);
 
-        assertSame(content, result);
+        assertEquals(7003L, result.getStorageObjectId());
+        assertSame(content.getInputStream(), result.getInputStream());
         verify(sharingRepository).insertAccessRecord(any(ClassicsShareAccessRecord.class));
     }
 
@@ -402,9 +400,9 @@ class ClassicsSharingApplicationServiceImplTest {
     void getPortalShareResourceContentShouldRejectHiddenOrOutsideSnapshotResource() {
         ClassicsSharingRepository sharingRepository = mock(ClassicsSharingRepository.class);
         ClassicsShareTokenHasher shareTokenHasher = mock(ClassicsShareTokenHasher.class);
-        StorageApplicationService storageApplicationService = mock(StorageApplicationService.class);
+        StorageFacade storageFacade = mock(StorageFacade.class);
         ClassicsSharingApplicationServiceImpl service =
-                portalService(sharingRepository, shareTokenHasher, storageApplicationService);
+                portalService(sharingRepository, shareTokenHasher, storageFacade);
         ClassicsShareLink link = link(ClassicsShareVisibility.PUBLIC, ClassicsShareLinkStatus.ACTIVE, futureDate());
         ClassicsShareTarget target = target(
                 ClassicsContentType.WANGQI_DOCUMENT, "{\"documentId\":12,\"storageObjectId\":7002,\"title\":\"王圻\"}");
@@ -415,7 +413,7 @@ class ClassicsSharingApplicationServiceImplTest {
                 .thenReturn(List.of(target));
 
         assertThrows(BizException.class, () -> service.getPortalShareResourceContent("share-token", 9999L, false));
-        verify(storageApplicationService, never()).openReadableContent(any());
+        verify(storageFacade, never()).open(any());
 
         when(sharingRepository.getLinkByTokenHash("hashed-share-token"))
                 .thenReturn(link(ClassicsShareVisibility.PUBLIC, ClassicsShareLinkStatus.ACTIVE, pastDate()));
@@ -426,9 +424,9 @@ class ClassicsSharingApplicationServiceImplTest {
     void getPortalShareResourceContentShouldRejectSancaiDownloadAndCrossTypeResource() {
         ClassicsSharingRepository sharingRepository = mock(ClassicsSharingRepository.class);
         ClassicsShareTokenHasher shareTokenHasher = mock(ClassicsShareTokenHasher.class);
-        StorageApplicationService storageApplicationService = mock(StorageApplicationService.class);
+        StorageFacade storageFacade = mock(StorageFacade.class);
         ClassicsSharingApplicationServiceImpl service =
-                portalService(sharingRepository, shareTokenHasher, storageApplicationService);
+                portalService(sharingRepository, shareTokenHasher, storageFacade);
         ClassicsShareLink link = link(ClassicsShareVisibility.PUBLIC, ClassicsShareLinkStatus.ACTIVE, futureDate());
         ClassicsShareTarget sancaiTarget = target(
                 ClassicsContentType.SANCAI_ENTRY,
@@ -442,7 +440,7 @@ class ClassicsSharingApplicationServiceImplTest {
 
         assertThrows(BizException.class, () -> service.getPortalShareResourceContent("share-token", 7003L, true));
         assertThrows(BizException.class, () -> service.getPortalShareResourceContent("share-token", 7004L, false));
-        verify(storageApplicationService, never()).openReadableContent(any());
+        verify(storageFacade, never()).open(any());
         verify(sharingRepository, never()).insertAccessRecord(any());
     }
 
@@ -483,7 +481,7 @@ class ClassicsSharingApplicationServiceImplTest {
     private static ClassicsSharingApplicationServiceImpl portalService(
             ClassicsSharingRepository sharingRepository,
             ClassicsShareTokenHasher shareTokenHasher,
-            StorageApplicationService storageApplicationService) {
+            StorageFacade storageFacade) {
         return new ClassicsSharingApplicationServiceImpl(
                 sharingRepository,
                 mock(ClassicsContentApplicationService.class),
@@ -492,7 +490,7 @@ class ClassicsSharingApplicationServiceImplTest {
                 mock(MingCustomsRepository.class),
                 mock(ClassicsShareTokenGenerator.class),
                 shareTokenHasher,
-                storageApplicationService);
+                storageFacade);
     }
 
     private static ClassicsShareTarget target(ClassicsContentType contentType, String snapshotJson) {
@@ -505,13 +503,16 @@ class ClassicsSharingApplicationServiceImplTest {
         return target;
     }
 
-    private static StoredObjectContent storedContent(Long storageObjectId) {
-        StoredObject storage = new StoredObject();
-        storage.setId(StoredObjectId.of(storageObjectId));
-        storage.setOriginalFilename("source.png");
-        storage.setContentType("image/png");
-        storage.setSize(1L);
-        return new StoredObjectContent(storage, new ByteArrayInputStream(new byte[] {1}));
+    private static OpenStorageFacadeResponse storedContentResponse(Long storageObjectId) {
+        return OpenStorageFacadeResponse.builder()
+                .storedObject(StorageObjectFacadeDto.builder()
+                        .id(storageObjectId)
+                        .originalFilename("source.png")
+                        .contentType("image/png")
+                        .size(1L)
+                        .build())
+                .inputStream(new ByteArrayInputStream(new byte[] {1}))
+                .build();
     }
 
     private static ClassicsShareLink link(

@@ -8,9 +8,10 @@ import com.thundax.kuzhambu.operations.domain.report.model.entity.ReportRecord;
 import com.thundax.kuzhambu.operations.domain.report.model.enums.ReportStatus;
 import com.thundax.kuzhambu.operations.domain.report.model.valueobject.ReportId;
 import com.thundax.kuzhambu.operations.domain.report.repository.ReportRepository;
-import com.thundax.kuzhambu.storage.application.service.ServerArtifactStorageApplicationService;
-import com.thundax.kuzhambu.storage.application.service.command.UploadServerArtifactCommand;
-import com.thundax.kuzhambu.storage.application.service.result.ServerArtifactStoredResult;
+import com.thundax.kuzhambu.storage.facade.StorageFacade;
+import com.thundax.kuzhambu.storage.facade.request.UploadStorageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.response.UploadStorageFacadeResponse;
+import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.concurrent.CompletableFuture;
@@ -20,20 +21,22 @@ import org.springframework.stereotype.Component;
 @Component
 public class DefaultOperationsReportTaskExecutor implements OperationsReportTaskExecutor {
 
+    private static final String STORAGE_OWNER_TYPE_USER = "USER";
+
     private final ReportRepository reportRepository;
     private final OperationsWorkerRenderClient operationsWorkerRenderClient;
     private final OperationsReportSnapshotAssembler snapshotAssembler;
-    private final ServerArtifactStorageApplicationService serverArtifactStorageApplicationService;
+    private final StorageFacade storageFacade;
 
     public DefaultOperationsReportTaskExecutor(
             ReportRepository reportRepository,
             OperationsWorkerRenderClient operationsWorkerRenderClient,
             OperationsReportSnapshotAssembler snapshotAssembler,
-            ServerArtifactStorageApplicationService serverArtifactStorageApplicationService) {
+            StorageFacade storageFacade) {
         this.reportRepository = reportRepository;
         this.operationsWorkerRenderClient = operationsWorkerRenderClient;
         this.snapshotAssembler = snapshotAssembler;
-        this.serverArtifactStorageApplicationService = serverArtifactStorageApplicationService;
+        this.storageFacade = storageFacade;
     }
 
     @Override
@@ -132,18 +135,21 @@ public class DefaultOperationsReportTaskExecutor implements OperationsReportTask
                 || artifactResult.getContentBytes().length == 0) {
             throw new IllegalStateException("Operations report artifact content is empty.");
         }
-        ServerArtifactStoredResult storedResult =
-                serverArtifactStorageApplicationService.storeServerArtifact(new UploadServerArtifactCommand(
-                        artifactResult.getContentBytes(),
-                        filenameHint(artifactResult),
-                        artifactResult.getContentType(),
+        UploadStorageFacadeResponse storedResult = storageFacade.upload(UploadStorageFacadeRequest.builder()
+                .inputStream(new ByteArrayInputStream(artifactResult.getContentBytes()))
+                .originalFilename(filenameHint(artifactResult))
+                .contentType(artifactResult.getContentType())
+                .sizeBytes(
                         artifactResult.getSizeBytes() == null
                                 ? (long) artifactResult.getContentBytes().length
-                                : artifactResult.getSizeBytes()));
+                                : artifactResult.getSizeBytes())
+                .ownerType(STORAGE_OWNER_TYPE_USER)
+                .ownerId("system")
+                .build());
         if (storedResult == null || storedResult.getStorageObjectId() == null) {
             throw new IllegalStateException("Operations report storage upload returned empty storage object.");
         }
-        artifactResult.setStorageObjectId(storedResult.getStorageObjectId().value());
+        artifactResult.setStorageObjectId(storedResult.getStorageObjectId());
     }
 
     private String filenameHint(OperationsReportArtifactResult artifactResult) {

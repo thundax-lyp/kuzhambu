@@ -28,7 +28,12 @@ Hard Rules 必须使用 ArchUnit、Maven reactor、Checkstyle、脚本或测试�
 - `SERVERS_DOMAIN_LAYER_DEPENDENCY`：同一业务域内依赖方向固定为 `interface -> application -> domain`、`infra -> domain`；`starter` 只做运行时装配。
 - `SERVERS_DOMAIN_NO_OUTER_DEPENDENCY`：`domain` 不得依赖 `application`、`interfaces`、`infra` 或 `starter`。
 - `SERVERS_APPLICATION_NO_OUTER_DEPENDENCY`：`application` 不得依赖 `interfaces`、`infra` 或 `starter`。
+- `SERVERS_INTERFACE_POM_DEPENDENCY_WHITELIST`：`kuzhambu-<domain>-interface` 在 Maven POM 层只能依赖 `kuzhambu-<domain>-application` 与 `kuzhambu-common-*`；不得直接依赖任何 `*-domain`、`*-facade`、他域 `*-application`、`*-infra` 或 `starter` 模块。
+- `SERVERS_APPLICATION_POM_DEPENDENCY_WHITELIST`：`kuzhambu-<domain>-application` 在 Maven POM 层只能依赖 `kuzhambu-<domain>-domain`、任意 `kuzhambu-*-facade` 与 `kuzhambu-common-*`；不得直接依赖任何 `*-application`、他域 `*-domain`、`*-interface`、`*-infra` 或 `starter` 模块。
+- `SERVERS_FACADE_POM_DEPENDENCY_WHITELIST`：`kuzhambu-<domain>-facade` 在 Maven POM 层只能依赖 `kuzhambu-common-*`；不得依赖任何 `*-application`、`*-domain`、`*-interface`、`*-infra` 或 `starter` 模块。
+- `SERVERS_DOMAIN_POM_DEPENDENCY_WHITELIST`：`kuzhambu-<domain>-domain` 在 Maven POM 层只能依赖 `kuzhambu-common-*`；不得依赖任何 `*-application`、`*-facade`、他域 `*-domain`、`*-interface`、`*-infra` 或 `starter` 模块。
 - `SERVERS_INTERFACE_NO_INFRA_DEPENDENCY`：`interface` 不得依赖任何业务域 `infra`。
+- `SERVERS_INFRA_POM_DEPENDENCY_WHITELIST`：`kuzhambu-<domain>-infra` 在 Maven POM 层只能依赖 `kuzhambu-<domain>-domain` 与 `kuzhambu-common-*`；不得直接依赖任何 `*-application`、`*-facade`、他域 `*-domain`、`*-interface`、他域 `*-infra` 或 `starter` 模块。
 - `SERVERS_INFRA_NO_INTERFACE_DEPENDENCY`：`infra` 不得依赖任何业务域 `interfaces` 或 `starter`。
 - `SERVERS_NO_STARTER_DEPENDENCY_OUTSIDE_STARTER`：除 `starter` 模块外，任何模块不得依赖 `kuzhambu-admin-starter` 或 `kuzhambu-portal-starter`。
 - `SERVERS_CROSS_DOMAIN_NO_INFRA_DEPENDENCY`：跨业务域依赖不得指向对端 `infra`、`infra.mapper`、`infra.dataobject` 或 `infra.repository.impl`。
@@ -43,7 +48,7 @@ Hard Rules 必须使用 ArchUnit、Maven reactor、Checkstyle、脚本或测试�
 - `SERVERS_APPLICATION_SERVICE_SUFFIX_ONLY`：业务域 `application` 层内以 `Service` 或 `ServiceImpl` 结尾的类型必须分别以 `ApplicationService` 或 `ApplicationServiceImpl` 结尾，内部辅助组件不得使用泛化 `*Service` 命名。
 - `SERVERS_NAMING_APPLICATION_INPUT`：应用层写入输入模型必须以 `Command` 结尾；读取输入模型必须以 `Query` 或 `PageQuery` 结尾。
 - `SERVERS_APPLICATION_INPUT_PACKAGE`：应用层写入输入模型必须位于 `application/{domain}/command/`；读取输入模型必须位于 `application/{domain}/query/`；不得放在 `service/command/` 或 `service/query/` 下。
-- `SERVERS_NAMING_APPLICATION_OUTPUT`：应用层输出模型必须以 `Result`、`DTO` 或 `PageResult` 结尾。
+- `SERVERS_NAMING_APPLICATION_OUTPUT`：应用层输出模型必须以 `Result`、`DTO` 或 `PageResult` 结尾；默认用例输出优先使用 `*Result`，`*DTO` 只用于稳定通用传输对象。
 - `SERVERS_NAMING_DOMAIN_ID`：强类型业务 ID 必须以 `Id` 结尾，必须是 `final class`，必须继承 common 基础 ID 类型，并位于对应业务域 `{module}-domain` 模块下的 `com.thundax.kuzhambu.{module}.domain.{domain}.model.valueobject`。
 - `SERVERS_VALUE_OBJECT_DOMAIN_ONLY`：`valueobject` 包只能出现在对应业务域 `{module}-domain` 模块下的 `com.thundax.kuzhambu.{module}.domain.{domain}.model.valueobject`；`infra`、`application`、`interfaces` 不得定义 `valueobject` 包。
 - `SERVERS_ENTITY_DOMAIN_ONLY`：`entity` 包只能出现在对应业务域 `{module}-domain` 模块下的 `com.thundax.kuzhambu.{module}.domain.{domain}.model.entity`；`infra`、`application`、`interfaces` 不得定义 `entity` 包。
@@ -51,6 +56,8 @@ Hard Rules 必须使用 ArchUnit、Maven reactor、Checkstyle、脚本或测试�
 - `SERVERS_DOMAIN_ENUM_MODEL_PACKAGE`：对应业务域 `{module}-domain` 模块内所有 enum 必须位于 `com.thundax.kuzhambu.{module}.domain.{domain}.model.enums`。
 - `SERVERS_NAMING_DOMAIN_SERVICE`：领域服务必须以 `DomainService` 结尾，并位于 `domain/service/` 包。
 - `SERVERS_NAMING_REPOSITORY`：领域仓储端口必须以 `Repository` 结尾，并位于 `domain/{domain}/repository/` 包；仓储实现必须以 `RepositoryImpl` 结尾，并位于 `infra/{domain}/repository/impl/` 包。
+- `SERVERS_REPOSITORY_METHOD_VERB_WHITELIST`：`Repository` 接口方法名必须使用稳定仓储动作白名单；通用读写继续使用 `getBy*`、`list*`、`page*`、`count*`、`insert*`、`update*`、`deleteBy*`、`batch*`，内容仓储端口允许使用精确动作 `save`、`exists`、`open`、`delete`。
+- `SERVERS_NAMING_FACADE`：跨域 facade 协议接口必须以 `Facade` 结尾，并位于独立 `*-facade` 模块的 `facade/` 包；facade 协议对象继续使用 `FacadeRequest`、`FacadeResponse`、`FacadeDto` 后缀与对应子包。
 - `SERVERS_NAMING_MAPPER_DO`：MyBatis Mapper 必须以 `Mapper` 结尾并位于 `infra/{domain}/persistence/mapper/` 包；持久化对象必须以 `DO` 结尾并位于 `infra/{domain}/persistence/dataobject/` 包。
 - `SERVERS_NAMING_PERSISTENCE_ASSEMBLER`：持久化转换类必须以 `PersistenceAssembler` 结尾，并位于 `infra/{domain}/persistence/assembler/` 包。
 - `SERVERS_NAMING_CODEC`：基础类型和值对象互转类必须以 `Codec` 结尾，并位于对应业务域 `{module}-domain` 模块下的 `com.thundax.kuzhambu.{module}.domain.{domain}.codec`；通用基础 codec 必须位于明确的 common 基础能力包。
@@ -59,7 +66,7 @@ Hard Rules 必须使用 ArchUnit、Maven reactor、Checkstyle、脚本或测试�
 ### Application Service API
 
 - `SERVERS_APP_SERVICE_INPUT_SHAPE`：`*ApplicationService` 的公开用例方法入参只能是无参、单个 `*Command`、单个 `*Query`、单个 `*PageQuery`，或少量 Java plain type 参数。
-- `SERVERS_APP_SERVICE_RETURN_SHAPE`：`*ApplicationService` 的公开用例方法返回值只能是 `void`、`*Result`、`*DTO`、`List<*DTO>`、`PageResult<*DTO>` 或 Java plain type。
+- `SERVERS_APP_SERVICE_RETURN_SHAPE`：`*ApplicationService` 的公开用例方法返回值只能是 `void`、`*Result`、`*DTO`、`List<*Result>`、`List<*DTO>`、`PageResult<*Result>`、`PageResult<*DTO>` 或 Java plain type。
 - `SERVERS_APP_SERVICE_PLAIN_TYPE_SET`：Java plain type 指 JDK 基础类型、包装类型、`String`、`Instant`、`BigDecimal`、枚举，以及这些类型的集合。
 
 ### Persistence Boundary
@@ -138,6 +145,7 @@ Hard Rules 必须使用 ArchUnit、Maven reactor、Checkstyle、脚本或测试�
 - `SERVERS_REVIEW_CROSS_DOMAIN_USE_CASE`：单体内跨业务域协作不按微服务远程调用口径强制经过对端 application 公开用例；复杂跨域业务表达为稳定 `DomainService` 语义，不为了复用内部查询而直接穿透对端 infra、mapper、dataobject 或 repository implementation。
 - `SERVERS_REVIEW_COMMON_EXTRACTION`：提取 common 能力前应确认至少两个业务域存在稳定复用需求，避免把业务概念过早沉淀到 common。
 - `SERVERS_REVIEW_SERVICE_GRANULARITY`：ApplicationService 应按用例聚合，不按数据库表机械拆分，也不把无关用例堆入单个巨型服务。
+- `SERVERS_REVIEW_FACADE_EXTERNAL_BOUNDARY`：`*Facade` 是提供方业务域给外域暴露的统一跨域边界，只供外域调用；提供方本域内部默认继续使用本域 application/domain 分层对象，不把 facade 当成本域内部复用入口。
 - `SERVERS_REVIEW_ASSEMBLER_COMPLEXITY`：InterfaceAssembler 和 PersistenceAssembler 只做模型转换；出现业务分支、权限判断或持久化访问时应回收到 application、domain 或 infra 对应职责内。
 - `SERVERS_REVIEW_SPRING_META_BEAN_SINGLE_CONSTRUCTOR`：通过派生注解、组合注解或其他 Spring 语义间接注册的类级 Bean 也应有且仅有一个构造器；如框架绑定类或特殊装配方式存在约束，按框架约定单独评审。
 - `SERVERS_REVIEW_TEST_CONSTRUCTION_EXPLICIT`：当生产类收敛为单构造器后，测试应通过 mock、stub 或测试工厂显式补齐依赖，不得为了测试便利重新引入第二构造器。

@@ -1,8 +1,8 @@
 package com.thundax.kuzhambu.storage.infra.configure;
 
 import com.thundax.kuzhambu.common.oss.client.ObjectStorageClient;
-import com.thundax.kuzhambu.storage.application.store.StoredObjectStore;
-import com.thundax.kuzhambu.storage.infra.store.ObjectStorageStoredObjectStore;
+import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectContentRepository;
+import com.thundax.kuzhambu.storage.infra.object.repository.impl.StoredObjectContentRepositoryImpl;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -13,10 +13,10 @@ import org.springframework.context.annotation.Configuration;
 public class StorageInfraConfiguration {
 
     @Bean
-    @ConditionalOnMissingBean(StoredObjectStore.class)
-    public StoredObjectStore storedObjectStore(
+    @ConditionalOnMissingBean(StoredObjectContentRepository.class)
+    public StoredObjectContentRepository storedObjectContentRepository(
             ObjectStorageClient objectStorageClient, StorageInfraProperties properties) {
-        return new ObjectStorageStoredObjectStore(
+        return new StoredObjectContentRepositoryImpl(
                 objectStorageClient, properties.getBucketName(), properties.getContentPath());
     }
 }

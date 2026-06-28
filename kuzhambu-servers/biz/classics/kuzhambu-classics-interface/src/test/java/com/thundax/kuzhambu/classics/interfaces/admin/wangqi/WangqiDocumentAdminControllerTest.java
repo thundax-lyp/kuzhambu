@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
+import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentCommand;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentSourceFileCommand;
 import com.thundax.kuzhambu.classics.application.wangqi.query.WangqiDocumentPageQuery;
@@ -27,8 +28,6 @@ import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
-import com.thundax.kuzhambu.storage.application.service.content.StoredObjectContent;
-import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
@@ -283,9 +282,7 @@ class WangqiDocumentAdminControllerTest {
                     }
                     if ("getSourceFileContent".equals(method.getName())) {
                         WangqiDocumentId documentId = (WangqiDocumentId) args[0];
-                        return new StoredObjectContent(
-                                sourceFileStorage(documentId.value()),
-                                new ByteArrayInputStream("source-bin".getBytes()));
+                        return sourceFileContent(documentId.value());
                     }
                     throw new UnsupportedOperationException(method.getName());
                 });
@@ -369,16 +366,13 @@ class WangqiDocumentAdminControllerTest {
     }
 
     private static WangqiDocumentSourceFile sourceFile() {
-        return new WangqiDocumentSourceFile(400000000001L, sourceFileStorage(400000000001L));
+        return new WangqiDocumentSourceFile(400000000001L, 7001L, "wangqi.pdf", "application/pdf", 10L);
     }
 
-    private static StoredObject sourceFileStorage(Long documentId) {
-        StoredObject storage = new StoredObject();
-        storage.setId(com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId.of(7001L));
-        storage.setOriginalFilename(documentId == 400000000002L ? "王圻原始.pdf" : "wangqi.pdf");
-        storage.setContentType("application/pdf");
-        storage.setSize(10L);
-        return storage;
+    private static ClassicsStoredContentResult sourceFileContent(Long documentId) {
+        String filename = documentId == 400000000002L ? "王圻原始.pdf" : "wangqi.pdf";
+        return new ClassicsStoredContentResult(
+                7001L, filename, "application/pdf", 10L, new ByteArrayInputStream("source-bin".getBytes()));
     }
 
     private static void assertRequestMapping(Class<?> controllerType, String expectedPath) {

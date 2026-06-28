@@ -22,6 +22,7 @@ import com.thundax.kuzhambu.classics.application.content.support.ClassicsAiCandi
 import com.thundax.kuzhambu.classics.application.content.support.ClassicsContentSnapshotAssembler;
 import com.thundax.kuzhambu.classics.application.content.support.ClassicsTagBindingSupport;
 import com.thundax.kuzhambu.classics.application.content.support.SancaiEntryVersionSnapshot;
+import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiAssetApplicationService;
 import com.thundax.kuzhambu.classics.application.sancai.support.SancaiEntryVersionRestorer;
 import com.thundax.kuzhambu.classics.application.searchsync.support.ClassicsSearchIndexSyncPublishSupport;
@@ -58,11 +59,13 @@ import com.thundax.kuzhambu.common.core.exception.ErrorCode;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
-import com.thundax.kuzhambu.storage.application.helper.StorageUploadResult;
-import com.thundax.kuzhambu.storage.application.helper.StorageUploadStreamHelper;
-import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
-import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
-import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
+import com.thundax.kuzhambu.storage.facade.StorageFacade;
+import com.thundax.kuzhambu.storage.facade.dto.StorageObjectFacadeDto;
+import com.thundax.kuzhambu.storage.facade.request.BindStorageOwnerFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.OpenStorageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.UploadStorageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.response.OpenStorageFacadeResponse;
+import com.thundax.kuzhambu.storage.facade.response.UploadStorageFacadeResponse;
 import java.io.ByteArrayInputStream;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -88,14 +91,16 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     private static final String DEFAULT_RENDER_OPERATION = "CLASSICS_EXPORT";
     private static final String DEFAULT_RENDER_TYPE = "CLASSICS_EXPORT";
     private static final String DEFAULT_TITLE = "classics-export";
+    private static final String SYSTEM_OWNER_ID = "system";
+    private static final String USER_OWNER_TYPE = "USER";
+    private static final String EXPORT_REFERENCE_USAGE = "CLASSICS_EXPORT_JOB";
 
     private final ClassicsContentRepository repository;
     private final WangqiDocumentVersionRestorer wangqiDocumentVersionRestorer;
     private final SancaiEntryVersionRestorer sancaiEntryVersionRestorer;
     private final SancaiAssetApplicationService sancaiAssetApplicationService;
-    private final StorageApplicationService storageApplicationService;
     private final WorkerRenderClient workerRenderClient;
-    private final StorageUploadStreamHelper storageUploadStreamHelper;
+    private final StorageFacade storageFacade;
     private final ObjectMapper objectMapper;
     private final ClassicsContentVersioningService versioningService = new ClassicsContentVersioningService();
     private final ClassicsContentSnapshotAssembler snapshotAssembler = new ClassicsContentSnapshotAssembler();
@@ -110,9 +115,8 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             WangqiDocumentVersionRestorer wangqiDocumentVersionRestorer,
             SancaiEntryVersionRestorer sancaiEntryVersionRestorer,
             SancaiAssetApplicationService sancaiAssetApplicationService,
-            StorageApplicationService storageApplicationService,
             WorkerRenderClient workerRenderClient,
-            StorageUploadStreamHelper storageUploadStreamHelper,
+            StorageFacade storageFacade,
             AiCandidateDomainService aiCandidateDomainService,
             ClassicsTagBindingSupport tagBindingSupport,
             ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport) {
@@ -120,9 +124,8 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         this.wangqiDocumentVersionRestorer = wangqiDocumentVersionRestorer;
         this.sancaiEntryVersionRestorer = sancaiEntryVersionRestorer;
         this.sancaiAssetApplicationService = sancaiAssetApplicationService;
-        this.storageApplicationService = storageApplicationService;
         this.workerRenderClient = workerRenderClient;
-        this.storageUploadStreamHelper = storageUploadStreamHelper;
+        this.storageFacade = storageFacade;
         this.aiCandidateDomainService = aiCandidateDomainService;
         this.tagBindingSupport = tagBindingSupport;
         this.searchIndexSyncPublishSupport = searchIndexSyncPublishSupport;
@@ -764,12 +767,13 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                 repository.markExportJobFailed(jobId);
                 return new ClassicsExportJobResult(jobId, ClassicsExportStatus.FAILED, null);
             }
-            StorageUploadResult uploadResult = saveRenderArtifact(jobId, response);
-            if (uploadResult.hasError()) {
+            UploadStorageFacadeResponse uploadResponse = saveRenderArtifact(jobId, response);
+            if (uploadResponse == null || uploadResponse.getStorageObjectId() == null) {
                 repository.markExportJobFailed(jobId);
                 return new ClassicsExportJobResult(jobId, ClassicsExportStatus.FAILED, null);
             }
-            StorageObjectId storageObjectId = toStorageObjectId(uploadResult);
+            bindRenderArtifactOwner(jobId, uploadResponse.getStorageObjectId());
+            StorageObjectId storageObjectId = toStorageObjectId(uploadResponse);
             int itemCount =
                     response.getSummary() == null || response.getSummary().getItemCount() == null
                             ? 0
@@ -799,6 +803,32 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     @Override
     public ClassicsContentExportJob getExportJob(ClassicsContentExportJobId id) {
         return repository.getExportJobById(id);
+    }
+
+    @Override
+    public ClassicsStoredContentResult getExportJobContent(ClassicsContentExportJobId id) {
+        ClassicsContentExportJob job = getExportJob(id);
+        if (job == null
+                || job.getStorageObjectId() == null
+                || job.getStatus() != ClassicsExportStatus.COMPLETED
+                || job.getExpiresAt() == null
+                || job.getExpiresAt().before(new Date())
+                || storageFacade == null) {
+            return null;
+        }
+        OpenStorageFacadeResponse response = storageFacade.open(OpenStorageFacadeRequest.builder()
+                .storageObjectId(StorageObjectIdCodec.toValue(job.getStorageObjectId()))
+                .build());
+        if (response == null || response.getStoredObject() == null || response.getInputStream() == null) {
+            return null;
+        }
+        StorageObjectFacadeDto storedObject = response.getStoredObject();
+        return new ClassicsStoredContentResult(
+                storedObject.getId(),
+                storedObject.getOriginalFilename(),
+                storedObject.getContentType(),
+                storedObject.getSize(),
+                response.getInputStream());
     }
 
     private void updateTagPriorityOrThrow(ClassicsContentTagId id, int priority) {
@@ -836,7 +866,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     private String snapshotJson(Versionable content) {
         if (content instanceof SancaiEntry entry && sancaiAssetApplicationService != null) {
             List<SancaiEntryImage> images = sancaiAssetApplicationService.listImages(entry.getId());
-            if (storageApplicationService == null) {
+            if (storageFacade == null) {
                 return snapshotAssembler.toSnapshotJson(entry, images);
             }
             return snapshotAssembler.toSnapshotJsonWithImageResources(
@@ -946,15 +976,20 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         return defaultPayload;
     }
 
-    private StorageUploadResult saveRenderArtifact(
+    private UploadStorageFacadeResponse saveRenderArtifact(
             ClassicsContentExportJobId jobId, WorkerRenderDtos.WorkerRenderResponse response) throws Exception {
         WorkerRenderDtos.Artifact artifact = response.getArtifact();
         byte[] content = artifactContent(artifact);
-        return storageUploadStreamHelper.uploadServerArtifact(
-                new ByteArrayInputStream(content),
-                filenameHint(artifact.getFilename(), response),
-                artifact.getContentType(),
-                content.length);
+        return storageFacade == null
+                ? null
+                : storageFacade.upload(UploadStorageFacadeRequest.builder()
+                        .inputStream(new ByteArrayInputStream(content))
+                        .originalFilename(filenameHint(artifact.getFilename(), response))
+                        .contentType(artifact.getContentType())
+                        .sizeBytes((long) content.length)
+                        .ownerType(USER_OWNER_TYPE)
+                        .ownerId(SYSTEM_OWNER_ID)
+                        .build());
     }
 
     private String filenameHint(String originalFilename, WorkerRenderDtos.WorkerRenderResponse response) {
@@ -966,12 +1001,22 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         return "classics-export-" + System.currentTimeMillis() + "." + formatSafeSuffix(format);
     }
 
-    private StorageObjectId toStorageObjectId(StorageUploadResult uploadResult) {
-        return uploadResult == null
-                        || uploadResult.getStorage() == null
-                        || uploadResult.getStorage().getId() == null
+    private void bindRenderArtifactOwner(ClassicsContentExportJobId jobId, Long storageObjectId) {
+        if (storageFacade == null || storageObjectId == null) {
+            return;
+        }
+        storageFacade.bindOwner(BindStorageOwnerFacadeRequest.builder()
+                .storageObjectIds(List.of(storageObjectId))
+                .ownerId(SYSTEM_OWNER_ID)
+                .ownerType(USER_OWNER_TYPE)
+                .ownerParams("usage=" + EXPORT_REFERENCE_USAGE + ";jobId=" + jobId.value())
+                .build());
+    }
+
+    private StorageObjectId toStorageObjectId(UploadStorageFacadeResponse uploadResponse) {
+        return uploadResponse == null || uploadResponse.getStorageObjectId() == null
                 ? null
-                : StorageObjectId.of(uploadResult.getStorage().getId().value());
+                : StorageObjectId.of(uploadResponse.getStorageObjectId());
     }
 
     private byte[] artifactContent(WorkerRenderDtos.Artifact artifact) {
@@ -994,10 +1039,13 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     }
 
     private SancaiEntryVersionSnapshot.ImageResource toImageResource(SancaiEntryImage image) {
-        StoredObject storage = image == null || image.getStorageObjectId() == null
-                ? null
-                : storageApplicationService.get(
-                        StoredObjectIdCodec.toDomain(StorageObjectIdCodec.toValue(image.getStorageObjectId())));
+        StorageObjectFacadeDto storage = null;
+        if (image != null && image.getStorageObjectId() != null && storageFacade != null) {
+            OpenStorageFacadeResponse response = storageFacade.open(OpenStorageFacadeRequest.builder()
+                    .storageObjectId(image.getStorageObjectId().value())
+                    .build());
+            storage = response == null ? null : response.getStoredObject();
+        }
         return SancaiEntryVersionSnapshot.ImageResource.from(image, storage);
     }
 

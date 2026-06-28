@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.classics.interfaces.admin.sancai;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImageSortCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImageUploadCommand;
 import com.thundax.kuzhambu.classics.application.sancai.result.SancaiEntryImageContent;
@@ -27,10 +28,6 @@ import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
-import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
-import com.thundax.kuzhambu.storage.application.service.content.StoredObjectContent;
-import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
-import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -208,7 +205,7 @@ class SancaiAssetAdminControllerTest {
     }
 
     private static SancaiAssetAdminController controller() {
-        return new SancaiAssetAdminController(service(), storageService());
+        return new SancaiAssetAdminController(service());
     }
 
     private static SancaiAssetApplicationService service() {
@@ -272,20 +269,9 @@ class SancaiAssetAdminControllerTest {
                         assertEquals(10, pageQuery.getPageSize());
                         return PageResult.of(1, 10, 1, List.of(showcase()));
                     }
-                    throw new UnsupportedOperationException(method.getName());
-                });
-    }
-
-    private static StorageApplicationService storageService() {
-        return (StorageApplicationService) Proxy.newProxyInstance(
-                StorageApplicationService.class.getClassLoader(),
-                new Class<?>[] {StorageApplicationService.class},
-                (proxy, method, args) -> {
-                    if ("openReadableContent".equals(method.getName())) {
-                        StoredObjectId storageObjectId = (StoredObjectId) args[0];
-                        assertEquals(StoredObjectId.of(7001L), storageObjectId);
-                        return new StoredObjectContent(
-                                showcaseStoredObject(), new ByteArrayInputStream("demo-json".getBytes()));
+                    if ("getShowcaseContent".equals(method.getName())) {
+                        assertEquals(StorageObjectId.of(7001L), args[0]);
+                        return showcaseContent();
                     }
                     throw new UnsupportedOperationException(method.getName());
                 });
@@ -314,13 +300,9 @@ class SancaiAssetAdminControllerTest {
                 "/api/classics/sancai/assets/images/3001/8002/content?download=true");
     }
 
-    private static StoredObjectContent storedContent() {
-        StoredObject storage = new StoredObject();
-        storage.setId(StoredObjectId.of(7001L));
-        storage.setOriginalFilename("三才图.png");
-        storage.setContentType("image/png");
-        storage.setSize(9L);
-        return new StoredObjectContent(storage, new ByteArrayInputStream("image-bin".getBytes()));
+    private static ClassicsStoredContentResult storedContent() {
+        return new ClassicsStoredContentResult(
+                7001L, "三才图.png", "image/png", 9L, new ByteArrayInputStream("image-bin".getBytes()));
     }
 
     private static SancaiShowcase showcase() {
@@ -335,13 +317,9 @@ class SancaiAssetAdminControllerTest {
         return showcase;
     }
 
-    private static StoredObject showcaseStoredObject() {
-        StoredObject storage = new StoredObject();
-        storage.setId(StoredObjectId.of(7001L));
-        storage.setOriginalFilename("showcase.json");
-        storage.setContentType("application/json");
-        storage.setSize(8L);
-        return storage;
+    private static ClassicsStoredContentResult showcaseContent() {
+        return new ClassicsStoredContentResult(
+                7001L, "showcase.json", "application/json", 8L, new ByteArrayInputStream("demo-json".getBytes()));
     }
 
     private static void assertRequestMapping(Class<?> controllerType, String expectedPath) {

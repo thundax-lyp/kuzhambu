@@ -35,15 +35,20 @@ public final class TransactionArchitectureRuleSupport {
         }
 
         assertTrue(
-                "@Transactional must stay on application service classes or public use-case methods: " + violations,
+                "@Transactional must stay on application service/facade classes or public use-case methods: "
+                        + violations,
                 violations.isEmpty());
     }
 
     private static boolean isApplicationServiceClass(JavaClass javaClass, String basePackage) {
         String packageName = javaClass.getPackageName();
         String simpleName = javaClass.getSimpleName();
-        return packageName.startsWith(basePackage + ".application.")
-                && packageName.contains(".service.impl")
-                && simpleName.endsWith("ApplicationServiceImpl");
+        if (!packageName.startsWith(basePackage + ".application.")) {
+            return false;
+        }
+        boolean applicationService =
+                packageName.contains(".service.impl") && simpleName.endsWith("ApplicationServiceImpl");
+        boolean facade = packageName.contains(".facade.impl") && simpleName.endsWith("FacadeImpl");
+        return applicationService || facade;
     }
 }
