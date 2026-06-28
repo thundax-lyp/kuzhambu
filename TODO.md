@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics-facade-summary-contract`：定义 summary facade 协议
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-facade/src/main/java/com/thundax/kuzhambu/classics/facade/ClassicsFacade.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-facade/src/main/java/com/thundax/kuzhambu/classics/facade/request/ClassicsSummaryFacadeRequest.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-facade/src/main/java/com/thundax/kuzhambu/classics/facade/response/ClassicsSummaryFacadeResponse.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-facade/src/main/java/com/thundax/kuzhambu/classics/facade/dto/ClassicsTopContentFacadeDto.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-facade/src/main/java/com/thundax/kuzhambu/classics/facade/dto/ClassicsContentGrowthPointFacadeDto.java`
-    - 处理动作：定义 `summary` request/response/dto 并补到 `ClassicsFacade`
-    - 验收点：`summary` 协议字段与 RUNBOOK 一致，且协议类包位正确
-    - 重要度：8/10
-
 - [ ] `classics-facade-summary-provider`：桥接 summary facade provider
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-FACADE-ISOLATION.md`
