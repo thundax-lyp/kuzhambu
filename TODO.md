@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `discovery-ai-facade`：迁移 discovery 查询理解与问答到 AiFacade
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/pom.xml`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/qa/service/impl/QaApplicationServiceImpl.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/search/service/impl/QueryUnderstandingApplicationServiceImpl.java`
-    - 处理动作：把 `DiscoveryAiDomainService` 和 `DiscoveryAiRequest/Result` 全部切到 `AiFacade` 协议。
-    - 验收点：`discovery-application` 删除 `kuzhambu-ai-domain` 依赖，新增 `kuzhambu-ai-facade` 依赖，生产代码不再导入 `ai.domain.discovery.*`。
-    - 重要度：9/10
-
 - [ ] `classics-ai-facade`：迁移 classics AI 候选应用到 AiFacade
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-FACADE-ISOLATION.md`

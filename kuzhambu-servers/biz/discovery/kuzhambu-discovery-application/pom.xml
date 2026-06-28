@@ -27,7 +27,7 @@
     </dependency>
     <dependency>
       <groupId>com.thundax</groupId>
-      <artifactId>kuzhambu-ai-domain</artifactId>
+      <artifactId>kuzhambu-ai-facade</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
