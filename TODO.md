@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `ai-facade/discovery-protocol`：定义 discovery AI facade 协议
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-facade/src/main/java/com/thundax/kuzhambu/ai/facade/AiFacade.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-facade/src/main/java/com/thundax/kuzhambu/ai/facade/request/DiscoveryAiFacadeRequest.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-facade/src/main/java/com/thundax/kuzhambu/ai/facade/response/DiscoveryAiFacadeResponse.java`
-    - 处理动作：为 `understandDiscoveryQuery(...)` 和 `generateDiscoveryAnswer(...)` 建立 discovery 协议。
-    - 验收点：`DiscoveryAiFacadeRequest` 包含 `serviceId/serviceRole/modelId/modelName/promptVersionId/requestId/traceId/promptMessagesJson/promptVariablesJson/promptHash/inputPayloadJson/outputSchemaJson/stream/forceJson/locale`，`DiscoveryAiFacadeResponse` 包含 `callId/candidateId/status/capability/resultFormat/resultPayload/errorType/errorMessage`。
-    - 重要度：9/10
-
 - [ ] `ai-facade/knowledge-protocol`：定义 knowledge 抽取 facade 协议
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-FACADE-ISOLATION.md`
