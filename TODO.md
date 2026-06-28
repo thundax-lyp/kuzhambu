@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `reference facade impl`：实现 `StorageReferenceFacadeImpl` 与 `FacadeAssembler`
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/main/java/com/thundax/kuzhambu/storage/application/facade/impl/StorageReferenceFacadeImpl.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/main/java/com/thundax/kuzhambu/storage/application/facade/assembler/StorageReferenceFacadeAssembler.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/main/java/com/thundax/kuzhambu/storage/application/service/StorageApplicationService.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/main/java/com/thundax/kuzhambu/storage/application/service/command/AddStorageReferencesCommand.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/main/java/com/thundax/kuzhambu/storage/application/service/command/RemoveStorageReferencesCommand.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/main/java/com/thundax/kuzhambu/storage/application/service/command/ChangeStorageReferenceStatusCommand.java`
-    - 处理动作：实现引用关系 facade 并把跨域引用操作收敛到 facade 协议。
-    - 验收点：外域可通过 `StorageReferenceFacade` 完成引用新增、删除和状态变更而不再直接依赖 storage application command 语义。
-    - 重要度：9/10
-
 - [ ] `cross-application isolation rule`：引入 cross-application isolation rule 与迁移白名单
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FACADE-ISOLATION.md`
