@@ -1,10 +1,16 @@
 package com.thundax.kuzhambu.ai.facade;
 
+import com.thundax.kuzhambu.ai.facade.dto.AiCallRecordFacadeDto;
+import com.thundax.kuzhambu.ai.facade.dto.AiCandidateFacadeDto;
 import com.thundax.kuzhambu.ai.facade.request.AiBatchJobFailureFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.AiReportSummaryFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.CreateAiBatchJobFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.DiscoveryAiFacadeRequest;
+import com.thundax.kuzhambu.ai.facade.request.GetAiCallRecordFacadeRequest;
+import com.thundax.kuzhambu.ai.facade.request.GetAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.KnowledgeAiExtractionFacadeRequest;
+import com.thundax.kuzhambu.ai.facade.request.MarkAiCandidateAppliedFacadeRequest;
+import com.thundax.kuzhambu.ai.facade.request.RequirePendingAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.response.AiBatchJobActionFacadeResponse;
 import com.thundax.kuzhambu.ai.facade.response.AiBatchJobFacadeResponse;
 import com.thundax.kuzhambu.ai.facade.response.AiReportSummaryFacadeResponse;
@@ -36,4 +42,12 @@ public interface AiFacade {
     AiBatchJobFacadeResponse recordBatchFailure(AiBatchJobFailureFacadeRequest request);
 
     AiBatchJobFacadeResponse cancelBatchJob(Long batchId);
+
+    AiCallRecordFacadeDto getCallRecord(GetAiCallRecordFacadeRequest request);
+
+    AiCandidateFacadeDto getCandidate(GetAiCandidateFacadeRequest request);
+
+    AiCandidateFacadeDto requirePendingCandidate(RequirePendingAiCandidateFacadeRequest request);
+
+    AiCandidateFacadeDto markCandidateApplied(MarkAiCandidateAppliedFacadeRequest request);
 }

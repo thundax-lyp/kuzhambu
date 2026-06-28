@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `ai-facade/invocation-protocol`：定义 AI 调用记录与候选请求协议
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-facade/src/main/java/com/thundax/kuzhambu/ai/facade/AiFacade.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-facade/src/main/java/com/thundax/kuzhambu/ai/facade/request/GetAiCallRecordFacadeRequest.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-facade/src/main/java/com/thundax/kuzhambu/ai/facade/request/GetAiCandidateFacadeRequest.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-facade/src/main/java/com/thundax/kuzhambu/ai/facade/request/RequirePendingAiCandidateFacadeRequest.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-facade/src/main/java/com/thundax/kuzhambu/ai/facade/request/MarkAiCandidateAppliedFacadeRequest.java`
-    - 处理动作：为调用记录读取和候选应用建立 facade 请求协议。
-    - 验收点：`GetAiCallRecordFacadeRequest` 包含 `callId`，`GetAiCandidateFacadeRequest` 包含 `candidateId`，`RequirePendingAiCandidateFacadeRequest` 包含 `candidateId/contentType/contentId/capability`，`MarkAiCandidateAppliedFacadeRequest` 包含 `candidateId/resultFormat/resultPayload/appliedAt`。
-    - 重要度：9/10
-
 - [ ] `ai-facade/invocation-dto`：定义 AI 调用记录与候选 dto
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-FACADE-ISOLATION.md`
