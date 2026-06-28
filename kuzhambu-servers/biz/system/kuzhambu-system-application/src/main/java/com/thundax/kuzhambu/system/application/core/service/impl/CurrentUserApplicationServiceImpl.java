@@ -11,6 +11,9 @@ import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
+import com.thundax.kuzhambu.storage.facade.StorageReadableContentFacade;
+import com.thundax.kuzhambu.storage.facade.request.GetReadableContentFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.response.GetReadableContentFacadeResponse;
 import com.thundax.kuzhambu.system.application.auth.command.PrincipalCredentialCommand;
 import com.thundax.kuzhambu.system.application.auth.exception.InvalidPasswordException;
 import com.thundax.kuzhambu.system.application.auth.query.PrincipalCredentialQuery;
@@ -82,6 +85,7 @@ public class CurrentUserApplicationServiceImpl implements CurrentUserApplication
     private final PrincipalIdentityApplicationService principalIdentityService;
     private final PrincipalCredentialApplicationService principalCredentialService;
     private final StorageApplicationService storageApplicationService;
+    private final StorageReadableContentFacade storageReadableContentFacade;
     private final StoredObjectStore storedObjectStore;
 
     public CurrentUserApplicationServiceImpl(
@@ -91,6 +95,7 @@ public class CurrentUserApplicationServiceImpl implements CurrentUserApplication
             PrincipalIdentityApplicationService principalIdentityService,
             PrincipalCredentialApplicationService principalCredentialService,
             StorageApplicationService storageApplicationService,
+            StorageReadableContentFacade storageReadableContentFacade,
             StoredObjectStore storedObjectStore) {
         this.userService = userService;
         this.roleService = roleService;
@@ -98,6 +103,7 @@ public class CurrentUserApplicationServiceImpl implements CurrentUserApplication
         this.principalIdentityService = principalIdentityService;
         this.principalCredentialService = principalCredentialService;
         this.storageApplicationService = storageApplicationService;
+        this.storageReadableContentFacade = storageReadableContentFacade;
         this.storedObjectStore = storedObjectStore;
     }
 
@@ -181,14 +187,22 @@ public class CurrentUserApplicationServiceImpl implements CurrentUserApplication
     @Override
     public InputStream getAvatarInputStream(UserId userId) {
         StoredObject avatar = getAvatar(userId);
-        if (avatar == null || !storedObjectStore.exists(avatar)) {
+        if (avatar == null || storageReadableContentFacade == null) {
             return null;
         }
-        try {
-            return storedObjectStore.open(avatar);
-        } catch (IOException e) {
-            throw storageFailure(e.getMessage());
+        GetReadableContentFacadeRequest request = GetReadableContentFacadeRequest.builder()
+                .storageObjectId(avatar.getId() == null ? null : avatar.getId().value())
+                .ownerId(avatar.getOwnerId())
+                .ownerType(
+                        avatar.getOwnerType() == null
+                                ? null
+                                : avatar.getOwnerType().value())
+                .build();
+        if (!storageReadableContentFacade.existsReadableContent(request)) {
+            return null;
         }
+        GetReadableContentFacadeResponse content = storageReadableContentFacade.getReadableContent(request);
+        return content == null ? null : content.getInputStream();
     }
 
     @Override

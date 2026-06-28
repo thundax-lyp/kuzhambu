@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `system avatar to storage-facade`：首批迁移 `system-application` 的最小头像入口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/system/kuzhambu-system-application/src/main/java/com/thundax/kuzhambu/system/application/core/service/impl/CurrentUserApplicationServiceImpl.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-facade/src/main/java/com/thundax/kuzhambu/storage/facade/StorageReadableContentFacade.java`、`kuzhambu-servers/biz/system/kuzhambu-system-application/src/test/java/com/thundax/kuzhambu/system/application/core/service/impl/CurrentUserApplicationServiceImplTest.java`
-    - 处理动作：将头像读取入口改为依赖 `StorageReadableContentFacade` 并新增对应应用层测试。
-    - 验收点：`CurrentUserApplicationServiceImpl#getAvatarInputStream` 不再直接依赖 storage application 或 `StoredObjectStore` 的跨域只读形状。
-    - 重要度：8/10
-
 - [ ] `storage facade closure cleanup`：清理 Storage facade 试点现场
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FACADE-ISOLATION.md`
