@@ -2,7 +2,8 @@ package com.thundax.kuzhambu.operations.application.report.support;
 
 import com.thundax.kuzhambu.ai.facade.AiFacade;
 import com.thundax.kuzhambu.ai.facade.request.AiReportSummaryFacadeRequest;
-import com.thundax.kuzhambu.classics.application.report.service.ClassicsReportApplicationService;
+import com.thundax.kuzhambu.classics.facade.ClassicsFacade;
+import com.thundax.kuzhambu.classics.facade.request.ClassicsSummaryFacadeRequest;
 import com.thundax.kuzhambu.discovery.application.report.service.DiscoveryReportApplicationService;
 import com.thundax.kuzhambu.knowledge.facade.KnowledgeFacade;
 import com.thundax.kuzhambu.knowledge.facade.request.KnowledgeSummaryFacadeRequest;
@@ -18,17 +19,17 @@ import org.springframework.stereotype.Component;
 @Component
 public class DefaultOperationsReportMetricsGateway implements OperationsReportMetricsGateway {
 
-    private final ClassicsReportApplicationService classicsReportApplicationService;
+    private final ClassicsFacade classicsFacade;
     private final AiFacade aiFacade;
     private final DiscoveryReportApplicationService discoveryReportApplicationService;
     private final KnowledgeFacade knowledgeFacade;
 
     public DefaultOperationsReportMetricsGateway(
-            ClassicsReportApplicationService classicsReportApplicationService,
+            ClassicsFacade classicsFacade,
             AiFacade aiFacade,
             DiscoveryReportApplicationService discoveryReportApplicationService,
             KnowledgeFacade knowledgeFacade) {
-        this.classicsReportApplicationService = classicsReportApplicationService;
+        this.classicsFacade = classicsFacade;
         this.aiFacade = aiFacade;
         this.discoveryReportApplicationService = discoveryReportApplicationService;
         this.knowledgeFacade = knowledgeFacade;
@@ -44,7 +45,11 @@ public class DefaultOperationsReportMetricsGateway implements OperationsReportMe
         sections.add(section(
                 "classicsSummary",
                 "Classics 统计摘要",
-                classicsReportApplicationService.summary(record.getPeriodStart(), record.getPeriodEnd(), bucketType)));
+                classicsFacade.summary(ClassicsSummaryFacadeRequest.builder()
+                        .periodStart(record.getPeriodStart())
+                        .periodEnd(record.getPeriodEnd())
+                        .bucketType(bucketType)
+                        .build())));
         sections.add(section(
                 "aiSummary",
                 "AI 调用摘要",

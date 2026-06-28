@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `operations-classics-facade`：operations 改用 ClassicsFacade 读取 summary
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/report/support/DefaultOperationsReportMetricsGateway.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/test/java/com/thundax/kuzhambu/operations/application/report/support/DefaultOperationsReportMetricsGatewayTest.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/pom.xml`
-    - 处理动作：将 `operations` 的 classics summary 读取改为通过 `ClassicsFacade`
-    - 验收点：`operations-application` 不再依赖 `kuzhambu-classics-application` 的 report service
-    - 重要度：8/10
-
 - [ ] `discovery-search-classics-facade`：discovery search provider 改用 ClassicsFacade 读取公开内容
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-FACADE-ISOLATION.md`
