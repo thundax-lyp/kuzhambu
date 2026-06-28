@@ -16,6 +16,7 @@
 
   <modules>
     <module>kuzhambu-discovery-domain</module>
+    <module>kuzhambu-discovery-facade</module>
     <module>kuzhambu-discovery-application</module>
     <module>kuzhambu-discovery-interface</module>
     <module>kuzhambu-discovery-infra</module>

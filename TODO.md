@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `discovery-facade模块骨架`：新增 discovery-facade 模块骨架
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/pom.xml`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-facade/pom.xml`
-    - 处理动作：新增 `kuzhambu-discovery-facade` 模块并接入 discovery 聚合模块
-    - 验收点：`kuzhambu-discovery-facade` 模块已在 discovery 聚合 POM 注册且拥有独立 POM
-    - 重要度：9/10
-
 - [ ] `DiscoveryFacade入口与request`：定义 summary facade 入口与 request
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-FACADE-ISOLATION.md`
