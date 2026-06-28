@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `ai-facade/batch-protocol`：定义 AI 批任务 facade 协议
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-facade/src/main/java/com/thundax/kuzhambu/ai/facade/AiFacade.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-facade/src/main/java/com/thundax/kuzhambu/ai/facade/request/CreateAiBatchJobFacadeRequest.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-facade/src/main/java/com/thundax/kuzhambu/ai/facade/request/AiBatchJobFailureFacadeRequest.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-facade/src/main/java/com/thundax/kuzhambu/ai/facade/response/AiBatchJobFacadeResponse.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-facade/src/main/java/com/thundax/kuzhambu/ai/facade/response/AiBatchJobActionFacadeResponse.java`
-    - 处理动作：为 batch job 创建、读取、状态回写和取消建立 facade 协议。
-    - 验收点：`CreateAiBatchJobFacadeRequest` 包含 `scope/capability/contentType/totalCount/failureSummaryJson`，`AiBatchJobFailureFacadeRequest` 包含 `batchId/failureSummaryJson`，`AiBatchJobFacadeResponse` 包含 `batchId/scope/capability/contentType/status/totalCount/successCount/failedCount/cancelledCount/failureSummaryJson/requestedAt/cancelledAt/completedAt`，`AiBatchJobActionFacadeResponse` 至少包含 `batchId`。
-    - 重要度：9/10
-
 - [ ] `ai-facade/invocation-protocol`：定义 AI 调用记录与候选请求协议
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-FACADE-ISOLATION.md`
