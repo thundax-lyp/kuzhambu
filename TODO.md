@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics-facade-summary-provider`：桥接 summary facade provider
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/pom.xml`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/facade/impl/ClassicsFacadeImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/facade/assembler/ClassicsFacadeAssembler.java`
-    - 处理动作：在 provider 侧实现 `summary` facade 桥接与 result 映射
-    - 验收点：`ClassicsFacadeImpl.summary(...)` 已可通过 `ClassicsReportApplicationService` 返回 `ClassicsSummaryFacadeResponse`
-    - 重要度：8/10
-
 - [ ] `classics-facade-public-content-contract`：定义 public search content facade 协议
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-FACADE-ISOLATION.md`
