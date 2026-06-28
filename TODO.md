@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `readable-content facade impl`：实现 `StorageReadableContentFacadeImpl` 与 `FacadeAssembler`
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/main/java/com/thundax/kuzhambu/storage/application/facade/impl/StorageReadableContentFacadeImpl.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/main/java/com/thundax/kuzhambu/storage/application/facade/assembler/StorageReadableContentFacadeAssembler.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/main/java/com/thundax/kuzhambu/storage/application/service/StorageApplicationService.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/main/java/com/thundax/kuzhambu/storage/application/service/content/StoredObjectContent.java`
-    - 处理动作：实现只读内容 facade 并把跨域只读出口收敛到 facade 协议。
-    - 验收点：外域可通过 `StorageReadableContentFacade` 获取只读内容而不再需要直接认识 `StorageApplicationService` 的只读形状。
-    - 重要度：9/10
-
 - [ ] `reference facade impl`：实现 `StorageReferenceFacadeImpl` 与 `FacadeAssembler`
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FACADE-ISOLATION.md`
