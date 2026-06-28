@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `DiscoveryFacade provider骨架`：新增 provider facade 入口骨架
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/pom.xml`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/facade/impl/DiscoveryFacadeImpl.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/facade/assembler/DiscoveryFacadeAssembler.java`
-    - 处理动作：在 discovery provider 侧新增 facade impl 和 assembler 骨架并接入 facade 模块依赖
-    - 验收点：`discovery-application` 已具备可编译的 facade provider 入口骨架
-    - 重要度：8/10
-
 - [ ] `Discovery summary provider桥接`：桥接 summary provider 能力
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-FACADE-ISOLATION.md`
