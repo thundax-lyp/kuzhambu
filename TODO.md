@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `classics upload to storage-facade`：首批迁移 `classics-application` 的最小上传入口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sancai/service/impl/SancaiAssetApplicationServiceImpl.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-facade/src/main/java/com/thundax/kuzhambu/storage/facade/StorageUploadFacade.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/sancai/service/impl/SancaiAssetApplicationServiceImplTest.java`
-    - 处理动作：将三才图会资源上传入口改为依赖 `StorageUploadFacade` 并开始移除 `StorageUploadStreamHelper` 外溢。
-    - 验收点：`SancaiAssetApplicationServiceImpl` 的最小上传路径不再直接依赖 `StorageUploadStreamHelper`。
-    - 重要度：8/10
-
 - [ ] `classics readable-content to storage-facade`：首批迁移 `classics-application` 的最小只读内容入口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FACADE-ISOLATION.md`

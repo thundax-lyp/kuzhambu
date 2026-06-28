@@ -48,7 +48,11 @@ import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObjectReference;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
+import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
+import com.thundax.kuzhambu.storage.facade.StorageUploadFacade;
+import com.thundax.kuzhambu.storage.facade.request.UploadStorageObjectFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.response.UploadStorageObjectFacadeResponse;
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -83,6 +87,7 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
 
     private final SancaiAssetRepository repository;
     private final WorkerRenderClient workerRenderClient;
+    private final StorageUploadFacade storageUploadFacade;
     private final StorageUploadStreamHelper storageUploadStreamHelper;
     private final StorageApplicationService storageApplicationService;
     private final ObjectMapper objectMapper;
@@ -90,11 +95,13 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     public SancaiAssetApplicationServiceImpl(
             SancaiAssetRepository repository,
             WorkerRenderClient workerRenderClient,
+            StorageUploadFacade storageUploadFacade,
             StorageUploadStreamHelper storageUploadStreamHelper,
             StorageApplicationService storageApplicationService,
             ObjectMapper objectMapper) {
         this.repository = repository;
         this.workerRenderClient = workerRenderClient;
+        this.storageUploadFacade = storageUploadFacade;
         this.storageUploadStreamHelper = storageUploadStreamHelper;
         this.storageApplicationService = storageApplicationService;
         this.objectMapper = objectMapper == null ? new ObjectMapper().findAndRegisterModules() : objectMapper;
@@ -145,19 +152,16 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
         SancaiEntryImage replacedImage = currentImageToReplace(command, entryId);
         validateImageUpload(command);
 
-        StorageUploadResult uploadResult = storageUploadStreamHelper.upload(
-                command.getInputStream(),
-                command.getOriginalFilename(),
-                command.getContentType(),
-                command.getSize(),
-                ALLOWED_IMAGE_SUFFIXES,
-                StorageOwnerType.CLASSICS_SANCAI_ENTRY_IMAGE,
-                null);
-        if (uploadResult.hasError()) {
-            throw new BizException(uploadResult.getError());
-        }
-
-        StoredObject storage = uploadResult.getStorage();
+        UploadStorageObjectFacadeResponse uploadResponse =
+                storageUploadFacade.uploadStorageObject(UploadStorageObjectFacadeRequest.builder()
+                        .inputStream(command.getInputStream())
+                        .originalFilename(command.getOriginalFilename())
+                        .contentType(command.getContentType())
+                        .sizeBytes(command.getSize())
+                        .allowedSuffixes(ALLOWED_IMAGE_SUFFIXES)
+                        .ownerType(StorageOwnerType.CLASSICS_SANCAI_ENTRY_IMAGE.value())
+                        .build());
+        StoredObject storage = toStoredObject(uploadResponse);
         SancaiEntryImage image = new SancaiEntryImage();
         image.setEntryId(entryId);
         image.setStorageObjectId(StorageObjectIdCodec.toDomain(storage.getId().value()));
@@ -466,6 +470,33 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
                         || uploadResult.getStorage().getId() == null
                 ? null
                 : StorageObjectId.of(uploadResult.getStorage().getId().value());
+    }
+
+    private static StoredObject toStoredObject(UploadStorageObjectFacadeResponse response) {
+        if (response == null) {
+            return null;
+        }
+        StoredObject storage = new StoredObject();
+        storage.setId(response.getStorageObjectId() == null ? null : StoredObjectId.of(response.getStorageObjectId()));
+        storage.setOriginalFilename(response.getOriginalFilename());
+        storage.setContentType(response.getContentType());
+        storage.setName(response.getName());
+        storage.setExtendName(response.getExtendName());
+        storage.setMimeType(response.getMimeType());
+        storage.setBucketName(response.getBucketName());
+        storage.setObjectKey(response.getObjectKey());
+        storage.setSize(response.getSizeBytes());
+        storage.setAccessEndpoint(response.getAccessEndpoint());
+        storage.setObjectStatus(
+                StringUtils.isBlank(response.getObjectStatus())
+                        ? null
+                        : StoredObjectStatus.from(response.getObjectStatus()));
+        storage.setReferenceStatus(
+                StringUtils.isBlank(response.getReferenceStatus())
+                        ? null
+                        : StoredObjectReferenceStatus.from(response.getReferenceStatus()));
+        storage.setRemarks(response.getRemarks());
+        return storage;
     }
 
     private static boolean isSuccess(WorkerRenderDtos.WorkerRenderResponse response) {

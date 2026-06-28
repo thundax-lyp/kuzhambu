@@ -35,6 +35,9 @@ import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
+import com.thundax.kuzhambu.storage.facade.StorageUploadFacade;
+import com.thundax.kuzhambu.storage.facade.request.UploadStorageObjectFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.response.UploadStorageObjectFacadeResponse;
 import java.io.ByteArrayInputStream;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -45,24 +48,16 @@ class SancaiAssetApplicationServiceImplTest {
     @Test
     void uploadImageShouldCreateReplacementAndBindStorageReference() {
         SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
-        StorageUploadStreamHelper uploadStreamHelper = mock(StorageUploadStreamHelper.class);
+        StorageUploadFacade storageUploadFacade = mock(StorageUploadFacade.class);
         StorageApplicationService storageApplicationService = mock(StorageApplicationService.class);
         SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(
-                repository, null, uploadStreamHelper, storageApplicationService, null);
+                repository, null, storageUploadFacade, null, storageApplicationService, null);
         SancaiEntryImage replacedImage = image(8001L, 3001L, 7000L);
         when(repository.getImageById(SancaiEntryImageId.of(8001L))).thenReturn(replacedImage);
         when(repository.maxPriority()).thenReturn(5);
         when(repository.insertImage(org.mockito.ArgumentMatchers.any())).thenReturn(SancaiEntryImageId.of(8002L));
-        StoredObject storage = storage();
-        when(uploadStreamHelper.upload(
-                        org.mockito.ArgumentMatchers.any(),
-                        org.mockito.ArgumentMatchers.eq("sancai.png"),
-                        org.mockito.ArgumentMatchers.eq("image/png"),
-                        org.mockito.ArgumentMatchers.eq(4L),
-                        org.mockito.ArgumentMatchers.eq(List.of("jpg", "jpeg", "png", "gif", "webp")),
-                        org.mockito.ArgumentMatchers.eq(StorageOwnerType.CLASSICS_SANCAI_ENTRY_IMAGE),
-                        org.mockito.ArgumentMatchers.isNull()))
-                .thenReturn(StorageUploadResult.builder().storage(storage).build());
+        when(storageUploadFacade.uploadStorageObject(org.mockito.ArgumentMatchers.any()))
+                .thenReturn(uploadResponse());
 
         SancaiEntryImageResource result = service.uploadImage(new SancaiEntryImageUploadCommand(
                 3001L,
@@ -86,6 +81,18 @@ class SancaiAssetApplicationServiceImplTest {
         assertEquals(StorageObjectId.of(7001L), insertCaptor.getValue().getStorageObjectId());
         assertEquals(6, insertCaptor.getValue().getPriority());
         verify(repository).updateImage(replacedImage);
+        ArgumentCaptor<UploadStorageObjectFacadeRequest> uploadCaptor =
+                ArgumentCaptor.forClass(UploadStorageObjectFacadeRequest.class);
+        verify(storageUploadFacade).uploadStorageObject(uploadCaptor.capture());
+        assertEquals("sancai.png", uploadCaptor.getValue().getOriginalFilename());
+        assertEquals("image/png", uploadCaptor.getValue().getContentType());
+        assertEquals(4L, uploadCaptor.getValue().getSizeBytes());
+        assertEquals(
+                List.of("jpg", "jpeg", "png", "gif", "webp"),
+                uploadCaptor.getValue().getAllowedSuffixes());
+        assertEquals(
+                StorageOwnerType.CLASSICS_SANCAI_ENTRY_IMAGE.value(),
+                uploadCaptor.getValue().getOwnerType());
         ArgumentCaptor<ChangeStorageCommand> changeCaptor = ArgumentCaptor.forClass(ChangeStorageCommand.class);
         verify(storageApplicationService).change(changeCaptor.capture());
         assertEquals(
@@ -114,7 +121,7 @@ class SancaiAssetApplicationServiceImplTest {
         SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
         StorageApplicationService storageApplicationService = mock(StorageApplicationService.class);
         SancaiAssetApplicationServiceImpl service =
-                new SancaiAssetApplicationServiceImpl(repository, null, null, storageApplicationService, null);
+                new SancaiAssetApplicationServiceImpl(repository, null, null, null, storageApplicationService, null);
         SancaiEntryImage image = image(8002L, 3001L, 7001L);
         when(repository.getImageById(SancaiEntryImageId.of(8002L))).thenReturn(image);
         when(storageApplicationService.existsReadableContent(org.mockito.ArgumentMatchers.any()))
@@ -144,8 +151,8 @@ class SancaiAssetApplicationServiceImplTest {
         SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
         StorageUploadStreamHelper uploadStreamHelper = mock(StorageUploadStreamHelper.class);
         WorkerRenderClient workerRenderClient = mock(WorkerRenderClient.class);
-        SancaiAssetApplicationServiceImpl service =
-                new SancaiAssetApplicationServiceImpl(repository, workerRenderClient, uploadStreamHelper, null, null);
+        SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(
+                repository, workerRenderClient, null, uploadStreamHelper, null, null);
         SancaiShowcaseId showcaseId = SancaiShowcaseId.of(9001L);
         when(repository.insertShowcase(org.mockito.ArgumentMatchers.any())).thenReturn(showcaseId);
         when(workerRenderClient.renderSancaiShowcase(org.mockito.ArgumentMatchers.any()))
@@ -171,8 +178,8 @@ class SancaiAssetApplicationServiceImplTest {
         SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
         StorageUploadStreamHelper uploadStreamHelper = mock(StorageUploadStreamHelper.class);
         WorkerRenderClient workerRenderClient = mock(WorkerRenderClient.class);
-        SancaiAssetApplicationServiceImpl service =
-                new SancaiAssetApplicationServiceImpl(repository, workerRenderClient, uploadStreamHelper, null, null);
+        SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(
+                repository, workerRenderClient, null, uploadStreamHelper, null, null);
         SancaiShowcaseId showcaseId = SancaiShowcaseId.of(9001L);
         when(repository.insertShowcase(org.mockito.ArgumentMatchers.any())).thenReturn(showcaseId);
         WorkerRenderDtos.WorkerRenderResponse response = new WorkerRenderDtos.WorkerRenderResponse();
@@ -227,7 +234,29 @@ class SancaiAssetApplicationServiceImplTest {
         storage.setId(StoredObjectId.of(7001L));
         storage.setOriginalFilename("sancai.png");
         storage.setContentType("image/png");
+        storage.setName("sancai");
+        storage.setExtendName("png");
+        storage.setMimeType("image/png");
+        storage.setBucketName("bucket");
+        storage.setObjectKey("storage/sancai.png");
         storage.setSize(4L);
+        storage.setAccessEndpoint("https://storage.test");
         return storage;
+    }
+
+    private static UploadStorageObjectFacadeResponse uploadResponse() {
+        StoredObject storage = storage();
+        return UploadStorageObjectFacadeResponse.builder()
+                .storageObjectId(storage.getId().value())
+                .originalFilename(storage.getOriginalFilename())
+                .contentType(storage.getContentType())
+                .name(storage.getName())
+                .extendName(storage.getExtendName())
+                .mimeType(storage.getMimeType())
+                .bucketName(storage.getBucketName())
+                .objectKey(storage.getObjectKey())
+                .sizeBytes(storage.getSize())
+                .accessEndpoint(storage.getAccessEndpoint())
+                .build();
     }
 }
