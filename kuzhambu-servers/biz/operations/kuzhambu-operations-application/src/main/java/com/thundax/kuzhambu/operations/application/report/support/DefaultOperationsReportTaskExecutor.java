@@ -8,9 +8,11 @@ import com.thundax.kuzhambu.operations.domain.report.model.entity.ReportRecord;
 import com.thundax.kuzhambu.operations.domain.report.model.enums.ReportStatus;
 import com.thundax.kuzhambu.operations.domain.report.model.valueobject.ReportId;
 import com.thundax.kuzhambu.operations.domain.report.repository.ReportRepository;
-import com.thundax.kuzhambu.storage.facade.ServerArtifactStorageFacade;
-import com.thundax.kuzhambu.storage.facade.request.StoreServerArtifactFacadeRequest;
-import com.thundax.kuzhambu.storage.facade.response.StoreServerArtifactFacadeResponse;
+import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
+import com.thundax.kuzhambu.storage.facade.StorageUploadFacade;
+import com.thundax.kuzhambu.storage.facade.request.UploadStorageObjectFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.response.UploadStorageObjectFacadeResponse;
+import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.concurrent.CompletableFuture;
@@ -23,17 +25,17 @@ public class DefaultOperationsReportTaskExecutor implements OperationsReportTask
     private final ReportRepository reportRepository;
     private final OperationsWorkerRenderClient operationsWorkerRenderClient;
     private final OperationsReportSnapshotAssembler snapshotAssembler;
-    private final ServerArtifactStorageFacade serverArtifactStorageFacade;
+    private final StorageUploadFacade storageUploadFacade;
 
     public DefaultOperationsReportTaskExecutor(
             ReportRepository reportRepository,
             OperationsWorkerRenderClient operationsWorkerRenderClient,
             OperationsReportSnapshotAssembler snapshotAssembler,
-            ServerArtifactStorageFacade serverArtifactStorageFacade) {
+            StorageUploadFacade storageUploadFacade) {
         this.reportRepository = reportRepository;
         this.operationsWorkerRenderClient = operationsWorkerRenderClient;
         this.snapshotAssembler = snapshotAssembler;
-        this.serverArtifactStorageFacade = serverArtifactStorageFacade;
+        this.storageUploadFacade = storageUploadFacade;
     }
 
     @Override
@@ -132,15 +134,17 @@ public class DefaultOperationsReportTaskExecutor implements OperationsReportTask
                 || artifactResult.getContentBytes().length == 0) {
             throw new IllegalStateException("Operations report artifact content is empty.");
         }
-        StoreServerArtifactFacadeResponse storedResult =
-                serverArtifactStorageFacade.storeServerArtifact(StoreServerArtifactFacadeRequest.builder()
-                        .contentBytes(artifactResult.getContentBytes())
+        UploadStorageObjectFacadeResponse storedResult =
+                storageUploadFacade.uploadStorageObject(UploadStorageObjectFacadeRequest.builder()
+                        .inputStream(new ByteArrayInputStream(artifactResult.getContentBytes()))
                         .originalFilename(filenameHint(artifactResult))
                         .contentType(artifactResult.getContentType())
                         .sizeBytes(
                                 artifactResult.getSizeBytes() == null
                                         ? (long) artifactResult.getContentBytes().length
                                         : artifactResult.getSizeBytes())
+                        .ownerType(StorageOwnerType.USER.value())
+                        .ownerId("system")
                         .build());
         if (storedResult == null || storedResult.getStorageObjectId() == null) {
             throw new IllegalStateException("Operations report storage upload returned empty storage object.");

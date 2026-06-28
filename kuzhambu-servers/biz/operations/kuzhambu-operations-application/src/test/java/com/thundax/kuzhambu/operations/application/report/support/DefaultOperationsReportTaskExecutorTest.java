@@ -12,9 +12,11 @@ import com.thundax.kuzhambu.operations.domain.report.model.entity.ReportRecord;
 import com.thundax.kuzhambu.operations.domain.report.model.enums.ReportStatus;
 import com.thundax.kuzhambu.operations.domain.report.model.valueobject.ReportId;
 import com.thundax.kuzhambu.operations.domain.report.repository.ReportRepository;
-import com.thundax.kuzhambu.storage.facade.ServerArtifactStorageFacade;
-import com.thundax.kuzhambu.storage.facade.request.StoreServerArtifactFacadeRequest;
-import com.thundax.kuzhambu.storage.facade.response.StoreServerArtifactFacadeResponse;
+import com.thundax.kuzhambu.storage.facade.StorageUploadFacade;
+import com.thundax.kuzhambu.storage.facade.request.UploadStorageObjectFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.response.UploadStorageObjectFacadeResponse;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -45,7 +47,10 @@ class DefaultOperationsReportTaskExecutorTest {
         assertNotNull(repository.updatedRecords.get(1).getCompletedAt());
         assertEquals("weekly-report.pdf", storage.lastCommand.getOriginalFilename());
         assertEquals("application/pdf", storage.lastCommand.getContentType());
-        assertEquals("ok", new String(storage.lastCommand.getContentBytes(), StandardCharsets.UTF_8));
+        assertEquals(2L, storage.lastCommand.getSizeBytes());
+        assertEquals("USER", storage.lastCommand.getOwnerType());
+        assertEquals("system", storage.lastCommand.getOwnerId());
+        assertEquals("ok", read(storage.lastCommand.getInputStream()));
     }
 
     @Test
@@ -146,18 +151,26 @@ class DefaultOperationsReportTaskExecutorTest {
         }
     }
 
-    private static final class RecordingArtifactStorage implements ServerArtifactStorageFacade {
-        private StoreServerArtifactFacadeRequest lastCommand;
+    private static final class RecordingArtifactStorage implements StorageUploadFacade {
+        private UploadStorageObjectFacadeRequest lastCommand;
 
         @Override
-        public StoreServerArtifactFacadeResponse storeServerArtifact(StoreServerArtifactFacadeRequest command) {
+        public UploadStorageObjectFacadeResponse uploadStorageObject(UploadStorageObjectFacadeRequest command) {
             this.lastCommand = command;
-            return StoreServerArtifactFacadeResponse.builder()
+            return UploadStorageObjectFacadeResponse.builder()
                     .storageObjectId(3001L)
                     .originalFilename(command.getOriginalFilename())
                     .contentType(command.getContentType())
                     .sizeBytes(command.getSizeBytes())
                     .build();
+        }
+    }
+
+    private static String read(InputStream inputStream) {
+        try {
+            return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
         }
     }
 
