@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `server-artifact facade impl`：实现 `ServerArtifactStorageFacadeImpl` 与 `FacadeAssembler`
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/main/java/com/thundax/kuzhambu/storage/application/facade/impl/ServerArtifactStorageFacadeImpl.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/main/java/com/thundax/kuzhambu/storage/application/facade/assembler/ServerArtifactStorageFacadeAssembler.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/main/java/com/thundax/kuzhambu/storage/application/service/impl/ServerArtifactStorageApplicationServiceImpl.java`
-    - 处理动作：实现服务端产物 facade 并完成 `FacadeRequest -> internal params -> FacadeResponse` 适配。
-    - 验收点：`ServerArtifactStorageFacade` 可由 storage application 提供稳定实现且不向外暴露内部 command/result。
-    - 重要度：9/10
-
 - [ ] `readable-content facade impl`：实现 `StorageReadableContentFacadeImpl` 与 `FacadeAssembler`
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FACADE-ISOLATION.md`

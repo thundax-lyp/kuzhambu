@@ -17,6 +17,11 @@
   <dependencies>
     <dependency>
       <groupId>com.thundax</groupId>
+      <artifactId>kuzhambu-storage-facade</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-storage-domain</artifactId>
       <version>${project.version}</version>
     </dependency>
