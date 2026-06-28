@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `storage-facade module`：建立 `kuzhambu-storage-facade` 模块骨架
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/pom.xml`、`kuzhambu-servers/biz/storage/kuzhambu-storage-facade/pom.xml`、`kuzhambu-servers/biz/storage/kuzhambu-storage-facade/src/main/java/com/thundax/kuzhambu/storage/facade/package-info.java`
-    - 处理动作：创建 `kuzhambu-storage-facade` 模块并接入 storage reactor 与基础 `facade` 包。
-    - 验收点：`kuzhambu-storage-facade` 模块可被 Maven reactor 识别且存在稳定的 `com.thundax.kuzhambu.storage.facade` 基础包。
-    - 重要度：10/10
-
 - [ ] `server-artifact facade contract`：定义 `ServerArtifactStorageFacade` 协议骨架
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FACADE-ISOLATION.md`
