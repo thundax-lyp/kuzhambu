@@ -48,7 +48,7 @@ Hard Rules 必须使用 ArchUnit、Maven reactor、Checkstyle、脚本或测试�
 - `SERVERS_APPLICATION_SERVICE_SUFFIX_ONLY`：业务域 `application` 层内以 `Service` 或 `ServiceImpl` 结尾的类型必须分别以 `ApplicationService` 或 `ApplicationServiceImpl` 结尾，内部辅助组件不得使用泛化 `*Service` 命名。
 - `SERVERS_NAMING_APPLICATION_INPUT`：应用层写入输入模型必须以 `Command` 结尾；读取输入模型必须以 `Query` 或 `PageQuery` 结尾。
 - `SERVERS_APPLICATION_INPUT_PACKAGE`：应用层写入输入模型必须位于 `application/{domain}/command/`；读取输入模型必须位于 `application/{domain}/query/`；不得放在 `service/command/` 或 `service/query/` 下。
-- `SERVERS_NAMING_APPLICATION_OUTPUT`：应用层输出模型必须以 `Result`、`DTO` 或 `PageResult` 结尾。
+- `SERVERS_NAMING_APPLICATION_OUTPUT`：应用层输出模型必须以 `Result`、`DTO` 或 `PageResult` 结尾；默认用例输出优先使用 `*Result`，`*DTO` 只用于稳定通用传输对象。
 - `SERVERS_NAMING_DOMAIN_ID`：强类型业务 ID 必须以 `Id` 结尾，必须是 `final class`，必须继承 common 基础 ID 类型，并位于对应业务域 `{module}-domain` 模块下的 `com.thundax.kuzhambu.{module}.domain.{domain}.model.valueobject`。
 - `SERVERS_VALUE_OBJECT_DOMAIN_ONLY`：`valueobject` 包只能出现在对应业务域 `{module}-domain` 模块下的 `com.thundax.kuzhambu.{module}.domain.{domain}.model.valueobject`；`infra`、`application`、`interfaces` 不得定义 `valueobject` 包。
 - `SERVERS_ENTITY_DOMAIN_ONLY`：`entity` 包只能出现在对应业务域 `{module}-domain` 模块下的 `com.thundax.kuzhambu.{module}.domain.{domain}.model.entity`；`infra`、`application`、`interfaces` 不得定义 `entity` 包。
@@ -66,7 +66,7 @@ Hard Rules 必须使用 ArchUnit、Maven reactor、Checkstyle、脚本或测试�
 ### Application Service API
 
 - `SERVERS_APP_SERVICE_INPUT_SHAPE`：`*ApplicationService` 的公开用例方法入参只能是无参、单个 `*Command`、单个 `*Query`、单个 `*PageQuery`，或少量 Java plain type 参数。
-- `SERVERS_APP_SERVICE_RETURN_SHAPE`：`*ApplicationService` 的公开用例方法返回值只能是 `void`、`*Result`、`*DTO`、`List<*DTO>`、`PageResult<*DTO>` 或 Java plain type。
+- `SERVERS_APP_SERVICE_RETURN_SHAPE`：`*ApplicationService` 的公开用例方法返回值只能是 `void`、`*Result`、`*DTO`、`List<*Result>`、`List<*DTO>`、`PageResult<*Result>`、`PageResult<*DTO>` 或 Java plain type。
 - `SERVERS_APP_SERVICE_PLAIN_TYPE_SET`：Java plain type 指 JDK 基础类型、包装类型、`String`、`Instant`、`BigDecimal`、枚举，以及这些类型的集合。
 
 ### Persistence Boundary

@@ -111,7 +111,7 @@ public final class LayerArchitectureRuleSupport {
 
         assertTrue(
                 "Service method boundary types must stay inside service-safe models such as *Query, PageQuery, "
-                        + "PageResult, *Command, *Id, *DTO, Entity, or Java-Type. Known dirty types still need cleanup: "
+                        + "PageResult, *Command, *Id, *DTO, *Result, Entity, or Java-Type. Known dirty types still need cleanup: "
                         + legacyDirtyTypes
                         + ". New violations: "
                         + violations,
@@ -266,6 +266,7 @@ public final class LayerArchitectureRuleSupport {
                 || isEntityId(type)
                 || isModuleEntity(type)
                 || isDto(type)
+                || isResult(type)
                 || isPageResult(type);
     }
 
@@ -330,6 +331,10 @@ public final class LayerArchitectureRuleSupport {
 
     private static boolean isDto(JavaClass type) {
         return type.getSimpleName().endsWith("DTO");
+    }
+
+    private static boolean isResult(JavaClass type) {
+        return type.getSimpleName().endsWith("Result") && type.getPackageName().contains(".application.");
     }
 
     private static boolean isServiceId(JavaClass type) {

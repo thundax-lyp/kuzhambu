@@ -59,7 +59,7 @@
 - 接口层协议转换：`InterfaceAssembler`
 - 用例编排入口：`ApplicationService`
 - 应用层输入：`Command` / `Query` / `PageQuery`
-- 应用层输出：`Result` / `PageResult`
+- 应用层输出：`Result` / `DTO` / `PageResult`
 - 应用层内部复用：`Helper` / `Factory` / `Resolver` / `Executor`
 - 核心领域规则：`DomainService`
 - 领域读写端口：`Repository`
@@ -181,6 +181,8 @@ com/thundax/kuzhambu/<domain>/interfaces/portal/
 路径用途：
 
 - `application/`：用例编排、事务边界、跨域协调、命令、查询和结果对象。
+- `application` 层公开方法输入默认使用 `*Command` / `*Query` / `PageQuery`。
+- `application` 层公开方法输出默认使用 `*Result`；仅在稳定通用传输对象场景下使用 `*DTO`；分页输出统一使用 `PageResult<...>`。
 - `application/<subdomain>/service/`：应用用例入口接口，命名为 `*ApplicationService`。
 - `application/<subdomain>/service/impl/`：应用用例入口实现，命名为 `*ApplicationServiceImpl`。
 - `application/<subdomain>/command/`：写入用例输入模型。
