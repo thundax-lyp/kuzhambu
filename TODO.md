@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `ai-facade-test`：补齐 AiFacade provider 单测与架构测试
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/test/java/com/thundax/kuzhambu/ai/application/facade/impl/AiFacadeImplTest.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-facade/src/test/java/com/thundax/kuzhambu/ai/facade/architecture/AiFacadeArchitectureTest.java`
-    - 处理动作：为 `AiFacadeImpl` 和 `ai-facade` 模块补单测与架构测试。
-    - 验收点：`AiFacadeImplTest` 覆盖 facade 到 provider 的主要字段映射与调用路径，`AiFacadeArchitectureTest` 能门禁 facade 包位和命名。
-    - 重要度：8/10
-
 - [ ] `consumer-ai-facade-test`：收口外域 AI facade 测试替身
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-FACADE-ISOLATION.md`
