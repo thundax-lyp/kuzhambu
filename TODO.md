@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Discovery summary provider桥接`：桥接 summary provider 能力
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/facade/impl/DiscoveryFacadeImpl.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/facade/assembler/DiscoveryFacadeAssembler.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/report/service/DiscoveryReportApplicationService.java`
-    - 处理动作：将 `DiscoveryReportApplicationService.summary(...)` 桥接为 `DiscoveryFacade.summary(...)`
-    - 验收点：provider 侧可返回完整 `DiscoverySummaryFacadeResponse`
-    - 重要度：9/10
-
 - [ ] `operations切换discovery facade`：operations 改用 discovery facade
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-FACADE-ISOLATION.md`

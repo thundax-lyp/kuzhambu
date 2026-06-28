@@ -24,6 +24,10 @@ public class DiscoveryFacadeImpl implements DiscoveryFacade {
     @Override
     @Transactional(readOnly = true)
     public DiscoverySummaryFacadeResponse summary(DiscoverySummaryFacadeRequest request) {
-        return null;
+        if (request == null) {
+            return null;
+        }
+        return discoveryFacadeAssembler.toSummaryFacadeResponse(discoveryReportApplicationService.summary(
+                request.getPeriodStart(), request.getPeriodEnd(), request.getBucketType()));
     }
 }
