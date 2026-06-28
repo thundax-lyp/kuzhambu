@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.classics.application.searchsync.service;
 
-import com.thundax.kuzhambu.classics.application.searchsync.model.ClassicsSearchIndexSyncMessage;
+import com.thundax.kuzhambu.classics.facade.dto.ClassicsSearchIndexSyncMessageFacadeDto;
 
 public interface ClassicsSearchIndexSyncPublisher {
-    void publish(ClassicsSearchIndexSyncMessage message);
+    void publish(ClassicsSearchIndexSyncMessageFacadeDto message);
 }

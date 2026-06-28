@@ -2,7 +2,7 @@ package com.thundax.kuzhambu.discovery.application.qa.support;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.thundax.kuzhambu.classics.application.search.result.ClassicsSearchSourceContent;
+import com.thundax.kuzhambu.classics.facade.dto.ClassicsPublicContentFacadeDto;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.discovery.application.search.result.QueryUnderstandingResult;
 import java.util.ArrayList;
@@ -25,7 +25,7 @@ public class QaContextAssembler {
     public QaContext assemble(
             String question,
             QueryUnderstandingResult understandingResult,
-            List<ClassicsSearchSourceContent> publicContents) {
+            List<ClassicsPublicContentFacadeDto> publicContents) {
         String normalizedQuestion = normalizeQuestion(question);
         String rewrittenQuestion = understandingResult == null
                 ? normalizedQuestion
@@ -34,7 +34,7 @@ public class QaContextAssembler {
                 understandingResult == null ? List.of() : safeList(understandingResult.getExpandedSynonyms());
         List<QueryUnderstandingResult.RecognizedEntityResult> recognizedEntities =
                 understandingResult == null ? List.of() : safeList(understandingResult.getRecognizedEntities());
-        List<ClassicsSearchSourceContent> selectedSources =
+        List<ClassicsPublicContentFacadeDto> selectedSources =
                 selectSources(normalizedQuestion, rewrittenQuestion, expandedTerms, recognizedEntities, publicContents);
         String contextSnapshotJson = writeJson(buildSnapshot(selectedSources));
         String promptMessagesJson =
@@ -60,17 +60,17 @@ public class QaContextAssembler {
                 selectedSources.size());
     }
 
-    private List<ClassicsSearchSourceContent> selectSources(
+    private List<ClassicsPublicContentFacadeDto> selectSources(
             String question,
             String rewrittenQuestion,
             List<String> expandedTerms,
             List<QueryUnderstandingResult.RecognizedEntityResult> recognizedEntities,
-            List<ClassicsSearchSourceContent> publicContents) {
+            List<ClassicsPublicContentFacadeDto> publicContents) {
         if (publicContents == null || publicContents.isEmpty()) {
             return List.of();
         }
         List<ClassicsSearchSourceContentScore> scoredContents = new ArrayList<>();
-        for (ClassicsSearchSourceContent content : publicContents) {
+        for (ClassicsPublicContentFacadeDto content : publicContents) {
             int score = scoreContent(content, question, rewrittenQuestion, expandedTerms, recognizedEntities);
             if (score > 0) {
                 scoredContents.add(new ClassicsSearchSourceContentScore(content, score));
@@ -88,7 +88,7 @@ public class QaContextAssembler {
     }
 
     private int scoreContent(
-            ClassicsSearchSourceContent content,
+            ClassicsPublicContentFacadeDto content,
             String question,
             String rewrittenQuestion,
             List<String> expandedTerms,
@@ -149,10 +149,10 @@ public class QaContextAssembler {
         return StringUtils.isNotBlank(needle) && haystack.contains(needle.trim().toLowerCase(Locale.ROOT));
     }
 
-    private Map<String, Object> buildSnapshot(List<ClassicsSearchSourceContent> sources) {
+    private Map<String, Object> buildSnapshot(List<ClassicsPublicContentFacadeDto> sources) {
         List<Map<String, Object>> items = new ArrayList<>();
         for (int index = 0; index < sources.size(); index++) {
-            ClassicsSearchSourceContent source = sources.get(index);
+            ClassicsPublicContentFacadeDto source = sources.get(index);
             Map<String, Object> item = new LinkedHashMap<>();
             item.put("sourceRank", index + 1);
             item.put("contentDomain", "CLASSICS");
@@ -187,7 +187,7 @@ public class QaContextAssembler {
             String rewrittenQuestion,
             List<String> expandedTerms,
             List<QueryUnderstandingResult.RecognizedEntityResult> recognizedEntities,
-            List<ClassicsSearchSourceContent> sources) {
+            List<ClassicsPublicContentFacadeDto> sources) {
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("question", question);
         payload.put("rewrittenQuestion", rewrittenQuestion);
@@ -197,7 +197,7 @@ public class QaContextAssembler {
         return payload;
     }
 
-    private String firstSnippet(ClassicsSearchSourceContent source) {
+    private String firstSnippet(ClassicsPublicContentFacadeDto source) {
         if (source == null) {
             return null;
         }
@@ -239,7 +239,7 @@ public class QaContextAssembler {
             String rewrittenQuestion,
             List<String> expandedTerms,
             List<QueryUnderstandingResult.RecognizedEntityResult> recognizedEntities,
-            List<ClassicsSearchSourceContent> sourceContents,
+            List<ClassicsPublicContentFacadeDto> sourceContents,
             String contextSnapshotJson,
             String promptMessagesJson,
             String inputPayloadJson,
@@ -247,5 +247,5 @@ public class QaContextAssembler {
             String filtersJson,
             Integer candidateCount) {}
 
-    private record ClassicsSearchSourceContentScore(ClassicsSearchSourceContent content, int score) {}
+    private record ClassicsSearchSourceContentScore(ClassicsPublicContentFacadeDto content, int score) {}
 }

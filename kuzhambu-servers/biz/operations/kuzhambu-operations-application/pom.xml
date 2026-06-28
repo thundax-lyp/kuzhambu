@@ -37,7 +37,7 @@
     </dependency>
     <dependency>
       <groupId>com.thundax</groupId>
-      <artifactId>kuzhambu-classics-application</artifactId>
+      <artifactId>kuzhambu-classics-facade</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

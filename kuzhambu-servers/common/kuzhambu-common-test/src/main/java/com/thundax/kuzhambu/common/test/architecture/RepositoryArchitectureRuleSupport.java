@@ -265,7 +265,7 @@ public final class RepositoryArchitectureRuleSupport {
             return ("kuzhambu-" + module.domain + "-domain").equals(artifactId) || artifactId.endsWith("-facade");
         }
         if ("interface".equals(module.layer)) {
-            return ("kuzhambu-" + module.domain + "-application").equals(artifactId);
+            return ("kuzhambu-" + module.domain + "-application").equals(artifactId) || artifactId.endsWith("-facade");
         }
         if ("infra".equals(module.layer)) {
             return ("kuzhambu-" + module.domain + "-domain").equals(artifactId);
@@ -296,7 +296,7 @@ public final class RepositoryArchitectureRuleSupport {
             return "[kuzhambu-" + module.domain + "-domain, kuzhambu-*-facade, kuzhambu-common-*]";
         }
         if ("interface".equals(module.layer)) {
-            return "[kuzhambu-" + module.domain + "-application, kuzhambu-common-*]";
+            return "[kuzhambu-" + module.domain + "-application, kuzhambu-*-facade, kuzhambu-common-*]";
         }
         if ("facade".equals(module.layer)) {
             return "[kuzhambu-common-*]";
@@ -312,16 +312,12 @@ public final class RepositoryArchitectureRuleSupport {
 
     private static Map<String, Set<String>> legacyApplicationPomDependencyAllowlist() {
         Map<String, Set<String>> allowlist = new HashMap<String, Set<String>>();
-        put(allowlist, "discovery", "kuzhambu-classics-application");
-        put(allowlist, "operations", "kuzhambu-classics-application");
         put(allowlist, "operations", "kuzhambu-discovery-application");
         return allowlist;
     }
 
     private static Map<String, Set<String>> legacyInterfacePomDependencyAllowlist() {
-        Map<String, Set<String>> allowlist = new HashMap<String, Set<String>>();
-        put(allowlist, "discovery", "kuzhambu-classics-application");
-        return allowlist;
+        return new HashMap<String, Set<String>>();
     }
 
     private static Map<String, Set<String>> legacyInfraPomDependencyAllowlist() {

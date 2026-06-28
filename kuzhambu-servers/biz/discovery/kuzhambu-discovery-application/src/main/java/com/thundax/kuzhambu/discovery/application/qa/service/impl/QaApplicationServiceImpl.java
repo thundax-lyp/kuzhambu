@@ -3,8 +3,8 @@ package com.thundax.kuzhambu.discovery.application.qa.service.impl;
 import com.thundax.kuzhambu.ai.facade.AiFacade;
 import com.thundax.kuzhambu.ai.facade.request.DiscoveryAiFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.response.DiscoveryAiFacadeResponse;
-import com.thundax.kuzhambu.classics.application.search.result.ClassicsSearchSourceContent;
-import com.thundax.kuzhambu.classics.application.search.service.ClassicsSearchContentApplicationService;
+import com.thundax.kuzhambu.classics.facade.ClassicsFacade;
+import com.thundax.kuzhambu.classics.facade.dto.ClassicsPublicContentFacadeDto;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.discovery.application.qa.command.AskQuestionCommand;
@@ -54,7 +54,7 @@ public class QaApplicationServiceImpl implements QaApplicationService {
     private final QaSourceRepository qaSourceRepository;
     private final QaRetrievalTraceRepository qaRetrievalTraceRepository;
     private final QueryUnderstandingApplicationService queryUnderstandingApplicationService;
-    private final ClassicsSearchContentApplicationService classicsSearchContentApplicationService;
+    private final ClassicsFacade classicsFacade;
     private final AiFacade aiFacade;
     private final QaContextAssembler qaContextAssembler;
     private final QaSourceAssembler qaSourceAssembler;
@@ -66,7 +66,7 @@ public class QaApplicationServiceImpl implements QaApplicationService {
             QaSourceRepository qaSourceRepository,
             QaRetrievalTraceRepository qaRetrievalTraceRepository,
             QueryUnderstandingApplicationService queryUnderstandingApplicationService,
-            ClassicsSearchContentApplicationService classicsSearchContentApplicationService,
+            ClassicsFacade classicsFacade,
             AiFacade aiFacade,
             QaContextAssembler qaContextAssembler,
             QaSourceAssembler qaSourceAssembler,
@@ -76,7 +76,7 @@ public class QaApplicationServiceImpl implements QaApplicationService {
         this.qaSourceRepository = qaSourceRepository;
         this.qaRetrievalTraceRepository = qaRetrievalTraceRepository;
         this.queryUnderstandingApplicationService = queryUnderstandingApplicationService;
-        this.classicsSearchContentApplicationService = classicsSearchContentApplicationService;
+        this.classicsFacade = classicsFacade;
         this.aiFacade = aiFacade;
         this.qaContextAssembler = qaContextAssembler;
         this.qaSourceAssembler = qaSourceAssembler;
@@ -147,7 +147,8 @@ public class QaApplicationServiceImpl implements QaApplicationService {
                 command.getTraceId());
         QueryUnderstandingResult understandingResult =
                 queryUnderstandingApplicationService.understand(understandingQuery);
-        List<ClassicsSearchSourceContent> publicContents = classicsSearchContentApplicationService.listPublicContents();
+        List<ClassicsPublicContentFacadeDto> publicContents =
+                classicsFacade.listPublicContents().getContents();
         QaContextAssembler.QaContext qaContext =
                 qaContextAssembler.assemble(command.getQuestion(), understandingResult, publicContents);
         DiscoveryAiFacadeResponse aiResult = aiFacade.generateDiscoveryAnswer(toAiRequest(command, qaContext));

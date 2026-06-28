@@ -10,8 +10,9 @@ import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.ai.facade.AiFacade;
 import com.thundax.kuzhambu.ai.facade.response.DiscoveryAiFacadeResponse;
-import com.thundax.kuzhambu.classics.application.search.result.ClassicsSearchSourceContent;
-import com.thundax.kuzhambu.classics.application.search.service.ClassicsSearchContentApplicationService;
+import com.thundax.kuzhambu.classics.facade.ClassicsFacade;
+import com.thundax.kuzhambu.classics.facade.dto.ClassicsPublicContentFacadeDto;
+import com.thundax.kuzhambu.classics.facade.response.ClassicsPublicContentsFacadeResponse;
 import com.thundax.kuzhambu.discovery.application.qa.command.AskQuestionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.command.OpenQaSessionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaAnswerResult;
@@ -43,8 +44,7 @@ class QaApplicationServiceImplTest {
         QaRetrievalTraceRepository traceRepository = mock(QaRetrievalTraceRepository.class);
         QueryUnderstandingApplicationService queryUnderstandingApplicationService =
                 mock(QueryUnderstandingApplicationService.class);
-        ClassicsSearchContentApplicationService classicsSearchContentApplicationService =
-                mock(ClassicsSearchContentApplicationService.class);
+        ClassicsFacade classicsFacade = mock(ClassicsFacade.class);
         AiFacade aiFacade = mock(AiFacade.class);
         QaApplicationServiceImpl service = new QaApplicationServiceImpl(
                 sessionRepository,
@@ -52,7 +52,7 @@ class QaApplicationServiceImplTest {
                 sourceRepository,
                 traceRepository,
                 queryUnderstandingApplicationService,
-                classicsSearchContentApplicationService,
+                classicsFacade,
                 aiFacade,
                 new QaContextAssembler(),
                 new QaSourceAssembler(),
@@ -75,8 +75,7 @@ class QaApplicationServiceImplTest {
         QaRetrievalTraceRepository traceRepository = mock(QaRetrievalTraceRepository.class);
         QueryUnderstandingApplicationService queryUnderstandingApplicationService =
                 mock(QueryUnderstandingApplicationService.class);
-        ClassicsSearchContentApplicationService classicsSearchContentApplicationService =
-                mock(ClassicsSearchContentApplicationService.class);
+        ClassicsFacade classicsFacade = mock(ClassicsFacade.class);
         AiFacade aiFacade = mock(AiFacade.class);
         QaApplicationServiceImpl service = new QaApplicationServiceImpl(
                 sessionRepository,
@@ -84,7 +83,7 @@ class QaApplicationServiceImplTest {
                 sourceRepository,
                 traceRepository,
                 queryUnderstandingApplicationService,
-                classicsSearchContentApplicationService,
+                classicsFacade,
                 aiFacade,
                 new QaContextAssembler(),
                 new QaSourceAssembler(),
@@ -114,22 +113,25 @@ class QaApplicationServiceImplTest {
                         List.of(new QueryUnderstandingResult.RecognizedEntityResult("黄帝", "PERSON", "黄帝")),
                         "req-1",
                         "trace-1"));
-        when(classicsSearchContentApplicationService.listPublicContents())
-                .thenReturn(List.of(new ClassicsSearchSourceContent(
-                        "SANCAI_ENTRY",
-                        "1001",
-                        "SANCAI",
-                        "11",
-                        "卷一",
-                        "黄帝",
-                        "上古帝王",
-                        List.of("黄帝是上古帝王"),
-                        List.of("礼制"),
-                        "PUBLISHED",
-                        "PUBLIC",
-                        1,
-                        new Date(),
-                        new Date())));
+        when(classicsFacade.listPublicContents())
+                .thenReturn(ClassicsPublicContentsFacadeResponse.builder()
+                        .contents(List.of(ClassicsPublicContentFacadeDto.builder()
+                                .contentType("SANCAI_ENTRY")
+                                .contentId("1001")
+                                .knowledgeBase("SANCAI")
+                                .categoryCode("11")
+                                .categoryName("卷一")
+                                .title("黄帝")
+                                .summary("上古帝王")
+                                .textSegments(List.of("黄帝是上古帝王"))
+                                .tagNames(List.of("礼制"))
+                                .status("PUBLISHED")
+                                .visibility("PUBLIC")
+                                .currentVersionNo(1)
+                                .publishedAt(new Date())
+                                .updatedAt(new Date())
+                                .build()))
+                        .build());
         when(aiFacade.generateDiscoveryAnswer(any()))
                 .thenReturn(DiscoveryAiFacadeResponse.builder()
                         .callId(1L)

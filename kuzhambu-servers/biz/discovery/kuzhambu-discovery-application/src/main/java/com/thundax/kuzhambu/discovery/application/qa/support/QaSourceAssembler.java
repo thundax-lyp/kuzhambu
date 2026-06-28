@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.discovery.application.qa.support;
 
-import com.thundax.kuzhambu.classics.application.search.result.ClassicsSearchSourceContent;
+import com.thundax.kuzhambu.classics.facade.dto.ClassicsPublicContentFacadeDto;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSourceResult;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSource;
 import java.math.BigDecimal;
@@ -13,13 +13,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class QaSourceAssembler {
 
-    public List<QaSource> toDomainList(List<ClassicsSearchSourceContent> sourceContents, Long messageId) {
+    public List<QaSource> toDomainList(List<ClassicsPublicContentFacadeDto> sourceContents, Long messageId) {
         if (sourceContents == null || sourceContents.isEmpty()) {
             return List.of();
         }
         List<QaSource> sources = new ArrayList<>();
         for (int index = 0; index < sourceContents.size(); index++) {
-            ClassicsSearchSourceContent sourceContent = sourceContents.get(index);
+            ClassicsPublicContentFacadeDto sourceContent = sourceContents.get(index);
             sources.add(new QaSource(
                     null,
                     null,
@@ -70,7 +70,7 @@ public class QaSourceAssembler {
         }
     }
 
-    private String firstSnippet(ClassicsSearchSourceContent sourceContent) {
+    private String firstSnippet(ClassicsPublicContentFacadeDto sourceContent) {
         if (sourceContent == null) {
             return null;
         }

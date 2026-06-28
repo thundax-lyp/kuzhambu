@@ -16,6 +16,7 @@
 
   <modules>
     <module>kuzhambu-classics-domain</module>
+    <module>kuzhambu-classics-facade</module>
     <module>kuzhambu-classics-application</module>
     <module>kuzhambu-classics-interface</module>
     <module>kuzhambu-classics-infra</module>

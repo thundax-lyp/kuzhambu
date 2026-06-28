@@ -7,7 +7,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.ai.facade.AiFacade;
-import com.thundax.kuzhambu.classics.application.search.service.ClassicsSearchContentApplicationService;
+import com.thundax.kuzhambu.classics.facade.ClassicsFacade;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaMessageResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionDetailResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaTraceResult;
@@ -37,8 +37,7 @@ class QaApplicationServiceImplAdminReadTest {
         QaRetrievalTraceRepository traceRepository = mock(QaRetrievalTraceRepository.class);
         QueryUnderstandingApplicationService queryUnderstandingApplicationService =
                 mock(QueryUnderstandingApplicationService.class);
-        ClassicsSearchContentApplicationService classicsSearchContentApplicationService =
-                mock(ClassicsSearchContentApplicationService.class);
+        ClassicsFacade classicsFacade = mock(ClassicsFacade.class);
         AiFacade aiFacade = mock(AiFacade.class);
         QaApplicationServiceImpl service = new QaApplicationServiceImpl(
                 sessionRepository,
@@ -46,7 +45,7 @@ class QaApplicationServiceImplAdminReadTest {
                 sourceRepository,
                 traceRepository,
                 queryUnderstandingApplicationService,
-                classicsSearchContentApplicationService,
+                classicsFacade,
                 aiFacade,
                 new QaContextAssembler(),
                 new QaSourceAssembler(),

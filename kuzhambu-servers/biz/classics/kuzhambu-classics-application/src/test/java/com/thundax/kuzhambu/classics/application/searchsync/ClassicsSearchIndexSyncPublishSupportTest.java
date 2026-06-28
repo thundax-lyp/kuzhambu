@@ -8,11 +8,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
-import com.thundax.kuzhambu.classics.application.searchsync.model.ClassicsSearchIndexSyncEventType;
-import com.thundax.kuzhambu.classics.application.searchsync.model.ClassicsSearchIndexSyncMessage;
 import com.thundax.kuzhambu.classics.application.searchsync.service.ClassicsSearchIndexSyncPublisher;
 import com.thundax.kuzhambu.classics.application.searchsync.support.ClassicsSearchIndexSyncPublishSupport;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
+import com.thundax.kuzhambu.classics.facade.dto.ClassicsSearchIndexSyncEventFacadeDto;
+import com.thundax.kuzhambu.classics.facade.dto.ClassicsSearchIndexSyncMessageFacadeDto;
 import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -43,12 +43,12 @@ class ClassicsSearchIndexSyncPublishSupportTest {
 
         synchronizations.forEach(TransactionSynchronization::afterCommit);
 
-        ArgumentCaptor<ClassicsSearchIndexSyncMessage> captor =
-                ArgumentCaptor.forClass(ClassicsSearchIndexSyncMessage.class);
+        ArgumentCaptor<ClassicsSearchIndexSyncMessageFacadeDto> captor =
+                ArgumentCaptor.forClass(ClassicsSearchIndexSyncMessageFacadeDto.class);
         verify(publisher).publish(captor.capture());
-        ClassicsSearchIndexSyncMessage message = captor.getValue();
+        ClassicsSearchIndexSyncMessageFacadeDto message = captor.getValue();
         assertNotNull(message.getEventId());
-        assertEquals(ClassicsSearchIndexSyncEventType.UPSERT, message.getEventType());
+        assertEquals(ClassicsSearchIndexSyncEventFacadeDto.UPSERT, message.getEventType());
         assertEquals("SANCAI_ENTRY", message.getContentType());
         assertEquals("1001", message.getContentId());
         assertEquals(3, message.getCurrentVersionNo());
@@ -68,10 +68,11 @@ class ClassicsSearchIndexSyncPublishSupportTest {
 
         synchronizations.forEach(TransactionSynchronization::afterCommit);
 
-        ArgumentCaptor<ClassicsSearchIndexSyncMessage> captor =
-                ArgumentCaptor.forClass(ClassicsSearchIndexSyncMessage.class);
+        ArgumentCaptor<ClassicsSearchIndexSyncMessageFacadeDto> captor =
+                ArgumentCaptor.forClass(ClassicsSearchIndexSyncMessageFacadeDto.class);
         verify(publisher).publish(captor.capture());
-        assertEquals(ClassicsSearchIndexSyncEventType.DELETE, captor.getValue().getEventType());
+        assertEquals(
+                ClassicsSearchIndexSyncEventFacadeDto.DELETE, captor.getValue().getEventType());
         assertEquals("WANGQI_DOCUMENT", captor.getValue().getContentType());
         assertEquals("2002", captor.getValue().getContentId());
         assertEquals(5, captor.getValue().getCurrentVersionNo());
