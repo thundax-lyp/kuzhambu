@@ -3,7 +3,7 @@ package com.thundax.kuzhambu.knowledge.application.graph;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
+import com.thundax.kuzhambu.ai.facade.dto.AiCandidateFacadeDto;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.application.graph.support.KnowledgeGraphCandidateApplySupport;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
@@ -43,12 +43,13 @@ class KnowledgeGraphCandidateApplySupportTest {
         task.setScopeJson("{\"entryIds\":[1]}");
         task.setSourceContentType("SANCAI_ENTRY");
         task.setSourceContentId(1L);
-        AiCandidate candidate = new AiCandidate();
-        candidate.setCandidateId(22L);
-        candidate.setResultFormat("STRUCTURED");
-        candidate.setResultPayload("{\"entities\":[{\"name\":\"黄帝\",\"entityType\":\"PERSON\",\"description\":\"始祖\"}],"
-                + "\"relations\":[{\"sourceName\":\"黄帝\",\"targetName\":\"伏羲\",\"relationType\":\"ANCESTOR\",\"evidence\":\"谱系\"}],"
-                + "\"entryRefs\":[{\"entryId\":1}]}");
+        AiCandidateFacadeDto candidate = AiCandidateFacadeDto.builder()
+                .candidateId(22L)
+                .resultFormat("STRUCTURED")
+                .resultPayload("{\"entities\":[{\"name\":\"黄帝\",\"entityType\":\"PERSON\",\"description\":\"始祖\"}],"
+                        + "\"relations\":[{\"sourceName\":\"黄帝\",\"targetName\":\"伏羲\",\"relationType\":\"ANCESTOR\",\"evidence\":\"谱系\"}],"
+                        + "\"entryRefs\":[{\"entryId\":1}]}")
+                .build();
 
         GraphVersion version = support.apply(task, candidate);
 

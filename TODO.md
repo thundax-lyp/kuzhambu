@@ -9,22 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `knowledge-ai-facade-stage1`：迁移 knowledge 图谱抽取与批任务到 AiFacade
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/pom.xml`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/graph/service/impl/KnowledgeGraphExtractionApplicationServiceImpl.java`
-    - 处理动作：先把 `AiBatchJobApplicationService` 和 `KnowledgeAiExtractionDomainService` 切到 `AiFacade`。
-    - 验收点：`knowledge-application` 删除 `kuzhambu-ai-domain` 与 `kuzhambu-ai-application` 依赖，新增 `kuzhambu-ai-facade` 依赖，且 `KnowledgeGraphExtractionApplicationServiceImpl` 不再导入 `ai.application.batch.*` 与 `ai.domain.knowledge.*`。
-    - 重要度：10/10
-
-- [ ] `knowledge-ai-facade-stage2`：迁移 knowledge 候选与调用记录读取到 AiFacade
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/graph/service/impl/KnowledgeGraphExtractionApplicationServiceImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/graph/support/KnowledgeGraphCandidateApplySupport.java`
-    - 处理动作：把 `AiInvocationRepository/AiCandidateDomainService/AiCallRecord/AiCandidate` 切到 `AiFacade` 和 facade dto。
-    - 验收点：`KnowledgeGraphExtractionApplicationServiceImpl` 与 `KnowledgeGraphCandidateApplySupport` 不再导入 `ai.domain.invocation.*`，候选与调用记录状态同步只通过 `AiFacade` 完成。
-    - 重要度：10/10
-
 - [ ] `ai-facade-test`：补齐 AiFacade provider 单测与架构测试
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-FACADE-ISOLATION.md`
@@ -36,9 +20,9 @@
 - [ ] `consumer-ai-facade-test`：收口外域 AI facade 测试替身
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/test/java/com/thundax/kuzhambu/discovery/application/search/service/impl/QueryUnderstandingApplicationServiceImplTest.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/test/java/com/thundax/kuzhambu/discovery/application/qa/service/impl/QaApplicationServiceImplTest.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/content/ClassicsContentApplicationServiceAiCandidateTest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/graph/KnowledgeGraphExtractionApplicationServiceTest.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/test/java/com/thundax/kuzhambu/operations/application/report/support/DefaultOperationsReportMetricsGatewayTest.java`
-    - 处理动作：把外域测试中的 AI 依赖替身统一切到 `AiFacade`。
-    - 验收点：上述测试文件全部只 mock 或 fake `AiFacade`，不再 mock `ai-application` 或 `ai-domain` 类型；如 `DefaultOperationsReportMetricsGatewayTest.java` 不存在则新增。
+    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/test/java/com/thundax/kuzhambu/discovery/application/search/service/impl/QueryUnderstandingApplicationServiceImplTest.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/test/java/com/thundax/kuzhambu/discovery/application/qa/service/impl/QaApplicationServiceImplTest.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/content/ClassicsContentApplicationServiceAiCandidateTest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/pom.xml`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/graph/KnowledgeGraphExtractionApplicationServiceTest.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/test/java/com/thundax/kuzhambu/operations/application/report/support/DefaultOperationsReportMetricsGatewayTest.java`
+    - 处理动作：把外域测试中的 AI 依赖替身统一切到 `AiFacade`，并删除仅为测试保留的 `ai-domain/ai-application` test scope 依赖。
+    - 验收点：上述测试文件全部只 mock 或 fake `AiFacade`，不再 mock `ai-application` 或 `ai-domain` 类型；`kuzhambu-knowledge-application/pom.xml` 删除 `ai-domain/ai-application` 的 test scope 依赖；如 `DefaultOperationsReportMetricsGatewayTest.java` 不存在则新增。
     - 重要度：8/10
 
 - [ ] `ai-facade-allowlist`：收缩 ai 相关架构 allowlist 并按需同步治理文档

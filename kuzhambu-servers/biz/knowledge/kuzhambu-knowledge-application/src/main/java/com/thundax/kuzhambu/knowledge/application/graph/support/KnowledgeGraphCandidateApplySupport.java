@@ -3,7 +3,7 @@ package com.thundax.kuzhambu.knowledge.application.graph.support;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
+import com.thundax.kuzhambu.ai.facade.dto.AiCandidateFacadeDto;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphVersion;
@@ -59,7 +59,7 @@ public class KnowledgeGraphCandidateApplySupport {
         this.objectMapper = new ObjectMapper().findAndRegisterModules();
     }
 
-    public GraphVersion apply(GraphExtractionTask task, AiCandidate candidate) {
+    public GraphVersion apply(GraphExtractionTask task, AiCandidateFacadeDto candidate) {
         if (task == null || task.getTaskId() == null || candidate == null || candidate.getCandidateId() == null) {
             throw new BizException("Knowledge graph apply target is incomplete");
         }
@@ -81,7 +81,7 @@ public class KnowledgeGraphCandidateApplySupport {
         return version;
     }
 
-    private GraphVersion ensureVersion(GraphExtractionTask task, AiCandidate candidate, Date appliedAt) {
+    private GraphVersion ensureVersion(GraphExtractionTask task, AiCandidateFacadeDto candidate, Date appliedAt) {
         GraphVersion existing = graphVersionRepository.getByTaskCandidate(task.getTaskId(), candidate.getCandidateId());
         if (existing != null) {
             return existing;
