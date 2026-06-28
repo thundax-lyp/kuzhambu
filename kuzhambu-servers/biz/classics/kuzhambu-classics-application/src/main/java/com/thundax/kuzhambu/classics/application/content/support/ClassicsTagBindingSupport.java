@@ -11,21 +11,20 @@ import com.thundax.kuzhambu.classics.domain.content.repository.ClassicsContentRe
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
-import com.thundax.kuzhambu.knowledge.domain.service.KnowledgeTagBindingDomainService;
-import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.Tag;
-import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.ContentType;
-import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.TagSource;
-import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.valueobject.TagId;
+import com.thundax.kuzhambu.knowledge.facade.KnowledgeFacade;
+import com.thundax.kuzhambu.knowledge.facade.request.KnowledgeContentTagRefFacadeRequest;
+import com.thundax.kuzhambu.knowledge.facade.request.KnowledgeRemoveContentTagRefFacadeRequest;
+import com.thundax.kuzhambu.knowledge.facade.request.KnowledgeResolveTagFacadeRequest;
+import com.thundax.kuzhambu.knowledge.facade.response.KnowledgeTagFacadeResponse;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ClassicsTagBindingSupport {
-    private final KnowledgeTagBindingDomainService knowledgeTagBindingDomainService;
+    private final KnowledgeFacade knowledgeFacade;
     private final ClassicsContentRepository repository;
 
-    public ClassicsTagBindingSupport(
-            KnowledgeTagBindingDomainService knowledgeTagBindingDomainService, ClassicsContentRepository repository) {
-        this.knowledgeTagBindingDomainService = knowledgeTagBindingDomainService;
+    public ClassicsTagBindingSupport(KnowledgeFacade knowledgeFacade, ClassicsContentRepository repository) {
+        this.knowledgeFacade = knowledgeFacade;
         this.repository = repository;
     }
 
@@ -39,13 +38,13 @@ public class ClassicsTagBindingSupport {
 
     private ClassicsContentTag bindTag(ContentTagCommand command, Integer priority, boolean aiTag) {
         ClassicsContentTag tag = command.toEntity();
-        Tag knowledgeTag = aiTag
-                ? knowledgeTagBindingDomainService.resolveOrCreateAiTag(command.getTagNameSnapshot())
-                : knowledgeTagBindingDomainService.resolveOrCreateManualTag(command.getTagNameSnapshot());
-        tag.setTagId(KnowledgeTagId.ofNullable(
-                knowledgeTag == null || knowledgeTag.getTagId() == null
-                        ? null
-                        : knowledgeTag.getTagId().value()));
+        KnowledgeResolveTagFacadeRequest request = KnowledgeResolveTagFacadeRequest.builder()
+                .tagName(command.getTagNameSnapshot())
+                .build();
+        KnowledgeTagFacadeResponse knowledgeTag = aiTag
+                ? knowledgeFacade.resolveOrCreateAiTag(request)
+                : knowledgeFacade.resolveOrCreateManualTag(request);
+        tag.setTagId(KnowledgeTagId.ofNullable(knowledgeTag == null ? null : knowledgeTag.getTagId()));
         if (priority != null) {
             tag.setPriority(priority);
         }
@@ -56,22 +55,24 @@ public class ClassicsTagBindingSupport {
         if (tag == null || tag.getTagId() == null || tag.getContentType() == null || tag.getContentId() == null) {
             return;
         }
-        knowledgeTagBindingDomainService.syncContentTagRef(
-                TagId.of(tag.getTagId().value()),
-                ContentType.from(tag.getContentType().value()),
-                tag.getContentId().value(),
-                resolveContentTitle(tag.getContentType(), tag.getContentId()),
-                toKnowledgeSource(tag.getSource()));
+        knowledgeFacade.syncContentTagRef(KnowledgeContentTagRefFacadeRequest.builder()
+                .tagId(tag.getTagId().value())
+                .contentType(toKnowledgeContentType(tag.getContentType()))
+                .contentId(tag.getContentId().value())
+                .contentTitle(resolveContentTitle(tag.getContentType(), tag.getContentId()))
+                .tagSource(toKnowledgeSource(tag.getSource()))
+                .build());
     }
 
     public void removeTagRef(ClassicsContentTag tag) {
         if (tag == null || tag.getTagId() == null || tag.getContentType() == null || tag.getContentId() == null) {
             return;
         }
-        knowledgeTagBindingDomainService.removeContentTagRef(
-                TagId.of(tag.getTagId().value()),
-                ContentType.from(tag.getContentType().value()),
-                tag.getContentId().value());
+        knowledgeFacade.removeContentTagRef(KnowledgeRemoveContentTagRefFacadeRequest.builder()
+                .tagId(tag.getTagId().value())
+                .contentType(toKnowledgeContentType(tag.getContentType()))
+                .contentId(tag.getContentId().value())
+                .build());
     }
 
     private String resolveContentTitle(ClassicsContentType contentType, ClassicsContentId contentId) {
@@ -82,8 +83,12 @@ public class ClassicsTagBindingSupport {
         };
     }
 
-    private TagSource toKnowledgeSource(ClassicsContentSource source) {
-        return source == ClassicsContentSource.AI ? TagSource.AI_EXTRACTED : TagSource.MANUAL;
+    private String toKnowledgeContentType(ClassicsContentType contentType) {
+        return contentType == ClassicsContentType.MING_CUSTOMS ? "MING_CUSTOM" : contentType.value();
+    }
+
+    private String toKnowledgeSource(ClassicsContentSource source) {
+        return source == ClassicsContentSource.AI ? "AI_EXTRACTED" : "MANUAL";
     }
 
     private String titleOf(Versionable content) {

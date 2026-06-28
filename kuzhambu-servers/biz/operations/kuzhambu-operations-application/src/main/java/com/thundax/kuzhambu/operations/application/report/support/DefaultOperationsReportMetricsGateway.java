@@ -4,7 +4,8 @@ import com.thundax.kuzhambu.ai.facade.AiFacade;
 import com.thundax.kuzhambu.ai.facade.request.AiReportSummaryFacadeRequest;
 import com.thundax.kuzhambu.classics.application.report.service.ClassicsReportApplicationService;
 import com.thundax.kuzhambu.discovery.application.report.service.DiscoveryReportApplicationService;
-import com.thundax.kuzhambu.knowledge.application.report.service.KnowledgeReportApplicationService;
+import com.thundax.kuzhambu.knowledge.facade.KnowledgeFacade;
+import com.thundax.kuzhambu.knowledge.facade.request.KnowledgeSummaryFacadeRequest;
 import com.thundax.kuzhambu.operations.application.report.support.OperationsReportSupportModels.OperationsReportSection;
 import com.thundax.kuzhambu.operations.domain.report.model.entity.ReportRecord;
 import java.util.ArrayList;
@@ -20,17 +21,17 @@ public class DefaultOperationsReportMetricsGateway implements OperationsReportMe
     private final ClassicsReportApplicationService classicsReportApplicationService;
     private final AiFacade aiFacade;
     private final DiscoveryReportApplicationService discoveryReportApplicationService;
-    private final KnowledgeReportApplicationService knowledgeReportApplicationService;
+    private final KnowledgeFacade knowledgeFacade;
 
     public DefaultOperationsReportMetricsGateway(
             ClassicsReportApplicationService classicsReportApplicationService,
             AiFacade aiFacade,
             DiscoveryReportApplicationService discoveryReportApplicationService,
-            KnowledgeReportApplicationService knowledgeReportApplicationService) {
+            KnowledgeFacade knowledgeFacade) {
         this.classicsReportApplicationService = classicsReportApplicationService;
         this.aiFacade = aiFacade;
         this.discoveryReportApplicationService = discoveryReportApplicationService;
-        this.knowledgeReportApplicationService = knowledgeReportApplicationService;
+        this.knowledgeFacade = knowledgeFacade;
     }
 
     @Override
@@ -59,7 +60,11 @@ public class DefaultOperationsReportMetricsGateway implements OperationsReportMe
         sections.add(section(
                 "knowledgeSummary",
                 "Knowledge 统计摘要",
-                knowledgeReportApplicationService.summary(record.getPeriodStart(), record.getPeriodEnd(), bucketType)));
+                knowledgeFacade.summary(KnowledgeSummaryFacadeRequest.builder()
+                        .periodStart(record.getPeriodStart())
+                        .periodEnd(record.getPeriodEnd())
+                        .bucketType(bucketType)
+                        .build())));
         return sections;
     }
 

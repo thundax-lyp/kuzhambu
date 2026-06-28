@@ -1,9 +1,10 @@
 package com.thundax.kuzhambu.discovery.application.search.support;
 
 import com.thundax.kuzhambu.discovery.application.search.result.QueryUnderstandingResult;
-import com.thundax.kuzhambu.knowledge.application.taxonomy.result.DiscoveryEntityHintResult;
-import com.thundax.kuzhambu.knowledge.application.taxonomy.result.DiscoveryTagHintResult;
-import com.thundax.kuzhambu.knowledge.application.taxonomy.service.KnowledgeTaxonomyReadApplicationService;
+import com.thundax.kuzhambu.knowledge.facade.KnowledgeFacade;
+import com.thundax.kuzhambu.knowledge.facade.dto.KnowledgeEntityHintFacadeDto;
+import com.thundax.kuzhambu.knowledge.facade.request.KnowledgeDiscoveryTermFacadeRequest;
+import com.thundax.kuzhambu.knowledge.facade.response.KnowledgeTagHintFacadeResponse;
 import java.util.Collections;
 import java.util.List;
 import org.springframework.stereotype.Component;
@@ -11,18 +12,20 @@ import org.springframework.stereotype.Component;
 @Component
 public class DiscoveryKnowledgeEnhancementProvider {
 
-    private final KnowledgeTaxonomyReadApplicationService knowledgeTaxonomyReadApplicationService;
+    private final KnowledgeFacade knowledgeFacade;
 
-    public DiscoveryKnowledgeEnhancementProvider(
-            KnowledgeTaxonomyReadApplicationService knowledgeTaxonomyReadApplicationService) {
-        this.knowledgeTaxonomyReadApplicationService = knowledgeTaxonomyReadApplicationService;
+    public DiscoveryKnowledgeEnhancementProvider(KnowledgeFacade knowledgeFacade) {
+        this.knowledgeFacade = knowledgeFacade;
     }
 
     public KnowledgeEnhancementResult enhance(String term) {
-        var synonymExpandResult = knowledgeTaxonomyReadApplicationService.expandSynonyms(term);
-        DiscoveryTagHintResult tagHintResult = knowledgeTaxonomyReadApplicationService.getTagHint(term);
+        KnowledgeDiscoveryTermFacadeRequest request =
+                KnowledgeDiscoveryTermFacadeRequest.builder().term(term).build();
+        var synonymExpandResult = knowledgeFacade.expandSynonyms(request);
+        KnowledgeTagHintFacadeResponse tagHintResult = knowledgeFacade.getTagHint(request);
+        var entityHintsResponse = knowledgeFacade.listEntityHints(request);
         List<QueryUnderstandingResult.RecognizedEntityResult> recognizedEntities =
-                mapRecognizedEntities(knowledgeTaxonomyReadApplicationService.listEntityHints(term));
+                mapRecognizedEntities(entityHintsResponse == null ? null : entityHintsResponse.getEntityHints());
         List<String> expandedSynonyms = synonymExpandResult == null || synonymExpandResult.getExpandedTerms() == null
                 ? Collections.emptyList()
                 : synonymExpandResult.getExpandedTerms();
@@ -30,7 +33,7 @@ public class DiscoveryKnowledgeEnhancementProvider {
     }
 
     private List<QueryUnderstandingResult.RecognizedEntityResult> mapRecognizedEntities(
-            List<DiscoveryEntityHintResult> entityHints) {
+            List<KnowledgeEntityHintFacadeDto> entityHints) {
         if (entityHints == null || entityHints.isEmpty()) {
             return Collections.emptyList();
         }
@@ -42,6 +45,6 @@ public class DiscoveryKnowledgeEnhancementProvider {
 
     public record KnowledgeEnhancementResult(
             List<String> expandedSynonyms,
-            DiscoveryTagHintResult tagHint,
+            KnowledgeTagHintFacadeResponse tagHint,
             List<QueryUnderstandingResult.RecognizedEntityResult> recognizedEntities) {}
 }
