@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `operations-ai-facade`：迁移 operations 报表指标读取到 AiFacade
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-application/pom.xml`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/report/support/DefaultOperationsReportMetricsGateway.java`
-    - 处理动作：把 `operations-application` 从 `AiReportApplicationService` 切到 `AiFacade.summary(...)`。
-    - 验收点：`operations-application` 删除 `kuzhambu-ai-application` 依赖，新增 `kuzhambu-ai-facade` 依赖，生产代码不再导入 `ai.application.report.*`。
-    - 重要度：8/10
-
 - [ ] `discovery-ai-facade`：迁移 discovery 查询理解与问答到 AiFacade
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-FACADE-ISOLATION.md`
