@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `ai-application/facade-entry`：接入 ai-facade 模块并建立 facade 实现骨架
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-application/pom.xml`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/facade/impl/AiFacadeImpl.java`
-    - 处理动作：让 `ai-application` 依赖 `ai-facade` 并新增 `AiFacadeImpl` 骨架。
-    - 验收点：`ai-application` 可以编译通过 `AiFacadeImpl`，且不把 facade 实现放错到 `domain/interface/infra` 包。
-    - 重要度：10/10
-
 - [ ] `ai-application/report-batch-bridge`：把报表摘要与批任务能力接入 AiFacade
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-FACADE-ISOLATION.md`
