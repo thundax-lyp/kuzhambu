@@ -9,18 +9,10 @@
 
 ## 当前任务项
 
-- [ ] `knowledge-facade-discovery-contract`：定义 discovery taxonomy facade 协议
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-facade/src/main/java/com/thundax/kuzhambu/knowledge/facade/KnowledgeFacade.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-facade/src/main/java/com/thundax/kuzhambu/knowledge/facade/request/KnowledgeDiscoveryTermFacadeRequest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-facade/src/main/java/com/thundax/kuzhambu/knowledge/facade/response/KnowledgeSynonymExpandFacadeResponse.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-facade/src/main/java/com/thundax/kuzhambu/knowledge/facade/response/KnowledgeTagHintFacadeResponse.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-facade/src/main/java/com/thundax/kuzhambu/knowledge/facade/dto/KnowledgeEntityHintFacadeDto.java`
-    - 处理动作：定义 `expandSynonyms(...)`、`getTagHint(...)`、`listEntityHints(...)` 协议
-    - 验收点：discovery facade 协议已明确 `term`、`normalizedTerm`、`expandedTerms`、`matchedTagName`、`matchedAliasName`、`contentRefCount`、`entityName`、`entityType` 字段
-    - 重要度：9/10
-
 - [ ] `knowledge-facade-discovery-provider`：落 discovery taxonomy provider 映射
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-facade/src/main/java/com/thundax/kuzhambu/knowledge/facade/response/KnowledgeEntityHintsFacadeResponse.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/facade/impl/KnowledgeFacadeImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/facade/assembler/KnowledgeFacadeAssembler.java`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/facade/impl/KnowledgeFacadeImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/facade/assembler/KnowledgeFacadeAssembler.java`
     - 处理动作：实现 discovery 场景的 synonym、tag hint、entity hints provider 映射
     - 验收点：`KnowledgeFacadeImpl` 已返回 facade response，`KnowledgeEntityHintsFacadeResponse.entityHints` 已完成组装
     - 重要度：9/10
