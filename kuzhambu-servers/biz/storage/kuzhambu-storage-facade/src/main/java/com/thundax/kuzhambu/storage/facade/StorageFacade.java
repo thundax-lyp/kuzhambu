@@ -1,26 +1,33 @@
 package com.thundax.kuzhambu.storage.facade;
 
-import com.thundax.kuzhambu.storage.facade.request.BindStorageObjectOwnerFacadeRequest;
-import com.thundax.kuzhambu.storage.facade.request.GetReadableContentFacadeRequest;
-import com.thundax.kuzhambu.storage.facade.request.MarkStorageObjectUsageFacadeRequest;
-import com.thundax.kuzhambu.storage.facade.request.UnbindStorageObjectOwnerFacadeRequest;
-import com.thundax.kuzhambu.storage.facade.request.UploadStorageObjectFacadeRequest;
-import com.thundax.kuzhambu.storage.facade.response.GetReadableContentFacadeResponse;
-import com.thundax.kuzhambu.storage.facade.response.UploadStorageObjectFacadeResponse;
+import com.thundax.kuzhambu.storage.facade.request.BindStorageOwnerFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.ListStorageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.MarkStorageUsageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.OpenStorageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.RemoveStorageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.UnbindStorageOwnerFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.UploadStorageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.response.ListStorageFacadeResponse;
+import com.thundax.kuzhambu.storage.facade.response.OpenStorageFacadeResponse;
+import com.thundax.kuzhambu.storage.facade.response.UploadStorageFacadeResponse;
 
 public interface StorageFacade {
 
-    boolean exists(GetReadableContentFacadeRequest request);
+    boolean exists(OpenStorageFacadeRequest request);
 
-    GetReadableContentFacadeResponse open(GetReadableContentFacadeRequest request);
+    OpenStorageFacadeResponse open(OpenStorageFacadeRequest request);
 
-    UploadStorageObjectFacadeResponse upload(UploadStorageObjectFacadeRequest request);
+    ListStorageFacadeResponse list(ListStorageFacadeRequest request);
 
-    void bindOwner(BindStorageObjectOwnerFacadeRequest request);
+    UploadStorageFacadeResponse upload(UploadStorageFacadeRequest request);
 
-    void unbindOwner(UnbindStorageObjectOwnerFacadeRequest request);
+    void remove(RemoveStorageFacadeRequest request);
 
-    void markInUse(MarkStorageObjectUsageFacadeRequest request);
+    void bindOwner(BindStorageOwnerFacadeRequest request);
 
-    void markUnused(MarkStorageObjectUsageFacadeRequest request);
+    void unbindOwner(UnbindStorageOwnerFacadeRequest request);
+
+    void markInUse(MarkStorageUsageFacadeRequest request);
+
+    void markUnused(MarkStorageUsageFacadeRequest request);
 }

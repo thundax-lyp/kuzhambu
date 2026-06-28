@@ -53,9 +53,9 @@ import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectRefere
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import com.thundax.kuzhambu.storage.facade.StorageFacade;
-import com.thundax.kuzhambu.storage.facade.dto.ReadableStoredObjectFacadeDto;
-import com.thundax.kuzhambu.storage.facade.request.GetReadableContentFacadeRequest;
-import com.thundax.kuzhambu.storage.facade.response.GetReadableContentFacadeResponse;
+import com.thundax.kuzhambu.storage.facade.dto.StorageObjectFacadeDto;
+import com.thundax.kuzhambu.storage.facade.request.OpenStorageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.response.OpenStorageFacadeResponse;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -199,7 +199,7 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
         if (matchedTarget == null) {
             throw shareContentNotFound();
         }
-        GetReadableContentFacadeRequest request = GetReadableContentFacadeRequest.builder()
+        OpenStorageFacadeRequest request = OpenStorageFacadeRequest.builder()
                 .storageObjectId(storageObjectId)
                 .build();
         if (!storageFacade.exists(request)) {
@@ -224,14 +224,14 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
         return link.getExpiresAt() == null || link.getExpiresAt().after(new Date());
     }
 
-    private static StoredObjectContent toStoredObjectContent(GetReadableContentFacadeResponse response) {
+    private static StoredObjectContent toStoredObjectContent(OpenStorageFacadeResponse response) {
         if (response == null || response.getInputStream() == null) {
             return null;
         }
         return new StoredObjectContent(toStoredObject(response.getStoredObject()), response.getInputStream());
     }
 
-    private static StoredObject toStoredObject(ReadableStoredObjectFacadeDto storedObject) {
+    private static StoredObject toStoredObject(StorageObjectFacadeDto storedObject) {
         if (storedObject == null) {
             return null;
         }

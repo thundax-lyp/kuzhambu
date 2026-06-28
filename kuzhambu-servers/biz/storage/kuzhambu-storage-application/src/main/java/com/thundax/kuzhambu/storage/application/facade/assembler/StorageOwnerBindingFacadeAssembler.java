@@ -7,9 +7,9 @@ import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObjectRefer
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
-import com.thundax.kuzhambu.storage.facade.request.BindStorageObjectOwnerFacadeRequest;
-import com.thundax.kuzhambu.storage.facade.request.MarkStorageObjectUsageFacadeRequest;
-import com.thundax.kuzhambu.storage.facade.request.UnbindStorageObjectOwnerFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.BindStorageOwnerFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.MarkStorageUsageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.UnbindStorageOwnerFacadeRequest;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class StorageOwnerBindingFacadeAssembler {
 
-    public AddStorageReferencesCommand toAddReferencesCommand(BindStorageObjectOwnerFacadeRequest request) {
+    public AddStorageReferencesCommand toAddReferencesCommand(BindStorageOwnerFacadeRequest request) {
         if (request == null) {
             return null;
         }
@@ -37,7 +37,7 @@ public class StorageOwnerBindingFacadeAssembler {
         return new AddStorageReferencesCommand(references);
     }
 
-    public RemoveStorageReferencesCommand toRemoveReferencesCommand(UnbindStorageObjectOwnerFacadeRequest request) {
+    public RemoveStorageReferencesCommand toRemoveReferencesCommand(UnbindStorageOwnerFacadeRequest request) {
         if (request == null) {
             return null;
         }
@@ -46,7 +46,7 @@ public class StorageOwnerBindingFacadeAssembler {
                 request.getOwnerId());
     }
 
-    public ChangeStorageReferenceStatusCommand toReferencedCommand(MarkStorageObjectUsageFacadeRequest request) {
+    public ChangeStorageReferenceStatusCommand toReferencedCommand(MarkStorageUsageFacadeRequest request) {
         if (request == null) {
             return null;
         }
@@ -55,7 +55,7 @@ public class StorageOwnerBindingFacadeAssembler {
                 StoredObjectReferenceStatus.REFERENCED);
     }
 
-    public ChangeStorageReferenceStatusCommand toUnreferencedCommand(MarkStorageObjectUsageFacadeRequest request) {
+    public ChangeStorageReferenceStatusCommand toUnreferencedCommand(MarkStorageUsageFacadeRequest request) {
         if (request == null) {
             return null;
         }

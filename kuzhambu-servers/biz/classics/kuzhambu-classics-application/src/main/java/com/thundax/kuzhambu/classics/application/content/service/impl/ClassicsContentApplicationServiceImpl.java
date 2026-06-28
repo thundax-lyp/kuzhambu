@@ -63,9 +63,9 @@ import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.facade.StorageFacade;
-import com.thundax.kuzhambu.storage.facade.request.BindStorageObjectOwnerFacadeRequest;
-import com.thundax.kuzhambu.storage.facade.request.UploadStorageObjectFacadeRequest;
-import com.thundax.kuzhambu.storage.facade.response.UploadStorageObjectFacadeResponse;
+import com.thundax.kuzhambu.storage.facade.request.BindStorageOwnerFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.UploadStorageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.response.UploadStorageFacadeResponse;
 import java.io.ByteArrayInputStream;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -769,7 +769,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                 repository.markExportJobFailed(jobId);
                 return new ClassicsExportJobResult(jobId, ClassicsExportStatus.FAILED, null);
             }
-            UploadStorageObjectFacadeResponse uploadResponse = saveRenderArtifact(jobId, response);
+            UploadStorageFacadeResponse uploadResponse = saveRenderArtifact(jobId, response);
             if (uploadResponse == null || uploadResponse.getStorageObjectId() == null) {
                 repository.markExportJobFailed(jobId);
                 return new ClassicsExportJobResult(jobId, ClassicsExportStatus.FAILED, null);
@@ -952,13 +952,13 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         return defaultPayload;
     }
 
-    private UploadStorageObjectFacadeResponse saveRenderArtifact(
+    private UploadStorageFacadeResponse saveRenderArtifact(
             ClassicsContentExportJobId jobId, WorkerRenderDtos.WorkerRenderResponse response) throws Exception {
         WorkerRenderDtos.Artifact artifact = response.getArtifact();
         byte[] content = artifactContent(artifact);
         return storageFacade == null
                 ? null
-                : storageFacade.upload(UploadStorageObjectFacadeRequest.builder()
+                : storageFacade.upload(UploadStorageFacadeRequest.builder()
                         .inputStream(new ByteArrayInputStream(content))
                         .originalFilename(filenameHint(artifact.getFilename(), response))
                         .contentType(artifact.getContentType())
@@ -981,7 +981,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         if (storageFacade == null || storageObjectId == null) {
             return;
         }
-        storageFacade.bindOwner(BindStorageObjectOwnerFacadeRequest.builder()
+        storageFacade.bindOwner(BindStorageOwnerFacadeRequest.builder()
                 .storageObjectIds(List.of(storageObjectId))
                 .ownerId(SYSTEM_OWNER_ID)
                 .ownerType(StorageOwnerType.USER.value())
@@ -989,7 +989,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                 .build());
     }
 
-    private StorageObjectId toStorageObjectId(UploadStorageObjectFacadeResponse uploadResponse) {
+    private StorageObjectId toStorageObjectId(UploadStorageFacadeResponse uploadResponse) {
         return uploadResponse == null || uploadResponse.getStorageObjectId() == null
                 ? null
                 : StorageObjectId.of(uploadResponse.getStorageObjectId());

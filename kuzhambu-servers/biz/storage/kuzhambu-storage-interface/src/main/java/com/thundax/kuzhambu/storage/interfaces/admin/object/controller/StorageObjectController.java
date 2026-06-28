@@ -155,7 +155,10 @@ public class StorageObjectController {
                     file == null ? 0L : file.getSize(),
                     ALLOWED_UPLOAD_SUFFIXES,
                     ownerTypeFrom(ownerType),
-                    StringUtils.trimToNull(ownerId)));
+                    StringUtils.trimToNull(ownerId),
+                    null,
+                    null,
+                    null));
             if (result.hasError()) {
                 throw AdminResponseExceptions.invalidParameter(result.getError());
             }

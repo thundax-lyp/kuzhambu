@@ -13,13 +13,16 @@ import com.thundax.kuzhambu.operations.domain.report.model.enums.ReportStatus;
 import com.thundax.kuzhambu.operations.domain.report.model.valueobject.ReportId;
 import com.thundax.kuzhambu.operations.domain.report.repository.ReportRepository;
 import com.thundax.kuzhambu.storage.facade.StorageFacade;
-import com.thundax.kuzhambu.storage.facade.request.BindStorageObjectOwnerFacadeRequest;
-import com.thundax.kuzhambu.storage.facade.request.GetReadableContentFacadeRequest;
-import com.thundax.kuzhambu.storage.facade.request.MarkStorageObjectUsageFacadeRequest;
-import com.thundax.kuzhambu.storage.facade.request.UnbindStorageObjectOwnerFacadeRequest;
-import com.thundax.kuzhambu.storage.facade.request.UploadStorageObjectFacadeRequest;
-import com.thundax.kuzhambu.storage.facade.response.GetReadableContentFacadeResponse;
-import com.thundax.kuzhambu.storage.facade.response.UploadStorageObjectFacadeResponse;
+import com.thundax.kuzhambu.storage.facade.request.BindStorageOwnerFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.ListStorageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.MarkStorageUsageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.OpenStorageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.RemoveStorageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.UnbindStorageOwnerFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.UploadStorageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.response.ListStorageFacadeResponse;
+import com.thundax.kuzhambu.storage.facade.response.OpenStorageFacadeResponse;
+import com.thundax.kuzhambu.storage.facade.response.UploadStorageFacadeResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -157,22 +160,27 @@ class DefaultOperationsReportTaskExecutorTest {
     }
 
     private static final class RecordingArtifactStorage implements StorageFacade {
-        private UploadStorageObjectFacadeRequest lastCommand;
+        private UploadStorageFacadeRequest lastCommand;
 
         @Override
-        public boolean exists(GetReadableContentFacadeRequest request) {
+        public boolean exists(OpenStorageFacadeRequest request) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public GetReadableContentFacadeResponse open(GetReadableContentFacadeRequest request) {
+        public OpenStorageFacadeResponse open(OpenStorageFacadeRequest request) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public UploadStorageObjectFacadeResponse upload(UploadStorageObjectFacadeRequest command) {
+        public ListStorageFacadeResponse list(ListStorageFacadeRequest request) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public UploadStorageFacadeResponse upload(UploadStorageFacadeRequest command) {
             this.lastCommand = command;
-            return UploadStorageObjectFacadeResponse.builder()
+            return UploadStorageFacadeResponse.builder()
                     .storageObjectId(3001L)
                     .originalFilename(command.getOriginalFilename())
                     .contentType(command.getContentType())
@@ -181,16 +189,19 @@ class DefaultOperationsReportTaskExecutorTest {
         }
 
         @Override
-        public void bindOwner(BindStorageObjectOwnerFacadeRequest request) {}
+        public void remove(RemoveStorageFacadeRequest request) {}
 
         @Override
-        public void unbindOwner(UnbindStorageObjectOwnerFacadeRequest request) {}
+        public void bindOwner(BindStorageOwnerFacadeRequest request) {}
 
         @Override
-        public void markInUse(MarkStorageObjectUsageFacadeRequest request) {}
+        public void unbindOwner(UnbindStorageOwnerFacadeRequest request) {}
 
         @Override
-        public void markUnused(MarkStorageObjectUsageFacadeRequest request) {}
+        public void markInUse(MarkStorageUsageFacadeRequest request) {}
+
+        @Override
+        public void markUnused(MarkStorageUsageFacadeRequest request) {}
     }
 
     private static String read(InputStream inputStream) {

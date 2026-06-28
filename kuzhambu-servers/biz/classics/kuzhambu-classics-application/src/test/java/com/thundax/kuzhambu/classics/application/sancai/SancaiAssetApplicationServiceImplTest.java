@@ -34,8 +34,8 @@ import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import com.thundax.kuzhambu.storage.facade.StorageFacade;
-import com.thundax.kuzhambu.storage.facade.request.UploadStorageObjectFacadeRequest;
-import com.thundax.kuzhambu.storage.facade.response.UploadStorageObjectFacadeResponse;
+import com.thundax.kuzhambu.storage.facade.request.UploadStorageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.response.UploadStorageFacadeResponse;
 import java.io.ByteArrayInputStream;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -78,8 +78,8 @@ class SancaiAssetApplicationServiceImplTest {
         assertEquals(StorageObjectId.of(7001L), insertCaptor.getValue().getStorageObjectId());
         assertEquals(6, insertCaptor.getValue().getPriority());
         verify(repository).updateImage(replacedImage);
-        ArgumentCaptor<UploadStorageObjectFacadeRequest> uploadCaptor =
-                ArgumentCaptor.forClass(UploadStorageObjectFacadeRequest.class);
+        ArgumentCaptor<UploadStorageFacadeRequest> uploadCaptor =
+                ArgumentCaptor.forClass(UploadStorageFacadeRequest.class);
         verify(storageFacade).upload(uploadCaptor.capture());
         assertEquals("sancai.png", uploadCaptor.getValue().getOriginalFilename());
         assertEquals("image/png", uploadCaptor.getValue().getContentType());
@@ -161,8 +161,8 @@ class SancaiAssetApplicationServiceImplTest {
 
         assertEquals(9001L, result.value());
         verify(repository).markShowcaseCompleted(showcaseId, StorageObjectId.of(7001L), 2);
-        ArgumentCaptor<UploadStorageObjectFacadeRequest> uploadCaptor =
-                ArgumentCaptor.forClass(UploadStorageObjectFacadeRequest.class);
+        ArgumentCaptor<UploadStorageFacadeRequest> uploadCaptor =
+                ArgumentCaptor.forClass(UploadStorageFacadeRequest.class);
         verify(storageFacade).upload(uploadCaptor.capture());
         assertEquals("showcase.html", uploadCaptor.getValue().getOriginalFilename());
         assertEquals("text/html; charset=utf-8", uploadCaptor.getValue().getContentType());
@@ -237,9 +237,9 @@ class SancaiAssetApplicationServiceImplTest {
         return storage;
     }
 
-    private static UploadStorageObjectFacadeResponse uploadResponse() {
+    private static UploadStorageFacadeResponse uploadResponse() {
         StoredObject storage = storage();
-        return UploadStorageObjectFacadeResponse.builder()
+        return UploadStorageFacadeResponse.builder()
                 .storageObjectId(storage.getId().value())
                 .originalFilename(storage.getOriginalFilename())
                 .contentType(storage.getContentType())
@@ -253,8 +253,8 @@ class SancaiAssetApplicationServiceImplTest {
                 .build();
     }
 
-    private static UploadStorageObjectFacadeResponse showcaseUploadResponse() {
-        return UploadStorageObjectFacadeResponse.builder()
+    private static UploadStorageFacadeResponse showcaseUploadResponse() {
+        return UploadStorageFacadeResponse.builder()
                 .storageObjectId(7001L)
                 .originalFilename("showcase.html")
                 .contentType("text/html; charset=utf-8")

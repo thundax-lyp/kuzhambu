@@ -59,9 +59,9 @@ import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.facade.StorageFacade;
-import com.thundax.kuzhambu.storage.facade.request.BindStorageObjectOwnerFacadeRequest;
-import com.thundax.kuzhambu.storage.facade.request.UploadStorageObjectFacadeRequest;
-import com.thundax.kuzhambu.storage.facade.response.UploadStorageObjectFacadeResponse;
+import com.thundax.kuzhambu.storage.facade.request.BindStorageOwnerFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.UploadStorageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.response.UploadStorageFacadeResponse;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
@@ -159,7 +159,7 @@ class ClassicsContentApplicationServiceImplTest {
         when(repository.insertExportJob(any())).thenReturn(ClassicsContentExportJobId.of(900000000001L));
         WorkerRenderDtos.WorkerRenderResponse response = renderSuccessResponse("export.zip");
         when(workerRenderClient.renderClassicsExport(any())).thenReturn(response);
-        when(storageFacade.upload(any(UploadStorageObjectFacadeRequest.class))).thenReturn(uploadResponse());
+        when(storageFacade.upload(any(UploadStorageFacadeRequest.class))).thenReturn(uploadResponse());
         ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
                 repository,
                 null,
@@ -187,15 +187,15 @@ class ClassicsContentApplicationServiceImplTest {
                         eq(0));
         verify(repository, never()).markExportJobFailed(ClassicsContentExportJobId.of(900000000001L));
         verify(workerRenderClient).renderClassicsExport(any());
-        ArgumentCaptor<UploadStorageObjectFacadeRequest> uploadCaptor =
-                ArgumentCaptor.forClass(UploadStorageObjectFacadeRequest.class);
+        ArgumentCaptor<UploadStorageFacadeRequest> uploadCaptor =
+                ArgumentCaptor.forClass(UploadStorageFacadeRequest.class);
         verify(storageFacade).upload(uploadCaptor.capture());
         assertEquals("export.zip", uploadCaptor.getValue().getOriginalFilename());
         assertEquals("application/zip", uploadCaptor.getValue().getContentType());
         assertEquals(StorageOwnerType.USER.value(), uploadCaptor.getValue().getOwnerType());
         assertEquals("system", uploadCaptor.getValue().getOwnerId());
-        ArgumentCaptor<BindStorageObjectOwnerFacadeRequest> bindOwnerCaptor =
-                ArgumentCaptor.forClass(BindStorageObjectOwnerFacadeRequest.class);
+        ArgumentCaptor<BindStorageOwnerFacadeRequest> bindOwnerCaptor =
+                ArgumentCaptor.forClass(BindStorageOwnerFacadeRequest.class);
         verify(storageFacade).bindOwner(bindOwnerCaptor.capture());
         assertEquals(List.of(7001L), bindOwnerCaptor.getValue().getStorageObjectIds());
         assertEquals("system", bindOwnerCaptor.getValue().getOwnerId());
@@ -452,10 +452,8 @@ class ClassicsContentApplicationServiceImplTest {
         return response;
     }
 
-    private static UploadStorageObjectFacadeResponse uploadResponse() {
-        return UploadStorageObjectFacadeResponse.builder()
-                .storageObjectId(7001L)
-                .build();
+    private static UploadStorageFacadeResponse uploadResponse() {
+        return UploadStorageFacadeResponse.builder().storageObjectId(7001L).build();
     }
 
     private static ClassicsContentVersion existingVersion(Long id, int versionNo, Date versionedAt) {

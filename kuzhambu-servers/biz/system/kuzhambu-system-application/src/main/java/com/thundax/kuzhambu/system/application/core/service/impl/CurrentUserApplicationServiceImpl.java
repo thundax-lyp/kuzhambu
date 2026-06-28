@@ -2,18 +2,20 @@ package com.thundax.kuzhambu.system.application.core.service.impl;
 
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
-import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
-import com.thundax.kuzhambu.storage.application.service.command.ChangeStorageCommand;
-import com.thundax.kuzhambu.storage.application.service.command.CreateStorageCommand;
-import com.thundax.kuzhambu.storage.application.service.query.StorageQuery;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
-import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectContentRepository;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import com.thundax.kuzhambu.storage.facade.StorageFacade;
-import com.thundax.kuzhambu.storage.facade.request.GetReadableContentFacadeRequest;
-import com.thundax.kuzhambu.storage.facade.response.GetReadableContentFacadeResponse;
+import com.thundax.kuzhambu.storage.facade.dto.StorageObjectFacadeDto;
+import com.thundax.kuzhambu.storage.facade.request.ListStorageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.OpenStorageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.RemoveStorageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.UploadStorageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.response.ListStorageFacadeResponse;
+import com.thundax.kuzhambu.storage.facade.response.OpenStorageFacadeResponse;
+import com.thundax.kuzhambu.storage.facade.response.UploadStorageFacadeResponse;
 import com.thundax.kuzhambu.system.application.auth.command.PrincipalCredentialCommand;
 import com.thundax.kuzhambu.system.application.auth.exception.InvalidPasswordException;
 import com.thundax.kuzhambu.system.application.auth.query.PrincipalCredentialQuery;
@@ -55,6 +57,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -71,7 +74,6 @@ public class CurrentUserApplicationServiceImpl implements CurrentUserApplication
 
     private static final int DEFAULT_PASSWORD_FAILED_LIMIT = 0;
     private static final String AVATAR_REMARKS = "avatar";
-    private static final String AVATAR_NAME = "avatar";
     private static final String AVATAR_FILENAME = "avatar.jpg";
     private static final String JPG = "jpg";
     private static final String IMAGE_JPEG = "image/jpeg";
@@ -84,9 +86,7 @@ public class CurrentUserApplicationServiceImpl implements CurrentUserApplication
     private final MenuApplicationService menuService;
     private final PrincipalIdentityApplicationService principalIdentityService;
     private final PrincipalCredentialApplicationService principalCredentialService;
-    private final StorageApplicationService storageApplicationService;
     private final StorageFacade storageFacade;
-    private final StoredObjectContentRepository storedObjectContentRepository;
 
     public CurrentUserApplicationServiceImpl(
             UserApplicationService userService,
@@ -94,17 +94,13 @@ public class CurrentUserApplicationServiceImpl implements CurrentUserApplication
             MenuApplicationService menuService,
             PrincipalIdentityApplicationService principalIdentityService,
             PrincipalCredentialApplicationService principalCredentialService,
-            StorageApplicationService storageApplicationService,
-            StorageFacade storageFacade,
-            StoredObjectContentRepository storedObjectContentRepository) {
+            StorageFacade storageFacade) {
         this.userService = userService;
         this.roleService = roleService;
         this.menuService = menuService;
         this.principalIdentityService = principalIdentityService;
         this.principalCredentialService = principalCredentialService;
-        this.storageApplicationService = storageApplicationService;
         this.storageFacade = storageFacade;
-        this.storedObjectContentRepository = storedObjectContentRepository;
     }
 
     @Override
@@ -159,15 +155,18 @@ public class CurrentUserApplicationServiceImpl implements CurrentUserApplication
         removeAvatar(command.getUserId());
 
         byte[] avatarBytes = readAvatarBytes(command.getInputStream());
-        StoredObject storage = toAvatarStorage(command.getUserId(), command.getOriginalFilename());
-        try {
-            applyStoredObject(
-                    storage, storedObjectContentRepository.save(storage, new ByteArrayInputStream(avatarBytes)));
-        } catch (IOException e) {
-            throw storageFailure(e.getMessage());
-        }
-        storage.setId(storageApplicationService.create(toCreateStorageCommand(storage)));
-        return storage;
+        UploadStorageFacadeResponse uploaded = storageFacade.upload(UploadStorageFacadeRequest.builder()
+                .inputStream(new ByteArrayInputStream(avatarBytes))
+                .originalFilename(originalFilename(command.getOriginalFilename()))
+                .contentType(IMAGE_JPEG)
+                .sizeBytes((long) avatarBytes.length)
+                .ownerType(StorageOwnerType.USER.value())
+                .ownerId(String.valueOf(command.getUserId().value()))
+                .objectStatus(StoredObjectStatus.ACTIVE.value())
+                .referenceStatus(StoredObjectReferenceStatus.UNREFERENCED.value())
+                .remarks(AVATAR_REMARKS)
+                .build());
+        return toStoredObject(uploaded);
     }
 
     @Override
@@ -191,25 +190,18 @@ public class CurrentUserApplicationServiceImpl implements CurrentUserApplication
         if (avatar == null || storageFacade == null) {
             return null;
         }
-        GetReadableContentFacadeRequest request = GetReadableContentFacadeRequest.builder()
-                .storageObjectId(avatar.getId() == null ? null : avatar.getId().value())
-                .ownerId(avatar.getOwnerId())
-                .ownerType(
-                        avatar.getOwnerType() == null
-                                ? null
-                                : avatar.getOwnerType().value())
-                .build();
+        OpenStorageFacadeRequest request = toReadableContentRequest(avatar);
         if (!storageFacade.exists(request)) {
             return null;
         }
-        GetReadableContentFacadeResponse content = storageFacade.open(request);
+        OpenStorageFacadeResponse content = storageFacade.open(request);
         return content == null ? null : content.getInputStream();
     }
 
     @Override
     public boolean existsAvatar(UserId userId) {
         StoredObject avatar = getAvatar(userId);
-        return avatar != null && storedObjectContentRepository.exists(avatar);
+        return avatar != null && storageFacade.exists(toReadableContentRequest(avatar));
     }
 
     @Override
@@ -258,17 +250,27 @@ public class CurrentUserApplicationServiceImpl implements CurrentUserApplication
     }
 
     private List<StoredObject> listAvatars(UserId userId) {
-        StorageQuery query = new StorageQuery();
-        query.setOwnerType(StorageOwnerType.USER);
-        query.setOwnerId(userId == null ? null : String.valueOf(userId.value()));
-        query.setObjectStatus(StoredObjectStatus.ACTIVE);
-        query.setRemarks(AVATAR_REMARKS);
-        return storageApplicationService.list(query);
+        if (userId == null) {
+            return Collections.emptyList();
+        }
+        ListStorageFacadeResponse response = storageFacade.list(ListStorageFacadeRequest.builder()
+                .ownerType(StorageOwnerType.USER.value())
+                .ownerId(String.valueOf(userId.value()))
+                .objectStatus(StoredObjectStatus.ACTIVE.value())
+                .remarks(AVATAR_REMARKS)
+                .build());
+        if (response == null || response.getStoredObjects() == null) {
+            return Collections.emptyList();
+        }
+        return response.getStoredObjects().stream().map(this::toStoredObject).collect(Collectors.toList());
     }
 
     private void removeAvatar(UserId userId) {
         for (StoredObject storage : listAvatars(userId)) {
-            storageApplicationService.remove(storage.getId());
+            storageFacade.remove(RemoveStorageFacadeRequest.builder()
+                    .storageObjectId(
+                            storage.getId() == null ? null : storage.getId().value())
+                    .build());
         }
     }
 
@@ -362,21 +364,6 @@ public class CurrentUserApplicationServiceImpl implements CurrentUserApplication
         }
     }
 
-    private StoredObject toAvatarStorage(UserId userId, String originalFilename) {
-        StoredObject storage = new StoredObject();
-        storage.setOriginalFilename(originalFilename(originalFilename));
-        storage.setContentType(IMAGE_JPEG);
-        storage.setName(AVATAR_NAME);
-        storage.setExtendName(JPG);
-        storage.setMimeType(IMAGE_JPEG);
-        storage.setOwnerId(String.valueOf(userId.value()));
-        storage.setOwnerType(StorageOwnerType.USER);
-        storage.setObjectStatus(StoredObjectStatus.ACTIVE);
-        storage.setReferenceStatus(StoredObjectReferenceStatus.UNREFERENCED);
-        storage.setRemarks(AVATAR_REMARKS);
-        return storage;
-    }
-
     private String originalFilename(String originalFilename) {
         if (StringUtils.isBlank(FilenameUtils.getExtension(originalFilename))) {
             return AVATAR_FILENAME;
@@ -384,50 +371,67 @@ public class CurrentUserApplicationServiceImpl implements CurrentUserApplication
         return originalFilename;
     }
 
-    private void applyStoredObject(StoredObject storage, StoredObject storedObject) {
-        storage.setBucketName(storedObject.getBucketName());
-        storage.setObjectKey(storedObject.getObjectKey());
-        storage.setSize(storedObject.getSize());
-        storage.setAccessEndpoint(storedObject.getAccessEndpoint());
+    private OpenStorageFacadeRequest toReadableContentRequest(StoredObject avatar) {
+        if (avatar == null) {
+            return null;
+        }
+        return OpenStorageFacadeRequest.builder()
+                .storageObjectId(avatar.getId() == null ? null : avatar.getId().value())
+                .ownerId(avatar.getOwnerId())
+                .ownerType(
+                        avatar.getOwnerType() == null
+                                ? null
+                                : avatar.getOwnerType().value())
+                .build();
     }
 
-    private CreateStorageCommand toCreateStorageCommand(StoredObject storage) {
-        CreateStorageCommand command = new CreateStorageCommand();
-        command.setOriginalFilename(storage.getOriginalFilename());
-        command.setContentType(storage.getContentType());
-        command.setName(storage.getName());
-        command.setExtendName(storage.getExtendName());
-        command.setMimeType(storage.getMimeType());
-        command.setOwnerId(storage.getOwnerId());
-        command.setOwnerType(storage.getOwnerType());
-        command.setBucketName(storage.getBucketName());
-        command.setObjectKey(storage.getObjectKey());
-        command.setSize(storage.getSize());
-        command.setAccessEndpoint(storage.getAccessEndpoint());
-        command.setObjectStatus(storage.getObjectStatus());
-        command.setReferenceStatus(storage.getReferenceStatus());
-        command.setRemarks(storage.getRemarks());
-        return command;
+    private StoredObject toStoredObject(UploadStorageFacadeResponse response) {
+        if (response == null) {
+            return null;
+        }
+        StoredObject storage = new StoredObject();
+        storage.setId(response.getStorageObjectId() == null ? null : StoredObjectId.of(response.getStorageObjectId()));
+        storage.setOriginalFilename(response.getOriginalFilename());
+        storage.setContentType(response.getContentType());
+        storage.setName(response.getName());
+        storage.setExtendName(response.getExtendName());
+        storage.setMimeType(response.getMimeType());
+        storage.setBucketName(response.getBucketName());
+        storage.setObjectKey(response.getObjectKey());
+        storage.setSize(response.getSizeBytes());
+        storage.setAccessEndpoint(response.getAccessEndpoint());
+        storage.setObjectStatus(
+                StringUtils.isBlank(response.getObjectStatus())
+                        ? null
+                        : StoredObjectStatus.from(response.getObjectStatus()));
+        storage.setReferenceStatus(
+                StringUtils.isBlank(response.getReferenceStatus())
+                        ? null
+                        : StoredObjectReferenceStatus.from(response.getReferenceStatus()));
+        storage.setRemarks(response.getRemarks());
+        return storage;
     }
 
-    private ChangeStorageCommand toChangeStorageCommand(StoredObject storage) {
-        ChangeStorageCommand command = new ChangeStorageCommand();
-        command.setId(storage.getId());
-        command.setOriginalFilename(storage.getOriginalFilename());
-        command.setContentType(storage.getContentType());
-        command.setName(storage.getName());
-        command.setExtendName(storage.getExtendName());
-        command.setMimeType(storage.getMimeType());
-        command.setOwnerId(storage.getOwnerId());
-        command.setOwnerType(storage.getOwnerType());
-        command.setBucketName(storage.getBucketName());
-        command.setObjectKey(storage.getObjectKey());
-        command.setSize(storage.getSize());
-        command.setAccessEndpoint(storage.getAccessEndpoint());
-        command.setObjectStatus(storage.getObjectStatus());
-        command.setReferenceStatus(storage.getReferenceStatus());
-        command.setRemarks(storage.getRemarks());
-        return command;
+    private StoredObject toStoredObject(StorageObjectFacadeDto dto) {
+        if (dto == null) {
+            return null;
+        }
+        StoredObject storage = new StoredObject();
+        storage.setId(dto.getId() == null ? null : StoredObjectId.of(dto.getId()));
+        storage.setOriginalFilename(dto.getOriginalFilename());
+        storage.setContentType(dto.getContentType());
+        storage.setOwnerId(dto.getOwnerId());
+        storage.setOwnerType(
+                StringUtils.isBlank(dto.getOwnerType()) ? null : StorageOwnerType.from(dto.getOwnerType()));
+        storage.setSize(dto.getSize());
+        storage.setObjectStatus(
+                StringUtils.isBlank(dto.getObjectStatus()) ? null : StoredObjectStatus.from(dto.getObjectStatus()));
+        storage.setReferenceStatus(
+                StringUtils.isBlank(dto.getReferenceStatus())
+                        ? null
+                        : StoredObjectReferenceStatus.from(dto.getReferenceStatus()));
+        storage.setRemarks(dto.getRemarks());
+        return storage;
     }
 
     private BizException invalidParameter(String name) {

@@ -10,8 +10,8 @@ import com.thundax.kuzhambu.operations.domain.report.model.valueobject.ReportId;
 import com.thundax.kuzhambu.operations.domain.report.repository.ReportRepository;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.facade.StorageFacade;
-import com.thundax.kuzhambu.storage.facade.request.UploadStorageObjectFacadeRequest;
-import com.thundax.kuzhambu.storage.facade.response.UploadStorageObjectFacadeResponse;
+import com.thundax.kuzhambu.storage.facade.request.UploadStorageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.response.UploadStorageFacadeResponse;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
@@ -134,7 +134,7 @@ public class DefaultOperationsReportTaskExecutor implements OperationsReportTask
                 || artifactResult.getContentBytes().length == 0) {
             throw new IllegalStateException("Operations report artifact content is empty.");
         }
-        UploadStorageObjectFacadeResponse storedResult = storageFacade.upload(UploadStorageObjectFacadeRequest.builder()
+        UploadStorageFacadeResponse storedResult = storageFacade.upload(UploadStorageFacadeRequest.builder()
                 .inputStream(new ByteArrayInputStream(artifactResult.getContentBytes()))
                 .originalFilename(filenameHint(artifactResult))
                 .contentType(artifactResult.getContentType())

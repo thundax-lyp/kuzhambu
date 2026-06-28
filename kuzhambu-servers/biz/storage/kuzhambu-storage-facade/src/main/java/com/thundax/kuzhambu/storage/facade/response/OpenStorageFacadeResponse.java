@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.storage.facade.response;
 
-import com.thundax.kuzhambu.storage.facade.dto.ReadableStoredObjectFacadeDto;
+import com.thundax.kuzhambu.storage.facade.dto.StorageObjectFacadeDto;
 import java.io.InputStream;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -10,8 +10,8 @@ import lombok.Getter;
 @Getter
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class GetReadableContentFacadeResponse {
+public class OpenStorageFacadeResponse {
 
-    private final ReadableStoredObjectFacadeDto storedObject;
+    private final StorageObjectFacadeDto storedObject;
     private final InputStream inputStream;
 }

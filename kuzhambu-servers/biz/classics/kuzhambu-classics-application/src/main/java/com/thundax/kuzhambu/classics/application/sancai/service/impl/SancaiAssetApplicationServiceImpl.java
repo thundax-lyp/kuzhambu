@@ -49,8 +49,8 @@ import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectRefere
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import com.thundax.kuzhambu.storage.facade.StorageFacade;
-import com.thundax.kuzhambu.storage.facade.request.UploadStorageObjectFacadeRequest;
-import com.thundax.kuzhambu.storage.facade.response.UploadStorageObjectFacadeResponse;
+import com.thundax.kuzhambu.storage.facade.request.UploadStorageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.response.UploadStorageFacadeResponse;
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -147,15 +147,14 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
         SancaiEntryImage replacedImage = currentImageToReplace(command, entryId);
         validateImageUpload(command);
 
-        UploadStorageObjectFacadeResponse uploadResponse =
-                storageFacade.upload(UploadStorageObjectFacadeRequest.builder()
-                        .inputStream(command.getInputStream())
-                        .originalFilename(command.getOriginalFilename())
-                        .contentType(command.getContentType())
-                        .sizeBytes(command.getSize())
-                        .allowedSuffixes(ALLOWED_IMAGE_SUFFIXES)
-                        .ownerType(StorageOwnerType.CLASSICS_SANCAI_ENTRY_IMAGE.value())
-                        .build());
+        UploadStorageFacadeResponse uploadResponse = storageFacade.upload(UploadStorageFacadeRequest.builder()
+                .inputStream(command.getInputStream())
+                .originalFilename(command.getOriginalFilename())
+                .contentType(command.getContentType())
+                .sizeBytes(command.getSize())
+                .allowedSuffixes(ALLOWED_IMAGE_SUFFIXES)
+                .ownerType(StorageOwnerType.CLASSICS_SANCAI_ENTRY_IMAGE.value())
+                .build());
         StoredObject storage = toStoredObject(uploadResponse);
         SancaiEntryImage image = new SancaiEntryImage();
         image.setEntryId(entryId);
@@ -308,7 +307,7 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
                 repository.markShowcaseFailed(showcaseId);
                 return showcaseId;
             }
-            UploadStorageObjectFacadeResponse uploadResponse = saveShowcaseArtifact(showcaseId, response);
+            UploadStorageFacadeResponse uploadResponse = saveShowcaseArtifact(showcaseId, response);
             if (uploadResponse == null) {
                 repository.markShowcaseFailed(showcaseId);
                 return showcaseId;
@@ -424,14 +423,14 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
         return defaultPayload;
     }
 
-    private UploadStorageObjectFacadeResponse saveShowcaseArtifact(
+    private UploadStorageFacadeResponse saveShowcaseArtifact(
             SancaiShowcaseId showcaseId, WorkerRenderDtos.WorkerRenderResponse response) {
         if (storageFacade == null) {
             return null;
         }
         WorkerRenderDtos.Artifact artifact = response == null ? null : response.getArtifact();
         byte[] content = artifactContent(artifact);
-        return storageFacade.upload(UploadStorageObjectFacadeRequest.builder()
+        return storageFacade.upload(UploadStorageFacadeRequest.builder()
                 .inputStream(new ByteArrayInputStream(content))
                 .originalFilename(filenameHint(showcaseId, artifact))
                 .contentType(artifact == null ? null : artifact.getContentType())
@@ -465,13 +464,13 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
         return artifact.getContent().getBytes(java.nio.charset.StandardCharsets.UTF_8);
     }
 
-    private StorageObjectId toStorageObjectId(UploadStorageObjectFacadeResponse uploadResponse) {
+    private StorageObjectId toStorageObjectId(UploadStorageFacadeResponse uploadResponse) {
         return uploadResponse == null || uploadResponse.getStorageObjectId() == null
                 ? null
                 : StorageObjectId.of(uploadResponse.getStorageObjectId());
     }
 
-    private static StoredObject toStoredObject(UploadStorageObjectFacadeResponse response) {
+    private static StoredObject toStoredObject(UploadStorageFacadeResponse response) {
         if (response == null) {
             return null;
         }

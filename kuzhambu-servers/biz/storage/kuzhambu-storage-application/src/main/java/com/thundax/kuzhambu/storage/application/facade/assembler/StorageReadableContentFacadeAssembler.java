@@ -5,17 +5,23 @@ import com.thundax.kuzhambu.storage.application.service.query.StorageQuery;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
+import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
-import com.thundax.kuzhambu.storage.facade.dto.ReadableStoredObjectFacadeDto;
-import com.thundax.kuzhambu.storage.facade.request.GetReadableContentFacadeRequest;
-import com.thundax.kuzhambu.storage.facade.response.GetReadableContentFacadeResponse;
+import com.thundax.kuzhambu.storage.facade.dto.StorageObjectFacadeDto;
+import com.thundax.kuzhambu.storage.facade.request.ListStorageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.OpenStorageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.response.ListStorageFacadeResponse;
+import com.thundax.kuzhambu.storage.facade.response.OpenStorageFacadeResponse;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 @Component
 public class StorageReadableContentFacadeAssembler {
 
-    public StorageQuery toQuery(GetReadableContentFacadeRequest request) {
+    public StorageQuery toQuery(OpenStorageFacadeRequest request) {
         if (request == null) {
             return null;
         }
@@ -31,28 +37,55 @@ public class StorageReadableContentFacadeAssembler {
         return query;
     }
 
-    public StoredObjectId toStoredObjectId(GetReadableContentFacadeRequest request) {
+    public StoredObjectId toStoredObjectId(OpenStorageFacadeRequest request) {
         if (request == null || request.getStorageObjectId() == null) {
             return null;
         }
         return StoredObjectId.of(request.getStorageObjectId());
     }
 
-    public GetReadableContentFacadeResponse toResponse(StoredObjectContent content) {
+    public StorageQuery toQuery(ListStorageFacadeRequest request) {
+        if (request == null) {
+            return null;
+        }
+        StorageQuery query = new StorageQuery();
+        query.setOwnerId(request.getOwnerId());
+        query.setOwnerType(
+                StringUtils.isBlank(request.getOwnerType()) ? null : StorageOwnerType.from(request.getOwnerType()));
+        query.setObjectStatus(
+                StringUtils.isBlank(request.getObjectStatus())
+                        ? null
+                        : StoredObjectStatus.from(request.getObjectStatus()));
+        query.setReferenceStatus(
+                StringUtils.isBlank(request.getReferenceStatus())
+                        ? null
+                        : StoredObjectReferenceStatus.from(request.getReferenceStatus()));
+        query.setRemarks(request.getRemarks());
+        return query;
+    }
+
+    public OpenStorageFacadeResponse toResponse(StoredObjectContent content) {
         if (content == null) {
             return null;
         }
-        return GetReadableContentFacadeResponse.builder()
+        return OpenStorageFacadeResponse.builder()
                 .storedObject(toDto(content.getStorage()))
                 .inputStream(content.getInputStream())
                 .build();
     }
 
-    private ReadableStoredObjectFacadeDto toDto(StoredObject storage) {
+    public ListStorageFacadeResponse toListResponse(List<StoredObject> storages) {
+        List<StorageObjectFacadeDto> storedObjects = storages == null
+                ? Collections.emptyList()
+                : storages.stream().map(this::toDto).collect(Collectors.toList());
+        return ListStorageFacadeResponse.builder().storedObjects(storedObjects).build();
+    }
+
+    public StorageObjectFacadeDto toDto(StoredObject storage) {
         if (storage == null) {
             return null;
         }
-        return ReadableStoredObjectFacadeDto.builder()
+        return StorageObjectFacadeDto.builder()
                 .id(storage.getId() == null ? null : storage.getId().value())
                 .originalFilename(storage.getOriginalFilename())
                 .contentType(storage.getContentType())

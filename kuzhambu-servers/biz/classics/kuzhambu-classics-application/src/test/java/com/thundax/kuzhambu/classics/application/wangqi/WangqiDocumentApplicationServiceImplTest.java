@@ -34,8 +34,8 @@ import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import com.thundax.kuzhambu.storage.facade.StorageFacade;
-import com.thundax.kuzhambu.storage.facade.request.UploadStorageObjectFacadeRequest;
-import com.thundax.kuzhambu.storage.facade.response.UploadStorageObjectFacadeResponse;
+import com.thundax.kuzhambu.storage.facade.request.UploadStorageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.response.UploadStorageFacadeResponse;
 import java.io.ByteArrayInputStream;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -84,8 +84,8 @@ class WangqiDocumentApplicationServiceImplTest {
         assertEquals(400000000001L, result.getDocumentId());
         assertEquals(7001L, result.getStorageObjectId());
         assertEquals(StorageObjectId.of(7001L), document.getStorageObjectId());
-        ArgumentCaptor<UploadStorageObjectFacadeRequest> uploadCaptor =
-                ArgumentCaptor.forClass(UploadStorageObjectFacadeRequest.class);
+        ArgumentCaptor<UploadStorageFacadeRequest> uploadCaptor =
+                ArgumentCaptor.forClass(UploadStorageFacadeRequest.class);
         verify(storageFacade).upload(uploadCaptor.capture());
         assertEquals("source.pdf", uploadCaptor.getValue().getOriginalFilename());
         assertEquals("application/pdf", uploadCaptor.getValue().getContentType());
@@ -201,9 +201,9 @@ class WangqiDocumentApplicationServiceImplTest {
         return storage;
     }
 
-    private static UploadStorageObjectFacadeResponse uploadResponse() {
+    private static UploadStorageFacadeResponse uploadResponse() {
         StoredObject storage = storage();
-        return UploadStorageObjectFacadeResponse.builder()
+        return UploadStorageFacadeResponse.builder()
                 .storageObjectId(storage.getId().value())
                 .originalFilename(storage.getOriginalFilename())
                 .contentType(storage.getContentType())

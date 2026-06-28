@@ -285,6 +285,9 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         StoredObject storage = new StoredObject();
         storage.setOwnerType(command.getOwnerType());
         storage.setOwnerId(command.getOwnerId());
+        storage.setObjectStatus(command.getObjectStatus());
+        storage.setReferenceStatus(command.getReferenceStatus());
+        storage.setRemarks(command.getRemarks());
         applyFileMetadata(command.getOriginalFilename(), command.getContentType(), storage);
         try {
             applyStoredObject(storage, storedObjectContentRepository.save(storage, command.getInputStream()));

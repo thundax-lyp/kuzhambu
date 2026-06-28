@@ -57,7 +57,10 @@ class StorageApplicationServiceUploadTest {
                 PAYLOAD.length,
                 null,
                 StorageOwnerType.USER,
-                "system"));
+                "system",
+                null,
+                null,
+                null));
 
         assertNotNull(result);
         assertFalse(result.hasError());
@@ -84,7 +87,10 @@ class StorageApplicationServiceUploadTest {
                 1L,
                 List.of("jpg"),
                 StorageOwnerType.USER,
-                "u-1"));
+                "u-1",
+                null,
+                null,
+                null));
 
         assertTrue(result.hasError());
         assertEquals("无效的后缀名", result.getError());
@@ -106,7 +112,10 @@ class StorageApplicationServiceUploadTest {
                 PAYLOAD.length,
                 null,
                 StorageOwnerType.USER,
-                "u-1"));
+                "u-1",
+                null,
+                null,
+                null));
 
         assertTrue(result.hasError());
         assertEquals("write failed", result.getError());

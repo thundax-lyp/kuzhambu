@@ -38,8 +38,8 @@ import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import com.thundax.kuzhambu.storage.facade.StorageFacade;
-import com.thundax.kuzhambu.storage.facade.request.UploadStorageObjectFacadeRequest;
-import com.thundax.kuzhambu.storage.facade.response.UploadStorageObjectFacadeResponse;
+import com.thundax.kuzhambu.storage.facade.request.UploadStorageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.response.UploadStorageFacadeResponse;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -134,15 +134,14 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
         WangqiDocument document = requireDocument(documentId);
         boolean replacing = document.getStorageObjectId() != null;
 
-        UploadStorageObjectFacadeResponse uploadResponse =
-                storageFacade.upload(UploadStorageObjectFacadeRequest.builder()
-                        .inputStream(command.getInputStream())
-                        .originalFilename(command.getOriginalFilename())
-                        .contentType(command.getContentType())
-                        .sizeBytes(command.getSize())
-                        .ownerType(StorageOwnerType.CLASSICS_WANGQI_DOCUMENT.value())
-                        .ownerId(ownerId(documentId))
-                        .build());
+        UploadStorageFacadeResponse uploadResponse = storageFacade.upload(UploadStorageFacadeRequest.builder()
+                .inputStream(command.getInputStream())
+                .originalFilename(command.getOriginalFilename())
+                .contentType(command.getContentType())
+                .sizeBytes(command.getSize())
+                .ownerType(StorageOwnerType.CLASSICS_WANGQI_DOCUMENT.value())
+                .ownerId(ownerId(documentId))
+                .build());
         StoredObject storage = toStoredObject(uploadResponse);
         if (storage == null || storage.getId() == null) {
             throw new BizException("王圻原始文件上传失败");
@@ -372,7 +371,7 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
         return StoredObjectIdCodec.toDomain(StorageObjectIdCodec.toValue(id));
     }
 
-    private static StoredObject toStoredObject(UploadStorageObjectFacadeResponse response) {
+    private static StoredObject toStoredObject(UploadStorageFacadeResponse response) {
         if (response == null) {
             return null;
         }

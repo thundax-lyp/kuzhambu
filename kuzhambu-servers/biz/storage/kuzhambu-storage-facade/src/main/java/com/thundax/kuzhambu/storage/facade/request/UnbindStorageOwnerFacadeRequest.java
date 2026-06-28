@@ -8,7 +8,8 @@ import lombok.Getter;
 @Getter
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class MarkStorageObjectUsageFacadeRequest {
+public class UnbindStorageOwnerFacadeRequest {
 
-    private final Long storageObjectId;
+    private final String ownerId;
+    private final String ownerType;
 }

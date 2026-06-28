@@ -10,13 +10,16 @@ import com.thundax.kuzhambu.storage.application.service.content.StoredObjectCont
 import com.thundax.kuzhambu.storage.application.service.result.StorageUploadResult;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import com.thundax.kuzhambu.storage.facade.StorageFacade;
-import com.thundax.kuzhambu.storage.facade.request.BindStorageObjectOwnerFacadeRequest;
-import com.thundax.kuzhambu.storage.facade.request.GetReadableContentFacadeRequest;
-import com.thundax.kuzhambu.storage.facade.request.MarkStorageObjectUsageFacadeRequest;
-import com.thundax.kuzhambu.storage.facade.request.UnbindStorageObjectOwnerFacadeRequest;
-import com.thundax.kuzhambu.storage.facade.request.UploadStorageObjectFacadeRequest;
-import com.thundax.kuzhambu.storage.facade.response.GetReadableContentFacadeResponse;
-import com.thundax.kuzhambu.storage.facade.response.UploadStorageObjectFacadeResponse;
+import com.thundax.kuzhambu.storage.facade.request.BindStorageOwnerFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.ListStorageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.MarkStorageUsageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.OpenStorageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.RemoveStorageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.UnbindStorageOwnerFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.UploadStorageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.response.ListStorageFacadeResponse;
+import com.thundax.kuzhambu.storage.facade.response.OpenStorageFacadeResponse;
+import com.thundax.kuzhambu.storage.facade.response.UploadStorageFacadeResponse;
 import java.util.Collections;
 import java.util.List;
 import org.springframework.stereotype.Service;
@@ -42,14 +45,14 @@ public class StorageFacadeImpl implements StorageFacade {
     }
 
     @Override
-    public boolean exists(GetReadableContentFacadeRequest request) {
+    public boolean exists(OpenStorageFacadeRequest request) {
         return request != null
                 && storageApplicationService.existsReadableContent(readableContentFacadeAssembler.toQuery(request));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public GetReadableContentFacadeResponse open(GetReadableContentFacadeRequest request) {
+    public OpenStorageFacadeResponse open(OpenStorageFacadeRequest request) {
         if (!exists(request)) {
             return null;
         }
@@ -62,8 +65,15 @@ public class StorageFacadeImpl implements StorageFacade {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public ListStorageFacadeResponse list(ListStorageFacadeRequest request) {
+        return readableContentFacadeAssembler.toListResponse(
+                storageApplicationService.list(readableContentFacadeAssembler.toQuery(request)));
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
-    public UploadStorageObjectFacadeResponse upload(UploadStorageObjectFacadeRequest request) {
+    public UploadStorageFacadeResponse upload(UploadStorageFacadeRequest request) {
         if (request == null) {
             return null;
         }
@@ -74,7 +84,10 @@ public class StorageFacadeImpl implements StorageFacade {
                 request.getSizeBytes() == null ? 0L : request.getSizeBytes(),
                 request.getAllowedSuffixes(),
                 uploadFacadeAssembler.toOwnerType(request),
-                request.getOwnerId()));
+                request.getOwnerId(),
+                uploadFacadeAssembler.toObjectStatus(request),
+                uploadFacadeAssembler.toReferenceStatus(request),
+                request.getRemarks()));
         if (result.hasError()) {
             throw new BizException(result.getError());
         }
@@ -83,7 +96,16 @@ public class StorageFacadeImpl implements StorageFacade {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void bindOwner(BindStorageObjectOwnerFacadeRequest request) {
+    public void remove(RemoveStorageFacadeRequest request) {
+        if (request == null || request.getStorageObjectId() == null) {
+            return;
+        }
+        storageApplicationService.remove(StoredObjectId.of(request.getStorageObjectId()));
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void bindOwner(BindStorageOwnerFacadeRequest request) {
         storageApplicationService.addReferences(ownerBindingFacadeAssembler.toAddReferencesCommand(request));
         List<Long> storageObjectIds = request == null || request.getStorageObjectIds() == null
                 ? Collections.emptyList()
@@ -93,7 +115,7 @@ public class StorageFacadeImpl implements StorageFacade {
                 continue;
             }
             storageApplicationService.changeReferenceStatus(
-                    ownerBindingFacadeAssembler.toReferencedCommand(MarkStorageObjectUsageFacadeRequest.builder()
+                    ownerBindingFacadeAssembler.toReferencedCommand(MarkStorageUsageFacadeRequest.builder()
                             .storageObjectId(storageObjectId)
                             .build()));
         }
@@ -101,19 +123,19 @@ public class StorageFacadeImpl implements StorageFacade {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void unbindOwner(UnbindStorageObjectOwnerFacadeRequest request) {
+    public void unbindOwner(UnbindStorageOwnerFacadeRequest request) {
         storageApplicationService.removeReferences(ownerBindingFacadeAssembler.toRemoveReferencesCommand(request));
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void markInUse(MarkStorageObjectUsageFacadeRequest request) {
+    public void markInUse(MarkStorageUsageFacadeRequest request) {
         storageApplicationService.changeReferenceStatus(ownerBindingFacadeAssembler.toReferencedCommand(request));
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void markUnused(MarkStorageObjectUsageFacadeRequest request) {
+    public void markUnused(MarkStorageUsageFacadeRequest request) {
         storageApplicationService.changeReferenceStatus(ownerBindingFacadeAssembler.toUnreferencedCommand(request));
     }
 }
