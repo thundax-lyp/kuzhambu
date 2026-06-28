@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Discovery facade测试覆盖`：补齐 facade 协议与 provider 测试
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-facade/src/test/java/com/thundax/kuzhambu/discovery/facade/DiscoveryFacadeArchitectureTest.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/test/java/com/thundax/kuzhambu/discovery/application/facade/impl/DiscoveryFacadeImplTest.java`
-    - 处理动作：新增 facade 协议架构测试和 provider 映射测试
-    - 验收点：`DiscoveryFacadeArchitectureTest` 与 `DiscoveryFacadeImplTest` 通过
-    - 重要度：8/10
-
 - [ ] `discovery跨域白名单收缩`：收缩 discovery 跨域 allowlist
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-FACADE-ISOLATION.md`
