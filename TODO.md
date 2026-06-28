@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `ai-facade/invocation-dto`：定义 AI 调用记录与候选 dto
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-facade/src/main/java/com/thundax/kuzhambu/ai/facade/dto/AiCallRecordFacadeDto.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-facade/src/main/java/com/thundax/kuzhambu/ai/facade/dto/AiCandidateFacadeDto.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-facade/src/main/java/com/thundax/kuzhambu/ai/facade/dto/AiUsageSnapshotFacadeDto.java`
-    - 处理动作：把调用记录、候选和 usage 快照固定为 facade dto。
-    - 验收点：`AiCallRecordFacadeDto` 包含 `callId/batchId/scope/capability/contentType/contentId/objectId/serviceId/serviceRole/modelId/modelName/promptVersionId/requestId/traceId/status/streamUsed/streamCompleted/fallbackUsed/errorType/errorMessage/warningsJson/requestedAt/completedAt/usage`，`AiCandidateFacadeDto` 包含 `candidateId/callId/batchId/capability/contentType/contentId/objectId/resultFormat/resultPayload/status/promptVersionId/modelName/errorType/errorMessage/requestedAt/appliedAt`，`AiUsageSnapshotFacadeDto` 包含 `promptTokens/completionTokens/totalTokens/latencyMs/costAmount/currency`。
-    - 重要度：9/10
-
 - [ ] `ai-application/facade-entry`：接入 ai-facade 模块并建立 facade 实现骨架
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-FACADE-ISOLATION.md`
