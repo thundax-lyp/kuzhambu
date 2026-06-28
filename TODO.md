@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `discovery-knowledge-facade`：discovery 改用 KnowledgeFacade
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/search/support/DiscoveryKnowledgeEnhancementProvider.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/test/java/com/thundax/kuzhambu/discovery/application/search/service/impl/QueryUnderstandingApplicationServiceImplTest.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/pom.xml`
-    - 处理动作：将 discovery 的 taxonomy 增强读取改为通过 `KnowledgeFacade`
-    - 验收点：`discovery-application` 不再依赖 `kuzhambu-knowledge-application`，并已消费 synonym、tag hint、entity hints facade response
-    - 重要度：8/10
-
 - [ ] `classics-knowledge-facade`：classics 改用 KnowledgeFacade
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-FACADE-ISOLATION.md`
