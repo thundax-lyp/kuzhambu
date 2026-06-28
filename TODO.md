@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics-knowledge-facade`：classics 改用 KnowledgeFacade
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/support/ClassicsTagBindingSupport.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/content/ClassicsContentApplicationServiceImplTest.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/content/ClassicsContentApplicationServiceAiCandidateTest.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/pom.xml`
-    - 处理动作：将 classics 的 tag resolve 与 tag ref 同步改为通过 `KnowledgeFacade`
-    - 验收点：`classics-application` 不再依赖 `kuzhambu-knowledge-domain`，并已消费 `KnowledgeTagFacadeResponse` 与 tag ref request
-    - 重要度：8/10
-
 - [ ] `knowledge-facade-test`：补齐 knowledge facade 架构与 provider 测试
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-FACADE-ISOLATION.md`
