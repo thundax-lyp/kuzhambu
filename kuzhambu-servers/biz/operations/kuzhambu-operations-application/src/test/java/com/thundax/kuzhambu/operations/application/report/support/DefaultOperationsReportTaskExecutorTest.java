@@ -12,10 +12,9 @@ import com.thundax.kuzhambu.operations.domain.report.model.entity.ReportRecord;
 import com.thundax.kuzhambu.operations.domain.report.model.enums.ReportStatus;
 import com.thundax.kuzhambu.operations.domain.report.model.valueobject.ReportId;
 import com.thundax.kuzhambu.operations.domain.report.repository.ReportRepository;
-import com.thundax.kuzhambu.storage.application.service.ServerArtifactStorageApplicationService;
-import com.thundax.kuzhambu.storage.application.service.command.UploadServerArtifactCommand;
-import com.thundax.kuzhambu.storage.application.service.result.ServerArtifactStoredResult;
-import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
+import com.thundax.kuzhambu.storage.facade.ServerArtifactStorageFacade;
+import com.thundax.kuzhambu.storage.facade.request.StoreServerArtifactFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.response.StoreServerArtifactFacadeResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -147,17 +146,18 @@ class DefaultOperationsReportTaskExecutorTest {
         }
     }
 
-    private static final class RecordingArtifactStorage implements ServerArtifactStorageApplicationService {
-        private UploadServerArtifactCommand lastCommand;
+    private static final class RecordingArtifactStorage implements ServerArtifactStorageFacade {
+        private StoreServerArtifactFacadeRequest lastCommand;
 
         @Override
-        public ServerArtifactStoredResult storeServerArtifact(UploadServerArtifactCommand command) {
+        public StoreServerArtifactFacadeResponse storeServerArtifact(StoreServerArtifactFacadeRequest command) {
             this.lastCommand = command;
-            return new ServerArtifactStoredResult(
-                    StoredObjectId.of(3001L),
-                    command.getOriginalFilename(),
-                    command.getContentType(),
-                    command.getSizeBytes());
+            return StoreServerArtifactFacadeResponse.builder()
+                    .storageObjectId(3001L)
+                    .originalFilename(command.getOriginalFilename())
+                    .contentType(command.getContentType())
+                    .sizeBytes(command.getSizeBytes())
+                    .build();
         }
     }
 

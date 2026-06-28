@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `operations to storage-facade`：首批迁移 `operations-application -> storage-facade`
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/report/support/DefaultOperationsReportTaskExecutor.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-facade/src/main/java/com/thundax/kuzhambu/storage/facade/ServerArtifactStorageFacade.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/test/java/com/thundax/kuzhambu/operations/application/report/support/DefaultOperationsReportTaskExecutorTest.java`
-    - 处理动作：将报表产物存储入口从 storage application 改为 `ServerArtifactStorageFacade`。
-    - 验收点：`operations-application` 不再直接依赖 `ServerArtifactStorageApplicationService` 即可完成报表产物落库。
-    - 重要度：8/10
-
 - [ ] `classics upload to storage-facade`：首批迁移 `classics-application` 的最小上传入口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FACADE-ISOLATION.md`

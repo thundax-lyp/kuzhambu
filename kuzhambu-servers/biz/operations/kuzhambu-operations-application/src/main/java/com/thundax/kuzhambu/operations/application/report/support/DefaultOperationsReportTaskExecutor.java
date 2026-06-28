@@ -8,9 +8,9 @@ import com.thundax.kuzhambu.operations.domain.report.model.entity.ReportRecord;
 import com.thundax.kuzhambu.operations.domain.report.model.enums.ReportStatus;
 import com.thundax.kuzhambu.operations.domain.report.model.valueobject.ReportId;
 import com.thundax.kuzhambu.operations.domain.report.repository.ReportRepository;
-import com.thundax.kuzhambu.storage.application.service.ServerArtifactStorageApplicationService;
-import com.thundax.kuzhambu.storage.application.service.command.UploadServerArtifactCommand;
-import com.thundax.kuzhambu.storage.application.service.result.ServerArtifactStoredResult;
+import com.thundax.kuzhambu.storage.facade.ServerArtifactStorageFacade;
+import com.thundax.kuzhambu.storage.facade.request.StoreServerArtifactFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.response.StoreServerArtifactFacadeResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.concurrent.CompletableFuture;
@@ -23,17 +23,17 @@ public class DefaultOperationsReportTaskExecutor implements OperationsReportTask
     private final ReportRepository reportRepository;
     private final OperationsWorkerRenderClient operationsWorkerRenderClient;
     private final OperationsReportSnapshotAssembler snapshotAssembler;
-    private final ServerArtifactStorageApplicationService serverArtifactStorageApplicationService;
+    private final ServerArtifactStorageFacade serverArtifactStorageFacade;
 
     public DefaultOperationsReportTaskExecutor(
             ReportRepository reportRepository,
             OperationsWorkerRenderClient operationsWorkerRenderClient,
             OperationsReportSnapshotAssembler snapshotAssembler,
-            ServerArtifactStorageApplicationService serverArtifactStorageApplicationService) {
+            ServerArtifactStorageFacade serverArtifactStorageFacade) {
         this.reportRepository = reportRepository;
         this.operationsWorkerRenderClient = operationsWorkerRenderClient;
         this.snapshotAssembler = snapshotAssembler;
-        this.serverArtifactStorageApplicationService = serverArtifactStorageApplicationService;
+        this.serverArtifactStorageFacade = serverArtifactStorageFacade;
     }
 
     @Override
@@ -132,18 +132,20 @@ public class DefaultOperationsReportTaskExecutor implements OperationsReportTask
                 || artifactResult.getContentBytes().length == 0) {
             throw new IllegalStateException("Operations report artifact content is empty.");
         }
-        ServerArtifactStoredResult storedResult =
-                serverArtifactStorageApplicationService.storeServerArtifact(new UploadServerArtifactCommand(
-                        artifactResult.getContentBytes(),
-                        filenameHint(artifactResult),
-                        artifactResult.getContentType(),
-                        artifactResult.getSizeBytes() == null
-                                ? (long) artifactResult.getContentBytes().length
-                                : artifactResult.getSizeBytes()));
+        StoreServerArtifactFacadeResponse storedResult =
+                serverArtifactStorageFacade.storeServerArtifact(StoreServerArtifactFacadeRequest.builder()
+                        .contentBytes(artifactResult.getContentBytes())
+                        .originalFilename(filenameHint(artifactResult))
+                        .contentType(artifactResult.getContentType())
+                        .sizeBytes(
+                                artifactResult.getSizeBytes() == null
+                                        ? (long) artifactResult.getContentBytes().length
+                                        : artifactResult.getSizeBytes())
+                        .build());
         if (storedResult == null || storedResult.getStorageObjectId() == null) {
             throw new IllegalStateException("Operations report storage upload returned empty storage object.");
         }
-        artifactResult.setStorageObjectId(storedResult.getStorageObjectId().value());
+        artifactResult.setStorageObjectId(storedResult.getStorageObjectId());
     }
 
     private String filenameHint(OperationsReportArtifactResult artifactResult) {
