@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics-facade-module`：新增 classics-facade 模块骨架
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/pom.xml`、`kuzhambu-servers/biz/classics/kuzhambu-classics-facade/pom.xml`、`kuzhambu-servers/biz/classics/kuzhambu-classics-facade/src/main/java/com/thundax/kuzhambu/classics/facade/ClassicsFacade.java`
-    - 处理动作：新增 `kuzhambu-classics-facade` 模块并建立空 `ClassicsFacade` 入口
-    - 验收点：`classics` 模块已包含 `kuzhambu-classics-facade`，且存在可编译的空 `ClassicsFacade`
-    - 重要度：8/10
-
 - [ ] `classics-facade-summary-contract`：定义 summary facade 协议
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-FACADE-ISOLATION.md`
