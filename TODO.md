@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `knowledge-facade-test`：补齐 knowledge facade 架构与 provider 测试
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-FACADE-ISOLATION.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-facade/src/test/java/com/thundax/kuzhambu/knowledge/facade/KnowledgeFacadeArchitectureTest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/facade/impl/KnowledgeFacadeImplTest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/report/service/impl/KnowledgeReportApplicationServiceImplTest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/taxonomy/service/impl/KnowledgeTaxonomyReadApplicationServiceImplTest.java`
-    - 处理动作：补齐 knowledge facade 模块架构测试和 provider 映射测试
-    - 验收点：facade 协议和 provider 映射都有测试覆盖，现有 report/taxonomy 语义测试继续通过
-    - 重要度：7/10
-
 - [ ] `knowledge-facade-allowlist`：收缩 knowledge 跨域白名单
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-FACADE-ISOLATION.md`
