@@ -1,8 +1,8 @@
 package com.thundax.kuzhambu.operations.infra.cleanup.repository.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.common.core.page.PageResult;
@@ -73,8 +73,9 @@ public class CleanupJobRepositoryImpl implements CleanupJobRepository {
 
     @Override
     public List<CleanupItem> listItemsByJobId(CleanupJobId jobId) {
-        List<CleanupItemDO> dataObjects = itemMapper.selectList(
-                new LambdaQueryWrapper<CleanupItemDO>().eq(CleanupItemDO::getCleanupId, jobId.value()).orderByAsc("id"));
+        List<CleanupItemDO> dataObjects = itemMapper.selectList(new LambdaQueryWrapper<CleanupItemDO>()
+                .eq(CleanupItemDO::getCleanupId, jobId.value())
+                .orderByAsc(CleanupItemDO::getId));
         return CleanupPersistenceAssembler.toDomainList(dataObjects);
     }
 
@@ -102,7 +103,8 @@ public class CleanupJobRepositoryImpl implements CleanupJobRepository {
 
     @Override
     public int deleteItemsByJobId(CleanupJobId jobId) {
-        return itemMapper.delete(new LambdaQueryWrapper<CleanupItemDO>().eq(CleanupItemDO::getCleanupId, jobId.value()));
+        return itemMapper.delete(
+                new LambdaQueryWrapper<CleanupItemDO>().eq(CleanupItemDO::getCleanupId, jobId.value()));
     }
 
     @Override
