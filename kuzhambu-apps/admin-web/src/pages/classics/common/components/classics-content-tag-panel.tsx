@@ -6,10 +6,7 @@ import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { KuzhambuTable } from "@/components/kuzhambu-table";
 import type { KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
 import * as contentService from "../classics-content-service";
-import type {
-    ClassicsContentTagRecord,
-    ClassicsContentType
-} from "../classics-content-types";
+import type { ClassicsContentTagRecord, ClassicsContentType } from "../classics-content-types";
 import {
     type ClassicsContentTagCommand,
     type ClassicsContentTagPayload
@@ -304,9 +301,11 @@ export const ClassicsContentTagPanel = ({
                     rowKey="id"
                     loading={tagsQuery.isLoading}
                     locale={{
-                        emptyText: tagsQuery.isFetching
-                            ? "加载中"
-                            : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无标签" />
+                        emptyText: tagsQuery.isFetching ? (
+                            "加载中"
+                        ) : (
+                            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无标签" />
+                        )
                     }}
                     pagination={false}
                     sortable
@@ -354,7 +353,10 @@ export const ClassicsContentTagPanel = ({
                         <Form.Item label="状态" name="status">
                             <Select
                                 aria-label="标签状态"
-                                options={[{ label: "启用", value: "ACTIVE" }, { label: "已移除", value: "REMOVED" }]}
+                                options={[
+                                    { label: "启用", value: "ACTIVE" },
+                                    { label: "已移除", value: "REMOVED" }
+                                ]}
                             />
                         </Form.Item>
                     </Form>

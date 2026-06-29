@@ -449,9 +449,7 @@ describe("SancaiEntryPanel sharing", () => {
         const entryTable = await screen.findByLabelText("三才图会条目表格");
         await user.click(await within(entryTable).findByRole("button", { name: "查看 天地" }));
 
-        expect(
-            await screen.findByText("三才图会标签治理")
-        ).toBeInTheDocument();
+        expect(await screen.findByText("三才图会标签治理")).toBeInTheDocument();
         expect(await screen.findByText("三才图会问答对治理")).toBeInTheDocument();
         expect(await screen.findByText("三才")).toBeInTheDocument();
         expect(await screen.findByText("天地为何不变？")).toBeInTheDocument();

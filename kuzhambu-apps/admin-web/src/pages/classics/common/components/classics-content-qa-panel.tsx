@@ -51,7 +51,9 @@ export const ClassicsContentQaPanel = ({
     const { message: messageApi } = App.useApp();
     const queryClient = useQueryClient();
     const [isEditorOpen, setIsEditorOpen] = useState(false);
-    const [editingQaPair, setEditingQaPair] = useState<ClassicsContentQaPairRecord | undefined>(undefined);
+    const [editingQaPair, setEditingQaPair] = useState<ClassicsContentQaPairRecord | undefined>(
+        undefined
+    );
     const [form] = Form.useForm<QaEditorValues>();
 
     const queryKey = ["classics", "content", "qa-pairs", contentType, contentId] as const;
@@ -112,7 +114,8 @@ export const ClassicsContentQaPanel = ({
     });
 
     const sortMutation = useMutation({
-        mutationFn: (request: ClassicsContentQaPairSortCommand) => contentService.sortQaPairs(request),
+        mutationFn: (request: ClassicsContentQaPairSortCommand) =>
+            contentService.sortQaPairs(request),
         onSuccess: async () => {
             await notifyChanged();
             messageApi.success("问答对顺序已保存");
@@ -260,9 +263,11 @@ export const ClassicsContentQaPanel = ({
                     rowKey="id"
                     loading={qaPairsQuery.isLoading}
                     locale={{
-                        emptyText: qaPairsQuery.isFetching
-                            ? "加载中"
-                            : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无问答对" />
+                        emptyText: qaPairsQuery.isFetching ? (
+                            "加载中"
+                        ) : (
+                            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无问答对" />
+                        )
                     }}
                     pagination={false}
                     sortable
@@ -295,14 +300,22 @@ export const ClassicsContentQaPanel = ({
                             name="question"
                             rules={[{ required: true, message: "请输入问题" }]}
                         >
-                            <Input.TextArea aria-label="问答问题" rows={3} placeholder="请输入问题" />
+                            <Input.TextArea
+                                aria-label="问答问题"
+                                rows={3}
+                                placeholder="请输入问题"
+                            />
                         </Form.Item>
                         <Form.Item
                             label="答案"
                             name="answer"
                             rules={[{ required: true, message: "请输入答案" }]}
                         >
-                            <Input.TextArea aria-label="问答答案" rows={4} placeholder="请输入答案" />
+                            <Input.TextArea
+                                aria-label="问答答案"
+                                rows={4}
+                                placeholder="请输入答案"
+                            />
                         </Form.Item>
                         <Form.Item label="来源" name="source">
                             <Select

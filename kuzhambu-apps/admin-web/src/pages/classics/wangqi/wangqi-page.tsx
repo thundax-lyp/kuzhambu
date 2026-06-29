@@ -109,7 +109,9 @@ export const WangqiPage = () => {
             queryClient.invalidateQueries({ queryKey: ["wangqi", "source-file"] }),
             queryClient.invalidateQueries({ queryKey: ["wangqi", "versions"] }),
             queryClient.invalidateQueries({ queryKey: ["wangqi", "version"] }),
-            queryClient.invalidateQueries({ queryKey: ["classics", "content", "tags", "WANGQI_DOCUMENT"] }),
+            queryClient.invalidateQueries({
+                queryKey: ["classics", "content", "tags", "WANGQI_DOCUMENT"]
+            }),
             queryClient.invalidateQueries({
                 queryKey: ["classics", "content", "qa-pairs", "WANGQI_DOCUMENT"]
             })
