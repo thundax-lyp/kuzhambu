@@ -48,6 +48,7 @@ const SERVICE_METHOD_VERBS = [
 ];
 
 const ANTD_SPACE_DIRECT_IMPORT_ALLOWLIST = [];
+const ANTD_DRAWER_DIRECT_IMPORT_ALLOWLIST = ["/src/components/kuzhambu-drawer/kuzhambu-drawer.tsx"];
 
 const localRules = {
     rules: {
@@ -302,6 +303,47 @@ const localRules = {
                                 node: specifier,
                                 message:
                                     "ADMIN_WEB_UI_NO_ANTD_SPACE_DIRECT: import KuzhambuSpace or KuzhambuSpaceCompact from src/components/kuzhambu-space/ instead of importing Space or SpaceProps from antd."
+                            });
+                        });
+                    }
+                };
+            }
+        },
+        "no-antd-drawer-direct": {
+            create(context) {
+                const readNormalizedFilePath = () => {
+                    return context.physicalFilename.split(path.sep).join("/");
+                };
+
+                const isKuzhambuDrawerImplementation = (normalizedFilePath) => {
+                    return ANTD_DRAWER_DIRECT_IMPORT_ALLOWLIST.some((suffix) =>
+                        normalizedFilePath.endsWith(suffix)
+                    );
+                };
+
+                return {
+                    ImportDeclaration(node) {
+                        if (isKuzhambuDrawerImplementation(readNormalizedFilePath())) {
+                            return;
+                        }
+
+                        if (node.source.value !== "antd") {
+                            return;
+                        }
+
+                        node.specifiers.forEach((specifier) => {
+                            if (specifier.type !== "ImportSpecifier") {
+                                return;
+                            }
+
+                            if (specifier.imported.name !== "Drawer") {
+                                return;
+                            }
+
+                            context.report({
+                                node: specifier,
+                                message:
+                                    "ADMIN_WEB_UI_NO_ANTD_DRAWER_DIRECT: import Drawer from antd is forbidden; use KuzhambuDrawer from src/components/kuzhambu-drawer/."
                             });
                         });
                     }
@@ -1819,6 +1861,7 @@ export default tseslint.config(
             "local/no-console-log": "error",
             "local/no-explicit-any": "error",
             "local/no-antd-space-direct": "error",
+            "local/no-antd-drawer-direct": "error",
             "@typescript-eslint/no-explicit-any": "off",
             "local/confirm-hook-only": "error",
             "local/table-action-column-shape": "error",

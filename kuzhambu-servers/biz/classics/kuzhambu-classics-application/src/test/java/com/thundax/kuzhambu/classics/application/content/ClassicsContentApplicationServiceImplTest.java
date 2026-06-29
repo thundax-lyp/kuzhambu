@@ -9,7 +9,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.ai.facade.AiFacade;
 import com.thundax.kuzhambu.ai.facade.dto.AiCandidateFacadeDto;
@@ -57,6 +56,7 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisual
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVolumeId;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import com.thundax.kuzhambu.storage.facade.StorageFacade;
 import com.thundax.kuzhambu.storage.facade.request.BindStorageOwnerFacadeRequest;
@@ -689,9 +689,9 @@ class ClassicsContentApplicationServiceImplTest {
         }
 
         @Override
-        public Page<ClassicsContentExportJob> pageExportJobs(
+        public PageResult<ClassicsContentExportJob> pageExportJobs(
                 String contentType, String exportKind, String status, int pageNo, int pageSize) {
-            return new Page<>();
+            return new PageResult<>();
         }
     }
 

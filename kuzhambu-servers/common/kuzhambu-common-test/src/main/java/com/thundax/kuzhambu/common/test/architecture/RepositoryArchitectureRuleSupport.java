@@ -212,6 +212,24 @@ public final class RepositoryArchitectureRuleSupport {
         boolean starterModule = normalizedPomPath.startsWith("kuzhambu-servers/starter/");
         DomainModule domainModule = domainModule(normalizedPomPath);
         for (Dependency dependency : model.dependencies) {
+            if (isDirectSpringBootStarterTestDependency(dependency)
+                    && !isAllowedDirectSpringBootStarterTestDependency(normalizedPomPath)) {
+                violations.add(
+                        ArchitectureSourceSupport.repositoryPath(root, pom)
+                                + " test-dependency=spring-boot-starter-test allowed=[kuzhambu-servers/common/kuzhambu-common-test/pom.xml]");
+            }
+            if (isCommonTestDependency(dependency) && !isAllowedCommonTestDependency(normalizedPomPath, dependency)) {
+                violations.add(ArchitectureSourceSupport.repositoryPath(root, pom)
+                        + " dependency=kuzhambu-common-test scope="
+                        + dependency.scope
+                        + " allowed=[scope=test]");
+            }
+            if (isDirectMybatisPlusStarterDependency(dependency)
+                    && !isAllowedDirectMybatisPlusStarterDependency(normalizedPomPath)) {
+                violations.add(
+                        ArchitectureSourceSupport.repositoryPath(root, pom)
+                                + " dependency=mybatis-plus-spring-boot3-starter allowed=[kuzhambu-servers/pom.xml(dependencyManagement), kuzhambu-servers/common/kuzhambu-common-mybatis/pom.xml]");
+            }
             if (!"com.thundax".equals(dependency.groupId)) {
                 continue;
             }
@@ -327,6 +345,35 @@ public final class RepositoryArchitectureRuleSupport {
         return allowlist;
     }
 
+    private static boolean isDirectSpringBootStarterTestDependency(Dependency dependency) {
+        return "org.springframework.boot".equals(dependency.groupId)
+                && "spring-boot-starter-test".equals(dependency.artifactId);
+    }
+
+    private static boolean isAllowedDirectSpringBootStarterTestDependency(String normalizedPomPath) {
+        return "kuzhambu-servers/common/kuzhambu-common-test/pom.xml".equals(normalizedPomPath);
+    }
+
+    private static boolean isDirectMybatisPlusStarterDependency(Dependency dependency) {
+        return "com.baomidou".equals(dependency.groupId)
+                && "mybatis-plus-spring-boot3-starter".equals(dependency.artifactId);
+    }
+
+    private static boolean isCommonTestDependency(Dependency dependency) {
+        return "com.thundax".equals(dependency.groupId) && "kuzhambu-common-test".equals(dependency.artifactId);
+    }
+
+    private static boolean isAllowedCommonTestDependency(String normalizedPomPath, Dependency dependency) {
+        return !normalizedPomPath.startsWith("kuzhambu-servers/biz/")
+                || "kuzhambu-servers/common/kuzhambu-common-test/pom.xml".equals(normalizedPomPath)
+                || "test".equals(dependency.scope);
+    }
+
+    private static boolean isAllowedDirectMybatisPlusStarterDependency(String normalizedPomPath) {
+        return "kuzhambu-servers/pom.xml".equals(normalizedPomPath)
+                || "kuzhambu-servers/common/kuzhambu-common-mybatis/pom.xml".equals(normalizedPomPath);
+    }
+
     private static void put(Map<String, Set<String>> allowlist, String domain, String dependencyArtifactId) {
         allowlist.computeIfAbsent(domain, key -> new HashSet<String>()).add(dependencyArtifactId);
     }
@@ -352,7 +399,8 @@ public final class RepositoryArchitectureRuleSupport {
                 Node node = dependencyNodes.item(index);
                 if (node instanceof Element) {
                     Element dependency = (Element) node;
-                    model.dependencies.add(new Dependency(text(dependency, "groupId"), text(dependency, "artifactId")));
+                    model.dependencies.add(new Dependency(
+                            text(dependency, "groupId"), text(dependency, "artifactId"), text(dependency, "scope")));
                 }
             }
             return model;
@@ -373,10 +421,12 @@ public final class RepositoryArchitectureRuleSupport {
     private static final class Dependency {
         private final String groupId;
         private final String artifactId;
+        private final String scope;
 
-        private Dependency(String groupId, String artifactId) {
+        private Dependency(String groupId, String artifactId, String scope) {
             this.groupId = groupId;
             this.artifactId = artifactId;
+            this.scope = scope;
         }
     }
 }

@@ -1,6 +1,5 @@
 package com.thundax.kuzhambu.classics.application.sancai.service.impl;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -344,9 +343,7 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
 
     @Override
     public PageResult<SancaiShowcase> pageShowcases(String status, PageQuery page) {
-        IPage<SancaiShowcase> dataPage = repository.pageShowcases(status, page.getPageNo(), page.getPageSize());
-        return PageResult.of(
-                (int) dataPage.getCurrent(), (int) dataPage.getSize(), dataPage.getTotal(), dataPage.getRecords());
+        return repository.pageShowcases(status, page.getPageNo(), page.getPageSize());
     }
 
     private WorkerRenderDtos.WorkerRenderRequest renderRequest(SancaiShowcaseId showcaseId, SancaiShowcase showcase) {

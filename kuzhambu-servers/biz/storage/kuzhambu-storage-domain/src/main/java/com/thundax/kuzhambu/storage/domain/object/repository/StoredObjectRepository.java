@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.storage.domain.object.repository;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
@@ -25,7 +25,7 @@ public interface StoredObjectRepository {
             String remarks,
             SortDirection sortDirection);
 
-    Page<StoredObject> page(
+    PageResult<StoredObject> page(
             String mimeType,
             String ownerId,
             String ownerType,

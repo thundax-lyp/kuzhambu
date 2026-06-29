@@ -1,6 +1,5 @@
 package com.thundax.kuzhambu.classics.domain.sharing.repository;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareAccessRecord;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareLink;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsSharePortalListItem;
@@ -8,6 +7,7 @@ import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareTa
 import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareAccessRecordId;
 import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareLinkId;
 import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareTargetId;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import java.util.Date;
 import java.util.List;
@@ -18,9 +18,9 @@ public interface ClassicsSharingRepository {
 
     ClassicsShareLink getLinkByTokenHash(String tokenHash);
 
-    Page<ClassicsShareLink> pageLinks(String status, String visibility, int pageNo, int pageSize);
+    PageResult<ClassicsShareLink> pageLinks(String status, String visibility, int pageNo, int pageSize);
 
-    Page<ClassicsSharePortalListItem> pagePortalShares(
+    PageResult<ClassicsSharePortalListItem> pagePortalShares(
             String contentType, String title, Date issuedAfter, Date issuedBefore, int pageNo, int pageSize);
 
     List<ClassicsSharePortalListItem> listTopPortalShares(String visibility, int limit);
@@ -47,6 +47,6 @@ public interface ClassicsSharingRepository {
 
     ClassicsShareAccessRecordId insertAccessRecord(ClassicsShareAccessRecord record);
 
-    Page<ClassicsShareAccessRecord> pageAccessRecords(
+    PageResult<ClassicsShareAccessRecord> pageAccessRecords(
             ClassicsShareLinkId shareLinkId, ClassicsShareTargetId shareTargetId, int pageNo, int pageSize);
 }

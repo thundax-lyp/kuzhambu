@@ -1,6 +1,5 @@
 package com.thundax.kuzhambu.classics.application.content.service.impl;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -799,10 +798,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     @Override
     public PageResult<ClassicsContentExportJob> pageExportJobs(
             String contentType, String exportKind, String status, PageQuery page) {
-        IPage<ClassicsContentExportJob> dataPage =
-                repository.pageExportJobs(contentType, exportKind, status, page.getPageNo(), page.getPageSize());
-        return PageResult.of(
-                (int) dataPage.getCurrent(), (int) dataPage.getSize(), dataPage.getTotal(), dataPage.getRecords());
+        return repository.pageExportJobs(contentType, exportKind, status, page.getPageNo(), page.getPageSize());
     }
 
     @Override

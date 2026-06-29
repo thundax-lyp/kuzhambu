@@ -1,6 +1,5 @@
 package com.thundax.kuzhambu.classics.application.sancai.support;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiCategory;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVolume;
@@ -8,6 +7,7 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiCateg
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVolumeId;
 import com.thundax.kuzhambu.classics.domain.sancai.repository.SancaiRepository;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import java.util.List;
 
@@ -119,7 +119,7 @@ public abstract class FakeSancaiRepositorySupport implements SancaiRepository {
     }
 
     @Override
-    public Page<SancaiEntry> pageEntries(
+    public PageResult<SancaiEntry> pageEntries(
             SancaiVolumeId volumeId,
             String keyword,
             String lifecycleStatus,
@@ -131,7 +131,7 @@ public abstract class FakeSancaiRepositorySupport implements SancaiRepository {
             SortDirection sortDirection,
             int pageNo,
             int pageSize) {
-        return new Page<>();
+        return new PageResult<>();
     }
 
     @Override

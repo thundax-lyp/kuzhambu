@@ -1,6 +1,5 @@
 package com.thundax.kuzhambu.classics.application.mingcustoms.service.impl;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsCommand;
 import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsKeywordCommand;
@@ -57,7 +56,7 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
 
     @Override
     public PageResult<MingCustomsEntry> page(MingCustomsPageQuery query, PageQuery page) {
-        IPage<MingCustomsEntry> dataPage = repository.page(
+        return repository.page(
                 query == null ? null : query.getCategory(),
                 query == null ? null : query.getKeyword(),
                 query == null ? null : query.getTagName(),
@@ -67,8 +66,6 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
                 query == null ? SortDirection.ASC : query.getSortDirection(),
                 page.getPageNo(),
                 page.getPageSize());
-        return PageResult.of(
-                (int) dataPage.getCurrent(), (int) dataPage.getSize(), dataPage.getTotal(), dataPage.getRecords());
     }
 
     @Override

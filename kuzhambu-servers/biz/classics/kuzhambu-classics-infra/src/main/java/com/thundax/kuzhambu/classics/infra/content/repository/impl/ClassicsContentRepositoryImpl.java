@@ -44,6 +44,7 @@ import com.thundax.kuzhambu.classics.infra.sancai.persistence.mapper.SancaiMappe
 import com.thundax.kuzhambu.classics.infra.wangqi.persistence.assembler.WangqiDocumentPersistenceAssembler;
 import com.thundax.kuzhambu.classics.infra.wangqi.persistence.dataobject.WangqiDocumentDO;
 import com.thundax.kuzhambu.classics.infra.wangqi.persistence.mapper.WangqiDocumentMapper;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import java.util.Date;
 import java.util.List;
@@ -381,7 +382,7 @@ public class ClassicsContentRepositoryImpl implements ClassicsContentRepository 
                 ClassicsContentExportJobIdCodec.toValue(id), ClassicsExportStatus.EXPIRED.value());
     }
 
-    public Page<ClassicsContentExportJob> pageExportJobs(
+    public PageResult<ClassicsContentExportJob> pageExportJobs(
             String contentType, String exportKind, String status, int pageNo, int pageSize) {
         LambdaQueryWrapper<ClassicsContentExportJobDO> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(StringUtils.isNotBlank(contentType), ClassicsContentExportJobDO::getContentType, contentType)
@@ -389,10 +390,11 @@ public class ClassicsContentRepositoryImpl implements ClassicsContentRepository 
                 .eq(StringUtils.isNotBlank(status), ClassicsContentExportJobDO::getStatus, status)
                 .orderByDesc(ClassicsContentExportJobDO::getRequestedAt);
         Page<ClassicsContentExportJobDO> dataPage = exportMapper.selectPage(new Page<>(pageNo, pageSize), wrapper);
-        Page<ClassicsContentExportJob> entityPage = new Page<>(dataPage.getCurrent(), dataPage.getSize());
-        entityPage.setTotal(dataPage.getTotal());
-        entityPage.setRecords(ClassicsContentPersistenceAssembler.toExportDomainList(dataPage.getRecords()));
-        return entityPage;
+        return PageResult.of(
+                (int) dataPage.getCurrent(),
+                (int) dataPage.getSize(),
+                dataPage.getTotal(),
+                ClassicsContentPersistenceAssembler.toExportDomainList(dataPage.getRecords()));
     }
 
     private static int maxPriority(List<Object> values) {

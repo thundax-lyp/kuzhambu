@@ -1,13 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Select } from "antd";
+import { Alert, App, Select } from "antd";
 import { useMemo, useState } from "react";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import { AiCandidatePanel } from "@/pages/classics/common/components/ai-candidate-panel";
+import { ClassicsExportJobSection } from "@/pages/classics/common/components/classics-export-job-section";
+import * as exportService from "@/pages/classics/common/classics-export-service";
 import * as shareService from "@/pages/classics/common/classics-share-service";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
-import { ClassicsContentQaPanel } from "@/pages/classics/common/components/classics-content-qa-panel";
 import { ClassicsContentTagPanel } from "@/pages/classics/common/components/classics-content-tag-panel";
+import { ClassicsContentQaPanel } from "@/pages/classics/common/components/classics-content-qa-panel";
 import { MingCustomsKeywordCloud } from "./components/ming-customs-keyword-cloud";
 import { MingCustomsList } from "./components/ming-customs-list";
 import { MingCustomsModel } from "./components/ming-customs-model";
@@ -18,6 +20,12 @@ import "./ming-customs-page.css";
 
 type MingCustomsVisibilityFilter = "ALL" | "PUBLIC" | "PRIVATE";
 type MingCustomsSortDirectionFilter = "ASC" | "DESC";
+
+const EXPORT_PAGE_SIZE = 8;
+
+const readTitle = (record?: MingCustomsRecord | null) => {
+    return record?.title?.trim() || `明代习俗 ${record?.id ?? "未命名"}`;
+};
 
 interface MingCustomsFilters {
     category: string;
@@ -76,6 +84,17 @@ export const MingCustomsPage = () => {
         enabled: editorOpen && editorMode === "edit" && Boolean(editingEntry?.id),
         retry: false
     });
+    const exportJobsQuery = useQuery({
+        queryKey: ["classics", "ming-customs", "exports", "jobs"],
+        queryFn: () =>
+            exportService.page({
+                pageNo: 1,
+                pageSize: EXPORT_PAGE_SIZE,
+                contentType: "MING_CUSTOMS",
+                exportKind: "CONTENT_DATASET"
+            }),
+        retry: false
+    });
     const pageResult = mingCustomsQuery.data;
     const records = useMemo(() => pageResult?.records || [], [pageResult?.records]);
     const categoryOptions = useMemo(
@@ -89,6 +108,7 @@ export const MingCustomsPage = () => {
     const currentPageNo = pageResult?.pageNo || query.pageNo || DEFAULT_PAGE_NO;
     const currentPageSize = pageResult?.pageSize || query.pageSize || DEFAULT_PAGE_SIZE;
     const editorEntry = detailQuery.data || editingEntry;
+    const exportJobs = exportJobsQuery.data?.records || [];
 
     const invalidateMingCustoms = async () => {
         await Promise.all([
@@ -102,6 +122,11 @@ export const MingCustomsPage = () => {
                 queryKey: ["classics", "content", "qa-pairs", "MING_CUSTOMS"]
             })
         ]);
+    };
+    const invalidateExportJobs = async () => {
+        await queryClient.invalidateQueries({
+            queryKey: ["classics", "ming-customs", "exports", "jobs"]
+        });
     };
 
     const saveMutation = useMutation({
@@ -139,6 +164,28 @@ export const MingCustomsPage = () => {
         },
         onError: (error) => {
             messageApi.error(error instanceof Error ? error.message : "分享创建失败");
+        }
+    });
+    const exportMutation = useMutation({
+        mutationFn: (entry: MingCustomsRecord) => {
+            const title = `${readTitle(entry)} 导出`;
+            return exportService.create({
+                contentType: "MING_CUSTOMS",
+                exportKind: "CONTENT_DATASET",
+                exportFormat: "HTML",
+                scopeType: "SELECTED_ITEMS",
+                scopeJson: JSON.stringify({
+                    title,
+                    ids: [entry.id]
+                })
+            });
+        },
+        onSuccess: async () => {
+            await invalidateExportJobs();
+            messageApi.success("导出任务已提交，请到下方任务列表查看进度。");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "导出提交失败");
         }
     });
 
@@ -224,6 +271,9 @@ export const MingCustomsPage = () => {
             title: `${title} 分享`,
             visibility: "PUBLIC"
         });
+    };
+    const exportEntry = (entry: MingCustomsRecord) => {
+        exportMutation.mutate(entry);
     };
 
     return (
@@ -315,25 +365,48 @@ export const MingCustomsPage = () => {
                 searchValue={searchText}
                 onSearchChange={searchMingCustoms}
                 content={
-                    <MingCustomsList
-                        categoryLabels={categoryLabels}
-                        loading={mingCustomsQuery.isLoading}
-                        dataSource={records}
-                        onDelete={deleteEntry}
-                        onOpenEdit={openEditEditor}
-                        onShare={shareEntry}
-                        pagination={{
-                            current: currentPageNo,
-                            pageSize: currentPageSize,
-                            total: totalCount,
-                            onChange: (pageNo, pageSize) =>
-                                setQuery((currentQuery) => ({
-                                    ...currentQuery,
-                                    pageNo,
-                                    pageSize
-                                }))
-                        }}
-                    />
+                    <>
+                        {exportJobsQuery.isError ? (
+                            <Alert
+                                type="warning"
+                                showIcon
+                                title="导出任务列表加载失败"
+                                description="请确认后台导出任务接口可用后重试。"
+                            />
+                        ) : null}
+                        <ClassicsExportJobSection
+                            items={exportJobs}
+                            loading={exportJobsQuery.isLoading || exportMutation.isPending}
+                            onDownload={(job) => {
+                                if (job.downloadUrl) {
+                                    window.open(job.downloadUrl, "_blank", "noopener,noreferrer");
+                                }
+                            }}
+                            onRefresh={() => {
+                                void invalidateExportJobs();
+                            }}
+                        />
+                        <MingCustomsList
+                            categoryLabels={categoryLabels}
+                            loading={mingCustomsQuery.isLoading}
+                            dataSource={records}
+                            onDelete={deleteEntry}
+                            onExport={exportEntry}
+                            onOpenEdit={openEditEditor}
+                            onShare={shareEntry}
+                            pagination={{
+                                current: currentPageNo,
+                                pageSize: currentPageSize,
+                                total: totalCount,
+                                onChange: (pageNo, pageSize) =>
+                                    setQuery((currentQuery) => ({
+                                        ...currentQuery,
+                                        pageNo,
+                                        pageSize
+                                    }))
+                            }}
+                        />
+                    </>
                 }
             />
             <MingCustomsModel

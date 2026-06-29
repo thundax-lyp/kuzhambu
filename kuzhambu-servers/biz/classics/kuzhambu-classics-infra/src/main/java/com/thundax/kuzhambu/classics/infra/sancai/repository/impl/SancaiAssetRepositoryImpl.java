@@ -31,6 +31,7 @@ import com.thundax.kuzhambu.classics.infra.sancai.persistence.mapper.SancaiAsset
 import com.thundax.kuzhambu.classics.infra.sancai.persistence.mapper.SancaiEntryDraftMapper;
 import com.thundax.kuzhambu.classics.infra.sancai.persistence.mapper.SancaiShowcaseMapper;
 import com.thundax.kuzhambu.classics.infra.sancai.persistence.mapper.SancaiVisualAssetMapper;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import java.util.List;
 import java.util.Objects;
@@ -212,15 +213,16 @@ public class SancaiAssetRepositoryImpl implements SancaiAssetRepository {
     }
 
     @Override
-    public Page<SancaiShowcase> pageShowcases(String status, int pageNo, int pageSize) {
+    public PageResult<SancaiShowcase> pageShowcases(String status, int pageNo, int pageSize) {
         LambdaQueryWrapper<SancaiShowcaseDO> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(StringUtils.isNotBlank(status), SancaiShowcaseDO::getStatus, status)
                 .orderByDesc(SancaiShowcaseDO::getRequestedAt);
         Page<SancaiShowcaseDO> dataPage = showcaseMapper.selectPage(new Page<>(pageNo, pageSize), wrapper);
-        Page<SancaiShowcase> entityPage = new Page<>(dataPage.getCurrent(), dataPage.getSize());
-        entityPage.setTotal(dataPage.getTotal());
-        entityPage.setRecords(SancaiAssetPersistenceAssembler.toShowcaseDomainList(dataPage.getRecords()));
-        return entityPage;
+        return PageResult.of(
+                (int) dataPage.getCurrent(),
+                (int) dataPage.getSize(),
+                dataPage.getTotal(),
+                SancaiAssetPersistenceAssembler.toShowcaseDomainList(dataPage.getRecords()));
     }
 
     private static int maxPriority(List<Object> values) {

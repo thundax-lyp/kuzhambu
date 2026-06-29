@@ -21,6 +21,47 @@ interface CapturedCall {
     path: string;
 }
 
+const defaultExportJobs = [
+    {
+        id: 700000000001,
+        contentType: "MING_CUSTOMS",
+        exportKind: "CONTENT_DATASET",
+        exportFormat: "HTML",
+        scopeType: "SELECTED_ITEMS",
+        scopeJson: JSON.stringify({
+            title: "岁时礼仪：元旦朝贺 导出",
+            ids: [500000000001]
+        }),
+        requestedAt: "2026-06-28T10:00:00.000+08:00",
+        status: "COMPLETED",
+        itemCount: 1,
+        assetCount: 0,
+        downloadUrl: "/downloads/ming-customs-7001.zip"
+    }
+];
+
+const expiredExportJobs = [
+    {
+        id: 700000000002,
+        contentType: "MING_CUSTOMS",
+        exportKind: "CONTENT_DATASET",
+        exportFormat: "HTML",
+        scopeType: "SELECTED_ITEMS",
+        scopeJson: JSON.stringify({
+            title: "岁时礼仪：元旦朝贺 导出",
+            ids: [500000000001]
+        }),
+        requestedAt: "2026-06-10T10:00:00.000+08:00",
+        expiresAt: "2026-06-11T00:00:00.000+08:00",
+        status: "COMPLETED",
+        itemCount: 1,
+        assetCount: 0,
+        downloadUrl: "/downloads/ming-customs-7002.zip"
+    }
+];
+
+let exportJobsForMock = defaultExportJobs;
+
 const capturedCalls: CapturedCall[] = [];
 
 const apiResponse = (data: unknown) =>
@@ -155,6 +196,30 @@ const installMingCustomsFetchMock = () => {
                 visibility: "PUBLIC"
             });
         }
+        if (path.endsWith("/classics/content/exports/page")) {
+            return apiResponse({
+                pageNo: 1,
+                pageSize: 8,
+                totalPage: 1,
+                count: exportJobsForMock.length,
+                records: exportJobsForMock,
+                totalCount: exportJobsForMock.length
+            });
+        }
+        if (path.endsWith("/classics/content/exports/create")) {
+            return apiResponse({
+                id: 700000000001,
+                contentType: "MING_CUSTOMS",
+                exportKind: "CONTENT_DATASET",
+                exportFormat: "HTML",
+                scopeType: "SELECTED_ITEMS",
+                scopeJson: JSON.stringify({
+                    title: "岁时礼仪：元旦朝贺 导出",
+                    ids: [500000000001]
+                }),
+                status: "REQUESTED"
+            });
+        }
 
         return apiResponse(true);
     });
@@ -176,6 +241,7 @@ describe("MingCustomsPage", () => {
         confirmDangerMock.mockClear();
         queryClient.clear();
         localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
+        exportJobsForMock = defaultExportJobs;
         installMingCustomsFetchMock();
     });
 
@@ -355,5 +421,52 @@ describe("MingCustomsPage", () => {
                 }
             });
         });
+    });
+
+    it("creates export job for entry and shows completed export list", async () => {
+        const user = userEvent.setup();
+        renderMingCustomsPage();
+
+        const contentTable = await screen.findByLabelText("明代习俗表格");
+        await user.click(
+            await within(contentTable).findByRole("button", { name: "导出 岁时礼仪：元旦朝贺" })
+        );
+
+        await waitFor(() => {
+            expect(capturedCalls).toContainEqual({
+                method: "POST",
+                path: "/classics/content/exports/create",
+                body: {
+                    contentType: "MING_CUSTOMS",
+                    exportKind: "CONTENT_DATASET",
+                    exportFormat: "HTML",
+                    scopeType: "SELECTED_ITEMS",
+                    scopeJson: JSON.stringify({
+                        title: "岁时礼仪：元旦朝贺 导出",
+                        ids: [500000000001]
+                    })
+                }
+            });
+        });
+
+        expect(await screen.findByText("导出任务")).toBeInTheDocument();
+        const exportSection = screen.getByText("导出任务").closest("section") as HTMLElement;
+        expect(
+            await within(exportSection).findByRole("button", { name: /下\s*载/ })
+        ).toBeInTheDocument();
+    });
+
+    it("shows expired export task and disables download", async () => {
+        exportJobsForMock = expiredExportJobs;
+        renderMingCustomsPage();
+
+        const exportSection = (await screen
+            .findByText("导出任务")
+            .then((node) => node.closest("section"))) as HTMLElement;
+        expect(exportSection).toBeTruthy();
+        expect(await within(exportSection).findByText("已过期")).toBeInTheDocument();
+        expect(
+            await within(exportSection).findByRole("button", { name: /下\s*载/ })
+        ).toBeDisabled();
     });
 });

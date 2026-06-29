@@ -43,6 +43,7 @@ export interface WangqiDocumentListProps {
     loading?: boolean;
     onDelete: (record: WangqiDocumentRecord) => void;
     onOpenEdit: (record: WangqiDocumentRecord) => void;
+    onShare: (record: WangqiDocumentRecord) => void;
     onSortDirectionChange: (sortDirection: "ASC" | "DESC") => void;
     pagination: KuzhambuTableProps<WangqiDocumentRecord>["pagination"];
     sortDirection: "ASC" | "DESC";
@@ -53,6 +54,7 @@ export const WangqiDocumentList = ({
     loading = false,
     onDelete,
     onOpenEdit,
+    onShare,
     onSortDirectionChange,
     pagination,
     sortDirection
@@ -119,6 +121,12 @@ export const WangqiDocumentList = ({
                     text: "编辑",
                     ariaLabel: `编辑 ${record.title || "未命名文档"}`,
                     onClick: () => onOpenEdit(record)
+                },
+                {
+                    key: "share",
+                    text: "分享",
+                    ariaLabel: `分享 ${record.title || "未命名文档"}`,
+                    onClick: () => onShare(record)
                 },
                 { type: "divider" },
                 {

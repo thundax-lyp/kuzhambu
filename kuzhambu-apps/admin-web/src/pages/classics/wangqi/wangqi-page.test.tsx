@@ -9,6 +9,26 @@ const confirmDangerMock = vi.hoisted(() =>
     vi.fn((options: { onConfirm: () => unknown }) => options.onConfirm())
 );
 
+const writeTextMock = vi.fn(() => Promise.resolve());
+
+const setupClipboardMock = () => {
+    Object.defineProperty(window.navigator, "clipboard", {
+        configurable: true,
+        value: {
+            writeText: writeTextMock
+        }
+    });
+};
+const resetClipboardMock = () => {
+    const descriptor = Object.getOwnPropertyDescriptor(window.navigator, "clipboard");
+    if (!descriptor) {
+        return;
+    }
+    if ("value" in descriptor && descriptor.value && "writeText" in descriptor.value) {
+        descriptor.value.writeText = vi.fn();
+    }
+};
+
 vi.mock("@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm", () => ({
     useKuzhambuConfirm: () => ({
         danger: confirmDangerMock
@@ -177,6 +197,15 @@ const installWangqiFetchMock = () => {
         ) {
             return apiResponse(true);
         }
+        if (path.endsWith("/classics/shares/create")) {
+            return apiResponse({
+                id: 500000000001,
+                title: "王圻文档 分享",
+                shareUrl: "https://example.com/share/500000000001",
+                contentType: "WANGQI_DOCUMENT",
+                visibility: "PUBLIC"
+            });
+        }
         return apiResponse(true);
     });
 };
@@ -195,6 +224,8 @@ describe("WangqiPage", () => {
     beforeEach(() => {
         capturedCalls.length = 0;
         confirmDangerMock.mockClear();
+        writeTextMock.mockClear();
+        setupClipboardMock();
         queryClient.clear();
         localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
         installWangqiFetchMock();
@@ -204,6 +235,7 @@ describe("WangqiPage", () => {
         cleanup();
         queryClient.clear();
         localStorage.clear();
+        resetClipboardMock();
         vi.restoreAllMocks();
     });
 
@@ -276,6 +308,33 @@ describe("WangqiPage", () => {
                     })
                 })
             );
+        });
+    }, 10000);
+
+    it("creates public share for wangqi document", async () => {
+        renderWangqiPage();
+
+        await screen.findByText("王圻文档");
+        fireEvent.click(await screen.findByLabelText("分享 王圻文档"));
+
+        await waitFor(() => {
+            expect(capturedCalls).toContainEqual({
+                method: "POST",
+                path: "/classics/shares/create",
+                body: {
+                    title: "王圻文档 分享",
+                    visibility: "PUBLIC",
+                    targets: [
+                        {
+                            contentId: 400000000001,
+                            contentType: "WANGQI_DOCUMENT"
+                        }
+                    ]
+                }
+            });
+        });
+        await waitFor(() => {
+            expect(writeTextMock).toHaveBeenCalledWith("https://example.com/share/500000000001");
         });
     }, 10000);
 });

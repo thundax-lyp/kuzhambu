@@ -1,6 +1,5 @@
 package com.thundax.kuzhambu.classics.application.sharing.service.impl;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -118,19 +117,14 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
 
     @Override
     public PageResult<ClassicsShareLink> pageLinks(String status, String visibility, PageQuery page) {
-        IPage<ClassicsShareLink> dataPage =
-                repository.pageLinks(status, visibility, page.getPageNo(), page.getPageSize());
-        return PageResult.of(
-                (int) dataPage.getCurrent(), (int) dataPage.getSize(), dataPage.getTotal(), dataPage.getRecords());
+        return repository.pageLinks(status, visibility, page.getPageNo(), page.getPageSize());
     }
 
     @Override
     public PageResult<ClassicsSharePortalListItem> pagePortalShares(
             String contentType, String title, Date issuedAfter, Date issuedBefore, PageQuery page) {
-        IPage<ClassicsSharePortalListItem> dataPage = repository.pagePortalShares(
+        return repository.pagePortalShares(
                 contentType, title, issuedAfter, issuedBefore, page.getPageNo(), page.getPageSize());
-        return PageResult.of(
-                (int) dataPage.getCurrent(), (int) dataPage.getSize(), dataPage.getTotal(), dataPage.getRecords());
     }
 
     @Override
@@ -386,13 +380,11 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
 
     @Override
     public PageResult<ClassicsShareAccessRecord> pageAccessRecords(ShareAccessQuery query, PageQuery page) {
-        IPage<ClassicsShareAccessRecord> dataPage = repository.pageAccessRecords(
+        return repository.pageAccessRecords(
                 query == null ? null : query.getShareLinkId(),
                 query == null ? null : query.getShareTargetId(),
                 page.getPageNo(),
                 page.getPageSize());
-        return PageResult.of(
-                (int) dataPage.getCurrent(), (int) dataPage.getSize(), dataPage.getTotal(), dataPage.getRecords());
     }
 
     private ClassicsShareTarget findReadableResourceTarget(

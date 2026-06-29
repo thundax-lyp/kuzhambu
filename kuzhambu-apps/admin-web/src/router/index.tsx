@@ -7,6 +7,7 @@ import { SearchAdminPage } from "../pages/discovery/search-admin/search-admin-pa
 import { MingCustomsPage } from "../pages/classics/ming-customs/ming-customs-page";
 import { SancaiPage } from "../pages/classics/sancai/sancai-page";
 import { WangqiPage } from "../pages/classics/wangqi/wangqi-page";
+import { SharingPage } from "../pages/classics/sharing/sharing-page";
 import { DashboardPage } from "../pages/dashboard/dashboard/dashboard-page";
 import { GraphExtractionPage } from "../pages/knowledge/graph-extraction/graph-extraction-page";
 import { GraphResultsPage } from "../pages/knowledge/graph-results/graph-results-page";
@@ -91,6 +92,10 @@ const router = createBrowserRouter(
                         {
                             path: "classics/wangqi",
                             element: <WangqiPage />
+                        },
+                        {
+                            path: "classics/sharing",
+                            element: <SharingPage />
                         },
                         {
                             path: "knowledge/graph-extraction",

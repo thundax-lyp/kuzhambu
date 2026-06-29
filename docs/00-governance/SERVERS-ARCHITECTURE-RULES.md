@@ -31,6 +31,9 @@ Hard Rules 必须使用 ArchUnit、Maven reactor、Checkstyle、脚本或测试�
 - `SERVERS_INTERFACE_POM_DEPENDENCY_WHITELIST`：`kuzhambu-<domain>-interface` 在 Maven POM 层只能依赖 `kuzhambu-<domain>-application`、任意 `kuzhambu-*-facade` 与 `kuzhambu-common-*`；不得直接依赖任何 `*-domain`、他域 `*-application`、`*-infra` 或 `starter` 模块。
 - `SERVERS_APPLICATION_POM_DEPENDENCY_WHITELIST`：`kuzhambu-<domain>-application` 在 Maven POM 层只能依赖 `kuzhambu-<domain>-domain`、任意 `kuzhambu-*-facade` 与 `kuzhambu-common-*`；不得直接依赖任何 `*-application`、他域 `*-domain`、`*-interface`、`*-infra` 或 `starter` 模块。
 - `SERVERS_POM_LEGACY_ALLOWLIST_SHRINK_ONLY`：测试中的 legacy allowlist 只用于登记存量跨域债务；一旦完成某条 facade 迁移，必须在同一轮删除对应 allowlist，允许项只能收缩不能新增。
+- `SERVERS_TEST_POM_COMMON_TEST_ONLY`：除 `kuzhambu-common-test` 外，任何模块的 `pom.xml` 都不得直接声明 `spring-boot-starter-test`；测试基建必须统一通过 `kuzhambu-common-test` 间接获得。
+- `SERVERS_TEST_POM_COMMON_TEST_SCOPE_ONLY`：业务模块如需依赖 `kuzhambu-common-test`，只能声明为 `test` 作用域；不得把测试基建作为生产依赖引入 `application`、`domain`、`interface` 或 `infra`。
+- `SERVERS_MYBATIS_POM_COMMON_MYBATIS_ONLY`：除仓库根 `dependencyManagement` 与 `kuzhambu-common-mybatis` 外，任何模块的 `pom.xml` 都不得直接声明 `mybatis-plus-spring-boot3-starter`；MyBatis-Plus 基建必须统一通过 `kuzhambu-common-mybatis` 间接获得。
 - `SERVERS_FACADE_POM_DEPENDENCY_WHITELIST`：`kuzhambu-<domain>-facade` 在 Maven POM 层只能依赖 `kuzhambu-common-*`；不得依赖任何 `*-application`、`*-domain`、`*-interface`、`*-infra` 或 `starter` 模块。
 - `SERVERS_DOMAIN_POM_DEPENDENCY_WHITELIST`：`kuzhambu-<domain>-domain` 在 Maven POM 层只能依赖 `kuzhambu-common-*`；不得依赖任何 `*-application`、`*-facade`、他域 `*-domain`、`*-interface`、`*-infra` 或 `starter` 模块。
 - `SERVERS_INTERFACE_NO_INFRA_DEPENDENCY`：`interface` 不得依赖任何业务域 `infra`。

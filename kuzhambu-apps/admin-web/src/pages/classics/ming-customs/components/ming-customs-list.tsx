@@ -30,6 +30,7 @@ export interface MingCustomsListProps {
     loading?: boolean;
     onDelete: (record: MingCustomsRecord) => void;
     onOpenEdit: (record: MingCustomsRecord) => void;
+    onExport: (record: MingCustomsRecord) => void;
     onShare: (record: MingCustomsRecord) => void;
     pagination: KuzhambuTableProps<MingCustomsRecord>["pagination"];
 }
@@ -40,6 +41,7 @@ export const MingCustomsList = ({
     loading = false,
     onDelete,
     onOpenEdit,
+    onExport,
     onShare,
     pagination
 }: MingCustomsListProps) => {
@@ -119,6 +121,12 @@ export const MingCustomsList = ({
                     text: "分享",
                     ariaLabel: `分享 ${record.title || "未命名条目"}`,
                     onClick: () => onShare(record)
+                },
+                {
+                    key: "export",
+                    text: "导出",
+                    ariaLabel: `导出 ${record.title || "未命名条目"}`,
+                    onClick: () => onExport(record)
                 },
                 { type: "divider" },
                 {
