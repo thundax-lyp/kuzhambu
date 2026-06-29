@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `delete 引用校验`：让 admin 删除入口拒绝被引用对象
-    - 任务类型：执行任务
-    - 依据文档：`docs/10-requirements/STORAGE-REQUIREMENTS.md`、`docs/30-designs/STORAGE-DESIGN.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-interface/src/main/java/com/thundax/kuzhambu/storage/interfaces/admin/object/controller/StorageObjectController.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/main/java/com/thundax/kuzhambu/storage/application/service/impl/StorageApplicationServiceImpl.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-interface/src/test/java/com/thundax/kuzhambu/storage/interfaces/admin/StorageObjectDeleteContractTest.java`
-    - 处理动作：实现“仅允许删除无引用对象”的删除校验
-    - 验收点：被引用对象无法通过 admin 通用删除接口删除且 contract test 覆盖该行为
-    - 重要度：10/10
-
 - [ ] `delete 引用释放`：收敛删除标记与引用释放逻辑
     - 任务类型：执行任务
     - 依据文档：`docs/10-requirements/STORAGE-REQUIREMENTS.md`、`docs/30-designs/STORAGE-DESIGN.md`

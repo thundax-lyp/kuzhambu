@@ -222,6 +222,13 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         if (id == null) {
             return 0;
         }
+        StoredObject storage = dao.getById(id);
+        if (storage == null) {
+            return 0;
+        }
+        if (StoredObjectReferenceStatus.REFERENCED == storage.getReferenceStatus()) {
+            throw new BizException("Storage 对象已被其他业务引用，无法删除");
+        }
         return dao.deleteById(id);
     }
 
