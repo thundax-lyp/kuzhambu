@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `storage_object_reference 真相源文档`：明确引用约束真相源
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FULL-CLOSURE.md`
-    - 范围对象：正式 schema 真相源、数据库治理文档
-    - 处理动作：明确 `storage_object_reference` 的主键或唯一键策略与多引用能力
-    - 验收点：正式真相源能清晰说明引用约束
-    - 重要度：9/10
-
 - [ ] `storage_object_reference DO`：对齐引用约束代码口径
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FULL-CLOSURE.md`

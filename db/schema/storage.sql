@@ -24,6 +24,10 @@ CREATE TABLE IF NOT EXISTS `storage_object` (
     KEY `idx_storage_object_owner` (`owner_type`, `owner_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='存储对象表';
 
+-- storage_object_reference 约束真相源：
+-- - 复合主键 (object_id, reference_owner_type, reference_owner_id) 实现 owner 级幂等。
+-- - 不同 owner 可同时引用同一 object（支持多引用）。
+-- - 多条引用状态变更由业务层按有效引用集合收敛。
 CREATE TABLE IF NOT EXISTS `storage_object_reference` (
     `object_id` bigint NOT NULL,
     `reference_owner_type` varchar(64) NOT NULL,
