@@ -2,6 +2,10 @@ package com.thundax.kuzhambu.operations.infra.cleanup.repository.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.operations.domain.cleanup.model.entity.CleanupItem;
 import com.thundax.kuzhambu.operations.domain.cleanup.model.entity.CleanupJob;
 import com.thundax.kuzhambu.operations.domain.cleanup.model.valueobject.CleanupItemId;
@@ -13,6 +17,7 @@ import com.thundax.kuzhambu.operations.infra.cleanup.persistence.dataobject.Clea
 import com.thundax.kuzhambu.operations.infra.cleanup.persistence.mapper.CleanupItemMapper;
 import com.thundax.kuzhambu.operations.infra.cleanup.persistence.mapper.CleanupJobMapper;
 import java.util.List;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -28,8 +33,12 @@ public class CleanupJobRepositoryImpl implements CleanupJobRepository {
 
     @Override
     public CleanupJob getById(CleanupJobId id) {
-        return CleanupPersistenceAssembler.toDomain(
+        CleanupJob job = CleanupPersistenceAssembler.toDomain(
                 jobMapper.selectOne(new LambdaQueryWrapper<CleanupJobDO>().eq(CleanupJobDO::getCleanupId, id.value())));
+        if (job != null) {
+            job.setCleanupItems(listItemsByJobId(id));
+        }
+        return job;
     }
 
     @Override
@@ -65,7 +74,7 @@ public class CleanupJobRepositoryImpl implements CleanupJobRepository {
     @Override
     public List<CleanupItem> listItemsByJobId(CleanupJobId jobId) {
         List<CleanupItemDO> dataObjects = itemMapper.selectList(
-                new LambdaQueryWrapper<CleanupItemDO>().eq(CleanupItemDO::getCleanupId, jobId.value()));
+                new LambdaQueryWrapper<CleanupItemDO>().eq(CleanupItemDO::getCleanupId, jobId.value()).orderByAsc("id"));
         return CleanupPersistenceAssembler.toDomainList(dataObjects);
     }
 
@@ -94,5 +103,36 @@ public class CleanupJobRepositoryImpl implements CleanupJobRepository {
     @Override
     public int deleteItemsByJobId(CleanupJobId jobId) {
         return itemMapper.delete(new LambdaQueryWrapper<CleanupItemDO>().eq(CleanupItemDO::getCleanupId, jobId.value()));
+    }
+
+    @Override
+    public PageResult<CleanupJob> page(
+            String cleanupType, String cleanupStatus, Long requesterUserId, int pageNo, int pageSize) {
+        Page<CleanupJobDO> page = new Page<>(pageNo, pageSize);
+        IPage<CleanupJobDO> dataObjectPage =
+                jobMapper.selectPage(page, buildPageWrapper(cleanupType, cleanupStatus, requesterUserId));
+        return PageResult.of(
+                (int) dataObjectPage.getCurrent(),
+                (int) dataObjectPage.getSize(),
+                dataObjectPage.getTotal(),
+                dataObjectPage.getRecords().stream()
+                        .map(CleanupPersistenceAssembler::toDomain)
+                        .toList());
+    }
+
+    private QueryWrapper<CleanupJobDO> buildPageWrapper(
+            String cleanupType, String cleanupStatus, Long requesterUserId) {
+        QueryWrapper<CleanupJobDO> wrapper = new QueryWrapper<>();
+        if (StringUtils.isNotBlank(cleanupType)) {
+            wrapper.eq("cleanup_type", cleanupType);
+        }
+        if (StringUtils.isNotBlank(cleanupStatus)) {
+            wrapper.eq("cleanup_status", cleanupStatus);
+        }
+        if (requesterUserId != null) {
+            wrapper.eq("requester_user_id", requesterUserId);
+        }
+        wrapper.orderByDesc("started_at");
+        return wrapper;
     }
 }
