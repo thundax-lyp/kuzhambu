@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Operations cleanup execute application`：新增 cleanup 执行应用服务
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-RUNTIME-CLOSURE.md`
-    - 范围对象：`kuzhambu-operations-application` 下 cleanup command、service、service impl、support 文件
-    - 处理动作：实现 cleanup 手动执行并写入 job / item 台账
-    - 验收点：支持四类 cleanup type 的 execute 应用编排
-    - 重要度：9/10
-
 - [ ] `Operations cleanup query application`：新增 cleanup 查询应用服务
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-RUNTIME-CLOSURE.md`
