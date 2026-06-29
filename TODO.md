@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `referenceStatus 一致性`：收敛对象引用状态维护
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FULL-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/main/java/com/thundax/kuzhambu/storage/application/service/impl/StorageApplicationServiceImpl.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-infra/src/main/java/com/thundax/kuzhambu/storage/infra/object/repository/impl/StoredObjectRepositoryImpl.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-infra/src/main/java/com/thundax/kuzhambu/storage/infra/object/persistence/assembler/StoragePersistenceAssembler.java`
-    - 处理动作：使 `referenceStatus` 与真实有效引用集合保持一致
-    - 验收点：新增、移除最后一条有效引用后对象引用状态变化正确且有测试锁定
-    - 重要度：10/10
-
 - [ ] `delete 引用校验`：让 admin 删除入口拒绝被引用对象
     - 任务类型：执行任务
     - 依据文档：`docs/10-requirements/STORAGE-REQUIREMENTS.md`、`docs/30-designs/STORAGE-DESIGN.md`

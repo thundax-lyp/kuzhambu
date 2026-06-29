@@ -31,8 +31,10 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -257,8 +259,13 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         if (command == null) {
             return 0;
         }
-        return businessRepository.deleteByOwner(
-                command.getOwnerType() == null ? null : command.getOwnerType().value(), command.getOwnerId());
+        String referenceOwnerType =
+                command.getOwnerType() == null ? null : command.getOwnerType().value();
+        String referenceOwnerId = command.getOwnerId();
+        Set<StoredObjectId> impactedObjectIds = impactedObjectIdsByOwner(referenceOwnerType, referenceOwnerId);
+        int removed = businessRepository.deleteByOwner(referenceOwnerType, referenceOwnerId);
+        updateReferenceStatusByObjectId(impactedObjectIds);
+        return removed;
     }
 
     @Override
@@ -271,11 +278,66 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         if (candidates == null || candidates.isEmpty()) {
             return;
         }
+        Set<StoredObjectId> impactedObjectIds = impactedObjectIds(candidates);
         List<StoredObjectReference> toInsert = uniqueReferences(candidates);
-        if (toInsert.isEmpty()) {
+        if (toInsert.isEmpty() && impactedObjectIds.isEmpty()) {
             return;
         }
-        businessRepository.insertReferences(toInsert);
+        if (!toInsert.isEmpty()) {
+            businessRepository.insertReferences(toInsert);
+        }
+        updateReferenceStatusByObjectId(impactedObjectIds, StoredObjectReferenceStatus.REFERENCED);
+    }
+
+    private void updateReferenceStatusByObjectId(Set<StoredObjectId> objectIds) {
+        updateReferenceStatusByObjectId(objectIds, null);
+    }
+
+    private void updateReferenceStatusByObjectId(
+            Set<StoredObjectId> objectIds, StoredObjectReferenceStatus forcedStatus) {
+        if (objectIds == null || objectIds.isEmpty()) {
+            return;
+        }
+        for (StoredObjectId objectId : objectIds) {
+            if (objectId == null) {
+                continue;
+            }
+            StoredObjectReferenceStatus referenceStatus = forcedStatus;
+            if (referenceStatus == null) {
+                long referenceCount = businessRepository.countByObjectId(objectId);
+                referenceStatus = referenceCount > 0
+                        ? StoredObjectReferenceStatus.REFERENCED
+                        : StoredObjectReferenceStatus.UNREFERENCED;
+            }
+            StoredObject target = new StoredObject();
+            target.setId(objectId);
+            target.setReferenceStatus(referenceStatus);
+            dao.updateReferenceStatus(target);
+        }
+    }
+
+    private Set<StoredObjectId> impactedObjectIdsByOwner(String referenceOwnerType, String referenceOwnerId) {
+        Set<StoredObjectId> objectIds = new LinkedHashSet<>();
+        for (StoredObjectId objectId : businessRepository.listObjectIdsByOwner(referenceOwnerType, referenceOwnerId)) {
+            if (objectId != null) {
+                objectIds.add(objectId);
+            }
+        }
+        return objectIds;
+    }
+
+    private Set<StoredObjectId> impactedObjectIds(List<StoredObjectReference> references) {
+        Set<StoredObjectId> objectIds = new LinkedHashSet<>();
+        if (references == null || references.isEmpty()) {
+            return objectIds;
+        }
+        for (StoredObjectReference reference : references) {
+            if (reference == null || reference.getObjectId() == null) {
+                continue;
+            }
+            objectIds.add(reference.getObjectId());
+        }
+        return objectIds;
     }
 
     private List<StoredObjectReference> uniqueReferences(List<StoredObjectReference> candidates) {
