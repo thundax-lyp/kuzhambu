@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Storage 正式文档`：回写 requirements、design 和 coverage
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FULL-CLOSURE.md`、`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`docs/10-requirements/STORAGE-REQUIREMENTS.md`、`docs/30-designs/STORAGE-DESIGN.md`、`docs/40-readiness/STORAGE-IMPLEMENTATION-COVERAGE.md`
-    - 处理动作：将已落实的稳定口径回写到正式需求、设计和 coverage 文档
-    - 验收点：requirements、design、coverage 与实现口径一致
-    - 重要度：8/10
-
 - [ ] `Storage 现场清理`：清理 RUNBOOK 与临时说明
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FULL-CLOSURE.md`、`docs/00-governance/TODO-RULES.md`
