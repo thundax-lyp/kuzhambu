@@ -218,6 +218,12 @@ public final class RepositoryArchitectureRuleSupport {
                         ArchitectureSourceSupport.repositoryPath(root, pom)
                                 + " test-dependency=spring-boot-starter-test allowed=[kuzhambu-servers/common/kuzhambu-common-test/pom.xml]");
             }
+            if (isCommonTestDependency(dependency) && !isAllowedCommonTestDependency(normalizedPomPath, dependency)) {
+                violations.add(ArchitectureSourceSupport.repositoryPath(root, pom)
+                        + " dependency=kuzhambu-common-test scope="
+                        + dependency.scope
+                        + " allowed=[scope=test]");
+            }
             if (isDirectMybatisPlusStarterDependency(dependency)
                     && !isAllowedDirectMybatisPlusStarterDependency(normalizedPomPath)) {
                 violations.add(
@@ -353,6 +359,16 @@ public final class RepositoryArchitectureRuleSupport {
                 && "mybatis-plus-spring-boot3-starter".equals(dependency.artifactId);
     }
 
+    private static boolean isCommonTestDependency(Dependency dependency) {
+        return "com.thundax".equals(dependency.groupId) && "kuzhambu-common-test".equals(dependency.artifactId);
+    }
+
+    private static boolean isAllowedCommonTestDependency(String normalizedPomPath, Dependency dependency) {
+        return !normalizedPomPath.startsWith("kuzhambu-servers/biz/")
+                || "kuzhambu-servers/common/kuzhambu-common-test/pom.xml".equals(normalizedPomPath)
+                || "test".equals(dependency.scope);
+    }
+
     private static boolean isAllowedDirectMybatisPlusStarterDependency(String normalizedPomPath) {
         return "kuzhambu-servers/pom.xml".equals(normalizedPomPath)
                 || "kuzhambu-servers/common/kuzhambu-common-mybatis/pom.xml".equals(normalizedPomPath);
@@ -383,7 +399,8 @@ public final class RepositoryArchitectureRuleSupport {
                 Node node = dependencyNodes.item(index);
                 if (node instanceof Element) {
                     Element dependency = (Element) node;
-                    model.dependencies.add(new Dependency(text(dependency, "groupId"), text(dependency, "artifactId")));
+                    model.dependencies.add(new Dependency(
+                            text(dependency, "groupId"), text(dependency, "artifactId"), text(dependency, "scope")));
                 }
             }
             return model;
@@ -404,10 +421,12 @@ public final class RepositoryArchitectureRuleSupport {
     private static final class Dependency {
         private final String groupId;
         private final String artifactId;
+        private final String scope;
 
-        private Dependency(String groupId, String artifactId) {
+        private Dependency(String groupId, String artifactId, String scope) {
             this.groupId = groupId;
             this.artifactId = artifactId;
+            this.scope = scope;
         }
     }
 }
