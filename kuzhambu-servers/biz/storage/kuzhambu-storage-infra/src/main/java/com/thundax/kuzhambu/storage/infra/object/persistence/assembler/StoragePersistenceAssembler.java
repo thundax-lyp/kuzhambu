@@ -112,6 +112,7 @@ public final class StoragePersistenceAssembler {
             return null;
         }
         StoredObjectReferenceDO dataObject = new StoredObjectReferenceDO();
+        // 复合主键映射：objectId + referenceOwnerType + referenceOwnerId
         dataObject.setObjectId(StoredObjectIdCodec.toValue(entity.getObjectId()));
         dataObject.setReferenceOwnerId(entity.getOwnerId());
         dataObject.setReferenceOwnerType(ownerTypeValue(entity.getOwnerType()));
@@ -125,6 +126,7 @@ public final class StoragePersistenceAssembler {
             return null;
         }
         StoredObjectReference entity = new StoredObjectReference();
+        // 按复合主键字段回填引用身份信息
         entity.setObjectId(StoredObjectIdCodec.toDomain(dataObject.getObjectId()));
         entity.setOwnerId(dataObject.getReferenceOwnerId());
         entity.setOwnerType(ownerTypeFrom(dataObject.getReferenceOwnerType()));

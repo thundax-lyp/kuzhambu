@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `storage_object_reference DO`：对齐引用约束代码口径
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FULL-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-infra/src/main/java/com/thundax/kuzhambu/storage/infra/object/persistence/dataobject/StoredObjectReferenceDO.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-infra/src/main/java/com/thundax/kuzhambu/storage/infra/object/persistence/assembler/StoragePersistenceAssembler.java`
-    - 处理动作：让 Java DO 与引用约束真相源保持一致
-    - 验收点：DO 和 assembler 与正式真相源不存在冲突
-    - 重要度：8/10
-
 - [ ] `addReferences 语义`：为 application 建立相同 owner 幂等规则
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FULL-CLOSURE.md`
