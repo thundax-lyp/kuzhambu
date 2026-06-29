@@ -25,33 +25,61 @@ const readFetchUrl = (input: RequestInfo | URL) => {
 const installFetchRecorder = () => {
     vi.spyOn(globalThis, "fetch").mockImplementation(async (input, init) => {
         const url = readFetchUrl(input);
+        const method = init?.method || "GET";
         capturedCalls.push({
             body: init?.body ? JSON.parse(String(init.body)) : undefined,
-            method: init?.method,
+            method,
             path: url.replace(API_PREFIX, "").replace(DEV_PROXY_PREFIX, "")
         });
+        let data: unknown = {
+            id: 9001,
+            shareToken: "abc123_-",
+            shareUrl: "http://localhost:5174/share/abc123_-",
+            status: "ACTIVE",
+            targets: [
+                {
+                    contentId: 3001,
+                    contentType: "SANCAI_ENTRY",
+                    contentVersionId: 8101,
+                    contentVersionNo: 1,
+                    id: 7001,
+                    titleSnapshot: "天地"
+                }
+            ],
+            title: "三才分享",
+            visibility: "PUBLIC"
+        };
+        if (url.includes("/classics/shares/page")) {
+            data = {
+                pageNo: 1,
+                pageSize: 10,
+                count: 1,
+                totalCount: 1,
+                totalPage: 1,
+                records: [data]
+            };
+        }
+        if (url.includes("/classics/shares/access-records/page")) {
+            data = {
+                pageNo: 1,
+                pageSize: 10,
+                count: 1,
+                totalCount: 1,
+                totalPage: 1,
+                records: [
+                    {
+                        id: 5001,
+                        shareLinkId: 9001,
+                        accessResult: "ALLOWED"
+                    }
+                ]
+            };
+        }
 
         return new Response(
             JSON.stringify({
                 code: "COMMON-00000",
-                data: {
-                    id: 9001,
-                    shareToken: "abc123_-",
-                    shareUrl: "http://localhost:5174/share/abc123_-",
-                    status: "ACTIVE",
-                    targets: [
-                        {
-                            contentId: 3001,
-                            contentType: "SANCAI_ENTRY",
-                            contentVersionId: 8101,
-                            contentVersionNo: 1,
-                            id: 7001,
-                            titleSnapshot: "天地"
-                        }
-                    ],
-                    title: "三才分享",
-                    visibility: "PUBLIC"
-                },
+                data,
                 message: "success"
             }),
             {
@@ -107,5 +135,67 @@ describe("classics share service request contracts", () => {
             path: "/classics/shares/create"
         });
         expect(response.shareUrl).toBe("http://localhost:5174/share/abc123_-");
+    });
+
+    it("loads shares by page request", async () => {
+        await shareService.page({
+            pageNo: 1,
+            pageSize: 10,
+            status: "ACTIVE",
+            visibility: "PUBLIC"
+        });
+        expect(capturedCalls.at(-1)).toEqual({
+            body: {
+                pageNo: 1,
+                pageSize: 10,
+                status: "ACTIVE",
+                visibility: "PUBLIC"
+            },
+            method: "POST",
+            path: "/classics/shares/page"
+        });
+    });
+
+    it("gets a share by id", async () => {
+        await shareService.get(9001);
+        expect(capturedCalls.at(-1)).toEqual({
+            body: undefined,
+            method: "GET",
+            path: "/classics/shares/9001"
+        });
+    });
+
+    it("updates share status by id", async () => {
+        await shareService.updateStatus({
+            id: 9001,
+            status: "REVOKED"
+        });
+        expect(capturedCalls.at(-1)).toEqual({
+            body: {
+                id: 9001,
+                status: "REVOKED"
+            },
+            method: "POST",
+            path: "/classics/shares/status/update"
+        });
+    });
+
+    it("loads access records for a share", async () => {
+        await shareService.pageAccessRecords({
+            pageNo: 1,
+            pageSize: 10,
+            shareLinkId: 9001,
+            shareTargetId: 7001
+        });
+        expect(capturedCalls.at(-1)).toEqual({
+            body: {
+                pageNo: 1,
+                pageSize: 10,
+                shareLinkId: 9001,
+                shareTargetId: 7001
+            },
+            method: "POST",
+            path: "/classics/shares/access-records/page"
+        });
     });
 });

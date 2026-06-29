@@ -36,3 +36,12 @@ export interface ClassicsShareRecord {
     title?: string | null;
     visibility?: ClassicsShareVisibility | string | null;
 }
+
+export interface ClassicsShareAccessRecord {
+    accessResult?: string | null;
+    accessedAt?: string | null;
+    clientSnapshot?: string | null;
+    id?: number | null;
+    shareLinkId?: number | null;
+    shareTargetId?: number | null;
+}

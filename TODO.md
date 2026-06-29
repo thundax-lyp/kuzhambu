@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web/classics/share-common`：补齐通用分享服务与类型
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARE-EXPORT-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/common/classics-share-service.ts`、`kuzhambu-apps/admin-web/src/pages/classics/common/classics-share-types.ts`、`kuzhambu-apps/admin-web/src/pages/classics/common/classics-share-service-contract.test.ts`
-    - 处理动作：补齐分享管理所需的前端 service、types 和契约测试
-    - 验收点：前端可统一使用 `page / get / updateStatus / pageAccessRecords`，且分享 service contract 测试覆盖新请求契约
-    - 重要度：9/10
-
 - [ ] `admin-web/classics/wangqi`：补齐 Wangqi 单文档分享入口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARE-EXPORT-CLOSURE.md`
