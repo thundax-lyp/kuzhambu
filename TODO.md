@@ -11,22 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Operations long task app-interface`：新增 long task 应用与接口读闭环
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-RUNTIME-CLOSURE.md`
-    - 范围对象：`kuzhambu-operations-application` 与 `kuzhambu-operations-interface` 下 task query、result、service、controller 文件
-    - 处理动作：新增 long task `page / detail` 应用服务与 admin API
-    - 验收点：暴露 `/api/operations/task/page` 和 `/api/operations/task/detail`
-    - 重要度：9/10
-
-- [ ] `Admin Web operations tasks page`：落地统一运维入口页面
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-RUNTIME-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/operations/tasks` 与 `src/router/index.tsx`
-    - 处理动作：新增 `/operations/tasks` 页面并接入 health summary、long task table 和运维入口跳转
-    - 验收点：页面可展示 health summary、long task 列表，并提供 report / backup-restore / cleanup 入口
-    - 重要度：9/10
-
 - [ ] `Admin Web operations cleanup page`：落地 cleanup 管理页面
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-RUNTIME-CLOSURE.md`
