@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `storage-interface response`：补齐 admin 分片上传响应模型
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FULL-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-interface/src/main/java/com/thundax/kuzhambu/storage/interfaces/admin/object/controller/response`
-    - 处理动作：新增 admin 分片上传四段式 response 模型
-    - 验收点：admin 分片上传四段式 response 模型齐全且命名与现有 interface 约定一致
-    - 重要度：8/10
-
 - [ ] `StorageObjectController`：补齐 admin 分片上传路由
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FULL-CLOSURE.md`
