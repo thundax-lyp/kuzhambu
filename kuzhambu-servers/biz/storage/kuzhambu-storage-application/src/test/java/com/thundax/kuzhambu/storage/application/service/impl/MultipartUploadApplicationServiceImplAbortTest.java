@@ -16,6 +16,7 @@ import com.thundax.kuzhambu.storage.domain.object.model.enums.MultipartUploadSta
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.repository.MultipartUploadRepository;
 import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectContentRepository;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -27,7 +28,7 @@ class MultipartUploadApplicationServiceImplAbortTest {
     private static final String PART_PATH_3 = "multipart/upload-1/3.part";
 
     @Test
-    void abortShouldCleanupPartsAndMarkSessionAborted() {
+    void abortShouldCleanupPartsAndMarkSessionAborted() throws IOException {
         MultipartUploadRepository multipartUploadRepository = mock(MultipartUploadRepository.class);
         StoredObjectContentRepository contentRepository = mock(StoredObjectContentRepository.class);
         MultipartUploadSession session = session();

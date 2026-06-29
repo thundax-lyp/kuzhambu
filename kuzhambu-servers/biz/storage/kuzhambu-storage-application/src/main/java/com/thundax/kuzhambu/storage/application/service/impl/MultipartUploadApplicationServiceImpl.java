@@ -185,7 +185,11 @@ public class MultipartUploadApplicationServiceImpl implements MultipartUploadApp
         for (MultipartUploadPart part : parts) {
             StoredObject partStorage = new StoredObject();
             partStorage.setObjectKey(part.getPartPath());
-            storedObjectContentRepository.delete(partStorage);
+            try {
+                storedObjectContentRepository.delete(partStorage);
+            } catch (IOException exception) {
+                throw new BizException("Multipart upload part delete failed: " + exception.getMessage());
+            }
         }
         multipartUploadRepository.deleteMultipartParts(session.getUploadId());
         Date now = new Date();
