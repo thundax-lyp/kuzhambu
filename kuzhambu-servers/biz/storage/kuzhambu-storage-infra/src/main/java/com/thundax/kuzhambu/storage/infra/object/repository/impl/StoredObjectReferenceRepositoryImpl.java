@@ -2,10 +2,10 @@ package com.thundax.kuzhambu.storage.infra.object.repository.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObjectReference;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
-import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectReferenceRepository;
 import com.thundax.kuzhambu.storage.infra.object.persistence.assembler.StoragePersistenceAssembler;
 import com.thundax.kuzhambu.storage.infra.object.persistence.dataobject.StoredObjectReferenceDO;
@@ -57,8 +57,7 @@ public class StoredObjectReferenceRepositoryImpl implements StoredObjectReferenc
         if (StringUtils.isNotBlank(referenceOwnerId)) {
             wrapper.eq(StoredObjectReferenceDO::getReferenceOwnerId, referenceOwnerId);
         }
-        return mapper.selectObjs(wrapper.select(StoredObjectReferenceDO::getObjectId))
-                .stream()
+        return mapper.selectObjs(wrapper.select(StoredObjectReferenceDO::getObjectId)).stream()
                 .filter(Objects::nonNull)
                 .map(objectId -> StoredObjectIdCodec.toDomain(String.valueOf(objectId)))
                 .collect(Collectors.toList());
