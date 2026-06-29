@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.storage.application.service.impl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -15,6 +16,7 @@ import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectContent
 import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectReferenceRepository;
 import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectRepository;
 import org.junit.jupiter.api.Test;
+import org.mockito.InOrder;
 import org.mockito.Mockito;
 
 class StorageApplicationServiceDeleteTest {
@@ -45,8 +47,9 @@ class StorageApplicationServiceDeleteTest {
 
         int deleted = service.remove(StoredObjectId.of(100L));
         assertEquals(1, deleted);
-        verify(referenceRepository).deleteByObjectId("100");
-        verify(repository).deleteById(StoredObjectId.of(100L));
+        InOrder inOrder = inOrder(repository, referenceRepository);
+        inOrder.verify(repository).deleteById(StoredObjectId.of(100L));
+        inOrder.verify(referenceRepository).deleteByObjectId("100");
     }
 
     private static StoredObject storage(StoredObjectId id, StoredObjectReferenceStatus referenceStatus) {

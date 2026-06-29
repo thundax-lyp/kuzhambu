@@ -229,8 +229,12 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         if (StoredObjectReferenceStatus.REFERENCED == storage.getReferenceStatus()) {
             throw new BizException("Storage 对象已被其他业务引用，无法删除");
         }
+        int deleted = dao.deleteById(id);
+        if (deleted <= 0) {
+            return 0;
+        }
         businessRepository.deleteByObjectId(String.valueOf(id.value()));
-        return dao.deleteById(id);
+        return deleted;
     }
 
     @Override

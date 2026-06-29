@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `delete 引用释放`：收敛删除标记与引用释放逻辑
-    - 任务类型：执行任务
-    - 依据文档：`docs/10-requirements/STORAGE-REQUIREMENTS.md`、`docs/30-designs/STORAGE-DESIGN.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/main/java/com/thundax/kuzhambu/storage/application/service/impl/StorageApplicationServiceImpl.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-infra/src/main/java/com/thundax/kuzhambu/storage/infra/object/repository/impl/StoredObjectReferenceRepositoryImpl.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-infra/src/main/java/com/thundax/kuzhambu/storage/infra/object/repository/impl/StoredObjectRepositoryImpl.java`
-    - 处理动作：让删除对象时的删除标记与引用释放行为保持一致
-    - 验收点：删除后对象不可读、有效引用被释放且行为有测试验证
-    - 重要度：10/10
-
 - [ ] `orphan cleanup 语义`：让异步物理删除任务与删除语义一致
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/STORAGE-DESIGN.md`、`docs/30-designs/RUNBOOK-STORAGE-FULL-CLOSURE.md`
