@@ -4,9 +4,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.operations.application.cleanup.command.OperationsCleanupExecuteCommand;
+import com.thundax.kuzhambu.operations.application.cleanup.query.OperationsCleanupDetailQuery;
+import com.thundax.kuzhambu.operations.application.cleanup.query.OperationsCleanupPageQuery;
 import com.thundax.kuzhambu.operations.application.cleanup.result.OperationsCleanupDetailResult;
+import com.thundax.kuzhambu.operations.application.cleanup.result.OperationsCleanupPageResult;
 import com.thundax.kuzhambu.operations.domain.cleanup.model.entity.CleanupItem;
 import com.thundax.kuzhambu.operations.domain.cleanup.model.entity.CleanupJob;
 import com.thundax.kuzhambu.operations.domain.cleanup.model.valueobject.CleanupItemId;
@@ -43,6 +47,36 @@ class CleanupApplicationServiceImplTest {
         assertThrows(
                 IllegalArgumentException.class,
                 () -> service.execute(new OperationsCleanupExecuteCommand("UNSUPPORTED", 1001L)));
+    }
+
+    @Test
+    void pageAndDetailShouldMapRepositoryRecords() {
+        InMemoryCleanupJobRepository repository = new InMemoryCleanupJobRepository();
+        CleanupJob cleanupJob = new CleanupJob(
+                CleanupJobId.of(9001L),
+                "EXPIRED_BACKUP",
+                "SUCCEEDED",
+                3,
+                2,
+                1,
+                null,
+                1001L,
+                new Date(1_719_630_400_000L),
+                new Date(1_719_630_500_000L),
+                List.of());
+        repository.jobs.put(9001L, cleanupJob);
+
+        CleanupApplicationServiceImpl service = new CleanupApplicationServiceImpl(repository);
+
+        PageResult<OperationsCleanupPageResult> pageResult = service.page(
+                new OperationsCleanupPageQuery("EXPIRED_BACKUP", "SUCCEEDED", 1001L), new PageQuery(1, 10));
+        OperationsCleanupDetailResult detailResult =
+                service.detail(new OperationsCleanupDetailQuery(CleanupJobId.of(9001L)));
+
+        assertEquals(1, pageResult.getRecords().size());
+        assertEquals(9001L, pageResult.getRecords().get(0).getCleanupId().value());
+        assertEquals("SUCCEEDED", pageResult.getRecords().get(0).getCleanupStatus());
+        assertEquals(3, detailResult.getTotalCount());
     }
 
     private static final class InMemoryCleanupJobRepository implements CleanupJobRepository {

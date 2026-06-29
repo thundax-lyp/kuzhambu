@@ -7,8 +7,13 @@ import static com.thundax.kuzhambu.operations.application.cleanup.support.Operat
 import static com.thundax.kuzhambu.operations.application.cleanup.support.OperationsCleanupSupport.CLEANUP_STATUS_SUCCEEDED;
 
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
+import com.thundax.kuzhambu.common.core.page.PageQuery;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.operations.application.cleanup.command.OperationsCleanupExecuteCommand;
+import com.thundax.kuzhambu.operations.application.cleanup.query.OperationsCleanupDetailQuery;
+import com.thundax.kuzhambu.operations.application.cleanup.query.OperationsCleanupPageQuery;
 import com.thundax.kuzhambu.operations.application.cleanup.result.OperationsCleanupDetailResult;
+import com.thundax.kuzhambu.operations.application.cleanup.result.OperationsCleanupPageResult;
 import com.thundax.kuzhambu.operations.application.cleanup.service.CleanupApplicationService;
 import com.thundax.kuzhambu.operations.application.cleanup.support.OperationsCleanupSupport;
 import com.thundax.kuzhambu.operations.domain.cleanup.model.entity.CleanupItem;
@@ -84,6 +89,28 @@ public class CleanupApplicationServiceImpl implements CleanupApplicationService 
         return toDetailResult(cleanupJobRepository.getById(cleanupId));
     }
 
+    @Override
+    public PageResult<OperationsCleanupPageResult> page(OperationsCleanupPageQuery query, PageQuery pageQuery) {
+        PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
+        effectivePage.normalize();
+        PageResult<CleanupJob> jobPage = cleanupJobRepository.page(
+                query == null ? null : query.getCleanupType(),
+                query == null ? null : query.getCleanupStatus(),
+                query == null ? null : query.getRequesterUserId(),
+                effectivePage.getPageNo(),
+                effectivePage.getPageSize());
+        return PageResult.of(
+                jobPage.getPageNo(),
+                jobPage.getPageSize(),
+                jobPage.getTotalCount(),
+                jobPage.getRecords().stream().map(this::toPageResult).collect(Collectors.toList()));
+    }
+
+    @Override
+    public OperationsCleanupDetailResult detail(OperationsCleanupDetailQuery query) {
+        return toDetailResult(cleanupJobRepository.getById(query == null ? null : query.getCleanupId()));
+    }
+
     private List<CleanupItem> discoverCleanupItems(Long cleanupJobId, String cleanupType, Date processedAt) {
         List<Long> targetIds = List.of();
         return targetIds.stream()
@@ -126,6 +153,23 @@ public class CleanupApplicationServiceImpl implements CleanupApplicationService 
             return null;
         }
         return new OperationsCleanupDetailResult(
+                cleanupJob.getId(),
+                cleanupJob.getCleanupType(),
+                cleanupJob.getCleanupStatus(),
+                cleanupJob.getTotalCount(),
+                cleanupJob.getSuccessCount(),
+                cleanupJob.getFailedCount(),
+                cleanupJob.getFailureReason(),
+                cleanupJob.getRequesterUserId(),
+                cleanupJob.getStartedAt(),
+                cleanupJob.getCompletedAt());
+    }
+
+    private OperationsCleanupPageResult toPageResult(CleanupJob cleanupJob) {
+        if (cleanupJob == null) {
+            return null;
+        }
+        return new OperationsCleanupPageResult(
                 cleanupJob.getId(),
                 cleanupJob.getCleanupType(),
                 cleanupJob.getCleanupStatus(),
