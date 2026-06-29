@@ -66,3 +66,26 @@ Compose uses project-prefixed image names by default:
 - `kuzhambu/rocketmq:5.3.0`
 
 Override the names with `KUZHAMBU_*_IMAGE` variables in `deploy/.env`. Business images are produced by `docker compose --env-file .env build`. Foundation images must be available locally under the configured names before offline smoke tests or image export.
+
+## Backup And Restore Scripts
+
+The compose stack mounts backup and restore assets directly into `admin-starter`.
+
+Current layout:
+
+- `admin-starter` and `portal-starter` share the same `storage-data` volume so local object storage has a single data root
+- `admin-starter` mounts the `backup-data` volume at `${KUZHAMBU_BACKUP_ROOT_PATH}`
+- `admin-starter` mounts `deploy/scripts` at `/app/ops-scripts`
+
+The scripts currently provided are:
+
+- `/app/ops-scripts/backup-business-data.sh`
+- `/app/ops-scripts/restore-business-data.sh`
+- `/app/ops-scripts/cleanup-backups.sh`
+- `/app/ops-scripts/business-table-whitelist.txt`
+
+Notes:
+
+- The scripts run inside `admin-starter` and connect to `mysql` over the compose network.
+- In `local` mode, the scripts read and restore files from the shared `/app/storage/object` path.
+- In `s3` mode, the scripts expect the `aws` CLI to be available inside the `admin-starter` image. If that is not yet true, either extend the image or defer S3 backup execution until the image includes the required tooling.
