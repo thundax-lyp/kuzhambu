@@ -343,7 +343,12 @@ export const postFormDataWithProgress = async <TResponse>(
     await refreshAccessTokenIfNeeded();
 
     const token = getAccessToken();
-    let { response, payload } = await requestFormDataWithProgress<TResponse>(path, body, token, options);
+    let { response, payload } = await requestFormDataWithProgress<TResponse>(
+        path,
+        body,
+        token,
+        options
+    );
 
     if (!response.ok || !isSuccessCode(payload.code)) {
         const code = payload.code ?? response.status;

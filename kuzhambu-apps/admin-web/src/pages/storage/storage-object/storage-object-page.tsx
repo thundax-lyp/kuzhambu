@@ -21,7 +21,11 @@ import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import * as service from "./storage-object-service";
 import type { StoragePageQuery } from "./storage-object-service";
 import { StorageUploadTaskCard } from "./components/storage-upload-task-card";
-import type { StorageContentMode, StorageRecord, StorageUploadTaskRecord } from "./storage-object-types";
+import type {
+    StorageContentMode,
+    StorageRecord,
+    StorageUploadTaskRecord
+} from "./storage-object-types";
 import "./storage-object-page.css";
 
 const { Text } = Typography;
@@ -210,7 +214,8 @@ export const StorageObjectPage = () => {
         mutationFn: (file: File) => {
             uploadAbortControllerRef.current?.abort();
             uploadAbortControllerRef.current = new AbortController();
-            return service.uploadStorageFile(file, {
+            return service.uploadStorageFile({
+                file,
                 signal: uploadAbortControllerRef.current.signal,
                 onTaskUpdate: setUploadTask
             });
@@ -308,12 +313,14 @@ export const StorageObjectPage = () => {
 
     const isUploadInProgress = Boolean(
         uploadMutation.isPending ||
-            (uploadTask &&
-                ["uploading-single", "initiating-multipart", "uploading-parts", "completing-multipart"].includes(
-                    uploadTask.stage
-                ))
+        (uploadTask &&
+            [
+                "uploading-single",
+                "initiating-multipart",
+                "uploading-parts",
+                "completing-multipart"
+            ].includes(uploadTask.stage))
     );
-
 
     const openDeleteConfirm = (storage: StorageRecord) => {
         confirm.danger({

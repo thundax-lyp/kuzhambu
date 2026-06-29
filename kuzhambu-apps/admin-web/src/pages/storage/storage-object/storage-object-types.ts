@@ -36,4 +36,11 @@ export interface StorageUploadTaskRecord {
     canCancel: boolean;
 }
 
+export interface InitMultipartUploadRecord {
+    uploadId: string;
+    partSize: number;
+    objectKey?: string | null;
+    bucketName?: string | null;
+}
+
 export type StorageContentMode = "preview" | "download";

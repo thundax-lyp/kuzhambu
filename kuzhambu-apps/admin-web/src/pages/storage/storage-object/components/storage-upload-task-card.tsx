@@ -37,6 +37,16 @@ const toUploadStageText = (stage: StorageUploadTaskRecord["stage"]) => {
     return "待上传";
 };
 
+const toProgressStatus = (stage: StorageUploadTaskRecord["stage"]) => {
+    if (stage === "error") {
+        return "exception";
+    }
+    if (stage === "success") {
+        return "success";
+    }
+    return "active";
+};
+
 const bytesRate = (uploadedBytes: number, totalBytes: number) => {
     if (!Number.isFinite(uploadedBytes) || !Number.isFinite(totalBytes) || totalBytes <= 0) {
         return "0 / 0 B";
@@ -46,8 +56,16 @@ const bytesRate = (uploadedBytes: number, totalBytes: number) => {
 };
 
 export const StorageUploadTaskCard = ({ task, onCancel }: StorageUploadTaskCardProps) => {
-    const percent = task.totalBytes <= 0 ? 0 : Math.round((task.uploadedBytes / task.totalBytes) * 100);
-    const canCancel = task.canCancel && ["uploading-single", "initiating-multipart", "uploading-parts", "completing-multipart"].includes(task.stage);
+    const percent =
+        task.totalBytes <= 0 ? 0 : Math.round((task.uploadedBytes / task.totalBytes) * 100);
+    const canCancel =
+        task.canCancel &&
+        [
+            "uploading-single",
+            "initiating-multipart",
+            "uploading-parts",
+            "completing-multipart"
+        ].includes(task.stage);
 
     return (
         <div className="storage-upload-task-card">
@@ -74,7 +92,7 @@ export const StorageUploadTaskCard = ({ task, onCancel }: StorageUploadTaskCardP
                 className="storage-upload-task-card-progress"
                 percent={percent}
                 size="small"
-                status={task.stage === "error" ? "exception" : task.stage === "success" ? "success" : "active"}
+                status={toProgressStatus(task.stage)}
                 showInfo={false}
             />
             <Text className="storage-upload-task-card-meta" type="secondary">

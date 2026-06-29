@@ -6,7 +6,12 @@ import {
     postJson
 } from "@/api/http";
 import type { Page } from "@/types/page";
-import type { StorageContentMode, StorageRecord, StorageUploadTaskRecord } from "./storage-object-types";
+import type {
+    InitMultipartUploadRecord,
+    StorageContentMode,
+    StorageRecord,
+    StorageUploadTaskRecord
+} from "./storage-object-types";
 
 const MULTIPART_UPLOAD_THRESHOLD_BYTES = 20 * 1024 * 1024;
 const MULTIPART_PART_SIZE_BYTES = 5 * 1024 * 1024;
@@ -61,6 +66,8 @@ export interface UploadMultipartPartCommand {
     etag: string;
     size: number;
     file: Blob;
+    signal?: AbortSignal;
+    onProgress?: (uploadedBytes: number, totalBytes: number) => void;
 }
 
 export interface InitMultipartUploadCommand {
@@ -77,21 +84,6 @@ export interface InitMultipartUploadCommand {
     partSize: number;
 }
 
-export interface InitMultipartUploadRecord {
-    uploadId: string;
-    partSize: number;
-    objectKey?: string | null;
-    bucketName?: string | null;
-}
-
-export interface UploadMultipartPartRecord {
-    uploadId: string;
-    partNumber: number;
-    etag?: string;
-    size?: number;
-    uploadStatus?: string;
-}
-
 export interface CompleteMultipartUploadCommand {
     uploadId: string;
     bucketName?: string | null;
@@ -104,12 +96,8 @@ export interface AbortMultipartUploadCommand {
     uploadId: string;
 }
 
-export interface FormDataProgressOptions {
-    signal?: AbortSignal;
-    onProgress?: (uploadedBytes: number, totalBytes: number) => void;
-}
-
-export interface UploadStorageFileOptions {
+export interface UploadStorageFileCommand {
+    file: File;
     ownerType?: string | null;
     ownerId?: string | null;
     businessType?: string | null;
@@ -123,10 +111,7 @@ export interface UploadStorageFileOptions {
     onTaskUpdate?: (task: StorageUploadTaskRecord) => void;
 }
 
-export const uploadMultipartPart = (
-    request: UploadMultipartPartCommand,
-    options: FormDataProgressOptions = {}
-) => {
+export const uploadMultipartPart = (request: UploadMultipartPartCommand) => {
     const body = new FormData();
     body.append("uploadId", request.uploadId);
     body.append("partNumber", request.partNumber.toString());
@@ -134,10 +119,13 @@ export const uploadMultipartPart = (
     body.append("size", request.size.toString());
     body.append("file", request.file);
 
-    return postFormDataWithProgress("/storage/object/multipart/uploadPart", body, options);
+    return postFormDataWithProgress("/storage/object/multipart/uploadPart", body, {
+        signal: request.signal,
+        onProgress: request.onProgress
+    });
 };
 
-export const initiateMultipartUpload = (request: InitMultipartUploadCommand) => {
+export const initMultipartUpload = (request: InitMultipartUploadCommand) => {
     return postJson<InitMultipartUploadRecord, InitMultipartUploadCommand>(
         "/storage/object/multipart/initiate",
         {
@@ -205,12 +193,26 @@ const normalizePositiveInteger = (value: number | undefined, fallback: number) =
     return Math.max(1, Math.floor(value));
 };
 
-export const uploadStorageFile = async (file: File, options: UploadStorageFileOptions = {}) => {
+export const uploadStorageFile = async (request: UploadStorageFileCommand) => {
     const emitTask = (task: StorageUploadTaskRecord) => {
-        options.onTaskUpdate?.(task);
+        request.onTaskUpdate?.(task);
     };
 
-    if (options.signal?.aborted) {
+    const {
+        file,
+        ownerType,
+        ownerId,
+        businessType,
+        bucketName,
+        objectKey,
+        providerUploadId,
+        uploadId,
+        partSize,
+        concurrency,
+        signal
+    } = request;
+
+    if (signal?.aborted) {
         const abortedTask = createStorageUploadTask(file, {
             stage: "aborted",
             canCancel: false,
@@ -252,32 +254,32 @@ export const uploadStorageFile = async (file: File, options: UploadStorageFileOp
         }
     }
 
-    const partSize = normalizePositiveInteger(options.partSize, MULTIPART_PART_SIZE_BYTES);
-    const totalPartCount = Math.ceil(file.size / partSize);
-    const partConcurrency = normalizePositiveInteger(options.concurrency, MULTIPART_UPLOAD_CONCURRENCY);
-
+    const normalizedPartSize = normalizePositiveInteger(partSize, MULTIPART_PART_SIZE_BYTES);
+    const normalizedConcurrency = normalizePositiveInteger(
+        concurrency,
+        MULTIPART_UPLOAD_CONCURRENCY
+    );
     let task = createStorageUploadTask(file, {
         stage: "initiating-multipart",
-        totalPartCount,
+        totalPartCount: 0,
         canCancel: true
     });
     emitTask(task);
 
-    let initRecord: InitMultipartUploadRecord | null = null;
-
+    let initRecord: InitMultipartUploadRecord;
     try {
-        initRecord = await initiateMultipartUpload({
+        initRecord = await initMultipartUpload({
             originalFilename: file.name,
             mimeType: file.type || "application/octet-stream",
-            ownerType: options.ownerType ?? null,
-            ownerId: options.ownerId ?? null,
-            businessType: options.businessType ?? null,
-            bucketName: options.bucketName ?? null,
-            objectKey: options.objectKey ?? null,
-            providerUploadId: options.providerUploadId ?? null,
-            uploadId: options.uploadId ?? null,
+            ownerType: ownerType ?? null,
+            ownerId: ownerId ?? null,
+            businessType: businessType ?? null,
+            bucketName: bucketName ?? null,
+            objectKey: objectKey ?? null,
+            providerUploadId: providerUploadId ?? null,
+            uploadId: uploadId ?? null,
             totalSize: file.size,
-            partSize
+            partSize: normalizedPartSize
         });
     } catch (error) {
         const errorMessage = `初始化分片上传失败：${readErrorMessage(error)}`;
@@ -292,10 +294,13 @@ export const uploadStorageFile = async (file: File, options: UploadStorageFileOp
         throw error;
     }
 
-    const uploadId = initRecord.uploadId;
-    const uploadPartSize = Math.max(partSize, initRecord.partSize || partSize);
+    const uploadPartSize = Math.max(normalizedPartSize, initRecord.partSize || normalizedPartSize);
     const parts: { partNumber: number; file: Blob }[] = [];
-    for (let start = 0, partNumber = 1; start < file.size; partNumber += 1, start += uploadPartSize) {
+    for (
+        let start = 0, partNumber = 1;
+        start < file.size;
+        partNumber += 1, start += uploadPartSize
+    ) {
         const fileSlice = file.slice(start, start + uploadPartSize);
         parts.push({
             partNumber,
@@ -306,11 +311,11 @@ export const uploadStorageFile = async (file: File, options: UploadStorageFileOp
     task = createStorageUploadTask(file, {
         ...task,
         stage: "uploading-parts",
-        uploadId,
+        uploadId: initRecord.uploadId,
         totalPartCount: parts.length,
         uploadedBytes: 0,
         uploadedPartCount: 0,
-        canCancel: Boolean(options.signal && !options.signal.aborted)
+        canCancel: Boolean(signal && !signal.aborted)
     });
     emitTask(task);
 
@@ -320,42 +325,44 @@ export const uploadStorageFile = async (file: File, options: UploadStorageFileOp
         emitTask({
             ...task,
             uploadedBytes,
-            canCancel: Boolean(options.signal && !options.signal.aborted)
+            canCancel: Boolean(signal && !signal.aborted)
         });
     };
 
     try {
         let nextPartIndex = 0;
         const worker = async () => {
-            while (nextPartIndex < parts.length && !options.signal?.aborted) {
+            while (nextPartIndex < parts.length && !signal?.aborted) {
                 const partIndex = nextPartIndex;
                 nextPartIndex += 1;
 
                 const part = parts[partIndex];
                 const partRequest: UploadMultipartPartCommand = {
-                    uploadId,
+                    uploadId: initRecord.uploadId,
                     partNumber: part.partNumber,
                     etag: createMultipartEtag(part.partNumber, part.file),
                     size: part.file.size,
-                    file: part.file
-                };
-                try {
-                    await uploadMultipartPart(partRequest, {
-                        signal: options.signal,
-                        onProgress: (uploadedBytes, totalBytes) => {
-                            partUploadedBytes[partIndex] = uploadedBytes;
-                            if (totalBytes > 0 && uploadedBytes >= totalBytes) {
-                                partUploadedBytes[partIndex] = totalBytes;
-                            }
-                            updateTaskBytes();
+                    file: part.file,
+                    signal,
+                    onProgress: (uploadedBytes, totalBytes) => {
+                        partUploadedBytes[partIndex] = uploadedBytes;
+                        if (totalBytes > 0 && uploadedBytes >= totalBytes) {
+                            partUploadedBytes[partIndex] = totalBytes;
                         }
-                    });
+                        updateTaskBytes();
+                    }
+                };
+
+                try {
+                    await uploadMultipartPart(partRequest);
                 } catch (error) {
                     if (isAbortedError(error)) {
                         throw error;
                     }
 
-                    await abortMultipartUpload({ uploadId }).catch(() => undefined);
+                    await abortMultipartUpload({ uploadId: initRecord.uploadId }).catch(
+                        () => undefined
+                    );
                     throw error;
                 }
 
@@ -367,9 +374,8 @@ export const uploadStorageFile = async (file: File, options: UploadStorageFileOp
             }
         };
 
-        const workers = Array.from(
-            { length: Math.min(partConcurrency, parts.length) },
-            () => worker()
+        const workers = Array.from({ length: Math.min(normalizedConcurrency, parts.length) }, () =>
+            worker()
         );
         await Promise.all(workers);
     } catch (error) {
@@ -384,7 +390,7 @@ export const uploadStorageFile = async (file: File, options: UploadStorageFileOp
         emitTask(task);
 
         if (!isAborted) {
-            await abortMultipartUpload({ uploadId }).catch(() => undefined);
+            await abortMultipartUpload({ uploadId: initRecord.uploadId }).catch(() => undefined);
             emitTask({
                 ...task,
                 stage: "error",
@@ -405,14 +411,14 @@ export const uploadStorageFile = async (file: File, options: UploadStorageFileOp
             ...task,
             stage: "completing-multipart",
             uploadedBytes: file.size,
-            canCancel: Boolean(options.signal && !options.signal.aborted)
+            canCancel: Boolean(signal && !signal.aborted)
         });
         emitTask(task);
 
         const result = await completeMultipartUpload({
-            uploadId,
-            bucketName: initRecord.bucketName || options.bucketName || null,
-            objectKey: initRecord.objectKey || options.objectKey || null,
+            uploadId: initRecord.uploadId,
+            bucketName: initRecord.bucketName || bucketName || null,
+            objectKey: initRecord.objectKey || objectKey || null,
             size: file.size,
             accessEndpoint: null
         });
@@ -431,7 +437,7 @@ export const uploadStorageFile = async (file: File, options: UploadStorageFileOp
     } catch (error) {
         const isAborted = isAbortedError(error);
         if (!isAborted) {
-            await abortMultipartUpload({ uploadId }).catch(() => undefined);
+            await abortMultipartUpload({ uploadId: initRecord.uploadId }).catch(() => undefined);
         }
 
         emitTask(

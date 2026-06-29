@@ -238,66 +238,75 @@ test.describe("storage object page", () => {
                 })
             });
         });
-        await page.route("**/kuzhambu-admin-api/api/storage/object/multipart/initiate", async (route) => {
-            initiatedPayload = route.request().postDataJSON();
-            await route.fulfill({
-                contentType: "application/json",
-                body: JSON.stringify({
-                    code: "COMMON-00000",
-                    message: "success",
-                    data: {
-                        uploadId: "upload-session-1",
-                        partSize: 5 * 1024 * 1024,
-                        objectKey: "multipart-key",
-                        bucketName: "default"
-                    }
-                })
-            });
-        });
-        await page.route("**/kuzhambu-admin-api/api/storage/object/multipart/uploadPart", async (route) => {
-            uploadPartRequestCount += 1;
-            await new Promise((resolve) => setTimeout(resolve, 120));
-            const postData = route.request().postData();
-            const partNumberMatch = postData?.match(/partNumber=(\d+)/);
-            const partNumber = partNumberMatch?.[1] ? Number(partNumberMatch[1]) : 1;
-            await route.fulfill({
-                contentType: "application/json",
-                body: JSON.stringify({
-                    code: "COMMON-00000",
-                    message: "success",
-                    data: {
-                        uploadId: "upload-session-1",
-                        partNumber,
-                        etag: `etag-${partNumber}`
-                    }
-                })
-            });
-        });
-        await page.route("**/kuzhambu-admin-api/api/storage/object/multipart/complete", async (route) => {
-            completedPayload = route.request().postDataJSON();
-            const uploadedRecord = {
-                id: "storage-2",
-                originalFilename: "multipart.bin",
-                contentType: "application/octet-stream",
-                ownerId: "",
-                ownerType: "",
-                size: 24 * 1024 * 1024,
-                accessEndpoint: "/api/storage/object/storage-2/content",
-                objectStatus: "ACTIVE",
-                referenceStatus: "UNREFERENCED",
-                priority: 101,
-                remarks: ""
-            };
-            records = [uploadedRecord, ...records];
-            await route.fulfill({
-                contentType: "application/json",
-                body: JSON.stringify({
-                    code: "COMMON-00000",
-                    message: "success",
-                    data: uploadedRecord
-                })
-            });
-        });
+        await page.route(
+            "**/kuzhambu-admin-api/api/storage/object/multipart/initiate",
+            async (route) => {
+                initiatedPayload = route.request().postDataJSON();
+                await route.fulfill({
+                    contentType: "application/json",
+                    body: JSON.stringify({
+                        code: "COMMON-00000",
+                        message: "success",
+                        data: {
+                            uploadId: "upload-session-1",
+                            partSize: 5 * 1024 * 1024,
+                            objectKey: "multipart-key",
+                            bucketName: "default"
+                        }
+                    })
+                });
+            }
+        );
+        await page.route(
+            "**/kuzhambu-admin-api/api/storage/object/multipart/uploadPart",
+            async (route) => {
+                uploadPartRequestCount += 1;
+                await new Promise((resolve) => setTimeout(resolve, 120));
+                const postData = route.request().postData();
+                const partNumberMatch = postData?.match(/partNumber=(\d+)/);
+                const partNumber = partNumberMatch?.[1] ? Number(partNumberMatch[1]) : 1;
+                await route.fulfill({
+                    contentType: "application/json",
+                    body: JSON.stringify({
+                        code: "COMMON-00000",
+                        message: "success",
+                        data: {
+                            uploadId: "upload-session-1",
+                            partNumber,
+                            etag: `etag-${partNumber}`
+                        }
+                    })
+                });
+            }
+        );
+        await page.route(
+            "**/kuzhambu-admin-api/api/storage/object/multipart/complete",
+            async (route) => {
+                completedPayload = route.request().postDataJSON();
+                const uploadedRecord = {
+                    id: "storage-2",
+                    originalFilename: "multipart.bin",
+                    contentType: "application/octet-stream",
+                    ownerId: "",
+                    ownerType: "",
+                    size: 24 * 1024 * 1024,
+                    accessEndpoint: "/api/storage/object/storage-2/content",
+                    objectStatus: "ACTIVE",
+                    referenceStatus: "UNREFERENCED",
+                    priority: 101,
+                    remarks: ""
+                };
+                records = [uploadedRecord, ...records];
+                await route.fulfill({
+                    contentType: "application/json",
+                    body: JSON.stringify({
+                        code: "COMMON-00000",
+                        message: "success",
+                        data: uploadedRecord
+                    })
+                });
+            }
+        );
 
         await page.route("**/kuzhambu-admin-api/api/storage/object/upload", async (route) => {
             await route.fulfill({
@@ -334,7 +343,7 @@ test.describe("storage object page", () => {
 
     test("supports multipart upload cancellation", async ({ page }) => {
         await page.setViewportSize({ width: 1280, height: 800 });
-        let records = [
+        const records = [
             {
                 id: "storage-1",
                 originalFilename: "small.txt",
@@ -365,50 +374,59 @@ test.describe("storage object page", () => {
                 })
             });
         });
-        await page.route("**/kuzhambu-admin-api/api/storage/object/multipart/initiate", async (route) => {
-            await route.fulfill({
-                contentType: "application/json",
-                body: JSON.stringify({
-                    code: "COMMON-00000",
-                    message: "success",
-                    data: {
-                        uploadId: "upload-session-cancel",
-                        partSize: 5 * 1024 * 1024,
-                        objectKey: "multipart-key",
-                        bucketName: "default"
-                    }
-                })
-            });
-        });
-        await page.route("**/kuzhambu-admin-api/api/storage/object/multipart/uploadPart", async (route) => {
-            uploadPartRequestCount += 1;
-            await new Promise((resolve) => setTimeout(resolve, 300));
-            await route.fulfill({
-                contentType: "application/json",
-                body: JSON.stringify({
-                    code: "COMMON-00000",
-                    message: "success",
-                    data: {
-                        uploadId: "upload-session-cancel",
-                        partNumber: uploadPartRequestCount,
-                        etag: `etag-${uploadPartRequestCount}`
-                    }
-                })
-            });
-        });
-        await page.route("**/kuzhambu-admin-api/api/storage/object/multipart/abort", async (route) => {
-            await route.fulfill({
-                contentType: "application/json",
-                body: JSON.stringify({
-                    code: "COMMON-00000",
-                    message: "success",
-                    data: {
-                        uploadId: "upload-session-cancel",
-                        uploadStatus: "ABORTED"
-                    }
-                })
-            });
-        });
+        await page.route(
+            "**/kuzhambu-admin-api/api/storage/object/multipart/initiate",
+            async (route) => {
+                await route.fulfill({
+                    contentType: "application/json",
+                    body: JSON.stringify({
+                        code: "COMMON-00000",
+                        message: "success",
+                        data: {
+                            uploadId: "upload-session-cancel",
+                            partSize: 5 * 1024 * 1024,
+                            objectKey: "multipart-key",
+                            bucketName: "default"
+                        }
+                    })
+                });
+            }
+        );
+        await page.route(
+            "**/kuzhambu-admin-api/api/storage/object/multipart/uploadPart",
+            async (route) => {
+                uploadPartRequestCount += 1;
+                await new Promise((resolve) => setTimeout(resolve, 300));
+                await route.fulfill({
+                    contentType: "application/json",
+                    body: JSON.stringify({
+                        code: "COMMON-00000",
+                        message: "success",
+                        data: {
+                            uploadId: "upload-session-cancel",
+                            partNumber: uploadPartRequestCount,
+                            etag: `etag-${uploadPartRequestCount}`
+                        }
+                    })
+                });
+            }
+        );
+        await page.route(
+            "**/kuzhambu-admin-api/api/storage/object/multipart/abort",
+            async (route) => {
+                await route.fulfill({
+                    contentType: "application/json",
+                    body: JSON.stringify({
+                        code: "COMMON-00000",
+                        message: "success",
+                        data: {
+                            uploadId: "upload-session-cancel",
+                            uploadStatus: "ABORTED"
+                        }
+                    })
+                });
+            }
+        );
 
         await page.goto("/storage/objects");
 
