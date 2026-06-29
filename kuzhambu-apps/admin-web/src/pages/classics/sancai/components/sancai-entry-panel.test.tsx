@@ -11,6 +11,44 @@ const confirmDangerMock = vi.hoisted(() =>
     vi.fn((options: { onConfirm: () => unknown }) => options.onConfirm())
 );
 
+vi.mock("@/pages/classics/common/classics-content-service", () => ({
+    addQaPair: vi.fn(),
+    addTag: vi.fn(),
+    listQaPairs: vi.fn(async () => [
+        {
+            id: 6001,
+            contentType: "SANCAI_ENTRY",
+            contentId: 3001,
+            qaPairId: 7001,
+            question: "天地为何不变？",
+            answer: "因为天地变化永恒。",
+            source: "MANUAL",
+            status: "ACTIVE",
+            priority: 1,
+            updatedAt: "2026-06-20T01:00:00.000+08:00",
+            createdAt: "2026-06-20T01:00:00.000+08:00"
+        }
+    ]),
+    listTags: vi.fn(async () => [
+        {
+            id: 5001,
+            contentType: "SANCAI_ENTRY",
+            contentId: 3001,
+            tagId: 8001,
+            tagNameSnapshot: "三才",
+            source: "MANUAL",
+            status: "ACTIVE",
+            priority: 1,
+            updatedAt: "2026-06-20T01:00:00.000+08:00",
+            createdAt: "2026-06-20T01:00:00.000+08:00"
+        }
+    ]),
+    sortQaPairs: vi.fn(),
+    sortTags: vi.fn(),
+    updateQaPair: vi.fn(),
+    updateTag: vi.fn()
+}));
+
 const entryState = vi.hoisted(() => ({
     restored: false
 }));
@@ -402,5 +440,18 @@ describe("SancaiEntryPanel sharing", () => {
         expect(
             await within(showcaseSection).findByRole("button", { name: /下\s*载/ })
         ).toBeInTheDocument();
+    });
+
+    it("renders tags and qa governance panel in editor", async () => {
+        const user = userEvent.setup();
+        renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        await user.click(await within(entryTable).findByRole("button", { name: "查看 天地" }));
+
+        expect(await screen.findByText("三才图会标签治理")).toBeInTheDocument();
+        expect(await screen.findByText("三才图会问答对治理")).toBeInTheDocument();
+        expect(await screen.findByText("三才")).toBeInTheDocument();
+        expect(await screen.findByText("天地为何不变？")).toBeInTheDocument();
     });
 });

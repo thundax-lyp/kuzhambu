@@ -8,6 +8,8 @@ import type { KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
 import * as exportService from "@/pages/classics/common/classics-export-service";
 import * as shareService from "@/pages/classics/common/classics-share-service";
 import { AiCandidatePanel } from "@/pages/classics/common/components/ai-candidate-panel";
+import { ClassicsContentQaPanel } from "@/pages/classics/common/components/classics-content-qa-panel";
+import { ClassicsContentTagPanel } from "@/pages/classics/common/components/classics-content-tag-panel";
 import { SancaiEntryList } from "./sancai-entry-list";
 import { SancaiEntryModel } from "./sancai-entry-model";
 import type { SancaiEntryFormValues } from "./sancai-form-values";
@@ -229,6 +231,16 @@ export const SancaiEntryPanel = ({
             }),
             queryClient.invalidateQueries({
                 queryKey: ["classics", "sancai", "entries", "versions", selectedEntry.id]
+            })
+        ]);
+    };
+    const invalidateSancaiContentGovernance = async () => {
+        await Promise.all([
+            queryClient.invalidateQueries({
+                queryKey: ["classics", "content", "tags", "SANCAI_ENTRY"]
+            }),
+            queryClient.invalidateQueries({
+                queryKey: ["classics", "content", "qa-pairs", "SANCAI_ENTRY"]
             })
         ]);
     };
@@ -701,9 +713,22 @@ export const SancaiEntryPanel = ({
                                 onApplied={async () => {
                                     await Promise.all([
                                         refreshSancaiEntryDetail(),
-                                        invalidateEntries()
+                                        invalidateEntries(),
+                                        invalidateSancaiContentGovernance()
                                     ]);
                                 }}
+                            />
+                            <ClassicsContentTagPanel
+                                contentId={selectedEntry.id}
+                                contentType="SANCAI_ENTRY"
+                                panelTitle="三才图会标签治理"
+                                onChanged={invalidateSancaiContentGovernance}
+                            />
+                            <ClassicsContentQaPanel
+                                contentId={selectedEntry.id}
+                                contentType="SANCAI_ENTRY"
+                                panelTitle="三才图会问答对治理"
+                                onChanged={invalidateSancaiContentGovernance}
                             />
                             <SancaiVersionHistoryPanel
                                 currentEntry={selectedEntry}
