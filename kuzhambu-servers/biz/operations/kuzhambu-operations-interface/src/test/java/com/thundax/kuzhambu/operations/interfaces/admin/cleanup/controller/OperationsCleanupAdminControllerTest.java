@@ -54,23 +54,7 @@ class OperationsCleanupAdminControllerTest {
         CleanupApplicationService service = mock(CleanupApplicationService.class);
         OperationsCleanupAdminController controller = new OperationsCleanupAdminController(service);
         when(service.execute(any()))
-                .thenReturn(
-                        new OperationsCleanupDetailResult(
-                                CleanupJobId.of(9101L),
-                                "LONG_TASK",
-                                "SUCCEEDED",
-                                3,
-                                3,
-                                0,
-                                null,
-                                1001L,
-                                new Date(1_719_630_400_000L),
-                                new Date(1_719_630_500_000L)));
-        when(service.page(any(), any())).thenReturn(PageResult.of(
-                1,
-                10,
-                1L,
-                List.of(new OperationsCleanupPageResult(
+                .thenReturn(new OperationsCleanupDetailResult(
                         CleanupJobId.of(9101L),
                         "LONG_TASK",
                         "SUCCEEDED",
@@ -80,18 +64,35 @@ class OperationsCleanupAdminControllerTest {
                         null,
                         1001L,
                         new Date(1_719_630_400_000L),
-                        new Date(1_719_630_500_000L)))));
-        when(service.detail(any())).thenReturn(new OperationsCleanupDetailResult(
-                CleanupJobId.of(9101L),
-                "LONG_TASK",
-                "SUCCEEDED",
-                3,
-                3,
-                0,
-                null,
-                1001L,
-                new Date(1_719_630_400_000L),
-                new Date(1_719_630_500_000L)));
+                        new Date(1_719_630_500_000L)));
+        when(service.page(any(), any()))
+                .thenReturn(PageResult.of(
+                        1,
+                        10,
+                        1L,
+                        List.of(new OperationsCleanupPageResult(
+                                CleanupJobId.of(9101L),
+                                "LONG_TASK",
+                                "SUCCEEDED",
+                                3,
+                                3,
+                                0,
+                                null,
+                                1001L,
+                                new Date(1_719_630_400_000L),
+                                new Date(1_719_630_500_000L)))));
+        when(service.detail(any()))
+                .thenReturn(new OperationsCleanupDetailResult(
+                        CleanupJobId.of(9101L),
+                        "LONG_TASK",
+                        "SUCCEEDED",
+                        3,
+                        3,
+                        0,
+                        null,
+                        1001L,
+                        new Date(1_719_630_400_000L),
+                        new Date(1_719_630_500_000L)));
 
         OperationsCleanupExecuteRequest executeRequest = new OperationsCleanupExecuteRequest();
         executeRequest.setCleanupType("LONG_TASK");
@@ -113,9 +114,7 @@ class OperationsCleanupAdminControllerTest {
         var detailResponse = controller.detail(detailRequest);
         assertEquals(9101L, detailResponse.getCleanupId());
 
-        verify(service)
-                .execute(argThat(command -> command != null
-                        && "LONG_TASK".equals(command.getCleanupType())));
+        verify(service).execute(argThat(command -> command != null && "LONG_TASK".equals(command.getCleanupType())));
         verify(service)
                 .page(
                         argThat(query -> query != null

@@ -31,8 +31,7 @@ public class HealthCheckApplicationServiceImpl implements HealthCheckApplication
     }
 
     @Override
-    public PageResult<OperationsHealthPageResult> page(
-            OperationsHealthPageQuery query, PageQuery pageQuery) {
+    public PageResult<OperationsHealthPageResult> page(OperationsHealthPageQuery query, PageQuery pageQuery) {
         PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
         effectivePage.normalize();
         PageResult<HealthCheckRecord> recordPage = healthCheckRepository.page(
@@ -40,9 +39,8 @@ public class HealthCheckApplicationServiceImpl implements HealthCheckApplication
                 query == null ? null : query.getHealthStatus(),
                 effectivePage.getPageNo(),
                 effectivePage.getPageSize());
-        List<OperationsHealthPageResult> results = recordPage.getRecords().stream()
-                .map(this::toPageResult)
-                .collect(Collectors.toList());
+        List<OperationsHealthPageResult> results =
+                recordPage.getRecords().stream().map(this::toPageResult).collect(Collectors.toList());
         return PageResult.of(recordPage.getPageNo(), recordPage.getPageSize(), recordPage.getTotalCount(), results);
     }
 

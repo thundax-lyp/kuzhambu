@@ -23,7 +23,8 @@ public final class OperationsHealthInterfaceAssembler {
             return null;
         }
         return OperationsHealthSummaryResponse.builder()
-                .checkId(result.getCheckId() == null ? null : result.getCheckId().value())
+                .checkId(
+                        result.getCheckId() == null ? null : result.getCheckId().value())
                 .component(result.getComponent())
                 .healthStatus(result.getHealthStatus())
                 .latencyMs(result.getLatencyMs())
@@ -37,7 +38,8 @@ public final class OperationsHealthInterfaceAssembler {
             return null;
         }
         return OperationsHealthPageResponse.builder()
-                .checkId(result.getCheckId() == null ? null : result.getCheckId().value())
+                .checkId(
+                        result.getCheckId() == null ? null : result.getCheckId().value())
                 .component(result.getComponent())
                 .healthStatus(result.getHealthStatus())
                 .latencyMs(result.getLatencyMs())

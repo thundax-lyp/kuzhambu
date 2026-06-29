@@ -1,8 +1,8 @@
 package com.thundax.kuzhambu.operations.domain.cleanup.repository;
 
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.operations.domain.cleanup.model.entity.CleanupItem;
 import com.thundax.kuzhambu.operations.domain.cleanup.model.entity.CleanupJob;
-import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.operations.domain.cleanup.model.valueobject.CleanupItemId;
 import com.thundax.kuzhambu.operations.domain.cleanup.model.valueobject.CleanupJobId;
 import java.util.List;
@@ -19,7 +19,8 @@ public interface CleanupJobRepository {
 
     List<CleanupItem> listItemsByJobId(CleanupJobId jobId);
 
-    PageResult<CleanupJob> page(String cleanupType, String cleanupStatus, Long requesterUserId, int pageNo, int pageSize);
+    PageResult<CleanupJob> page(
+            String cleanupType, String cleanupStatus, Long requesterUserId, int pageNo, int pageSize);
 
     CleanupItemId insertItem(CleanupItem item);
 

@@ -79,8 +79,7 @@ public class LongTaskSnapshotRepositoryImpl implements LongTaskSnapshotRepositor
                 .eq(LongTaskSnapshotDO::getSnapshotId, LongTaskSnapshotIdCodec.toValue(id)));
     }
 
-    private QueryWrapper<LongTaskSnapshotDO> buildPageWrapper(
-            String sourceDomain, String taskType, String taskStatus) {
+    private QueryWrapper<LongTaskSnapshotDO> buildPageWrapper(String sourceDomain, String taskType, String taskStatus) {
         QueryWrapper<LongTaskSnapshotDO> wrapper = new QueryWrapper<>();
         if (StringUtils.isNotBlank(sourceDomain)) {
             wrapper.eq("source_domain", sourceDomain);

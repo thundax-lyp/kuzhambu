@@ -38,8 +38,8 @@ class HealthCheckRepositoryImplTest {
         when(mapper.selectObjs(any())).thenReturn(List.of("cache", "database"));
 
         AtomicInteger invokeIndex = new AtomicInteger(0);
-        when(mapper.selectOne(any())).thenAnswer(invocation ->
-                dataObject(
+        when(mapper.selectOne(any()))
+                .thenAnswer(invocation -> dataObject(
                         1001L + invokeIndex.getAndIncrement(),
                         switch (invokeIndex.get()) {
                             case 1 -> "cache";
@@ -78,13 +78,6 @@ class HealthCheckRepositoryImplTest {
     }
 
     private static HealthCheckDO dataObject(long checkId, String component, String status) {
-        return new HealthCheckDO(
-                null,
-                checkId,
-                component,
-                status,
-                5,
-                "test-health",
-                new Date(1_718_000_000_000L));
+        return new HealthCheckDO(null, checkId, component, status, 5, "test-health", new Date(1_718_000_000_000L));
     }
 }

@@ -46,7 +46,10 @@ public final class OperationsCleanupInterfaceAssembler {
             return null;
         }
         return OperationsCleanupExecuteResponse.builder()
-                .cleanupId(result.getCleanupId() == null ? null : result.getCleanupId().value())
+                .cleanupId(
+                        result.getCleanupId() == null
+                                ? null
+                                : result.getCleanupId().value())
                 .cleanupType(result.getCleanupType())
                 .cleanupStatus(result.getCleanupStatus())
                 .totalCount(result.getTotalCount())
@@ -64,7 +67,10 @@ public final class OperationsCleanupInterfaceAssembler {
             return null;
         }
         return OperationsCleanupPageResponse.builder()
-                .cleanupId(result.getCleanupId() == null ? null : result.getCleanupId().value())
+                .cleanupId(
+                        result.getCleanupId() == null
+                                ? null
+                                : result.getCleanupId().value())
                 .cleanupType(result.getCleanupType())
                 .cleanupStatus(result.getCleanupStatus())
                 .totalCount(result.getTotalCount())
@@ -82,7 +88,10 @@ public final class OperationsCleanupInterfaceAssembler {
             return null;
         }
         return OperationsCleanupDetailResponse.builder()
-                .cleanupId(result.getCleanupId() == null ? null : result.getCleanupId().value())
+                .cleanupId(
+                        result.getCleanupId() == null
+                                ? null
+                                : result.getCleanupId().value())
                 .cleanupType(result.getCleanupType())
                 .cleanupStatus(result.getCleanupStatus())
                 .totalCount(result.getTotalCount())
