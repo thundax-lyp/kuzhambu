@@ -3,12 +3,19 @@ package com.thundax.kuzhambu.storage.interfaces.admin.object.assembler;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import com.thundax.kuzhambu.storage.application.service.query.StorageQuery;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
+import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadPart;
+import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadSession;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
+import com.thundax.kuzhambu.storage.domain.object.model.enums.MultipartUploadStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
 import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.request.StoragePageRequest;
+import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.response.AbortMultipartUploadResponse;
+import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.response.CompleteMultipartUploadResponse;
+import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.response.InitMultipartUploadResponse;
 import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.response.StorageObjectResponse;
+import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.response.UploadMultipartPartResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.lang.NonNull;
 
@@ -43,12 +50,73 @@ public final class StorageInterfaceAssembler {
                 .originalFilename(entity.getOriginalFilename())
                 .contentType(entity.getContentType())
                 .ownerId(entity.getOwnerId())
-                .ownerType(valueOf(entity.getOwnerType()))
+                .ownerType(ownerTypeValue(entity.getOwnerType()))
                 .size(entity.getSize())
                 .accessEndpoint(entity.getAccessEndpoint())
-                .objectStatus(valueOf(entity.getObjectStatus()))
-                .referenceStatus(valueOf(entity.getReferenceStatus()))
+                .objectStatus(objectStatusValue(entity.getObjectStatus()))
+                .referenceStatus(referenceStatusValue(entity.getReferenceStatus()))
                 .priority(entity.getPriority())
+                .build();
+    }
+
+    @NonNull
+    public static InitMultipartUploadResponse toResponse(MultipartUploadSession session) {
+        return session == null
+                ? InitMultipartUploadResponse.builder().build()
+                : InitMultipartUploadResponse.builder()
+                        .uploadId(session.getUploadId())
+                        .providerUploadId(session.getProviderUploadId())
+                        .ownerType(ownerTypeValue(session.getOwnerType()))
+                        .ownerId(session.getOwnerId())
+                        .businessType(session.getBusinessType())
+                        .originalFilename(session.getOriginalFilename())
+                        .mimeType(session.getMimeType())
+                        .bucketName(session.getBucketName())
+                        .objectKey(session.getObjectKey())
+                        .totalSize(session.getTotalSize())
+                        .partSize(session.getPartSize())
+                        .uploadedPartCount(session.getUploadedPartCount())
+                        .uploadStatus(uploadStatusValue(session.getUploadStatus()))
+                        .build();
+    }
+
+    @NonNull
+    public static UploadMultipartPartResponse toResponse(MultipartUploadPart part) {
+        return part == null
+                ? UploadMultipartPartResponse.builder().build()
+                : UploadMultipartPartResponse.builder()
+                        .uploadId(part.getUploadId())
+                        .partNumber(part.getPartNumber())
+                        .etag(part.getEtag())
+                        .size(part.getSize())
+                        .build();
+    }
+
+    @NonNull
+    public static CompleteMultipartUploadResponse toResponse(StoredObject storage, String uploadId) {
+        return storage == null
+                ? CompleteMultipartUploadResponse.builder().build()
+                : CompleteMultipartUploadResponse.builder()
+                        .id(StoredObjectIdCodec.toStringValue(storage.getId()))
+                        .uploadId(uploadId)
+                        .ownerType(ownerTypeValue(storage.getOwnerType()))
+                        .ownerId(storage.getOwnerId())
+                        .originalFilename(storage.getOriginalFilename())
+                        .mimeType(storage.getMimeType())
+                        .bucketName(storage.getBucketName())
+                        .objectKey(storage.getObjectKey())
+                        .size(storage.getSize())
+                        .accessEndpoint(storage.getAccessEndpoint())
+                        .objectStatus(objectStatusValue(storage.getObjectStatus()))
+                        .referenceStatus(referenceStatusValue(storage.getReferenceStatus()))
+                        .build();
+    }
+
+    @NonNull
+    public static AbortMultipartUploadResponse toResponse(String uploadId) {
+        return AbortMultipartUploadResponse.builder()
+                .uploadId(uploadId)
+                .uploadStatus(MultipartUploadStatus.ABORTED.value())
                 .build();
     }
 
@@ -75,15 +143,19 @@ public final class StorageInterfaceAssembler {
         return StringUtils.isBlank(value) ? null : value.trim();
     }
 
-    private static String valueOf(StorageOwnerType value) {
+    private static String ownerTypeValue(StorageOwnerType value) {
         return value == null ? null : value.value();
     }
 
-    private static String valueOf(StoredObjectStatus value) {
+    private static String objectStatusValue(StoredObjectStatus value) {
         return value == null ? null : value.value();
     }
 
-    private static String valueOf(StoredObjectReferenceStatus value) {
+    private static String referenceStatusValue(StoredObjectReferenceStatus value) {
+        return value == null ? null : value.value();
+    }
+
+    private static String uploadStatusValue(MultipartUploadStatus value) {
         return value == null ? null : value.value();
     }
 }

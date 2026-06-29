@@ -31,8 +31,10 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -220,7 +222,19 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         if (id == null) {
             return 0;
         }
-        return dao.deleteById(id);
+        StoredObject storage = dao.getById(id);
+        if (storage == null) {
+            return 0;
+        }
+        if (StoredObjectReferenceStatus.REFERENCED == storage.getReferenceStatus()) {
+            throw new BizException("Storage 对象已被其他业务引用，无法删除");
+        }
+        int deleted = dao.deleteById(id);
+        if (deleted <= 0) {
+            return 0;
+        }
+        businessRepository.deleteByObjectId(String.valueOf(id.value()));
+        return deleted;
     }
 
     @Override
@@ -257,14 +271,110 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         if (command == null) {
             return 0;
         }
-        return businessRepository.deleteByOwner(
-                command.getOwnerType() == null ? null : command.getOwnerType().value(), command.getOwnerId());
+        String referenceOwnerType =
+                command.getOwnerType() == null ? null : command.getOwnerType().value();
+        String referenceOwnerId = command.getOwnerId();
+        Set<StoredObjectId> impactedObjectIds = impactedObjectIdsByOwner(referenceOwnerType, referenceOwnerId);
+        int removed = businessRepository.deleteByOwner(referenceOwnerType, referenceOwnerId);
+        updateReferenceStatusByObjectId(impactedObjectIds);
+        return removed;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void addReferences(AddStorageReferencesCommand command) {
-        businessRepository.insertReferences(command.getReferences());
+        if (command == null) {
+            return;
+        }
+        List<StoredObjectReference> candidates = command.getReferences();
+        if (candidates == null || candidates.isEmpty()) {
+            return;
+        }
+        Set<StoredObjectId> impactedObjectIds = impactedObjectIds(candidates);
+        List<StoredObjectReference> toInsert = uniqueReferences(candidates);
+        if (toInsert.isEmpty() && impactedObjectIds.isEmpty()) {
+            return;
+        }
+        if (!toInsert.isEmpty()) {
+            businessRepository.insertReferences(toInsert);
+        }
+        updateReferenceStatusByObjectId(impactedObjectIds, StoredObjectReferenceStatus.REFERENCED);
+    }
+
+    private void updateReferenceStatusByObjectId(Set<StoredObjectId> objectIds) {
+        updateReferenceStatusByObjectId(objectIds, null);
+    }
+
+    private void updateReferenceStatusByObjectId(
+            Set<StoredObjectId> objectIds, StoredObjectReferenceStatus forcedStatus) {
+        if (objectIds == null || objectIds.isEmpty()) {
+            return;
+        }
+        for (StoredObjectId objectId : objectIds) {
+            if (objectId == null) {
+                continue;
+            }
+            StoredObjectReferenceStatus referenceStatus = forcedStatus;
+            if (referenceStatus == null) {
+                long referenceCount = businessRepository.countByObjectId(objectId);
+                referenceStatus = referenceCount > 0
+                        ? StoredObjectReferenceStatus.REFERENCED
+                        : StoredObjectReferenceStatus.UNREFERENCED;
+            }
+            StoredObject target = new StoredObject();
+            target.setId(objectId);
+            target.setReferenceStatus(referenceStatus);
+            dao.updateReferenceStatus(target);
+        }
+    }
+
+    private Set<StoredObjectId> impactedObjectIdsByOwner(String referenceOwnerType, String referenceOwnerId) {
+        Set<StoredObjectId> objectIds = new LinkedHashSet<>();
+        for (StoredObjectId objectId : businessRepository.listObjectIdsByOwner(referenceOwnerType, referenceOwnerId)) {
+            if (objectId != null) {
+                objectIds.add(objectId);
+            }
+        }
+        return objectIds;
+    }
+
+    private Set<StoredObjectId> impactedObjectIds(List<StoredObjectReference> references) {
+        Set<StoredObjectId> objectIds = new LinkedHashSet<>();
+        if (references == null || references.isEmpty()) {
+            return objectIds;
+        }
+        for (StoredObjectReference reference : references) {
+            if (reference == null || reference.getObjectId() == null) {
+                continue;
+            }
+            objectIds.add(reference.getObjectId());
+        }
+        return objectIds;
+    }
+
+    private List<StoredObjectReference> uniqueReferences(List<StoredObjectReference> candidates) {
+        Map<String, StoredObjectReference> pendingByKey = new HashMap<>(candidates.size());
+        for (StoredObjectReference reference : candidates) {
+            if (reference == null
+                    || reference.getObjectId() == null
+                    || reference.getOwnerType() == null
+                    || StringUtils.isBlank(reference.getOwnerId())) {
+                continue;
+            }
+            String referenceKey = referenceKey(reference);
+            if (pendingByKey.containsKey(referenceKey)) {
+                continue;
+            }
+            if (businessRepository.exists(reference)) {
+                continue;
+            }
+            pendingByKey.put(referenceKey, reference);
+        }
+        return new ArrayList<>(pendingByKey.values());
+    }
+
+    private String referenceKey(StoredObjectReference reference) {
+        return reference.getObjectId().value() + ":" + reference.getOwnerType().value() + ":" + reference.getOwnerId();
     }
 
     @Override

@@ -7,6 +7,7 @@ export interface ClassicsContentRef {
 
 export interface ClassicsContentTagRecord {
     id?: number | null;
+    tagId?: number | null;
     contentType?: ClassicsContentType | null;
     contentId?: number | null;
     tagNameSnapshot?: string | null;

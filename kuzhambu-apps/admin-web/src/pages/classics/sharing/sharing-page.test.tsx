@@ -182,7 +182,7 @@ describe("SharingPage", () => {
             });
         });
 
-        await user.click(screen.getByRole("button", { name: "filter 筛选" }));
+        await user.click(screen.getByRole("button", { name: /filter\s*筛选/ }));
         await user.click(screen.getByLabelText("分享内容类型"));
         await user.click(await screen.findByTitle("三才条目"));
         await user.click(screen.getByLabelText("分享状态"));

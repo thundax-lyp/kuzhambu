@@ -8,11 +8,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
+import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.StorageObjectController;
 import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.request.StorageDeleteRequest;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -65,7 +67,23 @@ class StorageObjectDeleteContractTest {
         assertThrows(RuntimeException.class, () -> controller.delete(emptyRequest));
     }
 
+    @Test
+    void deleteShouldRejectReferencedObject() {
+        List<StoredObjectId> removedIds = new ArrayList<>();
+        StorageObjectController controller =
+                new StorageObjectController(storageService(removedIds, Arrays.asList(100L)));
+        StorageDeleteRequest request = new StorageDeleteRequest();
+        request.setIds(List.of(100L));
+
+        assertThrows(RuntimeException.class, () -> controller.delete(request));
+        assertTrue(removedIds.isEmpty());
+    }
+
     private static StorageApplicationService storageService(List<StoredObjectId> removedIds) {
+        return storageService(removedIds, List.of());
+    }
+
+    private static StorageApplicationService storageService(List<StoredObjectId> removedIds, List<Long> referencedIds) {
         return (StorageApplicationService) Proxy.newProxyInstance(
                 StorageApplicationService.class.getClassLoader(),
                 new Class<?>[] {StorageApplicationService.class},
@@ -77,9 +95,16 @@ class StorageObjectDeleteContractTest {
                         }
                         StoredObject object = new StoredObject();
                         object.setId(id);
+                        if (referencedIds.contains(id.value())) {
+                            object.setReferenceStatus(StoredObjectReferenceStatus.REFERENCED);
+                        }
                         return object;
                     }
                     if ("remove".equals(method.getName())) {
+                        StoredObjectId id = (StoredObjectId) args[0];
+                        if (referencedIds.contains(id.value())) {
+                            throw new RuntimeException("Storage 对象已被其他业务引用，无法删除");
+                        }
                         removedIds.add((StoredObjectId) args[0]);
                         return 1;
                     }

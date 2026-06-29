@@ -112,6 +112,7 @@ public final class StoragePersistenceAssembler {
             return null;
         }
         StoredObjectReferenceDO dataObject = new StoredObjectReferenceDO();
+        // 复合主键映射：objectId + referenceOwnerType + referenceOwnerId
         dataObject.setObjectId(StoredObjectIdCodec.toValue(entity.getObjectId()));
         dataObject.setReferenceOwnerId(entity.getOwnerId());
         dataObject.setReferenceOwnerType(ownerTypeValue(entity.getOwnerType()));
@@ -125,6 +126,7 @@ public final class StoragePersistenceAssembler {
             return null;
         }
         StoredObjectReference entity = new StoredObjectReference();
+        // 按复合主键字段回填引用身份信息
         entity.setObjectId(StoredObjectIdCodec.toDomain(dataObject.getObjectId()));
         entity.setOwnerId(dataObject.getReferenceOwnerId());
         entity.setOwnerType(ownerTypeFrom(dataObject.getReferenceOwnerType()));
@@ -210,6 +212,7 @@ public final class StoragePersistenceAssembler {
         MultipartUploadPartDO dataObject = new MultipartUploadPartDO();
         dataObject.setId(MultipartUploadPartIdCodec.toValue(entity.getId()));
         dataObject.setUploadId(entity.getUploadId());
+        dataObject.setPartPath(entity.getPartPath());
         dataObject.setPartNumber(entity.getPartNumber());
         dataObject.setEtag(entity.getEtag());
         dataObject.setSize(entity.getSize());
@@ -223,6 +226,7 @@ public final class StoragePersistenceAssembler {
         MultipartUploadPart entity = new MultipartUploadPart();
         entity.setId(MultipartUploadPartIdCodec.toDomain(dataObject.getId()));
         entity.setUploadId(dataObject.getUploadId());
+        entity.setPartPath(dataObject.getPartPath());
         entity.setPartNumber(dataObject.getPartNumber());
         entity.setEtag(dataObject.getEtag());
         entity.setSize(dataObject.getSize());

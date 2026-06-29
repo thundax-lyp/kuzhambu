@@ -227,7 +227,7 @@ export const BackupRestorePage = () => {
             key: "backupStatus",
             width: 120,
             render: (value?: string | null) => (
-                <KuzhambuTag tone={backupStatusTone(value)}>{value || "UNKNOWN"}</KuzhambuTag>
+                <KuzhambuTag type={backupStatusTone(value)}>{value || "UNKNOWN"}</KuzhambuTag>
             )
         },
         {
@@ -315,7 +315,7 @@ export const BackupRestorePage = () => {
             key: "restoreStatus",
             width: 120,
             render: (value?: string | null) => (
-                <KuzhambuTag tone={restoreStatusTone(value)}>{value || "UNKNOWN"}</KuzhambuTag>
+                <KuzhambuTag type={restoreStatusTone(value)}>{value || "UNKNOWN"}</KuzhambuTag>
             )
         },
         {
@@ -325,7 +325,7 @@ export const BackupRestorePage = () => {
             width: 120,
             render: (value?: boolean | null) =>
                 value ? (
-                    <KuzhambuTag tone="warning">已启用</KuzhambuTag>
+                    <KuzhambuTag type="warning">已启用</KuzhambuTag>
                 ) : (
                     <Text type="secondary">未启用</Text>
                 )
@@ -568,7 +568,7 @@ export const BackupRestorePage = () => {
                                     label: "备份状态",
                                     children: (
                                         <KuzhambuTag
-                                            tone={backupStatusTone(
+                                            type={backupStatusTone(
                                                 backupDetailQuery.data.backupStatus
                                             )}
                                         >
@@ -650,7 +650,7 @@ export const BackupRestorePage = () => {
                                     label: "恢复状态",
                                     children: (
                                         <KuzhambuTag
-                                            tone={restoreStatusTone(
+                                            type={restoreStatusTone(
                                                 restoreDetailQuery.data.restoreStatus
                                             )}
                                         >

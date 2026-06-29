@@ -18,6 +18,8 @@ public interface MultipartUploadRepository {
 
     MultipartUploadPart getMultipartPart(String uploadId, Integer partNumber);
 
+    int deleteMultipartParts(String uploadId);
+
     List<MultipartUploadPart> listMultipartParts(String uploadId);
 
     int countMultipartParts(String uploadId);

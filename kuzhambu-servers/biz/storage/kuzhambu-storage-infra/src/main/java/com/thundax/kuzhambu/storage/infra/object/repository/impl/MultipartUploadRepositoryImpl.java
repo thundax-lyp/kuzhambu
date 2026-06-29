@@ -87,6 +87,13 @@ public class MultipartUploadRepositoryImpl implements MultipartUploadRepository 
     }
 
     @Override
+    public int deleteMultipartParts(String uploadId) {
+        LambdaQueryWrapper<MultipartUploadPartDO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(MultipartUploadPartDO::getUploadId, uploadId);
+        return partMapper.delete(wrapper);
+    }
+
+    @Override
     public List<MultipartUploadPart> listMultipartParts(String uploadId) {
         LambdaQueryWrapper<MultipartUploadPartDO> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(MultipartUploadPartDO::getUploadId, uploadId);

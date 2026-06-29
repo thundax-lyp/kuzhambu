@@ -20,7 +20,12 @@ import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import * as service from "./storage-object-service";
 import type { StoragePageQuery } from "./storage-object-service";
-import type { StorageContentMode, StorageRecord } from "./storage-object-types";
+import { StorageUploadTaskCard } from "./components/storage-upload-task-card";
+import type {
+    StorageContentMode,
+    StorageRecord,
+    StorageUploadTaskRecord
+} from "./storage-object-types";
 import "./storage-object-page.css";
 
 const { Text } = Typography;
@@ -167,7 +172,9 @@ export const StorageObjectPage = () => {
     const [searchText, setSearchText] = useState("");
     const [filters, setFilters] = useState<StorageObjectFilters>(DEFAULT_STORAGE_OBJECT_FILTERS);
     const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
+    const [uploadTask, setUploadTask] = useState<StorageUploadTaskRecord | null>(null);
     const uploadInputRef = useRef<HTMLInputElement>(null);
+    const uploadAbortControllerRef = useRef<AbortController | null>(null);
     const hasSelectedStorages = selectedRowKeys.length > 0;
     const hasActiveFilters = Boolean(
         filters.contentType.trim() ||
@@ -204,13 +211,27 @@ export const StorageObjectPage = () => {
     });
 
     const uploadMutation = useMutation({
-        mutationFn: service.uploadStorageObject,
+        mutationFn: (file: File) => {
+            uploadAbortControllerRef.current?.abort();
+            uploadAbortControllerRef.current = new AbortController();
+            return service.uploadStorageFile({
+                file,
+                signal: uploadAbortControllerRef.current.signal,
+                onTaskUpdate: setUploadTask
+            });
+        },
         onSuccess: async () => {
             await invalidateStoragePage();
             messageApi.success("文件已上传");
         },
         onError: (error) => {
+            if (error instanceof Error && error.message === "Request was aborted") {
+                return;
+            }
             messageApi.error(error instanceof Error ? error.message : "上传失败");
+        },
+        onSettled: () => {
+            uploadAbortControllerRef.current = null;
         }
     });
 
@@ -278,9 +299,28 @@ export const StorageObjectPage = () => {
         const file = event.target.files?.[0];
         event.target.value = "";
         if (file) {
+            setUploadTask(null);
             uploadMutation.mutate(file);
         }
     };
+
+    const cancelUpload = () => {
+        if (!uploadTask?.canCancel) {
+            return;
+        }
+        uploadAbortControllerRef.current?.abort();
+    };
+
+    const isUploadInProgress = Boolean(
+        uploadMutation.isPending ||
+        (uploadTask &&
+            [
+                "uploading-single",
+                "initiating-multipart",
+                "uploading-parts",
+                "completing-multipart"
+            ].includes(uploadTask.stage))
+    );
 
     const openDeleteConfirm = (storage: StorageRecord) => {
         confirm.danger({
@@ -454,6 +494,11 @@ export const StorageObjectPage = () => {
 
     return (
         <>
+            {uploadTask ? (
+                <div className="storage-object-upload-task-wrap">
+                    <StorageUploadTaskCard task={uploadTask} onCancel={cancelUpload} />
+                </div>
+            ) : null}
             <KuzhambuListPage<StorageRecord>
                 pageClassName="storage-object-page"
                 title="存储对象"
@@ -557,8 +602,8 @@ export const StorageObjectPage = () => {
                         />
                         <Button
                             icon={<UploadOutlined />}
-                            disabled={!canEditStorage}
-                            loading={uploadMutation.isPending}
+                            disabled={!canEditStorage || isUploadInProgress}
+                            loading={isUploadInProgress}
                             onClick={openUploadPicker}
                         >
                             上传

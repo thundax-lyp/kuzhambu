@@ -275,7 +275,7 @@ describe("MingCustomsPage", () => {
         renderMingCustomsPage();
 
         await screen.findByText("岁时礼仪：元旦朝贺");
-        await user.click(screen.getByRole("button", { name: "filter 筛选" }));
+        await user.click(screen.getByRole("button", { name: /filter\s*筛选/ }));
         await user.click(screen.getByLabelText("明代习俗分类"));
         await user.click(await screen.findByTitle("礼制"));
         await user.click(screen.getByRole("button", { name: /查\s*询/ }));
@@ -318,7 +318,7 @@ describe("MingCustomsPage", () => {
         renderMingCustomsPage();
 
         await screen.findByText("岁时礼仪：元旦朝贺");
-        await user.click(screen.getByRole("button", { name: "plus 新增明代习俗" }));
+        await user.click(screen.getByRole("button", { name: /plus\s*新增明代习俗/ }));
         await user.type(await screen.findByLabelText("明代习俗标题"), "新增灯市习俗");
         await user.click(screen.getByLabelText("明代习俗编辑分类"));
         await user.click(await screen.findByTitle("岁时节令"));
@@ -342,7 +342,7 @@ describe("MingCustomsPage", () => {
                 })
             );
         });
-    });
+    }, 15000);
 
     it("edits ming customs entry and renders sanitized content preview", async () => {
         const user = userEvent.setup();

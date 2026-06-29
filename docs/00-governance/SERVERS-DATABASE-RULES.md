@@ -91,6 +91,14 @@
 - 哈希类字段只保存哈希结果。
 - access token、refresh token、分享 token、下载 token 等明文只允许返回一次，不得持久化明文。
 
+## Storage Reference Constraint Truth Source
+
+- Storage 引用约束真相源固定为 `db/schema/storage.sql`。
+- `storage_object_reference` 的约束说明：
+  - `object_id + reference_owner_type + reference_owner_id` 为复合主键，承载“同一 owner 对同一 object 幂等”。
+  - 该设计天然允许同一 `object_id` 被多个不同 owner 并发引用。
+  - `reference_status` 表示该条引用记录的引用状态；对象级别的引用是否存在仍由应用层以有效引用集合为准。
+
 ## Cache Boundary
 
 - 正式业务数据以数据库为真相源。

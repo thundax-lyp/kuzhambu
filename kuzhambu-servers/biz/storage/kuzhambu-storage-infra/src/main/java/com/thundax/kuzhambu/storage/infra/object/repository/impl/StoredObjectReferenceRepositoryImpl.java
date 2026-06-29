@@ -2,8 +2,10 @@ package com.thundax.kuzhambu.storage.infra.object.repository.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObjectReference;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectReferenceRepository;
 import com.thundax.kuzhambu.storage.infra.object.persistence.assembler.StoragePersistenceAssembler;
 import com.thundax.kuzhambu.storage.infra.object.persistence.dataobject.StoredObjectReferenceDO;
@@ -11,6 +13,7 @@ import com.thundax.kuzhambu.storage.infra.object.persistence.mapper.StoredObject
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -43,6 +46,24 @@ public class StoredObjectReferenceRepositoryImpl implements StoredObjectReferenc
     }
 
     @Override
+    public List<StoredObjectId> listObjectIdsByOwner(String referenceOwnerType, String referenceOwnerId) {
+        if (StringUtils.isBlank(referenceOwnerType) && StringUtils.isBlank(referenceOwnerId)) {
+            return List.of();
+        }
+        LambdaQueryWrapper<StoredObjectReferenceDO> wrapper = new LambdaQueryWrapper<>();
+        if (StringUtils.isNotBlank(referenceOwnerType)) {
+            wrapper.eq(StoredObjectReferenceDO::getReferenceOwnerType, referenceOwnerType);
+        }
+        if (StringUtils.isNotBlank(referenceOwnerId)) {
+            wrapper.eq(StoredObjectReferenceDO::getReferenceOwnerId, referenceOwnerId);
+        }
+        return mapper.selectObjs(wrapper.select(StoredObjectReferenceDO::getObjectId)).stream()
+                .filter(Objects::nonNull)
+                .map(objectId -> StoredObjectIdCodec.toDomain(String.valueOf(objectId)))
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public void insertReferences(List<StoredObjectReference> list) {
         List<StoredObjectReferenceDO> dataObjects = StoragePersistenceAssembler.toBusinessObjectList(list);
         if (dataObjects == null) {
@@ -51,6 +72,33 @@ public class StoredObjectReferenceRepositoryImpl implements StoredObjectReferenc
         for (StoredObjectReferenceDO dataObject : dataObjects) {
             mapper.insert(dataObject);
         }
+    }
+
+    @Override
+    public boolean exists(StoredObjectReference reference) {
+        if (reference == null
+                || reference.getObjectId() == null
+                || reference.getOwnerType() == null
+                || StringUtils.isBlank(reference.getOwnerId())) {
+            return false;
+        }
+        LambdaQueryWrapper<StoredObjectReferenceDO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(StoredObjectReferenceDO::getObjectId, reference.getObjectId().value());
+        wrapper.eq(
+                StoredObjectReferenceDO::getReferenceOwnerType,
+                reference.getOwnerType().value());
+        wrapper.eq(StoredObjectReferenceDO::getReferenceOwnerId, reference.getOwnerId());
+        return mapper.selectCount(wrapper) > 0;
+    }
+
+    @Override
+    public long countByObjectId(StoredObjectId objectId) {
+        if (objectId == null) {
+            return 0;
+        }
+        LambdaQueryWrapper<StoredObjectReferenceDO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(StoredObjectReferenceDO::getObjectId, objectId.value());
+        return mapper.selectCount(wrapper);
     }
 
     @Override

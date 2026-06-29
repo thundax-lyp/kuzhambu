@@ -44,8 +44,7 @@ export interface KuzhambuTableRowActionDivider {
 }
 
 export type KuzhambuTableRowActionOption<RecordType extends object = object> =
-    | KuzhambuTableRowAction<RecordType>
-    | KuzhambuTableRowActionDivider;
+    KuzhambuTableRowAction<RecordType> | KuzhambuTableRowActionDivider;
 
 export type KuzhambuTableRowActions<RecordType extends object = object> =
     | KuzhambuTableRowActionOption<RecordType>[]

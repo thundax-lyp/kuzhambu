@@ -40,7 +40,7 @@ public class StorageOrphanObjectCleanupScheduler {
     @Scheduled(cron = "0 0 0/4 * * ?")
     public int cleanupExpiredOrphans() {
         Instant threshold = Instant.now(clock).minus(ORPHAN_ALIVE_TIME);
-        List<StoredObject> candidates = repository.listExpiredUnreferencedActive(threshold);
+        List<StoredObject> candidates = repository.listExpiredDeletedUnreferenced(threshold);
         int count = 0;
         for (StoredObject candidate : candidates) {
             delete(candidate);

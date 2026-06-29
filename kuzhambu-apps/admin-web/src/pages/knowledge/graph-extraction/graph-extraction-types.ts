@@ -3,12 +3,7 @@
 export type GraphExtractionTaskType = "RELATION" | "GRAPH" | "LINEAGE" | string;
 export type GraphExtractionTriggerSource = "MANUAL" | "QUALITY_REPORT" | "REGENERATE" | string;
 export type GraphExtractionTaskStatus =
-    | "PENDING"
-    | "RUNNING"
-    | "SUCCEEDED"
-    | "FAILED"
-    | "APPLIED"
-    | string;
+    "PENDING" | "RUNNING" | "SUCCEEDED" | "FAILED" | "APPLIED" | string;
 
 export interface GraphExtractionTaskRecord {
     taskId: string;

@@ -6,11 +6,10 @@ import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { KuzhambuTable } from "@/components/kuzhambu-table";
 import type { KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
 import * as contentService from "../classics-content-service";
-import type { ClassicsContentQaPairRecord } from "../classics-content-types";
+import type { ClassicsContentQaPairRecord, ClassicsContentType } from "../classics-content-types";
 import {
     type ClassicsContentQaPairCommand,
-    type ClassicsContentQaPairSortCommand,
-    type ClassicsContentType
+    type ClassicsContentQaPairSortCommand
 } from "../classics-content-service";
 
 interface ClassicsContentQaPanelProps {

@@ -13,15 +13,23 @@ import com.thundax.kuzhambu.operations.domain.report.model.enums.ReportStatus;
 import com.thundax.kuzhambu.operations.domain.report.model.valueobject.ReportId;
 import com.thundax.kuzhambu.operations.domain.report.repository.ReportRepository;
 import com.thundax.kuzhambu.storage.facade.StorageFacade;
+import com.thundax.kuzhambu.storage.facade.request.AbortMultipartUploadFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.BindStorageOwnerFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.CompleteMultipartUploadFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.InitMultipartUploadFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.ListStorageFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.MarkStorageUsageFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.OpenStorageFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.RemoveStorageFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.UnbindStorageOwnerFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.UploadMultipartPartFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.UploadStorageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.response.AbortMultipartUploadFacadeResponse;
+import com.thundax.kuzhambu.storage.facade.response.CompleteMultipartUploadFacadeResponse;
+import com.thundax.kuzhambu.storage.facade.response.InitMultipartUploadFacadeResponse;
 import com.thundax.kuzhambu.storage.facade.response.ListStorageFacadeResponse;
 import com.thundax.kuzhambu.storage.facade.response.OpenStorageFacadeResponse;
+import com.thundax.kuzhambu.storage.facade.response.UploadMultipartPartFacadeResponse;
 import com.thundax.kuzhambu.storage.facade.response.UploadStorageFacadeResponse;
 import java.io.IOException;
 import java.io.InputStream;
@@ -202,6 +210,26 @@ class DefaultOperationsReportTaskExecutorTest {
 
         @Override
         public void markUnused(MarkStorageUsageFacadeRequest request) {}
+
+        @Override
+        public InitMultipartUploadFacadeResponse initMultipartUpload(InitMultipartUploadFacadeRequest request) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public UploadMultipartPartFacadeResponse uploadPart(UploadMultipartPartFacadeRequest request) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public CompleteMultipartUploadFacadeResponse completeMultipart(CompleteMultipartUploadFacadeRequest request) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public AbortMultipartUploadFacadeResponse abortMultipart(AbortMultipartUploadFacadeRequest request) {
+            throw new UnsupportedOperationException();
+        }
     }
 
     private static String read(InputStream inputStream) {
