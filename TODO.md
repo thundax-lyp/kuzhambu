@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Operations cleanup interface`：新增 cleanup admin 接口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-RUNTIME-CLOSURE.md`
-    - 范围对象：`kuzhambu-operations-interface` 下 cleanup assembler、controller、request、response 文件
-    - 处理动作：新增 cleanup `execute / page / detail` admin API
-    - 验收点：暴露 `/api/operations/cleanup/execute`、`/page`、`/detail`，并使用现有 cleanup 权限
-    - 重要度：9/10
-
 - [ ] `Operations health repository query`：扩展 health 查询能力
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-RUNTIME-CLOSURE.md`
