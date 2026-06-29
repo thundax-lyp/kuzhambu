@@ -54,8 +54,8 @@
 
 | 需求项 | 状态 | 已完成部分 | 未完成部分 | 责任域 |
 | --- | --- | --- | --- | --- |
-| 跨库搜索三才图会、王圻文档和明代习俗 | 已完成 | Search 已通过 Classics application facade 读取 `SANCAI_ENTRY`、`WANGQI_DOCUMENT`、`MING_CUSTOMS` 三类内容，完成索引文档生成、Elasticsearch 检索和 Portal 结果返回 | Portal 页面仍未接入 | Discovery, Classics |
-| 结果按知识库分组展示 | 已完成 | Search 返回固定按 `contentType` 分组，并映射为 Portal `groups/items` 结构 | Admin/Portal 页面展示层仍未实现 | Discovery |
+| 跨库搜索三才图会、王圻文档和明代习俗 | 已完成 | Search 已通过 Classics application facade 读取 `SANCAI_ENTRY`、`WANGQI_DOCUMENT`、`MING_CUSTOMS` 三类内容，完成索引文档生成、Elasticsearch 检索、Portal 搜索页面展示与点击回写 | 无 | Discovery, Classics |
+| 结果按知识库分组展示 | 已完成 | Search 返回固定按 `contentType` 分组，并映射为 Portal `groups/items` 结构；Portal 搜索页已按分组渲染结果 | 无 | Discovery |
 | 组内相关性排序 | 部分完成 | Elasticsearch 检索已形成真实查询链路并返回结果顺序 | 高级相关性调优、复杂排序策略仍未实现 | Discovery |
 | 关键词高亮 | 部分完成 | Portal 结果项继续保留 `highlightText` 字段 | 本轮允许返回 `null`，高亮文本生成仍未实现 | Discovery |
 | 按知识库、门类、标签、状态、时间筛选 | 部分完成 | `SearchScope`、请求字段和 Search Gateway 真实检索入口已形成 | 当前筛选能力仍偏基础，复杂条件与标签增强未完成 | Discovery |
