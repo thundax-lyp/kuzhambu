@@ -17,14 +17,6 @@
     - 验收点：`complete / abort` 接口存在契约测试覆盖
     - 重要度：9/10
 
-- [ ] `storage-facade request-response`：补齐 facade 分片上传请求与响应模型
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FULL-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-facade/src/main/java/com/thundax/kuzhambu/storage/facade/request`、`kuzhambu-servers/biz/storage/kuzhambu-storage-facade/src/main/java/com/thundax/kuzhambu/storage/facade/response`
-    - 处理动作：新增 facade 分片上传 request 与 response 模型
-    - 验收点：facade 分片上传请求与响应模型齐全
-    - 重要度：8/10
-
 - [ ] `StorageFacade API`：补齐 facade 分片上传接口定义
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FULL-CLOSURE.md`
