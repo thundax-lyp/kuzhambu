@@ -17,9 +17,14 @@ import com.thundax.kuzhambu.storage.domain.object.model.enums.MultipartUploadSta
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
 import com.thundax.kuzhambu.storage.domain.object.repository.MultipartUploadRepository;
+import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectContentRepository;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.SequenceInputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Vector;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,11 +36,15 @@ public class MultipartUploadApplicationServiceImpl implements MultipartUploadApp
     private static final String EXTENSION_SEPARATOR = ".";
 
     private final MultipartUploadRepository multipartUploadRepository;
+    private final StoredObjectContentRepository storedObjectContentRepository;
     private final StorageApplicationService storageApplicationService;
 
     public MultipartUploadApplicationServiceImpl(
-            MultipartUploadRepository multipartUploadRepository, StorageApplicationService storageApplicationService) {
+            MultipartUploadRepository multipartUploadRepository,
+            StoredObjectContentRepository storedObjectContentRepository,
+            StorageApplicationService storageApplicationService) {
         this.multipartUploadRepository = multipartUploadRepository;
+        this.storedObjectContentRepository = storedObjectContentRepository;
         this.storageApplicationService = storageApplicationService;
     }
 
@@ -66,6 +75,9 @@ public class MultipartUploadApplicationServiceImpl implements MultipartUploadApp
     @Transactional(rollbackFor = Exception.class)
     public MultipartUploadPart uploadPart(UploadMultipartPartCommand command) {
         MultipartUploadPart part = toMultipartPart(command);
+        if (part == null || command == null || command.getInputStream() == null) {
+            throw new BizException("Multipart upload part content can not be null");
+        }
         if (part == null || StringUtils.isBlank(part.getUploadId())) {
             throw new BizException("Multipart upload part can not be null");
         }
@@ -77,6 +89,7 @@ public class MultipartUploadApplicationServiceImpl implements MultipartUploadApp
             throw new BizException("Multipart upload part already exists: " + part.getPartNumber());
         }
         part.setPartPath(resolveMultipartPartObjectKey(session, part.getPartNumber()));
+        persistMultipartPartContent(part, command.getInputStream());
         part.setId(multipartUploadRepository.insertMultipartPart(part));
 
         session.setUploadStatus(MultipartUploadStatus.UPLOADING);
@@ -94,6 +107,7 @@ public class MultipartUploadApplicationServiceImpl implements MultipartUploadApp
         validateMultipartParts(session, parts);
 
         StoredObject storage = toCompletedStorage(session, command);
+        persistCompletedMultipartStorage(session, parts, storage);
         storage.setId(storageApplicationService.create(toCreateStorageCommand(storage)));
 
         Date now = new Date();
@@ -102,6 +116,65 @@ public class MultipartUploadApplicationServiceImpl implements MultipartUploadApp
         session.setCompletedDate(now);
         multipartUploadRepository.updateMultipartSession(session);
         return storage;
+    }
+
+    private void persistMultipartPartContent(MultipartUploadPart part, InputStream inputStream) {
+        try (InputStream stream = inputStream) {
+            StoredObject partStorage = new StoredObject();
+            partStorage.setObjectKey(part.getPartPath());
+            storedObjectContentRepository.save(partStorage, stream);
+        } catch (IOException exception) {
+            throw new BizException("Multipart upload part save failed: " + exception.getMessage());
+        }
+    }
+
+    private void persistCompletedMultipartStorage(
+            MultipartUploadSession session, List<MultipartUploadPart> parts, StoredObject storage) {
+        List<InputStream> streams = new ArrayList<>();
+        try (InputStream mergedStream = mergeParts(session, parts, streams)) {
+            StoredObject mergedStorage = storedObjectContentRepository.save(storage, mergedStream);
+            storage.setObjectKey(mergedStorage.getObjectKey());
+            storage.setBucketName(mergedStorage.getBucketName());
+            storage.setSize(mergedStorage.getSize());
+            storage.setAccessEndpoint(mergedStorage.getAccessEndpoint());
+        } catch (IOException exception) {
+            throw new BizException("Multipart complete save failed: " + exception.getMessage());
+        } finally {
+            closePartStreams(streams);
+        }
+    }
+
+    private void closePartStreams(List<InputStream> streams) {
+        for (InputStream stream : streams) {
+            if (stream == null) {
+                continue;
+            }
+            try {
+                stream.close();
+            } catch (IOException ignored) {
+                // ignore
+            }
+        }
+    }
+
+    private InputStream mergeParts(
+            MultipartUploadSession session, List<MultipartUploadPart> parts, List<InputStream> streams)
+            throws IOException {
+        if (parts == null || parts.isEmpty()) {
+            return InputStream.nullInputStream();
+        }
+        for (MultipartUploadPart part : parts) {
+            if (part == null || StringUtils.isBlank(part.getPartPath())) {
+                throw new BizException("Multipart upload part path can not be empty: " + session.getUploadId());
+            }
+            StoredObject partStorage = new StoredObject();
+            partStorage.setObjectKey(part.getPartPath());
+            streams.add(storedObjectContentRepository.open(partStorage));
+        }
+        if (streams.isEmpty()) {
+            return InputStream.nullInputStream();
+        }
+        return new SequenceInputStream(new Vector<>(streams).elements());
     }
 
     @Override

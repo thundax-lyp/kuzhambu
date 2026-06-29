@@ -183,10 +183,16 @@ public class StorageObjectController {
     })
     @HasPermission(value = "storage:object:edit")
     @SysLogger(value = "分片上传-上传分片")
-    @PostMapping(value = "multipart/uploadPart")
-    public UploadMultipartPartResponse uploadPart(@Valid @RequestBody UploadMultipartPartRequest request) {
-        MultipartUploadPart part = multipartUploadApplicationService.uploadPart(toUploadMultipartPartCommand(request));
-        return StorageInterfaceAssembler.toResponse(part);
+    @PostMapping(value = "multipart/uploadPart", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public UploadMultipartPartResponse uploadPart(
+            @Valid UploadMultipartPartRequest request, @RequestParam("file") MultipartFile file) {
+        try {
+            MultipartUploadPart part =
+                    multipartUploadApplicationService.uploadPart(toUploadMultipartPartCommand(request, file));
+            return StorageInterfaceAssembler.toResponse(part);
+        } catch (IOException exception) {
+            throw AdminResponseExceptions.system(exception.getMessage());
+        }
     }
 
     @Operation(summary = "完成分片上传", description = "storage:object:edit")
@@ -328,11 +334,17 @@ public class StorageObjectController {
                         request.getPartSize());
     }
 
-    private UploadMultipartPartCommand toUploadMultipartPartCommand(UploadMultipartPartRequest request) {
-        return request == null
-                ? null
-                : new UploadMultipartPartCommand(
-                        request.getUploadId(), request.getPartNumber(), request.getEtag(), request.getSize());
+    private UploadMultipartPartCommand toUploadMultipartPartCommand(
+            UploadMultipartPartRequest request, MultipartFile file) throws IOException {
+        if (request == null) {
+            return null;
+        }
+        return new UploadMultipartPartCommand(
+                request.getUploadId(),
+                request.getPartNumber(),
+                request.getEtag(),
+                request.getSize(),
+                file == null ? null : file.getInputStream());
     }
 
     private CompleteMultipartUploadCommand toCompleteMultipartUploadCommand(CompleteMultipartUploadRequest request) {

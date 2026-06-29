@@ -1,7 +1,9 @@
 package com.thundax.kuzhambu.storage.interfaces.admin;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -31,7 +33,9 @@ import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.response.
 import java.lang.reflect.Proxy;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.multipart.MultipartFile;
 
 class StorageObjectMultipartUploadContractTest {
 
@@ -100,7 +104,7 @@ class StorageObjectMultipartUploadContractTest {
     @Test
     void uploadPartRouteShouldKeepMultipartContract() throws Exception {
         PostMapping methodMapping = StorageObjectController.class
-                .getDeclaredMethod("uploadPart", UploadMultipartPartRequest.class)
+                .getDeclaredMethod("uploadPart", UploadMultipartPartRequest.class, MultipartFile.class)
                 .getAnnotation(PostMapping.class);
         assertEquals("multipart/uploadPart", methodMapping.value()[0]);
     }
@@ -116,8 +120,10 @@ class StorageObjectMultipartUploadContractTest {
         request.setPartNumber(2);
         request.setEtag("etag-2");
         request.setSize(16L);
+        MultipartFile file =
+                new MockMultipartFile("file", "part-2.bin", "application/octet-stream", new byte[] {0x31, 0x32});
 
-        UploadMultipartPartResponse response = controller.uploadPart(request);
+        UploadMultipartPartResponse response = controller.uploadPart(request, file);
         JsonNode json = OBJECT_MAPPER.valueToTree(response);
 
         UploadMultipartPartCommand command = commandRef.get();
@@ -125,6 +131,8 @@ class StorageObjectMultipartUploadContractTest {
         assertEquals(2, command.getPartNumber());
         assertEquals("etag-2", command.getEtag());
         assertEquals(16L, command.getSize());
+        assertNotNull(command.getInputStream());
+        assertTrue(command.getInputStream().available() > 0);
 
         assertEquals("upload-1", json.get("uploadId").asText());
         assertEquals(2, json.get("partNumber").asInt());

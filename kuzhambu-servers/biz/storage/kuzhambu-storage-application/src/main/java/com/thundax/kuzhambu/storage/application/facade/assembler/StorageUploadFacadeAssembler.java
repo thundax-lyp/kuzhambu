@@ -48,7 +48,11 @@ public class StorageUploadFacadeAssembler {
         return request == null
                 ? null
                 : new UploadMultipartPartCommand(
-                        request.getUploadId(), request.getPartNumber(), request.getEtag(), request.getSize());
+                        request.getUploadId(),
+                        request.getPartNumber(),
+                        request.getEtag(),
+                        request.getSize(),
+                        request.getInputStream());
     }
 
     public CompleteMultipartUploadCommand toCompleteMultipartUploadCommand(
