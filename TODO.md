@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Operations cleanup infra DO/Mapper`：补齐 cleanup 持久化基础对象
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-RUNTIME-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-infra` 下 cleanup dataobject 与 mapper 文件
-    - 处理动作：新增 `CleanupJobDO`、`CleanupItemDO`、`CleanupJobMapper`、`CleanupItemMapper`
-    - 验收点：`operations_cleanup_job` 与 `operations_cleanup_item` 有对应 DO / Mapper 且命名、表名、字段映射正确
-    - 重要度：8/10
-
 - [ ] `Operations cleanup repository impl`：补齐 cleanup assembler 与 repository 实现
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-RUNTIME-CLOSURE.md`
