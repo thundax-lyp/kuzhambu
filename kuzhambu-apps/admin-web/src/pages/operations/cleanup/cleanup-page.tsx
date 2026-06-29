@@ -191,7 +191,7 @@ export const CleanupPage = () => {
                         />
                         <Text className="operations-cleanup-description" type="secondary">
                             最近一次状态：
-                            <KuzhambuTag tone={statusTone(latestRecord?.cleanupStatus)}>
+                            <KuzhambuTag type={statusTone(latestRecord?.cleanupStatus)}>
                                 {latestRecord?.cleanupStatus || "UNKNOWN"}
                             </KuzhambuTag>
                         </Text>
@@ -277,7 +277,7 @@ export const CleanupPage = () => {
                                             <td>{record.cleanupType || "-"}</td>
                                             <td>
                                                 <KuzhambuTag
-                                                    tone={statusTone(record.cleanupStatus)}
+                                                    type={statusTone(record.cleanupStatus)}
                                                 >
                                                     {record.cleanupStatus || "UNKNOWN"}
                                                 </KuzhambuTag>
@@ -380,7 +380,7 @@ export const CleanupPage = () => {
                                     key: "cleanupStatus",
                                     label: "任务状态",
                                     children: (
-                                        <KuzhambuTag tone={statusTone(detailRecord.cleanupStatus)}>
+                                        <KuzhambuTag type={statusTone(detailRecord.cleanupStatus)}>
                                             {detailRecord.cleanupStatus || "UNKNOWN"}
                                         </KuzhambuTag>
                                     )

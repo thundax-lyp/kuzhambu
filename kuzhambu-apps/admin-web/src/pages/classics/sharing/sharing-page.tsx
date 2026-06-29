@@ -123,6 +123,15 @@ const readStatusTagType = (status?: ClassicsShareLinkStatus | string | null) => 
     return shareStatusTone[status || ""] || "neutral";
 };
 
+const toShareLinkStatus = (
+    status?: ClassicsShareLinkStatus | string | null
+): ClassicsShareLinkStatus | undefined => {
+    if (status === "ACTIVE" || status === "EXPIRED" || status === "REVOKED") {
+        return status;
+    }
+    return undefined;
+};
+
 const readVisibilityLabel = (visibility?: ClassicsShareVisibility | string | null) => {
     return (
         {
@@ -542,7 +551,7 @@ export const SharingPage = () => {
 
                     <KuzhambuSpace align="end">
                         <Select<ClassicsShareLinkStatus>
-                            value={detailRecord?.status}
+                            value={toShareLinkStatus(detailRecord?.status)}
                             placeholder="更新状态"
                             aria-label="更新状态"
                             style={{ width: 180 }}

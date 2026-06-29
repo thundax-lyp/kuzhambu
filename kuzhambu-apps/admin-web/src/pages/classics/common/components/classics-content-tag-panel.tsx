@@ -7,10 +7,7 @@ import { KuzhambuTable } from "@/components/kuzhambu-table";
 import type { KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
 import * as contentService from "../classics-content-service";
 import type { ClassicsContentTagRecord, ClassicsContentType } from "../classics-content-types";
-import {
-    type ClassicsContentTagCommand,
-    type ClassicsContentTagPayload
-} from "../classics-content-service";
+import { type ClassicsContentTagCommand } from "../classics-content-service";
 
 interface ClassicsContentTagPanelProps {
     contentId: number;
@@ -95,7 +92,7 @@ export const ClassicsContentTagPanel = ({
     };
 
     const addMutation = useMutation({
-        mutationFn: (request: ClassicsContentTagPayload) =>
+        mutationFn: (request: ClassicsContentTagCommand) =>
             contentService.addTag({
                 ...request,
                 contentId,
@@ -112,7 +109,7 @@ export const ClassicsContentTagPanel = ({
     });
 
     const updateMutation = useMutation({
-        mutationFn: (request: ClassicsContentTagPayload) =>
+        mutationFn: (request: ClassicsContentTagCommand) =>
             contentService.updateTag({
                 ...request,
                 contentId,

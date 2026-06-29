@@ -268,7 +268,7 @@ describe("WangqiPage", () => {
             );
         });
 
-        await user.click(screen.getByRole("button", { name: "filter 筛选" }));
+        await user.click(screen.getByRole("button", { name: /filter\s*筛选/ }));
         await user.click(screen.getByLabelText("王圻文档可见性"));
         await user.click(await screen.findByTitle("私有"));
         await user.click(screen.getByRole("button", { name: /查\s*询/ }));
