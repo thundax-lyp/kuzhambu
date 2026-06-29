@@ -507,17 +507,11 @@ export const SharingPage = () => {
                 destroyOnClose
                 open={Boolean(selectedShareId)}
                 title="分享详情"
-                width={860}
+                size="middle"
                 onClose={closeShareDetail}
             >
-                <KuzhambuSpace direction="vertical" size="middle" style={{ width: "100%" }}>
-                    <Descriptions
-                        title="分享信息"
-                        bordered
-                        size="small"
-                        column={2}
-                        loading={detailQuery.isLoading}
-                    >
+                <KuzhambuSpace orientation="vertical" size="middle" style={{ width: "100%" }}>
+                    <Descriptions title="分享信息" bordered size="small" column={2}>
                         <Descriptions.Item label="标题">
                             {detailRecord?.title || "-"}
                         </Descriptions.Item>
