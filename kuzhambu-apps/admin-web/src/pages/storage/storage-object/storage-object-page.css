@@ -128,3 +128,9 @@ html[data-theme="dark"] .storage-object-page {
     border: 1px solid var(--storage-object-code-line);
     border-radius: 6px;
 }
+
+.storage-object-upload-task-wrap {
+    margin-bottom: 12px;
+    width: 100%;
+    max-width: 520px;
+}

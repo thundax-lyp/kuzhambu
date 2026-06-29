@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web multipart page`：为 Storage 页面接入上传状态与任务卡片
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-WEB-STORAGE-MULTIPART-SYNC.md`、`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/storage/storage-object/storage-object-page.tsx`、`kuzhambu-apps/admin-web/src/pages/storage/storage-object/storage-object-page.css`、`kuzhambu-apps/admin-web/src/pages/storage/storage-object/components/storage-upload-task-card.tsx`、`kuzhambu-apps/admin-web/src/pages/storage/storage-object/components/storage-upload-task-card.css`
-    - 处理动作：在 Storage 页面接入单任务上传状态机、进度展示、取消入口和上传完成后的列表刷新
-    - 验收点：页面仍只有一个上传入口，大文件上传时可见阶段与进度，可取消，成功后刷新列表，失败后显示错误
-    - 重要度：8/10
-
 - [ ] `admin-web multipart tests`：补齐普通上传与分片上传前端测试闭环
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-WEB-STORAGE-MULTIPART-SYNC.md`、`docs/00-governance/TODO-RULES.md`
