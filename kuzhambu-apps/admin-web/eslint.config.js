@@ -48,9 +48,7 @@ const SERVICE_METHOD_VERBS = [
 ];
 
 const ANTD_SPACE_DIRECT_IMPORT_ALLOWLIST = [];
-const ANTD_DRAWER_DIRECT_IMPORT_ALLOWLIST = [
-    "/src/components/kuzhambu-drawer/kuzhambu-drawer.tsx"
-];
+const ANTD_DRAWER_DIRECT_IMPORT_ALLOWLIST = ["/src/components/kuzhambu-drawer/kuzhambu-drawer.tsx"];
 
 const localRules = {
     rules: {
