@@ -200,4 +200,232 @@ test.describe("storage object page", () => {
         expect(deleteRequestBody).toEqual({ ids: ["storage-1"] });
         expect(pageRequestCount).toBeGreaterThanOrEqual(2);
     });
+
+    test("supports multipart upload success and progress status rendering", async ({ page }) => {
+        await page.setViewportSize({ width: 1280, height: 800 });
+        let records = [
+            {
+                id: "storage-1",
+                originalFilename: "small.txt",
+                contentType: "text/plain",
+                ownerId: "asset-1",
+                ownerType: "USER",
+                size: 8,
+                accessEndpoint: "/api/storage/object/storage-1/content",
+                objectStatus: "ACTIVE",
+                referenceStatus: "UNREFERENCED",
+                priority: 100,
+                remarks: ""
+            }
+        ];
+        let pageRequestCount = 0;
+        let uploadPartRequestCount = 0;
+        let initiatedPayload: { originalFilename?: unknown } = {};
+        let completedPayload: { uploadId?: unknown } = {};
+        await page.route("**/kuzhambu-admin-api/api/storage/object/page", async (route) => {
+            pageRequestCount += 1;
+            await route.fulfill({
+                contentType: "application/json",
+                body: JSON.stringify({
+                    code: "COMMON-00000",
+                    message: "success",
+                    data: {
+                        pageNo: 1,
+                        pageSize: 20,
+                        count: records.length,
+                        records
+                    }
+                })
+            });
+        });
+        await page.route("**/kuzhambu-admin-api/api/storage/object/multipart/initiate", async (route) => {
+            initiatedPayload = route.request().postDataJSON();
+            await route.fulfill({
+                contentType: "application/json",
+                body: JSON.stringify({
+                    code: "COMMON-00000",
+                    message: "success",
+                    data: {
+                        uploadId: "upload-session-1",
+                        partSize: 5 * 1024 * 1024,
+                        objectKey: "multipart-key",
+                        bucketName: "default"
+                    }
+                })
+            });
+        });
+        await page.route("**/kuzhambu-admin-api/api/storage/object/multipart/uploadPart", async (route) => {
+            uploadPartRequestCount += 1;
+            await new Promise((resolve) => setTimeout(resolve, 120));
+            const postData = route.request().postData();
+            const partNumberMatch = postData?.match(/partNumber=(\d+)/);
+            const partNumber = partNumberMatch?.[1] ? Number(partNumberMatch[1]) : 1;
+            await route.fulfill({
+                contentType: "application/json",
+                body: JSON.stringify({
+                    code: "COMMON-00000",
+                    message: "success",
+                    data: {
+                        uploadId: "upload-session-1",
+                        partNumber,
+                        etag: `etag-${partNumber}`
+                    }
+                })
+            });
+        });
+        await page.route("**/kuzhambu-admin-api/api/storage/object/multipart/complete", async (route) => {
+            completedPayload = route.request().postDataJSON();
+            const uploadedRecord = {
+                id: "storage-2",
+                originalFilename: "multipart.bin",
+                contentType: "application/octet-stream",
+                ownerId: "",
+                ownerType: "",
+                size: 24 * 1024 * 1024,
+                accessEndpoint: "/api/storage/object/storage-2/content",
+                objectStatus: "ACTIVE",
+                referenceStatus: "UNREFERENCED",
+                priority: 101,
+                remarks: ""
+            };
+            records = [uploadedRecord, ...records];
+            await route.fulfill({
+                contentType: "application/json",
+                body: JSON.stringify({
+                    code: "COMMON-00000",
+                    message: "success",
+                    data: uploadedRecord
+                })
+            });
+        });
+
+        await page.route("**/kuzhambu-admin-api/api/storage/object/upload", async (route) => {
+            await route.fulfill({
+                status: 400,
+                contentType: "application/json",
+                body: JSON.stringify({
+                    code: "COMMON-00099",
+                    message: "unexpected single upload"
+                })
+            });
+        });
+
+        await page.goto("/storage/objects");
+
+        const fileChooserPromise = page.waitForEvent("filechooser");
+        await page.getByRole("button", { name: "上传" }).click();
+        const fileChooser = await fileChooserPromise;
+        await fileChooser.setFiles({
+            name: "multipart.bin",
+            mimeType: "application/octet-stream",
+            buffer: Buffer.alloc(24 * 1024 * 1024)
+        });
+
+        await expect(page.getByText("初始化分片上传")).toBeVisible();
+        await expect(page.getByText("上传分片中")).toBeVisible();
+        await expect(page.getByText(/已上传分片：/)).toBeVisible();
+        await expect(page.getByText("multipart.bin")).toBeVisible();
+
+        expect(uploadPartRequestCount).toBeGreaterThanOrEqual(1);
+        expect(initiatedPayload.originalFilename).toBe("multipart.bin");
+        expect(completedPayload.uploadId).toBe("upload-session-1");
+        expect(pageRequestCount).toBeGreaterThanOrEqual(2);
+    });
+
+    test("supports multipart upload cancellation", async ({ page }) => {
+        await page.setViewportSize({ width: 1280, height: 800 });
+        let records = [
+            {
+                id: "storage-1",
+                originalFilename: "small.txt",
+                contentType: "text/plain",
+                ownerId: "asset-1",
+                ownerType: "USER",
+                size: 8,
+                accessEndpoint: "/api/storage/object/storage-1/content",
+                objectStatus: "ACTIVE",
+                referenceStatus: "UNREFERENCED",
+                priority: 100,
+                remarks: ""
+            }
+        ];
+        let uploadPartRequestCount = 0;
+        await page.route("**/kuzhambu-admin-api/api/storage/object/page", async (route) => {
+            await route.fulfill({
+                contentType: "application/json",
+                body: JSON.stringify({
+                    code: "COMMON-00000",
+                    message: "success",
+                    data: {
+                        pageNo: 1,
+                        pageSize: 20,
+                        count: records.length,
+                        records
+                    }
+                })
+            });
+        });
+        await page.route("**/kuzhambu-admin-api/api/storage/object/multipart/initiate", async (route) => {
+            await route.fulfill({
+                contentType: "application/json",
+                body: JSON.stringify({
+                    code: "COMMON-00000",
+                    message: "success",
+                    data: {
+                        uploadId: "upload-session-cancel",
+                        partSize: 5 * 1024 * 1024,
+                        objectKey: "multipart-key",
+                        bucketName: "default"
+                    }
+                })
+            });
+        });
+        await page.route("**/kuzhambu-admin-api/api/storage/object/multipart/uploadPart", async (route) => {
+            uploadPartRequestCount += 1;
+            await new Promise((resolve) => setTimeout(resolve, 300));
+            await route.fulfill({
+                contentType: "application/json",
+                body: JSON.stringify({
+                    code: "COMMON-00000",
+                    message: "success",
+                    data: {
+                        uploadId: "upload-session-cancel",
+                        partNumber: uploadPartRequestCount,
+                        etag: `etag-${uploadPartRequestCount}`
+                    }
+                })
+            });
+        });
+        await page.route("**/kuzhambu-admin-api/api/storage/object/multipart/abort", async (route) => {
+            await route.fulfill({
+                contentType: "application/json",
+                body: JSON.stringify({
+                    code: "COMMON-00000",
+                    message: "success",
+                    data: {
+                        uploadId: "upload-session-cancel",
+                        uploadStatus: "ABORTED"
+                    }
+                })
+            });
+        });
+
+        await page.goto("/storage/objects");
+
+        const fileChooserPromise = page.waitForEvent("filechooser");
+        await page.getByRole("button", { name: "上传" }).click();
+        const fileChooser = await fileChooserPromise;
+        await fileChooser.setFiles({
+            name: "multipart-cancel.bin",
+            mimeType: "application/octet-stream",
+            buffer: Buffer.alloc(21 * 1024 * 1024)
+        });
+
+        await expect(page.getByText("上传分片中")).toBeVisible();
+        await page.getByRole("button", { name: "取消" }).click();
+        await expect(page.getByText(/正在取消|已取消/)).toBeVisible();
+
+        expect(uploadPartRequestCount).toBeGreaterThanOrEqual(1);
+        await expect(page.locator("tbody").getByText("multipart-cancel.bin")).toBeHidden();
+    });
 });
