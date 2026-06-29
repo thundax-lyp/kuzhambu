@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web multipart service`：收口 Storage 页面分片上传契约与分流策略
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-WEB-STORAGE-MULTIPART-SYNC.md`、`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/storage/storage-object/storage-object-service.ts`、`kuzhambu-apps/admin-web/src/pages/storage/storage-object/storage-object-types.ts`
-    - 处理动作：在页面 service 中定义 multipart 接口契约、上传状态数据结构和统一入口 `uploadStorageFile`
-    - 验收点：service 层具备普通上传与 multipart 自动分流、进度回调和取消能力，页面不再拼接 multipart 底层步骤
-    - 重要度：9/10
-
 - [ ] `admin-web multipart page`：为 Storage 页面接入上传状态与任务卡片
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-WEB-STORAGE-MULTIPART-SYNC.md`、`docs/00-governance/TODO-RULES.md`
