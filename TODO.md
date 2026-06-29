@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Storage 现场清理`：清理 RUNBOOK 与临时说明
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FULL-CLOSURE.md`、`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`docs/30-designs/RUNBOOK-STORAGE-FULL-CLOSURE.md`、与本轮直接相关的临时说明或测试桩
-    - 处理动作：在正式文档沉淀完成后清理 RUNBOOK 中已过期的临时决策和临时现场
-    - 验收点：RUNBOOK 只保留仍未沉淀的临时决策，过期说明和临时测试桩被清理
-    - 重要度：7/10
-
 ## 待审阅任务项
 
 ## 待讨论项
