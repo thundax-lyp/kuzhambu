@@ -9,21 +9,36 @@ import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.common.web.request.RequestListHelper;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
+import com.thundax.kuzhambu.storage.application.service.MultipartUploadApplicationService;
 import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
+import com.thundax.kuzhambu.storage.application.service.command.AbortMultipartUploadCommand;
+import com.thundax.kuzhambu.storage.application.service.command.CompleteMultipartUploadCommand;
+import com.thundax.kuzhambu.storage.application.service.command.InitMultipartUploadCommand;
 import com.thundax.kuzhambu.storage.application.service.command.StorageSortCommand;
+import com.thundax.kuzhambu.storage.application.service.command.UploadMultipartPartCommand;
 import com.thundax.kuzhambu.storage.application.service.command.UploadStorageObjectCommand;
 import com.thundax.kuzhambu.storage.application.service.content.StoredObjectContent;
 import com.thundax.kuzhambu.storage.application.service.query.StorageQuery;
 import com.thundax.kuzhambu.storage.application.service.result.StorageUploadResult;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
+import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadPart;
+import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadSession;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import com.thundax.kuzhambu.storage.interfaces.admin.object.assembler.StorageInterfaceAssembler;
+import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.request.AbortMultipartUploadRequest;
+import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.request.CompleteMultipartUploadRequest;
+import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.request.InitMultipartUploadRequest;
 import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.request.StorageDeleteRequest;
 import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.request.StoragePageRequest;
 import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.request.StorageSortRequest;
+import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.request.UploadMultipartPartRequest;
+import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.response.AbortMultipartUploadResponse;
+import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.response.CompleteMultipartUploadResponse;
+import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.response.InitMultipartUploadResponse;
 import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.response.StorageObjectResponse;
+import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.response.UploadMultipartPartResponse;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
@@ -38,6 +53,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -60,9 +76,18 @@ public class StorageObjectController {
             "pptx");
 
     private final StorageApplicationService storageApplicationService;
+    private final MultipartUploadApplicationService multipartUploadApplicationService;
 
     public StorageObjectController(StorageApplicationService storageApplicationService) {
+        this(storageApplicationService, null);
+    }
+
+    @Autowired
+    public StorageObjectController(
+            StorageApplicationService storageApplicationService,
+            MultipartUploadApplicationService multipartUploadApplicationService) {
         this.storageApplicationService = storageApplicationService;
+        this.multipartUploadApplicationService = multipartUploadApplicationService;
     }
 
     @Operation(summary = "获取存储对象分页列表", description = "storage:object:view")
@@ -130,6 +155,71 @@ public class StorageObjectController {
 
         idList.forEach(storageApplicationService::remove);
         return true;
+    }
+
+    @Operation(summary = "初始化分片上传", description = "storage:object:edit")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
+    @HasPermission(value = "storage:object:edit")
+    @SysLogger(value = "分片上传-初始化")
+    @PostMapping(value = "multipart/initiate")
+    public InitMultipartUploadResponse initiate(@Valid @RequestBody InitMultipartUploadRequest request) {
+        MultipartUploadSession session = multipartUploadApplicationService.init(toInitMultipartUploadCommand(request));
+        return StorageInterfaceAssembler.toResponse(session);
+    }
+
+    @Operation(summary = "上传分片", description = "storage:object:edit")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
+    @HasPermission(value = "storage:object:edit")
+    @SysLogger(value = "分片上传-上传分片")
+    @PostMapping(value = "multipart/uploadPart")
+    public UploadMultipartPartResponse uploadPart(@Valid @RequestBody UploadMultipartPartRequest request) {
+        MultipartUploadPart part = multipartUploadApplicationService.uploadPart(toUploadMultipartPartCommand(request));
+        return StorageInterfaceAssembler.toResponse(part);
+    }
+
+    @Operation(summary = "完成分片上传", description = "storage:object:edit")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
+    @HasPermission(value = "storage:object:edit")
+    @SysLogger(value = "分片上传-完成")
+    @PostMapping(value = "multipart/complete")
+    public CompleteMultipartUploadResponse complete(@Valid @RequestBody CompleteMultipartUploadRequest request) {
+        StoredObject storage = multipartUploadApplicationService.complete(toCompleteMultipartUploadCommand(request));
+        applyDefaultAccessEndpoint(storage);
+        return StorageInterfaceAssembler.toResponse(storage, request.getUploadId());
+    }
+
+    @Operation(summary = "中止分片上传", description = "storage:object:edit")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
+    @HasPermission(value = "storage:object:edit")
+    @SysLogger(value = "分片上传-中止")
+    @PostMapping(value = "multipart/abort")
+    public AbortMultipartUploadResponse abort(@Valid @RequestBody AbortMultipartUploadRequest request) {
+        multipartUploadApplicationService.abort(toAbortMultipartUploadCommand(request));
+        return StorageInterfaceAssembler.toResponse(request.getUploadId());
     }
 
     @Operation(summary = "上传存储对象", description = "storage:object:edit")
@@ -219,5 +309,44 @@ public class StorageObjectController {
         String encodedFilename =
                 URLEncoder.encode(filename, StandardCharsets.UTF_8).replace("+", "%20");
         return disposition + "; filename=\"" + asciiFilename + "\"; filename*=UTF-8''" + encodedFilename;
+    }
+
+    private InitMultipartUploadCommand toInitMultipartUploadCommand(InitMultipartUploadRequest request) {
+        return request == null
+                ? null
+                : new InitMultipartUploadCommand(
+                        request.getUploadId(),
+                        request.getOwnerId(),
+                        ownerTypeFrom(request.getOwnerType()),
+                        request.getBusinessType(),
+                        request.getOriginalFilename(),
+                        request.getMimeType(),
+                        request.getBucketName(),
+                        request.getObjectKey(),
+                        request.getProviderUploadId(),
+                        request.getTotalSize(),
+                        request.getPartSize());
+    }
+
+    private UploadMultipartPartCommand toUploadMultipartPartCommand(UploadMultipartPartRequest request) {
+        return request == null
+                ? null
+                : new UploadMultipartPartCommand(
+                        request.getUploadId(), request.getPartNumber(), request.getEtag(), request.getSize());
+    }
+
+    private CompleteMultipartUploadCommand toCompleteMultipartUploadCommand(CompleteMultipartUploadRequest request) {
+        return request == null
+                ? null
+                : new CompleteMultipartUploadCommand(
+                        request.getUploadId(),
+                        request.getBucketName(),
+                        request.getObjectKey(),
+                        request.getSize(),
+                        request.getAccessEndpoint());
+    }
+
+    private AbortMultipartUploadCommand toAbortMultipartUploadCommand(AbortMultipartUploadRequest request) {
+        return request == null ? null : new AbortMultipartUploadCommand(request.getUploadId());
     }
 }

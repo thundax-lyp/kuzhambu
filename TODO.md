@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `StorageObjectController`：补齐 admin 分片上传路由
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FULL-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-interface/src/main/java/com/thundax/kuzhambu/storage/interfaces/admin/object/controller/StorageObjectController.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-interface/src/main/java/com/thundax/kuzhambu/storage/interfaces/admin/object/assembler/StorageInterfaceAssembler.java`
-    - 处理动作：在 admin controller 中增加 `initiate / uploadPart / complete / abort` 四段式分片上传路由
-    - 验收点：admin controller 提供四段式公开路由且 assembler 能完成协议转换
-    - 重要度：10/10
-
 - [ ] `multipart initiate/uploadPart contracts`：补齐 admin 分片上传前半段契约测试
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FULL-CLOSURE.md`
