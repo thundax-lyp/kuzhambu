@@ -24,6 +24,11 @@ interface RequestOptions<TBody> {
     body?: TBody;
 }
 
+interface FormDataProgressOptions {
+    signal?: AbortSignal;
+    onProgress?: (uploadedBytes: number, totalBytes: number) => void;
+}
+
 interface AccessTokenPayload {
     token: string;
     refreshToken?: string;
@@ -163,6 +168,70 @@ const requestFormData = async <TResponse>(path: string, body: FormData, token: s
     return { response, payload };
 };
 
+const requestFormDataWithProgress = async <TResponse>(
+    path: string,
+    body: FormData,
+    token: string | null,
+    options: FormDataProgressOptions = {}
+) => {
+    const signal = options.signal;
+    const onProgress = options.onProgress;
+
+    const response = await new Promise<Response>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        const url = `${ADMIN_API_BASE_URL}${path}`;
+        xhr.open("POST", url, true);
+
+        if (token) {
+            xhr.setRequestHeader(ACCESS_TOKEN_HEADER, token);
+        }
+
+        if (onProgress) {
+            xhr.upload.onprogress = (event) => {
+                if (event.lengthComputable) {
+                    onProgress(event.loaded, event.total);
+                }
+            };
+        }
+
+        if (signal) {
+            if (signal.aborted) {
+                reject(new ApiError("ABORTED", "Request was aborted"));
+                return;
+            }
+
+            const abortHandler = () => {
+                xhr.abort();
+                reject(new ApiError("ABORTED", "Request was aborted"));
+            };
+            signal.addEventListener("abort", abortHandler, { once: true });
+            xhr.addEventListener("loadend", () => {
+                signal.removeEventListener("abort", abortHandler);
+            });
+        }
+
+        xhr.onload = () => {
+            const payloadText = xhr.responseText;
+            resolve(
+                new Response(payloadText, {
+                    status: xhr.status,
+                    statusText: xhr.statusText,
+                    headers: { "Content-Type": "application/json" }
+                })
+            );
+        };
+
+        xhr.onerror = () => {
+            reject(new ApiError("NETWORK_ERROR", "network error"));
+        };
+
+        xhr.send(body);
+    });
+
+    const payload = (await response.json()) as ApiResponse<TResponse>;
+    return { response, payload };
+};
+
 export const postJson = async <TResponse, TBody = unknown>(
     path: string,
     options: RequestOptions<TBody> = {}
@@ -247,6 +316,45 @@ export const postFormData = async <TResponse>(path: string, body: FormData) => {
                     path,
                     body,
                     refreshedToken.token
+                );
+                response = retryResult.response;
+                payload = retryResult.payload;
+
+                if (response.ok && isSuccessCode(payload.code)) {
+                    return payload.data;
+                }
+            }
+        }
+
+        if (isAuthInvalid(response, code)) {
+            clearAccessToken();
+        }
+        throw new ApiError(code, payload.message || "请求失败");
+    }
+
+    return payload.data;
+};
+
+export const postFormDataWithProgress = async <TResponse>(
+    path: string,
+    body: FormData,
+    options: FormDataProgressOptions = {}
+) => {
+    await refreshAccessTokenIfNeeded();
+
+    const token = getAccessToken();
+    let { response, payload } = await requestFormDataWithProgress<TResponse>(path, body, token, options);
+
+    if (!response.ok || !isSuccessCode(payload.code)) {
+        const code = payload.code ?? response.status;
+        if (isAuthInvalid(response, code) && getRefreshToken()) {
+            const refreshedToken = await refreshAccessToken();
+            if (refreshedToken?.token) {
+                const retryResult = await requestFormDataWithProgress<TResponse>(
+                    path,
+                    body,
+                    refreshedToken.token,
+                    options
                 );
                 response = retryResult.response;
                 payload = retryResult.payload;

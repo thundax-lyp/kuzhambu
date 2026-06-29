@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web multipart helper`：补齐分片上传进度与取消请求能力
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-WEB-STORAGE-MULTIPART-SYNC.md`、`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/api/http.ts`、`kuzhambu-apps/admin-web/src/pages/storage/storage-object/storage-object-service.ts`
-    - 处理动作：在前端请求层增加带进度与取消能力的 form-data helper，并让分片上传单片调用走该 helper
-    - 验收点：`http.ts` 提供 `postFormDataWithProgress`，`storage-object-service.ts` 可用其上传单个分片且页面层不直接接触底层请求实现
-    - 重要度：9/10
-
 - [ ] `admin-web multipart service`：收口 Storage 页面分片上传契约与分流策略
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-WEB-STORAGE-MULTIPART-SYNC.md`、`docs/00-governance/TODO-RULES.md`
