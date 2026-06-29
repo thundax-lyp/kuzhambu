@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Operations cleanup repository query`：扩展 cleanup 查询能力
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-RUNTIME-CLOSURE.md`
-    - 范围对象：`CleanupJobRepository.java`、`CleanupJobRepositoryImpl.java`、`CleanupJobMapper.java`
-    - 处理动作：补齐 cleanup job 分页、详情和按 job 查 item 列表
-    - 验收点：repository 可支撑 cleanup `page / detail / item list` 查询
-    - 重要度：8/10
-
 - [ ] `Operations cleanup execute application`：新增 cleanup 执行应用服务
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-RUNTIME-CLOSURE.md`
