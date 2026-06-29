@@ -22,30 +22,30 @@ class StorageApplicationServiceDeleteTest {
     @Test
     void removeShouldRejectReferencedStorageObject() {
         StoredObjectRepository repository = Mockito.mock(StoredObjectRepository.class);
+        StoredObjectReferenceRepository referenceRepository = Mockito.mock(StoredObjectReferenceRepository.class);
         StorageApplicationServiceImpl service = new StorageApplicationServiceImpl(
-                repository,
-                Mockito.mock(StoredObjectReferenceRepository.class),
-                Mockito.mock(StoredObjectContentRepository.class));
+                repository, referenceRepository, Mockito.mock(StoredObjectContentRepository.class));
         when(repository.getById(StoredObjectId.of(100L)))
                 .thenReturn(storage(StoredObjectId.of(100L), StoredObjectReferenceStatus.REFERENCED));
 
         assertThrows(BizException.class, () -> service.remove(StoredObjectId.of(100L)));
         verify(repository, never()).deleteById(any());
+        verify(referenceRepository, never()).deleteByObjectId(any());
     }
 
     @Test
     void removeShouldDeleteUnreferencedStorageObject() {
         StoredObjectRepository repository = Mockito.mock(StoredObjectRepository.class);
+        StoredObjectReferenceRepository referenceRepository = Mockito.mock(StoredObjectReferenceRepository.class);
         StorageApplicationServiceImpl service = new StorageApplicationServiceImpl(
-                repository,
-                Mockito.mock(StoredObjectReferenceRepository.class),
-                Mockito.mock(StoredObjectContentRepository.class));
+                repository, referenceRepository, Mockito.mock(StoredObjectContentRepository.class));
         when(repository.getById(StoredObjectId.of(100L)))
                 .thenReturn(storage(StoredObjectId.of(100L), StoredObjectReferenceStatus.UNREFERENCED));
         when(repository.deleteById(StoredObjectId.of(100L))).thenReturn(1);
 
         int deleted = service.remove(StoredObjectId.of(100L));
         assertEquals(1, deleted);
+        verify(referenceRepository).deleteByObjectId("100");
         verify(repository).deleteById(StoredObjectId.of(100L));
     }
 
