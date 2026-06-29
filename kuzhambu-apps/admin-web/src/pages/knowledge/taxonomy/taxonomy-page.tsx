@@ -476,9 +476,7 @@ export const TaxonomyPage = () => {
                                         loading={governanceMetricsQuery.isFetching}
                                         metrics={
                                             governanceMetricsQuery.data as
-                                                | TagGovernanceMetricsRecord
-                                                | null
-                                                | undefined
+                                                TagGovernanceMetricsRecord | null | undefined
                                         }
                                         onRefresh={() => governanceMetricsQuery.refetch()}
                                     />

@@ -6,12 +6,7 @@ export type RefinementTaskType = "GRAPH" | "RELATION" | "LINEAGE" | string;
 export type RefinementTaskStatus = "DRAFT" | "SUBMITTED" | "APPLIED" | "CANCELLED" | string;
 export type RefinementConfirmationStatus = "PENDING" | "MANUAL_CONFIRMED" | string;
 export type RefinementOperationType =
-    | "UNCHANGED"
-    | "UPDATED"
-    | "DELETED"
-    | "CONFIRMED"
-    | "ADDED"
-    | string;
+    "UNCHANGED" | "UPDATED" | "DELETED" | "CONFIRMED" | "ADDED" | string;
 
 export interface RefinementProgressSummary {
     entityPendingCount?: number | null;
