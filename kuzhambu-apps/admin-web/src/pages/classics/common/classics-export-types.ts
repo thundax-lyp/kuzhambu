@@ -7,3 +7,12 @@ export interface ClassicsExportJobRecord {
     assetCount?: number | null;
     downloadUrl?: string | null;
 }
+
+export interface ClassicsShowcaseJobRecord {
+    id?: number | null;
+    status?: string | null;
+    requestedAt?: string | null;
+    entryCount?: number | null;
+    visibilityRiskStatus?: string | null;
+    downloadUrl?: string | null;
+}

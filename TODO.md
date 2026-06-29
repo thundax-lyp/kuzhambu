@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web/classics/sancai`：收口 Sancai 导出与静态展示任务治理
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARE-EXPORT-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.test.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/services/sancai-entry-service.ts`
-    - 处理动作：统一 Sancai 导出任务区和静态展示任务区的状态展示与刷新语义
-    - 验收点：Sancai 页面可稳定查看导出任务和静态展示任务的状态与下载入口，且相关单测更新通过
-    - 重要度：8/10
-
 - [ ] `classics/facade`：校验 Facade 公共读口径是否齐备
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARE-EXPORT-CLOSURE.md`
