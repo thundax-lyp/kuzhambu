@@ -48,30 +48,6 @@ public class ClassicsSharingResponse implements Serializable {
     @Builder
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class AccessRecord implements Serializable {
-        @JsonProperty("id")
-        private Long id;
-
-        @JsonProperty("shareLinkId")
-        private Long shareLinkId;
-
-        @JsonProperty("shareTargetId")
-        private Long shareTargetId;
-
-        @JsonProperty("accessedAt")
-        private Date accessedAt;
-
-        @JsonProperty("accessResult")
-        private String accessResult;
-
-        @JsonProperty("clientSnapshot")
-        private String clientSnapshot;
-    }
-
-    @Getter
-    @Builder
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Target implements Serializable {
         @JsonProperty("id")
         private Long id;

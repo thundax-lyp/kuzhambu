@@ -11,6 +11,7 @@ import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsSh
 import com.thundax.kuzhambu.classics.interfaces.admin.sharing.assembler.ClassicsSharingInterfaceAssembler;
 import com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller.request.ClassicsShareTargetSortRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller.request.ClassicsSharingRequest;
+import com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller.response.ClassicsSharingAccessRecordResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller.response.ClassicsSharingResponse;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
@@ -107,7 +108,7 @@ public class ClassicsSharingAdminController {
     @HasPermission("classics:sharing:view")
     @SysLogger(value = "访问记录分页")
     @PostMapping("access-records/page")
-    public PageResponse<ClassicsSharingResponse.AccessRecord> pageAccessRecords(
+    public PageResponse<ClassicsSharingAccessRecordResponse> pageAccessRecords(
             @Valid @RequestBody ClassicsSharingRequest request) {
         ShareAccessQuery query = new ShareAccessQuery(
                 ClassicsShareLinkIdCodec.toDomain(

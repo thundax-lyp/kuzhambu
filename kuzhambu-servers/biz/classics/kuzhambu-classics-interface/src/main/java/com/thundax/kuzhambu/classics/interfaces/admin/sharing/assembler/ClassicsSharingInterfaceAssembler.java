@@ -13,6 +13,7 @@ import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareLin
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareVisibility;
 import com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller.request.ClassicsShareTargetRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller.request.ClassicsSharingRequest;
+import com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller.response.ClassicsSharingAccessRecordResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller.response.ClassicsSharingResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller.response.ClassicsSharingResponse.Target;
 import java.util.List;
@@ -68,10 +69,10 @@ public final class ClassicsSharingInterfaceAssembler {
                         .build();
     }
 
-    public static ClassicsSharingResponse.AccessRecord toAccessRecordResponse(ClassicsShareAccessRecord record) {
+    public static ClassicsSharingAccessRecordResponse toAccessRecordResponse(ClassicsShareAccessRecord record) {
         return record == null
-                ? ClassicsSharingResponse.AccessRecord.builder().build()
-                : ClassicsSharingResponse.AccessRecord.builder()
+                ? ClassicsSharingAccessRecordResponse.builder().build()
+                : ClassicsSharingAccessRecordResponse.builder()
                         .id(record.getId() == null ? null : record.getId().value())
                         .shareLinkId(
                                 record.getShareLinkId() == null
