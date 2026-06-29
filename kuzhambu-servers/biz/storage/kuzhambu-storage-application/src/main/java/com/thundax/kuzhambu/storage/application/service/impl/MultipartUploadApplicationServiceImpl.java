@@ -181,6 +181,13 @@ public class MultipartUploadApplicationServiceImpl implements MultipartUploadApp
     @Transactional(rollbackFor = Exception.class)
     public int abort(AbortMultipartUploadCommand command) {
         MultipartUploadSession session = requireActiveMultipartSession(command == null ? null : command.getUploadId());
+        List<MultipartUploadPart> parts = multipartUploadRepository.listMultipartParts(session.getUploadId());
+        for (MultipartUploadPart part : parts) {
+            StoredObject partStorage = new StoredObject();
+            partStorage.setObjectKey(part.getPartPath());
+            storedObjectContentRepository.delete(partStorage);
+        }
+        multipartUploadRepository.deleteMultipartParts(session.getUploadId());
         Date now = new Date();
         session.setUploadStatus(MultipartUploadStatus.ABORTED);
         session.setAbortedDate(now);
