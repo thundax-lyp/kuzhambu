@@ -130,6 +130,8 @@
         "仪表盘",
         "知识治理",
         "知识治理/知识图谱精修",
+        "运营运维",
+        "运营运维/备份恢复",
         "审计中心",
         "审计中心/审计日志",
         "系统管理",
@@ -809,11 +811,16 @@
         },
         {
           "name": "备份恢复",
-          "perms": ["operations:backup:view", "operations:backup:edit"],
+          "perms": [
+            "operations:backup:view",
+            "operations:backup:execute",
+            "operations:restore:view",
+            "operations:restore:execute"
+          ],
           "priority": 55,
           "icon": "storage",
-          "url": "/operations/backups",
-          "remarks": "备份列表、手动备份和恢复入口"
+          "url": "/operations/backup-restore",
+          "remarks": "备份台账、手动备份和恢复入口"
         },
         {
           "name": "清理维护",
