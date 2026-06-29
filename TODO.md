@@ -17,14 +17,6 @@
     - 验收点：`Sancai` 成为完整内容治理工作台，翻译候选、摘要候选、标签维护和问答维护可在同一抽屉连续完成
     - 重要度：10/10
 
-- [ ] `classics/facade`：校验公共读模型是否具备
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-CONTENT-REFINEMENT.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-facade/src/main/java/com/thundax/kuzhambu/classics/facade/ClassicsFacade.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-facade/src/main/java/com/thundax/kuzhambu/classics/facade/dto/ClassicsPublicContentFacadeDto.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-facade/src/main/java/com/thundax/kuzhambu/classics/facade/response/ClassicsPublicContentFacadeResponse.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-facade/src/test/java/com/thundax/kuzhambu/classics/facade/ClassicsFacadeArchitectureTest.java`
-    - 处理动作：检查 facade 公共读模型是否已能稳定承载 `summary / tagNames / updatedAt` 等本轮闭环依赖字段
-    - 验收点：明确记录 facade 为“无需修改”或“已完成最小补强”，且不引入无关协议扩张
-    - 重要度：7/10
-
 - [ ] `docs/classics`：同步实现覆盖状态
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-CONTENT-REFINEMENT.md`
