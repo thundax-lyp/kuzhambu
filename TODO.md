@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Operations health app-interface`：新增 health 应用与接口读闭环
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-RUNTIME-CLOSURE.md`
-    - 范围对象：`kuzhambu-operations-application` 与 `kuzhambu-operations-interface` 下 health query、result、service、controller 文件
-    - 处理动作：新增 health `summary / page` 应用服务与 admin API
-    - 验收点：暴露 `/api/operations/health/summary` 和 `/api/operations/health/page`，summary 口径固定为 component 最新记录
-    - 重要度：9/10
-
 - [ ] `Operations long task repository query`：扩展 long task 查询能力
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-RUNTIME-CLOSURE.md`
