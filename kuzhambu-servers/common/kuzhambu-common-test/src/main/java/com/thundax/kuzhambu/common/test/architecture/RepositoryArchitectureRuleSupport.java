@@ -212,6 +212,12 @@ public final class RepositoryArchitectureRuleSupport {
         boolean starterModule = normalizedPomPath.startsWith("kuzhambu-servers/starter/");
         DomainModule domainModule = domainModule(normalizedPomPath);
         for (Dependency dependency : model.dependencies) {
+            if (isDirectSpringBootStarterTestDependency(dependency)
+                    && !isAllowedDirectSpringBootStarterTestDependency(normalizedPomPath)) {
+                violations.add(
+                        ArchitectureSourceSupport.repositoryPath(root, pom)
+                                + " test-dependency=spring-boot-starter-test allowed=[kuzhambu-servers/common/kuzhambu-common-test/pom.xml]");
+            }
             if (!"com.thundax".equals(dependency.groupId)) {
                 continue;
             }
@@ -325,6 +331,15 @@ public final class RepositoryArchitectureRuleSupport {
         put(allowlist, "storage", "kuzhambu-storage-application");
         put(allowlist, "system", "kuzhambu-system-application");
         return allowlist;
+    }
+
+    private static boolean isDirectSpringBootStarterTestDependency(Dependency dependency) {
+        return "org.springframework.boot".equals(dependency.groupId)
+                && "spring-boot-starter-test".equals(dependency.artifactId);
+    }
+
+    private static boolean isAllowedDirectSpringBootStarterTestDependency(String normalizedPomPath) {
+        return "kuzhambu-servers/common/kuzhambu-common-test/pom.xml".equals(normalizedPomPath);
     }
 
     private static void put(Map<String, Set<String>> allowlist, String domain, String dependencyArtifactId) {
