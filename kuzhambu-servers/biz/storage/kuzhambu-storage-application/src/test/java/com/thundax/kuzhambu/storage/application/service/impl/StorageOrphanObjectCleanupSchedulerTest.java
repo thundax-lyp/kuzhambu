@@ -3,7 +3,7 @@ package com.thundax.kuzhambu.storage.application.service.impl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
@@ -165,7 +165,7 @@ class StorageOrphanObjectCleanupSchedulerTest {
         }
 
         @Override
-        public Page<StoredObject> page(
+        public PageResult<StoredObject> page(
                 String mimeType,
                 String ownerId,
                 String ownerType,
@@ -178,7 +178,7 @@ class StorageOrphanObjectCleanupSchedulerTest {
                 SortDirection sortDirection,
                 int pageNo,
                 int pageSize) {
-            return new Page<>();
+            return new PageResult<>();
         }
 
         @Override

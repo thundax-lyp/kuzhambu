@@ -1,6 +1,5 @@
 package com.thundax.kuzhambu.classics.application.sancai.service.impl;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiCategoryCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiCategorySortCommand;
@@ -350,7 +349,7 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
 
     @Override
     public PageResult<SancaiEntry> pageEntries(SancaiEntryPageQuery query, PageQuery page) {
-        IPage<SancaiEntry> dataPage = repository.pageEntries(
+        return repository.pageEntries(
                 query == null ? null : SancaiVolumeIdCodec.toDomain(query.getVolumeId()),
                 query == null ? null : query.getKeyword(),
                 query == null || query.getLifecycleStatus() == null
@@ -374,8 +373,6 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
                 query == null ? SortDirection.ASC : query.getSortDirection(),
                 page.getPageNo(),
                 page.getPageSize());
-        return PageResult.of(
-                (int) dataPage.getCurrent(), (int) dataPage.getSize(), dataPage.getTotal(), dataPage.getRecords());
     }
 
     @Override

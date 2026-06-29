@@ -1,6 +1,5 @@
 package com.thundax.kuzhambu.classics.domain.content.repository;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentExportJob;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentQaPair;
@@ -15,6 +14,7 @@ import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsCo
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import java.util.Date;
 import java.util.List;
@@ -115,6 +115,6 @@ public interface ClassicsContentRepository {
 
     int markExportJobExpired(ClassicsContentExportJobId id);
 
-    Page<ClassicsContentExportJob> pageExportJobs(
+    PageResult<ClassicsContentExportJob> pageExportJobs(
             String contentType, String exportKind, String status, int pageNo, int pageSize);
 }

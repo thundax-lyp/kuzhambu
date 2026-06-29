@@ -1,6 +1,5 @@
 package com.thundax.kuzhambu.storage.application.service.impl;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.exception.ErrorCode;
@@ -94,7 +93,7 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
 
     @Override
     public PageResult<StoredObject> page(StorageQuery query, PageQuery page) {
-        IPage<StoredObject> dataPage = dao.page(
+        return dao.page(
                 query == null ? null : query.getContentType(),
                 query == null ? null : query.getOwnerId(),
                 query == null || query.getOwnerType() == null
@@ -113,8 +112,6 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
                 query == null ? null : query.getSortDirection(),
                 page.getPageNo(),
                 page.getPageSize());
-        return PageResult.of(
-                (int) dataPage.getCurrent(), (int) dataPage.getSize(), dataPage.getTotal(), dataPage.getRecords());
     }
 
     @Override

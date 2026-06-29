@@ -26,6 +26,7 @@ import com.thundax.kuzhambu.classics.infra.sharing.persistence.dataobject.Classi
 import com.thundax.kuzhambu.classics.infra.sharing.persistence.mapper.ClassicsShareLinkMapper;
 import com.thundax.kuzhambu.classics.infra.sharing.persistence.mapper.ClassicsShareTargetMapper;
 import com.thundax.kuzhambu.classics.infra.sharing.persistence.mapper.ClassicsSharingMapper;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import java.util.Date;
 import java.util.List;
@@ -58,20 +59,21 @@ public class ClassicsSharingRepositoryImpl implements ClassicsSharingRepository 
                 new LambdaQueryWrapper<ClassicsShareLinkDO>().eq(ClassicsShareLinkDO::getTokenHash, tokenHash)));
     }
 
-    public Page<ClassicsShareLink> pageLinks(String status, String visibility, int pageNo, int pageSize) {
+    public PageResult<ClassicsShareLink> pageLinks(String status, String visibility, int pageNo, int pageSize) {
         LambdaQueryWrapper<ClassicsShareLinkDO> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(StringUtils.isNotBlank(status), ClassicsShareLinkDO::getStatus, status)
                 .eq(StringUtils.isNotBlank(visibility), ClassicsShareLinkDO::getVisibility, visibility)
                 .orderByDesc(ClassicsShareLinkDO::getIssuedAt);
         Page<ClassicsShareLinkDO> dataPage = linkMapper.selectPage(new Page<>(pageNo, pageSize), wrapper);
-        Page<ClassicsShareLink> entityPage = new Page<>(dataPage.getCurrent(), dataPage.getSize());
-        entityPage.setTotal(dataPage.getTotal());
-        entityPage.setRecords(ClassicsSharingPersistenceAssembler.toLinkDomainList(dataPage.getRecords()));
-        return entityPage;
+        return PageResult.of(
+                (int) dataPage.getCurrent(),
+                (int) dataPage.getSize(),
+                dataPage.getTotal(),
+                ClassicsSharingPersistenceAssembler.toLinkDomainList(dataPage.getRecords()));
     }
 
     @Override
-    public Page<ClassicsSharePortalListItem> pagePortalShares(
+    public PageResult<ClassicsSharePortalListItem> pagePortalShares(
             String contentType, String title, Date issuedAfter, Date issuedBefore, int pageNo, int pageSize) {
         Page<ClassicsSharePortalListItemDO> dataPage = targetMapper.pagePortalShares(
                 new Page<>(pageNo, pageSize),
@@ -83,10 +85,11 @@ public class ClassicsSharingRepositoryImpl implements ClassicsSharingRepository 
                 title,
                 issuedAfter,
                 issuedBefore);
-        Page<ClassicsSharePortalListItem> entityPage = new Page<>(dataPage.getCurrent(), dataPage.getSize());
-        entityPage.setTotal(dataPage.getTotal());
-        entityPage.setRecords(ClassicsSharingPersistenceAssembler.toPortalListItemDomainList(dataPage.getRecords()));
-        return entityPage;
+        return PageResult.of(
+                (int) dataPage.getCurrent(),
+                (int) dataPage.getSize(),
+                dataPage.getTotal(),
+                ClassicsSharingPersistenceAssembler.toPortalListItemDomainList(dataPage.getRecords()));
     }
 
     @Override
@@ -173,7 +176,7 @@ public class ClassicsSharingRepositoryImpl implements ClassicsSharingRepository 
         return ClassicsShareAccessRecordIdCodec.toDomain(dataObject.getId());
     }
 
-    public Page<ClassicsShareAccessRecord> pageAccessRecords(
+    public PageResult<ClassicsShareAccessRecord> pageAccessRecords(
             ClassicsShareLinkId shareLinkId, ClassicsShareTargetId shareTargetId, int pageNo, int pageSize) {
         LambdaQueryWrapper<ClassicsShareAccessRecordDO> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(
@@ -186,10 +189,11 @@ public class ClassicsSharingRepositoryImpl implements ClassicsSharingRepository 
                         ClassicsShareTargetIdCodec.toValue(shareTargetId))
                 .orderByDesc(ClassicsShareAccessRecordDO::getAccessedAt);
         Page<ClassicsShareAccessRecordDO> dataPage = accessMapper.selectPage(new Page<>(pageNo, pageSize), wrapper);
-        Page<ClassicsShareAccessRecord> entityPage = new Page<>(dataPage.getCurrent(), dataPage.getSize());
-        entityPage.setTotal(dataPage.getTotal());
-        entityPage.setRecords(ClassicsSharingPersistenceAssembler.toAccessDomainList(dataPage.getRecords()));
-        return entityPage;
+        return PageResult.of(
+                (int) dataPage.getCurrent(),
+                (int) dataPage.getSize(),
+                dataPage.getTotal(),
+                ClassicsSharingPersistenceAssembler.toAccessDomainList(dataPage.getRecords()));
     }
 
     private static int maxPriority(List<Object> values) {

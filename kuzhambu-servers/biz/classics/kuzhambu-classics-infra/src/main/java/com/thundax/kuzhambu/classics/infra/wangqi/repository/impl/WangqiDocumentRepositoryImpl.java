@@ -12,6 +12,7 @@ import com.thundax.kuzhambu.classics.domain.wangqi.repository.WangqiDocumentRepo
 import com.thundax.kuzhambu.classics.infra.wangqi.persistence.assembler.WangqiDocumentPersistenceAssembler;
 import com.thundax.kuzhambu.classics.infra.wangqi.persistence.dataobject.WangqiDocumentDO;
 import com.thundax.kuzhambu.classics.infra.wangqi.persistence.mapper.WangqiDocumentMapper;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
@@ -32,14 +33,15 @@ public class WangqiDocumentRepositoryImpl implements WangqiDocumentRepository {
     }
 
     @Override
-    public Page<WangqiDocument> page(
+    public PageResult<WangqiDocument> page(
             String keyword, String visibility, SortDirection sortDirection, int pageNo, int pageSize) {
         LambdaQueryWrapper<WangqiDocumentDO> wrapper = buildWrapper(keyword, visibility, sortDirection);
         Page<WangqiDocumentDO> dataPage = mapper.selectPage(new Page<>(pageNo, pageSize), wrapper);
-        Page<WangqiDocument> entityPage = new Page<>(dataPage.getCurrent(), dataPage.getSize());
-        entityPage.setTotal(dataPage.getTotal());
-        entityPage.setRecords(WangqiDocumentPersistenceAssembler.toDomainList(dataPage.getRecords()));
-        return entityPage;
+        return PageResult.of(
+                (int) dataPage.getCurrent(),
+                (int) dataPage.getSize(),
+                dataPage.getTotal(),
+                WangqiDocumentPersistenceAssembler.toDomainList(dataPage.getRecords()));
     }
 
     @Override

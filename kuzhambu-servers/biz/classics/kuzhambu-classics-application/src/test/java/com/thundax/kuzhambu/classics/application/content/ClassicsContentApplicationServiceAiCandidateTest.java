@@ -8,7 +8,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.ai.facade.AiFacade;
 import com.thundax.kuzhambu.ai.facade.dto.AiCandidateFacadeDto;
 import com.thundax.kuzhambu.ai.facade.request.MarkAiCandidateAppliedFacadeRequest;
@@ -41,6 +40,7 @@ import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiContentForm
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.valueobject.WangqiDocumentId;
 import com.thundax.kuzhambu.common.core.exception.DomainException;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
@@ -642,9 +642,9 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         }
 
         @Override
-        public Page<ClassicsContentExportJob> pageExportJobs(
+        public PageResult<ClassicsContentExportJob> pageExportJobs(
                 String contentType, String exportKind, String status, int pageNo, int pageSize) {
-            return new Page<>();
+            return new PageResult<>();
         }
     }
 }

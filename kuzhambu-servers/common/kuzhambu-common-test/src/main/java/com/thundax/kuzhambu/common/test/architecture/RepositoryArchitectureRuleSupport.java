@@ -218,6 +218,12 @@ public final class RepositoryArchitectureRuleSupport {
                         ArchitectureSourceSupport.repositoryPath(root, pom)
                                 + " test-dependency=spring-boot-starter-test allowed=[kuzhambu-servers/common/kuzhambu-common-test/pom.xml]");
             }
+            if (isDirectMybatisPlusStarterDependency(dependency)
+                    && !isAllowedDirectMybatisPlusStarterDependency(normalizedPomPath)) {
+                violations.add(
+                        ArchitectureSourceSupport.repositoryPath(root, pom)
+                                + " dependency=mybatis-plus-spring-boot3-starter allowed=[kuzhambu-servers/pom.xml(dependencyManagement), kuzhambu-servers/common/kuzhambu-common-mybatis/pom.xml]");
+            }
             if (!"com.thundax".equals(dependency.groupId)) {
                 continue;
             }
@@ -340,6 +346,16 @@ public final class RepositoryArchitectureRuleSupport {
 
     private static boolean isAllowedDirectSpringBootStarterTestDependency(String normalizedPomPath) {
         return "kuzhambu-servers/common/kuzhambu-common-test/pom.xml".equals(normalizedPomPath);
+    }
+
+    private static boolean isDirectMybatisPlusStarterDependency(Dependency dependency) {
+        return "com.baomidou".equals(dependency.groupId)
+                && "mybatis-plus-spring-boot3-starter".equals(dependency.artifactId);
+    }
+
+    private static boolean isAllowedDirectMybatisPlusStarterDependency(String normalizedPomPath) {
+        return "kuzhambu-servers/pom.xml".equals(normalizedPomPath)
+                || "kuzhambu-servers/common/kuzhambu-common-mybatis/pom.xml".equals(normalizedPomPath);
     }
 
     private static void put(Map<String, Set<String>> allowlist, String domain, String dependencyArtifactId) {

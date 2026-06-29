@@ -1,6 +1,5 @@
 package com.thundax.kuzhambu.classics.application.wangqi.service.impl;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
 import com.thundax.kuzhambu.classics.application.searchsync.support.ClassicsSearchIndexSyncPublishSupport;
@@ -68,7 +67,7 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
 
     @Override
     public PageResult<WangqiDocument> page(WangqiDocumentPageQuery query, PageQuery page) {
-        IPage<WangqiDocument> dataPage = repository.page(
+        return repository.page(
                 query == null ? null : query.getKeyword(),
                 query == null || query.getVisibility() == null
                         ? null
@@ -76,8 +75,6 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
                 query == null ? SortDirection.ASC : query.getSortDirection(),
                 page.getPageNo(),
                 page.getPageSize());
-        return PageResult.of(
-                (int) dataPage.getCurrent(), (int) dataPage.getSize(), dataPage.getTotal(), dataPage.getRecords());
     }
 
     @Override

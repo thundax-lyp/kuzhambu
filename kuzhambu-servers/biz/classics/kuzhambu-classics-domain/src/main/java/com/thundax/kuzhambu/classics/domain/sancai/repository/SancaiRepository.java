@@ -1,12 +1,12 @@
 package com.thundax.kuzhambu.classics.domain.sancai.repository;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiCategory;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVolume;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiCategoryId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVolumeId;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import java.util.List;
 
@@ -54,7 +54,7 @@ public interface SancaiRepository {
 
     SancaiEntry getEntryById(SancaiEntryId id);
 
-    Page<SancaiEntry> pageEntries(
+    PageResult<SancaiEntry> pageEntries(
             SancaiVolumeId volumeId,
             String keyword,
             String lifecycleStatus,

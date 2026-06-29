@@ -18,6 +18,7 @@ import com.thundax.kuzhambu.classics.infra.mingcustoms.persistence.dataobject.Mi
 import com.thundax.kuzhambu.classics.infra.mingcustoms.persistence.dataobject.MingCustomsKeywordDO;
 import com.thundax.kuzhambu.classics.infra.mingcustoms.persistence.mapper.MingCustomsEntryMapper;
 import com.thundax.kuzhambu.classics.infra.mingcustoms.persistence.mapper.MingCustomsMapper;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +44,7 @@ public class MingCustomsRepositoryImpl implements MingCustomsRepository {
     }
 
     @Override
-    public Page<MingCustomsEntry> page(
+    public PageResult<MingCustomsEntry> page(
             String category,
             String keyword,
             String tagName,
@@ -63,10 +64,11 @@ public class MingCustomsRepositoryImpl implements MingCustomsRepository {
                         .like(MingCustomsEntryDO::getOriginalExcerpts, keyword))
                 .orderBy(true, sortDirection != SortDirection.DESC, MingCustomsEntryDO::getId);
         Page<MingCustomsEntryDO> dataPage = entryMapper.selectPage(new Page<>(pageNo, pageSize), wrapper);
-        Page<MingCustomsEntry> entityPage = new Page<>(dataPage.getCurrent(), dataPage.getSize());
-        entityPage.setTotal(dataPage.getTotal());
-        entityPage.setRecords(MingCustomsPersistenceAssembler.toEntryDomainList(dataPage.getRecords()));
-        return entityPage;
+        return PageResult.of(
+                (int) dataPage.getCurrent(),
+                (int) dataPage.getSize(),
+                dataPage.getTotal(),
+                MingCustomsPersistenceAssembler.toEntryDomainList(dataPage.getRecords()));
     }
 
     @Override

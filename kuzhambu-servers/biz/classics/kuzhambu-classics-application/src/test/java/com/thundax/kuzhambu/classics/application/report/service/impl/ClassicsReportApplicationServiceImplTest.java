@@ -5,7 +5,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.classics.application.report.result.ClassicsReportSummaryResult;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
@@ -28,6 +27,7 @@ import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiContentFormat;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
 import com.thundax.kuzhambu.classics.domain.wangqi.repository.WangqiDocumentRepository;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import java.util.Date;
 import java.util.List;
@@ -73,7 +73,7 @@ class ClassicsReportApplicationServiceImplTest {
         when(mingCustomsRepository.list(null, null, null, MingCustomsVisibility.PUBLIC.value(), SortDirection.ASC))
                 .thenReturn(List.of(mingCustomsEntry("明礼汇编", date(1_718_172_800_000L))));
 
-        Page<ClassicsShareLink> sharePage = new Page<>();
+        PageResult<ClassicsShareLink> sharePage = new PageResult<>();
         sharePage.setRecords(List.of(shareLink(10L), shareLink(20L)));
         when(classicsSharingRepository.pageLinks(null, ClassicsShareVisibility.PUBLIC.value(), 1, 10_000))
                 .thenReturn(sharePage);

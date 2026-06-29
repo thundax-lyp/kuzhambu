@@ -21,6 +21,7 @@ import com.thundax.kuzhambu.classics.infra.sancai.persistence.dataobject.SancaiV
 import com.thundax.kuzhambu.classics.infra.sancai.persistence.mapper.SancaiCategoryMapper;
 import com.thundax.kuzhambu.classics.infra.sancai.persistence.mapper.SancaiMapper;
 import com.thundax.kuzhambu.classics.infra.sancai.persistence.mapper.SancaiVolumeMapper;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import java.util.List;
 import java.util.Objects;
@@ -185,7 +186,7 @@ public class SancaiRepositoryImpl implements SancaiRepository {
     }
 
     @Override
-    public Page<SancaiEntry> pageEntries(
+    public PageResult<SancaiEntry> pageEntries(
             SancaiVolumeId volumeId,
             String keyword,
             String lifecycleStatus,
@@ -212,10 +213,11 @@ public class SancaiRepositoryImpl implements SancaiRepository {
                         .like(SancaiEntryDO::getTranslationText, keyword))
                 .orderBy(true, sortDirection != SortDirection.DESC, SancaiEntryDO::getPriority);
         Page<SancaiEntryDO> dataPage = entryMapper.selectPage(new Page<>(pageNo, pageSize), wrapper);
-        Page<SancaiEntry> entityPage = new Page<>(dataPage.getCurrent(), dataPage.getSize());
-        entityPage.setTotal(dataPage.getTotal());
-        entityPage.setRecords(SancaiPersistenceAssembler.toEntryDomainList(dataPage.getRecords()));
-        return entityPage;
+        return PageResult.of(
+                (int) dataPage.getCurrent(),
+                (int) dataPage.getSize(),
+                dataPage.getTotal(),
+                SancaiPersistenceAssembler.toEntryDomainList(dataPage.getRecords()));
     }
 
     @Override
