@@ -5,6 +5,8 @@ import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/us
 import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import { AiCandidatePanel } from "@/pages/classics/common/components/ai-candidate-panel";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
+import { ClassicsContentQaPanel } from "@/pages/classics/common/components/classics-content-qa-panel";
+import { ClassicsContentTagPanel } from "@/pages/classics/common/components/classics-content-tag-panel";
 import { WangqiDocumentList } from "./components/wangqi-document-list";
 import { WangqiDocumentModel } from "./components/wangqi-document-model";
 import { WangqiStorageFilePanel } from "./components/wangqi-storage-file-panel";
@@ -106,7 +108,11 @@ export const WangqiPage = () => {
             queryClient.invalidateQueries({ queryKey: ["wangqi", "detail"] }),
             queryClient.invalidateQueries({ queryKey: ["wangqi", "source-file"] }),
             queryClient.invalidateQueries({ queryKey: ["wangqi", "versions"] }),
-            queryClient.invalidateQueries({ queryKey: ["wangqi", "version"] })
+            queryClient.invalidateQueries({ queryKey: ["wangqi", "version"] }),
+            queryClient.invalidateQueries({ queryKey: ["classics", "content", "tags", "WANGQI_DOCUMENT"] }),
+            queryClient.invalidateQueries({
+                queryKey: ["classics", "content", "qa-pairs", "WANGQI_DOCUMENT"]
+            })
         ]);
     };
 
@@ -357,6 +363,16 @@ export const WangqiPage = () => {
                                 onApplied={async () => {
                                     await invalidateWangqi();
                                 }}
+                            />
+                            <ClassicsContentTagPanel
+                                contentId={activeDocument.id}
+                                contentType="WANGQI_DOCUMENT"
+                                onChanged={invalidateWangqi}
+                            />
+                            <ClassicsContentQaPanel
+                                contentId={activeDocument.id}
+                                contentType="WANGQI_DOCUMENT"
+                                onChanged={invalidateWangqi}
                             />
                             <WangqiStorageFilePanel
                                 document={activeDocument}

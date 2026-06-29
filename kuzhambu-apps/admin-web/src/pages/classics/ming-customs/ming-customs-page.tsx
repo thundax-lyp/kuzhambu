@@ -6,6 +6,8 @@ import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import { AiCandidatePanel } from "@/pages/classics/common/components/ai-candidate-panel";
 import * as shareService from "@/pages/classics/common/classics-share-service";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
+import { ClassicsContentQaPanel } from "@/pages/classics/common/components/classics-content-qa-panel";
+import { ClassicsContentTagPanel } from "@/pages/classics/common/components/classics-content-tag-panel";
 import { MingCustomsKeywordCloud } from "./components/ming-customs-keyword-cloud";
 import { MingCustomsList } from "./components/ming-customs-list";
 import { MingCustomsModel } from "./components/ming-customs-model";
@@ -92,7 +94,13 @@ export const MingCustomsPage = () => {
         await Promise.all([
             queryClient.invalidateQueries({ queryKey: ["ming-customs", "page"] }),
             queryClient.invalidateQueries({ queryKey: ["ming-customs", "keyword-cloud"] }),
-            queryClient.invalidateQueries({ queryKey: ["ming-customs", "detail"] })
+            queryClient.invalidateQueries({ queryKey: ["ming-customs", "detail"] }),
+            queryClient.invalidateQueries({
+                queryKey: ["classics", "content", "tags", "MING_CUSTOMS"]
+            }),
+            queryClient.invalidateQueries({
+                queryKey: ["classics", "content", "qa-pairs", "MING_CUSTOMS"]
+            })
         ]);
     };
 
@@ -339,14 +347,26 @@ export const MingCustomsPage = () => {
                 onSave={(command) => saveMutation.mutate(command)}
                 afterForm={
                     editorMode === "edit" && editorEntry ? (
-                        <AiCandidatePanel
-                            capabilities={["summary", "tags", "qa"]}
-                            contentId={editorEntry.id}
-                            contentType="MING_CUSTOMS"
-                            onApplied={async () => {
-                                await invalidateMingCustoms();
-                            }}
-                        />
+                        <>
+                            <AiCandidatePanel
+                                capabilities={["summary", "tags", "qa"]}
+                                contentId={editorEntry.id}
+                                contentType="MING_CUSTOMS"
+                                onApplied={async () => {
+                                    await invalidateMingCustoms();
+                                }}
+                            />
+                            <ClassicsContentTagPanel
+                                contentId={editorEntry.id}
+                                contentType="MING_CUSTOMS"
+                                onChanged={invalidateMingCustoms}
+                            />
+                            <ClassicsContentQaPanel
+                                contentId={editorEntry.id}
+                                contentType="MING_CUSTOMS"
+                                onChanged={invalidateMingCustoms}
+                            />
+                        </>
                     ) : null
                 }
             />

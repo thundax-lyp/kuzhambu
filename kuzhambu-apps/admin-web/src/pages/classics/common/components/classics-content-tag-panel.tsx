@@ -32,8 +32,8 @@ interface TagEditorValues {
     status: string;
 }
 
-const getActiveTags = (tags: ClassicsContentTagRecord[] | undefined) =>
-    (tags ?? []).filter((tag) => (tag.status || "ACTIVE") !== "REMOVED");
+const getActiveTags = (tags: ClassicsContentTagRecord[] | unknown) =>
+    (Array.isArray(tags) ? tags : []).filter((tag) => (tag.status || "ACTIVE") !== "REMOVED");
 
 const readSourceLabel = (source?: string | null) => {
     switch (source) {
