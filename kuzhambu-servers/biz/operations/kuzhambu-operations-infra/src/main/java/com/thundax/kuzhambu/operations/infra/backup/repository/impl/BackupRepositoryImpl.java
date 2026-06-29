@@ -1,7 +1,11 @@
 package com.thundax.kuzhambu.operations.infra.backup.repository.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.operations.domain.backup.codec.BackupIdCodec;
 import com.thundax.kuzhambu.operations.domain.backup.model.entity.BackupRecord;
 import com.thundax.kuzhambu.operations.domain.backup.model.valueobject.BackupId;
@@ -9,6 +13,7 @@ import com.thundax.kuzhambu.operations.domain.backup.repository.BackupRepository
 import com.thundax.kuzhambu.operations.infra.backup.persistence.assembler.BackupPersistenceAssembler;
 import com.thundax.kuzhambu.operations.infra.backup.persistence.dataobject.BackupDO;
 import com.thundax.kuzhambu.operations.infra.backup.persistence.mapper.BackupMapper;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -24,6 +29,28 @@ public class BackupRepositoryImpl implements BackupRepository {
     public BackupRecord getById(BackupId id) {
         return BackupPersistenceAssembler.toDomain(mapper.selectOne(
                 new LambdaQueryWrapper<BackupDO>().eq(BackupDO::getBackupId, BackupIdCodec.toValue(id))));
+    }
+
+    @Override
+    public BackupRecord getByFileName(String fileName) {
+        if (StringUtils.isBlank(fileName)) {
+            return null;
+        }
+        return BackupPersistenceAssembler.toDomain(
+                mapper.selectOne(new LambdaQueryWrapper<BackupDO>().eq(BackupDO::getFileName, fileName)));
+    }
+
+    @Override
+    public PageResult<BackupRecord> page(
+            String backupType, String backupStatus, Long requesterUserId, int pageNo, int pageSize) {
+        Page<BackupDO> page = new Page<>(pageNo, pageSize);
+        IPage<BackupDO> dataObjectPage =
+                mapper.selectPage(page, buildPageWrapper(backupType, backupStatus, requesterUserId));
+        return PageResult.of(
+                (int) dataObjectPage.getCurrent(),
+                (int) dataObjectPage.getSize(),
+                dataObjectPage.getTotal(),
+                BackupPersistenceAssembler.toDomainList(dataObjectPage.getRecords()));
     }
 
     @Override
@@ -56,5 +83,20 @@ public class BackupRepositoryImpl implements BackupRepository {
     @Override
     public int deleteById(BackupId id) {
         return mapper.delete(new LambdaQueryWrapper<BackupDO>().eq(BackupDO::getBackupId, BackupIdCodec.toValue(id)));
+    }
+
+    private QueryWrapper<BackupDO> buildPageWrapper(String backupType, String backupStatus, Long requesterUserId) {
+        QueryWrapper<BackupDO> wrapper = new QueryWrapper<>();
+        if (StringUtils.isNotBlank(backupType)) {
+            wrapper.eq("backup_type", backupType);
+        }
+        if (StringUtils.isNotBlank(backupStatus)) {
+            wrapper.eq("backup_status", backupStatus);
+        }
+        if (requesterUserId != null) {
+            wrapper.eq("requester_user_id", requesterUserId);
+        }
+        wrapper.orderByDesc("started_at");
+        return wrapper;
     }
 }

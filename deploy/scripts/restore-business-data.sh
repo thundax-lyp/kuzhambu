@@ -23,6 +23,7 @@ BACKUP_NAME="$1"
 WHITELIST_FILE="${WHITELIST_FILE:-${DEFAULT_WHITELIST_FILE}}"
 POST_RESTORE_COMMAND="${KUZHAMBU_POST_RESTORE_COMMAND:-}"
 RUN_PRE_RESTORE="${RUN_PRE_RESTORE:-true}"
+PRE_RESTORE_TIMESTAMP="${PRE_RESTORE_TIMESTAMP:-$(resolve_now)}"
 SQL_FILE="${KUZHAMBU_BACKUP_ROOT_PATH}/${BACKUP_NAME}.sql"
 SQL_SHA_FILE="${SQL_FILE}.sha256"
 STORAGE_ARCHIVE="${KUZHAMBU_BACKUP_ROOT_PATH}/$(storage_archive_name "${BACKUP_NAME}")"
@@ -38,7 +39,13 @@ sha256sum -c "${STORAGE_SHA_FILE}"
 
 if [[ "${RUN_PRE_RESTORE}" == "true" ]]; then
   backup_log "creating pre-restore snapshot"
-  BACKUP_TYPE="PRE_RESTORE" BACKUP_PREFIX="prerestore" "${SCRIPT_DIR}/backup-business-data.sh"
+  PRE_RESTORE_OUTPUT="$(
+    BACKUP_TYPE="PRE_RESTORE" \
+    BACKUP_PREFIX="prerestore" \
+    TIMESTAMP="${PRE_RESTORE_TIMESTAMP}" \
+    "${SCRIPT_DIR}/backup-business-data.sh"
+  )"
+  printf '%s\n' "${PRE_RESTORE_OUTPUT}"
 fi
 
 load_table_whitelist "${WHITELIST_FILE}"
@@ -63,3 +70,7 @@ if [[ -n "${POST_RESTORE_COMMAND}" ]]; then
 fi
 
 backup_log "restore completed successfully"
+printf 'RESTORE_BACKUP_NAME=%s\n' "${BACKUP_NAME}"
+if [[ "${RUN_PRE_RESTORE}" == "true" ]]; then
+  printf 'PRE_RESTORE_BASE_NAME=%s\n' "prerestore_${PRE_RESTORE_TIMESTAMP}"
+fi

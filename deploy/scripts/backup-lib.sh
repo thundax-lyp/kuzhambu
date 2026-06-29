@@ -76,6 +76,12 @@ write_sha256() {
   sha256sum "$file_path" > "${file_path}.sha256"
 }
 
+read_sha256_value() {
+  local file_path="$1"
+  [[ -f "${file_path}.sha256" ]] || backup_fail "checksum file not found: ${file_path}.sha256"
+  awk '{print $1}' "${file_path}.sha256"
+}
+
 backup_local_storage() {
   local base_name="$1"
   local output_dir="$2"

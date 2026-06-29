@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `kuzhambu-servers/biz/operations`：接入备份恢复 Java 编排与台账闭环
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-BACKUP-RESTORE.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/`、`kuzhambu-servers/starter/kuzhambu-admin-starter/`
-    - 处理动作：在 `Operations` application 中增加脚本调用、恢复模式编排和备份恢复台账写入闭环
-    - 验收点：管理端可触发备份和恢复，`operations_backup` / `operations_restore` 可追溯，恢复失败时保留 `PRE_RESTORE` 快照记录
-    - 重要度：10/10
-
 - [ ] `kuzhambu-apps/admin-web/src`：补齐备份恢复管理页面
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-BACKUP-RESTORE.md`
