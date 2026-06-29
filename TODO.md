@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics/facade`：校验 Facade 公共读口径是否齐备
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARE-EXPORT-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-facade/src/main/java/com/thundax/kuzhambu/classics/facade/ClassicsFacade.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-facade/src/main/java/com/thundax/kuzhambu/classics/facade/dto/ClassicsPublicContentFacadeDto.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/facade/impl/ClassicsFacadeImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/facade/assembler/ClassicsFacadeAssembler.java`
-    - 处理动作：检查本轮分享与导出治理是否影响 Facade 公共读口径，并仅在缺字段时做最小补充
-    - 验收点：收口记录能明确说明 Facade 已校验且是否需要改动，若发生改动则对应测试同步补齐
-    - 重要度：7/10
-
 - [ ] `docs/classics`：同步覆盖状态并收口任务面板
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARE-EXPORT-CLOSURE.md`
