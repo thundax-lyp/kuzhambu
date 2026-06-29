@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `multipart complete/abort contracts`：补齐 admin 分片上传后半段契约测试
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FULL-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-interface/src/test/java/com/thundax/kuzhambu/storage/interfaces/admin`
-    - 处理动作：新增 `complete / abort` 分片上传 contract test 并锁定核心路由与协议字段
-    - 验收点：`complete / abort` 接口存在契约测试覆盖
-    - 重要度：9/10
-
 - [ ] `StorageFacade API`：补齐 facade 分片上传接口定义
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FULL-CLOSURE.md`

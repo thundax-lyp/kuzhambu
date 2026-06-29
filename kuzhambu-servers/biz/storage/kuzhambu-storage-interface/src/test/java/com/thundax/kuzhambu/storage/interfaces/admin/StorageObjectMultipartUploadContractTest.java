@@ -7,15 +7,25 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.storage.application.service.MultipartUploadApplicationService;
 import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
+import com.thundax.kuzhambu.storage.application.service.command.AbortMultipartUploadCommand;
+import com.thundax.kuzhambu.storage.application.service.command.CompleteMultipartUploadCommand;
 import com.thundax.kuzhambu.storage.application.service.command.InitMultipartUploadCommand;
 import com.thundax.kuzhambu.storage.application.service.command.UploadMultipartPartCommand;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadPart;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadSession;
+import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.MultipartUploadStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
+import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
+import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.StorageObjectController;
+import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.request.AbortMultipartUploadRequest;
+import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.request.CompleteMultipartUploadRequest;
 import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.request.InitMultipartUploadRequest;
 import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.request.UploadMultipartPartRequest;
+import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.response.AbortMultipartUploadResponse;
+import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.response.CompleteMultipartUploadResponse;
 import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.response.InitMultipartUploadResponse;
 import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.response.UploadMultipartPartResponse;
 import java.lang.reflect.Proxy;
@@ -123,6 +133,82 @@ class StorageObjectMultipartUploadContractTest {
         assertNull(json.get("uploadStatus"));
     }
 
+    @Test
+    void completeRouteShouldKeepMultipartContract() throws Exception {
+        PostMapping methodMapping = StorageObjectController.class
+                .getDeclaredMethod("complete", CompleteMultipartUploadRequest.class)
+                .getAnnotation(PostMapping.class);
+        assertEquals("multipart/complete", methodMapping.value()[0]);
+    }
+
+    @Test
+    void completeShouldMapRequestAndKeepResponseContract() throws Exception {
+        AtomicReference<CompleteMultipartUploadCommand> commandRef = new AtomicReference<>();
+        StorageObjectController controller =
+                new StorageObjectController(storageService(), multipartUploadApplicationServiceForComplete(commandRef));
+
+        CompleteMultipartUploadRequest request = new CompleteMultipartUploadRequest();
+        request.setUploadId("upload-2");
+        request.setBucketName("bucket-b");
+        request.setObjectKey("folder/sancai.bin");
+        request.setSize(120L);
+        request.setAccessEndpoint("/api/storage/object/22/content");
+
+        CompleteMultipartUploadResponse response = controller.complete(request);
+        JsonNode json = OBJECT_MAPPER.valueToTree(response);
+
+        CompleteMultipartUploadCommand command = commandRef.get();
+        assertEquals("upload-2", command.getUploadId());
+        assertEquals("bucket-b", command.getBucketName());
+        assertEquals("folder/sancai.bin", command.getObjectKey());
+        assertEquals(120L, command.getSize());
+        assertEquals("/api/storage/object/22/content", command.getAccessEndpoint());
+
+        assertEquals("22", json.get("id").asText());
+        assertEquals("upload-2", json.get("uploadId").asText());
+        assertEquals("USER", json.get("ownerType").asText());
+        assertEquals("owner-2", json.get("ownerId").asText());
+        assertEquals("sancai.bin", json.get("originalFilename").asText());
+        assertEquals("application/octet-stream", json.get("mimeType").asText());
+        assertEquals("bucket-b", json.get("bucketName").asText());
+        assertEquals("folder/sancai.bin", json.get("objectKey").asText());
+        assertEquals(120L, json.get("size").asLong());
+        assertEquals(
+                "/api/storage/object/22/content", json.get("accessEndpoint").asText());
+        assertEquals(StoredObjectStatus.ACTIVE.value(), json.get("objectStatus").asText());
+        assertEquals(
+                StoredObjectReferenceStatus.UNREFERENCED.value(),
+                json.get("referenceStatus").asText());
+    }
+
+    @Test
+    void abortRouteShouldKeepMultipartContract() throws Exception {
+        PostMapping methodMapping = StorageObjectController.class
+                .getDeclaredMethod("abort", AbortMultipartUploadRequest.class)
+                .getAnnotation(PostMapping.class);
+        assertEquals("multipart/abort", methodMapping.value()[0]);
+    }
+
+    @Test
+    void abortShouldMapRequestAndKeepResponseContract() throws Exception {
+        AtomicReference<AbortMultipartUploadCommand> commandRef = new AtomicReference<>();
+        StorageObjectController controller =
+                new StorageObjectController(storageService(), multipartUploadApplicationServiceForAbort(commandRef));
+
+        AbortMultipartUploadRequest request = new AbortMultipartUploadRequest();
+        request.setUploadId("upload-3");
+
+        AbortMultipartUploadResponse response = controller.abort(request);
+        JsonNode json = OBJECT_MAPPER.valueToTree(response);
+
+        AbortMultipartUploadCommand command = commandRef.get();
+        assertEquals("upload-3", command.getUploadId());
+
+        assertEquals("upload-3", json.get("uploadId").asText());
+        assertEquals(
+                MultipartUploadStatus.ABORTED.value(), json.get("uploadStatus").asText());
+    }
+
     private static StorageApplicationService storageService() {
         return (StorageApplicationService) Proxy.newProxyInstance(
                 StorageApplicationService.class.getClassLoader(),
@@ -174,6 +260,48 @@ class StorageObjectMultipartUploadContractTest {
                         part.setEtag(command.getEtag());
                         part.setSize(command.getSize());
                         return part;
+                    }
+                    throw new UnsupportedOperationException(method.getName());
+                });
+    }
+
+    private static MultipartUploadApplicationService multipartUploadApplicationServiceForComplete(
+            AtomicReference<CompleteMultipartUploadCommand> commandRef) {
+        return (MultipartUploadApplicationService) Proxy.newProxyInstance(
+                MultipartUploadApplicationService.class.getClassLoader(),
+                new Class<?>[] {MultipartUploadApplicationService.class},
+                (proxy, method, args) -> {
+                    if ("complete".equals(method.getName())) {
+                        CompleteMultipartUploadCommand command = (CompleteMultipartUploadCommand) args[0];
+                        commandRef.set(command);
+                        StoredObject storage = new StoredObject();
+                        storage.setId(StoredObjectId.of(22L));
+                        storage.setOwnerType(StorageOwnerType.USER);
+                        storage.setOwnerId("owner-2");
+                        storage.setOriginalFilename("sancai.bin");
+                        storage.setMimeType("application/octet-stream");
+                        storage.setBucketName("bucket-b");
+                        storage.setObjectKey("folder/sancai.bin");
+                        storage.setSize(120L);
+                        storage.setAccessEndpoint("/api/storage/object/22/content");
+                        storage.setObjectStatus(StoredObjectStatus.ACTIVE);
+                        storage.setReferenceStatus(StoredObjectReferenceStatus.UNREFERENCED);
+                        return storage;
+                    }
+                    throw new UnsupportedOperationException(method.getName());
+                });
+    }
+
+    private static MultipartUploadApplicationService multipartUploadApplicationServiceForAbort(
+            AtomicReference<AbortMultipartUploadCommand> commandRef) {
+        return (MultipartUploadApplicationService) Proxy.newProxyInstance(
+                MultipartUploadApplicationService.class.getClassLoader(),
+                new Class<?>[] {MultipartUploadApplicationService.class},
+                (proxy, method, args) -> {
+                    if ("abort".equals(method.getName())) {
+                        AbortMultipartUploadCommand command = (AbortMultipartUploadCommand) args[0];
+                        commandRef.set(command);
+                        return 1;
                     }
                     throw new UnsupportedOperationException(method.getName());
                 });
