@@ -17,9 +17,9 @@
 
 部分完成：
 
-- `cleanup` 当前仅完成领域实体、值对象与仓储端口，尚未看到对应的 DO、Mapper、Persistence Assembler、RepositoryImpl。
-- `health`、`long task` 已具备值对象、领域实体、仓储端口，以及对应的 DO、Mapper、Persistence Assembler、RepositoryImpl，但仍缺少 application/interface/admin 展示闭环。
-- 备份恢复链路已经闭环，但自动备份调度、真实写入阻断、健康检查、清理任务、长任务和统一运维入口仍未全部补齐。
+- `cleanup` 已完成领域模型、持久化实现、应用层与接口层闭环，并已接通 admin 列表与详情查询；当前清理目标发现与执行逻辑仍为占位实现，未形成真实清理能力。
+- `health` 与 `long task` 已完成领域模型、持久化、应用层、接口层闭环，支持健康摘要、组件级分页和长任务分页/详情查询；运行指标采集源与前端运行态展示仍未接入。
+- 备份恢复链路具备基础闭环，但自动备份调度、恢复期间真实写入阻断、统一运维首页与系统/审计入口仍未全部补齐。
 
 已完成：
 
@@ -40,8 +40,7 @@
 
 未完成：
 
-- 仪表盘聚合展示、按权限聚合图表化展示、自动备份、恢复期间真实写入阻断、清理任务执行入口、健康检查摘要与运行指标查看、长任务状态查看、System 日志/审计入口仍未形成可运行交付。
-- `cleanup`、`health`、`long task` 仍缺少 application/interface/admin 页面/测试闭环。
+- 仪表盘聚合展示、按权限聚合图表化展示、自动备份、恢复期间真实写入阻断、health/task 前端运行态面板、System 日志/审计入口仍未形成可运行交付。
 
 ## Requirement Coverage Matrix
 
@@ -50,10 +49,10 @@
 | 仪表盘与聚合展示 | 未完成 | 仅有需求/设计边界定义 | 内容统计、访问统计、活跃用户、功能频率、热门内容、趋势图、标签覆盖率变化、按权限聚合与图表化展示均未见代码落地 | Operations |
 | 报表 | 已完成 | 已完成周报/月报任务生成、HTML/PDF worker 渲染、Storage 产物回写、报表记录分页/详情查询、状态流转、独立 response、`operations:report:view` / `operations:report:generate` 权限控制，以及跨域 summary 聚合读取 | admin 页面接入与专属下载表现不在本矩阵范围内；后续如增加调度报表可另行扩展 | Operations |
 | 备份与恢复 | 部分完成 | 已完成 `BackupRecord`、`RestoreRecord`、各自 persistence、手动备份执行、恢复前 `PRE_RESTORE` 快照创建、备份/恢复 `execute/page/detail` 接口、`admin-web` 备份恢复页面、菜单与权限种子，以及脚本执行结果回写 | 启动自动备份、24 小时自动备份、恢复期间真实写入阻断、真实恢复演练与长期调度仍未完成 | Operations |
-| 清理任务 | 部分完成 | `CleanupJob`、`CleanupItem`、`CleanupJobRepository` 已完成领域层建模 | `cleanup` 持久化实现缺失；过期备份/分享/草稿/导出产物清理入口、执行链路、结果查询与单项失败追踪未完成 | Operations |
-| 健康检查与运行状态 | 部分完成 | `HealthCheckRecord`、`LongTaskSnapshot` 及 health/task persistence 已完成，可承载健康记录与长任务快照 | 健康检查摘要、运行指标查看、关键组件检查写入源、长任务查询入口与展示闭环未完成 | Operations |
-| 运维入口 | 部分完成 | 已完成备份恢复 admin 入口、路由、菜单权限种子，以及报表链路接口；管理员可从 `Operations` 菜单进入备份恢复页并触发动作 | System 日志入口、业务审计入口、清理任务、健康检查、长任务、统一运维首页仍未完成 | Operations |
-| 台账记录 | 部分完成 | report 已完成 domain + persistence + application + interface + test 闭环；backup、restore 已完成 domain + persistence + application + interface + admin page + test 闭环；health、long task 已完成 domain + persistence；cleanup 已完成 domain 建模 | cleanup 持久化缺失；health/task 仍缺少 application/interface/query/test 闭环 | Operations |
+| 清理任务 | 部分完成 | `CleanupJob` / `CleanupItem` 已完成领域模型与持久化，应用层 `execute/page/detail` 与 admin 接口已上线，前端清理台账页已接通，`operations:cleanup:view/execute` 与页面基础回归测试已存在 | 清理目标发现与真实执行逻辑待接入，失败项失败原因链路与长期规则策略未闭环 | Operations |
+| 健康检查与运行状态 | 部分完成 | `HealthCheckRecord`、`LongTaskSnapshot` 已完成 domain + persistence + application + interface，支持健康摘要、组件分页查询、长任务分页与详情查询，`operations:health:view`/`operations:task:view` 接口已就绪 | 健康指标采集源、运行态趋势展示、告警策略与失败恢复联动未完成 | Operations |
+| 运维入口 | 部分完成 | 已完成备份恢复与报表 admin 入口、路由与菜单种子；清理/健康/长任务接口可用于统一运维入口聚合消费 | 健康与长任务前端入口、System 日志/审计入口、统一运维首页仍未完成 | Operations |
+| 台账记录 | 部分完成 | report、backup、restore、cleanup 已完成 domain + persistence + application + interface + admin page；health 与 long task 已完成 domain + persistence + application + interface，基础查询能力可消费 | 清理真实执行归档、健康指标来源写入、长任务异常恢复与跨模块联调验证未完成 | Operations |
 | TODO 与治理文档清理 | 已完成 | `TODO.md` 已清空，备份恢复专项 RUNBOOK 已删除 | 无 | Governance |
 
 ## Follow-up Backlog
@@ -61,7 +60,7 @@
 ### B1 Operations 非报表剩余应用层闭环
 
 状态：进行中  
-目标：完成 `kuzhambu-operations-application` 中剩余的清理任务、健康检查、长任务与统一运维入口编排服务，并完成对 repository、权限校验、调度与运行态数据源的应用层接入。
+目标：补齐清理任务真实执行逻辑、健康组件采集来源入库、长任务写入源接入，以及统一运维入口编排层的状态聚合与阈值策略。
 
 ### B2 Operations 剩余接口与入口
 
@@ -70,8 +69,8 @@
 
 ### B3 Cleanup 持久化补齐
 
-状态：未开始  
-目标：补齐 `operations_cleanup_job` 与 `operations_cleanup_item` 的 DO、Mapper、Persistence Assembler、RepositoryImpl，使 cleanup 台账与需求口径一致。
+状态：已完成  
+目标：清理台账持久化基础设施已就绪，进入接入真实清理执行规则与任务编排层阶段。
 
 ### B4 调度、阻断与运行态接入
 

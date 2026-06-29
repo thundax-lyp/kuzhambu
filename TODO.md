@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Operations readiness coverage`：更新 Operations 实现覆盖文档
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-RUNTIME-CLOSURE.md`
-    - 范围对象：`docs/40-readiness/OPERATIONS-IMPLEMENTATION-COVERAGE.md`
-    - 处理动作：根据 cleanup、health、long task 和统一运维入口的实际落地结果同步 Implementation Coverage
-    - 验收点：`OPERATIONS-IMPLEMENTATION-COVERAGE.md` 与代码事实一致，能准确反映已完成、部分完成和未完成项
-    - 重要度：8/10
-
 - [ ] `Operations runtime runbook cleanup`：删除已完成 RUNBOOK
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-RUNTIME-CLOSURE.md`
