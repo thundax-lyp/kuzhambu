@@ -1,0 +1,81 @@
+.backup-restore-page > section {
+    gap: 20px;
+}
+
+.backup-restore-page-summary {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.backup-restore-page-summary-card {
+    border-radius: 18px;
+}
+
+.backup-restore-page-summary-card .ant-statistic {
+    min-height: 88px;
+}
+
+.backup-restore-page-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: flex-end;
+    justify-content: space-between;
+}
+
+.backup-restore-page-toolbar-fields {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: flex-end;
+}
+
+.backup-restore-page-toolbar-field {
+    display: grid;
+    gap: 6px;
+    min-width: 180px;
+}
+
+.backup-restore-page-toolbar-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.backup-restore-page-ledgers {
+    display: grid;
+    gap: 18px;
+}
+
+.backup-restore-page-card {
+    border-radius: 18px;
+}
+
+.backup-restore-page-card-head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.backup-restore-page-card-title {
+    display: grid;
+    gap: 2px;
+}
+
+.backup-restore-page-detail {
+    display: grid;
+    gap: 16px;
+}
+
+.backup-restore-page-empty-copy {
+    margin-top: 8px;
+}
+
+@media (max-width: 1100px) {
+    .backup-restore-page-summary {
+        grid-template-columns: 1fr;
+    }
+}
