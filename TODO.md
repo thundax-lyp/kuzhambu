@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `addReferences 语义`：为 application 建立相同 owner 幂等规则
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FULL-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/main/java/com/thundax/kuzhambu/storage/application/service/impl/StorageApplicationServiceImpl.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-infra/src/main/java/com/thundax/kuzhambu/storage/infra/object/repository/impl/StoredObjectReferenceRepositoryImpl.java`
-    - 处理动作：让 `application.addReferences(...)` 对相同 owner 的重复引用建立保持幂等
-    - 验收点：重复建立同一 owner 引用不会产生重复有效引用且有测试锁定
-    - 重要度：10/10
-
 - [ ] `referenceStatus 一致性`：收敛对象引用状态维护
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FULL-CLOSURE.md`

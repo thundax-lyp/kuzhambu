@@ -5,12 +5,17 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.thundax.kuzhambu.storage.application.service.command.AddStorageReferencesCommand;
 import com.thundax.kuzhambu.storage.application.service.command.UploadStorageObjectCommand;
 import com.thundax.kuzhambu.storage.application.service.result.StorageUploadResult;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
+import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObjectReference;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
@@ -119,5 +124,70 @@ class StorageApplicationServiceUploadTest {
 
         assertTrue(result.hasError());
         assertEquals("write failed", result.getError());
+    }
+
+    @Test
+    void addReferencesShouldDeduplicateAndSkipExistingRecords() {
+        StoredObjectReferenceRepository referenceRepository = mock(StoredObjectReferenceRepository.class);
+        StorageApplicationServiceImpl service = new StorageApplicationServiceImpl(
+                mock(StoredObjectRepository.class), referenceRepository, mock(StoredObjectContentRepository.class));
+        when(referenceRepository.exists(any())).thenAnswer(invocation -> {
+            StoredObjectReference reference = invocation.getArgument(0);
+            return reference != null
+                    && reference.getObjectId() != null
+                    && reference.getObjectId().value().equals(100L)
+                    && StorageOwnerType.USER.equals(reference.getOwnerType())
+                    && "owner-1".equals(reference.getOwnerId());
+        });
+
+        service.addReferences(new AddStorageReferencesCommand(List.of(
+                new StoredObjectReference(
+                        StoredObjectId.of(100L),
+                        "owner-1",
+                        StorageOwnerType.USER,
+                        null,
+                        StoredObjectReferenceStatus.REFERENCED),
+                new StoredObjectReference(
+                        StoredObjectId.of(100L),
+                        "owner-1",
+                        StorageOwnerType.USER,
+                        null,
+                        StoredObjectReferenceStatus.REFERENCED),
+                new StoredObjectReference(
+                        StoredObjectId.of(100L),
+                        "owner-2",
+                        StorageOwnerType.USER,
+                        null,
+                        StoredObjectReferenceStatus.REFERENCED),
+                new StoredObjectReference(
+                        StoredObjectId.of(101L),
+                        "owner-1",
+                        StorageOwnerType.USER,
+                        null,
+                        StoredObjectReferenceStatus.REFERENCED))));
+
+        verify(referenceRepository).insertReferences(argThat(references -> {
+            if (!(references instanceof List)) {
+                return false;
+            }
+            List<StoredObjectReference> insertedReferences = (List<StoredObjectReference>) references;
+            boolean hasUserOwner2 = insertedReferences.stream()
+                    .anyMatch(item -> item.getObjectId().value().equals(100L) && "owner-2".equals(item.getOwnerId()));
+            boolean hasObject101Owner1 = insertedReferences.stream()
+                    .anyMatch(item -> item.getObjectId().value().equals(101L) && "owner-1".equals(item.getOwnerId()));
+            return insertedReferences.size() == 2 && hasUserOwner2 && hasObject101Owner1;
+        }));
+    }
+
+    @Test
+    void addReferencesShouldNotInsertWhenInputNullOrEmpty() {
+        StoredObjectReferenceRepository referenceRepository = mock(StoredObjectReferenceRepository.class);
+        StorageApplicationServiceImpl service = new StorageApplicationServiceImpl(
+                mock(StoredObjectRepository.class), referenceRepository, mock(StoredObjectContentRepository.class));
+
+        service.addReferences(null);
+        service.addReferences(new AddStorageReferencesCommand(List.of()));
+
+        verify(referenceRepository, never()).insertReferences(any());
     }
 }

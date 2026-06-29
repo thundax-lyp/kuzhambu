@@ -264,7 +264,43 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void addReferences(AddStorageReferencesCommand command) {
-        businessRepository.insertReferences(command.getReferences());
+        if (command == null) {
+            return;
+        }
+        List<StoredObjectReference> candidates = command.getReferences();
+        if (candidates == null || candidates.isEmpty()) {
+            return;
+        }
+        List<StoredObjectReference> toInsert = uniqueReferences(candidates);
+        if (toInsert.isEmpty()) {
+            return;
+        }
+        businessRepository.insertReferences(toInsert);
+    }
+
+    private List<StoredObjectReference> uniqueReferences(List<StoredObjectReference> candidates) {
+        Map<String, StoredObjectReference> pendingByKey = new HashMap<>(candidates.size());
+        for (StoredObjectReference reference : candidates) {
+            if (reference == null
+                    || reference.getObjectId() == null
+                    || reference.getOwnerType() == null
+                    || StringUtils.isBlank(reference.getOwnerId())) {
+                continue;
+            }
+            String referenceKey = referenceKey(reference);
+            if (pendingByKey.containsKey(referenceKey)) {
+                continue;
+            }
+            if (businessRepository.exists(reference)) {
+                continue;
+            }
+            pendingByKey.put(referenceKey, reference);
+        }
+        return new ArrayList<>(pendingByKey.values());
+    }
+
+    private String referenceKey(StoredObjectReference reference) {
+        return reference.getObjectId().value() + ":" + reference.getOwnerType().value() + ":" + reference.getOwnerId();
     }
 
     @Override

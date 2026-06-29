@@ -11,6 +11,7 @@ import com.thundax.kuzhambu.storage.infra.object.persistence.mapper.StoredObject
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -51,6 +52,23 @@ public class StoredObjectReferenceRepositoryImpl implements StoredObjectReferenc
         for (StoredObjectReferenceDO dataObject : dataObjects) {
             mapper.insert(dataObject);
         }
+    }
+
+    @Override
+    public boolean exists(StoredObjectReference reference) {
+        if (reference == null
+                || reference.getObjectId() == null
+                || reference.getOwnerType() == null
+                || StringUtils.isBlank(reference.getOwnerId())) {
+            return false;
+        }
+        LambdaQueryWrapper<StoredObjectReferenceDO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(StoredObjectReferenceDO::getObjectId, reference.getObjectId().value());
+        wrapper.eq(
+                StoredObjectReferenceDO::getReferenceOwnerType,
+                reference.getOwnerType().value());
+        wrapper.eq(StoredObjectReferenceDO::getReferenceOwnerId, reference.getOwnerId());
+        return mapper.selectCount(wrapper) > 0;
     }
 
     @Override

@@ -12,6 +12,8 @@ public interface StoredObjectReferenceRepository {
 
     void insertReferences(List<StoredObjectReference> list);
 
+    boolean exists(StoredObjectReference reference);
+
     void deleteByObjectId(String id);
 
     int deleteByOwner(String referenceOwnerType, String referenceOwnerId);
