@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Admin Web operations cleanup page`：落地 cleanup 管理页面
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-RUNTIME-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/operations/cleanup` 与 `src/router/index.tsx`
-    - 处理动作：新增 `/operations/cleanup` 页面并接入 cleanup 触发、列表、详情与失败项查看
-    - 验收点：页面支持 cleanup 执行、job 列表展示和 detail / failure item 查看
-    - 重要度：9/10
-
 - [ ] `Operations readiness coverage`：更新 Operations 实现覆盖文档
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-RUNTIME-CLOSURE.md`
