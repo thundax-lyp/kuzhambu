@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Operations runtime closure cleanup`：清理收口现场
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`TODO.md`、Operations runtime closure 相关文档与残留临时文件
-    - 处理动作：删除已完成 TODO 项，清理本轮遗留的临时说明、无用占位和收口残留
-    - 验收点：TODO 只保留未完成项，已完成任务不残留，工作区与文档现场整洁
-    - 重要度：8/10
-
 ## 待审阅任务项
 
 ## 待讨论项
