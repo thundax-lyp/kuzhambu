@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `orphan cleanup 语义`：让异步物理删除任务与删除语义一致
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/STORAGE-DESIGN.md`、`docs/30-designs/RUNBOOK-STORAGE-FULL-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/main/java/com/thundax/kuzhambu/storage/application/service/impl/StorageOrphanObjectCleanupScheduler.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-infra/src/main/java/com/thundax/kuzhambu/storage/infra/object/repository/impl/StoredObjectRepositoryImpl.java`、scheduler tests
-    - 处理动作：收敛计划任务对最终物理删除对象的判定与执行语义
-    - 验收点：异步物理删除任务与删除标记语义一致且有 scheduler 测试锁定
-    - 重要度：9/10
-
 - [ ] `multipart 暂存结构`：补齐分片内容暂存结构
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FULL-CLOSURE.md`

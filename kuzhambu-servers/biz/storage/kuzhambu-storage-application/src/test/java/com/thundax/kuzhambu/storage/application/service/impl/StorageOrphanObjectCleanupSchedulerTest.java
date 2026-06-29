@@ -25,10 +25,10 @@ class StorageOrphanObjectCleanupSchedulerTest {
     private static final Instant NOW = Instant.parse("2026-06-20T10:00:00Z");
 
     @Test
-    void cleanupShouldRemoveExpiredUnreferencedActiveObject() {
+    void cleanupShouldDeleteMarkedDeletedUnreferencedObjectAndValidateObjectInfo() {
         FakeRepository repository = new FakeRepository();
         RecordingStore store = new RecordingStore();
-        StoredObject expired = storage(1001L, StoredObjectStatus.ACTIVE, StoredObjectReferenceStatus.UNREFERENCED, 13);
+        StoredObject expired = storage(1001L, StoredObjectStatus.DELETED, StoredObjectReferenceStatus.UNREFERENCED, 13);
         repository.objects.add(expired);
 
         int count = scheduler(repository, store).cleanupExpiredOrphans();
@@ -36,6 +36,19 @@ class StorageOrphanObjectCleanupSchedulerTest {
         assertEquals(1, count);
         assertEquals(List.of(expired), store.deletedObjects);
         assertEquals(List.of(StoredObjectId.of(1001L)), repository.physicalDeletedIds);
+    }
+
+    @Test
+    void cleanupShouldKeepExpiredActiveUnreferencedObject() {
+        FakeRepository repository = new FakeRepository();
+        RecordingStore store = new RecordingStore();
+        repository.objects.add(storage(1002L, StoredObjectStatus.ACTIVE, StoredObjectReferenceStatus.UNREFERENCED, 13));
+
+        int count = scheduler(repository, store).cleanupExpiredOrphans();
+
+        assertEquals(0, count);
+        assertEquals(List.of(), store.deletedObjects);
+        assertEquals(List.of(), repository.physicalDeletedIds);
     }
 
     @Test
@@ -101,7 +114,8 @@ class StorageOrphanObjectCleanupSchedulerTest {
         FakeRepository repository = new FakeRepository();
         RecordingStore store = new RecordingStore();
         store.deleteFailure = new IOException("delete failed");
-        repository.objects.add(storage(1006L, StoredObjectStatus.ACTIVE, StoredObjectReferenceStatus.UNREFERENCED, 13));
+        repository.objects.add(
+                storage(1006L, StoredObjectStatus.DELETED, StoredObjectReferenceStatus.UNREFERENCED, 13));
 
         assertThrows(RuntimeException.class, () -> scheduler(repository, store).cleanupExpiredOrphans());
         assertEquals(List.of(), repository.physicalDeletedIds);
@@ -231,10 +245,9 @@ class StorageOrphanObjectCleanupSchedulerTest {
         }
 
         @Override
-        public List<StoredObject> listExpiredUnreferencedActive(Instant storedBefore) {
-            List<StoredObjectStatus> targetStatuses = List.of(StoredObjectStatus.ACTIVE, StoredObjectStatus.DELETED);
+        public List<StoredObject> listExpiredDeletedUnreferenced(Instant storedBefore) {
             return objects.stream()
-                    .filter(storage -> targetStatuses.contains(storage.getObjectStatus()))
+                    .filter(storage -> StoredObjectStatus.DELETED == storage.getObjectStatus())
                     .filter(storage -> StoredObjectReferenceStatus.UNREFERENCED == storage.getReferenceStatus())
                     .filter(storage -> !storage.getStoredAt().isAfter(storedBefore))
                     .toList();
