@@ -87,6 +87,8 @@
 - Content-Type：`multipart/form-data`
 - 表单字段：
   - `file: File`
+  - `ownerType?: string`
+  - `ownerId?: string`
 - 返回：
   - `StorageRecord`
 
@@ -98,15 +100,31 @@
 - 路径：`/storage/object/multipart/initiate`
 - Content-Type：`application/json`
 - 请求字段：
-  - `originalFilename: string`
-  - `contentType: string`
-  - `size: number`
-  - `partSize: number`
+  - `ownerType: string`（必填，`@NotBlank`）
+  - `ownerId?: string`
+  - `businessType?: string`
+  - `originalFilename: string`（必填，`@NotBlank`）
+  - `mimeType: string`（必填，`@NotBlank`）
+  - `bucketName?: string`
+  - `objectKey?: string`
+  - `providerUploadId?: string`
+  - `uploadId?: string`
+  - `totalSize: number`（必填，`@NotNull` 且 `>0`）
+  - `partSize: number`（必填，`@NotNull` 且 `>0`）
 - 返回字段：
   - `uploadId: string`
+  - `providerUploadId?: string`
+  - `ownerType?: string`
+  - `ownerId?: string`
+  - `businessType?: string`
+  - `originalFilename?: string`
+  - `mimeType?: string`
   - `partSize: number`
-  - `objectKey?: string`
   - `bucketName?: string`
+  - `objectKey?: string`
+  - `totalSize?: number`
+  - `uploadedPartCount?: number`
+  - `uploadStatus?: string`
 
 上传单个分片：
 
@@ -116,14 +134,15 @@
 - 表单字段：
   - `uploadId: string`
   - `partNumber: number`
+  - `etag: string`（必填，`@NotBlank`）
   - `size: number`
-  - `etag?: string`
   - `file: File`
 - 返回字段：
   - `uploadId: string`
   - `partNumber: number`
   - `etag?: string`
   - `size?: number`
+  - `uploadStatus?: string`
 
 完成分片上传：
 
@@ -132,8 +151,24 @@
 - Content-Type：`application/json`
 - 请求字段：
   - `uploadId: string`
+  - `bucketName?: string`
+  - `objectKey?: string`
+  - `size?: number`
+  - `accessEndpoint?: string`
 - 返回字段：
-  - `StorageRecord`
+  - `id`
+  - `uploadId: string`
+  - `ownerType?: string`
+  - `ownerId?: string`
+  - `businessType?: string`
+  - `originalFilename?: string`
+  - `mimeType?: string`
+  - `bucketName?: string`
+  - `objectKey?: string`
+  - `size?: number`
+  - `accessEndpoint?: string`
+  - `objectStatus?: string`
+  - `referenceStatus?: string`
 
 取消分片上传：
 
@@ -143,7 +178,15 @@
 - 请求字段：
   - `uploadId: string`
 - 返回字段：
-  - `boolean` 或等价成功标志
+  - `uploadId: string`
+  - `uploadStatus: string`（固定值 `ABORTED`）
+
+上传会话状态值（参考）：
+
+- `INITIATED`
+- `UPLOADING`
+- `COMPLETED`
+- `ABORTED`
 
 若运行时接口字段名和这里不一致，以实际后端 controller 契约为准，但字段适配必须收口到 `storage-object-service.ts`，不得散落到页面组件。
 
@@ -176,8 +219,15 @@ interface StorageRecord {
 ```ts
 interface InitMultipartUploadCommand {
     originalFilename: string;
-    contentType: string;
-    size: number;
+    mimeType: string;
+    ownerType?: string | null;
+    ownerId?: string | null;
+    businessType?: string | null;
+    bucketName?: string | null;
+    objectKey?: string | null;
+    providerUploadId?: string | null;
+    uploadId?: string | null;
+    totalSize: number;
     partSize: number;
 }
 
@@ -191,13 +241,17 @@ interface InitMultipartUploadRecord {
 interface UploadMultipartPartCommand {
     uploadId: string;
     partNumber: number;
+    etag: string;
     size: number;
-    etag?: string | null;
     file: Blob;
 }
 
 interface CompleteMultipartUploadCommand {
     uploadId: string;
+    bucketName?: string | null;
+    objectKey?: string | null;
+    size?: number | null;
+    accessEndpoint?: string | null;
 }
 
 interface AbortMultipartUploadCommand {
