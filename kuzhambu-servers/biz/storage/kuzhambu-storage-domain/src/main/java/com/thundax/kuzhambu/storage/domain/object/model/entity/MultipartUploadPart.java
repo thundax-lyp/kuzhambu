@@ -14,6 +14,7 @@ public class MultipartUploadPart {
 
     private MultipartUploadPartId id;
     private String uploadId;
+    private String partPath;
     private Integer partNumber;
     private String etag;
     private Long size;

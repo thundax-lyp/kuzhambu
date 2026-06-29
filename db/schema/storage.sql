@@ -64,6 +64,7 @@ CREATE TABLE IF NOT EXISTS `storage_multipart_upload` (
 CREATE TABLE IF NOT EXISTS `storage_multipart_upload_part` (
     `id` bigint NOT NULL AUTO_INCREMENT,
     `upload_id` varchar(64) NOT NULL,
+    `part_path` varchar(512) NOT NULL,
     `part_number` int NOT NULL,
     `etag` varchar(255) NOT NULL,
     `size` bigint NOT NULL,

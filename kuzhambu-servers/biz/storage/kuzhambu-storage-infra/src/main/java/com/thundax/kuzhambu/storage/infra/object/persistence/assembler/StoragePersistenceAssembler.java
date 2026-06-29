@@ -212,6 +212,7 @@ public final class StoragePersistenceAssembler {
         MultipartUploadPartDO dataObject = new MultipartUploadPartDO();
         dataObject.setId(MultipartUploadPartIdCodec.toValue(entity.getId()));
         dataObject.setUploadId(entity.getUploadId());
+        dataObject.setPartPath(entity.getPartPath());
         dataObject.setPartNumber(entity.getPartNumber());
         dataObject.setEtag(entity.getEtag());
         dataObject.setSize(entity.getSize());
@@ -225,6 +226,7 @@ public final class StoragePersistenceAssembler {
         MultipartUploadPart entity = new MultipartUploadPart();
         entity.setId(MultipartUploadPartIdCodec.toDomain(dataObject.getId()));
         entity.setUploadId(dataObject.getUploadId());
+        entity.setPartPath(dataObject.getPartPath());
         entity.setPartNumber(dataObject.getPartNumber());
         entity.setEtag(dataObject.getEtag());
         entity.setSize(dataObject.getSize());

@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `multipart 暂存结构`：补齐分片内容暂存结构
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FULL-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/main/java/com/thundax/kuzhambu/storage/application/service/impl/MultipartUploadApplicationServiceImpl.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-infra/src/main/java/com/thundax/kuzhambu/storage/infra/object/repository/impl/MultipartUploadRepositoryImpl.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-infra/src/main/java/com/thundax/kuzhambu/storage/infra/object/repository/impl/StoredObjectContentRepositoryImpl.java`
-    - 处理动作：明确并实现分片内容暂存位置与写入方式
-    - 验收点：分片上传具备真实内容暂存结构且不再只保存元数据
-    - 重要度：10/10
-
 - [ ] `multipart complete`：实现分片合并落存储
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FULL-CLOSURE.md`

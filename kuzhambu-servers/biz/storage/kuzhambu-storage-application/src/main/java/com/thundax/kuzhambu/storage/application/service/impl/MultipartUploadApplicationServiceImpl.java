@@ -76,6 +76,7 @@ public class MultipartUploadApplicationServiceImpl implements MultipartUploadApp
         if (multipartUploadRepository.getMultipartPart(part.getUploadId(), part.getPartNumber()) != null) {
             throw new BizException("Multipart upload part already exists: " + part.getPartNumber());
         }
+        part.setPartPath(resolveMultipartPartObjectKey(session, part.getPartNumber()));
         part.setId(multipartUploadRepository.insertMultipartPart(part));
 
         session.setUploadStatus(MultipartUploadStatus.UPLOADING);
@@ -224,6 +225,10 @@ public class MultipartUploadApplicationServiceImpl implements MultipartUploadApp
         part.setEtag(command.getEtag());
         part.setSize(command.getSize());
         return part;
+    }
+
+    private String resolveMultipartPartObjectKey(MultipartUploadSession session, Integer partNumber) {
+        return "multipart/" + session.getUploadId() + "/" + partNumber + ".part";
     }
 
     private String baseName(String originalFilename) {
