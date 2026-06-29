@@ -17,10 +17,11 @@
 
 - Classics 精修入口已对接六类同步候选能力（`translate/summary/tags/qa/visual/split`）的 Java → Worker 调用链路（Sancai、Wangqi、Ming Customs）。
 - Knowledge 图谱抽取已对接三类候选能力（`relation_extraction/knowledge_graph/lineage_extraction`）的 Knowledge → AI → Worker 调用链路，并补齐批量任务、取消和重生成所需的 AI 协作台账。
+- AI 域当前已具备候选结果台账读取、拒绝和“标记已应用”协作入口，可支持 Classics / Knowledge 在业务确认后回写 AI 候选状态。
 
 部分完成：
 
-- `CLASSICS_SANCAI_IMAGE_ANALYSIS` 在 worker 层可触发流式能力，但当前 Java 精修入口是同步，导致本轮未形成同链路闭环。
+- `CLASSICS_SANCAI_IMAGE_ANALYSIS` 已有 Java admin 入口，但当前仍沿用 legacy `operation` 且不传 `workerPath`，同时 worker 契约要求流式调用，因此本轮仍未形成标准化闭环。
 
 未完成：
 

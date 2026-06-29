@@ -12,6 +12,8 @@ import { DashboardPage } from "../pages/dashboard/dashboard/dashboard-page";
 import { GraphExtractionPage } from "../pages/knowledge/graph-extraction/graph-extraction-page";
 import { GraphResultsPage } from "../pages/knowledge/graph-results/graph-results-page";
 import { BackupRestorePage } from "../pages/operations/backup-restore/backup-restore-page";
+import { CleanupPage } from "../pages/operations/cleanup/cleanup-page";
+import { OperationsTasksPage } from "../pages/operations/tasks/tasks-page";
 import { RefinementPage } from "../pages/knowledge/refinement/refinement-page";
 import { TaxonomyPage } from "../pages/knowledge/taxonomy/taxonomy-page";
 import { StorageObjectPage } from "../pages/storage/storage-object/storage-object-page";
@@ -122,8 +124,16 @@ const router = createBrowserRouter(
                             element: <SearchAdminPage />
                         },
                         {
+                            path: "operations/tasks",
+                            element: <OperationsTasksPage />
+                        },
+                        {
                             path: "operations/backup-restore",
                             element: <BackupRestorePage />
+                        },
+                        {
+                            path: "operations/cleanup",
+                            element: <CleanupPage />
                         }
                     ]
                 }

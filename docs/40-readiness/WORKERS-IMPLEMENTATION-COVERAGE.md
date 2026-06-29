@@ -4,6 +4,8 @@
 
 本文档记录 Worker 能力与 Java/AI usecase 对接状态，用于核对 worker 能力覆盖面与接入完整性。
 
+本清单只回答“worker 侧路由与 usecase 是否已注册并可被调用”，不直接代表对应 Java 业务域已经把该能力接入到最终页面或业务闭环。
+
 ## Status Definition
 
 - `已完成`：对应调用路径与 worker usecase 已在代码与路由层确认接通。
@@ -16,6 +18,7 @@
 
 - Classics、Discovery、Knowledge、Platform 的 usecase 已完成 worker 注册与调用链可追溯确认。
 - 关键入口 `workerPath/operation` 已与 `kuzhambu_workers.ai.graph_registry:GraphRegistry.invoke` 对齐。
+- `Workers Implementation Coverage` 与各业务域 coverage 的口径不同：此处的 `已完成` 表示 worker 侧服务路径和 registry 已就绪；Java 侧是否已消费仍以 `AI / Classics / Knowledge / Discovery` 各自的 coverage 为准。
 
 ## Requirement Coverage Matrix
 

@@ -40,6 +40,7 @@
 - Knowledge 图谱抽取已补齐 `batchId` 关联、批量创建、批任务取消、重生成和请求快照持久化，`knowledge_graph_extraction_task` 现可追踪 `triggerSource`、`selectionScopeJson`、`replaceUnconfirmedOnly` 与可重放请求输入。
 - Knowledge 已补齐候选结果应用链路，可将 `ai_candidate.result_payload` 应用到 `knowledge_entity`、`knowledge_relation`、`knowledge_graph_version`、`knowledge_lineage_node`、`knowledge_lineage_relation`，并生成或续增图谱版本号。
 - Knowledge 已补充面向 Discovery 的 taxonomy 读协作服务，`expandSynonyms`、`getTagHint` 和 `listEntityHints` 可直接为搜索与问答提供同义词、标签和实体提示。
+- Classics 三类内容编辑页已接入 Knowledge 治理协作入口：标签治理、问答对治理和 AI 候选确认面板已作为页面内联能力落地，并通过 Knowledge/AI 协作回写统一标签与正式内容。
 - Admin Web 已接入 `/knowledge/graph-extraction` 页面，支持三类抽取任务创建、批量范围输入、质量触发模式、任务分页、任务详情抽屉、重生成、批任务取消和候选应用动作。
 - Admin Web 已接入 `/knowledge/graph-results` 页面，支持图谱版本列表、版本详情，以及从版本下钻查看正式实体、正式关系和正式世系结果。
 - Portal Web 已接入 Knowledge 只读门户：首页 `/knowledge`、质量页 `/knowledge/quality` 和图谱分层浏览页 `/knowledge/atlas` 已形成入口闭环。
@@ -74,7 +75,7 @@
 | 标签使用排行、知识库分布、来源占比、月度新增趋势 | 已完成   | 已提供完整治理统计读取和 Admin Web 展示入口                                                                                    | 无                                              | Knowledge, Admin Web   |
 | 同义词新增、编辑、删除、查看和搜索               | 已完成   | 后端和 Admin Web 已支持分页、创建、更新、状态变更、删除                                                                        | 无                                              | Knowledge, Admin Web   |
 | 同义词正向和反向查询                             | 部分完成 | 域模型和管理入口已支持词条治理；标签解析链路可消费治理结果                                                                     | 面向搜索和问答的独立正向/反向查询入口未对外提供 | Knowledge, Discovery   |
-| 搜索和问答使用同义词扩展                         | 部分完成 | 同义词治理模型已可作为下游增强数据源                                                                                           | Discovery/Search/QA 消费链路当前仍未接通        | Knowledge, Discovery   |
+| 搜索和问答使用同义词扩展                         | 已完成   | Knowledge 已通过 `expandSynonyms`、`getTagHint` 和 `listEntityHints` 读协作向 Discovery 搜索/问答提供增强数据；Discovery Search/QA 已消费该链路 | 无                                              | Knowledge, Discovery   |
 | 标签审核、合并和废弃操作审计                     | 已完成   | 审核、合并和废弃操作继续由 System 审计承载；审计注解、快照模型和运行时 SPI 已下沉到 `common-audit`，Knowledge / System 已切换到统一审计契约 | 无                                              | Knowledge, System      |
 | Classics 内容标签协作与兼容口径                  | 已完成   | 已提供统一标签绑定协作语义、内容引用同步/删除能力，并兼容 Classics 的 `MING_CUSTOMS` 与 `AI` 协作输入                          | 无                                              | Knowledge, Classics    |
 | 后台菜单与页面入口                               | 已完成   | `system.json` 已新增 `知识治理 / 标签与同义词` 菜单；`system.sql` 已由脚本生成同步；Admin Web 路由已接入 `/knowledge/taxonomy` | 无                                              | System Data, Admin Web |
@@ -122,12 +123,12 @@
 | ----------------------------------- | ------ | ------------------------------------------------------------------------------------------------------ |
 | 数据精修                            | 部分完成 | 实体、关系和世系精修工作台已落地，正式事实回写和质量汇总已接通；独立质量标注前端入口仍未开放           |
 | 图谱浏览与质量报告                  | 部分完成 | 当前已交付 Portal 图谱分层浏览页、质量摘要页、抽取任务、批量生成、重生成、候选应用、正式结果落库和后台读取页 |
-| 世系图浏览                          | 未完成 | 当前只交付世系抽取、正式结果落库和后台读取，不含可视化页面                                             |
+| 世系图浏览                          | 部分完成 | 当前已交付世系抽取、正式结果落库和后台读取，并可在正式结果页查看世系节点/关系详情；仍缺独立可视化画布     |
 | Portal 页面                         | 已完成 | Portal 侧已形成 `/knowledge`、`/knowledge/quality`、`/knowledge/atlas` 三个可执行只读入口              |
 | 数据精修与图谱联动                  | 部分完成 | 精修应用已回写正式事实并被正式结果读取链路消费，图谱抽取也已具备批量重生成能力                             |
 | Discovery 搜索或问答接入            | 已完成 | taxonomy 治理、同义词扩展、标签提示和实体提示已被 Discovery 搜索 / 问答消费，形成最小闭环             |
 | 标签批量操作                        | 未完成 | 当前只交付单条治理动作，未支持批量合并、批量废弃或批量审核                                             |
-| Classics 内容编辑页内联知识治理入口 | 未完成 | 当前只提供独立 taxonomy 页面，未内联到 Classics 内容编辑页                                             |
+| Classics 内容编辑页内联知识治理入口 | 部分完成 | Wangqi、Sancai、MingCustoms 编辑页已内联标签治理、问答对治理和 AI 候选确认入口                           | 标签分类、同义词、审核与合并等完整 taxonomy 治理仍只在独立页面提供 |
 
 ## Residual Risks
 

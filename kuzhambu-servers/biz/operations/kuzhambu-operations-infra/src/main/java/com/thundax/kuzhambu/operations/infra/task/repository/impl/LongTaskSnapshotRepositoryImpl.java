@@ -1,7 +1,11 @@
 package com.thundax.kuzhambu.operations.infra.task.repository.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.operations.domain.task.model.entity.LongTaskSnapshot;
 import com.thundax.kuzhambu.operations.domain.task.model.valueobject.LongTaskSnapshotId;
 import com.thundax.kuzhambu.operations.domain.task.model.valueobject.LongTaskSnapshotIdCodec;
@@ -9,6 +13,7 @@ import com.thundax.kuzhambu.operations.domain.task.repository.LongTaskSnapshotRe
 import com.thundax.kuzhambu.operations.infra.task.persistence.assembler.LongTaskSnapshotPersistenceAssembler;
 import com.thundax.kuzhambu.operations.infra.task.persistence.dataobject.LongTaskSnapshotDO;
 import com.thundax.kuzhambu.operations.infra.task.persistence.mapper.LongTaskSnapshotMapper;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -25,6 +30,19 @@ public class LongTaskSnapshotRepositoryImpl implements LongTaskSnapshotRepositor
         return LongTaskSnapshotPersistenceAssembler.toDomain(
                 mapper.selectOne(new LambdaQueryWrapper<LongTaskSnapshotDO>()
                         .eq(LongTaskSnapshotDO::getSnapshotId, LongTaskSnapshotIdCodec.toValue(id))));
+    }
+
+    @Override
+    public PageResult<LongTaskSnapshot> page(
+            String sourceDomain, String taskType, String taskStatus, int pageNo, int pageSize) {
+        Page<LongTaskSnapshotDO> page = new Page<>(pageNo, pageSize);
+        IPage<LongTaskSnapshotDO> dataObjectPage =
+                mapper.selectPage(page, buildPageWrapper(sourceDomain, taskType, taskStatus));
+        return PageResult.of(
+                (int) dataObjectPage.getCurrent(),
+                (int) dataObjectPage.getSize(),
+                dataObjectPage.getTotal(),
+                LongTaskSnapshotPersistenceAssembler.toDomainList(dataObjectPage.getRecords()));
     }
 
     @Override
@@ -59,5 +77,21 @@ public class LongTaskSnapshotRepositoryImpl implements LongTaskSnapshotRepositor
     public int deleteById(LongTaskSnapshotId id) {
         return mapper.delete(new LambdaQueryWrapper<LongTaskSnapshotDO>()
                 .eq(LongTaskSnapshotDO::getSnapshotId, LongTaskSnapshotIdCodec.toValue(id)));
+    }
+
+    private QueryWrapper<LongTaskSnapshotDO> buildPageWrapper(String sourceDomain, String taskType, String taskStatus) {
+        QueryWrapper<LongTaskSnapshotDO> wrapper = new QueryWrapper<>();
+        if (StringUtils.isNotBlank(sourceDomain)) {
+            wrapper.eq("source_domain", sourceDomain);
+        }
+        if (StringUtils.isNotBlank(taskType)) {
+            wrapper.eq("task_type", taskType);
+        }
+        if (StringUtils.isNotBlank(taskStatus)) {
+            wrapper.eq("task_status", taskStatus);
+        }
+        wrapper.orderByDesc("snapshot_at");
+        wrapper.orderByDesc("snapshot_id");
+        return wrapper;
     }
 }
