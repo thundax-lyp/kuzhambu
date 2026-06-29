@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `StorageFacade API`：补齐 facade 分片上传接口定义
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FULL-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-facade/src/main/java/com/thundax/kuzhambu/storage/facade/StorageFacade.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-facade/src/main/java/com/thundax/kuzhambu/storage/facade/request`、`kuzhambu-servers/biz/storage/kuzhambu-storage-facade/src/main/java/com/thundax/kuzhambu/storage/facade/response`
-    - 处理动作：在 facade 接口中增加分片上传四段式稳定入口
-    - 验收点：业务域可通过 facade 调用分片上传而无需直接拼 application command
-    - 重要度：8/10
-
 - [ ] `StorageFacadeImpl multipart`：实现 facade 分片上传调用链
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FULL-CLOSURE.md`
