@@ -4,6 +4,7 @@ import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.storage.application.facade.assembler.StorageOwnerBindingFacadeAssembler;
 import com.thundax.kuzhambu.storage.application.facade.assembler.StorageReadableContentFacadeAssembler;
 import com.thundax.kuzhambu.storage.application.facade.assembler.StorageUploadFacadeAssembler;
+import com.thundax.kuzhambu.storage.application.service.MultipartUploadApplicationService;
 import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
 import com.thundax.kuzhambu.storage.application.service.command.ChangeStorageCommand;
 import com.thundax.kuzhambu.storage.application.service.command.UploadStorageObjectCommand;
@@ -15,15 +16,23 @@ import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObjectRefer
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import com.thundax.kuzhambu.storage.facade.StorageFacade;
+import com.thundax.kuzhambu.storage.facade.request.AbortMultipartUploadFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.BindStorageOwnerFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.CompleteMultipartUploadFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.InitMultipartUploadFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.ListStorageFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.MarkStorageUsageFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.OpenStorageFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.RemoveStorageFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.UnbindStorageOwnerFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.UploadMultipartPartFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.UploadStorageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.response.AbortMultipartUploadFacadeResponse;
+import com.thundax.kuzhambu.storage.facade.response.CompleteMultipartUploadFacadeResponse;
+import com.thundax.kuzhambu.storage.facade.response.InitMultipartUploadFacadeResponse;
 import com.thundax.kuzhambu.storage.facade.response.ListStorageFacadeResponse;
 import com.thundax.kuzhambu.storage.facade.response.OpenStorageFacadeResponse;
+import com.thundax.kuzhambu.storage.facade.response.UploadMultipartPartFacadeResponse;
 import com.thundax.kuzhambu.storage.facade.response.UploadStorageFacadeResponse;
 import java.util.Collections;
 import java.util.List;
@@ -35,16 +44,19 @@ import org.springframework.transaction.annotation.Transactional;
 public class StorageFacadeImpl implements StorageFacade {
 
     private final StorageApplicationService storageApplicationService;
+    private final MultipartUploadApplicationService multipartUploadApplicationService;
     private final StorageReadableContentFacadeAssembler readableContentFacadeAssembler;
     private final StorageOwnerBindingFacadeAssembler ownerBindingFacadeAssembler;
     private final StorageUploadFacadeAssembler uploadFacadeAssembler;
 
     public StorageFacadeImpl(
             StorageApplicationService storageApplicationService,
+            MultipartUploadApplicationService multipartUploadApplicationService,
             StorageReadableContentFacadeAssembler readableContentFacadeAssembler,
             StorageOwnerBindingFacadeAssembler ownerBindingFacadeAssembler,
             StorageUploadFacadeAssembler uploadFacadeAssembler) {
         this.storageApplicationService = storageApplicationService;
+        this.multipartUploadApplicationService = multipartUploadApplicationService;
         this.readableContentFacadeAssembler = readableContentFacadeAssembler;
         this.ownerBindingFacadeAssembler = ownerBindingFacadeAssembler;
         this.uploadFacadeAssembler = uploadFacadeAssembler;
@@ -98,6 +110,36 @@ public class StorageFacadeImpl implements StorageFacade {
             throw new BizException(result.getError());
         }
         return uploadFacadeAssembler.toResponse(result.getStorage());
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public InitMultipartUploadFacadeResponse initMultipartUpload(InitMultipartUploadFacadeRequest request) {
+        return uploadFacadeAssembler.toResponse(
+                multipartUploadApplicationService.init(uploadFacadeAssembler.toInitMultipartUploadCommand(request)));
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public UploadMultipartPartFacadeResponse uploadPart(UploadMultipartPartFacadeRequest request) {
+        return uploadFacadeAssembler.toResponse(multipartUploadApplicationService.uploadPart(
+                uploadFacadeAssembler.toUploadMultipartPartCommand(request)));
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public CompleteMultipartUploadFacadeResponse completeMultipart(CompleteMultipartUploadFacadeRequest request) {
+        return uploadFacadeAssembler.toResponse(
+                multipartUploadApplicationService.complete(
+                        uploadFacadeAssembler.toCompleteMultipartUploadCommand(request)),
+                request == null ? null : request.getUploadId());
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public AbortMultipartUploadFacadeResponse abortMultipart(AbortMultipartUploadFacadeRequest request) {
+        multipartUploadApplicationService.abort(uploadFacadeAssembler.toAbortMultipartUploadCommand(request));
+        return uploadFacadeAssembler.toResponse(request == null ? null : request.getUploadId());
     }
 
     @Override

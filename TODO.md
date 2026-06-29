@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `StorageFacadeImpl multipart`：实现 facade 分片上传调用链
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FULL-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/main/java/com/thundax/kuzhambu/storage/application/facade/impl/StorageFacadeImpl.java`、相关 facade assembler 与 facade tests
-    - 处理动作：在 `StorageFacadeImpl` 中实现分片上传四段式 facade 调用链
-    - 验收点：facade 可转发分片上传四段式调用且 tests 能验证 facade 到 application 的调用关系
-    - 重要度：9/10
-
 - [ ] `storage_object_reference 真相源文档`：明确引用约束真相源
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FULL-CLOSURE.md`
