@@ -45,7 +45,14 @@ Storage 拥有文件对象和文件引用事实。业务域只保存稳定文件
 - `MultipartUploadApplicationService`
 - `StorageReadApplicationService`
 
-Application 层负责上传校验、文件对象创建、引用幂等建立和清理、分片上传状态流转、删除校验和内容读取。
+Application 层负责上传校验、文件对象创建、引用幂等建立和清理、分片上传状态流转、内容暂存与合并、删除校验和内容读取。
+
+分片上传闭环实现为四段式入口：
+
+- `initiateMultipartUpload` 创建会话。
+- `uploadPart` 接收分片并持久化为临时对象，写入 `storage_multipart_upload_part`。
+- `completeMultipartUpload` 校验分片完整性与顺序，按顺序合并临时对象内容并落为 `storage_object`。
+- `abortMultipartUpload` 删除会话内已上传分片内容并清理分片记录，更新会话状态为 `ABORTED`。
 
 删除链路采用两阶段语义：
 

@@ -9,22 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `multipart complete`：实现分片合并落存储
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FULL-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/main/java/com/thundax/kuzhambu/storage/application/service/impl/MultipartUploadApplicationServiceImpl.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-infra/src/main/java/com/thundax/kuzhambu/storage/infra/object/repository/impl/StoredObjectContentRepositoryImpl.java`、`kuzhambu-servers/common/kuzhambu-common-oss/src/main/java/com/thundax/kuzhambu/common/oss/client/ObjectStorageClient.java`
-    - 处理动作：让 `complete` 真正完成分片内容合并、落对象存储并生成 `storage_object`
-    - 验收点：`complete` 后存在真实内容对象且有 application 或 integration 级验证
-    - 重要度：10/10
-
-- [ ] `multipart abort`：实现分片取消清理链路
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FULL-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/main/java/com/thundax/kuzhambu/storage/application/service/impl/MultipartUploadApplicationServiceImpl.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-infra/src/main/java/com/thundax/kuzhambu/storage/infra/object/repository/impl/MultipartUploadRepositoryImpl.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-infra/src/main/java/com/thundax/kuzhambu/storage/infra/object/repository/impl/StoredObjectContentRepositoryImpl.java`
-    - 处理动作：让 `abort` 真正清理临时分片内容与会话残留
-    - 验收点：取消分片上传后不会留下可用对象或临时残留且有测试验证
-    - 重要度：9/10
-
 - [ ] `Storage 正式文档`：回写 requirements、design 和 coverage
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-FULL-CLOSURE.md`、`docs/00-governance/TODO-RULES.md`
