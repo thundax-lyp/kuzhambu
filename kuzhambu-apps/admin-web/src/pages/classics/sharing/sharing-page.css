@@ -1,0 +1,13 @@
+.sharing-page {
+    --sharing-accent-color: #7a5c44;
+    --sharing-panel-bg: rgba(122, 92, 68, 0.08);
+}
+
+.sharing-page .ant-descriptions-item-label {
+    font-weight: 500;
+}
+
+html[data-theme="dark"] .sharing-page {
+    --sharing-accent-color: #e8be93;
+    --sharing-panel-bg: rgba(232, 190, 147, 0.12);
+}

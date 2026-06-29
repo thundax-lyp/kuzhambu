@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web/classics/sharing`：落地分享管理页
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARE-EXPORT-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/common/components/`、`kuzhambu-apps/admin-web/src/pages/classics/sharing/`
-    - 处理动作：新增分享管理页面或入口并完成分享列表、详情、状态变更和访问记录查看闭环
-    - 验收点：后台可查看分享标题、状态、可见性、过期时间、访问次数、targets 和访问记录，并可执行状态变更
-    - 重要度：10/10
-
 - [ ] `admin-web/classics/ming-customs`：补齐 MingCustoms 导出任务治理
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARE-EXPORT-CLOSURE.md`
