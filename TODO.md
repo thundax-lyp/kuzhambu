@@ -9,16 +9,6 @@
 
 ## 当前任务项
 
-## 待审阅任务项
-
-- [ ] `Operations runtime runbook cleanup`：删除已完成 RUNBOOK
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-RUNTIME-CLOSURE.md`
-    - 范围对象：`docs/30-designs/RUNBOOK-OPERATIONS-RUNTIME-CLOSURE.md`
-    - 处理动作：在 Operations runtime closure 全部完成后删除本次专项 RUNBOOK
-    - 验收点：RUNBOOK 已删除，仓库中不保留已失效的专项执行文档
-    - 重要度：7/10
-
 - [ ] `Operations runtime closure cleanup`：清理收口现场
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`
@@ -26,5 +16,7 @@
     - 处理动作：删除已完成 TODO 项，清理本轮遗留的临时说明、无用占位和收口残留
     - 验收点：TODO 只保留未完成项，已完成任务不残留，工作区与文档现场整洁
     - 重要度：8/10
+
+## 待审阅任务项
 
 ## 待讨论项
