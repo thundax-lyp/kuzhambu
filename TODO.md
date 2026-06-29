@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web/classics/export-common`：收口导出任务复用语义
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARE-EXPORT-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/common/classics-export-service.ts`、`kuzhambu-apps/admin-web/src/pages/classics/common/classics-export-service-contract.test.ts`、`kuzhambu-apps/admin-web/src/pages/classics/common/components/`
-    - 处理动作：把 Wangqi、MingCustoms、Sancai 的导出任务展示语义收敛到同一模式
-    - 验收点：三类内容页面的导出任务状态、下载入口和刷新语义一致，且导出 service contract 与复用组件同步成立
-    - 重要度：8/10
-
 - [ ] `admin-web/classics/sancai`：收口 Sancai 导出与静态展示任务治理
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARE-EXPORT-CLOSURE.md`

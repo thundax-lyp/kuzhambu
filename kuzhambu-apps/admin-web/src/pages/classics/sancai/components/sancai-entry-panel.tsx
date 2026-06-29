@@ -7,6 +7,7 @@ import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import type { KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
 import * as exportService from "@/pages/classics/common/classics-export-service";
 import * as shareService from "@/pages/classics/common/classics-share-service";
+import { ClassicsExportJobSection } from "@/pages/classics/common/components/classics-export-job-section";
 import { AiCandidatePanel } from "@/pages/classics/common/components/ai-candidate-panel";
 import { ClassicsContentQaPanel } from "@/pages/classics/common/components/classics-content-qa-panel";
 import { ClassicsContentTagPanel } from "@/pages/classics/common/components/classics-content-tag-panel";
@@ -19,7 +20,6 @@ import type {
     SancaiContentVersionRecord,
     SancaiEntryRecord,
     SancaiShowcaseRecord,
-    SancaiExportJobRecord,
     SancaiVolumeRecord
 } from "../sancai-types";
 
@@ -49,22 +49,6 @@ const formatDateTime = (value?: string | null) => {
     return `${year}/${month}/${day} ${hour}:${minute}:${second}`;
 };
 
-const exportStatusTagType = (status?: string | null) => {
-    switch (status) {
-        case "COMPLETED":
-            return "success";
-        case "RUNNING":
-        case "REQUESTED":
-            return "processing";
-        case "FAILED":
-            return "error";
-        case "EXPIRED":
-            return "warning";
-        default:
-            return "default";
-    }
-};
-
 const showcaseStatusTagType = (status?: string | null) => {
     switch (status) {
         case "COMPLETED":
@@ -77,16 +61,6 @@ const showcaseStatusTagType = (status?: string | null) => {
         default:
             return "default";
     }
-};
-
-const isExpired = (expiresAt?: string | null) => {
-    if (!expiresAt) {
-        return false;
-    }
-    const expired = Number.isNaN(Date.parse(expiresAt))
-        ? false
-        : Date.parse(expiresAt) <= Date.now();
-    return expired;
 };
 
 interface SancaiEntryPanelProps {
@@ -459,12 +433,6 @@ export const SancaiEntryPanel = ({
         showcaseEntryMutation.mutate(entry);
     };
 
-    const downloadExport = (job: SancaiExportJobRecord) => {
-        if (!job.downloadUrl) {
-            return;
-        }
-        window.open(job.downloadUrl, "_blank", "noopener,noreferrer");
-    };
     const downloadShowcase = (job: SancaiShowcaseRecord) => {
         if (!job.downloadUrl) {
             return;
@@ -510,26 +478,8 @@ export const SancaiEntryPanel = ({
             sortDirection: "ASC"
         });
     };
-    const isDownloadableExport = (job: SancaiExportJobRecord) => {
-        return job.status === "COMPLETED" && Boolean(job.downloadUrl) && !isExpired(job.expiresAt);
-    };
     const isDownloadableShowcase = (job: SancaiShowcaseRecord) => {
         return job.status === "COMPLETED" && Boolean(job.downloadUrl);
-    };
-    const renderExportStatus = (status?: string | null, expiresAt?: string | null) => {
-        const normalized = status || "UNKNOWN";
-        if (isExpired(expiresAt)) {
-            return <Tag color="warning">已过期</Tag>;
-        }
-        const displayStatus =
-            {
-                COMPLETED: "已完成",
-                REQUESTED: "排队中",
-                RUNNING: "进行中",
-                FAILED: "失败",
-                EXPIRED: "已过期"
-            }[normalized] || normalized;
-        return <Tag color={exportStatusTagType(normalized)}>{displayStatus}</Tag>;
     };
     const renderShowcaseStatus = (status?: string | null) => {
         const normalized = status || "UNKNOWN";
@@ -572,61 +522,18 @@ export const SancaiEntryPanel = ({
                     description="请确认后台导出任务接口可用后刷新页面。"
                 />
             ) : null}
-            <section className="sancai-export-section">
-                <KuzhambuSpace align="center" className="sancai-export-section-head" size={12} wrap>
-                    <Text strong>导出任务</Text>
-                    <Button
-                        size="small"
-                        type="link"
-                        onClick={() => {
-                            void invalidateExportJobs();
-                        }}
-                    >
-                        刷新
-                    </Button>
-                </KuzhambuSpace>
-                <KuzhambuList
-                    size="small"
-                    dataSource={exportJobs}
-                    loading={exportsQuery.isLoading || exportEntryMutation.isPending}
-                    empty={
-                        <Empty description="暂无导出任务" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+            <ClassicsExportJobSection
+                items={exportJobs}
+                loading={exportsQuery.isLoading || exportEntryMutation.isPending}
+                onDownload={(job) => {
+                    if (job.downloadUrl) {
+                        window.open(job.downloadUrl, "_blank", "noopener,noreferrer");
                     }
-                    renderItem={(job) => {
-                        const expired = isExpired(job.expiresAt);
-                        const downloadable = isDownloadableExport(job);
-                        const statusText = expired ? "已过期" : formatDateTime(job.requestedAt);
-                        return (
-                            <KuzhambuListItem
-                                key={job.id ?? `export-job-${job.requestedAt}`}
-                                extra={
-                                    <KuzhambuSpace size={8} wrap>
-                                        {renderExportStatus(job.status, job.expiresAt)}
-                                        {downloadable ? (
-                                            <Button
-                                                size="small"
-                                                type="primary"
-                                                onClick={() => downloadExport(job)}
-                                            >
-                                                下载
-                                            </Button>
-                                        ) : (
-                                            <Button size="small" disabled>
-                                                下载
-                                            </Button>
-                                        )}
-                                    </KuzhambuSpace>
-                                }
-                            >
-                                <KuzhambuListMeta
-                                    title={`任务 #${job.id ?? "草稿"}`}
-                                    description={`${statusText} | 条目数：${job.itemCount ?? 0} | 资产数：${job.assetCount ?? 0}`}
-                                />
-                            </KuzhambuListItem>
-                        );
-                    }}
-                />
-            </section>
+                }}
+                onRefresh={() => {
+                    void invalidateExportJobs();
+                }}
+            />
             <section className="sancai-export-section">
                 <KuzhambuSpace align="center" className="sancai-export-section-head" size={12} wrap>
                     <Text strong>静态展示任务</Text>
