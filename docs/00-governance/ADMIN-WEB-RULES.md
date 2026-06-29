@@ -136,6 +136,7 @@
 
 - `ADMIN_WEB_UI_CONFIRM_HOOK`：确认操作固定使用 `useKuzhambuConfirm`，页面不直接调用 `Modal.confirm`。
 - `ADMIN_WEB_UI_NO_ANTD_SPACE_DIRECT`：页面、布局和共享组件禁止直接从 `antd` 导入 `Space` 或 `SpaceProps`；统一使用 `src/components/kuzhambu-space/` 暴露的 `KuzhambuSpace` 与 `KuzhambuSpaceCompact`。`KuzhambuSpace` 实现文件自身作为唯一例外。
+- `ADMIN_WEB_UI_NO_ANTD_DRAWER_DIRECT`：页面和共享组件禁止直接从 `antd` 导入 `Drawer`；统一使用 `src/components/kuzhambu-drawer/` 暴露的 `KuzhambuDrawer`。`KuzhambuDrawer` 实现文件自身作为唯一例外。
 - `ADMIN_WEB_UI_TABLE_ACTION_COLUMN`：表格操作列使用 `key: "actions"`，优先传 `options`；`render` 只作为复杂逃生口。
 - `ADMIN_WEB_UI_INTERACTIVE_ACCESSIBLE_NAME`：可机器判断的业务交互控件必须有稳定可访问名称。当前门禁覆盖无可见文本的 `Button`、`Input.Search`、`Table` 和 `KuzhambuTable`；名称来自可见文本、`aria-label` 或 `aria-labelledby`。
 

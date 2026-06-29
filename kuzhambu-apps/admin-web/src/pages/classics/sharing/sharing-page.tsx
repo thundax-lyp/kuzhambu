@@ -1,8 +1,9 @@
 import { FileSearchOutlined, ReloadOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Button, Descriptions, Drawer, Select, Tag, Typography } from "antd";
+import { App, Button, Descriptions, Select, Tag, Typography } from "antd";
 import { useMemo, useState } from "react";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
+import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { KuzhambuTag } from "@/components/kuzhambu-tag";
@@ -502,7 +503,7 @@ export const SharingPage = () => {
                 ariaLabel="分享列表"
             />
 
-            <Drawer
+            <KuzhambuDrawer
                 destroyOnClose
                 open={Boolean(selectedShareId)}
                 title="分享详情"
@@ -609,7 +610,7 @@ export const SharingPage = () => {
                         }}
                     />
                 </KuzhambuSpace>
-            </Drawer>
+            </KuzhambuDrawer>
         </>
     );
 };
