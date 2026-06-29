@@ -7,6 +7,7 @@ import { AiCandidatePanel } from "@/pages/classics/common/components/ai-candidat
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { ClassicsContentQaPanel } from "@/pages/classics/common/components/classics-content-qa-panel";
 import { ClassicsContentTagPanel } from "@/pages/classics/common/components/classics-content-tag-panel";
+import * as shareService from "@/pages/classics/common/classics-share-service";
 import { WangqiDocumentList } from "./components/wangqi-document-list";
 import { WangqiDocumentModel } from "./components/wangqi-document-model";
 import { WangqiStorageFilePanel } from "./components/wangqi-storage-file-panel";
@@ -174,6 +175,20 @@ export const WangqiPage = () => {
             messageApi.error(error instanceof Error ? error.message : "版本恢复失败");
         }
     });
+    const shareDocumentMutation = useMutation({
+        mutationFn: shareService.create,
+        onSuccess: (share) => {
+            if (typeof navigator.clipboard?.writeText === "function") {
+                void navigator.clipboard.writeText(share.shareUrl);
+                messageApi.success("分享链接已复制");
+                return;
+            }
+            messageApi.success(`分享链接：${share.shareUrl}`);
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "分享创建失败");
+        }
+    });
 
     const searchWangqi = (value: string) => {
         setSearchText(value);
@@ -262,6 +277,20 @@ export const WangqiPage = () => {
         });
     };
 
+    const shareDocument = (document: WangqiDocumentRecord) => {
+        const title = document.title?.trim() || `王圻文档 ${document.id}`;
+        shareDocumentMutation.mutate({
+            targets: [
+                {
+                    contentId: document.id,
+                    contentType: "WANGQI_DOCUMENT"
+                }
+            ],
+            title: `${title} 分享`,
+            visibility: "PUBLIC"
+        });
+    };
+
     return (
         <>
             <KuzhambuListPage<WangqiDocumentRecord>
@@ -336,6 +365,7 @@ export const WangqiPage = () => {
                         dataSource={records}
                         onDelete={deleteDocument}
                         onOpenEdit={openEditEditor}
+                        onShare={shareDocument}
                         onSortDirectionChange={sortWangqiDocuments}
                         pagination={{
                             current: currentPageNo,

@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web/classics/wangqi`：补齐 Wangqi 单文档分享入口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARE-EXPORT-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/wangqi/wangqi-page.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/wangqi/wangqi-page.test.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/wangqi/components/wangqi-document-list.tsx`
-    - 处理动作：为 Wangqi 页面接入单文档分享入口并与现有分享反馈语义保持一致
-    - 验收点：Wangqi 列表或详情可以创建分享链接并给出成功反馈，且页面单测覆盖该入口
-    - 重要度：8/10
-
 - [ ] `admin-web/classics/sharing`：落地分享管理页
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARE-EXPORT-CLOSURE.md`
