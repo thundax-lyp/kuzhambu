@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Operations long task repository query`：扩展 long task 查询能力
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-RUNTIME-CLOSURE.md`
-    - 范围对象：`LongTaskSnapshotRepository.java`、`LongTaskSnapshotRepositoryImpl.java`、`LongTaskSnapshotMapper.java`
-    - 处理动作：补齐 long task 分页和详情查询
-    - 验收点：repository 可支撑 long task `page / detail`
-    - 重要度：8/10
-
 - [ ] `Operations long task app-interface`：新增 long task 应用与接口读闭环
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-RUNTIME-CLOSURE.md`
