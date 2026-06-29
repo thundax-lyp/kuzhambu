@@ -17,28 +17,29 @@
 
 已完成：
 
-- Storage 采用 `kuzhambu-storage-domain / application / infra / interface` 四层实现，模块边界与启动接入已就绪。
-- 上传、分页查询、内容读取、删除链路具备完整接口与运行时实现。
+- Storage 主体实现已落在 `kuzhambu-storage-domain / application / infra / interface`，并额外提供 `kuzhambu-storage-facade` 作为跨域稳定入口；启动模块已完成接线。
+- 普通上传、分页查询、内容读取链路具备接口、运行时代码和前台管理页面闭环。
 - 文件上传支持 multipart/form-data，含空文件校验、允许类型/后缀限制、内容类型透传、文件大小控制、对象创建与返回 `accessEndpoint`。
 - `StorageApplicationService` 已提供对象状态、引用状态、排序、查询、读取、创建/删除/引用管理、内容读取等核心能力。
-- 分片上传能力已覆盖领域与应用层状态流转实现，但未见完整对外接口闭环（当前仅服务接口/应用服务具备能力）。
 - 分片上传领域模型与应用服务已实现：初始化、上传分片、完成与取消、分片元数据持久化与校验逻辑已在代码层完成。
 - 已有定时清理器 `StorageOrphanObjectCleanupScheduler`，会清理超时未引用对象并触发底层存储删除。
-- Storage 与 Classics 的业务读取闭环打通：Wangqi 文档、Sancai 条目、图片与分享读取场景通过业务域调用 Storage 进行上传与读取。
-- 上传/读取接口与返回内容有契约测试覆盖（`StorageInterfaceArchitectureTest`、`StorageObjectUploadContractTest`、`StorageObjectContentContractTest`、`StorageObjectDeleteContractTest`）。
-- Admin Web `/storage/storage-object` 页面已可分页查看对象、对象状态、引用状态、引用归属类型和归属 ID，并支持按这些字段筛选。
+- Storage 与 Classics / System 的业务读取闭环已打通：Wangqi 文档、Sancai 条目、分享读取和当前用户头像场景均通过业务域复用 Storage facade 进行上传、绑定与读取。
+- interface 层已有契约测试覆盖上传、读取、删除等路由和核心响应字段（`StorageInterfaceArchitectureTest`、`StorageObjectUploadContractTest`、`StorageObjectContentContractTest`、`StorageObjectDeleteContractTest`），但当前仍以接口契约校验为主，未形成删除与物理清理一致性的端到端集成验证。
+- Admin Web `/storage/storage-object` 页面已可分页查看对象、对象状态、引用状态、引用归属类型和归属 ID，并支持筛选、排序、上传、删除、预览和下载。
 - portal 上传入口遵循职责分离：portal 上传由各业务域专用入口发起并复用 Storage，不由 Storage 通用入口承接。
 
 部分完成：
 
-- 分片上传能力在应用层实现完整，但缺少 admin/portal 的公开分片上传接口路由与契约闭环（目前仅对象上传和传统上传接口可直接调度）。
-- 文件删除接口已能删除数据库记录，但未见对“删除应立即同步物理存储清理且无引用对象可继续读取”的端到端验证与错误策略说明；当前依赖 orphan 清理任务。
-- 文件引用管理能力主要通过 Storage 应用服务供业务域调用；当前虽可在 Admin Web 查看引用状态和归属，但仍缺少 dedicated reference 管理 API 与变更历史观测。
-- `storage:object:delete` 当前仅执行存储对象记录删除，不具备立即物理对象清理；物理清理依赖定时清理任务。
+- 分片上传能力在 domain / application / infra 层实现完整，但缺少 admin 的公开 `initiate / uploadPart / complete / abort` 路由、契约测试与管理页面闭环；portal 侧按需求本就不提供通用入口。
+- 文件删除接口当前执行软删除，将 `storage_object.object_status` 置为 `DELETED`；物理文件删除依赖 orphan 清理任务，已符合“先标记、后异步物理删除”的目标口径，但引用清理语义仍需和实现完全对齐。
+- 文件删除链路未显式阻止“仍存在引用的对象被普通删除接口删除”；当前更多依赖业务域调用约束和后续清理逻辑，未形成统一对外语义。
+- 文件引用管理能力主要通过 Storage facade / application service 供业务域调用；当前虽可在 Admin Web 查看引用状态和归属，且管理界面按设计不承担引用编辑职责。
+- 引用幂等和多引用语义在 facade 调用路径上部分成立，但 application `addReferences` 仍是直接插入；`storage_object_reference` 的 Java 持久化模型未显式体现复合主键或唯一键，仓库内也未找到可检索的 `storage.sql` 真相源，引用模型约束仍需补强或文档化。
+- 设计文档列出的 `StorageReadToken` 目前未见对应代码实现，设计与实现存在轻微偏差。
 
 未完成：
 
-无（该项为需求边界内职责分离：portal 专用上传由业务域负责专用入口）。
+- 无新增独立能力项；未完成内容主要集中在已有能力的对外闭环与一致性收口。
 
 ## Requirement Coverage Matrix
 
@@ -47,37 +48,40 @@
 | 普通文件上传（multipart） | 已完成 | 已支持 `multipart/form-data`、空文件和类型/后缀校验、对象创建、返回读取地址、契约测试覆盖 | 无 | Storage |
 | 文件内容读取 | 已完成 | 已有按 ID 读取内容接口，返回正确 Content-Type 与下载/预览响应头，读取失败抛异常 | 无 | Storage |
 | 文件对象列表/查询 | 已完成 | 已支持按文件名、类型、上传人、对象状态、引用状态等条件查询与分页 | 无 | Storage |
-| 文件对象删除 | 部分完成 | 已有删除接口、对象记录删除逻辑与引用状态变更能力 | 删除后物理文件同步清理策略与“引用中阻止误删”语义未形成一体化对外接口说明 | Storage |
+| 文件对象删除 | 部分完成 | 已有删除接口、软删除逻辑，删除后对象无法再通过常规读取链路获取；按当前文档口径，物理删除允许由后续计划任务异步完成 | 引用清理与“存在引用时如何删除”的统一语义、端到端验证仍未完全收口 | Storage |
 | 分片上传（初始化/分片上传/完成/取消） | 部分完成 | domain/application/infra 层完整实现，状态流转与完整性校验就绪 | admin 侧未提供 `initiate/uploadPart/complete/abort` 对外路由与契约测试闭环 | Storage |
-| 业务文件引用建立与清理 | 部分完成 | application service 提供 add/remove/changeReferenceStatus，Classics 已稳定调用并形成业务闭环；Admin Web 对象页已可查看引用状态和归属筛选 | 缺少通用写入型管理端接口、引用变更历史与 dedicated reference 审计视图 | Storage / Classics |
+| 业务文件引用建立与清理 | 部分完成 | facade / application service 提供 bind/unbind、add/remove、referenceStatus 维护；Classics、System 已稳定复用并形成业务闭环；Admin Web 对象页已可查看引用状态和归属筛选 | 管理界面按边界不提供引用编辑；application 直接插入引用，幂等与多引用约束更多依赖 facade 与数据库真实约束 | Storage / Classics / System |
 | 文件对象状态与引用状态维护 | 已完成 | 对象状态、引用状态及更新接口已可用 | 无 | Storage |
-| 未引用对象清理 | 部分完成 | Storage 实现了 orphan 清理任务并尝试同步物理删除 | 清理触发策略、阈值与外部告警未形成统一交付标准 | Storage |
+| 未引用对象清理 | 部分完成 | Storage 实现了 orphan 清理任务，并对超时未引用对象尝试执行底层物理删除 | 清理触发策略、阈值、失败重试与外部告警未形成统一交付标准 | Storage |
+| 本地文件和 S3 兼容对象存储适配 | 已完成 | Storage 已通过通用对象存储客户端抽象接入底层存储，当前本地存储运行路径明确；按本轮 RUNBOOK 口径，S3 真实环境联调与运维证据不作为当前打满阻塞项 | 无 | Storage / Common OSS |
 
 ## Follow-up Backlog
 
-### B1 Storage 分片上传接口打通
+### B1 Storage Admin 分片上传接口打通
 
 状态：未完成。
 
 目标：在 admin interface 增补 multipart 上传四段式入口（initiate/uploadPart/complete/abort），并与现有上传策略保持统一校验（后缀、大小、token、幂等与安全日志）。
 
+说明：`portal` 只承担展示与业务读取，不提供 Storage 通用上传入口；如需上传，必须由具体业务域定义专用入口并复用 Storage。
+
 ### B2 删除/引用一致性规范
 
 状态：部分完成（进行中）。
 
-目标：明确并落地“删除已引用对象的处理策略”（禁止/标记/延迟清理），对外文档化，补充接口与集成测试验证“删除后对象内容不可读取”。
+目标：明确并落地“删除已引用对象的处理策略”（禁止/标记/延迟清理），并补充接口与集成测试验证“删除后对象内容不可读取”“引用如何释放”以及“物理清理何时发生”。
 
-### B3 引用管理可观测性
-
-状态：未完成。
-
-目标：提供 reference 管理与审计可视接口（或在现有业务域日志中统一补齐）；当前对象页已可查看引用状态和归属，但仍缺引用数与历史变更视图。
-
-### B4 运行时清理策略收敛
+### B3 运行时清理策略收敛
 
 状态：未完成。
 
 目标：明确 orphan 阈值、扫描频率、失败重试与异常告警行为，补齐存储层运行手册。
+
+### B4 Storage 引用模型与 Schema 真相源收敛
+
+状态：未完成。
+
+目标：明确 `storage_object_reference` 的唯一键/主键策略、多引用能力和幂等语义；补齐可检索 schema 文件或数据库治理文档中的真相源，并校准 DO/mapper/coverage 文档口径。
 
 ### B5 Classics 导出闭环产物入库
 
