@@ -1,9 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Select } from "antd";
+import { Alert, App, Button, Empty, Select, Tag, Typography } from "antd";
 import { useMemo, useState } from "react";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
+import { KuzhambuList, KuzhambuListItem, KuzhambuListMeta } from "@/components/kuzhambu-list";
+import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import { AiCandidatePanel } from "@/pages/classics/common/components/ai-candidate-panel";
+import * as exportService from "@/pages/classics/common/classics-export-service";
 import * as shareService from "@/pages/classics/common/classics-share-service";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { ClassicsContentQaPanel } from "@/pages/classics/common/components/classics-content-qa-panel";
@@ -15,9 +18,57 @@ import * as service from "./ming-customs-service";
 import type { MingCustomsCommand, MingCustomsQuery } from "./ming-customs-service";
 import type { MingCustomsRecord } from "./ming-customs-types";
 import "./ming-customs-page.css";
+import type { ClassicsExportJobRecord } from "@/pages/classics/export/export-types";
 
 type MingCustomsVisibilityFilter = "ALL" | "PUBLIC" | "PRIVATE";
 type MingCustomsSortDirectionFilter = "ASC" | "DESC";
+
+const { Text } = Typography;
+const EXPORT_PAGE_SIZE = 8;
+
+const formatDateTime = (value?: string | null) => {
+    if (!value) {
+        return "—";
+    }
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+        return value;
+    }
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const hour = String(date.getHours()).padStart(2, "0");
+    const minute = String(date.getMinutes()).padStart(2, "0");
+    const second = String(date.getSeconds()).padStart(2, "0");
+    return `${year}/${month}/${day} ${hour}:${minute}:${second}`;
+};
+
+const readTitle = (record?: MingCustomsRecord | null) => {
+    return record?.title?.trim() || `明代习俗 ${record?.id ?? "未命名"}`;
+};
+
+const exportStatusTagType = (status?: string | null) => {
+    switch (status) {
+        case "COMPLETED":
+            return "success";
+        case "RUNNING":
+        case "REQUESTED":
+            return "processing";
+        case "FAILED":
+            return "error";
+        case "EXPIRED":
+            return "warning";
+        default:
+            return "default";
+    }
+};
+
+const isExpired = (expiresAt?: string | null) => {
+    if (!expiresAt) {
+        return false;
+    }
+    return Number.isNaN(Date.parse(expiresAt)) ? false : Date.parse(expiresAt) <= Date.now();
+};
 
 interface MingCustomsFilters {
     category: string;
@@ -76,6 +127,17 @@ export const MingCustomsPage = () => {
         enabled: editorOpen && editorMode === "edit" && Boolean(editingEntry?.id),
         retry: false
     });
+    const exportJobsQuery = useQuery({
+        queryKey: ["classics", "ming-customs", "exports", "jobs"],
+        queryFn: () =>
+            exportService.page({
+                pageNo: 1,
+                pageSize: EXPORT_PAGE_SIZE,
+                contentType: "MING_CUSTOMS",
+                exportKind: "CONTENT_DATASET"
+            }),
+        retry: false
+    });
     const pageResult = mingCustomsQuery.data;
     const records = useMemo(() => pageResult?.records || [], [pageResult?.records]);
     const categoryOptions = useMemo(
@@ -89,6 +151,7 @@ export const MingCustomsPage = () => {
     const currentPageNo = pageResult?.pageNo || query.pageNo || DEFAULT_PAGE_NO;
     const currentPageSize = pageResult?.pageSize || query.pageSize || DEFAULT_PAGE_SIZE;
     const editorEntry = detailQuery.data || editingEntry;
+    const exportJobs = exportJobsQuery.data?.records || [];
 
     const invalidateMingCustoms = async () => {
         await Promise.all([
@@ -102,6 +165,11 @@ export const MingCustomsPage = () => {
                 queryKey: ["classics", "content", "qa-pairs", "MING_CUSTOMS"]
             })
         ]);
+    };
+    const invalidateExportJobs = async () => {
+        await queryClient.invalidateQueries({
+            queryKey: ["classics", "ming-customs", "exports", "jobs"]
+        });
     };
 
     const saveMutation = useMutation({
@@ -139,6 +207,28 @@ export const MingCustomsPage = () => {
         },
         onError: (error) => {
             messageApi.error(error instanceof Error ? error.message : "分享创建失败");
+        }
+    });
+    const exportMutation = useMutation({
+        mutationFn: (entry: MingCustomsRecord) => {
+            const title = `${readTitle(entry)} 导出`;
+            return exportService.create({
+                contentType: "MING_CUSTOMS",
+                exportKind: "CONTENT_DATASET",
+                exportFormat: "HTML",
+                scopeType: "SELECTED_ITEMS",
+                scopeJson: JSON.stringify({
+                    title,
+                    ids: [entry.id]
+                })
+            });
+        },
+        onSuccess: async () => {
+            await invalidateExportJobs();
+            messageApi.success("导出任务已提交，请到下方任务列表查看进度。");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "导出提交失败");
         }
     });
 
@@ -224,6 +314,35 @@ export const MingCustomsPage = () => {
             title: `${title} 分享`,
             visibility: "PUBLIC"
         });
+    };
+    const exportEntry = (entry: MingCustomsRecord) => {
+        exportMutation.mutate(entry);
+    };
+    const downloadExport = (job: ClassicsExportJobRecord) => {
+        if (!job.downloadUrl) {
+            return;
+        }
+        window.open(job.downloadUrl, "_blank", "noopener,noreferrer");
+    };
+    const isDownloadableExport = (job: ClassicsExportJobRecord) => {
+        return job.status === "COMPLETED" && Boolean(job.downloadUrl) && !isExpired(job.expiresAt);
+    };
+    const renderExportStatus = (status?: string | null, expiresAt?: string | null) => {
+        const normalized = status || "UNKNOWN";
+        if (isExpired(expiresAt)) {
+            return <Tag color="warning">已过期</Tag>;
+        }
+        return (
+            <Tag color={exportStatusTagType(normalized)}>
+                {{
+                    COMPLETED: "已完成",
+                    REQUESTED: "排队中",
+                    RUNNING: "进行中",
+                    FAILED: "失败",
+                    EXPIRED: "已过期"
+                }[normalized] || normalized}
+            </Tag>
+        );
     };
 
     return (
@@ -315,25 +434,101 @@ export const MingCustomsPage = () => {
                 searchValue={searchText}
                 onSearchChange={searchMingCustoms}
                 content={
-                    <MingCustomsList
-                        categoryLabels={categoryLabels}
-                        loading={mingCustomsQuery.isLoading}
-                        dataSource={records}
-                        onDelete={deleteEntry}
-                        onOpenEdit={openEditEditor}
-                        onShare={shareEntry}
-                        pagination={{
-                            current: currentPageNo,
-                            pageSize: currentPageSize,
-                            total: totalCount,
-                            onChange: (pageNo, pageSize) =>
-                                setQuery((currentQuery) => ({
-                                    ...currentQuery,
-                                    pageNo,
-                                    pageSize
-                                }))
-                        }}
-                    />
+                    <>
+                        {exportJobsQuery.isError ? (
+                            <Alert
+                                type="warning"
+                                showIcon
+                                title="导出任务列表加载失败"
+                                description="请确认后台导出任务接口可用后重试。"
+                            />
+                        ) : null}
+                        <section className="ming-customs-export-section">
+                            <KuzhambuSpace
+                                align="center"
+                                className="ming-customs-export-section-head"
+                                size={12}
+                                wrap
+                            >
+                                <Text strong>导出任务</Text>
+                                <Button
+                                    size="small"
+                                    type="link"
+                                    onClick={() => {
+                                        void invalidateExportJobs();
+                                    }}
+                                >
+                                    刷新
+                                </Button>
+                            </KuzhambuSpace>
+                            <KuzhambuList
+                                size="small"
+                                dataSource={exportJobs}
+                                loading={exportJobsQuery.isLoading || exportMutation.isPending}
+                                empty={
+                                    <Empty
+                                        description="暂无导出任务"
+                                        image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                    />
+                                }
+                                renderItem={(job) => {
+                                    const expired = isExpired(job.expiresAt);
+                                    const downloadable = isDownloadableExport(job);
+                                    const statusText = expired
+                                        ? "已过期"
+                                        : formatDateTime(job.requestedAt);
+                                    return (
+                                        <KuzhambuListItem
+                                            key={job.id ?? `ming-export-job-${job.requestedAt}`}
+                                            extra={
+                                                <KuzhambuSpace size={8} wrap>
+                                                    {renderExportStatus(job.status, job.expiresAt)}
+                                                    {downloadable ? (
+                                                        <Button
+                                                            size="small"
+                                                            type="primary"
+                                                            onClick={() => downloadExport(job)}
+                                                        >
+                                                            下载
+                                                        </Button>
+                                                    ) : (
+                                                        <Button size="small" disabled>
+                                                            下载
+                                                        </Button>
+                                                    )}
+                                                </KuzhambuSpace>
+                                            }
+                                        >
+                                            <KuzhambuListMeta
+                                                title={`任务 #${job.id ?? "草稿"}`}
+                                                description={`${statusText} | 条目数：${job.itemCount ?? 0} | 资产数：${job.assetCount ?? 0}`}
+                                            />
+                                        </KuzhambuListItem>
+                                    );
+                                }}
+                            />
+                        </section>
+                        <MingCustomsList
+                            categoryLabels={categoryLabels}
+                            loading={mingCustomsQuery.isLoading}
+                            dataSource={records}
+                            onDelete={deleteEntry}
+                            onExport={exportEntry}
+                            onOpenEdit={openEditEditor}
+                            onShare={shareEntry}
+                            pagination={{
+                                current: currentPageNo,
+                                pageSize: currentPageSize,
+                                total: totalCount,
+                                onChange: (pageNo, pageSize) =>
+                                    setQuery((currentQuery) => ({
+                                        ...currentQuery,
+                                        pageNo,
+                                        pageSize
+                                    }))
+                            }}
+                        />
+                    </>
                 }
             />
             <MingCustomsModel

@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web/classics/ming-customs`：补齐 MingCustoms 导出任务治理
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARE-EXPORT-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/ming-customs/ming-customs-page.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/ming-customs/ming-customs-page.test.tsx`
-    - 处理动作：为 MingCustoms 页面接入导出任务创建与任务列表闭环
-    - 验收点：MingCustoms 页面可提交导出任务并查看任务状态、过期状态和下载入口，且页面单测同步更新
-    - 重要度：8/10
-
 - [ ] `admin-web/classics/export-common`：收口导出任务复用语义
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARE-EXPORT-CLOSURE.md`
