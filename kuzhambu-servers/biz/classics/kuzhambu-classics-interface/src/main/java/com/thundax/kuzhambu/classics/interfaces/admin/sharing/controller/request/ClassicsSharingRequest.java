@@ -32,6 +32,21 @@ public class ClassicsSharingRequest extends PageRequest {
     @JsonProperty("expiresAt")
     private Date expiresAt;
 
+    @JsonProperty("issuedAfter")
+    private Date issuedAfter;
+
+    @JsonProperty("issuedBefore")
+    private Date issuedBefore;
+
+    @JsonProperty("shareLinkId")
+    private Long shareLinkId;
+
+    @JsonProperty("shareTargetId")
+    private Long shareTargetId;
+
+    @JsonProperty("contentType")
+    private String contentType;
+
     @JsonProperty("targets")
     private List<ClassicsShareTargetRequest> targets;
 }

@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics/sharing-backend`：补齐分享后台分页与访问记录接口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARE-EXPORT-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/sharing/controller/ClassicsSharingAdminController.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/sharing/controller/request/ClassicsSharingRequest.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/sharing/controller/response/ClassicsSharingResponse.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/sharing/assembler/ClassicsSharingInterfaceAssembler.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/test/java/com/thundax/kuzhambu/classics/interfaces/admin/sharing/ClassicsSharingAdminControllerTest.java`
-    - 处理动作：暴露分享列表分页接口和访问记录分页接口，并保持现有创建、详情和状态变更语义不变
-    - 验收点：后台接口可支持分享列表、详情、targets、状态变更和访问记录分页闭环，且 controller 测试更新通过
-    - 重要度：10/10
-
 - [ ] `admin-web/classics/share-common`：补齐通用分享服务与类型
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARE-EXPORT-CLOSURE.md`

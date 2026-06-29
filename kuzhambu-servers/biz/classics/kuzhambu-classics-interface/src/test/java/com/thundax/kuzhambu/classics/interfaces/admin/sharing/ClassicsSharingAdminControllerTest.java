@@ -7,23 +7,32 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkCreateCommand;
+import com.thundax.kuzhambu.classics.application.sharing.query.ShareAccessQuery;
 import com.thundax.kuzhambu.classics.application.sharing.result.ShareLinkCreateResult;
 import com.thundax.kuzhambu.classics.application.sharing.service.ClassicsSharingApplicationService;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentVersionId;
+import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareAccessRecord;
+import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareLink;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareTarget;
+import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareAccessResult;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareLinkStatus;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareTargetStatus;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareVisibility;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsSharedContentVisibility;
+import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareAccessRecordId;
 import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareLinkId;
 import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareTargetId;
 import com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller.ClassicsSharingAdminController;
 import com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller.request.ClassicsSharingRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller.response.ClassicsSharingResponse;
+import com.thundax.kuzhambu.common.core.page.PageQuery;
+import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.common.core.page.PageRules;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.Date;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,9 +46,15 @@ class ClassicsSharingAdminControllerTest {
     void routesShouldKeepAdminSharingApiPaths() throws Exception {
         assertRequestMapping(ClassicsSharingAdminController.class, "/api/classics/shares");
         assertPostMapping(ClassicsSharingAdminController.class, "create", "create", ClassicsSharingRequest.class);
+        assertPostMapping(ClassicsSharingAdminController.class, "page", "page", ClassicsSharingRequest.class);
         assertPostMapping(
                 ClassicsSharingAdminController.class, "updateStatus", "status/update", ClassicsSharingRequest.class);
         assertGetMapping(ClassicsSharingAdminController.class, "get", "{id}", Long.class);
+        assertPostMapping(
+                ClassicsSharingAdminController.class,
+                "pageAccessRecords",
+                "access-records/page",
+                ClassicsSharingRequest.class);
     }
 
     @Test
@@ -77,6 +92,30 @@ class ClassicsSharingAdminControllerTest {
         assertFalse(responseJson.at("/targets/0").has("contentSnapshotJson"), responseJson::toString);
     }
 
+    @Test
+    void pageAndAccessRecordsShouldMapListResults() {
+        ClassicsSharingRequest request = new ClassicsSharingRequest();
+        request.setStatus("ACTIVE");
+        request.setVisibility("PUBLIC");
+        request.setShareLinkId(10L);
+        request.setPageNo(1);
+        request.setPageSize(10);
+
+        ClassicsSharingAdminController controller = new ClassicsSharingAdminController(sharingService());
+
+        JsonNode page =
+                OBJECT_MAPPER.valueToTree(controller.page(request).getRecords().get(0));
+        assertEquals("ACTIVE", page.get("status").asText());
+        assertEquals("公开分享", page.get("title").asText());
+        assertEquals(1L, page.get("accessCount").asLong());
+
+        JsonNode accessRecord = OBJECT_MAPPER.valueToTree(
+                controller.pageAccessRecords(request).getRecords().get(0));
+        assertEquals(100L, accessRecord.get("id").asLong());
+        assertEquals(10L, accessRecord.get("shareLinkId").asLong());
+        assertEquals("ALLOWED", accessRecord.get("accessResult").asText());
+    }
+
     private static ClassicsSharingApplicationService sharingService() {
         return (ClassicsSharingApplicationService) Proxy.newProxyInstance(
                 ClassicsSharingApplicationService.class.getClassLoader(),
@@ -103,8 +142,48 @@ class ClassicsSharingAdminControllerTest {
                                 null,
                                 List.of(target()));
                     }
+                    if ("pageLinks".equals(method.getName())) {
+                        assertEquals("ACTIVE", args[0]);
+                        assertEquals("PUBLIC", args[1]);
+                        PageQuery page = (PageQuery) args[2];
+                        assertEquals(1, page.getPageNo());
+                        assertEquals(10, page.getPageSize());
+                        return PageResult.of(1, 10, 1, List.of(link()));
+                    }
+                    if ("pageAccessRecords".equals(method.getName())) {
+                        ShareAccessQuery query = (ShareAccessQuery) args[0];
+                        assertEquals(ClassicsShareLinkId.of(10L), query.getShareLinkId());
+                        PageQuery page = (PageQuery) args[1];
+                        assertEquals(1, page.getPageNo());
+                        assertEquals(10, page.getPageSize());
+                        return PageResult.of(
+                                PageRules.firstPageIndex(), page.getPageSize(), 1, List.of(accessRecord()));
+                    }
                     throw new UnsupportedOperationException(method.getName());
                 });
+    }
+
+    private static ClassicsShareLink link() {
+        ClassicsShareLink shareLink = new ClassicsShareLink();
+        shareLink.setId(ClassicsShareLinkId.of(10L));
+        shareLink.setTitle("公开分享");
+        shareLink.setVisibility(ClassicsShareVisibility.PUBLIC);
+        shareLink.setStatus(ClassicsShareLinkStatus.ACTIVE);
+        shareLink.setIssuedAt(new Date());
+        shareLink.setExpiresAt(new Date(System.currentTimeMillis() + 86_400_000L));
+        shareLink.setAccessCount(1L);
+        return shareLink;
+    }
+
+    private static ClassicsShareAccessRecord accessRecord() {
+        ClassicsShareAccessRecord record = new ClassicsShareAccessRecord();
+        record.setId(ClassicsShareAccessRecordId.of(100L));
+        record.setShareLinkId(ClassicsShareLinkId.of(10L));
+        record.setShareTargetId(ClassicsShareTargetId.of(20L));
+        record.setAccessedAt(new Date(System.currentTimeMillis() - 3_600_000L));
+        record.setAccessResult(ClassicsShareAccessResult.ALLOWED);
+        record.setClientSnapshot("resourceStorageObjectId=101");
+        return record;
     }
 
     private static ClassicsShareTarget target() {

@@ -6,6 +6,7 @@ import com.thundax.kuzhambu.classics.application.sharing.result.ShareLinkCreateR
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisibilityRiskStatus;
+import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareAccessRecord;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareLink;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareTarget;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareLinkStatus;
@@ -48,6 +49,10 @@ public final class ClassicsSharingInterfaceAssembler {
                         .build();
     }
 
+    public static ClassicsSharingResponse toResponse(ClassicsShareLink link) {
+        return toResponse(link, List.of());
+    }
+
     public static ClassicsSharingResponse toResponse(ClassicsShareLink link, List<ClassicsShareTarget> targets) {
         return link == null
                 ? ClassicsSharingResponse.builder().build()
@@ -60,6 +65,25 @@ public final class ClassicsSharingInterfaceAssembler {
                         .expiresAt(link.getExpiresAt())
                         .accessCount(link.getAccessCount())
                         .targets(toTargetResponses(targets))
+                        .build();
+    }
+
+    public static ClassicsSharingResponse.AccessRecord toAccessRecordResponse(ClassicsShareAccessRecord record) {
+        return record == null
+                ? ClassicsSharingResponse.AccessRecord.builder().build()
+                : ClassicsSharingResponse.AccessRecord.builder()
+                        .id(record.getId() == null ? null : record.getId().value())
+                        .shareLinkId(
+                                record.getShareLinkId() == null
+                                        ? null
+                                        : record.getShareLinkId().value())
+                        .shareTargetId(
+                                record.getShareTargetId() == null
+                                        ? null
+                                        : record.getShareTargetId().value())
+                        .accessedAt(record.getAccessedAt())
+                        .accessResult(value(record.getAccessResult()))
+                        .clientSnapshot(record.getClientSnapshot())
                         .build();
     }
 

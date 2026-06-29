@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller;
 
 import com.thundax.kuzhambu.classics.application.sharing.command.ClassicsShareTargetSortCommand;
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkStatusCommand;
+import com.thundax.kuzhambu.classics.application.sharing.query.ShareAccessQuery;
 import com.thundax.kuzhambu.classics.application.sharing.service.ClassicsSharingApplicationService;
 import com.thundax.kuzhambu.classics.domain.sharing.codec.ClassicsShareLinkIdCodec;
 import com.thundax.kuzhambu.classics.domain.sharing.codec.ClassicsShareTargetIdCodec;
@@ -14,8 +15,11 @@ import com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller.respons
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
+import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
 import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.common.web.request.RequestListHelper;
+import com.thundax.kuzhambu.common.web.response.PageResponse;
+import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -45,6 +49,20 @@ public class ClassicsSharingAdminController {
     public ClassicsSharingResponse create(@Valid @RequestBody ClassicsSharingRequest request) {
         return ClassicsSharingInterfaceAssembler.toResponse(
                 service.createLink(ClassicsSharingInterfaceAssembler.toCreateCommand(request)));
+    }
+
+    @Operation(summary = "分页查询古籍分享", description = "classics:sharing:view")
+    @ApiImplicitParams({})
+    @HasPermission("classics:sharing:view")
+    @SysLogger(value = "分页查询")
+    @PostMapping("page")
+    public PageResponse<ClassicsSharingResponse> page(@Valid @RequestBody ClassicsSharingRequest request) {
+        return PageResponseHelper.fromPageResult(
+                service.pageLinks(
+                        request == null ? null : request.getStatus(),
+                        request == null ? null : request.getVisibility(),
+                        PageInterfaceAssembler.toPageQuery(request)),
+                ClassicsSharingInterfaceAssembler::toResponse);
     }
 
     @Operation(summary = "变更古籍分享状态", description = "classics:sharing:edit")
@@ -82,5 +100,28 @@ public class ClassicsSharingAdminController {
     public ClassicsSharingResponse get(@PathVariable("id") Long id) {
         ClassicsShareLinkId linkId = ClassicsShareLinkIdCodec.toDomain(id);
         return ClassicsSharingInterfaceAssembler.toResponse(service.getLink(linkId), service.listTargets(linkId));
+    }
+
+    @Operation(summary = "分页查询古籍分享访问记录", description = "classics:sharing:view")
+    @ApiImplicitParams({})
+    @HasPermission("classics:sharing:view")
+    @SysLogger(value = "访问记录分页")
+    @PostMapping("access-records/page")
+    public PageResponse<ClassicsSharingResponse.AccessRecord> pageAccessRecords(
+            @Valid @RequestBody ClassicsSharingRequest request) {
+        ShareAccessQuery query = new ShareAccessQuery(
+                ClassicsShareLinkIdCodec.toDomain(
+                        requireParameter(request == null ? null : request.getShareLinkId(), "shareLinkId")),
+                ClassicsShareTargetIdCodec.toDomain(request == null ? null : request.getShareTargetId()));
+        return PageResponseHelper.fromPageResult(
+                service.pageAccessRecords(query, PageInterfaceAssembler.toPageQuery(request)),
+                ClassicsSharingInterfaceAssembler::toAccessRecordResponse);
+    }
+
+    private static Long requireParameter(Long value, String name) {
+        if (value == null) {
+            throw AdminResponseExceptions.invalidParameter(name);
+        }
+        return value;
     }
 }
