@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `AI-WORKERS T6B`：收口 Java 转存 Storage 桥接
-  - 任务类型：执行任务
-  - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLOSURE.md#T6`
-  - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/invocation/service/impl/AiWorkerInvocationApplicationServiceImpl.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-facade/src/main/java/com/thundax/kuzhambu/storage/facade/StorageFacade.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-facade/src/main/java/com/thundax/kuzhambu/storage/facade/request/UploadStorageFacadeRequest.java`
-  - 处理动作：接收 artifact 下载结果并上传到 Storage，固定业务侧最终只拿 Storage 结果。
-  - 验收点：Java 成功转存后返回 Storage 结果；失败时记录 `STORAGE_PERSIST`。
-  - 重要度：10/10
-
 - [ ] `AI-WORKERS T7A`：收口大文件下载阈值与 multipart 初始化
   - 任务类型：执行任务
   - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLOSURE.md#T7A`

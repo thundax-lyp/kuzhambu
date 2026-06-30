@@ -1,13 +1,21 @@
 package com.thundax.kuzhambu.ai.application.invocation.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCallRecord;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
+import com.thundax.kuzhambu.ai.infra.client.WorkerAiClient;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
+import com.thundax.kuzhambu.storage.facade.StorageFacade;
+import com.thundax.kuzhambu.storage.facade.request.UploadStorageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.response.UploadStorageFacadeResponse;
+import java.io.ByteArrayInputStream;
 import java.time.Instant;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -19,11 +27,14 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
 
     private final AiInvocationRepository aiInvocationRepository;
     private final WorkerAiClient workerAiClient;
+    private final StorageFacade storageFacade;
+    private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 
     public AiWorkerInvocationApplicationServiceImpl(
-            AiInvocationRepository aiInvocationRepository, WorkerAiClient workerAiClient) {
+            AiInvocationRepository aiInvocationRepository, WorkerAiClient workerAiClient, StorageFacade storageFacade) {
         this.aiInvocationRepository = aiInvocationRepository;
         this.workerAiClient = workerAiClient;
+        this.storageFacade = storageFacade;
     }
 
     @Override
@@ -137,6 +148,9 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
         if (result.getCapability() == null) {
             result.setCapability(command.getCapability());
         }
+        if (result.isSucceeded() && !isBlank(result.getArtifactReferenceJson())) {
+            return persistArtifactResult(command, result);
+        }
         return result;
     }
 
@@ -156,5 +170,54 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
 
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
+    }
+
+    private AiInvokeResult persistArtifactResult(AiInvokeCommand command, AiInvokeResult result) {
+        try {
+            JsonNode artifactReference = objectMapper.readTree(result.getArtifactReferenceJson());
+            WorkerAiClient.DownloadedArtifact artifact = workerAiClient.downloadArtifact(
+                    command.getRequestId(), command.getTraceId(), artifactReference.path("downloadPath").asText());
+            UploadStorageFacadeResponse uploaded = storageFacade.upload(UploadStorageFacadeRequest.builder()
+                    .inputStream(new ByteArrayInputStream(artifact.data()))
+                    .originalFilename(artifact.filename())
+                    .contentType(artifact.contentType())
+                    .sizeBytes(artifact.sizeBytes())
+                    .remarks("AI artifact transfer")
+                    .build());
+            result.setResultPayload(toStorageResultJson(uploaded));
+            return result;
+        } catch (WorkerAiClient.ArtifactDownloadException ex) {
+            return AiInvokeResult.failed(
+                    command.getRequestId(),
+                    command.getTraceId(),
+                    "WORKER_UNAVAILABLE",
+                    ex.getMessage(),
+                    "ARTIFACT_DOWNLOAD");
+        } catch (JsonProcessingException ex) {
+            return AiInvokeResult.failed(
+                    command.getRequestId(),
+                    command.getTraceId(),
+                    "WORKER_PROTOCOL_FAILURE",
+                    ex.getMessage(),
+                    "ARTIFACT_DOWNLOAD");
+        } catch (RuntimeException ex) {
+            return AiInvokeResult.failed(
+                    command.getRequestId(),
+                    command.getTraceId(),
+                    "INTERNAL_FAILURE",
+                    ex.getMessage(),
+                    "STORAGE_PERSIST");
+        }
+    }
+
+    private String toStorageResultJson(UploadStorageFacadeResponse response) {
+        if (response == null) {
+            return null;
+        }
+        try {
+            return objectMapper.writeValueAsString(response);
+        } catch (JsonProcessingException ex) {
+            throw new IllegalArgumentException("Failed to serialize storage upload response", ex);
+        }
     }
 }
