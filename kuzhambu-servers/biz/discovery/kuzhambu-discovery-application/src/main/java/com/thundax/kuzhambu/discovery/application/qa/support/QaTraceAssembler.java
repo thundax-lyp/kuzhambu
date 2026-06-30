@@ -23,11 +23,13 @@ public class QaTraceAssembler {
             QaSession session,
             QueryUnderstandingResult understandingResult,
             QaContextAssembler.QaContext qaContext,
-            Long messageId) {
+            Long messageId,
+            Long callId) {
         return new QaRetrievalTrace(
                 null,
                 null,
                 messageId,
+                callId,
                 command.getQuestion(),
                 qaContext.rewrittenQuestion(),
                 session == null ? null : session.getScope(),
@@ -60,6 +62,7 @@ public class QaTraceAssembler {
         return new QaTraceResult(
                 trace.getTraceId(),
                 trace.getMessageId(),
+                trace.getCallId(),
                 trace.getRawQuestion(),
                 trace.getRewrittenQuestion(),
                 trace.getScope(),
