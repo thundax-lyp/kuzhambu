@@ -298,6 +298,7 @@ class StorageOrphanObjectCleanupSchedulerTest {
                     .filter(storage -> storage != null
                             && storage.getId() != null
                             && !referencedIds.contains(storage.getId().value()))
+                    .filter(storage -> !objectStatusUpdatedIds.contains(storage.getId()) || !skipObjectStatusMutation)
                     .filter(storage -> !storage.getStoredAt().isAfter(storedBefore))
                     .toList();
         }
