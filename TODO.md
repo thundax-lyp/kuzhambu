@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `storage-http-response`：清理后端对象 response 的 owner 暴露
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-OWNER-CLEANUP.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-interface/src/main/java/com/thundax/kuzhambu/storage/interfaces/admin/object/controller/response/StorageObjectResponse.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-interface/src/main/java/com/thundax/kuzhambu/storage/interfaces/admin/object/assembler/StorageInterfaceAssembler.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-interface/src/test/java/com/thundax/kuzhambu/storage/interfaces/admin/StorageObjectUploadContractTest.java`
-    - 处理动作：删除对象 response 中的 owner 字段并同步契约测试
-    - 验收点：对象 response 不再把 object owner 作为对外对象事实暴露
-    - 重要度：9/10
-
 - [ ] `storage-http-query`：将对象查询接口改成 reference 筛选语义
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-OWNER-CLEANUP.md`
