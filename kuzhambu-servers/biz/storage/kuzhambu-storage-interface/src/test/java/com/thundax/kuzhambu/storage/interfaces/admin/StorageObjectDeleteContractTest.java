@@ -55,6 +55,17 @@ class StorageObjectDeleteContractTest {
     }
 
     @Test
+    void deleteShouldAllowUnreferencedObject() {
+        List<StoredObjectId> removedIds = new ArrayList<>();
+        StorageObjectController controller = new StorageObjectController(storageService(removedIds));
+        StorageDeleteRequest request = new StorageDeleteRequest();
+        request.setIds(List.of(101L));
+
+        assertTrue(controller.delete(request));
+        assertEquals(List.of(StoredObjectId.of(101L)), removedIds);
+    }
+
+    @Test
     void deleteShouldRejectMissingOrEmptyIds() {
         StorageObjectController controller = new StorageObjectController(storageService(new ArrayList<>()));
 
@@ -97,6 +108,8 @@ class StorageObjectDeleteContractTest {
                         object.setId(id);
                         if (referencedIds.contains(id.value())) {
                             object.setReferenceStatus(StoredObjectReferenceStatus.REFERENCED);
+                        } else {
+                            object.setReferenceStatus(StoredObjectReferenceStatus.UNREFERENCED);
                         }
                         return object;
                     }

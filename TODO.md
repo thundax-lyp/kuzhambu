@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `storage-tests`：验证派生 reference_status 与删除路径
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-OWNER-CLEANUP.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/test/java/com/thundax/kuzhambu/storage/application/service/impl/StorageOrphanObjectCleanupSchedulerTest.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-interface/src/test/java/com/thundax/kuzhambu/storage/interfaces/admin/StorageObjectDeleteContractTest.java`
-    - 处理动作：补齐“有 reference 则 referenced，无 reference 则 unreferenced”以及删除链路一致性测试
-    - 验收点：测试能证明派生状态规则与删除/cleanup 链路一致
-    - 重要度：9/10
-
 - [ ] `storage-doc-cleanup`：清理现场与临时文档入口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-OWNER-CLEANUP.md`
