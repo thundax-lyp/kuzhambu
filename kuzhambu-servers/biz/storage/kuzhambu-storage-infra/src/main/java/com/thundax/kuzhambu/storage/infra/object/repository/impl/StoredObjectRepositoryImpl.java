@@ -225,6 +225,17 @@ public class StoredObjectRepositoryImpl implements StoredObjectRepository {
     }
 
     @Override
+    public List<StoredObject> listExpiredActiveUnreferenced(Instant storedBefore) {
+        LambdaQueryWrapper<StoredObjectDO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(StoredObjectDO::getObjectStatus, StoredObjectStatus.ACTIVE.value())
+                .eq(StoredObjectDO::getReferenceStatus, StoredObjectReferenceStatus.UNREFERENCED.value())
+                .le(StoredObjectDO::getStoredAt, storedBefore)
+                .orderByAsc(StoredObjectDO::getStoredAt)
+                .orderByAsc(StoredObjectDO::getId);
+        return StoragePersistenceAssembler.toDomainList(mapper.selectList(wrapper));
+    }
+
+    @Override
     public List<StoredObject> listExpiredDeletedUnreferenced(Instant storedBefore) {
         LambdaQueryWrapper<StoredObjectDO> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(StoredObjectDO::getObjectStatus, StoredObjectStatus.DELETED.value())
