@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `admin-web-storage-object`：前端对象页改为引用语义
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-OWNER-CLEANUP.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/storage/storage-object/storage-object-types.ts`、`kuzhambu-apps/admin-web/src/pages/storage/storage-object/storage-object-service.ts`、`kuzhambu-apps/admin-web/src/pages/storage/storage-object/storage-object-page.tsx`、`kuzhambu-apps/admin-web/src/app.test.tsx`、`kuzhambu-apps/admin-web/e2e/storage/storage-object/storage-object.spec.ts`
-    - 处理动作：将对象页从 owner 展示与筛选切换为 reference 语义并同步测试
-    - 验收点：前端不再把 object owner 当成对象事实展示，筛选和断言与新的引用模型一致
-    - 重要度：10/10
-
 - [ ] `storage-http-response`：清理后端对象 response 的 owner 暴露
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-OWNER-CLEANUP.md`

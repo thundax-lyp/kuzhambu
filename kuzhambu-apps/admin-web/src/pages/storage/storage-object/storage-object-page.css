@@ -106,15 +106,13 @@ html[data-theme="dark"] .storage-object-page {
     color: var(--storage-object-blue);
 }
 
-.storage-object-name-cell,
-.storage-object-owner-cell {
+.storage-object-name-cell {
     display: grid;
     min-width: 0;
     gap: 2px;
 }
 
-.storage-object-name-cell > .ant-typography,
-.storage-object-owner-cell > .ant-typography {
+.storage-object-name-cell > .ant-typography {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

@@ -9,6 +9,7 @@ import type { Page } from "@/types/page";
 import type {
     InitMultipartUploadRecord,
     StorageContentMode,
+    StorageObjectReferenceFilter,
     StorageRecord,
     StorageUploadTaskRecord
 } from "./storage-object-types";
@@ -17,14 +18,12 @@ const MULTIPART_UPLOAD_THRESHOLD_BYTES = 20 * 1024 * 1024;
 const MULTIPART_PART_SIZE_BYTES = 5 * 1024 * 1024;
 const MULTIPART_UPLOAD_CONCURRENCY = 3;
 
-export interface StoragePageQuery {
+export interface StoragePageQuery extends StorageObjectReferenceFilter {
     pageNo?: number;
     pageSize?: number;
     contentType?: string | null;
     objectStatus?: string | null;
     referenceStatus?: string | null;
-    referenceOwnerId?: string | null;
-    referenceOwnerType?: string | null;
     originalFilename?: string | null;
     remarks?: string | null;
     sortDirection?: "ASC" | "DESC" | null;

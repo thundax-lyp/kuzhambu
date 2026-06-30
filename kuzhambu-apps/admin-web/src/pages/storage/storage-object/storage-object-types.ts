@@ -10,6 +10,11 @@ export interface StorageRecord {
     remarks?: string | null;
 }
 
+export interface StorageObjectReferenceFilter {
+    referenceOwnerId?: string | null;
+    referenceOwnerType?: string | null;
+}
+
 export type UploadStage =
     | "idle"
     | "uploading-single"
