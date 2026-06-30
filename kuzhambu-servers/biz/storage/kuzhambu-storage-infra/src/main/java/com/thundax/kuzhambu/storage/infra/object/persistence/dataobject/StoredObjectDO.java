@@ -19,8 +19,6 @@ public class StoredObjectDO {
     private String name;
     private String extendName;
     private String mimeType;
-    private String ownerId;
-    private String ownerType;
     private String bucketName;
     private String objectKey;
     private Long size;

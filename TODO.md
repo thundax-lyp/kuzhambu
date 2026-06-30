@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `storage-domain-model`：删除 object owner 与 reference 记录状态字段
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-OWNER-CLEANUP.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-domain/src/main/java/com/thundax/kuzhambu/storage/domain/object/model/entity/StoredObject.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-domain/src/main/java/com/thundax/kuzhambu/storage/domain/object/model/entity/StoredObjectReference.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-infra/src/main/java/com/thundax/kuzhambu/storage/infra/object/persistence/dataobject/StoredObjectDO.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-infra/src/main/java/com/thundax/kuzhambu/storage/infra/object/persistence/dataobject/StoredObjectReferenceDO.java`
-    - 处理动作：从领域对象和 DO 中删除冗余 owner / referenceStatus 字段
-    - 验收点：`StoredObject` 不再暴露 `ownerType / ownerId`，`StoredObjectReference` 不再暴露 `referenceStatus`
-    - 重要度：10/10
-
 - [ ] `storage-infra-mapping`：清理 persistence 与 cache 映射
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-OWNER-CLEANUP.md`
