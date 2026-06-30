@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `AI-WORKERS T5A`：收口 Workers 临时产物落地与元数据管理
-  - 任务类型：执行任务
-  - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLOSURE.md#T5`
-  - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/render/artifact_store.py`、`kuzhambu-workers/src/kuzhambu_workers/core/config.py`
-  - 处理动作：实现临时 artifact 落地、metadata 管理与过期时间计算。
-  - 验收点：artifact store 能稳定返回带 `expiresAt` 的临时引用元数据。
-  - 重要度：10/10
-
 - [ ] `AI-WORKERS T5B`：收口 Workers artifact 下载接口
   - 任务类型：执行任务
   - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLOSURE.md#T5`
