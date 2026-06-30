@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `AiRefinementTaskCleanupService/AiRefinementTaskCleanupServiceImpl`：补齐精修任务失效清理
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLASSICS-TEXT-CLOSURE.md`、`docs/30-designs/AI-DESIGN.md`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/refinement/service/AiRefinementTaskCleanupService.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/refinement/service/impl/AiRefinementTaskCleanupServiceImpl.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-infra/src/main/java/com/thundax/kuzhambu/ai/infra/refinement/persistence/mapper/AiRefinementTaskMapper.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/refinement/controller/AiRefinementTaskController.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/test/java/com/thundax/kuzhambu/ai/application/refinement/service/impl/AiRefinementTaskCleanupServiceImplTest.java`
-    - 处理动作：增加每小时扫描的失效任务清理，先超时收口再删除终态历史任务
-    - 验收点：`PENDING/RUNNING` 超过 `12` 小时自动转成 `FAILED/TASK_EXPIRED`，终态任务保留 `12` 小时后可删除
-    - 重要度：9/10
-
 - [ ] `ClassicsContentApplicationServiceAiCandidateTest/ClassicsContentAdminControllerTest`：验收 classics 候选应用
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLASSICS-TEXT-CLOSURE.md`

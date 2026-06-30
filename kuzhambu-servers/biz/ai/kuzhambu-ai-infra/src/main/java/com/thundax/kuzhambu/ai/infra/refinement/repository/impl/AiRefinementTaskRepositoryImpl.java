@@ -98,6 +98,11 @@ public class AiRefinementTaskRepositoryImpl implements AiRefinementTaskRepositor
         return toRefinementTaskDomainList(aiRefinementTaskMapper.selectExpiredRunningTasks(threshold));
     }
 
+    @Override
+    public int deleteExpiredTerminalTasks(Instant threshold) {
+        return aiRefinementTaskMapper.deleteExpiredTerminalTasks(threshold);
+    }
+
     private AiRefinementTaskDO toTaskObject(AiRefinementTask task) {
         if (task == null) {
             return null;

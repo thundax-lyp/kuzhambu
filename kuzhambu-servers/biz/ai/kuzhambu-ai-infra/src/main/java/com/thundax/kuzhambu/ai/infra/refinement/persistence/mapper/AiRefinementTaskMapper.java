@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.ai.infra.refinement.persistence.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.thundax.kuzhambu.ai.infra.refinement.persistence.dataobject.AiRefinementTaskDO;
 import java.util.List;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
@@ -51,6 +52,14 @@ public interface AiRefinementTaskMapper extends BaseMapper<AiRefinementTaskDO> {
               and requested_at < #{threshold}
             """)
     List<AiRefinementTaskDO> selectExpiredRunningTasks(java.time.Instant threshold);
+
+    @Delete(
+            """
+            delete from ai_refinement_task
+            where status in ('SUCCEEDED', 'FAILED', 'PARTIAL', 'CANCELLED')
+              and coalesce(completed_at, cancelled_at, requested_at) < #{threshold}
+            """)
+    int deleteExpiredTerminalTasks(java.time.Instant threshold);
 
     @Insert(
             """
