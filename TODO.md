@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `ai-refinement-task-service.ts`：补齐 Admin Web 精修任务服务与请求类型
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLASSICS-TEXT-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/common/ai-refinement-task-types.ts`、`kuzhambu-apps/admin-web/src/pages/classics/common/ai-refinement-task-service.ts`、`kuzhambu-apps/admin-web/src/pages/classics/common/ai-refinement-task-service.test.ts`
-    - 处理动作：新增 Admin Web `task/add`、`task/get`、`task/page`、`task/cancel` 的类型与服务封装
-    - 验收点：前端存在稳定的 Classics AI 任务入口，字段覆盖 `capability/scope/contentType/contentId/modelId/promptVersionId/requestId/traceId/requestedBy`
-    - 重要度：9/10
-
 - [ ] `sancai-entry-panel.tsx`：接通三才图会精修任务创建与轮询
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLASSICS-TEXT-CLOSURE.md`
