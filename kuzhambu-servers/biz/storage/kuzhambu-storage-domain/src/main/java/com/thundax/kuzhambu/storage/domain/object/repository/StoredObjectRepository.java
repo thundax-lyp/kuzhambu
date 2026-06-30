@@ -47,6 +47,8 @@ public interface StoredObjectRepository {
 
     int physicalDeleteById(StoredObjectId id);
 
+    List<StoredObject> listExpiredActiveUnreferenced(Instant storedBefore);
+
     List<StoredObject> listExpiredDeletedUnreferenced(Instant storedBefore);
 
     List<String> listMimeTypes();
