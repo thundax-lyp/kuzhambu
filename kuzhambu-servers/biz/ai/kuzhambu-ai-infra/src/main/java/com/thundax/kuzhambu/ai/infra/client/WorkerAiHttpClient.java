@@ -258,9 +258,14 @@ public class WorkerAiHttpClient implements WorkerAiClient {
         result.setTraceId(defaultString(response.getTraceId(), command.getTraceId()));
         result.setStatus(response.getStatus());
         result.setCapability(defaultString(response.getCapability(), command.getCapability()));
+        result.setFailureStage(response.getFailureStage());
+        result.setFallbackUsed(Boolean.TRUE.equals(response.getFallbackUsed()));
         if (response.getResult() != null) {
             result.setResultFormat(response.getResult().getFormat());
             result.setResultPayload(payloadToString(response.getResult().getPayload()));
+        }
+        if (response.getArtifactReference() != null && !response.getArtifactReference().isNull()) {
+            result.setArtifactReferenceJson(payloadToString(response.getArtifactReference()));
         }
         result.setUsage(toUsage(response.getUsage()));
         if (response.getWarnings() != null && !response.getWarnings().isNull()) {
@@ -325,7 +330,13 @@ public class WorkerAiHttpClient implements WorkerAiClient {
         event.setStage(text(node, "stage"));
         event.setTimestamp(toInstant(text(node, "timestamp")));
         event.setDeltaText(payloadToString(node.path("delta").path("text")));
-        event.setStatus(text(node, "status"));
+        event.setStatus(defaultString(text(node, "status"), text(node.path("extra"), "status")));
+        event.setFailureStage(text(node.path("extra"), "failureStage"));
+        event.setFallbackUsed(Boolean.parseBoolean(text(node.path("extra"), "fallbackUsed")));
+        if (!node.path("extra").path("artifactReference").isMissingNode()
+                && !node.path("extra").path("artifactReference").isNull()) {
+            event.setArtifactReferenceJson(payloadToString(node.path("extra").path("artifactReference")));
+        }
         setResult(node, event);
         event.setUsage(toUsage(node.get("usage")));
         JsonNode error = node.get("error");
@@ -396,7 +407,7 @@ public class WorkerAiHttpClient implements WorkerAiClient {
 
     private AiInvokeResult failure(AiInvokeCommand command, String errorType, String errorMessage) {
         AiInvokeResult result =
-                AiInvokeResult.failed(command.getRequestId(), command.getTraceId(), errorType, errorMessage);
+                AiInvokeResult.failed(command.getRequestId(), command.getTraceId(), errorType, errorMessage, null);
         result.setCapability(command.getCapability());
         return result;
     }

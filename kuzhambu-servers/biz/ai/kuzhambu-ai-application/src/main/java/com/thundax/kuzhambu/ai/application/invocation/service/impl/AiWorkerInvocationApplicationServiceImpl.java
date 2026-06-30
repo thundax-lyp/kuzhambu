@@ -190,26 +190,32 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
                     : toStorageResultJson(persistSmallArtifact(artifact)));
             return result;
         } catch (WorkerAiClient.ArtifactDownloadException ex) {
-            return AiInvokeResult.failed(
+            AiInvokeResult failed = AiInvokeResult.failed(
                     command.getRequestId(),
                     command.getTraceId(),
                     "WORKER_UNAVAILABLE",
                     ex.getMessage(),
                     "ARTIFACT_DOWNLOAD");
+            failed.setArtifactReferenceJson(result.getArtifactReferenceJson());
+            return failed;
         } catch (JsonProcessingException ex) {
-            return AiInvokeResult.failed(
+            AiInvokeResult failed = AiInvokeResult.failed(
                     command.getRequestId(),
                     command.getTraceId(),
                     "WORKER_PROTOCOL_FAILURE",
                     ex.getMessage(),
                     "ARTIFACT_DOWNLOAD");
+            failed.setArtifactReferenceJson(result.getArtifactReferenceJson());
+            return failed;
         } catch (RuntimeException ex) {
-            return AiInvokeResult.failed(
+            AiInvokeResult failed = AiInvokeResult.failed(
                     command.getRequestId(),
                     command.getTraceId(),
                     "INTERNAL_FAILURE",
                     ex.getMessage(),
                     "STORAGE_PERSIST");
+            failed.setArtifactReferenceJson(result.getArtifactReferenceJson());
+            return failed;
         }
     }
 

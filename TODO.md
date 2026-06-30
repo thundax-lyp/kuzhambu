@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `AI-WORKERS T9`：收口文件类结果失败边界
-  - 任务类型：执行任务
-  - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLOSURE.md#T9`
-  - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/invocation/service/impl/AiWorkerInvocationApplicationServiceImpl.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-infra/src/main/java/com/thundax/kuzhambu/ai/infra/client/WorkerAiHttpClient.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-facade/src/main/java/com/thundax/kuzhambu/storage/facade/StorageFacade.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-facade/src/main/java/com/thundax/kuzhambu/storage/facade/request/UploadStorageFacadeRequest.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/test/java/com/thundax/kuzhambu/ai/application/invocation/service/impl/AiWorkerInvocationApplicationServiceImplTest.java`
-  - 处理动作：固定 `ARTIFACT_DOWNLOAD`、`STORAGE_PERSIST` 并在失败时保留调用记录与 artifact reference 摘要。
-  - 验收点：能区分 worker 生成失败、artifact 下载失败、Storage 转存失败。
-  - 重要度：10/10
-
 - [ ] `AI-WORKERS T10`：收口 Knowledge AI 候选闭环
   - 任务类型：执行任务
   - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLOSURE.md#T10`
