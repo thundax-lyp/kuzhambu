@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `docs/40-readiness/AI-IMPLEMENTATION-COVERAGE.md`：AI-WORKERS T5 更新 image_analysis 完成口径
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-IMAGE-ANALYSIS-CLOSURE.md`
-    - 范围对象：`docs/40-readiness/AI-IMPLEMENTATION-COVERAGE.md`
-    - 处理动作：将 `CLASSICS_SANCAI_IMAGE_ANALYSIS` 从 `部分完成` 收口为 `已完成`，并改写说明为标准 usecase path 与 stream final-state 协议已闭合。
-    - 验收点：该项不再保留 legacy Java 入口说明，且 `WORKERS-IMPLEMENTATION-COVERAGE.md` 保持不变。
-    - 重要度：7/10
-
 - [ ] `docs/30-designs/RUNBOOK-CLASSICS-SANCAI-IMAGE-ANALYSIS-CLOSURE.md`：AI-WORKERS T6 清理现场
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`
