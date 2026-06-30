@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `storage-http-query`：将对象查询接口改成 reference 筛选语义
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-OWNER-CLEANUP.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-interface/src/main/java/com/thundax/kuzhambu/storage/interfaces/admin/object/controller/StorageObjectController.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-interface/src/main/java/com/thundax/kuzhambu/storage/interfaces/admin/object/assembler/StorageInterfaceAssembler.java`
-    - 处理动作：将按 owner 查询 object 的接口语义改成 reference 语义或显式移除
-    - 验收点：若仍保留筛选，必须明确是按 reference owner 筛选，而不是按 object owner 筛选
-    - 重要度：9/10
-
 - [ ] `storage-tests`：验证派生 reference_status 与删除路径
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-OWNER-CLEANUP.md`

@@ -74,14 +74,8 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         if (query != null && query.getIds() != null) {
             return dao.listByIds(StoredObjectIdCodec.toValues(query.getIds()));
         }
-        String referenceOwnerType = query == null || query.getReferenceOwnerType() == null
-                ? query == null || query.getOwnerType() == null
-                        ? null
-                        : query.getOwnerType().value()
-                : query.getReferenceOwnerType();
-        String referenceOwnerId = StringUtils.isNotBlank(query == null ? null : query.getReferenceOwnerId())
-                ? query.getReferenceOwnerId()
-                : query == null ? null : query.getOwnerId();
+        String referenceOwnerType = query == null ? null : query.getReferenceOwnerType();
+        String referenceOwnerId = query == null ? null : query.getReferenceOwnerId();
         return dao.list(
                 query == null ? null : query.getContentType(),
                 query == null || query.getObjectStatus() == null
@@ -99,14 +93,8 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
 
     @Override
     public PageResult<StoredObject> page(StorageQuery query, PageQuery page) {
-        String referenceOwnerType = query == null || query.getReferenceOwnerType() == null
-                ? query == null || query.getOwnerType() == null
-                        ? null
-                        : query.getOwnerType().value()
-                : query.getReferenceOwnerType();
-        String referenceOwnerId = StringUtils.isNotBlank(query == null ? null : query.getReferenceOwnerId())
-                ? query.getReferenceOwnerId()
-                : query == null ? null : query.getOwnerId();
+        String referenceOwnerType = query == null ? null : query.getReferenceOwnerType();
+        String referenceOwnerId = query == null ? null : query.getReferenceOwnerId();
         return dao.page(
                 query == null ? null : query.getContentType(),
                 query == null || query.getObjectStatus() == null

@@ -21,16 +21,6 @@ public class StoragePageRequest extends PageRequest {
     @Size(max = 100, message = "\"内容类型\"长度不能超过100")
     private String contentType;
 
-    @Schema(name = "ownerId", description = "对象归属ID")
-    @JsonProperty(value = "ownerId")
-    @Size(max = 64, message = "\"对象归属ID\"长度不能超过64")
-    private String ownerId;
-
-    @Schema(name = "ownerType", description = "对象归属类型")
-    @JsonProperty(value = "ownerType")
-    @Size(max = 40, message = "\"对象归属类型\"长度不能超过40")
-    private String ownerType;
-
     @Schema(name = "objectStatus", description = "对象状态")
     @JsonProperty(value = "objectStatus")
     @Size(max = 40, message = "\"对象状态\"长度不能超过40")
