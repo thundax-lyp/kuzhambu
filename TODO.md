@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `kuzhambu-ai final-state markdown model`：AI-WORKERS T4 锁定 image_analysis 最终结果落库语义
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-IMAGE-ANALYSIS-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/invocation/result/AiInvokeResult.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-domain/src/main/java/com/thundax/kuzhambu/ai/domain/invocation/model/entity/AiCallRecord.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-domain/src/main/java/com/thundax/kuzhambu/ai/domain/invocation/model/entity/AiCandidate.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/test/java/com/thundax/kuzhambu/ai/application/refinement/service/impl/AiRefinementApplicationServiceImplTest.java`
-    - 处理动作：通过测试锁定 `image_analysis` 继续复用统一的 `MARKDOWN + resultPayload` 最终结果模型，不新增字段。
-    - 验收点：`AiInvokeResult.resultFormat/resultPayload`、`AiCallRecord.streamUsed/resultFormat/resultPayload`、`AiCandidate.resultFormat/resultPayload` 的语义保持统一，且无 schema 变更。
-    - 重要度：8/10
-
 - [ ] `docs/40-readiness/AI-IMPLEMENTATION-COVERAGE.md`：AI-WORKERS T5 更新 image_analysis 完成口径
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-IMAGE-ANALYSIS-CLOSURE.md`
