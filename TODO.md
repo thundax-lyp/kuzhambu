@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `kuzhambu-ai-application resolver`：AI-WORKERS T1 收入口径增加 SANCAI image_analysis
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-IMAGE-ANALYSIS-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/refinement/support/ClassicsAiWorkerUsecaseResolver.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/test/java/com/thundax/kuzhambu/ai/application/refinement/support/ClassicsAiWorkerUsecaseResolverTest.java`
-    - 处理动作：为 `SANCAI_ENTRY + image_analysis` 增加标准 usecase 映射并同步 resolver 测试。
-    - 验收点：resolver 可解析 `CLASSICS_SANCAI_IMAGE_ANALYSIS` 和 `/internal/ai/classics/sancai/image-analysis`，不再将该能力视为 unsupported。
-    - 重要度：9/10
-
 - [ ] `kuzhambu-ai-application refinement invoke path`：AI-WORKERS T2 去掉 image_analysis legacy 分支
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-IMAGE-ANALYSIS-CLOSURE.md`

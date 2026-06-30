@@ -18,6 +18,10 @@ public class ClassicsAiWorkerUsecaseResolver {
                             new ClassicsAiWorkerUsecaseSpec(
                                     "CLASSICS_SANCAI_TAGS", "/internal/ai/classics/sancai/tags"),
                     "qa", new ClassicsAiWorkerUsecaseSpec("CLASSICS_SANCAI_QA", "/internal/ai/classics/sancai/qa"),
+                    "image_analysis",
+                            new ClassicsAiWorkerUsecaseSpec(
+                                    "CLASSICS_SANCAI_IMAGE_ANALYSIS",
+                                    "/internal/ai/classics/sancai/image-analysis"),
                     "visual",
                             new ClassicsAiWorkerUsecaseSpec(
                                     "CLASSICS_SANCAI_VISUAL_DESCRIPTION",

@@ -53,11 +53,10 @@ class ClassicsAiWorkerUsecaseResolverTest {
     }
 
     @Test
-    void resolveUnsupportedSanCaiImageAnalysisShouldThrow() {
-        BizException exception =
-                assertThrows(BizException.class, () -> resolver.resolve("SANCAI_ENTRY", "image_analysis"));
-        assertEquals(
-                "unsupported classics ai worker usecase: contentType=SANCAI_ENTRY, capability=image_analysis",
-                exception.getMessage());
+    void resolveSanCaiImageAnalysis() {
+        ClassicsAiWorkerUsecaseSpec spec = resolver.resolve("SANCAI_ENTRY", "image_analysis");
+        assertNotNull(spec);
+        assertEquals("CLASSICS_SANCAI_IMAGE_ANALYSIS", spec.operation());
+        assertEquals("/internal/ai/classics/sancai/image-analysis", spec.workerPath());
     }
 }
