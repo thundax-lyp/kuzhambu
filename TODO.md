@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `db/storage`：收敛 Storage schema 与数据库治理规则
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-OWNER-CLEANUP.md`
-    - 范围对象：`db/schema/storage.sql`、`docs/00-governance/SERVERS-DATABASE-RULES.md`
-    - 处理动作：删除 `storage_object.owner_type / owner_id` 与 `storage_object_reference.reference_status` 的 schema 和治理口径
-    - 验收点：schema 与数据库治理文档明确 `storage_object_reference` 只保存当前有效引用记录
-    - 重要度：10/10
-
 - [ ] `storage-domain-model`：删除 object owner 与 reference 记录状态字段
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-OWNER-CLEANUP.md`

@@ -5,8 +5,6 @@ CREATE TABLE IF NOT EXISTS `storage_object` (
     `name` varchar(255) NOT NULL,
     `extend_name` varchar(64) DEFAULT NULL,
     `mime_type` varchar(128) DEFAULT NULL,
-    `owner_id` varchar(64) DEFAULT NULL,
-    `owner_type` varchar(64) DEFAULT NULL,
     `bucket_name` varchar(128) DEFAULT NULL,
     `object_key` varchar(512) NOT NULL,
     `size` bigint NOT NULL DEFAULT 0,
@@ -20,8 +18,7 @@ CREATE TABLE IF NOT EXISTS `storage_object` (
     UNIQUE KEY `uk_storage_object_key` (`bucket_name`, `object_key`),
     KEY `idx_storage_object_status` (`object_status`, `reference_status`),
     KEY `idx_storage_object_cleanup` (`object_status`, `reference_status`, `stored_at`),
-    KEY `idx_storage_object_mime_type` (`mime_type`),
-    KEY `idx_storage_object_owner` (`owner_type`, `owner_id`)
+    KEY `idx_storage_object_mime_type` (`mime_type`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='存储对象表';
 
 -- storage_object_reference 约束真相源：
@@ -33,7 +30,6 @@ CREATE TABLE IF NOT EXISTS `storage_object_reference` (
     `reference_owner_type` varchar(64) NOT NULL,
     `reference_owner_id` varchar(64) NOT NULL,
     `business_params` text DEFAULT NULL,
-    `reference_status` varchar(16) NOT NULL DEFAULT 'REFERENCED',
     PRIMARY KEY (`object_id`, `reference_owner_type`, `reference_owner_id`),
     KEY `idx_storage_object_reference_owner` (`reference_owner_type`, `reference_owner_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='存储对象引用关系表';
