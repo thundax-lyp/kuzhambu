@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `AI-WORKERS T12A`：收口 AI + Workers 关键测试
-  - 任务类型：执行任务
-  - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLOSURE.md#T12`
-  - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/test/java/com/thundax/kuzhambu/ai/application/discovery/service/impl/DiscoveryAiApplicationServiceImplTest.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/test/java/com/thundax/kuzhambu/ai/application/knowledge/service/impl/KnowledgeAiExtractionApplicationServiceImplTest.java`、`kuzhambu-workers/tests/test_ai_routes.py`、`kuzhambu-workers/tests/test_ai_usecase_routes.py`、`kuzhambu-workers/tests/test_artifact_store.py`、`kuzhambu-workers/tests/test_artifact_cleanup_job.py`
-  - 处理动作：为关键协议、artifact 生命周期、消费闭环补齐测试。
-  - 验收点：关键协议、artifact 生命周期、消费闭环都有测试。
-  - 重要度：8/10
-
 - [ ] `AI-WORKERS T12B`：收口 AI + Workers 设计文档与覆盖文档
   - 任务类型：执行任务
   - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLOSURE.md#T12`

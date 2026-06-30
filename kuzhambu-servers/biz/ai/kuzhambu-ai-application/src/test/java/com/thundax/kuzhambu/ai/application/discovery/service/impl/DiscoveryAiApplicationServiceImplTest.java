@@ -57,6 +57,20 @@ class DiscoveryAiApplicationServiceImplTest {
         assertEquals("answer_generation", result.getCapability());
     }
 
+    @Test
+    void generateAnswerShouldExposeFinalFailureStateFromInvocationResult() {
+        CapturingInvocationService invocationService = new CapturingInvocationService();
+        invocationService.failed = true;
+        DiscoveryAiApplicationServiceImpl service = new DiscoveryAiApplicationServiceImpl(invocationService, resolver);
+
+        DiscoveryAiResult result = service.generateAnswer(request(false));
+
+        assertNotNull(result);
+        assertEquals("FAILED", result.getStatus());
+        assertEquals("WORKER_STREAM", result.getErrorType());
+        assertEquals("stream interrupted", result.getErrorMessage());
+    }
+
     private DiscoveryAiRequest request(boolean stream) {
         return new DiscoveryAiRequest(
                 3L,
@@ -80,6 +94,7 @@ class DiscoveryAiApplicationServiceImplTest {
 
         private AiInvokeCommand captured;
         private boolean streamInvoked;
+        private boolean failed;
 
         @Override
         public AiInvokeResult invoke(AiInvokeCommand command) {
@@ -89,10 +104,12 @@ class DiscoveryAiApplicationServiceImplTest {
             result.setCandidateId(102L);
             result.setRequestId(command.getRequestId());
             result.setTraceId(command.getTraceId());
-            result.setStatus("SUCCEEDED");
+            result.setStatus(failed ? "FAILED" : "SUCCEEDED");
             result.setCapability(command.getCapability());
             result.setResultFormat("STRUCTURED");
-            result.setResultPayload("{\"intent\":\"search\"}");
+            result.setResultPayload(failed ? null : "{\"intent\":\"search\"}");
+            result.setErrorType(failed ? "WORKER_STREAM" : null);
+            result.setErrorMessage(failed ? "stream interrupted" : null);
             return result;
         }
 

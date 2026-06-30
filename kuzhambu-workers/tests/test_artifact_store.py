@@ -1,64 +1,58 @@
-from base64 import b64decode
+from datetime import datetime, timedelta, timezone
+from json import loads
 
 from kuzhambu_workers.render.artifact_store import RequestArtifactStore
-from kuzhambu_workers.streaming.events import artifact_chunk_event
-from kuzhambu_workers.streaming.sse import encode_sse
 
 
-def test_artifact_store_chunks_and_hashes(tmp_path) -> None:
-    store = RequestArtifactStore("req-1", tmp_path, chunk_bytes=4)
+def test_artifact_store_persists_metadata_and_bytes(tmp_path) -> None:
+    store = RequestArtifactStore("req-1", tmp_path, chunk_bytes=4, ttl_hours=12)
+
     metadata = store.put_bytes(
         data=b"hello world",
-        format="PDF",
-        filename="report.pdf",
-        content_type="application/pdf",
+        format="PNG",
+        filename="image.png",
+        content_type="image/png",
     )
 
-    chunks = store.chunks(metadata.artifact_id)
-
+    assert metadata.request_id == "req-1"
+    assert metadata.download_path == f"/internal/artifacts/{metadata.artifact_id}"
     assert metadata.size_bytes == 11
     assert metadata.chunk_count == 3
-    assert [chunk.chunk_index for chunk in chunks] == [0, 1, 2]
-    assert b"".join(b64decode(chunk.chunk) for chunk in chunks) == b"hello world"
-    assert all(chunk.sha256 == metadata.sha256 for chunk in chunks)
-    assert all(chunk.chunk_sha256.startswith("sha256:") for chunk in chunks)
+    assert store.read_bytes(metadata.artifact_id) == b"hello world"
+    persisted = loads((tmp_path / "artifacts" / f"{metadata.artifact_id}.json").read_text(encoding="utf-8"))
+    assert persisted["artifact_id"] == metadata.artifact_id
+    assert persisted["download_path"] == metadata.download_path
 
 
-def test_artifact_store_cleans_request_directory(tmp_path) -> None:
-    store = RequestArtifactStore("req-1", tmp_path, chunk_bytes=4)
+def test_artifact_store_cleanup_only_clears_memory_cache(tmp_path) -> None:
+    store = RequestArtifactStore("req-1", tmp_path, chunk_bytes=4, ttl_hours=12)
+
     metadata = store.put_bytes(
         data=b"payload",
         format="ZIP",
         filename="export.zip",
         content_type="application/zip",
     )
-    assert (tmp_path / "req-1" / metadata.artifact_id).exists()
-
     store.cleanup()
 
-    assert not (tmp_path / "req-1").exists()
+    assert store.get_metadata(metadata.artifact_id).artifact_id == metadata.artifact_id
+    assert (tmp_path / "artifacts" / f"{metadata.artifact_id}.bin").exists()
+    assert (tmp_path / "artifacts" / f"{metadata.artifact_id}.json").exists()
 
 
-def test_artifact_chunk_event_matches_sse_contract(tmp_path) -> None:
-    store = RequestArtifactStore("req-1", tmp_path, chunk_bytes=4)
+def test_artifact_store_sets_expiry_from_ttl(tmp_path) -> None:
+    store = RequestArtifactStore("req-1", tmp_path, chunk_bytes=4, ttl_hours=12)
+
     metadata = store.put_bytes(
-        data=b"hello",
-        format="HTML",
-        filename="page.html",
-        content_type="text/html; charset=utf-8",
-    )
-    chunk = store.chunks(metadata.artifact_id)[0]
-
-    encoded = encode_sse(
-        artifact_chunk_event(
-            request_id="req-1",
-            trace_id="trace-1",
-            timestamp="2026-06-01T10:00:00.000Z",
-            chunk=chunk,
-        )
+        data=b"payload",
+        format="MP4",
+        filename="video.mp4",
+        content_type="video/mp4",
     )
 
-    assert "event: artifact" in encoded
-    assert '"artifactId":"' in encoded
-    assert '"chunkIndex":0' in encoded
-    assert '"chunkSha256":"sha256:' in encoded
+    created_at = datetime.fromisoformat(metadata.created_at.replace("Z", "+00:00"))
+    expires_at = datetime.fromisoformat(metadata.expires_at.replace("Z", "+00:00"))
+    delta = expires_at - created_at
+    assert delta >= timedelta(hours=11, minutes=59)
+    assert delta <= timedelta(hours=12, minutes=1)
+    assert expires_at.tzinfo == timezone.utc
