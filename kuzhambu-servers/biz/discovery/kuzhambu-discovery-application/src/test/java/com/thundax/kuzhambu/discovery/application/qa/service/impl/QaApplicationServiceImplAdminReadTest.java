@@ -83,20 +83,7 @@ class QaApplicationServiceImplAdminReadTest {
                         java.math.BigDecimal.ONE,
                         "CITED",
                         new Date(1_718_000_060_000L))));
-        when(traceRepository.getByTraceId(8001L))
-                .thenReturn(new QaRetrievalTrace(
-                        8001L,
-                        8001L,
-                        7002L,
-                        "黄帝是谁",
-                        "黄帝是谁",
-                        "GLOBAL",
-                        "{\"sessionId\":5001}",
-                        "[\"轩辕\"]",
-                        "[{\"name\":\"黄帝\"}]",
-                        1,
-                        "{\"sources\":[]}",
-                        new Date(1_718_000_070_000L)));
+        when(traceRepository.getByTraceId(8001L)).thenReturn(trace());
 
         QaSessionDetailResult sessionDetail = service.getSessionDetail(5001L);
         assertEquals(5001L, sessionDetail.getSessionId());
@@ -117,5 +104,22 @@ class QaApplicationServiceImplAdminReadTest {
         verify(messageRepository).listBySessionId(5001L);
         verify(sourceRepository).listByMessageId(7002L);
         verify(traceRepository).getByTraceId(8001L);
+    }
+
+    private QaRetrievalTrace trace() {
+        QaRetrievalTrace trace = new QaRetrievalTrace();
+        trace.setId(8001L);
+        trace.setTraceId(8001L);
+        trace.setMessageId(7002L);
+        trace.setRawQuestion("黄帝是谁");
+        trace.setRewrittenQuestion("黄帝是谁");
+        trace.setScope("GLOBAL");
+        trace.setFiltersJson("{\"sessionId\":5001}");
+        trace.setExpandedTermsJson("[\"轩辕\"]");
+        trace.setLinkedEntitiesJson("[{\"name\":\"黄帝\"}]");
+        trace.setCandidateCount(1);
+        trace.setContextSnapshot("{\"sources\":[]}");
+        trace.setRetrievedAt(new Date(1_718_000_070_000L));
+        return trace;
     }
 }
