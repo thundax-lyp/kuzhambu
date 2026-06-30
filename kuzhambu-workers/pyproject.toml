@@ -16,6 +16,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
+    "build",
     "import-linter",
     "mypy",
     "pytest",

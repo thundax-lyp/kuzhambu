@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field
 
 from kuzhambu_workers.schemas.ai import ArtifactReference, FailureStage
 
+
 class StreamEventType(str, Enum):
     STARTED = "started"
     DELTA = "delta"

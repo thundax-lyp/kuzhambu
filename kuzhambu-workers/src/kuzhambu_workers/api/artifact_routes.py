@@ -4,19 +4,20 @@ from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse, Response
 
 from kuzhambu_workers.core.config import load_settings
-from kuzhambu_workers.core.errors import WorkerError, WorkerErrorPayload
+from kuzhambu_workers.core.errors import WorkerError, to_error_payload
 from kuzhambu_workers.core.security import (
     REQUEST_ID_HEADER,
     TRACE_ID_HEADER,
     verify_internal_request,
 )
 from kuzhambu_workers.render.artifact_store import RequestArtifactStore
+from kuzhambu_workers.schemas.common import WorkerErrorPayload
 
 router = APIRouter(prefix="/internal/artifacts", tags=["Artifacts"])
 
 
-@router.get("/{artifact_id}")
-async def download_artifact(artifact_id: str, request: Request) -> Response | JSONResponse:
+@router.get("/{artifact_id}", response_model=None)
+async def download_artifact(artifact_id: str, request: Request) -> Response:
     body = b""
     request_id = request.headers.get(REQUEST_ID_HEADER, "")
     trace_id = request.headers.get(TRACE_ID_HEADER, "")
@@ -57,7 +58,9 @@ async def download_artifact(artifact_id: str, request: Request) -> Response | JS
         return JSONResponse(
             {
                 "status": "FAILED",
-                "error": WorkerErrorPayload.model_validate(exc.to_payload()).model_dump(mode="json"),
+                "error": WorkerErrorPayload.model_validate(to_error_payload(exc)).model_dump(
+                    mode="json"
+                ),
             },
             status_code=_status_code(exc.code),
         )

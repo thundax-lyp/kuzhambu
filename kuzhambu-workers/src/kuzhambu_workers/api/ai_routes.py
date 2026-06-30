@@ -152,7 +152,9 @@ def stream_ai_graph(
                     trace_id=request.traceId,
                     stage="completed",
                     timestamp=_now(),
-                    result=None if artifact_reference is not None else result.model_dump(mode="json"),
+                    result=None
+                    if artifact_reference is not None
+                    else result.model_dump(mode="json"),
                     usage=UsageSummary().model_dump(mode="json"),
                     extra={
                         "status": WorkerStatus.SUCCEEDED.value,

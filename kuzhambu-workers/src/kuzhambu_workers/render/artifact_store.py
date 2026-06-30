@@ -39,7 +39,9 @@ class ArtifactChunk:
 
 
 class RequestArtifactStore:
-    def __init__(self, request_id: str, root_dir: Path, chunk_bytes: int, ttl_hours: int = 12) -> None:
+    def __init__(
+        self, request_id: str, root_dir: Path, chunk_bytes: int, ttl_hours: int = 12
+    ) -> None:
         if chunk_bytes <= 0:
             raise ValueError("chunk_bytes must be positive")
         if ttl_hours <= 0:
@@ -159,13 +161,12 @@ def _now() -> str:
 
 
 def _expires_at(ttl_hours: int) -> str:
-    return (datetime.now(timezone.utc) + timedelta(hours=ttl_hours)).isoformat(
-        timespec="milliseconds"
-    ).replace("+00:00", "Z")
+    return (
+        (datetime.now(timezone.utc) + timedelta(hours=ttl_hours))
+        .isoformat(timespec="milliseconds")
+        .replace("+00:00", "Z")
+    )
 
 
 def _metadata_to_json(metadata: ArtifactMetadata) -> dict[str, str | int]:
-    return {
-        key: value
-        for key, value in asdict(metadata).items()
-    }
+    return {key: value for key, value in asdict(metadata).items()}

@@ -28,7 +28,9 @@ def test_cleanup_expired_artifacts_deletes_expired_files(tmp_path) -> None:
         encoding="utf-8",
     )
 
-    deleted = cleanup_expired_artifacts(tmp_path, now=datetime(2026, 6, 30, 0, 0, 2, tzinfo=timezone.utc))
+    deleted = cleanup_expired_artifacts(
+        tmp_path, now=datetime(2026, 6, 30, 0, 0, 2, tzinfo=timezone.utc)
+    )
 
     assert deleted == 1
     assert not (artifact_dir / f"{artifact_id}.bin").exists()

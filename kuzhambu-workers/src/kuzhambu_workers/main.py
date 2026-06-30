@@ -47,7 +47,10 @@ def create_app() -> FastAPI:
             {"name": "Knowledge", "description": "Knowledge AI usecase interfaces."},
             {"name": "Platform", "description": "Platform AI usecase interfaces."},
             {"name": "AI Debug", "description": "Generic AI debug interfaces."},
-            {"name": "Artifacts", "description": "Internal temporary artifact download interfaces."},
+            {
+                "name": "Artifacts",
+                "description": "Internal temporary artifact download interfaces.",
+            },
             {"name": "Render", "description": "Render usecase interfaces."},
             {"name": "Health", "description": "Health and capability probes."},
         ],

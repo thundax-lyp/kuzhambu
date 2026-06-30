@@ -19,7 +19,9 @@ def test_artifact_store_persists_metadata_and_bytes(tmp_path) -> None:
     assert metadata.size_bytes == 11
     assert metadata.chunk_count == 3
     assert store.read_bytes(metadata.artifact_id) == b"hello world"
-    persisted = loads((tmp_path / "artifacts" / f"{metadata.artifact_id}.json").read_text(encoding="utf-8"))
+    persisted = loads(
+        (tmp_path / "artifacts" / f"{metadata.artifact_id}.json").read_text(encoding="utf-8")
+    )
     assert persisted["artifact_id"] == metadata.artifact_id
     assert persisted["download_path"] == metadata.download_path
 
