@@ -127,6 +127,82 @@ Stream 流程：
 - stream 中断时，AI application 必须把调用记录为失败或部分失败，并允许重新发起完整调用。
 - 流式调用必须以 `completed` 或 `error` 形成最终态；不得出现“只有 delta 没有最终结果”的业务闭环。
 
+Admin Web 交互流程：
+
+- Java servers 对前端的默认协议不是直接暴露 workers SSE，也不是默认使用 WebSocket。
+- AI 能力默认采用 `createJob -> jobId -> get/page status` 的异步任务协议。
+- workers 的 SSE 只表示 `AI domain -> workers` 的内部执行传输，不直接决定 `Admin Web -> Java` 的产品协议。
+- 只有明确需要边生成边展示的能力，才在任务协议之上补充 Java 对前端的 SSE 订阅能力。
+- 无论是否存在前端 SSE，任务台账、调用记录、候选结果和最终状态都必须先落到 AI 域本地表，再由前端读取。
+
+默认前端任务协议：
+
+- `POST /api/ai/refinement/task/add`
+- `POST /api/ai/refinement/task/get`
+- `POST /api/ai/refinement/task/page`
+- `POST /api/ai/refinement/task/cancel`
+
+可选流式订阅协议：
+
+- `GET /api/ai/refinement/task/stream?taskId=...`
+
+该订阅接口只用于展示 `RUNNING` 中的增量文本、阶段进度和 warning，不作为业务最终结果真相源。最终结果、失败信息、`callId`、`candidateId` 和可应用状态必须以 `task/get` 返回的数据为准。
+
+默认任务协议详细流程：
+
+1. Admin Web 调用 `POST /api/ai/refinement/task/add`，传入 `contentType`、`contentId`、`capability`、`modelId`、`promptVersionId`、`requestId`、`requestedBy` 等字段。
+2. AI interface 校验权限、请求字段、AI 动作开关和内容类型与 capability 的匹配关系。
+3. AI application 创建 `ai_refinement_task`，初始状态为 `PENDING`。
+4. AI application 读取业务内容快照、模型配置、能力映射和 prompt 真相源。
+5. AI application 把任务状态更新为 `RUNNING`，并开始本次 worker 调用。
+6. 对同步 capability，AI application 等待 worker JSON 完成，再统一写入：
+   - `ai_call_record`
+   - `ai_candidate`
+   - `ai_refinement_task.callId`
+   - `ai_refinement_task.candidateId`
+   - `ai_refinement_task.status`
+7. 对流式 capability，AI application 内部消费 workers SSE；`delta/progress/warning` 只更新任务进度快照，`completed/error` 才形成最终态。
+8. 成功时，AI application 把任务状态更新为 `SUCCEEDED`，并写入 `candidateId`、`resultFormat`、`resultPreview`、`completedAt`。
+9. 失败时，AI application 把任务状态更新为 `FAILED` 或 `PARTIAL`，并写入 `failureStage`、`errorType`、`errorMessage`、`completedAt`。
+10. Admin Web 通过 `POST /api/ai/refinement/task/get` 或 `POST /api/ai/refinement/task/page` 轮询任务状态。
+11. 当任务进入 `SUCCEEDED` 且存在 `candidateId` 后，Admin Web 刷新候选面板，用户再通过候选应用接口把结果落到正式内容。
+12. `task/add` 的成功只表示“任务已受理”，不表示候选已生成；候选是否可用必须以后续 `task/get` 返回的最终状态判断。
+
+精修任务失效清理流程：
+
+1. 清理范围只包含 `ai_refinement_task`。
+2. 不清理：
+   - `ai_call_record`
+   - `ai_candidate`
+   - `ai_batch_job`
+3. 清理由 Java servers 计划任务执行，建议频率为每 `1` 小时一次。
+4. 默认失效阈值固定为 `12` 小时。
+5. 对 `status in (PENDING, RUNNING)` 且 `requestedAt < now - 12h` 的任务，不直接删除，先自动收口为失败终态：
+   - `status = FAILED`
+   - `failureStage = WORKER_RESULT`
+   - `errorType = TASK_EXPIRED`
+   - `errorMessage = 任务超过 12 小时未完成，系统自动关闭`
+   - `completedAt = now`
+6. 对 `status in (SUCCEEDED, FAILED, PARTIAL, CANCELLED)` 的终态任务，当终态时间早于 `now - 12h` 时执行物理删除。
+7. 终态时间字段取值规则：
+   - 优先 `completedAt`
+   - 若为空则取 `cancelledAt`
+   - 若仍为空则回退 `requestedAt`
+8. 删除 `ai_refinement_task` 不得级联删除 `ai_call_record` 或 `ai_candidate`；调用记录和候选快照继续作为追踪真相源保留。
+9. Admin Web 轮询到已被清理的 `taskId` 时，Java 应返回稳定业务提示，例如“任务不存在或已过期清理”，而不是前端无限重试。
+
+前端 SSE 的适用边界：
+
+- 默认不为 `translate`、`summary`、`tags`、`qa` 提供前端 SSE，因为这些能力不需要逐 token 展示。
+- `answer_generation`、`image_analysis`、`image_gen` 或未来其他明显长时任务，可以在任务协议之上增加 `task/stream`。
+- 即使存在 `task/stream`，前端断线重连后也必须退回 `task/get` 拉最终状态，不依赖流恢复。
+
+不默认选择 WebSocket 的原因：
+
+- 当前 workers、AI 域和接口文档都围绕 HTTP + SSE 设计，没有现成 WebSocket 会话模型。
+- WebSocket 会引入连接鉴权、重连、节点粘性和服务治理复杂度，但本批次 `translate/summary` 不需要这类实时性。
+- 对管理后台任务，状态轮询更符合现有 `task/add -> task/page -> task/get -> task/apply` 交互风格。
+
 失败阶段固定枚举：
 
 - `REQUEST_VALIDATE`
