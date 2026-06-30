@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `AI-WORKERS T7B`：收口大文件 multipart 分片上传与完成
-  - 任务类型：执行任务
-  - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLOSURE.md#T7B`
-  - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/main/java/com/thundax/kuzhambu/storage/application/service/MultipartUploadApplicationService.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-facade/src/main/java/com/thundax/kuzhambu/storage/facade/request/UploadMultipartPartFacadeRequest.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-facade/src/main/java/com/thundax/kuzhambu/storage/facade/request/CompleteMultipartUploadFacadeRequest.java`、`docs/30-designs/STORAGE-DESIGN.md`
-  - 处理动作：完成 multipart 分片上传、完成提交与设计文档口径同步。
-  - 验收点：大文件不会因单次内存装载或普通上传路径导致实现不可行。
-  - 重要度：10/10
-
 - [ ] `AI-WORKERS T8`：收口 Workers 临时 artifact 清理任务
   - 任务类型：执行任务
   - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLOSURE.md#T8`

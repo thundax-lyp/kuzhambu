@@ -65,6 +65,13 @@ Application 层负责上传校验、文件对象创建、引用幂等建立和�
 - `completeMultipartUpload` 校验分片完整性与顺序，按顺序合并临时对象内容并落为 `storage_object`。
 - `abortMultipartUpload` 删除会话内已上传分片内容并清理分片记录，更新会话状态为 `ABORTED`。
 
+AI / Workers 文件类结果转存补充语义：
+
+- Java AI 域从 Workers 下载 `temporary artifact reference` 对应临时产物后，再决定进入普通上传或分片上传链路。
+- 小文件允许直接复用普通上传入口。
+- 超过阈值的大文件必须走 `流式下载 + multipart upload`，不得默认一次性装入单次普通上传路径。
+- 转存完成后，业务侧只认 `storage_object` 结果，不认 Workers 临时引用。
+
 删除链路采用两阶段语义：
 
 - 删除接口仅允许删除无引用对象，并先将 `storage_object` 标记为已删除。
