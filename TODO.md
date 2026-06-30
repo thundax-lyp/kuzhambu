@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `docs/storage`：同步 Storage 稳定文档到 reference 单真相源模型
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-OWNER-CLEANUP.md`
-    - 范围对象：`docs/10-requirements/STORAGE-REQUIREMENTS.md`、`docs/30-designs/STORAGE-DESIGN.md`、`docs/40-readiness/STORAGE-IMPLEMENTATION-COVERAGE.md`
-    - 处理动作：将稳定文档统一到“删除 object owner、删除 reference 记录状态、object 级 reference_status 为派生状态”的口径
-    - 验收点：三份文档不再把 `storage_object.owner_type / owner_id` 和 `storage_object_reference.reference_status` 作为目标模型的一部分
-    - 重要度：10/10
-
 - [ ] `db/storage`：收敛 Storage schema 与数据库治理规则
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-OWNER-CLEANUP.md`
