@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `AiWorkerModelConfigResolver/WorkerAiHttpClient`：实现 AI 域统一 modelConfig 组装与下发
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLASSICS-TEXT-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/invocation/command/AiInvokeCommand.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/config/service/AiServiceConfigApplicationService.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/model/service/AiModelApplicationService.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/invocation/support/AiWorkerModelConfigResolver.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-infra/src/main/java/com/thundax/kuzhambu/ai/infra/client/WorkerAiHttpClient.java`
-    - 处理动作：在 AI 域形成单一 `modelConfig` 真相组装入口并将完整字段下发给 workers
-    - 验收点：workers 请求中 `serviceRole/apiSource/baseUrl/apiKey/modelName/capabilityTags/parameters/timeoutMs` 全部真实可用
-    - 重要度：10/10
-
 - [ ] `AiRefinementApplicationServiceImpl/DiscoveryAiApplicationServiceImpl/KnowledgeAiExtractionApplicationServiceImpl`：统一复用 modelConfig resolver
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLASSICS-TEXT-CLOSURE.md`
