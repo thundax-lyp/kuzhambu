@@ -89,6 +89,11 @@ public class AiRefinementTaskRepositoryImpl implements AiRefinementTaskRepositor
     }
 
     @Override
+    public long countTasks(String capability, String status, String contentType, Long contentId, Long requestedBy) {
+        return aiRefinementTaskMapper.countTasks(capability, status, contentType, contentId, requestedBy);
+    }
+
+    @Override
     public List<AiRefinementTask> listExpiredRunningTasks(Instant threshold) {
         return toRefinementTaskDomainList(aiRefinementTaskMapper.selectExpiredRunningTasks(threshold));
     }

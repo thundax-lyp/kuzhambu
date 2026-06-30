@@ -2,8 +2,11 @@ package com.thundax.kuzhambu.ai.interfaces.admin.refinement.assembler;
 
 import com.thundax.kuzhambu.ai.application.refinement.command.AiRefinementRequestCommand;
 import com.thundax.kuzhambu.ai.application.refinement.result.AiCandidateResult;
+import com.thundax.kuzhambu.ai.domain.refinement.model.entity.AiRefinementTask;
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.request.AiRefinementRequests;
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.response.AiRefinementResponses;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class AiRefinementInterfaceAssembler {
 
@@ -11,11 +14,13 @@ public final class AiRefinementInterfaceAssembler {
 
     public static AiRefinementRequestCommand toCommand(AiRefinementRequests.RefinementRequest request) {
         AiRefinementRequestCommand command = new AiRefinementRequestCommand();
+        command.setCapability(request.getCapability());
         command.setScope(request.getScope());
         command.setOperation(request.getOperation());
         command.setContentType(request.getContentType());
         command.setContentId(request.getContentId());
         command.setObjectId(request.getObjectId());
+        command.setRequestedBy(request.getRequestedBy());
         command.setServiceId(request.getServiceId());
         command.setServiceRole(request.getServiceRole());
         command.setModelId(request.getModelId());
@@ -46,6 +51,80 @@ public final class AiRefinementInterfaceAssembler {
                 .resultPayload(result.getResultPayload())
                 .errorType(result.getErrorType())
                 .errorMessage(result.getErrorMessage())
+                .build();
+    }
+
+    public static AiRefinementResponses.TaskDetailResponse toTaskDetailResponse(AiRefinementTask task) {
+        if (task == null) {
+            return AiRefinementResponses.TaskDetailResponse.builder().build();
+        }
+        return AiRefinementResponses.TaskDetailResponse.builder()
+                .taskId(task.getTaskId())
+                .status(task.getStatus())
+                .scope(task.getScope())
+                .capability(task.getCapability())
+                .contentType(task.getContentType())
+                .contentId(task.getContentId())
+                .objectId(task.getObjectId())
+                .requestedBy(task.getRequestedBy())
+                .serviceRole(task.getServiceRole())
+                .modelId(task.getModelId())
+                .modelName(task.getModelName())
+                .promptVersionId(task.getPromptVersionId())
+                .requestId(task.getRequestId())
+                .traceId(task.getTraceId())
+                .callId(task.getCallId())
+                .candidateId(task.getCandidateId())
+                .failureStage(task.getFailureStage())
+                .errorType(task.getErrorType())
+                .errorMessage(task.getErrorMessage())
+                .resultFormat(task.getResultFormat())
+                .resultPreview(task.getResultPreview())
+                .requestedAt(task.getRequestedAt())
+                .startedAt(task.getStartedAt())
+                .completedAt(task.getCompletedAt())
+                .cancelledAt(task.getCancelledAt())
+                .build();
+    }
+
+    public static AiRefinementResponses.TaskAcceptedResponse toTaskAcceptedResponse(AiRefinementTask task) {
+        if (task == null) {
+            return AiRefinementResponses.TaskAcceptedResponse.builder().build();
+        }
+        return AiRefinementResponses.TaskAcceptedResponse.builder()
+                .taskId(task.getTaskId())
+                .status(task.getStatus())
+                .capability(task.getCapability())
+                .contentType(task.getContentType())
+                .contentId(task.getContentId())
+                .requestedAt(task.getRequestedAt())
+                .build();
+    }
+
+    public static AiRefinementResponses.TaskCancelResponse toTaskCancelResponse(AiRefinementTask task) {
+        if (task == null) {
+            return AiRefinementResponses.TaskCancelResponse.builder().build();
+        }
+        return AiRefinementResponses.TaskCancelResponse.builder()
+                .taskId(task.getTaskId())
+                .status(task.getStatus())
+                .cancelledAt(task.getCancelledAt())
+                .build();
+    }
+
+    public static AiRefinementResponses.TaskPageResponse toTaskPageResponse(
+            int pageNo, int pageSize, long total, List<AiRefinementTask> records) {
+        List<AiRefinementResponses.TaskDetailResponse> items = new ArrayList<>();
+        if (records != null) {
+            for (AiRefinementTask record : records) {
+                items.add(toTaskDetailResponse(record));
+            }
+        }
+        return AiRefinementResponses.TaskPageResponse.builder()
+                .items(items)
+                .total(total)
+                .pageNo(pageNo)
+                .pageSize(pageSize)
                 .build();
     }
 }

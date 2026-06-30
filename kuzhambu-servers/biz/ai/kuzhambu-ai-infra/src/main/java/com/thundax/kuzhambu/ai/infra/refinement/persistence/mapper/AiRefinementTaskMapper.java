@@ -30,6 +30,17 @@ public interface AiRefinementTaskMapper extends BaseMapper<AiRefinementTaskDO> {
             Integer offset,
             Integer pageSize);
 
+    @Select(
+            """
+            select count(1) from ai_refinement_task
+            where (#{capability} is null or capability = #{capability})
+              and (#{status} is null or status = #{status})
+              and (#{contentType} is null or content_type = #{contentType})
+              and (#{contentId} is null or content_id = #{contentId})
+              and (#{requestedBy} is null or requested_by = #{requestedBy})
+            """)
+    long countTasks(String capability, String status, String contentType, Long contentId, Long requestedBy);
+
     @Select("select * from ai_refinement_task where task_id = #{taskId}")
     AiRefinementTaskDO selectTask(Long taskId);
 

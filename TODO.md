@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `AiRefinementTaskController/AiRefinementTaskApplicationServiceImpl`：新增精修任务接口与编排
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLASSICS-TEXT-CLOSURE.md`、`docs/30-designs/AI-DESIGN.md`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/refinement/controller/AiRefinementTaskController.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/refinement/controller/request/AiRefinementTaskRequests.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/refinement/controller/response/AiRefinementTaskResponses.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/refinement/service/impl/AiRefinementTaskApplicationServiceImpl.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/test/java/com/thundax/kuzhambu/ai/interfaces/admin/refinement/controller/AiRefinementTaskControllerTest.java`
-    - 处理动作：新增 `task/add`、`task/get`、`task/page`、`task/cancel` 接口，并把 worker 最终态回写到任务台账
-    - 验收点：前端可以拿到 `taskId` 并轮询看到 `PENDING/RUNNING/SUCCEEDED/FAILED/PARTIAL/CANCELLED`
-    - 重要度：10/10
-
 - [ ] `AiRefinementTaskCleanupService/AiRefinementTaskCleanupServiceImpl`：补齐精修任务失效清理
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLASSICS-TEXT-CLOSURE.md`、`docs/30-designs/AI-DESIGN.md`

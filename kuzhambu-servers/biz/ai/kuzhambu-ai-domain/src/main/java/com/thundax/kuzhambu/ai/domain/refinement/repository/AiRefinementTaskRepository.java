@@ -21,5 +21,7 @@ public interface AiRefinementTaskRepository {
             Integer pageNo,
             Integer pageSize);
 
+    long countTasks(String capability, String status, String contentType, Long contentId, Long requestedBy);
+
     List<AiRefinementTask> listExpiredRunningTasks(Instant threshold);
 }

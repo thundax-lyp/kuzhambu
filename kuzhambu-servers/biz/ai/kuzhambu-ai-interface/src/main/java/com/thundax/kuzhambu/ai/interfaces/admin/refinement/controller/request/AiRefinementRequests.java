@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.request;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.thundax.kuzhambu.common.web.request.PageRequest;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -21,6 +22,10 @@ public final class AiRefinementRequests {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class RefinementRequest implements Serializable {
+
+        @Size(max = 64)
+        @JsonProperty(value = "capability")
+        private String capability;
 
         @NotBlank
         @Size(max = 64)
@@ -42,6 +47,9 @@ public final class AiRefinementRequests {
 
         @JsonProperty(value = "objectId")
         private Long objectId;
+
+        @JsonProperty(value = "requestedBy")
+        private Long requestedBy;
 
         @JsonProperty(value = "serviceId")
         private Long serviceId;
@@ -96,5 +104,59 @@ public final class AiRefinementRequests {
         @Size(max = 32)
         @JsonProperty(value = "locale")
         private String locale;
+    }
+
+    @Getter
+    @Setter
+    @Schema(name = "AiRefinementTaskIdRequest", description = "AI精修任务ID请求")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class TaskIdRequest implements Serializable {
+
+        @NotNull
+        @JsonProperty(value = "taskId")
+        private Long taskId;
+    }
+
+    @Getter
+    @Setter
+    @Schema(name = "AiRefinementTaskCancelRequest", description = "AI精修任务取消请求")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class TaskCancelRequest implements Serializable {
+
+        @NotNull
+        @JsonProperty(value = "taskId")
+        private Long taskId;
+
+        @NotNull
+        @JsonProperty(value = "requestedBy")
+        private Long requestedBy;
+    }
+
+    @Getter
+    @Setter
+    @Schema(name = "AiRefinementTaskPageRequest", description = "AI精修任务分页请求")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class TaskPageRequest extends PageRequest {
+
+        @Size(max = 64)
+        @JsonProperty(value = "capability")
+        private String capability;
+
+        @Size(max = 32)
+        @JsonProperty(value = "status")
+        private String status;
+
+        @Size(max = 64)
+        @JsonProperty(value = "contentType")
+        private String contentType;
+
+        @JsonProperty(value = "contentId")
+        private Long contentId;
+
+        @JsonProperty(value = "requestedBy")
+        private Long requestedBy;
     }
 }

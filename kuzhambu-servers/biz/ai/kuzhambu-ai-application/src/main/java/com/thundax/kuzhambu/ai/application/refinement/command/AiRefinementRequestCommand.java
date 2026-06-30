@@ -12,11 +12,13 @@ import lombok.Setter;
 @AllArgsConstructor
 public class AiRefinementRequestCommand {
 
+    private String capability;
     private String scope;
     private String operation;
     private String contentType;
     private Long contentId;
     private Long objectId;
+    private Long requestedBy;
     private Long serviceId;
     private String serviceRole;
     private Long modelId;
