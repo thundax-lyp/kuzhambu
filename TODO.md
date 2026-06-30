@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `text.py/graph_registry.py/basic.py`：替换 workers 文本占位 graph
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLASSICS-TEXT-CLOSURE.md`
-    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/ai/graphs/text.py`、`kuzhambu-workers/src/kuzhambu_workers/ai/graph_registry.py`、`kuzhambu-workers/src/kuzhambu_workers/ai/graphs/basic.py`、`kuzhambu-workers/tests/test_graph_registry.py`、`kuzhambu-workers/tests/test_worker_e2e_ai_usecase_classics.py`
-    - 处理动作：新增真实文本 graph，并将 classics `translate/summary` usecase 切换到该 graph
-    - 验收点：`POST /internal/ai/classics/sancai/translate`、`POST /internal/ai/classics/sancai/summary`、`POST /internal/ai/classics/wangqi/summary`、`POST /internal/ai/classics/ming-customs/summary` 返回非空 `TEXT`
-    - 重要度：10/10
-
 - [ ] `ai_routes.py/test_ai_routes.py`：收紧 workers 文本成功条件与失败映射
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLASSICS-TEXT-CLOSURE.md`
