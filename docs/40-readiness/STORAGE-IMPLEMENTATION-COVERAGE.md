@@ -29,10 +29,9 @@
 - portal 上传入口遵循职责分离：portal 上传由各业务域专用入口发起并复用 Storage，不由 Storage 通用入口承接。
 
 部分完成：
-- 文件删除链路的人工删除语义已落地：application `remove` 会拒绝 `REFERENCED` 对象，repository `deleteById` 仅将 `storage_object.object_status` 置为 `DELETED`，后续再由清理任务执行物理删除。当前设计已确认“人工删除 + 自动 orphan 删除”两条线并存，但自动线尚未实现为“超时 `UNREFERENCED` 自动标记 `DELETED`”。
 
 未完成：
-- 无新增独立能力项；剩余未完成内容集中在“自动 orphan 删除策略与运行时清理口径收口”。
+- 无。
 
 ## Requirement Coverage Matrix
 
@@ -41,11 +40,11 @@
 | 普通文件上传（multipart） | 已完成 | 已支持 `multipart/form-data`、空文件和类型/后缀校验、对象创建、返回读取地址、契约测试覆盖 | 无 | Storage |
 | 文件内容读取 | 已完成 | 已有按 ID 读取内容接口，返回正确 Content-Type 与下载/预览响应头，读取失败抛异常 | 无 | Storage |
 | 文件对象列表/查询 | 已完成 | 已支持按文件名、类型、引用 owner、对象状态与引用状态等条件查询与分页 | 无 | Storage |
-| 文件对象删除 | 部分完成 | 已有删除接口；明确只允许删除无引用对象；删除时将对象标记为 `DELETED`，常规读取链路随即不可见；物理删除由后续计划任务异步完成 | 自动 orphan 删除线尚未实现为“超时 `UNREFERENCED` 自动标记 `DELETED`”；删除与物理清理一致性的端到端验证、运行时异常告警与清理策略文档仍缺收口 | Storage |
+| 文件对象删除 | 已完成 | 已有删除接口；明确只允许删除无引用对象；删除时将对象标记为 `DELETED`，常规读取链路随即不可见；超时 `UNREFERENCED` orphan 会被自动推进到 `DELETED`；物理删除由后续计划任务异步完成 | 无 | Storage |
 | 分片上传（初始化/分片上传/完成/取消） | 已完成 | admin/facade 与 application 全链路闭环，uploadPart 写入临时内容、complete 合并落库、abort 清理残留分片，测试覆盖 contract 与 application service | 无 | Storage |
 | 业务文件引用建立与清理 | 已完成 | facade / application service 提供 bind/unbind、add/remove、referenceStatus 维护；application 去重并跳过已存在引用；`db/schema/storage.sql` 已明确引用复合主键；`storage_object.owner_type / owner_id` 与 `storage_object_reference.reference_status` 已从实现、接口和 schema 中移除，引用关系统一由有效 `storage_object_reference` 记录承载；Classics、System 已稳定复用并形成业务闭环；Admin Web 对象页已切换到引用 owner 语义，可查看引用状态和引用筛选 | 管理界面按边界不提供引用编辑；多 owner 并发引用是否作为稳定对外能力开放仍待业务决策 | Storage / Classics / System |
 | 文件对象状态与引用状态维护 | 已完成 | 对象状态、引用状态及更新接口已可用 | 无 | Storage |
-| 未引用对象清理 | 部分完成 | Storage 已实现物理清理任务，会对已标记删除且满足阈值条件的对象执行底层物理删除 | 设计要求的“超时 `UNREFERENCED` 自动推进到 `DELETED`”尚未落地；清理触发策略、阈值、失败重试与外部告警未形成统一交付标准 | Storage |
+| 未引用对象清理 | 已完成 | Storage 已实现 orphan 清理任务：会将超时 `UNREFERENCED` 对象自动推进到 `DELETED`，并对已标记删除且满足阈值条件的对象执行底层物理删除；当前阈值固定为 `12 小时`，允许同一轮完成标记与清理 | 本轮不引入新的失败重试机制，也不接外部告警系统 | Storage |
 | 本地文件和 S3 兼容对象存储适配 | 已完成 | Storage 已通过通用对象存储客户端抽象接入底层存储，当前本地存储运行路径明确；按本轮 RUNBOOK 口径，S3 真实环境联调与运维证据不作为当前打满阻塞项 | 无 | Storage / Common OSS |
 
 ## Follow-up Backlog
@@ -60,15 +59,19 @@
 
 ### B2 删除/引用一致性规范
 
-状态：部分完成（进行中）。
+状态：已完成。
 
 目标：保持“仅允许删除无引用对象”的现行显式删除策略，并补齐“超时 `UNREFERENCED` 自动标记 `DELETED`”的自动删除线；同时补充接口与集成测试验证“删除后对象内容不可读取”“业务域先解绑后删除”的调用约束以及“物理清理何时发生”。
 
+更新：Storage 已完成“显式删除 + 自动 orphan 删除”双路径收口；自动线会将超时 `UNREFERENCED` 对象推进到 `DELETED`，并由清理任务完成异步物理删除，相关 application / infra 测试已补齐失败边界。
+
 ### B3 运行时清理策略收敛
 
-状态：未完成。
+状态：已完成。
 
 目标：明确 orphan 阈值、扫描频率、`UNREFERENCED -> DELETED` 推进规则、失败重试与异常告警行为，补齐存储层运行手册。
+
+更新：当前稳定口径已固定为“orphan 阈值 12 小时、允许同一轮完成标记与清理”；本轮不引入新的失败重试机制，也不接外部告警系统。
 
 ### B4 Storage 引用模型与 Schema 真相源收敛
 
