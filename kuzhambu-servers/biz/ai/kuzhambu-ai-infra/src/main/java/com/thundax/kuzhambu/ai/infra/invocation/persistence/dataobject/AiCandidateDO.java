@@ -24,13 +24,16 @@ public class AiCandidateDO {
     private String contentType;
     private Long contentId;
     private Long objectId;
+    private String artifactReferenceJson;
     private String resultFormat;
     private String resultPayload;
     private String status;
     private Long promptVersionId;
     private String modelName;
+    private String failureStage;
     private String errorType;
     private String errorMessage;
     private Instant requestedAt;
     private Instant appliedAt;
+    private Instant rejectedAt;
 }

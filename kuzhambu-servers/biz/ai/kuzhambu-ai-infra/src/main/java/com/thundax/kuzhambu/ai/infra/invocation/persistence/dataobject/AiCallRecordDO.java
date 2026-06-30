@@ -40,6 +40,10 @@ public class AiCallRecordDO {
     private Integer inputTokens;
     private Integer outputTokens;
     private BigDecimal costAmount;
+    private String failureStage;
+    private String resultFormat;
+    private String resultPayload;
+    private String artifactReferenceJson;
     private String errorType;
     private String errorMessage;
     private String warningsJson;

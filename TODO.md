@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `AI-WORKERS T3B`：收口 AI 调用记录与候选记录持久化映射
-  - 任务类型：执行任务
-  - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLOSURE.md#T3`
-  - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-infra/src/main/java/com/thundax/kuzhambu/ai/infra/invocation/persistence/dataobject/AiCallRecordDO.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-infra/src/main/java/com/thundax/kuzhambu/ai/infra/invocation/persistence/dataobject/AiCandidateDO.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-infra/src/main/java/com/thundax/kuzhambu/ai/infra/invocation/repository/impl/AiInvocationRepositoryImpl.java`
-  - 处理动作：补齐 `failureStage`、`resultFormat`、`resultPayload`、`artifactReferenceJson`、`rejectedAt` 的 DO 与 repository 读写映射。
-  - 验收点：DO、repository、领域对象读写字段完全对齐。
-  - 重要度：10/10
-
 - [ ] `AI-WORKERS T4`：定义 temporary artifact reference 协议
   - 任务类型：执行任务
   - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLOSURE.md#T4`
