@@ -2,7 +2,6 @@ package com.thundax.kuzhambu.ai.application.refinement.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
@@ -120,19 +119,24 @@ class AiRefinementApplicationServiceImplTest {
     }
 
     @Test
-    void analyzeImageShouldKeepLegacyOperationAndNoWorkerPath() {
+    void analyzeImageShouldUseClassicsUsecasePathForSancai() {
         CapturingInvocationService invocationService = new CapturingInvocationService();
         AiRefinementApplicationServiceImpl service =
                 new AiRefinementApplicationServiceImpl(invocationService, resolver);
 
         AiCandidateResult result =
-                service.analyzeImage(command("SANCAI_ENTRY", "ORIGINAL_OP", CAPABILITY_IMAGE_ANALYSIS));
+                service.analyzeImage(command("SANCAI_ENTRY", "external-operation", CAPABILITY_IMAGE_ANALYSIS));
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
 
         assertNotNull(result);
-        assertEquals("ORIGINAL_OP", capturedCommand.getOperation());
-        assertNull(capturedCommand.getWorkerPath());
+        assertEquals("MARKDOWN", result.getResultFormat());
+        assertEquals("image-analysis-body", result.getResultPayload());
+        assertEquals("CLASSICS_SANCAI_IMAGE_ANALYSIS", capturedCommand.getOperation());
+        assertEquals("/internal/ai/classics/sancai/image-analysis", capturedCommand.getWorkerPath());
         assertEquals("image_analysis", capturedCommand.getCapability());
+        assertEquals(true, capturedCommand.isStream());
+        assertEquals(true, capturedCommand.isCreateCandidate());
+        assertEquals(true, capturedCommand.toRunningCallRecord().isStreamUsed());
     }
 
     private AiRefinementRequestCommand command(String contentType, String operation, String capability) {
@@ -163,6 +167,9 @@ class AiRefinementApplicationServiceImplTest {
             result.setTraceId("trace-1");
             result.setStatus("SUCCEEDED");
             result.setCapability(command.getCapability());
+            result.setResultFormat("MARKDOWN");
+            result.setResultPayload("image-analysis-body");
+            result.setStreamCompleted(command.isStream());
             return result;
         }
 
