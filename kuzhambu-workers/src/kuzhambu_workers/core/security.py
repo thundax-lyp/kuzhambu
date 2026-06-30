@@ -18,6 +18,7 @@ COMMON_PATHS = {
     "/internal/health",
     "/internal/capabilities",
 }
+ARTIFACT_PATH_PREFIX = "/internal/artifacts/"
 
 SERVICE_PATHS = {
     "kuzhambu-ai": {
@@ -67,7 +68,7 @@ def verify_internal_request(
         raise _auth_error("HEADER_BODY_MISMATCH", "请求头与请求体追踪标识不一致。", retryable=False)
     if service not in settings.allowed_services:
         raise _auth_error("SERVICE_NOT_ALLOWED", "调用方服务不在允许列表中。", retryable=False)
-    if path not in COMMON_PATHS and path not in SERVICE_PATHS.get(service, set()):
+    if not _is_path_allowed(service, path):
         raise _auth_error("PATH_FORBIDDEN", "调用方服务不允许访问该路径。", retryable=False)
     if not settings.internal_secret:
         raise _auth_error("WORKER_SECRET_MISSING", "worker 内部密钥未配置。", retryable=True)
@@ -124,6 +125,12 @@ def _parse_timestamp(timestamp: str) -> int:
         return int(timestamp)
     except ValueError as exc:
         raise _auth_error("BAD_TIMESTAMP", "请求时间戳格式不合法。", retryable=False) from exc
+
+
+def _is_path_allowed(service: str, path: str) -> bool:
+    if path in COMMON_PATHS or path in SERVICE_PATHS.get(service, set()):
+        return True
+    return service == "kuzhambu-ai" and path.startswith(ARTIFACT_PATH_PREFIX)
 
 
 def _auth_error(code: str, message: str, *, retryable: bool) -> WorkerError:

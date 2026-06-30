@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `AI-WORKERS T5B`：收口 Workers artifact 下载接口
-  - 任务类型：执行任务
-  - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLOSURE.md#T5`
-  - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/api/artifact_routes.py`、`kuzhambu-workers/src/kuzhambu_workers/core/security.py`、`kuzhambu-workers/src/kuzhambu_workers/main.py`
-  - 处理动作：提供内部下载入口并接入内部服务身份校验。
-  - 验收点：Java 可以凭内部服务身份下载指定 artifact，已过期 artifact 无法读取。
-  - 重要度：10/10
-
 - [ ] `AI-WORKERS T6A`：收口 Java artifact 下载客户端
   - 任务类型：执行任务
   - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLOSURE.md#T6`
