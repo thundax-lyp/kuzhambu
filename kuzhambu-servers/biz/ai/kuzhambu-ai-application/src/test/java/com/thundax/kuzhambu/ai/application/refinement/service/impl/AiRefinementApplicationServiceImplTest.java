@@ -132,6 +132,8 @@ class AiRefinementApplicationServiceImplTest {
         assertEquals("CLASSICS_SANCAI_IMAGE_ANALYSIS", capturedCommand.getOperation());
         assertEquals("/internal/ai/classics/sancai/image-analysis", capturedCommand.getWorkerPath());
         assertEquals("image_analysis", capturedCommand.getCapability());
+        assertEquals(true, capturedCommand.isStream());
+        assertEquals(true, capturedCommand.isCreateCandidate());
     }
 
     private AiRefinementRequestCommand command(String contentType, String operation, String capability) {

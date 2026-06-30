@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `kuzhambu-ai-application stream command`：AI-WORKERS T3 固定 image_analysis 的 stream 调用语义
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-IMAGE-ANALYSIS-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/refinement/service/impl/AiRefinementApplicationServiceImpl.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/invocation/command/AiInvokeCommand.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/test/java/com/thundax/kuzhambu/ai/application/refinement/service/impl/AiRefinementApplicationServiceImplTest.java`
-    - 处理动作：仅为 `image_analysis` 显式固定 `AiInvokeCommand.stream = true` 并保持 `createCandidate = true`。
-    - 验收点：image analysis 调用命令的 `stream = true`、`createCandidate = true`，且不扩大到其他 capability 的 stream 组装重构。
-    - 重要度：10/10
-
 - [ ] `kuzhambu-ai final-state markdown model`：AI-WORKERS T4 锁定 image_analysis 最终结果落库语义
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-IMAGE-ANALYSIS-CLOSURE.md`
