@@ -35,7 +35,7 @@
 - 明代习俗富文本展示已通过 Admin Web 独立控件封装 Markdown/HTML 渲染，前端使用统一清洗策略处理危险内容。
 - 明代习俗闭环已完成验证：数据生成校验、后端 Maven 检查和测试、前端 format/lint/test/build、Playwright 页面闭环、dev.env 登录后分页和关键词云接口冒烟均已通过。
 - 王圻文档 Admin Web 管理闭环已完成：后台菜单和 `/classics/wangqi` 路由可进入真实页面，支持文档分页、关键词和可见性筛选、时间线视图、详情阅读、新增、编辑、删除、原始文件上传和读取、版本历史、版本字段对比和历史恢复。
-- 王圻文档初始化数据、后端接口契约、前端服务契约、页面单测、Playwright 页面闭环和 dev.env Admin API 冒烟均已通过；删除 Wangqi 文档会删除版本历史、移除 Storage reference，并释放当前原始文件对象引用状态。
+- 王圻文档初始化数据、后端接口契约、前端服务契约、页面单测、Playwright 页面闭环和 dev.env Admin API 冒烟均已通过；删除 Wangqi 文档会删除版本历史、解绑 Storage owner，并将当前原始文件对象回落为未引用状态。
 - Storage 文件读取和预览最小闭环已接入 Classics：Admin Storage/Wangqi/Sancai 使用鉴权资源 URL，Wangqi 原始文件和 Sancai 图片通过业务域接口读取，Portal 分享详情动态装配资源对象，分享资源读取会校验分享链接和快照内资源 ID。
 - Classics 通用内容标签闭环已接通后端运行时：手工标签新增/更新/删除会先解析或创建 Knowledge 统一标签，再同步 Knowledge 内容引用；AI 标签确认会先清理旧 AI 引用，再经 Knowledge 协作语义回写统一标签和引用投影；标签排序已收敛为 `contentType + contentId` 作用域。
 - Classics 标签闭环核心路径已补齐后端测试，覆盖手工标签绑定、AI 标签确认同步、删除标签同步和按内容排序请求映射。
@@ -83,7 +83,7 @@
 | 需求项 | 状态 | 已完成部分 | 未完成部分 | 责任域 |
 | --- | --- | --- | --- | --- |
 | 文档查看、创建、编辑、删除 | 已完成 | 文档分页、详情、时间线、保存、删除接口与服务已实现；Admin Web 已支持列表进入详情、新增、编辑、删除和列表刷新闭环；dev.env Admin API 冒烟已通过 | 无 | Classics, Admin Web |
-| 原始文件关联和替换 | 已完成 | `storage_object_id` 已设计并入参到位；Wangqi 业务接口已支持原始文件上传、元数据查询和资源流读取；上传会绑定 Storage 归属和引用，替换会追加版本；删除文档会移除引用并释放当前对象引用状态 | 无 | Classics, Storage, Admin Web |
+| 原始文件关联和替换 | 已完成 | `storage_object_id` 已设计并入参到位；Wangqi 业务接口已支持原始文件上传、元数据查询和资源流读取；上传会绑定 Storage 归属和引用，替换会追加版本；删除文档会解绑 Storage owner，并将当前对象回落为未引用状态 | 无 | Classics, Storage, Admin Web |
 | 全文阅读和内容安全展示 | 已完成 | 文本内容/时间字段及阅读接口已实现；Admin Web 详情编辑页已提供正文预览，并复用统一富文本清洗控件展示 Markdown/HTML 内容 | 无 | Classics, Admin Web |
 | 摘要、标签和问答对展示维护 | 部分完成 | 文档摘要、通用标签/问答对模型与 API 已实现；Admin Web 编辑页已接入标签治理面板和问答对治理面板；通用标签写路径已接通 Knowledge 协作与内容引用同步 | 问答对版本化确认链路与更多治理约束未补齐 | Classics, Knowledge |
 | AI 摘要、标签、问答对生成入口和候选确认 | 部分完成 | Admin Web 编辑页已接入 AI 候选确认面板，可读取 `PENDING` 候选、编辑 payload、应用或拒绝候选；后端已接通候选应用后的正文摘要/标签/问答对写回、版本追加与 AI 候选状态回写 | AI 触发生成入口、流式过程展示和候选来源侧任务治理未实现 | Classics, AI |
