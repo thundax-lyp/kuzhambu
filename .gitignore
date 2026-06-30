@@ -39,6 +39,9 @@ __pycache__/
 **/.pytest_cache/
 .ruff_cache/
 **/.ruff_cache/
+*.egg-info/**
+**/*.egg-info/**
+**/package-lock.json
 .env
 dev.env
 deploy/.env

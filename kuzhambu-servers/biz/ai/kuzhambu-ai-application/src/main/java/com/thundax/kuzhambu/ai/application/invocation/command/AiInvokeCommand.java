@@ -36,6 +36,7 @@ public class AiInvokeCommand {
     private boolean stream;
     private boolean forceJson;
     private String locale;
+    private boolean allowFallback;
     private boolean createCandidate = true;
 
     public AiCallRecord toRunningCallRecord() {

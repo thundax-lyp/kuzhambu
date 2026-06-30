@@ -33,6 +33,16 @@ class ResultFormat(str, Enum):
     ARTIFACT = "ARTIFACT"
 
 
+class FailureStage(str, Enum):
+    REQUEST_VALIDATE = "REQUEST_VALIDATE"
+    WORKER_REQUEST = "WORKER_REQUEST"
+    WORKER_STREAM = "WORKER_STREAM"
+    WORKER_RESULT = "WORKER_RESULT"
+    ARTIFACT_DOWNLOAD = "ARTIFACT_DOWNLOAD"
+    STORAGE_PERSIST = "STORAGE_PERSIST"
+    CANDIDATE_PERSIST = "CANDIDATE_PERSIST"
+
+
 class MessageRole(str, Enum):
     SYSTEM = "system"
     USER = "user"
@@ -101,6 +111,16 @@ class AiResult(BaseModel):
     payload: Any
 
 
+class ArtifactReference(BaseModel):
+    artifactId: str
+    downloadPath: str
+    contentType: str
+    filename: str
+    sizeBytes: int
+    sha256: str
+    expiresAt: str
+
+
 class KnowledgeEntityCandidate(BaseModel):
     name: str
     entityType: str
@@ -160,5 +180,8 @@ class AiInvokeResponse(BaseModel):
     capability: AiCapability
     result: AiResult | None = None
     usage: UsageSummary = Field(default_factory=UsageSummary)
+    failureStage: FailureStage | None = None
+    fallbackUsed: bool = False
+    artifactReference: ArtifactReference | None = None
     warnings: list[dict[str, Any]] = Field(default_factory=list)
     error: WorkerErrorPayload | None = None

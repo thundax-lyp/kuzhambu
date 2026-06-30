@@ -23,10 +23,14 @@ public class AiInvokeResult {
     private String capability;
     private String resultFormat;
     private String resultPayload;
+    private String artifactReferenceJson;
     private AiUsageSnapshot usage = AiUsageSnapshot.empty();
     private String warningsJson;
     private String errorType;
     private String errorMessage;
+    private String failureStage;
+    private boolean streamCompleted;
+    private boolean fallbackUsed;
 
     public boolean isSucceeded() {
         return "SUCCEEDED".equals(status);
@@ -48,13 +52,15 @@ public class AiInvokeResult {
         return candidate;
     }
 
-    public static AiInvokeResult failed(String requestId, String traceId, String errorType, String errorMessage) {
+    public static AiInvokeResult failed(
+            String requestId, String traceId, String errorType, String errorMessage, String failureStage) {
         AiInvokeResult result = new AiInvokeResult();
         result.setRequestId(requestId);
         result.setTraceId(traceId);
         result.setStatus("FAILED");
         result.setErrorType(errorType);
         result.setErrorMessage(errorMessage);
+        result.setFailureStage(failureStage);
         result.setUsage(AiUsageSnapshot.empty());
         return result;
     }

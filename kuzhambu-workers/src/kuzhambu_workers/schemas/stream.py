@@ -3,6 +3,8 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
+from kuzhambu_workers.schemas.ai import ArtifactReference, FailureStage
+
 
 class StreamEventType(str, Enum):
     STARTED = "started"
@@ -30,3 +32,11 @@ class StreamEvent(BaseModel):
     error: dict[str, Any] | None = None
     result: dict[str, Any] | None = None
     extra: dict[str, Any] = Field(default_factory=dict)
+
+
+class StreamEventExtra(BaseModel):
+    status: str | None = None
+    failureStage: FailureStage | None = None
+    fallbackUsed: bool = False
+    artifactReference: ArtifactReference | None = None
+    message: str | None = None

@@ -56,15 +56,7 @@ public class DiscoveryAiApplicationServiceImpl implements DiscoveryAiApplication
         AiInvokeResult result = spec.stream()
                 ? invocationApplicationService.stream(command, event -> {})
                 : invocationApplicationService.invoke(command);
-        return new DiscoveryAiResult(
-                result.getCallId(),
-                result.getCandidateId(),
-                result.getStatus(),
-                result.getCapability(),
-                result.getResultFormat(),
-                result.getResultPayload(),
-                result.getErrorType(),
-                result.getErrorMessage());
+        return toDiscoveryResult(result);
     }
 
     private AiInvokeCommand toInvokeCommand(DiscoveryAiRequest request, DiscoveryAiWorkerUsecaseSpec spec) {
@@ -109,5 +101,28 @@ public class DiscoveryAiApplicationServiceImpl implements DiscoveryAiApplication
 
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
+    }
+
+    private DiscoveryAiResult toDiscoveryResult(AiInvokeResult result) {
+        if (result == null) {
+            return new DiscoveryAiResult(
+                    null,
+                    null,
+                    "FAILED",
+                    null,
+                    null,
+                    null,
+                    "DISCOVERY_AI_RESULT_MISSING",
+                    "Discovery AI result is missing");
+        }
+        return new DiscoveryAiResult(
+                result.getCallId(),
+                result.getCandidateId(),
+                result.getStatus(),
+                result.getCapability(),
+                result.getResultFormat(),
+                result.getResultPayload(),
+                result.getErrorType(),
+                result.getErrorMessage());
     }
 }

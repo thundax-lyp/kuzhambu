@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
+import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService.ArtifactDownloadException;
+import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService.DownloadedArtifact;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiUsageSnapshot;
 import com.thundax.kuzhambu.ai.infra.client.dto.WorkerAiDtos;
 import java.io.BufferedReader;
@@ -106,6 +108,38 @@ public class WorkerAiHttpClient implements WorkerAiClient {
         }
     }
 
+    @Override
+    public DownloadedArtifact downloadArtifact(String requestId, String traceId, String downloadPath) {
+        try {
+            HttpRequest request = buildGetRequest(downloadPath, requestId, traceId);
+            HttpResponse<byte[]> response = httpClient.send(request, HttpResponse.BodyHandlers.ofByteArray());
+            if (!isSuccessful(response.statusCode())) {
+                throw new ArtifactDownloadException("ARTIFACT_DOWNLOAD failed with HTTP " + response.statusCode());
+            }
+            return new DownloadedArtifact(
+                    response.body(),
+                    response.headers().firstValue("Content-Type").orElse("application/octet-stream"),
+                    resolveFilename(
+                            response.headers().firstValue("Content-Disposition").orElse(null)),
+                    response.headers().firstValue("X-Kuzhambu-Artifact-Sha256").orElse(null),
+                    response.headers()
+                            .firstValue("X-Kuzhambu-Artifact-Size-Bytes")
+                            .map(Long::parseLong)
+                            .orElse((long) response.body().length),
+                    response.headers()
+                            .firstValue("X-Kuzhambu-Artifact-Expires-At")
+                            .map(this::toInstant)
+                            .orElse(null));
+        } catch (HttpTimeoutException ex) {
+            throw new ArtifactDownloadException("ARTIFACT_DOWNLOAD timed out", ex);
+        } catch (IOException ex) {
+            throw new ArtifactDownloadException("ARTIFACT_DOWNLOAD unavailable", ex);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            throw new ArtifactDownloadException("ARTIFACT_DOWNLOAD interrupted", ex);
+        }
+    }
+
     private String resolveInvokePath(AiInvokeCommand command) {
         if (command == null || isBlank(command.getWorkerPath())) {
             return INVOKE_PATH;
@@ -192,6 +226,21 @@ public class WorkerAiHttpClient implements WorkerAiClient {
                 .build();
     }
 
+    private HttpRequest buildGetRequest(String path, String requestId, String traceId) {
+        String timestamp = String.valueOf(System.currentTimeMillis());
+        String signature = signatureSupport.sign("GET", path, timestamp, requestId, "", properties.getInternalSecret());
+        return HttpRequest.newBuilder(uri(path))
+                .timeout(Duration.ofMillis(properties.getTimeoutMs()))
+                .header("Accept", "application/octet-stream")
+                .header("X-Kuzhambu-Service", properties.getServiceName())
+                .header("X-Kuzhambu-Request-Id", requestId)
+                .header("X-Kuzhambu-Trace-Id", traceId)
+                .header("X-Kuzhambu-Timestamp", timestamp)
+                .header("X-Kuzhambu-Signature", signature)
+                .GET()
+                .build();
+    }
+
     private URI uri(String path) {
         String baseUrl = properties.getBaseUrl();
         if (baseUrl == null || baseUrl.trim().isEmpty()) {
@@ -210,9 +259,15 @@ public class WorkerAiHttpClient implements WorkerAiClient {
         result.setTraceId(defaultString(response.getTraceId(), command.getTraceId()));
         result.setStatus(response.getStatus());
         result.setCapability(defaultString(response.getCapability(), command.getCapability()));
+        result.setFailureStage(response.getFailureStage());
+        result.setFallbackUsed(Boolean.TRUE.equals(response.getFallbackUsed()));
         if (response.getResult() != null) {
             result.setResultFormat(response.getResult().getFormat());
             result.setResultPayload(payloadToString(response.getResult().getPayload()));
+        }
+        if (response.getArtifactReference() != null
+                && !response.getArtifactReference().isNull()) {
+            result.setArtifactReferenceJson(payloadToString(response.getArtifactReference()));
         }
         result.setUsage(toUsage(response.getUsage()));
         if (response.getWarnings() != null && !response.getWarnings().isNull()) {
@@ -277,7 +332,13 @@ public class WorkerAiHttpClient implements WorkerAiClient {
         event.setStage(text(node, "stage"));
         event.setTimestamp(toInstant(text(node, "timestamp")));
         event.setDeltaText(payloadToString(node.path("delta").path("text")));
-        event.setStatus(text(node, "status"));
+        event.setStatus(defaultString(text(node, "status"), text(node.path("extra"), "status")));
+        event.setFailureStage(text(node.path("extra"), "failureStage"));
+        event.setFallbackUsed(Boolean.parseBoolean(text(node.path("extra"), "fallbackUsed")));
+        if (!node.path("extra").path("artifactReference").isMissingNode()
+                && !node.path("extra").path("artifactReference").isNull()) {
+            event.setArtifactReferenceJson(payloadToString(node.path("extra").path("artifactReference")));
+        }
         setResult(node, event);
         event.setUsage(toUsage(node.get("usage")));
         JsonNode error = node.get("error");
@@ -348,7 +409,7 @@ public class WorkerAiHttpClient implements WorkerAiClient {
 
     private AiInvokeResult failure(AiInvokeCommand command, String errorType, String errorMessage) {
         AiInvokeResult result =
-                AiInvokeResult.failed(command.getRequestId(), command.getTraceId(), errorType, errorMessage);
+                AiInvokeResult.failed(command.getRequestId(), command.getTraceId(), errorType, errorMessage, null);
         result.setCapability(command.getCapability());
         return result;
     }
@@ -446,5 +507,22 @@ public class WorkerAiHttpClient implements WorkerAiClient {
 
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
+    }
+
+    private String resolveFilename(String contentDisposition) {
+        if (isBlank(contentDisposition)) {
+            return "artifact.bin";
+        }
+        String marker = "filename=\"";
+        int start = contentDisposition.indexOf(marker);
+        if (start < 0) {
+            return contentDisposition;
+        }
+        int valueStart = start + marker.length();
+        int valueEnd = contentDisposition.indexOf('"', valueStart);
+        if (valueEnd < 0) {
+            return contentDisposition.substring(valueStart);
+        }
+        return contentDisposition.substring(valueStart, valueEnd);
     }
 }

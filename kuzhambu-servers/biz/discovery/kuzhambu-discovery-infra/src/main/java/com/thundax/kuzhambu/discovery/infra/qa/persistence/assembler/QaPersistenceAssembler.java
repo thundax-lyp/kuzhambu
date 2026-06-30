@@ -141,6 +141,7 @@ public final class QaPersistenceAssembler {
         dataObject.setId(entity.getId());
         dataObject.setTraceId(entity.getTraceId());
         dataObject.setMessageId(entity.getMessageId());
+        dataObject.setCallId(entity.getCallId());
         dataObject.setRawQuestion(entity.getRawQuestion());
         dataObject.setRewrittenQuestion(entity.getRewrittenQuestion());
         dataObject.setScope(entity.getScope());
@@ -161,6 +162,7 @@ public final class QaPersistenceAssembler {
         entity.setId(dataObject.getId());
         entity.setTraceId(dataObject.getTraceId());
         entity.setMessageId(dataObject.getMessageId());
+        entity.setCallId(dataObject.getCallId());
         entity.setRawQuestion(dataObject.getRawQuestion());
         entity.setRewrittenQuestion(dataObject.getRewrittenQuestion());
         entity.setScope(dataObject.getScope());

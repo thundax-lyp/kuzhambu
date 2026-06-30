@@ -152,11 +152,14 @@ public class QaApplicationServiceImpl implements QaApplicationService {
         QaContextAssembler.QaContext qaContext =
                 qaContextAssembler.assemble(command.getQuestion(), understandingResult, publicContents);
         DiscoveryAiFacadeResponse aiResult = aiFacade.generateDiscoveryAnswer(toAiRequest(command, qaContext));
+        boolean aiSucceeded = aiResult != null && "SUCCEEDED".equalsIgnoreCase(aiResult.getStatus());
 
         String answerText = aiResult == null ? null : aiResult.getResultPayload();
         if (StringUtils.isBlank(answerText)) {
             answerText = "暂时没有生成可用回答。";
         }
+        String failureReason =
+                aiSucceeded ? null : aiResult == null ? "Discovery AI result is missing" : aiResult.getErrorMessage();
 
         QaMessage assistantMessage = new QaMessage(
                 null,
@@ -164,9 +167,9 @@ public class QaApplicationServiceImpl implements QaApplicationService {
                 command.getSessionId(),
                 "ASSISTANT",
                 answerText,
-                "ANSWERED",
+                aiSucceeded ? "ANSWERED" : "FAILED",
                 command.getContextTurnCount() == null ? 0 : command.getContextTurnCount(),
-                null,
+                failureReason,
                 now,
                 now);
         Long answerMessagePk = qaMessageRepository.save(assistantMessage);
@@ -183,8 +186,13 @@ public class QaApplicationServiceImpl implements QaApplicationService {
             sourceEntities.add(sourceEntity);
         }
 
-        QaRetrievalTrace traceEntity =
-                qaTraceAssembler.toDomain(command, session, understandingResult, qaContext, answerMessagePk);
+        QaRetrievalTrace traceEntity = qaTraceAssembler.toDomain(
+                command,
+                session,
+                understandingResult,
+                qaContext,
+                answerMessagePk,
+                aiResult == null ? null : aiResult.getCallId());
         Long tracePk = qaRetrievalTraceRepository.save(traceEntity);
         traceEntity.setId(tracePk);
         traceEntity.setTraceId(tracePk);
@@ -198,8 +206,8 @@ public class QaApplicationServiceImpl implements QaApplicationService {
                 answerMessagePk,
                 command.getQuestion(),
                 answerText,
-                "SUCCEEDED",
-                null,
+                aiSucceeded ? "SUCCEEDED" : "FAILED",
+                failureReason,
                 qaSourceAssembler.toResultList(sourceEntities),
                 qaTraceAssembler.toTraceSummary(traceEntity, understandingResult, qaContext));
     }

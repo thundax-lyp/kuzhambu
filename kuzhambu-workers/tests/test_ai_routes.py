@@ -24,6 +24,9 @@ def test_ai_invoke_returns_success(monkeypatch) -> None:
     assert payload["traceId"] == "trace-1"
     assert payload["status"] == "SUCCEEDED"
     assert payload["capability"] == "translate"
+    assert payload["failureStage"] is None
+    assert payload["fallbackUsed"] is False
+    assert payload["artifactReference"] is None
     assert payload["result"] == {"format": "TEXT", "payload": ""}
 
 
@@ -44,6 +47,8 @@ def test_ai_stream_returns_started_and_completed(monkeypatch) -> None:
     assert "event: started" in text
     assert "event: completed" in text
     assert '"status":"SUCCEEDED"' in text
+    assert '"failureStage":null' in text
+    assert '"fallbackUsed":false' in text
     assert '"result":{"format":"TEXT","payload":""}' in text
 
 
@@ -72,7 +77,10 @@ def test_ai_invoke_maps_graph_errors_to_failed_response(monkeypatch) -> None:
     )
 
     assert response.status_code == 400
-    assert response.json()["error"]["code"] == "BAD_REQUEST"
+    payload = response.json()
+    assert payload["failureStage"] == "REQUEST_VALIDATE"
+    assert payload["fallbackUsed"] is False
+    assert payload["error"]["code"] == "BAD_REQUEST"
 
 
 def _body(capability: str, *, stream: bool = False) -> bytes:

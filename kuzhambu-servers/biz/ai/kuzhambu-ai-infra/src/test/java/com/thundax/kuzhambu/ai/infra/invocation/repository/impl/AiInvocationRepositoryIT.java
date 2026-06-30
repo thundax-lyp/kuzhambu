@@ -40,32 +40,29 @@ class AiInvocationRepositoryIT {
         AiInvocationMapper mapper = mock(AiInvocationMapper.class);
         AiInvocationRepositoryImpl repository = new AiInvocationRepositoryImpl(mapper);
         Instant requestedAt = Instant.parse("2026-01-05T00:00:00Z");
-        AiCallRecord record = new AiCallRecord(
-                null,
-                7001L,
-                8001L,
-                "classics",
-                "translate",
-                "ENTRY",
-                9001L,
-                9101L,
-                1001L,
-                "PRIMARY",
-                2001L,
-                "gpt-test",
-                5001L,
-                "req-1",
-                "trace-1",
-                "SUCCEEDED",
-                true,
-                true,
-                false,
-                new AiUsageSnapshot(120, 10, 20, new BigDecimal("0.01")),
-                null,
-                null,
-                "[]",
-                requestedAt,
-                requestedAt);
+        AiCallRecord record = new AiCallRecord();
+        record.setCallId(7001L);
+        record.setBatchId(8001L);
+        record.setScope("classics");
+        record.setCapability("translate");
+        record.setContentType("ENTRY");
+        record.setContentId(9001L);
+        record.setObjectId(9101L);
+        record.setServiceId(1001L);
+        record.setServiceRole("PRIMARY");
+        record.setModelId(2001L);
+        record.setModelName("gpt-test");
+        record.setPromptVersionId(5001L);
+        record.setRequestId("req-1");
+        record.setTraceId("trace-1");
+        record.setStatus("SUCCEEDED");
+        record.setStreamUsed(true);
+        record.setStreamCompleted(true);
+        record.setFallbackUsed(false);
+        record.setUsage(new AiUsageSnapshot(120, 10, 20, new BigDecimal("0.01")));
+        record.setWarningsJson("[]");
+        record.setRequestedAt(requestedAt);
+        record.setCompletedAt(requestedAt);
 
         Long callId = repository.saveCallRecord(record);
 
@@ -90,24 +87,20 @@ class AiInvocationRepositoryIT {
         AiInvocationMapper mapper = mock(AiInvocationMapper.class);
         AiInvocationRepositoryImpl repository = new AiInvocationRepositoryImpl(mapper);
         Instant requestedAt = Instant.parse("2026-01-06T00:00:00Z");
-        AiCandidate candidate = new AiCandidate(
-                null,
-                7101L,
-                7001L,
-                8001L,
-                "translate",
-                "ENTRY",
-                9001L,
-                9101L,
-                "json",
-                "{\"title\":\"ok\"}",
-                "PENDING",
-                5001L,
-                "gpt-test",
-                null,
-                null,
-                requestedAt,
-                null);
+        AiCandidate candidate = new AiCandidate();
+        candidate.setCandidateId(7101L);
+        candidate.setCallId(7001L);
+        candidate.setBatchId(8001L);
+        candidate.setCapability("translate");
+        candidate.setContentType("ENTRY");
+        candidate.setContentId(9001L);
+        candidate.setObjectId(9101L);
+        candidate.setResultFormat("json");
+        candidate.setResultPayload("{\"title\":\"ok\"}");
+        candidate.setStatus("PENDING");
+        candidate.setPromptVersionId(5001L);
+        candidate.setModelName("gpt-test");
+        candidate.setRequestedAt(requestedAt);
 
         Long candidateId = repository.saveCandidate(candidate);
 

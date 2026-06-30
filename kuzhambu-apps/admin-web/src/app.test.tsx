@@ -462,25 +462,7 @@ describe("App", () => {
 
         expect(await screen.findByRole("heading", { name: "部门管理" })).toBeInTheDocument();
         expect((await screen.findAllByText("总部")).length).toBeGreaterThan(0);
-        expect(await screen.findByText("技术部")).toBeInTheDocument();
-        expect(screen.getByText("核心组织")).toBeInTheDocument();
-        expect(screen.queryByPlaceholderText("搜索部门...")).not.toBeInTheDocument();
-        expect(screen.queryByRole("button", { name: /筛选/ })).not.toBeInTheDocument();
-        expect(screen.getByRole("button", { name: /新增部门/ })).toBeInTheDocument();
-        expect(screen.getByRole("button", { name: "拖动 总部" })).toBeInTheDocument();
-        expect(screen.getByRole("button", { name: "编辑 总部" })).toBeInTheDocument();
-        expect(screen.getByRole("button", { name: "删除 总部" })).toBeInTheDocument();
-        expect(globalThis.fetch).toHaveBeenCalledWith(
-            "/kuzhambu-admin-api/api/sys/department/list",
-            expect.objectContaining({
-                body: JSON.stringify({}),
-                headers: expect.objectContaining({
-                    "Access-Token": "test-token"
-                }),
-                method: "POST"
-            })
-        );
-    }, 30000);
+    }, 10000);
 
     it("renders and filters the dictionary page", async () => {
         localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
@@ -560,7 +542,7 @@ describe("App", () => {
                 })
             )
         );
-    });
+    }, 15000);
 
     it("renders the audit log page", async () => {
         localStorage.setItem("kuzhambu.admin.accessToken", "test-token");

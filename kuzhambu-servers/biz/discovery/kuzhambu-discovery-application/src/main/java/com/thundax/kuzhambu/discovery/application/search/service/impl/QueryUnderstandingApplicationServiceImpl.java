@@ -21,6 +21,7 @@ import com.thundax.kuzhambu.discovery.domain.service.SearchDomainService;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -79,6 +80,7 @@ public class QueryUnderstandingApplicationServiceImpl implements QueryUnderstand
                     .locale(DEFAULT_LOCALE)
                     .build();
             DiscoveryAiFacadeResponse aiResult = aiFacade.understandDiscoveryQuery(aiRequest);
+            ensureAiSucceeded(aiResult, "DISCOVERY-20003", "discovery.search.query-understanding.ai-failed");
             QueryUnderstandingResult result = toResult(
                     normalizedQueryText,
                     enhancement.expandedSynonyms(),
@@ -225,5 +227,17 @@ public class QueryUnderstandingApplicationServiceImpl implements QueryUnderstand
 
     private <T> List<T> safeList(List<T> values) {
         return values == null ? Collections.emptyList() : values;
+    }
+
+    private void ensureAiSucceeded(DiscoveryAiFacadeResponse aiResult, String defaultCode, String defaultMessageKey) {
+        if (aiResult == null) {
+            throw new BizException(defaultCode, defaultMessageKey, "Discovery AI result is missing");
+        }
+        if (!"SUCCEEDED".equalsIgnoreCase(aiResult.getStatus())) {
+            String code = StringUtils.defaultIfBlank(aiResult.getErrorType(), defaultCode);
+            String message =
+                    StringUtils.defaultIfBlank(aiResult.getErrorMessage(), "Discovery AI invocation did not succeed");
+            throw new BizException(code, defaultMessageKey, message);
+        }
     }
 }

@@ -18,7 +18,9 @@ export default defineConfig(({ mode }) => {
         test: {
             environment: "jsdom",
             globals: true,
-            exclude: ["node_modules/**", "dist/**"]
+            exclude: ["node_modules/**", "dist/**"],
+            fileParallelism: true,
+            maxWorkers: "75%"
         },
         server: {
             port: 5174,

@@ -10,7 +10,14 @@ from kuzhambu_workers.ai.graph_registry import GraphRegistry
 from kuzhambu_workers.core.config import load_settings
 from kuzhambu_workers.core.errors import WorkerError, protocol_failure, to_error_payload
 from kuzhambu_workers.core.security import verify_internal_request
-from kuzhambu_workers.schemas.ai import AiInvokeRequest, AiInvokeResponse, AiResult
+from kuzhambu_workers.schemas.ai import (
+    AiInvokeRequest,
+    AiInvokeResponse,
+    AiResult,
+    ArtifactReference,
+    FailureStage,
+    ResultFormat,
+)
 from kuzhambu_workers.schemas.common import UsageSummary, WorkerErrorPayload, WorkerStatus
 from kuzhambu_workers.schemas.stream import StreamEventType
 from kuzhambu_workers.streaming.events import started_event, stream_event
@@ -106,18 +113,25 @@ def invoke_ai_graph(
     registry: GraphRegistry = _REGISTRY,
 ) -> JSONResponse:
     try:
-        result = registry.invoke(request)
+        result = AiResult.model_validate(registry.invoke(request))
+        artifact_reference = _artifact_reference_from_result(result)
         response = AiInvokeResponse(
             requestId=request.requestId,
             traceId=request.traceId,
             status=WorkerStatus.SUCCEEDED,
             capability=request.capability,
-            result=AiResult.model_validate(result),
+            result=None if artifact_reference is not None else result,
             usage=UsageSummary(),
+            fallbackUsed=False,
+            artifactReference=artifact_reference,
         )
         return JSONResponse(response.model_dump(mode="json"))
     except Exception as exc:
-        return _failed_response(request, WorkerErrorPayload.model_validate(to_error_payload(exc)))
+        return _failed_response(
+            request,
+            WorkerErrorPayload.model_validate(to_error_payload(exc)),
+            failure_stage=FailureStage.WORKER_RESULT,
+        )
 
 
 def stream_ai_graph(
@@ -129,7 +143,8 @@ def stream_ai_graph(
         timestamp = _now()
         yield encode_sse(started_event(request.requestId, request.traceId, timestamp))
         try:
-            result = registry.invoke(request)
+            result = AiResult.model_validate(registry.invoke(request))
+            artifact_reference = _artifact_reference_from_result(result)
             yield encode_sse(
                 stream_event(
                     StreamEventType.COMPLETED,
@@ -137,9 +152,18 @@ def stream_ai_graph(
                     trace_id=request.traceId,
                     stage="completed",
                     timestamp=_now(),
-                    result=result,
+                    result=None
+                    if artifact_reference is not None
+                    else result.model_dump(mode="json"),
                     usage=UsageSummary().model_dump(mode="json"),
-                    extra={"status": WorkerStatus.SUCCEEDED.value},
+                    extra={
+                        "status": WorkerStatus.SUCCEEDED.value,
+                        "failureStage": None,
+                        "fallbackUsed": False,
+                        "artifactReference": None
+                        if artifact_reference is None
+                        else artifact_reference.model_dump(mode="json"),
+                    },
                 )
             )
         except Exception as exc:
@@ -152,6 +176,12 @@ def stream_ai_graph(
                     stage="error",
                     timestamp=_now(),
                     error=error.model_dump(mode="json"),
+                    extra={
+                        "status": WorkerStatus.FAILED.value,
+                        "failureStage": FailureStage.WORKER_RESULT.value,
+                        "fallbackUsed": False,
+                        "artifactReference": None,
+                    },
                 )
             )
 
@@ -212,6 +242,7 @@ def _failed_response(
     error: WorkerErrorPayload,
     *,
     status_code: int = 200,
+    failure_stage: FailureStage | None = None,
 ) -> JSONResponse:
     response = AiInvokeResponse(
         requestId=request.requestId,
@@ -220,6 +251,9 @@ def _failed_response(
         capability=request.capability,
         result=None,
         usage=UsageSummary(),
+        failureStage=failure_stage,
+        fallbackUsed=False,
+        artifactReference=None,
         error=error,
     )
     return JSONResponse(response.model_dump(mode="json"), status_code=status_code)
@@ -229,6 +263,9 @@ def _error_json(error: WorkerErrorPayload, status_code: int) -> JSONResponse:
     return JSONResponse(
         {
             "status": WorkerStatus.FAILED.value,
+            "failureStage": FailureStage.REQUEST_VALIDATE.value,
+            "fallbackUsed": False,
+            "artifactReference": None,
             "error": error.model_dump(mode="json"),
         },
         status_code=status_code,
@@ -245,3 +282,22 @@ def _status_code(code: str) -> int:
 
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="milliseconds").replace("+00:00", "Z")
+
+
+def _artifact_reference_from_result(result: AiResult) -> ArtifactReference | None:
+    if result.format != ResultFormat.ARTIFACT:
+        return None
+    payload = result.payload
+    if not isinstance(payload, dict):
+        return None
+    if not {
+        "artifactId",
+        "downloadPath",
+        "contentType",
+        "filename",
+        "sizeBytes",
+        "sha256",
+        "expiresAt",
+    }.issubset(payload):
+        return None
+    return ArtifactReference.model_validate(payload)

@@ -129,6 +129,7 @@ class DiscoveryQaAdminControllerTest {
         return new QaTraceResult(
                 8001L,
                 7002L,
+                6001L,
                 "黄帝是谁",
                 "黄帝是谁",
                 "GLOBAL",

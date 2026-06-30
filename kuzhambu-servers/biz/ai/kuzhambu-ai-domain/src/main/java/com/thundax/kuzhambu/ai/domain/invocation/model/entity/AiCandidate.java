@@ -20,24 +20,33 @@ public class AiCandidate {
     private String contentType;
     private Long contentId;
     private Long objectId;
+    private String artifactReferenceJson;
     private String resultFormat;
     private String resultPayload;
     private String status = "PENDING";
     private Long promptVersionId;
     private String modelName;
+    private String failureStage;
     private String errorType;
     private String errorMessage;
     private Instant requestedAt;
     private Instant appliedAt;
+    private Instant rejectedAt;
 
     public boolean isPending() {
         return "PENDING".equals(status);
     }
 
-    public void reject(String failureType, String failureMessage) {
+    public void reject(String failureType, String failureMessage, String stage, Instant rejectedTime) {
         this.status = "REJECTED";
         this.errorType = failureType;
         this.errorMessage = failureMessage;
+        this.failureStage = stage;
+        this.rejectedAt = rejectedTime;
+    }
+
+    public void reject(String failureType, String failureMessage) {
+        reject(failureType, failureMessage, null, Instant.now());
     }
 
     public void markApplied(Instant appliedTime) {

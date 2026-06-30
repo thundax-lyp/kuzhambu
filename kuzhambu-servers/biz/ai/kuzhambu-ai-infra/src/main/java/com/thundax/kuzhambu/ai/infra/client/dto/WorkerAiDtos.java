@@ -87,6 +87,9 @@ public final class WorkerAiDtos {
         private String capability;
         private Result result;
         private Usage usage;
+        private String failureStage;
+        private Boolean fallbackUsed;
+        private JsonNode artifactReference;
         private JsonNode warnings;
         private Error error;
     }

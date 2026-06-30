@@ -63,6 +63,21 @@ Workers 不拥有 AI 配置、提示词、调用记录或候选结果。Classics
 
 数据模型必须记录 worker 调用所需的稳定追踪信息，包括模型、服务、能力、提示词版本、请求标识、链路标识、耗时、用量、失败类型和降级状态。stream 片段不是业务事实，默认不逐片段持久化；最终结果、失败或部分失败状态必须进入调用记录。
 
+AI 调用记录固定补充以下字段口径：
+
+- `failureStage`
+- `resultFormat`
+- `resultPayload`
+- `artifactReferenceJson`
+
+AI 候选记录固定补充以下字段口径：
+
+- `rejectedAt`
+- `failureStage`
+- `artifactReferenceJson`
+
+文件类 AI 结果不得把大文件内容直接作为正式业务结果保存；只允许以 `artifactReferenceJson` 保存 Workers 返回的 `temporary artifact reference` 摘要。
+
 ## Application Layer
 
 - `AiServiceConfigApplicationService`
@@ -90,8 +105,10 @@ Knowledge 抽取协作语义：
 5. AI infra 通过 `WorkerAiClient` 调用 workers。
 6. workers 返回同步结果或 stream 事件。
 7. AI application 记录耗时、用量、失败类型和降级状态。
-8. 需要人工确认的结果进入 `AiCandidate`。
-9. 正式内容、问答会话或图谱结果由对应业务域在确认或编排后写入。
+8. 文本类结果直接形成最终调用结果；文件类结果先保存 `temporary artifact reference`。
+9. 文件类结果由 Java servers 根据 `temporary artifact reference` 下载并转存到 `Storage`。
+10. 需要人工确认的结果进入 `AiCandidate`。
+11. 正式内容、问答会话或图谱结果由对应业务域在确认或编排后写入。
 
 批量流程：
 
@@ -108,6 +125,19 @@ Stream 流程：
 - 流式片段只用于展示过程，不直接写入正式内容。
 - `completed` 事件或同步最终响应用于生成候选结果、问答消息或调用记录终态。
 - stream 中断时，AI application 必须把调用记录为失败或部分失败，并允许重新发起完整调用。
+- 流式调用必须以 `completed` 或 `error` 形成最终态；不得出现“只有 delta 没有最终结果”的业务闭环。
+
+失败阶段固定枚举：
+
+- `REQUEST_VALIDATE`
+- `WORKER_REQUEST`
+- `WORKER_STREAM`
+- `WORKER_RESULT`
+- `ARTIFACT_DOWNLOAD`
+- `STORAGE_PERSIST`
+- `CANDIDATE_PERSIST`
+
+`fallbackUsed` 只表示主服务不可用后切换到备用服务或备用模型继续执行，不表示提示词兜底、结果默认值或 UI 默认文案。
 
 ## Interface Layer
 
@@ -138,15 +168,22 @@ Discovery 调用入口：
 - 查询改写。
 - 回答生成和流式回答生成。
 
+文件类结果规则：
+
+- 图片、视频、ZIP、PDF 等文件类结果统一由 Workers 返回 `temporary artifact reference`。
+- Java servers 必须根据该引用下载临时产物，并转存 `Storage`。
+- 业务侧最终只认 `Storage` 结果，不认 Workers 临时引用。
+- 对大文件转存必须支持 `multipart upload`，不得默认走一次性内存上传路径。
+
 ## Infrastructure Layer
 
-- `WorkerAiClient` 适配 Python workers 内部 HTTP 和 SSE 接口。
+- `WorkerAiClient` 适配 Python workers 内部 HTTP、SSE 和临时 artifact 下载接口。
 - AI 域向 workers 传入主服务或备用服务的模型配置、调用参数、渲染后 messages、结构化输出 schema 和完整上下文。
 - Knowledge 三个稳定 usecase path 为 `/internal/ai/knowledge/relation-extraction`、`/internal/ai/knowledge/graph-extraction` 和 `/internal/ai/knowledge/lineage-extraction`。
 - workers 内部执行 LangGraph；AI 域不直接依赖 workers 内部 graph 实现。
 - AI 域与 workers 的协议见 [`WORKERS-AI-INTERFACE.md`](../20-interfaces/WORKERS-AI-INTERFACE.md)。
 - Repository 持久化 AI 配置、提示词、调用记录和候选结果。
-- 外部调用失败需要区分网络传输层失败、worker 协议失败、AI 语义层失败和输出格式失败。
+- 外部调用失败需要区分网络传输层失败、worker 协议失败、AI 语义层失败、artifact 下载失败、Storage 转存失败和输出格式失败。
 - 网络传输层失败允许由 AI application 决策切换备用服务并重新调用 workers。
 - AI 语义层失败不得由 infra 自动无限重试。
 
@@ -154,13 +191,13 @@ Discovery 调用入口：
 
 AI 是 `ai_*` 表的唯一写入方。正式内容写入由 Classics 或 Knowledge 在用户确认或业务编排后完成。
 
-Discovery 问答会话、消息和来源由 Discovery 写入。Knowledge 标签、实体、关系、图谱版本和质量指标由 Knowledge 写入。workers 不写入任何业务表。
+Discovery 问答会话、消息和来源由 Discovery 写入；QA trace 可以挂载 AI `callId` 作为调用追溯标识，但该 trace 仍归 Discovery 持有。Knowledge 标签、实体、关系、图谱版本和质量指标由 Knowledge 写入。workers 不写入任何业务表。
 
 ## Observability
 
 - 记录 AI 调用延迟、失败、成本、服务降级状态和模型检测历史。
 - AI Key 不输出到前端、日志或审计。
-- 记录 worker 请求标识、链路标识、stream 是否完成、失败分类和用量摘要。
+- 记录 worker 请求标识、链路标识、stream 是否完成、失败分类、失败阶段、降级状态和用量摘要。
 
 ## Acceptance
 

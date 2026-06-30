@@ -8,6 +8,8 @@ DEFAULT_MAX_REQUEST_BYTES = 10 * 1024 * 1024
 DEFAULT_TIMEOUT_MS = 60_000
 DEFAULT_MAX_ARTIFACT_BYTES = 100 * 1024 * 1024
 DEFAULT_ARTIFACT_CHUNK_BYTES = 256 * 1024
+DEFAULT_ARTIFACT_TTL_HOURS = 12
+DEFAULT_ARTIFACT_CLEANUP_INTERVAL_SECONDS = 3600
 DEFAULT_BROWSER_POOL_SIZE = 1
 DEFAULT_BROWSER_MAX_PAGES = 4
 DEFAULT_BROWSER_PAGE_TIMEOUT_MS = 30_000
@@ -25,6 +27,8 @@ class WorkerSettings:
     default_timeout_ms: int
     max_artifact_bytes: int
     artifact_chunk_bytes: int
+    artifact_ttl_hours: int
+    artifact_cleanup_interval_seconds: int
     browser_pool_size: int
     browser_max_pages: int
     browser_page_timeout_ms: int
@@ -55,6 +59,14 @@ def load_settings() -> WorkerSettings:
         artifact_chunk_bytes=_integer(
             "KUZHAMBU_WORKER_ARTIFACT_CHUNK_BYTES",
             DEFAULT_ARTIFACT_CHUNK_BYTES,
+        ),
+        artifact_ttl_hours=_integer(
+            "KUZHAMBU_WORKER_ARTIFACT_TTL_HOURS",
+            DEFAULT_ARTIFACT_TTL_HOURS,
+        ),
+        artifact_cleanup_interval_seconds=_integer(
+            "KUZHAMBU_WORKER_ARTIFACT_CLEANUP_INTERVAL_SECONDS",
+            DEFAULT_ARTIFACT_CLEANUP_INTERVAL_SECONDS,
         ),
         browser_pool_size=_integer("KUZHAMBU_WORKER_BROWSER_POOL_SIZE", DEFAULT_BROWSER_POOL_SIZE),
         browser_max_pages=_integer("KUZHAMBU_WORKER_BROWSER_MAX_PAGES", DEFAULT_BROWSER_MAX_PAGES),

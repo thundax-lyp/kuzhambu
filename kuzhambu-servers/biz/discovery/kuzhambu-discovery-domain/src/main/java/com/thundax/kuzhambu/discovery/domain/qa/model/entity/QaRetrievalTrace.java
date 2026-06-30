@@ -14,6 +14,7 @@ public class QaRetrievalTrace {
     private Long id;
     private Long traceId;
     private Long messageId;
+    private Long callId;
     private String rawQuestion;
     private String rewrittenQuestion;
     private String scope;

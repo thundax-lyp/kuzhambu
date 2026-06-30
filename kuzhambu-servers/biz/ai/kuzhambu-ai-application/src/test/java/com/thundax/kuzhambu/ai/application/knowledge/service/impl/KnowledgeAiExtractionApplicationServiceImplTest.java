@@ -59,6 +59,19 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
         assertEquals("lineage_extraction", capturedCommand.getCapability());
     }
 
+    @Test
+    void extractGraphShouldPreserveCallAndCandidateIdentifiers() {
+        CapturingInvocationService invocationService = new CapturingInvocationService();
+        KnowledgeAiExtractionApplicationServiceImpl service =
+                new KnowledgeAiExtractionApplicationServiceImpl(invocationService, resolver);
+
+        KnowledgeAiExtractionResult result = service.extractGraph(request());
+
+        assertEquals(101L, result.getCallId());
+        assertEquals(102L, result.getCandidateId());
+        assertEquals("SUCCEEDED", result.getStatus());
+    }
+
     private KnowledgeAiExtractionRequest request() {
         return new KnowledgeAiExtractionRequest(
                 "GRAPH",
@@ -97,6 +110,8 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
             result.setTraceId(command.getTraceId());
             result.setStatus("SUCCEEDED");
             result.setCapability(command.getCapability());
+            result.setResultFormat("STRUCTURED");
+            result.setResultPayload("{\"nodes\":[]}");
             return result;
         }
 

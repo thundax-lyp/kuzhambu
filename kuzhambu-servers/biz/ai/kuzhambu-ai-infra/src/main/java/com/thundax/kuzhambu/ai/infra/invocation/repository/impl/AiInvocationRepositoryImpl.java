@@ -59,6 +59,10 @@ public class AiInvocationRepositoryImpl implements AiInvocationRepository {
                         .set(AiCallRecordDO::getInputTokens, dataObject.getInputTokens())
                         .set(AiCallRecordDO::getOutputTokens, dataObject.getOutputTokens())
                         .set(AiCallRecordDO::getCostAmount, dataObject.getCostAmount())
+                        .set(AiCallRecordDO::getFailureStage, dataObject.getFailureStage())
+                        .set(AiCallRecordDO::getResultFormat, dataObject.getResultFormat())
+                        .set(AiCallRecordDO::getResultPayload, dataObject.getResultPayload())
+                        .set(AiCallRecordDO::getArtifactReferenceJson, dataObject.getArtifactReferenceJson())
                         .set(AiCallRecordDO::getErrorType, dataObject.getErrorType())
                         .set(AiCallRecordDO::getErrorMessage, dataObject.getErrorMessage())
                         .set(AiCallRecordDO::getWarningsJson, dataObject.getWarningsJson())
@@ -128,6 +132,10 @@ public class AiInvocationRepositoryImpl implements AiInvocationRepository {
         dataObject.setInputTokens(usage.getInputTokens());
         dataObject.setOutputTokens(usage.getOutputTokens());
         dataObject.setCostAmount(usage.getCostAmount());
+        dataObject.setFailureStage(record.getFailureStage());
+        dataObject.setResultFormat(record.getResultFormat());
+        dataObject.setResultPayload(record.getResultPayload());
+        dataObject.setArtifactReferenceJson(record.getArtifactReferenceJson());
         dataObject.setErrorType(record.getErrorType());
         dataObject.setErrorMessage(record.getErrorMessage());
         dataObject.setWarningsJson(record.getWarningsJson());
@@ -140,36 +148,41 @@ public class AiInvocationRepositoryImpl implements AiInvocationRepository {
         if (dataObject == null) {
             return null;
         }
-        return new AiCallRecord(
-                dataObject.getId(),
-                dataObject.getCallId(),
-                dataObject.getBatchId(),
-                dataObject.getScope(),
-                dataObject.getCapability(),
-                dataObject.getContentType(),
-                dataObject.getContentId(),
-                dataObject.getObjectId(),
-                dataObject.getServiceId(),
-                dataObject.getServiceRole(),
-                dataObject.getModelId(),
-                dataObject.getModelName(),
-                dataObject.getPromptVersionId(),
-                dataObject.getRequestId(),
-                dataObject.getTraceId(),
-                dataObject.getStatus(),
-                Boolean.TRUE.equals(dataObject.getStreamUsed()),
-                Boolean.TRUE.equals(dataObject.getStreamCompleted()),
-                Boolean.TRUE.equals(dataObject.getFallbackUsed()),
-                new AiUsageSnapshot(
-                        dataObject.getLatencyMs(),
-                        dataObject.getInputTokens() == null ? 0 : dataObject.getInputTokens(),
-                        dataObject.getOutputTokens() == null ? 0 : dataObject.getOutputTokens(),
-                        dataObject.getCostAmount() == null ? BigDecimal.ZERO : dataObject.getCostAmount()),
-                dataObject.getErrorType(),
-                dataObject.getErrorMessage(),
-                dataObject.getWarningsJson(),
-                dataObject.getRequestedAt(),
-                dataObject.getCompletedAt());
+        AiCallRecord record = new AiCallRecord();
+        record.setId(dataObject.getId());
+        record.setCallId(dataObject.getCallId());
+        record.setBatchId(dataObject.getBatchId());
+        record.setScope(dataObject.getScope());
+        record.setCapability(dataObject.getCapability());
+        record.setContentType(dataObject.getContentType());
+        record.setContentId(dataObject.getContentId());
+        record.setObjectId(dataObject.getObjectId());
+        record.setServiceId(dataObject.getServiceId());
+        record.setServiceRole(dataObject.getServiceRole());
+        record.setModelId(dataObject.getModelId());
+        record.setModelName(dataObject.getModelName());
+        record.setPromptVersionId(dataObject.getPromptVersionId());
+        record.setRequestId(dataObject.getRequestId());
+        record.setTraceId(dataObject.getTraceId());
+        record.setStatus(dataObject.getStatus());
+        record.setStreamUsed(Boolean.TRUE.equals(dataObject.getStreamUsed()));
+        record.setStreamCompleted(Boolean.TRUE.equals(dataObject.getStreamCompleted()));
+        record.setFallbackUsed(Boolean.TRUE.equals(dataObject.getFallbackUsed()));
+        record.setUsage(new AiUsageSnapshot(
+                dataObject.getLatencyMs(),
+                dataObject.getInputTokens() == null ? 0 : dataObject.getInputTokens(),
+                dataObject.getOutputTokens() == null ? 0 : dataObject.getOutputTokens(),
+                dataObject.getCostAmount() == null ? BigDecimal.ZERO : dataObject.getCostAmount()));
+        record.setFailureStage(dataObject.getFailureStage());
+        record.setResultFormat(dataObject.getResultFormat());
+        record.setResultPayload(dataObject.getResultPayload());
+        record.setArtifactReferenceJson(dataObject.getArtifactReferenceJson());
+        record.setErrorType(dataObject.getErrorType());
+        record.setErrorMessage(dataObject.getErrorMessage());
+        record.setWarningsJson(dataObject.getWarningsJson());
+        record.setRequestedAt(dataObject.getRequestedAt());
+        record.setCompletedAt(dataObject.getCompletedAt());
+        return record;
     }
 
     private AiCandidateDO toCandidateObject(AiCandidate candidate) {
@@ -185,15 +198,18 @@ public class AiInvocationRepositoryImpl implements AiInvocationRepository {
         dataObject.setContentType(candidate.getContentType());
         dataObject.setContentId(candidate.getContentId());
         dataObject.setObjectId(candidate.getObjectId());
+        dataObject.setArtifactReferenceJson(candidate.getArtifactReferenceJson());
         dataObject.setResultFormat(candidate.getResultFormat());
         dataObject.setResultPayload(candidate.getResultPayload());
         dataObject.setStatus(candidate.getStatus());
         dataObject.setPromptVersionId(candidate.getPromptVersionId());
         dataObject.setModelName(candidate.getModelName());
+        dataObject.setFailureStage(candidate.getFailureStage());
         dataObject.setErrorType(candidate.getErrorType());
         dataObject.setErrorMessage(candidate.getErrorMessage());
         dataObject.setRequestedAt(candidate.getRequestedAt());
         dataObject.setAppliedAt(candidate.getAppliedAt());
+        dataObject.setRejectedAt(candidate.getRejectedAt());
         return dataObject;
     }
 
@@ -201,24 +217,28 @@ public class AiInvocationRepositoryImpl implements AiInvocationRepository {
         if (dataObject == null) {
             return null;
         }
-        return new AiCandidate(
-                dataObject.getId(),
-                dataObject.getCandidateId(),
-                dataObject.getCallId(),
-                dataObject.getBatchId(),
-                dataObject.getCapability(),
-                dataObject.getContentType(),
-                dataObject.getContentId(),
-                dataObject.getObjectId(),
-                dataObject.getResultFormat(),
-                dataObject.getResultPayload(),
-                dataObject.getStatus(),
-                dataObject.getPromptVersionId(),
-                dataObject.getModelName(),
-                dataObject.getErrorType(),
-                dataObject.getErrorMessage(),
-                dataObject.getRequestedAt(),
-                dataObject.getAppliedAt());
+        AiCandidate candidate = new AiCandidate();
+        candidate.setId(dataObject.getId());
+        candidate.setCandidateId(dataObject.getCandidateId());
+        candidate.setCallId(dataObject.getCallId());
+        candidate.setBatchId(dataObject.getBatchId());
+        candidate.setCapability(dataObject.getCapability());
+        candidate.setContentType(dataObject.getContentType());
+        candidate.setContentId(dataObject.getContentId());
+        candidate.setObjectId(dataObject.getObjectId());
+        candidate.setArtifactReferenceJson(dataObject.getArtifactReferenceJson());
+        candidate.setResultFormat(dataObject.getResultFormat());
+        candidate.setResultPayload(dataObject.getResultPayload());
+        candidate.setStatus(dataObject.getStatus());
+        candidate.setPromptVersionId(dataObject.getPromptVersionId());
+        candidate.setModelName(dataObject.getModelName());
+        candidate.setFailureStage(dataObject.getFailureStage());
+        candidate.setErrorType(dataObject.getErrorType());
+        candidate.setErrorMessage(dataObject.getErrorMessage());
+        candidate.setRequestedAt(dataObject.getRequestedAt());
+        candidate.setAppliedAt(dataObject.getAppliedAt());
+        candidate.setRejectedAt(dataObject.getRejectedAt());
+        return candidate;
     }
 
     private List<AiCallRecord> toCallDomainList(List<AiCallRecordDO> dataObjects) {

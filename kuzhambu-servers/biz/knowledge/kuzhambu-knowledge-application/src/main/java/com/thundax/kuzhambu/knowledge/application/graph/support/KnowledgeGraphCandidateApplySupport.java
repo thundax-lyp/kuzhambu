@@ -63,6 +63,9 @@ public class KnowledgeGraphCandidateApplySupport {
         if (task == null || task.getTaskId() == null || candidate == null || candidate.getCandidateId() == null) {
             throw new BizException("Knowledge graph apply target is incomplete");
         }
+        if ("REJECTED".equals(candidate.getStatus())) {
+            throw new BizException("Knowledge graph candidate has been rejected");
+        }
         if (StringUtils.isBlank(candidate.getResultPayload())) {
             throw new BizException("Knowledge graph candidate payload is empty");
         }

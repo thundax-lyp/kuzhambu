@@ -6,12 +6,15 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
+import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService.DownloadedArtifact;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService.WorkerAiClient;
 import com.thundax.kuzhambu.ai.application.invocation.service.impl.AiWorkerInvocationApplicationServiceImpl;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCallRecord;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiUsageSnapshot;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
+import com.thundax.kuzhambu.storage.facade.StorageFacade;
+import java.lang.reflect.Proxy;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -38,9 +41,14 @@ class AiWorkerInvocationApplicationServiceTest {
                 event.setStatus("RUNNING");
                 eventConsumer.accept(event);
             }
+
+            @Override
+            public DownloadedArtifact downloadArtifact(String requestId, String traceId, String downloadPath) {
+                throw new UnsupportedOperationException("not used");
+            }
         };
         AiWorkerInvocationApplicationServiceImpl service =
-                new AiWorkerInvocationApplicationServiceImpl(repository, workerClient);
+                new AiWorkerInvocationApplicationServiceImpl(repository, workerClient, unusedStorageFacade());
 
         AiInvokeResult result = service.stream(command(), event -> {});
 
@@ -75,9 +83,14 @@ class AiWorkerInvocationApplicationServiceTest {
             public void stream(AiInvokeCommand command, Consumer<AiStreamEventResult> eventConsumer) {
                 throw new UnsupportedOperationException("not used");
             }
+
+            @Override
+            public DownloadedArtifact downloadArtifact(String requestId, String traceId, String downloadPath) {
+                throw new UnsupportedOperationException("not used");
+            }
         };
         AiWorkerInvocationApplicationServiceImpl service =
-                new AiWorkerInvocationApplicationServiceImpl(repository, workerClient);
+                new AiWorkerInvocationApplicationServiceImpl(repository, workerClient, unusedStorageFacade());
 
         AiInvokeCommand command = command();
         command.setOperation("CLASSICS_SANCAI_SUMMARY");
@@ -111,6 +124,13 @@ class AiWorkerInvocationApplicationServiceTest {
         command.setInputPayloadJson("{\"text\":\"hello\"}");
         command.setCreateCandidate(false);
         return command;
+    }
+
+    private static StorageFacade unusedStorageFacade() {
+        return (StorageFacade) Proxy.newProxyInstance(
+                StorageFacade.class.getClassLoader(),
+                new Class<?>[] {StorageFacade.class},
+                (proxy, method, args) -> boolean.class.equals(method.getReturnType()) ? Boolean.FALSE : null);
     }
 
     private static class RecordingInvocationRepository implements AiInvocationRepository {
