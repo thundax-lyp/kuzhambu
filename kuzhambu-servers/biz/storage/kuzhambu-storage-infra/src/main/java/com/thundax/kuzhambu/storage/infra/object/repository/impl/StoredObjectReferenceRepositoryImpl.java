@@ -78,16 +78,14 @@ public class StoredObjectReferenceRepositoryImpl implements StoredObjectReferenc
     public boolean exists(StoredObjectReference reference) {
         if (reference == null
                 || reference.getObjectId() == null
-                || reference.getOwnerType() == null
-                || StringUtils.isBlank(reference.getOwnerId())) {
+                || reference.getReferenceOwnerType() == null
+                || StringUtils.isBlank(reference.getReferenceOwnerId())) {
             return false;
         }
         LambdaQueryWrapper<StoredObjectReferenceDO> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(StoredObjectReferenceDO::getObjectId, reference.getObjectId().value());
-        wrapper.eq(
-                StoredObjectReferenceDO::getReferenceOwnerType,
-                reference.getOwnerType().value());
-        wrapper.eq(StoredObjectReferenceDO::getReferenceOwnerId, reference.getOwnerId());
+        wrapper.eq(StoredObjectReferenceDO::getReferenceOwnerType, reference.getReferenceOwnerType());
+        wrapper.eq(StoredObjectReferenceDO::getReferenceOwnerId, reference.getReferenceOwnerId());
         return mapper.selectCount(wrapper) > 0;
     }
 

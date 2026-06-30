@@ -69,8 +69,6 @@ class MultipartUploadApplicationServiceImplTest {
         assertNotNull(storage);
         assertEquals(StoredObjectId.of(11L), storage.getId());
         assertEquals("multipart-file.txt", storage.getOriginalFilename());
-        assertEquals(StorageOwnerType.USER, storage.getOwnerType());
-        assertEquals("u-1", storage.getOwnerId());
         assertEquals("/api/storage/object/11/content", storage.getAccessEndpoint());
         assertEquals(11L, storage.getSize());
         assertArrayEquals("onetwothree".getBytes(), savedBytes.get());

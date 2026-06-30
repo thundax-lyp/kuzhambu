@@ -159,8 +159,6 @@ public class StoredObjectRepositoryImpl implements StoredObjectRepository {
                         .set(StoredObjectDO::getName, dataObject.getName())
                         .set(StoredObjectDO::getExtendName, dataObject.getExtendName())
                         .set(StoredObjectDO::getMimeType, dataObject.getMimeType())
-                        .set(StoredObjectDO::getOwnerId, dataObject.getOwnerId())
-                        .set(StoredObjectDO::getOwnerType, dataObject.getOwnerType())
                         .set(StoredObjectDO::getBucketName, dataObject.getBucketName())
                         .set(StoredObjectDO::getObjectKey, dataObject.getObjectKey())
                         .set(StoredObjectDO::getSize, dataObject.getSize())

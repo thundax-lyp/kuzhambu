@@ -247,8 +247,6 @@ public class MultipartUploadApplicationServiceImpl implements MultipartUploadApp
         storage.setName(baseName(session.getOriginalFilename()));
         storage.setExtendName(extension(session.getOriginalFilename()));
         storage.setMimeType(session.getMimeType());
-        storage.setOwnerId(session.getOwnerId());
-        storage.setOwnerType(session.getOwnerType());
         storage.setBucketName(
                 command == null || command.getBucketName() == null ? session.getBucketName() : command.getBucketName());
         storage.setObjectKey(
@@ -287,8 +285,6 @@ public class MultipartUploadApplicationServiceImpl implements MultipartUploadApp
         command.setName(storage.getName());
         command.setExtendName(storage.getExtendName());
         command.setMimeType(storage.getMimeType());
-        command.setOwnerId(storage.getOwnerId());
-        command.setOwnerType(storage.getOwnerType());
         command.setBucketName(storage.getBucketName());
         command.setObjectKey(storage.getObjectKey());
         command.setSize(storage.getSize());

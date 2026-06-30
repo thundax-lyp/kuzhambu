@@ -29,9 +29,8 @@ public class StorageOwnerBindingFacadeAssembler {
                 .map(storageObjectId -> new StoredObjectReference(
                         storageObjectId == null ? null : StoredObjectId.of(storageObjectId),
                         request.getOwnerId(),
-                        ownerType,
-                        request.getOwnerParams(),
-                        StoredObjectReferenceStatus.REFERENCED))
+                        ownerType == null ? null : ownerType.value(),
+                        request.getOwnerParams()))
                 .collect(Collectors.toList());
         return new AddStorageReferencesCommand(references);
     }

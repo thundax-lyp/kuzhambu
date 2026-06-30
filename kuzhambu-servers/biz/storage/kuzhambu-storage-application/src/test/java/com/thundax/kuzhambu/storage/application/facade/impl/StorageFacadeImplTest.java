@@ -64,7 +64,7 @@ class StorageFacadeImplTest {
         ArgumentCaptor<ChangeStorageReferenceStatusCommand> statusCaptor =
                 ArgumentCaptor.forClass(ChangeStorageReferenceStatusCommand.class);
         verify(storageApplicationService).changeReferenceStatus(statusCaptor.capture());
-        assertEquals(StoredObjectId.of(7001L), statusCaptor.getValue().getStorageObjectId());
+        assertEquals(StoredObjectId.of(7001L), statusCaptor.getValue().getId());
         assertEquals("REFERENCED", statusCaptor.getValue().getReferenceStatus().value());
     }
 
