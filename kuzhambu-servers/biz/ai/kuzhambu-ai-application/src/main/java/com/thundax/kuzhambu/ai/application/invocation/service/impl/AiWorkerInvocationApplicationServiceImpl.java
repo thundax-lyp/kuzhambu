@@ -13,7 +13,12 @@ import com.thundax.kuzhambu.ai.infra.client.WorkerAiClient;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.storage.facade.StorageFacade;
+import com.thundax.kuzhambu.storage.facade.request.CompleteMultipartUploadFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.InitMultipartUploadFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.UploadMultipartPartFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.UploadStorageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.response.CompleteMultipartUploadFacadeResponse;
+import com.thundax.kuzhambu.storage.facade.response.InitMultipartUploadFacadeResponse;
 import com.thundax.kuzhambu.storage.facade.response.UploadStorageFacadeResponse;
 import java.io.ByteArrayInputStream;
 import java.time.Instant;
@@ -24,6 +29,9 @@ import org.springframework.stereotype.Service;
 @Service
 @BizExceptionBoundary
 public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocationApplicationService {
+
+    private static final long MULTIPART_THRESHOLD_BYTES = 8L * 1024 * 1024;
+    private static final long MULTIPART_PART_SIZE_BYTES = 5L * 1024 * 1024;
 
     private final AiInvocationRepository aiInvocationRepository;
     private final WorkerAiClient workerAiClient;
@@ -177,14 +185,9 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
             JsonNode artifactReference = objectMapper.readTree(result.getArtifactReferenceJson());
             WorkerAiClient.DownloadedArtifact artifact = workerAiClient.downloadArtifact(
                     command.getRequestId(), command.getTraceId(), artifactReference.path("downloadPath").asText());
-            UploadStorageFacadeResponse uploaded = storageFacade.upload(UploadStorageFacadeRequest.builder()
-                    .inputStream(new ByteArrayInputStream(artifact.data()))
-                    .originalFilename(artifact.filename())
-                    .contentType(artifact.contentType())
-                    .sizeBytes(artifact.sizeBytes())
-                    .remarks("AI artifact transfer")
-                    .build());
-            result.setResultPayload(toStorageResultJson(uploaded));
+            result.setResultPayload(artifact.sizeBytes() > MULTIPART_THRESHOLD_BYTES
+                    ? toStorageResultJson(persistMultipartArtifact(artifact))
+                    : toStorageResultJson(persistSmallArtifact(artifact)));
             return result;
         } catch (WorkerAiClient.ArtifactDownloadException ex) {
             return AiInvokeResult.failed(
@@ -219,5 +222,56 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
         } catch (JsonProcessingException ex) {
             throw new IllegalArgumentException("Failed to serialize storage upload response", ex);
         }
+    }
+
+    private String toStorageResultJson(CompleteMultipartUploadFacadeResponse response) {
+        if (response == null) {
+            return null;
+        }
+        try {
+            return objectMapper.writeValueAsString(response);
+        } catch (JsonProcessingException ex) {
+            throw new IllegalArgumentException("Failed to serialize multipart upload response", ex);
+        }
+    }
+
+    private UploadStorageFacadeResponse persistSmallArtifact(WorkerAiClient.DownloadedArtifact artifact) {
+        return storageFacade.upload(UploadStorageFacadeRequest.builder()
+                .inputStream(new ByteArrayInputStream(artifact.data()))
+                .originalFilename(artifact.filename())
+                .contentType(artifact.contentType())
+                .sizeBytes(artifact.sizeBytes())
+                .remarks("AI artifact transfer")
+                .build());
+    }
+
+    private CompleteMultipartUploadFacadeResponse persistMultipartArtifact(WorkerAiClient.DownloadedArtifact artifact) {
+        InitMultipartUploadFacadeResponse init = storageFacade.initMultipartUpload(InitMultipartUploadFacadeRequest
+                .builder()
+                .originalFilename(artifact.filename())
+                .mimeType(artifact.contentType())
+                .totalSize(artifact.sizeBytes())
+                .partSize(MULTIPART_PART_SIZE_BYTES)
+                .build());
+        byte[] data = artifact.data();
+        int partNumber = 1;
+        for (int offset = 0; offset < data.length; offset += (int) MULTIPART_PART_SIZE_BYTES) {
+            int length = Math.min((int) MULTIPART_PART_SIZE_BYTES, data.length - offset);
+            byte[] partBytes = new byte[length];
+            System.arraycopy(data, offset, partBytes, 0, length);
+            storageFacade.uploadPart(UploadMultipartPartFacadeRequest.builder()
+                    .uploadId(init.getUploadId())
+                    .partNumber(partNumber)
+                    .size((long) length)
+                    .inputStream(new ByteArrayInputStream(partBytes))
+                    .build());
+            partNumber++;
+        }
+        return storageFacade.completeMultipart(CompleteMultipartUploadFacadeRequest.builder()
+                .uploadId(init.getUploadId())
+                .bucketName(init.getBucketName())
+                .objectKey(init.getObjectKey())
+                .size(artifact.sizeBytes())
+                .build());
     }
 }

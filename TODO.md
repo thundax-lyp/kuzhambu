@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `AI-WORKERS T7A`：收口大文件下载阈值与 multipart 初始化
-  - 任务类型：执行任务
-  - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLOSURE.md#T7A`
-  - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-infra/src/main/java/com/thundax/kuzhambu/ai/infra/client/WorkerAiHttpClient.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/main/java/com/thundax/kuzhambu/storage/application/service/MultipartUploadApplicationService.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-facade/src/main/java/com/thundax/kuzhambu/storage/facade/StorageFacade.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-facade/src/main/java/com/thundax/kuzhambu/storage/facade/request/InitMultipartUploadFacadeRequest.java`
-  - 处理动作：固定小文件与大文件转存阈值，并在超阈值时切到 `流式下载 + multipart init`。
-  - 验收点：Java 能按阈值区分普通上传与 multipart 转存入口。
-  - 重要度：10/10
-
 - [ ] `AI-WORKERS T7B`：收口大文件 multipart 分片上传与完成
   - 任务类型：执行任务
   - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLOSURE.md#T7B`

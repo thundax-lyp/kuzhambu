@@ -118,7 +118,7 @@ public class WorkerAiHttpClient implements WorkerAiClient {
             return new DownloadedArtifact(
                     response.body(),
                     response.headers().firstValue("Content-Type").orElse("application/octet-stream"),
-                    response.headers().firstValue("Content-Disposition").orElse("artifact.bin"),
+                    resolveFilename(response.headers().firstValue("Content-Disposition").orElse(null)),
                     response.headers().firstValue("X-Kuzhambu-Artifact-Sha256").orElse(null),
                     response.headers()
                             .firstValue("X-Kuzhambu-Artifact-Size-Bytes")
@@ -494,5 +494,22 @@ public class WorkerAiHttpClient implements WorkerAiClient {
 
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
+    }
+
+    private String resolveFilename(String contentDisposition) {
+        if (isBlank(contentDisposition)) {
+            return "artifact.bin";
+        }
+        String marker = "filename=\"";
+        int start = contentDisposition.indexOf(marker);
+        if (start < 0) {
+            return contentDisposition;
+        }
+        int valueStart = start + marker.length();
+        int valueEnd = contentDisposition.indexOf('"', valueStart);
+        if (valueEnd < 0) {
+            return contentDisposition.substring(valueStart);
+        }
+        return contentDisposition.substring(valueStart, valueEnd);
     }
 }
