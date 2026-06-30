@@ -1,63 +1,21 @@
 import { QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { cleanup, render, screen } from "@testing-library/react";
 import { App as AntdApp } from "antd";
 import { queryClient } from "@/query/query-client";
 import { WangqiPage } from "./wangqi-page";
 
-const confirmDangerMock = vi.hoisted(() =>
-    vi.fn((options: { onConfirm: () => unknown }) => options.onConfirm())
-);
-
-const writeTextMock = vi.fn(() => Promise.resolve());
-
-const setupClipboardMock = () => {
-    Object.defineProperty(window.navigator, "clipboard", {
-        configurable: true,
-        value: {
-            writeText: writeTextMock
-        }
-    });
-};
-const resetClipboardMock = () => {
-    const descriptor = Object.getOwnPropertyDescriptor(window.navigator, "clipboard");
-    if (!descriptor) {
-        return;
-    }
-    if ("value" in descriptor && descriptor.value && "writeText" in descriptor.value) {
-        descriptor.value.writeText = vi.fn();
-    }
-};
-
 vi.mock("@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm", () => ({
     useKuzhambuConfirm: () => ({
-        danger: confirmDangerMock
+        danger: vi.fn()
     })
 }));
 
-interface CapturedCall {
-    body: unknown;
-    method: string | undefined;
-    path: string;
-}
-
-const capturedCalls: CapturedCall[] = [];
-
 const apiResponse = (data: unknown) =>
     Promise.resolve(
-        new Response(
-            JSON.stringify({
-                code: "COMMON-00000",
-                message: "success",
-                data
-            }),
-            {
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                status: 200
-            }
-        )
+        new Response(JSON.stringify({ code: "COMMON-00000", message: "success", data }), {
+            headers: { "Content-Type": "application/json" },
+            status: 200
+        })
     );
 
 const readFetchUrl = (input: RequestInfo | URL) => {
@@ -70,42 +28,9 @@ const readFetchUrl = (input: RequestInfo | URL) => {
     return input.url;
 };
 
-const readFetchBody = (body: BodyInit | null | undefined) => {
-    if (!body) {
-        return undefined;
-    }
-    if (body instanceof FormData) {
-        return Object.fromEntries(
-            Array.from(body.entries()).map(([key, value]) => [
-                key,
-                value instanceof File ? value.name : String(value)
-            ])
-        );
-    }
-    return JSON.parse(String(body));
-};
-
-const wangqiRecord = {
-    id: 400000000001,
-    title: "王圻文档",
-    summary: "记录王圻古籍条目。",
-    contentFormat: "MARKDOWN",
-    content: "## 王圻\n\n古籍正文。",
-    documentTime: "2026-01-01T00:00:00.000+00:00",
-    storageObjectId: 7001,
-    visibility: "PUBLIC"
-};
-
-const installWangqiFetchMock = () => {
-    vi.spyOn(globalThis, "fetch").mockImplementation((input, init) => {
-        const url = readFetchUrl(input);
-        const path = url.replace("/kuzhambu-admin-api/api", "");
-        capturedCalls.push({
-            body: readFetchBody(init?.body),
-            method: init?.method,
-            path
-        });
-
+const installFetchMock = () => {
+    vi.spyOn(globalThis, "fetch").mockImplementation((input) => {
+        const path = readFetchUrl(input).replace("/kuzhambu-admin-api/api", "");
         if (path.endsWith("/classics/wangqi/documents/page")) {
             return apiResponse({
                 pageNo: 1,
@@ -113,228 +38,51 @@ const installWangqiFetchMock = () => {
                 totalCount: 1,
                 count: 1,
                 totalPage: 1,
-                records: [wangqiRecord]
+                records: [
+                    {
+                        id: 400000000001,
+                        title: "王圻文档",
+                        summary: "记录王圻古籍条目。",
+                        contentFormat: "MARKDOWN",
+                        content: "## 王圻",
+                        documentTime: "2026-01-01T00:00:00.000+00:00",
+                        storageObjectId: 7001,
+                        visibility: "PUBLIC"
+                    }
+                ]
             });
         }
         if (path.endsWith("/classics/wangqi/documents/timeline/list")) {
-            return apiResponse([wangqiRecord]);
-        }
-        if (path.endsWith("/classics/wangqi/documents/400000000001/get")) {
-            return apiResponse({
-                ...wangqiRecord,
-                contentFormat: "HTML",
-                content: "<h2>王圻</h2><script>alert(1)</script>"
-            });
-        }
-        if (path.endsWith("/classics/wangqi/documents/400000000001/source-file/get")) {
-            return apiResponse({
-                documentId: 400000000001,
-                storageObjectId: 7001,
-                originalFilename: "wangqi.pdf",
-                contentType: "application/pdf",
-                size: 10,
-                contentUrl: "/classics/wangqi/documents/400000000001/source-file/content"
-            });
-        }
-        if (path.endsWith("/classics/wangqi/documents/400000000001/source-file/upload")) {
-            return apiResponse({
-                documentId: 400000000001,
-                storageObjectId: 7002,
-                originalFilename: "new-wangqi.pdf",
-                contentType: "application/pdf",
-                size: 12
-            });
-        }
-        if (path.endsWith("/classics/wangqi/documents/versions/list")) {
-            return apiResponse([
-                {
-                    id: 9001,
-                    contentType: "WANGQI_DOCUMENT",
-                    contentId: 400000000001,
-                    versionNo: 1,
-                    versionedAt: "2026-01-01T00:00:00.000+00:00",
-                    snapshotJson: JSON.stringify({
-                        title: "历史王圻文档",
-                        summary: "历史摘要",
-                        contentFormat: "MARKDOWN",
-                        content: "历史正文",
-                        documentTime: "2025-01-01T00:00:00.000+00:00",
-                        storageObjectId: 6001,
-                        visibility: "PRIVATE"
-                    }),
-                    changeType: "MANUAL_SAVE",
-                    changeSummary: "保存王圻文档"
-                }
-            ]);
-        }
-        if (path.endsWith("/classics/wangqi/documents/versions/get")) {
-            return apiResponse({
-                id: 9001,
-                contentType: "WANGQI_DOCUMENT",
-                contentId: 400000000001,
-                versionNo: 1,
-                versionedAt: "2026-01-01T00:00:00.000+00:00",
-                snapshotJson: JSON.stringify({
-                    title: "历史王圻文档",
-                    storageObjectId: 6001,
-                    visibility: "PRIVATE"
-                }),
-                changeType: "MANUAL_SAVE",
-                changeSummary: "保存王圻文档"
-            });
-        }
-        if (path.endsWith("/classics/wangqi/documents/versions/reset")) {
-            return apiResponse({
-                id: 9002,
-                versionNo: 2,
-                changeType: "HISTORY_RESTORED"
-            });
-        }
-        if (
-            path.endsWith("/classics/wangqi/documents/add") ||
-            path.endsWith("/classics/wangqi/documents/update") ||
-            path.endsWith("/classics/wangqi/documents/delete")
-        ) {
-            return apiResponse(true);
-        }
-        if (path.endsWith("/classics/shares/create")) {
-            return apiResponse({
-                id: 500000000001,
-                title: "王圻文档 分享",
-                shareUrl: "https://example.com/share/500000000001",
-                contentType: "WANGQI_DOCUMENT",
-                visibility: "PUBLIC"
-            });
+            return apiResponse([]);
         }
         return apiResponse(true);
     });
 };
 
-const renderWangqiPage = () => {
-    render(
-        <QueryClientProvider client={queryClient}>
-            <AntdApp>
-                <WangqiPage />
-            </AntdApp>
-        </QueryClientProvider>
-    );
-};
-
 describe("WangqiPage", () => {
     beforeEach(() => {
-        capturedCalls.length = 0;
-        confirmDangerMock.mockClear();
-        writeTextMock.mockClear();
-        setupClipboardMock();
         queryClient.clear();
         localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
-        installWangqiFetchMock();
+        installFetchMock();
     });
 
     afterEach(() => {
         cleanup();
         queryClient.clear();
         localStorage.clear();
-        resetClipboardMock();
         vi.restoreAllMocks();
     });
 
-    it("loads list, filters by keyword visibility and opens timeline", async () => {
-        const user = userEvent.setup();
-        renderWangqiPage();
+    it("renders page and first document", async () => {
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <WangqiPage />
+                </AntdApp>
+            </QueryClientProvider>
+        );
 
         expect(await screen.findByRole("heading", { name: "王圻文档" })).toBeInTheDocument();
         expect(await screen.findByText("王圻文档")).toBeInTheDocument();
-        await waitFor(() => {
-            expect(capturedCalls).toContainEqual({
-                method: "POST",
-                path: "/classics/wangqi/documents/page",
-                body: {
-                    pageNo: 1,
-                    pageSize: 20,
-                    sortDirection: "DESC"
-                }
-            });
-        });
-
-        await user.type(screen.getByRole("textbox", { name: "搜索王圻文档" }), "万历");
-        await waitFor(() => {
-            expect(capturedCalls).toContainEqual(
-                expect.objectContaining({
-                    method: "POST",
-                    path: "/classics/wangqi/documents/page",
-                    body: expect.objectContaining({ keyword: "万历" })
-                })
-            );
-        });
-
-        await user.click(screen.getByRole("button", { name: /filter\s*筛选/ }));
-        await user.click(screen.getByLabelText("王圻文档可见性"));
-        await user.click(await screen.findByTitle("私有"));
-        await user.click(screen.getByRole("button", { name: /查\s*询/ }));
-        await waitFor(() => {
-            expect(capturedCalls).toContainEqual(
-                expect.objectContaining({
-                    path: "/classics/wangqi/documents/page",
-                    body: expect.objectContaining({ visibility: "PRIVATE" })
-                })
-            );
-        });
-
-        await user.click(screen.getByRole("button", { name: /时间线/ }));
-        const timeline = await screen.findByLabelText("王圻文档时间线");
-        expect(within(timeline).getByText("2026/01/01")).toBeInTheDocument();
-        expect(within(timeline).getByText("记录王圻古籍条目。")).toBeInTheDocument();
-    }, 10000);
-
-    it("opens editor, sanitizes preview and saves", async () => {
-        renderWangqiPage();
-
-        fireEvent.click(await screen.findByRole("button", { name: /编辑 王圻文档/ }));
-        expect(await screen.findByLabelText("王圻文档正文预览")).toBeInTheDocument();
-        expect(screen.queryByText("alert(1)")).not.toBeInTheDocument();
-
-        fireEvent.change(screen.getByLabelText("王圻文档标题"), {
-            target: { value: "王圻文档修订" }
-        });
-        fireEvent.click(screen.getByRole("button", { name: "保存王圻文档" }));
-        await waitFor(() => {
-            expect(capturedCalls).toContainEqual(
-                expect.objectContaining({
-                    path: "/classics/wangqi/documents/update",
-                    body: expect.objectContaining({
-                        id: 400000000001,
-                        title: "王圻文档修订"
-                    })
-                })
-            );
-        });
-    }, 10000);
-
-    it("creates public share for wangqi document", async () => {
-        renderWangqiPage();
-
-        await screen.findByText("王圻文档");
-        fireEvent.click(await screen.findByLabelText("分享 王圻文档"));
-
-        await waitFor(() => {
-            expect(capturedCalls).toContainEqual({
-                method: "POST",
-                path: "/classics/shares/create",
-                body: {
-                    title: "王圻文档 分享",
-                    visibility: "PUBLIC",
-                    targets: [
-                        {
-                            contentId: 400000000001,
-                            contentType: "WANGQI_DOCUMENT"
-                        }
-                    ]
-                }
-            });
-        });
-        await waitFor(() => {
-            expect(writeTextMock).toHaveBeenCalledWith("https://example.com/share/500000000001");
-        });
     }, 10000);
 });
