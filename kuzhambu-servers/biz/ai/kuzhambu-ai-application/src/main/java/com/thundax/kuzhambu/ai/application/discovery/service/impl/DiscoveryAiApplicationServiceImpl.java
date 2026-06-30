@@ -6,11 +6,13 @@ import com.thundax.kuzhambu.ai.application.discovery.support.DiscoveryAiWorkerUs
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService;
+import com.thundax.kuzhambu.ai.application.invocation.support.AiWorkerModelConfigResolver;
 import com.thundax.kuzhambu.ai.domain.discovery.model.valueobject.DiscoveryAiRequest;
 import com.thundax.kuzhambu.ai.domain.discovery.model.valueobject.DiscoveryAiResult;
 import com.thundax.kuzhambu.ai.domain.discovery.service.DiscoveryAiDomainService;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -21,12 +23,22 @@ public class DiscoveryAiApplicationServiceImpl implements DiscoveryAiApplication
 
     private final AiWorkerInvocationApplicationService invocationApplicationService;
     private final DiscoveryAiWorkerUsecaseResolver resolver;
+    private final AiWorkerModelConfigResolver modelConfigResolver;
 
     public DiscoveryAiApplicationServiceImpl(
             AiWorkerInvocationApplicationService invocationApplicationService,
             DiscoveryAiWorkerUsecaseResolver resolver) {
+        this(invocationApplicationService, resolver, null);
+    }
+
+    @Autowired
+    public DiscoveryAiApplicationServiceImpl(
+            AiWorkerInvocationApplicationService invocationApplicationService,
+            DiscoveryAiWorkerUsecaseResolver resolver,
+            AiWorkerModelConfigResolver modelConfigResolver) {
         this.invocationApplicationService = invocationApplicationService;
         this.resolver = resolver;
+        this.modelConfigResolver = modelConfigResolver;
     }
 
     @Override
@@ -53,6 +65,7 @@ public class DiscoveryAiApplicationServiceImpl implements DiscoveryAiApplication
         validateRequest(request);
         DiscoveryAiWorkerUsecaseSpec spec = resolver.resolve(usecase);
         AiInvokeCommand command = toInvokeCommand(request, spec);
+        enrichModelConfig(command);
         AiInvokeResult result = spec.stream()
                 ? invocationApplicationService.stream(command, event -> {})
                 : invocationApplicationService.invoke(command);
@@ -82,6 +95,18 @@ public class DiscoveryAiApplicationServiceImpl implements DiscoveryAiApplication
         command.setLocale(request.getLocale());
         command.setCreateCandidate(false);
         return command;
+    }
+
+    private void enrichModelConfig(AiInvokeCommand command) {
+        if (modelConfigResolver == null || command == null) {
+            return;
+        }
+        if (isBlank(command.getServiceRole()) && command.getServiceId() == null) {
+            return;
+        }
+        var resolved = modelConfigResolver.resolve(command);
+        command.setServiceRole(resolved.serviceRole());
+        command.setModelName(resolved.modelName());
     }
 
     private void validateRequest(DiscoveryAiRequest request) {

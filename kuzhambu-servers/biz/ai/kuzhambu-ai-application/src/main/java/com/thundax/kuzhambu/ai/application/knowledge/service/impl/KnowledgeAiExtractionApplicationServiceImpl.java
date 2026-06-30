@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.ai.application.knowledge.service.impl;
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService;
+import com.thundax.kuzhambu.ai.application.invocation.support.AiWorkerModelConfigResolver;
 import com.thundax.kuzhambu.ai.application.knowledge.support.KnowledgeAiWorkerUsecaseResolver;
 import com.thundax.kuzhambu.ai.application.knowledge.support.KnowledgeAiWorkerUsecaseSpec;
 import com.thundax.kuzhambu.ai.domain.knowledge.model.valueobject.KnowledgeAiExtractionRequest;
@@ -10,6 +11,7 @@ import com.thundax.kuzhambu.ai.domain.knowledge.model.valueobject.KnowledgeAiExt
 import com.thundax.kuzhambu.ai.domain.knowledge.service.KnowledgeAiExtractionDomainService;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -18,12 +20,21 @@ public class KnowledgeAiExtractionApplicationServiceImpl implements KnowledgeAiE
 
     private final AiWorkerInvocationApplicationService invocationApplicationService;
     private final KnowledgeAiWorkerUsecaseResolver resolver;
+    private final AiWorkerModelConfigResolver modelConfigResolver;
 
     public KnowledgeAiExtractionApplicationServiceImpl(
+            AiWorkerInvocationApplicationService invocationApplicationService, KnowledgeAiWorkerUsecaseResolver resolver) {
+        this(invocationApplicationService, resolver, null);
+    }
+
+    @Autowired
+    public KnowledgeAiExtractionApplicationServiceImpl(
             AiWorkerInvocationApplicationService invocationApplicationService,
-            KnowledgeAiWorkerUsecaseResolver resolver) {
+            KnowledgeAiWorkerUsecaseResolver resolver,
+            AiWorkerModelConfigResolver modelConfigResolver) {
         this.invocationApplicationService = invocationApplicationService;
         this.resolver = resolver;
+        this.modelConfigResolver = modelConfigResolver;
     }
 
     @Override
@@ -66,6 +77,7 @@ public class KnowledgeAiExtractionApplicationServiceImpl implements KnowledgeAiE
         command.setForceJson(request.isForceJson());
         command.setLocale(request.getLocale());
         command.setCreateCandidate(true);
+        enrichModelConfig(command);
         AiInvokeResult result = invocationApplicationService.invoke(command);
         return new KnowledgeAiExtractionResult(
                 result.getCallId(),
@@ -94,5 +106,17 @@ public class KnowledgeAiExtractionApplicationServiceImpl implements KnowledgeAiE
 
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
+    }
+
+    private void enrichModelConfig(AiInvokeCommand command) {
+        if (modelConfigResolver == null || command == null) {
+            return;
+        }
+        if (isBlank(command.getServiceRole()) && command.getServiceId() == null) {
+            return;
+        }
+        var resolved = modelConfigResolver.resolve(command);
+        command.setServiceRole(resolved.serviceRole());
+        command.setModelName(resolved.modelName());
     }
 }

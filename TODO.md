@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `AiRefinementApplicationServiceImpl/DiscoveryAiApplicationServiceImpl/KnowledgeAiExtractionApplicationServiceImpl`：统一复用 modelConfig resolver
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLASSICS-TEXT-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/refinement/service/impl/AiRefinementApplicationServiceImpl.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/discovery/service/impl/DiscoveryAiApplicationServiceImpl.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/knowledge/service/impl/KnowledgeAiExtractionApplicationServiceImpl.java`
-    - 处理动作：让 `Refinement`、`Discovery`、`Knowledge` 三条入口统一接入 `AiWorkerModelConfigResolver`
-    - 验收点：业务入口不再自行拼装 `apiSource/baseUrl/apiKey/capabilityTags/parameters`
-    - 重要度：8/10
-
 - [ ] `text.py/graph_registry.py/basic.py`：替换 workers 文本占位 graph
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLASSICS-TEXT-CLOSURE.md`
