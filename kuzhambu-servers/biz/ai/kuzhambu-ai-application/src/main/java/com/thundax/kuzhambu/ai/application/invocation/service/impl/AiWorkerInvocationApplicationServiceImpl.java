@@ -38,7 +38,11 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
             result = workerAiClient.invoke(command);
         } catch (RuntimeException ex) {
             result = AiInvokeResult.failed(
-                    command.getRequestId(), command.getTraceId(), "WORKER_UNAVAILABLE", ex.getMessage());
+                    command.getRequestId(),
+                    command.getTraceId(),
+                    "WORKER_UNAVAILABLE",
+                    ex.getMessage(),
+                    "WORKER_REQUEST");
         }
         return completeCall(command, callRecord, normalizeResult(command, result));
     }
@@ -57,7 +61,11 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
             completedResult.compareAndSet(
                     null,
                     AiInvokeResult.failed(
-                            command.getRequestId(), command.getTraceId(), "WORKER_UNAVAILABLE", ex.getMessage()));
+                            command.getRequestId(),
+                            command.getTraceId(),
+                            "WORKER_UNAVAILABLE",
+                            ex.getMessage(),
+                            "WORKER_STREAM"));
         }
         AiInvokeResult result = completedResult.get();
         if (result == null) {
@@ -65,7 +73,8 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
                     command.getRequestId(),
                     command.getTraceId(),
                     "WORKER_PROTOCOL_FAILURE",
-                    "Worker stream ended without completed event");
+                    "Worker stream ended without completed event",
+                    "WORKER_STREAM");
         }
         return completeCall(command, callRecord, normalizeResult(command, result));
     }
@@ -84,7 +93,11 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
             completedResult.compareAndSet(
                     null,
                     AiInvokeResult.failed(
-                            event.getRequestId(), event.getTraceId(), event.getErrorType(), event.getErrorMessage()));
+                            event.getRequestId(),
+                            event.getTraceId(),
+                            event.getErrorType(),
+                            event.getErrorMessage(),
+                            event.getFailureStage()));
         }
     }
 
