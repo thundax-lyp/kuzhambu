@@ -6,7 +6,6 @@ import com.thundax.kuzhambu.storage.application.facade.assembler.StorageReadable
 import com.thundax.kuzhambu.storage.application.facade.assembler.StorageUploadFacadeAssembler;
 import com.thundax.kuzhambu.storage.application.service.MultipartUploadApplicationService;
 import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
-import com.thundax.kuzhambu.storage.application.service.command.ChangeStorageCommand;
 import com.thundax.kuzhambu.storage.application.service.command.UploadStorageObjectCommand;
 import com.thundax.kuzhambu.storage.application.service.content.StoredObjectContent;
 import com.thundax.kuzhambu.storage.application.service.query.StorageQuery;
@@ -36,7 +35,6 @@ import com.thundax.kuzhambu.storage.facade.response.UploadMultipartPartFacadeRes
 import com.thundax.kuzhambu.storage.facade.response.UploadStorageFacadeResponse;
 import java.util.Collections;
 import java.util.List;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -184,11 +182,9 @@ public class StorageFacadeImpl implements StorageFacade {
         if (storageObjectId == null || request == null) {
             return;
         }
-        StoredObject storedObject = requireStoredObject(storageObjectId);
+        requireStoredObject(storageObjectId);
         StorageOwnerType ownerType = ownerBindingFacadeAssembler.toOwnerType(request);
         String ownerId = request.getOwnerId();
-        assertBindable(storedObject, ownerType, ownerId);
-        changeOwner(storedObject, ownerType, ownerId);
         addReferenceIfAbsent(storageObjectId, ownerType, ownerId, request.getOwnerParams());
         storageApplicationService.changeReferenceStatus(
                 ownerBindingFacadeAssembler.toReferencedCommand(MarkStorageUsageFacadeRequest.builder()
@@ -202,46 +198,6 @@ public class StorageFacadeImpl implements StorageFacade {
             throw new BizException("Storage 对象不存在");
         }
         return storedObject;
-    }
-
-    private void assertBindable(StoredObject storedObject, StorageOwnerType targetOwnerType, String targetOwnerId) {
-        if (storedObject.getOwnerType() != null && storedObject.getOwnerType() != targetOwnerType) {
-            throw new BizException("Storage 对象已绑定其他业务对象");
-        }
-        if (StringUtils.isNotBlank(storedObject.getOwnerId())
-                && !StringUtils.equals(storedObject.getOwnerId(), targetOwnerId)) {
-            throw new BizException("Storage 对象已绑定其他业务对象");
-        }
-        List<StoredObjectReference> references = listReferences(storedObject.getId());
-        boolean hasOtherReference = references.stream()
-                .anyMatch(reference -> reference.getOwnerType() != targetOwnerType
-                        || !StringUtils.equals(reference.getOwnerId(), targetOwnerId));
-        if (hasOtherReference) {
-            throw new BizException("Storage 对象已存在其他引用");
-        }
-    }
-
-    private void changeOwner(StoredObject storedObject, StorageOwnerType ownerType, String ownerId) {
-        if (storedObject.getOwnerType() == ownerType && StringUtils.equals(storedObject.getOwnerId(), ownerId)) {
-            return;
-        }
-        ChangeStorageCommand command = new ChangeStorageCommand();
-        command.setId(storedObject.getId());
-        command.setOriginalFilename(storedObject.getOriginalFilename());
-        command.setContentType(storedObject.getContentType());
-        command.setName(storedObject.getName());
-        command.setExtendName(storedObject.getExtendName());
-        command.setMimeType(storedObject.getMimeType());
-        command.setOwnerType(ownerType);
-        command.setOwnerId(ownerId);
-        command.setBucketName(storedObject.getBucketName());
-        command.setObjectKey(storedObject.getObjectKey());
-        command.setSize(storedObject.getSize());
-        command.setAccessEndpoint(storedObject.getAccessEndpoint());
-        command.setObjectStatus(storedObject.getObjectStatus());
-        command.setReferenceStatus(storedObject.getReferenceStatus());
-        command.setRemarks(storedObject.getRemarks());
-        storageApplicationService.change(command);
     }
 
     private void addReferenceIfAbsent(
@@ -260,8 +216,10 @@ public class StorageFacadeImpl implements StorageFacade {
 
     private boolean referenceExists(Long storageObjectId, StorageOwnerType ownerType, String ownerId) {
         return listReferences(StoredObjectId.of(storageObjectId)).stream()
-                .anyMatch(reference ->
-                        reference.getOwnerType() == ownerType && StringUtils.equals(reference.getOwnerId(), ownerId));
+                .anyMatch(reference -> ownerType != null
+                        && ownerType.value().equals(reference.getReferenceOwnerType())
+                        && ownerId != null
+                        && ownerId.equals(reference.getReferenceOwnerId()));
     }
 
     private List<StoredObjectReference> listReferences(StoredObjectId storedObjectId) {

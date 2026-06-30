@@ -1,21 +1,18 @@
 package com.thundax.kuzhambu.storage.application.facade.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.storage.application.facade.assembler.StorageOwnerBindingFacadeAssembler;
 import com.thundax.kuzhambu.storage.application.facade.assembler.StorageReadableContentFacadeAssembler;
 import com.thundax.kuzhambu.storage.application.facade.assembler.StorageUploadFacadeAssembler;
 import com.thundax.kuzhambu.storage.application.service.MultipartUploadApplicationService;
 import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
 import com.thundax.kuzhambu.storage.application.service.command.AddStorageReferencesCommand;
-import com.thundax.kuzhambu.storage.application.service.command.ChangeStorageCommand;
 import com.thundax.kuzhambu.storage.application.service.command.ChangeStorageReferenceStatusCommand;
 import com.thundax.kuzhambu.storage.application.service.query.StorageQuery;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadPart;
@@ -37,7 +34,7 @@ import org.mockito.ArgumentCaptor;
 class StorageFacadeImplTest {
 
     @Test
-    void bindOwnerShouldChangeOwnerAddReferenceAndMarkInUse() {
+    void bindOwnerShouldAddReferenceAndMarkInUse() {
         StorageApplicationService storageApplicationService = mock(StorageApplicationService.class);
         StorageFacadeImpl facade = new StorageFacadeImpl(
                 storageApplicationService,
@@ -45,8 +42,7 @@ class StorageFacadeImplTest {
                 new StorageReadableContentFacadeAssembler(),
                 new StorageOwnerBindingFacadeAssembler(),
                 new StorageUploadFacadeAssembler());
-        StoredObject storage = storage(7001L, null, null);
-        when(storageApplicationService.get(StoredObjectId.of(7001L))).thenReturn(storage);
+        when(storageApplicationService.get(StoredObjectId.of(7001L))).thenReturn(storage(7001L));
         when(storageApplicationService.listReferences(any(StorageQuery.class))).thenReturn(List.of());
 
         facade.bindOwner(BindStorageOwnerFacadeRequest.builder()
@@ -56,24 +52,24 @@ class StorageFacadeImplTest {
                 .ownerParams("usage=WANGQI_SOURCE_FILE;documentId=400000000001")
                 .build());
 
-        ArgumentCaptor<ChangeStorageCommand> changeCaptor = ArgumentCaptor.forClass(ChangeStorageCommand.class);
-        verify(storageApplicationService).change(changeCaptor.capture());
-        assertEquals(
-                StorageOwnerType.CLASSICS_WANGQI_DOCUMENT,
-                changeCaptor.getValue().getOwnerType());
-        assertEquals("400000000001", changeCaptor.getValue().getOwnerId());
-
         ArgumentCaptor<AddStorageReferencesCommand> addCaptor =
                 ArgumentCaptor.forClass(AddStorageReferencesCommand.class);
         verify(storageApplicationService).addReferences(addCaptor.capture());
         assertEquals(1, addCaptor.getValue().getReferences().size());
-        assertEquals("400000000001", addCaptor.getValue().getReferences().get(0).getOwnerId());
+        assertEquals("400000000001", addCaptor.getValue().getReferences().get(0).getReferenceOwnerId());
+        assertEquals(
+                StorageOwnerType.CLASSICS_WANGQI_DOCUMENT.value(),
+                addCaptor.getValue().getReferences().get(0).getReferenceOwnerType());
 
-        verify(storageApplicationService).changeReferenceStatus(any(ChangeStorageReferenceStatusCommand.class));
+        ArgumentCaptor<ChangeStorageReferenceStatusCommand> statusCaptor =
+                ArgumentCaptor.forClass(ChangeStorageReferenceStatusCommand.class);
+        verify(storageApplicationService).changeReferenceStatus(statusCaptor.capture());
+        assertEquals(StoredObjectId.of(7001L), statusCaptor.getValue().getStorageObjectId());
+        assertEquals("REFERENCED", statusCaptor.getValue().getReferenceStatus().value());
     }
 
     @Test
-    void bindOwnerShouldRejectCrossOwnerReference() {
+    void bindOwnerShouldSkipDuplicateReferenceOnly() {
         StorageApplicationService storageApplicationService = mock(StorageApplicationService.class);
         StorageFacadeImpl facade = new StorageFacadeImpl(
                 storageApplicationService,
@@ -81,26 +77,49 @@ class StorageFacadeImplTest {
                 new StorageReadableContentFacadeAssembler(),
                 new StorageOwnerBindingFacadeAssembler(),
                 new StorageUploadFacadeAssembler());
-        when(storageApplicationService.get(StoredObjectId.of(7001L)))
-                .thenReturn(storage(7001L, StorageOwnerType.CLASSICS_WANGQI_DOCUMENT, "400000000001"));
+        when(storageApplicationService.get(StoredObjectId.of(7001L))).thenReturn(storage(7001L));
+        when(storageApplicationService.listReferences(any(StorageQuery.class)))
+                .thenReturn(List.of(new StoredObjectReference(
+                        StoredObjectId.of(7001L),
+                        "400000000001",
+                        StorageOwnerType.CLASSICS_WANGQI_DOCUMENT.value(),
+                        null)));
+
+        facade.bindOwner(BindStorageOwnerFacadeRequest.builder()
+                .storageObjectIds(List.of(7001L))
+                .ownerType(StorageOwnerType.CLASSICS_WANGQI_DOCUMENT.value())
+                .ownerId("400000000001")
+                .build());
+
+        verify(storageApplicationService, never()).addReferences(any(AddStorageReferencesCommand.class));
+        verify(storageApplicationService).changeReferenceStatus(any(ChangeStorageReferenceStatusCommand.class));
+    }
+
+    @Test
+    void bindOwnerShouldAllowExistingDifferentReference() {
+        StorageApplicationService storageApplicationService = mock(StorageApplicationService.class);
+        StorageFacadeImpl facade = new StorageFacadeImpl(
+                storageApplicationService,
+                mock(MultipartUploadApplicationService.class),
+                new StorageReadableContentFacadeAssembler(),
+                new StorageOwnerBindingFacadeAssembler(),
+                new StorageUploadFacadeAssembler());
+        when(storageApplicationService.get(StoredObjectId.of(7001L))).thenReturn(storage(7001L));
         when(storageApplicationService.listReferences(any(StorageQuery.class)))
                 .thenReturn(List.of(new StoredObjectReference(
                         StoredObjectId.of(7001L),
                         "400000000002",
-                        StorageOwnerType.CLASSICS_WANGQI_DOCUMENT,
-                        null,
+                        StorageOwnerType.CLASSICS_WANGQI_DOCUMENT.value(),
                         null)));
 
-        assertThrows(
-                BizException.class,
-                () -> facade.bindOwner(BindStorageOwnerFacadeRequest.builder()
-                        .storageObjectIds(List.of(7001L))
-                        .ownerType(StorageOwnerType.CLASSICS_WANGQI_DOCUMENT.value())
-                        .ownerId("400000000001")
-                        .build()));
+        facade.bindOwner(BindStorageOwnerFacadeRequest.builder()
+                .storageObjectIds(List.of(7001L))
+                .ownerType(StorageOwnerType.CLASSICS_WANGQI_DOCUMENT.value())
+                .ownerId("400000000001")
+                .build());
 
-        verify(storageApplicationService, never()).change(any(ChangeStorageCommand.class));
-        verify(storageApplicationService, never()).addReferences(any(AddStorageReferencesCommand.class));
+        verify(storageApplicationService).addReferences(any(AddStorageReferencesCommand.class));
+        verify(storageApplicationService).changeReferenceStatus(any(ChangeStorageReferenceStatusCommand.class));
     }
 
     @Test
@@ -185,8 +204,7 @@ class StorageFacadeImplTest {
                 new StorageReadableContentFacadeAssembler(),
                 new StorageOwnerBindingFacadeAssembler(),
                 new StorageUploadFacadeAssembler());
-        when(multipartUploadApplicationService.complete(any()))
-                .thenReturn(storage(7002L, StorageOwnerType.USER, "owner-1"));
+        when(multipartUploadApplicationService.complete(any())).thenReturn(storage(7002L));
 
         var response = facade.completeMultipart(CompleteMultipartUploadFacadeRequest.builder()
                 .uploadId("upload-1")
@@ -198,7 +216,6 @@ class StorageFacadeImplTest {
 
         assertEquals(7002L, response.getStorageObjectId());
         assertEquals("upload-1", response.getUploadId());
-        assertEquals("USER", response.getOwnerType());
     }
 
     @Test
@@ -221,13 +238,11 @@ class StorageFacadeImplTest {
         verify(multipartUploadApplicationService).abort(any());
     }
 
-    private static StoredObject storage(Long id, StorageOwnerType ownerType, String ownerId) {
+    private static StoredObject storage(Long id) {
         StoredObject storage = new StoredObject();
         storage.setId(StoredObjectId.of(id));
         storage.setOriginalFilename("source.pdf");
         storage.setContentType("application/pdf");
-        storage.setOwnerType(ownerType);
-        storage.setOwnerId(ownerId);
         storage.setSize(4L);
         storage.setBucketName("local");
         storage.setObjectKey("wangqi/source.pdf");

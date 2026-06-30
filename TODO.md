@@ -11,22 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `storage-infra-mapping`：清理 persistence 与 cache 映射
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-OWNER-CLEANUP.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-infra/src/main/java/com/thundax/kuzhambu/storage/infra/object/persistence/assembler/StoragePersistenceAssembler.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-infra/src/main/java/com/thundax/kuzhambu/storage/infra/cache/StorageCacheSupport.java`
-    - 处理动作：删除 object owner 和 reference 记录状态在 persistence / cache 中的读写映射
-    - 验收点：persistence / cache 层不再读写 `storage_object.owner_type / owner_id` 和 `storage_object_reference.reference_status`
-    - 重要度：9/10
-
-- [ ] `storage-facade-binding`：删除 bindOwner 改 owner 的链路
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-OWNER-CLEANUP.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/main/java/com/thundax/kuzhambu/storage/application/facade/impl/StorageFacadeImpl.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/test/java/com/thundax/kuzhambu/storage/application/facade/impl/StorageFacadeImplTest.java`
-    - 处理动作：移除 `bindOwner -> changeOwner` 逻辑并改写对应测试
-    - 验收点：binding 链路不再更新 object owner，旧的 owner mutation 测试已删除或重写
-    - 重要度：10/10
-
 - [ ] `storage-application-reference`：统一只维护有效引用与派生 reference_status
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-OWNER-CLEANUP.md`
