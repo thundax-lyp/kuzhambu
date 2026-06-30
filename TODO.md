@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `AI-WORKERS T3A`：收口 AI 调用记录与候选记录领域模型
-  - 任务类型：执行任务
-  - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLOSURE.md#T3`
-  - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-domain/src/main/java/com/thundax/kuzhambu/ai/domain/invocation/model/entity/AiCallRecord.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-domain/src/main/java/com/thundax/kuzhambu/ai/domain/invocation/model/entity/AiCandidate.java`
-  - 处理动作：补齐 `failureStage`、`resultFormat`、`resultPayload`、`artifactReferenceJson`、`rejectedAt` 等领域字段与语义。
-  - 验收点：领域对象已能完整表达文本结果、文件结果、拒绝时间与失败阶段。
-  - 重要度：10/10
-
 - [ ] `AI-WORKERS T3B`：收口 AI 调用记录与候选记录持久化映射
   - 任务类型：执行任务
   - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLOSURE.md#T3`

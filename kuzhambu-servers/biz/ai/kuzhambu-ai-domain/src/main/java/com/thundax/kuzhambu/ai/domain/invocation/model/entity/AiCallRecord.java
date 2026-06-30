@@ -33,6 +33,10 @@ public class AiCallRecord {
     private boolean streamCompleted;
     private boolean fallbackUsed;
     private AiUsageSnapshot usage = AiUsageSnapshot.empty();
+    private String failureStage;
+    private String resultFormat;
+    private String resultPayload;
+    private String artifactReferenceJson;
     private String errorType;
     private String errorMessage;
     private String warningsJson;
@@ -46,6 +50,14 @@ public class AiCallRecord {
         this.completedAt = completedTime;
         this.errorType = null;
         this.errorMessage = null;
+        this.failureStage = null;
+    }
+
+    public void recordResult(String format, String payload, String artifactReference, String warnings) {
+        this.resultFormat = format;
+        this.resultPayload = payload;
+        this.artifactReferenceJson = artifactReference;
+        this.warningsJson = warnings;
     }
 
     public void markFailed(
@@ -55,5 +67,9 @@ public class AiCallRecord {
         this.errorType = failureType;
         this.errorMessage = failureMessage;
         this.completedAt = completedTime;
+    }
+
+    public void recordFailureStage(String stage) {
+        this.failureStage = stage;
     }
 }
