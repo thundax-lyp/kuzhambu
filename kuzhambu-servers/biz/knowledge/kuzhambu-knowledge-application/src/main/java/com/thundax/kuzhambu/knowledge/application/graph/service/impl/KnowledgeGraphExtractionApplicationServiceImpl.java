@@ -989,9 +989,15 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
         }
         if (candidate != null) {
             result.setAiCandidateId(candidate.getCandidateId());
+            if (result.getAiCallId() == null) {
+                result.setAiCallId(candidate.getCallId());
+            }
             if (candidate.getAppliedAt() != null) {
                 result.setAppliedAt(candidate.getAppliedAt().toEpochMilli());
                 result.setStatus(STATUS_APPLIED);
+            }
+            if ("REJECTED".equals(candidate.getStatus())) {
+                result.setStatus(STATUS_FAILED);
             }
             if (StringUtils.isBlank(result.getErrorType())) {
                 result.setErrorType(candidate.getErrorType());

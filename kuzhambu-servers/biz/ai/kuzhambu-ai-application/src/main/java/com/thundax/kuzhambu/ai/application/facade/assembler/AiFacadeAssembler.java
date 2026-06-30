@@ -80,10 +80,13 @@ public class AiFacadeAssembler {
                 .status(candidate.getStatus())
                 .promptVersionId(candidate.getPromptVersionId())
                 .modelName(candidate.getModelName())
+                .failureStage(candidate.getFailureStage())
+                .artifactReferenceJson(candidate.getArtifactReferenceJson())
                 .errorType(candidate.getErrorType())
                 .errorMessage(candidate.getErrorMessage())
                 .requestedAt(candidate.getRequestedAt())
                 .appliedAt(candidate.getAppliedAt())
+                .rejectedAt(candidate.getRejectedAt())
                 .build();
     }
 

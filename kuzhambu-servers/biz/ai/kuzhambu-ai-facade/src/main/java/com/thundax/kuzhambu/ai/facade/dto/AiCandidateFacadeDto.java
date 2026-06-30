@@ -23,8 +23,11 @@ public class AiCandidateFacadeDto {
     private final String status;
     private final Long promptVersionId;
     private final String modelName;
+    private final String failureStage;
+    private final String artifactReferenceJson;
     private final String errorType;
     private final String errorMessage;
     private final Instant requestedAt;
     private final Instant appliedAt;
+    private final Instant rejectedAt;
 }
