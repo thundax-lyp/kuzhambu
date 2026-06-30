@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `AiInvocationMapper/AiInvocationRepositoryIT`：补齐调用记录与候选结果 schema
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLASSICS-TEXT-CLOSURE.md`
-    - 范围对象：`db/schema/ai.sql`、`kuzhambu-servers/biz/ai/kuzhambu-ai-infra/src/main/java/com/thundax/kuzhambu/ai/infra/invocation/persistence/mapper/AiInvocationMapper.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-infra/src/test/java/com/thundax/kuzhambu/ai/infra/invocation/repository/impl/AiInvocationRepositoryIT.java`
-    - 处理动作：把 `ai_call_record` 和 `ai_candidate` 的 schema 与持久化映射对齐到 RUNBOOK 字段
-    - 验收点：`failure_stage`、`result_format`、`result_payload`、`artifact_reference_json`、`rejected_at` 等字段在 schema 和仓储层一致
-    - 重要度：10/10
-
 - [ ] `AiWorkerInvocationApplicationServiceImpl/AiInvokeResult`：补齐最终态与候选快照落库
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLASSICS-TEXT-CLOSURE.md`
