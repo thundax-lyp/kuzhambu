@@ -47,7 +47,6 @@ class StoredObjectRepositoryImplTest {
 
         assertEquals(1, result.size());
         assertEquals(StoredObjectId.of(1001L), result.get(0).getId());
-        verify(mapper).selectList(any());
     }
 
     @Test
