@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `kuzhambu-ai-application refinement invoke path`：AI-WORKERS T2 去掉 image_analysis legacy 分支
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-IMAGE-ANALYSIS-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/refinement/service/impl/AiRefinementApplicationServiceImpl.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/test/java/com/thundax/kuzhambu/ai/application/refinement/service/impl/AiRefinementApplicationServiceImplTest.java`
-    - 处理动作：移除 `image_analysis` 的 legacy `operation/workerPath` 旁路，统一改为 resolver 分发。
-    - 验收点：`analyzeImage(...)` 传给 invocation service 的 `operation` 固定为 `CLASSICS_SANCAI_IMAGE_ANALYSIS`，`workerPath` 固定为 `/internal/ai/classics/sancai/image-analysis`。
-    - 重要度：10/10
-
 - [ ] `kuzhambu-ai-application stream command`：AI-WORKERS T3 固定 image_analysis 的 stream 调用语义
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-IMAGE-ANALYSIS-CLOSURE.md`

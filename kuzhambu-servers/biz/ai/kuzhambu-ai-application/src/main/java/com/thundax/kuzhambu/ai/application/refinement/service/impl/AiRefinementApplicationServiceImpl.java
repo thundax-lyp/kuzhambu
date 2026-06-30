@@ -70,16 +70,10 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
 
     private AiCandidateResult invokeCandidate(AiRefinementRequestCommand command, String capability) {
         validateCommand(command);
-        String operation = command.getOperation();
-        String workerPath = null;
-        if (!CAPABILITY_IMAGE_ANALYSIS.equals(capability)) {
-            var spec = classicsAiWorkerUsecaseResolver.resolve(command.getContentType(), capability);
-            operation = spec.operation();
-            workerPath = spec.workerPath();
-        }
+        var spec = classicsAiWorkerUsecaseResolver.resolve(command.getContentType(), capability);
         AiInvokeCommand invokeCommand = command.toInvokeCommand(capability);
-        invokeCommand.setOperation(operation);
-        invokeCommand.setWorkerPath(workerPath);
+        invokeCommand.setOperation(spec.operation());
+        invokeCommand.setWorkerPath(spec.workerPath());
         AiInvokeResult result = invocationApplicationService.invoke(invokeCommand);
         return AiCandidateResult.from(result);
     }
