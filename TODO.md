@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `AI-WORKERS T8`：收口 Workers 临时 artifact 清理任务
-  - 任务类型：执行任务
-  - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLOSURE.md#T8`
-  - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/render/artifact_store.py`、`kuzhambu-workers/src/kuzhambu_workers/core/config.py`、`kuzhambu-workers/src/kuzhambu_workers/main.py`、`kuzhambu-workers/tests/test_artifact_store.py`、`kuzhambu-workers/tests/test_artifact_cleanup_job.py`
-  - 处理动作：增加定时清理任务并清理超过 `12` 小时的 artifact。
-  - 验收点：超时文件会被清理，未超时文件不会误删。
-  - 重要度：10/10
-
 - [ ] `AI-WORKERS T9`：收口文件类结果失败边界
   - 任务类型：执行任务
   - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLOSURE.md#T9`

@@ -131,6 +131,25 @@ class RequestArtifactStore:
         return self.artifact_dir / f"{artifact_id}.json"
 
 
+def cleanup_expired_artifacts(root_dir: Path, now: datetime | None = None) -> int:
+    artifact_dir = root_dir / "artifacts"
+    if not artifact_dir.exists():
+        return 0
+    current = now or datetime.now(timezone.utc)
+    deleted = 0
+    for metadata_path in artifact_dir.glob("*.json"):
+        metadata = ArtifactMetadata(**loads(metadata_path.read_text(encoding="utf-8")))
+        expires_at = datetime.fromisoformat(metadata.expires_at.replace("Z", "+00:00"))
+        if current < expires_at:
+            continue
+        artifact_path = artifact_dir / f"{metadata.artifact_id}.bin"
+        if artifact_path.exists():
+            artifact_path.unlink()
+        metadata_path.unlink()
+        deleted += 1
+    return deleted
+
+
 def _digest(data: bytes) -> str:
     return f"sha256:{sha256(data).hexdigest()}"
 
