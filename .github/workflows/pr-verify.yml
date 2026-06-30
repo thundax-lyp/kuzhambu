@@ -168,7 +168,6 @@ jobs:
               with:
                   node-version: "20"
                   cache: npm
-                  cache-dependency-path: kuzhambu-apps/package-lock.json
 
             - name: Verify frontend package manifests
               run: |
@@ -178,7 +177,7 @@ jobs:
 
             - name: Install frontend dependencies
               working-directory: kuzhambu-apps
-              run: npm ci
+              run: npm install
 
             - name: Verify frontend formatting
               working-directory: kuzhambu-apps
