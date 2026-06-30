@@ -184,8 +184,6 @@ class StorageOrphanObjectCleanupSchedulerTest {
         @Override
         public List<StoredObject> list(
                 String mimeType,
-                String ownerId,
-                String ownerType,
                 String objectStatus,
                 String referenceStatus,
                 String referenceOwnerId,
@@ -199,8 +197,6 @@ class StorageOrphanObjectCleanupSchedulerTest {
         @Override
         public PageResult<StoredObject> page(
                 String mimeType,
-                String ownerId,
-                String ownerType,
                 String objectStatus,
                 String referenceStatus,
                 String referenceOwnerId,

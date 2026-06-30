@@ -11,22 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `storage-application-reference`：统一只维护有效引用与派生 reference_status
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-OWNER-CLEANUP.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/main/java/com/thundax/kuzhambu/storage/application/service/StorageApplicationService.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/main/java/com/thundax/kuzhambu/storage/application/service/impl/StorageApplicationServiceImpl.java`
-    - 处理动作：将引用维护改成“新增有效记录 / 删除有效记录 / 汇总 object 级 reference_status”
-    - 验收点：unbind 直接删除 reference 记录，`storage_object.reference_status` 由 application service 统一汇总维护，Storage 稳定支持多业务对象并发引用同一 object
-    - 重要度：10/10
-
-- [ ] `storage-repository-query`：收敛 repository 查询到新数据结构
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-OWNER-CLEANUP.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-domain/src/main/java/com/thundax/kuzhambu/storage/domain/object/repository/StoredObjectRepository.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-infra/src/main/java/com/thundax/kuzhambu/storage/infra/object/repository/impl/StoredObjectRepositoryImpl.java`
-    - 处理动作：移除对 object owner 和 reference 记录状态字段的查询依赖
-    - 验收点：repository 查询只依赖 `storage_object_reference` 有效记录和 object 级派生 `reference_status`
-    - 重要度：9/10
-
 - [ ] `admin-web-storage-object`：前端对象页改为引用语义
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-OWNER-CLEANUP.md`

@@ -15,8 +15,6 @@ public interface StoredObjectRepository {
 
     List<StoredObject> list(
             String mimeType,
-            String ownerId,
-            String ownerType,
             String objectStatus,
             String referenceStatus,
             String referenceOwnerId,
@@ -27,8 +25,6 @@ public interface StoredObjectRepository {
 
     PageResult<StoredObject> page(
             String mimeType,
-            String ownerId,
-            String ownerType,
             String objectStatus,
             String referenceStatus,
             String referenceOwnerId,

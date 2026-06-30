@@ -90,8 +90,6 @@ public class StoredObjectRepositoryImpl implements StoredObjectRepository {
     @Override
     public List<StoredObject> list(
             String mimeType,
-            String ownerId,
-            String ownerType,
             String objectStatus,
             String referenceStatus,
             String referenceOwnerId,
@@ -101,8 +99,6 @@ public class StoredObjectRepositoryImpl implements StoredObjectRepository {
             SortDirection sortDirection) {
         return StoragePersistenceAssembler.toDomainList(mapper.selectList(buildListWrapper(
                 mimeType,
-                ownerId,
-                ownerType,
                 objectStatus,
                 referenceStatus,
                 referenceOwnerId,
@@ -115,8 +111,6 @@ public class StoredObjectRepositoryImpl implements StoredObjectRepository {
     @Override
     public PageResult<StoredObject> page(
             String mimeType,
-            String ownerId,
-            String ownerType,
             String objectStatus,
             String referenceStatus,
             String referenceOwnerId,
@@ -130,8 +124,6 @@ public class StoredObjectRepositoryImpl implements StoredObjectRepository {
                 new Page<>(pageNo, pageSize),
                 buildListWrapper(
                         mimeType,
-                        ownerId,
-                        ownerType,
                         objectStatus,
                         referenceStatus,
                         referenceOwnerId,
@@ -294,8 +286,6 @@ public class StoredObjectRepositoryImpl implements StoredObjectRepository {
 
     private LambdaQueryWrapper<StoredObjectDO> buildListWrapper(
             String mimeType,
-            String ownerId,
-            String ownerType,
             String objectStatus,
             String referenceStatus,
             String referenceOwnerId,
@@ -315,12 +305,6 @@ public class StoredObjectRepositoryImpl implements StoredObjectRepository {
         }
         if (StringUtils.isNotBlank(mimeType)) {
             wrapper.eq(StoredObjectDO::getMimeType, mimeType);
-        }
-        if (StringUtils.isNotBlank(ownerId)) {
-            wrapper.eq(StoredObjectDO::getOwnerId, ownerId);
-        }
-        if (StringUtils.isNotBlank(ownerType)) {
-            wrapper.eq(StoredObjectDO::getOwnerType, ownerType);
         }
         if (StringUtils.isNotBlank(objectStatus)) {
             wrapper.eq(StoredObjectDO::getObjectStatus, objectStatus);
