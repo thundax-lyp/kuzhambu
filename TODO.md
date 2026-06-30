@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `sancai-entry-panel.tsx`：接通三才图会精修任务创建与轮询
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLASSICS-TEXT-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/common/components/ai-candidate-panel.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.test.tsx`
-    - 处理动作：在三才图会详情页接通 `translate/summary` 的任务创建与轮询，并在任务成功后刷新候选与详情
-    - 验收点：页面可以先创建 `translate` 与 `summary` 任务，再在任务成功后看到候选并刷新 `translationText`、`translationStatus`、`summary`
-    - 重要度：10/10
-
 - [ ] `wangqi-page.tsx/ming-customs-page.tsx`：接通汪耆与明俗 summary 任务创建与轮询
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLASSICS-TEXT-CLOSURE.md`

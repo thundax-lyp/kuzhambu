@@ -1,10 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Alert, App } from "antd";
-import { useState } from "react";
+import { Alert, App, Button, Card } from "antd";
+import { useEffect, useState } from "react";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import type { KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
+import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import * as exportService from "@/pages/classics/common/classics-export-service";
 import * as shareService from "@/pages/classics/common/classics-share-service";
+import * as currentUserService from "@/service/current-user-service";
 import { ClassicsExportJobSection } from "@/pages/classics/common/components/classics-export-job-section";
 import { ClassicsShowcaseJobSection } from "@/pages/classics/common/components/classics-showcase-job-section";
 import { AiCandidatePanel } from "@/pages/classics/common/components/ai-candidate-panel";
@@ -23,9 +25,67 @@ import type {
 
 const EXPORT_PAGE_SIZE = 8;
 const SHOWCASE_PAGE_SIZE = 8;
+const TASK_POLL_INTERVAL_MS = 3000;
+const DEFAULT_REFINEMENT_MODEL_ID = 1;
+const DEFAULT_REFINEMENT_MODEL_NAME = "gpt-5.5";
+const DEFAULT_REFINEMENT_SERVICE_ROLE = "PRIMARY";
 
 const readEntryTitle = (entry: SancaiEntryRecord) => {
     return entry.title?.trim() || `条目 ${entry.id}`;
+};
+
+const createEventId = (prefix: string) => {
+    if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+        return `${prefix}-${crypto.randomUUID()}`;
+    }
+    return `${prefix}-${Date.now()}`;
+};
+
+const buildPromptMessagesJson = (
+    capability: "translate" | "summary",
+    entry: SancaiEntryRecord
+) => {
+    if (capability === "translate") {
+        return JSON.stringify([
+            {
+                role: "system",
+                content: "你是古籍翻译助手，请输出可直接展示的现代汉语译文。"
+            },
+            {
+                role: "user",
+                content: entry.originalText?.trim() || ""
+            }
+        ]);
+    }
+    return JSON.stringify([
+        {
+            role: "system",
+            content: "你是古籍摘要助手，请输出可直接展示的简明中文摘要。"
+        },
+        {
+            role: "user",
+            content: JSON.stringify({
+                title: entry.title,
+                originalText: entry.originalText,
+                translationText: entry.translationText
+            })
+        }
+    ]);
+};
+
+const buildInputPayloadJson = (
+    capability: "translate" | "summary",
+    entry: SancaiEntryRecord
+) => {
+    return JSON.stringify({
+        capability,
+        contentId: entry.id,
+        contentType: "SANCAI_ENTRY",
+        originalText: entry.originalText,
+        summary: entry.summary,
+        title: entry.title,
+        translationText: entry.translationText
+    });
 };
 
 interface SancaiEntryPanelProps {
@@ -52,10 +112,19 @@ export const SancaiEntryPanel = ({
     const { message: messageApi, modal: modalApi } = App.useApp();
     const confirm = useKuzhambuConfirm();
     const queryClient = useQueryClient();
+    const [creatingRefinementCapability, setCreatingRefinementCapability] = useState<
+        "translate" | "summary" | null
+    >(null);
+    const [handledSucceededTaskIds, setHandledSucceededTaskIds] = useState<number[]>([]);
     const [isCreating, setIsCreating] = useState(defaultCreateOpen);
     const [isModelOpen, setIsModelOpen] = useState(defaultCreateOpen);
     const [editingEntry, setEditingEntry] = useState<SancaiEntryRecord | null>(null);
     const [selectedVersionId, setSelectedVersionId] = useState<number | null>(null);
+    const currentUserQuery = useQuery({
+        queryKey: ["sys", "current-user", "info"],
+        queryFn: currentUserService.getCurrentUserInfo,
+        retry: false
+    });
     const entriesQuery = useQuery({
         queryKey: [
             "classics",
@@ -111,6 +180,25 @@ export const SancaiEntryPanel = ({
         versionDetailQuery.data ||
         versions.find((version) => version.id === selectedVersionId) ||
         null;
+    const refinementTasksQuery = useQuery({
+        queryKey: ["classics", "sancai", "refinement", "tasks", selectedEntry?.id],
+        queryFn: () =>
+            aiRefinementTaskService.pageTasks({
+                contentType: "SANCAI_ENTRY",
+                contentId: selectedEntry?.id ?? 0,
+                pageNo: 1,
+                pageSize: 20
+            }),
+        enabled: isModelOpen && Boolean(selectedEntry?.id),
+        retry: false,
+        refetchInterval: (query) => {
+            const tasks = query.state.data?.items || [];
+            return tasks.some((task) => task.status === "PENDING" || task.status === "RUNNING")
+                ? TASK_POLL_INTERVAL_MS
+                : false;
+        }
+    });
+    const refinementTasks = refinementTasksQuery.data?.items || [];
     const exportsQuery = useQuery({
         queryKey: ["classics", "sancai", "exports", "jobs"],
         queryFn: () =>
@@ -180,8 +268,16 @@ export const SancaiEntryPanel = ({
             }),
             queryClient.invalidateQueries({
                 queryKey: ["classics", "content", "qa-pairs", "SANCAI_ENTRY"]
+            }),
+            queryClient.invalidateQueries({
+                queryKey: ["ai", "candidates", "SANCAI_ENTRY", selectedEntry?.id]
             })
         ]);
+    };
+    const invalidateRefinementTasks = async () => {
+        await queryClient.invalidateQueries({
+            queryKey: ["classics", "sancai", "refinement", "tasks", selectedEntry?.id]
+        });
     };
     const addEntryMutation = useMutation({
         mutationFn: entryService.add,
@@ -309,6 +405,45 @@ export const SancaiEntryPanel = ({
             messageApi.error(error instanceof Error ? error.message : "静态展示提交失败");
         }
     });
+    const createRefinementTaskMutation = useMutation({
+        mutationFn: aiRefinementTaskService.createTask,
+        onMutate: (command) => {
+            if (command.capability === "translate" || command.capability === "summary") {
+                setCreatingRefinementCapability(command.capability);
+            }
+        },
+        onSuccess: async (_, command) => {
+            await invalidateRefinementTasks();
+            messageApi.success(
+                command.capability === "translate" ? "译文任务已创建" : "摘要任务已创建"
+            );
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "AI 精修任务创建失败");
+        },
+        onSettled: () => {
+            setCreatingRefinementCapability(null);
+        }
+    });
+
+    useEffect(() => {
+        const newlySucceededTaskIds = refinementTasks
+            .filter(
+                (task) =>
+                    (task.status === "SUCCEEDED" || task.status === "PARTIAL") &&
+                    typeof task.taskId === "number" &&
+                    !handledSucceededTaskIds.includes(task.taskId)
+            )
+            .map((task) => task.taskId);
+        if (!newlySucceededTaskIds.length) {
+            return;
+        }
+        setHandledSucceededTaskIds((currentTaskIds) => [
+            ...currentTaskIds,
+            ...newlySucceededTaskIds.filter((taskId) => !currentTaskIds.includes(taskId))
+        ]);
+        void Promise.all([refreshSancaiEntryDetail(), invalidateEntries(), invalidateSancaiContentGovernance()]);
+    }, [handledSucceededTaskIds, refinementTasks]);
 
     const selectEntry = (entry: SancaiEntryRecord) => {
         setIsCreating(false);
@@ -321,6 +456,7 @@ export const SancaiEntryPanel = ({
         setIsCreating(false);
         setEditingEntry(null);
         setSelectedVersionId(null);
+        setHandledSucceededTaskIds([]);
         setIsModelOpen(false);
     };
 
@@ -396,6 +532,39 @@ export const SancaiEntryPanel = ({
             return;
         }
         showcaseEntryMutation.mutate(entry);
+    };
+
+    const createRefinementTask = (capability: "translate" | "summary") => {
+        if (!selectedEntry?.id) {
+            return;
+        }
+        if (!currentUserQuery.data?.id) {
+            messageApi.warning("当前用户信息尚未加载完成");
+            return;
+        }
+        if (!selectedEntry.originalText?.trim()) {
+            messageApi.warning("当前条目缺少原文，无法创建 AI 精修任务");
+            return;
+        }
+        createRefinementTaskMutation.mutate({
+            capability,
+            scope: "classics",
+            contentType: "SANCAI_ENTRY",
+            contentId: selectedEntry.id,
+            objectId: null,
+            requestedBy: currentUserQuery.data.id,
+            serviceRole: DEFAULT_REFINEMENT_SERVICE_ROLE,
+            modelId: DEFAULT_REFINEMENT_MODEL_ID,
+            modelName: DEFAULT_REFINEMENT_MODEL_NAME,
+            requestId: createEventId("sancai-task"),
+            traceId: createEventId("sancai-trace"),
+            promptMessagesJson: buildPromptMessagesJson(capability, selectedEntry),
+            promptVariablesJson: JSON.stringify({
+                title: selectedEntry.title
+            }),
+            inputPayloadJson: buildInputPayloadJson(capability, selectedEntry),
+            locale: "zh-CN"
+        });
     };
 
     const resetVersion = (version: SancaiContentVersionRecord) => {
@@ -511,6 +680,38 @@ export const SancaiEntryPanel = ({
                 afterForm={
                     !isCreating && selectedEntry ? (
                         <>
+                            <Card size="small" title="AI 精修任务">
+                                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                                    <Button
+                                        type="primary"
+                                        loading={creatingRefinementCapability === "translate"}
+                                        onClick={() => createRefinementTask("translate")}
+                                    >
+                                        创建译文任务
+                                    </Button>
+                                    <Button
+                                        loading={creatingRefinementCapability === "summary"}
+                                        onClick={() => createRefinementTask("summary")}
+                                    >
+                                        创建摘要任务
+                                    </Button>
+                                </div>
+                                <div style={{ marginTop: 12, display: "grid", gap: 8 }}>
+                                    {refinementTasks
+                                        .filter(
+                                            (task) =>
+                                                task.capability === "translate" ||
+                                                task.capability === "summary"
+                                        )
+                                        .slice(0, 4)
+                                        .map((task) => (
+                                            <div key={task.taskId}>
+                                                {task.capability}：{task.status}
+                                                {task.resultPreview ? ` / ${task.resultPreview}` : ""}
+                                            </div>
+                                        ))}
+                                </div>
+                            </Card>
                             <AiCandidatePanel
                                 capabilities={["translate", "summary", "tags", "qa"]}
                                 contentId={selectedEntry.id}
