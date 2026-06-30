@@ -7,9 +7,10 @@ import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService;
+import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService.ArtifactDownloadException;
+import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService.DownloadedArtifact;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCallRecord;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
-import com.thundax.kuzhambu.ai.infra.client.WorkerAiClient;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.storage.facade.StorageFacade;
@@ -145,7 +146,8 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
                     command.getRequestId(),
                     command.getTraceId(),
                     "WORKER_PROTOCOL_FAILURE",
-                    "Worker returned empty result");
+                    "Worker returned empty result",
+                    "WORKER_RESULT");
         }
         if (result.getRequestId() == null) {
             result.setRequestId(command.getRequestId());
@@ -183,7 +185,7 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
     private AiInvokeResult persistArtifactResult(AiInvokeCommand command, AiInvokeResult result) {
         try {
             JsonNode artifactReference = objectMapper.readTree(result.getArtifactReferenceJson());
-            WorkerAiClient.DownloadedArtifact artifact = workerAiClient.downloadArtifact(
+            DownloadedArtifact artifact = workerAiClient.downloadArtifact(
                     command.getRequestId(),
                     command.getTraceId(),
                     artifactReference.path("downloadPath").asText());
@@ -192,7 +194,7 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
                             ? toStorageResultJson(persistMultipartArtifact(artifact))
                             : toStorageResultJson(persistSmallArtifact(artifact)));
             return result;
-        } catch (WorkerAiClient.ArtifactDownloadException ex) {
+        } catch (ArtifactDownloadException ex) {
             AiInvokeResult failed = AiInvokeResult.failed(
                     command.getRequestId(),
                     command.getTraceId(),
@@ -244,7 +246,7 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
         }
     }
 
-    private UploadStorageFacadeResponse persistSmallArtifact(WorkerAiClient.DownloadedArtifact artifact) {
+    private UploadStorageFacadeResponse persistSmallArtifact(DownloadedArtifact artifact) {
         return storageFacade.upload(UploadStorageFacadeRequest.builder()
                 .inputStream(new ByteArrayInputStream(artifact.data()))
                 .originalFilename(artifact.filename())
@@ -254,7 +256,7 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
                 .build());
     }
 
-    private CompleteMultipartUploadFacadeResponse persistMultipartArtifact(WorkerAiClient.DownloadedArtifact artifact) {
+    private CompleteMultipartUploadFacadeResponse persistMultipartArtifact(DownloadedArtifact artifact) {
         InitMultipartUploadFacadeResponse init =
                 storageFacade.initMultipartUpload(InitMultipartUploadFacadeRequest.builder()
                         .originalFilename(artifact.filename())
