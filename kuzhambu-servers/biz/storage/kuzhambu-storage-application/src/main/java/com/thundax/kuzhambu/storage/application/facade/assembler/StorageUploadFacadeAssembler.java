@@ -113,8 +113,6 @@ public class StorageUploadFacadeAssembler {
                 .storageObjectId(
                         storage.getId() == null ? null : storage.getId().value())
                 .uploadId(uploadId)
-                .ownerType(valueOf(storage.getOwnerType()))
-                .ownerId(storage.getOwnerId())
                 .businessType(null)
                 .originalFilename(storage.getOriginalFilename())
                 .mimeType(storage.getMimeType())

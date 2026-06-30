@@ -18,17 +18,6 @@ import lombok.Setter;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class InitMultipartUploadRequest {
 
-    @Schema(name = "ownerType", description = "对象归属类型")
-    @JsonProperty("ownerType")
-    @NotBlank(message = "ownerType不能为空")
-    @Size(max = 40, message = "\"对象归属类型\"长度不能超过40")
-    private String ownerType;
-
-    @Schema(name = "ownerId", description = "对象归属ID")
-    @JsonProperty("ownerId")
-    @Size(max = 64, message = "\"对象归属ID\"长度不能超过64")
-    private String ownerId;
-
     @Schema(name = "businessType", description = "业务类型")
     @JsonProperty("businessType")
     @Size(max = 40, message = "\"业务类型\"长度不能超过40")

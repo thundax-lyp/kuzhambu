@@ -17,7 +17,6 @@ import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadPa
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadSession;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.MultipartUploadStatus;
-import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
@@ -57,8 +56,6 @@ class StorageObjectMultipartUploadContractTest {
 
         InitMultipartUploadRequest request = new InitMultipartUploadRequest();
         request.setUploadId("upload-1");
-        request.setOwnerId("owner-1");
-        request.setOwnerType("USER");
         request.setBusinessType("bizA");
         request.setOriginalFilename("sancai.png");
         request.setMimeType("image/png");
@@ -73,8 +70,6 @@ class StorageObjectMultipartUploadContractTest {
 
         InitMultipartUploadCommand command = commandRef.get();
         assertEquals("upload-1", command.getUploadId());
-        assertEquals("owner-1", command.getOwnerId());
-        assertEquals(StorageOwnerType.USER, command.getOwnerType());
         assertEquals("bizA", command.getBusinessType());
         assertEquals("sancai.png", command.getOriginalFilename());
         assertEquals("image/png", command.getMimeType());
@@ -86,8 +81,8 @@ class StorageObjectMultipartUploadContractTest {
 
         assertEquals("upload-1", json.get("uploadId").asText());
         assertEquals("provider-1", json.get("providerUploadId").asText());
-        assertEquals("USER", json.get("ownerType").asText());
-        assertEquals("owner-1", json.get("ownerId").asText());
+        assertEquals(false, json.has("ownerType"));
+        assertEquals(false, json.has("ownerId"));
         assertEquals("bizA", json.get("businessType").asText());
         assertEquals("sancai.png", json.get("originalFilename").asText());
         assertEquals("image/png", json.get("mimeType").asText());
@@ -174,8 +169,8 @@ class StorageObjectMultipartUploadContractTest {
 
         assertEquals("22", json.get("id").asText());
         assertEquals("upload-2", json.get("uploadId").asText());
-        assertEquals("USER", json.get("ownerType").asText());
-        assertEquals("owner-2", json.get("ownerId").asText());
+        assertEquals(false, json.has("ownerType"));
+        assertEquals(false, json.has("ownerId"));
         assertEquals("sancai.bin", json.get("originalFilename").asText());
         assertEquals("application/octet-stream", json.get("mimeType").asText());
         assertEquals("bucket-b", json.get("bucketName").asText());
@@ -238,8 +233,6 @@ class StorageObjectMultipartUploadContractTest {
                         MultipartUploadSession session = new MultipartUploadSession();
                         session.setUploadId(command.getUploadId());
                         session.setProviderUploadId(command.getProviderUploadId());
-                        session.setOwnerType(command.getOwnerType());
-                        session.setOwnerId(command.getOwnerId());
                         session.setBusinessType(command.getBusinessType());
                         session.setOriginalFilename(command.getOriginalFilename());
                         session.setMimeType(command.getMimeType());
@@ -284,8 +277,6 @@ class StorageObjectMultipartUploadContractTest {
                         commandRef.set(command);
                         StoredObject storage = new StoredObject();
                         storage.setId(StoredObjectId.of(22L));
-                        storage.setOwnerType(StorageOwnerType.USER);
-                        storage.setOwnerId("owner-2");
                         storage.setOriginalFilename("sancai.bin");
                         storage.setMimeType("application/octet-stream");
                         storage.setBucketName("bucket-b");

@@ -2,7 +2,6 @@ package com.thundax.kuzhambu.storage.domain.object.model.entity;
 
 import com.thundax.kuzhambu.common.core.sort.Sortable;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
-import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
@@ -29,8 +28,6 @@ public class StoredObject implements Sortable {
     private String name;
     private String extendName;
     private String mimeType;
-    private String ownerId;
-    private StorageOwnerType ownerType;
     private String bucketName;
     private String objectKey;
     private Long size;

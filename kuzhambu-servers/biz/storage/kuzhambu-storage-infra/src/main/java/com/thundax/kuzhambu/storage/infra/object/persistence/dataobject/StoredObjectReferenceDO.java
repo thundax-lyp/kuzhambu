@@ -23,5 +23,4 @@ public class StoredObjectReferenceDO {
     private String referenceOwnerId;
     private String referenceOwnerType;
     private String businessParams;
-    private String referenceStatus;
 }

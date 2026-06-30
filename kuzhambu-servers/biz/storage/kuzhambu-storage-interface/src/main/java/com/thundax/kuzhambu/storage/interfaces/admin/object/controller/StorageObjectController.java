@@ -322,8 +322,8 @@ public class StorageObjectController {
                 ? null
                 : new InitMultipartUploadCommand(
                         request.getUploadId(),
-                        request.getOwnerId(),
-                        ownerTypeFrom(request.getOwnerType()),
+                        null,
+                        null,
                         request.getBusinessType(),
                         request.getOriginalFilename(),
                         request.getMimeType(),

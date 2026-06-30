@@ -138,35 +138,15 @@ class StorageApplicationServiceUploadTest {
             return reference != null
                     && reference.getObjectId() != null
                     && reference.getObjectId().value().equals(100L)
-                    && StorageOwnerType.USER.equals(reference.getOwnerType())
-                    && "owner-1".equals(reference.getOwnerId());
+                    && StorageOwnerType.USER.value().equals(reference.getReferenceOwnerType())
+                    && "owner-1".equals(reference.getReferenceOwnerId());
         });
 
         service.addReferences(new AddStorageReferencesCommand(List.of(
-                new StoredObjectReference(
-                        StoredObjectId.of(100L),
-                        "owner-1",
-                        StorageOwnerType.USER,
-                        null,
-                        StoredObjectReferenceStatus.REFERENCED),
-                new StoredObjectReference(
-                        StoredObjectId.of(100L),
-                        "owner-1",
-                        StorageOwnerType.USER,
-                        null,
-                        StoredObjectReferenceStatus.REFERENCED),
-                new StoredObjectReference(
-                        StoredObjectId.of(100L),
-                        "owner-2",
-                        StorageOwnerType.USER,
-                        null,
-                        StoredObjectReferenceStatus.REFERENCED),
-                new StoredObjectReference(
-                        StoredObjectId.of(101L),
-                        "owner-1",
-                        StorageOwnerType.USER,
-                        null,
-                        StoredObjectReferenceStatus.REFERENCED))));
+                new StoredObjectReference(StoredObjectId.of(100L), "owner-1", StorageOwnerType.USER.value(), null),
+                new StoredObjectReference(StoredObjectId.of(100L), "owner-1", StorageOwnerType.USER.value(), null),
+                new StoredObjectReference(StoredObjectId.of(100L), "owner-2", StorageOwnerType.USER.value(), null),
+                new StoredObjectReference(StoredObjectId.of(101L), "owner-1", StorageOwnerType.USER.value(), null))));
 
         verify(referenceRepository).insertReferences(argThat(references -> {
             if (!(references instanceof List)) {
@@ -174,9 +154,11 @@ class StorageApplicationServiceUploadTest {
             }
             List<StoredObjectReference> insertedReferences = (List<StoredObjectReference>) references;
             boolean hasUserOwner2 = insertedReferences.stream()
-                    .anyMatch(item -> item.getObjectId().value().equals(100L) && "owner-2".equals(item.getOwnerId()));
+                    .anyMatch(item ->
+                            item.getObjectId().value().equals(100L) && "owner-2".equals(item.getReferenceOwnerId()));
             boolean hasObject101Owner1 = insertedReferences.stream()
-                    .anyMatch(item -> item.getObjectId().value().equals(101L) && "owner-1".equals(item.getOwnerId()));
+                    .anyMatch(item ->
+                            item.getObjectId().value().equals(101L) && "owner-1".equals(item.getReferenceOwnerId()));
             return insertedReferences.size() == 2 && hasUserOwner2 && hasObject101Owner1;
         }));
     }
@@ -201,12 +183,8 @@ class StorageApplicationServiceUploadTest {
                 storageRepository, referenceRepository, mock(StoredObjectContentRepository.class));
         when(referenceRepository.exists(any())).thenReturn(true);
 
-        service.addReferences(new AddStorageReferencesCommand(List.of(new StoredObjectReference(
-                StoredObjectId.of(100L),
-                "owner-1",
-                StorageOwnerType.USER,
-                null,
-                StoredObjectReferenceStatus.REFERENCED))));
+        service.addReferences(new AddStorageReferencesCommand(List.of(
+                new StoredObjectReference(StoredObjectId.of(100L), "owner-1", StorageOwnerType.USER.value(), null))));
 
         verify(referenceRepository, never()).insertReferences(any());
         verify(storageRepository)

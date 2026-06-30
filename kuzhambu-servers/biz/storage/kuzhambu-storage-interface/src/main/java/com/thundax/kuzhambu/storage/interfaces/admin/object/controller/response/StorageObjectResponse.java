@@ -31,14 +31,6 @@ public class StorageObjectResponse implements Serializable {
     @JsonProperty(value = "contentType")
     private String contentType;
 
-    @Schema(name = "ownerId", description = "对象归属ID")
-    @JsonProperty(value = "ownerId")
-    private String ownerId;
-
-    @Schema(name = "ownerType", description = "对象归属类型")
-    @JsonProperty(value = "ownerType")
-    private String ownerType;
-
     @Schema(name = "size", description = "文件大小")
     @JsonProperty(value = "size")
     private Long size;

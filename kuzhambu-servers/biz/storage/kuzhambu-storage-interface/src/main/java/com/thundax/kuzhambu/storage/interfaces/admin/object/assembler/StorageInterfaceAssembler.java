@@ -7,7 +7,6 @@ import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadPa
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadSession;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.MultipartUploadStatus;
-import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
 import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.request.StoragePageRequest;
@@ -29,8 +28,6 @@ public final class StorageInterfaceAssembler {
         query.setContentType(emptyToNull(request.getContentType()));
         query.setReferenceOwnerId(emptyToNull(request.getReferenceOwnerId()));
         query.setReferenceOwnerType(emptyToNull(request.getReferenceOwnerType()));
-        query.setOwnerId(emptyToNull(request.getOwnerId()));
-        query.setOwnerType(ownerTypeFrom(request.getOwnerType()));
         query.setObjectStatus(objectStatusFrom(request.getObjectStatus()));
         query.setReferenceStatus(referenceStatusFrom(request.getReferenceStatus()));
         query.setOriginalFilename(emptyToNull(request.getOriginalFilename()));
@@ -49,8 +46,6 @@ public final class StorageInterfaceAssembler {
                 .remarks(entity.getRemarks())
                 .originalFilename(entity.getOriginalFilename())
                 .contentType(entity.getContentType())
-                .ownerId(entity.getOwnerId())
-                .ownerType(ownerTypeValue(entity.getOwnerType()))
                 .size(entity.getSize())
                 .accessEndpoint(entity.getAccessEndpoint())
                 .objectStatus(objectStatusValue(entity.getObjectStatus()))
@@ -66,8 +61,6 @@ public final class StorageInterfaceAssembler {
                 : InitMultipartUploadResponse.builder()
                         .uploadId(session.getUploadId())
                         .providerUploadId(session.getProviderUploadId())
-                        .ownerType(ownerTypeValue(session.getOwnerType()))
-                        .ownerId(session.getOwnerId())
                         .businessType(session.getBusinessType())
                         .originalFilename(session.getOriginalFilename())
                         .mimeType(session.getMimeType())
@@ -99,8 +92,6 @@ public final class StorageInterfaceAssembler {
                 : CompleteMultipartUploadResponse.builder()
                         .id(StoredObjectIdCodec.toStringValue(storage.getId()))
                         .uploadId(uploadId)
-                        .ownerType(ownerTypeValue(storage.getOwnerType()))
-                        .ownerId(storage.getOwnerId())
                         .originalFilename(storage.getOriginalFilename())
                         .mimeType(storage.getMimeType())
                         .bucketName(storage.getBucketName())
@@ -120,10 +111,6 @@ public final class StorageInterfaceAssembler {
                 .build();
     }
 
-    private static StorageOwnerType ownerTypeFrom(String value) {
-        return StringUtils.isBlank(value) ? null : StorageOwnerType.from(value);
-    }
-
     private static StoredObjectStatus objectStatusFrom(String value) {
         return StringUtils.isBlank(value) ? null : StoredObjectStatus.from(value);
     }
@@ -141,10 +128,6 @@ public final class StorageInterfaceAssembler {
 
     private static String emptyToNull(String value) {
         return StringUtils.isBlank(value) ? null : value.trim();
-    }
-
-    private static String ownerTypeValue(StorageOwnerType value) {
-        return value == null ? null : value.value();
     }
 
     private static String objectStatusValue(StoredObjectStatus value) {

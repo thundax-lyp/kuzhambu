@@ -11,10 +11,15 @@ permissions:
     contents: read
 
 jobs:
-    verify:
-        name: Verify Repository
+    detect-changes:
+        name: Detect Changes
         runs-on: ubuntu-latest
-        timeout-minutes: 20
+        outputs:
+            servers_changed: ${{ steps.changes.outputs.servers_changed }}
+            workers_changed: ${{ steps.changes.outputs.workers_changed }}
+            apps_changed: ${{ steps.changes.outputs.apps_changed }}
+            db_changed: ${{ steps.changes.outputs.db_changed }}
+            workflow_changed: ${{ steps.changes.outputs.verify_workflow_changed }}
 
         steps:
             - name: Checkout
@@ -64,28 +69,17 @@ jobs:
                     echo "db_changed=false" >> "$GITHUB_OUTPUT"
                   fi
 
-            - name: Setup Java
-              if: steps.changes.outputs.servers_changed == 'true'
-              uses: actions/setup-java@v4
-              with:
-                  distribution: temurin
-                  java-version: "17"
-                  cache: maven
+    verify-governance:
+        name: Verify Governance
+        needs: detect-changes
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
 
-            - name: Setup Node
-              if: steps.changes.outputs.apps_changed == 'true'
-              uses: actions/setup-node@v4
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
               with:
-                  node-version: "20"
-                  cache: npm
-                  cache-dependency-path: kuzhambu-apps/package-lock.json
-
-            - name: Setup Python
-              if: steps.changes.outputs.workers_changed == 'true'
-              uses: actions/setup-python@v5
-              with:
-                  python-version: "3.10"
-                  cache: pip
+                  fetch-depth: 0
 
             - name: Verify governance files
               run: |
@@ -104,8 +98,27 @@ jobs:
                     exit 1
                   fi
 
+    verify-backend:
+        name: Verify Backend
+        needs: detect-changes
+        if: needs.detect-changes.outputs.servers_changed == 'true'
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: Setup Java
+              uses: actions/setup-java@v4
+              with:
+                  distribution: temurin
+                  java-version: "17"
+                  cache: maven
+
             - name: Verify backend layout
-              if: steps.changes.outputs.servers_changed == 'true'
               run: |
                   test -d kuzhambu-servers/common
                   test -d kuzhambu-servers/biz
@@ -121,8 +134,123 @@ jobs:
                     exit 1
                   fi
 
+            - name: Verify backend clean
+              working-directory: kuzhambu-servers
+              run: mvn -q clean
+
+            - name: Verify backend formatting
+              working-directory: kuzhambu-servers
+              run: mvn -q spotless:check
+
+            - name: Verify backend style
+              working-directory: kuzhambu-servers
+              run: mvn -q checkstyle:check
+
+            - name: Verify backend tests
+              working-directory: kuzhambu-servers
+              run: mvn -q test
+
+    verify-apps:
+        name: Verify Frontend
+        needs: detect-changes
+        if: needs.detect-changes.outputs.apps_changed == 'true'
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "20"
+                  cache: npm
+                  cache-dependency-path: kuzhambu-apps/package-lock.json
+
+            - name: Verify frontend package manifests
+              run: |
+                  node -e "JSON.parse(require('fs').readFileSync('kuzhambu-apps/package.json', 'utf8'))"
+                  node -e "JSON.parse(require('fs').readFileSync('kuzhambu-apps/admin-web/package.json', 'utf8'))"
+                  node -e "JSON.parse(require('fs').readFileSync('kuzhambu-apps/portal-web/package.json', 'utf8'))"
+
+            - name: Install frontend dependencies
+              working-directory: kuzhambu-apps
+              run: npm ci
+
+            - name: Verify frontend formatting
+              working-directory: kuzhambu-apps
+              run: npm run format:check
+
+            - name: Verify frontend lint
+              working-directory: kuzhambu-apps
+              run: npm run lint
+
+            - name: Verify frontend tests
+              working-directory: kuzhambu-apps
+              run: npm test
+
+    verify-workers:
+        name: Verify Python Workers
+        needs: detect-changes
+        if: needs.detect-changes.outputs.workers_changed == 'true'
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: Setup Python
+              uses: actions/setup-python@v5
+              with:
+                  python-version: "3.10"
+                  cache: pip
+
+            - name: Verify Python worker manifest
+              run: |
+                  test -f kuzhambu-workers/pyproject.toml
+                  grep -q 'name = "kuzhambu-workers"' kuzhambu-workers/pyproject.toml
+                  grep -q 'requires-python = ">=3.10,<3.11"' kuzhambu-workers/pyproject.toml
+
+            - name: Verify Python worker runtime
+              run: |
+                  python -c "import sys; assert sys.version_info[:2] == (3, 10), sys.version"
+
+            - name: Install Python worker dependencies
+              working-directory: kuzhambu-workers
+              run: python -m pip install -e '.[dev]'
+
+            - name: Verify Python worker formatting
+              working-directory: kuzhambu-workers
+              run: ruff format --check .
+
+            - name: Verify Python worker lint
+              working-directory: kuzhambu-workers
+              run: ruff check .
+
+            - name: Verify Python worker tests
+              working-directory: kuzhambu-workers
+              run: pytest
+
+    verify-db:
+        name: Verify Database
+        needs: detect-changes
+        if: needs.detect-changes.outputs.db_changed == 'true'
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
             - name: Verify Classics SQL seed
-              if: steps.changes.outputs.db_changed == 'true'
               run: |
                   test -f db/schema/classics.sql
                   test -f db/data/classics.sql
@@ -134,82 +262,3 @@ jobs:
                   grep -q 'CREATE TABLE IF NOT EXISTS `classics_share_link`' db/schema/classics.sql
                   grep -q 'INSERT INTO `classics_sancai_category`' db/data/classics.sql
                   grep -q 'INSERT INTO `classics_sancai_entry`' db/data/classics.sql
-
-            - name: Verify backend clean
-              if: steps.changes.outputs.servers_changed == 'true'
-              working-directory: kuzhambu-servers
-              run: mvn -q clean
-
-            - name: Verify backend formatting
-              if: steps.changes.outputs.servers_changed == 'true'
-              working-directory: kuzhambu-servers
-              run: mvn -q spotless:check
-
-            - name: Verify backend style
-              if: steps.changes.outputs.servers_changed == 'true'
-              working-directory: kuzhambu-servers
-              run: mvn -q checkstyle:check
-
-            - name: Verify backend tests
-              if: steps.changes.outputs.servers_changed == 'true'
-              working-directory: kuzhambu-servers
-              run: mvn -q test
-
-            - name: Verify frontend package manifests
-              if: steps.changes.outputs.apps_changed == 'true'
-              run: |
-                  node -e "JSON.parse(require('fs').readFileSync('kuzhambu-apps/package.json', 'utf8'))"
-                  node -e "JSON.parse(require('fs').readFileSync('kuzhambu-apps/admin-web/package.json', 'utf8'))"
-                  node -e "JSON.parse(require('fs').readFileSync('kuzhambu-apps/portal-web/package.json', 'utf8'))"
-
-            - name: Install frontend dependencies
-              if: steps.changes.outputs.apps_changed == 'true'
-              working-directory: kuzhambu-apps
-              run: npm ci
-
-            - name: Verify frontend formatting
-              if: steps.changes.outputs.apps_changed == 'true'
-              working-directory: kuzhambu-apps
-              run: npm run format:check
-
-            - name: Verify frontend lint
-              if: steps.changes.outputs.apps_changed == 'true'
-              working-directory: kuzhambu-apps
-              run: npm run lint
-
-            - name: Verify frontend tests
-              if: steps.changes.outputs.apps_changed == 'true'
-              working-directory: kuzhambu-apps
-              run: npm test
-
-            - name: Verify Python worker manifest
-              if: steps.changes.outputs.workers_changed == 'true'
-              run: |
-                  test -f kuzhambu-workers/pyproject.toml
-                  grep -q 'name = "kuzhambu-workers"' kuzhambu-workers/pyproject.toml
-                  grep -q 'requires-python = ">=3.10,<3.11"' kuzhambu-workers/pyproject.toml
-
-            - name: Verify Python worker runtime
-              if: steps.changes.outputs.workers_changed == 'true'
-              run: |
-                  python -c "import sys; assert sys.version_info[:2] == (3, 10), sys.version"
-
-            - name: Install Python worker dependencies
-              if: steps.changes.outputs.workers_changed == 'true'
-              working-directory: kuzhambu-workers
-              run: python -m pip install -e '.[dev]'
-
-            - name: Verify Python worker formatting
-              if: steps.changes.outputs.workers_changed == 'true'
-              working-directory: kuzhambu-workers
-              run: ruff format --check .
-
-            - name: Verify Python worker lint
-              if: steps.changes.outputs.workers_changed == 'true'
-              working-directory: kuzhambu-workers
-              run: ruff check .
-
-            - name: Verify Python worker tests
-              if: steps.changes.outputs.workers_changed == 'true'
-              working-directory: kuzhambu-workers
-              run: pytest

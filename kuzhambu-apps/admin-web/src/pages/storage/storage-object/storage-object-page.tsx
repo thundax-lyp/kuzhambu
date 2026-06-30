@@ -33,7 +33,6 @@ const { Text } = Typography;
 const DEFAULT_COLUMN_WIDTHS = {
     name: 280,
     contentType: 180,
-    owner: 170,
     size: 120,
     objectStatus: 120,
     referenceStatus: 130,
@@ -47,6 +46,8 @@ interface StorageObjectFilters {
     contentType: string;
     objectStatus: StorageObjectStatusFilter;
     referenceStatus: StorageReferenceStatusFilter;
+    referenceOwnerId: string;
+    referenceOwnerType: string;
     remarks: string;
 }
 
@@ -54,6 +55,8 @@ const DEFAULT_STORAGE_OBJECT_FILTERS: StorageObjectFilters = {
     contentType: "",
     objectStatus: "ALL",
     referenceStatus: "ALL",
+    referenceOwnerId: "",
+    referenceOwnerType: "",
     remarks: ""
 };
 
@@ -66,11 +69,6 @@ const objectStatusLabels: Record<Exclude<StorageObjectStatusFilter, "ALL">, stri
 const referenceStatusLabels: Record<Exclude<StorageReferenceStatusFilter, "ALL">, string> = {
     REFERENCED: "已引用",
     UNREFERENCED: "未引用"
-};
-
-const ownerTypeLabels: Record<string, string> = {
-    USER: "后台用户",
-    MEMBER: "前台会员"
 };
 
 const uploadAccept =
@@ -118,6 +116,10 @@ const formatFileSize = (size?: number | null) => {
 
 const readStatusFilterValue = <T extends string>(value: T | "ALL") => {
     return value === "ALL" ? undefined : value;
+};
+
+const readReferenceFilterValue = (value: string) => {
+    return normalizeSearch(value);
 };
 
 const objectStatusTagType = (status?: string | null) => {
@@ -178,6 +180,8 @@ export const StorageObjectPage = () => {
     const hasSelectedStorages = selectedRowKeys.length > 0;
     const hasActiveFilters = Boolean(
         filters.contentType.trim() ||
+        filters.referenceOwnerId.trim() ||
+        filters.referenceOwnerType.trim() ||
         filters.remarks.trim() ||
         filters.objectStatus !== "ALL" ||
         filters.referenceStatus !== "ALL"
@@ -252,8 +256,6 @@ export const StorageObjectPage = () => {
             const nextQuery = { ...currentQuery, ...values };
             return {
                 contentType: nextQuery.contentType,
-                ownerId: nextQuery.ownerId,
-                ownerType: nextQuery.ownerType,
                 objectStatus: nextQuery.objectStatus,
                 referenceStatus: nextQuery.referenceStatus,
                 referenceOwnerId: nextQuery.referenceOwnerId,
@@ -277,6 +279,8 @@ export const StorageObjectPage = () => {
             contentType: normalizeSearch(filters.contentType),
             objectStatus: readStatusFilterValue(filters.objectStatus),
             referenceStatus: readStatusFilterValue(filters.referenceStatus),
+            referenceOwnerId: readReferenceFilterValue(filters.referenceOwnerId),
+            referenceOwnerType: readReferenceFilterValue(filters.referenceOwnerType),
             remarks: normalizeSearch(filters.remarks)
         });
     };
@@ -287,6 +291,8 @@ export const StorageObjectPage = () => {
             contentType: undefined,
             objectStatus: undefined,
             referenceStatus: undefined,
+            referenceOwnerId: undefined,
+            referenceOwnerType: undefined,
             remarks: undefined
         });
     };
@@ -386,25 +392,6 @@ export const StorageObjectPage = () => {
             ellipsis: true,
             render: (contentType?: string | null) =>
                 contentType ? <Text code>{contentType}</Text> : null
-        },
-        {
-            title: "归属",
-            key: "owner",
-            width: DEFAULT_COLUMN_WIDTHS.owner,
-            render: (_, storage) => {
-                const ownerType = storage.ownerType
-                    ? ownerTypeLabels[storage.ownerType] || storage.ownerType
-                    : "";
-                if (!ownerType && !storage.ownerId) {
-                    return null;
-                }
-                return (
-                    <div className="storage-object-owner-cell">
-                        {ownerType ? <Text>{ownerType}</Text> : null}
-                        {storage.ownerId ? <Text type="secondary">{storage.ownerId}</Text> : null}
-                    </div>
-                );
-            }
         },
         {
             title: "大小",
@@ -565,6 +552,40 @@ export const StorageObjectPage = () => {
                                     setFilters((currentFilters) => ({
                                         ...currentFilters,
                                         referenceStatus
+                                    }))
+                                }
+                            />
+                        )
+                    },
+                    {
+                        name: "referenceOwnerType",
+                        label: "引用归属类型",
+                        render: () => (
+                            <Input
+                                allowClear
+                                placeholder="reference_owner_type"
+                                value={filters.referenceOwnerType}
+                                onChange={(event) =>
+                                    setFilters((currentFilters) => ({
+                                        ...currentFilters,
+                                        referenceOwnerType: event.target.value
+                                    }))
+                                }
+                            />
+                        )
+                    },
+                    {
+                        name: "referenceOwnerId",
+                        label: "引用归属ID",
+                        render: () => (
+                            <Input
+                                allowClear
+                                placeholder="123e4567-e89b-12d3-a456-426614174000"
+                                value={filters.referenceOwnerId}
+                                onChange={(event) =>
+                                    setFilters((currentFilters) => ({
+                                        ...currentFilters,
+                                        referenceOwnerId: event.target.value
                                     }))
                                 }
                             />

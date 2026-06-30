@@ -97,7 +97,7 @@
 - `storage_object_reference` 的约束说明：
   - `object_id + reference_owner_type + reference_owner_id` 为复合主键，承载“同一 owner 对同一 object 幂等”。
   - 该设计天然允许同一 `object_id` 被多个不同 owner 并发引用。
-  - `reference_status` 表示该条引用记录的引用状态；对象级别的引用是否存在仍由应用层以有效引用集合为准。
+  - `storage_object_reference` 只保存当前有效引用记录；对象级别引用存在性由应用层按有效引用集合汇总为 `storage_object.reference_status`。
 
 ## Cache Boundary
 

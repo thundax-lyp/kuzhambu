@@ -22,14 +22,6 @@ public class CompleteMultipartUploadResponse {
     @JsonProperty(value = "uploadId")
     private String uploadId;
 
-    @Schema(name = "ownerType", description = "对象归属类型")
-    @JsonProperty(value = "ownerType")
-    private String ownerType;
-
-    @Schema(name = "ownerId", description = "对象归属ID")
-    @JsonProperty(value = "ownerId")
-    private String ownerId;
-
     @Schema(name = "businessType", description = "业务类型")
     @JsonProperty(value = "businessType")
     private String businessType;

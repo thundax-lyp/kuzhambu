@@ -755,8 +755,6 @@ describe("App", () => {
                 id: "storage-1",
                 originalFilename: "sancai.png",
                 contentType: "image/png",
-                ownerId: "asset-1",
-                ownerType: "USER",
                 size: 1536,
                 accessEndpoint: "/api/storage/object/storage-1/content",
                 objectStatus: "ACTIVE",
@@ -822,8 +820,6 @@ describe("App", () => {
                     id: "storage-2",
                     originalFilename: "upload.txt",
                     contentType: "text/plain",
-                    ownerId: "",
-                    ownerType: "",
                     size: 5,
                     accessEndpoint: "/api/storage/object/storage-2/content",
                     objectStatus: "ACTIVE",
@@ -910,6 +906,82 @@ describe("App", () => {
 
         await waitFor(() => expect(screen.queryByText("sancai.png")).not.toBeInTheDocument());
         expect(pageRequestCount).toBeGreaterThanOrEqual(2);
+    }, 20000);
+
+    it("filters storage objects by reference owner", async () => {
+        localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
+        localStorage.setItem(
+            "kuzhambu.admin.permissions",
+            JSON.stringify(["storage:object:view", "storage:object:edit"])
+        );
+        const pageRequestBodies: Array<Record<string, unknown>> = [];
+        vi.spyOn(globalThis, "fetch").mockImplementation((input, init) => {
+            const url = String(input);
+            if (url.endsWith("/storage/object/page")) {
+                pageRequestBodies.push(
+                    JSON.parse(String(init?.body ?? "{}")) as Record<string, unknown>
+                );
+                return Promise.resolve(
+                    new Response(
+                        JSON.stringify({
+                            code: "COMMON-00000",
+                            message: "success",
+                            data: {
+                                pageNo: 1,
+                                pageSize: 20,
+                                count: 1,
+                                records: [
+                                    {
+                                        id: "storage-1",
+                                        originalFilename: "sancai.png",
+                                        contentType: "image/png",
+                                        size: 1536,
+                                        accessEndpoint: "/api/storage/object/storage-1/content",
+                                        objectStatus: "ACTIVE",
+                                        referenceStatus: "UNREFERENCED",
+                                        priority: 100,
+                                        remarks: "三才图会图片"
+                                    }
+                                ]
+                            }
+                        }),
+                        {
+                            headers: { "Content-Type": "application/json" },
+                            status: 200
+                        }
+                    )
+                );
+            }
+
+            return Promise.resolve(
+                new Response(JSON.stringify({ code: "COMMON-00004", message: "not found" }), {
+                    headers: { "Content-Type": "application/json" },
+                    status: 404
+                })
+            );
+        });
+
+        renderWithQueryClientAndApp(<StorageObjectPage />);
+
+        expect(await screen.findByRole("heading", { name: "存储对象" })).toBeInTheDocument();
+        await userEvent.click(screen.getByRole("button", { name: /筛选/ }));
+        await userEvent.type(screen.getByPlaceholderText("reference_owner_type"), "BOOK");
+        await userEvent.type(
+            screen.getByPlaceholderText("123e4567-e89b-12d3-a456-426614174000"),
+            "owner-9"
+        );
+        await userEvent.click(screen.getByRole("button", { name: /查\s*询/ }));
+
+        await waitFor(() => expect(pageRequestBodies.length).toBeGreaterThan(1));
+        const latestRequest = pageRequestBodies[pageRequestBodies.length - 1];
+        expect(latestRequest).toMatchObject({
+            pageNo: 1,
+            pageSize: 20,
+            referenceOwnerType: "BOOK",
+            referenceOwnerId: "owner-9"
+        });
+        expect(latestRequest).not.toHaveProperty("ownerType");
+        expect(latestRequest).not.toHaveProperty("ownerId");
     }, 20000);
 
     it("renders the silver user management layout interactions", async () => {

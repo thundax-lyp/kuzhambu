@@ -31,8 +31,6 @@ public final class StoragePersistenceAssembler {
         dataObject.setName(entity.getName());
         dataObject.setExtendName(entity.getExtendName());
         dataObject.setMimeType(entity.getMimeType());
-        dataObject.setOwnerId(entity.getOwnerId());
-        dataObject.setOwnerType(ownerTypeValue(entity.getOwnerType()));
         dataObject.setBucketName(entity.getBucketName());
         dataObject.setObjectKey(entity.getObjectKey());
         dataObject.setSize(entity.getSize());
@@ -54,8 +52,6 @@ public final class StoragePersistenceAssembler {
         entity.setName(dataObject.getName());
         entity.setExtendName(dataObject.getExtendName());
         entity.setMimeType(dataObject.getMimeType());
-        entity.setOwnerId(dataObject.getOwnerId());
-        entity.setOwnerType(ownerTypeFrom(dataObject.getOwnerType()));
         entity.setBucketName(dataObject.getBucketName());
         entity.setObjectKey(dataObject.getObjectKey());
         entity.setSize(dataObject.getSize());
@@ -114,10 +110,9 @@ public final class StoragePersistenceAssembler {
         StoredObjectReferenceDO dataObject = new StoredObjectReferenceDO();
         // 复合主键映射：objectId + referenceOwnerType + referenceOwnerId
         dataObject.setObjectId(StoredObjectIdCodec.toValue(entity.getObjectId()));
-        dataObject.setReferenceOwnerId(entity.getOwnerId());
-        dataObject.setReferenceOwnerType(ownerTypeValue(entity.getOwnerType()));
+        dataObject.setReferenceOwnerId(entity.getReferenceOwnerId());
+        dataObject.setReferenceOwnerType(entity.getReferenceOwnerType());
         dataObject.setBusinessParams(entity.getOwnerParams());
-        dataObject.setReferenceStatus(referenceStatusValue(entity.getReferenceStatus()));
         return dataObject;
     }
 
@@ -128,10 +123,9 @@ public final class StoragePersistenceAssembler {
         StoredObjectReference entity = new StoredObjectReference();
         // 按复合主键字段回填引用身份信息
         entity.setObjectId(StoredObjectIdCodec.toDomain(dataObject.getObjectId()));
-        entity.setOwnerId(dataObject.getReferenceOwnerId());
-        entity.setOwnerType(ownerTypeFrom(dataObject.getReferenceOwnerType()));
+        entity.setReferenceOwnerId(dataObject.getReferenceOwnerId());
+        entity.setReferenceOwnerType(dataObject.getReferenceOwnerType());
         entity.setOwnerParams(dataObject.getBusinessParams());
-        entity.setReferenceStatus(referenceStatusFrom(dataObject.getReferenceStatus()));
         return entity;
     }
 

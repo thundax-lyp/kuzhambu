@@ -3,7 +3,6 @@ package com.thundax.kuzhambu.storage.application.facade.assembler;
 import com.thundax.kuzhambu.storage.application.service.content.StoredObjectContent;
 import com.thundax.kuzhambu.storage.application.service.query.StorageQuery;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
-import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
@@ -27,9 +26,8 @@ public class StorageReadableContentFacadeAssembler {
         }
         StorageQuery query = new StorageQuery();
         query.setId(toStoredObjectId(request));
-        query.setOwnerId(request.getOwnerId());
-        query.setOwnerType(
-                StringUtils.isBlank(request.getOwnerType()) ? null : StorageOwnerType.from(request.getOwnerType()));
+        query.setReferenceOwnerId(request.getOwnerId());
+        query.setReferenceOwnerType(request.getOwnerType());
         query.setReferenceStatus(
                 StringUtils.isBlank(request.getReferenceStatus())
                         ? null
@@ -49,9 +47,8 @@ public class StorageReadableContentFacadeAssembler {
             return null;
         }
         StorageQuery query = new StorageQuery();
-        query.setOwnerId(request.getOwnerId());
-        query.setOwnerType(
-                StringUtils.isBlank(request.getOwnerType()) ? null : StorageOwnerType.from(request.getOwnerType()));
+        query.setReferenceOwnerId(request.getOwnerId());
+        query.setReferenceOwnerType(request.getOwnerType());
         query.setObjectStatus(
                 StringUtils.isBlank(request.getObjectStatus())
                         ? null
@@ -89,11 +86,8 @@ public class StorageReadableContentFacadeAssembler {
                 .id(storage.getId() == null ? null : storage.getId().value())
                 .originalFilename(storage.getOriginalFilename())
                 .contentType(storage.getContentType())
-                .ownerId(storage.getOwnerId())
-                .ownerType(
-                        storage.getOwnerType() == null
-                                ? null
-                                : storage.getOwnerType().value())
+                .ownerId(null)
+                .ownerType(null)
                 .size(storage.getSize())
                 .objectStatus(
                         storage.getObjectStatus() == null

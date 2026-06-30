@@ -104,8 +104,6 @@ test.describe("storage object page", () => {
                 id: "storage-1",
                 originalFilename: "sancai.png",
                 contentType: "image/png",
-                ownerId: "asset-1",
-                ownerType: "USER",
                 size: 1536,
                 accessEndpoint: "/api/storage/object/storage-1/content",
                 objectStatus: "ACTIVE",
@@ -139,8 +137,6 @@ test.describe("storage object page", () => {
                 id: "storage-2",
                 originalFilename: "upload.txt",
                 contentType: "text/plain",
-                ownerId: "",
-                ownerType: "",
                 size: 5,
                 accessEndpoint: "/api/storage/object/storage-2/content",
                 objectStatus: "ACTIVE",
@@ -208,8 +204,6 @@ test.describe("storage object page", () => {
                 id: "storage-1",
                 originalFilename: "small.txt",
                 contentType: "text/plain",
-                ownerId: "asset-1",
-                ownerType: "USER",
                 size: 8,
                 accessEndpoint: "/api/storage/object/storage-1/content",
                 objectStatus: "ACTIVE",
@@ -287,8 +281,6 @@ test.describe("storage object page", () => {
                     id: "storage-2",
                     originalFilename: "multipart.bin",
                     contentType: "application/octet-stream",
-                    ownerId: "",
-                    ownerType: "",
                     size: 24 * 1024 * 1024,
                     accessEndpoint: "/api/storage/object/storage-2/content",
                     objectStatus: "ACTIVE",
@@ -348,8 +340,6 @@ test.describe("storage object page", () => {
                 id: "storage-1",
                 originalFilename: "small.txt",
                 contentType: "text/plain",
-                ownerId: "asset-1",
-                ownerType: "USER",
                 size: 8,
                 accessEndpoint: "/api/storage/object/storage-1/content",
                 objectStatus: "ACTIVE",
@@ -445,5 +435,52 @@ test.describe("storage object page", () => {
 
         expect(uploadPartRequestCount).toBeGreaterThanOrEqual(1);
         await expect(page.locator("tbody").getByText("multipart-cancel.bin")).toBeHidden();
+    });
+
+    test("supports filtering by reference owner", async ({ page }) => {
+        await page.setViewportSize({ width: 1280, height: 800 });
+        const records = [
+            {
+                id: "storage-1",
+                originalFilename: "sancai.png",
+                contentType: "image/png",
+                size: 1536,
+                accessEndpoint: "/api/storage/object/storage-1/content",
+                objectStatus: "ACTIVE",
+                referenceStatus: "UNREFERENCED",
+                priority: 100,
+                remarks: "三才图会图片"
+            }
+        ];
+        let latestRequestBody: Record<string, unknown> = {};
+        await page.route("**/kuzhambu-admin-api/api/storage/object/page", async (route) => {
+            const body = JSON.parse(route.request().postData() ?? "{}") as Record<string, unknown>;
+            latestRequestBody = body;
+            await route.fulfill({
+                contentType: "application/json",
+                body: JSON.stringify({
+                    code: "COMMON-00000",
+                    message: "success",
+                    data: {
+                        pageNo: 1,
+                        pageSize: 20,
+                        count: records.length,
+                        records
+                    }
+                })
+            });
+        });
+
+        await page.goto("/storage/objects");
+
+        await page.getByRole("button", { name: /筛选/ }).click();
+        await page.getByPlaceholder("reference_owner_type").fill("BOOK");
+        await page.getByPlaceholder("123e4567-e89b-12d3-a456-426614174000").fill("owner-9");
+        await page.getByRole("button", { name: "查询" }).click();
+
+        await expect.poll(() => latestRequestBody.referenceOwnerType).toBe("BOOK");
+        await expect.poll(() => latestRequestBody.referenceOwnerId).toBe("owner-9");
+        expect(latestRequestBody).not.toHaveProperty("ownerType");
+        expect(latestRequestBody).not.toHaveProperty("ownerId");
     });
 });
