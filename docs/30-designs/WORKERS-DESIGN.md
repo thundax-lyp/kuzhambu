@@ -17,6 +17,7 @@ kuzhambu-workers/
     api/
       health_routes.py
       ai_routes.py
+      artifact_routes.py
       render_routes.py
     core/
       config.py
@@ -99,7 +100,7 @@ AI 能力必须经由 AI 域治理入口。凡是涉及模型、提示词、能�
 
 Workers 的 AI 对外接口按 usecase 建模。`/internal/ai/invoke` 和 `/internal/ai/stream` 只作为调试、平台联调和协议验证接口，不作为真实业务域长期集成入口。真实业务入口必须由 AI 域或业务域定义稳定 usecase path、请求模型、权限边界、审计语义和失败分类。
 
-Render 能力只处理调用方已经完成权限过滤、风险确认和数据快照准备后的内容。Workers 返回的文件在进入 Storage 前只是临时产物。
+Render 能力只处理调用方已经完成权限过滤、风险确认和数据快照准备后的内容。Workers 返回的文件在进入 Storage 前只是临时产物。文件类 AI 结果与 render 结果统一使用 `temporary artifact reference` 表达；Java servers 负责根据该引用下载临时产物并转存到 `Storage`。
 
 ## API Layer
 
@@ -112,6 +113,7 @@ Render 能力只处理调用方已经完成权限过滤、风险确认和数据�
 - `GET /internal/capabilities`
 - `POST /internal/ai/invoke`
 - `POST /internal/ai/stream`
+- `GET /internal/artifacts/{artifactId}`
 - `POST /internal/render/classics-export`
 - `POST /internal/render/sancai-showcase`
 - `POST /internal/render/operations-report`
@@ -130,6 +132,8 @@ OpenAPI 和 Swagger UI 仅作为内部开发、联调和排查入口，固定挂
 `/internal/health` 返回 worker 进程状态、版本、启动时间和基础依赖可用性，不访问数据库、Redis 或 MQ。
 
 `/internal/capabilities` 返回当前 worker 支持的 AI capability、render type、输出格式、stream 支持情况、PDF 引擎、Browser Pool 限制和最大请求或分片大小，用于 Java servers 启动检查和运维排查。
+
+`GET /internal/artifacts/{artifactId}` 只用于 Java servers 下载 `temporary artifact reference` 对应的临时产物。该接口必须经过内部服务身份校验，成功时返回文件流与基础元数据响应头；当 artifact 不存在、已过期或签名不合法时返回稳定错误，不得退化为匿名下载入口。
 
 ## Security
 
@@ -180,6 +184,18 @@ Graph registry 必须使用 canonical capability matrix，不得新增未登记�
 
 AI 域 `ai_capability` seed、workers `graph_registry.py`、`/internal/capabilities` 和 `WORKERS-AI-INTERFACE.md` 必须使用同一组 capability 编码。`image_generation` 不作为接口编码使用。
 
+文件类结果统一使用 `temporary artifact reference`。固定字段：
+
+- `artifactId`
+- `downloadPath`
+- `contentType`
+- `filename`
+- `sizeBytes`
+- `sha256`
+- `expiresAt`
+
+`temporary artifact reference` 只表示 Workers 短期可读的临时产物引用，不表示最终业务下载地址、分享地址或 Storage URL。默认 TTL 固定为 `12` 小时。
+
 AI 执行流程：
 
 1. `api/ai_routes.py` 校验内部服务身份和请求模型。
@@ -219,16 +235,16 @@ Browser Pool 规则：
 - 渲染超时必须释放 page/context。
 - Browser Pool 指标必须进入 health 或 capabilities 诊断信息。
 
-Artifact store 由 AI 和 render 共享，只保存当前请求生命周期内的临时产物和分片读取状态。它不提供跨请求下载，不生成可复用 artifact URL；请求结束后立即清理。
+Artifact store 由 AI 和 render 共享，负责保存文件类结果的临时产物与元数据。它提供仅供 Java servers 使用的内部下载引用，不生成最终业务 URL，不承担长期文件托管职责。Artifact store 返回的 `temporary artifact reference` 允许在 TTL 内跨请求读取；超过 `12` 小时后由 Workers 自身清理。
 
 Render 执行流程：
 
 1. Java servers 完成权限校验、内容可见性过滤、私有内容风险确认和内容快照准备。
 2. Workers 校验内部服务身份和请求模型。
 3. renderer 在请求级临时目录中生成文件。
-4. Workers 返回文件 text、base64 或 SSE 分片，以及文件名建议、内容类型、文件大小和生成摘要。
-5. Java servers 将返回文件交给 Storage 创建文件对象并建立引用。
-6. 请求结束后 Workers 清理临时目录。
+4. Workers 返回文件类结果对应的 `temporary artifact reference`，以及文件名建议、内容类型、文件大小和生成摘要。
+5. Java servers 根据 `temporary artifact reference` 下载临时产物，并交给 Storage 创建文件对象和建立引用。
+6. Workers 保留 TTL 内的临时产物，并由计划任务清理超过 `12` 小时的 artifact。
 
 Workers 不保存 Storage object id，不建立文件引用，不删除文件对象。
 
@@ -248,7 +264,20 @@ AI 流式片段只用于展示过程，不是业务提交事实。Java servers �
 
 HTTP 连接中断且未收到 `completed` 时，Workers 不负责恢复。Java servers 负责记录失败或部分失败，并在重试时重新发起完整请求。
 
-大型 AI 产物和 render 产物必须在当前 SSE 连接内通过 `artifact` 事件分片传输。Java servers 按 `artifactId`、`chunkIndex` 和 `sha256` 组装校验；收到 `completed` 前不得把产物视为业务事实。
+大型 AI 产物和 render 产物不得要求通过当前 SSE 连接传完整文件内容。对于图片、视频、ZIP、PDF 等大文件，Workers 在 `completed` 事件中返回 `temporary artifact reference`，Java servers 再根据引用下载并校验产物。收到 `completed` 前不得把产物视为业务事实。
+
+文件类结果下载规则：
+
+- 下载入口只允许内部服务身份访问。
+- 已过期 artifact 必须返回稳定错误。
+- Java servers 不得把 `temporary artifact reference` 直接暴露给业务前端。
+- Java servers 对大文件转存必须支持 `multipart upload`，不得默认走一次性内存上传路径。
+
+Artifact 清理规则：
+
+- Workers 必须提供计划任务清理超过 `12` 小时的临时 artifact。
+- 清理责任属于 Workers；Java servers 不负责清理 Workers 临时文件。
+- 已过期 artifact 被清理后，Java servers 不得假设该引用仍可读取。
 
 ## Error Handling
 
