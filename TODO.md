@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `AI-WORKERS T4`：定义 temporary artifact reference 协议
-  - 任务类型：执行任务
-  - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLOSURE.md#T4`
-  - 范围对象：`docs/30-designs/AI-DESIGN.md`、`docs/30-designs/WORKERS-DESIGN.md`、`docs/20-interfaces/WORKERS-AI-INTERFACE.md`、`kuzhambu-workers/src/kuzhambu_workers/schemas/ai.py`
-  - 处理动作：固定 `artifactId`、`downloadPath`、`contentType`、`filename`、`sizeBytes`、`sha256`、`expiresAt` 字段与 `12` 小时 TTL 规则。
-  - 验收点：文档与代码使用同一套 artifact reference 字段定义。
-  - 重要度：10/10
-
 - [ ] `AI-WORKERS T5A`：收口 Workers 临时产物落地与元数据管理
   - 任务类型：执行任务
   - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLOSURE.md#T5`

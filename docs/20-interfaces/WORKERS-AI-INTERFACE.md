@@ -28,6 +28,8 @@ AI domain -> workers
 
 AI 域不向 workers 开放业务写入、候选结果写入、任务状态回调、提示词读取或模型配置读取接口。业务域通过 AI 域 application 接口使用 AI 能力；AI 域在调用 workers 时把已选择和校验的 prompt/messages 放入请求体。workers 不通过 AI 域接口反向拉取提示词。workers 必须在当前 HTTP 响应或 SSE 流中返回执行结果；异步任务状态、失败归档、候选区和调用记录均由 AI 域在本地处理。
 
+文件类 AI 结果统一使用 `temporary artifact reference`。workers 只返回临时产物引用，不返回最终业务 URL；Java AI 域必须根据该引用下载临时产物并转存到 `Storage`，业务侧最终只认 `Storage` 结果。
+
 访问控制分三层：
 
 1. 网络层：workers 不暴露公网入口，只允许 Java servers 所在内网、容器网络或服务网格访问。
@@ -293,6 +295,9 @@ Health 接口不得检查数据库、Redis 或 MQ。
     "outputTokens": 340,
     "costAmount": "0.03"
   },
+  "failureStage": null,
+  "fallbackUsed": false,
+  "artifactReference": null,
   "warnings": [],
   "error": null
 }
@@ -313,6 +318,9 @@ Health 接口不得检查数据库、Redis 或 MQ。
     "outputTokens": 0,
     "costAmount": "0.00"
   },
+  "failureStage": "WORKER_RESULT",
+  "fallbackUsed": false,
+  "artifactReference": null,
   "warnings": [],
   "error": {
     "type": "MODEL_SEMANTIC_FAILURE",
@@ -323,6 +331,37 @@ Health 接口不得检查数据库、Redis 或 MQ。
       "providerStatus": 200
     }
   }
+}
+```
+
+文件类成功响应：
+
+```json
+{
+  "requestId": "req_20260601_000001",
+  "traceId": "trace_20260601_000001",
+  "status": "SUCCEEDED",
+  "capability": "image_gen",
+  "result": null,
+  "usage": {
+    "latencyMs": 4120,
+    "inputTokens": 980,
+    "outputTokens": 0,
+    "costAmount": "0.08"
+  },
+  "failureStage": null,
+  "fallbackUsed": false,
+  "artifactReference": {
+    "artifactId": "art_20260601_000001",
+    "downloadPath": "/internal/artifacts/art_20260601_000001",
+    "contentType": "image/png",
+    "filename": "sancai-image.png",
+    "sizeBytes": 204800,
+    "sha256": "sha256:...",
+    "expiresAt": "2026-06-01T22:00:00.000Z"
+  },
+  "warnings": [],
+  "error": null
 }
 ```
 
@@ -339,6 +378,12 @@ Health 接口不得检查数据库、Redis 或 MQ。
 - `JSON`
 - `STRUCTURED`
 - `ARTIFACT`
+
+固定补充字段：
+
+- `failureStage`：固定枚举，取值为 `REQUEST_VALIDATE`、`WORKER_REQUEST`、`WORKER_STREAM`、`WORKER_RESULT`、`ARTIFACT_DOWNLOAD`、`STORAGE_PERSIST`、`CANDIDATE_PERSIST`。
+- `fallbackUsed`：只表示主服务不可用后切换到备用服务或备用模型继续执行。
+- `artifactReference`：仅用于文件类结果；字段固定为 `artifactId`、`downloadPath`、`contentType`、`filename`、`sizeBytes`、`sha256`、`expiresAt`。TTL 固定为 `12` 小时。
 
 ## SSE Stream
 
@@ -384,7 +429,6 @@ data: {"eventId":"evt_0002","requestId":"req_20260601_000001","traceId":"trace_2
   "traceId": "trace_20260601_000001",
   "stage": "completed",
   "timestamp": "2026-06-01T10:00:05.000Z",
-  "status": "SUCCEEDED",
   "result": {
     "format": "TEXT",
     "payload": "完整最终结果..."
@@ -394,6 +438,45 @@ data: {"eventId":"evt_0002","requestId":"req_20260601_000001","traceId":"trace_2
     "inputTokens": 1200,
     "outputTokens": 340,
     "costAmount": "0.03"
+  },
+  "extra": {
+    "status": "SUCCEEDED",
+    "failureStage": null,
+    "fallbackUsed": false,
+    "artifactReference": null
+  }
+}
+```
+
+文件类 `completed` 示例：
+
+```json
+{
+  "eventId": "evt_0100",
+  "requestId": "req_20260601_000001",
+  "traceId": "trace_20260601_000001",
+  "stage": "completed",
+  "timestamp": "2026-06-01T10:00:05.500Z",
+  "result": null,
+  "usage": {
+    "latencyMs": 5500,
+    "inputTokens": 980,
+    "outputTokens": 0,
+    "costAmount": "0.08"
+  },
+  "extra": {
+    "status": "SUCCEEDED",
+    "failureStage": null,
+    "fallbackUsed": false,
+    "artifactReference": {
+      "artifactId": "art_20260601_000001",
+      "downloadPath": "/internal/artifacts/art_20260601_000001",
+      "contentType": "image/png",
+      "filename": "sancai-image.png",
+      "sizeBytes": 204800,
+      "sha256": "sha256:...",
+      "expiresAt": "2026-06-01T22:00:00.000Z"
+    }
   }
 }
 ```
@@ -401,7 +484,7 @@ data: {"eventId":"evt_0002","requestId":"req_20260601_000001","traceId":"trace_2
 流式规则：
 
 - AI 域可以将 `delta` 转发给前端展示。
-- AI 域只能以 `completed.result` 或同步最终响应生成候选结果、问答消息或调用终态。
+- AI 域只能以 `completed.result`、`completed.extra.artifactReference` 或同步最终响应生成候选结果、问答消息或调用终态。
 - workers 不负责 stream 恢复。
 - HTTP 连接中断但未收到 `completed` 时，AI 域必须按失败或部分失败处理。
 - `error` 事件后 workers 应结束流；如无法发送 `error`，AI 域按连接中断处理。
@@ -435,7 +518,7 @@ data: {"eventId":"evt_0002","requestId":"req_20260601_000001","traceId":"trace_2
 - `tags`：结构化数组，元素包含 `name`、`dimension` 和可选 `confidence`。
 - `qa`：结构化数组，元素包含 `question`、`answer` 和可选 `sourceHint`。
 - `image_analysis`：Markdown 文本。
-- `image_gen`：产物对象，包含 `artifactType`、`contentType`、`encoding`、`content` 或 SSE artifact chunk、`sizeBytes`、`sha256` 和可选 `metadata`。
+- `image_gen`：`result` 为空，最终结果通过 `artifactReference` 返回。
 - `fusion`：纯文本或 Markdown 信息融合说明。
 - `visual`：纯文本视觉描述。
 - `split`：结构化数组，元素包含 `title`、`originalText`、`translationText` 和 `targetVolumeHint`。
