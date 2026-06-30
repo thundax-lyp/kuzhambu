@@ -43,10 +43,10 @@ class StoredObjectRepositoryImplTest {
                         1,
                         null)));
 
-        assertEquals(1, repository.listExpiredActiveUnreferenced(threshold).size());
-        assertEquals(
-                StoredObjectId.of(1001L),
-                repository.listExpiredActiveUnreferenced(threshold).get(0).getId());
+        var result = repository.listExpiredActiveUnreferenced(threshold);
+
+        assertEquals(1, result.size());
+        assertEquals(StoredObjectId.of(1001L), result.get(0).getId());
         verify(mapper).selectList(any());
     }
 
