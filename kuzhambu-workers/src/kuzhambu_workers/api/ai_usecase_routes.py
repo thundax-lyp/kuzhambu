@@ -74,7 +74,8 @@ def _description(usecase: AiUsecase) -> str:
     return (
         f"{usecase.description}\n\n"
         f"调用方固定为 kuzhambu-ai；capability 必须为 `{usecase.capability.value}`；"
-        f"options.stream 必须为 `{str(usecase.stream).lower()}`；响应模式为 {stream_mode}。"
+        f"options.stream 必须为 `{str(usecase.stream).lower()}`；响应模式为 {stream_mode}；"
+        "最终态字段固定包含 status、usage、failureStage、fallbackUsed 和 result 或 artifactReference。"
     )
 
 

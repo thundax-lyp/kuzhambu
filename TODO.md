@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `AI-WORKERS T1`：收口 Workers AI 最终态协议
-  - 任务类型：执行任务
-  - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLOSURE.md#T1`
-  - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/schemas/ai.py`、`kuzhambu-workers/src/kuzhambu_workers/schemas/stream.py`、`kuzhambu-workers/src/kuzhambu_workers/api/ai_routes.py`、`kuzhambu-workers/src/kuzhambu_workers/api/ai_usecase_routes.py`
-  - 处理动作：补齐 Workers 同步响应与流式最终事件的 `failureStage`、`fallbackUsed`、`artifactReference` 最终态字段。
-  - 验收点：同步与流式最终事件都能表达 `status + usage + failureStage + fallbackUsed + result/artifactReference`。
-  - 重要度：10/10
-
 - [ ] `AI-WORKERS T2`：收口 Java AI 调用结果模型
   - 任务类型：执行任务
   - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLOSURE.md#T2`
