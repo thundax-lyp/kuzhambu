@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `AiRefinementTaskMapper/AiRefinementTaskRepositoryIT`：新增精修任务台账 schema 与仓储
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLASSICS-TEXT-CLOSURE.md`、`docs/30-designs/AI-DESIGN.md`
-    - 范围对象：`db/schema/ai.sql`、`kuzhambu-servers/biz/ai/kuzhambu-ai-domain/src/main/java/com/thundax/kuzhambu/ai/domain/refinement/model/entity/AiRefinementTask.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-infra/src/main/java/com/thundax/kuzhambu/ai/infra/refinement/persistence/dataobject/AiRefinementTaskDO.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-infra/src/main/java/com/thundax/kuzhambu/ai/infra/refinement/persistence/mapper/AiRefinementTaskMapper.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-infra/src/test/java/com/thundax/kuzhambu/ai/infra/refinement/repository/impl/AiRefinementTaskRepositoryIT.java`
-    - 处理动作：新增 `ai_refinement_task` 的表结构、实体、DO、mapper 和仓储测试
-    - 验收点：任务台账能稳定记录 `taskId/status/callId/candidateId/failureStage/errorType/errorMessage/resultPreview`
-    - 重要度：10/10
-
 - [ ] `AiWorkerModelConfigResolver/WorkerAiHttpClient`：实现 AI 域统一 modelConfig 组装与下发
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLASSICS-TEXT-CLOSURE.md`

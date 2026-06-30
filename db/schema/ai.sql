@@ -212,6 +212,41 @@ CREATE TABLE IF NOT EXISTS `ai_candidate` (
     KEY `idx_ai_candidate_call` (`call_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='AI候选结果表';
 
+CREATE TABLE IF NOT EXISTS `ai_refinement_task` (
+    `id` bigint NOT NULL AUTO_INCREMENT,
+    `task_id` bigint NOT NULL,
+    `scope` varchar(32) DEFAULT NULL,
+    `capability` varchar(64) NOT NULL,
+    `content_type` varchar(32) NOT NULL,
+    `content_id` bigint NOT NULL,
+    `object_id` bigint DEFAULT NULL,
+    `requested_by` bigint NOT NULL,
+    `request_id` varchar(128) DEFAULT NULL,
+    `trace_id` varchar(128) DEFAULT NULL,
+    `status` varchar(32) NOT NULL DEFAULT 'PENDING',
+    `service_role` varchar(16) DEFAULT NULL,
+    `model_id` bigint DEFAULT NULL,
+    `model_name` varchar(255) DEFAULT NULL,
+    `prompt_version_id` bigint DEFAULT NULL,
+    `call_id` bigint DEFAULT NULL,
+    `candidate_id` bigint DEFAULT NULL,
+    `result_format` varchar(32) DEFAULT NULL,
+    `result_preview` text DEFAULT NULL,
+    `failure_stage` varchar(32) DEFAULT NULL,
+    `error_type` varchar(64) DEFAULT NULL,
+    `error_message` text DEFAULT NULL,
+    `stream_enabled` tinyint(1) NOT NULL DEFAULT 0,
+    `requested_at` datetime(3) NOT NULL,
+    `started_at` datetime(3) DEFAULT NULL,
+    `completed_at` datetime(3) DEFAULT NULL,
+    `cancelled_at` datetime(3) DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_ai_refinement_task_id` (`task_id`),
+    KEY `idx_ai_refinement_task_status` (`status`, `requested_at`),
+    KEY `idx_ai_refinement_task_target` (`content_type`, `content_id`, `capability`),
+    KEY `idx_ai_refinement_task_requested_by` (`requested_by`, `requested_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='AI精修任务台账表';
+
 CREATE TABLE IF NOT EXISTS `ai_batch_job` (
     `id` bigint NOT NULL AUTO_INCREMENT,
     `batch_id` bigint NOT NULL,
