@@ -2,8 +2,6 @@ export interface StorageRecord {
     id: string;
     originalFilename?: string | null;
     contentType?: string | null;
-    ownerId?: string | null;
-    ownerType?: string | null;
     size?: number | null;
     accessEndpoint?: string | null;
     objectStatus?: string | null;

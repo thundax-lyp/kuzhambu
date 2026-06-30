@@ -21,8 +21,6 @@ export interface StoragePageQuery {
     pageNo?: number;
     pageSize?: number;
     contentType?: string | null;
-    ownerId?: string | null;
-    ownerType?: string | null;
     objectStatus?: string | null;
     referenceStatus?: string | null;
     referenceOwnerId?: string | null;
@@ -73,8 +71,6 @@ export interface UploadMultipartPartCommand {
 export interface InitMultipartUploadCommand {
     originalFilename: string;
     mimeType: string;
-    ownerType?: string | null;
-    ownerId?: string | null;
     businessType?: string | null;
     bucketName?: string | null;
     objectKey?: string | null;
@@ -98,8 +94,6 @@ export interface AbortMultipartUploadCommand {
 
 export interface UploadStorageFileCommand {
     file: File;
-    ownerType?: string | null;
-    ownerId?: string | null;
     businessType?: string | null;
     bucketName?: string | null;
     objectKey?: string | null;
@@ -200,8 +194,6 @@ export const uploadStorageFile = async (request: UploadStorageFileCommand) => {
 
     const {
         file,
-        ownerType,
-        ownerId,
         businessType,
         bucketName,
         objectKey,
@@ -271,8 +263,6 @@ export const uploadStorageFile = async (request: UploadStorageFileCommand) => {
         initRecord = await initMultipartUpload({
             originalFilename: file.name,
             mimeType: file.type || "application/octet-stream",
-            ownerType: ownerType ?? null,
-            ownerId: ownerId ?? null,
             businessType: businessType ?? null,
             bucketName: bucketName ?? null,
             objectKey: objectKey ?? null,

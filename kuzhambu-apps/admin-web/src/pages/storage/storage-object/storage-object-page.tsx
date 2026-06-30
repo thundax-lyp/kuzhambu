@@ -33,7 +33,6 @@ const { Text } = Typography;
 const DEFAULT_COLUMN_WIDTHS = {
     name: 280,
     contentType: 180,
-    owner: 170,
     size: 120,
     objectStatus: 120,
     referenceStatus: 130,
@@ -66,11 +65,6 @@ const objectStatusLabels: Record<Exclude<StorageObjectStatusFilter, "ALL">, stri
 const referenceStatusLabels: Record<Exclude<StorageReferenceStatusFilter, "ALL">, string> = {
     REFERENCED: "已引用",
     UNREFERENCED: "未引用"
-};
-
-const ownerTypeLabels: Record<string, string> = {
-    USER: "后台用户",
-    MEMBER: "前台会员"
 };
 
 const uploadAccept =
@@ -252,8 +246,6 @@ export const StorageObjectPage = () => {
             const nextQuery = { ...currentQuery, ...values };
             return {
                 contentType: nextQuery.contentType,
-                ownerId: nextQuery.ownerId,
-                ownerType: nextQuery.ownerType,
                 objectStatus: nextQuery.objectStatus,
                 referenceStatus: nextQuery.referenceStatus,
                 referenceOwnerId: nextQuery.referenceOwnerId,
@@ -386,25 +378,6 @@ export const StorageObjectPage = () => {
             ellipsis: true,
             render: (contentType?: string | null) =>
                 contentType ? <Text code>{contentType}</Text> : null
-        },
-        {
-            title: "归属",
-            key: "owner",
-            width: DEFAULT_COLUMN_WIDTHS.owner,
-            render: (_, storage) => {
-                const ownerType = storage.ownerType
-                    ? ownerTypeLabels[storage.ownerType] || storage.ownerType
-                    : "";
-                if (!ownerType && !storage.ownerId) {
-                    return null;
-                }
-                return (
-                    <div className="storage-object-owner-cell">
-                        {ownerType ? <Text>{ownerType}</Text> : null}
-                        {storage.ownerId ? <Text type="secondary">{storage.ownerId}</Text> : null}
-                    </div>
-                );
-            }
         },
         {
             title: "大小",
