@@ -53,11 +53,7 @@ public class AiInvokeResult {
     }
 
     public static AiInvokeResult failed(
-            String requestId,
-            String traceId,
-            String errorType,
-            String errorMessage,
-            String failureStage) {
+            String requestId, String traceId, String errorType, String errorMessage, String failureStage) {
         AiInvokeResult result = new AiInvokeResult();
         result.setRequestId(requestId);
         result.setTraceId(traceId);

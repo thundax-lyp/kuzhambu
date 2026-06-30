@@ -158,7 +158,8 @@ public class QaApplicationServiceImpl implements QaApplicationService {
         if (StringUtils.isBlank(answerText)) {
             answerText = "暂时没有生成可用回答。";
         }
-        String failureReason = aiSucceeded ? null : aiResult == null ? "Discovery AI result is missing" : aiResult.getErrorMessage();
+        String failureReason =
+                aiSucceeded ? null : aiResult == null ? "Discovery AI result is missing" : aiResult.getErrorMessage();
 
         QaMessage assistantMessage = new QaMessage(
                 null,
@@ -185,14 +186,13 @@ public class QaApplicationServiceImpl implements QaApplicationService {
             sourceEntities.add(sourceEntity);
         }
 
-        QaRetrievalTrace traceEntity =
-                qaTraceAssembler.toDomain(
-                        command,
-                        session,
-                        understandingResult,
-                        qaContext,
-                        answerMessagePk,
-                        aiResult == null ? null : aiResult.getCallId());
+        QaRetrievalTrace traceEntity = qaTraceAssembler.toDomain(
+                command,
+                session,
+                understandingResult,
+                qaContext,
+                answerMessagePk,
+                aiResult == null ? null : aiResult.getCallId());
         Long tracePk = qaRetrievalTraceRepository.save(traceEntity);
         traceEntity.setId(tracePk);
         traceEntity.setTraceId(tracePk);

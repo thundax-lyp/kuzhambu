@@ -184,10 +184,13 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
         try {
             JsonNode artifactReference = objectMapper.readTree(result.getArtifactReferenceJson());
             WorkerAiClient.DownloadedArtifact artifact = workerAiClient.downloadArtifact(
-                    command.getRequestId(), command.getTraceId(), artifactReference.path("downloadPath").asText());
-            result.setResultPayload(artifact.sizeBytes() > MULTIPART_THRESHOLD_BYTES
-                    ? toStorageResultJson(persistMultipartArtifact(artifact))
-                    : toStorageResultJson(persistSmallArtifact(artifact)));
+                    command.getRequestId(),
+                    command.getTraceId(),
+                    artifactReference.path("downloadPath").asText());
+            result.setResultPayload(
+                    artifact.sizeBytes() > MULTIPART_THRESHOLD_BYTES
+                            ? toStorageResultJson(persistMultipartArtifact(artifact))
+                            : toStorageResultJson(persistSmallArtifact(artifact)));
             return result;
         } catch (WorkerAiClient.ArtifactDownloadException ex) {
             AiInvokeResult failed = AiInvokeResult.failed(
@@ -252,13 +255,13 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
     }
 
     private CompleteMultipartUploadFacadeResponse persistMultipartArtifact(WorkerAiClient.DownloadedArtifact artifact) {
-        InitMultipartUploadFacadeResponse init = storageFacade.initMultipartUpload(InitMultipartUploadFacadeRequest
-                .builder()
-                .originalFilename(artifact.filename())
-                .mimeType(artifact.contentType())
-                .totalSize(artifact.sizeBytes())
-                .partSize(MULTIPART_PART_SIZE_BYTES)
-                .build());
+        InitMultipartUploadFacadeResponse init =
+                storageFacade.initMultipartUpload(InitMultipartUploadFacadeRequest.builder()
+                        .originalFilename(artifact.filename())
+                        .mimeType(artifact.contentType())
+                        .totalSize(artifact.sizeBytes())
+                        .partSize(MULTIPART_PART_SIZE_BYTES)
+                        .build());
         byte[] data = artifact.data();
         int partNumber = 1;
         for (int offset = 0; offset < data.length; offset += (int) MULTIPART_PART_SIZE_BYTES) {

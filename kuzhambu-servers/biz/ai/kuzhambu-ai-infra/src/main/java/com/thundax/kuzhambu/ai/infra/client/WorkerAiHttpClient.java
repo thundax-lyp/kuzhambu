@@ -112,13 +112,13 @@ public class WorkerAiHttpClient implements WorkerAiClient {
             HttpRequest request = buildGetRequest(downloadPath, requestId, traceId);
             HttpResponse<byte[]> response = httpClient.send(request, HttpResponse.BodyHandlers.ofByteArray());
             if (!isSuccessful(response.statusCode())) {
-                throw new ArtifactDownloadException(
-                        "ARTIFACT_DOWNLOAD failed with HTTP " + response.statusCode());
+                throw new ArtifactDownloadException("ARTIFACT_DOWNLOAD failed with HTTP " + response.statusCode());
             }
             return new DownloadedArtifact(
                     response.body(),
                     response.headers().firstValue("Content-Type").orElse("application/octet-stream"),
-                    resolveFilename(response.headers().firstValue("Content-Disposition").orElse(null)),
+                    resolveFilename(
+                            response.headers().firstValue("Content-Disposition").orElse(null)),
                     response.headers().firstValue("X-Kuzhambu-Artifact-Sha256").orElse(null),
                     response.headers()
                             .firstValue("X-Kuzhambu-Artifact-Size-Bytes")
@@ -226,8 +226,7 @@ public class WorkerAiHttpClient implements WorkerAiClient {
 
     private HttpRequest buildGetRequest(String path, String requestId, String traceId) {
         String timestamp = String.valueOf(System.currentTimeMillis());
-        String signature =
-                signatureSupport.sign("GET", path, timestamp, requestId, "", properties.getInternalSecret());
+        String signature = signatureSupport.sign("GET", path, timestamp, requestId, "", properties.getInternalSecret());
         return HttpRequest.newBuilder(uri(path))
                 .timeout(Duration.ofMillis(properties.getTimeoutMs()))
                 .header("Accept", "application/octet-stream")
@@ -264,7 +263,8 @@ public class WorkerAiHttpClient implements WorkerAiClient {
             result.setResultFormat(response.getResult().getFormat());
             result.setResultPayload(payloadToString(response.getResult().getPayload()));
         }
-        if (response.getArtifactReference() != null && !response.getArtifactReference().isNull()) {
+        if (response.getArtifactReference() != null
+                && !response.getArtifactReference().isNull()) {
             result.setArtifactReferenceJson(payloadToString(response.getArtifactReference()));
         }
         result.setUsage(toUsage(response.getUsage()));

@@ -106,7 +106,14 @@ public class DiscoveryAiApplicationServiceImpl implements DiscoveryAiApplication
     private DiscoveryAiResult toDiscoveryResult(AiInvokeResult result) {
         if (result == null) {
             return new DiscoveryAiResult(
-                    null, null, "FAILED", null, null, null, "DISCOVERY_AI_RESULT_MISSING", "Discovery AI result is missing");
+                    null,
+                    null,
+                    "FAILED",
+                    null,
+                    null,
+                    null,
+                    "DISCOVERY_AI_RESULT_MISSING",
+                    "Discovery AI result is missing");
         }
         return new DiscoveryAiResult(
                 result.getCallId(),
