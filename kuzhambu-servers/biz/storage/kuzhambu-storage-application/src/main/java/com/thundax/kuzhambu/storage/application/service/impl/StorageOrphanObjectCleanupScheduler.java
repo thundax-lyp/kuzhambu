@@ -40,6 +40,11 @@ public class StorageOrphanObjectCleanupScheduler {
     @Scheduled(cron = "0 0 0/4 * * ?")
     public int cleanupExpiredOrphans() {
         Instant threshold = Instant.now(clock).minus(ORPHAN_ALIVE_TIME);
+        List<StoredObject> activeOrphans = repository.listExpiredActiveUnreferenced(threshold);
+        for (StoredObject orphan : activeOrphans) {
+            orphan.setObjectStatus(com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus.DELETED);
+            repository.updateObjectStatus(orphan);
+        }
         List<StoredObject> candidates = repository.listExpiredDeletedUnreferenced(threshold);
         int count = 0;
         for (StoredObject candidate : candidates) {
