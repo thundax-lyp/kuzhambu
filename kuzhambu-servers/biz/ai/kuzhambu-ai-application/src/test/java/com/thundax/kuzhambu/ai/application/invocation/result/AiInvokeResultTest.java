@@ -23,6 +23,10 @@ class AiInvokeResultTest {
         AiInvokeResult result = new AiInvokeResult();
         result.setResultFormat("MARKDOWN");
         result.setResultPayload("image-analysis-body");
+        result.setArtifactReferenceJson("{\"downloadPath\":\"artifact-1\"}");
+        result.setFailureStage("WORKER_PROTOCOL_FAILURE");
+        result.setErrorType("ERR");
+        result.setErrorMessage("bad");
         result.setStreamCompleted(true);
 
         AiCandidate candidate = result.toCandidate(command, 100L);
@@ -35,7 +39,37 @@ class AiInvokeResultTest {
         assertEquals(20L, candidate.getObjectId());
         assertEquals("MARKDOWN", candidate.getResultFormat());
         assertEquals("image-analysis-body", candidate.getResultPayload());
+        assertEquals("{\"downloadPath\":\"artifact-1\"}", candidate.getArtifactReferenceJson());
+        assertEquals("WORKER_PROTOCOL_FAILURE", candidate.getFailureStage());
+        assertEquals("ERR", candidate.getErrorType());
+        assertEquals("bad", candidate.getErrorMessage());
         assertEquals(30L, candidate.getPromptVersionId());
         assertEquals("model-a", candidate.getModelName());
+    }
+
+    @Test
+    void toCandidateShouldKeepFailureSnapshot() {
+        AiInvokeCommand command = new AiInvokeCommand();
+        command.setBatchId(1L);
+        command.setCapability("translate");
+        command.setContentType("ENTRY");
+        command.setContentId(10L);
+        command.setModelName("model-a");
+
+        AiInvokeResult result = new AiInvokeResult();
+        result.setStatus("FAILED");
+        result.setFailureStage("WORKER_RESULT");
+        result.setErrorType("WORKER_PROTOCOL_FAILURE");
+        result.setErrorMessage("bad");
+        result.setResultFormat("TEXT");
+        result.setResultPayload("bad-payload");
+
+        AiCandidate candidate = result.toCandidate(command, 100L);
+
+        assertEquals("WORKER_RESULT", candidate.getFailureStage());
+        assertEquals("WORKER_PROTOCOL_FAILURE", candidate.getErrorType());
+        assertEquals("bad", candidate.getErrorMessage());
+        assertEquals("TEXT", candidate.getResultFormat());
+        assertEquals("bad-payload", candidate.getResultPayload());
     }
 }

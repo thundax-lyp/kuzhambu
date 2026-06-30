@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `AiWorkerInvocationApplicationServiceImpl/AiInvokeResult`：补齐最终态与候选快照落库
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLASSICS-TEXT-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/invocation/service/impl/AiWorkerInvocationApplicationServiceImpl.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/invocation/result/AiInvokeResult.java`
-    - 处理动作：让 worker 成功和失败两条路径都写入完整调用最终态与候选结果快照
-    - 验收点：`ai_call_record` 和 `ai_candidate` 最终写入字段与 RUNBOOK 一致
-    - 重要度：10/10
-
 - [ ] `AiRefinementTaskMapper/AiRefinementTaskRepositoryIT`：新增精修任务台账 schema 与仓储
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLASSICS-TEXT-CLOSURE.md`、`docs/30-designs/AI-DESIGN.md`

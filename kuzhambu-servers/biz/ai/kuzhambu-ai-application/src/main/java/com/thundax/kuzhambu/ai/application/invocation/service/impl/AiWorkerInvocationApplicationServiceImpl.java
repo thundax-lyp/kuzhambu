@@ -10,6 +10,7 @@ import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocation
 import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService.ArtifactDownloadException;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService.DownloadedArtifact;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCallRecord;
+import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
@@ -123,9 +124,13 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
 
     private AiInvokeResult completeCall(AiInvokeCommand command, AiCallRecord callRecord, AiInvokeResult result) {
         Instant completedAt = Instant.now();
+        callRecord.recordResult(
+                result.getResultFormat(),
+                result.getResultPayload(),
+                result.getArtifactReferenceJson(),
+                result.getWarningsJson());
         if (result.isSucceeded()) {
             callRecord.markSucceeded(result.getUsage(), completedAt);
-            callRecord.setWarningsJson(result.getWarningsJson());
             aiInvocationRepository.updateCallRecord(callRecord);
             if (command.isCreateCandidate()) {
                 Long candidateId =
@@ -133,7 +138,14 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
                 result.setCandidateId(candidateId);
             }
         } else {
+            callRecord.recordFailureStage(result.getFailureStage());
             callRecord.markFailed(result.getErrorType(), result.getErrorMessage(), result.getUsage(), completedAt);
+            if (command.isCreateCandidate()) {
+                AiCandidate candidate = result.toCandidate(command, callRecord.getCallId());
+                candidate.reject(result.getErrorType(), result.getErrorMessage(), result.getFailureStage(), completedAt);
+                Long candidateId = aiInvocationRepository.saveCandidate(candidate);
+                result.setCandidateId(candidateId);
+            }
             aiInvocationRepository.updateCallRecord(callRecord);
         }
         result.setCallId(callRecord.getCallId());
