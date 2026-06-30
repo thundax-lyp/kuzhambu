@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `ai_routes.py/test_ai_routes.py`：收紧 workers 文本成功条件与失败映射
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLASSICS-TEXT-CLOSURE.md`
-    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/api/ai_routes.py`、`kuzhambu-workers/tests/test_ai_routes.py`、`kuzhambu-workers/tests/test_worker_e2e_ai_usecase_classics.py`
-    - 处理动作：把非空 `choices[0].message.content` 收口为唯一成功出口，并统一失败阶段映射
-    - 验收点：空字符串、缺字段、非法 JSON 不再进入成功候选
-    - 重要度：9/10
-
 - [ ] `AiRefinementTaskController/AiRefinementTaskApplicationServiceImpl`：新增精修任务接口与编排
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLASSICS-TEXT-CLOSURE.md`、`docs/30-designs/AI-DESIGN.md`

@@ -1,3 +1,4 @@
+import json
 from typing import Any, TypedDict
 
 from langgraph.graph import END, START, StateGraph
@@ -24,18 +25,31 @@ def _invoke_text(state: TextGraphState) -> TextGraphState:
         **state,
         "result": {
             "format": ResultFormat.TEXT.value,
-            "payload": _text_output(request),
+            "payload": _text_output_as_provider_json(request),
         },
     }
 
 
-def _text_output(request: AiInvokeRequest) -> str:
+def _text_output_as_provider_json(request: AiInvokeRequest) -> str:
     payload = _first_payload_text(request)
     if payload:
-        return f"[{request.operation}] {payload}"
-    if request.capability == AiCapability.TRANSLATE:
-        return "已完成古文翻译占位结果"
-    return "已完成文本生成占位结果"
+        content = f"[{request.operation}] {payload}"
+    elif request.capability == AiCapability.TRANSLATE:
+        content = "已完成古文翻译占位结果"
+    else:
+        content = "已完成文本生成占位结果"
+    return json.dumps(
+        {
+            "choices": [
+                {
+                    "message": {
+                        "content": content,
+                    },
+                }
+            ]
+        },
+        ensure_ascii=False,
+    )
 
 
 def _first_payload_text(request: AiInvokeRequest) -> str:

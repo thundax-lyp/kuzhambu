@@ -56,6 +56,7 @@ def test_worker_e2e_classics_usecase_text_returns_non_empty_payload(
     assert payload["result"]["format"] == "TEXT"
     assert isinstance(payload["result"]["payload"], str)
     assert payload["result"]["payload"] != ""
+    assert json.loads(payload["result"]["payload"])["choices"][0]["message"]["content"] != ""
 
 
 def _body(*, operation: str, capability: str, scope: str, stream: bool) -> bytes:
