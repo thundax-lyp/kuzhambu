@@ -58,6 +58,8 @@ class StorageObjectUploadContractTest {
         assertEquals(5L, json.get("size").asLong());
         assertEquals(
                 "/api/storage/object/10/content", json.get("accessEndpoint").asText());
+        assertEquals(false, json.has("ownerId"));
+        assertEquals(false, json.has("ownerType"));
     }
 
     @Test

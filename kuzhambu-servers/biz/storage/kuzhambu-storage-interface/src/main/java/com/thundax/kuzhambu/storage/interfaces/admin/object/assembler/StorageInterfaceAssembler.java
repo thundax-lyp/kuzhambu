@@ -49,8 +49,6 @@ public final class StorageInterfaceAssembler {
                 .remarks(entity.getRemarks())
                 .originalFilename(entity.getOriginalFilename())
                 .contentType(entity.getContentType())
-                .ownerId(entity.getOwnerId())
-                .ownerType(ownerTypeValue(entity.getOwnerType()))
                 .size(entity.getSize())
                 .accessEndpoint(entity.getAccessEndpoint())
                 .objectStatus(objectStatusValue(entity.getObjectStatus()))
