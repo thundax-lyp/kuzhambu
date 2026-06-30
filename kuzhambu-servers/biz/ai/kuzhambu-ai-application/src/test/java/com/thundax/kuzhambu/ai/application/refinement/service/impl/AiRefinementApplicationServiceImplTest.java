@@ -41,6 +41,36 @@ class AiRefinementApplicationServiceImplTest {
     }
 
     @Test
+    void summarizeShouldUseClassicsUsecasePathForWangqi() {
+        CapturingInvocationService invocationService = new CapturingInvocationService();
+        AiRefinementApplicationServiceImpl service =
+                new AiRefinementApplicationServiceImpl(invocationService, resolver);
+
+        AiCandidateResult result = service.summarize(command("WANGQI_DOCUMENT", "external-operation", CAPABILITY_SUMMARY));
+        AiInvokeCommand capturedCommand = invocationService.capturedCommand();
+
+        assertNotNull(result);
+        assertEquals("CLASSICS_WANGQI_SUMMARY", capturedCommand.getOperation());
+        assertEquals("/internal/ai/classics/wangqi/summary", capturedCommand.getWorkerPath());
+        assertEquals("summary", capturedCommand.getCapability());
+    }
+
+    @Test
+    void summarizeShouldUseClassicsUsecasePathForMingCustoms() {
+        CapturingInvocationService invocationService = new CapturingInvocationService();
+        AiRefinementApplicationServiceImpl service =
+                new AiRefinementApplicationServiceImpl(invocationService, resolver);
+
+        AiCandidateResult result = service.summarize(command("MING_CUSTOMS", "external-operation", CAPABILITY_SUMMARY));
+        AiInvokeCommand capturedCommand = invocationService.capturedCommand();
+
+        assertNotNull(result);
+        assertEquals("CLASSICS_MING_CUSTOMS_SUMMARY", capturedCommand.getOperation());
+        assertEquals("/internal/ai/classics/ming-customs/summary", capturedCommand.getWorkerPath());
+        assertEquals("summary", capturedCommand.getCapability());
+    }
+
+    @Test
     void generateTagsShouldUseClassicsUsecasePathForWangqi() {
         CapturingInvocationService invocationService = new CapturingInvocationService();
         AiRefinementApplicationServiceImpl service =

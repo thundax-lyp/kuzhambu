@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `ClassicsContentApplicationServiceAiCandidateTest/ClassicsContentAdminControllerTest`：验收 classics 候选应用
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLASSICS-TEXT-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/content/ClassicsContentApplicationServiceAiCandidateTest.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/test/java/com/thundax/kuzhambu/classics/interfaces/admin/content/ClassicsContentAdminControllerTest.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/test/java/com/thundax/kuzhambu/ai/application/refinement/service/impl/AiRefinementApplicationServiceImplTest.java`
-    - 处理动作：补齐 `translate/summary` 候选应用的后端与接口验收测试
-    - 验收点：`SANCAI_ENTRY.translate`、`SANCAI_ENTRY.summary`、`WANGQI_DOCUMENT.summary`、`MING_CUSTOMS.summary` 应用后正式字段和版本号正确
-    - 重要度：10/10
-
 - [ ] `ai-refinement-task-service.ts`：补齐 Admin Web 精修任务服务与请求类型
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLASSICS-TEXT-CLOSURE.md`

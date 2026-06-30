@@ -124,6 +124,25 @@ class ClassicsContentAdminControllerTest {
     }
 
     @Test
+    void aiCandidateApplyTranslateRequestShouldMapToServiceCommandAndReturnResponse() {
+        ClassicsContentAdminController controller = controller();
+        ClassicsContentRequest.AiCandidateApplyRequest request = new ClassicsContentRequest.AiCandidateApplyRequest();
+        request.setCandidateId(124L);
+        request.setContentType("SANCAI_ENTRY");
+        request.setContentId(456L);
+        request.setCapability("translate");
+        request.setResultFormat("TEXT");
+        request.setResultPayload("new translation");
+        request.setChangeSummary("AI 应用：译文");
+
+        ClassicsContentResponse.AiCandidateApplyResponse response = controller.changeAiCandidate(request);
+        assertEquals(456L, response.getContentId());
+        assertEquals("SANCAI_ENTRY", response.getContentType());
+        assertEquals(790L, response.getVersionId());
+        assertEquals(4, response.getVersionNo());
+    }
+
+    @Test
     void tagRequestsShouldMapToServiceCommandsAndResponses() {
         ClassicsContentAdminController controller = controller();
         ClassicsContentRequest addRequest = new ClassicsContentRequest();
@@ -265,14 +284,22 @@ class ClassicsContentAdminControllerTest {
                     }
                     if ("applyAiCandidate".equals(method.getName())) {
                         AiCandidateApplyContentCommand command = (AiCandidateApplyContentCommand) args[0];
-                        assertEquals(123L, command.getCandidateId());
                         assertEquals(ClassicsContentType.SANCAI_ENTRY, command.getContentType());
                         assertEquals(456L, command.getContentId());
-                        assertEquals("summary", command.getCapability());
                         assertEquals("TEXT", command.getResultFormat());
-                        assertEquals("new summary", command.getResultPayload());
-                        assertEquals("AI 应用：摘要", command.getChangeSummary());
-                        return new AiCandidateApplyContentResult(ClassicsContentType.SANCAI_ENTRY, 456L, 789L, 3);
+                        if ("summary".equals(command.getCapability())) {
+                            assertEquals(123L, command.getCandidateId());
+                            assertEquals("new summary", command.getResultPayload());
+                            assertEquals("AI 应用：摘要", command.getChangeSummary());
+                            return new AiCandidateApplyContentResult(ClassicsContentType.SANCAI_ENTRY, 456L, 789L, 3);
+                        }
+                        if ("translate".equals(command.getCapability())) {
+                            assertEquals(124L, command.getCandidateId());
+                            assertEquals("new translation", command.getResultPayload());
+                            assertEquals("AI 应用：译文", command.getChangeSummary());
+                            return new AiCandidateApplyContentResult(ClassicsContentType.SANCAI_ENTRY, 456L, 790L, 4);
+                        }
+                        throw new UnsupportedOperationException("unexpected apply capability: " + command.getCapability());
                     }
                     if ("addTag".equals(method.getName())) {
                         var command =

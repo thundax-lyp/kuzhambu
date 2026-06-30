@@ -50,6 +50,48 @@ import org.junit.jupiter.api.Test;
 class ClassicsContentApplicationServiceAiCandidateTest {
 
     @Test
+    void applyAiCandidateTranslateShouldUpdateSancaiAndGenerateAiAppliedVersion() {
+        FakeRepository repository = new FakeRepository();
+        SancaiEntry entry = new SancaiEntry();
+        entry.setId(SancaiEntryId.of(11L));
+        entry.setTranslationText("old translation");
+        entry.setContentUpdatedAt(new Date(1L));
+        repository.sancaiEntryForAiApply = entry;
+
+        AiFacade aiFacade = mockAiFacade(
+                request -> {
+                    assertEquals(11L, request.getCandidateId());
+                    assertEquals("SANCAI_ENTRY", request.getContentType());
+                    assertEquals(11L, request.getContentId());
+                    assertEquals("translate", request.getCapability());
+                    return pendingCandidate();
+                },
+                request -> {
+                    assertEquals(11L, request.getCandidateId());
+                    assertEquals("TEXT", request.getResultFormat());
+                    assertEquals("new translation", request.getResultPayload());
+                    return candidateApplied();
+                });
+
+        ClassicsContentApplicationServiceImpl service = serviceWithAiFacade(repository, aiFacade);
+        AiCandidateApplyContentCommand command =
+                applyCommand(11L, ClassicsContentType.SANCAI_ENTRY, 11L, "translate", "new translation");
+
+        AiCandidateApplyContentResult result = service.applyAiCandidate(command);
+
+        assertEquals(ClassicsContentType.SANCAI_ENTRY, result.getContentType());
+        assertEquals(11L, result.getContentId());
+        assertEquals(1L, result.getVersionId());
+        assertEquals(1, result.getVersionNo());
+        assertEquals("new translation", entry.getTranslationText());
+        assertEquals(ClassicsContentChangeType.AI_APPLIED, repository.lastInsertedVersion.getChangeType());
+        assertEquals("AI 应用：译文", repository.lastInsertedVersion.getChangeSummary());
+        assertEquals(1, repository.insertVersionCount);
+        assertEquals(1, repository.updateSancaiEntryAiCount);
+        verify(aiFacade).markCandidateApplied(any(MarkAiCandidateAppliedFacadeRequest.class));
+    }
+
+    @Test
     void applyAiCandidateSummaryShouldUpdateSancaiAndGenerateAiAppliedVersion() {
         FakeRepository repository = new FakeRepository();
         SancaiEntry entry = new SancaiEntry();
