@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `wangqi-page.tsx/ming-customs-page.tsx`：接通汪耆与明俗 summary 任务创建与轮询
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLASSICS-TEXT-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/common/components/ai-candidate-panel.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/wangqi/wangqi-page.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/wangqi/wangqi-page.test.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/ming-customs/ming-customs-page.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/ming-customs/ming-customs-page.test.tsx`
-    - 处理动作：在汪耆文稿和明代风俗详情页接通 `summary` 的任务创建与轮询，并在候选应用后刷新详情
-    - 验收点：页面可以先创建 `summary` 任务，再在任务成功后看到候选并刷新 `WANGQI_DOCUMENT.summary` 与 `MING_CUSTOMS.summary`
-    - 重要度：9/10
-
 - [ ] `Implementation Coverage/RUNBOOK`：执行全域验证并完成文档收口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLASSICS-TEXT-CLOSURE.md`、`docs/00-governance/TODO-RULES.md`、`docs/40-readiness/PR-WORKFLOW.md`
