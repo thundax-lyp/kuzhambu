@@ -464,9 +464,7 @@ describe("App", () => {
         expect((await screen.findAllByText("总部")).length).toBeGreaterThan(0);
     }, 10000);
 
-    it(
-        "renders and filters the dictionary page",
-        async () => {
+    it("renders and filters the dictionary page", async () => {
         localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
         localStorage.setItem(
             "kuzhambu.admin.permissions",
@@ -544,9 +542,7 @@ describe("App", () => {
                 })
             )
         );
-    },
-        15000
-    );
+    }, 15000);
 
     it("renders the audit log page", async () => {
         localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
