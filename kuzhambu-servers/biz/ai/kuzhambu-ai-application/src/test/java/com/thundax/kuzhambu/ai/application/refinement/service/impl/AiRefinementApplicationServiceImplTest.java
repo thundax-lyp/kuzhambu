@@ -137,6 +137,7 @@ class AiRefinementApplicationServiceImplTest {
         assertEquals(true, capturedCommand.isStream());
         assertEquals(true, capturedCommand.isCreateCandidate());
         assertEquals(true, capturedCommand.toRunningCallRecord().isStreamUsed());
+        assertEquals(true, invocationService.streamInvoked());
     }
 
     private AiRefinementRequestCommand command(String contentType, String operation, String capability) {
@@ -158,6 +159,7 @@ class AiRefinementApplicationServiceImplTest {
     private static class CapturingInvocationService implements AiWorkerInvocationApplicationService {
 
         private AiInvokeCommand captured;
+        private boolean streamInvoked;
 
         @Override
         public AiInvokeResult invoke(AiInvokeCommand command) {
@@ -175,11 +177,16 @@ class AiRefinementApplicationServiceImplTest {
 
         @Override
         public AiInvokeResult stream(AiInvokeCommand command, Consumer<AiStreamEventResult> eventConsumer) {
-            return null;
+            streamInvoked = true;
+            return invoke(command);
         }
 
         public AiInvokeCommand capturedCommand() {
             return captured;
+        }
+
+        public boolean streamInvoked() {
+            return streamInvoked;
         }
     }
 }

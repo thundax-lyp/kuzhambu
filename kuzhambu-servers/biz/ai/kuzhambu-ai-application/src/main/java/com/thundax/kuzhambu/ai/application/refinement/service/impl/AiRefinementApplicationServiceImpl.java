@@ -77,7 +77,9 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
         if (CAPABILITY_IMAGE_ANALYSIS.equals(capability)) {
             invokeCommand.setStream(true);
         }
-        AiInvokeResult result = invocationApplicationService.invoke(invokeCommand);
+        AiInvokeResult result = CAPABILITY_IMAGE_ANALYSIS.equals(capability)
+                ? invocationApplicationService.stream(invokeCommand, event -> {})
+                : invocationApplicationService.invoke(invokeCommand);
         return AiCandidateResult.from(result);
     }
 
