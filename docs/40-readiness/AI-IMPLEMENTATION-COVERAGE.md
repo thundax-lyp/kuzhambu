@@ -18,6 +18,8 @@
 - Classics 精修入口已对接六类同步候选能力（`translate/summary/tags/qa/visual/split`）的 Java → Worker 调用链路（Sancai、Wangqi、Ming Customs）。
 - Knowledge 图谱抽取已对接三类候选能力（`relation_extraction/knowledge_graph/lineage_extraction`）的 Knowledge → AI → Worker 调用链路，并补齐批量任务、取消和重生成所需的 AI 协作台账。
 - AI 域当前已具备候选结果台账读取、拒绝和“标记已应用”协作入口，可支持 Classics / Knowledge 在业务确认后回写 AI 候选状态。
+- AI 域已形成统一最终态协议：调用结果、调用记录、候选结果和 Worker stream `completed/error` 统一使用 `failureStage / fallbackUsed / artifactReference` 口径；文件类结果由 Java 下载 Workers 临时产物并转存 `Storage`。
+- Discovery 的 query understanding、answer generation 与 stream answer 已统一消费 AI 最终态，并把最终 AI `callId` 稳定挂到 QA trace。
 
 部分完成：
 
@@ -44,10 +46,10 @@
 | classics | MING_CUSTOMS | summary | AiRefinementController#summarize | CLASSICS_MING_CUSTOMS_SUMMARY | /internal/ai/classics/ming-customs/summary | 已完成 | 六类同步候选型精修能力接入 usecase path |
 | classics | MING_CUSTOMS | tags | AiRefinementController#generateTags | CLASSICS_MING_CUSTOMS_TAGS | /internal/ai/classics/ming-customs/tags | 已完成 | 六类同步候选型精修能力接入 usecase path |
 | classics | MING_CUSTOMS | qa | AiRefinementController#generateQa | CLASSICS_MING_CUSTOMS_QA | /internal/ai/classics/ming-customs/qa | 已完成 | 六类同步候选型精修能力接入 usecase path |
-| discovery | - | query_understanding | DiscoveryAiApplicationService#understandQuery | DISCOVERY_QUERY_UNDERSTANDING | /internal/ai/discovery/query-understanding | 已完成 | Discovery query understanding 已接入 worker usecase path |
-| discovery | - | query_understanding | DiscoveryAiApplicationService#rewriteQuery | DISCOVERY_QUERY_REWRITE | /internal/ai/discovery/query-rewrite | 已完成 | Discovery query rewrite 已接入 worker usecase path |
-| discovery | - | answer_generation | DiscoveryAiApplicationService#generateAnswer | DISCOVERY_ANSWER_GENERATION | /internal/ai/discovery/answer-generation | 已完成 | Discovery answer generation 已接入 worker usecase path |
-| discovery | - | answer_generation | DiscoveryAiApplicationService#streamAnswer | DISCOVERY_ANSWER_GENERATION_STREAM | /internal/ai/discovery/answer-generation/stream | 已完成 | Discovery answer stream usecase 已接入 worker usecase path |
+| discovery | - | query_understanding | DiscoveryAiApplicationService#understandQuery | DISCOVERY_QUERY_UNDERSTANDING | /internal/ai/discovery/query-understanding | 已完成 | 已统一消费 AI 最终态字段；失败时按最终错误口径落库 |
+| discovery | - | query_understanding | DiscoveryAiApplicationService#rewriteQuery | DISCOVERY_QUERY_REWRITE | /internal/ai/discovery/query-rewrite | 已完成 | 已统一消费 AI 最终态字段；失败时按最终错误口径落库 |
+| discovery | - | answer_generation | DiscoveryAiApplicationService#generateAnswer | DISCOVERY_ANSWER_GENERATION | /internal/ai/discovery/answer-generation | 已完成 | 最终回答消费 AI 最终态字段，并把 `callId` 挂到 QA trace |
+| discovery | - | answer_generation | DiscoveryAiApplicationService#streamAnswer | DISCOVERY_ANSWER_GENERATION_STREAM | /internal/ai/discovery/answer-generation/stream | 已完成 | stream 最终态消费已收口，并把最终 `callId` 挂到 QA trace |
 | knowledge | SANCAI_ENTRY | relation_extraction | KnowledgeGraphExtractionApplicationService#requestRelationExtraction | KNOWLEDGE_RELATION_EXTRACTION | /internal/ai/knowledge/relation-extraction | 已完成 | 已形成任务台账、AI 调用、候选应用、批量与重生成闭环 |
 | knowledge | SANCAI_ENTRY | knowledge_graph | KnowledgeGraphExtractionApplicationService#requestGraphExtraction | KNOWLEDGE_GRAPH_EXTRACTION | /internal/ai/knowledge/graph-extraction | 已完成 | 已形成任务台账、AI 调用、候选应用、批量与重生成闭环 |
 | knowledge | SANCAI_ENTRY | lineage_extraction | KnowledgeGraphExtractionApplicationService#requestLineageExtraction | KNOWLEDGE_LINEAGE_EXTRACTION | /internal/ai/knowledge/lineage-extraction | 已完成 | 已形成任务台账、AI 调用、候选应用、批量与重生成闭环 |

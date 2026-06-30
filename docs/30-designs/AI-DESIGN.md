@@ -191,7 +191,7 @@ Discovery 调用入口：
 
 AI 是 `ai_*` 表的唯一写入方。正式内容写入由 Classics 或 Knowledge 在用户确认或业务编排后完成。
 
-Discovery 问答会话、消息和来源由 Discovery 写入。Knowledge 标签、实体、关系、图谱版本和质量指标由 Knowledge 写入。workers 不写入任何业务表。
+Discovery 问答会话、消息和来源由 Discovery 写入；QA trace 可以挂载 AI `callId` 作为调用追溯标识，但该 trace 仍归 Discovery 持有。Knowledge 标签、实体、关系、图谱版本和质量指标由 Knowledge 写入。workers 不写入任何业务表。
 
 ## Observability
 
