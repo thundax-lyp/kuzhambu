@@ -11,12 +11,4 @@
 
 ## 待审阅任务项
 
-- [ ] `docs/30-designs/RUNBOOK-CLASSICS-SANCAI-IMAGE-ANALYSIS-CLOSURE.md`：AI-WORKERS T6 清理现场
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-IMAGE-ANALYSIS-CLOSURE.md`、`TODO.md`
-    - 处理动作：在所有代码、测试和覆盖文档完成后删除临时 RUNBOOK，并同步清空本轮 TODO 项。
-    - 验收点：该 RUNBOOK 已删除，`TODO.md` 中本轮任务已清空，不保留已完成项。
-    - 重要度：6/10
-
 ## 待讨论项
