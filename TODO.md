@@ -27,14 +27,6 @@
     - 验收点：对象 response 不再把 object owner 作为对外对象事实暴露
     - 重要度：9/10
 
-- [ ] `storage-http-upload-multipart`：删除 upload 和 multipart 的 owner 输入与响应暴露
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-OWNER-CLEANUP.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-interface/src/test/java/com/thundax/kuzhambu/storage/interfaces/admin/StorageObjectMultipartUploadContractTest.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-application/src/main/java/com/thundax/kuzhambu/storage/application/facade/assembler/StorageUploadFacadeAssembler.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-interface/src/main/java/com/thundax/kuzhambu/storage/interfaces/admin/object/controller/request/InitMultipartUploadRequest.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-interface/src/main/java/com/thundax/kuzhambu/storage/interfaces/admin/object/controller/response/InitMultipartUploadResponse.java`、`kuzhambu-servers/biz/storage/kuzhambu-storage-interface/src/main/java/com/thundax/kuzhambu/storage/interfaces/admin/object/controller/response/CompleteMultipartUploadResponse.java`
-    - 处理动作：删除 upload 和 multipart 的 owner 输入参数及响应字段
-    - 验收点：upload / multipart 请求不再接收 `ownerType / ownerId`，响应也不再暴露 object owner
-    - 重要度：9/10
-
 - [ ] `storage-http-query`：将对象查询接口改成 reference 筛选语义
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-STORAGE-OWNER-CLEANUP.md`

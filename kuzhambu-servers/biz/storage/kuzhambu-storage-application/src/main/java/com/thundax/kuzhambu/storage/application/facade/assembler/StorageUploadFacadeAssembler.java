@@ -32,8 +32,8 @@ public class StorageUploadFacadeAssembler {
         }
         return new InitMultipartUploadCommand(
                 request.getUploadId(),
-                request.getOwnerId(),
-                toOwnerType(request.getOwnerType()),
+                null,
+                null,
                 request.getBusinessType(),
                 request.getOriginalFilename(),
                 request.getMimeType(),
@@ -78,8 +78,6 @@ public class StorageUploadFacadeAssembler {
         return InitMultipartUploadFacadeResponse.builder()
                 .uploadId(session.getUploadId())
                 .providerUploadId(session.getProviderUploadId())
-                .ownerType(valueOf(session.getOwnerType()))
-                .ownerId(session.getOwnerId())
                 .businessType(session.getBusinessType())
                 .originalFilename(session.getOriginalFilename())
                 .mimeType(session.getMimeType())
@@ -113,8 +111,6 @@ public class StorageUploadFacadeAssembler {
                 .storageObjectId(
                         storage.getId() == null ? null : storage.getId().value())
                 .uploadId(uploadId)
-                .ownerType(valueOf(storage.getOwnerType()))
-                .ownerId(storage.getOwnerId())
                 .businessType(null)
                 .originalFilename(storage.getOriginalFilename())
                 .mimeType(storage.getMimeType())

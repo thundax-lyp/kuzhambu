@@ -22,14 +22,6 @@ public class InitMultipartUploadResponse {
     @JsonProperty("providerUploadId")
     private String providerUploadId;
 
-    @Schema(name = "ownerType", description = "对象归属类型")
-    @JsonProperty("ownerType")
-    private String ownerType;
-
-    @Schema(name = "ownerId", description = "对象归属ID")
-    @JsonProperty("ownerId")
-    private String ownerId;
-
     @Schema(name = "businessType", description = "业务类型")
     @JsonProperty("businessType")
     private String businessType;
