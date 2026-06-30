@@ -30,12 +30,9 @@
 
 部分完成：
 - 文件删除链路的人工删除语义已落地：application `remove` 会拒绝 `REFERENCED` 对象，repository `deleteById` 仅将 `storage_object.object_status` 置为 `DELETED`，后续再由清理任务执行物理删除。当前设计已确认“人工删除 + 自动 orphan 删除”两条线并存，但自动线尚未实现为“超时 `UNREFERENCED` 自动标记 `DELETED`”。
-- 文件引用管理能力主要通过 Storage facade / application service 供业务域调用；当前虽可在 Admin Web 查看引用状态和引用筛选，且管理界面按设计不承担引用编辑职责。
-- 引用幂等已有代码与 schema 双重收敛：application `addReferences` 会去重并跳过已存在引用，`db/schema/storage.sql` 与 `SERVERS-DATABASE-RULES.md` 已明确 `storage_object_reference(object_id, reference_owner_type, reference_owner_id)` 复合主键语义，`StoredObjectReferenceDO` 也已补充注释对齐该约束。当前稳定设计收敛方向为“`storage_object` 不再保留 owner 字段，`storage_object_reference` 成为唯一关系真相源，`storage_object.reference_status` 仅保留对象级派生汇总状态”；实现侧仍需完成 `bindOwner -> changeOwner` 链路移除与 `storage_object_reference.reference_status` 清理。
 
 未完成：
-
-- 无新增独立能力项；未完成内容主要集中在已有能力的对外闭环与一致性收口。
+- 无新增独立能力项；剩余未完成内容集中在“自动 orphan 删除策略与运行时清理口径收口”。
 
 ## Requirement Coverage Matrix
 
@@ -46,7 +43,7 @@
 | 文件对象列表/查询 | 已完成 | 已支持按文件名、类型、引用 owner、对象状态与引用状态等条件查询与分页 | 无 | Storage |
 | 文件对象删除 | 部分完成 | 已有删除接口；明确只允许删除无引用对象；删除时将对象标记为 `DELETED`，常规读取链路随即不可见；物理删除由后续计划任务异步完成 | 自动 orphan 删除线尚未实现为“超时 `UNREFERENCED` 自动标记 `DELETED`”；删除与物理清理一致性的端到端验证、运行时异常告警与清理策略文档仍缺收口 | Storage |
 | 分片上传（初始化/分片上传/完成/取消） | 已完成 | admin/facade 与 application 全链路闭环，uploadPart 写入临时内容、complete 合并落库、abort 清理残留分片，测试覆盖 contract 与 application service | 无 | Storage |
-| 业务文件引用建立与清理 | 部分完成 | facade / application service 提供 bind/unbind、add/remove、referenceStatus 维护；application 去重并跳过已存在引用；`db/schema/storage.sql` 已明确引用复合主键；Classics、System 已稳定复用并形成业务闭环；Admin Web 对象页已可查看引用状态和引用筛选 | 管理界面按边界不提供引用编辑；目标设计已收敛为删除 `storage_object.owner_type / owner_id`、删除 `storage_object_reference.reference_status`，仅保留有效引用记录；当前实现仍保留 `bindOwner` 更新 owner 的链路，且 reference 记录仍带状态字段；多 owner 并发引用是否作为稳定对外能力开放仍待业务决策 | Storage / Classics / System |
+| 业务文件引用建立与清理 | 已完成 | facade / application service 提供 bind/unbind、add/remove、referenceStatus 维护；application 去重并跳过已存在引用；`db/schema/storage.sql` 已明确引用复合主键；`storage_object.owner_type / owner_id` 与 `storage_object_reference.reference_status` 已从实现、接口和 schema 中移除，引用关系统一由有效 `storage_object_reference` 记录承载；Classics、System 已稳定复用并形成业务闭环；Admin Web 对象页已切换到引用 owner 语义，可查看引用状态和引用筛选 | 管理界面按边界不提供引用编辑；多 owner 并发引用是否作为稳定对外能力开放仍待业务决策 | Storage / Classics / System |
 | 文件对象状态与引用状态维护 | 已完成 | 对象状态、引用状态及更新接口已可用 | 无 | Storage |
 | 未引用对象清理 | 部分完成 | Storage 已实现物理清理任务，会对已标记删除且满足阈值条件的对象执行底层物理删除 | 设计要求的“超时 `UNREFERENCED` 自动推进到 `DELETED`”尚未落地；清理触发策略、阈值、失败重试与外部告警未形成统一交付标准 | Storage |
 | 本地文件和 S3 兼容对象存储适配 | 已完成 | Storage 已通过通用对象存储客户端抽象接入底层存储，当前本地存储运行路径明确；按本轮 RUNBOOK 口径，S3 真实环境联调与运维证据不作为当前打满阻塞项 | 无 | Storage / Common OSS |
@@ -75,9 +72,11 @@
 
 ### B4 Storage 引用模型与 Schema 真相源收敛
 
-状态：部分完成。
+状态：已完成。
 
-目标：继续收敛 `storage_object_reference` 的关系真相源语义，并移除冗余 owner / reference 状态字段。当前 `db/schema/storage.sql`、`SERVERS-DATABASE-RULES.md` 与 `StoredObjectReferenceDO` 已明确复合主键与 owner 级幂等真相源；任务目标是删除 `storage_object.owner_type / owner_id` 与 `storage_object_reference.reference_status`、禁用 `bindOwner -> changeOwner` 的 owner 更新链路，并收口到“reference 只保存有效记录、object 级 `reference_status` 只做派生汇总”的稳定语义。
+目标：继续收敛 `storage_object_reference` 的关系真相源语义，并移除冗余 owner / reference 状态字段。
+
+更新：`db/schema/storage.sql`、`SERVERS-DATABASE-RULES.md`、domain/application/infra/interface 与 Admin Web 已对齐到统一语义：`storage_object_reference` 作为唯一引用关系真相源，`storage_object.owner_type / owner_id` 与 `storage_object_reference.reference_status` 已删除，`storage_object.reference_status` 仅保留对象级派生汇总状态，`bindOwner -> changeOwner` 的 owner 更新链路也已移除。
 
 ### B5 Classics 导出闭环产物入库
 
