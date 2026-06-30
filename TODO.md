@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `PromptController/PromptRepositoryIT`：准备 AI 基础配置与 Prompt 真相源数据
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLASSICS-TEXT-CLOSURE.md`
-    - 范围对象：`db/schema/ai.sql`、`kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/prompt/controller/PromptController.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-infra/src/test/java/com/thundax/kuzhambu/ai/infra/prompt/repository/impl/PromptRepositoryIT.java`
-    - 处理动作：补齐 `ai_service_config`、`ai_model`、`ai_capability_mapping`、`ai_prompt_*` 的目标结构与入口约束
-    - 验收点：Prompt 真相源与 AI 基础配置可以按 RUNBOOK 中的字段和模板记录稳定建模与验证
-    - 重要度：9/10
-
 - [ ] `AiInvocationMapper/AiInvocationRepositoryIT`：补齐调用记录与候选结果 schema
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLASSICS-TEXT-CLOSURE.md`
