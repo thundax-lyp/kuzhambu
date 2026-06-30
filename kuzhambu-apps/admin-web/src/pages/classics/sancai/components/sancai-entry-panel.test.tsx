@@ -291,7 +291,9 @@ describe("SancaiEntryPanel sharing", () => {
         entryState.restored = false;
     });
 
-    it("creates a public share from an entry reference", async () => {
+    it(
+        "creates a public share from an entry reference",
+        async () => {
         const user = userEvent.setup();
 
         renderEntryPanel();
@@ -312,9 +314,13 @@ describe("SancaiEntryPanel sharing", () => {
             title: "天地 分享",
             visibility: "PUBLIC"
         });
-    });
+    },
+        20000
+    );
 
-    it("loads version detail, restores it and refreshes the open drawer", async () => {
+    it(
+        "loads version detail, restores it and refreshes the open drawer",
+        async () => {
         const user = userEvent.setup();
 
         renderEntryPanel();
@@ -338,7 +344,9 @@ describe("SancaiEntryPanel sharing", () => {
         );
         expect(await screen.findAllByText("三才图会版本已恢复")).not.toHaveLength(0);
         expect(await screen.findByDisplayValue("历史天地")).toBeInTheDocument();
-    }, 15000);
+    },
+        30000
+    );
 
     it("creates export job and shows download section", async () => {
         const user = userEvent.setup();

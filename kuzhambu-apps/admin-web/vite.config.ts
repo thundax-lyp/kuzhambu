@@ -18,8 +18,9 @@ export default defineConfig(({ mode }) => {
             environment: "jsdom",
             globals: true,
             setupFiles: "./src/test/setup.ts",
-            fileParallelism: false,
-            exclude: ["e2e/**", "node_modules/**", "dist/**"]
+            exclude: ["e2e/**", "node_modules/**", "dist/**"],
+            fileParallelism: true,
+            maxWorkers: "75%"
         },
         build: {
             chunkSizeWarningLimit: 1500
