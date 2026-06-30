@@ -106,6 +106,38 @@ public class WorkerAiHttpClient implements WorkerAiClient {
         }
     }
 
+    @Override
+    public DownloadedArtifact downloadArtifact(String requestId, String traceId, String downloadPath) {
+        try {
+            HttpRequest request = buildGetRequest(downloadPath, requestId, traceId);
+            HttpResponse<byte[]> response = httpClient.send(request, HttpResponse.BodyHandlers.ofByteArray());
+            if (!isSuccessful(response.statusCode())) {
+                throw new ArtifactDownloadException(
+                        "ARTIFACT_DOWNLOAD failed with HTTP " + response.statusCode());
+            }
+            return new DownloadedArtifact(
+                    response.body(),
+                    response.headers().firstValue("Content-Type").orElse("application/octet-stream"),
+                    response.headers().firstValue("Content-Disposition").orElse("artifact.bin"),
+                    response.headers().firstValue("X-Kuzhambu-Artifact-Sha256").orElse(null),
+                    response.headers()
+                            .firstValue("X-Kuzhambu-Artifact-Size-Bytes")
+                            .map(Long::parseLong)
+                            .orElse((long) response.body().length),
+                    response.headers()
+                            .firstValue("X-Kuzhambu-Artifact-Expires-At")
+                            .map(this::toInstant)
+                            .orElse(null));
+        } catch (HttpTimeoutException ex) {
+            throw new ArtifactDownloadException("ARTIFACT_DOWNLOAD timed out", ex);
+        } catch (IOException ex) {
+            throw new ArtifactDownloadException("ARTIFACT_DOWNLOAD unavailable", ex);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            throw new ArtifactDownloadException("ARTIFACT_DOWNLOAD interrupted", ex);
+        }
+    }
+
     private String resolveInvokePath(AiInvokeCommand command) {
         if (command == null || isBlank(command.getWorkerPath())) {
             return INVOKE_PATH;
@@ -189,6 +221,22 @@ public class WorkerAiHttpClient implements WorkerAiClient {
                 .header("X-Kuzhambu-Timestamp", timestamp)
                 .header("X-Kuzhambu-Signature", signature)
                 .POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8))
+                .build();
+    }
+
+    private HttpRequest buildGetRequest(String path, String requestId, String traceId) {
+        String timestamp = String.valueOf(System.currentTimeMillis());
+        String signature =
+                signatureSupport.sign("GET", path, timestamp, requestId, "", properties.getInternalSecret());
+        return HttpRequest.newBuilder(uri(path))
+                .timeout(Duration.ofMillis(properties.getTimeoutMs()))
+                .header("Accept", "application/octet-stream")
+                .header("X-Kuzhambu-Service", properties.getServiceName())
+                .header("X-Kuzhambu-Request-Id", requestId)
+                .header("X-Kuzhambu-Trace-Id", traceId)
+                .header("X-Kuzhambu-Timestamp", timestamp)
+                .header("X-Kuzhambu-Signature", signature)
+                .GET()
                 .build();
     }
 

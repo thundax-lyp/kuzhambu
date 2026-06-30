@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `AI-WORKERS T6A`：收口 Java artifact 下载客户端
-  - 任务类型：执行任务
-  - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLOSURE.md#T6`
-  - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-infra/src/main/java/com/thundax/kuzhambu/ai/infra/client/WorkerAiClient.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-infra/src/main/java/com/thundax/kuzhambu/ai/infra/client/WorkerAiHttpClient.java`
-  - 处理动作：增加 artifact 下载能力并把下载失败映射到 `ARTIFACT_DOWNLOAD`。
-  - 验收点：Java 能基于 artifact reference 稳定下载 Workers 临时产物。
-  - 重要度：10/10
-
 - [ ] `AI-WORKERS T6B`：收口 Java 转存 Storage 桥接
   - 任务类型：执行任务
   - 依据文档：`docs/30-designs/RUNBOOK-AI-WORKERS-CLOSURE.md#T6`
