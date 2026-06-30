@@ -52,6 +52,23 @@ class StorageApplicationServiceDeleteTest {
         inOrder.verify(referenceRepository).deleteByObjectId("100");
     }
 
+    @Test
+    void removeShouldStopWhenDeleteMarkerUpdateFails() {
+        StoredObjectRepository repository = Mockito.mock(StoredObjectRepository.class);
+        StoredObjectReferenceRepository referenceRepository = Mockito.mock(StoredObjectReferenceRepository.class);
+        StorageApplicationServiceImpl service = new StorageApplicationServiceImpl(
+                repository, referenceRepository, Mockito.mock(StoredObjectContentRepository.class));
+        when(repository.getById(StoredObjectId.of(100L)))
+                .thenReturn(storage(StoredObjectId.of(100L), StoredObjectReferenceStatus.UNREFERENCED));
+        when(repository.deleteById(StoredObjectId.of(100L))).thenReturn(0);
+
+        int deleted = service.remove(StoredObjectId.of(100L));
+
+        assertEquals(0, deleted);
+        verify(repository).deleteById(StoredObjectId.of(100L));
+        verify(referenceRepository, never()).deleteByObjectId(any());
+    }
+
     private static StoredObject storage(StoredObjectId id, StoredObjectReferenceStatus referenceStatus) {
         StoredObject storage = new StoredObject();
         storage.setId(id);
