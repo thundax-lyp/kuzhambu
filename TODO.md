@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Sancai Visual Asset Persistence`：补齐视觉资产读取与更新支撑
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-SINGLE-IMAGE-ANALYSIS-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-domain/src/main/java/com/thundax/kuzhambu/classics/domain/sancai/repository/SancaiAssetRepository.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/java/com/thundax/kuzhambu/classics/infra/sancai/repository/impl/SancaiAssetRepositoryImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/content/ClassicsContentApplicationServiceAiCandidateTest.java`
-    - 处理动作：为单条视觉资产按 `visualAssetId` 读取与更新补齐仓储语义，支撑候选应用到指定图片
-    - 验收点：应用层不再依赖模糊条目级更新，能够稳定定位并更新目标 `visualAsset`
-    - 重要度：10/10
-
 - [ ] `Sancai Image Analysis Apply`：支持图片理解候选应用到视觉资产
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-SINGLE-IMAGE-ANALYSIS-CLOSURE.md`
