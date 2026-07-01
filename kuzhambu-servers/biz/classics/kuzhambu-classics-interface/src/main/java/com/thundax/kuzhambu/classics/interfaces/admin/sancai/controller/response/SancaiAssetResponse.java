@@ -19,6 +19,9 @@ public class SancaiAssetResponse implements Serializable {
     @JsonProperty("entryId")
     private Long entryId;
 
+    @JsonProperty("visualAssetId")
+    private Long visualAssetId;
+
     @JsonProperty("storageObjectId")
     private Long storageObjectId;
 
@@ -69,4 +72,43 @@ public class SancaiAssetResponse implements Serializable {
 
     @JsonProperty("downloadUrl")
     private String downloadUrl;
+
+    @JsonProperty("versionNo")
+    private Integer versionNo;
+
+    @JsonProperty("sourceImageStorageObjectId")
+    private Long sourceImageStorageObjectId;
+
+    @JsonProperty("generatedImageStorageObjectId")
+    private Long generatedImageStorageObjectId;
+
+    @JsonProperty("textWeight")
+    private Integer textWeight;
+
+    @JsonProperty("imageWeight")
+    private Integer imageWeight;
+
+    @JsonProperty("imageAnalysisMarkdown")
+    private String imageAnalysisMarkdown;
+
+    @JsonProperty("fusionDescription")
+    private String fusionDescription;
+
+    @JsonProperty("visualDescription")
+    private String visualDescription;
+
+    @JsonProperty("generationParamsJson")
+    private String generationParamsJson;
+
+    @JsonProperty("sourcePreviewUrl")
+    private String sourcePreviewUrl;
+
+    @JsonProperty("sourceDownloadUrl")
+    private String sourceDownloadUrl;
+
+    @JsonProperty("generatedPreviewUrl")
+    private String generatedPreviewUrl;
+
+    @JsonProperty("generatedDownloadUrl")
+    private String generatedDownloadUrl;
 }

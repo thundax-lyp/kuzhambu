@@ -8,6 +8,7 @@ import com.thundax.kuzhambu.classics.application.sancai.service.SancaiAssetAppli
 import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryImageIdCodec;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiVisualAssetIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryImageType;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryDraftId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryImageId;
@@ -231,6 +232,43 @@ public class SancaiAssetAdminController {
         try (InputStream inputStream = content.getInputStream()) {
             inputStream.transferTo(response.getOutputStream());
         }
+    }
+
+    @Operation(summary = "查询三才图会视觉资产", description = "classics:sancai:view")
+    @ApiImplicitParams({})
+    @HasPermission("classics:sancai:view")
+    @SysLogger(value = "视觉资产列表")
+    @GetMapping("visual-assets/{entryId}")
+    public List<SancaiAssetResponse> listVisualAssets(@PathVariable Long entryId) {
+        return service.listVisualAssets(SancaiEntryIdCodec.toDomain(entryId)).stream()
+                .map(SancaiAssetInterfaceAssembler::toVisualAssetResponse)
+                .toList();
+    }
+
+    @Operation(summary = "更新三才图会视觉资产", description = "classics:sancai:edit")
+    @ApiImplicitParams({})
+    @HasPermission("classics:sancai:edit")
+    @SysLogger(value = "更新视觉资产")
+    @PostMapping("visual-assets/update")
+    public SancaiAssetResponse updateVisualAsset(@Valid @RequestBody SancaiAssetRequest request) {
+        Long visualAssetId = service.updateVisualAsset(SancaiAssetInterfaceAssembler.toVisualAsset(request))
+                .value();
+        return SancaiAssetResponse.builder()
+                .id(visualAssetId)
+                .visualAssetId(visualAssetId)
+                .build();
+    }
+
+    @Operation(summary = "切换三才图会当前视觉资产", description = "classics:sancai:edit")
+    @ApiImplicitParams({})
+    @HasPermission("classics:sancai:edit")
+    @SysLogger(value = "切换当前视觉资产")
+    @PostMapping("visual-assets/use")
+    public Boolean useVisualAsset(@Valid @RequestBody SancaiAssetRequest request) {
+        service.useVisualAsset(
+                SancaiEntryIdCodec.toDomain(request.getEntryId()),
+                SancaiVisualAssetIdCodec.toDomain(request.getVisualAssetId()));
+        return true;
     }
 
     private static String contentDisposition(String originalFilename, boolean download) {

@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Sancai Asset Admin API`：补齐三才图会视觉资产 Admin 契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-VISUAL-ASSETS-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/sancai/controller/request/SancaiAssetRequest.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/sancai/controller/response/SancaiAssetResponse.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/sancai/assembler/SancaiAssetInterfaceAssembler.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/sancai/controller/SancaiAssetAdminController.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/test/java/com/thundax/kuzhambu/classics/interfaces/admin/sancai/SancaiAssetAdminControllerTest.java`
-    - 处理动作：新增视觉资产列表、保存、当前使用切换路由，并补齐 request/response 字段映射与接口测试
-    - 验收点：存在 `GET /api/classics/sancai/assets/visual-assets/{entryId}`、`POST /api/classics/sancai/assets/visual-assets/update`、`POST /api/classics/sancai/assets/visual-assets/use`，且接口测试覆盖新增字段与路径
-    - 重要度：10/10
-
 - [ ] `Sancai Asset Application Mapping`：收紧视觉资产应用层与接口层映射边界
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-VISUAL-ASSETS-CLOSURE.md`
