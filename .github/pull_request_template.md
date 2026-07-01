@@ -17,7 +17,7 @@
 - [ ] PR workflow: workers changed -> `ruff check .`
 - [ ] PR workflow: workers changed -> `pytest`
 - [ ] PR workflow: apps changed -> frontend package manifests
-- [ ] PR workflow: apps changed -> `npm ci`
+- [ ] PR workflow: apps changed -> `npm install`
 - [ ] PR workflow: apps changed -> `npm run format:check`
 - [ ] PR workflow: apps changed -> `npm run lint`
 - [ ] PR workflow: apps changed -> `npm test`
