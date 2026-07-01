@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `sancai/visual-workflow-tests`：补齐视觉资产工作流核心测试
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-VISUAL-ASSET-WORKFLOW-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.test.tsx`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/test/java/com/thundax/kuzhambu/classics/interfaces/admin/sancai/SancaiAssetAdminControllerTest.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/sancai/SancaiAssetApplicationServiceImplTest.java`、`kuzhambu-workers/tests/test_artifact_store.py`、`kuzhambu-workers/tests/test_ai_usecase_routes_classics.py`
-    - 处理动作：为视觉资产工作流补齐面板、controller、应用服务、artifact store 和 workers 契约测试
-    - 验收点：视觉资产闭环关键路径具备自动化测试保护
-    - 重要度：10/10
-
 - [ ] `classics/coverage-and-cleanup`：更新覆盖文档并删除本轮 RUNBOOK
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-VISUAL-ASSET-WORKFLOW-CLOSURE.md`

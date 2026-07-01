@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.classics.application.sancai;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -249,6 +250,48 @@ class SancaiAssetApplicationServiceImplTest {
         assertEquals(7001L, queryCaptor.getValue().getStorageObjectId());
         assertEquals("CLASSICS_SANCAI_ENTRY_IMAGE", queryCaptor.getValue().getOwnerType());
         assertEquals("entry:3001:image:8002", queryCaptor.getValue().getOwnerId());
+    }
+
+    @Test
+    void getVisualAssetSourceContentShouldReadStorageByVisualAssetRelation() {
+        SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
+        StorageFacade storageFacade = mock(StorageFacade.class);
+        SancaiAssetApplicationServiceImpl service =
+                new SancaiAssetApplicationServiceImpl(repository, null, storageFacade, null);
+        SancaiVisualAsset asset = visualAsset(5002L, 3001L);
+        asset.setSourceImageStorageObjectId(StorageObjectId.of(7001L));
+        when(repository.getVisualAssetById(SancaiVisualAssetId.of(5002L))).thenReturn(asset);
+        when(storageFacade.open(org.mockito.ArgumentMatchers.any()))
+                .thenReturn(OpenStorageFacadeResponse.builder()
+                        .storedObject(storageDto())
+                        .inputStream(new ByteArrayInputStream(new byte[] {1}))
+                        .build());
+
+        ClassicsStoredContentResult result =
+                service.getVisualAssetSourceContent(SancaiEntryId.of(3001L), SancaiVisualAssetId.of(5002L));
+
+        assertEquals("sancai.png", result.getOriginalFilename());
+        assertEquals("image/png", result.getContentType());
+        ArgumentCaptor<OpenStorageFacadeRequest> queryCaptor = ArgumentCaptor.forClass(OpenStorageFacadeRequest.class);
+        verify(storageFacade).open(queryCaptor.capture());
+        assertEquals(7001L, queryCaptor.getValue().getStorageObjectId());
+        assertNull(queryCaptor.getValue().getOwnerType());
+        assertNull(queryCaptor.getValue().getOwnerId());
+    }
+
+    @Test
+    void getVisualAssetGeneratedContentShouldRejectWhenGeneratedStorageMissing() {
+        SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
+        SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(repository, null, null, null);
+        SancaiVisualAsset asset = visualAsset(5002L, 3001L);
+        asset.setGeneratedImageStorageObjectId(null);
+        when(repository.getVisualAssetById(SancaiVisualAssetId.of(5002L))).thenReturn(asset);
+
+        BizException exception = assertThrows(
+                BizException.class,
+                () -> service.getVisualAssetGeneratedContent(SancaiEntryId.of(3001L), SancaiVisualAssetId.of(5002L)));
+
+        assertEquals("三才视觉资产生成图不存在", exception.getMessage());
     }
 
     @Test

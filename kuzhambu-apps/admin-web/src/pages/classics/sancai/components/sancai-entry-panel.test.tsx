@@ -250,13 +250,13 @@ vi.mock("../services/sancai-entry-service", () => ({
             fusionDescription: "当前版本融合描述",
             visualDescription: "当前版本视觉描述",
             generationParamsJson: '{"style":"gongbi"}',
-            sourcePreviewUrl: "/api/classics/sancai/assets/visual-assets/3001/5001/source-content",
+            sourcePreviewUrl: "/api/classics/sancai/assets/visual-assets/3001/5002/source-content",
             sourceDownloadUrl:
-                "/api/classics/sancai/assets/visual-assets/3001/5001/source-content?download=true",
+                "/api/classics/sancai/assets/visual-assets/3001/5002/source-content?download=true",
             generatedPreviewUrl:
-                "/api/classics/sancai/assets/visual-assets/3001/5001/generated-content",
+                "/api/classics/sancai/assets/visual-assets/3001/5002/generated-content",
             generatedDownloadUrl:
-                "/api/classics/sancai/assets/visual-assets/3001/5001/generated-content?download=true"
+                "/api/classics/sancai/assets/visual-assets/3001/5002/generated-content?download=true"
         },
         {
             id: 5001,
@@ -273,13 +273,13 @@ vi.mock("../services/sancai-entry-service", () => ({
             fusionDescription: "历史版本融合描述",
             visualDescription: "历史版本视觉描述",
             generationParamsJson: '{"style":"shuimo"}',
-            sourcePreviewUrl: "/api/classics/sancai/assets/visual-assets/3001/5002/source-content",
+            sourcePreviewUrl: "/api/classics/sancai/assets/visual-assets/3001/5001/source-content",
             sourceDownloadUrl:
-                "/api/classics/sancai/assets/visual-assets/3001/5002/source-content?download=true",
+                "/api/classics/sancai/assets/visual-assets/3001/5001/source-content?download=true",
             generatedPreviewUrl:
-                "/api/classics/sancai/assets/visual-assets/3001/5002/generated-content",
+                "/api/classics/sancai/assets/visual-assets/3001/5001/generated-content",
             generatedDownloadUrl:
-                "/api/classics/sancai/assets/visual-assets/3001/5002/generated-content?download=true"
+                "/api/classics/sancai/assets/visual-assets/3001/5001/generated-content?download=true"
         }
     ]),
     listVersions: vi.fn(async () => [
@@ -725,9 +725,9 @@ describe("SancaiEntryPanel sharing", () => {
                 sourcePreviewUrl: undefined,
                 sourceDownloadUrl: undefined,
                 generatedPreviewUrl:
-                    "/api/classics/sancai/assets/visual-assets/3001/5002/generated-content",
+                    "/api/classics/sancai/assets/visual-assets/3001/6002/generated-content",
                 generatedDownloadUrl:
-                    "/api/classics/sancai/assets/visual-assets/3001/5002/generated-content?download=true"
+                    "/api/classics/sancai/assets/visual-assets/3001/6002/generated-content?download=true"
             }
         ]);
         const user = userEvent.setup();
@@ -941,6 +941,45 @@ describe("SancaiEntryPanel sharing", () => {
             entryId: 3001,
             visualAssetId: 5001
         });
+    });
+
+    it("renders formal preview and download links for visual asset images", async () => {
+        const user = userEvent.setup();
+        renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        await user.click(await within(entryTable).findByRole("button", { name: "查看 天地" }));
+
+        const visualAssetPanel = await screen.findByLabelText("三才图会视觉资产面板");
+        const previewSourceLink = within(visualAssetPanel).getByLabelText("预览视觉资产原图");
+        const downloadSourceLink = within(visualAssetPanel).getByLabelText("下载视觉资产原图");
+        const previewGeneratedLink = within(visualAssetPanel).getByLabelText("预览视觉资产生成图");
+        const downloadGeneratedLink = within(visualAssetPanel).getByLabelText("下载视觉资产生成图");
+
+        expect(previewSourceLink).toHaveAttribute(
+            "href",
+            "/api/classics/sancai/assets/visual-assets/3001/5002/source-content"
+        );
+        expect(downloadSourceLink).toHaveAttribute(
+            "href",
+            "/api/classics/sancai/assets/visual-assets/3001/5002/source-content?download=true"
+        );
+        expect(previewGeneratedLink).toHaveAttribute(
+            "href",
+            "/api/classics/sancai/assets/visual-assets/3001/5002/generated-content"
+        );
+        expect(downloadGeneratedLink).toHaveAttribute(
+            "href",
+            "/api/classics/sancai/assets/visual-assets/3001/5002/generated-content?download=true"
+        );
+        expect(within(visualAssetPanel).getByAltText("三才图会视觉资产原图")).toHaveAttribute(
+            "src",
+            "/api/classics/sancai/assets/visual-assets/3001/5002/source-content"
+        );
+        expect(within(visualAssetPanel).getByAltText("三才图会视觉资产生成图")).toHaveAttribute(
+            "src",
+            "/api/classics/sancai/assets/visual-assets/3001/5002/generated-content"
+        );
     });
 
     it("saves visual asset editable fields through the formal service contract", async () => {
