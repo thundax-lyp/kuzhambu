@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `sancai-entry-panel/use-sancai-entry-panel-state/ai-refinement-task-service`：统一失败展示与重试交互
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-SANCAI-AI-WORKERS-FULL-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/hooks/use-sancai-entry-panel-state.ts`、`kuzhambu-apps/admin-web/src/pages/classics/common/ai-refinement-task-service.ts`
-    - 处理动作：统一单条与批量任务的失败原因展示和重试入口
-    - 验收点：页面能展示 `failureStage`、`errorType`、`errorMessage`，并可对失败任务发起重试
-    - 重要度：8/10
-
 - [ ] `admin-web 三才测试文件`：补齐单条入口、候选治理、批量状态与失败重试测试
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-SANCAI-AI-WORKERS-FULL-CLOSURE.md`
