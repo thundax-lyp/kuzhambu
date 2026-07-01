@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Sancai Coverage And Closure`：更新覆盖文档并完成任务收口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-VISUAL-ASSETS-CLOSURE.md`
-    - 范围对象：`docs/40-readiness/CLASSICS-IMPLEMENTATION-COVERAGE.md`、`docs/30-designs/RUNBOOK-SANCAI-VISUAL-ASSETS-CLOSURE.md`、`TODO.md`
-    - 处理动作：更新三才视觉资产相关 Implementation Coverage 口径，删除已完成 RUNBOOK，并将 TODO 收窄为剩余未完成内容或清空
-    - 验收点：`CLASSICS-IMPLEMENTATION-COVERAGE.md` 已同步当前实现状态，RUNBOOK 已删除，`TODO.md` 不保留已完成任务
-    - 重要度：8/10
-
 - [ ] `Sancai Final Verify`：执行全量格式化、静态检查、构建与测试
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`
