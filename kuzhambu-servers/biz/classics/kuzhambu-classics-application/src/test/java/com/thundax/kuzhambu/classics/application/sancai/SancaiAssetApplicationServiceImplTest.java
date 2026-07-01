@@ -294,6 +294,33 @@ class SancaiAssetApplicationServiceImplTest {
     }
 
     @Test
+    void getVisualAssetGeneratedContentShouldReadGeneratedStorageByVisualAssetRelation() {
+        SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
+        StorageFacade storageFacade = mock(StorageFacade.class);
+        SancaiAssetApplicationServiceImpl service =
+                new SancaiAssetApplicationServiceImpl(repository, null, storageFacade, null);
+        SancaiVisualAsset asset = visualAsset(5002L, 3001L);
+        asset.setGeneratedImageStorageObjectId(StorageObjectId.of(7002L));
+        when(repository.getVisualAssetById(SancaiVisualAssetId.of(5002L))).thenReturn(asset);
+        when(storageFacade.open(org.mockito.ArgumentMatchers.any()))
+                .thenReturn(OpenStorageFacadeResponse.builder()
+                        .storedObject(storageDto())
+                        .inputStream(new ByteArrayInputStream(new byte[] {2}))
+                        .build());
+
+        ClassicsStoredContentResult result =
+                service.getVisualAssetGeneratedContent(SancaiEntryId.of(3001L), SancaiVisualAssetId.of(5002L));
+
+        assertEquals("sancai.png", result.getOriginalFilename());
+        assertEquals("image/png", result.getContentType());
+        ArgumentCaptor<OpenStorageFacadeRequest> queryCaptor = ArgumentCaptor.forClass(OpenStorageFacadeRequest.class);
+        verify(storageFacade).open(queryCaptor.capture());
+        assertEquals(7002L, queryCaptor.getValue().getStorageObjectId());
+        assertNull(queryCaptor.getValue().getOwnerType());
+        assertNull(queryCaptor.getValue().getOwnerId());
+    }
+
+    @Test
     void deleteImageShouldMarkStorageUnused() {
         SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
         StorageFacade storageFacade = mock(StorageFacade.class);

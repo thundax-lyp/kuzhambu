@@ -347,6 +347,36 @@ class ClassicsContentApplicationServiceAiCandidateTest {
     }
 
     @Test
+    void applyAiCandidateImageGenShouldFailWhenStorageObjectIdMissingInPayload() {
+        FakeRepository repository = new FakeRepository();
+        SancaiEntry entry = new SancaiEntry();
+        entry.setId(SancaiEntryId.of(11L));
+        repository.sancaiEntryForAiApply = entry;
+
+        SancaiVisualAsset visualAsset = new SancaiVisualAsset();
+        visualAsset.setId(SancaiVisualAssetId.of(111L));
+        visualAsset.setEntryId(SancaiEntryId.of(11L));
+
+        SancaiAssetApplicationService assetService = org.mockito.Mockito.mock(SancaiAssetApplicationService.class);
+        when(assetService.listVisualAssets(SancaiEntryId.of(11L))).thenReturn(List.of(visualAsset));
+
+        AiFacade aiFacade = mockAiFacade(request -> pendingCandidate(), request -> {
+            throw new IllegalStateException("markApplied should not be called");
+        });
+
+        ClassicsContentApplicationServiceImpl service = serviceWithAiFacade(repository, aiFacade, assetService);
+        AiCandidateApplyContentCommand command = applyCommand(
+                11L, ClassicsContentType.SANCAI_ENTRY, 11L, "image_gen", "{\"contentType\":\"image/png\"}", 111L);
+
+        BizException exception = assertThrows(BizException.class, () -> service.applyAiCandidate(command));
+
+        assertEquals("AI候选生图结果不可用: AI候选结果缺少 storageObjectId", exception.getMessage());
+        verify(aiFacade, never()).markCandidateApplied(any(MarkAiCandidateAppliedFacadeRequest.class));
+        verify(assetService, never())
+                .createGeneratedVisualAssetVersion(any(SancaiEntryId.class), any(SancaiVisualAssetId.class), any());
+    }
+
+    @Test
     void applyAiCandidateImageAnalysisShouldFailWhenObjectIdMissing() {
         FakeRepository repository = new FakeRepository();
         SancaiEntry entry = new SancaiEntry();
