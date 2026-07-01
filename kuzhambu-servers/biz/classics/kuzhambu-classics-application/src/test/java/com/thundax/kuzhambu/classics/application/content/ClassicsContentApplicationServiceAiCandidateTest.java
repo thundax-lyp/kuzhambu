@@ -370,7 +370,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
 
         BizException exception = assertThrows(BizException.class, () -> service.applyAiCandidate(command));
 
-        assertEquals("AI候选生图结果不可用: AI候选结果缺少 storageObjectId", exception.getMessage());
+        assertEquals("AI候选生图结果不可用: AI候选生图结果缺少 storageObjectId", exception.getMessage());
         verify(aiFacade, never()).markCandidateApplied(any(MarkAiCandidateAppliedFacadeRequest.class));
         verify(assetService, never())
                 .createGeneratedVisualAssetVersion(any(SancaiEntryId.class), any(SancaiVisualAssetId.class), any());
@@ -393,7 +393,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 applyCommand(11L, ClassicsContentType.SANCAI_ENTRY, 11L, "image_analysis", "分析结果", null);
 
         BizException exception = assertThrows(BizException.class, () -> service.applyAiCandidate(command));
-        assertEquals("AI候选应用参数不完整", exception.getMessage());
+        assertEquals("三才视觉资产候选应用参数不完整", exception.getMessage());
         assertEquals(0, repository.insertVersionCount);
         assertEquals(0, repository.updateSancaiEntryAiCount);
         verify(aiFacade).requirePendingCandidate(any(RequirePendingAiCandidateFacadeRequest.class));

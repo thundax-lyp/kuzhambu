@@ -26,18 +26,29 @@ class AiInvocationControllerTest {
     @Test
     void routesShouldKeepCandidateManagementApiPathsAndPermissions() throws Exception {
         assertRequestMapping(AiInvocationController.class, "/api/ai/invocation");
-        assertPostMapping(AiInvocationController.class, "listCandidates", "candidate/list", CandidateListRequest.class);
         assertPostMapping(
-                AiInvocationController.class, "rejectCandidate", "candidate/reject", CandidateRejectRequest.class);
+                AiInvocationController.class,
+                "listCandidates",
+                "candidate/list",
+                "ai:invocation:view",
+                CandidateListRequest.class);
+        assertPostMapping(
+                AiInvocationController.class,
+                "rejectCandidate",
+                "candidate/reject",
+                "ai:invocation:edit",
+                CandidateRejectRequest.class);
         assertPostMapping(
                 AiInvocationController.class,
                 "markCandidateApplied",
                 "candidate/mark-applied",
+                "ai:invocation:edit",
                 CandidateMarkAppliedRequest.class);
         assertPostMapping(
                 AiInvocationController.class,
                 "cancelBatch",
                 "batch/cancel",
+                "ai:invocation:edit",
                 com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.request.AiInvocationRequests
                         .BatchIdRequest.class);
     }
@@ -265,13 +276,17 @@ class AiInvocationControllerTest {
     }
 
     private static void assertPostMapping(
-            Class<?> controllerType, String methodName, String expectedPath, Class<?>... parameterTypes)
+            Class<?> controllerType,
+            String methodName,
+            String expectedPath,
+            String expectedPermission,
+            Class<?>... parameterTypes)
             throws Exception {
         Method method = controllerType.getDeclaredMethod(methodName, parameterTypes);
         PostMapping mapping = method.getAnnotation(PostMapping.class);
         assertEquals(expectedPath, mapping.value()[0]);
         HasPermission permission = method.getAnnotation(HasPermission.class);
-        assertEquals(List.of("ai:invocation:edit"), List.of(permission.value()));
+        assertEquals(List.of(expectedPermission), List.of(permission.value()));
     }
 
     private static class FakeRepository implements AiInvocationRepository {

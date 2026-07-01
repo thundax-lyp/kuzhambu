@@ -85,7 +85,7 @@ class SancaiAssetApplicationServiceImplTest {
 
         BizException exception = assertThrows(BizException.class, () -> service.updateVisualAsset(visualAsset));
 
-        assertEquals("三才视觉资产文本权重不能为空", exception.getMessage());
+        assertEquals("三才视觉资产保存失败：文本权重不能为空", exception.getMessage());
     }
 
     @Test
@@ -97,7 +97,7 @@ class SancaiAssetApplicationServiceImplTest {
 
         BizException exception = assertThrows(BizException.class, () -> service.updateVisualAsset(visualAsset));
 
-        assertEquals("三才视觉资产图片权重不能为空", exception.getMessage());
+        assertEquals("三才视觉资产保存失败：图片权重不能为空", exception.getMessage());
     }
 
     @Test
