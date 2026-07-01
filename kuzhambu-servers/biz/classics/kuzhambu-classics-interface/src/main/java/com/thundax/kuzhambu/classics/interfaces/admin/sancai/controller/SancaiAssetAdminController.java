@@ -245,6 +245,34 @@ public class SancaiAssetAdminController {
                 .toList();
     }
 
+    @Operation(summary = "读取三才图会视觉资产原图", description = "classics:sancai:view")
+    @ApiImplicitParams({})
+    @HasPermission("classics:sancai:view")
+    @SysLogger(value = "视觉资产原图读取")
+    @GetMapping("visual-assets/{entryId}/{visualAssetId}/source-content")
+    public void downloadVisualAssetSourceContent(
+            @PathVariable Long entryId,
+            @PathVariable Long visualAssetId,
+            @RequestParam(value = "download", required = false) Boolean download,
+            HttpServletResponse response)
+            throws IOException {
+        downloadVisualAssetContent(entryId, visualAssetId, true, download, response);
+    }
+
+    @Operation(summary = "读取三才图会视觉资产生成图", description = "classics:sancai:view")
+    @ApiImplicitParams({})
+    @HasPermission("classics:sancai:view")
+    @SysLogger(value = "视觉资产生成图读取")
+    @GetMapping("visual-assets/{entryId}/{visualAssetId}/generated-content")
+    public void downloadVisualAssetGeneratedContent(
+            @PathVariable Long entryId,
+            @PathVariable Long visualAssetId,
+            @RequestParam(value = "download", required = false) Boolean download,
+            HttpServletResponse response)
+            throws IOException {
+        downloadVisualAssetContent(entryId, visualAssetId, false, download, response);
+    }
+
     @Operation(summary = "更新三才图会视觉资产", description = "classics:sancai:edit")
     @ApiImplicitParams({})
     @HasPermission("classics:sancai:edit")
@@ -287,5 +315,32 @@ public class SancaiAssetAdminController {
         String normalized = path.replace('\\', '/');
         int index = normalized.lastIndexOf('/');
         return index >= 0 ? normalized.substring(index + 1) : normalized;
+    }
+
+    private void downloadVisualAssetContent(
+            Long entryId, Long visualAssetId, boolean sourceContent, Boolean download, HttpServletResponse response)
+            throws IOException {
+        ClassicsStoredContentResult content;
+        try {
+            content = sourceContent
+                    ? service.getVisualAssetSourceContent(
+                            SancaiEntryIdCodec.toDomain(entryId), SancaiVisualAssetIdCodec.toDomain(visualAssetId))
+                    : service.getVisualAssetGeneratedContent(
+                            SancaiEntryIdCodec.toDomain(entryId), SancaiVisualAssetIdCodec.toDomain(visualAssetId));
+        } catch (BizException exception) {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+        response.setContentType(
+                StringUtils.defaultIfBlank(content.getContentType(), MediaType.APPLICATION_OCTET_STREAM_VALUE));
+        if (content.getSize() != null) {
+            response.setContentLengthLong(content.getSize());
+        }
+        response.setHeader(
+                "Content-Disposition",
+                contentDisposition(content.getOriginalFilename(), Boolean.TRUE.equals(download)));
+        try (InputStream inputStream = content.getInputStream()) {
+            inputStream.transferTo(response.getOutputStream());
+        }
     }
 }

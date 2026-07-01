@@ -278,6 +278,23 @@ describe("sancai service request contracts", () => {
         expect(
             entryService.getImageContentUrl({ entryId: 3001, imageId: 8002, mode: "download" })
         ).toBe(`${DEV_PROXY_PREFIX}/classics/sancai/assets/images/3001/8002/content?download=true`);
+        expect(
+            entryService.getVisualAssetContentUrl({
+                entryId: 3001,
+                visualAssetId: 5001,
+                variant: "source"
+            })
+        ).toBe(`${DEV_PROXY_PREFIX}/classics/sancai/assets/visual-assets/3001/5001/source-content`);
+        expect(
+            entryService.getVisualAssetContentUrl({
+                entryId: 3001,
+                visualAssetId: 5001,
+                variant: "generated",
+                mode: "download"
+            })
+        ).toBe(
+            `${DEV_PROXY_PREFIX}/classics/sancai/assets/visual-assets/3001/5001/generated-content?download=true`
+        );
 
         await entryService.updateVisualAsset({
             visualAssetId: 5001,

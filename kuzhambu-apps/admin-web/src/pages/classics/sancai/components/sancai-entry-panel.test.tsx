@@ -250,10 +250,13 @@ vi.mock("../services/sancai-entry-service", () => ({
             fusionDescription: "当前版本融合描述",
             visualDescription: "当前版本视觉描述",
             generationParamsJson: '{"style":"gongbi"}',
-            sourcePreviewUrl: "/api/storage/object/7001/content",
-            sourceDownloadUrl: "/api/storage/object/7001/content?download=true",
-            generatedPreviewUrl: "/api/storage/object/7002/content",
-            generatedDownloadUrl: "/api/storage/object/7002/content?download=true"
+            sourcePreviewUrl: "/api/classics/sancai/assets/visual-assets/3001/5001/source-content",
+            sourceDownloadUrl:
+                "/api/classics/sancai/assets/visual-assets/3001/5001/source-content?download=true",
+            generatedPreviewUrl:
+                "/api/classics/sancai/assets/visual-assets/3001/5001/generated-content",
+            generatedDownloadUrl:
+                "/api/classics/sancai/assets/visual-assets/3001/5001/generated-content?download=true"
         },
         {
             id: 5001,
@@ -270,10 +273,13 @@ vi.mock("../services/sancai-entry-service", () => ({
             fusionDescription: "历史版本融合描述",
             visualDescription: "历史版本视觉描述",
             generationParamsJson: '{"style":"shuimo"}',
-            sourcePreviewUrl: "/api/storage/object/7101/content",
-            sourceDownloadUrl: "/api/storage/object/7101/content?download=true",
-            generatedPreviewUrl: "/api/storage/object/7102/content",
-            generatedDownloadUrl: "/api/storage/object/7102/content?download=true"
+            sourcePreviewUrl: "/api/classics/sancai/assets/visual-assets/3001/5002/source-content",
+            sourceDownloadUrl:
+                "/api/classics/sancai/assets/visual-assets/3001/5002/source-content?download=true",
+            generatedPreviewUrl:
+                "/api/classics/sancai/assets/visual-assets/3001/5002/generated-content",
+            generatedDownloadUrl:
+                "/api/classics/sancai/assets/visual-assets/3001/5002/generated-content?download=true"
         }
     ]),
     listVersions: vi.fn(async () => [
@@ -308,6 +314,18 @@ vi.mock("../services/sancai-entry-service", () => ({
         (request: { entryId: number; imageId: number; mode?: "download" | "preview" }) => {
             const search = request.mode === "download" ? "?download=true" : "";
             return `/kuzhambu-admin-api/api/classics/sancai/assets/images/${request.entryId}/${request.imageId}/content${search}`;
+        }
+    ),
+    getVisualAssetContentUrl: vi.fn(
+        (request: {
+            entryId: number;
+            visualAssetId: number;
+            variant: "source" | "generated";
+            mode?: "download" | "preview";
+        }) => {
+            const search = request.mode === "download" ? "?download=true" : "";
+            const suffix = request.variant === "source" ? "source-content" : "generated-content";
+            return `/kuzhambu-admin-api/api/classics/sancai/assets/visual-assets/${request.entryId}/${request.visualAssetId}/${suffix}${search}`;
         }
     ),
     uploadImage: vi.fn(),
@@ -706,8 +724,10 @@ describe("SancaiEntryPanel sharing", () => {
                 generationParamsJson: '{"style":"shuimo"}',
                 sourcePreviewUrl: undefined,
                 sourceDownloadUrl: undefined,
-                generatedPreviewUrl: "/api/storage/object/7102/content",
-                generatedDownloadUrl: "/api/storage/object/7102/content?download=true"
+                generatedPreviewUrl:
+                    "/api/classics/sancai/assets/visual-assets/3001/5002/generated-content",
+                generatedDownloadUrl:
+                    "/api/classics/sancai/assets/visual-assets/3001/5002/generated-content?download=true"
             }
         ]);
         const user = userEvent.setup();

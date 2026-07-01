@@ -189,6 +189,18 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     }
 
     @Override
+    public ClassicsStoredContentResult getVisualAssetSourceContent(
+            SancaiEntryId entryId, SancaiVisualAssetId visualAssetId) {
+        return openVisualAssetContent(entryId, visualAssetId, true);
+    }
+
+    @Override
+    public ClassicsStoredContentResult getVisualAssetGeneratedContent(
+            SancaiEntryId entryId, SancaiVisualAssetId visualAssetId) {
+        return openVisualAssetContent(entryId, visualAssetId, false);
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public void sortImages(SancaiEntryImageSortCommand command) {
         SortDirection effectiveDirection =
@@ -572,6 +584,38 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
             throw new BizException("三才图片未关联 Storage 对象");
         }
         return image;
+    }
+
+    private SancaiVisualAsset requireVisualAsset(SancaiEntryId entryId, SancaiVisualAssetId visualAssetId) {
+        if (entryId == null || visualAssetId == null) {
+            throw new BizException("三才视觉资产不存在");
+        }
+        SancaiVisualAsset visualAsset = repository.getVisualAssetById(visualAssetId);
+        if (visualAsset == null || visualAsset.getEntryId() == null || !entryId.equals(visualAsset.getEntryId())) {
+            throw new BizException("三才视觉资产不存在: " + visualAssetId.value());
+        }
+        return visualAsset;
+    }
+
+    private ClassicsStoredContentResult openVisualAssetContent(
+            SancaiEntryId entryId, SancaiVisualAssetId visualAssetId, boolean sourceContent) {
+        SancaiVisualAsset visualAsset = requireVisualAsset(entryId, visualAssetId);
+        StorageObjectId storageObjectId = sourceContent
+                ? visualAsset.getSourceImageStorageObjectId()
+                : visualAsset.getGeneratedImageStorageObjectId();
+        if (storageObjectId == null) {
+            throw new BizException(sourceContent ? "三才视觉资产原图不存在" : "三才视觉资产生成图不存在");
+        }
+        OpenStorageFacadeResponse response = storageFacade == null
+                ? null
+                : storageFacade.open(OpenStorageFacadeRequest.builder()
+                        .storageObjectId(StorageObjectIdCodec.toValue(storageObjectId))
+                        .build());
+        ClassicsStoredContentResult content = toStoredContentResult(response);
+        if (content == null) {
+            throw new BizException(sourceContent ? "三才视觉资产原图不可读" : "三才视觉资产生成图不可读");
+        }
+        return content;
     }
 
     private static void validateImageUpload(SancaiEntryImageUploadCommand command) {

@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `sancai/image-gen-delivery`：补齐生图预览下载链路
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-VISUAL-ASSET-WORKFLOW-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/sancai/controller/SancaiAssetAdminController.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/sancai/controller/response/SancaiAssetResponse.java`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/services/sancai-entry-service.ts`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.tsx`
-    - 处理动作：补齐生成图在页面内的正式预览和下载入口
-    - 验收点：生成图在条目详情中可预览、可下载，且都基于已转存的 Storage 对象
-    - 重要度：9/10
-
 - [ ] `sancai/visual-workflow-tests`：补齐视觉资产工作流核心测试
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-VISUAL-ASSET-WORKFLOW-CLOSURE.md`

@@ -36,6 +36,11 @@ public interface SancaiAssetApplicationService {
 
     SancaiEntryImageContent getImageContent(SancaiEntryId entryId, SancaiEntryImageId imageId);
 
+    ClassicsStoredContentResult getVisualAssetSourceContent(SancaiEntryId entryId, SancaiVisualAssetId visualAssetId);
+
+    ClassicsStoredContentResult getVisualAssetGeneratedContent(
+            SancaiEntryId entryId, SancaiVisualAssetId visualAssetId);
+
     void sortImages(SancaiEntryImageSortCommand command);
 
     void deleteImage(SancaiEntryImageId id);

@@ -133,15 +133,15 @@ public final class SancaiAssetInterfaceAssembler {
         Long visualAssetId = visualAsset == null || visualAsset.getId() == null
                 ? null
                 : visualAsset.getId().value();
+        Long entryId = visualAsset == null || visualAsset.getEntryId() == null
+                ? null
+                : visualAsset.getEntryId().value();
         return visualAsset == null
                 ? SancaiAssetResponse.builder().build()
                 : SancaiAssetResponse.builder()
                         .id(visualAssetId)
                         .visualAssetId(visualAssetId)
-                        .entryId(
-                                visualAsset.getEntryId() == null
-                                        ? null
-                                        : visualAsset.getEntryId().value())
+                        .entryId(entryId)
                         .versionNo(visualAsset.getVersionNo())
                         .status(
                                 visualAsset.getStatus() == null
@@ -156,10 +156,11 @@ public final class SancaiAssetInterfaceAssembler {
                         .fusionDescription(visualAsset.getFusionDescription())
                         .visualDescription(visualAsset.getVisualDescription())
                         .generationParamsJson(visualAsset.getGenerationParamsJson())
-                        .sourcePreviewUrl(storagePreviewUrl(sourceStorageObjectId))
-                        .sourceDownloadUrl(storageDownloadUrl(sourceStorageObjectId))
-                        .generatedPreviewUrl(storagePreviewUrl(generatedStorageObjectId))
-                        .generatedDownloadUrl(storageDownloadUrl(generatedStorageObjectId))
+                        .sourcePreviewUrl(visualAssetContentUrl(entryId, visualAssetId, "source-content"))
+                        .sourceDownloadUrl(visualAssetContentDownloadUrl(entryId, visualAssetId, "source-content"))
+                        .generatedPreviewUrl(visualAssetContentUrl(entryId, visualAssetId, "generated-content"))
+                        .generatedDownloadUrl(
+                                visualAssetContentDownloadUrl(entryId, visualAssetId, "generated-content"))
                         .build();
     }
 
@@ -198,11 +199,14 @@ public final class SancaiAssetInterfaceAssembler {
                 : "/api/classics/sancai/assets/showcases/" + storageObjectId + "/content?download=true";
     }
 
-    private static String storagePreviewUrl(Long storageObjectId) {
-        return storageObjectId == null ? null : "/api/storage/object/" + storageObjectId + "/content";
+    private static String visualAssetContentUrl(Long entryId, Long visualAssetId, String contentPath) {
+        return entryId == null || visualAssetId == null
+                ? null
+                : "/api/classics/sancai/assets/visual-assets/" + entryId + "/" + visualAssetId + "/" + contentPath;
     }
 
-    private static String storageDownloadUrl(Long storageObjectId) {
-        return storageObjectId == null ? null : "/api/storage/object/" + storageObjectId + "/content?download=true";
+    private static String visualAssetContentDownloadUrl(Long entryId, Long visualAssetId, String contentPath) {
+        String contentUrl = visualAssetContentUrl(entryId, visualAssetId, contentPath);
+        return contentUrl == null ? null : contentUrl + "?download=true";
     }
 }

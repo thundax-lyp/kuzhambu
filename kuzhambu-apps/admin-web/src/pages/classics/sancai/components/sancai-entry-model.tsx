@@ -174,10 +174,50 @@ export const SancaiEntryModel = ({
         const formId = visualAssetForm?.visualAssetId ?? visualAssetForm?.id ?? null;
         return formId === selectedId ? visualAssetForm : { ...selectedVisualAsset };
     }, [selectedVisualAsset, visualAssetForm]);
-    const sourcePreviewUrl = resolveStorageUrl(selectedVisualAsset?.sourcePreviewUrl);
-    const sourceDownloadUrl = resolveStorageUrl(selectedVisualAsset?.sourceDownloadUrl);
-    const generatedPreviewUrl = resolveStorageUrl(selectedVisualAsset?.generatedPreviewUrl);
-    const generatedDownloadUrl = resolveStorageUrl(selectedVisualAsset?.generatedDownloadUrl);
+    const selectedVisualAssetResourceId =
+        selectedVisualAsset?.visualAssetId ?? selectedVisualAsset?.id;
+    const sourcePreviewUrl = resolveStorageUrl(
+        selectedVisualAsset?.sourcePreviewUrl ??
+            (entryId && selectedVisualAssetResourceId
+                ? entryService.getVisualAssetContentUrl({
+                      entryId,
+                      visualAssetId: selectedVisualAssetResourceId,
+                      variant: "source"
+                  })
+                : undefined)
+    );
+    const sourceDownloadUrl = resolveStorageUrl(
+        selectedVisualAsset?.sourceDownloadUrl ??
+            (entryId && selectedVisualAssetResourceId
+                ? entryService.getVisualAssetContentUrl({
+                      entryId,
+                      visualAssetId: selectedVisualAssetResourceId,
+                      variant: "source",
+                      mode: "download"
+                  })
+                : undefined)
+    );
+    const generatedPreviewUrl = resolveStorageUrl(
+        selectedVisualAsset?.generatedPreviewUrl ??
+            (entryId && selectedVisualAssetResourceId
+                ? entryService.getVisualAssetContentUrl({
+                      entryId,
+                      visualAssetId: selectedVisualAssetResourceId,
+                      variant: "generated"
+                  })
+                : undefined)
+    );
+    const generatedDownloadUrl = resolveStorageUrl(
+        selectedVisualAsset?.generatedDownloadUrl ??
+            (entryId && selectedVisualAssetResourceId
+                ? entryService.getVisualAssetContentUrl({
+                      entryId,
+                      visualAssetId: selectedVisualAssetResourceId,
+                      variant: "generated",
+                      mode: "download"
+                  })
+                : undefined)
+    );
     const canSwitchVisualAsset =
         Boolean(selectedVisualAsset) &&
         (selectedVisualAsset?.visualAssetId ?? selectedVisualAsset?.id) !==

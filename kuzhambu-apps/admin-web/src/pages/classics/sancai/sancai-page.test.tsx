@@ -141,10 +141,14 @@ const installFetchMock = () => {
                     entryId: 3001,
                     versionNo: 2,
                     status: "READY",
-                    sourcePreviewUrl: "/api/storage/object/7001/content",
-                    sourceDownloadUrl: "/api/storage/object/7001/content?download=true",
-                    generatedPreviewUrl: "/api/storage/object/7002/content",
-                    generatedDownloadUrl: "/api/storage/object/7002/content?download=true",
+                    sourcePreviewUrl:
+                        "/api/classics/sancai/assets/visual-assets/3001/5001/source-content",
+                    sourceDownloadUrl:
+                        "/api/classics/sancai/assets/visual-assets/3001/5001/source-content?download=true",
+                    generatedPreviewUrl:
+                        "/api/classics/sancai/assets/visual-assets/3001/5001/generated-content",
+                    generatedDownloadUrl:
+                        "/api/classics/sancai/assets/visual-assets/3001/5001/generated-content?download=true",
                     currentUsed: true,
                     textWeight: 60,
                     imageWeight: 40,
