@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Alert, App, Button, Card, Select } from "antd";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import { AiCandidatePanel } from "@/pages/classics/common/components/ai-candidate-panel";
@@ -41,8 +41,7 @@ const buildPromptMessagesJson = (entry: MingCustomsRecord) => {
     return JSON.stringify([
         {
             role: "system",
-            content:
-                "你是明代风俗整理助理。请基于输入条目提炼准确、紧凑、便于后台回填的中文摘要。"
+            content: "你是明代风俗整理助理。请基于输入条目提炼准确、紧凑、便于后台回填的中文摘要。"
         },
         {
             role: "user",
@@ -108,7 +107,7 @@ export const MingCustomsPage = () => {
     const [creatingRefinementCapability, setCreatingRefinementCapability] = useState<
         "summary" | null
     >(null);
-    const [handledSucceededTaskIds, setHandledSucceededTaskIds] = useState<number[]>([]);
+    const handledSucceededTaskIdsRef = useRef<Set<number>>(new Set());
     const hasActiveFilters = Boolean(
         filters.category ||
         filters.visibility !== "ALL" ||
@@ -136,6 +135,7 @@ export const MingCustomsPage = () => {
         queryFn: currentUserService.getCurrentUserInfo,
         retry: false
     });
+    const currentUserId = Number(currentUserQuery.data?.id ?? 0);
     const exportJobsQuery = useQuery({
         queryKey: ["classics", "ming-customs", "exports", "jobs"],
         queryFn: () =>
@@ -180,9 +180,12 @@ export const MingCustomsPage = () => {
     const currentPageSize = pageResult?.pageSize || query.pageSize || DEFAULT_PAGE_SIZE;
     const editorEntry = detailQuery.data || editingEntry;
     const exportJobs = exportJobsQuery.data?.records || [];
-    const refinementTasks = refinementTasksQuery.data?.items || [];
+    const refinementTasks = useMemo(
+        () => refinementTasksQuery.data?.items || [],
+        [refinementTasksQuery.data?.items]
+    );
 
-    const invalidateMingCustoms = async () => {
+    const invalidateMingCustoms = useCallback(async () => {
         await Promise.all([
             queryClient.invalidateQueries({ queryKey: ["ming-customs", "page"] }),
             queryClient.invalidateQueries({ queryKey: ["ming-customs", "keyword-cloud"] }),
@@ -197,7 +200,7 @@ export const MingCustomsPage = () => {
                 queryKey: ["ai", "candidates", "MING_CUSTOMS", editorEntry?.id]
             })
         ]);
-    };
+    }, [editorEntry?.id, queryClient]);
     const invalidateExportJobs = async () => {
         await queryClient.invalidateQueries({
             queryKey: ["classics", "ming-customs", "exports", "jobs"]
@@ -287,15 +290,16 @@ export const MingCustomsPage = () => {
             .filter(
                 (task) =>
                     (task.status === "SUCCEEDED" || task.status === "PARTIAL") &&
-                    !handledSucceededTaskIds.includes(task.id)
+                    typeof task.taskId === "number" &&
+                    !handledSucceededTaskIdsRef.current.has(task.taskId)
             )
-            .map((task) => task.id);
+            .map((task) => task.taskId);
         if (!completedTaskIds.length) {
             return;
         }
-        setHandledSucceededTaskIds((currentTaskIds) => [...currentTaskIds, ...completedTaskIds]);
+        completedTaskIds.forEach((taskId) => handledSucceededTaskIdsRef.current.add(taskId));
         void invalidateMingCustoms();
-    }, [handledSucceededTaskIds, invalidateMingCustoms, refinementTasks]);
+    }, [invalidateMingCustoms, refinementTasks]);
 
     const searchMingCustoms = (value: string) => {
         setSearchText(value);
@@ -354,7 +358,7 @@ export const MingCustomsPage = () => {
         }
         setEditorOpen(false);
         setEditingEntry(null);
-        setHandledSucceededTaskIds([]);
+        handledSucceededTaskIdsRef.current.clear();
     };
 
     const deleteEntry = (entry: MingCustomsRecord) => {
@@ -401,7 +405,7 @@ export const MingCustomsPage = () => {
             scope: "classics",
             contentType: "MING_CUSTOMS",
             contentId: entry.id,
-            requestedBy,
+            requestedBy: currentUserId,
             serviceRole: DEFAULT_REFINEMENT_SERVICE_ROLE,
             modelId: DEFAULT_REFINEMENT_MODEL_ID,
             modelName: DEFAULT_REFINEMENT_MODEL_NAME,
@@ -574,7 +578,7 @@ export const MingCustomsPage = () => {
                             >
                                 {refinementTasks.length ? (
                                     refinementTasks.slice(0, 4).map((task) => (
-                                        <div key={task.id}>
+                                        <div key={task.taskId}>
                                             {task.capability}：{task.status}
                                             {task.resultPreview ? ` · ${task.resultPreview}` : ""}
                                         </div>

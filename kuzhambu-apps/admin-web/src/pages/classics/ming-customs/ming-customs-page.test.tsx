@@ -1,20 +1,19 @@
-import { QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { App as AntdApp } from "antd";
-import { queryClient } from "@/query/query-client";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import * as currentUserService from "@/service/current-user-service";
 import { MingCustomsPage } from "./ming-customs-page";
 
 vi.mock("@/service/current-user-service", () => ({
-    getCurrentUserInfo: vi.fn(() =>
-        Promise.resolve({ id: 99, loginName: "admin", name: "Admin" })
-    )
+    getCurrentUserInfo: vi.fn(() => Promise.resolve({ id: 99, loginName: "admin", name: "Admin" }))
 }));
 
 vi.mock("@/pages/classics/common/ai-refinement-task-service", () => ({
-    createTask: vi.fn(() => Promise.resolve({ id: 9101, status: "PENDING", capability: "summary" })),
+    createTask: vi.fn(() =>
+        Promise.resolve({ id: 9101, status: "PENDING", capability: "summary" })
+    ),
     getTask: vi.fn(),
     pageTasks: vi.fn(() => Promise.resolve({ items: [], totalCount: 0, pageNo: 1, pageSize: 10 })),
     cancelTask: vi.fn()
@@ -44,6 +43,15 @@ const readFetchUrl = (input: RequestInfo | URL) => {
     }
     return input.url;
 };
+
+const createTestQueryClient = () =>
+    new QueryClient({
+        defaultOptions: {
+            queries: {
+                retry: false
+            }
+        }
+    });
 
 const installFetchMock = () => {
     vi.spyOn(globalThis, "fetch").mockImplementation((input) => {
@@ -124,8 +132,10 @@ const installFetchMock = () => {
 };
 
 describe("MingCustomsPage", () => {
+    let queryClient: QueryClient;
+
     beforeEach(() => {
-        queryClient.clear();
+        queryClient = createTestQueryClient();
         localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
         installFetchMock();
     });
@@ -167,7 +177,8 @@ describe("MingCustomsPage", () => {
         await user.click(await screen.findByRole("button", { name: "创建摘要任务" }));
 
         expect(currentUserService.getCurrentUserInfo).toHaveBeenCalled();
-        expect(aiRefinementTaskService.createTask).toHaveBeenCalledWith(
+        expect(aiRefinementTaskService.createTask).toHaveBeenCalled();
+        expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0]).toEqual(
             expect.objectContaining({
                 capability: "summary",
                 scope: "classics",

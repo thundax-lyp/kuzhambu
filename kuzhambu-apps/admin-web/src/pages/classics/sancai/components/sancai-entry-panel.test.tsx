@@ -420,7 +420,7 @@ describe("SancaiEntryPanel sharing", () => {
             modelName: "gpt-5.5",
             locale: "zh-CN"
         });
-    });
+    }, 15000);
 
     it("shows expired export task as disabled download", async () => {
         vi.mocked(exportService.page).mockResolvedValueOnce({

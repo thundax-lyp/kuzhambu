@@ -1,11 +1,5 @@
 export type AiRefinementTaskStatus =
-    | "PENDING"
-    | "RUNNING"
-    | "SUCCEEDED"
-    | "FAILED"
-    | "PARTIAL"
-    | "CANCELLED"
-    | string;
+    "PENDING" | "RUNNING" | "SUCCEEDED" | "FAILED" | "PARTIAL" | "CANCELLED" | string;
 
 export interface AiRefinementTaskRecord {
     taskId: number;
@@ -86,7 +80,7 @@ export interface AiRefinementTaskAcceptedRecord {
     requestedAt?: string | null;
 }
 
-export interface AiRefinementTaskPageResult {
+export interface AiRefinementTaskPageRecord {
     items: AiRefinementTaskRecord[];
     total: number;
     pageNo: number;

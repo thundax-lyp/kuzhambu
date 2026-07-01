@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Button, Card, Select } from "antd";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import { AiCandidatePanel } from "@/pages/classics/common/components/ai-candidate-panel";
@@ -54,8 +54,7 @@ const buildPromptMessagesJson = (document: WangqiDocumentRecord) => {
     return JSON.stringify([
         {
             role: "system",
-            content:
-                "你是古籍整理助理。请基于输入文稿生成简洁、准确、可直接回填到后台的中文摘要。"
+            content: "你是古籍整理助理。请基于输入文稿生成简洁、准确、可直接回填到后台的中文摘要。"
         },
         {
             role: "user",
@@ -95,7 +94,7 @@ export const WangqiPage = () => {
     const [creatingRefinementCapability, setCreatingRefinementCapability] = useState<
         "summary" | null
     >(null);
-    const [handledSucceededTaskIds, setHandledSucceededTaskIds] = useState<number[]>([]);
+    const handledSucceededTaskIdsRef = useRef<Set<number>>(new Set());
 
     const hasActiveFilters = Boolean(
         filters.visibility !== "ALL" ||
@@ -119,6 +118,7 @@ export const WangqiPage = () => {
         queryFn: currentUserService.getCurrentUserInfo,
         retry: false
     });
+    const currentUserId = Number(currentUserQuery.data?.id ?? 0);
     const sourceFileQuery = useQuery({
         queryKey: ["wangqi", "source-file", activeDocument?.id, activeDocument?.storageObjectId],
         queryFn: () => wangqiService.getSourceFile(activeDocument?.id ?? 0),
@@ -159,7 +159,9 @@ export const WangqiPage = () => {
 
     const pageResult = pageQuery.data;
     const records = useMemo(() => pageResult?.records || [], [pageResult?.records]);
-    const versions = useMemo(() => versionsQuery.data || [], [versionsQuery.data]);
+    const versions = useMemo(() => {
+        return Array.isArray(versionsQuery.data) ? versionsQuery.data : [];
+    }, [versionsQuery.data]);
     const totalCount = pageResult?.count ?? pageResult?.totalCount ?? 0;
     const currentPageNo = pageResult?.pageNo || query.pageNo || DEFAULT_PAGE_NO;
     const currentPageSize = pageResult?.pageSize || query.pageSize || DEFAULT_PAGE_SIZE;
@@ -167,9 +169,12 @@ export const WangqiPage = () => {
         versionDetailQuery.data ||
         versions.find((version) => version.id === selectedVersionId) ||
         null;
-    const refinementTasks = refinementTasksQuery.data?.items || [];
+    const refinementTasks = useMemo(
+        () => refinementTasksQuery.data?.items || [],
+        [refinementTasksQuery.data?.items]
+    );
 
-    const invalidateWangqi = async () => {
+    const invalidateWangqi = useCallback(async () => {
         await Promise.all([
             queryClient.invalidateQueries({ queryKey: ["wangqi", "page"] }),
             queryClient.invalidateQueries({ queryKey: ["wangqi", "detail"] }),
@@ -186,7 +191,7 @@ export const WangqiPage = () => {
                 queryKey: ["ai", "candidates", "WANGQI_DOCUMENT", activeDocument?.id]
             })
         ]);
-    };
+    }, [activeDocument?.id, queryClient]);
 
     const invalidateRefinementTasks = async () => {
         await queryClient.invalidateQueries({
@@ -283,15 +288,16 @@ export const WangqiPage = () => {
             .filter(
                 (task) =>
                     (task.status === "SUCCEEDED" || task.status === "PARTIAL") &&
-                    !handledSucceededTaskIds.includes(task.id)
+                    typeof task.taskId === "number" &&
+                    !handledSucceededTaskIdsRef.current.has(task.taskId)
             )
-            .map((task) => task.id);
+            .map((task) => task.taskId);
         if (!completedTaskIds.length) {
             return;
         }
-        setHandledSucceededTaskIds((currentTaskIds) => [...currentTaskIds, ...completedTaskIds]);
+        completedTaskIds.forEach((taskId) => handledSucceededTaskIdsRef.current.add(taskId));
         void invalidateWangqi();
-    }, [handledSucceededTaskIds, invalidateWangqi, refinementTasks]);
+    }, [invalidateWangqi, refinementTasks]);
 
     const searchWangqi = (value: string) => {
         setSearchText(value);
@@ -342,7 +348,7 @@ export const WangqiPage = () => {
         setEditorOpen(false);
         setEditingDocument(null);
         setSelectedVersionId(null);
-        setHandledSucceededTaskIds([]);
+        handledSucceededTaskIdsRef.current.clear();
     };
 
     const deleteDocument = (document: WangqiDocumentRecord) => {
@@ -411,7 +417,7 @@ export const WangqiPage = () => {
             scope: "classics",
             contentType: "WANGQI_DOCUMENT",
             contentId: document.id,
-            requestedBy,
+            requestedBy: currentUserId,
             serviceRole: DEFAULT_REFINEMENT_SERVICE_ROLE,
             modelId: DEFAULT_REFINEMENT_MODEL_ID,
             modelName: DEFAULT_REFINEMENT_MODEL_NAME,
@@ -536,7 +542,7 @@ export const WangqiPage = () => {
                             >
                                 {refinementTasks.length ? (
                                     refinementTasks.slice(0, 4).map((task) => (
-                                        <div key={task.id}>
+                                        <div key={task.taskId}>
                                             {task.capability}：{task.status}
                                             {task.resultPreview ? ` · ${task.resultPreview}` : ""}
                                         </div>

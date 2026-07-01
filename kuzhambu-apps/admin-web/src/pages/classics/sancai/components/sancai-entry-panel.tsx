@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Alert, App, Button, Card } from "antd";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import type { KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
@@ -41,10 +41,7 @@ const createEventId = (prefix: string) => {
     return `${prefix}-${Date.now()}`;
 };
 
-const buildPromptMessagesJson = (
-    capability: "translate" | "summary",
-    entry: SancaiEntryRecord
-) => {
+const buildPromptMessagesJson = (capability: "translate" | "summary", entry: SancaiEntryRecord) => {
     if (capability === "translate") {
         return JSON.stringify([
             {
@@ -73,10 +70,7 @@ const buildPromptMessagesJson = (
     ]);
 };
 
-const buildInputPayloadJson = (
-    capability: "translate" | "summary",
-    entry: SancaiEntryRecord
-) => {
+const buildInputPayloadJson = (capability: "translate" | "summary", entry: SancaiEntryRecord) => {
     return JSON.stringify({
         capability,
         contentId: entry.id,
@@ -115,7 +109,7 @@ export const SancaiEntryPanel = ({
     const [creatingRefinementCapability, setCreatingRefinementCapability] = useState<
         "translate" | "summary" | null
     >(null);
-    const [handledSucceededTaskIds, setHandledSucceededTaskIds] = useState<number[]>([]);
+    const handledSucceededTaskIdsRef = useRef<Set<number>>(new Set());
     const [isCreating, setIsCreating] = useState(defaultCreateOpen);
     const [isModelOpen, setIsModelOpen] = useState(defaultCreateOpen);
     const [editingEntry, setEditingEntry] = useState<SancaiEntryRecord | null>(null);
@@ -156,6 +150,7 @@ export const SancaiEntryPanel = ({
         retry: false
     });
     const selectedEntry = isCreating ? undefined : (detailQuery.data ?? editingEntry ?? undefined);
+    const selectedEntryId = selectedEntry?.id ?? null;
     const versionsQuery = useQuery({
         queryKey: ["classics", "sancai", "entries", "versions", selectedEntry?.id],
         queryFn: () => entryService.listVersions(selectedEntry?.id ?? 0),
@@ -198,7 +193,10 @@ export const SancaiEntryPanel = ({
                 : false;
         }
     });
-    const refinementTasks = refinementTasksQuery.data?.items || [];
+    const refinementTasks = useMemo(
+        () => refinementTasksQuery.data?.items || [],
+        [refinementTasksQuery.data?.items]
+    );
     const exportsQuery = useQuery({
         queryKey: ["classics", "sancai", "exports", "jobs"],
         queryFn: () =>
@@ -232,12 +230,12 @@ export const SancaiEntryPanel = ({
         ].join(":");
     }
     const isLoading = isCatalogLoading || entriesQuery.isLoading;
-    const invalidateEntries = async () => {
+    const invalidateEntries = useCallback(async () => {
         await Promise.all([
             queryClient.invalidateQueries({ queryKey: ["classics", "sancai", "entries"] }),
             queryClient.invalidateQueries({ queryKey: ["classics", "sancai", "exports", "jobs"] })
         ]);
-    };
+    }, [queryClient]);
     const invalidateExportJobs = async () => {
         await queryClient.invalidateQueries({
             queryKey: ["classics", "sancai", "exports", "jobs"]
@@ -248,20 +246,20 @@ export const SancaiEntryPanel = ({
             queryKey: ["classics", "sancai", "showcases", "jobs"]
         });
     };
-    const refreshSancaiEntryDetail = async () => {
-        if (!selectedEntry?.id) {
+    const refreshSancaiEntryDetail = useCallback(async () => {
+        if (!selectedEntryId) {
             return;
         }
         await Promise.all([
             queryClient.invalidateQueries({
-                queryKey: ["classics", "sancai", "entries", "detail", selectedEntry.id]
+                queryKey: ["classics", "sancai", "entries", "detail", selectedEntryId]
             }),
             queryClient.invalidateQueries({
-                queryKey: ["classics", "sancai", "entries", "versions", selectedEntry.id]
+                queryKey: ["classics", "sancai", "entries", "versions", selectedEntryId]
             })
         ]);
-    };
-    const invalidateSancaiContentGovernance = async () => {
+    }, [queryClient, selectedEntryId]);
+    const invalidateSancaiContentGovernance = useCallback(async () => {
         await Promise.all([
             queryClient.invalidateQueries({
                 queryKey: ["classics", "content", "tags", "SANCAI_ENTRY"]
@@ -270,10 +268,10 @@ export const SancaiEntryPanel = ({
                 queryKey: ["classics", "content", "qa-pairs", "SANCAI_ENTRY"]
             }),
             queryClient.invalidateQueries({
-                queryKey: ["ai", "candidates", "SANCAI_ENTRY", selectedEntry?.id]
+                queryKey: ["ai", "candidates", "SANCAI_ENTRY", selectedEntryId]
             })
         ]);
-    };
+    }, [queryClient, selectedEntryId]);
     const invalidateRefinementTasks = async () => {
         await queryClient.invalidateQueries({
             queryKey: ["classics", "sancai", "refinement", "tasks", selectedEntry?.id]
@@ -432,18 +430,24 @@ export const SancaiEntryPanel = ({
                 (task) =>
                     (task.status === "SUCCEEDED" || task.status === "PARTIAL") &&
                     typeof task.taskId === "number" &&
-                    !handledSucceededTaskIds.includes(task.taskId)
+                    !handledSucceededTaskIdsRef.current.has(task.taskId)
             )
             .map((task) => task.taskId);
         if (!newlySucceededTaskIds.length) {
             return;
         }
-        setHandledSucceededTaskIds((currentTaskIds) => [
-            ...currentTaskIds,
-            ...newlySucceededTaskIds.filter((taskId) => !currentTaskIds.includes(taskId))
+        newlySucceededTaskIds.forEach((taskId) => handledSucceededTaskIdsRef.current.add(taskId));
+        void Promise.all([
+            refreshSancaiEntryDetail(),
+            invalidateEntries(),
+            invalidateSancaiContentGovernance()
         ]);
-        void Promise.all([refreshSancaiEntryDetail(), invalidateEntries(), invalidateSancaiContentGovernance()]);
-    }, [handledSucceededTaskIds, refinementTasks]);
+    }, [
+        invalidateEntries,
+        invalidateSancaiContentGovernance,
+        refreshSancaiEntryDetail,
+        refinementTasks
+    ]);
 
     const selectEntry = (entry: SancaiEntryRecord) => {
         setIsCreating(false);
@@ -456,7 +460,7 @@ export const SancaiEntryPanel = ({
         setIsCreating(false);
         setEditingEntry(null);
         setSelectedVersionId(null);
-        setHandledSucceededTaskIds([]);
+        handledSucceededTaskIdsRef.current.clear();
         setIsModelOpen(false);
     };
 
@@ -552,7 +556,7 @@ export const SancaiEntryPanel = ({
             contentType: "SANCAI_ENTRY",
             contentId: selectedEntry.id,
             objectId: null,
-            requestedBy: currentUserQuery.data.id,
+            requestedBy: Number(currentUserQuery.data.id),
             serviceRole: DEFAULT_REFINEMENT_SERVICE_ROLE,
             modelId: DEFAULT_REFINEMENT_MODEL_ID,
             modelName: DEFAULT_REFINEMENT_MODEL_NAME,
@@ -707,7 +711,9 @@ export const SancaiEntryPanel = ({
                                         .map((task) => (
                                             <div key={task.taskId}>
                                                 {task.capability}：{task.status}
-                                                {task.resultPreview ? ` / ${task.resultPreview}` : ""}
+                                                {task.resultPreview
+                                                    ? ` / ${task.resultPreview}`
+                                                    : ""}
                                             </div>
                                         ))}
                                 </div>

@@ -5,7 +5,7 @@ import type {
     AiRefinementTaskCreatePayload,
     AiRefinementTaskGetPayload,
     AiRefinementTaskPagePayload,
-    AiRefinementTaskPageResult,
+    AiRefinementTaskPageRecord,
     AiRefinementTaskRecord
 } from "./ai-refinement-task-types";
 
@@ -35,7 +35,7 @@ export const getTask = (command: AiRefinementTaskGetCommand) => {
 };
 
 export const pageTasks = (query: AiRefinementTaskPageQuery = {}) => {
-    return postJson<AiRefinementTaskPageResult, AiRefinementTaskPageQuery>(
+    return postJson<AiRefinementTaskPageRecord, AiRefinementTaskPageQuery>(
         `${AI_REFINEMENT_TASK_PATH}/page`,
         {
             body: query
