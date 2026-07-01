@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Sancai Asset Application Mapping`：收紧视觉资产应用层与接口层映射边界
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-VISUAL-ASSETS-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sancai/service/SancaiAssetApplicationService.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sancai/service/impl/SancaiAssetApplicationServiceImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-domain/src/main/java/com/thundax/kuzhambu/classics/domain/sancai/repository/SancaiAssetRepository.java`
-    - 处理动作：确认视觉资产列表、保存、当前使用切换在 application 层和 repository 层的入参与返回语义稳定，不为前端暴露引入额外行为漂移
-    - 验收点：application service 与 repository 契约能支撑新 Admin API，且不新增 schema 变更或 AI 链路扩展
-    - 重要度：8/10
-
 - [ ] `Sancai Asset Frontend Contract`：补齐三才图会视觉资产前端契约与 service
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-VISUAL-ASSETS-CLOSURE.md`

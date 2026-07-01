@@ -42,10 +42,21 @@ public interface SancaiAssetApplicationService {
 
     List<SancaiEntryImage> listImages(SancaiEntryId entryId);
 
+    /**
+     * 保存视觉资产草稿字段，不隐式切换当前使用版本。
+     * 当前使用版本切换必须通过 {@link #useVisualAsset(SancaiEntryId, SancaiVisualAssetId)} 单独执行。
+     */
     SancaiVisualAssetId updateVisualAsset(SancaiVisualAsset visualAsset);
 
+    /**
+     * 将条目的当前视觉资产切换到指定版本。
+     * 该操作不修改视觉资产本身的描述字段，仅更新条目和视觉资产之间的当前使用关系。
+     */
     void useVisualAsset(SancaiEntryId entryId, SancaiVisualAssetId visualAssetId);
 
+    /**
+     * 返回条目下全部视觉资产版本，供管理端展示历史列表和当前使用状态。
+     */
     List<SancaiVisualAsset> listVisualAssets(SancaiEntryId entryId);
 
     SancaiShowcaseId requestShowcase(SancaiShowcaseCommand command);

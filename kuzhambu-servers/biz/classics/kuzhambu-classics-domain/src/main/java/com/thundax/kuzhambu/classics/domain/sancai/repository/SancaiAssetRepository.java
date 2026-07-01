@@ -40,12 +40,24 @@ public interface SancaiAssetRepository {
 
     int updatePriority(SancaiEntryImage image);
 
+    /**
+     * 新增视觉资产版本记录，不负责变更当前使用版本。
+     */
     SancaiVisualAssetId insertVisualAsset(SancaiVisualAsset visualAsset);
 
+    /**
+     * 更新既有视觉资产版本字段，不负责切换当前使用版本。
+     */
     int updateVisualAsset(SancaiVisualAsset visualAsset);
 
+    /**
+     * 仅切换条目当前使用的视觉资产版本。
+     */
     int updateCurrentVisualAsset(SancaiEntryId entryId, SancaiVisualAssetId visualAssetId);
 
+    /**
+     * 按条目返回全部视觉资产版本，包含当前使用标记。
+     */
     List<SancaiVisualAsset> listVisualAssetsByEntryId(SancaiEntryId entryId);
 
     SancaiShowcaseId insertShowcase(SancaiShowcase showcase);
