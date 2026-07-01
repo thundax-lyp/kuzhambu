@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `kuzhambu-workers/`：按 format -> lint -> test 顺序完成 workers 收口验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/40-readiness/PR-WORKFLOW.md`、`docs/30-designs/RUNBOOK-SANCAI-AI-WORKERS-FULL-CLOSURE.md`
-    - 范围对象：`kuzhambu-workers/`
-    - 处理动作：按 Ruff format、Ruff check、pytest 顺序执行 workers 全域验证
-    - 验收点：`kuzhambu-workers/` 按 `format -> lint -> test` 顺序通过，且结果可写入 PR 验证记录
-    - 重要度：10/10
-
 - [ ] `RUNBOOK-SANCAI-AI-WORKERS-FULL-CLOSURE.md`：在本轮需求关闭后清理执行手册
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-SANCAI-AI-WORKERS-FULL-CLOSURE.md`
