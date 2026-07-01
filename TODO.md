@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `admin-web 三才测试文件`：补齐单条入口、候选治理、批量状态与失败重试测试
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-SANCAI-AI-WORKERS-FULL-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.test.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-page.test.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-service-contract.test.ts`
-    - 处理动作：补齐三才页面 AI 单条入口、候选治理、批量状态和失败重试前端回归测试
-    - 验收点：前端测试覆盖单条任务入口、候选接受拒绝、批量状态展示和失败重试
-    - 重要度：8/10
-
 - [ ] `Java 三才与 AI 接口测试文件`：补齐字段写回、版本追加、批量取消与接口契约测试
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-SANCAI-AI-WORKERS-FULL-CLOSURE.md`

@@ -781,6 +781,96 @@ describe("SancaiEntryPanel sharing", () => {
         expect(aiRefinementTaskService.createTask).not.toHaveBeenCalled();
     }, 30000);
 
+    it("shows failed refinement details and retries visual task with the same visual asset", async () => {
+        const user = userEvent.setup();
+        vi.mocked(aiRefinementTaskService.pageTasks).mockResolvedValueOnce({
+            items: [
+                {
+                    taskId: 7101,
+                    status: "FAILED",
+                    capability: "visual",
+                    contentType: "SANCAI_ENTRY",
+                    contentId: 3001,
+                    objectId: 5002,
+                    failureStage: "WORKER_RESULT",
+                    errorType: "MODEL_TIMEOUT",
+                    errorMessage: "模型超时"
+                }
+            ],
+            total: 1,
+            pageNo: 1,
+            pageSize: 20
+        });
+
+        renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        await user.click(await within(entryTable).findByRole("button", { name: "查看 天地" }));
+
+        expect(await screen.findByText("失败原因")).toBeInTheDocument();
+        expect(screen.getByText("WORKER_RESULT / MODEL_TIMEOUT / 模型超时")).toBeInTheDocument();
+
+        await user.click(screen.getByRole("button", { name: "重试" }));
+
+        await waitFor(() => {
+            expect(aiRefinementTaskService.createTask).toHaveBeenCalled();
+        });
+        expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls.at(-1)?.[0]).toEqual(
+            expect.objectContaining({
+                capability: "visual",
+                contentId: 3001,
+                objectId: 5002
+            })
+        );
+    }, 30000);
+
+    it("creates batch image analysis task and shows aggregated batch status", async () => {
+        const user = userEvent.setup();
+        vi.mocked(entryService.createRefinementBatch).mockResolvedValueOnce({
+            batchId: 8801,
+            scope: "classics",
+            capability: "image_analysis",
+            contentType: "SANCAI_ENTRY",
+            status: "PENDING",
+            totalCount: 1,
+            successCount: 0,
+            failedCount: 0,
+            cancelledCount: 0
+        });
+        vi.mocked(entryService.getRefinementBatch).mockResolvedValue({
+            batchId: 8801,
+            scope: "classics",
+            capability: "image_analysis",
+            contentType: "SANCAI_ENTRY",
+            status: "FAILED",
+            totalCount: 1,
+            successCount: 0,
+            failedCount: 1,
+            cancelledCount: 0,
+            failureSummaryJson: '[{"contentId":3001,"errorType":"MODEL_TIMEOUT"}]'
+        });
+
+        renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        const rowCheckbox = within(entryTable).getAllByRole("checkbox")[1];
+        await user.click(rowCheckbox);
+        await user.click(screen.getByRole("button", { name: "批量图片理解" }));
+
+        await waitFor(() => {
+            expect(entryService.createRefinementBatch).toHaveBeenCalledWith({
+                scope: "classics",
+                capability: "image_analysis",
+                contentType: "SANCAI_ENTRY",
+                totalCount: 1
+            });
+        });
+        expect(
+            await screen.findByText(/批量任务 #8801 \/ image_analysis \/ FAILED/)
+        ).toBeInTheDocument();
+        expect(screen.getByText("成功 0 / 失败 1 / 取消 0")).toBeInTheDocument();
+    }, 30000);
+
     it("loads version detail, restores it and refreshes the open drawer", async () => {
         const user = userEvent.setup();
 
