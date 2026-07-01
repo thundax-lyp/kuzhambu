@@ -330,6 +330,39 @@ vi.mock("../services/sancai-entry-service", () => ({
     ),
     uploadImage: vi.fn(),
     update: vi.fn(),
+    createRefinementBatch: vi.fn(async () => ({
+        batchId: 8801,
+        scope: "classics",
+        capability: "image_analysis",
+        contentType: "SANCAI_ENTRY",
+        status: "PENDING",
+        totalCount: 1,
+        successCount: 0,
+        failedCount: 0,
+        cancelledCount: 0
+    })),
+    getRefinementBatch: vi.fn(async () => ({
+        batchId: 8801,
+        scope: "classics",
+        capability: "image_analysis",
+        contentType: "SANCAI_ENTRY",
+        status: "PENDING",
+        totalCount: 1,
+        successCount: 0,
+        failedCount: 0,
+        cancelledCount: 0
+    })),
+    cancelRefinementBatch: vi.fn(async () => ({
+        batchId: 8801,
+        scope: "classics",
+        capability: "image_analysis",
+        contentType: "SANCAI_ENTRY",
+        status: "CANCELLED",
+        totalCount: 1,
+        successCount: 0,
+        failedCount: 0,
+        cancelledCount: 1
+    })),
     requestShowcase: vi.fn(async () => ({
         id: 2001,
         status: "REQUESTED"
