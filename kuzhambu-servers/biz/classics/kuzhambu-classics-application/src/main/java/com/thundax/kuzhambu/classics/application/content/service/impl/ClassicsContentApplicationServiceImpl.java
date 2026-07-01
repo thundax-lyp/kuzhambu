@@ -488,6 +488,20 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                 String visualDescription = aiCandidatePayloadParser.parseText(command.getResultPayload());
                 visualAsset.setVisualDescription(visualDescription);
                 sancaiAssetApplicationService.updateVisualAsset(visualAsset);
+            } else if ("fusion".equals(capability)) {
+                if (command.getObjectId() == null) {
+                    throw new BizException("AI候选应用参数不完整");
+                }
+                if (sancaiAssetApplicationService == null) {
+                    throw new BizException("三才图片服务未就绪");
+                }
+                SancaiVisualAsset visualAsset = findVisualAsset(contentId, command.getObjectId());
+                if (visualAsset == null) {
+                    throw new BizException("三才视觉资产不存在: " + command.getObjectId());
+                }
+                String fusionDescription = aiCandidatePayloadParser.parseText(command.getResultPayload());
+                visualAsset.setFusionDescription(fusionDescription);
+                sancaiAssetApplicationService.updateVisualAsset(visualAsset);
             } else if ("translate".equals(capability)) {
                 entry.setTranslationText(aiCandidatePayloadParser.parseText(command.getResultPayload()));
                 entry.setTranslationStatus(SancaiEntryTranslationStatus.READY);
@@ -504,7 +518,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             } else {
                 throw new BizException("不支持的 AI 候选能力: " + capability);
             }
-            if (!"image_analysis".equals(capability) && !"visual".equals(capability)) {
+            if (!"image_analysis".equals(capability) && !"visual".equals(capability) && !"fusion".equals(capability)) {
                 content = entry;
             }
         } else if (contentType == ClassicsContentType.WANGQI_DOCUMENT) {
@@ -546,7 +560,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         }
 
         if (content == null) {
-            if ("image_analysis".equals(capability) || "visual".equals(capability)) {
+            if ("image_analysis".equals(capability) || "visual".equals(capability) || "fusion".equals(capability)) {
                 aiFacade.markCandidateApplied(MarkAiCandidateAppliedFacadeRequest.builder()
                         .candidateId(command.getCandidateId())
                         .resultFormat(command.getResultFormat())
@@ -594,6 +608,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         return switch (capability) {
             case "image_analysis" -> "AI 应用：图片理解";
             case "visual" -> "AI 应用：视觉描述";
+            case "fusion" -> "AI 应用：信息融合";
             case "translate" -> "AI 应用：译文";
             case "summary" -> "AI 应用：摘要";
             case "tags" -> "AI 应用：标签";

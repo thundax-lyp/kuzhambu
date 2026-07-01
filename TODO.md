@@ -9,22 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `sancai/fusion-input`：接通信息融合任务输入与能力注册
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-VISUAL-ASSET-WORKFLOW-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/hooks/use-sancai-entry-panel-state.ts`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-types.ts`、`kuzhambu-workers/src/kuzhambu_workers/ai/usecase_registry.py`
-    - 处理动作：让 `fusion` 发起时显式消费当前 `imageAnalysisMarkdown`、文本上下文和权重
-    - 验收点：信息融合任务输入包含已确认图片理解结果和当前权重，workers 注册口径一致
-    - 重要度：8/10
-
-- [ ] `sancai/fusion-apply`：收紧信息融合候选写回语义
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-VISUAL-ASSET-WORKFLOW-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/service/impl/ClassicsContentApplicationServiceImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sancai/service/impl/SancaiAssetApplicationServiceImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-domain/src/main/java/com/thundax/kuzhambu/classics/domain/sancai/model/entity/SancaiVisualAsset.java`
-    - 处理动作：确保 `fusion` 候选应用后只写回 `fusionDescription`
-    - 验收点：信息融合任务不会绕过图片理解，也不会污染 `imageAnalysisMarkdown` 和 `visualDescription`
-    - 重要度：9/10
-
 - [ ] `sancai/candidate-scope`：按 visual asset 收紧候选治理边界
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-VISUAL-ASSET-WORKFLOW-CLOSURE.md`
