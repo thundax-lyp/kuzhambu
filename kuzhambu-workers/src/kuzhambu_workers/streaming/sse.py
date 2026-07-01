@@ -8,9 +8,11 @@ def encode_sse(event: StreamEvent) -> str:
 
 
 def _event_data(event: StreamEvent) -> str:
-    data = event.model_dump(mode="json", exclude={"event"}, exclude_none=True)
-    extra = data.pop("extra", {})
+    data = event.model_dump(mode="json", exclude={"event", "extra"}, exclude_none=True)
+    extra = event.extra if isinstance(event.extra, dict) else {}
     if isinstance(extra, dict):
+        if extra:
+            data["extra"] = extra
         data.update(extra)
     return json.dumps(data, ensure_ascii=False, separators=(",", ":"))
 

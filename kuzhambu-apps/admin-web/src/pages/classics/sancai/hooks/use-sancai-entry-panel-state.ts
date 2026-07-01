@@ -6,9 +6,10 @@ import type { ClassicsContentTagRecord } from "@/pages/classics/common/classics-
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import type { AiRefinementTaskRecord } from "@/pages/classics/common/ai-refinement-task-types";
 import type { QueryClient } from "@tanstack/react-query";
+import type { SancaiVisualAssetRefinementCapability } from "../services/sancai-entry-service";
 import type { SancaiEntryRecord, SancaiVisualAssetRecord } from "../sancai-types";
 
-type RefinementCapability = "translate" | "summary" | "image_analysis" | "visual" | "fusion";
+type RefinementCapability = "translate" | "summary" | SancaiVisualAssetRefinementCapability;
 
 const DEFAULT_REFINEMENT_MODEL_ID = 1;
 const DEFAULT_REFINEMENT_MODEL_NAME = "gpt-5.5";
@@ -21,7 +22,11 @@ const createEventId = (prefix: string) => {
     return `${prefix}-${Date.now()}`;
 };
 
-const buildPromptMessagesJson = (capability: RefinementCapability, entry: SancaiEntryRecord) => {
+const buildPromptMessagesJson = (
+    capability: RefinementCapability,
+    entry: SancaiEntryRecord,
+    asset?: SancaiVisualAssetRecord | null
+) => {
     if (capability === "translate") {
         return JSON.stringify([
             {
@@ -83,6 +88,23 @@ const buildPromptMessagesJson = (capability: RefinementCapability, entry: Sancai
             }
         ]);
     }
+    if (capability === "image_gen") {
+        return JSON.stringify([
+            {
+                role: "system",
+                content: "你是古籍生图助手，请根据视觉描述输出稳定可执行的生图结果。"
+            },
+            {
+                role: "user",
+                content: JSON.stringify({
+                    title: entry.title,
+                    contentId: entry.id,
+                    objectId: asset?.visualAssetId ?? asset?.id ?? null,
+                    capability
+                })
+            }
+        ]);
+    }
     return JSON.stringify([
         {
             role: "system",
@@ -105,7 +127,11 @@ const buildInputPayloadJson = (
     objectId?: number | null,
     textWeight?: number | null,
     imageWeight?: number | null,
-    imageAnalysisMarkdown?: string | null
+    imageAnalysisMarkdown?: string | null,
+    fusionDescription?: string | null,
+    visualDescription?: string | null,
+    generationParamsJson?: string | null,
+    sourceImageStorageObjectId?: number | null
 ) => {
     const payload = {
         capability,
@@ -117,12 +143,22 @@ const buildInputPayloadJson = (
         title: entry.title,
         translationText: entry.translationText
     };
-    if (capability === "fusion") {
+    if (capability === "fusion" || capability === "visual") {
         return JSON.stringify({
             ...payload,
+            sourceImageStorageObjectId: sourceImageStorageObjectId ?? null,
             imageAnalysisMarkdown: imageAnalysisMarkdown ?? null,
             textWeight,
             imageWeight
+        });
+    }
+    if (capability === "image_gen") {
+        return JSON.stringify({
+            ...payload,
+            sourceImageStorageObjectId: sourceImageStorageObjectId ?? null,
+            fusionDescription: fusionDescription ?? null,
+            visualDescription: visualDescription ?? null,
+            generationParamsJson: generationParamsJson ?? null
         });
     }
     return JSON.stringify(payload);
@@ -151,6 +187,7 @@ interface UseSancaiEntryPanelStateResult {
     selectedVisualAssetId: number | null;
     entryTagNames: string[];
     creatingRefinementCapability: RefinementCapability | null;
+    retryingRefinementTaskId: number | null;
     invalidateSancaiContentGovernance: () => Promise<void>;
     invalidateSancaiContentCandidates: (visualAssetId: number | null) => Promise<void>;
     refreshSancaiEntryDetail: () => Promise<void>;
@@ -158,7 +195,8 @@ interface UseSancaiEntryPanelStateResult {
         capability: RefinementCapability,
         imageAnalysisAsset?: SancaiVisualAssetRecord | null
     ) => void;
-    refreshAfterImageAnalysisApplied: () => Promise<void>;
+    retryRefinementTask: (task: AiRefinementTaskRecord) => void;
+    refreshAfterVisualAssetCandidateHandled: () => Promise<void>;
     resetHandledSucceededTaskIds: () => void;
 }
 
@@ -174,6 +212,7 @@ export const useSancaiEntryPanelState = ({
 }: UseSancaiEntryPanelStateParams): UseSancaiEntryPanelStateResult => {
     const [creatingRefinementCapability, setCreatingRefinementCapability] =
         useState<RefinementCapability | null>(null);
+    const [retryingRefinementTaskId, setRetryingRefinementTaskId] = useState<number | null>(null);
     const [selectedVisualAsset, setSelectedVisualAsset] = useState<SancaiVisualAssetRecord | null>(
         null
     );
@@ -264,6 +303,8 @@ export const useSancaiEntryPanelState = ({
                 messageApi.success("视觉描述任务已创建");
             } else if (command.capability === "fusion") {
                 messageApi.success("信息融合任务已创建");
+            } else if (command.capability === "image_gen") {
+                messageApi.success("生图任务已创建");
             } else {
                 messageApi.success("图片理解任务已创建");
             }
@@ -301,95 +342,189 @@ export const useSancaiEntryPanelState = ({
         refinementTasks
     ]);
 
+    const submitRefinementTask = useCallback(
+        (
+            capability: RefinementCapability,
+            imageAnalysisAsset: SancaiVisualAssetRecord | null = null,
+            sourceTaskId: number | null = null
+        ) => {
+            if (!selectedEntry?.id) {
+                return;
+            }
+            if (!currentUserId) {
+                messageApi.warning("当前用户信息尚未加载完成");
+                return;
+            }
+            const resolvedVisualAsset = imageAnalysisAsset ?? selectedVisualAsset;
+            const imageAnalysisObjectId = resolvedVisualAsset
+                ? (resolvedVisualAsset.visualAssetId ?? resolvedVisualAsset.id ?? null)
+                : null;
+            const sourceImageStorageObjectId = resolvedVisualAsset?.sourceImageStorageObjectId;
+            const imageAnalysisMarkdown = resolvedVisualAsset?.imageAnalysisMarkdown;
+            const fusionDescription = resolvedVisualAsset?.fusionDescription;
+            const visualDescription = resolvedVisualAsset?.visualDescription;
+            const generationParamsJson = resolvedVisualAsset?.generationParamsJson;
+            const textWeight = resolvedVisualAsset?.textWeight;
+            const imageWeight = resolvedVisualAsset?.imageWeight;
+            if (
+                (capability === "image_analysis" ||
+                    capability === "visual" ||
+                    capability === "fusion" ||
+                    capability === "image_gen") &&
+                (imageAnalysisObjectId == null || sourceImageStorageObjectId == null)
+            ) {
+                messageApi.warning("当前视觉资产缺少原图，无法创建图片相关任务");
+                return;
+            }
+            if (
+                capability === "fusion" &&
+                (imageAnalysisObjectId == null ||
+                    sourceImageStorageObjectId == null ||
+                    !imageAnalysisMarkdown?.trim())
+            ) {
+                messageApi.warning("当前视觉资产缺少图片理解结果，无法创建信息融合任务");
+                return;
+            }
+            if (
+                capability === "fusion" &&
+                (!Number.isInteger(textWeight) || !Number.isInteger(imageWeight))
+            ) {
+                messageApi.warning("当前视觉资产权重未正确设置，无法创建信息融合任务");
+                return;
+            }
+            if (
+                capability === "visual" &&
+                (!imageAnalysisMarkdown?.trim() ||
+                    !Number.isInteger(textWeight) ||
+                    !Number.isInteger(imageWeight))
+            ) {
+                messageApi.warning("当前视觉资产缺少图片理解结果或权重，无法创建视觉描述任务");
+                return;
+            }
+            if (capability === "image_gen" && !visualDescription?.trim()) {
+                messageApi.warning("当前视觉资产缺少视觉描述结果，无法创建生图任务");
+                return;
+            }
+            if (
+                capability !== "image_analysis" &&
+                capability !== "visual" &&
+                capability !== "fusion" &&
+                capability !== "image_gen" &&
+                !selectedEntry.originalText?.trim()
+            ) {
+                messageApi.warning("当前条目缺少原文，无法创建 AI 精修任务");
+                return;
+            }
+            if (sourceTaskId) {
+                setRetryingRefinementTaskId(sourceTaskId);
+            }
+            createRefinementTaskMutation.mutate(
+                {
+                    capability,
+                    scope: "classics",
+                    contentType: "SANCAI_ENTRY",
+                    contentId: selectedEntry.id,
+                    objectId:
+                        capability === "image_analysis" ||
+                        capability === "visual" ||
+                        capability === "fusion"
+                            ? imageAnalysisObjectId
+                            : null,
+                    requestedBy: Number(currentUserId),
+                    serviceRole: DEFAULT_REFINEMENT_SERVICE_ROLE,
+                    modelId: DEFAULT_REFINEMENT_MODEL_ID,
+                    modelName: DEFAULT_REFINEMENT_MODEL_NAME,
+                    requestId: createEventId("sancai-task"),
+                    traceId: createEventId("sancai-trace"),
+                    promptMessagesJson: buildPromptMessagesJson(
+                        capability,
+                        selectedEntry,
+                        resolvedVisualAsset
+                    ),
+                    promptVariablesJson: JSON.stringify({
+                        title: selectedEntry.title
+                    }),
+                    inputPayloadJson: buildInputPayloadJson(
+                        capability,
+                        selectedEntry,
+                        capability === "image_analysis" ||
+                            capability === "visual" ||
+                            capability === "fusion" ||
+                            capability === "image_gen"
+                            ? imageAnalysisObjectId
+                            : null,
+                        textWeight,
+                        imageWeight,
+                        imageAnalysisMarkdown,
+                        fusionDescription,
+                        visualDescription,
+                        generationParamsJson,
+                        sourceImageStorageObjectId
+                    ),
+                    locale: "zh-CN"
+                },
+                {
+                    onSettled: () => {
+                        if (sourceTaskId) {
+                            setRetryingRefinementTaskId(null);
+                        }
+                    }
+                }
+            );
+        },
+        [
+            createRefinementTaskMutation,
+            currentUserId,
+            messageApi,
+            selectedEntry,
+            selectedVisualAsset
+        ]
+    );
+
     const createRefinementTask = (
         capability: RefinementCapability,
         imageAnalysisAsset: SancaiVisualAssetRecord | null = null
     ) => {
+        submitRefinementTask(capability, imageAnalysisAsset);
+    };
+
+    const retryRefinementTask = (task: AiRefinementTaskRecord) => {
         if (!selectedEntry?.id) {
             return;
         }
-        if (!currentUserId) {
-            messageApi.warning("当前用户信息尚未加载完成");
-            return;
-        }
-        const resolvedVisualAsset = imageAnalysisAsset ?? selectedVisualAsset;
-        const imageAnalysisObjectId = resolvedVisualAsset
-            ? (resolvedVisualAsset.visualAssetId ?? resolvedVisualAsset.id ?? null)
-            : null;
-        const sourceImageStorageObjectId = resolvedVisualAsset?.sourceImageStorageObjectId;
-        const imageAnalysisMarkdown = resolvedVisualAsset?.imageAnalysisMarkdown;
-        const textWeight = resolvedVisualAsset?.textWeight;
-        const imageWeight = resolvedVisualAsset?.imageWeight;
+        const capability = task.capability as RefinementCapability;
         if (
-            (capability === "image_analysis" || capability === "visual") &&
-            (imageAnalysisObjectId == null || sourceImageStorageObjectId == null)
-        ) {
-            messageApi.warning("当前视觉资产缺少原图，无法创建图片相关任务");
-            return;
-        }
-        if (
-            capability === "fusion" &&
-            (imageAnalysisObjectId == null ||
-                sourceImageStorageObjectId == null ||
-                !imageAnalysisMarkdown?.trim())
-        ) {
-            messageApi.warning("当前视觉资产缺少图片理解结果，无法创建信息融合任务");
-            return;
-        }
-        if (
-            capability === "fusion" &&
-            (!Number.isInteger(textWeight) || !Number.isInteger(imageWeight))
-        ) {
-            messageApi.warning("当前视觉资产权重未正确设置，无法创建信息融合任务");
-            return;
-        }
-        if (
+            capability !== "translate" &&
+            capability !== "summary" &&
             capability !== "image_analysis" &&
-            capability !== "visual" &&
             capability !== "fusion" &&
-            !selectedEntry.originalText?.trim()
+            capability !== "visual" &&
+            capability !== "image_gen"
         ) {
-            messageApi.warning("当前条目缺少原文，无法创建 AI 精修任务");
+            messageApi.warning("当前任务能力暂不支持页面内重试");
             return;
         }
-        createRefinementTaskMutation.mutate({
-            capability,
-            scope: "classics",
-            contentType: "SANCAI_ENTRY",
-            contentId: selectedEntry.id,
-            objectId:
-                capability === "image_analysis" ||
-                capability === "visual" ||
-                capability === "fusion"
-                    ? imageAnalysisObjectId
-                    : null,
-            requestedBy: Number(currentUserId),
-            serviceRole: DEFAULT_REFINEMENT_SERVICE_ROLE,
-            modelId: DEFAULT_REFINEMENT_MODEL_ID,
-            modelName: DEFAULT_REFINEMENT_MODEL_NAME,
-            requestId: createEventId("sancai-task"),
-            traceId: createEventId("sancai-trace"),
-            promptMessagesJson: buildPromptMessagesJson(capability, selectedEntry),
-            promptVariablesJson: JSON.stringify({
-                title: selectedEntry.title
-            }),
-            inputPayloadJson: buildInputPayloadJson(
-                capability,
-                selectedEntry,
-                capability === "image_analysis" ||
-                    capability === "visual" ||
-                    capability === "fusion"
-                    ? imageAnalysisObjectId
-                    : null,
-                textWeight,
-                imageWeight,
-                imageAnalysisMarkdown
-            ),
-            locale: "zh-CN"
-        });
+        const visualAssets =
+            queryClient.getQueryData<SancaiVisualAssetRecord[]>([
+                "classics",
+                "sancai",
+                "entries",
+                "visual-assets",
+                selectedEntry.id
+            ]) || [];
+        const taskAsset =
+            visualAssets.find(
+                (asset) => (asset.visualAssetId ?? asset.id ?? null) === (task.objectId ?? null)
+            ) ||
+            (selectedVisualAsset &&
+            (selectedVisualAsset.visualAssetId ?? selectedVisualAsset.id ?? null) ===
+                (task.objectId ?? null)
+                ? selectedVisualAsset
+                : null);
+        submitRefinementTask(capability, taskAsset, task.taskId);
     };
 
-    const refreshAfterImageAnalysisApplied = useCallback(async () => {
+    const refreshAfterVisualAssetCandidateHandled = useCallback(async () => {
         await Promise.all([
             refreshSancaiEntryDetail(),
             refreshSancaiVisualAssets(),
@@ -407,11 +542,13 @@ export const useSancaiEntryPanelState = ({
         selectedVisualAssetId,
         entryTagNames,
         creatingRefinementCapability,
+        retryingRefinementTaskId,
         invalidateSancaiContentGovernance,
         invalidateSancaiContentCandidates,
         refreshSancaiEntryDetail,
         createRefinementTask,
-        refreshAfterImageAnalysisApplied,
+        retryRefinementTask,
+        refreshAfterVisualAssetCandidateHandled,
         resetHandledSucceededTaskIds
     };
 };

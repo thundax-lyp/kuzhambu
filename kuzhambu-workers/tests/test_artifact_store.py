@@ -74,9 +74,16 @@ def test_artifact_store_chunks_keep_image_gen_metadata(tmp_path) -> None:
     chunks = store.chunks(metadata.artifact_id)
 
     assert chunks[0].artifact_id == metadata.artifact_id
+    assert chunks[0].request_id == "req-image-gen"
     assert chunks[0].format == "PNG"
     assert chunks[0].filename == "generated.png"
     assert chunks[0].content_type == "image/png"
     assert chunks[0].encoding == "BASE64_CHUNK"
     assert chunks[-1].chunk_index == metadata.chunk_count - 1
     assert b"".join(b64decode(chunk.chunk) for chunk in chunks) == b"png-binary"
+    persisted = loads(
+        (tmp_path / "artifacts" / f"{metadata.artifact_id}.json").read_text(encoding="utf-8")
+    )
+    assert persisted["request_id"] == "req-image-gen"
+    assert persisted["chunk_count"] == metadata.chunk_count
+    assert persisted["sha256"] == metadata.sha256

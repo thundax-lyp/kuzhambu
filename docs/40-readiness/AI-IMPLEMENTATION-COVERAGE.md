@@ -21,11 +21,12 @@
 - AI 域当前已具备候选结果台账读取、拒绝和“标记已应用”协作入口，可支持 Classics / Knowledge 在业务确认后回写 AI 候选状态。
 - AI 域已形成统一最终态协议：调用结果、调用记录、候选结果和 Worker stream `completed/error` 统一使用 `failureStage / fallbackUsed / artifactReference` 口径；文件类结果由 Java 下载 Workers 临时产物并转存 `Storage`。
 - Discovery 的 query understanding、answer generation 与 stream answer 已统一消费 AI 最终态，并把最终 AI `callId` 稳定挂到 QA trace。
-- AI 域当前已形成“治理入口 -> Workers 执行 -> 候选结果/任务台账 -> Classics 页面消费”的最小闭环；`task/stream` 仍停留在设计层的可选协议，未在当前代码中实现。
+- AI 域当前已形成“治理入口 -> Workers 执行 -> 候选结果/任务台账 -> Classics 页面消费”的闭环；三才图会视觉资产已接通 `image_analysis / fusion / visual / image_gen` 的单条任务、批量任务、候选治理、失败重试和正式版本写回。
+- `task/stream` 仍停留在设计层的可选协议，未在当前代码中实现。
 
 未完成：
 
-- Classics 的批处理、融合、图像生成类能力（`translate-batch-item/fusion/image-gen`）在 worker 存在但未接入 Java 精修 resolver。
+- Classics 的 `translate-batch-item` usecase 仍只存在于 worker 侧，Java 精修 resolver 目前未消费。
 - Knowledge `tag_extraction` 与 Platform 两类能力在 worker 表内存在，但当前 Java 侧尚未提供对应调用入口。
 
 ## 已完成
@@ -37,7 +38,9 @@
 | classics | SANCAI_ENTRY | tags | AiRefinementController#generateTags | CLASSICS_SANCAI_TAGS | /internal/ai/classics/sancai/tags | 已完成 | 六类同步候选型精修能力接入 usecase path |
 | classics | SANCAI_ENTRY | qa | AiRefinementController#generateQa | CLASSICS_SANCAI_QA | /internal/ai/classics/sancai/qa | 已完成 | 六类同步候选型精修能力接入 usecase path |
 | classics | SANCAI_ENTRY | image_analysis | AiRefinementController#analyzeImage | CLASSICS_SANCAI_IMAGE_ANALYSIS | /internal/ai/classics/sancai/image-analysis | 已完成 | 已切到标准 classics usecase path 与 stream final-state 协议 |
+| classics | SANCAI_ENTRY | fusion | AiRefinementController#fuseSancaiVisualAsset | CLASSICS_SANCAI_FUSION | /internal/ai/classics/sancai/fusion | 已完成 | 已接入三才视觉资产精修入口，支持候选治理与正式字段写回 |
 | classics | SANCAI_ENTRY | visual | AiRefinementController#describeVisual | CLASSICS_SANCAI_VISUAL_DESCRIPTION | /internal/ai/classics/sancai/visual-description | 已完成 | 六类同步候选型精修能力接入 usecase path |
+| classics | SANCAI_ENTRY | image_gen | AiRefinementController#generateSancaiImage | CLASSICS_SANCAI_IMAGE_GEN | /internal/ai/classics/sancai/image-gen | 已完成 | 已接入三才视觉资产精修入口，支持 artifact 转存、候选治理与新版本写回 |
 | classics | SANCAI_ENTRY | split | AiRefinementController#splitEntry | CLASSICS_SANCAI_SPLIT | /internal/ai/classics/sancai/split | 已完成 | 六类同步候选型精修能力接入 usecase path |
 | classics | WANGQI_DOCUMENT | summary | AiRefinementController#summarize | CLASSICS_WANGQI_SUMMARY | /internal/ai/classics/wangqi/summary | 已完成 | 六类同步候选型精修能力接入 usecase path |
 | classics | WANGQI_DOCUMENT | tags | AiRefinementController#generateTags | CLASSICS_WANGQI_TAGS | /internal/ai/classics/wangqi/tags | 已完成 | 六类同步候选型精修能力接入 usecase path |
@@ -46,6 +49,7 @@
 | classics | MING_CUSTOMS | tags | AiRefinementController#generateTags | CLASSICS_MING_CUSTOMS_TAGS | /internal/ai/classics/ming-customs/tags | 已完成 | 六类同步候选型精修能力接入 usecase path |
 | classics | MING_CUSTOMS | qa | AiRefinementController#generateQa | CLASSICS_MING_CUSTOMS_QA | /internal/ai/classics/ming-customs/qa | 已完成 | 六类同步候选型精修能力接入 usecase path |
 | classics | SANCAI_ENTRY / WANGQI_DOCUMENT / MING_CUSTOMS | task_management | AiRefinementTaskController#add/get/page/cancel | AI_REFINEMENT_TASK_MANAGEMENT | - | 已完成 | 已实现设计文档定义的默认任务协议；代码未提供 `task/stream` 前端订阅入口 |
+| classics | SANCAI_ENTRY | batch_visual_processing | AiRefinementTaskController#createBatch/get/page/cancelBatch | AI_REFINEMENT_TASK_BATCH_MANAGEMENT | - | 已完成 | 三才图会已接通批量图片理解与视觉资产处理任务的创建、分页、取消和失败聚合 |
 | discovery | - | query_understanding | DiscoveryAiApplicationService#understandQuery | DISCOVERY_QUERY_UNDERSTANDING | /internal/ai/discovery/query-understanding | 已完成 | 已统一消费 AI 最终态字段；失败时按最终错误口径落库 |
 | discovery | - | query_understanding | DiscoveryAiApplicationService#rewriteQuery | DISCOVERY_QUERY_REWRITE | /internal/ai/discovery/query-rewrite | 已完成 | 已统一消费 AI 最终态字段；失败时按最终错误口径落库 |
 | discovery | - | answer_generation | DiscoveryAiApplicationService#generateAnswer | DISCOVERY_ANSWER_GENERATION | /internal/ai/discovery/answer-generation | 已完成 | 最终回答消费 AI 最终态字段，并把 `callId` 挂到 QA trace |
@@ -59,8 +63,6 @@
 | domain | contentType | capability | javaEntry | operation | workerPath | status | note |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | classics | SANCAI_ENTRY | translate | - | CLASSICS_SANCAI_TRANSLATE_BATCH_ITEM | /internal/ai/classics/sancai/translate-batch-item | 未完成 | 对应 usecase 未在 Classics 精修 resolver 中配置 |
-| classics | SANCAI_ENTRY | fusion | - | CLASSICS_SANCAI_FUSION | /internal/ai/classics/sancai/fusion | 未完成 | 对应 usecase 未在 Java 精修入口中接入 |
-| classics | SANCAI_ENTRY | image_gen | - | CLASSICS_SANCAI_IMAGE_GEN | /internal/ai/classics/sancai/image-gen | 未完成 | 对应 usecase 未在 Java 精修入口中接入 |
 | knowledge | - | tags | - | KNOWLEDGE_TAG_EXTRACTION | /internal/ai/knowledge/tag-extraction | 未完成 | 当前 Java AI 精修未提供该域的调用入口 |
 | platform | - | prompt_suggestion | - | PLATFORM_PROMPT_SUGGESTION | /internal/ai/platform/prompt-suggestion | 未完成 | 当前 Java AI 精修未提供该域的调用入口 |
 | platform | - | version_summary | - | PLATFORM_VERSION_SUMMARY | /internal/ai/platform/version-summary | 未完成 | 当前 Java AI 精修未提供该域的调用入口 |

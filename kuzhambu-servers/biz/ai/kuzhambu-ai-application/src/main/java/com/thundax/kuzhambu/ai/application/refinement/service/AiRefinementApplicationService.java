@@ -15,6 +15,8 @@ public interface AiRefinementApplicationService {
 
     AiCandidateResult analyzeImage(AiRefinementRequestCommand command);
 
+    AiCandidateResult fuseVisualContext(AiRefinementRequestCommand command);
+
     AiCandidateResult generateImage(AiRefinementRequestCommand command);
 
     AiCandidateResult describeVisual(AiRefinementRequestCommand command);

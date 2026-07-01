@@ -70,6 +70,22 @@ export interface SancaiVisualAssetRecord {
     generatedDownloadUrl?: string | null;
 }
 
+export interface SancaiRefinementBatchRecord {
+    batchId: number;
+    scope?: string | null;
+    capability?: string | null;
+    contentType?: string | null;
+    status?: string | null;
+    totalCount?: number | null;
+    successCount?: number | null;
+    failedCount?: number | null;
+    cancelledCount?: number | null;
+    failureSummaryJson?: string | null;
+    requestedAt?: string | null;
+    cancelledAt?: string | null;
+    completedAt?: string | null;
+}
+
 export type SancaiEntryImageContentMode = "preview" | "download";
 
 export interface SancaiContentVersionRecord {

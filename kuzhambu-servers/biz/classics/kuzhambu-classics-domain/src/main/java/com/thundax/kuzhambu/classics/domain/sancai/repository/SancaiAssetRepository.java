@@ -62,11 +62,13 @@ public interface SancaiAssetRepository {
      */
     List<SancaiVisualAsset> listVisualAssetsByEntryId(SancaiEntryId entryId);
 
-    int updateVisualAssetById(
-            SancaiVisualAssetId visualAssetId,
-            String imageAnalysisMarkdown,
-            String fusionDescription,
-            String visualDescription);
+    int maxVisualAssetVersionNo(SancaiEntryId entryId);
+
+    int updateVisualAssetImageAnalysisMarkdown(SancaiVisualAssetId visualAssetId, String imageAnalysisMarkdown);
+
+    int updateVisualAssetFusionDescription(SancaiVisualAssetId visualAssetId, String fusionDescription);
+
+    int updateVisualAssetVisualDescription(SancaiVisualAssetId visualAssetId, String visualDescription);
 
     SancaiShowcaseId insertShowcase(SancaiShowcase showcase);
 

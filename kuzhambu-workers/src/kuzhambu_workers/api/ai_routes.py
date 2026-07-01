@@ -21,7 +21,7 @@ from kuzhambu_workers.schemas.ai import (
 )
 from kuzhambu_workers.schemas.common import UsageSummary, WorkerErrorPayload, WorkerStatus
 from kuzhambu_workers.schemas.stream import StreamEventType
-from kuzhambu_workers.streaming.events import started_event, stream_event
+from kuzhambu_workers.streaming.events import final_state_extra, started_event, stream_event
 from kuzhambu_workers.streaming.sse import encode_sse
 
 router = APIRouter(prefix="/internal/ai", tags=["AI Debug"])
@@ -125,6 +125,8 @@ def invoke_ai_graph(
             usage=UsageSummary(),
             fallbackUsed=False,
             artifactReference=artifact_reference,
+            errorType=None,
+            errorMessage=None,
         )
         return JSONResponse(response.model_dump(mode="json"))
     except Exception as exc:
@@ -157,14 +159,12 @@ def stream_ai_graph(
                     if artifact_reference is not None
                     else result.model_dump(mode="json"),
                     usage=UsageSummary().model_dump(mode="json"),
-                    extra={
-                        "status": WorkerStatus.SUCCEEDED.value,
-                        "failureStage": None,
-                        "fallbackUsed": False,
-                        "artifactReference": None
-                        if artifact_reference is None
-                        else artifact_reference.model_dump(mode="json"),
-                    },
+                    extra=final_state_extra(
+                        status=WorkerStatus.SUCCEEDED.value,
+                        failure_stage=None,
+                        fallback_used=False,
+                        artifact_reference=artifact_reference,
+                    ),
                 )
             )
         except Exception as exc:
@@ -177,12 +177,14 @@ def stream_ai_graph(
                     stage="error",
                     timestamp=_now(),
                     error=error.model_dump(mode="json"),
-                    extra={
-                        "status": WorkerStatus.FAILED.value,
-                        "failureStage": FailureStage.WORKER_RESULT.value,
-                        "fallbackUsed": False,
-                        "artifactReference": None,
-                    },
+                    extra=final_state_extra(
+                        status=WorkerStatus.FAILED.value,
+                        failure_stage=FailureStage.WORKER_RESULT,
+                        fallback_used=False,
+                        artifact_reference=None,
+                        error_type=error.type,
+                        error_message=error.message,
+                    ),
                 )
             )
 
@@ -320,6 +322,8 @@ def _failed_response(
         fallbackUsed=False,
         artifactReference=None,
         error=error,
+        errorType=error.type,
+        errorMessage=error.message,
     )
     return JSONResponse(response.model_dump(mode="json"), status_code=status_code)
 
@@ -332,6 +336,8 @@ def _error_json(error: WorkerErrorPayload, status_code: int) -> JSONResponse:
             "fallbackUsed": False,
             "artifactReference": None,
             "error": error.model_dump(mode="json"),
+            "errorType": error.type,
+            "errorMessage": error.message,
         },
         status_code=status_code,
     )

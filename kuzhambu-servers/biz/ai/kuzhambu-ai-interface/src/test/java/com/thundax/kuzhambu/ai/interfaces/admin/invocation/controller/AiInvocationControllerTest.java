@@ -27,12 +27,30 @@ class AiInvocationControllerTest {
     void routesShouldKeepCandidateManagementApiPathsAndPermissions() throws Exception {
         assertRequestMapping(AiInvocationController.class, "/api/ai/invocation");
         assertPostMapping(
-                AiInvocationController.class, "rejectCandidate", "candidate/reject", CandidateRejectRequest.class);
+                AiInvocationController.class,
+                "listCandidates",
+                "candidate/list",
+                "ai:invocation:view",
+                CandidateListRequest.class);
+        assertPostMapping(
+                AiInvocationController.class,
+                "rejectCandidate",
+                "candidate/reject",
+                "ai:invocation:edit",
+                CandidateRejectRequest.class);
         assertPostMapping(
                 AiInvocationController.class,
                 "markCandidateApplied",
                 "candidate/mark-applied",
+                "ai:invocation:edit",
                 CandidateMarkAppliedRequest.class);
+        assertPostMapping(
+                AiInvocationController.class,
+                "cancelBatch",
+                "batch/cancel",
+                "ai:invocation:edit",
+                com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.request.AiInvocationRequests
+                        .BatchIdRequest.class);
     }
 
     @Test
@@ -100,6 +118,22 @@ class AiInvocationControllerTest {
                         "applyAiCandidate", CandidateMarkAppliedRequest.class));
     }
 
+    @Test
+    void cancelBatchShouldDelegateToBatchService() {
+        AiInvocationController controller =
+                new AiInvocationController(noRepository(), cancelBatchService(), noDomainService());
+        com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.request.AiInvocationRequests.BatchIdRequest
+                request = new com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.request
+                        .AiInvocationRequests.BatchIdRequest();
+        request.setBatchId(8801L);
+
+        var response = controller.cancelBatch(request);
+
+        assertEquals(8801L, response.getBatchId());
+        assertEquals("CANCELLED", response.getStatus());
+        assertEquals(1, response.getCancelledCount());
+    }
+
     private static AiInvocationRepository noRepository() {
         return fakeRepository();
     }
@@ -128,6 +162,33 @@ class AiInvocationControllerTest {
                 AiBatchJobApplicationService.class.getClassLoader(),
                 new Class<?>[] {AiBatchJobApplicationService.class},
                 noOpInvocationHandler("batch service"));
+    }
+
+    private static AiBatchJobApplicationService cancelBatchService() {
+        return (AiBatchJobApplicationService) Proxy.newProxyInstance(
+                AiBatchJobApplicationService.class.getClassLoader(),
+                new Class<?>[] {AiBatchJobApplicationService.class},
+                (proxy, method, args) -> {
+                    if ("cancel".equals(method.getName())) {
+                        assertEquals(8801L, args[0]);
+                        return new com.thundax.kuzhambu.ai.application.batch.result.AiBatchJobResult(
+                                8801L,
+                                "classics",
+                                "image_analysis",
+                                "SANCAI_ENTRY",
+                                "CANCELLED",
+                                1,
+                                0,
+                                0,
+                                1,
+                                null,
+                                null,
+                                java.time.Instant.parse("2026-07-01T00:00:00Z"),
+                                null);
+                    }
+                    throw new UnsupportedOperationException(
+                            "batch service should not be called in this test: " + method.getName());
+                });
     }
 
     private static AiCandidateDomainService noDomainService() {
@@ -215,13 +276,17 @@ class AiInvocationControllerTest {
     }
 
     private static void assertPostMapping(
-            Class<?> controllerType, String methodName, String expectedPath, Class<?>... parameterTypes)
+            Class<?> controllerType,
+            String methodName,
+            String expectedPath,
+            String expectedPermission,
+            Class<?>... parameterTypes)
             throws Exception {
         Method method = controllerType.getDeclaredMethod(methodName, parameterTypes);
         PostMapping mapping = method.getAnnotation(PostMapping.class);
         assertEquals(expectedPath, mapping.value()[0]);
         HasPermission permission = method.getAnnotation(HasPermission.class);
-        assertEquals(List.of("ai:invocation:edit"), List.of(permission.value()));
+        assertEquals(List.of(expectedPermission), List.of(permission.value()));
     }
 
     private static class FakeRepository implements AiInvocationRepository {

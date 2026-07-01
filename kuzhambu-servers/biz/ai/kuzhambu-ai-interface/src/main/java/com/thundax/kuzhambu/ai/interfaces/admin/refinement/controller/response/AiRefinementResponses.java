@@ -34,18 +34,23 @@ public final class AiRefinementResponses {
         @JsonProperty(value = "capability")
         private String capability;
 
+        @Schema(description = "失败阶段；当 status=FAILED 或 PARTIAL 时必须返回页面可读阶段标识")
         @JsonProperty(value = "failureStage")
         private String failureStage;
 
+        @Schema(description = "候选结果格式；TEXT 表示文本候选，STRUCTURED 表示结构化候选")
         @JsonProperty(value = "resultFormat")
         private String resultFormat;
 
+        @Schema(description = "候选结果载荷；正式写回前仅作为候选内容，不直接代表正式业务事实")
         @JsonProperty(value = "resultPayload")
         private String resultPayload;
 
+        @Schema(description = "失败类型；当 status=FAILED 或 PARTIAL 时必须可供页面直接展示或重试分流")
         @JsonProperty(value = "errorType")
         private String errorType;
 
+        @Schema(description = "失败详情；当 status=FAILED 或 PARTIAL 时不得返回空串占位")
         @JsonProperty(value = "errorMessage")
         private String errorMessage;
     }
@@ -131,18 +136,23 @@ public final class AiRefinementResponses {
         @JsonProperty(value = "candidateId")
         private Long candidateId;
 
+        @Schema(description = "失败阶段；当 status=FAILED 或 PARTIAL 时必须返回页面可读阶段标识")
         @JsonProperty(value = "failureStage")
         private String failureStage;
 
+        @Schema(description = "失败类型；用于页面失败提示和重试策略判断")
         @JsonProperty(value = "errorType")
         private String errorType;
 
+        @Schema(description = "失败详情；用于页面直接展示，不得返回空串占位")
         @JsonProperty(value = "errorMessage")
         private String errorMessage;
 
+        @Schema(description = "结果预览格式；仅表示当前任务结果预览类型，不代表正式写回字段")
         @JsonProperty(value = "resultFormat")
         private String resultFormat;
 
+        @Schema(description = "结果预览内容；用于页面展示任务结果摘要或失败前最后结果")
         @JsonProperty(value = "resultPreview")
         private String resultPreview;
 
@@ -195,5 +205,53 @@ public final class AiRefinementResponses {
 
         @JsonProperty(value = "cancelledAt")
         private Instant cancelledAt;
+    }
+
+    @Getter
+    @Builder
+    @Schema(name = "AiRefinementBatchJobResponse", description = "AI精修批量任务响应")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class BatchJobResponse implements Serializable {
+
+        @JsonProperty(value = "batchId")
+        private Long batchId;
+
+        @JsonProperty(value = "scope")
+        private String scope;
+
+        @JsonProperty(value = "capability")
+        private String capability;
+
+        @JsonProperty(value = "contentType")
+        private String contentType;
+
+        @JsonProperty(value = "status")
+        private String status;
+
+        @JsonProperty(value = "totalCount")
+        private Integer totalCount;
+
+        @JsonProperty(value = "successCount")
+        private Integer successCount;
+
+        @JsonProperty(value = "failedCount")
+        private Integer failedCount;
+
+        @JsonProperty(value = "cancelledCount")
+        private Integer cancelledCount;
+
+        @Schema(description = "批量失败聚合摘要；用于页面展示已失败或已跳过单元的汇总信息")
+        @JsonProperty(value = "failureSummaryJson")
+        private String failureSummaryJson;
+
+        @JsonProperty(value = "requestedAt")
+        private Instant requestedAt;
+
+        @JsonProperty(value = "cancelledAt")
+        private Instant cancelledAt;
+
+        @JsonProperty(value = "completedAt")
+        private Instant completedAt;
     }
 }

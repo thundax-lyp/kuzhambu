@@ -152,7 +152,6 @@ class ClassicsContentApplicationServiceAiCandidateTest {
 
         SancaiAssetApplicationService assetService = org.mockito.Mockito.mock(SancaiAssetApplicationService.class);
         when(assetService.listVisualAssets(SancaiEntryId.of(11L))).thenReturn(List.of(visualAsset));
-        when(assetService.updateVisualAsset(visualAsset)).thenReturn(SancaiVisualAssetId.of(111L));
 
         AiFacade aiFacade = mockAiFacade(
                 request -> {
@@ -281,13 +280,10 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         assertEquals(11L, result.getContentId());
         assertEquals(null, result.getVersionId());
         assertEquals(null, result.getVersionNo());
-        assertEquals("融合说明", visualAsset.getFusionDescription());
-        assertEquals("old image analysis", visualAsset.getImageAnalysisMarkdown());
-        assertEquals("old visual", visualAsset.getVisualDescription());
         assertEquals(0, repository.insertVersionCount);
         assertEquals(0, repository.updateSancaiEntryAiCount);
         verify(aiFacade).markCandidateApplied(any(MarkAiCandidateAppliedFacadeRequest.class));
-        verify(assetService).updateVisualAsset(visualAsset);
+        verify(assetService).applyFusionDescription(SancaiEntryId.of(11L), SancaiVisualAssetId.of(111L), "融合说明");
     }
 
     @Test
@@ -351,6 +347,36 @@ class ClassicsContentApplicationServiceAiCandidateTest {
     }
 
     @Test
+    void applyAiCandidateImageGenShouldFailWhenStorageObjectIdMissingInPayload() {
+        FakeRepository repository = new FakeRepository();
+        SancaiEntry entry = new SancaiEntry();
+        entry.setId(SancaiEntryId.of(11L));
+        repository.sancaiEntryForAiApply = entry;
+
+        SancaiVisualAsset visualAsset = new SancaiVisualAsset();
+        visualAsset.setId(SancaiVisualAssetId.of(111L));
+        visualAsset.setEntryId(SancaiEntryId.of(11L));
+
+        SancaiAssetApplicationService assetService = org.mockito.Mockito.mock(SancaiAssetApplicationService.class);
+        when(assetService.listVisualAssets(SancaiEntryId.of(11L))).thenReturn(List.of(visualAsset));
+
+        AiFacade aiFacade = mockAiFacade(request -> pendingCandidate(), request -> {
+            throw new IllegalStateException("markApplied should not be called");
+        });
+
+        ClassicsContentApplicationServiceImpl service = serviceWithAiFacade(repository, aiFacade, assetService);
+        AiCandidateApplyContentCommand command = applyCommand(
+                11L, ClassicsContentType.SANCAI_ENTRY, 11L, "image_gen", "{\"contentType\":\"image/png\"}", 111L);
+
+        BizException exception = assertThrows(BizException.class, () -> service.applyAiCandidate(command));
+
+        assertEquals("AI候选生图结果不可用: AI候选生图结果缺少 storageObjectId", exception.getMessage());
+        verify(aiFacade, never()).markCandidateApplied(any(MarkAiCandidateAppliedFacadeRequest.class));
+        verify(assetService, never())
+                .createGeneratedVisualAssetVersion(any(SancaiEntryId.class), any(SancaiVisualAssetId.class), any());
+    }
+
+    @Test
     void applyAiCandidateImageAnalysisShouldFailWhenObjectIdMissing() {
         FakeRepository repository = new FakeRepository();
         SancaiEntry entry = new SancaiEntry();
@@ -367,7 +393,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 applyCommand(11L, ClassicsContentType.SANCAI_ENTRY, 11L, "image_analysis", "分析结果", null);
 
         BizException exception = assertThrows(BizException.class, () -> service.applyAiCandidate(command));
-        assertEquals("AI候选应用参数不完整", exception.getMessage());
+        assertEquals("三才视觉资产候选应用参数不完整", exception.getMessage());
         assertEquals(0, repository.insertVersionCount);
         assertEquals(0, repository.updateSancaiEntryAiCount);
         verify(aiFacade).requirePendingCandidate(any(RequirePendingAiCandidateFacadeRequest.class));

@@ -75,7 +75,19 @@ vi.mock("@/pages/classics/common/ai-refinement-task-service", () => ({
         pageNo: 1,
         pageSize: 20
     })),
-    cancelTask: vi.fn()
+    cancelTask: vi.fn(),
+    getTaskCapabilityLabel: vi.fn((capability: string) => capability),
+    getTaskFailureText: vi.fn(
+        (failureStage?: string | null, errorType?: string | null, errorMessage?: string | null) =>
+            [failureStage, errorType, errorMessage].filter(Boolean).join(" / ") || null
+    ),
+    getTaskRetryable: vi.fn(
+        (status: string, capability: string) =>
+            ["FAILED", "PARTIAL", "CANCELLED"].includes(status) &&
+            ["translate", "summary", "image_analysis", "fusion", "visual", "image_gen"].includes(
+                capability
+            )
+    )
 }));
 vi.mock("@/pages/classics/common/ai-candidate-service", () => ({
     list: vi.fn(async () => []),
@@ -330,6 +342,39 @@ vi.mock("../services/sancai-entry-service", () => ({
     ),
     uploadImage: vi.fn(),
     update: vi.fn(),
+    createRefinementBatch: vi.fn(async () => ({
+        batchId: 8801,
+        scope: "classics",
+        capability: "image_analysis",
+        contentType: "SANCAI_ENTRY",
+        status: "PENDING",
+        totalCount: 1,
+        successCount: 0,
+        failedCount: 0,
+        cancelledCount: 0
+    })),
+    getRefinementBatch: vi.fn(async () => ({
+        batchId: 8801,
+        scope: "classics",
+        capability: "image_analysis",
+        contentType: "SANCAI_ENTRY",
+        status: "PENDING",
+        totalCount: 1,
+        successCount: 0,
+        failedCount: 0,
+        cancelledCount: 0
+    })),
+    cancelRefinementBatch: vi.fn(async () => ({
+        batchId: 8801,
+        scope: "classics",
+        capability: "image_analysis",
+        contentType: "SANCAI_ENTRY",
+        status: "CANCELLED",
+        totalCount: 1,
+        successCount: 0,
+        failedCount: 0,
+        cancelledCount: 1
+    })),
     requestShowcase: vi.fn(async () => ({
         id: 2001,
         status: "REQUESTED"
@@ -746,6 +791,54 @@ describe("SancaiEntryPanel sharing", () => {
             await screen.findByText("当前视觉资产缺少原图，无法创建图片相关任务")
         ).toBeInTheDocument();
         expect(aiRefinementTaskService.createTask).not.toHaveBeenCalled();
+    }, 30000);
+
+    it("creates batch image analysis task and shows aggregated batch status", async () => {
+        const user = userEvent.setup();
+        vi.mocked(entryService.createRefinementBatch).mockResolvedValueOnce({
+            batchId: 8801,
+            scope: "classics",
+            capability: "image_analysis",
+            contentType: "SANCAI_ENTRY",
+            status: "PENDING",
+            totalCount: 1,
+            successCount: 0,
+            failedCount: 0,
+            cancelledCount: 0
+        });
+        vi.mocked(entryService.getRefinementBatch).mockResolvedValue({
+            batchId: 8801,
+            scope: "classics",
+            capability: "image_analysis",
+            contentType: "SANCAI_ENTRY",
+            status: "FAILED",
+            totalCount: 1,
+            successCount: 0,
+            failedCount: 1,
+            cancelledCount: 0,
+            failureSummaryJson: '[{"contentId":3001,"errorType":"MODEL_TIMEOUT"}]'
+        });
+
+        renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        const rowCheckbox = within(entryTable).getAllByRole("checkbox")[1];
+        await user.click(rowCheckbox);
+        await user.click(screen.getByRole("button", { name: "批量图片理解" }));
+
+        await waitFor(() => {
+            expect(entryService.createRefinementBatch).toHaveBeenCalled();
+        });
+        expect(vi.mocked(entryService.createRefinementBatch).mock.calls[0]?.[0]).toEqual({
+            scope: "classics",
+            capability: "image_analysis",
+            contentType: "SANCAI_ENTRY",
+            totalCount: 1
+        });
+        expect(
+            await screen.findByText(/批量任务 #8801 \/ image_analysis \/ FAILED/)
+        ).toBeInTheDocument();
+        expect(screen.getByText("成功 0 / 失败 1 / 取消 0")).toBeInTheDocument();
     }, 30000);
 
     it("loads version detail, restores it and refreshes the open drawer", async () => {

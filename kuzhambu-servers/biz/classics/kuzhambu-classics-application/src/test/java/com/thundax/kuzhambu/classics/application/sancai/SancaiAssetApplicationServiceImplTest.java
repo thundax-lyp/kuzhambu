@@ -85,7 +85,7 @@ class SancaiAssetApplicationServiceImplTest {
 
         BizException exception = assertThrows(BizException.class, () -> service.updateVisualAsset(visualAsset));
 
-        assertEquals("三才视觉资产文本权重不能为空", exception.getMessage());
+        assertEquals("三才视觉资产保存失败：文本权重不能为空", exception.getMessage());
     }
 
     @Test
@@ -97,7 +97,7 @@ class SancaiAssetApplicationServiceImplTest {
 
         BizException exception = assertThrows(BizException.class, () -> service.updateVisualAsset(visualAsset));
 
-        assertEquals("三才视觉资产图片权重不能为空", exception.getMessage());
+        assertEquals("三才视觉资产保存失败：图片权重不能为空", exception.getMessage());
     }
 
     @Test
@@ -141,8 +141,7 @@ class SancaiAssetApplicationServiceImplTest {
         SancaiVisualAsset olderAsset = visualAsset(4001L, 3001L);
         olderAsset.setVersionNo(5);
         when(repository.getVisualAssetById(SancaiVisualAssetId.of(5001L))).thenReturn(currentAsset);
-        when(repository.listVisualAssetsByEntryId(SancaiEntryId.of(3001L)))
-                .thenReturn(List.of(currentAsset, olderAsset));
+        when(repository.maxVisualAssetVersionNo(SancaiEntryId.of(3001L))).thenReturn(5);
         when(repository.insertVisualAsset(org.mockito.ArgumentMatchers.any()))
                 .thenReturn(SancaiVisualAssetId.of(5002L));
 
@@ -292,6 +291,33 @@ class SancaiAssetApplicationServiceImplTest {
                 () -> service.getVisualAssetGeneratedContent(SancaiEntryId.of(3001L), SancaiVisualAssetId.of(5002L)));
 
         assertEquals("三才视觉资产生成图不存在", exception.getMessage());
+    }
+
+    @Test
+    void getVisualAssetGeneratedContentShouldReadGeneratedStorageByVisualAssetRelation() {
+        SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
+        StorageFacade storageFacade = mock(StorageFacade.class);
+        SancaiAssetApplicationServiceImpl service =
+                new SancaiAssetApplicationServiceImpl(repository, null, storageFacade, null);
+        SancaiVisualAsset asset = visualAsset(5002L, 3001L);
+        asset.setGeneratedImageStorageObjectId(StorageObjectId.of(7002L));
+        when(repository.getVisualAssetById(SancaiVisualAssetId.of(5002L))).thenReturn(asset);
+        when(storageFacade.open(org.mockito.ArgumentMatchers.any()))
+                .thenReturn(OpenStorageFacadeResponse.builder()
+                        .storedObject(storageDto())
+                        .inputStream(new ByteArrayInputStream(new byte[] {2}))
+                        .build());
+
+        ClassicsStoredContentResult result =
+                service.getVisualAssetGeneratedContent(SancaiEntryId.of(3001L), SancaiVisualAssetId.of(5002L));
+
+        assertEquals("sancai.png", result.getOriginalFilename());
+        assertEquals("image/png", result.getContentType());
+        ArgumentCaptor<OpenStorageFacadeRequest> queryCaptor = ArgumentCaptor.forClass(OpenStorageFacadeRequest.class);
+        verify(storageFacade).open(queryCaptor.capture());
+        assertEquals(7002L, queryCaptor.getValue().getStorageObjectId());
+        assertNull(queryCaptor.getValue().getOwnerType());
+        assertNull(queryCaptor.getValue().getOwnerId());
     }
 
     @Test

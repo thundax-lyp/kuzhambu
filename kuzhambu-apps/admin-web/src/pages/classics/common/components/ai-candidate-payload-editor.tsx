@@ -4,17 +4,18 @@ import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 
 type AiCandidateCapability =
-    "translate" | "summary" | "tags" | "qa" | "image_analysis" | "visual" | "fusion";
+    "translate" | "summary" | "tags" | "qa" | "image_analysis" | "visual" | "fusion" | "image_gen";
 
 const TEXT_CAPABILITY_ARIA_LABEL: Record<
-    "translate" | "summary" | "image_analysis" | "visual" | "fusion",
+    "translate" | "summary" | "image_analysis" | "visual" | "fusion" | "image_gen",
     string
 > = {
     translate: "候选译文内容",
     summary: "候选摘要内容",
     image_analysis: "候选图片理解内容",
     visual: "候选视觉描述内容",
-    fusion: "候选融合说明内容"
+    fusion: "候选融合说明内容",
+    image_gen: "候选生图结果内容"
 };
 
 interface AiCandidatePayloadEditorProps {
@@ -109,7 +110,8 @@ export const AiCandidatePayloadEditor = ({
             capability === "translate" ||
             capability === "image_analysis" ||
             capability === "visual" ||
-            capability === "fusion"
+            capability === "fusion" ||
+            capability === "image_gen"
         ) {
             const payload = textPayload.trim();
             onPayloadChange(candidateId, payload);
@@ -191,7 +193,8 @@ export const AiCandidatePayloadEditor = ({
         capability === "translate" ||
         capability === "image_analysis" ||
         capability === "visual" ||
-        capability === "fusion"
+        capability === "fusion" ||
+        capability === "image_gen"
     ) {
         return (
             <Input.TextArea

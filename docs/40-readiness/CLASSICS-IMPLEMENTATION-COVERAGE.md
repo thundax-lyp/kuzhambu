@@ -43,8 +43,9 @@
 - 三类内容页面已接入需求文档要求的“内容上下文内联 AI 精修”中的任务型入口，但当前能力并不对称：Sancai 页面可创建 `translate` 与 `summary` 任务，Wangqi 与 Ming Customs 页面只接入 `summary` 任务；三页都已接入任务轮询，并在 `SUCCEEDED/PARTIAL` 后刷新详情或治理面板。
 - 分享后台管理闭环已完成：分享分页列表、详情、状态更新与访问记录查询接口在 admin 侧完成闭环；Wangqi/MingCustoms/Sancai 可通过页面完成分享入口与管理入口联动。
 - 导出和静态展示任务治理闭环收口：三类内容页面分别完成导出任务列表/创建闭环与状态可见性展示；Sancai 的静态展示列表与下载状态在页面内已收口。
-- 三才图会视觉资产核心闭环已补齐：视觉资产历史列表、当前版本切换、权重与描述字段维护、`image_analysis / visual / fusion` 候选确认，以及 `image_gen` 候选应用后的 `artifact -> Storage -> 新 version -> 页面预览/下载` 链路均已接通；当前仍缺页面内直接发起 `image_gen` 任务入口与批量治理。
-- 结合需求文档、设计文档和代码现状，Classics 当前已实现“内容维护 + 候选确认 + 局部任务型 AI 入口 + 导出/分享治理”的主干闭环；批量操作、权限过滤和更完整的 AI 任务覆盖仍保留在未完成项中。
+- 三才图会视觉资产 AI 闭环已补齐：页面内已接入 `image_analysis / fusion / visual / image_gen` 单条任务入口、任务状态轮询、失败提示与重试入口；候选区已接通按 `objectId` 限定的候选读取、编辑、应用、拒绝和刷新联动；`image_gen` 候选应用后的 `artifact -> Storage -> 新 version -> 页面预览/下载` 链路已稳定。
+- 三才图会视觉资产批量闭环已补齐：页面支持批量发起图片理解与视觉资产处理任务，后端已提供批量创建、分页查询、取消、失败聚合和已完成结果保留语义；前后端与 workers 已补齐对应回归测试。
+- 结合需求文档、设计文档和代码现状，Classics 当前已实现“内容维护 + 候选确认 + 任务型 AI 入口 + 批量视觉资产治理 + 导出/分享治理”的主干闭环；权限过滤、非视觉资产批量操作和更复杂的候选流式治理仍保留在未完成项中。
 
 未完成：
 
@@ -65,11 +66,11 @@
 | 展示原文、译文、标签、配图和状态 | 部分完成 | 条目详情、标签列表、配图列表均已提供独立接口；Admin Web 已展示条目列表状态、详情编辑核心文本字段、当前使用图片预览/下载入口，以及视觉资产历史列表、当前版本摘要和原图/生成图预览下载入口 | 标签仍未在三才条目详情内聚合展示；更复杂的视觉资产批量治理仍未闭环 | Classics, Admin Web |
 | 多张配图、缩略预览、放大浏览 | 部分完成 | 图片保存、列表、类型、Storage 对象引用、业务上传、业务读取和 Admin Web 当前图预览/下载链路已落地；分享快照只带 `currentUsed=true` 图片并按 `priority ASC` 展示；Admin Web 已支持视觉资产历史版本切换查看原图/生成图 | 缩略图生成、多图放大浏览交互和图片列表管理仍未闭环 | Classics, Storage, Admin Web |
 | 区分原始配图和视觉资产生成图 | 已完成 | `image_type`、图片模型、资产模型与保存入口已实现；Admin Web 已区分展示视觉资产原图与生成图，并分别提供预览/下载入口；`image_gen` 结果会新建 visual asset version 并绑定正式 Storage 对象 | 无 | Classics, Admin Web |
-| 从条目上下文进入视觉资产工作流 | 部分完成 | 资产草稿、图片、展示任务接口与服务可用；Admin Web 已在条目详情弹窗中接入视觉资产历史列表、当前版本切换、权重与描述字段维护、原图/生成图预览下载，以及 `image_analysis / visual / fusion` 候选治理；后端已接通 `image_gen` 候选应用后的版本化落库与页面展示 | 页面内直接发起 `image_gen` 任务入口、批量处理与失败治理仍未完成 | Classics, Admin Web, AI |
+| 从条目上下文进入视觉资产工作流 | 已完成 | 资产草稿、图片、展示任务接口与服务可用；Admin Web 已在条目详情弹窗中接入视觉资产历史列表、当前版本切换、权重与描述字段维护、原图/生成图预览下载，以及 `image_analysis / fusion / visual / image_gen` 的页面内任务入口、任务状态轮询、失败提示与重试入口；后端已接通候选读取/应用/拒绝和 `image_gen` 候选应用后的版本化落库与页面展示 | 无 | Classics, Admin Web, AI |
 | 原图上传、删除和预览 | 部分完成 | 原图业务上传、列表、Storage owner/reference 绑定、业务读取、inline/attachment 响应头和 Admin Web 当前图预览/下载已实现 | 删除接口虽有应用层能力但未形成 Admin Web 删除闭环；批量图片管理未完成 | Classics, Storage, Admin Web |
-| 图片理解、信息融合、权重调节、视觉描述、AI 生图入口 | 部分完成 | 视觉资产字段建模完成，三才视觉资产已接入图片理解/视觉描述/信息融合的任务与候选确认链路，`textWeight`、`imageWeight`、`imageAnalysisMarkdown`、`fusionDescription`、`visualDescription` 已可保存并按字段边界写回；`image_gen` 候选应用已接通 `artifact -> Storage -> 新 version -> 页面预览/下载` 闭环 | 页面内直接发起 `image_gen` 任务入口、批量处理、可配置失败治理、权重策略和更细粒度视觉资产治理未实现 | Classics, AI |
+| 图片理解、信息融合、权重调节、视觉描述、AI 生图入口 | 已完成 | 视觉资产字段建模完成，三才视觉资产已接入图片理解/视觉描述/信息融合/AI 生图的任务与候选确认链路，`textWeight`、`imageWeight`、`imageAnalysisMarkdown`、`fusionDescription`、`visualDescription`、`generationParamsJson` 已可保存并按字段边界写回；`image_gen` 候选应用已接通 `artifact -> Storage -> 新 version -> 页面预览/下载` 闭环，失败提示与重试入口已在页面内收口 | 无 | Classics, AI |
 | 视觉资产历史和当前使用版本选择 | 已完成 | 视觉资产持久化、列表查询、当前版本切换服务、Admin API 和 Admin Web 已接通；条目详情内可查看历史版本、切换当前使用版本并保存基础字段 | 无 | Classics, Admin Web |
-| 多选条目批量视觉资产处理 | 部分完成 | 批处理需求与模型约束在需求和数据模型中存在 | 批量执行、失败结果模型、取消回滚策略未实现 | Classics, AI |
+| 多选条目批量视觉资产处理 | 已完成 | Admin Web 已支持多选条目批量发起图片理解与视觉资产处理任务，并展示成功数、失败数、失败原因、运行中状态和取消入口；后端已提供批量创建、分页、取消、失败聚合和已完成结果保留语义 | 无 | Classics, AI |
 | 摘要、标签和问答对内联维护 | 部分完成 | 主表摘要、通用内容 tag/qa CRUD 已实现；手工标签绑定、删除标签同步和 AI 标签确认回写已接通 Knowledge 内容引用闭环；三才图会、王圻文档、明代习俗页面已接入 `summary / tags / qa` 内联维护入口，含 AI 候选应用后的刷新联动 | 候选预览与更多确认入口仍未完整对齐 | Classics, Knowledge, AI |
 | 分页、筛选、当前卷搜索和多选 | 部分完成 | 条目分页、筛选、卷过滤、排序查询已实现；Admin Web 已支持门类/卷筛选、关键词搜索、生命周期筛选、分页和 pageSize 切换，并用 Playwright 固定请求体 | 多选结果模型、批量操作和返回聚合未实现 | Classics, Admin Web |
 | 生命周期：草稿、发布、归档、恢复 | 部分完成 | 状态枚举与变更能力在服务层已有实现；Admin Web 已支持按生命周期筛选条目 | 管理接口未完整暴露、恢复策略与版本链路未闭环；本轮页面未提供生命周期编辑 | Classics, Admin Web |
@@ -134,7 +135,7 @@
 | --- | --- | --- | --- | --- |
 | 权限不足用户看不到私有内容 | 部分完成 | 可见性字段与规则已设计 | 权限策略来自 System，调用点和过滤实现未完成 | Classics, System |
 | 批量状态修改成功数、失败数和失败原因 | 未完成 | 需求已记录 | 批处理结果模型和接口响应未形成可执行任务粒度 | Classics |
-| AI 生成候选预览、修改、确认和放弃 | 部分完成 | Classics 已接入 AI 候选列表读取、payload 编辑、应用和拒绝闭环；候选应用支持 `translate / summary / tags / qa / image_analysis` 写回正式内容，并追加版本和回写 AI 候选状态；三才视觉资产支持按 `objectId` 的候选限定与刷新联动 | AI 触发生成入口、流式过程展示、批量候选治理和更细粒度放弃/重试策略未完成 | Classics, AI |
+| AI 生成候选预览、修改、确认和放弃 | 部分完成 | Classics 已接入 AI 候选列表读取、payload 编辑、应用和拒绝闭环；候选应用支持 `translate / summary / tags / qa / image_analysis` 写回正式内容，并追加版本和回写 AI 候选状态；三才视觉资产支持按 `objectId` 的候选限定与刷新联动，且已补齐 `fusion / visual / image_gen` 候选应用规则、失败提示和重试入口 | 流式过程展示、跨内容批量候选治理和更细粒度放弃策略未完成 | Classics, AI |
 | Knowledge 标签治理 | 外部依赖 | Classics 已保存标签主事实、标签名快照，并通过 Knowledge 协作语义解析统一标签、自动创建标签和同步内容引用投影 | 标签合并、同义词治理、分类运营规则仍不属于 Classics | Knowledge |
 | Storage 对象管理 | 外部依赖 | Classics 只保存 `storage_object_id`，但业务域已负责 Wangqi 原始文件和 Sancai 图片的上传入口、归属校验、读取 URL 和 Portal 分享资源访问控制 | 底层对象生命周期、物理删除、清理策略和通用对象管理仍由 Storage 实现 | Classics, Storage |
 | Discovery 搜索和问答 | 外部依赖 | Classics 可提供内容上下文和入口 | 索引、召回、问答生成由 Discovery/AI 实现 | Discovery, AI |
@@ -161,9 +162,8 @@
 
 需要补充：
 
-- 补齐 Classics 到 AI 的触发生成入口。
-- 补齐流式过程展示、失败分类和重试治理。
-- 补齐批量候选治理与更细粒度放弃策略。
+- 补齐流式过程展示与更细粒度失败分类。
+- 补齐跨内容批量候选治理与更细粒度放弃策略。
 
 ### B3 批量操作结果模型
 
@@ -172,8 +172,8 @@
 需要补充：
 
 - 批量公开私有修改结果。
-- 批量视觉资产处理结果。
 - 批量分享创建结果。
+- 将当前批量视觉资产处理结果模型复用到更多 Classics 批处理场景。
 - 统一成功数、失败数、失败原因和取消保留已完成结果语义。
 
 ### B4 权限接入

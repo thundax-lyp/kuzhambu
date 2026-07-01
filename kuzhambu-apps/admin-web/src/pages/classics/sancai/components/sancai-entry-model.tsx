@@ -8,6 +8,7 @@ import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { toEntryFormValues, type SancaiEntryFormValues } from "./sancai-form-values";
+import type { SancaiVisualAssetRefinementCapability } from "../services/sancai-entry-service";
 import * as entryService from "../services/sancai-entry-service";
 import type {
     SancaiEntryImageContentMode,
@@ -85,8 +86,11 @@ interface SancaiEntryModelProps {
     onSubmit: (values: SancaiEntryFormValues) => void;
     onUseVisualAsset?: (asset: SancaiVisualAssetRecord) => void;
     onUpdateVisualAsset?: (asset: SancaiVisualAssetRecord) => void;
-    onCreateImageAnalysisTask?: (asset: SancaiVisualAssetRecord) => void;
-    isCreatingImageAnalysisTask?: boolean;
+    onCreateVisualAssetTask?: (
+        capability: SancaiVisualAssetRefinementCapability,
+        asset: SancaiVisualAssetRecord
+    ) => void;
+    creatingVisualAssetCapability?: SancaiVisualAssetRefinementCapability | null;
     onSelectedVisualAssetChange?: (asset: SancaiVisualAssetRecord | null) => void;
 }
 
@@ -103,8 +107,8 @@ export const SancaiEntryModel = ({
     onSubmit,
     onUseVisualAsset,
     onUpdateVisualAsset,
-    onCreateImageAnalysisTask,
-    isCreatingImageAnalysisTask = false,
+    onCreateVisualAssetTask,
+    creatingVisualAssetCapability = null,
     onSelectedVisualAssetChange
 }: SancaiEntryModelProps) => {
     const { message: messageApi } = App.useApp();
@@ -249,6 +253,12 @@ export const SancaiEntryModel = ({
                   }
                 : currentForm;
         });
+    };
+    const createVisualAssetTask = (capability: SancaiVisualAssetRefinementCapability) => {
+        if (!selectedVisualAsset || !onCreateVisualAssetTask) {
+            return;
+        }
+        onCreateVisualAssetTask(capability, selectedVisualAsset);
     };
     const uploadImageMutation = useMutation({
         mutationFn: (file: File) => {
@@ -525,19 +535,47 @@ export const SancaiEntryModel = ({
                                     })}
                                 </KuzhambuSpace>
                                 <KuzhambuSpace wrap>
-                                    {onCreateImageAnalysisTask ? (
-                                        <Button
-                                            type="default"
-                                            loading={isCreatingImageAnalysisTask}
-                                            onClick={() => {
-                                                if (!selectedVisualAsset) {
-                                                    return;
+                                    {onCreateVisualAssetTask ? (
+                                        <>
+                                            <Button
+                                                type="default"
+                                                loading={
+                                                    creatingVisualAssetCapability ===
+                                                    "image_analysis"
                                                 }
-                                                onCreateImageAnalysisTask(selectedVisualAsset);
-                                            }}
-                                        >
-                                            创建图片理解任务
-                                        </Button>
+                                                onClick={() => {
+                                                    createVisualAssetTask("image_analysis");
+                                                }}
+                                            >
+                                                创建图片理解任务
+                                            </Button>
+                                            <Button
+                                                loading={creatingVisualAssetCapability === "fusion"}
+                                                onClick={() => {
+                                                    createVisualAssetTask("fusion");
+                                                }}
+                                            >
+                                                创建信息融合任务
+                                            </Button>
+                                            <Button
+                                                loading={creatingVisualAssetCapability === "visual"}
+                                                onClick={() => {
+                                                    createVisualAssetTask("visual");
+                                                }}
+                                            >
+                                                创建视觉描述任务
+                                            </Button>
+                                            <Button
+                                                loading={
+                                                    creatingVisualAssetCapability === "image_gen"
+                                                }
+                                                onClick={() => {
+                                                    createVisualAssetTask("image_gen");
+                                                }}
+                                            >
+                                                创建生图任务
+                                            </Button>
+                                        </>
                                     ) : null}
                                     <Button
                                         type="primary"

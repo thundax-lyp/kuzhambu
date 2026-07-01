@@ -75,8 +75,10 @@ def _description(usecase: AiUsecase) -> str:
         f"{usecase.description}\n\n"
         f"调用方固定为 kuzhambu-ai；capability 必须为 `{usecase.capability.value}`；"
         f"options.stream 必须为 `{str(usecase.stream).lower()}`；响应模式为 {stream_mode}；"
-        "最终态字段固定包含 status、usage、failureStage、fallbackUsed 和 result 或 "
-        "artifactReference。"
+        "最终态字段固定包含 status、usage、failureStage、fallbackUsed、errorType、"
+        "errorMessage 和 result 或 artifactReference。"
+        "批量场景按 requestId + traceId 识别单元最终态；单元失败只影响当前单元，"
+        "上游可直接基于 failureStage、errorType、errorMessage 聚合失败摘要。"
     )
 
 

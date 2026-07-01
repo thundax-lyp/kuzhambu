@@ -65,6 +65,11 @@ public interface SancaiAssetApplicationService {
     List<SancaiVisualAsset> listVisualAssets(SancaiEntryId entryId);
 
     /**
+     * 将已确认的信息融合结果写回到目标视觉资产，仅更新 fusionDescription。
+     */
+    void applyFusionDescription(SancaiEntryId entryId, SancaiVisualAssetId visualAssetId, String fusionDescription);
+
+    /**
      * 基于既有视觉资产生成新的生图版本，不隐式切换当前使用版本。
      */
     SancaiVisualAsset createGeneratedVisualAssetVersion(

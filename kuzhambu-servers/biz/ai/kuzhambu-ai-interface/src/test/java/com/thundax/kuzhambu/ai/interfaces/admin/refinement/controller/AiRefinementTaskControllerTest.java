@@ -2,6 +2,9 @@ package com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import com.thundax.kuzhambu.ai.application.batch.command.AiBatchJobCreateCommand;
+import com.thundax.kuzhambu.ai.application.batch.result.AiBatchJobResult;
+import com.thundax.kuzhambu.ai.application.batch.service.AiBatchJobApplicationService;
 import com.thundax.kuzhambu.ai.application.refinement.command.AiRefinementRequestCommand;
 import com.thundax.kuzhambu.ai.application.refinement.service.AiRefinementTaskApplicationService;
 import com.thundax.kuzhambu.ai.domain.refinement.model.entity.AiRefinementTask;
@@ -46,11 +49,30 @@ class AiRefinementTaskControllerTest {
                 "cancel",
                 "ai:refinement:edit",
                 AiRefinementRequests.TaskCancelRequest.class);
+        assertPostMapping(
+                AiRefinementTaskController.class,
+                "createBatch",
+                "batch/create",
+                "ai:refinement:edit",
+                AiRefinementRequests.BatchCreateRequest.class);
+        assertPostMapping(
+                AiRefinementTaskController.class,
+                "getBatch",
+                "batch/get",
+                "ai:refinement:view",
+                AiRefinementRequests.BatchIdRequest.class);
+        assertPostMapping(
+                AiRefinementTaskController.class,
+                "cancelBatch",
+                "batch/cancel",
+                "ai:refinement:edit",
+                AiRefinementRequests.BatchIdRequest.class);
     }
 
     @Test
     void controllerShouldMapTaskLifecycleResponses() {
-        AiRefinementTaskController controller = new AiRefinementTaskController(new FakeTaskApplicationService());
+        AiRefinementTaskController controller =
+                new AiRefinementTaskController(new FakeTaskApplicationService(), new NoOpBatchJobService());
 
         AiRefinementRequests.RefinementRequest addRequest = new AiRefinementRequests.RefinementRequest();
         addRequest.setCapability("summary");
@@ -109,6 +131,39 @@ class AiRefinementTaskControllerTest {
         assertEquals(expectedPath, mapping.value()[0]);
         HasPermission permission = method.getAnnotation(HasPermission.class);
         assertEquals(permissionValue, permission.value()[0]);
+    }
+
+    private static final class NoOpBatchJobService implements AiBatchJobApplicationService {
+
+        @Override
+        public AiBatchJobResult get(Long batchId) {
+            return null;
+        }
+
+        @Override
+        public Long create(AiBatchJobCreateCommand command) {
+            return null;
+        }
+
+        @Override
+        public boolean canDispatchNextUnit(Long batchId) {
+            return false;
+        }
+
+        @Override
+        public AiBatchJobResult recordSuccess(Long batchId) {
+            return null;
+        }
+
+        @Override
+        public AiBatchJobResult recordFailure(Long batchId, String failureSummaryJson) {
+            return null;
+        }
+
+        @Override
+        public AiBatchJobResult cancel(Long batchId) {
+            return null;
+        }
     }
 
     private static final class FakeTaskApplicationService implements AiRefinementTaskApplicationService {

@@ -27,4 +27,16 @@ public class SancaiVisualAsset {
     private String fusionDescription;
     private String visualDescription;
     private String generationParamsJson;
+
+    public void updateImageAnalysisMarkdown(String imageAnalysisMarkdown) {
+        this.imageAnalysisMarkdown = imageAnalysisMarkdown;
+    }
+
+    public void updateFusionDescription(String fusionDescription) {
+        this.fusionDescription = fusionDescription;
+    }
+
+    public void updateVisualDescription(String visualDescription) {
+        this.visualDescription = visualDescription;
+    }
 }

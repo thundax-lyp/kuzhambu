@@ -376,6 +376,29 @@ describe("sancai service request contracts", () => {
             pageSize: 10,
             status: "COMPLETED"
         });
+
+        await entryService.createRefinementBatch({
+            scope: "classics",
+            capability: "image_analysis",
+            contentType: "SANCAI_ENTRY",
+            totalCount: 2
+        });
+        expectLastCall("POST", "/ai/refinement/task/batch/create", {
+            scope: "classics",
+            capability: "image_analysis",
+            contentType: "SANCAI_ENTRY",
+            totalCount: 2
+        });
+
+        await entryService.getRefinementBatch(8801);
+        expectLastCall("POST", "/ai/refinement/task/batch/get", {
+            batchId: 8801
+        });
+
+        await entryService.cancelRefinementBatch(8801);
+        expectLastCall("POST", "/ai/refinement/task/batch/cancel", {
+            batchId: 8801
+        });
     });
 
     it("sends AI candidate contracts with objectId payload", async () => {

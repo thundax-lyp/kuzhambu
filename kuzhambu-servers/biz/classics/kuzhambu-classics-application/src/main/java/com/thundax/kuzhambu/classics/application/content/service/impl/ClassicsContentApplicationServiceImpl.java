@@ -461,70 +461,14 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                 throw new BizException("三才内容不存在: " + contentId.value());
             }
             if ("image_analysis".equals(capability)) {
-                if (command.getObjectId() == null) {
-                    throw new BizException("AI候选应用参数不完整");
-                }
-                if (sancaiAssetApplicationService == null) {
-                    throw new BizException("三才图片服务未就绪");
-                }
-                SancaiVisualAsset visualAsset = findVisualAsset(contentId, command.getObjectId());
-                if (visualAsset == null) {
-                    throw new BizException("三才视觉资产不存在: " + command.getObjectId());
-                }
-                String imageAnalysisMarkdown = aiCandidatePayloadParser.parseText(command.getResultPayload());
-                visualAsset.setImageAnalysisMarkdown(imageAnalysisMarkdown);
-                sancaiAssetApplicationService.updateVisualAsset(visualAsset);
+                applySancaiImageAnalysisCandidate(contentId, command);
             } else if ("visual".equals(capability)) {
-                if (command.getObjectId() == null) {
-                    throw new BizException("AI候选应用参数不完整");
-                }
-                if (sancaiAssetApplicationService == null) {
-                    throw new BizException("三才图片服务未就绪");
-                }
-                SancaiVisualAsset visualAsset = findVisualAsset(contentId, command.getObjectId());
-                if (visualAsset == null) {
-                    throw new BizException("三才视觉资产不存在: " + command.getObjectId());
-                }
-                String visualDescription = aiCandidatePayloadParser.parseText(command.getResultPayload());
-                visualAsset.setVisualDescription(visualDescription);
-                sancaiAssetApplicationService.updateVisualAsset(visualAsset);
+                applySancaiVisualDescriptionCandidate(contentId, command);
             } else if ("fusion".equals(capability)) {
-                if (command.getObjectId() == null) {
-                    throw new BizException("AI候选应用参数不完整");
-                }
-                if (sancaiAssetApplicationService == null) {
-                    throw new BizException("三才图片服务未就绪");
-                }
-                SancaiVisualAsset visualAsset = findVisualAsset(contentId, command.getObjectId());
-                if (visualAsset == null) {
-                    throw new BizException("三才视觉资产不存在: " + command.getObjectId());
-                }
-                String fusionDescription = aiCandidatePayloadParser.parseText(command.getResultPayload());
-                visualAsset.setFusionDescription(fusionDescription);
-                sancaiAssetApplicationService.updateVisualAsset(visualAsset);
+                applySancaiFusionCandidate(contentId, command);
             } else if ("image_gen".equals(capability)) {
-                if (command.getObjectId() == null) {
-                    throw new BizException("AI候选应用参数不完整");
-                }
-                if (sancaiAssetApplicationService == null) {
-                    throw new BizException("三才图片服务未就绪");
-                }
-                SancaiVisualAsset visualAsset = findVisualAsset(contentId, command.getObjectId());
-                if (visualAsset == null) {
-                    throw new BizException("三才视觉资产不存在: " + command.getObjectId());
-                }
-                Long generatedStorageObjectId =
-                        aiCandidatePayloadParser.parseStorageObjectId(command.getResultPayload());
-                SancaiVisualAsset generatedAsset = sancaiAssetApplicationService.createGeneratedVisualAssetVersion(
-                        SancaiEntryId.of(contentId.value()),
-                        visualAsset.getId(),
-                        StorageObjectId.of(generatedStorageObjectId));
-                aiFacade.markCandidateApplied(MarkAiCandidateAppliedFacadeRequest.builder()
-                        .candidateId(command.getCandidateId())
-                        .resultFormat(command.getResultFormat())
-                        .resultPayload(command.getResultPayload())
-                        .appliedAt(Instant.now())
-                        .build());
+                SancaiVisualAsset generatedAsset = applySancaiImageGenCandidate(contentId, command);
+                markAiCandidateApplied(command);
                 return new AiCandidateApplyContentResult(
                         contentType,
                         contentId.value(),
@@ -597,12 +541,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                     || "visual".equals(capability)
                     || "fusion".equals(capability)
                     || "image_gen".equals(capability)) {
-                aiFacade.markCandidateApplied(MarkAiCandidateAppliedFacadeRequest.builder()
-                        .candidateId(command.getCandidateId())
-                        .resultFormat(command.getResultFormat())
-                        .resultPayload(command.getResultPayload())
-                        .appliedAt(Instant.now())
-                        .build());
+                markAiCandidateApplied(command);
                 return new AiCandidateApplyContentResult(contentType, contentId.value(), null, null);
             }
             throw new BizException("内容不存在");
@@ -610,12 +549,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         ClassicsContentVersion version = applyAiResult(content, changeSummary);
         persistVersionMarkers(content);
         publishSearchSyncAfterCommit(content);
-        aiFacade.markCandidateApplied(MarkAiCandidateAppliedFacadeRequest.builder()
-                .candidateId(command.getCandidateId())
-                .resultFormat(command.getResultFormat())
-                .resultPayload(command.getResultPayload())
-                .appliedAt(Instant.now())
-                .build());
+        markAiCandidateApplied(command);
         return new AiCandidateApplyContentResult(
                 contentType,
                 contentId.value(),
@@ -635,6 +569,78 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                         && objectId.equals(visualAsset.getId().value()))
                 .findFirst()
                 .orElse(null);
+    }
+
+    private void applySancaiImageAnalysisCandidate(
+            ClassicsContentId contentId, AiCandidateApplyContentCommand command) {
+        SancaiVisualAsset visualAsset = requireSancaiVisualAsset(contentId, command);
+        visualAsset.setImageAnalysisMarkdown(parseRequiredCandidateText(command, "图片理解"));
+        sancaiAssetApplicationService.updateVisualAsset(visualAsset);
+    }
+
+    private void applySancaiVisualDescriptionCandidate(
+            ClassicsContentId contentId, AiCandidateApplyContentCommand command) {
+        SancaiVisualAsset visualAsset = requireSancaiVisualAsset(contentId, command);
+        visualAsset.setVisualDescription(parseRequiredCandidateText(command, "视觉描述"));
+        sancaiAssetApplicationService.updateVisualAsset(visualAsset);
+    }
+
+    private void applySancaiFusionCandidate(ClassicsContentId contentId, AiCandidateApplyContentCommand command) {
+        SancaiVisualAsset visualAsset = requireSancaiVisualAsset(contentId, command);
+        sancaiAssetApplicationService.applyFusionDescription(
+                SancaiEntryId.of(contentId.value()), visualAsset.getId(), parseRequiredCandidateText(command, "信息融合"));
+    }
+
+    private SancaiVisualAsset applySancaiImageGenCandidate(
+            ClassicsContentId contentId, AiCandidateApplyContentCommand command) {
+        SancaiVisualAsset visualAsset = requireSancaiVisualAsset(contentId, command);
+        return sancaiAssetApplicationService.createGeneratedVisualAssetVersion(
+                SancaiEntryId.of(contentId.value()),
+                visualAsset.getId(),
+                StorageObjectId.of(parseGeneratedStorageObjectId(command)));
+    }
+
+    private SancaiVisualAsset requireSancaiVisualAsset(
+            ClassicsContentId contentId, AiCandidateApplyContentCommand command) {
+        if (command == null || command.getObjectId() == null) {
+            throw new BizException("三才视觉资产候选应用参数不完整");
+        }
+        if (sancaiAssetApplicationService == null) {
+            throw new BizException("三才图片服务未就绪");
+        }
+        SancaiVisualAsset visualAsset = findVisualAsset(contentId, command.getObjectId());
+        if (visualAsset == null) {
+            throw new BizException("三才视觉资产不存在: " + command.getObjectId());
+        }
+        if (visualAsset.getId() == null) {
+            throw new BizException("三才视觉资产标识不存在: " + command.getObjectId());
+        }
+        return visualAsset;
+    }
+
+    private String parseRequiredCandidateText(AiCandidateApplyContentCommand command, String capabilityLabel) {
+        try {
+            return aiCandidatePayloadParser.parseText(command.getResultPayload());
+        } catch (BizException ex) {
+            throw new BizException("AI候选" + capabilityLabel + "结果不可用: " + ex.getMessage());
+        }
+    }
+
+    private Long parseGeneratedStorageObjectId(AiCandidateApplyContentCommand command) {
+        try {
+            return aiCandidatePayloadParser.parseStorageObjectId(command.getResultPayload());
+        } catch (BizException ex) {
+            throw new BizException("AI候选生图结果不可用: " + ex.getMessage());
+        }
+    }
+
+    private void markAiCandidateApplied(AiCandidateApplyContentCommand command) {
+        aiFacade.markCandidateApplied(MarkAiCandidateAppliedFacadeRequest.builder()
+                .candidateId(command.getCandidateId())
+                .resultFormat(command.getResultFormat())
+                .resultPayload(command.getResultPayload())
+                .appliedAt(Instant.now())
+                .build());
     }
 
     private String resolveChangeSummary(String capability, String changeSummary) {

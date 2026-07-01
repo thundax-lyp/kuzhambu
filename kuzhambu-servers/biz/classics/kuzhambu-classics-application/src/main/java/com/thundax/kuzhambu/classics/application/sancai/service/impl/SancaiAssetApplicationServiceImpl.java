@@ -302,20 +302,38 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    public void applyFusionDescription(
+            SancaiEntryId entryId, SancaiVisualAssetId visualAssetId, String fusionDescription) {
+        if (entryId == null || visualAssetId == null || StringUtils.isBlank(fusionDescription)) {
+            throw new BizException("三才信息融合写回参数不完整");
+        }
+        SancaiVisualAsset currentAsset = requireVisualAsset(entryId, visualAssetId);
+        validateVisualWeights(currentAsset, "三才信息融合写回");
+        if (StringUtils.isBlank(currentAsset.getImageAnalysisMarkdown())) {
+            throw new BizException("三才信息融合写回失败：视觉资产缺少图片理解结果");
+        }
+        repository.updateVisualAssetFusionDescription(visualAssetId, fusionDescription.trim());
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public SancaiVisualAsset createGeneratedVisualAssetVersion(
             SancaiEntryId entryId, SancaiVisualAssetId visualAssetId, StorageObjectId generatedImageStorageObjectId) {
         if (entryId == null || visualAssetId == null || generatedImageStorageObjectId == null) {
             throw new BizException("三才生图版本参数不完整");
         }
-        SancaiVisualAsset currentAsset = repository.getVisualAssetById(visualAssetId);
-        if (currentAsset == null || currentAsset.getEntryId() == null || !entryId.equals(currentAsset.getEntryId())) {
-            throw new BizException("三才视觉资产不存在: " + visualAssetId.value());
+        SancaiVisualAsset currentAsset = requireVisualAsset(entryId, visualAssetId);
+        validateVisualWeights(currentAsset, "三才生图版本创建");
+        if (currentAsset.getSourceImageStorageObjectId() == null) {
+            throw new BizException("三才生图版本创建失败：视觉资产缺少原图");
         }
-        validateVisualWeights(currentAsset);
+        if (StringUtils.isBlank(currentAsset.getVisualDescription())) {
+            throw new BizException("三才生图版本创建失败：视觉资产缺少视觉描述");
+        }
 
         SancaiVisualAsset nextAsset = new SancaiVisualAsset();
         nextAsset.setEntryId(entryId);
-        nextAsset.setVersionNo(nextVisualAssetVersionNo(entryId));
+        nextAsset.setVersionNo(repository.maxVisualAssetVersionNo(entryId) + 1);
         nextAsset.setStatus(SancaiVisualAssetStatus.READY);
         nextAsset.setSourceImageStorageObjectId(currentAsset.getSourceImageStorageObjectId());
         nextAsset.setGeneratedImageStorageObjectId(generatedImageStorageObjectId);
@@ -628,14 +646,18 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     }
 
     private static void validateVisualWeights(SancaiVisualAsset visualAsset) {
+        validateVisualWeights(visualAsset, "三才视觉资产保存");
+    }
+
+    private static void validateVisualWeights(SancaiVisualAsset visualAsset, String actionLabel) {
         if (visualAsset == null) {
-            throw new BizException("三才视觉资产不能为空");
+            throw new BizException(actionLabel + "失败：视觉资产不能为空");
         }
         if (visualAsset.getTextWeight() == null) {
-            throw new BizException("三才视觉资产文本权重不能为空");
+            throw new BizException(actionLabel + "失败：文本权重不能为空");
         }
         if (visualAsset.getImageWeight() == null) {
-            throw new BizException("三才视觉资产图片权重不能为空");
+            throw new BizException(actionLabel + "失败：图片权重不能为空");
         }
     }
 
@@ -684,18 +706,5 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
             return null;
         }
         return IMAGE_OWNER_ID_PREFIX + entryId.value() + IMAGE_OWNER_ID_SEPARATOR + imageId.value();
-    }
-
-    private int nextVisualAssetVersionNo(SancaiEntryId entryId) {
-        List<SancaiVisualAsset> visualAssets = repository.listVisualAssetsByEntryId(entryId);
-        if (visualAssets == null || visualAssets.isEmpty()) {
-            return 1;
-        }
-        return visualAssets.stream()
-                        .filter(java.util.Objects::nonNull)
-                        .mapToInt(SancaiVisualAsset::getVersionNo)
-                        .max()
-                        .orElse(0)
-                + 1;
     }
 }

@@ -169,17 +169,29 @@ public class SancaiAssetRepositoryImpl implements SancaiAssetRepository {
     }
 
     @Override
-    public int updateVisualAssetById(
-            SancaiVisualAssetId visualAssetId,
-            String imageAnalysisMarkdown,
-            String fusionDescription,
-            String visualDescription) {
+    public int updateVisualAssetImageAnalysisMarkdown(SancaiVisualAssetId visualAssetId, String imageAnalysisMarkdown) {
         return visualAssetMapper.update(
                 null,
                 new LambdaUpdateWrapper<SancaiVisualAssetDO>()
                         .eq(SancaiVisualAssetDO::getId, SancaiVisualAssetIdCodec.toValue(visualAssetId))
-                        .set(SancaiVisualAssetDO::getImageAnalysisMarkdown, imageAnalysisMarkdown)
-                        .set(SancaiVisualAssetDO::getFusionDescription, fusionDescription)
+                        .set(SancaiVisualAssetDO::getImageAnalysisMarkdown, imageAnalysisMarkdown));
+    }
+
+    @Override
+    public int updateVisualAssetFusionDescription(SancaiVisualAssetId visualAssetId, String fusionDescription) {
+        return visualAssetMapper.update(
+                null,
+                new LambdaUpdateWrapper<SancaiVisualAssetDO>()
+                        .eq(SancaiVisualAssetDO::getId, SancaiVisualAssetIdCodec.toValue(visualAssetId))
+                        .set(SancaiVisualAssetDO::getFusionDescription, StringUtils.trimToNull(fusionDescription)));
+    }
+
+    @Override
+    public int updateVisualAssetVisualDescription(SancaiVisualAssetId visualAssetId, String visualDescription) {
+        return visualAssetMapper.update(
+                null,
+                new LambdaUpdateWrapper<SancaiVisualAssetDO>()
+                        .eq(SancaiVisualAssetDO::getId, SancaiVisualAssetIdCodec.toValue(visualAssetId))
                         .set(SancaiVisualAssetDO::getVisualDescription, visualDescription));
     }
 
@@ -204,6 +216,14 @@ public class SancaiAssetRepositoryImpl implements SancaiAssetRepository {
                 visualAssetMapper.selectList(new LambdaQueryWrapper<SancaiVisualAssetDO>()
                         .eq(SancaiVisualAssetDO::getEntryId, SancaiEntryIdCodec.toValue(entryId))
                         .orderByDesc(SancaiVisualAssetDO::getVersionNo)));
+    }
+
+    @Override
+    public int maxVisualAssetVersionNo(SancaiEntryId entryId) {
+        List<Object> values = visualAssetMapper.selectObjs(new QueryWrapper<SancaiVisualAssetDO>()
+                .select("max(version_no)")
+                .eq("entry_id", SancaiEntryIdCodec.toValue(entryId)));
+        return maxPriority(values);
     }
 
     @Override

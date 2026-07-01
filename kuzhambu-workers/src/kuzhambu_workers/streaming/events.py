@@ -1,6 +1,7 @@
 from itertools import count
 from typing import Any, Protocol
 
+from kuzhambu_workers.schemas.ai import ArtifactReference, FailureStage
 from kuzhambu_workers.schemas.stream import StreamEvent, StreamEventType
 
 _EVENT_COUNTER = count(1)
@@ -93,6 +94,28 @@ def completed_event(
         result=result,
         usage=usage,
     )
+
+
+def final_state_extra(
+    *,
+    status: str,
+    failure_stage: FailureStage | None,
+    fallback_used: bool,
+    artifact_reference: ArtifactReference | None,
+    error_type: str | None = None,
+    error_message: str | None = None,
+) -> dict[str, Any]:
+    artifact_reference_payload = (
+        None if artifact_reference is None else artifact_reference.model_dump(mode="json")
+    )
+    return {
+        "status": status,
+        "failureStage": None if failure_stage is None else failure_stage.value,
+        "fallbackUsed": fallback_used,
+        "artifactReference": artifact_reference_payload,
+        "errorType": error_type,
+        "errorMessage": error_message,
+    }
 
 
 def artifact_chunk_event(

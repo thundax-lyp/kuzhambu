@@ -59,6 +59,43 @@ def test_usecase_registry_exposes_metadata_by_path() -> None:
     ("path", "capability", "stream", "output"),
     [
         (
+            "/internal/ai/classics/sancai/fusion",
+            AiCapability.FUSION,
+            False,
+            ResultFormat.MARKDOWN,
+        ),
+        (
+            "/internal/ai/classics/sancai/visual-description",
+            AiCapability.VISUAL,
+            False,
+            ResultFormat.TEXT,
+        ),
+        (
+            "/internal/ai/classics/sancai/image-gen",
+            AiCapability.IMAGE_GEN,
+            True,
+            ResultFormat.ARTIFACT,
+        ),
+    ],
+)
+def test_classics_visual_usecases_have_expected_metadata(
+    path: str,
+    capability: AiCapability,
+    stream: bool,
+    output: ResultFormat,
+) -> None:
+    usecase = require_usecase(path)
+
+    assert usecase.domain == AiUsecaseDomain.CLASSICS
+    assert usecase.capability == capability
+    assert usecase.stream is stream
+    assert usecase.output == output
+
+
+@pytest.mark.parametrize(
+    ("path", "capability", "stream", "output"),
+    [
+        (
             "/internal/ai/discovery/answer-generation/stream",
             AiCapability.ANSWER_GENERATION,
             True,

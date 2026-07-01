@@ -24,6 +24,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @WrappedApiController
 public class AiRefinementController {
 
+    private static final String CAPABILITY_TRANSLATE = "translate";
+    private static final String CAPABILITY_SUMMARY = "summary";
+    private static final String CAPABILITY_TAGS = "tags";
+    private static final String CAPABILITY_QA = "qa";
+    private static final String CAPABILITY_IMAGE_ANALYSIS = "image_analysis";
+    private static final String CAPABILITY_FUSION = "fusion";
+    private static final String CAPABILITY_VISUAL = "visual";
+    private static final String CAPABILITY_IMAGE_GEN = "image_gen";
+    private static final String CAPABILITY_SPLIT = "split";
+
     private final AiRefinementApplicationService refinementService;
 
     public AiRefinementController(AiRefinementApplicationService refinementService) {
@@ -37,7 +47,7 @@ public class AiRefinementController {
     @PostMapping(value = "translate")
     public AiRefinementResponses.CandidateResultResponse translate(
             @Valid @RequestBody AiRefinementRequests.RefinementRequest request) {
-        return invoke(request, refinementService::translate);
+        return invoke(request, CAPABILITY_TRANSLATE, refinementService::translate);
     }
 
     @Operation(summary = "AI摘要", description = "ai:refinement:edit")
@@ -47,7 +57,7 @@ public class AiRefinementController {
     @PostMapping(value = "summary")
     public AiRefinementResponses.CandidateResultResponse summarize(
             @Valid @RequestBody AiRefinementRequests.RefinementRequest request) {
-        return invoke(request, refinementService::summarize);
+        return invoke(request, CAPABILITY_SUMMARY, refinementService::summarize);
     }
 
     @Operation(summary = "AI标签", description = "ai:refinement:edit")
@@ -57,7 +67,7 @@ public class AiRefinementController {
     @PostMapping(value = "tags")
     public AiRefinementResponses.CandidateResultResponse generateTags(
             @Valid @RequestBody AiRefinementRequests.RefinementRequest request) {
-        return invoke(request, refinementService::generateTags);
+        return invoke(request, CAPABILITY_TAGS, refinementService::generateTags);
     }
 
     @Operation(summary = "AI问答对", description = "ai:refinement:edit")
@@ -67,7 +77,7 @@ public class AiRefinementController {
     @PostMapping(value = "qa")
     public AiRefinementResponses.CandidateResultResponse generateQa(
             @Valid @RequestBody AiRefinementRequests.RefinementRequest request) {
-        return invoke(request, refinementService::generateQa);
+        return invoke(request, CAPABILITY_QA, refinementService::generateQa);
     }
 
     @Operation(summary = "AI图片理解", description = "ai:refinement:edit")
@@ -77,7 +87,17 @@ public class AiRefinementController {
     @PostMapping(value = "image-analysis")
     public AiRefinementResponses.CandidateResultResponse analyzeImage(
             @Valid @RequestBody AiRefinementRequests.RefinementRequest request) {
-        return invoke(request, refinementService::analyzeImage);
+        return invoke(request, CAPABILITY_IMAGE_ANALYSIS, refinementService::analyzeImage);
+    }
+
+    @Operation(summary = "AI信息融合", description = "ai:refinement:edit")
+    @ApiImplicitParams({})
+    @HasPermission(value = "ai:refinement:edit")
+    @SysLogger(value = "信息融合")
+    @PostMapping(value = "fusion")
+    public AiRefinementResponses.CandidateResultResponse fuseVisualContext(
+            @Valid @RequestBody AiRefinementRequests.RefinementRequest request) {
+        return invoke(request, CAPABILITY_FUSION, refinementService::fuseVisualContext);
     }
 
     @Operation(summary = "AI视觉描述", description = "ai:refinement:edit")
@@ -87,7 +107,17 @@ public class AiRefinementController {
     @PostMapping(value = "visual")
     public AiRefinementResponses.CandidateResultResponse describeVisual(
             @Valid @RequestBody AiRefinementRequests.RefinementRequest request) {
-        return invoke(request, refinementService::describeVisual);
+        return invoke(request, CAPABILITY_VISUAL, refinementService::describeVisual);
+    }
+
+    @Operation(summary = "AI生图", description = "ai:refinement:edit")
+    @ApiImplicitParams({})
+    @HasPermission(value = "ai:refinement:edit")
+    @SysLogger(value = "生图")
+    @PostMapping(value = "image-gen")
+    public AiRefinementResponses.CandidateResultResponse generateImage(
+            @Valid @RequestBody AiRefinementRequests.RefinementRequest request) {
+        return invoke(request, CAPABILITY_IMAGE_GEN, refinementService::generateImage);
     }
 
     @Operation(summary = "AI条目拆分", description = "ai:refinement:edit")
@@ -97,13 +127,14 @@ public class AiRefinementController {
     @PostMapping(value = "split")
     public AiRefinementResponses.CandidateResultResponse splitEntry(
             @Valid @RequestBody AiRefinementRequests.RefinementRequest request) {
-        return invoke(request, refinementService::splitEntry);
+        return invoke(request, CAPABILITY_SPLIT, refinementService::splitEntry);
     }
 
     private AiRefinementResponses.CandidateResultResponse invoke(
             AiRefinementRequests.RefinementRequest request,
+            String capability,
             Function<AiRefinementRequestCommand, AiCandidateResult> invocation) {
         return AiRefinementInterfaceAssembler.toResponse(
-                invocation.apply(AiRefinementInterfaceAssembler.toCommand(request)));
+                invocation.apply(AiRefinementInterfaceAssembler.toCommand(request, capability)));
     }
 }
