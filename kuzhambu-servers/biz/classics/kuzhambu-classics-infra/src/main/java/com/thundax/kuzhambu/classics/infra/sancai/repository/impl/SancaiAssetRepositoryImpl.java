@@ -169,17 +169,29 @@ public class SancaiAssetRepositoryImpl implements SancaiAssetRepository {
     }
 
     @Override
-    public int updateVisualAssetById(
-            SancaiVisualAssetId visualAssetId,
-            String imageAnalysisMarkdown,
-            String fusionDescription,
-            String visualDescription) {
+    public int updateVisualAssetImageAnalysisMarkdown(SancaiVisualAssetId visualAssetId, String imageAnalysisMarkdown) {
         return visualAssetMapper.update(
                 null,
                 new LambdaUpdateWrapper<SancaiVisualAssetDO>()
                         .eq(SancaiVisualAssetDO::getId, SancaiVisualAssetIdCodec.toValue(visualAssetId))
-                        .set(SancaiVisualAssetDO::getImageAnalysisMarkdown, imageAnalysisMarkdown)
-                        .set(SancaiVisualAssetDO::getFusionDescription, fusionDescription)
+                        .set(SancaiVisualAssetDO::getImageAnalysisMarkdown, imageAnalysisMarkdown));
+    }
+
+    @Override
+    public int updateVisualAssetFusionDescription(SancaiVisualAssetId visualAssetId, String fusionDescription) {
+        return visualAssetMapper.update(
+                null,
+                new LambdaUpdateWrapper<SancaiVisualAssetDO>()
+                        .eq(SancaiVisualAssetDO::getId, SancaiVisualAssetIdCodec.toValue(visualAssetId))
+                        .set(SancaiVisualAssetDO::getFusionDescription, fusionDescription));
+    }
+
+    @Override
+    public int updateVisualAssetVisualDescription(SancaiVisualAssetId visualAssetId, String visualDescription) {
+        return visualAssetMapper.update(
+                null,
+                new LambdaUpdateWrapper<SancaiVisualAssetDO>()
+                        .eq(SancaiVisualAssetDO::getId, SancaiVisualAssetIdCodec.toValue(visualAssetId))
                         .set(SancaiVisualAssetDO::getVisualDescription, visualDescription));
     }
 

@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `SancaiVisualAsset/SancaiAssetRepository/SancaiAssetRepositoryImpl`：收紧视觉资产实体与仓储字段写回规则
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-SANCAI-AI-WORKERS-FULL-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-domain/src/main/java/com/thundax/kuzhambu/classics/domain/sancai/model/entity/SancaiVisualAsset.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-domain/src/main/java/com/thundax/kuzhambu/classics/domain/sancai/repository/SancaiAssetRepository.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/java/com/thundax/kuzhambu/classics/infra/sancai/repository/impl/SancaiAssetRepositoryImpl.java`
-    - 处理动作：按 RUNBOOK 6.1 固定 `image_analysis_markdown`、`fusion_description`、`visual_description`、`generated_image_storage_object_id` 的字段分工
-    - 验收点：仓储更新路径不再允许跨能力污染字段，且 artifact id 不会写入正式生成图字段
-    - 重要度：10/10
-
 - [ ] `ai.py/events.py/ai_routes.py`：收紧 workers 最终态 schema 与 SSE 口径
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-SANCAI-AI-WORKERS-FULL-CLOSURE.md`
