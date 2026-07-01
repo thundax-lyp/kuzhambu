@@ -34,18 +34,23 @@ public final class AiRefinementResponses {
         @JsonProperty(value = "capability")
         private String capability;
 
+        @Schema(description = "失败阶段；当 status=FAILED 或 PARTIAL 时必须返回页面可读阶段标识")
         @JsonProperty(value = "failureStage")
         private String failureStage;
 
+        @Schema(description = "候选结果格式；TEXT 表示文本候选，STRUCTURED 表示结构化候选")
         @JsonProperty(value = "resultFormat")
         private String resultFormat;
 
+        @Schema(description = "候选结果载荷；正式写回前仅作为候选内容，不直接代表正式业务事实")
         @JsonProperty(value = "resultPayload")
         private String resultPayload;
 
+        @Schema(description = "失败类型；当 status=FAILED 或 PARTIAL 时必须可供页面直接展示或重试分流")
         @JsonProperty(value = "errorType")
         private String errorType;
 
+        @Schema(description = "失败详情；当 status=FAILED 或 PARTIAL 时不得返回空串占位")
         @JsonProperty(value = "errorMessage")
         private String errorMessage;
     }
@@ -131,18 +136,23 @@ public final class AiRefinementResponses {
         @JsonProperty(value = "candidateId")
         private Long candidateId;
 
+        @Schema(description = "失败阶段；当 status=FAILED 或 PARTIAL 时必须返回页面可读阶段标识")
         @JsonProperty(value = "failureStage")
         private String failureStage;
 
+        @Schema(description = "失败类型；用于页面失败提示和重试策略判断")
         @JsonProperty(value = "errorType")
         private String errorType;
 
+        @Schema(description = "失败详情；用于页面直接展示，不得返回空串占位")
         @JsonProperty(value = "errorMessage")
         private String errorMessage;
 
+        @Schema(description = "结果预览格式；仅表示当前任务结果预览类型，不代表正式写回字段")
         @JsonProperty(value = "resultFormat")
         private String resultFormat;
 
+        @Schema(description = "结果预览内容；用于页面展示任务结果摘要或失败前最后结果")
         @JsonProperty(value = "resultPreview")
         private String resultPreview;
 

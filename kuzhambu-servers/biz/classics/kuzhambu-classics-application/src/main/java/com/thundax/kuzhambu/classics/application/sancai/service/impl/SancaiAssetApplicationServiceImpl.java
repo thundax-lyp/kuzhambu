@@ -308,9 +308,9 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
             throw new BizException("三才信息融合写回参数不完整");
         }
         SancaiVisualAsset currentAsset = requireVisualAsset(entryId, visualAssetId);
-        validateVisualWeights(currentAsset);
+        validateVisualWeights(currentAsset, "三才信息融合写回");
         if (StringUtils.isBlank(currentAsset.getImageAnalysisMarkdown())) {
-            throw new BizException("三才视觉资产缺少图片理解结果");
+            throw new BizException("三才信息融合写回失败：视觉资产缺少图片理解结果");
         }
         repository.updateVisualAssetFusionDescription(visualAssetId, fusionDescription.trim());
     }
@@ -323,12 +323,12 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
             throw new BizException("三才生图版本参数不完整");
         }
         SancaiVisualAsset currentAsset = requireVisualAsset(entryId, visualAssetId);
-        validateVisualWeights(currentAsset);
+        validateVisualWeights(currentAsset, "三才生图版本创建");
         if (currentAsset.getSourceImageStorageObjectId() == null) {
-            throw new BizException("三才视觉资产缺少原图");
+            throw new BizException("三才生图版本创建失败：视觉资产缺少原图");
         }
         if (StringUtils.isBlank(currentAsset.getVisualDescription())) {
-            throw new BizException("三才视觉资产缺少视觉描述");
+            throw new BizException("三才生图版本创建失败：视觉资产缺少视觉描述");
         }
 
         SancaiVisualAsset nextAsset = new SancaiVisualAsset();
@@ -646,14 +646,18 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     }
 
     private static void validateVisualWeights(SancaiVisualAsset visualAsset) {
+        validateVisualWeights(visualAsset, "三才视觉资产保存");
+    }
+
+    private static void validateVisualWeights(SancaiVisualAsset visualAsset, String actionLabel) {
         if (visualAsset == null) {
-            throw new BizException("三才视觉资产不能为空");
+            throw new BizException(actionLabel + "失败：视觉资产不能为空");
         }
         if (visualAsset.getTextWeight() == null) {
-            throw new BizException("三才视觉资产文本权重不能为空");
+            throw new BizException(actionLabel + "失败：文本权重不能为空");
         }
         if (visualAsset.getImageWeight() == null) {
-            throw new BizException("三才视觉资产图片权重不能为空");
+            throw new BizException(actionLabel + "失败：图片权重不能为空");
         }
     }
 

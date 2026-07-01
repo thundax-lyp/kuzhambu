@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `ClassicsContentApplicationServiceImpl/SancaiAssetApplicationServiceImpl/AiRefinementResponses`：锁定候选应用规则与失败响应
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-SANCAI-AI-WORKERS-FULL-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/service/impl/ClassicsContentApplicationServiceImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sancai/service/impl/SancaiAssetApplicationServiceImpl.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/refinement/controller/response/AiRefinementResponses.java`
-    - 处理动作：固定四类 capability 的候选应用映射和失败返回字段
-    - 验收点：`image_analysis`、`fusion`、`visual`、`image_gen` 各自只写指定正式字段或版本，失败响应稳定返回页面可读原因
-    - 重要度：10/10
-
 - [ ] `AiRefinementTaskController/AiRefinementResponses/sancai-entry-list/sancai-entry-service`：补齐批量任务编排与取消入口
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-SANCAI-AI-WORKERS-FULL-CLOSURE.md`
