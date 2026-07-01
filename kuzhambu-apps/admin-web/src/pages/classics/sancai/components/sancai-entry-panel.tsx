@@ -196,7 +196,7 @@ export const SancaiEntryPanel = ({
         invalidateSancaiContentGovernance,
         refreshSancaiEntryDetail,
         createRefinementTask,
-        refreshAfterImageAnalysisApplied,
+        refreshAfterVisualAssetCandidateHandled,
         resetHandledSucceededTaskIds
     } = useSancaiEntryPanelState({
         queryClient,
@@ -654,15 +654,20 @@ export const SancaiEntryPanel = ({
                             </Card>
                             {selectedVisualAssetId ? (
                                 <AiCandidatePanel
-                                    capabilities={["image_analysis", "visual", "fusion"]}
+                                    capabilities={[
+                                        "image_analysis",
+                                        "visual",
+                                        "fusion",
+                                        "image_gen"
+                                    ]}
                                     contentId={selectedEntry.id}
                                     contentType="SANCAI_ENTRY"
                                     objectId={selectedVisualAssetId}
                                     onApplied={async () => {
-                                        await refreshAfterImageAnalysisApplied();
+                                        await refreshAfterVisualAssetCandidateHandled();
                                     }}
                                     onRejected={async () => {
-                                        await refreshAfterImageAnalysisApplied();
+                                        await refreshAfterVisualAssetCandidateHandled();
                                     }}
                                 />
                             ) : null}

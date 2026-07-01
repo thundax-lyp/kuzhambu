@@ -194,7 +194,7 @@ interface UseSancaiEntryPanelStateResult {
         capability: RefinementCapability,
         imageAnalysisAsset?: SancaiVisualAssetRecord | null
     ) => void;
-    refreshAfterImageAnalysisApplied: () => Promise<void>;
+    refreshAfterVisualAssetCandidateHandled: () => Promise<void>;
     resetHandledSucceededTaskIds: () => void;
 }
 
@@ -456,7 +456,7 @@ export const useSancaiEntryPanelState = ({
         });
     };
 
-    const refreshAfterImageAnalysisApplied = useCallback(async () => {
+    const refreshAfterVisualAssetCandidateHandled = useCallback(async () => {
         await Promise.all([
             refreshSancaiEntryDetail(),
             refreshSancaiVisualAssets(),
@@ -478,7 +478,7 @@ export const useSancaiEntryPanelState = ({
         invalidateSancaiContentCandidates,
         refreshSancaiEntryDetail,
         createRefinementTask,
-        refreshAfterImageAnalysisApplied,
+        refreshAfterVisualAssetCandidateHandled,
         resetHandledSucceededTaskIds
     };
 };

@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `ai-candidate-panel/ai-candidate-payload-editor/sancai-entry-panel/use-sancai-entry-panel-state`：补齐候选区编辑与接受拒绝交互
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-SANCAI-AI-WORKERS-FULL-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/common/components/ai-candidate-panel.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/common/components/ai-candidate-payload-editor.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/hooks/use-sancai-entry-panel-state.ts`
-    - 处理动作：让三才候选区支持预览、编辑、接受、拒绝，并在接受后刷新正式视觉资产事实
-    - 验收点：四类 capability 候选都可治理，且页面接受后能看到正式字段或版本切换结果刷新
-    - 重要度：9/10
-
 - [ ] `ClassicsContentApplicationServiceImpl/SancaiAssetApplicationServiceImpl/AiRefinementResponses`：锁定候选应用规则与失败响应
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-SANCAI-AI-WORKERS-FULL-CLOSURE.md`
