@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `sancai/weight-edit`：补齐权重前端编辑与保存
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-VISUAL-ASSET-WORKFLOW-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-model.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/services/sancai-entry-service.ts`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-types.ts`
-    - 处理动作：将 `textWeight` 和 `imageWeight` 作为正式可编辑字段接入视觉资产面板
-    - 验收点：页面可编辑并提交权重字段，请求体与前端类型保持一致
-    - 重要度：8/10
-
 - [ ] `sancai/weight-persistence`：落实权重后端校验与持久化
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-VISUAL-ASSET-WORKFLOW-CLOSURE.md`
