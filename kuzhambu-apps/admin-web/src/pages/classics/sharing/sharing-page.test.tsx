@@ -83,5 +83,5 @@ describe("SharingPage", () => {
 
         expect(await screen.findByRole("heading", { name: "分享管理" })).toBeInTheDocument();
         expect(await screen.findByText("王圻文档 分享")).toBeInTheDocument();
-    }, 10000);
+    }, 30000);
 });

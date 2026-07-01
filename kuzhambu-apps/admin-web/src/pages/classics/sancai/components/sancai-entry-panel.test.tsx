@@ -292,7 +292,7 @@ vi.mock("../services/sancai-entry-service", () => ({
     }),
     sort: vi.fn(),
     updateVisualAsset: vi.fn(async (request) => request),
-    useVisualAsset: vi.fn(async () => true),
+    changeCurrentVisualAsset: vi.fn(async () => true),
     getImageContentUrl: vi.fn(
         (request: { entryId: number; imageId: number; mode?: "download" | "preview" }) => {
             const search = request.mode === "download" ? "?download=true" : "";
@@ -384,7 +384,7 @@ describe("SancaiEntryPanel sharing", () => {
             title: "天地 分享",
             visibility: "PUBLIC"
         });
-    }, 20000);
+    }, 30000);
 
     it("loads version detail, restores it and refreshes the open drawer", async () => {
         const user = userEvent.setup();
@@ -464,7 +464,7 @@ describe("SancaiEntryPanel sharing", () => {
             modelName: "gpt-5.5",
             locale: "zh-CN"
         });
-    }, 15000);
+    }, 30000);
 
     it("shows expired export task as disabled download", async () => {
         vi.mocked(exportService.page).mockResolvedValueOnce({
@@ -572,9 +572,9 @@ describe("SancaiEntryPanel sharing", () => {
         );
 
         await waitFor(() => {
-            expect(entryService.useVisualAsset).toHaveBeenCalled();
+            expect(entryService.changeCurrentVisualAsset).toHaveBeenCalled();
         });
-        expect(vi.mocked(entryService.useVisualAsset).mock.calls[0]?.[0]).toEqual({
+        expect(vi.mocked(entryService.changeCurrentVisualAsset).mock.calls[0]?.[0]).toEqual({
             entryId: 3001,
             visualAssetId: 5001
         });

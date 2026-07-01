@@ -189,10 +189,13 @@ export const updateVisualAsset = (command: SancaiVisualAssetCommand) => {
     );
 };
 
-export const useVisualAsset = (command: SancaiVisualAssetUseCommand) => {
-    return postJson<boolean, SancaiVisualAssetUseCommand>(`${ASSET_VISUAL_ASSETS_PATH}/use`, {
-        body: command
-    });
+export const changeCurrentVisualAsset = (command: SancaiVisualAssetUseCommand) => {
+    return postJson<boolean, SancaiVisualAssetUseCommand>(
+        "/classics/sancai/assets/visual-assets/current/change",
+        {
+            body: command
+        }
+    );
 };
 
 export const listVersions = (entryId: number) => {

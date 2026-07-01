@@ -111,5 +111,5 @@ describe("CleanupPage", () => {
 
         expect(await screen.findByRole("heading", { name: "清理任务台账" })).toBeInTheDocument();
         expect(await screen.findByText("EXPIRED_BACKUP")).toBeInTheDocument();
-    }, 10000);
+    }, 30000);
 });

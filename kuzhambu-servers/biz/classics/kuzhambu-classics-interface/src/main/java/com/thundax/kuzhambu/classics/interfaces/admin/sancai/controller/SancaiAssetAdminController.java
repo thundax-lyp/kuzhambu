@@ -263,8 +263,8 @@ public class SancaiAssetAdminController {
     @ApiImplicitParams({})
     @HasPermission("classics:sancai:edit")
     @SysLogger(value = "切换当前视觉资产")
-    @PostMapping("visual-assets/use")
-    public Boolean useVisualAsset(@Valid @RequestBody SancaiAssetRequest request) {
+    @PostMapping("visual-assets/current/change")
+    public Boolean changeCurrentVisualAsset(@Valid @RequestBody SancaiAssetRequest request) {
         service.useVisualAsset(
                 SancaiEntryIdCodec.toDomain(request.getEntryId()),
                 SancaiVisualAssetIdCodec.toDomain(request.getVisualAssetId()));

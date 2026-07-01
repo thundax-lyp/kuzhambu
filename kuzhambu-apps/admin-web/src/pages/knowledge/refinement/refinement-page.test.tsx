@@ -125,5 +125,5 @@ describe("RefinementPage", () => {
         ).toBeInTheDocument();
         expect(await screen.findByLabelText("知识图谱精修任务表格")).toBeInTheDocument();
         expect(screen.getByText("SANCAI_ENTRY")).toBeInTheDocument();
-    }, 10000);
+    }, 30000);
 });

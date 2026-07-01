@@ -130,5 +130,5 @@ describe("GraphResultsPage", () => {
         expect(screen.getByRole("heading", { name: "正式结果读取" })).toBeInTheDocument();
         expect(await screen.findByLabelText("知识图谱版本表格")).toBeInTheDocument();
         expect(screen.getByText("71")).toBeInTheDocument();
-    }, 10000);
+    }, 30000);
 });

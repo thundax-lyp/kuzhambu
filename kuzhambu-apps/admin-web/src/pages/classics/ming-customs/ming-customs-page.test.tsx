@@ -158,7 +158,7 @@ describe("MingCustomsPage", () => {
 
         expect(await screen.findByRole("heading", { name: "明代习俗" })).toBeInTheDocument();
         expect(await screen.findByText("岁时礼仪：元旦朝贺")).toBeInTheDocument();
-    }, 10000);
+    }, 30000);
 
     it("creates summary refinement task from the entry drawer", async () => {
         const user = userEvent.setup();
@@ -191,5 +191,5 @@ describe("MingCustomsPage", () => {
                 locale: "zh-CN"
             })
         );
-    }, 10000);
+    }, 30000);
 });

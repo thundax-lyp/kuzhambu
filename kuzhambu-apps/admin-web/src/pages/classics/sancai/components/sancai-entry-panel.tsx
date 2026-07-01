@@ -434,8 +434,8 @@ export const SancaiEntryPanel = ({
             messageApi.error(error instanceof Error ? error.message : "视觉资产保存失败");
         }
     });
-    const useVisualAssetMutation = useMutation({
-        mutationFn: entryService.useVisualAsset,
+    const changeCurrentVisualAssetMutation = useMutation({
+        mutationFn: entryService.changeCurrentVisualAsset,
         onSuccess: async () => {
             await Promise.all([refreshSancaiEntryDetail(), invalidateEntries()]);
             messageApi.success("当前视觉资产版本已切换");
@@ -631,7 +631,7 @@ export const SancaiEntryPanel = ({
         if (!visualAssetId || !entryId) {
             return;
         }
-        useVisualAssetMutation.mutate({
+        changeCurrentVisualAssetMutation.mutate({
             entryId,
             visualAssetId
         });
@@ -726,7 +726,7 @@ export const SancaiEntryPanel = ({
                 key={modelKey}
                 entry={selectedEntry}
                 isSubmitting={addEntryMutation.isPending || updateEntryMutation.isPending}
-                isSwitchingVisualAsset={useVisualAssetMutation.isPending}
+                isSwitchingVisualAsset={changeCurrentVisualAssetMutation.isPending}
                 isUpdatingVisualAsset={updateVisualAssetMutation.isPending}
                 mode={isCreating ? "create" : "edit"}
                 open={isModelOpen && !isLoading}

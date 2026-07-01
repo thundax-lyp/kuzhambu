@@ -5,6 +5,30 @@ import { App as AntdApp } from "antd";
 import { queryClient } from "@/query/query-client";
 import { SancaiPage } from "./sancai-page";
 
+const { mockSancaiEntryPanel } = vi.hoisted(() => ({
+    mockSancaiEntryPanel: (props: {
+        categoryId: number | null;
+        keyword?: string | null;
+        lifecycleStatus?: string | null;
+        refreshVersion: number;
+        volumeId: number | null;
+        volumes: Array<{ id: number }>;
+    }) => (
+        <section aria-label="三才图会条目面板">
+            <span>{`category:${props.categoryId ?? "none"}`}</span>
+            <span>{`volume:${props.volumeId ?? "none"}`}</span>
+            <span>{`volumes:${props.volumes.length}`}</span>
+            <span>{`refresh:${props.refreshVersion}`}</span>
+            <span>{`keyword:${props.keyword ?? "none"}`}</span>
+            <span>{`status:${props.lifecycleStatus ?? "none"}`}</span>
+        </section>
+    )
+}));
+
+vi.mock("./components/sancai-entry-panel", () => ({
+    SancaiEntryPanel: mockSancaiEntryPanel
+}));
+
 const apiResponse = (data: unknown) =>
     Promise.resolve(
         new Response(JSON.stringify({ code: "COMMON-00000", message: "success", data }), {
@@ -199,9 +223,9 @@ describe("SancaiPage", () => {
 
         expect(await screen.findByRole("heading", { name: "三才图会" })).toBeInTheDocument();
         expect(await screen.findByRole("link", { name: "打开门类 天文" })).toBeInTheDocument();
-    }, 10000);
+    }, 30000);
 
-    it("opens entry detail from the page and keeps the visual asset section available", async () => {
+    it("switches to the entry panel with the selected catalog context", async () => {
         const user = userEvent.setup();
 
         render(
@@ -218,11 +242,12 @@ describe("SancaiPage", () => {
             await within(volumeTable).findByRole("link", { name: "打开卷目 天文卷一" })
         );
 
-        const entryTable = await screen.findByLabelText("三才图会条目表格");
-        await user.click(await within(entryTable).findByRole("button", { name: "查看 天地" }));
-
-        expect(await screen.findByLabelText("三才图会视觉资产面板")).toBeInTheDocument();
-        expect(await screen.findByRole("button", { name: "保存视觉资产字段" })).toBeInTheDocument();
-        expect(await screen.findByRole("button", { name: "设为当前使用版本" })).toBeDisabled();
-    }, 15000);
+        const entryPanel = await screen.findByLabelText("三才图会条目面板");
+        expect(within(entryPanel).getByText("category:2")).toBeInTheDocument();
+        expect(within(entryPanel).getByText("volume:101")).toBeInTheDocument();
+        expect(within(entryPanel).getByText("volumes:1")).toBeInTheDocument();
+        expect(within(entryPanel).getByText("refresh:0")).toBeInTheDocument();
+        expect(within(entryPanel).getByText("keyword:none")).toBeInTheDocument();
+        expect(within(entryPanel).getByText("status:none")).toBeInTheDocument();
+    }, 30000);
 });

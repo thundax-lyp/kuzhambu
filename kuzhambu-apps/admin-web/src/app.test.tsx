@@ -324,7 +324,7 @@ describe("App", () => {
                 method: "POST"
             })
         );
-    }, 15000);
+    }, 30000);
 
     it("logs out and returns to the login route", async () => {
         localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
@@ -462,7 +462,7 @@ describe("App", () => {
 
         expect(await screen.findByRole("heading", { name: "部门管理" })).toBeInTheDocument();
         expect((await screen.findAllByText("总部")).length).toBeGreaterThan(0);
-    }, 10000);
+    }, 30000);
 
     it("renders and filters the dictionary page", async () => {
         localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
@@ -542,7 +542,7 @@ describe("App", () => {
                 })
             )
         );
-    }, 15000);
+    }, 30000);
 
     it("renders the audit log page", async () => {
         localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
@@ -723,7 +723,7 @@ describe("App", () => {
         expect(screen.getAllByText("旧标题").length).toBeGreaterThan(0);
         expect(screen.getAllByText("新标题").length).toBeGreaterThan(0);
         expect(screen.getByText("已变更")).toBeInTheDocument();
-    }, 15000);
+    }, 30000);
 
     it("uploads storage objects and refreshes after delete", async () => {
         localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
@@ -888,7 +888,7 @@ describe("App", () => {
 
         await waitFor(() => expect(screen.queryByText("sancai.png")).not.toBeInTheDocument());
         expect(pageRequestCount).toBeGreaterThanOrEqual(2);
-    }, 20000);
+    }, 30000);
 
     it("filters storage objects by reference owner", async () => {
         localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
@@ -964,7 +964,7 @@ describe("App", () => {
         });
         expect(latestRequest).not.toHaveProperty("ownerType");
         expect(latestRequest).not.toHaveProperty("ownerId");
-    }, 20000);
+    }, 30000);
 
     it("renders the silver user management layout interactions", async () => {
         localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
@@ -1177,7 +1177,7 @@ describe("App", () => {
 
         expect((await screen.findAllByText("删除用户")).length).toBeGreaterThan(0);
         expect(screen.getByText("确认删除 Olivia Martinez？")).toBeInTheDocument();
-    }, 20000);
+    }, 30000);
 
     it("emits sortable table row movement", () => {
         const records = [

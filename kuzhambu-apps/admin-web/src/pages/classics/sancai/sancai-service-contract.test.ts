@@ -309,11 +309,11 @@ describe("sancai service request contracts", () => {
             generationParamsJson: '{"style":"gongbi"}'
         });
 
-        await entryService.useVisualAsset({
+        await entryService.changeCurrentVisualAsset({
             entryId: 3001,
             visualAssetId: 5001
         });
-        expectLastCall("POST", "/classics/sancai/assets/visual-assets/use", {
+        expectLastCall("POST", "/classics/sancai/assets/visual-assets/current/change", {
             entryId: 3001,
             visualAssetId: 5001
         });

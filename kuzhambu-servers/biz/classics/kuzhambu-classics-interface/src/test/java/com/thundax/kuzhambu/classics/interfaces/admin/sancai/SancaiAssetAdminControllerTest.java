@@ -123,8 +123,8 @@ class SancaiAssetAdminControllerTest {
                 SancaiAssetRequest.class);
         assertPostMapping(
                 SancaiAssetAdminController.class,
-                "useVisualAsset",
-                "visual-assets/use",
+                "changeCurrentVisualAsset",
+                "visual-assets/current/change",
                 "classics:sancai:edit",
                 SancaiAssetRequest.class);
         assertGetMapping(
@@ -248,7 +248,7 @@ class SancaiAssetAdminControllerTest {
         SancaiAssetRequest useRequest = new SancaiAssetRequest();
         useRequest.setEntryId(3001L);
         useRequest.setVisualAssetId(5001L);
-        assertEquals(true, controller().useVisualAsset(useRequest));
+        assertEquals(true, controller().changeCurrentVisualAsset(useRequest));
     }
 
     @Test

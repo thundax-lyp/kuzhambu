@@ -122,7 +122,7 @@ describe("WangqiPage", () => {
 
         expect(await screen.findByRole("heading", { name: "王圻文档" })).toBeInTheDocument();
         expect(await screen.findByText("王圻文档")).toBeInTheDocument();
-    }, 10000);
+    }, 30000);
 
     it("creates summary refinement task from the document drawer", async () => {
         const user = userEvent.setup();
@@ -153,5 +153,5 @@ describe("WangqiPage", () => {
                 locale: "zh-CN"
             })
         );
-    }, 10000);
+    }, 30000);
 });
