@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `ai_usecase_routes.py/ai.py/sse.py`：补齐 workers 批量最终态与失败聚合规则
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-SANCAI-AI-WORKERS-FULL-CLOSURE.md`
-    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/api/ai_usecase_routes.py`、`kuzhambu-workers/src/kuzhambu_workers/schemas/ai.py`、`kuzhambu-workers/src/kuzhambu_workers/streaming/sse.py`
-    - 处理动作：让 workers 批量子单元最终态可稳定映射成功数、失败数和失败原因
-    - 验收点：批量子单元失败不污染其他单元，且 Java 与前端可直接消费聚合状态
-    - 重要度：9/10
-
 - [ ] `sancai-entry-panel/use-sancai-entry-panel-state/ai-refinement-task-service`：统一失败展示与重试交互
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-SANCAI-AI-WORKERS-FULL-CLOSURE.md`

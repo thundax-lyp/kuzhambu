@@ -180,6 +180,8 @@ class AiInvokeResponse(BaseModel):
     capability: AiCapability
     result: AiResult | None = None
     usage: UsageSummary = Field(default_factory=UsageSummary)
+    # Batch callers aggregate each unit by requestId + traceId and rely on
+    # failureStage/errorType/errorMessage for per-unit failure summaries.
     failureStage: FailureStage | None = None
     fallbackUsed: bool = False
     artifactReference: ArtifactReference | None = None
