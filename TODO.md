@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `ai.py/events.py/ai_routes.py`：收紧 workers 最终态 schema 与 SSE 口径
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-SANCAI-AI-WORKERS-FULL-CLOSURE.md`
-    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/schemas/ai.py`、`kuzhambu-workers/src/kuzhambu_workers/streaming/events.py`、`kuzhambu-workers/src/kuzhambu_workers/api/ai_routes.py`
-    - 处理动作：统一 workers 同步响应与 SSE `completed` 事件的最终态字段集合和错误字段语义
-    - 验收点：`status`、`result`、`artifactReference`、`failureStage`、`errorType`、`errorMessage` 在同步与流式响应中同构
-    - 重要度：10/10
-
 - [ ] `sancai-entry-panel/sancai-entry-model/use-sancai-entry-panel-state/sancai-entry-service`：补齐单条视觉资产四类 AI 入口
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-SANCAI-AI-WORKERS-FULL-CLOSURE.md`

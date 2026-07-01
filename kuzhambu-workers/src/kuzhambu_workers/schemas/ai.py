@@ -185,3 +185,5 @@ class AiInvokeResponse(BaseModel):
     artifactReference: ArtifactReference | None = None
     warnings: list[dict[str, Any]] = Field(default_factory=list)
     error: WorkerErrorPayload | None = None
+    errorType: str | None = None
+    errorMessage: str | None = None
