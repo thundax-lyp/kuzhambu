@@ -20,6 +20,7 @@ import * as entryService from "../services/sancai-entry-service";
 import type {
     SancaiContentVersionRecord,
     SancaiEntryRecord,
+    SancaiVisualAssetRecord,
     SancaiVolumeRecord
 } from "../sancai-types";
 
@@ -423,6 +424,26 @@ export const SancaiEntryPanel = ({
             setCreatingRefinementCapability(null);
         }
     });
+    const updateVisualAssetMutation = useMutation({
+        mutationFn: entryService.updateVisualAsset,
+        onSuccess: async () => {
+            await Promise.all([refreshSancaiEntryDetail(), invalidateEntries()]);
+            messageApi.success("三才视觉资产已保存");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "视觉资产保存失败");
+        }
+    });
+    const changeCurrentVisualAssetMutation = useMutation({
+        mutationFn: entryService.changeCurrentVisualAsset,
+        onSuccess: async () => {
+            await Promise.all([refreshSancaiEntryDetail(), invalidateEntries()]);
+            messageApi.success("当前视觉资产版本已切换");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "视觉资产切换失败");
+        }
+    });
 
     useEffect(() => {
         const newlySucceededTaskIds = refinementTasks
@@ -587,6 +608,34 @@ export const SancaiEntryPanel = ({
                 })
         });
     };
+    const updateVisualAsset = (asset: SancaiVisualAssetRecord) => {
+        updateVisualAssetMutation.mutate({
+            visualAssetId: asset.visualAssetId ?? asset.id ?? null,
+            entryId: asset.entryId ?? selectedEntryId,
+            versionNo: asset.versionNo,
+            status: asset.status,
+            sourceImageStorageObjectId: asset.sourceImageStorageObjectId,
+            generatedImageStorageObjectId: asset.generatedImageStorageObjectId,
+            currentUsed: asset.currentUsed,
+            textWeight: asset.textWeight,
+            imageWeight: asset.imageWeight,
+            imageAnalysisMarkdown: asset.imageAnalysisMarkdown,
+            fusionDescription: asset.fusionDescription,
+            visualDescription: asset.visualDescription,
+            generationParamsJson: asset.generationParamsJson
+        });
+    };
+    const switchVisualAsset = (asset: SancaiVisualAssetRecord) => {
+        const visualAssetId = asset.visualAssetId ?? asset.id;
+        const entryId = asset.entryId ?? selectedEntryId;
+        if (!visualAssetId || !entryId) {
+            return;
+        }
+        changeCurrentVisualAssetMutation.mutate({
+            entryId,
+            visualAssetId
+        });
+    };
 
     const sortEntry = (
         sourceEntry: SancaiEntryRecord,
@@ -677,10 +726,14 @@ export const SancaiEntryPanel = ({
                 key={modelKey}
                 entry={selectedEntry}
                 isSubmitting={addEntryMutation.isPending || updateEntryMutation.isPending}
+                isSwitchingVisualAsset={changeCurrentVisualAssetMutation.isPending}
+                isUpdatingVisualAsset={updateVisualAssetMutation.isPending}
                 mode={isCreating ? "create" : "edit"}
                 open={isModelOpen && !isLoading}
                 onCancel={closeModel}
                 onSubmit={submitEntry}
+                onUseVisualAsset={switchVisualAsset}
+                onUpdateVisualAsset={updateVisualAsset}
                 afterForm={
                     !isCreating && selectedEntry ? (
                         <>

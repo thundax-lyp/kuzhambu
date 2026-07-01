@@ -28,7 +28,7 @@ public class SancaiAssetRequest extends PageRequest {
     private String title;
 
     @JsonProperty("currentUsed")
-    private boolean currentUsed;
+    private Boolean currentUsed;
 
     @JsonProperty("draftJson")
     private String draftJson;
@@ -40,8 +40,38 @@ public class SancaiAssetRequest extends PageRequest {
     private String status;
 
     @JsonProperty("entryCount")
-    private int entryCount;
+    private Integer entryCount;
 
     @JsonProperty("visibilityRiskStatus")
     private String visibilityRiskStatus;
+
+    @JsonProperty("visualAssetId")
+    private Long visualAssetId;
+
+    @JsonProperty("versionNo")
+    private Integer versionNo;
+
+    @JsonProperty("sourceImageStorageObjectId")
+    private Long sourceImageStorageObjectId;
+
+    @JsonProperty("generatedImageStorageObjectId")
+    private Long generatedImageStorageObjectId;
+
+    @JsonProperty("textWeight")
+    private Integer textWeight;
+
+    @JsonProperty("imageWeight")
+    private Integer imageWeight;
+
+    @JsonProperty("imageAnalysisMarkdown")
+    private String imageAnalysisMarkdown;
+
+    @JsonProperty("fusionDescription")
+    private String fusionDescription;
+
+    @JsonProperty("visualDescription")
+    private String visualDescription;
+
+    @JsonProperty("generationParamsJson")
+    private String generationParamsJson;
 }

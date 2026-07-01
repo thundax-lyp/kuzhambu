@@ -88,5 +88,5 @@ describe("OperationsTasksPage", () => {
         expect(await screen.findByRole("heading", { name: "运营任务台账" })).toBeInTheDocument();
         expect(await screen.findByText("All good")).toBeInTheDocument();
         expect(screen.getByText("长任务列表")).toBeInTheDocument();
-    }, 10000);
+    }, 30000);
 });

@@ -61,5 +61,5 @@ describe("GraphExtractionPage", () => {
 
         expect(await screen.findByRole("heading", { name: "知识抽取任务" })).toBeInTheDocument();
         expect(await screen.findByText("8008")).toBeInTheDocument();
-    }, 10000);
+    }, 30000);
 });

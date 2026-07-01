@@ -13,9 +13,11 @@ import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObje
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryDraft;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryImage;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiShowcase;
+import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVisualAsset;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryImageType;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiShowcaseStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisibilityRiskStatus;
+import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisualAssetStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryDraftId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryImageId;
@@ -109,6 +111,24 @@ class SancaiAssetAdminControllerTest {
                 SancaiAssetRequest.class);
         assertGetMapping(
                 SancaiAssetAdminController.class,
+                "listVisualAssets",
+                "visual-assets/{entryId}",
+                "classics:sancai:view",
+                Long.class);
+        assertPostMapping(
+                SancaiAssetAdminController.class,
+                "updateVisualAsset",
+                "visual-assets/update",
+                "classics:sancai:edit",
+                SancaiAssetRequest.class);
+        assertPostMapping(
+                SancaiAssetAdminController.class,
+                "changeCurrentVisualAsset",
+                "visual-assets/current/change",
+                "classics:sancai:edit",
+                SancaiAssetRequest.class);
+        assertGetMapping(
+                SancaiAssetAdminController.class,
                 "downloadShowcaseContent",
                 "showcases/{id}/content",
                 "classics:sancai:view",
@@ -184,6 +204,54 @@ class SancaiAssetAdminControllerTest {
     }
 
     @Test
+    void visualAssetApisShouldReturnVisualAssetContract() {
+        List<SancaiAssetResponse> listResponse = controller().listVisualAssets(3001L);
+        assertEquals(1, listResponse.size());
+        SancaiAssetResponse item = listResponse.get(0);
+        assertEquals(5001L, item.getVisualAssetId());
+        assertEquals(3001L, item.getEntryId());
+        assertEquals(2, item.getVersionNo());
+        assertEquals("READY", item.getStatus());
+        assertEquals(7001L, item.getSourceImageStorageObjectId());
+        assertEquals(7002L, item.getGeneratedImageStorageObjectId());
+        assertEquals(true, item.getCurrentUsed());
+        assertEquals(60, item.getTextWeight());
+        assertEquals(40, item.getImageWeight());
+        assertEquals("图片理解", item.getImageAnalysisMarkdown());
+        assertEquals("融合说明", item.getFusionDescription());
+        assertEquals("视觉描述", item.getVisualDescription());
+        assertEquals("{\"style\":\"gongbi\"}", item.getGenerationParamsJson());
+        assertEquals("/api/storage/object/7001/content", item.getSourcePreviewUrl());
+        assertEquals("/api/storage/object/7001/content?download=true", item.getSourceDownloadUrl());
+        assertEquals("/api/storage/object/7002/content", item.getGeneratedPreviewUrl());
+        assertEquals("/api/storage/object/7002/content?download=true", item.getGeneratedDownloadUrl());
+
+        SancaiAssetRequest updateRequest = new SancaiAssetRequest();
+        updateRequest.setVisualAssetId(5001L);
+        updateRequest.setEntryId(3001L);
+        updateRequest.setVersionNo(2);
+        updateRequest.setStatus("READY");
+        updateRequest.setSourceImageStorageObjectId(7001L);
+        updateRequest.setGeneratedImageStorageObjectId(7002L);
+        updateRequest.setCurrentUsed(true);
+        updateRequest.setTextWeight(60);
+        updateRequest.setImageWeight(40);
+        updateRequest.setImageAnalysisMarkdown("图片理解");
+        updateRequest.setFusionDescription("融合说明");
+        updateRequest.setVisualDescription("视觉描述");
+        updateRequest.setGenerationParamsJson("{\"style\":\"gongbi\"}");
+
+        SancaiAssetResponse updateResponse = controller().updateVisualAsset(updateRequest);
+        assertEquals(5001L, updateResponse.getId());
+        assertEquals(5001L, updateResponse.getVisualAssetId());
+
+        SancaiAssetRequest useRequest = new SancaiAssetRequest();
+        useRequest.setEntryId(3001L);
+        useRequest.setVisualAssetId(5001L);
+        assertEquals(true, controller().changeCurrentVisualAsset(useRequest));
+    }
+
+    @Test
     void downloadShowcaseContentShouldSupportInlineAndAttachment() throws Exception {
         SancaiAssetAdminController controller = controller();
         MockHttpServletResponse inlineResponse = new MockHttpServletResponse();
@@ -256,8 +324,14 @@ class SancaiAssetAdminControllerTest {
                     if ("updateVisualAsset".equals(method.getName())) {
                         return SancaiVisualAssetId.of(5001L);
                     }
-                    if ("useVisualAsset".equals(method.getName()) || "listVisualAssets".equals(method.getName())) {
-                        return List.of();
+                    if ("useVisualAsset".equals(method.getName())) {
+                        assertEquals(SancaiEntryId.of(3001L), args[0]);
+                        assertEquals(SancaiVisualAssetId.of(5001L), args[1]);
+                        return null;
+                    }
+                    if ("listVisualAssets".equals(method.getName())) {
+                        assertEquals(SancaiEntryId.of(3001L), args[0]);
+                        return List.of(visualAsset());
                     }
                     if ("requestShowcase".equals(method.getName())) {
                         return SancaiShowcaseId.of(9001L);
@@ -320,6 +394,24 @@ class SancaiAssetAdminControllerTest {
     private static ClassicsStoredContentResult showcaseContent() {
         return new ClassicsStoredContentResult(
                 7001L, "showcase.json", "application/json", 8L, new ByteArrayInputStream("demo-json".getBytes()));
+    }
+
+    private static SancaiVisualAsset visualAsset() {
+        SancaiVisualAsset visualAsset = new SancaiVisualAsset();
+        visualAsset.setId(SancaiVisualAssetId.of(5001L));
+        visualAsset.setEntryId(SancaiEntryId.of(3001L));
+        visualAsset.setVersionNo(2);
+        visualAsset.setStatus(SancaiVisualAssetStatus.READY);
+        visualAsset.setSourceImageStorageObjectId(StorageObjectId.of(7001L));
+        visualAsset.setGeneratedImageStorageObjectId(StorageObjectId.of(7002L));
+        visualAsset.setCurrentUsed(true);
+        visualAsset.setTextWeight(60);
+        visualAsset.setImageWeight(40);
+        visualAsset.setImageAnalysisMarkdown("图片理解");
+        visualAsset.setFusionDescription("融合说明");
+        visualAsset.setVisualDescription("视觉描述");
+        visualAsset.setGenerationParamsJson("{\"style\":\"gongbi\"}");
+        return visualAsset;
     }
 
     private static void assertRequestMapping(Class<?> controllerType, String expectedPath) {

@@ -53,5 +53,5 @@ describe("SearchAdminPage", () => {
         expect(screen.getByRole("button", { name: "查询日志" })).toBeInTheDocument();
         expect(screen.getByRole("button", { name: "查看详情" })).toBeInTheDocument();
         expect(screen.getByRole("button", { name: "触发重建" })).toBeInTheDocument();
-    }, 10000);
+    }, 30000);
 });

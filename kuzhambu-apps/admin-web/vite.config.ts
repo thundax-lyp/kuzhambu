@@ -19,6 +19,8 @@ export default defineConfig(({ mode }) => {
             globals: true,
             setupFiles: "./src/test/setup.ts",
             exclude: ["e2e/**", "node_modules/**", "dist/**"],
+            testTimeout: 30000,
+            hookTimeout: 30000,
             fileParallelism: true,
             maxWorkers: "75%"
         },

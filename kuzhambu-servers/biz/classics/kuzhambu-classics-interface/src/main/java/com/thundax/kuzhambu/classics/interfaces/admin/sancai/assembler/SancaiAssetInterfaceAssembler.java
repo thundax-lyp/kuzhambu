@@ -5,12 +5,16 @@ import com.thundax.kuzhambu.classics.application.sancai.command.SancaiImageComma
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiShowcaseCommand;
 import com.thundax.kuzhambu.classics.application.sancai.result.SancaiEntryImageResource;
 import com.thundax.kuzhambu.classics.domain.common.codec.StorageObjectIdCodec;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiVisualAssetIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryDraft;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryImage;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiShowcase;
+import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVisualAsset;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryImageType;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiShowcaseStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisibilityRiskStatus;
+import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisualAssetStatus;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiAssetRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response.SancaiAssetResponse;
 import org.apache.commons.lang3.StringUtils;
@@ -29,7 +33,7 @@ public final class SancaiAssetInterfaceAssembler {
                 StorageObjectIdCodec.toDomain(request.getStorageObjectId()),
                 StringUtils.isBlank(request.getImageType()) ? null : SancaiEntryImageType.from(request.getImageType()),
                 request.getTitle(),
-                request.isCurrentUsed());
+                Boolean.TRUE.equals(request.getCurrentUsed()));
     }
 
     public static SancaiShowcaseCommand toShowcaseCommand(SancaiAssetRequest request) {
@@ -40,10 +44,32 @@ public final class SancaiAssetInterfaceAssembler {
                         : SancaiShowcaseStatus.from(request.getStatus()),
                 request.getScopeJson(),
                 StorageObjectIdCodec.toDomain(request.getStorageObjectId()),
-                request.getEntryCount(),
+                request.getEntryCount() == null ? 0 : request.getEntryCount(),
                 StringUtils.isBlank(request.getVisibilityRiskStatus())
                         ? null
                         : SancaiVisibilityRiskStatus.from(request.getVisibilityRiskStatus()));
+    }
+
+    public static SancaiVisualAsset toVisualAsset(SancaiAssetRequest request) {
+        SancaiVisualAsset visualAsset = new SancaiVisualAsset();
+        visualAsset.setId(SancaiVisualAssetIdCodec.toDomain(
+                request.getVisualAssetId() == null ? request.getId() : request.getVisualAssetId()));
+        visualAsset.setEntryId(SancaiEntryIdCodec.toDomain(request.getEntryId()));
+        visualAsset.setVersionNo(request.getVersionNo() == null ? 0 : request.getVersionNo());
+        visualAsset.setStatus(
+                StringUtils.isBlank(request.getStatus()) ? null : SancaiVisualAssetStatus.from(request.getStatus()));
+        visualAsset.setSourceImageStorageObjectId(
+                StorageObjectIdCodec.toDomain(request.getSourceImageStorageObjectId()));
+        visualAsset.setGeneratedImageStorageObjectId(
+                StorageObjectIdCodec.toDomain(request.getGeneratedImageStorageObjectId()));
+        visualAsset.setCurrentUsed(Boolean.TRUE.equals(request.getCurrentUsed()));
+        visualAsset.setTextWeight(request.getTextWeight() == null ? 0 : request.getTextWeight());
+        visualAsset.setImageWeight(request.getImageWeight() == null ? 0 : request.getImageWeight());
+        visualAsset.setImageAnalysisMarkdown(request.getImageAnalysisMarkdown());
+        visualAsset.setFusionDescription(request.getFusionDescription());
+        visualAsset.setVisualDescription(request.getVisualDescription());
+        visualAsset.setGenerationParamsJson(request.getGenerationParamsJson());
+        return visualAsset;
     }
 
     public static SancaiAssetResponse toImageResponse(SancaiEntryImage image) {
@@ -97,6 +123,46 @@ public final class SancaiAssetInterfaceAssembler {
                         .build();
     }
 
+    public static SancaiAssetResponse toVisualAssetResponse(SancaiVisualAsset visualAsset) {
+        Long sourceStorageObjectId = visualAsset == null || visualAsset.getSourceImageStorageObjectId() == null
+                ? null
+                : visualAsset.getSourceImageStorageObjectId().value();
+        Long generatedStorageObjectId = visualAsset == null || visualAsset.getGeneratedImageStorageObjectId() == null
+                ? null
+                : visualAsset.getGeneratedImageStorageObjectId().value();
+        Long visualAssetId = visualAsset == null || visualAsset.getId() == null
+                ? null
+                : visualAsset.getId().value();
+        return visualAsset == null
+                ? SancaiAssetResponse.builder().build()
+                : SancaiAssetResponse.builder()
+                        .id(visualAssetId)
+                        .visualAssetId(visualAssetId)
+                        .entryId(
+                                visualAsset.getEntryId() == null
+                                        ? null
+                                        : visualAsset.getEntryId().value())
+                        .versionNo(visualAsset.getVersionNo())
+                        .status(
+                                visualAsset.getStatus() == null
+                                        ? null
+                                        : visualAsset.getStatus().value())
+                        .sourceImageStorageObjectId(sourceStorageObjectId)
+                        .generatedImageStorageObjectId(generatedStorageObjectId)
+                        .currentUsed(visualAsset.isCurrentUsed())
+                        .textWeight(visualAsset.getTextWeight())
+                        .imageWeight(visualAsset.getImageWeight())
+                        .imageAnalysisMarkdown(visualAsset.getImageAnalysisMarkdown())
+                        .fusionDescription(visualAsset.getFusionDescription())
+                        .visualDescription(visualAsset.getVisualDescription())
+                        .generationParamsJson(visualAsset.getGenerationParamsJson())
+                        .sourcePreviewUrl(storagePreviewUrl(sourceStorageObjectId))
+                        .sourceDownloadUrl(storageDownloadUrl(sourceStorageObjectId))
+                        .generatedPreviewUrl(storagePreviewUrl(generatedStorageObjectId))
+                        .generatedDownloadUrl(storageDownloadUrl(generatedStorageObjectId))
+                        .build();
+    }
+
     public static SancaiAssetResponse toShowcaseResponse(SancaiShowcase showcase) {
         Long storageObjectId = showcase == null || showcase.getStorageObjectId() == null
                 ? null
@@ -130,5 +196,13 @@ public final class SancaiAssetInterfaceAssembler {
         return storageObjectId == null
                 ? null
                 : "/api/classics/sancai/assets/showcases/" + storageObjectId + "/content?download=true";
+    }
+
+    private static String storagePreviewUrl(Long storageObjectId) {
+        return storageObjectId == null ? null : "/api/storage/object/" + storageObjectId + "/content";
+    }
+
+    private static String storageDownloadUrl(Long storageObjectId) {
+        return storageObjectId == null ? null : "/api/storage/object/" + storageObjectId + "/content?download=true";
     }
 }

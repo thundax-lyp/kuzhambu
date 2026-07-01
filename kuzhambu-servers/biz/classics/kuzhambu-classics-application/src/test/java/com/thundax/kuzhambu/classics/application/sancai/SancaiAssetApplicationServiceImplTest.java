@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.classics.application.sancai;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -17,11 +18,13 @@ import com.thundax.kuzhambu.classics.domain.common.client.WorkerRenderClient;
 import com.thundax.kuzhambu.classics.domain.common.client.dto.WorkerRenderDtos;
 import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryImage;
+import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVisualAsset;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryImageType;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiShowcaseStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryImageId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiShowcaseId;
+import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVisualAssetId;
 import com.thundax.kuzhambu.classics.domain.sancai.repository.SancaiAssetRepository;
 import com.thundax.kuzhambu.storage.facade.StorageFacade;
 import com.thundax.kuzhambu.storage.facade.dto.StorageObjectFacadeDto;
@@ -37,6 +40,62 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 class SancaiAssetApplicationServiceImplTest {
+
+    @Test
+    void updateVisualAssetShouldInsertWithoutImplicitCurrentSwitch() {
+        SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
+        SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(repository, null, null, null);
+        SancaiVisualAsset visualAsset = visualAsset(null, 3001L);
+        when(repository.insertVisualAsset(visualAsset)).thenReturn(SancaiVisualAssetId.of(5001L));
+
+        SancaiVisualAssetId result = service.updateVisualAsset(visualAsset);
+
+        assertEquals(5001L, result.value());
+        verify(repository).insertVisualAsset(visualAsset);
+        verify(repository, never()).updateVisualAsset(org.mockito.ArgumentMatchers.any());
+        verify(repository, never())
+                .updateCurrentVisualAsset(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any());
+    }
+
+    @Test
+    void updateVisualAssetShouldUpdateExistingRecordWithoutImplicitCurrentSwitch() {
+        SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
+        SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(repository, null, null, null);
+        SancaiVisualAsset visualAsset = visualAsset(5001L, 3001L);
+
+        SancaiVisualAssetId result = service.updateVisualAsset(visualAsset);
+
+        assertEquals(5001L, result.value());
+        verify(repository).updateVisualAsset(visualAsset);
+        verify(repository, never()).insertVisualAsset(org.mockito.ArgumentMatchers.any());
+        verify(repository, never())
+                .updateCurrentVisualAsset(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any());
+    }
+
+    @Test
+    void useVisualAssetShouldDelegateCurrentSwitchOnly() {
+        SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
+        SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(repository, null, null, null);
+
+        service.useVisualAsset(SancaiEntryId.of(3001L), SancaiVisualAssetId.of(5001L));
+
+        verify(repository).updateCurrentVisualAsset(SancaiEntryId.of(3001L), SancaiVisualAssetId.of(5001L));
+        verify(repository, never()).updateVisualAsset(org.mockito.ArgumentMatchers.any());
+        verify(repository, never()).insertVisualAsset(org.mockito.ArgumentMatchers.any());
+    }
+
+    @Test
+    void listVisualAssetsShouldDelegateRepositoryList() {
+        SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
+        SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(repository, null, null, null);
+        List<SancaiVisualAsset> expected = List.of(visualAsset(5001L, 3001L));
+        when(repository.listVisualAssetsByEntryId(SancaiEntryId.of(3001L))).thenReturn(expected);
+
+        List<SancaiVisualAsset> result = service.listVisualAssets(SancaiEntryId.of(3001L));
+
+        assertEquals(expected, result);
+        verify(repository).listVisualAssetsByEntryId(SancaiEntryId.of(3001L));
+    }
 
     @Test
     void uploadImageShouldCreateReplacementAndBindStorageReference() {
@@ -218,6 +277,14 @@ class SancaiAssetApplicationServiceImplTest {
         image.setStorageObjectId(StorageObjectId.of(storageObjectId));
         image.setCurrentUsed(true);
         return image;
+    }
+
+    private static SancaiVisualAsset visualAsset(Long visualAssetId, long entryId) {
+        SancaiVisualAsset visualAsset = new SancaiVisualAsset();
+        visualAsset.setId(visualAssetId == null ? null : SancaiVisualAssetId.of(visualAssetId));
+        visualAsset.setEntryId(SancaiEntryId.of(entryId));
+        visualAsset.setCurrentUsed(true);
+        return visualAsset;
     }
 
     private static UploadStorageFacadeResponse uploadResponse() {

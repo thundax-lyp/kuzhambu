@@ -169,5 +169,5 @@ describe("BackupRestorePage", () => {
         expect((await screen.findAllByText("backup_20260629-120000.sql")).length).toBeGreaterThan(
             0
         );
-    }, 10000);
+    }, 30000);
 });

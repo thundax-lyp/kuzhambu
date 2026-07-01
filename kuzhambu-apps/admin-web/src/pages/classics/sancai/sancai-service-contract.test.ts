@@ -252,6 +252,9 @@ describe("sancai service request contracts", () => {
         await entryService.listImages(3001);
         expectLastCall("GET", "/classics/sancai/assets/images/3001", undefined);
 
+        await entryService.listVisualAssets(3001);
+        expectLastCall("GET", "/classics/sancai/assets/visual-assets/3001", undefined);
+
         await entryService.uploadImage({
             currentUsed: true,
             entryId: 3001,
@@ -274,6 +277,46 @@ describe("sancai service request contracts", () => {
         expect(
             entryService.getImageContentUrl({ entryId: 3001, imageId: 8002, mode: "download" })
         ).toBe(`${DEV_PROXY_PREFIX}/classics/sancai/assets/images/3001/8002/content?download=true`);
+
+        await entryService.updateVisualAsset({
+            visualAssetId: 5001,
+            entryId: 3001,
+            versionNo: 2,
+            status: "READY",
+            sourceImageStorageObjectId: 7001,
+            generatedImageStorageObjectId: 7002,
+            currentUsed: true,
+            textWeight: 60,
+            imageWeight: 40,
+            imageAnalysisMarkdown: "图片理解",
+            fusionDescription: "融合说明",
+            visualDescription: "视觉描述",
+            generationParamsJson: '{"style":"gongbi"}'
+        });
+        expectLastCall("POST", "/classics/sancai/assets/visual-assets/update", {
+            visualAssetId: 5001,
+            entryId: 3001,
+            versionNo: 2,
+            status: "READY",
+            sourceImageStorageObjectId: 7001,
+            generatedImageStorageObjectId: 7002,
+            currentUsed: true,
+            textWeight: 60,
+            imageWeight: 40,
+            imageAnalysisMarkdown: "图片理解",
+            fusionDescription: "融合说明",
+            visualDescription: "视觉描述",
+            generationParamsJson: '{"style":"gongbi"}'
+        });
+
+        await entryService.changeCurrentVisualAsset({
+            entryId: 3001,
+            visualAssetId: 5001
+        });
+        expectLastCall("POST", "/classics/sancai/assets/visual-assets/current/change", {
+            entryId: 3001,
+            visualAssetId: 5001
+        });
 
         await entryService.listVersions(3001);
         expectLastCall("POST", "/classics/sancai/entries/versions/list", {

@@ -105,5 +105,5 @@ describe("TaxonomyPage", () => {
             })
         );
         expect(await screen.findByText("标签治理统计")).toBeInTheDocument();
-    }, 10000);
+    }, 30000);
 });

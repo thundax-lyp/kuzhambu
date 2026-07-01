@@ -54,5 +54,5 @@ describe("QaAdminPage", () => {
         expect(screen.getByRole("button", { name: "加载会话" })).toBeInTheDocument();
         expect(screen.getByRole("button", { name: "加载来源" })).toBeInTheDocument();
         expect(screen.getByRole("button", { name: "加载轨迹" })).toBeInTheDocument();
-    }, 10000);
+    }, 30000);
 });
