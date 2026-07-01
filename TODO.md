@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [x] `sancai/image-gen-capability`：补齐生图能力入口与 capability 识别
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-VISUAL-ASSET-WORKFLOW-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/hooks/use-sancai-entry-panel-state.ts`、`kuzhambu-workers/src/kuzhambu_workers/schemas/ai.py`、`kuzhambu-workers/src/kuzhambu_workers/ai/usecase_registry.py`
-    - 处理动作：补齐 `image_gen` capability 的前端入口和 workers 识别
-    - 验收点：页面可发起 `image_gen`，workers 枚举和注册口径支持该能力
-    - 重要度：8/10
-
 - [ ] `sancai/image-gen-storage`：接通生图产物转存与新版本规则
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-VISUAL-ASSET-WORKFLOW-CLOSURE.md`
