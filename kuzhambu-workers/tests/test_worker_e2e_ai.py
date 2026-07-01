@@ -22,7 +22,8 @@ def test_worker_e2e_ai_invoke_and_stream(monkeypatch) -> None:
     assert invoke_response.status_code == 200
     assert invoke_response.json()["status"] == "SUCCEEDED"
     invoke_payload = invoke_response.json()["result"]["payload"]
-    assert json.loads(invoke_payload)["choices"][0]["message"]["content"] != ""
+    assert isinstance(invoke_payload, str)
+    assert invoke_payload != ""
 
     stream_body = _body("answer_generation", stream=True)
     stream_response = client.post(

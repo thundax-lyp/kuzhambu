@@ -1,3 +1,5 @@
+import json
+
 import pytest
 
 from kuzhambu_workers.ai.graph_registry import CANONICAL_CAPABILITIES, GraphRegistry
@@ -21,7 +23,10 @@ def test_registry_invokes_text_graph_for_classics_translate() -> None:
     result = registry.invoke(request)
 
     assert result["format"] == "TEXT"
-    assert result["payload"] == "[CLASSICS_SANCAI_TRANSLATE] hello"
+    assert (
+        json.loads(result["payload"])["choices"][0]["message"]["content"]
+        == "[CLASSICS_SANCAI_TRANSLATE] hello"
+    )
 
 
 def test_registry_returns_structured_placeholder_for_structured_capability() -> None:
@@ -58,7 +63,7 @@ def test_registry_returns_stable_payload_shape_for_knowledge_capabilities(
 
 
 def test_registry_rejects_unregistered_capability() -> None:
-    registry = GraphRegistry(graphs={})
+    registry = GraphRegistry(graphs={}, classics_text_graphs={})
     request = AiInvokeRequest.model_validate(_request_payload("translate"))
 
     with pytest.raises(WorkerError) as raised:

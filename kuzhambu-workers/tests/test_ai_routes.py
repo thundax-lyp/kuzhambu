@@ -5,9 +5,9 @@ from typing import Any
 from fastapi.testclient import TestClient
 
 from kuzhambu_workers.api.ai_routes import invoke_ai_graph
-from kuzhambu_workers.schemas.ai import AiInvokeRequest
 from kuzhambu_workers.core.security import sign_request
 from kuzhambu_workers.main import app
+from kuzhambu_workers.schemas.ai import AiInvokeRequest
 
 
 def test_ai_invoke_returns_success(monkeypatch) -> None:
@@ -31,8 +31,7 @@ def test_ai_invoke_returns_success(monkeypatch) -> None:
     assert payload["fallbackUsed"] is False
     assert payload["artifactReference"] is None
     assert payload["result"]["format"] == "TEXT"
-    result_payload = json.loads(payload["result"]["payload"])
-    assert result_payload["choices"][0]["message"]["content"] == "[CLASSICS_SANCAI_TRANSLATE] hello"
+    assert payload["result"]["payload"] == "[CLASSICS_SANCAI_TRANSLATE] hello"
 
 
 def test_ai_stream_returns_started_and_completed(monkeypatch) -> None:

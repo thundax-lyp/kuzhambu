@@ -1,5 +1,5 @@
-from collections.abc import AsyncIterator, Callable
 import json
+from collections.abc import AsyncIterator, Callable
 from datetime import datetime, timezone
 from typing import Any, NamedTuple
 

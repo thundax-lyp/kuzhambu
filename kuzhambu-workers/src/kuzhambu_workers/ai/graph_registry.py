@@ -1,5 +1,5 @@
 from collections.abc import Iterable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, cast
 
 from kuzhambu_workers.ai.graphs.basic import build_basic_graph
@@ -18,19 +18,18 @@ CLASSICS_TEXT_USECASES = frozenset(
     }
 )
 
+
 @dataclass(frozen=True)
 class GraphRegistry:
     graphs: dict[AiCapability, Any]
-    classics_text_graphs: dict[str, Any]
+    classics_text_graphs: dict[str, Any] = field(default_factory=dict)
 
     @classmethod
     def build_default(cls) -> "GraphRegistry":
         text_graph = build_text_graph()
         return cls(
             graphs={capability: build_basic_graph() for capability in AiCapability},
-            classics_text_graphs={
-                operation: text_graph for operation in CLASSICS_TEXT_USECASES
-            },
+            classics_text_graphs={operation: text_graph for operation in CLASSICS_TEXT_USECASES},
         )
 
     def capabilities(self) -> Iterable[str]:
