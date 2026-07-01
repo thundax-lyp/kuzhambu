@@ -9,6 +9,9 @@ from kuzhambu_workers.core.security import sign_request
 from kuzhambu_workers.main import app
 from kuzhambu_workers.schemas.ai import AiCapability
 
+IMAGE_ANALYSIS_PATH = "/internal/ai/classics/sancai/image-analysis"
+IMAGE_ANALYSIS_OPERATION = "CLASSICS_SANCAI_IMAGE_ANALYSIS"
+
 CLASSICS_USECASES = tuple(
     usecase for usecase in USECASES if usecase.domain == AiUsecaseDomain.CLASSICS
 )
@@ -62,6 +65,28 @@ def test_classics_usecase_route_rejects_capability_mismatch(monkeypatch) -> None
     assert response.status_code == 400
     assert response.json()["status"] == "FAILED"
     assert response.json()["error"]["code"] == "BAD_REQUEST"
+
+
+def test_classics_image_analysis_route_contract_is_stable(monkeypatch) -> None:
+    monkeypatch.setenv("KUZHAMBU_WORKER_ALLOWED_SERVICES", "kuzhambu-ai")
+    monkeypatch.setenv("KUZHAMBU_WORKER_INTERNAL_SECRET", "worker-secret")
+    body = _body(
+        operation=IMAGE_ANALYSIS_OPERATION,
+        capability=AiCapability.IMAGE_ANALYSIS.value,
+        stream=True,
+    )
+
+    response = TestClient(app).post(
+        IMAGE_ANALYSIS_PATH,
+        content=body,
+        headers=_headers(body, IMAGE_ANALYSIS_PATH, service="kuzhambu-ai"),
+    )
+
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("text/event-stream")
+    assert "event: started" in response.text
+    assert "event: completed" in response.text
+    assert '"format":"MARKDOWN"' in response.text
 
 
 def test_classics_usecase_route_rejects_stream_mismatch(monkeypatch) -> None:

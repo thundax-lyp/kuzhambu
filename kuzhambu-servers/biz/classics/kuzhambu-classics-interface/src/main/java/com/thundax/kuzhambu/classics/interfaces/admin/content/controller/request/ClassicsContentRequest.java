@@ -75,6 +75,9 @@ public class ClassicsContentRequest extends PageRequest {
         @JsonProperty("capability")
         private String capability;
 
+        @JsonProperty("objectId")
+        private Long objectId;
+
         @JsonProperty("resultFormat")
         private String resultFormat;
 

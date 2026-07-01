@@ -401,7 +401,7 @@ class ClassicsContentApplicationServiceImplTest {
                 repository, null, null, null, null, null, aiFacade, null, publishSupport);
 
         service.applyAiCandidate(new AiCandidateApplyContentCommand(
-                7001L, ClassicsContentType.SANCAI_ENTRY, 102L, "summary", "TEXT", "AI摘要", null));
+                7001L, ClassicsContentType.SANCAI_ENTRY, 102L, null, "summary", "TEXT", "AI摘要", null));
 
         assertEquals("AI摘要", repository.sancaiEntryForAiApply.getSummary());
         assertEquals(1, repository.sancaiEntryVersionMarker.getCurrentVersionNo());

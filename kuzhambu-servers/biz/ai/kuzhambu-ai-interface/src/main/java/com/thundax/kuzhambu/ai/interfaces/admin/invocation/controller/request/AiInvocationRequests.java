@@ -53,6 +53,9 @@ public final class AiInvocationRequests {
         @JsonProperty(value = "contentId")
         private Long contentId;
 
+        @JsonProperty(value = "objectId")
+        private Long objectId;
+
         @Size(max = 64)
         @JsonProperty(value = "capability")
         private String capability;

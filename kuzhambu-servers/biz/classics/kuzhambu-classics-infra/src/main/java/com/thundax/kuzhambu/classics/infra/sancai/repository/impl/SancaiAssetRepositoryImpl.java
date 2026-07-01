@@ -163,6 +163,27 @@ public class SancaiAssetRepositoryImpl implements SancaiAssetRepository {
     }
 
     @Override
+    public SancaiVisualAsset getVisualAssetById(SancaiVisualAssetId visualAssetId) {
+        return SancaiAssetPersistenceAssembler.toVisualAssetDomain(
+                visualAssetMapper.selectById(SancaiVisualAssetIdCodec.toValue(visualAssetId)));
+    }
+
+    @Override
+    public int updateVisualAssetById(
+            SancaiVisualAssetId visualAssetId,
+            String imageAnalysisMarkdown,
+            String fusionDescription,
+            String visualDescription) {
+        return visualAssetMapper.update(
+                null,
+                new LambdaUpdateWrapper<SancaiVisualAssetDO>()
+                        .eq(SancaiVisualAssetDO::getId, SancaiVisualAssetIdCodec.toValue(visualAssetId))
+                        .set(SancaiVisualAssetDO::getImageAnalysisMarkdown, imageAnalysisMarkdown)
+                        .set(SancaiVisualAssetDO::getFusionDescription, fusionDescription)
+                        .set(SancaiVisualAssetDO::getVisualDescription, visualDescription));
+    }
+
+    @Override
     public int updateCurrentVisualAsset(SancaiEntryId entryId, SancaiVisualAssetId visualAssetId) {
         visualAssetMapper.update(
                 null,

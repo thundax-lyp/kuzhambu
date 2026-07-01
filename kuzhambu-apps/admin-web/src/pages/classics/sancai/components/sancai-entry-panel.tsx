@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Alert, App, Button, Card } from "antd";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import type { KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
@@ -16,6 +16,7 @@ import { SancaiEntryList } from "./sancai-entry-list";
 import { SancaiEntryModel } from "./sancai-entry-model";
 import type { SancaiEntryFormValues } from "./sancai-form-values";
 import { SancaiVersionHistoryPanel } from "./sancai-version-history-panel";
+import { useSancaiEntryPanelState } from "../hooks/use-sancai-entry-panel-state";
 import * as entryService from "../services/sancai-entry-service";
 import type {
     SancaiContentVersionRecord,
@@ -27,60 +28,9 @@ import type {
 const EXPORT_PAGE_SIZE = 8;
 const SHOWCASE_PAGE_SIZE = 8;
 const TASK_POLL_INTERVAL_MS = 3000;
-const DEFAULT_REFINEMENT_MODEL_ID = 1;
-const DEFAULT_REFINEMENT_MODEL_NAME = "gpt-5.5";
-const DEFAULT_REFINEMENT_SERVICE_ROLE = "PRIMARY";
 
 const readEntryTitle = (entry: SancaiEntryRecord) => {
     return entry.title?.trim() || `条目 ${entry.id}`;
-};
-
-const createEventId = (prefix: string) => {
-    if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
-        return `${prefix}-${crypto.randomUUID()}`;
-    }
-    return `${prefix}-${Date.now()}`;
-};
-
-const buildPromptMessagesJson = (capability: "translate" | "summary", entry: SancaiEntryRecord) => {
-    if (capability === "translate") {
-        return JSON.stringify([
-            {
-                role: "system",
-                content: "你是古籍翻译助手，请输出可直接展示的现代汉语译文。"
-            },
-            {
-                role: "user",
-                content: entry.originalText?.trim() || ""
-            }
-        ]);
-    }
-    return JSON.stringify([
-        {
-            role: "system",
-            content: "你是古籍摘要助手，请输出可直接展示的简明中文摘要。"
-        },
-        {
-            role: "user",
-            content: JSON.stringify({
-                title: entry.title,
-                originalText: entry.originalText,
-                translationText: entry.translationText
-            })
-        }
-    ]);
-};
-
-const buildInputPayloadJson = (capability: "translate" | "summary", entry: SancaiEntryRecord) => {
-    return JSON.stringify({
-        capability,
-        contentId: entry.id,
-        contentType: "SANCAI_ENTRY",
-        originalText: entry.originalText,
-        summary: entry.summary,
-        title: entry.title,
-        translationText: entry.translationText
-    });
 };
 
 interface SancaiEntryPanelProps {
@@ -107,10 +57,6 @@ export const SancaiEntryPanel = ({
     const { message: messageApi, modal: modalApi } = App.useApp();
     const confirm = useKuzhambuConfirm();
     const queryClient = useQueryClient();
-    const [creatingRefinementCapability, setCreatingRefinementCapability] = useState<
-        "translate" | "summary" | null
-    >(null);
-    const handledSucceededTaskIdsRef = useRef<Set<number>>(new Set());
     const [isCreating, setIsCreating] = useState(defaultCreateOpen);
     const [isModelOpen, setIsModelOpen] = useState(defaultCreateOpen);
     const [editingEntry, setEditingEntry] = useState<SancaiEntryRecord | null>(null);
@@ -237,6 +183,30 @@ export const SancaiEntryPanel = ({
             queryClient.invalidateQueries({ queryKey: ["classics", "sancai", "exports", "jobs"] })
         ]);
     }, [queryClient]);
+    const invalidateRefinementTasks = async () => {
+        await queryClient.invalidateQueries({
+            queryKey: ["classics", "sancai", "refinement", "tasks", selectedEntry?.id]
+        });
+    };
+    const {
+        setSelectedVisualAsset,
+        selectedVisualAssetId,
+        creatingRefinementCapability,
+        invalidateSancaiContentGovernance,
+        refreshSancaiEntryDetail,
+        createRefinementTask,
+        refreshAfterImageAnalysisApplied,
+        resetHandledSucceededTaskIds
+    } = useSancaiEntryPanelState({
+        queryClient,
+        messageApi,
+        selectedEntry,
+        selectedEntryId,
+        currentUserId: currentUserQuery.data?.id,
+        refinementTasks,
+        invalidateEntries,
+        invalidateRefinementTasks
+    });
     const invalidateExportJobs = async () => {
         await queryClient.invalidateQueries({
             queryKey: ["classics", "sancai", "exports", "jobs"]
@@ -245,37 +215,6 @@ export const SancaiEntryPanel = ({
     const invalidateShowcaseJobs = async () => {
         await queryClient.invalidateQueries({
             queryKey: ["classics", "sancai", "showcases", "jobs"]
-        });
-    };
-    const refreshSancaiEntryDetail = useCallback(async () => {
-        if (!selectedEntryId) {
-            return;
-        }
-        await Promise.all([
-            queryClient.invalidateQueries({
-                queryKey: ["classics", "sancai", "entries", "detail", selectedEntryId]
-            }),
-            queryClient.invalidateQueries({
-                queryKey: ["classics", "sancai", "entries", "versions", selectedEntryId]
-            })
-        ]);
-    }, [queryClient, selectedEntryId]);
-    const invalidateSancaiContentGovernance = useCallback(async () => {
-        await Promise.all([
-            queryClient.invalidateQueries({
-                queryKey: ["classics", "content", "tags", "SANCAI_ENTRY"]
-            }),
-            queryClient.invalidateQueries({
-                queryKey: ["classics", "content", "qa-pairs", "SANCAI_ENTRY"]
-            }),
-            queryClient.invalidateQueries({
-                queryKey: ["ai", "candidates", "SANCAI_ENTRY", selectedEntryId]
-            })
-        ]);
-    }, [queryClient, selectedEntryId]);
-    const invalidateRefinementTasks = async () => {
-        await queryClient.invalidateQueries({
-            queryKey: ["classics", "sancai", "refinement", "tasks", selectedEntry?.id]
         });
     };
     const addEntryMutation = useMutation({
@@ -404,26 +343,6 @@ export const SancaiEntryPanel = ({
             messageApi.error(error instanceof Error ? error.message : "静态展示提交失败");
         }
     });
-    const createRefinementTaskMutation = useMutation({
-        mutationFn: aiRefinementTaskService.createTask,
-        onMutate: (command) => {
-            if (command.capability === "translate" || command.capability === "summary") {
-                setCreatingRefinementCapability(command.capability);
-            }
-        },
-        onSuccess: async (_, command) => {
-            await invalidateRefinementTasks();
-            messageApi.success(
-                command.capability === "translate" ? "译文任务已创建" : "摘要任务已创建"
-            );
-        },
-        onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "AI 精修任务创建失败");
-        },
-        onSettled: () => {
-            setCreatingRefinementCapability(null);
-        }
-    });
     const updateVisualAssetMutation = useMutation({
         mutationFn: entryService.updateVisualAsset,
         onSuccess: async () => {
@@ -445,33 +364,9 @@ export const SancaiEntryPanel = ({
         }
     });
 
-    useEffect(() => {
-        const newlySucceededTaskIds = refinementTasks
-            .filter(
-                (task) =>
-                    (task.status === "SUCCEEDED" || task.status === "PARTIAL") &&
-                    typeof task.taskId === "number" &&
-                    !handledSucceededTaskIdsRef.current.has(task.taskId)
-            )
-            .map((task) => task.taskId);
-        if (!newlySucceededTaskIds.length) {
-            return;
-        }
-        newlySucceededTaskIds.forEach((taskId) => handledSucceededTaskIdsRef.current.add(taskId));
-        void Promise.all([
-            refreshSancaiEntryDetail(),
-            invalidateEntries(),
-            invalidateSancaiContentGovernance()
-        ]);
-    }, [
-        invalidateEntries,
-        invalidateSancaiContentGovernance,
-        refreshSancaiEntryDetail,
-        refinementTasks
-    ]);
-
     const selectEntry = (entry: SancaiEntryRecord) => {
         setIsCreating(false);
+        setSelectedVisualAsset(null);
         setEditingEntry(entry);
         setSelectedVersionId(null);
         setIsModelOpen(true);
@@ -479,9 +374,10 @@ export const SancaiEntryPanel = ({
 
     const closeModel = () => {
         setIsCreating(false);
+        setSelectedVisualAsset(null);
         setEditingEntry(null);
         setSelectedVersionId(null);
-        handledSucceededTaskIdsRef.current.clear();
+        resetHandledSucceededTaskIds();
         setIsModelOpen(false);
     };
 
@@ -557,39 +453,6 @@ export const SancaiEntryPanel = ({
             return;
         }
         showcaseEntryMutation.mutate(entry);
-    };
-
-    const createRefinementTask = (capability: "translate" | "summary") => {
-        if (!selectedEntry?.id) {
-            return;
-        }
-        if (!currentUserQuery.data?.id) {
-            messageApi.warning("当前用户信息尚未加载完成");
-            return;
-        }
-        if (!selectedEntry.originalText?.trim()) {
-            messageApi.warning("当前条目缺少原文，无法创建 AI 精修任务");
-            return;
-        }
-        createRefinementTaskMutation.mutate({
-            capability,
-            scope: "classics",
-            contentType: "SANCAI_ENTRY",
-            contentId: selectedEntry.id,
-            objectId: null,
-            requestedBy: Number(currentUserQuery.data.id),
-            serviceRole: DEFAULT_REFINEMENT_SERVICE_ROLE,
-            modelId: DEFAULT_REFINEMENT_MODEL_ID,
-            modelName: DEFAULT_REFINEMENT_MODEL_NAME,
-            requestId: createEventId("sancai-task"),
-            traceId: createEventId("sancai-trace"),
-            promptMessagesJson: buildPromptMessagesJson(capability, selectedEntry),
-            promptVariablesJson: JSON.stringify({
-                title: selectedEntry.title
-            }),
-            inputPayloadJson: buildInputPayloadJson(capability, selectedEntry),
-            locale: "zh-CN"
-        });
     };
 
     const resetVersion = (version: SancaiContentVersionRecord) => {
@@ -734,6 +597,11 @@ export const SancaiEntryPanel = ({
                 onSubmit={submitEntry}
                 onUseVisualAsset={switchVisualAsset}
                 onUpdateVisualAsset={updateVisualAsset}
+                onSelectedVisualAssetChange={setSelectedVisualAsset}
+                onCreateImageAnalysisTask={(asset) => {
+                    createRefinementTask("image_analysis", asset);
+                }}
+                isCreatingImageAnalysisTask={creatingRefinementCapability === "image_analysis"}
                 afterForm={
                     !isCreating && selectedEntry ? (
                         <>
@@ -758,7 +626,8 @@ export const SancaiEntryPanel = ({
                                         .filter(
                                             (task) =>
                                                 task.capability === "translate" ||
-                                                task.capability === "summary"
+                                                task.capability === "summary" ||
+                                                task.capability === "image_analysis"
                                         )
                                         .slice(0, 4)
                                         .map((task) => (
@@ -771,18 +640,17 @@ export const SancaiEntryPanel = ({
                                         ))}
                                 </div>
                             </Card>
-                            <AiCandidatePanel
-                                capabilities={["translate", "summary", "tags", "qa"]}
-                                contentId={selectedEntry.id}
-                                contentType="SANCAI_ENTRY"
-                                onApplied={async () => {
-                                    await Promise.all([
-                                        refreshSancaiEntryDetail(),
-                                        invalidateEntries(),
-                                        invalidateSancaiContentGovernance()
-                                    ]);
-                                }}
-                            />
+                            {selectedVisualAssetId ? (
+                                <AiCandidatePanel
+                                    capabilities={["image_analysis"]}
+                                    contentId={selectedEntry.id}
+                                    contentType="SANCAI_ENTRY"
+                                    objectId={selectedVisualAssetId}
+                                    onApplied={async () => {
+                                        await refreshAfterImageAnalysisApplied();
+                                    }}
+                                />
+                            ) : null}
                             <ClassicsContentTagPanel
                                 contentId={selectedEntry.id}
                                 contentType="SANCAI_ENTRY"

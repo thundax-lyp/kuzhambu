@@ -4,6 +4,7 @@ import type { AiCandidateApplyRecord, AiCandidateRecord } from "./ai-candidate-t
 export interface AiCandidateListQuery {
     contentType?: string | null;
     contentId?: number | null;
+    objectId?: number | null;
     capability?: string | null;
     status?: "PENDING" | "APPLIED" | "REJECTED" | string | null;
 }
@@ -13,6 +14,7 @@ export interface AiCandidateApplyCommand {
     contentType: string;
     contentId: number;
     capability: string;
+    objectId?: number | null;
     resultFormat: string;
     resultPayload: string;
     changeSummary?: string | null;

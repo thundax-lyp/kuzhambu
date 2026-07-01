@@ -2,11 +2,13 @@ package com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.thundax.kuzhambu.ai.application.batch.service.AiBatchJobApplicationService;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
 import com.thundax.kuzhambu.ai.domain.invocation.service.AiCandidateDomainService;
+import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.request.AiInvocationRequests.CandidateListRequest;
 import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.request.AiInvocationRequests.CandidateMarkAppliedRequest;
 import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.request.AiInvocationRequests.CandidateRejectRequest;
 import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.response.AiInvocationResponses.CandidateResponse;
@@ -65,6 +67,32 @@ class AiInvocationControllerTest {
     }
 
     @Test
+    void listCandidatesShouldPassObjectIdFilterToRepository() {
+        AiInvocationRepository repository = new FakeRepository() {
+            @Override
+            public List<AiCandidate> listCandidates(
+                    String contentType, Long contentId, Long objectId, String capability, String status) {
+                assertEquals("ENTRY", contentType);
+                assertEquals(9001L, contentId);
+                assertEquals(10001L, objectId);
+                assertEquals("summary", capability);
+                assertEquals("PENDING", status);
+                return List.of();
+            }
+        };
+        AiInvocationController controller = new AiInvocationController(repository, noBatchService(), noDomainService());
+
+        CandidateListRequest request = new CandidateListRequest();
+        request.setContentType("ENTRY");
+        request.setContentId(9001L);
+        request.setObjectId(10001L);
+        request.setCapability("summary");
+        request.setStatus("PENDING");
+
+        assertTrue(controller.listCandidates(request).isEmpty());
+    }
+
+    @Test
     void controllerShouldNotExposeApplyEndpoint() {
         assertThrows(
                 NoSuchMethodException.class,
@@ -100,6 +128,21 @@ class AiInvocationControllerTest {
                 AiBatchJobApplicationService.class.getClassLoader(),
                 new Class<?>[] {AiBatchJobApplicationService.class},
                 noOpInvocationHandler("batch service"));
+    }
+
+    private static AiCandidateDomainService noDomainService() {
+        return new AiCandidateDomainService(fakeRepository()) {
+            @Override
+            public AiCandidate reject(Long candidateId, String errorType, String errorMessage) {
+                throw new UnsupportedOperationException("candidate domain service should not be called in this test");
+            }
+
+            @Override
+            public AiCandidate markApplied(
+                    Long candidateId, String resultFormat, String resultPayload, java.time.Instant appliedAt) {
+                throw new UnsupportedOperationException("candidate domain service should not be called in this test");
+            }
+        };
     }
 
     private static AiCandidateDomainService rejectDomainService() {
@@ -220,7 +263,7 @@ class AiInvocationControllerTest {
 
         @Override
         public List<com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate> listCandidates(
-                String contentType, Long contentId, String capability, String status) {
+                String contentType, Long contentId, Long objectId, String capability, String status) {
             return java.util.Collections.emptyList();
         }
     }

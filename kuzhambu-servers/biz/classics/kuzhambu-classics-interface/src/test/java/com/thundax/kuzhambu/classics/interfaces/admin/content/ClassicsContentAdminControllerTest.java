@@ -112,6 +112,7 @@ class ClassicsContentAdminControllerTest {
         request.setContentType("SANCAI_ENTRY");
         request.setContentId(456L);
         request.setCapability("summary");
+        request.setObjectId(901L);
         request.setResultFormat("TEXT");
         request.setResultPayload("new summary");
         request.setChangeSummary("AI 应用：摘要");
@@ -131,6 +132,7 @@ class ClassicsContentAdminControllerTest {
         request.setContentType("SANCAI_ENTRY");
         request.setContentId(456L);
         request.setCapability("translate");
+        request.setObjectId(902L);
         request.setResultFormat("TEXT");
         request.setResultPayload("new translation");
         request.setChangeSummary("AI 应用：译文");
@@ -291,12 +293,14 @@ class ClassicsContentAdminControllerTest {
                             assertEquals(123L, command.getCandidateId());
                             assertEquals("new summary", command.getResultPayload());
                             assertEquals("AI 应用：摘要", command.getChangeSummary());
+                            assertEquals(901L, command.getObjectId());
                             return new AiCandidateApplyContentResult(ClassicsContentType.SANCAI_ENTRY, 456L, 789L, 3);
                         }
                         if ("translate".equals(command.getCapability())) {
                             assertEquals(124L, command.getCandidateId());
                             assertEquals("new translation", command.getResultPayload());
                             assertEquals("AI 应用：译文", command.getChangeSummary());
+                            assertEquals(902L, command.getObjectId());
                             return new AiCandidateApplyContentResult(ClassicsContentType.SANCAI_ENTRY, 456L, 790L, 4);
                         }
                         throw new UnsupportedOperationException(

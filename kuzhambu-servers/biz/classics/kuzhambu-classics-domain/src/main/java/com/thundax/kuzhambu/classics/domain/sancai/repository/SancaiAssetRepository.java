@@ -55,10 +55,18 @@ public interface SancaiAssetRepository {
      */
     int updateCurrentVisualAsset(SancaiEntryId entryId, SancaiVisualAssetId visualAssetId);
 
+    SancaiVisualAsset getVisualAssetById(SancaiVisualAssetId visualAssetId);
+
     /**
      * 按条目返回全部视觉资产版本，包含当前使用标记。
      */
     List<SancaiVisualAsset> listVisualAssetsByEntryId(SancaiEntryId entryId);
+
+    int updateVisualAssetById(
+            SancaiVisualAssetId visualAssetId,
+            String imageAnalysisMarkdown,
+            String fusionDescription,
+            String visualDescription);
 
     SancaiShowcaseId insertShowcase(SancaiShowcase showcase);
 

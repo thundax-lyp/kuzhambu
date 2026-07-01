@@ -70,7 +70,11 @@ public class AiInvocationController {
             @Valid @RequestBody AiInvocationRequests.CandidateListRequest request) {
         return invocationRepository
                 .listCandidates(
-                        request.getContentType(), request.getContentId(), request.getCapability(), request.getStatus())
+                        request.getContentType(),
+                        request.getContentId(),
+                        request.getObjectId(),
+                        request.getCapability(),
+                        request.getStatus())
                 .stream()
                 .map(AiInvocationInterfaceAssembler::toResponse)
                 .collect(Collectors.toList());

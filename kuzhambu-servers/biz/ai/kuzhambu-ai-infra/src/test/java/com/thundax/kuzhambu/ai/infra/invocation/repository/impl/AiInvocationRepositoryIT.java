@@ -135,9 +135,10 @@ class AiInvocationRepositoryIT {
         assertEquals(requestedAt, savedCandidate.getRejectedAt());
 
         when(mapper.selectCandidate(7101L)).thenReturn(savedCandidate);
-        when(mapper.selectCandidates("ENTRY", 9001L, "translate", "REJECTED")).thenReturn(List.of(savedCandidate));
+        when(mapper.selectCandidates("ENTRY", 9001L, null, "translate", "REJECTED"))
+                .thenReturn(List.of(savedCandidate));
         AiCandidate loadedCandidate = repository.getCandidate(7101L);
-        List<AiCandidate> loadedCandidates = repository.listCandidates("ENTRY", 9001L, "translate", "REJECTED");
+        List<AiCandidate> loadedCandidates = repository.listCandidates("ENTRY", 9001L, null, "translate", "REJECTED");
 
         assertEquals("{\"title\":\"ok\"}", loadedCandidate.getResultPayload());
         assertEquals("SCHEMA_CHECK", loadedCandidate.getFailureStage());

@@ -1,7 +1,7 @@
 import { DownloadOutlined, EyeOutlined, PictureOutlined, UploadOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Button, Empty, Image, Input, Switch, Typography, Upload } from "antd";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
@@ -84,6 +84,9 @@ interface SancaiEntryModelProps {
     onSubmit: (values: SancaiEntryFormValues) => void;
     onUseVisualAsset?: (asset: SancaiVisualAssetRecord) => void;
     onUpdateVisualAsset?: (asset: SancaiVisualAssetRecord) => void;
+    onCreateImageAnalysisTask?: (asset: SancaiVisualAssetRecord) => void;
+    isCreatingImageAnalysisTask?: boolean;
+    onSelectedVisualAssetChange?: (asset: SancaiVisualAssetRecord | null) => void;
 }
 
 export const SancaiEntryModel = ({
@@ -97,7 +100,10 @@ export const SancaiEntryModel = ({
     onCancel,
     onSubmit,
     onUseVisualAsset,
-    onUpdateVisualAsset
+    onUpdateVisualAsset,
+    onCreateImageAnalysisTask,
+    isCreatingImageAnalysisTask = false,
+    onSelectedVisualAssetChange
 }: SancaiEntryModelProps) => {
     const { message: messageApi } = App.useApp();
     const queryClient = useQueryClient();
@@ -136,6 +142,12 @@ export const SancaiEntryModel = ({
         ) ||
         currentVisualAsset ||
         null;
+
+    useEffect(() => {
+        if (onSelectedVisualAssetChange) {
+            onSelectedVisualAssetChange(selectedVisualAsset);
+        }
+    }, [onSelectedVisualAssetChange, selectedVisualAsset]);
     const visualAssetFormValue = useMemo(() => {
         if (!selectedVisualAsset) {
             return null;
@@ -419,6 +431,20 @@ export const SancaiEntryModel = ({
                                     })}
                                 </KuzhambuSpace>
                                 <KuzhambuSpace wrap>
+                                    {onCreateImageAnalysisTask ? (
+                                        <Button
+                                            type="default"
+                                            loading={isCreatingImageAnalysisTask}
+                                            onClick={() => {
+                                                if (!selectedVisualAsset) {
+                                                    return;
+                                                }
+                                                onCreateImageAnalysisTask(selectedVisualAsset);
+                                            }}
+                                        >
+                                            创建图片理解任务
+                                        </Button>
+                                    ) : null}
                                     <Button
                                         type="primary"
                                         loading={isUpdatingVisualAsset}

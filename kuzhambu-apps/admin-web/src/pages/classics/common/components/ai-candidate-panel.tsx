@@ -7,13 +7,14 @@ import * as aiCandidateService from "../ai-candidate-service";
 import type { AiCandidateRecord } from "../ai-candidate-types";
 import { AiCandidatePayloadEditor } from "./ai-candidate-payload-editor";
 
-type AiCandidateCapability = "translate" | "summary" | "tags" | "qa";
+type AiCandidateCapability = "translate" | "summary" | "tags" | "qa" | "image_analysis";
 type CandidateContentType = "SANCAI_ENTRY" | "WANGQI_DOCUMENT" | "MING_CUSTOMS";
 
 interface AiCandidatePanelProps {
     capabilities: AiCandidateCapability[];
     contentId: number;
     contentType: CandidateContentType;
+    objectId?: number | null;
     onApplied?: () => void;
 }
 
@@ -49,13 +50,14 @@ const formatDateTime = (value?: string | null) => {
 };
 
 const isSupportCapability = (capability: string): capability is AiCandidateCapability => {
-    return ["translate", "summary", "tags", "qa"].includes(capability);
+    return ["translate", "summary", "tags", "qa", "image_analysis"].includes(capability);
 };
 
 export const AiCandidatePanel = ({
     capabilities,
     contentId,
     contentType,
+    objectId = null,
     onApplied
 }: AiCandidatePanelProps) => {
     const { message: messageApi } = App.useApp();
@@ -68,12 +70,13 @@ export const AiCandidatePanel = ({
     const capabilityFilter = useMemo(() => toCapabilityFilterSet(capabilities), [capabilities]);
 
     const pendingCandidatesQuery = useQuery({
-        queryKey: ["ai", "candidates", contentType, contentId],
+        queryKey: ["ai", "candidates", contentType, contentId, objectId ?? null],
         queryFn: () =>
             aiCandidateService.list({
                 contentId,
                 contentType,
-                status: "PENDING"
+                status: "PENDING",
+                objectId
             }),
         enabled: capabilityFilter.size > 0 && Boolean(contentId),
         retry: false
@@ -83,17 +86,18 @@ export const AiCandidatePanel = ({
         const candidates = Array.isArray(pendingCandidatesQuery.data)
             ? pendingCandidatesQuery.data
             : [];
-        return candidates.filter(
+        const result = candidates.filter(
             (candidate) =>
                 candidate.status === "PENDING" &&
                 isSupportCapability(candidate.capability) &&
                 capabilityFilter.has(candidate.capability)
         );
+        return result;
     }, [capabilityFilter, pendingCandidatesQuery.data]);
 
     const refreshCandidates = async () => {
         await queryClient.invalidateQueries({
-            queryKey: ["ai", "candidates", contentType, contentId]
+            queryKey: ["ai", "candidates", contentType, contentId, objectId ?? null]
         });
     };
 
@@ -153,6 +157,7 @@ export const AiCandidatePanel = ({
             contentId,
             contentType,
             capability: candidate.capability,
+            objectId: candidate.objectId,
             resultFormat:
                 candidate.resultFormat?.trim() ||
                 defaultResultFormatForCapability(candidate.capability),

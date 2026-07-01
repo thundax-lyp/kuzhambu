@@ -87,6 +87,7 @@ describe("AI candidate service request contracts", () => {
         await aiCandidateService.list({
             contentType: "SANCAI_ENTRY",
             contentId: 3001,
+            objectId: 5001,
             capability: "summary",
             status: "PENDING"
         });
@@ -95,6 +96,7 @@ describe("AI candidate service request contracts", () => {
             body: {
                 contentType: "SANCAI_ENTRY",
                 contentId: 3001,
+                objectId: 5001,
                 capability: "summary",
                 status: "PENDING"
             },
@@ -109,6 +111,7 @@ describe("AI candidate service request contracts", () => {
             contentType: "SANCAI_ENTRY",
             contentId: 3001,
             capability: "summary",
+            objectId: 5001,
             resultFormat: "TEXT",
             resultPayload: "new summary",
             changeSummary: "AI 应用：摘要"

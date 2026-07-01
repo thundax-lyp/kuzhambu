@@ -17,6 +17,7 @@ import com.thundax.kuzhambu.classics.application.content.command.ContentTagComma
 import com.thundax.kuzhambu.classics.application.content.result.AiCandidateApplyContentResult;
 import com.thundax.kuzhambu.classics.application.content.service.impl.ClassicsContentApplicationServiceImpl;
 import com.thundax.kuzhambu.classics.application.content.support.ClassicsTagBindingSupport;
+import com.thundax.kuzhambu.classics.application.sancai.service.SancaiAssetApplicationService;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentExportJob;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentQaPair;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
@@ -34,11 +35,14 @@ import com.thundax.kuzhambu.classics.domain.content.repository.ClassicsContentRe
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsEntryId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
+import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVisualAsset;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
+import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVisualAssetId;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiContentFormat;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.valueobject.WangqiDocumentId;
+import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.DomainException;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import java.time.Instant;
@@ -132,6 +136,110 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         assertEquals(1, repository.insertVersionCount);
         assertEquals(1, repository.updateSancaiEntryAiCount);
         verify(aiFacade).markCandidateApplied(any(MarkAiCandidateAppliedFacadeRequest.class));
+    }
+
+    @Test
+    void applyAiCandidateImageAnalysisShouldUpdateTargetVisualAssetAndSkipVersion() {
+        FakeRepository repository = new FakeRepository();
+        SancaiEntry entry = new SancaiEntry();
+        entry.setId(SancaiEntryId.of(11L));
+        entry.setContentUpdatedAt(new Date(1L));
+        repository.sancaiEntryForAiApply = entry;
+
+        SancaiVisualAsset visualAsset = new SancaiVisualAsset();
+        visualAsset.setId(SancaiVisualAssetId.of(111L));
+
+        SancaiAssetApplicationService assetService = org.mockito.Mockito.mock(SancaiAssetApplicationService.class);
+        when(assetService.listVisualAssets(SancaiEntryId.of(11L))).thenReturn(List.of(visualAsset));
+        when(assetService.updateVisualAsset(visualAsset)).thenReturn(SancaiVisualAssetId.of(111L));
+
+        AiFacade aiFacade = mockAiFacade(
+                request -> {
+                    assertEquals(11L, request.getCandidateId());
+                    assertEquals("SANCAI_ENTRY", request.getContentType());
+                    assertEquals(11L, request.getContentId());
+                    assertEquals("image_analysis", request.getCapability());
+                    return pendingCandidate();
+                },
+                request -> {
+                    assertEquals(11L, request.getCandidateId());
+                    assertEquals("TEXT", request.getResultFormat());
+                    assertEquals("分析结果", request.getResultPayload());
+                    return candidateApplied();
+                });
+
+        ClassicsContentApplicationServiceImpl service = serviceWithAiFacade(repository, aiFacade, assetService);
+        AiCandidateApplyContentCommand command =
+                applyCommand(11L, ClassicsContentType.SANCAI_ENTRY, 11L, "image_analysis", "分析结果", 111L);
+
+        AiCandidateApplyContentResult result = service.applyAiCandidate(command);
+
+        assertEquals(ClassicsContentType.SANCAI_ENTRY, result.getContentType());
+        assertEquals(11L, result.getContentId());
+        assertEquals(null, result.getVersionId());
+        assertEquals(null, result.getVersionNo());
+        assertEquals("分析结果", visualAsset.getImageAnalysisMarkdown());
+        assertEquals("分析结果", visualAsset.getFusionDescription());
+        assertEquals("分析结果", visualAsset.getVisualDescription());
+        assertEquals(0, repository.insertVersionCount);
+        assertEquals(0, repository.updateSancaiEntryAiCount);
+        verify(aiFacade).markCandidateApplied(any(MarkAiCandidateAppliedFacadeRequest.class));
+        verify(assetService).updateVisualAsset(visualAsset);
+    }
+
+    @Test
+    void applyAiCandidateImageAnalysisShouldFailWhenObjectIdMissing() {
+        FakeRepository repository = new FakeRepository();
+        SancaiEntry entry = new SancaiEntry();
+        entry.setId(SancaiEntryId.of(11L));
+        entry.setContentUpdatedAt(new Date(1L));
+        repository.sancaiEntryForAiApply = entry;
+
+        AiFacade aiFacade = mockAiFacade(request -> pendingCandidate(), request -> {
+            throw new IllegalStateException("markApplied should not be called");
+        });
+
+        ClassicsContentApplicationServiceImpl service = serviceWithAiFacade(repository, aiFacade);
+        AiCandidateApplyContentCommand command =
+                applyCommand(11L, ClassicsContentType.SANCAI_ENTRY, 11L, "image_analysis", "分析结果", null);
+
+        BizException exception = assertThrows(BizException.class, () -> service.applyAiCandidate(command));
+        assertEquals("AI候选应用参数不完整", exception.getMessage());
+        assertEquals(0, repository.insertVersionCount);
+        assertEquals(0, repository.updateSancaiEntryAiCount);
+        verify(aiFacade).requirePendingCandidate(any(RequirePendingAiCandidateFacadeRequest.class));
+        verify(aiFacade, never()).markCandidateApplied(any(MarkAiCandidateAppliedFacadeRequest.class));
+    }
+
+    @Test
+    void applyAiCandidateImageAnalysisShouldFailWhenVisualAssetNotFound() {
+        FakeRepository repository = new FakeRepository();
+        SancaiEntry entry = new SancaiEntry();
+        entry.setId(SancaiEntryId.of(11L));
+        repository.sancaiEntryForAiApply = entry;
+
+        SancaiVisualAsset visualAsset = new SancaiVisualAsset();
+        visualAsset.setId(SancaiVisualAssetId.of(111L));
+
+        SancaiAssetApplicationService assetService = org.mockito.Mockito.mock(SancaiAssetApplicationService.class);
+        when(assetService.listVisualAssets(SancaiEntryId.of(11L))).thenReturn(List.of(visualAsset));
+        when(assetService.updateVisualAsset(visualAsset)).thenReturn(SancaiVisualAssetId.of(111L));
+
+        AiFacade aiFacade = mockAiFacade(request -> pendingCandidate(), request -> {
+            throw new IllegalStateException("markApplied should not be called");
+        });
+
+        ClassicsContentApplicationServiceImpl service = serviceWithAiFacade(repository, aiFacade, assetService);
+        AiCandidateApplyContentCommand command =
+                applyCommand(11L, ClassicsContentType.SANCAI_ENTRY, 11L, "image_analysis", "分析结果", 112L);
+
+        BizException exception = assertThrows(BizException.class, () -> service.applyAiCandidate(command));
+        assertEquals("三才视觉资产不存在: 112", exception.getMessage());
+        assertEquals(0, repository.insertVersionCount);
+        assertEquals(0, repository.updateSancaiEntryAiCount);
+        verify(aiFacade).requirePendingCandidate(any(RequirePendingAiCandidateFacadeRequest.class));
+        verify(assetService, never()).updateVisualAsset(any());
+        verify(aiFacade, never()).markCandidateApplied(any(MarkAiCandidateAppliedFacadeRequest.class));
     }
 
     @Test
@@ -382,16 +490,32 @@ class ClassicsContentApplicationServiceAiCandidateTest {
 
     private static ClassicsContentApplicationServiceImpl serviceWithAiFacade(
             ClassicsContentRepository repository, AiFacade aiFacade) {
+        return serviceWithAiFacade(repository, aiFacade, null);
+    }
+
+    private static ClassicsContentApplicationServiceImpl serviceWithAiFacade(
+            ClassicsContentRepository repository, AiFacade aiFacade, SancaiAssetApplicationService assetService) {
         return new ClassicsContentApplicationServiceImpl(
-                repository, null, null, null, null, null, aiFacade, null, null);
+                repository, null, null, assetService, null, null, aiFacade, null, null);
     }
 
     private static AiCandidateApplyContentCommand applyCommand(
             Long candidateId, ClassicsContentType contentType, Long contentId, String capability, String payload) {
+        return applyCommand(candidateId, contentType, contentId, capability, payload, null);
+    }
+
+    private static AiCandidateApplyContentCommand applyCommand(
+            Long candidateId,
+            ClassicsContentType contentType,
+            Long contentId,
+            String capability,
+            String payload,
+            Long objectId) {
         AiCandidateApplyContentCommand command = new AiCandidateApplyContentCommand();
         command.setCandidateId(candidateId);
         command.setContentType(contentType);
         command.setContentId(contentId);
+        command.setObjectId(objectId);
         command.setCapability(capability);
         command.setResultFormat("TEXT");
         command.setResultPayload(payload);

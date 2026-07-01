@@ -29,11 +29,13 @@ public interface AiInvocationMapper extends BaseMapper<AiCallRecordDO> {
             select * from ai_candidate
             where (#{contentType} is null or content_type = #{contentType})
               and (#{contentId} is null or content_id = #{contentId})
+              and (#{objectId} is null or object_id = #{objectId})
               and (#{capability} is null or capability = #{capability})
               and (#{status} is null or status = #{status})
             order by requested_at desc
             """)
-    List<AiCandidateDO> selectCandidates(String contentType, Long contentId, String capability, String status);
+    List<AiCandidateDO> selectCandidates(
+            String contentType, Long contentId, Long objectId, String capability, String status);
 
     @Insert(
             """

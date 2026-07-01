@@ -51,7 +51,9 @@ import com.thundax.kuzhambu.classics.domain.content.service.ClassicsContentVersi
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryImage;
+import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVisualAsset;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryTranslationStatus;
+import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
@@ -451,14 +453,30 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         String capability = command.getCapability();
         ClassicsContentId contentId = ClassicsContentId.of(command.getContentId());
         String changeSummary = resolveChangeSummary(capability, command.getChangeSummary());
-        Versionable content;
+        Versionable content = null;
 
         if (contentType == ClassicsContentType.SANCAI_ENTRY) {
             SancaiEntry entry = repository.getSancaiEntryForAiApply(contentId);
             if (entry == null) {
                 throw new BizException("三才内容不存在: " + contentId.value());
             }
-            if ("translate".equals(capability)) {
+            if ("image_analysis".equals(capability)) {
+                if (command.getObjectId() == null) {
+                    throw new BizException("AI候选应用参数不完整");
+                }
+                if (sancaiAssetApplicationService == null) {
+                    throw new BizException("三才图片服务未就绪");
+                }
+                SancaiVisualAsset visualAsset = findVisualAsset(contentId, command.getObjectId());
+                if (visualAsset == null) {
+                    throw new BizException("三才视觉资产不存在: " + command.getObjectId());
+                }
+                String imageAnalysisMarkdown = aiCandidatePayloadParser.parseText(command.getResultPayload());
+                visualAsset.setImageAnalysisMarkdown(imageAnalysisMarkdown);
+                visualAsset.setFusionDescription(imageAnalysisMarkdown);
+                visualAsset.setVisualDescription(imageAnalysisMarkdown);
+                sancaiAssetApplicationService.updateVisualAsset(visualAsset);
+            } else if ("translate".equals(capability)) {
                 entry.setTranslationText(aiCandidatePayloadParser.parseText(command.getResultPayload()));
                 entry.setTranslationStatus(SancaiEntryTranslationStatus.READY);
                 touchContentUpdatedAt(ClassicsContentType.SANCAI_ENTRY, entry);
@@ -474,7 +492,9 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             } else {
                 throw new BizException("不支持的 AI 候选能力: " + capability);
             }
-            content = entry;
+            if (!"image_analysis".equals(capability)) {
+                content = entry;
+            }
         } else if (contentType == ClassicsContentType.WANGQI_DOCUMENT) {
             WangqiDocument document = repository.getWangqiDocumentForAiApply(contentId);
             if (document == null) {
@@ -514,6 +534,15 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         }
 
         if (content == null) {
+            if ("image_analysis".equals(capability)) {
+                aiFacade.markCandidateApplied(MarkAiCandidateAppliedFacadeRequest.builder()
+                        .candidateId(command.getCandidateId())
+                        .resultFormat(command.getResultFormat())
+                        .resultPayload(command.getResultPayload())
+                        .appliedAt(Instant.now())
+                        .build());
+                return new AiCandidateApplyContentResult(contentType, contentId.value(), null, null);
+            }
             throw new BizException("内容不存在");
         }
         ClassicsContentVersion version = applyAiResult(content, changeSummary);
@@ -534,11 +563,24 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                 version == null ? null : version.getVersionNo());
     }
 
+    private SancaiVisualAsset findVisualAsset(ClassicsContentId contentId, Long objectId) {
+        if (sancaiAssetApplicationService == null || contentId == null || objectId == null) {
+            return null;
+        }
+        return sancaiAssetApplicationService.listVisualAssets(SancaiEntryId.of(contentId.value())).stream()
+                .filter(visualAsset -> visualAsset != null
+                        && visualAsset.getId() != null
+                        && objectId.equals(visualAsset.getId().value()))
+                .findFirst()
+                .orElse(null);
+    }
+
     private String resolveChangeSummary(String capability, String changeSummary) {
         if (StringUtils.isNotBlank(changeSummary)) {
             return changeSummary;
         }
         return switch (capability) {
+            case "image_analysis" -> "AI 应用：图片理解";
             case "translate" -> "AI 应用：译文";
             case "summary" -> "AI 应用：摘要";
             case "tags" -> "AI 应用：标签";
