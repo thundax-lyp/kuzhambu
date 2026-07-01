@@ -500,8 +500,8 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                     throw new BizException("三才视觉资产不存在: " + command.getObjectId());
                 }
                 String fusionDescription = aiCandidatePayloadParser.parseText(command.getResultPayload());
-                visualAsset.setFusionDescription(fusionDescription);
-                sancaiAssetApplicationService.updateVisualAsset(visualAsset);
+                sancaiAssetApplicationService.applyFusionDescription(
+                        SancaiEntryId.of(contentId.value()), visualAsset.getId(), fusionDescription);
             } else if ("image_gen".equals(capability)) {
                 if (command.getObjectId() == null) {
                     throw new BizException("AI候选应用参数不完整");

@@ -183,7 +183,7 @@ public class SancaiAssetRepositoryImpl implements SancaiAssetRepository {
                 null,
                 new LambdaUpdateWrapper<SancaiVisualAssetDO>()
                         .eq(SancaiVisualAssetDO::getId, SancaiVisualAssetIdCodec.toValue(visualAssetId))
-                        .set(SancaiVisualAssetDO::getFusionDescription, fusionDescription));
+                        .set(SancaiVisualAssetDO::getFusionDescription, StringUtils.trimToNull(fusionDescription)));
     }
 
     @Override

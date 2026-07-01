@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `SancaiAssetApplicationService/SancaiAssetApplicationServiceImpl/ClassicsContentApplicationServiceImpl/SancaiAssetRepositoryImpl`：补齐 fusion 正式写回链路
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-SANCAI-AI-WORKERS-FULL-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sancai/service/SancaiAssetApplicationService.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sancai/service/impl/SancaiAssetApplicationServiceImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/service/impl/ClassicsContentApplicationServiceImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/java/com/thundax/kuzhambu/classics/infra/sancai/repository/impl/SancaiAssetRepositoryImpl.java`
-    - 处理动作：将 `fusion` 候选应用后的正式写回严格绑定到 `fusion_description` 并消费权重与图片理解结果
-    - 验收点：`fusion` 只写 `fusion_description`，且正式写回依赖 `image_analysis_markdown + text_weight + image_weight`
-    - 重要度：10/10
-
 - [ ] `SancaiAssetApplicationServiceImpl/SancaiAssetRepository/SancaiAssetRepositoryImpl/artifact_store.py`：补齐 image_gen 新版本写回链路
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-SANCAI-AI-WORKERS-FULL-CLOSURE.md`

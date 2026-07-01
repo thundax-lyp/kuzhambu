@@ -302,15 +302,27 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    public void applyFusionDescription(
+            SancaiEntryId entryId, SancaiVisualAssetId visualAssetId, String fusionDescription) {
+        if (entryId == null || visualAssetId == null || StringUtils.isBlank(fusionDescription)) {
+            throw new BizException("三才信息融合写回参数不完整");
+        }
+        SancaiVisualAsset currentAsset = requireVisualAsset(entryId, visualAssetId);
+        validateVisualWeights(currentAsset);
+        if (StringUtils.isBlank(currentAsset.getImageAnalysisMarkdown())) {
+            throw new BizException("三才视觉资产缺少图片理解结果");
+        }
+        repository.updateVisualAssetFusionDescription(visualAssetId, fusionDescription.trim());
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public SancaiVisualAsset createGeneratedVisualAssetVersion(
             SancaiEntryId entryId, SancaiVisualAssetId visualAssetId, StorageObjectId generatedImageStorageObjectId) {
         if (entryId == null || visualAssetId == null || generatedImageStorageObjectId == null) {
             throw new BizException("三才生图版本参数不完整");
         }
-        SancaiVisualAsset currentAsset = repository.getVisualAssetById(visualAssetId);
-        if (currentAsset == null || currentAsset.getEntryId() == null || !entryId.equals(currentAsset.getEntryId())) {
-            throw new BizException("三才视觉资产不存在: " + visualAssetId.value());
-        }
+        SancaiVisualAsset currentAsset = requireVisualAsset(entryId, visualAssetId);
         validateVisualWeights(currentAsset);
 
         SancaiVisualAsset nextAsset = new SancaiVisualAsset();
