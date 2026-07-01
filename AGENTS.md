@@ -53,8 +53,8 @@ Frontend apps use npm workspaces under `kuzhambu-apps/`:
 cd kuzhambu-apps
 npm run format:check
 npm run lint
-npm run test
 npm run build
+npm run test
 ```
 
 Before any frontend build or package step, first run the narrowest relevant formatter on the files touched by the task, then run Prettier formatting checks and lint:

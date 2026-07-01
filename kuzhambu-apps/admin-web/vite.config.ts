@@ -23,7 +23,7 @@ export default defineConfig(({ mode }) => {
             maxWorkers: "75%"
         },
         build: {
-            chunkSizeWarningLimit: 1500
+            chunkSizeWarningLimit: 10000
         },
         server: {
             port: 5173,
