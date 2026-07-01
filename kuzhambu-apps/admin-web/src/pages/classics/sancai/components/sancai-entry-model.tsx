@@ -1,7 +1,7 @@
-import { DownloadOutlined, EyeOutlined, UploadOutlined } from "@ant-design/icons";
+import { DownloadOutlined, EyeOutlined, PictureOutlined, UploadOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Button, Empty, Image, Input, Switch, Typography, Upload } from "antd";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
@@ -12,7 +12,8 @@ import * as entryService from "../services/sancai-entry-service";
 import type {
     SancaiEntryImageContentMode,
     SancaiEntryImageRecord,
-    SancaiEntryRecord
+    SancaiEntryRecord,
+    SancaiVisualAssetRecord
 } from "../sancai-types";
 
 const { Text } = Typography;
@@ -54,6 +55,23 @@ const resolveImageUrl = (
     );
 };
 
+const selectCurrentVisualAsset = (assets: SancaiVisualAssetRecord[]) => {
+    return [...assets]
+        .filter((asset) => asset.currentUsed !== false)
+        .sort((left, right) => (right.versionNo ?? 0) - (left.versionNo ?? 0))[0];
+};
+
+const readVisualAssetTitle = (asset: SancaiVisualAssetRecord | undefined) => {
+    if (!asset) {
+        return "未选择视觉资产";
+    }
+    return `版本 ${asset.versionNo ?? asset.visualAssetId ?? asset.id ?? "-"}`;
+};
+
+const resolveStorageUrl = (url?: string | null) => {
+    return url ? toAuthenticatedResourceUrl(url) : undefined;
+};
+
 interface SancaiEntryModelProps {
     afterForm?: ReactNode;
     entry: SancaiEntryRecord | undefined;
@@ -86,6 +104,33 @@ export const SancaiEntryModel = ({
     const currentImage = selectCurrentImage(imagesQuery.data || []);
     const previewUrl = resolveImageUrl(entryId, currentImage, "preview");
     const downloadUrl = resolveImageUrl(entryId, currentImage, "download");
+    const visualAssetsQuery = useQuery({
+        queryKey: ["classics", "sancai", "entries", "visual-assets", entryId],
+        queryFn: () => entryService.listVisualAssets(entryId ?? 0),
+        enabled: open && Boolean(entryId),
+        retry: false
+    });
+    const visualAssets = visualAssetsQuery.data || [];
+    const currentVisualAsset = useMemo(
+        () => selectCurrentVisualAsset(visualAssets),
+        [visualAssets]
+    );
+    const [selectedVisualAssetId, setSelectedVisualAssetId] = useState<number | null>(null);
+    useEffect(() => {
+        setSelectedVisualAssetId(
+            currentVisualAsset?.visualAssetId ?? currentVisualAsset?.id ?? null
+        );
+    }, [currentVisualAsset?.id, currentVisualAsset?.visualAssetId]);
+    const selectedVisualAsset =
+        visualAssets.find(
+            (asset) => (asset.visualAssetId ?? asset.id ?? null) === selectedVisualAssetId
+        ) ||
+        currentVisualAsset ||
+        null;
+    const sourcePreviewUrl = resolveStorageUrl(selectedVisualAsset?.sourcePreviewUrl);
+    const sourceDownloadUrl = resolveStorageUrl(selectedVisualAsset?.sourceDownloadUrl);
+    const generatedPreviewUrl = resolveStorageUrl(selectedVisualAsset?.generatedPreviewUrl);
+    const generatedDownloadUrl = resolveStorageUrl(selectedVisualAsset?.generatedDownloadUrl);
     const uploadImageMutation = useMutation({
         mutationFn: (file: File) => {
             if (!entryId) {
@@ -271,6 +316,187 @@ export const SancaiEntryModel = ({
                             <Empty
                                 image={Empty.PRESENTED_IMAGE_SIMPLE}
                                 description="未关联当前图片"
+                            />
+                        )}
+                    </section>
+                ) : null}
+                {entryId ? (
+                    <section className="sancai-form-field" aria-label="三才图会视觉资产面板">
+                        <Text strong>视觉资产</Text>
+                        {selectedVisualAsset ? (
+                            <div
+                                style={{
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    gap: 12,
+                                    width: "100%"
+                                }}
+                            >
+                                <Text type="secondary">
+                                    当前使用版本：
+                                    {readVisualAssetTitle(currentVisualAsset)}
+                                    {currentVisualAsset?.status
+                                        ? ` · 状态 ${currentVisualAsset.status}`
+                                        : ""}
+                                </Text>
+                                <KuzhambuSpace wrap>
+                                    {visualAssets.map((asset) => {
+                                        const assetId = asset.visualAssetId ?? asset.id;
+                                        if (!assetId) {
+                                            return null;
+                                        }
+                                        return (
+                                            <Button
+                                                key={assetId}
+                                                type={
+                                                    assetId ===
+                                                    (selectedVisualAsset?.visualAssetId ??
+                                                        selectedVisualAsset?.id)
+                                                        ? "primary"
+                                                        : "default"
+                                                }
+                                                ghost={
+                                                    assetId !==
+                                                    (selectedVisualAsset?.visualAssetId ??
+                                                        selectedVisualAsset?.id)
+                                                }
+                                                onClick={() => setSelectedVisualAssetId(assetId)}
+                                            >
+                                                {`版本 ${asset.versionNo ?? assetId}${
+                                                    asset.currentUsed ? " · 当前使用" : ""
+                                                }`}
+                                            </Button>
+                                        );
+                                    })}
+                                </KuzhambuSpace>
+                                <Text type="secondary">
+                                    已选版本：
+                                    {readVisualAssetTitle(selectedVisualAsset)}
+                                    {selectedVisualAsset.status
+                                        ? ` · 状态 ${selectedVisualAsset.status}`
+                                        : ""}
+                                </Text>
+                                <KuzhambuSpace wrap>
+                                    <Button
+                                        aria-label="预览视觉资产原图"
+                                        icon={<EyeOutlined />}
+                                        href={sourcePreviewUrl}
+                                        target="_blank"
+                                        disabled={!sourcePreviewUrl}
+                                    >
+                                        预览原图
+                                    </Button>
+                                    <Button
+                                        aria-label="下载视觉资产原图"
+                                        icon={<DownloadOutlined />}
+                                        href={sourceDownloadUrl}
+                                        target="_blank"
+                                        disabled={!sourceDownloadUrl}
+                                    >
+                                        下载原图
+                                    </Button>
+                                    <Button
+                                        aria-label="预览视觉资产生成图"
+                                        icon={<PictureOutlined />}
+                                        href={generatedPreviewUrl}
+                                        target="_blank"
+                                        disabled={!generatedPreviewUrl}
+                                    >
+                                        预览生成图
+                                    </Button>
+                                    <Button
+                                        aria-label="下载视觉资产生成图"
+                                        icon={<DownloadOutlined />}
+                                        href={generatedDownloadUrl}
+                                        target="_blank"
+                                        disabled={!generatedDownloadUrl}
+                                    >
+                                        下载生成图
+                                    </Button>
+                                </KuzhambuSpace>
+                                <KuzhambuSpace wrap align="start">
+                                    {sourcePreviewUrl ? (
+                                        <Image
+                                            width={180}
+                                            src={sourcePreviewUrl}
+                                            alt="三才图会视觉资产原图"
+                                        />
+                                    ) : (
+                                        <Empty
+                                            image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                            description="未关联原图"
+                                        />
+                                    )}
+                                    {generatedPreviewUrl ? (
+                                        <Image
+                                            width={180}
+                                            src={generatedPreviewUrl}
+                                            alt="三才图会视觉资产生成图"
+                                        />
+                                    ) : (
+                                        <Empty
+                                            image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                            description="未关联生成图"
+                                        />
+                                    )}
+                                </KuzhambuSpace>
+                                <KuzhambuSpace wrap>
+                                    <Text type="secondary">
+                                        文本权重：{selectedVisualAsset.textWeight ?? "-"}
+                                    </Text>
+                                    <Text type="secondary">
+                                        图片权重：{selectedVisualAsset.imageWeight ?? "-"}
+                                    </Text>
+                                </KuzhambuSpace>
+                                <label className="sancai-form-field">
+                                    <Text strong>图片理解</Text>
+                                    <Input.TextArea
+                                        value={selectedVisualAsset.imageAnalysisMarkdown ?? ""}
+                                        readOnly
+                                        autoSize={resolveTextAreaAutoSize({
+                                            minRows: 3,
+                                            maxRows: 6
+                                        })}
+                                    />
+                                </label>
+                                <label className="sancai-form-field">
+                                    <Text strong>融合描述</Text>
+                                    <Input.TextArea
+                                        value={selectedVisualAsset.fusionDescription ?? ""}
+                                        readOnly
+                                        autoSize={resolveTextAreaAutoSize({
+                                            minRows: 2,
+                                            maxRows: 5
+                                        })}
+                                    />
+                                </label>
+                                <label className="sancai-form-field">
+                                    <Text strong>视觉描述</Text>
+                                    <Input.TextArea
+                                        value={selectedVisualAsset.visualDescription ?? ""}
+                                        readOnly
+                                        autoSize={resolveTextAreaAutoSize({
+                                            minRows: 2,
+                                            maxRows: 5
+                                        })}
+                                    />
+                                </label>
+                                <label className="sancai-form-field">
+                                    <Text strong>生成参数</Text>
+                                    <Input.TextArea
+                                        value={selectedVisualAsset.generationParamsJson ?? ""}
+                                        readOnly
+                                        autoSize={resolveTextAreaAutoSize({
+                                            minRows: 2,
+                                            maxRows: 5
+                                        })}
+                                    />
+                                </label>
+                            </div>
+                        ) : (
+                            <Empty
+                                image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                description="暂无视觉资产版本"
                             />
                         )}
                     </section>

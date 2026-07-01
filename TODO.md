@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Sancai Asset Model UI`：在条目详情弹窗接入视觉资产展示区块
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-VISUAL-ASSETS-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-model.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-types.ts`
-    - 处理动作：在条目详情弹窗中新增视觉资产展示结构，呈现当前使用版本、历史列表、原图/生成图预览下载和基础字段查看区
-    - 验收点：打开三才条目时可看到视觉资产区块、当前使用版本、原图/生成图预览下载入口
-    - 重要度：9/10
-
 - [ ] `Sancai Asset Panel Actions`：接通视觉资产切换与保存交互
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-VISUAL-ASSETS-CLOSURE.md`
