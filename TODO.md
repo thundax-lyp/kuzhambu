@@ -9,22 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `sancai/visual-capability`：补齐视觉描述任务能力识别与写回
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-VISUAL-ASSET-WORKFLOW-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/common/components/ai-candidate-panel.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/common/components/ai-candidate-payload-editor.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.tsx`、`kuzhambu-workers/src/kuzhambu_workers/schemas/ai.py`
-    - 处理动作：补齐 `visual` capability 的前端与 workers 识别
-    - 验收点：前端可发起 `visual` 任务且 workers 枚举支持该能力
-    - 重要度：8/10
-
-- [ ] `sancai/visual-apply`：收紧视觉描述候选写回语义
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-VISUAL-ASSET-WORKFLOW-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/service/impl/ClassicsContentApplicationServiceImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-domain/src/main/java/com/thundax/kuzhambu/classics/domain/sancai/model/entity/SancaiVisualAsset.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/sancai/controller/response/SancaiAssetResponse.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/sancai/assembler/SancaiAssetInterfaceAssembler.java`
-    - 处理动作：确保 `visual` 候选应用后只写回 `visualDescription`
-    - 验收点：视觉描述任务不会污染 `imageAnalysisMarkdown` 和 `fusionDescription`
-    - 重要度：9/10
-
 - [ ] `sancai/fusion-input`：接通信息融合任务输入与能力注册
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-VISUAL-ASSET-WORKFLOW-CLOSURE.md`
