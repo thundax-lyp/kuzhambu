@@ -49,6 +49,27 @@ export interface SancaiEntryImageRecord {
     downloadUrl?: string | null;
 }
 
+export interface SancaiVisualAssetRecord {
+    id?: number | null;
+    visualAssetId?: number | null;
+    entryId?: number | null;
+    versionNo?: number | null;
+    status?: string | null;
+    sourceImageStorageObjectId?: number | null;
+    generatedImageStorageObjectId?: number | null;
+    currentUsed?: boolean | null;
+    textWeight?: number | null;
+    imageWeight?: number | null;
+    imageAnalysisMarkdown?: string | null;
+    fusionDescription?: string | null;
+    visualDescription?: string | null;
+    generationParamsJson?: string | null;
+    sourcePreviewUrl?: string | null;
+    sourceDownloadUrl?: string | null;
+    generatedPreviewUrl?: string | null;
+    generatedDownloadUrl?: string | null;
+}
+
 export type SancaiEntryImageContentMode = "preview" | "download";
 
 export interface SancaiContentVersionRecord {

@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Sancai Asset Frontend Contract`：补齐三才图会视觉资产前端契约与 service
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-VISUAL-ASSETS-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-types.ts`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/services/sancai-entry-service.ts`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-service-contract.test.ts`
-    - 处理动作：新增 `SancaiVisualAssetRecord`、更新与切换 command 类型，以及视觉资产 service 方法和请求路径断言
-    - 验收点：存在 `listVisualAssets`、`updateVisualAsset`、`useVisualAsset` 三个 service 方法，且 contract test 固定 `visual-assets` 路径与请求体
-    - 重要度：9/10
-
 - [ ] `Sancai Asset Model UI`：在条目详情弹窗接入视觉资产展示区块
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-VISUAL-ASSETS-CLOSURE.md`

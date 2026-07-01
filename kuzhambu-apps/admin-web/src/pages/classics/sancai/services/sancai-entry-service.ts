@@ -5,12 +5,14 @@ import type {
     SancaiEntryImageContentMode,
     SancaiEntryImageRecord,
     SancaiEntryRecord,
-    SancaiShowcaseRecord
+    SancaiShowcaseRecord,
+    SancaiVisualAssetRecord
 } from "../sancai-types";
 
 const ENTRIES_PATH = "/classics/sancai/entries";
 const ASSET_IMAGES_PATH = "/classics/sancai/assets/images";
 const ASSET_SHOWCASES_PATH = "/classics/sancai/assets/showcases";
+const ASSET_VISUAL_ASSETS_PATH = "/classics/sancai/assets/visual-assets";
 
 export interface SancaiEntryQuery {
     categoryId?: number | null;
@@ -63,6 +65,28 @@ export interface SancaiEntryImageContentUrlCommand {
     entryId: number;
     imageId: number;
     mode?: SancaiEntryImageContentMode;
+}
+
+export interface SancaiVisualAssetCommand {
+    id?: number | null;
+    visualAssetId?: number | null;
+    entryId?: number | null;
+    versionNo?: number | null;
+    status?: string | null;
+    sourceImageStorageObjectId?: number | null;
+    generatedImageStorageObjectId?: number | null;
+    currentUsed?: boolean | null;
+    textWeight?: number | null;
+    imageWeight?: number | null;
+    imageAnalysisMarkdown?: string | null;
+    fusionDescription?: string | null;
+    visualDescription?: string | null;
+    generationParamsJson?: string | null;
+}
+
+export interface SancaiVisualAssetUseCommand {
+    entryId: number;
+    visualAssetId: number;
 }
 
 // prettier-ignore
@@ -125,6 +149,10 @@ export const listImages = (entryId: number) => {
     return getJson<SancaiEntryImageRecord[]>(`${ASSET_IMAGES_PATH}/${entryId}`);
 };
 
+export const listVisualAssets = (entryId: number) => {
+    return getJson<SancaiVisualAssetRecord[]>(`${ASSET_VISUAL_ASSETS_PATH}/${entryId}`);
+};
+
 export const uploadImage = (command: SancaiEntryImageUploadCommand) => {
     const body = new FormData();
     body.append("file", command.file);
@@ -150,6 +178,21 @@ export const getImageContentUrl = (request: SancaiEntryImageContentUrlCommand) =
     const mode = request.mode || "preview";
     const search = mode === "download" ? "?download=true" : "";
     return `${ADMIN_API_BASE_URL}${ASSET_IMAGES_PATH}/${request.entryId}/${request.imageId}/content${search}`;
+};
+
+export const updateVisualAsset = (command: SancaiVisualAssetCommand) => {
+    return postJson<SancaiVisualAssetRecord, SancaiVisualAssetCommand>(
+        `${ASSET_VISUAL_ASSETS_PATH}/update`,
+        {
+            body: command
+        }
+    );
+};
+
+export const useVisualAsset = (command: SancaiVisualAssetUseCommand) => {
+    return postJson<boolean, SancaiVisualAssetUseCommand>(`${ASSET_VISUAL_ASSETS_PATH}/use`, {
+        body: command
+    });
 };
 
 export const listVersions = (entryId: number) => {
