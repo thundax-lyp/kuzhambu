@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `sancai-entry-panel/sancai-entry-model/use-sancai-entry-panel-state/sancai-entry-service`：补齐单条视觉资产四类 AI 入口
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-SANCAI-AI-WORKERS-FULL-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-model.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/hooks/use-sancai-entry-panel-state.ts`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/services/sancai-entry-service.ts`
-    - 处理动作：在三才条目面板中统一接入 `image_analysis`、`fusion`、`visual`、`image_gen` 的单条任务入口
-    - 验收点：页面可携带 `entryId`、`visualAssetId`、`capability` 发起四类任务，且入口不依赖临时调试路径
-    - 重要度：9/10
-
 - [ ] `AiRefinementController/AiRefinementRequests/AiRefinementInterfaceAssembler`：补齐三才视觉资产 AI 请求上下文
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-SANCAI-AI-WORKERS-FULL-CLOSURE.md`

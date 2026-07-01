@@ -96,6 +96,9 @@ export interface SancaiVisualAssetUseCommand {
     visualAssetId: number;
 }
 
+export type SancaiVisualAssetRefinementCapability =
+    "image_analysis" | "fusion" | "visual" | "image_gen";
+
 // prettier-ignore
 export type SancaiShowcaseStatus =
     | "REQUESTED"

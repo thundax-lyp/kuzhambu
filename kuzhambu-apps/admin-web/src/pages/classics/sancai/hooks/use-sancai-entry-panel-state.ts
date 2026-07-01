@@ -6,9 +6,10 @@ import type { ClassicsContentTagRecord } from "@/pages/classics/common/classics-
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import type { AiRefinementTaskRecord } from "@/pages/classics/common/ai-refinement-task-types";
 import type { QueryClient } from "@tanstack/react-query";
+import type { SancaiVisualAssetRefinementCapability } from "../services/sancai-entry-service";
 import type { SancaiEntryRecord, SancaiVisualAssetRecord } from "../sancai-types";
 
-type RefinementCapability = "translate" | "summary" | "image_analysis" | "visual" | "fusion";
+type RefinementCapability = "translate" | "summary" | SancaiVisualAssetRefinementCapability;
 
 const DEFAULT_REFINEMENT_MODEL_ID = 1;
 const DEFAULT_REFINEMENT_MODEL_NAME = "gpt-5.5";
@@ -21,7 +22,11 @@ const createEventId = (prefix: string) => {
     return `${prefix}-${Date.now()}`;
 };
 
-const buildPromptMessagesJson = (capability: RefinementCapability, entry: SancaiEntryRecord) => {
+const buildPromptMessagesJson = (
+    capability: RefinementCapability,
+    entry: SancaiEntryRecord,
+    asset?: SancaiVisualAssetRecord | null
+) => {
     if (capability === "translate") {
         return JSON.stringify([
             {
@@ -83,6 +88,23 @@ const buildPromptMessagesJson = (capability: RefinementCapability, entry: Sancai
             }
         ]);
     }
+    if (capability === "image_gen") {
+        return JSON.stringify([
+            {
+                role: "system",
+                content: "你是古籍生图助手，请根据视觉描述输出稳定可执行的生图结果。"
+            },
+            {
+                role: "user",
+                content: JSON.stringify({
+                    title: entry.title,
+                    contentId: entry.id,
+                    objectId: asset?.visualAssetId ?? asset?.id ?? null,
+                    capability
+                })
+            }
+        ]);
+    }
     return JSON.stringify([
         {
             role: "system",
@@ -105,7 +127,11 @@ const buildInputPayloadJson = (
     objectId?: number | null,
     textWeight?: number | null,
     imageWeight?: number | null,
-    imageAnalysisMarkdown?: string | null
+    imageAnalysisMarkdown?: string | null,
+    fusionDescription?: string | null,
+    visualDescription?: string | null,
+    generationParamsJson?: string | null,
+    sourceImageStorageObjectId?: number | null
 ) => {
     const payload = {
         capability,
@@ -117,12 +143,22 @@ const buildInputPayloadJson = (
         title: entry.title,
         translationText: entry.translationText
     };
-    if (capability === "fusion") {
+    if (capability === "fusion" || capability === "visual") {
         return JSON.stringify({
             ...payload,
+            sourceImageStorageObjectId: sourceImageStorageObjectId ?? null,
             imageAnalysisMarkdown: imageAnalysisMarkdown ?? null,
             textWeight,
             imageWeight
+        });
+    }
+    if (capability === "image_gen") {
+        return JSON.stringify({
+            ...payload,
+            sourceImageStorageObjectId: sourceImageStorageObjectId ?? null,
+            fusionDescription: fusionDescription ?? null,
+            visualDescription: visualDescription ?? null,
+            generationParamsJson: generationParamsJson ?? null
         });
     }
     return JSON.stringify(payload);
@@ -264,6 +300,8 @@ export const useSancaiEntryPanelState = ({
                 messageApi.success("视觉描述任务已创建");
             } else if (command.capability === "fusion") {
                 messageApi.success("信息融合任务已创建");
+            } else if (command.capability === "image_gen") {
+                messageApi.success("生图任务已创建");
             } else {
                 messageApi.success("图片理解任务已创建");
             }
@@ -318,10 +356,16 @@ export const useSancaiEntryPanelState = ({
             : null;
         const sourceImageStorageObjectId = resolvedVisualAsset?.sourceImageStorageObjectId;
         const imageAnalysisMarkdown = resolvedVisualAsset?.imageAnalysisMarkdown;
+        const fusionDescription = resolvedVisualAsset?.fusionDescription;
+        const visualDescription = resolvedVisualAsset?.visualDescription;
+        const generationParamsJson = resolvedVisualAsset?.generationParamsJson;
         const textWeight = resolvedVisualAsset?.textWeight;
         const imageWeight = resolvedVisualAsset?.imageWeight;
         if (
-            (capability === "image_analysis" || capability === "visual") &&
+            (capability === "image_analysis" ||
+                capability === "visual" ||
+                capability === "fusion" ||
+                capability === "image_gen") &&
             (imageAnalysisObjectId == null || sourceImageStorageObjectId == null)
         ) {
             messageApi.warning("当前视觉资产缺少原图，无法创建图片相关任务");
@@ -344,9 +388,23 @@ export const useSancaiEntryPanelState = ({
             return;
         }
         if (
+            capability === "visual" &&
+            (!imageAnalysisMarkdown?.trim() ||
+                !Number.isInteger(textWeight) ||
+                !Number.isInteger(imageWeight))
+        ) {
+            messageApi.warning("当前视觉资产缺少图片理解结果或权重，无法创建视觉描述任务");
+            return;
+        }
+        if (capability === "image_gen" && !visualDescription?.trim()) {
+            messageApi.warning("当前视觉资产缺少视觉描述结果，无法创建生图任务");
+            return;
+        }
+        if (
             capability !== "image_analysis" &&
             capability !== "visual" &&
             capability !== "fusion" &&
+            capability !== "image_gen" &&
             !selectedEntry.originalText?.trim()
         ) {
             messageApi.warning("当前条目缺少原文，无法创建 AI 精修任务");
@@ -369,7 +427,11 @@ export const useSancaiEntryPanelState = ({
             modelName: DEFAULT_REFINEMENT_MODEL_NAME,
             requestId: createEventId("sancai-task"),
             traceId: createEventId("sancai-trace"),
-            promptMessagesJson: buildPromptMessagesJson(capability, selectedEntry),
+            promptMessagesJson: buildPromptMessagesJson(
+                capability,
+                selectedEntry,
+                resolvedVisualAsset
+            ),
             promptVariablesJson: JSON.stringify({
                 title: selectedEntry.title
             }),
@@ -378,12 +440,17 @@ export const useSancaiEntryPanelState = ({
                 selectedEntry,
                 capability === "image_analysis" ||
                     capability === "visual" ||
-                    capability === "fusion"
+                    capability === "fusion" ||
+                    capability === "image_gen"
                     ? imageAnalysisObjectId
                     : null,
                 textWeight,
                 imageWeight,
-                imageAnalysisMarkdown
+                imageAnalysisMarkdown,
+                fusionDescription,
+                visualDescription,
+                generationParamsJson,
+                sourceImageStorageObjectId
             ),
             locale: "zh-CN"
         });

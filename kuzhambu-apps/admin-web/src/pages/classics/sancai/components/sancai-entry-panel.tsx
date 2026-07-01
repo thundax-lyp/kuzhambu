@@ -600,10 +600,17 @@ export const SancaiEntryPanel = ({
                 onUseVisualAsset={switchVisualAsset}
                 onUpdateVisualAsset={updateVisualAsset}
                 onSelectedVisualAssetChange={setSelectedVisualAsset}
-                onCreateImageAnalysisTask={(asset) => {
-                    createRefinementTask("image_analysis", asset);
+                onCreateVisualAssetTask={(capability, asset) => {
+                    createRefinementTask(capability, asset);
                 }}
-                isCreatingImageAnalysisTask={creatingRefinementCapability === "image_analysis"}
+                creatingVisualAssetCapability={
+                    creatingRefinementCapability === "image_analysis" ||
+                    creatingRefinementCapability === "fusion" ||
+                    creatingRefinementCapability === "visual" ||
+                    creatingRefinementCapability === "image_gen"
+                        ? creatingRefinementCapability
+                        : null
+                }
                 afterForm={
                     !isCreating && selectedEntry ? (
                         <>
@@ -622,18 +629,6 @@ export const SancaiEntryPanel = ({
                                     >
                                         创建摘要任务
                                     </Button>
-                                    <Button
-                                        loading={creatingRefinementCapability === "visual"}
-                                        onClick={() => createRefinementTask("visual")}
-                                    >
-                                        创建视觉描述任务
-                                    </Button>
-                                    <Button
-                                        loading={creatingRefinementCapability === "fusion"}
-                                        onClick={() => createRefinementTask("fusion")}
-                                    >
-                                        创建信息融合任务
-                                    </Button>
                                 </div>
                                 <div style={{ marginTop: 12, display: "grid", gap: 8 }}>
                                     {refinementTasks
@@ -643,9 +638,10 @@ export const SancaiEntryPanel = ({
                                                 task.capability === "summary" ||
                                                 task.capability === "image_analysis" ||
                                                 task.capability === "visual" ||
-                                                task.capability === "fusion"
+                                                task.capability === "fusion" ||
+                                                task.capability === "image_gen"
                                         )
-                                        .slice(0, 4)
+                                        .slice(0, 6)
                                         .map((task) => (
                                             <div key={task.taskId}>
                                                 {task.capability}：{task.status}
