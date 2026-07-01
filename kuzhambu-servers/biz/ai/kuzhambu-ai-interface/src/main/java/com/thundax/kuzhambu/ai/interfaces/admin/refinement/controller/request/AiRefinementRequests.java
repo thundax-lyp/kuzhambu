@@ -7,6 +7,7 @@ import com.thundax.kuzhambu.common.web.request.PageRequest;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import java.io.Serializable;
 import lombok.Getter;
@@ -162,5 +163,48 @@ public final class AiRefinementRequests {
 
         @JsonProperty(value = "requestedBy")
         private Long requestedBy;
+    }
+
+    @Getter
+    @Setter
+    @Schema(name = "AiRefinementBatchCreateRequest", description = "AI精修批量任务创建请求")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class BatchCreateRequest implements Serializable {
+
+        @NotBlank
+        @Size(max = 64)
+        @JsonProperty(value = "scope")
+        private String scope;
+
+        @NotBlank
+        @Size(max = 64)
+        @JsonProperty(value = "capability")
+        private String capability;
+
+        @NotBlank
+        @Size(max = 64)
+        @JsonProperty(value = "contentType")
+        private String contentType;
+
+        @NotNull
+        @Positive
+        @JsonProperty(value = "totalCount")
+        private Integer totalCount;
+
+        @JsonProperty(value = "failureSummaryJson")
+        private String failureSummaryJson;
+    }
+
+    @Getter
+    @Setter
+    @Schema(name = "AiRefinementBatchIdRequest", description = "AI精修批量任务ID请求")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class BatchIdRequest implements Serializable {
+
+        @NotNull
+        @JsonProperty(value = "batchId")
+        private Long batchId;
     }
 }

@@ -49,6 +49,24 @@ class AiRefinementTaskControllerTest {
                 "cancel",
                 "ai:refinement:edit",
                 AiRefinementRequests.TaskCancelRequest.class);
+        assertPostMapping(
+                AiRefinementTaskController.class,
+                "createBatch",
+                "batch/create",
+                "ai:refinement:edit",
+                AiRefinementRequests.BatchCreateRequest.class);
+        assertPostMapping(
+                AiRefinementTaskController.class,
+                "getBatch",
+                "batch/get",
+                "ai:refinement:view",
+                AiRefinementRequests.BatchIdRequest.class);
+        assertPostMapping(
+                AiRefinementTaskController.class,
+                "cancelBatch",
+                "batch/cancel",
+                "ai:refinement:edit",
+                AiRefinementRequests.BatchIdRequest.class);
     }
 
     @Test

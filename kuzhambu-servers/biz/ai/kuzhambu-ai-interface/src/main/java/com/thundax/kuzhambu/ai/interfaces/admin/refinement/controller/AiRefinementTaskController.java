@@ -14,7 +14,6 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.util.Map;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -90,13 +89,14 @@ public class AiRefinementTaskController {
     @HasPermission(value = "ai:refinement:edit")
     @SysLogger(value = "批量任务创建")
     @PostMapping(value = "batch/create")
-    public AiRefinementResponses.BatchJobResponse createBatch(@RequestBody Map<String, Object> request) {
+    public AiRefinementResponses.BatchJobResponse createBatch(
+            @Valid @RequestBody AiRefinementRequests.BatchCreateRequest request) {
         AiBatchJobCreateCommand command = new AiBatchJobCreateCommand();
-        command.setScope(readString(request, "scope"));
-        command.setCapability(readString(request, "capability"));
-        command.setContentType(readString(request, "contentType"));
-        command.setTotalCount(readInteger(request, "totalCount"));
-        command.setFailureSummaryJson(readString(request, "failureSummaryJson"));
+        command.setScope(request.getScope());
+        command.setCapability(request.getCapability());
+        command.setContentType(request.getContentType());
+        command.setTotalCount(request.getTotalCount());
+        command.setFailureSummaryJson(request.getFailureSummaryJson());
         Long batchId = batchJobApplicationService.create(command);
         return toBatchResponse(batchJobApplicationService.get(batchId));
     }
@@ -106,8 +106,9 @@ public class AiRefinementTaskController {
     @HasPermission(value = "ai:refinement:view")
     @SysLogger(value = "批量任务详情")
     @PostMapping(value = "batch/get")
-    public AiRefinementResponses.BatchJobResponse getBatch(@RequestBody Map<String, Object> request) {
-        return toBatchResponse(batchJobApplicationService.get(readLong(request, "batchId")));
+    public AiRefinementResponses.BatchJobResponse getBatch(
+            @Valid @RequestBody AiRefinementRequests.BatchIdRequest request) {
+        return toBatchResponse(batchJobApplicationService.get(request.getBatchId()));
     }
 
     @Operation(summary = "取消AI精修批量任务", description = "ai:refinement:edit")
@@ -115,8 +116,9 @@ public class AiRefinementTaskController {
     @HasPermission(value = "ai:refinement:edit")
     @SysLogger(value = "批量任务取消")
     @PostMapping(value = "batch/cancel")
-    public AiRefinementResponses.BatchJobResponse cancelBatch(@RequestBody Map<String, Object> request) {
-        return toBatchResponse(batchJobApplicationService.cancel(readLong(request, "batchId")));
+    public AiRefinementResponses.BatchJobResponse cancelBatch(
+            @Valid @RequestBody AiRefinementRequests.BatchIdRequest request) {
+        return toBatchResponse(batchJobApplicationService.cancel(request.getBatchId()));
     }
 
     private static AiRefinementResponses.BatchJobResponse toBatchResponse(
@@ -139,32 +141,5 @@ public class AiRefinementTaskController {
                 .cancelledAt(result.getCancelledAt())
                 .completedAt(result.getCompletedAt())
                 .build();
-    }
-
-    private static Long readLong(Map<String, Object> request, String key) {
-        Object value = request == null ? null : request.get(key);
-        if (value instanceof Number number) {
-            return number.longValue();
-        }
-        if (value instanceof String text && !text.isBlank()) {
-            return Long.valueOf(text.trim());
-        }
-        throw new IllegalArgumentException("缺少字段: " + key);
-    }
-
-    private static Integer readInteger(Map<String, Object> request, String key) {
-        Object value = request == null ? null : request.get(key);
-        if (value instanceof Number number) {
-            return number.intValue();
-        }
-        if (value instanceof String text && !text.isBlank()) {
-            return Integer.valueOf(text.trim());
-        }
-        return 0;
-    }
-
-    private static String readString(Map<String, Object> request, String key) {
-        Object value = request == null ? null : request.get(key);
-        return value == null ? null : String.valueOf(value).trim();
     }
 }
