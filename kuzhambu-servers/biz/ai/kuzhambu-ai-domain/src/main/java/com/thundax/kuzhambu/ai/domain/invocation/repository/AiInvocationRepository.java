@@ -21,5 +21,6 @@ public interface AiInvocationRepository {
 
     int updateCandidate(AiCandidate candidate);
 
-    List<AiCandidate> listCandidates(String contentType, Long contentId, String capability, String status);
+    List<AiCandidate> listCandidates(
+            String contentType, Long contentId, Long objectId, String capability, String status);
 }

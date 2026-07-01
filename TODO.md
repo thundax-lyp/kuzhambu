@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `AI Invocation Candidate Contract`：补齐 AI 候选 objectId 查询契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-SINGLE-IMAGE-ANALYSIS-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/invocation/controller/request/AiInvocationRequests.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/invocation/controller/AiInvocationController.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/test/java/com/thundax/kuzhambu/ai/interfaces/admin/invocation/controller/AiInvocationControllerTest.java`
-    - 处理动作：为 AI 候选列表请求增加 `objectId` 并打通 controller 查询链路与接口测试
-    - 验收点：`candidate/list` 支持按 `contentType + contentId + capability + status + objectId` 查询且接口测试通过
-    - 重要度：9/10
-
 - [ ] `Classics Candidate Apply Contract`：补齐 Classics 候选应用 objectId 契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-SINGLE-IMAGE-ANALYSIS-CLOSURE.md`

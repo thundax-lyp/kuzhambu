@@ -99,8 +99,10 @@ public class AiInvocationRepositoryImpl implements AiInvocationRepository {
     }
 
     @Override
-    public List<AiCandidate> listCandidates(String contentType, Long contentId, String capability, String status) {
-        return toCandidateDomainList(aiInvocationMapper.selectCandidates(contentType, contentId, capability, status));
+    public List<AiCandidate> listCandidates(
+            String contentType, Long contentId, Long objectId, String capability, String status) {
+        return toCandidateDomainList(
+                aiInvocationMapper.selectCandidates(contentType, contentId, objectId, capability, status));
     }
 
     private AiCallRecordDO toCallObject(AiCallRecord record) {

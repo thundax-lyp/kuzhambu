@@ -234,7 +234,8 @@ class AiWorkerInvocationApplicationServiceTest {
         }
 
         @Override
-        public List<AiCandidate> listCandidates(String contentType, Long contentId, String capability, String status) {
+        public List<AiCandidate> listCandidates(
+                String contentType, Long contentId, Long objectId, String capability, String status) {
             return Collections.emptyList();
         }
     }

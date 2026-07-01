@@ -880,7 +880,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
 
         int updateCandidate(AiCandidate candidate);
 
-        List<AiCandidate> listCandidates(String contentType, Long contentId, String capability, String status);
+        List<AiCandidate> listCandidates(String contentType, Long contentId, Long objectId, String capability, String status);
     }
 
     @Getter
@@ -1755,7 +1755,8 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         }
 
         @Override
-        public List<AiCandidate> listCandidates(String contentType, Long contentId, String capability, String status) {
+        public List<AiCandidate> listCandidates(
+                String contentType, Long contentId, Long objectId, String capability, String status) {
             return List.of();
         }
     }
