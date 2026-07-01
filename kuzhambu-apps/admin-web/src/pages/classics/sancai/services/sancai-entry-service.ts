@@ -5,6 +5,7 @@ import type {
     SancaiEntryImageContentMode,
     SancaiEntryImageRecord,
     SancaiEntryRecord,
+    SancaiRefinementBatchRecord,
     SancaiShowcaseRecord,
     SancaiVisualAssetRecord
 } from "../sancai-types";
@@ -98,6 +99,14 @@ export interface SancaiVisualAssetUseCommand {
 
 export type SancaiVisualAssetRefinementCapability =
     "image_analysis" | "fusion" | "visual" | "image_gen";
+
+export interface SancaiRefinementBatchCreateCommand {
+    capability: "image_analysis" | "visual";
+    contentType: "SANCAI_ENTRY";
+    failureSummaryJson?: string | null;
+    scope: "classics";
+    totalCount: number;
+}
 
 // prettier-ignore
 export type SancaiShowcaseStatus =
@@ -256,6 +265,33 @@ export const resetVersion = (entryId: number, versionId: number) => {
         `${ENTRIES_PATH}/versions/reset`,
         {
             body: { id: entryId, versionId }
+        }
+    );
+};
+
+export const createRefinementBatch = (command: SancaiRefinementBatchCreateCommand) => {
+    return postJson<SancaiRefinementBatchRecord, SancaiRefinementBatchCreateCommand>(
+        "/ai/refinement/task/batch/create",
+        {
+            body: command
+        }
+    );
+};
+
+export const getRefinementBatch = (batchId: number) => {
+    return postJson<SancaiRefinementBatchRecord, { batchId: number }>(
+        "/ai/refinement/task/batch/get",
+        {
+            body: { batchId }
+        }
+    );
+};
+
+export const cancelRefinementBatch = (batchId: number) => {
+    return postJson<SancaiRefinementBatchRecord, { batchId: number }>(
+        "/ai/refinement/task/batch/cancel",
+        {
+            body: { batchId }
         }
     );
 };

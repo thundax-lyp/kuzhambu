@@ -206,4 +206,52 @@ public final class AiRefinementResponses {
         @JsonProperty(value = "cancelledAt")
         private Instant cancelledAt;
     }
+
+    @Getter
+    @Builder
+    @Schema(name = "AiRefinementBatchJobResponse", description = "AI精修批量任务响应")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class BatchJobResponse implements Serializable {
+
+        @JsonProperty(value = "batchId")
+        private Long batchId;
+
+        @JsonProperty(value = "scope")
+        private String scope;
+
+        @JsonProperty(value = "capability")
+        private String capability;
+
+        @JsonProperty(value = "contentType")
+        private String contentType;
+
+        @JsonProperty(value = "status")
+        private String status;
+
+        @JsonProperty(value = "totalCount")
+        private Integer totalCount;
+
+        @JsonProperty(value = "successCount")
+        private Integer successCount;
+
+        @JsonProperty(value = "failedCount")
+        private Integer failedCount;
+
+        @JsonProperty(value = "cancelledCount")
+        private Integer cancelledCount;
+
+        @Schema(description = "批量失败聚合摘要；用于页面展示已失败或已跳过单元的汇总信息")
+        @JsonProperty(value = "failureSummaryJson")
+        private String failureSummaryJson;
+
+        @JsonProperty(value = "requestedAt")
+        private Instant requestedAt;
+
+        @JsonProperty(value = "cancelledAt")
+        private Instant cancelledAt;
+
+        @JsonProperty(value = "completedAt")
+        private Instant completedAt;
+    }
 }

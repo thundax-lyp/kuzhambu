@@ -1,6 +1,10 @@
-import { Empty, Skeleton, Tag, Typography } from "antd";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { App, Button, Empty, Skeleton, Tag, Typography } from "antd";
+import { useMemo, useState } from "react";
 import { KuzhambuTable } from "@/components/kuzhambu-table";
 import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
+import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import * as entryService from "../services/sancai-entry-service";
 import type { SancaiEntryRecord, SancaiVolumeRecord } from "../sancai-types";
 
 const { Text } = Typography;
@@ -60,6 +64,66 @@ export const SancaiEntryList = ({
     onView,
     volumes
 }: SancaiEntryListProps) => {
+    const { message: messageApi } = App.useApp();
+    const [selectedRowKeys, setSelectedRowKeys] = useState<number[]>([]);
+    const [activeBatchId, setActiveBatchId] = useState<number | null>(null);
+
+    const activeBatchQuery = useQuery({
+        queryKey: ["classics", "sancai", "refinement", "batch", activeBatchId],
+        queryFn: () => entryService.getRefinementBatch(activeBatchId ?? 0),
+        enabled: activeBatchId !== null,
+        retry: false,
+        refetchInterval: (query) => {
+            const status = query.state.data?.status;
+            return status === "PENDING" || status === "RUNNING" ? 3000 : false;
+        }
+    });
+
+    const createBatchMutation = useMutation({
+        mutationFn: entryService.createRefinementBatch,
+        onSuccess: (batch) => {
+            setActiveBatchId(batch.batchId);
+            messageApi.success(`批量任务已创建：${batch.batchId}`);
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "批量任务创建失败");
+        }
+    });
+
+    const cancelBatchMutation = useMutation({
+        mutationFn: entryService.cancelRefinementBatch,
+        onSuccess: (batch) => {
+            setActiveBatchId(batch.batchId);
+            void activeBatchQuery.refetch();
+            messageApi.success("批量任务已取消");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "批量任务取消失败");
+        }
+    });
+
+    const selectedEntries = useMemo(
+        () => entries.filter((entry) => selectedRowKeys.includes(entry.id)),
+        [entries, selectedRowKeys]
+    );
+    const activeBatch = activeBatchQuery.data;
+    const canCancelBatch =
+        activeBatch?.batchId != null &&
+        (activeBatch.status === "PENDING" || activeBatch.status === "RUNNING");
+
+    const startBatch = (capability: "image_analysis" | "visual") => {
+        if (!selectedEntries.length) {
+            messageApi.warning("请先选择要批量处理的条目");
+            return;
+        }
+        createBatchMutation.mutate({
+            scope: "classics",
+            capability,
+            contentType: "SANCAI_ENTRY",
+            totalCount: selectedEntries.length
+        });
+    };
+
     if (isLoading) {
         return <Skeleton active paragraph={{ rows: 7 }} />;
     }
@@ -147,6 +211,50 @@ export const SancaiEntryList = ({
 
     return (
         <div className="sancai-entry-table-wrap">
+            <KuzhambuSpace
+                wrap
+                style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}
+            >
+                <KuzhambuSpace wrap>
+                    <Button
+                        disabled={!selectedEntries.length}
+                        loading={createBatchMutation.isPending}
+                        onClick={() => startBatch("image_analysis")}
+                    >
+                        批量图片理解
+                    </Button>
+                    <Button
+                        disabled={!selectedEntries.length}
+                        loading={createBatchMutation.isPending}
+                        onClick={() => startBatch("visual")}
+                    >
+                        批量视觉处理
+                    </Button>
+                </KuzhambuSpace>
+                {activeBatch ? (
+                    <KuzhambuSpace wrap>
+                        <Text type="secondary">
+                            批量任务 #{activeBatch.batchId} / {activeBatch.capability} /{" "}
+                            {activeBatch.status || "UNKNOWN"}
+                        </Text>
+                        <Text type="secondary">
+                            成功 {activeBatch.successCount ?? 0} / 失败{" "}
+                            {activeBatch.failedCount ?? 0} / 取消 {activeBatch.cancelledCount ?? 0}
+                        </Text>
+                        <Button
+                            disabled={!canCancelBatch}
+                            loading={cancelBatchMutation.isPending}
+                            onClick={() => {
+                                if (activeBatch.batchId) {
+                                    cancelBatchMutation.mutate(activeBatch.batchId);
+                                }
+                            }}
+                        >
+                            取消批量任务
+                        </Button>
+                    </KuzhambuSpace>
+                ) : null}
+            </KuzhambuSpace>
             <KuzhambuTable
                 className="sancai-entry-table"
                 ariaLabel="三才图会条目表格"
@@ -154,6 +262,10 @@ export const SancaiEntryList = ({
                 dataSource={entries}
                 pagination={{
                     showTotal: (total) => `${total} 条稿件`
+                }}
+                rowSelection={{
+                    selectedRowKeys,
+                    onChange: (keys) => setSelectedRowKeys(keys.map((key) => Number(key)))
                 }}
                 rowKey="id"
                 size="middle"
