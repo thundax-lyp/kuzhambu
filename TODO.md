@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web/sancai-entry-panel`：重组视觉资产面板布局与上下文展示
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-VISUAL-ASSET-WORKFLOW-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-model.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/hooks/use-sancai-entry-panel-state.ts`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-types.ts`
-    - 处理动作：将三才条目详情重组为统一视觉资产面板并展示最小上下文、当前版本和历史版本
-    - 验收点：视觉资产成为单一入口，页面可同时看到原文、译文、标签、当前配图、状态和版本切换结果
-    - 重要度：9/10
-
 - [ ] `admin-web/sancai-asset-contract`：对齐视觉资产前端服务契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-VISUAL-ASSET-WORKFLOW-CLOSURE.md`
