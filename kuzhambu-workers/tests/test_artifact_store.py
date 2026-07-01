@@ -1,3 +1,4 @@
+from base64 import b64decode
 from datetime import datetime, timedelta, timezone
 from json import loads
 
@@ -58,3 +59,24 @@ def test_artifact_store_sets_expiry_from_ttl(tmp_path) -> None:
     assert delta >= timedelta(hours=11, minutes=59)
     assert delta <= timedelta(hours=12, minutes=1)
     assert expires_at.tzinfo == timezone.utc
+
+
+def test_artifact_store_chunks_keep_image_gen_metadata(tmp_path) -> None:
+    store = RequestArtifactStore("req-image-gen", tmp_path, chunk_bytes=5, ttl_hours=12)
+
+    metadata = store.put_bytes(
+        data=b"png-binary",
+        format="PNG",
+        filename="generated.png",
+        content_type="image/png",
+    )
+
+    chunks = store.chunks(metadata.artifact_id)
+
+    assert chunks[0].artifact_id == metadata.artifact_id
+    assert chunks[0].format == "PNG"
+    assert chunks[0].filename == "generated.png"
+    assert chunks[0].content_type == "image/png"
+    assert chunks[0].encoding == "BASE64_CHUNK"
+    assert chunks[-1].chunk_index == metadata.chunk_count - 1
+    assert b"".join(b64decode(chunk.chunk) for chunk in chunks) == b"png-binary"

@@ -21,6 +21,12 @@ public class ClassicsAiWorkerUsecaseResolver {
                     "image_analysis",
                             new ClassicsAiWorkerUsecaseSpec(
                                     "CLASSICS_SANCAI_IMAGE_ANALYSIS", "/internal/ai/classics/sancai/image-analysis"),
+                    "image_gen",
+                            new ClassicsAiWorkerUsecaseSpec(
+                                    "CLASSICS_SANCAI_IMAGE_GEN", "/internal/ai/classics/sancai/image-gen"),
+                    "fusion",
+                            new ClassicsAiWorkerUsecaseSpec(
+                                    "CLASSICS_SANCAI_FUSION", "/internal/ai/classics/sancai/fusion"),
                     "visual",
                             new ClassicsAiWorkerUsecaseSpec(
                                     "CLASSICS_SANCAI_VISUAL_DESCRIPTION",

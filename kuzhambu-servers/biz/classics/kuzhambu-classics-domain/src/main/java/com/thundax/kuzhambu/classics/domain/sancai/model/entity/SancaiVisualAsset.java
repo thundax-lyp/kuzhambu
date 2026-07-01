@@ -21,8 +21,8 @@ public class SancaiVisualAsset {
     private StorageObjectId sourceImageStorageObjectId;
     private StorageObjectId generatedImageStorageObjectId;
     private boolean currentUsed;
-    private int textWeight;
-    private int imageWeight;
+    private Integer textWeight;
+    private Integer imageWeight;
     private String imageAnalysisMarkdown;
     private String fusionDescription;
     private String visualDescription;

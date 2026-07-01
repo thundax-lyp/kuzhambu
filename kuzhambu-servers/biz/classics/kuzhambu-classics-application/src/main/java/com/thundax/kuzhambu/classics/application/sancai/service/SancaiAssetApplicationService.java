@@ -36,6 +36,11 @@ public interface SancaiAssetApplicationService {
 
     SancaiEntryImageContent getImageContent(SancaiEntryId entryId, SancaiEntryImageId imageId);
 
+    ClassicsStoredContentResult getVisualAssetSourceContent(SancaiEntryId entryId, SancaiVisualAssetId visualAssetId);
+
+    ClassicsStoredContentResult getVisualAssetGeneratedContent(
+            SancaiEntryId entryId, SancaiVisualAssetId visualAssetId);
+
     void sortImages(SancaiEntryImageSortCommand command);
 
     void deleteImage(SancaiEntryImageId id);
@@ -58,6 +63,12 @@ public interface SancaiAssetApplicationService {
      * 返回条目下全部视觉资产版本，供管理端展示历史列表和当前使用状态。
      */
     List<SancaiVisualAsset> listVisualAssets(SancaiEntryId entryId);
+
+    /**
+     * 基于既有视觉资产生成新的生图版本，不隐式切换当前使用版本。
+     */
+    SancaiVisualAsset createGeneratedVisualAssetVersion(
+            SancaiEntryId entryId, SancaiVisualAssetId visualAssetId, StorageObjectId generatedImageStorageObjectId);
 
     SancaiShowcaseId requestShowcase(SancaiShowcaseCommand command);
 

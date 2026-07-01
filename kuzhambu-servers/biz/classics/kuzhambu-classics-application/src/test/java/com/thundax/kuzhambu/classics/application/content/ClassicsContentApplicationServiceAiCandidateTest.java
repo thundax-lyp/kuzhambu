@@ -18,6 +18,7 @@ import com.thundax.kuzhambu.classics.application.content.result.AiCandidateApply
 import com.thundax.kuzhambu.classics.application.content.service.impl.ClassicsContentApplicationServiceImpl;
 import com.thundax.kuzhambu.classics.application.content.support.ClassicsTagBindingSupport;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiAssetApplicationService;
+import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentExportJob;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentQaPair;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
@@ -179,12 +180,174 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         assertEquals(null, result.getVersionId());
         assertEquals(null, result.getVersionNo());
         assertEquals("分析结果", visualAsset.getImageAnalysisMarkdown());
-        assertEquals("分析结果", visualAsset.getFusionDescription());
-        assertEquals("分析结果", visualAsset.getVisualDescription());
+        assertEquals(null, visualAsset.getFusionDescription());
+        assertEquals(null, visualAsset.getVisualDescription());
         assertEquals(0, repository.insertVersionCount);
         assertEquals(0, repository.updateSancaiEntryAiCount);
         verify(aiFacade).markCandidateApplied(any(MarkAiCandidateAppliedFacadeRequest.class));
         verify(assetService).updateVisualAsset(visualAsset);
+    }
+
+    @Test
+    void applyAiCandidateVisualShouldUpdateTargetVisualAssetAndSkipVersion() {
+        FakeRepository repository = new FakeRepository();
+        SancaiEntry entry = new SancaiEntry();
+        entry.setId(SancaiEntryId.of(11L));
+        entry.setContentUpdatedAt(new Date(1L));
+        repository.sancaiEntryForAiApply = entry;
+
+        SancaiVisualAsset visualAsset = new SancaiVisualAsset();
+        visualAsset.setId(SancaiVisualAssetId.of(111L));
+        visualAsset.setImageAnalysisMarkdown("old image analysis");
+        visualAsset.setFusionDescription("old fusion");
+
+        SancaiAssetApplicationService assetService = org.mockito.Mockito.mock(SancaiAssetApplicationService.class);
+        when(assetService.listVisualAssets(SancaiEntryId.of(11L))).thenReturn(List.of(visualAsset));
+        when(assetService.updateVisualAsset(visualAsset)).thenReturn(SancaiVisualAssetId.of(111L));
+
+        AiFacade aiFacade = mockAiFacade(
+                request -> {
+                    assertEquals(11L, request.getCandidateId());
+                    assertEquals("SANCAI_ENTRY", request.getContentType());
+                    assertEquals(11L, request.getContentId());
+                    assertEquals("visual", request.getCapability());
+                    return pendingCandidate();
+                },
+                request -> {
+                    assertEquals(11L, request.getCandidateId());
+                    assertEquals("TEXT", request.getResultFormat());
+                    assertEquals("视觉描述", request.getResultPayload());
+                    return candidateApplied();
+                });
+
+        ClassicsContentApplicationServiceImpl service = serviceWithAiFacade(repository, aiFacade, assetService);
+        AiCandidateApplyContentCommand command =
+                applyCommand(11L, ClassicsContentType.SANCAI_ENTRY, 11L, "visual", "视觉描述", 111L);
+
+        AiCandidateApplyContentResult result = service.applyAiCandidate(command);
+
+        assertEquals(ClassicsContentType.SANCAI_ENTRY, result.getContentType());
+        assertEquals(11L, result.getContentId());
+        assertEquals(null, result.getVersionId());
+        assertEquals(null, result.getVersionNo());
+        assertEquals("视觉描述", visualAsset.getVisualDescription());
+        assertEquals("old image analysis", visualAsset.getImageAnalysisMarkdown());
+        assertEquals("old fusion", visualAsset.getFusionDescription());
+        assertEquals(0, repository.insertVersionCount);
+        assertEquals(0, repository.updateSancaiEntryAiCount);
+        verify(aiFacade).markCandidateApplied(any(MarkAiCandidateAppliedFacadeRequest.class));
+        verify(assetService).updateVisualAsset(visualAsset);
+    }
+
+    @Test
+    void applyAiCandidateFusionShouldUpdateTargetVisualAssetAndSkipVersion() {
+        FakeRepository repository = new FakeRepository();
+        SancaiEntry entry = new SancaiEntry();
+        entry.setId(SancaiEntryId.of(11L));
+        entry.setContentUpdatedAt(new Date(1L));
+        repository.sancaiEntryForAiApply = entry;
+
+        SancaiVisualAsset visualAsset = new SancaiVisualAsset();
+        visualAsset.setId(SancaiVisualAssetId.of(111L));
+        visualAsset.setImageAnalysisMarkdown("old image analysis");
+        visualAsset.setVisualDescription("old visual");
+
+        SancaiAssetApplicationService assetService = org.mockito.Mockito.mock(SancaiAssetApplicationService.class);
+        when(assetService.listVisualAssets(SancaiEntryId.of(11L))).thenReturn(List.of(visualAsset));
+        when(assetService.updateVisualAsset(visualAsset)).thenReturn(SancaiVisualAssetId.of(111L));
+
+        AiFacade aiFacade = mockAiFacade(
+                request -> {
+                    assertEquals(11L, request.getCandidateId());
+                    assertEquals("SANCAI_ENTRY", request.getContentType());
+                    assertEquals(11L, request.getContentId());
+                    assertEquals("fusion", request.getCapability());
+                    return pendingCandidate();
+                },
+                request -> {
+                    assertEquals(11L, request.getCandidateId());
+                    assertEquals("TEXT", request.getResultFormat());
+                    assertEquals("融合说明", request.getResultPayload());
+                    return candidateApplied();
+                });
+
+        ClassicsContentApplicationServiceImpl service = serviceWithAiFacade(repository, aiFacade, assetService);
+        AiCandidateApplyContentCommand command =
+                applyCommand(11L, ClassicsContentType.SANCAI_ENTRY, 11L, "fusion", "融合说明", 111L);
+
+        AiCandidateApplyContentResult result = service.applyAiCandidate(command);
+
+        assertEquals(ClassicsContentType.SANCAI_ENTRY, result.getContentType());
+        assertEquals(11L, result.getContentId());
+        assertEquals(null, result.getVersionId());
+        assertEquals(null, result.getVersionNo());
+        assertEquals("融合说明", visualAsset.getFusionDescription());
+        assertEquals("old image analysis", visualAsset.getImageAnalysisMarkdown());
+        assertEquals("old visual", visualAsset.getVisualDescription());
+        assertEquals(0, repository.insertVersionCount);
+        assertEquals(0, repository.updateSancaiEntryAiCount);
+        verify(aiFacade).markCandidateApplied(any(MarkAiCandidateAppliedFacadeRequest.class));
+        verify(assetService).updateVisualAsset(visualAsset);
+    }
+
+    @Test
+    void applyAiCandidateImageGenShouldCreateGeneratedVisualAssetVersion() {
+        FakeRepository repository = new FakeRepository();
+        SancaiEntry entry = new SancaiEntry();
+        entry.setId(SancaiEntryId.of(11L));
+        repository.sancaiEntryForAiApply = entry;
+
+        SancaiVisualAsset visualAsset = new SancaiVisualAsset();
+        visualAsset.setId(SancaiVisualAssetId.of(111L));
+        visualAsset.setEntryId(SancaiEntryId.of(11L));
+
+        SancaiVisualAsset generatedAsset = new SancaiVisualAsset();
+        generatedAsset.setId(SancaiVisualAssetId.of(112L));
+        generatedAsset.setEntryId(SancaiEntryId.of(11L));
+        generatedAsset.setVersionNo(3);
+
+        SancaiAssetApplicationService assetService = org.mockito.Mockito.mock(SancaiAssetApplicationService.class);
+        when(assetService.listVisualAssets(SancaiEntryId.of(11L))).thenReturn(List.of(visualAsset));
+        when(assetService.createGeneratedVisualAssetVersion(
+                        SancaiEntryId.of(11L), SancaiVisualAssetId.of(111L), StorageObjectId.of(7101L)))
+                .thenReturn(generatedAsset);
+
+        AiFacade aiFacade = mockAiFacade(
+                request -> {
+                    assertEquals(11L, request.getCandidateId());
+                    assertEquals("SANCAI_ENTRY", request.getContentType());
+                    assertEquals(11L, request.getContentId());
+                    assertEquals("image_gen", request.getCapability());
+                    return pendingCandidate();
+                },
+                request -> {
+                    assertEquals(11L, request.getCandidateId());
+                    assertEquals("TEXT", request.getResultFormat());
+                    assertEquals(
+                            "{\"storageObjectId\":7101,\"contentType\":\"image/png\"}", request.getResultPayload());
+                    return candidateApplied();
+                });
+
+        ClassicsContentApplicationServiceImpl service = serviceWithAiFacade(repository, aiFacade, assetService);
+        AiCandidateApplyContentCommand command = applyCommand(
+                11L,
+                ClassicsContentType.SANCAI_ENTRY,
+                11L,
+                "image_gen",
+                "{\"storageObjectId\":7101,\"contentType\":\"image/png\"}",
+                111L);
+
+        AiCandidateApplyContentResult result = service.applyAiCandidate(command);
+
+        assertEquals(ClassicsContentType.SANCAI_ENTRY, result.getContentType());
+        assertEquals(11L, result.getContentId());
+        assertEquals(112L, result.getVersionId());
+        assertEquals(3, result.getVersionNo());
+        assertEquals(0, repository.insertVersionCount);
+        verify(assetService)
+                .createGeneratedVisualAssetVersion(
+                        SancaiEntryId.of(11L), SancaiVisualAssetId.of(111L), StorageObjectId.of(7101L));
+        verify(aiFacade).markCandidateApplied(any(MarkAiCandidateAppliedFacadeRequest.class));
     }
 
     @Test

@@ -20,6 +20,7 @@ class AiRefinementApplicationServiceImplTest {
     private static final String CAPABILITY_TAGS = "tags";
     private static final String CAPABILITY_QA = "qa";
     private static final String CAPABILITY_IMAGE_ANALYSIS = "image_analysis";
+    private static final String CAPABILITY_IMAGE_GEN = "image_gen";
     private static final String CAPABILITY_VISUAL = "visual";
     private static final String CAPABILITY_SPLIT = "split";
 
@@ -168,6 +169,24 @@ class AiRefinementApplicationServiceImplTest {
         assertEquals(true, capturedCommand.isStream());
         assertEquals(true, capturedCommand.isCreateCandidate());
         assertEquals(true, capturedCommand.toRunningCallRecord().isStreamUsed());
+        assertEquals(true, invocationService.streamInvoked());
+    }
+
+    @Test
+    void generateImageShouldUseClassicsUsecasePathForSancai() {
+        CapturingInvocationService invocationService = new CapturingInvocationService();
+        AiRefinementApplicationServiceImpl service =
+                new AiRefinementApplicationServiceImpl(invocationService, resolver, null);
+
+        AiCandidateResult result =
+                service.generateImage(command("SANCAI_ENTRY", "external-operation", CAPABILITY_IMAGE_GEN));
+        AiInvokeCommand capturedCommand = invocationService.capturedCommand();
+
+        assertNotNull(result);
+        assertEquals("CLASSICS_SANCAI_IMAGE_GEN", capturedCommand.getOperation());
+        assertEquals("/internal/ai/classics/sancai/image-gen", capturedCommand.getWorkerPath());
+        assertEquals("image_gen", capturedCommand.getCapability());
+        assertEquals(true, capturedCommand.isStream());
         assertEquals(true, invocationService.streamInvoked());
     }
 

@@ -23,6 +23,7 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryDraft
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryImage;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiShowcase;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVisualAsset;
+import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisualAssetStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryDraftId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryImageId;
@@ -188,6 +189,18 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     }
 
     @Override
+    public ClassicsStoredContentResult getVisualAssetSourceContent(
+            SancaiEntryId entryId, SancaiVisualAssetId visualAssetId) {
+        return openVisualAssetContent(entryId, visualAssetId, true);
+    }
+
+    @Override
+    public ClassicsStoredContentResult getVisualAssetGeneratedContent(
+            SancaiEntryId entryId, SancaiVisualAssetId visualAssetId) {
+        return openVisualAssetContent(entryId, visualAssetId, false);
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public void sortImages(SancaiEntryImageSortCommand command) {
         SortDirection effectiveDirection =
@@ -268,6 +281,7 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     @Override
     @Transactional(rollbackFor = Exception.class)
     public SancaiVisualAssetId updateVisualAsset(SancaiVisualAsset visualAsset) {
+        validateVisualWeights(visualAsset);
         if (visualAsset.getId() == null) {
             return repository.insertVisualAsset(visualAsset);
         }
@@ -284,6 +298,36 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     @Override
     public List<SancaiVisualAsset> listVisualAssets(SancaiEntryId entryId) {
         return repository.listVisualAssetsByEntryId(entryId);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public SancaiVisualAsset createGeneratedVisualAssetVersion(
+            SancaiEntryId entryId, SancaiVisualAssetId visualAssetId, StorageObjectId generatedImageStorageObjectId) {
+        if (entryId == null || visualAssetId == null || generatedImageStorageObjectId == null) {
+            throw new BizException("三才生图版本参数不完整");
+        }
+        SancaiVisualAsset currentAsset = repository.getVisualAssetById(visualAssetId);
+        if (currentAsset == null || currentAsset.getEntryId() == null || !entryId.equals(currentAsset.getEntryId())) {
+            throw new BizException("三才视觉资产不存在: " + visualAssetId.value());
+        }
+        validateVisualWeights(currentAsset);
+
+        SancaiVisualAsset nextAsset = new SancaiVisualAsset();
+        nextAsset.setEntryId(entryId);
+        nextAsset.setVersionNo(nextVisualAssetVersionNo(entryId));
+        nextAsset.setStatus(SancaiVisualAssetStatus.READY);
+        nextAsset.setSourceImageStorageObjectId(currentAsset.getSourceImageStorageObjectId());
+        nextAsset.setGeneratedImageStorageObjectId(generatedImageStorageObjectId);
+        nextAsset.setCurrentUsed(false);
+        nextAsset.setTextWeight(currentAsset.getTextWeight());
+        nextAsset.setImageWeight(currentAsset.getImageWeight());
+        nextAsset.setImageAnalysisMarkdown(currentAsset.getImageAnalysisMarkdown());
+        nextAsset.setFusionDescription(currentAsset.getFusionDescription());
+        nextAsset.setVisualDescription(currentAsset.getVisualDescription());
+        nextAsset.setGenerationParamsJson(currentAsset.getGenerationParamsJson());
+        nextAsset.setId(repository.insertVisualAsset(nextAsset));
+        return nextAsset;
     }
 
     @Override
@@ -542,12 +586,56 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
         return image;
     }
 
+    private SancaiVisualAsset requireVisualAsset(SancaiEntryId entryId, SancaiVisualAssetId visualAssetId) {
+        if (entryId == null || visualAssetId == null) {
+            throw new BizException("三才视觉资产不存在");
+        }
+        SancaiVisualAsset visualAsset = repository.getVisualAssetById(visualAssetId);
+        if (visualAsset == null || visualAsset.getEntryId() == null || !entryId.equals(visualAsset.getEntryId())) {
+            throw new BizException("三才视觉资产不存在: " + visualAssetId.value());
+        }
+        return visualAsset;
+    }
+
+    private ClassicsStoredContentResult openVisualAssetContent(
+            SancaiEntryId entryId, SancaiVisualAssetId visualAssetId, boolean sourceContent) {
+        SancaiVisualAsset visualAsset = requireVisualAsset(entryId, visualAssetId);
+        StorageObjectId storageObjectId = sourceContent
+                ? visualAsset.getSourceImageStorageObjectId()
+                : visualAsset.getGeneratedImageStorageObjectId();
+        if (storageObjectId == null) {
+            throw new BizException(sourceContent ? "三才视觉资产原图不存在" : "三才视觉资产生成图不存在");
+        }
+        OpenStorageFacadeResponse response = storageFacade == null
+                ? null
+                : storageFacade.open(OpenStorageFacadeRequest.builder()
+                        .storageObjectId(StorageObjectIdCodec.toValue(storageObjectId))
+                        .build());
+        ClassicsStoredContentResult content = toStoredContentResult(response);
+        if (content == null) {
+            throw new BizException(sourceContent ? "三才视觉资产原图不可读" : "三才视觉资产生成图不可读");
+        }
+        return content;
+    }
+
     private static void validateImageUpload(SancaiEntryImageUploadCommand command) {
         if (command == null || command.getEntryId() == null) {
             throw new BizException("三才条目不能为空");
         }
         if (!StringUtils.startsWithIgnoreCase(command.getContentType(), "image/")) {
             throw new BizException("三才图片内容类型无效");
+        }
+    }
+
+    private static void validateVisualWeights(SancaiVisualAsset visualAsset) {
+        if (visualAsset == null) {
+            throw new BizException("三才视觉资产不能为空");
+        }
+        if (visualAsset.getTextWeight() == null) {
+            throw new BizException("三才视觉资产文本权重不能为空");
+        }
+        if (visualAsset.getImageWeight() == null) {
+            throw new BizException("三才视觉资产图片权重不能为空");
         }
     }
 
@@ -596,5 +684,18 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
             return null;
         }
         return IMAGE_OWNER_ID_PREFIX + entryId.value() + IMAGE_OWNER_ID_SEPARATOR + imageId.value();
+    }
+
+    private int nextVisualAssetVersionNo(SancaiEntryId entryId) {
+        List<SancaiVisualAsset> visualAssets = repository.listVisualAssetsByEntryId(entryId);
+        if (visualAssets == null || visualAssets.isEmpty()) {
+            return 1;
+        }
+        return visualAssets.stream()
+                        .filter(java.util.Objects::nonNull)
+                        .mapToInt(SancaiVisualAsset::getVersionNo)
+                        .max()
+                        .orElse(0)
+                + 1;
     }
 }

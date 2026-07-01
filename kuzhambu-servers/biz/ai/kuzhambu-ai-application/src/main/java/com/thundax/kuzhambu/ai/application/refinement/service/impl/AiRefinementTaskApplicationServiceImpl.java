@@ -162,6 +162,9 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
         if ("visual".equals(capability)) {
             return refinementApplicationService.describeVisual(command);
         }
+        if ("image_gen".equals(capability)) {
+            return refinementApplicationService.generateImage(command);
+        }
         if ("split".equals(capability)) {
             return refinementApplicationService.splitEntry(command);
         }

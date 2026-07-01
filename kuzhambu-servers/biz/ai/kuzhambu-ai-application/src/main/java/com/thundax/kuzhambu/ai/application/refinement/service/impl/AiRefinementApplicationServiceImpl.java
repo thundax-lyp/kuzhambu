@@ -22,6 +22,7 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
     private static final String CAPABILITY_TAGS = "tags";
     private static final String CAPABILITY_QA = "qa";
     private static final String CAPABILITY_IMAGE_ANALYSIS = "image_analysis";
+    private static final String CAPABILITY_IMAGE_GEN = "image_gen";
     private static final String CAPABILITY_VISUAL = "visual";
     private static final String CAPABILITY_SPLIT = "split";
 
@@ -65,6 +66,11 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
     }
 
     @Override
+    public AiCandidateResult generateImage(AiRefinementRequestCommand command) {
+        return invokeCandidate(command, CAPABILITY_IMAGE_GEN);
+    }
+
+    @Override
     public AiCandidateResult describeVisual(AiRefinementRequestCommand command) {
         return invokeCandidate(command, CAPABILITY_VISUAL);
     }
@@ -81,10 +87,10 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
         invokeCommand.setOperation(spec.operation());
         invokeCommand.setWorkerPath(spec.workerPath());
         enrichModelConfig(invokeCommand);
-        if (CAPABILITY_IMAGE_ANALYSIS.equals(capability)) {
+        if (CAPABILITY_IMAGE_ANALYSIS.equals(capability) || CAPABILITY_IMAGE_GEN.equals(capability)) {
             invokeCommand.setStream(true);
         }
-        AiInvokeResult result = CAPABILITY_IMAGE_ANALYSIS.equals(capability)
+        AiInvokeResult result = CAPABILITY_IMAGE_ANALYSIS.equals(capability) || CAPABILITY_IMAGE_GEN.equals(capability)
                 ? invocationApplicationService.stream(invokeCommand, event -> {})
                 : invocationApplicationService.invoke(invokeCommand);
         return AiCandidateResult.from(result);

@@ -115,6 +115,24 @@ class SancaiAssetAdminControllerTest {
                 "visual-assets/{entryId}",
                 "classics:sancai:view",
                 Long.class);
+        assertGetMapping(
+                SancaiAssetAdminController.class,
+                "downloadVisualAssetSourceContent",
+                "visual-assets/{entryId}/{visualAssetId}/source-content",
+                "classics:sancai:view",
+                Long.class,
+                Long.class,
+                Boolean.class,
+                HttpServletResponse.class);
+        assertGetMapping(
+                SancaiAssetAdminController.class,
+                "downloadVisualAssetGeneratedContent",
+                "visual-assets/{entryId}/{visualAssetId}/generated-content",
+                "classics:sancai:view",
+                Long.class,
+                Long.class,
+                Boolean.class,
+                HttpServletResponse.class);
         assertPostMapping(
                 SancaiAssetAdminController.class,
                 "updateVisualAsset",
@@ -221,10 +239,15 @@ class SancaiAssetAdminControllerTest {
         assertEquals("融合说明", item.getFusionDescription());
         assertEquals("视觉描述", item.getVisualDescription());
         assertEquals("{\"style\":\"gongbi\"}", item.getGenerationParamsJson());
-        assertEquals("/api/storage/object/7001/content", item.getSourcePreviewUrl());
-        assertEquals("/api/storage/object/7001/content?download=true", item.getSourceDownloadUrl());
-        assertEquals("/api/storage/object/7002/content", item.getGeneratedPreviewUrl());
-        assertEquals("/api/storage/object/7002/content?download=true", item.getGeneratedDownloadUrl());
+        assertEquals("/api/classics/sancai/assets/visual-assets/3001/5001/source-content", item.getSourcePreviewUrl());
+        assertEquals(
+                "/api/classics/sancai/assets/visual-assets/3001/5001/source-content?download=true",
+                item.getSourceDownloadUrl());
+        assertEquals(
+                "/api/classics/sancai/assets/visual-assets/3001/5001/generated-content", item.getGeneratedPreviewUrl());
+        assertEquals(
+                "/api/classics/sancai/assets/visual-assets/3001/5001/generated-content?download=true",
+                item.getGeneratedDownloadUrl());
 
         SancaiAssetRequest updateRequest = new SancaiAssetRequest();
         updateRequest.setVisualAssetId(5001L);
@@ -270,6 +293,28 @@ class SancaiAssetAdminControllerTest {
         assertTrue(disposition.startsWith("attachment;"));
         assertTrue(disposition.contains("filename=\"showcase.json\""));
         assertTrue(disposition.contains("filename*=UTF-8''showcase.json"));
+    }
+
+    @Test
+    void downloadVisualAssetContentShouldSupportInlineAndAttachment() throws Exception {
+        SancaiAssetAdminController controller = controller();
+        MockHttpServletResponse sourceInlineResponse = new MockHttpServletResponse();
+
+        controller.downloadVisualAssetSourceContent(3001L, 5001L, false, sourceInlineResponse);
+
+        assertEquals("image/png", sourceInlineResponse.getContentType());
+        assertEquals(9, sourceInlineResponse.getContentLength());
+        assertTrue(sourceInlineResponse.getHeader("Content-Disposition").startsWith("inline;"));
+        assertEquals("image-bin", sourceInlineResponse.getContentAsString());
+
+        MockHttpServletResponse generatedAttachmentResponse = new MockHttpServletResponse();
+        controller.downloadVisualAssetGeneratedContent(3001L, 5001L, true, generatedAttachmentResponse);
+
+        String disposition = generatedAttachmentResponse.getHeader("Content-Disposition");
+        assertTrue(disposition.startsWith("attachment;"));
+        assertTrue(disposition.contains("filename=\"生成图.png\""));
+        assertTrue(disposition.contains("filename*=UTF-8''%E7%94%9F%E6%88%90%E5%9B%BE.png"));
+        assertEquals("generated", generatedAttachmentResponse.getContentAsString());
     }
 
     private static SancaiAssetAdminController controller() {
@@ -333,6 +378,16 @@ class SancaiAssetAdminControllerTest {
                         assertEquals(SancaiEntryId.of(3001L), args[0]);
                         return List.of(visualAsset());
                     }
+                    if ("getVisualAssetSourceContent".equals(method.getName())) {
+                        assertEquals(SancaiEntryId.of(3001L), args[0]);
+                        assertEquals(SancaiVisualAssetId.of(5001L), args[1]);
+                        return storedContent();
+                    }
+                    if ("getVisualAssetGeneratedContent".equals(method.getName())) {
+                        assertEquals(SancaiEntryId.of(3001L), args[0]);
+                        assertEquals(SancaiVisualAssetId.of(5001L), args[1]);
+                        return generatedContent();
+                    }
                     if ("requestShowcase".equals(method.getName())) {
                         return SancaiShowcaseId.of(9001L);
                     }
@@ -394,6 +449,11 @@ class SancaiAssetAdminControllerTest {
     private static ClassicsStoredContentResult showcaseContent() {
         return new ClassicsStoredContentResult(
                 7001L, "showcase.json", "application/json", 8L, new ByteArrayInputStream("demo-json".getBytes()));
+    }
+
+    private static ClassicsStoredContentResult generatedContent() {
+        return new ClassicsStoredContentResult(
+                7002L, "生成图.png", "image/png", 9L, new ByteArrayInputStream("generated".getBytes()));
     }
 
     private static SancaiVisualAsset visualAsset() {

@@ -59,4 +59,20 @@ class ClassicsAiWorkerUsecaseResolverTest {
         assertEquals("CLASSICS_SANCAI_IMAGE_ANALYSIS", spec.operation());
         assertEquals("/internal/ai/classics/sancai/image-analysis", spec.workerPath());
     }
+
+    @Test
+    void resolveSanCaiFusion() {
+        ClassicsAiWorkerUsecaseSpec spec = resolver.resolve("SANCAI_ENTRY", "fusion");
+        assertNotNull(spec);
+        assertEquals("CLASSICS_SANCAI_FUSION", spec.operation());
+        assertEquals("/internal/ai/classics/sancai/fusion", spec.workerPath());
+    }
+
+    @Test
+    void resolveSanCaiImageGen() {
+        ClassicsAiWorkerUsecaseSpec spec = resolver.resolve("SANCAI_ENTRY", "image_gen");
+        assertNotNull(spec);
+        assertEquals("CLASSICS_SANCAI_IMAGE_GEN", spec.operation());
+        assertEquals("/internal/ai/classics/sancai/image-gen", spec.workerPath());
+    }
 }

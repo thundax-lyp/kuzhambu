@@ -67,6 +67,13 @@ export interface SancaiEntryImageContentUrlCommand {
     mode?: SancaiEntryImageContentMode;
 }
 
+export interface SancaiVisualAssetContentUrlCommand {
+    entryId: number;
+    mode?: SancaiEntryImageContentMode;
+    visualAssetId: number;
+    variant: "source" | "generated";
+}
+
 export interface SancaiVisualAssetCommand {
     id?: number | null;
     visualAssetId?: number | null;
@@ -178,6 +185,13 @@ export const getImageContentUrl = (request: SancaiEntryImageContentUrlCommand) =
     const mode = request.mode || "preview";
     const search = mode === "download" ? "?download=true" : "";
     return `${ADMIN_API_BASE_URL}${ASSET_IMAGES_PATH}/${request.entryId}/${request.imageId}/content${search}`;
+};
+
+export const getVisualAssetContentUrl = (request: SancaiVisualAssetContentUrlCommand) => {
+    const mode = request.mode || "preview";
+    const search = mode === "download" ? "?download=true" : "";
+    const suffix = request.variant === "source" ? "source-content" : "generated-content";
+    return `${ADMIN_API_BASE_URL}${ASSET_VISUAL_ASSETS_PATH}/${request.entryId}/${request.visualAssetId}/${suffix}${search}`;
 };
 
 export const updateVisualAsset = (command: SancaiVisualAssetCommand) => {

@@ -7,7 +7,8 @@ import * as aiCandidateService from "../ai-candidate-service";
 import type { AiCandidateRecord } from "../ai-candidate-types";
 import { AiCandidatePayloadEditor } from "./ai-candidate-payload-editor";
 
-type AiCandidateCapability = "translate" | "summary" | "tags" | "qa" | "image_analysis";
+type AiCandidateCapability =
+    "translate" | "summary" | "tags" | "qa" | "image_analysis" | "visual" | "fusion";
 type CandidateContentType = "SANCAI_ENTRY" | "WANGQI_DOCUMENT" | "MING_CUSTOMS";
 
 interface AiCandidatePanelProps {
@@ -16,6 +17,7 @@ interface AiCandidatePanelProps {
     contentType: CandidateContentType;
     objectId?: number | null;
     onApplied?: () => void;
+    onRejected?: () => void;
 }
 
 const REJECT_ERROR_TYPE = "USER_REJECTED";
@@ -50,7 +52,9 @@ const formatDateTime = (value?: string | null) => {
 };
 
 const isSupportCapability = (capability: string): capability is AiCandidateCapability => {
-    return ["translate", "summary", "tags", "qa", "image_analysis"].includes(capability);
+    return ["translate", "summary", "tags", "qa", "image_analysis", "visual", "fusion"].includes(
+        capability
+    );
 };
 
 export const AiCandidatePanel = ({
@@ -58,7 +62,8 @@ export const AiCandidatePanel = ({
     contentId,
     contentType,
     objectId = null,
-    onApplied
+    onApplied,
+    onRejected
 }: AiCandidatePanelProps) => {
     const { message: messageApi } = App.useApp();
     const queryClient = useQueryClient();
@@ -90,10 +95,11 @@ export const AiCandidatePanel = ({
             (candidate) =>
                 candidate.status === "PENDING" &&
                 isSupportCapability(candidate.capability) &&
-                capabilityFilter.has(candidate.capability)
+                capabilityFilter.has(candidate.capability) &&
+                (objectId == null || candidate.objectId === objectId)
         );
         return result;
-    }, [capabilityFilter, pendingCandidatesQuery.data]);
+    }, [capabilityFilter, objectId, pendingCandidatesQuery.data]);
 
     const refreshCandidates = async () => {
         await queryClient.invalidateQueries({
@@ -128,6 +134,9 @@ export const AiCandidatePanel = ({
         },
         onSuccess: async () => {
             await refreshCandidates();
+            if (onRejected) {
+                onRejected();
+            }
             messageApi.success("候选已拒绝");
         },
         onError: (error) => {
