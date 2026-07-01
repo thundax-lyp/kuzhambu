@@ -2,7 +2,7 @@
 
 ## Purpose
 
-本文档记录 AI 精修能力在 Java 与 Workers 的接入状态，用于跟踪本轮与后续闭环进度。
+本文档记录 AI 精修能力在 Java 与 Workers 的当前接入状态，用于跟踪后续闭环进度。
 
 ## Status Definition
 
@@ -16,10 +16,12 @@
 已完成：
 
 - Classics 精修入口已对接六类同步候选能力（`translate/summary/tags/qa/visual/split`）的 Java → Worker 调用链路（Sancai、Wangqi、Ming Customs）。
+- AI 设计文档定义的默认精修任务协议（`task/add -> task/get/page -> task/cancel`）已经在代码中落地；当前实现覆盖任务受理、查询、分页、取消、12 小时超时清理与 `TASK_EXPIRED` 失败态收口。
 - Knowledge 图谱抽取已对接三类候选能力（`relation_extraction/knowledge_graph/lineage_extraction`）的 Knowledge → AI → Worker 调用链路，并补齐批量任务、取消和重生成所需的 AI 协作台账。
 - AI 域当前已具备候选结果台账读取、拒绝和“标记已应用”协作入口，可支持 Classics / Knowledge 在业务确认后回写 AI 候选状态。
 - AI 域已形成统一最终态协议：调用结果、调用记录、候选结果和 Worker stream `completed/error` 统一使用 `failureStage / fallbackUsed / artifactReference` 口径；文件类结果由 Java 下载 Workers 临时产物并转存 `Storage`。
 - Discovery 的 query understanding、answer generation 与 stream answer 已统一消费 AI 最终态，并把最终 AI `callId` 稳定挂到 QA trace。
+- AI 域当前已形成“治理入口 -> Workers 执行 -> 候选结果/任务台账 -> Classics 页面消费”的最小闭环；`task/stream` 仍停留在设计层的可选协议，未在当前代码中实现。
 
 未完成：
 
@@ -43,6 +45,7 @@
 | classics | MING_CUSTOMS | summary | AiRefinementController#summarize | CLASSICS_MING_CUSTOMS_SUMMARY | /internal/ai/classics/ming-customs/summary | 已完成 | 六类同步候选型精修能力接入 usecase path |
 | classics | MING_CUSTOMS | tags | AiRefinementController#generateTags | CLASSICS_MING_CUSTOMS_TAGS | /internal/ai/classics/ming-customs/tags | 已完成 | 六类同步候选型精修能力接入 usecase path |
 | classics | MING_CUSTOMS | qa | AiRefinementController#generateQa | CLASSICS_MING_CUSTOMS_QA | /internal/ai/classics/ming-customs/qa | 已完成 | 六类同步候选型精修能力接入 usecase path |
+| classics | SANCAI_ENTRY / WANGQI_DOCUMENT / MING_CUSTOMS | task_management | AiRefinementTaskController#add/get/page/cancel | AI_REFINEMENT_TASK_MANAGEMENT | - | 已完成 | 已实现设计文档定义的默认任务协议；代码未提供 `task/stream` 前端订阅入口 |
 | discovery | - | query_understanding | DiscoveryAiApplicationService#understandQuery | DISCOVERY_QUERY_UNDERSTANDING | /internal/ai/discovery/query-understanding | 已完成 | 已统一消费 AI 最终态字段；失败时按最终错误口径落库 |
 | discovery | - | query_understanding | DiscoveryAiApplicationService#rewriteQuery | DISCOVERY_QUERY_REWRITE | /internal/ai/discovery/query-rewrite | 已完成 | 已统一消费 AI 最终态字段；失败时按最终错误口径落库 |
 | discovery | - | answer_generation | DiscoveryAiApplicationService#generateAnswer | DISCOVERY_ANSWER_GENERATION | /internal/ai/discovery/answer-generation | 已完成 | 最终回答消费 AI 最终态字段，并把 `callId` 挂到 QA trace |
