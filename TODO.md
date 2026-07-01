@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Sancai Asset Component Tests`：补齐视觉资产组件级测试
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-VISUAL-ASSETS-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.test.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-model.tsx`
-    - 处理动作：补齐视觉资产区块展示、切换、原图/生成图入口和字段展示的组件级测试
-    - 验收点：组件测试覆盖视觉资产核心 UI 和切换回调，不依赖新增独立页面
-    - 重要度：8/10
-
 - [ ] `Sancai Asset Page Regression`：收口三才页面层回归测试
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-VISUAL-ASSETS-CLOSURE.md`

@@ -223,6 +223,48 @@ vi.mock("../services/sancai-entry-service", () => ({
             title: "sancai.png"
         }
     ]),
+    listVisualAssets: vi.fn(async () => [
+        {
+            id: 5002,
+            visualAssetId: 5002,
+            entryId: 3001,
+            versionNo: 2,
+            status: "READY",
+            sourceImageStorageObjectId: 7001,
+            generatedImageStorageObjectId: 7002,
+            currentUsed: true,
+            textWeight: 60,
+            imageWeight: 40,
+            imageAnalysisMarkdown: "当前版本图片理解",
+            fusionDescription: "当前版本融合描述",
+            visualDescription: "当前版本视觉描述",
+            generationParamsJson: '{"style":"gongbi"}',
+            sourcePreviewUrl: "/api/storage/object/7001/content",
+            sourceDownloadUrl: "/api/storage/object/7001/content?download=true",
+            generatedPreviewUrl: "/api/storage/object/7002/content",
+            generatedDownloadUrl: "/api/storage/object/7002/content?download=true"
+        },
+        {
+            id: 5001,
+            visualAssetId: 5001,
+            entryId: 3001,
+            versionNo: 1,
+            status: "READY",
+            sourceImageStorageObjectId: 7101,
+            generatedImageStorageObjectId: 7102,
+            currentUsed: false,
+            textWeight: 55,
+            imageWeight: 45,
+            imageAnalysisMarkdown: "历史版本图片理解",
+            fusionDescription: "历史版本融合描述",
+            visualDescription: "历史版本视觉描述",
+            generationParamsJson: '{"style":"shuimo"}',
+            sourcePreviewUrl: "/api/storage/object/7101/content",
+            sourceDownloadUrl: "/api/storage/object/7101/content?download=true",
+            generatedPreviewUrl: "/api/storage/object/7102/content",
+            generatedDownloadUrl: "/api/storage/object/7102/content?download=true"
+        }
+    ]),
     listVersions: vi.fn(async () => [
         {
             id: 9001,
@@ -249,6 +291,8 @@ vi.mock("../services/sancai-entry-service", () => ({
         };
     }),
     sort: vi.fn(),
+    updateVisualAsset: vi.fn(async (request) => request),
+    useVisualAsset: vi.fn(async () => true),
     getImageContentUrl: vi.fn(
         (request: { entryId: number; imageId: number; mode?: "download" | "preview" }) => {
             const search = request.mode === "download" ? "?download=true" : "";
@@ -507,5 +551,62 @@ describe("SancaiEntryPanel sharing", () => {
         expect(await screen.findByText("三才图会问答对治理")).toBeInTheDocument();
         expect(await screen.findByText("三才")).toBeInTheDocument();
         expect(await screen.findByText("天地为何不变？")).toBeInTheDocument();
+    });
+
+    it("renders visual asset section and supports switching current version", async () => {
+        const user = userEvent.setup();
+        renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        await user.click(await within(entryTable).findByRole("button", { name: "查看 天地" }));
+
+        const visualAssetPanel = await screen.findByLabelText("三才图会视觉资产面板");
+        expect(within(visualAssetPanel).getByText(/当前使用版本：版本 2/)).toBeInTheDocument();
+        expect(
+            within(visualAssetPanel).getByRole("button", { name: "版本 1" })
+        ).toBeInTheDocument();
+
+        await user.click(within(visualAssetPanel).getByRole("button", { name: "版本 1" }));
+        await user.click(
+            within(visualAssetPanel).getByRole("button", { name: "设为当前使用版本" })
+        );
+
+        await waitFor(() => {
+            expect(entryService.useVisualAsset).toHaveBeenCalled();
+        });
+        expect(vi.mocked(entryService.useVisualAsset).mock.calls[0]?.[0]).toEqual({
+            entryId: 3001,
+            visualAssetId: 5001
+        });
+    });
+
+    it("saves visual asset editable fields through the formal service contract", async () => {
+        const user = userEvent.setup();
+        renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        await user.click(await within(entryTable).findByRole("button", { name: "查看 天地" }));
+
+        const visualAssetPanel = await screen.findByLabelText("三才图会视觉资产面板");
+        const descriptionInput =
+            within(visualAssetPanel).getByLabelText("三才图会视觉资产视觉描述");
+        await user.clear(descriptionInput);
+        await user.type(descriptionInput, "更新后的视觉描述");
+        await user.click(
+            within(visualAssetPanel).getByRole("button", { name: "保存视觉资产字段" })
+        );
+
+        await waitFor(() => {
+            expect(entryService.updateVisualAsset).toHaveBeenCalled();
+        });
+        expect(vi.mocked(entryService.updateVisualAsset).mock.calls[0]?.[0]).toEqual(
+            expect.objectContaining({
+                visualAssetId: 5002,
+                entryId: 3001,
+                visualDescription: "更新后的视觉描述",
+                textWeight: 60,
+                imageWeight: 40
+            })
+        );
     });
 });
