@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Sancai Candidate Panel Wiring`：补齐单图候选预览与人工确认接线
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-SINGLE-IMAGE-ANALYSIS-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/common/components/ai-candidate-panel.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-model.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.test.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-page.test.tsx`
-    - 处理动作：在三才视觉资产上下文中只展示当前 `visualAsset` 的 `image_analysis` 候选，并完成应用、拒绝与刷新联动
-    - 验收点：候选面板只看当前单图，应用后 `imageAnalysisMarkdown`、`fusionDescription`、`visualDescription` 与视觉资产列表都会刷新
-    - 重要度：10/10
-
 - [ ] `Workers Image Analysis Contract`：补齐 workers 图片理解契约回归
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-SINGLE-IMAGE-ANALYSIS-CLOSURE.md`

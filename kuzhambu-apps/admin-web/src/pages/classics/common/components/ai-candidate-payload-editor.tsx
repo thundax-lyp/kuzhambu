@@ -3,7 +3,13 @@ import { useEffect, useState } from "react";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 
-type AiCandidateCapability = "translate" | "summary" | "tags" | "qa";
+type AiCandidateCapability = "translate" | "summary" | "tags" | "qa" | "image_analysis";
+
+const TEXT_CAPABILITY_ARIA_LABEL: Record<"translate" | "summary" | "image_analysis", string> = {
+    translate: "候选译文内容",
+    summary: "候选摘要内容",
+    image_analysis: "候选图片理解内容"
+};
 
 interface AiCandidatePayloadEditorProps {
     candidateId: number;
@@ -92,7 +98,11 @@ export const AiCandidatePayloadEditor = ({
     const [qaPayload, setQaPayload] = useState(() => parseQaPayload(initialPayload));
 
     useEffect(() => {
-        if (capability === "summary" || capability === "translate") {
+        if (
+            capability === "summary" ||
+            capability === "translate" ||
+            capability === "image_analysis"
+        ) {
             const payload = textPayload.trim();
             onPayloadChange(candidateId, payload);
             onSubmitEnabledChange(candidateId, payload.length > 0);
@@ -168,10 +178,10 @@ export const AiCandidatePayloadEditor = ({
         });
     };
 
-    if (capability === "summary" || capability === "translate") {
+    if (capability === "summary" || capability === "translate" || capability === "image_analysis") {
         return (
             <Input.TextArea
-                aria-label={capability === "summary" ? "候选摘要内容" : "候选译文内容"}
+                aria-label={TEXT_CAPABILITY_ARIA_LABEL[capability]}
                 autoSize={resolveTextAreaAutoSize({ minRows: 4, maxRows: 10 })}
                 value={textPayload}
                 onChange={(event) => setTextPayload(event.target.value)}

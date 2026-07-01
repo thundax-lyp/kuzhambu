@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { App as AntdApp } from "antd";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
+import * as aiCandidateService from "@/pages/classics/common/ai-candidate-service";
 import * as exportService from "@/pages/classics/common/classics-export-service";
 import * as shareService from "@/pages/classics/common/classics-share-service";
 import * as currentUserService from "@/service/current-user-service";
@@ -75,6 +76,16 @@ vi.mock("@/pages/classics/common/ai-refinement-task-service", () => ({
         pageSize: 20
     })),
     cancelTask: vi.fn()
+}));
+vi.mock("@/pages/classics/common/ai-candidate-service", () => ({
+    list: vi.fn(async () => []),
+    updateCandidateApplied: vi.fn(async () => ({
+        contentType: "SANCAI_ENTRY",
+        contentId: 3001,
+        versionId: 5002,
+        versionNo: 2
+    })),
+    updateCandidateRejected: vi.fn(async () => ({}))
 }));
 
 const entryState = vi.hoisted(() => ({
@@ -353,6 +364,8 @@ const renderEntryPanel = () => {
             </AntdApp>
         </QueryClientProvider>
     );
+
+    return client;
 };
 
 describe("SancaiEntryPanel sharing", () => {
@@ -413,6 +426,142 @@ describe("SancaiEntryPanel sharing", () => {
             modelName: "gpt-5.5",
             locale: "zh-CN"
         });
+    }, 30000);
+
+    it("filters image analysis candidates by selected visual asset", async () => {
+        const user = userEvent.setup();
+        vi.mocked(aiCandidateService.list).mockClear();
+        vi.mocked(aiCandidateService.list)
+            .mockResolvedValueOnce([
+                {
+                    candidateId: 8001,
+                    capability: "image_analysis",
+                    contentType: "SANCAI_ENTRY",
+                    contentId: 3001,
+                    objectId: 5002,
+                    resultFormat: "TEXT",
+                    resultPayload: "候选 A",
+                    status: "PENDING",
+                    requestedAt: "2026-06-20T01:00:00.000+08:00"
+                }
+            ])
+            .mockResolvedValueOnce([
+                {
+                    candidateId: 8002,
+                    capability: "image_analysis",
+                    contentType: "SANCAI_ENTRY",
+                    contentId: 3001,
+                    objectId: 5001,
+                    resultFormat: "TEXT",
+                    resultPayload: "候选 B",
+                    status: "PENDING",
+                    requestedAt: "2026-06-20T01:00:00.000+08:00"
+                }
+            ]);
+
+        renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        await user.click(await within(entryTable).findByRole("button", { name: "查看 天地" }));
+
+        await waitFor(() => {
+            expect(vi.mocked(aiCandidateService.list)).toHaveBeenCalledTimes(1);
+        });
+        expect(vi.mocked(aiCandidateService.list).mock.calls[0]?.[0]).toMatchObject({
+            contentType: "SANCAI_ENTRY",
+            contentId: 3001,
+            status: "PENDING",
+            objectId: 5002
+        });
+
+        const visualAssetPanel = await screen.findByLabelText("三才图会视觉资产面板");
+        await user.click(within(visualAssetPanel).getByRole("button", { name: "版本 1" }));
+
+        await waitFor(() => {
+            expect(vi.mocked(aiCandidateService.list)).toHaveBeenCalledTimes(2);
+        });
+        expect(vi.mocked(aiCandidateService.list).mock.calls[1]?.[0]).toMatchObject({
+            contentType: "SANCAI_ENTRY",
+            contentId: 3001,
+            status: "PENDING",
+            objectId: 5001
+        });
+    }, 30000);
+
+    it("refreshes entry detail, visual assets, and candidate list after applying image analysis", async () => {
+        const user = userEvent.setup();
+        vi.mocked(aiCandidateService.list).mockResolvedValue([
+            {
+                candidateId: 8003,
+                capability: "image_analysis",
+                contentType: "SANCAI_ENTRY",
+                contentId: 3001,
+                objectId: 5002,
+                resultFormat: "TEXT",
+                resultPayload: "候选 C",
+                status: "PENDING",
+                requestedAt: "2026-06-20T01:00:00.000+08:00"
+            }
+        ]);
+
+        const client = renderEntryPanel();
+        const invalidateSpy = vi.spyOn(client, "invalidateQueries");
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        await user.click(await within(entryTable).findByRole("button", { name: "查看 天地" }));
+
+        await waitFor(() => {
+            expect(screen.queryByText("AI 候选确认")).toBeInTheDocument();
+        });
+        const applyButton = await screen.findByRole("button", {
+            name: (value) => value.replace(/\s/g, "") === "应用"
+        });
+        expect(applyButton).toBeEnabled();
+        await user.click(applyButton);
+
+        await waitFor(() => {
+            expect(vi.mocked(aiCandidateService.updateCandidateApplied)).toHaveBeenCalledTimes(1);
+        });
+        expect(
+            vi.mocked(aiCandidateService.updateCandidateApplied).mock.calls[0]?.[0]
+        ).toMatchObject({
+            candidateId: 8003,
+            contentType: "SANCAI_ENTRY",
+            contentId: 3001,
+            capability: "image_analysis",
+            objectId: 5002,
+            resultFormat: "TEXT",
+            resultPayload: "候选 C",
+            changeSummary: "AI 应用：image_analysis"
+        });
+
+        expect(
+            invalidateSpy.mock.calls.some(
+                (call) =>
+                    JSON.stringify(call[0]) ===
+                    JSON.stringify({
+                        queryKey: ["classics", "sancai", "entries", "detail", 3001]
+                    })
+            )
+        ).toBeTruthy();
+        expect(
+            invalidateSpy.mock.calls.some(
+                (call) =>
+                    JSON.stringify(call[0]) ===
+                    JSON.stringify({
+                        queryKey: ["classics", "sancai", "entries", "visual-assets", 3001]
+                    })
+            )
+        ).toBeTruthy();
+        expect(
+            invalidateSpy.mock.calls.some(
+                (call) =>
+                    JSON.stringify(call[0]) ===
+                    JSON.stringify({
+                        queryKey: ["ai", "candidates", "SANCAI_ENTRY", 3001, 5002]
+                    })
+            )
+        ).toBeTruthy();
     }, 30000);
 
     it("blocks image analysis task creation when visual asset has no source image", async () => {

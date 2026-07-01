@@ -1,7 +1,7 @@
 import { DownloadOutlined, EyeOutlined, PictureOutlined, UploadOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Button, Empty, Image, Input, Switch, Typography, Upload } from "antd";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
@@ -86,6 +86,7 @@ interface SancaiEntryModelProps {
     onUpdateVisualAsset?: (asset: SancaiVisualAssetRecord) => void;
     onCreateImageAnalysisTask?: (asset: SancaiVisualAssetRecord) => void;
     isCreatingImageAnalysisTask?: boolean;
+    onSelectedVisualAssetChange?: (asset: SancaiVisualAssetRecord | null) => void;
 }
 
 export const SancaiEntryModel = ({
@@ -101,7 +102,8 @@ export const SancaiEntryModel = ({
     onUseVisualAsset,
     onUpdateVisualAsset,
     onCreateImageAnalysisTask,
-    isCreatingImageAnalysisTask = false
+    isCreatingImageAnalysisTask = false,
+    onSelectedVisualAssetChange
 }: SancaiEntryModelProps) => {
     const { message: messageApi } = App.useApp();
     const queryClient = useQueryClient();
@@ -140,6 +142,12 @@ export const SancaiEntryModel = ({
         ) ||
         currentVisualAsset ||
         null;
+
+    useEffect(() => {
+        if (onSelectedVisualAssetChange) {
+            onSelectedVisualAssetChange(selectedVisualAsset);
+        }
+    }, [onSelectedVisualAssetChange, selectedVisualAsset]);
     const visualAssetFormValue = useMemo(() => {
         if (!selectedVisualAsset) {
             return null;
