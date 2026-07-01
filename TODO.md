@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `sancai/image-gen-storage`：接通生图产物转存与新版本规则
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-VISUAL-ASSET-WORKFLOW-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sancai/service/impl/SancaiAssetApplicationServiceImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-domain/src/main/java/com/thundax/kuzhambu/classics/domain/sancai/repository/SancaiAssetRepository.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/java/com/thundax/kuzhambu/classics/infra/sancai/repository/impl/SancaiAssetRepositoryImpl.java`、`kuzhambu-workers/src/kuzhambu_workers/api/artifact_routes.py`、`kuzhambu-workers/src/kuzhambu_workers/render/artifact_store.py`
-    - 处理动作：将 `image_gen` artifact 转存到 Storage 并默认生成新的 visual asset version
-    - 验收点：页面事实只基于 Storage 对象，新生成图不会直接覆盖已有生成图版本
-    - 重要度：10/10
-
 - [ ] `sancai/image-gen-delivery`：补齐生图预览下载链路
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-VISUAL-ASSET-WORKFLOW-CLOSURE.md`

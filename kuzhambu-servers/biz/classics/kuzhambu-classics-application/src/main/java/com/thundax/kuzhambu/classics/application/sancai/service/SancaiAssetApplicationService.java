@@ -59,6 +59,12 @@ public interface SancaiAssetApplicationService {
      */
     List<SancaiVisualAsset> listVisualAssets(SancaiEntryId entryId);
 
+    /**
+     * 基于既有视觉资产生成新的生图版本，不隐式切换当前使用版本。
+     */
+    SancaiVisualAsset createGeneratedVisualAssetVersion(
+            SancaiEntryId entryId, SancaiVisualAssetId visualAssetId, StorageObjectId generatedImageStorageObjectId);
+
     SancaiShowcaseId requestShowcase(SancaiShowcaseCommand command);
 
     ClassicsStoredContentResult getShowcaseContent(StorageObjectId storageObjectId);

@@ -18,6 +18,7 @@ import com.thundax.kuzhambu.classics.application.content.result.AiCandidateApply
 import com.thundax.kuzhambu.classics.application.content.service.impl.ClassicsContentApplicationServiceImpl;
 import com.thundax.kuzhambu.classics.application.content.support.ClassicsTagBindingSupport;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiAssetApplicationService;
+import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentExportJob;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentQaPair;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
@@ -287,6 +288,66 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         assertEquals(0, repository.updateSancaiEntryAiCount);
         verify(aiFacade).markCandidateApplied(any(MarkAiCandidateAppliedFacadeRequest.class));
         verify(assetService).updateVisualAsset(visualAsset);
+    }
+
+    @Test
+    void applyAiCandidateImageGenShouldCreateGeneratedVisualAssetVersion() {
+        FakeRepository repository = new FakeRepository();
+        SancaiEntry entry = new SancaiEntry();
+        entry.setId(SancaiEntryId.of(11L));
+        repository.sancaiEntryForAiApply = entry;
+
+        SancaiVisualAsset visualAsset = new SancaiVisualAsset();
+        visualAsset.setId(SancaiVisualAssetId.of(111L));
+        visualAsset.setEntryId(SancaiEntryId.of(11L));
+
+        SancaiVisualAsset generatedAsset = new SancaiVisualAsset();
+        generatedAsset.setId(SancaiVisualAssetId.of(112L));
+        generatedAsset.setEntryId(SancaiEntryId.of(11L));
+        generatedAsset.setVersionNo(3);
+
+        SancaiAssetApplicationService assetService = org.mockito.Mockito.mock(SancaiAssetApplicationService.class);
+        when(assetService.listVisualAssets(SancaiEntryId.of(11L))).thenReturn(List.of(visualAsset));
+        when(assetService.createGeneratedVisualAssetVersion(
+                        SancaiEntryId.of(11L), SancaiVisualAssetId.of(111L), StorageObjectId.of(7101L)))
+                .thenReturn(generatedAsset);
+
+        AiFacade aiFacade = mockAiFacade(
+                request -> {
+                    assertEquals(11L, request.getCandidateId());
+                    assertEquals("SANCAI_ENTRY", request.getContentType());
+                    assertEquals(11L, request.getContentId());
+                    assertEquals("image_gen", request.getCapability());
+                    return pendingCandidate();
+                },
+                request -> {
+                    assertEquals(11L, request.getCandidateId());
+                    assertEquals("TEXT", request.getResultFormat());
+                    assertEquals(
+                            "{\"storageObjectId\":7101,\"contentType\":\"image/png\"}", request.getResultPayload());
+                    return candidateApplied();
+                });
+
+        ClassicsContentApplicationServiceImpl service = serviceWithAiFacade(repository, aiFacade, assetService);
+        AiCandidateApplyContentCommand command = applyCommand(
+                11L,
+                ClassicsContentType.SANCAI_ENTRY,
+                11L,
+                "image_gen",
+                "{\"storageObjectId\":7101,\"contentType\":\"image/png\"}",
+                111L);
+
+        AiCandidateApplyContentResult result = service.applyAiCandidate(command);
+
+        assertEquals(ClassicsContentType.SANCAI_ENTRY, result.getContentType());
+        assertEquals(11L, result.getContentId());
+        assertEquals(112L, result.getVersionId());
+        assertEquals(3, result.getVersionNo());
+        assertEquals(0, repository.insertVersionCount);
+        verify(assetService)
+                .createGeneratedVisualAssetVersion(
+                        SancaiEntryId.of(11L), SancaiVisualAssetId.of(111L), StorageObjectId.of(7101L));
+        verify(aiFacade).markCandidateApplied(any(MarkAiCandidateAppliedFacadeRequest.class));
     }
 
     @Test

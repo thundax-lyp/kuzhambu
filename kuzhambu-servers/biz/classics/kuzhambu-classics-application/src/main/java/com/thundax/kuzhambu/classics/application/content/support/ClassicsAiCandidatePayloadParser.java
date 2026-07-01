@@ -67,6 +67,19 @@ public class ClassicsAiCandidatePayloadParser {
         return deduped;
     }
 
+    public Long parseStorageObjectId(String resultPayload) {
+        JsonNode root = parseJson(resultPayload);
+        JsonNode storageObjectIdNode = root.path("storageObjectId");
+        if (!storageObjectIdNode.canConvertToLong()) {
+            throw new BizException("AI候选生图结果缺少 storageObjectId");
+        }
+        long storageObjectId = storageObjectIdNode.asLong();
+        if (storageObjectId <= 0) {
+            throw new BizException("AI候选生图结果 storageObjectId 无效");
+        }
+        return storageObjectId;
+    }
+
     private JsonNode parseJson(String resultPayload) {
         try {
             return objectMapper.readTree(resultPayload);
