@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web/sancai-asset-contract`：对齐视觉资产前端服务契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-VISUAL-ASSET-WORKFLOW-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/services/sancai-entry-service.ts`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/sancai/controller/response/SancaiAssetResponse.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/sancai/assembler/SancaiAssetInterfaceAssembler.java`
-    - 处理动作：补齐视觉资产面板所需字段并统一前后端响应结构
-    - 验收点：前端 service 和后端 response/assembler 对当前版本、历史版本、原图、生成图和描述字段口径一致
-    - 重要度：8/10
-
 - [ ] `sancai/image-analysis-apply`：收紧图片理解写回语义
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-VISUAL-ASSET-WORKFLOW-CLOSURE.md`
