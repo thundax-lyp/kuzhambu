@@ -11,6 +11,8 @@ from kuzhambu_workers.schemas.ai import AiCapability
 
 IMAGE_ANALYSIS_PATH = "/internal/ai/classics/sancai/image-analysis"
 IMAGE_ANALYSIS_OPERATION = "CLASSICS_SANCAI_IMAGE_ANALYSIS"
+FUSION_PATH = "/internal/ai/classics/sancai/fusion"
+FUSION_OPERATION = "CLASSICS_SANCAI_FUSION"
 IMAGE_GEN_PATH = "/internal/ai/classics/sancai/image-gen"
 IMAGE_GEN_OPERATION = "CLASSICS_SANCAI_IMAGE_GEN"
 
@@ -110,9 +112,37 @@ def test_classics_image_gen_route_contract_is_stable(monkeypatch) -> None:
     assert response.headers["content-type"].startswith("text/event-stream")
     assert "event: started" in response.text
     assert "event: completed" in response.text
+    assert '"status":"SUCCEEDED"' in response.text
+    assert '"failureStage":null' in response.text
+    assert '"fallbackUsed":false' in response.text
     assert '"format":"ARTIFACT"' in response.text
     assert '"artifactType":"IMAGE"' in response.text
     assert '"encoding":"SSE_ARTIFACT_CHUNK"' in response.text
+
+
+def test_classics_fusion_route_contract_is_stable(monkeypatch) -> None:
+    monkeypatch.setenv("KUZHAMBU_WORKER_ALLOWED_SERVICES", "kuzhambu-ai")
+    monkeypatch.setenv("KUZHAMBU_WORKER_INTERNAL_SECRET", "worker-secret")
+    body = _body(
+        operation=FUSION_OPERATION,
+        capability=AiCapability.FUSION.value,
+        stream=False,
+    )
+
+    response = TestClient(app).post(
+        FUSION_PATH,
+        content=body,
+        headers=_headers(body, FUSION_PATH, service="kuzhambu-ai"),
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "SUCCEEDED"
+    assert payload["capability"] == AiCapability.FUSION.value
+    assert payload["failureStage"] is None
+    assert payload["fallbackUsed"] is False
+    assert payload["artifactReference"] is None
+    assert payload["result"]["format"] == "MARKDOWN"
 
 
 def test_classics_usecase_route_rejects_stream_mismatch(monkeypatch) -> None:
