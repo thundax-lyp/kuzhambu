@@ -34,6 +34,9 @@ public final class AiRefinementResponses {
         @JsonProperty(value = "capability")
         private String capability;
 
+        @JsonProperty(value = "failureStage")
+        private String failureStage;
+
         @JsonProperty(value = "resultFormat")
         private String resultFormat;
 

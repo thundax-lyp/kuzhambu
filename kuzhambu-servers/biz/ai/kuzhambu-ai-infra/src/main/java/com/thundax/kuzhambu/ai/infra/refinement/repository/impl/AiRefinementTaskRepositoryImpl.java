@@ -85,7 +85,13 @@ public class AiRefinementTaskRepositoryImpl implements AiRefinementTaskRepositor
         int safePageNo = resolvePageNo(pageNo);
         int safePageSize = resolvePageSize(pageSize);
         return toRefinementTaskDomainList(aiRefinementTaskMapper.selectTasks(
-                capability, status, contentType, contentId, requestedBy, (safePageNo - 1) * safePageSize, safePageSize));
+                capability,
+                status,
+                contentType,
+                contentId,
+                requestedBy,
+                (safePageNo - 1) * safePageSize,
+                safePageSize));
     }
 
     @Override

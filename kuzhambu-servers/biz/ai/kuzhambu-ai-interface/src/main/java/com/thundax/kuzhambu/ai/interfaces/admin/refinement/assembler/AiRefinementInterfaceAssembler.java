@@ -47,6 +47,7 @@ public final class AiRefinementInterfaceAssembler {
                 .candidateId(result.getCandidateId())
                 .status(result.getStatus())
                 .capability(result.getCapability())
+                .failureStage(result.getFailureStage())
                 .resultFormat(result.getResultFormat())
                 .resultPayload(result.getResultPayload())
                 .errorType(result.getErrorType())

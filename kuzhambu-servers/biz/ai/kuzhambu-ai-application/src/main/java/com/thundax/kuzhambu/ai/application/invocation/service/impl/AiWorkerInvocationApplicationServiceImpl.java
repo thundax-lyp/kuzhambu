@@ -142,7 +142,8 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
             callRecord.markFailed(result.getErrorType(), result.getErrorMessage(), result.getUsage(), completedAt);
             if (command.isCreateCandidate()) {
                 AiCandidate candidate = result.toCandidate(command, callRecord.getCallId());
-                candidate.reject(result.getErrorType(), result.getErrorMessage(), result.getFailureStage(), completedAt);
+                candidate.reject(
+                        result.getErrorType(), result.getErrorMessage(), result.getFailureStage(), completedAt);
                 Long candidateId = aiInvocationRepository.saveCandidate(candidate);
                 result.setCandidateId(candidateId);
             }

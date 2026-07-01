@@ -37,22 +37,20 @@ public class AiWorkerModelConfigResolver {
         AiModel model = resolveModel(command);
 
         if (serviceConfig == null) {
-            throw new IllegalArgumentException(
-                    "AI service config not found: serviceRole=%s, serviceId=%s"
-                            .formatted(command.getServiceRole(), command.getServiceId()));
+            throw new IllegalArgumentException("AI service config not found: serviceRole=%s, serviceId=%s"
+                    .formatted(command.getServiceRole(), command.getServiceId()));
         }
 
         if (model.getServiceId() != null
                 && serviceConfig.getServiceId() != null
                 && !model.getServiceId().equals(serviceConfig.getServiceId())) {
-            throw new IllegalArgumentException(
-                    "AI service mismatch: serviceRole=%s, modelId=%s".formatted(serviceConfig.getServiceRole(), model.getModelId()));
+            throw new IllegalArgumentException("AI service mismatch: serviceRole=%s, modelId=%s"
+                    .formatted(serviceConfig.getServiceRole(), model.getModelId()));
         }
 
-        if (!isBlank(command.getModelName())
-                && !command.getModelName().equals(model.getModelName())) {
-            throw new IllegalArgumentException(
-                    "AI model mismatch: modelId=%s, modelName=%s".formatted(command.getModelId(), command.getModelName()));
+        if (!isBlank(command.getModelName()) && !command.getModelName().equals(model.getModelName())) {
+            throw new IllegalArgumentException("AI model mismatch: modelId=%s, modelName=%s"
+                    .formatted(command.getModelId(), command.getModelName()));
         }
 
         return new ResolvedModelConfig(
@@ -115,5 +113,4 @@ public class AiWorkerModelConfigResolver {
             List<String> capabilityTags,
             JsonNode parameters,
             Long timeoutMs) {}
-
 }

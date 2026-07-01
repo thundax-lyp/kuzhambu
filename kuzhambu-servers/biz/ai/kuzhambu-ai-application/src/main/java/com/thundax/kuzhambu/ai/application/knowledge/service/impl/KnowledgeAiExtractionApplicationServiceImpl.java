@@ -22,11 +22,6 @@ public class KnowledgeAiExtractionApplicationServiceImpl implements KnowledgeAiE
     private final KnowledgeAiWorkerUsecaseResolver resolver;
     private final AiWorkerModelConfigResolver modelConfigResolver;
 
-    public KnowledgeAiExtractionApplicationServiceImpl(
-            AiWorkerInvocationApplicationService invocationApplicationService, KnowledgeAiWorkerUsecaseResolver resolver) {
-        this(invocationApplicationService, resolver, null);
-    }
-
     @Autowired
     public KnowledgeAiExtractionApplicationServiceImpl(
             AiWorkerInvocationApplicationService invocationApplicationService,

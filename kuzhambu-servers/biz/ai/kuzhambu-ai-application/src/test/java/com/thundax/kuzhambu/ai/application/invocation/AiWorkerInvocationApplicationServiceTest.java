@@ -153,7 +153,8 @@ class AiWorkerInvocationApplicationServiceTest {
         assertEquals(100L, result.getCallId());
         assertEquals(200L, result.getCandidateId());
         assertEquals("FAILED", repository.updatedCallRecord.get().getStatus());
-        assertEquals("WORKER_PROTOCOL_FAILURE", repository.updatedCallRecord.get().getErrorType());
+        assertEquals(
+                "WORKER_PROTOCOL_FAILURE", repository.updatedCallRecord.get().getErrorType());
         assertEquals("WORKER_RESULT", repository.updatedCallRecord.get().getFailureStage());
         assertEquals("TEXT", repository.updatedCallRecord.get().getResultFormat());
         assertEquals("should-be-persisted", repository.updatedCallRecord.get().getResultPayload());

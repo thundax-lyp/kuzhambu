@@ -44,20 +44,23 @@ class PromptRepositoryIT {
         String normalized = dataSql.replaceAll("\\s+", " ");
 
         assertTrue(normalized.contains("INSERT INTO `ai_service_config`"));
-        assertTrue(normalized.contains("('classics', 'translate', 'Classics Translate', 'Classics translate template', 'ACTIVE', 1"));
-        assertTrue(normalized.contains("('classics', 'summary', 'Classics Summary', 'Classics summary template', 'ACTIVE', 1"));
-        assertTrue(normalized.contains("(900101, 900001, 'CTYUN-CX-Qwen3.5-397B-A17B'"));
-        assertTrue(normalized.contains("(900102, 900001, 'CTYUN-CX-DeepSeek-V3.1'"));
+        assertTrue(normalized.contains("( 900001, 'PRIMARY', 'ctyun', 'https://worker-ai.local/mock'"));
+        assertTrue(normalized.contains(
+                "930106, 'classics', 'translate', 'Classics Translate', 'Classics translate template', 'ACTIVE', 1"));
+        assertTrue(normalized.contains(
+                "930101, 'classics', 'summary', 'Classics Summary', 'Classics summary template', 'ACTIVE', 1"));
+        assertTrue(normalized.contains("900101, 900001, 'CTYUN-CX-Qwen3.5-397B-A17B'"));
+        assertTrue(normalized.contains("900102, 900001, 'CTYUN-CX-DeepSeek-V3.1'"));
         assertTrue(normalized.contains("(910105, 'classics', 'translate', 900102"));
         assertTrue(normalized.contains("(920107, 'classics', 'translate', 1, NULL"));
 
-        assertTrue(normalized.contains("940101, 930101, 1,"));
-        assertTrue(normalized.contains("940106, 930106, 1,"));
+        assertTrue(normalized.contains("( 940101, 930101, 1,"));
+        assertTrue(normalized.contains("( 940106, 930106, 1,"));
         assertTrue(normalized.contains("\"contentType\",\"required\":true"));
         assertTrue(normalized.contains("\"existingSummary\",\"required\":false"));
         assertTrue(normalized.contains("\"contextPath\",\"required\":false"));
         assertTrue(normalized.contains("\"sourceText\",\"required\":true"));
-        assertTrue(normalized.contains("'{\\\"type\\\":\\\"text\\\"}'"));
+        assertTrue(normalized.contains("{\"type\":\"text\"}"));
     }
 
     @Test

@@ -49,11 +49,7 @@ public class AiRefinementTask {
     }
 
     public void markSucceeded(
-            Long callId,
-            Long candidateId,
-            String resultFormat,
-            String resultPreview,
-            Instant completedTime) {
+            Long callId, Long candidateId, String resultFormat, String resultPreview, Instant completedTime) {
         this.status = "SUCCEEDED";
         this.callId = callId;
         this.candidateId = candidateId;

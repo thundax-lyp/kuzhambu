@@ -12,6 +12,7 @@ public class AiCandidateResult {
     private final Long candidateId;
     private final String status;
     private final String capability;
+    private final String failureStage;
     private final String resultFormat;
     private final String resultPayload;
     private final String errorType;
@@ -26,6 +27,7 @@ public class AiCandidateResult {
                 result.getCandidateId(),
                 result.getStatus(),
                 result.getCapability(),
+                result.getFailureStage(),
                 result.getResultFormat(),
                 result.getResultPayload(),
                 result.getErrorType(),

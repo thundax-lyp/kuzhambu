@@ -70,7 +70,12 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
 
     @Override
     public PageResult<AiRefinementTask> pageTasks(
-            String capability, String status, String contentType, Long contentId, Long requestedBy, PageQuery pageQuery) {
+            String capability,
+            String status,
+            String contentType,
+            Long contentId,
+            Long requestedBy,
+            PageQuery pageQuery) {
         PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
         effectivePage.normalize();
         long total = taskRepository.countTasks(capability, status, contentType, contentId, requestedBy);
@@ -92,7 +97,9 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
     @Transactional(rollbackFor = Exception.class)
     public AiRefinementTask cancelTask(Long taskId, Long requestedBy) {
         AiRefinementTask task = getRequiredTask(taskId);
-        if (task.getRequestedBy() != null && requestedBy != null && !task.getRequestedBy().equals(requestedBy)) {
+        if (task.getRequestedBy() != null
+                && requestedBy != null
+                && !task.getRequestedBy().equals(requestedBy)) {
             throw new BizException("AI refinement task cancel requester mismatch: " + taskId);
         }
         if (isTerminal(task.getStatus())) {
@@ -165,7 +172,8 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
         Instant completedAt = Instant.now();
         String preview = truncate(result == null ? null : result.getResultPayload());
         if (result != null && STATUS_SUCCEEDED.equals(result.getStatus())) {
-            task.markSucceeded(result.getCallId(), result.getCandidateId(), result.getResultFormat(), preview, completedAt);
+            task.markSucceeded(
+                    result.getCallId(), result.getCandidateId(), result.getResultFormat(), preview, completedAt);
             return;
         }
         task.setCallId(result == null ? null : result.getCallId());

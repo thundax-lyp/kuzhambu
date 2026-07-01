@@ -299,7 +299,8 @@ class ClassicsContentAdminControllerTest {
                             assertEquals("AI 应用：译文", command.getChangeSummary());
                             return new AiCandidateApplyContentResult(ClassicsContentType.SANCAI_ENTRY, 456L, 790L, 4);
                         }
-                        throw new UnsupportedOperationException("unexpected apply capability: " + command.getCapability());
+                        throw new UnsupportedOperationException(
+                                "unexpected apply capability: " + command.getCapability());
                     }
                     if ("addTag".equals(method.getName())) {
                         var command =

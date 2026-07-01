@@ -3,11 +3,11 @@ package com.thundax.kuzhambu.ai.application.refinement.service.impl;
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService;
+import com.thundax.kuzhambu.ai.application.invocation.support.AiWorkerModelConfigResolver;
 import com.thundax.kuzhambu.ai.application.refinement.command.AiRefinementRequestCommand;
 import com.thundax.kuzhambu.ai.application.refinement.result.AiCandidateResult;
 import com.thundax.kuzhambu.ai.application.refinement.service.AiRefinementApplicationService;
 import com.thundax.kuzhambu.ai.application.refinement.support.ClassicsAiWorkerUsecaseResolver;
-import com.thundax.kuzhambu.ai.application.invocation.support.AiWorkerModelConfigResolver;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,12 +28,6 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
     private final AiWorkerInvocationApplicationService invocationApplicationService;
     private final ClassicsAiWorkerUsecaseResolver classicsAiWorkerUsecaseResolver;
     private final AiWorkerModelConfigResolver modelConfigResolver;
-
-    public AiRefinementApplicationServiceImpl(
-            AiWorkerInvocationApplicationService invocationApplicationService,
-            ClassicsAiWorkerUsecaseResolver classicsAiWorkerUsecaseResolver) {
-        this(invocationApplicationService, classicsAiWorkerUsecaseResolver, null);
-    }
 
     @Autowired
     public AiRefinementApplicationServiceImpl(

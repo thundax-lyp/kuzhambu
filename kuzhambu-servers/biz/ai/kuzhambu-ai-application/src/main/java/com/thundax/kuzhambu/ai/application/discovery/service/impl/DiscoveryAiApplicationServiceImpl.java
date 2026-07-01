@@ -25,12 +25,6 @@ public class DiscoveryAiApplicationServiceImpl implements DiscoveryAiApplication
     private final DiscoveryAiWorkerUsecaseResolver resolver;
     private final AiWorkerModelConfigResolver modelConfigResolver;
 
-    public DiscoveryAiApplicationServiceImpl(
-            AiWorkerInvocationApplicationService invocationApplicationService,
-            DiscoveryAiWorkerUsecaseResolver resolver) {
-        this(invocationApplicationService, resolver, null);
-    }
-
     @Autowired
     public DiscoveryAiApplicationServiceImpl(
             AiWorkerInvocationApplicationService invocationApplicationService,

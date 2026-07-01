@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.ai.application.refinement.service.impl;
 
-import com.thundax.kuzhambu.ai.application.refinement.service.AiRefinementTaskCleanupService;
+import com.thundax.kuzhambu.ai.application.refinement.service.AiRefinementTaskCleanupApplicationService;
 import com.thundax.kuzhambu.ai.domain.refinement.model.entity.AiRefinementTask;
 import com.thundax.kuzhambu.ai.domain.refinement.repository.AiRefinementTaskRepository;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @BizExceptionBoundary
-public class AiRefinementTaskCleanupServiceImpl implements AiRefinementTaskCleanupService {
+public class AiRefinementTaskCleanupApplicationServiceImpl implements AiRefinementTaskCleanupApplicationService {
 
     static final Duration TASK_RETENTION = Duration.ofHours(12);
     static final String FAILURE_STAGE_WORKER_RESULT = "WORKER_RESULT";
@@ -22,7 +22,7 @@ public class AiRefinementTaskCleanupServiceImpl implements AiRefinementTaskClean
 
     private final AiRefinementTaskRepository taskRepository;
 
-    public AiRefinementTaskCleanupServiceImpl(AiRefinementTaskRepository taskRepository) {
+    public AiRefinementTaskCleanupApplicationServiceImpl(AiRefinementTaskRepository taskRepository) {
         this.taskRepository = taskRepository;
     }
 

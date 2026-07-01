@@ -4,11 +4,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
-import com.thundax.kuzhambu.ai.application.invocation.support.AiWorkerModelConfigResolver;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService.ArtifactDownloadException;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService.DownloadedArtifact;
+import com.thundax.kuzhambu.ai.application.invocation.support.AiWorkerModelConfigResolver;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiUsageSnapshot;
 import com.thundax.kuzhambu.ai.infra.client.dto.WorkerAiDtos;
 import java.io.BufferedReader;
@@ -46,12 +46,10 @@ public class WorkerAiHttpClient implements WorkerAiClient {
     private final HttpClient httpClient;
     private final AiWorkerModelConfigResolver modelConfigResolver;
 
-    public WorkerAiHttpClient(WorkerAiProperties properties, WorkerAiSignatureSupport signatureSupport) {
-        this(properties, signatureSupport, null);
-    }
-
     public WorkerAiHttpClient(
-            WorkerAiProperties properties, WorkerAiSignatureSupport signatureSupport, AiWorkerModelConfigResolver modelConfigResolver) {
+            WorkerAiProperties properties,
+            WorkerAiSignatureSupport signatureSupport,
+            AiWorkerModelConfigResolver modelConfigResolver) {
         this.properties = properties;
         this.signatureSupport = signatureSupport;
         this.modelConfigResolver = modelConfigResolver;
@@ -189,9 +187,8 @@ public class WorkerAiHttpClient implements WorkerAiClient {
                 modelConfig.setBaseUrl(resolved.baseUrl());
                 modelConfig.setApiKey(resolved.apiKey());
                 modelConfig.setModelName(resolved.modelName());
-                modelConfig.setCapabilityTags(resolved.capabilityTags() == null
-                        ? Collections.emptyList()
-                        : resolved.capabilityTags());
+                modelConfig.setCapabilityTags(
+                        resolved.capabilityTags() == null ? Collections.emptyList() : resolved.capabilityTags());
                 modelConfig.setParameters(resolved.parameters());
                 modelConfig.setTimeoutMs(
                         resolved.timeoutMs() == null ? properties.getTimeoutMs() : resolved.timeoutMs());

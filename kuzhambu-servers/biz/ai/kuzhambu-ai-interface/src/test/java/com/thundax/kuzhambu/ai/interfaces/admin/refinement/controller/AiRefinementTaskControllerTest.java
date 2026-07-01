@@ -22,10 +22,30 @@ class AiRefinementTaskControllerTest {
     @Test
     void routesShouldKeepTaskApiPathsAndPermissions() throws Exception {
         assertRequestMapping(AiRefinementTaskController.class, "/api/ai/refinement/task");
-        assertPostMapping(AiRefinementTaskController.class, "addTask", "add", "ai:refinement:edit", AiRefinementRequests.RefinementRequest.class);
-        assertPostMapping(AiRefinementTaskController.class, "getTask", "get", "ai:refinement:view", AiRefinementRequests.TaskIdRequest.class);
-        assertPostMapping(AiRefinementTaskController.class, "pageTasks", "page", "ai:refinement:view", AiRefinementRequests.TaskPageRequest.class);
-        assertPostMapping(AiRefinementTaskController.class, "cancelTask", "cancel", "ai:refinement:edit", AiRefinementRequests.TaskCancelRequest.class);
+        assertPostMapping(
+                AiRefinementTaskController.class,
+                "addTask",
+                "add",
+                "ai:refinement:edit",
+                AiRefinementRequests.RefinementRequest.class);
+        assertPostMapping(
+                AiRefinementTaskController.class,
+                "getTask",
+                "get",
+                "ai:refinement:view",
+                AiRefinementRequests.TaskIdRequest.class);
+        assertPostMapping(
+                AiRefinementTaskController.class,
+                "pageTasks",
+                "page",
+                "ai:refinement:view",
+                AiRefinementRequests.TaskPageRequest.class);
+        assertPostMapping(
+                AiRefinementTaskController.class,
+                "cancelTask",
+                "cancel",
+                "ai:refinement:edit",
+                AiRefinementRequests.TaskCancelRequest.class);
     }
 
     @Test
@@ -78,7 +98,11 @@ class AiRefinementTaskControllerTest {
     }
 
     private static void assertPostMapping(
-            Class<?> controllerType, String methodName, String expectedPath, String permissionValue, Class<?> parameterType)
+            Class<?> controllerType,
+            String methodName,
+            String expectedPath,
+            String permissionValue,
+            Class<?> parameterType)
             throws Exception {
         Method method = controllerType.getDeclaredMethod(methodName, parameterType);
         PostMapping mapping = method.getAnnotation(PostMapping.class);

@@ -29,7 +29,7 @@ class AiRefinementApplicationServiceImplTest {
     void summarizeShouldUseClassicsUsecasePathForSancai() {
         CapturingInvocationService invocationService = new CapturingInvocationService();
         AiRefinementApplicationServiceImpl service =
-                new AiRefinementApplicationServiceImpl(invocationService, resolver);
+                new AiRefinementApplicationServiceImpl(invocationService, resolver, null);
 
         AiCandidateResult result = service.summarize(command("SANCAI_ENTRY", "external-operation", CAPABILITY_SUMMARY));
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
@@ -44,9 +44,10 @@ class AiRefinementApplicationServiceImplTest {
     void summarizeShouldUseClassicsUsecasePathForWangqi() {
         CapturingInvocationService invocationService = new CapturingInvocationService();
         AiRefinementApplicationServiceImpl service =
-                new AiRefinementApplicationServiceImpl(invocationService, resolver);
+                new AiRefinementApplicationServiceImpl(invocationService, resolver, null);
 
-        AiCandidateResult result = service.summarize(command("WANGQI_DOCUMENT", "external-operation", CAPABILITY_SUMMARY));
+        AiCandidateResult result =
+                service.summarize(command("WANGQI_DOCUMENT", "external-operation", CAPABILITY_SUMMARY));
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
 
         assertNotNull(result);
@@ -59,7 +60,7 @@ class AiRefinementApplicationServiceImplTest {
     void summarizeShouldUseClassicsUsecasePathForMingCustoms() {
         CapturingInvocationService invocationService = new CapturingInvocationService();
         AiRefinementApplicationServiceImpl service =
-                new AiRefinementApplicationServiceImpl(invocationService, resolver);
+                new AiRefinementApplicationServiceImpl(invocationService, resolver, null);
 
         AiCandidateResult result = service.summarize(command("MING_CUSTOMS", "external-operation", CAPABILITY_SUMMARY));
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
@@ -74,7 +75,7 @@ class AiRefinementApplicationServiceImplTest {
     void generateTagsShouldUseClassicsUsecasePathForWangqi() {
         CapturingInvocationService invocationService = new CapturingInvocationService();
         AiRefinementApplicationServiceImpl service =
-                new AiRefinementApplicationServiceImpl(invocationService, resolver);
+                new AiRefinementApplicationServiceImpl(invocationService, resolver, null);
 
         AiCandidateResult result =
                 service.generateTags(command("WANGQI_DOCUMENT", "external-operation", CAPABILITY_TAGS));
@@ -90,7 +91,7 @@ class AiRefinementApplicationServiceImplTest {
     void generateQaShouldUseClassicsUsecasePathForMingCustoms() {
         CapturingInvocationService invocationService = new CapturingInvocationService();
         AiRefinementApplicationServiceImpl service =
-                new AiRefinementApplicationServiceImpl(invocationService, resolver);
+                new AiRefinementApplicationServiceImpl(invocationService, resolver, null);
 
         AiCandidateResult result = service.generateQa(command("MING_CUSTOMS", "external-operation", CAPABILITY_QA));
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
@@ -105,7 +106,7 @@ class AiRefinementApplicationServiceImplTest {
     void translateShouldUseClassicsUsecasePathForSancai() {
         CapturingInvocationService invocationService = new CapturingInvocationService();
         AiRefinementApplicationServiceImpl service =
-                new AiRefinementApplicationServiceImpl(invocationService, resolver);
+                new AiRefinementApplicationServiceImpl(invocationService, resolver, null);
 
         AiCandidateResult result =
                 service.translate(command("SANCAI_ENTRY", "external-operation", CAPABILITY_TRANSLATE));
@@ -121,7 +122,7 @@ class AiRefinementApplicationServiceImplTest {
     void describeVisualShouldUseClassicsUsecasePathForSancai() {
         CapturingInvocationService invocationService = new CapturingInvocationService();
         AiRefinementApplicationServiceImpl service =
-                new AiRefinementApplicationServiceImpl(invocationService, resolver);
+                new AiRefinementApplicationServiceImpl(invocationService, resolver, null);
 
         AiCandidateResult result =
                 service.describeVisual(command("SANCAI_ENTRY", "external-operation", CAPABILITY_VISUAL));
@@ -137,7 +138,7 @@ class AiRefinementApplicationServiceImplTest {
     void splitEntryShouldUseClassicsUsecasePathForSancai() {
         CapturingInvocationService invocationService = new CapturingInvocationService();
         AiRefinementApplicationServiceImpl service =
-                new AiRefinementApplicationServiceImpl(invocationService, resolver);
+                new AiRefinementApplicationServiceImpl(invocationService, resolver, null);
 
         AiCandidateResult result = service.splitEntry(command("SANCAI_ENTRY", "external-operation", CAPABILITY_SPLIT));
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
@@ -152,7 +153,7 @@ class AiRefinementApplicationServiceImplTest {
     void analyzeImageShouldUseClassicsUsecasePathForSancai() {
         CapturingInvocationService invocationService = new CapturingInvocationService();
         AiRefinementApplicationServiceImpl service =
-                new AiRefinementApplicationServiceImpl(invocationService, resolver);
+                new AiRefinementApplicationServiceImpl(invocationService, resolver, null);
 
         AiCandidateResult result =
                 service.analyzeImage(command("SANCAI_ENTRY", "external-operation", CAPABILITY_IMAGE_ANALYSIS));

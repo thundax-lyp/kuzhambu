@@ -12,7 +12,12 @@ public interface AiRefinementTaskApplicationService {
     AiRefinementTask getTask(Long taskId);
 
     PageResult<AiRefinementTask> pageTasks(
-            String capability, String status, String contentType, Long contentId, Long requestedBy, PageQuery pageQuery);
+            String capability,
+            String status,
+            String contentType,
+            Long contentId,
+            Long requestedBy,
+            PageQuery pageQuery);
 
     AiRefinementTask cancelTask(Long taskId, Long requestedBy);
 }

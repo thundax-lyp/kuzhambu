@@ -2,7 +2,7 @@ package com.thundax.kuzhambu.ai.application.refinement.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.thundax.kuzhambu.ai.application.refinement.service.AiRefinementTaskCleanupService.CleanupResult;
+import com.thundax.kuzhambu.ai.application.refinement.service.AiRefinementTaskCleanupApplicationService.CleanupResult;
 import com.thundax.kuzhambu.ai.domain.refinement.model.entity.AiRefinementTask;
 import com.thundax.kuzhambu.ai.domain.refinement.repository.AiRefinementTaskRepository;
 import java.time.Instant;
@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-class AiRefinementTaskCleanupServiceImplTest {
+class AiRefinementTaskCleanupApplicationServiceImplTest {
 
     @Test
     void cleanupShouldExpireRunningTasksAndDeleteTerminalTasks() {
@@ -19,12 +19,13 @@ class AiRefinementTaskCleanupServiceImplTest {
         repository.expiredRunningTasks.add(task(1002L, "RUNNING"));
         repository.deletedTerminalCount = 3;
 
-        AiRefinementTaskCleanupServiceImpl service = new AiRefinementTaskCleanupServiceImpl(repository) {
-            @Override
-            protected Instant now() {
-                return Instant.parse("2026-07-01T12:00:00Z");
-            }
-        };
+        AiRefinementTaskCleanupApplicationServiceImpl service =
+                new AiRefinementTaskCleanupApplicationServiceImpl(repository) {
+                    @Override
+                    protected Instant now() {
+                        return Instant.parse("2026-07-01T12:00:00Z");
+                    }
+                };
 
         CleanupResult result = service.cleanupExpiredTasks();
 
@@ -34,12 +35,8 @@ class AiRefinementTaskCleanupServiceImplTest {
         assertEquals("FAILED", repository.updatedTasks.get(0).getStatus());
         assertEquals("TASK_EXPIRED", repository.updatedTasks.get(0).getErrorType());
         assertEquals("WORKER_RESULT", repository.updatedTasks.get(0).getFailureStage());
-        assertEquals(
-                Instant.parse("2026-07-01T00:00:00Z"),
-                repository.listExpiredRunningThreshold);
-        assertEquals(
-                Instant.parse("2026-07-01T00:00:00Z"),
-                repository.deletedTerminalThreshold);
+        assertEquals(Instant.parse("2026-07-01T00:00:00Z"), repository.listExpiredRunningThreshold);
+        assertEquals(Instant.parse("2026-07-01T00:00:00Z"), repository.deletedTerminalThreshold);
     }
 
     @Test
@@ -47,12 +44,13 @@ class AiRefinementTaskCleanupServiceImplTest {
         RecordingTaskRepository repository = new RecordingTaskRepository();
         repository.deletedTerminalCount = 1;
 
-        AiRefinementTaskCleanupServiceImpl service = new AiRefinementTaskCleanupServiceImpl(repository) {
-            @Override
-            protected Instant now() {
-                return Instant.parse("2026-07-01T12:00:00Z");
-            }
-        };
+        AiRefinementTaskCleanupApplicationServiceImpl service =
+                new AiRefinementTaskCleanupApplicationServiceImpl(repository) {
+                    @Override
+                    protected Instant now() {
+                        return Instant.parse("2026-07-01T12:00:00Z");
+                    }
+                };
 
         CleanupResult result = service.cleanupExpiredTasks();
 

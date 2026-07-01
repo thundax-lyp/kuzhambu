@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.ai.application.refinement.service;
 
-public interface AiRefinementTaskCleanupService {
+public interface AiRefinementTaskCleanupApplicationService {
 
     CleanupResult cleanupExpiredTasks();
 
