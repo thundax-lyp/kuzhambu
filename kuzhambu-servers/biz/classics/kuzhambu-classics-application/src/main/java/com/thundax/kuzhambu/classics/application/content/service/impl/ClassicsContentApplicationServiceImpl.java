@@ -473,8 +473,6 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                 }
                 String imageAnalysisMarkdown = aiCandidatePayloadParser.parseText(command.getResultPayload());
                 visualAsset.setImageAnalysisMarkdown(imageAnalysisMarkdown);
-                visualAsset.setFusionDescription(imageAnalysisMarkdown);
-                visualAsset.setVisualDescription(imageAnalysisMarkdown);
                 sancaiAssetApplicationService.updateVisualAsset(visualAsset);
             } else if ("translate".equals(capability)) {
                 entry.setTranslationText(aiCandidatePayloadParser.parseText(command.getResultPayload()));

@@ -179,8 +179,8 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         assertEquals(null, result.getVersionId());
         assertEquals(null, result.getVersionNo());
         assertEquals("分析结果", visualAsset.getImageAnalysisMarkdown());
-        assertEquals("分析结果", visualAsset.getFusionDescription());
-        assertEquals("分析结果", visualAsset.getVisualDescription());
+        assertEquals(null, visualAsset.getFusionDescription());
+        assertEquals(null, visualAsset.getVisualDescription());
         assertEquals(0, repository.insertVersionCount);
         assertEquals(0, repository.updateSancaiEntryAiCount);
         verify(aiFacade).markCandidateApplied(any(MarkAiCandidateAppliedFacadeRequest.class));

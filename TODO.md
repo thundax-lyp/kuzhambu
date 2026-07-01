@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `sancai/image-analysis-apply`：收紧图片理解写回语义
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-VISUAL-ASSET-WORKFLOW-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/service/impl/ClassicsContentApplicationServiceImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sancai/service/impl/SancaiAssetApplicationServiceImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-domain/src/main/java/com/thundax/kuzhambu/classics/domain/sancai/model/entity/SancaiVisualAsset.java`
-    - 处理动作：确保 `image_analysis` 候选应用后只写回 `imageAnalysisMarkdown`
-    - 验收点：后端不再把图片理解结果混写到 `fusionDescription` 和 `visualDescription`
-    - 重要度：10/10
-
 - [ ] `sancai/weight-edit`：补齐权重前端编辑与保存
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-VISUAL-ASSET-WORKFLOW-CLOSURE.md`
