@@ -11,7 +11,7 @@ def test_worker_e2e_ai_invoke_and_stream(monkeypatch) -> None:
     monkeypatch.setenv("KUZHAMBU_WORKER_ALLOWED_SERVICES", "kuzhambu-ai")
     monkeypatch.setenv("KUZHAMBU_WORKER_INTERNAL_SECRET", "worker-secret")
     client = TestClient(app)
-    invoke_body = _body("summary", stream=False)
+    invoke_body = _body("summary", stream=False, operation="CLASSICS_SANCAI_SUMMARY")
 
     invoke_response = client.post(
         "/internal/ai/invoke",
@@ -21,7 +21,9 @@ def test_worker_e2e_ai_invoke_and_stream(monkeypatch) -> None:
 
     assert invoke_response.status_code == 200
     assert invoke_response.json()["status"] == "SUCCEEDED"
-    assert invoke_response.json()["result"] == {"format": "TEXT", "payload": ""}
+    invoke_payload = invoke_response.json()["result"]["payload"]
+    assert isinstance(invoke_payload, str)
+    assert invoke_payload != ""
 
     stream_body = _body("answer_generation", stream=True)
     stream_response = client.post(
@@ -36,12 +38,12 @@ def test_worker_e2e_ai_invoke_and_stream(monkeypatch) -> None:
     assert '"status":"SUCCEEDED"' in stream_response.text
 
 
-def _body(capability: str, *, stream: bool) -> bytes:
+def _body(capability: str, *, stream: bool, operation: str = "E2E") -> bytes:
     payload = {
         "requestId": "req-1",
         "traceId": "trace-1",
         "callerDomain": "AI",
-        "operation": "E2E",
+        "operation": operation,
         "capability": capability,
         "scope": "SANCAI",
         "modelConfig": {

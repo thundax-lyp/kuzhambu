@@ -25,7 +25,7 @@ def test_worker_e2e_discovery_answer_generation_stream_usecase(monkeypatch) -> N
     assert "event: started" in response.text
     assert "event: completed" in response.text
     assert '"status":"SUCCEEDED"' in response.text
-    assert '"result":{"format":"TEXT","payload":""}' in response.text
+    assert '"format":"TEXT"' in response.text
 
 
 def _body(*, operation: str, capability: str, scope: str, stream: bool) -> bytes:

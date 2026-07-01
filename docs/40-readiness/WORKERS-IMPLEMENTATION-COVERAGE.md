@@ -21,6 +21,7 @@
 - `Workers Implementation Coverage` 与各业务域 coverage 的口径不同：此处的 `已完成` 表示 worker 侧服务路径和 registry 已就绪；Java 侧是否已消费仍以 `AI / Classics / Knowledge / Discovery` 各自的 coverage 为准。
 - Workers 已补齐统一最终态协议：同步响应与 SSE `completed/error` 都输出 `failureStage / fallbackUsed / artifactReference`。
 - Workers 已补齐 `GET /internal/artifacts/{artifactId}` 临时产物下载入口，并提供超过 `12` 小时 artifact 的后台清理任务。
+- Workers 设计文档要求的 graph registry、按 usecase 路由分发、统一最终态协议和临时 artifact 下载入口，当前都能在 `ai_routes.py`、`graph_registry.py`、`usecase_registry.py` 与对应测试中找到实现落点。
 
 ## Requirement Coverage Matrix
 

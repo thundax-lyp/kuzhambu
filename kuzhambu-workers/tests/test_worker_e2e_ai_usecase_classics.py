@@ -1,19 +1,46 @@
 import json
 from time import time
 
+import pytest
 from fastapi.testclient import TestClient
 
 from kuzhambu_workers.core.security import sign_request
 from kuzhambu_workers.main import app
 
 
-def test_worker_e2e_classics_translate_usecase(monkeypatch) -> None:
+@pytest.mark.parametrize(
+    ("operation", "capability", "path"),
+    [
+        (
+            "CLASSICS_SANCAI_TRANSLATE",
+            "translate",
+            "/internal/ai/classics/sancai/translate",
+        ),
+        (
+            "CLASSICS_SANCAI_SUMMARY",
+            "summary",
+            "/internal/ai/classics/sancai/summary",
+        ),
+        (
+            "CLASSICS_WANGQI_SUMMARY",
+            "summary",
+            "/internal/ai/classics/wangqi/summary",
+        ),
+        (
+            "CLASSICS_MING_CUSTOMS_SUMMARY",
+            "summary",
+            "/internal/ai/classics/ming-customs/summary",
+        ),
+    ],
+)
+def test_worker_e2e_classics_usecase_text_returns_non_empty_payload(
+    monkeypatch, operation: str, capability: str, path: str
+) -> None:
     monkeypatch.setenv("KUZHAMBU_WORKER_ALLOWED_SERVICES", "kuzhambu-ai")
     monkeypatch.setenv("KUZHAMBU_WORKER_INTERNAL_SECRET", "worker-secret")
-    path = "/internal/ai/classics/sancai/translate"
     body = _body(
-        operation="CLASSICS_SANCAI_TRANSLATE",
-        capability="translate",
+        operation=operation,
+        capability=capability,
         scope="classics",
         stream=False,
     )
@@ -23,8 +50,10 @@ def test_worker_e2e_classics_translate_usecase(monkeypatch) -> None:
     assert response.status_code == 200
     payload = response.json()
     assert payload["status"] == "SUCCEEDED"
-    assert payload["capability"] == "translate"
-    assert payload["result"] == {"format": "TEXT", "payload": ""}
+    assert payload["capability"] == capability
+    assert payload["result"]["format"] == "TEXT"
+    assert isinstance(payload["result"]["payload"], str)
+    assert payload["result"]["payload"] != ""
 
 
 def _body(*, operation: str, capability: str, scope: str, stream: bool) -> bytes:

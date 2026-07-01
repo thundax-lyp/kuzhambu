@@ -22,7 +22,8 @@ class DiscoveryAiApplicationServiceImplTest {
     @Test
     void understandQueryShouldMapToSyncInvokeCommand() {
         CapturingInvocationService invocationService = new CapturingInvocationService();
-        DiscoveryAiApplicationServiceImpl service = new DiscoveryAiApplicationServiceImpl(invocationService, resolver);
+        DiscoveryAiApplicationServiceImpl service =
+                new DiscoveryAiApplicationServiceImpl(invocationService, resolver, null);
 
         DiscoveryAiResult result = service.understandQuery(request(false));
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
@@ -41,7 +42,8 @@ class DiscoveryAiApplicationServiceImplTest {
     @Test
     void streamAnswerShouldUseStreamingInvocation() {
         CapturingInvocationService invocationService = new CapturingInvocationService();
-        DiscoveryAiApplicationServiceImpl service = new DiscoveryAiApplicationServiceImpl(invocationService, resolver);
+        DiscoveryAiApplicationServiceImpl service =
+                new DiscoveryAiApplicationServiceImpl(invocationService, resolver, null);
 
         DiscoveryAiResult result = service.streamAnswer(request(false));
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
@@ -61,7 +63,8 @@ class DiscoveryAiApplicationServiceImplTest {
     void generateAnswerShouldExposeFinalFailureStateFromInvocationResult() {
         CapturingInvocationService invocationService = new CapturingInvocationService();
         invocationService.failed = true;
-        DiscoveryAiApplicationServiceImpl service = new DiscoveryAiApplicationServiceImpl(invocationService, resolver);
+        DiscoveryAiApplicationServiceImpl service =
+                new DiscoveryAiApplicationServiceImpl(invocationService, resolver, null);
 
         DiscoveryAiResult result = service.generateAnswer(request(false));
 

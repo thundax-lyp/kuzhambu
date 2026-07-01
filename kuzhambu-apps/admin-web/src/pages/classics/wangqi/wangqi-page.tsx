@@ -1,13 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Select } from "antd";
-import { useMemo, useState } from "react";
+import { App, Button, Card, Select } from "antd";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import { AiCandidatePanel } from "@/pages/classics/common/components/ai-candidate-panel";
+import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { ClassicsContentQaPanel } from "@/pages/classics/common/components/classics-content-qa-panel";
 import { ClassicsContentTagPanel } from "@/pages/classics/common/components/classics-content-tag-panel";
 import * as shareService from "@/pages/classics/common/classics-share-service";
+import * as currentUserService from "@/service/current-user-service";
 import { WangqiDocumentList } from "./components/wangqi-document-list";
 import { WangqiDocumentModel } from "./components/wangqi-document-model";
 import { WangqiStorageFilePanel } from "./components/wangqi-storage-file-panel";
@@ -30,6 +32,10 @@ const DEFAULT_WANGQI_FILTERS: WangqiFilters = {
     sortDirection: "DESC",
     visibility: "ALL"
 };
+const TASK_POLL_INTERVAL_MS = 3000;
+const DEFAULT_REFINEMENT_MODEL_ID = 1;
+const DEFAULT_REFINEMENT_MODEL_NAME = "gpt-5.5";
+const DEFAULT_REFINEMENT_SERVICE_ROLE = "PRIMARY";
 
 const normalizeSearch = (value?: string | null) => {
     const normalizedValue = value?.trim();
@@ -38,6 +44,36 @@ const normalizeSearch = (value?: string | null) => {
 
 const readVisibilityValue = (visibility: WangqiVisibilityFilter) => {
     return visibility === "ALL" ? undefined : visibility;
+};
+
+const createEventId = (prefix: string) => {
+    return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+};
+
+const buildPromptMessagesJson = (document: WangqiDocumentRecord) => {
+    return JSON.stringify([
+        {
+            role: "system",
+            content: "你是古籍整理助理。请基于输入文稿生成简洁、准确、可直接回填到后台的中文摘要。"
+        },
+        {
+            role: "user",
+            content: [
+                `标题：${document.title || "未命名文档"}`,
+                `现有摘要：${document.summary || "暂无"}`,
+                `正文：${document.content || "暂无正文"}`
+            ].join("\n")
+        }
+    ]);
+};
+
+const buildInputPayloadJson = (document: WangqiDocumentRecord) => {
+    return JSON.stringify({
+        title: document.title || null,
+        summary: document.summary || null,
+        content: document.content || null,
+        contentFormat: document.contentFormat || null
+    });
 };
 
 export const WangqiPage = () => {
@@ -55,6 +91,10 @@ export const WangqiPage = () => {
     const [editorOpen, setEditorOpen] = useState(false);
     const [editingDocument, setEditingDocument] = useState<WangqiDocumentRecord | null>(null);
     const [selectedVersionId, setSelectedVersionId] = useState<number | null>(null);
+    const [creatingRefinementCapability, setCreatingRefinementCapability] = useState<
+        "summary" | null
+    >(null);
+    const handledSucceededTaskIdsRef = useRef<Set<number>>(new Set());
 
     const hasActiveFilters = Boolean(
         filters.visibility !== "ALL" ||
@@ -73,6 +113,12 @@ export const WangqiPage = () => {
         retry: false
     });
     const activeDocument = detailQuery.data || editingDocument;
+    const currentUserQuery = useQuery({
+        queryKey: ["sys", "current-user", "info"],
+        queryFn: currentUserService.getCurrentUserInfo,
+        retry: false
+    });
+    const currentUserId = Number(currentUserQuery.data?.id ?? 0);
     const sourceFileQuery = useQuery({
         queryKey: ["wangqi", "source-file", activeDocument?.id, activeDocument?.storageObjectId],
         queryFn: () => wangqiService.getSourceFile(activeDocument?.id ?? 0),
@@ -91,10 +137,31 @@ export const WangqiPage = () => {
         enabled: editorOpen && Boolean(activeDocument?.id && selectedVersionId),
         retry: false
     });
+    const refinementTasksQuery = useQuery({
+        queryKey: ["classics", "wangqi", "refinement", "tasks", activeDocument?.id],
+        queryFn: () =>
+            aiRefinementTaskService.pageTasks({
+                pageNo: 1,
+                pageSize: 10,
+                contentType: "WANGQI_DOCUMENT",
+                contentId: activeDocument?.id,
+                capability: "summary"
+            }),
+        enabled: editorOpen && editorMode === "edit" && Boolean(activeDocument?.id),
+        retry: false,
+        refetchInterval: (query) => {
+            const tasks = query.state.data?.items || [];
+            return tasks.some((task) => task.status === "PENDING" || task.status === "RUNNING")
+                ? TASK_POLL_INTERVAL_MS
+                : false;
+        }
+    });
 
     const pageResult = pageQuery.data;
     const records = useMemo(() => pageResult?.records || [], [pageResult?.records]);
-    const versions = useMemo(() => versionsQuery.data || [], [versionsQuery.data]);
+    const versions = useMemo(() => {
+        return Array.isArray(versionsQuery.data) ? versionsQuery.data : [];
+    }, [versionsQuery.data]);
     const totalCount = pageResult?.count ?? pageResult?.totalCount ?? 0;
     const currentPageNo = pageResult?.pageNo || query.pageNo || DEFAULT_PAGE_NO;
     const currentPageSize = pageResult?.pageSize || query.pageSize || DEFAULT_PAGE_SIZE;
@@ -102,8 +169,12 @@ export const WangqiPage = () => {
         versionDetailQuery.data ||
         versions.find((version) => version.id === selectedVersionId) ||
         null;
+    const refinementTasks = useMemo(
+        () => refinementTasksQuery.data?.items || [],
+        [refinementTasksQuery.data?.items]
+    );
 
-    const invalidateWangqi = async () => {
+    const invalidateWangqi = useCallback(async () => {
         await Promise.all([
             queryClient.invalidateQueries({ queryKey: ["wangqi", "page"] }),
             queryClient.invalidateQueries({ queryKey: ["wangqi", "detail"] }),
@@ -115,8 +186,17 @@ export const WangqiPage = () => {
             }),
             queryClient.invalidateQueries({
                 queryKey: ["classics", "content", "qa-pairs", "WANGQI_DOCUMENT"]
+            }),
+            queryClient.invalidateQueries({
+                queryKey: ["ai", "candidates", "WANGQI_DOCUMENT", activeDocument?.id]
             })
         ]);
+    }, [activeDocument?.id, queryClient]);
+
+    const invalidateRefinementTasks = async () => {
+        await queryClient.invalidateQueries({
+            queryKey: ["classics", "wangqi", "refinement", "tasks", activeDocument?.id]
+        });
     };
 
     const updateQuery = (values: Partial<WangqiDocumentQuery>) => {
@@ -189,6 +269,35 @@ export const WangqiPage = () => {
             messageApi.error(error instanceof Error ? error.message : "分享创建失败");
         }
     });
+    const createRefinementTaskMutation = useMutation({
+        mutationFn: aiRefinementTaskService.createTask,
+        onSuccess: async () => {
+            await invalidateRefinementTasks();
+            messageApi.success("王圻精修任务已创建");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "精修任务创建失败");
+        },
+        onSettled: () => {
+            setCreatingRefinementCapability(null);
+        }
+    });
+
+    useEffect(() => {
+        const completedTaskIds = refinementTasks
+            .filter(
+                (task) =>
+                    (task.status === "SUCCEEDED" || task.status === "PARTIAL") &&
+                    typeof task.taskId === "number" &&
+                    !handledSucceededTaskIdsRef.current.has(task.taskId)
+            )
+            .map((task) => task.taskId);
+        if (!completedTaskIds.length) {
+            return;
+        }
+        completedTaskIds.forEach((taskId) => handledSucceededTaskIdsRef.current.add(taskId));
+        void invalidateWangqi();
+    }, [invalidateWangqi, refinementTasks]);
 
     const searchWangqi = (value: string) => {
         setSearchText(value);
@@ -239,6 +348,7 @@ export const WangqiPage = () => {
         setEditorOpen(false);
         setEditingDocument(null);
         setSelectedVersionId(null);
+        handledSucceededTaskIdsRef.current.clear();
     };
 
     const deleteDocument = (document: WangqiDocumentRecord) => {
@@ -288,6 +398,35 @@ export const WangqiPage = () => {
             ],
             title: `${title} 分享`,
             visibility: "PUBLIC"
+        });
+    };
+
+    const createRefinementTask = (document: WangqiDocumentRecord) => {
+        const requestedBy = currentUserQuery.data?.id;
+        if (!requestedBy) {
+            messageApi.warning("当前用户信息未加载完成，请稍后重试");
+            return;
+        }
+        if (!document.content?.trim()) {
+            messageApi.warning("正文为空，无法创建摘要精修任务");
+            return;
+        }
+        setCreatingRefinementCapability("summary");
+        createRefinementTaskMutation.mutate({
+            capability: "summary",
+            scope: "classics",
+            contentType: "WANGQI_DOCUMENT",
+            contentId: document.id,
+            requestedBy: currentUserId,
+            serviceRole: DEFAULT_REFINEMENT_SERVICE_ROLE,
+            modelId: DEFAULT_REFINEMENT_MODEL_ID,
+            modelName: DEFAULT_REFINEMENT_MODEL_NAME,
+            requestId: createEventId("wangqi-summary-request"),
+            traceId: createEventId("wangqi-summary-trace"),
+            promptMessagesJson: buildPromptMessagesJson(document),
+            promptVariablesJson: JSON.stringify({ title: document.title || null }),
+            inputPayloadJson: buildInputPayloadJson(document),
+            locale: "zh-CN"
         });
     };
 
@@ -388,6 +527,30 @@ export const WangqiPage = () => {
                 afterForm={
                     editorMode === "edit" && activeDocument ? (
                         <div className="wangqi-page-drawer-panels">
+                            <Card
+                                size="small"
+                                title="AI 精修任务"
+                                extra={
+                                    <Button
+                                        type="primary"
+                                        onClick={() => createRefinementTask(activeDocument)}
+                                        loading={creatingRefinementCapability === "summary"}
+                                    >
+                                        创建摘要任务
+                                    </Button>
+                                }
+                            >
+                                {refinementTasks.length ? (
+                                    refinementTasks.slice(0, 4).map((task) => (
+                                        <div key={task.taskId}>
+                                            {task.capability}：{task.status}
+                                            {task.resultPreview ? ` · ${task.resultPreview}` : ""}
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div>暂无精修任务</div>
+                                )}
+                            </Card>
                             <AiCandidatePanel
                                 capabilities={["summary", "tags", "qa"]}
                                 contentId={activeDocument.id}

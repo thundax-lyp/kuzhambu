@@ -3,12 +3,14 @@ package com.thundax.kuzhambu.ai.application.refinement.service.impl;
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService;
+import com.thundax.kuzhambu.ai.application.invocation.support.AiWorkerModelConfigResolver;
 import com.thundax.kuzhambu.ai.application.refinement.command.AiRefinementRequestCommand;
 import com.thundax.kuzhambu.ai.application.refinement.result.AiCandidateResult;
 import com.thundax.kuzhambu.ai.application.refinement.service.AiRefinementApplicationService;
 import com.thundax.kuzhambu.ai.application.refinement.support.ClassicsAiWorkerUsecaseResolver;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -25,12 +27,16 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
 
     private final AiWorkerInvocationApplicationService invocationApplicationService;
     private final ClassicsAiWorkerUsecaseResolver classicsAiWorkerUsecaseResolver;
+    private final AiWorkerModelConfigResolver modelConfigResolver;
 
+    @Autowired
     public AiRefinementApplicationServiceImpl(
             AiWorkerInvocationApplicationService invocationApplicationService,
-            ClassicsAiWorkerUsecaseResolver classicsAiWorkerUsecaseResolver) {
+            ClassicsAiWorkerUsecaseResolver classicsAiWorkerUsecaseResolver,
+            AiWorkerModelConfigResolver modelConfigResolver) {
         this.invocationApplicationService = invocationApplicationService;
         this.classicsAiWorkerUsecaseResolver = classicsAiWorkerUsecaseResolver;
+        this.modelConfigResolver = modelConfigResolver;
     }
 
     @Override
@@ -74,11 +80,26 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
         AiInvokeCommand invokeCommand = command.toInvokeCommand(capability);
         invokeCommand.setOperation(spec.operation());
         invokeCommand.setWorkerPath(spec.workerPath());
+        enrichModelConfig(invokeCommand);
         if (CAPABILITY_IMAGE_ANALYSIS.equals(capability)) {
             invokeCommand.setStream(true);
         }
-        AiInvokeResult result = invocationApplicationService.invoke(invokeCommand);
+        AiInvokeResult result = CAPABILITY_IMAGE_ANALYSIS.equals(capability)
+                ? invocationApplicationService.stream(invokeCommand, event -> {})
+                : invocationApplicationService.invoke(invokeCommand);
         return AiCandidateResult.from(result);
+    }
+
+    private void enrichModelConfig(AiInvokeCommand command) {
+        if (modelConfigResolver == null || command == null) {
+            return;
+        }
+        if (isBlank(command.getServiceRole()) && command.getServiceId() == null) {
+            return;
+        }
+        var resolved = modelConfigResolver.resolve(command);
+        command.setServiceRole(resolved.serviceRole());
+        command.setModelName(resolved.modelName());
     }
 
     private void validateCommand(AiRefinementRequestCommand command) {

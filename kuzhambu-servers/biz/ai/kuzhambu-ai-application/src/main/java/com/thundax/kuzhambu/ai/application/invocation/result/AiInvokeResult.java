@@ -44,8 +44,12 @@ public class AiInvokeResult {
         candidate.setContentType(command.getContentType());
         candidate.setContentId(command.getContentId());
         candidate.setObjectId(command.getObjectId());
+        candidate.setArtifactReferenceJson(artifactReferenceJson);
         candidate.setResultFormat(resultFormat);
         candidate.setResultPayload(resultPayload);
+        candidate.setFailureStage(failureStage);
+        candidate.setErrorType(errorType);
+        candidate.setErrorMessage(errorMessage);
         candidate.setPromptVersionId(command.getPromptVersionId());
         candidate.setModelName(command.getModelName());
         candidate.setRequestedAt(Instant.now());

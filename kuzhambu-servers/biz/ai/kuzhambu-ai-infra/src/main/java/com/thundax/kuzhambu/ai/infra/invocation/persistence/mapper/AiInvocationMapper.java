@@ -39,12 +39,12 @@ public interface AiInvocationMapper extends BaseMapper<AiCallRecordDO> {
             """
             insert into ai_candidate
                 (candidate_id, call_id, batch_id, capability, content_type, content_id, object_id,
-                 result_format, result_payload, status, prompt_version_id, model_name,
-                 error_type, error_message, requested_at, applied_at)
+                 artifact_reference_json, result_format, result_payload, status, prompt_version_id, model_name,
+                 failure_stage, error_type, error_message, requested_at, applied_at, rejected_at)
             values
                 (#{candidateId}, #{callId}, #{batchId}, #{capability}, #{contentType}, #{contentId}, #{objectId},
-                 #{resultFormat}, #{resultPayload}, #{status}, #{promptVersionId}, #{modelName},
-                 #{errorType}, #{errorMessage}, #{requestedAt}, #{appliedAt})
+                 #{artifactReferenceJson}, #{resultFormat}, #{resultPayload}, #{status}, #{promptVersionId}, #{modelName},
+                 #{failureStage}, #{errorType}, #{errorMessage}, #{requestedAt}, #{appliedAt}, #{rejectedAt})
             """)
     int insertCandidate(AiCandidateDO dataObject);
 
@@ -53,10 +53,13 @@ public interface AiInvocationMapper extends BaseMapper<AiCallRecordDO> {
             update ai_candidate
             set result_format = #{resultFormat},
                 result_payload = #{resultPayload},
+                artifact_reference_json = #{artifactReferenceJson},
                 status = #{status},
+                failure_stage = #{failureStage},
                 error_type = #{errorType},
                 error_message = #{errorMessage},
-                applied_at = #{appliedAt}
+                applied_at = #{appliedAt},
+                rejected_at = #{rejectedAt}
             where candidate_id = #{candidateId}
             """)
     int updateCandidate(AiCandidateDO dataObject);

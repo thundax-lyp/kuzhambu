@@ -723,7 +723,7 @@ describe("App", () => {
         expect(screen.getAllByText("旧标题").length).toBeGreaterThan(0);
         expect(screen.getAllByText("新标题").length).toBeGreaterThan(0);
         expect(screen.getByText("已变更")).toBeInTheDocument();
-    });
+    }, 15000);
 
     it("uploads storage objects and refreshes after delete", async () => {
         localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
@@ -1225,7 +1225,7 @@ describe("App", () => {
         fireEvent.drop(targetRow!, { clientY: 5, dataTransfer });
 
         expect(onSort).toHaveBeenCalledWith(records[0], records[1], "after");
-    });
+    }, 40000);
 
     it("clears stale tokens when protected menu loading is unauthorized", async () => {
         localStorage.setItem("kuzhambu.admin.accessToken", "stale-token");

@@ -1,6 +1,7 @@
+import json
 from collections.abc import AsyncIterator, Callable
 from datetime import datetime, timezone
-from typing import NamedTuple
+from typing import Any, NamedTuple
 
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse, StreamingResponse
@@ -8,7 +9,7 @@ from pydantic import ValidationError
 
 from kuzhambu_workers.ai.graph_registry import GraphRegistry
 from kuzhambu_workers.core.config import load_settings
-from kuzhambu_workers.core.errors import WorkerError, protocol_failure, to_error_payload
+from kuzhambu_workers.core.errors import WorkerError, protocol_failure
 from kuzhambu_workers.core.security import verify_internal_request
 from kuzhambu_workers.schemas.ai import (
     AiInvokeRequest,
@@ -113,7 +114,7 @@ def invoke_ai_graph(
     registry: GraphRegistry = _REGISTRY,
 ) -> JSONResponse:
     try:
-        result = AiResult.model_validate(registry.invoke(request))
+        result = _coerce_text_payload(request, registry.invoke(request))
         artifact_reference = _artifact_reference_from_result(result)
         response = AiInvokeResponse(
             requestId=request.requestId,
@@ -129,7 +130,7 @@ def invoke_ai_graph(
     except Exception as exc:
         return _failed_response(
             request,
-            WorkerErrorPayload.model_validate(to_error_payload(exc)),
+            WorkerErrorPayload.model_validate(_text_result_error_payload(exc)),
             failure_stage=FailureStage.WORKER_RESULT,
         )
 
@@ -143,7 +144,7 @@ def stream_ai_graph(
         timestamp = _now()
         yield encode_sse(started_event(request.requestId, request.traceId, timestamp))
         try:
-            result = AiResult.model_validate(registry.invoke(request))
+            result = _coerce_text_payload(request, registry.invoke(request))
             artifact_reference = _artifact_reference_from_result(result)
             yield encode_sse(
                 stream_event(
@@ -167,7 +168,7 @@ def stream_ai_graph(
                 )
             )
         except Exception as exc:
-            error = WorkerErrorPayload.model_validate(to_error_payload(exc))
+            error = WorkerErrorPayload.model_validate(_text_result_error_payload(exc))
             yield encode_sse(
                 stream_event(
                     StreamEventType.ERROR,
@@ -186,6 +187,70 @@ def stream_ai_graph(
             )
 
     return StreamingResponse(events(), media_type="text/event-stream")
+
+
+def _coerce_text_payload(
+    request: AiInvokeRequest,
+    result: dict[str, Any],
+) -> AiResult:
+    ai_result = AiResult.model_validate(result)
+    if ai_result.format != ResultFormat.TEXT:
+        return ai_result
+    content = _extract_text_content(ai_result.payload)
+    if content is None:
+        raise protocol_failure(
+            "WORKER_RESULT_INVALID",
+            "AI worker 的 TEXT 结果不满足 provider 格式要求。",
+            detail={
+                "requestId": request.requestId,
+                "traceId": request.traceId,
+                "payload": ai_result.payload,
+            },
+        )
+    return AiResult(format=ai_result.format, payload=content)
+
+
+def _extract_text_content(payload: Any) -> str | None:
+    if not isinstance(payload, str) or not payload.strip():
+        return None
+
+    try:
+        parsed = json.loads(payload)
+    except json.JSONDecodeError:
+        return None
+    except ValueError:
+        return None
+
+    if not isinstance(parsed, dict):
+        return None
+
+    choices = parsed.get("choices")
+    if not isinstance(choices, list) or len(choices) == 0:
+        return None
+
+    first = choices[0]
+    if not isinstance(first, dict):
+        return None
+
+    message = first.get("message")
+    if not isinstance(message, dict):
+        return None
+
+    content = message.get("content")
+    if not isinstance(content, str) or not content.strip():
+        return None
+
+    return content
+
+
+def _text_result_error_payload(exc: Exception) -> dict[str, Any]:
+    if isinstance(exc, WorkerError):
+        return exc.to_payload()
+    return protocol_failure(
+        "WORKER_RESULT_UNEXPECTED",
+        "AI worker 结果处理失败。",
+        detail={"errorClass": type(exc).__name__},
+    ).to_payload()
 
 
 def _parse_request(body: bytes) -> AiInvokeRequest | JSONResponse:

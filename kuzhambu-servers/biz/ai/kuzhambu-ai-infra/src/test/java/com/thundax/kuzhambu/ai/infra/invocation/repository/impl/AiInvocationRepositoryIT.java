@@ -31,6 +31,11 @@ class AiInvocationRepositoryIT {
         assertTrue(schemaSql.contains("CREATE TABLE IF NOT EXISTS `ai_call_record`"));
         assertTrue(schemaSql.contains("CREATE TABLE IF NOT EXISTS `ai_candidate`"));
         assertTrue(schemaSql.contains("UNIQUE KEY `uk_ai_call_record_id`"));
+        assertTrue(schemaSql.contains("`failure_stage`"));
+        assertTrue(schemaSql.contains("`result_format`"));
+        assertTrue(schemaSql.contains("`result_payload`"));
+        assertTrue(schemaSql.contains("`artifact_reference_json`"));
+        assertTrue(schemaSql.contains("`rejected_at`"));
         assertTrue(schemaSql.contains("KEY `idx_ai_call_record_trace`"));
         assertTrue(schemaSql.contains("KEY `idx_ai_candidate_target`"));
     }
@@ -59,6 +64,10 @@ class AiInvocationRepositoryIT {
         record.setStreamUsed(true);
         record.setStreamCompleted(true);
         record.setFallbackUsed(false);
+        record.setFailureStage("WORKER_RESULT");
+        record.setResultFormat("TEXT");
+        record.setResultPayload("译文内容");
+        record.setArtifactReferenceJson("{\"artifact\":\"s3://ai/call/7001.json\"}");
         record.setUsage(new AiUsageSnapshot(120, 10, 20, new BigDecimal("0.01")));
         record.setWarningsJson("[]");
         record.setRequestedAt(requestedAt);
@@ -73,6 +82,10 @@ class AiInvocationRepositoryIT {
         assertEquals("classics", savedCall.getScope());
         assertEquals(10, savedCall.getInputTokens());
         assertEquals(new BigDecimal("0.01"), savedCall.getCostAmount());
+        assertEquals("WORKER_RESULT", savedCall.getFailureStage());
+        assertEquals("TEXT", savedCall.getResultFormat());
+        assertEquals("译文内容", savedCall.getResultPayload());
+        assertEquals("{\"artifact\":\"s3://ai/call/7001.json\"}", savedCall.getArtifactReferenceJson());
 
         when(mapper.selectOne(any())).thenReturn(savedCall);
         AiCallRecord loadedRecord = repository.getCallRecord(7001L);
@@ -80,6 +93,7 @@ class AiInvocationRepositoryIT {
         assertEquals("trace-1", loadedRecord.getTraceId());
         assertEquals(20, loadedRecord.getUsage().getOutputTokens());
         assertTrue(loadedRecord.isStreamCompleted());
+        assertEquals("WORKER_RESULT", loadedRecord.getFailureStage());
     }
 
     @Test
@@ -95,12 +109,17 @@ class AiInvocationRepositoryIT {
         candidate.setContentType("ENTRY");
         candidate.setContentId(9001L);
         candidate.setObjectId(9101L);
+        candidate.setArtifactReferenceJson("{\"artifact\":\"s3://ai/candidate/7101.json\"}");
         candidate.setResultFormat("json");
         candidate.setResultPayload("{\"title\":\"ok\"}");
-        candidate.setStatus("PENDING");
+        candidate.setFailureStage("SCHEMA_CHECK");
+        candidate.setErrorType("WARN");
+        candidate.setErrorMessage("临时校验警告");
+        candidate.setStatus("REJECTED");
         candidate.setPromptVersionId(5001L);
         candidate.setModelName("gpt-test");
         candidate.setRequestedAt(requestedAt);
+        candidate.setRejectedAt(requestedAt);
 
         Long candidateId = repository.saveCandidate(candidate);
 
@@ -108,15 +127,21 @@ class AiInvocationRepositoryIT {
         verify(mapper).insertCandidate(candidateCaptor.capture());
         AiCandidateDO savedCandidate = candidateCaptor.getValue();
         assertEquals(7101L, candidateId);
+        assertEquals("{\"artifact\":\"s3://ai/candidate/7101.json\"}", savedCandidate.getArtifactReferenceJson());
         assertEquals("json", savedCandidate.getResultFormat());
-        assertEquals("PENDING", savedCandidate.getStatus());
+        assertEquals("REJECTED", savedCandidate.getStatus());
+        assertEquals("SCHEMA_CHECK", savedCandidate.getFailureStage());
+        assertEquals("WARN", savedCandidate.getErrorType());
+        assertEquals(requestedAt, savedCandidate.getRejectedAt());
 
         when(mapper.selectCandidate(7101L)).thenReturn(savedCandidate);
-        when(mapper.selectCandidates("ENTRY", 9001L, "translate", "PENDING")).thenReturn(List.of(savedCandidate));
+        when(mapper.selectCandidates("ENTRY", 9001L, "translate", "REJECTED")).thenReturn(List.of(savedCandidate));
         AiCandidate loadedCandidate = repository.getCandidate(7101L);
-        List<AiCandidate> loadedCandidates = repository.listCandidates("ENTRY", 9001L, "translate", "PENDING");
+        List<AiCandidate> loadedCandidates = repository.listCandidates("ENTRY", 9001L, "translate", "REJECTED");
 
         assertEquals("{\"title\":\"ok\"}", loadedCandidate.getResultPayload());
+        assertEquals("SCHEMA_CHECK", loadedCandidate.getFailureStage());
+        assertEquals("REJECTED", loadedCandidate.getStatus());
         assertEquals(1, loadedCandidates.size());
         assertEquals(7101L, loadedCandidates.get(0).getCandidateId());
     }

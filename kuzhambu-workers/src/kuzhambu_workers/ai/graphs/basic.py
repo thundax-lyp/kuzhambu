@@ -1,3 +1,4 @@
+import json
 from typing import Any, TypedDict
 
 from langgraph.graph import END, START, StateGraph
@@ -154,6 +155,44 @@ def _placeholder_payload(request: AiInvokeRequest) -> str | dict[str, Any]:
             "sizeBytes": 0,
             "sha256": "",
         }
+    return _text_placeholder_payload(request)
+
+
+def _text_placeholder_payload(request: AiInvokeRequest) -> str:
+    content = _first_payload_text(request)
+    if not content:
+        content = f"已完成 {request.operation} 占位结果"
+    return json.dumps(
+        {
+            "choices": [
+                {
+                    "message": {
+                        "content": f"[{request.operation}] {content}",
+                    }
+                }
+            ]
+        },
+        ensure_ascii=False,
+    )
+
+
+def _first_payload_text(request: AiInvokeRequest) -> str:
+    input_payload = request.input.payload
+    if not input_payload:
+        return ""
+
+    for key in ("text", "summary", "query"):
+        value = input_payload.get(key)
+        if isinstance(value, str):
+            stripped = value.strip()
+            if stripped:
+                return stripped
+
+    for value in input_payload.values():
+        if isinstance(value, str):
+            stripped = value.strip()
+            if stripped:
+                return stripped
     return ""
 
 

@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.ai.application.invocation;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
@@ -104,9 +105,65 @@ class AiWorkerInvocationApplicationServiceTest {
                 "/internal/ai/classics/sancai/summary", capturedCommand.get().getWorkerPath());
         assertFalse(capturedCommand.get().isStream());
         assertEquals(100L, result.getCallId());
+        assertEquals("text", repository.updatedCallRecord.get().getResultFormat());
+        assertEquals("candidate-result", repository.updatedCallRecord.get().getResultPayload());
         assertEquals(200L, result.getCandidateId());
         assertEquals(100L, repository.savedCandidate.get().getCallId());
         assertEquals("translate", repository.savedCandidate.get().getCapability());
+    }
+
+    @Test
+    void invokeShouldPersistFailedCandidateSnapshot() {
+        RecordingInvocationRepository repository = new RecordingInvocationRepository();
+        WorkerAiClient workerClient = new WorkerAiClient() {
+            @Override
+            public AiInvokeResult invoke(AiInvokeCommand command) {
+                AiInvokeResult result = new AiInvokeResult();
+                result.setRequestId(command.getRequestId());
+                result.setTraceId(command.getTraceId());
+                result.setStatus("FAILED");
+                result.setCapability(command.getCapability());
+                result.setResultFormat("TEXT");
+                result.setResultPayload("should-be-persisted");
+                result.setErrorType("WORKER_PROTOCOL_FAILURE");
+                result.setErrorMessage("bad worker response");
+                result.setFailureStage("WORKER_RESULT");
+                result.setUsage(AiUsageSnapshot.empty());
+                return result;
+            }
+
+            @Override
+            public void stream(AiInvokeCommand command, Consumer<AiStreamEventResult> eventConsumer) {
+                throw new UnsupportedOperationException("not used");
+            }
+
+            @Override
+            public DownloadedArtifact downloadArtifact(String requestId, String traceId, String downloadPath) {
+                throw new UnsupportedOperationException("not used");
+            }
+        };
+        AiWorkerInvocationApplicationServiceImpl service =
+                new AiWorkerInvocationApplicationServiceImpl(repository, workerClient, unusedStorageFacade());
+
+        AiInvokeCommand command = command();
+        command.setCreateCandidate(true);
+        AiInvokeResult result = service.invoke(command);
+
+        assertEquals("FAILED", result.getStatus());
+        assertEquals(100L, result.getCallId());
+        assertEquals(200L, result.getCandidateId());
+        assertEquals("FAILED", repository.updatedCallRecord.get().getStatus());
+        assertEquals(
+                "WORKER_PROTOCOL_FAILURE", repository.updatedCallRecord.get().getErrorType());
+        assertEquals("WORKER_RESULT", repository.updatedCallRecord.get().getFailureStage());
+        assertEquals("TEXT", repository.updatedCallRecord.get().getResultFormat());
+        assertEquals("should-be-persisted", repository.updatedCallRecord.get().getResultPayload());
+        assertNotNull(repository.savedCandidate.get());
+        assertEquals("REJECTED", repository.savedCandidate.get().getStatus());
+        assertEquals("WORKER_PROTOCOL_FAILURE", repository.savedCandidate.get().getErrorType());
+        assertEquals("WORKER_RESULT", repository.savedCandidate.get().getFailureStage());
+        assertEquals("TEXT", repository.savedCandidate.get().getResultFormat());
+        assertNotNull(repository.savedCandidate.get().getRejectedAt());
     }
 
     private AiInvokeCommand command() {

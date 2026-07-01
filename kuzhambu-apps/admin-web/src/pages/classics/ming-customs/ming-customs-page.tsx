@@ -1,15 +1,17 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Alert, App, Select } from "antd";
-import { useMemo, useState } from "react";
+import { Alert, App, Button, Card, Select } from "antd";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import { AiCandidatePanel } from "@/pages/classics/common/components/ai-candidate-panel";
+import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import { ClassicsExportJobSection } from "@/pages/classics/common/components/classics-export-job-section";
 import * as exportService from "@/pages/classics/common/classics-export-service";
 import * as shareService from "@/pages/classics/common/classics-share-service";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { ClassicsContentTagPanel } from "@/pages/classics/common/components/classics-content-tag-panel";
 import { ClassicsContentQaPanel } from "@/pages/classics/common/components/classics-content-qa-panel";
+import * as currentUserService from "@/service/current-user-service";
 import { MingCustomsKeywordCloud } from "./components/ming-customs-keyword-cloud";
 import { MingCustomsList } from "./components/ming-customs-list";
 import { MingCustomsModel } from "./components/ming-customs-model";
@@ -22,9 +24,49 @@ type MingCustomsVisibilityFilter = "ALL" | "PUBLIC" | "PRIVATE";
 type MingCustomsSortDirectionFilter = "ASC" | "DESC";
 
 const EXPORT_PAGE_SIZE = 8;
+const TASK_POLL_INTERVAL_MS = 3000;
+const DEFAULT_REFINEMENT_MODEL_ID = 1;
+const DEFAULT_REFINEMENT_MODEL_NAME = "gpt-5.5";
+const DEFAULT_REFINEMENT_SERVICE_ROLE = "PRIMARY";
 
 const readTitle = (record?: MingCustomsRecord | null) => {
     return record?.title?.trim() || `明代习俗 ${record?.id ?? "未命名"}`;
+};
+
+const createEventId = (prefix: string) => {
+    return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+};
+
+const buildPromptMessagesJson = (entry: MingCustomsRecord) => {
+    return JSON.stringify([
+        {
+            role: "system",
+            content: "你是明代风俗整理助理。请基于输入条目提炼准确、紧凑、便于后台回填的中文摘要。"
+        },
+        {
+            role: "user",
+            content: [
+                `标题：${readTitle(entry)}`,
+                `分类：${entry.category || "未分类"}`,
+                `现有摘要：${entry.summary || "暂无"}`,
+                `原文摘录：${entry.originalExcerpts || "暂无"}`,
+                `正文：${entry.content || "暂无正文"}`
+            ].join("\n")
+        }
+    ]);
+};
+
+const buildInputPayloadJson = (entry: MingCustomsRecord) => {
+    return JSON.stringify({
+        title: entry.title || null,
+        category: entry.category || null,
+        chapter: entry.chapter || null,
+        section: entry.section || null,
+        summary: entry.summary || null,
+        originalExcerpts: entry.originalExcerpts || null,
+        content: entry.content || null,
+        contentFormat: entry.contentFormat || null
+    });
 };
 
 interface MingCustomsFilters {
@@ -62,6 +104,10 @@ export const MingCustomsPage = () => {
     const [editorMode, setEditorMode] = useState<"create" | "edit">("create");
     const [editorOpen, setEditorOpen] = useState(false);
     const [editingEntry, setEditingEntry] = useState<MingCustomsRecord | null>(null);
+    const [creatingRefinementCapability, setCreatingRefinementCapability] = useState<
+        "summary" | null
+    >(null);
+    const handledSucceededTaskIdsRef = useRef<Set<number>>(new Set());
     const hasActiveFilters = Boolean(
         filters.category ||
         filters.visibility !== "ALL" ||
@@ -84,6 +130,12 @@ export const MingCustomsPage = () => {
         enabled: editorOpen && editorMode === "edit" && Boolean(editingEntry?.id),
         retry: false
     });
+    const currentUserQuery = useQuery({
+        queryKey: ["sys", "current-user", "info"],
+        queryFn: currentUserService.getCurrentUserInfo,
+        retry: false
+    });
+    const currentUserId = Number(currentUserQuery.data?.id ?? 0);
     const exportJobsQuery = useQuery({
         queryKey: ["classics", "ming-customs", "exports", "jobs"],
         queryFn: () =>
@@ -94,6 +146,25 @@ export const MingCustomsPage = () => {
                 exportKind: "CONTENT_DATASET"
             }),
         retry: false
+    });
+    const refinementTasksQuery = useQuery({
+        queryKey: ["classics", "ming-customs", "refinement", "tasks", editingEntry?.id],
+        queryFn: () =>
+            aiRefinementTaskService.pageTasks({
+                pageNo: 1,
+                pageSize: 10,
+                contentType: "MING_CUSTOMS",
+                contentId: editingEntry?.id,
+                capability: "summary"
+            }),
+        enabled: editorOpen && editorMode === "edit" && Boolean(editingEntry?.id),
+        retry: false,
+        refetchInterval: (query) => {
+            const tasks = query.state.data?.items || [];
+            return tasks.some((task) => task.status === "PENDING" || task.status === "RUNNING")
+                ? TASK_POLL_INTERVAL_MS
+                : false;
+        }
     });
     const pageResult = mingCustomsQuery.data;
     const records = useMemo(() => pageResult?.records || [], [pageResult?.records]);
@@ -109,8 +180,12 @@ export const MingCustomsPage = () => {
     const currentPageSize = pageResult?.pageSize || query.pageSize || DEFAULT_PAGE_SIZE;
     const editorEntry = detailQuery.data || editingEntry;
     const exportJobs = exportJobsQuery.data?.records || [];
+    const refinementTasks = useMemo(
+        () => refinementTasksQuery.data?.items || [],
+        [refinementTasksQuery.data?.items]
+    );
 
-    const invalidateMingCustoms = async () => {
+    const invalidateMingCustoms = useCallback(async () => {
         await Promise.all([
             queryClient.invalidateQueries({ queryKey: ["ming-customs", "page"] }),
             queryClient.invalidateQueries({ queryKey: ["ming-customs", "keyword-cloud"] }),
@@ -120,12 +195,20 @@ export const MingCustomsPage = () => {
             }),
             queryClient.invalidateQueries({
                 queryKey: ["classics", "content", "qa-pairs", "MING_CUSTOMS"]
+            }),
+            queryClient.invalidateQueries({
+                queryKey: ["ai", "candidates", "MING_CUSTOMS", editorEntry?.id]
             })
         ]);
-    };
+    }, [editorEntry?.id, queryClient]);
     const invalidateExportJobs = async () => {
         await queryClient.invalidateQueries({
             queryKey: ["classics", "ming-customs", "exports", "jobs"]
+        });
+    };
+    const invalidateRefinementTasks = async () => {
+        await queryClient.invalidateQueries({
+            queryKey: ["classics", "ming-customs", "refinement", "tasks", editorEntry?.id]
         });
     };
 
@@ -188,6 +271,35 @@ export const MingCustomsPage = () => {
             messageApi.error(error instanceof Error ? error.message : "导出提交失败");
         }
     });
+    const createRefinementTaskMutation = useMutation({
+        mutationFn: aiRefinementTaskService.createTask,
+        onSuccess: async () => {
+            await invalidateRefinementTasks();
+            messageApi.success("明代习俗精修任务已创建");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "精修任务创建失败");
+        },
+        onSettled: () => {
+            setCreatingRefinementCapability(null);
+        }
+    });
+
+    useEffect(() => {
+        const completedTaskIds = refinementTasks
+            .filter(
+                (task) =>
+                    (task.status === "SUCCEEDED" || task.status === "PARTIAL") &&
+                    typeof task.taskId === "number" &&
+                    !handledSucceededTaskIdsRef.current.has(task.taskId)
+            )
+            .map((task) => task.taskId);
+        if (!completedTaskIds.length) {
+            return;
+        }
+        completedTaskIds.forEach((taskId) => handledSucceededTaskIdsRef.current.add(taskId));
+        void invalidateMingCustoms();
+    }, [invalidateMingCustoms, refinementTasks]);
 
     const searchMingCustoms = (value: string) => {
         setSearchText(value);
@@ -246,6 +358,7 @@ export const MingCustomsPage = () => {
         }
         setEditorOpen(false);
         setEditingEntry(null);
+        handledSucceededTaskIdsRef.current.clear();
     };
 
     const deleteEntry = (entry: MingCustomsRecord) => {
@@ -274,6 +387,35 @@ export const MingCustomsPage = () => {
     };
     const exportEntry = (entry: MingCustomsRecord) => {
         exportMutation.mutate(entry);
+    };
+
+    const createRefinementTask = (entry: MingCustomsRecord) => {
+        const requestedBy = currentUserQuery.data?.id;
+        if (!requestedBy) {
+            messageApi.warning("当前用户信息未加载完成，请稍后重试");
+            return;
+        }
+        if (!entry.content?.trim() && !entry.originalExcerpts?.trim()) {
+            messageApi.warning("正文与原文摘录均为空，无法创建摘要精修任务");
+            return;
+        }
+        setCreatingRefinementCapability("summary");
+        createRefinementTaskMutation.mutate({
+            capability: "summary",
+            scope: "classics",
+            contentType: "MING_CUSTOMS",
+            contentId: entry.id,
+            requestedBy: currentUserId,
+            serviceRole: DEFAULT_REFINEMENT_SERVICE_ROLE,
+            modelId: DEFAULT_REFINEMENT_MODEL_ID,
+            modelName: DEFAULT_REFINEMENT_MODEL_NAME,
+            requestId: createEventId("ming-customs-summary-request"),
+            traceId: createEventId("ming-customs-summary-trace"),
+            promptMessagesJson: buildPromptMessagesJson(entry),
+            promptVariablesJson: JSON.stringify({ title: entry.title || null }),
+            inputPayloadJson: buildInputPayloadJson(entry),
+            locale: "zh-CN"
+        });
     };
 
     return (
@@ -421,6 +563,30 @@ export const MingCustomsPage = () => {
                 afterForm={
                     editorMode === "edit" && editorEntry ? (
                         <>
+                            <Card
+                                size="small"
+                                title="AI 精修任务"
+                                extra={
+                                    <Button
+                                        type="primary"
+                                        onClick={() => createRefinementTask(editorEntry)}
+                                        loading={creatingRefinementCapability === "summary"}
+                                    >
+                                        创建摘要任务
+                                    </Button>
+                                }
+                            >
+                                {refinementTasks.length ? (
+                                    refinementTasks.slice(0, 4).map((task) => (
+                                        <div key={task.taskId}>
+                                            {task.capability}：{task.status}
+                                            {task.resultPreview ? ` · ${task.resultPreview}` : ""}
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div>暂无精修任务</div>
+                                )}
+                            </Card>
                             <AiCandidatePanel
                                 capabilities={["summary", "tags", "qa"]}
                                 contentId={editorEntry.id}

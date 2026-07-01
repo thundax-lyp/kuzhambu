@@ -2,8 +2,10 @@ import { cleanup, render, screen, waitFor, within } from "@testing-library/react
 import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { App as AntdApp } from "antd";
+import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import * as exportService from "@/pages/classics/common/classics-export-service";
 import * as shareService from "@/pages/classics/common/classics-share-service";
+import * as currentUserService from "@/service/current-user-service";
 import { SancaiEntryPanel } from "./sancai-entry-panel";
 import * as entryService from "../services/sancai-entry-service";
 
@@ -47,6 +49,32 @@ vi.mock("@/pages/classics/common/classics-content-service", () => ({
     sortTags: vi.fn(),
     updateQaPair: vi.fn(),
     updateTag: vi.fn()
+}));
+
+vi.mock("@/service/current-user-service", () => ({
+    getCurrentUserInfo: vi.fn(async () => ({
+        id: 99,
+        loginName: "admin",
+        name: "Admin"
+    }))
+}));
+
+vi.mock("@/pages/classics/common/ai-refinement-task-service", () => ({
+    createTask: vi.fn(async () => ({
+        taskId: 7001,
+        status: "PENDING",
+        capability: "translate",
+        contentType: "SANCAI_ENTRY",
+        contentId: 3001
+    })),
+    getTask: vi.fn(),
+    pageTasks: vi.fn(async () => ({
+        items: [],
+        total: 0,
+        pageNo: 1,
+        pageSize: 20
+    })),
+    cancelTask: vi.fn()
 }));
 
 const entryState = vi.hoisted(() => ({
@@ -367,6 +395,32 @@ describe("SancaiEntryPanel sharing", () => {
             await within(exportSection).findByRole("button", { name: /下\s*载/ })
         ).toBeInTheDocument();
     });
+
+    it("creates translate refinement task from the entry detail drawer", async () => {
+        const user = userEvent.setup();
+
+        renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        await user.click(await within(entryTable).findByRole("button", { name: "查看 天地" }));
+        await user.click(await screen.findByRole("button", { name: "创建译文任务" }));
+
+        await waitFor(() => {
+            expect(aiRefinementTaskService.createTask).toHaveBeenCalled();
+        });
+        expect(vi.mocked(currentUserService.getCurrentUserInfo)).toHaveBeenCalled();
+        expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0]).toMatchObject({
+            capability: "translate",
+            scope: "classics",
+            contentType: "SANCAI_ENTRY",
+            contentId: 3001,
+            requestedBy: 99,
+            serviceRole: "PRIMARY",
+            modelId: 1,
+            modelName: "gpt-5.5",
+            locale: "zh-CN"
+        });
+    }, 15000);
 
     it("shows expired export task as disabled download", async () => {
         vi.mocked(exportService.page).mockResolvedValueOnce({

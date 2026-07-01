@@ -76,6 +76,7 @@ INSERT INTO `ai_capability_mapping` (
 ) VALUES
     (910101, 'classics', 'summary', 900102, 1, '2026-02-27 04:00:00.000'),
     (910102, 'classics', 'tags', 900102, 1, '2026-02-27 04:00:00.000'),
+    (910105, 'classics', 'translate', 900102, 1, '2026-02-27 04:00:00.000'),
     (910103, 'classics', 'qa', 900102, 1, '2026-02-27 04:00:00.000'),
     (910104, 'classics', 'image_analysis', 900101, 1, '2026-02-27 04:00:00.000')
 ON DUPLICATE KEY UPDATE
@@ -89,7 +90,8 @@ INSERT INTO `ai_action_status` (
     (920101, 'classics', 'summary', 1, NULL, '2026-02-27 04:00:00.000'),
     (920102, 'classics', 'tags', 1, NULL, '2026-02-27 04:00:00.000'),
     (920103, 'classics', 'qa', 1, NULL, '2026-02-27 04:00:00.000'),
-    (920104, 'classics', 'image_analysis', 1, NULL, '2026-02-27 04:00:00.000')
+    (920104, 'classics', 'image_analysis', 1, NULL, '2026-02-27 04:00:00.000'),
+    (920107, 'classics', 'translate', 1, NULL, '2026-02-27 04:00:00.000')
 ON DUPLICATE KEY UPDATE
     `available` = VALUES(`available`),
     `unavailable_reason` = VALUES(`unavailable_reason`),
@@ -100,8 +102,12 @@ INSERT INTO `ai_prompt_template` (
     `current_version_no`, `registered_at`
 ) VALUES
     (
-        930101, 'classics', 'summary', '王圻文档摘要', '从 KB_HTML prompts 表导入的摘要测试提示词。',
-        'ACTIVE', 1, '2026-02-27 04:00:00.000'
+        930101, 'classics', 'summary', 'Classics Summary',
+        'Classics summary template', 'ACTIVE', 1, '2026-02-27 04:00:00.000'
+    ),
+    (
+        930106, 'classics', 'translate', 'Classics Translate',
+        'Classics translate template', 'ACTIVE', 1, '2026-02-27 04:00:00.000'
     ),
     (
         930102, 'classics', 'tags', '王圻文档标签', '从 KB_HTML prompts 表导入的标签测试提示词。',
@@ -124,10 +130,11 @@ INSERT INTO `ai_prompt_version` (
 ) VALUES
     (
         940101, 930101, 1,
-        '[{"role":"system","content":"你是熟悉王圻与古籍整理的中文文献助手。"},{"role":"user","content":"请为以下关于王圻的文档生成一个简洁的摘要，包含文档的核心内容、主要观点和重要信息。摘要应准确反映文档内容，长度适中，便于快速了解文档主题。文档内容：{{document}}"}]',
-        '[{"name":"document","required":true,"description":"待摘要的文档内容"}]',
-        '{"type":"object","properties":{"summary":{"type":"string"}},"required":["summary"]}',
-        '930101:current', 'Imported from KB_HTML prompts.summary.', '2026-02-27 04:00:00.000'
+        '[{"role":"system","content":"你是古籍整理助手。任务是根据给定内容生成简洁、准确、可直接展示的中文摘要。不得编造未出现的信息，不得输出解释性前缀。输出结果为纯文本摘要，不限制字数，但必须保持摘要性，不得机械复述原文。"},{"role":"user","content":"内容类型：{{contentType}}\\n标题：{{title}}\\n分类信息：{{categoryPath}}\\n原文：\\n{{originalText}}\\n\\n译文：\\n{{translationText}}\\n\\n正文：\\n{{bodyText}}\\n\\n已有摘要：{{existingSummary}}\\n\\n要求：\\n1. 生成可直接展示的中文摘要，不限制长度，但必须保持摘要性。\\n2. 优先使用译文和正文中的确定信息。\\n3. 不重复标题，不输出“摘要：”前缀。\\n4. 不得机械复述整段原文。\\n5. 输出必须是纯文本。"}]',
+        '[{"name":"contentType","required":true},{"name":"title","required":false},{"name":"categoryPath","required":false},{"name":"originalText","required":false},{"name":"translationText","required":false},{"name":"bodyText","required":false},{"name":"existingSummary","required":false}]',
+        '{"type":"text"}',
+        '930101:current', 'Classics summary template.',
+        '2026-02-27 04:00:00.000'
     ),
     (
         940102, 930102, 1,
@@ -135,6 +142,14 @@ INSERT INTO `ai_prompt_version` (
         '[{"name":"document","required":true,"description":"待提取标签的文档内容"}]',
         '{"type":"object","properties":{"tags":{"type":"array","items":{"type":"string"},"minItems":3,"maxItems":5}},"required":["tags"]}',
         '930102:current', 'Imported from KB_HTML prompts.tags.', '2026-02-27 04:00:00.000'
+    ),
+    (
+        940106, 930106, 1,
+        '[{"role":"system","content":"你是古籍整理助手。任务是把输入的古文或文言文内容准确翻译成现代中文。不得输出说明、前缀、标题或注释，只输出最终译文。遇到不确定处应保守翻译，不得编造。"},{"role":"user","content":"内容类型：{{contentType}}\\n标题：{{title}}\\n卷/章节：{{contextPath}}\\n原文：\\n{{sourceText}}\\n\\n要求：\\n1. 输出现代中文译文。\\n2. 保留原文专有名词，不要擅自改写。\\n3. 不要输出“译文：”等前缀。\\n4. 输出必须是纯文本。"}]',
+        '[{"name":"contentType","required":true},{"name":"title","required":false},{"name":"contextPath","required":false},{"name":"sourceText","required":true}]',
+        '{"type":"text"}',
+        '930106:current', 'Classics translate template.',
+        '2026-02-27 04:00:00.000'
     ),
     (
         940103, 930103, 1,
@@ -154,9 +169,17 @@ ON DUPLICATE KEY UPDATE
 INSERT INTO `ai_prompt_variable` (
     `variable_id`, `template_id`, `variable_name`, `required`, `description`, `priority`
 ) VALUES
-    (950101, 930101, 'document', 1, '待摘要的文档内容', 1000),
-    (950102, 930102, 'document', 1, '待提取标签的文档内容', 1010),
-    (950103, 930103, 'document', 1, '待生成问答的文档内容', 1020)
+    (950101, 930101, 'contentType', 1, '内容类型', 1000),
+    (950102, 930101, 'title', 0, '标题', 1010),
+    (950103, 930101, 'categoryPath', 0, '分类信息', 1020),
+    (950104, 930101, 'originalText', 0, '原文', 1030),
+    (950105, 930101, 'translationText', 0, '译文', 1040),
+    (950106, 930101, 'bodyText', 0, '正文', 1050),
+    (950107, 930101, 'existingSummary', 0, '已有摘要', 1060),
+    (950108, 930106, 'contentType', 1, '内容类型', 1070),
+    (950109, 930106, 'title', 0, '标题', 1080),
+    (950110, 930106, 'contextPath', 0, '卷/章节路径', 1090),
+    (950111, 930106, 'sourceText', 1, '原文', 1100)
 ON DUPLICATE KEY UPDATE
     `required` = VALUES(`required`),
     `description` = VALUES(`description`),

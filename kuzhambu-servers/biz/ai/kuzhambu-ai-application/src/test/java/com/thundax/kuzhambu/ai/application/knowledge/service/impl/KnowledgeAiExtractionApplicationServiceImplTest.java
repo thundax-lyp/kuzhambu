@@ -21,7 +21,7 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
     void extractGraphShouldUseKnowledgeGraphUsecase() {
         CapturingInvocationService invocationService = new CapturingInvocationService();
         KnowledgeAiExtractionApplicationServiceImpl service =
-                new KnowledgeAiExtractionApplicationServiceImpl(invocationService, resolver);
+                new KnowledgeAiExtractionApplicationServiceImpl(invocationService, resolver, null);
 
         KnowledgeAiExtractionResult result = service.extractGraph(request());
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
@@ -36,7 +36,7 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
     void extractRelationShouldUseRelationExtractionCapability() {
         CapturingInvocationService invocationService = new CapturingInvocationService();
         KnowledgeAiExtractionApplicationServiceImpl service =
-                new KnowledgeAiExtractionApplicationServiceImpl(invocationService, resolver);
+                new KnowledgeAiExtractionApplicationServiceImpl(invocationService, resolver, null);
 
         service.extractRelations(request());
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
@@ -49,7 +49,7 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
     void extractLineageShouldUseLineageUsecase() {
         CapturingInvocationService invocationService = new CapturingInvocationService();
         KnowledgeAiExtractionApplicationServiceImpl service =
-                new KnowledgeAiExtractionApplicationServiceImpl(invocationService, resolver);
+                new KnowledgeAiExtractionApplicationServiceImpl(invocationService, resolver, null);
 
         service.extractLineage(request());
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
@@ -63,7 +63,7 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
     void extractGraphShouldPreserveCallAndCandidateIdentifiers() {
         CapturingInvocationService invocationService = new CapturingInvocationService();
         KnowledgeAiExtractionApplicationServiceImpl service =
-                new KnowledgeAiExtractionApplicationServiceImpl(invocationService, resolver);
+                new KnowledgeAiExtractionApplicationServiceImpl(invocationService, resolver, null);
 
         KnowledgeAiExtractionResult result = service.extractGraph(request());
 

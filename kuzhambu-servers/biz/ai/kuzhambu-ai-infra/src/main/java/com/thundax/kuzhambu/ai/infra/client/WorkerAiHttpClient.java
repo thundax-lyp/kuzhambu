@@ -8,6 +8,7 @@ import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService.ArtifactDownloadException;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService.DownloadedArtifact;
+import com.thundax.kuzhambu.ai.application.invocation.support.AiWorkerModelConfigResolver;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiUsageSnapshot;
 import com.thundax.kuzhambu.ai.infra.client.dto.WorkerAiDtos;
 import java.io.BufferedReader;
@@ -43,10 +44,15 @@ public class WorkerAiHttpClient implements WorkerAiClient {
     private final WorkerAiSignatureSupport signatureSupport;
     private final ObjectMapper objectMapper;
     private final HttpClient httpClient;
+    private final AiWorkerModelConfigResolver modelConfigResolver;
 
-    public WorkerAiHttpClient(WorkerAiProperties properties, WorkerAiSignatureSupport signatureSupport) {
+    public WorkerAiHttpClient(
+            WorkerAiProperties properties,
+            WorkerAiSignatureSupport signatureSupport,
+            AiWorkerModelConfigResolver modelConfigResolver) {
         this.properties = properties;
         this.signatureSupport = signatureSupport;
+        this.modelConfigResolver = modelConfigResolver;
         this.objectMapper = new ObjectMapper().findAndRegisterModules();
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofMillis(properties.getTimeoutMs()))
@@ -173,9 +179,26 @@ public class WorkerAiHttpClient implements WorkerAiClient {
 
     private WorkerAiDtos.ModelConfig modelConfig(AiInvokeCommand command) {
         WorkerAiDtos.ModelConfig modelConfig = new WorkerAiDtos.ModelConfig();
+        if (modelConfigResolver != null) {
+            AiWorkerModelConfigResolver.ResolvedModelConfig resolved = modelConfigResolver.resolve(command);
+            if (resolved != null) {
+                modelConfig.setServiceRole(resolved.serviceRole());
+                modelConfig.setApiSource(resolved.apiSource());
+                modelConfig.setBaseUrl(resolved.baseUrl());
+                modelConfig.setApiKey(resolved.apiKey());
+                modelConfig.setModelName(resolved.modelName());
+                modelConfig.setCapabilityTags(
+                        resolved.capabilityTags() == null ? Collections.emptyList() : resolved.capabilityTags());
+                modelConfig.setParameters(resolved.parameters());
+                modelConfig.setTimeoutMs(
+                        resolved.timeoutMs() == null ? properties.getTimeoutMs() : resolved.timeoutMs());
+                return modelConfig;
+            }
+        }
         modelConfig.setServiceRole(command.getServiceRole());
         modelConfig.setModelName(command.getModelName());
         modelConfig.setCapabilityTags(Collections.emptyList());
+        modelConfig.setParameters(objectMapper.createObjectNode());
         modelConfig.setTimeoutMs(properties.getTimeoutMs());
         return modelConfig;
     }

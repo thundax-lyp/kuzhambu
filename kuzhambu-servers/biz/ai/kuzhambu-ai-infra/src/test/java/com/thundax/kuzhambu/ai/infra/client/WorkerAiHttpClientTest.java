@@ -51,7 +51,7 @@ class WorkerAiHttpClientTest {
                             }
                             """);
         });
-        WorkerAiHttpClient client = new WorkerAiHttpClient(properties(), new WorkerAiSignatureSupport());
+        WorkerAiHttpClient client = new WorkerAiHttpClient(properties(), new WorkerAiSignatureSupport(), null);
 
         AiInvokeResult result = client.invoke(command());
 
@@ -90,7 +90,7 @@ class WorkerAiHttpClientTest {
                             }
                             """);
         });
-        WorkerAiHttpClient client = new WorkerAiHttpClient(properties(), new WorkerAiSignatureSupport());
+        WorkerAiHttpClient client = new WorkerAiHttpClient(properties(), new WorkerAiSignatureSupport(), null);
         AiInvokeCommand command = command();
         command.setWorkerPath(usecasePath);
 
@@ -112,7 +112,7 @@ class WorkerAiHttpClientTest {
     @Test
     void invokeShouldNormalizeWorkerHttpFailure() throws IOException {
         startServer("/internal/ai/invoke", exchange -> respond(exchange, 503, ""));
-        WorkerAiHttpClient client = new WorkerAiHttpClient(properties(), new WorkerAiSignatureSupport());
+        WorkerAiHttpClient client = new WorkerAiHttpClient(properties(), new WorkerAiSignatureSupport(), null);
 
         AiInvokeResult result = client.invoke(command());
 
@@ -132,7 +132,7 @@ class WorkerAiHttpClientTest {
             capturedBody.set(new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
             respond(exchange, 200, STREAM_COMPLETED_EVENT);
         });
-        WorkerAiHttpClient client = new WorkerAiHttpClient(properties(), new WorkerAiSignatureSupport());
+        WorkerAiHttpClient client = new WorkerAiHttpClient(properties(), new WorkerAiSignatureSupport(), null);
         AiInvokeCommand command = command();
         command.setWorkerPath(usecasePath);
 
@@ -155,7 +155,7 @@ class WorkerAiHttpClientTest {
             captured.set(exchange);
             respond(exchange, 200, STREAM_COMPLETED_EVENT);
         });
-        WorkerAiHttpClient client = new WorkerAiHttpClient(properties(), new WorkerAiSignatureSupport());
+        WorkerAiHttpClient client = new WorkerAiHttpClient(properties(), new WorkerAiSignatureSupport(), null);
 
         client.stream(command(), event -> {});
 

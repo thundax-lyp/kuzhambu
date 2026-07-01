@@ -1,3 +1,5 @@
+import json
+
 import pytest
 
 from kuzhambu_workers.ai.graph_registry import CANONICAL_CAPABILITIES, GraphRegistry
@@ -12,13 +14,19 @@ def test_registry_contains_all_canonical_capabilities() -> None:
     assert set(CANONICAL_CAPABILITIES) == {capability.value for capability in AiCapability}
 
 
-def test_registry_invokes_basic_graph_for_single_prompt() -> None:
+def test_registry_invokes_text_graph_for_classics_translate() -> None:
     registry = GraphRegistry.build_default()
-    request = AiInvokeRequest.model_validate(_request_payload("translate"))
+    request = AiInvokeRequest.model_validate(
+        _request_payload("translate", operation="CLASSICS_SANCAI_TRANSLATE")
+    )
 
     result = registry.invoke(request)
 
-    assert result == {"format": "TEXT", "payload": ""}
+    assert result["format"] == "TEXT"
+    assert (
+        json.loads(result["payload"])["choices"][0]["message"]["content"]
+        == "[CLASSICS_SANCAI_TRANSLATE] hello"
+    )
 
 
 def test_registry_returns_structured_placeholder_for_structured_capability() -> None:
@@ -55,7 +63,7 @@ def test_registry_returns_stable_payload_shape_for_knowledge_capabilities(
 
 
 def test_registry_rejects_unregistered_capability() -> None:
-    registry = GraphRegistry(graphs={})
+    registry = GraphRegistry(graphs={}, classics_text_graphs={})
     request = AiInvokeRequest.model_validate(_request_payload("translate"))
 
     with pytest.raises(WorkerError) as raised:
@@ -64,12 +72,12 @@ def test_registry_rejects_unregistered_capability() -> None:
     assert raised.value.code == "UNSUPPORTED_CAPABILITY"
 
 
-def _request_payload(capability: str) -> dict:
+def _request_payload(capability: str, *, operation: str = "TEST") -> dict:
     return {
         "requestId": "req-1",
         "traceId": "trace-1",
         "callerDomain": "AI",
-        "operation": "TEST",
+        "operation": operation,
         "capability": capability,
         "scope": "SANCAI",
         "modelConfig": {
