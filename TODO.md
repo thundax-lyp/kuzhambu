@@ -17,14 +17,6 @@
     - 验收点：前端 service 和后端 response/assembler 对当前版本、历史版本、原图、生成图和描述字段口径一致
     - 重要度：8/10
 
-- [ ] `sancai/image-analysis-entry`：补齐图片理解任务入口与候选刷新
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-VISUAL-ASSET-WORKFLOW-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/hooks/use-sancai-entry-panel-state.ts`、`kuzhambu-apps/admin-web/src/pages/classics/common/components/ai-candidate-panel.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/common/components/ai-candidate-payload-editor.tsx`
-    - 处理动作：将 `image_analysis` 任务入口绑定到当前 `visualAssetId` 并在确认或拒绝后刷新当前资产
-    - 验收点：图片理解候选只属于当前 visual asset，确认或拒绝后页面立即刷新候选状态和当前字段
-    - 重要度：9/10
-
 - [ ] `sancai/image-analysis-apply`：收紧图片理解写回语义
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-VISUAL-ASSET-WORKFLOW-CLOSURE.md`

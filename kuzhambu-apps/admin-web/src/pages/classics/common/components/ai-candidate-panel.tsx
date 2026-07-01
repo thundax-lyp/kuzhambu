@@ -16,6 +16,7 @@ interface AiCandidatePanelProps {
     contentType: CandidateContentType;
     objectId?: number | null;
     onApplied?: () => void;
+    onRejected?: () => void;
 }
 
 const REJECT_ERROR_TYPE = "USER_REJECTED";
@@ -58,7 +59,8 @@ export const AiCandidatePanel = ({
     contentId,
     contentType,
     objectId = null,
-    onApplied
+    onApplied,
+    onRejected
 }: AiCandidatePanelProps) => {
     const { message: messageApi } = App.useApp();
     const queryClient = useQueryClient();
@@ -128,6 +130,9 @@ export const AiCandidatePanel = ({
         },
         onSuccess: async () => {
             await refreshCandidates();
+            if (onRejected) {
+                onRejected();
+            }
             messageApi.success("候选已拒绝");
         },
         onError: (error) => {

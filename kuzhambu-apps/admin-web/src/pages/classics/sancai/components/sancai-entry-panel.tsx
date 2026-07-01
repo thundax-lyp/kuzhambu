@@ -651,6 +651,9 @@ export const SancaiEntryPanel = ({
                                     onApplied={async () => {
                                         await refreshAfterImageAnalysisApplied();
                                     }}
+                                    onRejected={async () => {
+                                        await refreshAfterImageAnalysisApplied();
+                                    }}
                                 />
                             ) : null}
                             <ClassicsContentTagPanel

@@ -564,6 +564,77 @@ describe("SancaiEntryPanel sharing", () => {
         ).toBeTruthy();
     }, 30000);
 
+    it("refreshes entry detail, visual assets, and candidate list after rejecting image analysis", async () => {
+        const user = userEvent.setup();
+        vi.mocked(aiCandidateService.list).mockResolvedValue([
+            {
+                candidateId: 8004,
+                capability: "image_analysis",
+                contentType: "SANCAI_ENTRY",
+                contentId: 3001,
+                objectId: 5002,
+                resultFormat: "TEXT",
+                resultPayload: "候选 D",
+                status: "PENDING",
+                requestedAt: "2026-06-20T01:00:00.000+08:00"
+            }
+        ]);
+
+        const client = renderEntryPanel();
+        const invalidateSpy = vi.spyOn(client, "invalidateQueries");
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        await user.click(await within(entryTable).findByRole("button", { name: "查看 天地" }));
+
+        await waitFor(() => {
+            expect(screen.queryByText("AI 候选确认")).toBeInTheDocument();
+        });
+
+        const rejectButton = await screen.findByRole("button", {
+            name: (value) => value.replace(/\s/g, "") === "拒绝"
+        });
+        await user.click(rejectButton);
+
+        await waitFor(() => {
+            expect(vi.mocked(aiCandidateService.updateCandidateRejected)).toHaveBeenCalledTimes(1);
+        });
+        expect(
+            vi.mocked(aiCandidateService.updateCandidateRejected).mock.calls[0]?.[0]
+        ).toMatchObject({
+            candidateId: 8004,
+            errorType: "USER_REJECTED",
+            errorMessage: "用户已拒绝该 AI 候选"
+        });
+
+        expect(
+            invalidateSpy.mock.calls.some(
+                (call) =>
+                    JSON.stringify(call[0]) ===
+                    JSON.stringify({
+                        queryKey: ["classics", "sancai", "entries", "detail", 3001]
+                    })
+            )
+        ).toBeTruthy();
+        expect(
+            invalidateSpy.mock.calls.some(
+                (call) =>
+                    JSON.stringify(call[0]) ===
+                    JSON.stringify({
+                        queryKey: ["classics", "sancai", "entries", "visual-assets", 3001]
+                    })
+            )
+        ).toBeTruthy();
+        expect(
+            invalidateSpy.mock.calls.some(
+                (call) =>
+                    JSON.stringify(call[0]) ===
+                    JSON.stringify({
+                        queryKey: ["ai", "candidates", "SANCAI_ENTRY", 3001, 5002]
+                    })
+            )
+        ).toBeTruthy();
+    }, 30000);
+
     it("blocks image analysis task creation when visual asset has no source image", async () => {
         vi.mocked(entryService.listVisualAssets).mockResolvedValueOnce([
             {
