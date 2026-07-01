@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `SancaiAssetRequest/SancaiAssetResponse/SancaiAssetInterfaceAssembler`：收紧三才视觉资产接口字段语义
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-SANCAI-AI-WORKERS-FULL-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/sancai/controller/request/SancaiAssetRequest.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/sancai/controller/response/SancaiAssetResponse.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/sancai/assembler/SancaiAssetInterfaceAssembler.java`
-    - 处理动作：按 RUNBOOK 6.4 锁定视觉资产请求响应字段和装配语义
-    - 验收点：接口层稳定返回 `visualAssetId`、`entryId`、版本与正式预览下载字段，且不再混用视觉资产字段含义
-    - 重要度：9/10
-
 - [ ] `SancaiVisualAsset/SancaiAssetRepository/SancaiAssetRepositoryImpl`：收紧视觉资产实体与仓储字段写回规则
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-SANCAI-AI-WORKERS-FULL-CLOSURE.md`
