@@ -11,12 +11,4 @@
 
 ## 待审阅任务项
 
-- [ ] `RUNBOOK-SANCAI-AI-WORKERS-FULL-CLOSURE.md`：在本轮需求关闭后清理执行手册
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-SANCAI-AI-WORKERS-FULL-CLOSURE.md`
-    - 范围对象：`docs/30-designs/RUNBOOK-SANCAI-AI-WORKERS-FULL-CLOSURE.md`
-    - 处理动作：在功能、测试、文档和验证全部完成后删除本轮 RUNBOOK
-    - 验收点：PR 收口前该 RUNBOOK 已清理，且 TODO 仅保留真实剩余未完成任务
-    - 重要度：8/10
-
 ## 待讨论项
