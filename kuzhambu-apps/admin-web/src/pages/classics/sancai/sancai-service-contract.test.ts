@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as categoryService from "./services/sancai-category-service";
 import * as entryService from "./services/sancai-entry-service";
 import * as volumeService from "./services/sancai-volume-service";
+import * as aiCandidateService from "@/pages/classics/common/ai-candidate-service";
 
 interface CapturedCall {
     body: unknown;
@@ -357,6 +358,44 @@ describe("sancai service request contracts", () => {
             pageNo: 1,
             pageSize: 10,
             status: "COMPLETED"
+        });
+    });
+
+    it("sends AI candidate contracts with objectId payload", async () => {
+        await aiCandidateService.list({
+            contentType: "SANCAI_ENTRY",
+            contentId: 3001,
+            objectId: 5001,
+            capability: "image_analysis",
+            status: "PENDING"
+        });
+        expectLastCall("POST", "/ai/invocation/candidate/list", {
+            contentType: "SANCAI_ENTRY",
+            contentId: 3001,
+            objectId: 5001,
+            capability: "image_analysis",
+            status: "PENDING"
+        });
+
+        await aiCandidateService.updateCandidateApplied({
+            candidateId: 7001,
+            contentType: "SANCAI_ENTRY",
+            contentId: 3001,
+            capability: "image_analysis",
+            objectId: 5001,
+            resultFormat: "TEXT",
+            resultPayload: "图片理解内容",
+            changeSummary: "AI 应用：图片理解"
+        });
+        expectLastCall("POST", "/classics/content/ai-candidates/change", {
+            candidateId: 7001,
+            contentType: "SANCAI_ENTRY",
+            contentId: 3001,
+            capability: "image_analysis",
+            objectId: 5001,
+            resultFormat: "TEXT",
+            resultPayload: "图片理解内容",
+            changeSummary: "AI 应用：图片理解"
         });
     });
 });

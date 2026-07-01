@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `AI Candidate Frontend Contract`：补齐前端 AI 候选 objectId 契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-SINGLE-IMAGE-ANALYSIS-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/common/ai-candidate-service.ts`、`kuzhambu-apps/admin-web/src/pages/classics/common/ai-candidate-types.ts`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-service-contract.test.ts`
-    - 处理动作：为前端候选列表与候选应用契约增加 `objectId` 并固定 service contract
-    - 验收点：前端 service contract 覆盖 `objectId`，请求路径与请求体稳定
-    - 重要度：9/10
-
 - [ ] `Sancai Candidate Panel Wiring`：补齐单图候选预览与人工确认接线
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-SINGLE-IMAGE-ANALYSIS-CLOSURE.md`

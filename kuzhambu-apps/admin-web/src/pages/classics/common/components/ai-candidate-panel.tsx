@@ -153,6 +153,7 @@ export const AiCandidatePanel = ({
             contentId,
             contentType,
             capability: candidate.capability,
+            objectId: candidate.objectId,
             resultFormat:
                 candidate.resultFormat?.trim() ||
                 defaultResultFormatForCapability(candidate.capability),
