@@ -177,12 +177,13 @@ export const useSancaiEntryPanelState = ({
         },
         onSuccess: async (_, command) => {
             await invalidateRefinementTasks();
-            const createSuccessMessages: Record<RefinementCapability, string> = {
-                translate: "译文任务已创建",
-                summary: "摘要任务已创建",
-                image_analysis: "图片理解任务已创建"
-            };
-            messageApi.success(createSuccessMessages[command.capability]);
+            if (command.capability === "translate") {
+                messageApi.success("译文任务已创建");
+            } else if (command.capability === "summary") {
+                messageApi.success("摘要任务已创建");
+            } else {
+                messageApi.success("图片理解任务已创建");
+            }
         },
         onError: (error) => {
             messageApi.error(error instanceof Error ? error.message : "AI 精修任务创建失败");
@@ -231,9 +232,10 @@ export const useSancaiEntryPanelState = ({
         const imageAnalysisObjectId = imageAnalysisAsset
             ? (imageAnalysisAsset.visualAssetId ?? imageAnalysisAsset.id ?? null)
             : null;
+        const sourceImageStorageObjectId = imageAnalysisAsset?.sourceImageStorageObjectId;
         if (
             capability === "image_analysis" &&
-            (imageAnalysisObjectId == null || imageAnalysisAsset.sourceImageStorageObjectId == null)
+            (imageAnalysisObjectId == null || sourceImageStorageObjectId == null)
         ) {
             messageApi.warning("当前视觉资产缺少原图，无法创建图片理解任务");
             return;
