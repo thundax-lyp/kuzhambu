@@ -15,6 +15,7 @@ public class AiCandidateApplyContentCommand {
     private Long candidateId;
     private ClassicsContentType contentType;
     private Long contentId;
+    private Long objectId;
     private String capability;
     private String resultFormat;
     private String resultPayload;

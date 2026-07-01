@@ -149,6 +149,7 @@ public final class ClassicsContentInterfaceAssembler {
                 request.getCandidateId(),
                 type(request.getContentType()),
                 request.getContentId(),
+                request.getObjectId(),
                 request.getCapability(),
                 request.getResultFormat(),
                 request.getResultPayload(),
