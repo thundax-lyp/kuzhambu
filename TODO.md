@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics/coverage-and-cleanup`：更新覆盖文档并删除本轮 RUNBOOK
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-VISUAL-ASSET-WORKFLOW-CLOSURE.md`
-    - 范围对象：`docs/40-readiness/CLASSICS-IMPLEMENTATION-COVERAGE.md`、`docs/30-designs/RUNBOOK-SANCAI-VISUAL-ASSET-WORKFLOW-CLOSURE.md`
-    - 处理动作：按真实完成度更新 Implementation Coverage 并在收口时删除本轮 RUNBOOK
-    - 验收点：coverage 口径与实际交付一致，RUNBOOK 不再保留残留引用
-    - 重要度：9/10
-
 - [ ] `repo/final-verification`：执行最终全量格式化与校验收口
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`
