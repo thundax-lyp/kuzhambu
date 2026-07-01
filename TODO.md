@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Sancai Asset Panel Actions`：接通视觉资产切换与保存交互
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-VISUAL-ASSETS-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-model.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/services/sancai-entry-service.ts`
-    - 处理动作：把“设为当前使用版本”和基础字段保存动作接到 service，确保弹窗和列表刷新联动
-    - 验收点：用户可以切换当前视觉资产版本并看到刷新结果，基础字段保存走正式 service 契约
-    - 重要度：9/10
-
 - [ ] `Sancai Asset Component Tests`：补齐视觉资产组件级测试
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-VISUAL-ASSETS-CLOSURE.md`

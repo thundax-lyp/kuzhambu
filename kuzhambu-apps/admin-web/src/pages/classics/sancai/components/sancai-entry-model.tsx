@@ -76,20 +76,28 @@ interface SancaiEntryModelProps {
     afterForm?: ReactNode;
     entry: SancaiEntryRecord | undefined;
     isSubmitting: boolean;
+    isSwitchingVisualAsset?: boolean;
+    isUpdatingVisualAsset?: boolean;
     mode?: "create" | "edit";
     open: boolean;
     onCancel: () => void;
     onSubmit: (values: SancaiEntryFormValues) => void;
+    onUseVisualAsset?: (asset: SancaiVisualAssetRecord) => void;
+    onUpdateVisualAsset?: (asset: SancaiVisualAssetRecord) => void;
 }
 
 export const SancaiEntryModel = ({
     afterForm,
     entry,
     isSubmitting,
+    isSwitchingVisualAsset = false,
+    isUpdatingVisualAsset = false,
     mode = "edit",
     open,
     onCancel,
-    onSubmit
+    onSubmit,
+    onUseVisualAsset,
+    onUpdateVisualAsset
 }: SancaiEntryModelProps) => {
     const { message: messageApi } = App.useApp();
     const queryClient = useQueryClient();
@@ -116,6 +124,7 @@ export const SancaiEntryModel = ({
         [visualAssets]
     );
     const [selectedVisualAssetId, setSelectedVisualAssetId] = useState<number | null>(null);
+    const [visualAssetForm, setVisualAssetForm] = useState<SancaiVisualAssetRecord | null>(null);
     useEffect(() => {
         setSelectedVisualAssetId(
             currentVisualAsset?.visualAssetId ?? currentVisualAsset?.id ?? null
@@ -127,10 +136,35 @@ export const SancaiEntryModel = ({
         ) ||
         currentVisualAsset ||
         null;
+    useEffect(() => {
+        setVisualAssetForm(
+            selectedVisualAsset
+                ? {
+                      ...selectedVisualAsset
+                  }
+                : null
+        );
+    }, [selectedVisualAsset]);
     const sourcePreviewUrl = resolveStorageUrl(selectedVisualAsset?.sourcePreviewUrl);
     const sourceDownloadUrl = resolveStorageUrl(selectedVisualAsset?.sourceDownloadUrl);
     const generatedPreviewUrl = resolveStorageUrl(selectedVisualAsset?.generatedPreviewUrl);
     const generatedDownloadUrl = resolveStorageUrl(selectedVisualAsset?.generatedDownloadUrl);
+    const canSwitchVisualAsset =
+        Boolean(selectedVisualAsset) &&
+        (selectedVisualAsset?.visualAssetId ?? selectedVisualAsset?.id) !==
+            (currentVisualAsset?.visualAssetId ?? currentVisualAsset?.id);
+    const saveVisualAsset = () => {
+        if (!visualAssetForm || !onUpdateVisualAsset) {
+            return;
+        }
+        onUpdateVisualAsset(visualAssetForm);
+    };
+    const useVisualAsset = () => {
+        if (!selectedVisualAsset || !onUseVisualAsset) {
+            return;
+        }
+        onUseVisualAsset(selectedVisualAsset);
+    };
     const uploadImageMutation = useMutation({
         mutationFn: (file: File) => {
             if (!entryId) {
@@ -369,6 +403,22 @@ export const SancaiEntryModel = ({
                                         );
                                     })}
                                 </KuzhambuSpace>
+                                <KuzhambuSpace wrap>
+                                    <Button
+                                        type="primary"
+                                        loading={isUpdatingVisualAsset}
+                                        onClick={saveVisualAsset}
+                                    >
+                                        保存视觉资产字段
+                                    </Button>
+                                    <Button
+                                        loading={isSwitchingVisualAsset}
+                                        disabled={!canSwitchVisualAsset}
+                                        onClick={useVisualAsset}
+                                    >
+                                        设为当前使用版本
+                                    </Button>
+                                </KuzhambuSpace>
                                 <Text type="secondary">
                                     已选版本：
                                     {readVisualAssetTitle(selectedVisualAsset)}
@@ -442,54 +492,130 @@ export const SancaiEntryModel = ({
                                 </KuzhambuSpace>
                                 <KuzhambuSpace wrap>
                                     <Text type="secondary">
-                                        文本权重：{selectedVisualAsset.textWeight ?? "-"}
-                                    </Text>
-                                    <Text type="secondary">
-                                        图片权重：{selectedVisualAsset.imageWeight ?? "-"}
+                                        当前使用：
+                                        {selectedVisualAsset.currentUsed ? "是" : "否"}
                                     </Text>
                                 </KuzhambuSpace>
                                 <label className="sancai-form-field">
+                                    <Text strong>文本权重</Text>
+                                    <Input
+                                        aria-label="三才图会视觉资产文本权重"
+                                        value={visualAssetForm?.textWeight ?? ""}
+                                        onChange={(event) =>
+                                            setVisualAssetForm((currentForm) =>
+                                                currentForm
+                                                    ? {
+                                                          ...currentForm,
+                                                          textWeight: event.target.value
+                                                              ? Number(event.target.value)
+                                                              : null
+                                                      }
+                                                    : currentForm
+                                            )
+                                        }
+                                    />
+                                </label>
+                                <label className="sancai-form-field">
+                                    <Text strong>图片权重</Text>
+                                    <Input
+                                        aria-label="三才图会视觉资产图片权重"
+                                        value={visualAssetForm?.imageWeight ?? ""}
+                                        onChange={(event) =>
+                                            setVisualAssetForm((currentForm) =>
+                                                currentForm
+                                                    ? {
+                                                          ...currentForm,
+                                                          imageWeight: event.target.value
+                                                              ? Number(event.target.value)
+                                                              : null
+                                                      }
+                                                    : currentForm
+                                            )
+                                        }
+                                    />
+                                </label>
+                                <label className="sancai-form-field">
                                     <Text strong>图片理解</Text>
                                     <Input.TextArea
-                                        value={selectedVisualAsset.imageAnalysisMarkdown ?? ""}
-                                        readOnly
+                                        aria-label="三才图会视觉资产图片理解"
+                                        value={visualAssetForm?.imageAnalysisMarkdown ?? ""}
                                         autoSize={resolveTextAreaAutoSize({
                                             minRows: 3,
                                             maxRows: 6
                                         })}
+                                        onChange={(event) =>
+                                            setVisualAssetForm((currentForm) =>
+                                                currentForm
+                                                    ? {
+                                                          ...currentForm,
+                                                          imageAnalysisMarkdown: event.target.value
+                                                      }
+                                                    : currentForm
+                                            )
+                                        }
                                     />
                                 </label>
                                 <label className="sancai-form-field">
                                     <Text strong>融合描述</Text>
                                     <Input.TextArea
-                                        value={selectedVisualAsset.fusionDescription ?? ""}
-                                        readOnly
+                                        aria-label="三才图会视觉资产融合描述"
+                                        value={visualAssetForm?.fusionDescription ?? ""}
                                         autoSize={resolveTextAreaAutoSize({
                                             minRows: 2,
                                             maxRows: 5
                                         })}
+                                        onChange={(event) =>
+                                            setVisualAssetForm((currentForm) =>
+                                                currentForm
+                                                    ? {
+                                                          ...currentForm,
+                                                          fusionDescription: event.target.value
+                                                      }
+                                                    : currentForm
+                                            )
+                                        }
                                     />
                                 </label>
                                 <label className="sancai-form-field">
                                     <Text strong>视觉描述</Text>
                                     <Input.TextArea
-                                        value={selectedVisualAsset.visualDescription ?? ""}
-                                        readOnly
+                                        aria-label="三才图会视觉资产视觉描述"
+                                        value={visualAssetForm?.visualDescription ?? ""}
                                         autoSize={resolveTextAreaAutoSize({
                                             minRows: 2,
                                             maxRows: 5
                                         })}
+                                        onChange={(event) =>
+                                            setVisualAssetForm((currentForm) =>
+                                                currentForm
+                                                    ? {
+                                                          ...currentForm,
+                                                          visualDescription: event.target.value
+                                                      }
+                                                    : currentForm
+                                            )
+                                        }
                                     />
                                 </label>
                                 <label className="sancai-form-field">
                                     <Text strong>生成参数</Text>
                                     <Input.TextArea
-                                        value={selectedVisualAsset.generationParamsJson ?? ""}
-                                        readOnly
+                                        aria-label="三才图会视觉资产生成参数"
+                                        value={visualAssetForm?.generationParamsJson ?? ""}
                                         autoSize={resolveTextAreaAutoSize({
                                             minRows: 2,
                                             maxRows: 5
                                         })}
+                                        onChange={(event) =>
+                                            setVisualAssetForm((currentForm) =>
+                                                currentForm
+                                                    ? {
+                                                          ...currentForm,
+                                                          generationParamsJson: event.target.value
+                                                      }
+                                                    : currentForm
+                                            )
+                                        }
                                     />
                                 </label>
                             </div>
