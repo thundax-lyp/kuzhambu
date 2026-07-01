@@ -768,7 +768,8 @@ describe("SancaiEntryPanel sharing", () => {
 
         expect(await screen.findByText("三才图会标签治理")).toBeInTheDocument();
         expect(await screen.findByText("三才图会问答对治理")).toBeInTheDocument();
-        expect(await screen.findByText("三才")).toBeInTheDocument();
+        const contextSection = await screen.findByLabelText("三才图会内容上下文");
+        expect(within(contextSection).getByText("三才")).toBeInTheDocument();
         expect(await screen.findByText("天地为何不变？")).toBeInTheDocument();
     });
 
@@ -780,7 +781,7 @@ describe("SancaiEntryPanel sharing", () => {
         await user.click(await within(entryTable).findByRole("button", { name: "查看 天地" }));
 
         const visualAssetPanel = await screen.findByLabelText("三才图会视觉资产面板");
-        expect(within(visualAssetPanel).getByText(/当前使用版本：版本 2/)).toBeInTheDocument();
+        expect(within(visualAssetPanel).getByText(/当前版本：版本 2/)).toBeInTheDocument();
         expect(
             within(visualAssetPanel).getByRole("button", { name: "版本 1" })
         ).toBeInTheDocument();

@@ -191,6 +191,7 @@ export const SancaiEntryPanel = ({
     const {
         setSelectedVisualAsset,
         selectedVisualAssetId,
+        entryTagNames,
         creatingRefinementCapability,
         invalidateSancaiContentGovernance,
         refreshSancaiEntryDetail,
@@ -588,6 +589,7 @@ export const SancaiEntryPanel = ({
             <SancaiEntryModel
                 key={modelKey}
                 entry={selectedEntry}
+                entryTags={entryTagNames}
                 isSubmitting={addEntryMutation.isPending || updateEntryMutation.isPending}
                 isSwitchingVisualAsset={changeCurrentVisualAssetMutation.isPending}
                 isUpdatingVisualAsset={updateVisualAssetMutation.isPending}

@@ -1,6 +1,6 @@
 import { DownloadOutlined, EyeOutlined, PictureOutlined, UploadOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Button, Empty, Image, Input, Switch, Typography, Upload } from "antd";
+import { App, Button, Empty, Image, Input, Switch, Tag, Typography, Upload } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
@@ -74,6 +74,7 @@ const resolveStorageUrl = (url?: string | null) => {
 
 interface SancaiEntryModelProps {
     afterForm?: ReactNode;
+    entryTags?: string[];
     entry: SancaiEntryRecord | undefined;
     isSubmitting: boolean;
     isSwitchingVisualAsset?: boolean;
@@ -91,6 +92,7 @@ interface SancaiEntryModelProps {
 
 export const SancaiEntryModel = ({
     afterForm,
+    entryTags,
     entry,
     isSubmitting,
     isSwitchingVisualAsset = false,
@@ -125,6 +127,22 @@ export const SancaiEntryModel = ({
         retry: false
     });
     const visualAssets = useMemo(() => visualAssetsQuery.data || [], [visualAssetsQuery.data]);
+    const orderedVisualAssets = useMemo(
+        () =>
+            [...visualAssets].sort((left, right) => {
+                if ((left.versionNo ?? 0) !== (right.versionNo ?? 0)) {
+                    return (right.versionNo ?? 0) - (left.versionNo ?? 0);
+                }
+                return (
+                    (right.visualAssetId ?? right.id ?? 0) - (left.visualAssetId ?? left.id ?? 0)
+                );
+            }),
+        [visualAssets]
+    );
+    const activeTags = useMemo(
+        () => [...new Set((entryTags || []).map((tag) => tag.trim()).filter(Boolean))],
+        [entryTags]
+    );
     const currentVisualAsset = useMemo(
         () => selectCurrentVisualAsset(visualAssets),
         [visualAssets]
@@ -382,8 +400,51 @@ export const SancaiEntryModel = ({
                     </section>
                 ) : null}
                 {entryId ? (
+                    <section className="sancai-form-field" aria-label="三才图会内容上下文">
+                        <Text strong>条目上下文</Text>
+                        <KuzhambuSpace wrap>
+                            <Text type="secondary">
+                                翻译状态：{entry?.translationStatus || "待处理"}
+                            </Text>
+                            <Text type="secondary">图片状态：{entry?.imageStatus || "待处理"}</Text>
+                            <Text type="secondary">
+                                视觉状态：{entry?.visualAssetStatus || "待处理"}
+                            </Text>
+                            <Text type="secondary">
+                                精修状态：{entry?.refinementStatus || "待处理"}
+                            </Text>
+                        </KuzhambuSpace>
+                        <Text type="secondary">原文：{entry?.originalText || "未填写"}</Text>
+                        <Text type="secondary">译文：{entry?.translationText || "未生成"}</Text>
+                        <div>
+                            <Text type="secondary">标签：</Text>
+                            {activeTags.length ? (
+                                <KuzhambuSpace wrap>
+                                    {activeTags.map((tag) => (
+                                        <Tag key={tag}>{tag}</Tag>
+                                    ))}
+                                </KuzhambuSpace>
+                            ) : (
+                                <Text type="secondary">未标注标签</Text>
+                            )}
+                        </div>
+                    </section>
+                ) : null}
+                {entryId ? (
                     <section className="sancai-form-field" aria-label="三才图会视觉资产面板">
                         <Text strong>视觉资产</Text>
+                        <Text type="secondary">
+                            当前版本：{readVisualAssetTitle(currentVisualAsset)}
+                            {currentVisualAsset?.status
+                                ? ` · 状态 ${currentVisualAsset.status}`
+                                : ""}
+                        </Text>
+                        <Text type="secondary">
+                            已选版本：{readVisualAssetTitle(selectedVisualAsset)}
+                            {selectedVisualAsset?.status
+                                ? ` · 状态 ${selectedVisualAsset.status}`
+                                : ""}
+                        </Text>
                         {selectedVisualAsset ? (
                             <div
                                 style={{
@@ -393,15 +454,8 @@ export const SancaiEntryModel = ({
                                     width: "100%"
                                 }}
                             >
-                                <Text type="secondary">
-                                    当前使用版本：
-                                    {readVisualAssetTitle(currentVisualAsset)}
-                                    {currentVisualAsset?.status
-                                        ? ` · 状态 ${currentVisualAsset.status}`
-                                        : ""}
-                                </Text>
                                 <KuzhambuSpace wrap>
-                                    {visualAssets.map((asset) => {
+                                    {orderedVisualAssets.map((asset) => {
                                         const assetId = asset.visualAssetId ?? asset.id;
                                         if (!assetId) {
                                             return null;
@@ -460,13 +514,6 @@ export const SancaiEntryModel = ({
                                         设为当前使用版本
                                     </Button>
                                 </KuzhambuSpace>
-                                <Text type="secondary">
-                                    已选版本：
-                                    {readVisualAssetTitle(selectedVisualAsset)}
-                                    {selectedVisualAsset.status
-                                        ? ` · 状态 ${selectedVisualAsset.status}`
-                                        : ""}
-                                </Text>
                                 <KuzhambuSpace wrap>
                                     <Button
                                         aria-label="预览视觉资产原图"
