@@ -66,7 +66,7 @@
 | 区分原始配图和视觉资产生成图 | 部分完成 | `image_type`、图片模型、资产模型与保存入口已实现；Admin Web 已区分展示视觉资产原图与生成图，并分别提供预览/下载入口 | 视觉资产生成结果识别和 AI 生图入口仍未闭环 | Classics, Admin Web |
 | 从条目上下文进入视觉资产工作流 | 部分完成 | 资产草稿、图片、展示任务接口与服务可用；Admin Web 已在条目详情弹窗中接入视觉资产历史列表、当前版本切换和基础字段维护入口 | AI 生成与调用链路未形成闭环 | Classics, Admin Web, AI |
 | 原图上传、删除和预览 | 部分完成 | 原图业务上传、列表、Storage owner/reference 绑定、业务读取、inline/attachment 响应头和 Admin Web 当前图预览/下载已实现 | 删除接口虽有应用层能力但未形成 Admin Web 删除闭环；批量图片管理未完成 | Classics, Storage, Admin Web |
-| 图片理解、信息融合、权重调节、视觉描述、AI 生图入口 | 部分完成 | 视觉资产相关字段建模完成 | AI 执行、候选预览、确认应用和失败处理未实现 | Classics, AI |
+| 图片理解、信息融合、权重调节、视觉描述、AI 生图入口 | 部分完成 | 视觉资产字段建模完成，三才视觉资产已接入单图图片理解任务创建、候选预览（按单条 visualAsset 过滤）与人工确认落库（`imageAnalysisMarkdown`、`fusionDescription`、`visualDescription`）链路 | AI 生图入口、批量处理、可配置失败治理、权重策略和视觉资产级治理未实现 | Classics, AI |
 | 视觉资产历史和当前使用版本选择 | 已完成 | 视觉资产持久化、列表查询、当前版本切换服务、Admin API 和 Admin Web 已接通；条目详情内可查看历史版本、切换当前使用版本并保存基础字段 | 无 | Classics, Admin Web |
 | 多选条目批量视觉资产处理 | 部分完成 | 批处理需求与模型约束在需求和数据模型中存在 | 批量执行、失败结果模型、取消回滚策略未实现 | Classics, AI |
 | 摘要、标签和问答对内联维护 | 部分完成 | 主表摘要、通用内容 tag/qa CRUD 已实现；手工标签绑定、删除标签同步和 AI 标签确认回写已接通 Knowledge 内容引用闭环；三才图会、王圻文档、明代习俗页面已接入 `summary / tags / qa` 内联维护入口，含 AI 候选应用后的刷新联动 | 候选预览与更多确认入口仍未完整对齐 | Classics, Knowledge, AI |
@@ -133,7 +133,7 @@
 | --- | --- | --- | --- | --- |
 | 权限不足用户看不到私有内容 | 部分完成 | 可见性字段与规则已设计 | 权限策略来自 System，调用点和过滤实现未完成 | Classics, System |
 | 批量状态修改成功数、失败数和失败原因 | 未完成 | 需求已记录 | 批处理结果模型和接口响应未形成可执行任务粒度 | Classics |
-| AI 生成候选预览、修改、确认和放弃 | 部分完成 | Classics 已接入 AI 候选列表读取、payload 编辑、应用和拒绝闭环；候选应用支持 `translate / summary / tags / qa` 写回正式内容，并追加版本和回写 AI 候选状态 | AI 触发生成入口、流式过程展示、批量候选治理和更细粒度放弃/重试策略未完成 | Classics, AI |
+| AI 生成候选预览、修改、确认和放弃 | 部分完成 | Classics 已接入 AI 候选列表读取、payload 编辑、应用和拒绝闭环；候选应用支持 `translate / summary / tags / qa / image_analysis` 写回正式内容，并追加版本和回写 AI 候选状态；三才视觉资产支持按 `objectId` 的候选限定与刷新联动 | AI 触发生成入口、流式过程展示、批量候选治理和更细粒度放弃/重试策略未完成 | Classics, AI |
 | Knowledge 标签治理 | 外部依赖 | Classics 已保存标签主事实、标签名快照，并通过 Knowledge 协作语义解析统一标签、自动创建标签和同步内容引用投影 | 标签合并、同义词治理、分类运营规则仍不属于 Classics | Knowledge |
 | Storage 对象管理 | 外部依赖 | Classics 只保存 `storage_object_id`，但业务域已负责 Wangqi 原始文件和 Sancai 图片的上传入口、归属校验、读取 URL 和 Portal 分享资源访问控制 | 底层对象生命周期、物理删除、清理策略和通用对象管理仍由 Storage 实现 | Classics, Storage |
 | Discovery 搜索和问答 | 外部依赖 | Classics 可提供内容上下文和入口 | 索引、召回、问答生成由 Discovery/AI 实现 | Discovery, AI |
