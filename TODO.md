@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Sancai Asset Page Regression`：收口三才页面层回归测试
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-VISUAL-ASSETS-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-page.test.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.tsx`
-    - 处理动作：校准页面级回归测试，确保视觉资产区块接入后不破坏原有三才条目打开、保存、导出和展示流程
-    - 验收点：页面级测试通过，且不新增独立视觉资产页面
-    - 重要度：8/10
-
 - [ ] `Sancai Coverage And Closure`：更新覆盖文档并完成任务收口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-VISUAL-ASSETS-CLOSURE.md`
