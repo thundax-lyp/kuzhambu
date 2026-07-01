@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.classics.application.sancai;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -26,6 +27,7 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntry
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiShowcaseId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVisualAssetId;
 import com.thundax.kuzhambu.classics.domain.sancai.repository.SancaiAssetRepository;
+import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.storage.facade.StorageFacade;
 import com.thundax.kuzhambu.storage.facade.dto.StorageObjectFacadeDto;
 import com.thundax.kuzhambu.storage.facade.request.BindStorageOwnerFacadeRequest;
@@ -70,6 +72,30 @@ class SancaiAssetApplicationServiceImplTest {
         verify(repository, never()).insertVisualAsset(org.mockito.ArgumentMatchers.any());
         verify(repository, never())
                 .updateCurrentVisualAsset(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any());
+    }
+
+    @Test
+    void updateVisualAssetShouldRejectWhenTextWeightMissing() {
+        SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
+        SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(repository, null, null, null);
+        SancaiVisualAsset visualAsset = visualAsset(5001L, 3001L);
+        visualAsset.setTextWeight(null);
+
+        BizException exception = assertThrows(BizException.class, () -> service.updateVisualAsset(visualAsset));
+
+        assertEquals("三才视觉资产文本权重不能为空", exception.getMessage());
+    }
+
+    @Test
+    void updateVisualAssetShouldRejectWhenImageWeightMissing() {
+        SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
+        SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(repository, null, null, null);
+        SancaiVisualAsset visualAsset = visualAsset(5001L, 3001L);
+        visualAsset.setImageWeight(null);
+
+        BizException exception = assertThrows(BizException.class, () -> service.updateVisualAsset(visualAsset));
+
+        assertEquals("三才视觉资产图片权重不能为空", exception.getMessage());
     }
 
     @Test
@@ -283,6 +309,8 @@ class SancaiAssetApplicationServiceImplTest {
         SancaiVisualAsset visualAsset = new SancaiVisualAsset();
         visualAsset.setId(visualAssetId == null ? null : SancaiVisualAssetId.of(visualAssetId));
         visualAsset.setEntryId(SancaiEntryId.of(entryId));
+        visualAsset.setTextWeight(60);
+        visualAsset.setImageWeight(40);
         visualAsset.setCurrentUsed(true);
         return visualAsset;
     }

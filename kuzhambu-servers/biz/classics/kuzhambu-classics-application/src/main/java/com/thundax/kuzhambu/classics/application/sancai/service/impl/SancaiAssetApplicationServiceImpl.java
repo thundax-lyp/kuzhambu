@@ -268,6 +268,7 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     @Override
     @Transactional(rollbackFor = Exception.class)
     public SancaiVisualAssetId updateVisualAsset(SancaiVisualAsset visualAsset) {
+        validateVisualWeights(visualAsset);
         if (visualAsset.getId() == null) {
             return repository.insertVisualAsset(visualAsset);
         }
@@ -548,6 +549,18 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
         }
         if (!StringUtils.startsWithIgnoreCase(command.getContentType(), "image/")) {
             throw new BizException("三才图片内容类型无效");
+        }
+    }
+
+    private static void validateVisualWeights(SancaiVisualAsset visualAsset) {
+        if (visualAsset == null) {
+            throw new BizException("三才视觉资产不能为空");
+        }
+        if (visualAsset.getTextWeight() == null) {
+            throw new BizException("三才视觉资产文本权重不能为空");
+        }
+        if (visualAsset.getImageWeight() == null) {
+            throw new BizException("三才视觉资产图片权重不能为空");
         }
     }
 

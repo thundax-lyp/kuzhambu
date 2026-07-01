@@ -63,8 +63,8 @@ public final class SancaiAssetInterfaceAssembler {
         visualAsset.setGeneratedImageStorageObjectId(
                 StorageObjectIdCodec.toDomain(request.getGeneratedImageStorageObjectId()));
         visualAsset.setCurrentUsed(Boolean.TRUE.equals(request.getCurrentUsed()));
-        visualAsset.setTextWeight(request.getTextWeight() == null ? 0 : request.getTextWeight());
-        visualAsset.setImageWeight(request.getImageWeight() == null ? 0 : request.getImageWeight());
+        visualAsset.setTextWeight(request.getTextWeight());
+        visualAsset.setImageWeight(request.getImageWeight());
         visualAsset.setImageAnalysisMarkdown(request.getImageAnalysisMarkdown());
         visualAsset.setFusionDescription(request.getFusionDescription());
         visualAsset.setVisualDescription(request.getVisualDescription());
