@@ -62,6 +62,8 @@ public interface SancaiAssetRepository {
      */
     List<SancaiVisualAsset> listVisualAssetsByEntryId(SancaiEntryId entryId);
 
+    int maxVisualAssetVersionNo(SancaiEntryId entryId);
+
     int updateVisualAssetImageAnalysisMarkdown(SancaiVisualAssetId visualAssetId, String imageAnalysisMarkdown);
 
     int updateVisualAssetFusionDescription(SancaiVisualAssetId visualAssetId, String fusionDescription);

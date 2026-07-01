@@ -25,6 +25,7 @@ class ArtifactMetadata:
 
 @dataclass(frozen=True)
 class ArtifactChunk:
+    request_id: str
     artifact_id: str
     format: str
     filename: str
@@ -97,6 +98,7 @@ class RequestArtifactStore:
             ]
         return [
             ArtifactChunk(
+                request_id=metadata.request_id,
                 artifact_id=metadata.artifact_id,
                 format=metadata.format,
                 filename=metadata.filename,

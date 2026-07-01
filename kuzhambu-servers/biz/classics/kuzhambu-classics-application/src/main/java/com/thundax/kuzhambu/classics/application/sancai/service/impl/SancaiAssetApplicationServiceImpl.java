@@ -324,10 +324,16 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
         }
         SancaiVisualAsset currentAsset = requireVisualAsset(entryId, visualAssetId);
         validateVisualWeights(currentAsset);
+        if (currentAsset.getSourceImageStorageObjectId() == null) {
+            throw new BizException("三才视觉资产缺少原图");
+        }
+        if (StringUtils.isBlank(currentAsset.getVisualDescription())) {
+            throw new BizException("三才视觉资产缺少视觉描述");
+        }
 
         SancaiVisualAsset nextAsset = new SancaiVisualAsset();
         nextAsset.setEntryId(entryId);
-        nextAsset.setVersionNo(nextVisualAssetVersionNo(entryId));
+        nextAsset.setVersionNo(repository.maxVisualAssetVersionNo(entryId) + 1);
         nextAsset.setStatus(SancaiVisualAssetStatus.READY);
         nextAsset.setSourceImageStorageObjectId(currentAsset.getSourceImageStorageObjectId());
         nextAsset.setGeneratedImageStorageObjectId(generatedImageStorageObjectId);
@@ -696,18 +702,5 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
             return null;
         }
         return IMAGE_OWNER_ID_PREFIX + entryId.value() + IMAGE_OWNER_ID_SEPARATOR + imageId.value();
-    }
-
-    private int nextVisualAssetVersionNo(SancaiEntryId entryId) {
-        List<SancaiVisualAsset> visualAssets = repository.listVisualAssetsByEntryId(entryId);
-        if (visualAssets == null || visualAssets.isEmpty()) {
-            return 1;
-        }
-        return visualAssets.stream()
-                        .filter(java.util.Objects::nonNull)
-                        .mapToInt(SancaiVisualAsset::getVersionNo)
-                        .max()
-                        .orElse(0)
-                + 1;
     }
 }

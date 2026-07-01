@@ -219,6 +219,14 @@ public class SancaiAssetRepositoryImpl implements SancaiAssetRepository {
     }
 
     @Override
+    public int maxVisualAssetVersionNo(SancaiEntryId entryId) {
+        List<Object> values = visualAssetMapper.selectObjs(new QueryWrapper<SancaiVisualAssetDO>()
+                .select("max(version_no)")
+                .eq("entry_id", SancaiEntryIdCodec.toValue(entryId)));
+        return maxPriority(values);
+    }
+
+    @Override
     public SancaiShowcaseId insertShowcase(SancaiShowcase showcase) {
         SancaiShowcaseDO dataObject = SancaiAssetPersistenceAssembler.toShowcaseObject(showcase);
         showcaseMapper.insert(dataObject);

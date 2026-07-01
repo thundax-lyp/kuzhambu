@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `SancaiAssetApplicationServiceImpl/SancaiAssetRepository/SancaiAssetRepositoryImpl/artifact_store.py`：补齐 image_gen 新版本写回链路
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-SANCAI-AI-WORKERS-FULL-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sancai/service/impl/SancaiAssetApplicationServiceImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-domain/src/main/java/com/thundax/kuzhambu/classics/domain/sancai/repository/SancaiAssetRepository.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/java/com/thundax/kuzhambu/classics/infra/sancai/repository/impl/SancaiAssetRepositoryImpl.java`、`kuzhambu-workers/src/kuzhambu_workers/render/artifact_store.py`
-    - 处理动作：将 `image_gen` 候选应用固定为正式转存并新建 visual asset version
-    - 验收点：`image_gen` 应用后创建新 version、落正式 `StorageObject`、不覆盖旧 version，且业务字段不保存 artifact id
-    - 重要度：10/10
-
 - [ ] `ai-candidate-panel/ai-candidate-payload-editor/sancai-entry-panel/use-sancai-entry-panel-state`：补齐候选区编辑与接受拒绝交互
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-SANCAI-AI-WORKERS-FULL-CLOSURE.md`
