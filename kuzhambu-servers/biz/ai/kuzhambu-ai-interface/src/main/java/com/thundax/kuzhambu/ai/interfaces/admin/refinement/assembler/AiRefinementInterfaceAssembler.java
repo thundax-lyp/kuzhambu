@@ -13,8 +13,13 @@ public final class AiRefinementInterfaceAssembler {
     private AiRefinementInterfaceAssembler() {}
 
     public static AiRefinementRequestCommand toCommand(AiRefinementRequests.RefinementRequest request) {
+        return toCommand(request, request == null ? null : request.getCapability());
+    }
+
+    public static AiRefinementRequestCommand toCommand(
+            AiRefinementRequests.RefinementRequest request, String capability) {
         AiRefinementRequestCommand command = new AiRefinementRequestCommand();
-        command.setCapability(request.getCapability());
+        command.setCapability(capability);
         command.setScope(request.getScope());
         command.setOperation(request.getOperation());
         command.setContentType(request.getContentType());

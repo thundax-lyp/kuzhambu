@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `AiRefinementController/AiRefinementRequests/AiRefinementInterfaceAssembler`：补齐三才视觉资产 AI 请求上下文
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-SANCAI-AI-WORKERS-FULL-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/refinement/controller/AiRefinementController.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/refinement/controller/request/AiRefinementRequests.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/refinement/assembler/AiRefinementInterfaceAssembler.java`
-    - 处理动作：让 Java AI 入口稳定接收三才视觉资产上下文并映射四类 capability 请求
-    - 验收点：AI 接口请求体可稳定表达三才视觉资产任务上下文，且接口装配不丢失 capability 与对象标识
-    - 重要度：9/10
-
 - [ ] `SancaiAssetApplicationService/SancaiAssetApplicationServiceImpl/ClassicsContentApplicationServiceImpl/SancaiAssetRepositoryImpl`：补齐 fusion 正式写回链路
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-SANCAI-AI-WORKERS-FULL-CLOSURE.md`

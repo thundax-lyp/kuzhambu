@@ -22,6 +22,7 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
     private static final String CAPABILITY_TAGS = "tags";
     private static final String CAPABILITY_QA = "qa";
     private static final String CAPABILITY_IMAGE_ANALYSIS = "image_analysis";
+    private static final String CAPABILITY_FUSION = "fusion";
     private static final String CAPABILITY_IMAGE_GEN = "image_gen";
     private static final String CAPABILITY_VISUAL = "visual";
     private static final String CAPABILITY_SPLIT = "split";
@@ -63,6 +64,11 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
     @Override
     public AiCandidateResult analyzeImage(AiRefinementRequestCommand command) {
         return invokeCandidate(command, CAPABILITY_IMAGE_ANALYSIS);
+    }
+
+    @Override
+    public AiCandidateResult fuseVisualContext(AiRefinementRequestCommand command) {
+        return invokeCandidate(command, CAPABILITY_FUSION);
     }
 
     @Override

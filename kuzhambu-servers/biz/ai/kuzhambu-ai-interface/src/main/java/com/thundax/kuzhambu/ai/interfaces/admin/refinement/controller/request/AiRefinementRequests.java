@@ -23,6 +23,7 @@ public final class AiRefinementRequests {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class RefinementRequest implements Serializable {
 
+        @Schema(description = "能力编码；三才视觉资产场景固定使用 image_analysis、fusion、visual、image_gen")
         @Size(max = 64)
         @JsonProperty(value = "capability")
         private String capability;
@@ -36,6 +37,7 @@ public final class AiRefinementRequests {
         @JsonProperty(value = "operation")
         private String operation;
 
+        @Schema(description = "业务内容类型；三才视觉资产场景固定为 SANCAI_ENTRY")
         @NotBlank
         @Size(max = 64)
         @JsonProperty(value = "contentType")
@@ -45,6 +47,7 @@ public final class AiRefinementRequests {
         @JsonProperty(value = "contentId")
         private Long contentId;
 
+        @Schema(description = "业务对象标识；三才视觉资产场景固定传 visualAssetId")
         @JsonProperty(value = "objectId")
         private Long objectId;
 
@@ -91,6 +94,7 @@ public final class AiRefinementRequests {
         @JsonProperty(value = "promptHash")
         private String promptHash;
 
+        @Schema(description = "AI 输入上下文 JSON；三才视觉资产场景必须包含 entryId、visualAssetId 和 capability 上下文")
         @NotBlank
         @JsonProperty(value = "inputPayloadJson")
         private String inputPayloadJson;
