@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Workers Image Analysis Contract`：补齐 workers 图片理解契约回归
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-SINGLE-IMAGE-ANALYSIS-CLOSURE.md`
-    - 范围对象：`kuzhambu-workers/tests/test_ai_usecase_routes_classics.py`、`kuzhambu-workers/tests/test_ai_usecase_registry.py`
-    - 处理动作：固定三才图片理解 usecase 的 route 与 registry 映射契约
-    - 验收点：`/internal/ai/classics/sancai/image-analysis` 路径与 `image_analysis` registry 映射都有测试保护
-    - 重要度：7/10
-
 - [ ] `Sancai Coverage And Closure`：更新覆盖文档并清理 RUNBOOK
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-SINGLE-IMAGE-ANALYSIS-CLOSURE.md`

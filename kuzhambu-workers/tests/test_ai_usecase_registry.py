@@ -47,6 +47,7 @@ def test_usecase_registry_covers_interface_matrix() -> None:
 def test_usecase_registry_exposes_metadata_by_path() -> None:
     usecase = require_usecase("/internal/ai/classics/sancai/image-analysis")
 
+    assert usecase.operation == "CLASSICS_SANCAI_IMAGE_ANALYSIS"
     assert usecase.domain == AiUsecaseDomain.CLASSICS
     assert usecase.capability == AiCapability.IMAGE_ANALYSIS
     assert usecase.stream is True
