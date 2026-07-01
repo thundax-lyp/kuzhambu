@@ -84,6 +84,8 @@ interface SancaiEntryModelProps {
     onSubmit: (values: SancaiEntryFormValues) => void;
     onUseVisualAsset?: (asset: SancaiVisualAssetRecord) => void;
     onUpdateVisualAsset?: (asset: SancaiVisualAssetRecord) => void;
+    onCreateImageAnalysisTask?: (asset: SancaiVisualAssetRecord) => void;
+    isCreatingImageAnalysisTask?: boolean;
 }
 
 export const SancaiEntryModel = ({
@@ -97,7 +99,9 @@ export const SancaiEntryModel = ({
     onCancel,
     onSubmit,
     onUseVisualAsset,
-    onUpdateVisualAsset
+    onUpdateVisualAsset,
+    onCreateImageAnalysisTask,
+    isCreatingImageAnalysisTask = false
 }: SancaiEntryModelProps) => {
     const { message: messageApi } = App.useApp();
     const queryClient = useQueryClient();
@@ -419,6 +423,20 @@ export const SancaiEntryModel = ({
                                     })}
                                 </KuzhambuSpace>
                                 <KuzhambuSpace wrap>
+                                    {onCreateImageAnalysisTask ? (
+                                        <Button
+                                            type="default"
+                                            loading={isCreatingImageAnalysisTask}
+                                            onClick={() => {
+                                                if (!selectedVisualAsset) {
+                                                    return;
+                                                }
+                                                onCreateImageAnalysisTask(selectedVisualAsset);
+                                            }}
+                                        >
+                                            创建图片理解任务
+                                        </Button>
+                                    ) : null}
                                     <Button
                                         type="primary"
                                         loading={isUpdatingVisualAsset}

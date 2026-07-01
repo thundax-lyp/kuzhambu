@@ -386,6 +386,76 @@ describe("SancaiEntryPanel sharing", () => {
         });
     }, 30000);
 
+    it("creates image analysis task from selected visual asset and carries visual asset objectId", async () => {
+        const user = userEvent.setup();
+
+        renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        await user.click(await within(entryTable).findByRole("button", { name: "查看 天地" }));
+
+        const visualAssetPanel = await screen.findByLabelText("三才图会视觉资产面板");
+        await user.click(
+            within(visualAssetPanel).getByRole("button", { name: "创建图片理解任务" })
+        );
+
+        await waitFor(() => {
+            expect(aiRefinementTaskService.createTask).toHaveBeenCalled();
+        });
+        expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0]).toMatchObject({
+            capability: "image_analysis",
+            contentType: "SANCAI_ENTRY",
+            contentId: 3001,
+            objectId: 5002,
+            requestedBy: 99,
+            serviceRole: "PRIMARY",
+            modelId: 1,
+            modelName: "gpt-5.5",
+            locale: "zh-CN"
+        });
+    }, 30000);
+
+    it("blocks image analysis task creation when visual asset has no source image", async () => {
+        vi.mocked(entryService.listVisualAssets).mockResolvedValueOnce([
+            {
+                id: 6002,
+                visualAssetId: 6002,
+                entryId: 3001,
+                versionNo: 1,
+                status: "READY",
+                sourceImageStorageObjectId: null,
+                generatedImageStorageObjectId: 7102,
+                currentUsed: true,
+                textWeight: 55,
+                imageWeight: 45,
+                imageAnalysisMarkdown: "无图版本图片理解",
+                fusionDescription: "无图版本融合描述",
+                visualDescription: "无图版本视觉描述",
+                generationParamsJson: '{"style":"shuimo"}',
+                sourcePreviewUrl: undefined,
+                sourceDownloadUrl: undefined,
+                generatedPreviewUrl: "/api/storage/object/7102/content",
+                generatedDownloadUrl: "/api/storage/object/7102/content?download=true"
+            }
+        ]);
+        const user = userEvent.setup();
+
+        renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        await user.click(await within(entryTable).findByRole("button", { name: "查看 天地" }));
+
+        const visualAssetPanel = await screen.findByLabelText("三才图会视觉资产面板");
+        await user.click(
+            within(visualAssetPanel).getByRole("button", { name: "创建图片理解任务" })
+        );
+
+        expect(
+            await screen.findByText("当前视觉资产缺少原图，无法创建图片理解任务")
+        ).toBeInTheDocument();
+        expect(aiRefinementTaskService.createTask).not.toHaveBeenCalled();
+    }, 30000);
+
     it("loads version detail, restores it and refreshes the open drawer", async () => {
         const user = userEvent.setup();
 

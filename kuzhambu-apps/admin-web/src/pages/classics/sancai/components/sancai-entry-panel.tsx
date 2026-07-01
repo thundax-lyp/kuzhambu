@@ -42,7 +42,10 @@ const createEventId = (prefix: string) => {
     return `${prefix}-${Date.now()}`;
 };
 
-const buildPromptMessagesJson = (capability: "translate" | "summary", entry: SancaiEntryRecord) => {
+const buildPromptMessagesJson = (
+    capability: "translate" | "summary" | "image_analysis",
+    entry: SancaiEntryRecord
+) => {
     if (capability === "translate") {
         return JSON.stringify([
             {
@@ -52,6 +55,22 @@ const buildPromptMessagesJson = (capability: "translate" | "summary", entry: San
             {
                 role: "user",
                 content: entry.originalText?.trim() || ""
+            }
+        ]);
+    }
+    if (capability === "image_analysis") {
+        return JSON.stringify([
+            {
+                role: "system",
+                content: "你是图片理解助手，请输出结构清晰、可展示的中文描述。"
+            },
+            {
+                role: "user",
+                content: JSON.stringify({
+                    title: entry.title,
+                    contentId: entry.id,
+                    capability
+                })
             }
         ]);
     }
@@ -71,16 +90,22 @@ const buildPromptMessagesJson = (capability: "translate" | "summary", entry: San
     ]);
 };
 
-const buildInputPayloadJson = (capability: "translate" | "summary", entry: SancaiEntryRecord) => {
-    return JSON.stringify({
+const buildInputPayloadJson = (
+    capability: "translate" | "summary" | "image_analysis",
+    entry: SancaiEntryRecord,
+    objectId?: number | null
+) => {
+    const payload = {
         capability,
         contentId: entry.id,
         contentType: "SANCAI_ENTRY",
+        objectId,
         originalText: entry.originalText,
         summary: entry.summary,
         title: entry.title,
         translationText: entry.translationText
-    });
+    };
+    return JSON.stringify(payload);
 };
 
 interface SancaiEntryPanelProps {
@@ -108,7 +133,7 @@ export const SancaiEntryPanel = ({
     const confirm = useKuzhambuConfirm();
     const queryClient = useQueryClient();
     const [creatingRefinementCapability, setCreatingRefinementCapability] = useState<
-        "translate" | "summary" | null
+        "translate" | "summary" | "image_analysis" | null
     >(null);
     const handledSucceededTaskIdsRef = useRef<Set<number>>(new Set());
     const [isCreating, setIsCreating] = useState(defaultCreateOpen);
@@ -407,14 +432,22 @@ export const SancaiEntryPanel = ({
     const createRefinementTaskMutation = useMutation({
         mutationFn: aiRefinementTaskService.createTask,
         onMutate: (command) => {
-            if (command.capability === "translate" || command.capability === "summary") {
+            if (
+                command.capability === "translate" ||
+                command.capability === "summary" ||
+                command.capability === "image_analysis"
+            ) {
                 setCreatingRefinementCapability(command.capability);
             }
         },
         onSuccess: async (_, command) => {
             await invalidateRefinementTasks();
             messageApi.success(
-                command.capability === "translate" ? "译文任务已创建" : "摘要任务已创建"
+                command.capability === "translate"
+                    ? "译文任务已创建"
+                    : command.capability === "summary"
+                      ? "摘要任务已创建"
+                      : "图片理解任务已创建"
             );
         },
         onError: (error) => {
@@ -559,7 +592,10 @@ export const SancaiEntryPanel = ({
         showcaseEntryMutation.mutate(entry);
     };
 
-    const createRefinementTask = (capability: "translate" | "summary") => {
+    const createRefinementTask = (
+        capability: "translate" | "summary" | "image_analysis",
+        imageAnalysisAsset: SancaiVisualAssetRecord | null = null
+    ) => {
         if (!selectedEntry?.id) {
             return;
         }
@@ -567,7 +603,17 @@ export const SancaiEntryPanel = ({
             messageApi.warning("当前用户信息尚未加载完成");
             return;
         }
-        if (!selectedEntry.originalText?.trim()) {
+        const imageAnalysisObjectId = imageAnalysisAsset
+            ? (imageAnalysisAsset.visualAssetId ?? imageAnalysisAsset.id ?? null)
+            : null;
+        if (
+            capability === "image_analysis" &&
+            (imageAnalysisObjectId == null || imageAnalysisAsset.sourceImageStorageObjectId == null)
+        ) {
+            messageApi.warning("当前视觉资产缺少原图，无法创建图片理解任务");
+            return;
+        }
+        if (capability !== "image_analysis" && !selectedEntry.originalText?.trim()) {
             messageApi.warning("当前条目缺少原文，无法创建 AI 精修任务");
             return;
         }
@@ -576,7 +622,7 @@ export const SancaiEntryPanel = ({
             scope: "classics",
             contentType: "SANCAI_ENTRY",
             contentId: selectedEntry.id,
-            objectId: null,
+            objectId: capability === "image_analysis" ? imageAnalysisObjectId : null,
             requestedBy: Number(currentUserQuery.data.id),
             serviceRole: DEFAULT_REFINEMENT_SERVICE_ROLE,
             modelId: DEFAULT_REFINEMENT_MODEL_ID,
@@ -587,7 +633,11 @@ export const SancaiEntryPanel = ({
             promptVariablesJson: JSON.stringify({
                 title: selectedEntry.title
             }),
-            inputPayloadJson: buildInputPayloadJson(capability, selectedEntry),
+            inputPayloadJson: buildInputPayloadJson(
+                capability,
+                selectedEntry,
+                capability === "image_analysis" ? imageAnalysisObjectId : null
+            ),
             locale: "zh-CN"
         });
     };
@@ -734,6 +784,10 @@ export const SancaiEntryPanel = ({
                 onSubmit={submitEntry}
                 onUseVisualAsset={switchVisualAsset}
                 onUpdateVisualAsset={updateVisualAsset}
+                onCreateImageAnalysisTask={(asset) => {
+                    createRefinementTask("image_analysis", asset);
+                }}
+                isCreatingImageAnalysisTask={creatingRefinementCapability === "image_analysis"}
                 afterForm={
                     !isCreating && selectedEntry ? (
                         <>
@@ -758,7 +812,8 @@ export const SancaiEntryPanel = ({
                                         .filter(
                                             (task) =>
                                                 task.capability === "translate" ||
-                                                task.capability === "summary"
+                                                task.capability === "summary" ||
+                                                task.capability === "image_analysis"
                                         )
                                         .slice(0, 4)
                                         .map((task) => (

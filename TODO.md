@@ -9,22 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Sancai Image Analysis Apply`：支持图片理解候选应用到视觉资产
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-SINGLE-IMAGE-ANALYSIS-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/service/impl/ClassicsContentApplicationServiceImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/content/ClassicsContentApplicationServiceAiCandidateTest.java`
-    - 处理动作：在 Classics 内容应用层新增 `image_analysis` 分支并将结果写入目标 `visual_asset` 的 `imageAnalysisMarkdown`、`fusionDescription`、`visualDescription`
-    - 验收点：`applyAiCandidate(...)` 支持 `image_analysis`，要求 `objectId`，并由应用层测试固定正式写回行为
-    - 重要度：10/10
-
-- [ ] `Sancai Image Analysis Task Entry`：补齐三才单图图片理解任务创建入口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-SINGLE-IMAGE-ANALYSIS-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/common/ai-refinement-task-types.ts`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-model.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.test.tsx`
-    - 处理动作：在三才视觉资产面板中增加单图图片理解任务创建入口并携带 `objectId = visualAssetId`
-    - 验收点：当前选中视觉资产时可创建 `image_analysis` 任务，缺少原图时会阻止创建并提示原因
-    - 重要度：10/10
-
 - [ ] `AI Candidate Frontend Contract`：补齐前端 AI 候选 objectId 契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-SINGLE-IMAGE-ANALYSIS-CLOSURE.md`
