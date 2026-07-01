@@ -8,7 +8,7 @@ import type { AiRefinementTaskRecord } from "@/pages/classics/common/ai-refineme
 import type { QueryClient } from "@tanstack/react-query";
 import type { SancaiEntryRecord, SancaiVisualAssetRecord } from "../sancai-types";
 
-type RefinementCapability = "translate" | "summary" | "image_analysis";
+type RefinementCapability = "translate" | "summary" | "image_analysis" | "visual" | "fusion";
 
 const DEFAULT_REFINEMENT_MODEL_ID = 1;
 const DEFAULT_REFINEMENT_MODEL_NAME = "gpt-5.5";
@@ -50,6 +50,39 @@ const buildPromptMessagesJson = (capability: RefinementCapability, entry: Sancai
             }
         ]);
     }
+    if (capability === "visual") {
+        return JSON.stringify([
+            {
+                role: "system",
+                content: "你是古籍视觉描述助手，请输出可直接展示的中文视觉说明。"
+            },
+            {
+                role: "user",
+                content: JSON.stringify({
+                    title: entry.title,
+                    contentId: entry.id,
+                    capability
+                })
+            }
+        ]);
+    }
+    if (capability === "fusion") {
+        return JSON.stringify([
+            {
+                role: "system",
+                content:
+                    "你是古籍视觉信息融合助手，请结合文本语义和图片理解生成可用于视觉生成的融合说明。"
+            },
+            {
+                role: "user",
+                content: JSON.stringify({
+                    title: entry.title,
+                    contentId: entry.id,
+                    capability
+                })
+            }
+        ]);
+    }
     return JSON.stringify([
         {
             role: "system",
@@ -69,7 +102,10 @@ const buildPromptMessagesJson = (capability: RefinementCapability, entry: Sancai
 const buildInputPayloadJson = (
     capability: RefinementCapability,
     entry: SancaiEntryRecord,
-    objectId?: number | null
+    objectId?: number | null,
+    textWeight?: number | null,
+    imageWeight?: number | null,
+    imageAnalysisMarkdown?: string | null
 ) => {
     const payload = {
         capability,
@@ -81,6 +117,14 @@ const buildInputPayloadJson = (
         title: entry.title,
         translationText: entry.translationText
     };
+    if (capability === "fusion") {
+        return JSON.stringify({
+            ...payload,
+            imageAnalysisMarkdown: imageAnalysisMarkdown ?? null,
+            textWeight,
+            imageWeight
+        });
+    }
     return JSON.stringify(payload);
 };
 
@@ -108,6 +152,7 @@ interface UseSancaiEntryPanelStateResult {
     entryTagNames: string[];
     creatingRefinementCapability: RefinementCapability | null;
     invalidateSancaiContentGovernance: () => Promise<void>;
+    invalidateSancaiContentCandidates: (visualAssetId: number | null) => Promise<void>;
     refreshSancaiEntryDetail: () => Promise<void>;
     createRefinementTask: (
         capability: RefinementCapability,
@@ -184,12 +229,17 @@ export const useSancaiEntryPanelState = ({
             }),
             queryClient.invalidateQueries({
                 queryKey: ["classics", "content", "qa-pairs", "SANCAI_ENTRY"]
-            }),
-            queryClient.invalidateQueries({
-                queryKey: ["ai", "candidates", "SANCAI_ENTRY", selectedEntryId]
             })
         ]);
     }, [queryClient, selectedEntryId]);
+
+    const invalidateSancaiContentCandidates = useCallback(
+        (visualAssetId: number | null) =>
+            queryClient.invalidateQueries({
+                queryKey: ["ai", "candidates", "SANCAI_ENTRY", selectedEntryId, visualAssetId]
+            }),
+        [queryClient, selectedEntryId]
+    );
 
     const createRefinementTaskMutation = useMutation({
         mutationFn: aiRefinementTaskService.createTask,
@@ -197,7 +247,9 @@ export const useSancaiEntryPanelState = ({
             if (
                 command.capability === "translate" ||
                 command.capability === "summary" ||
-                command.capability === "image_analysis"
+                command.capability === "image_analysis" ||
+                command.capability === "visual" ||
+                command.capability === "fusion"
             ) {
                 setCreatingRefinementCapability(command.capability);
             }
@@ -208,6 +260,10 @@ export const useSancaiEntryPanelState = ({
                 messageApi.success("译文任务已创建");
             } else if (command.capability === "summary") {
                 messageApi.success("摘要任务已创建");
+            } else if (command.capability === "visual") {
+                messageApi.success("视觉描述任务已创建");
+            } else if (command.capability === "fusion") {
+                messageApi.success("信息融合任务已创建");
             } else {
                 messageApi.success("图片理解任务已创建");
             }
@@ -256,18 +312,43 @@ export const useSancaiEntryPanelState = ({
             messageApi.warning("当前用户信息尚未加载完成");
             return;
         }
-        const imageAnalysisObjectId = imageAnalysisAsset
-            ? (imageAnalysisAsset.visualAssetId ?? imageAnalysisAsset.id ?? null)
+        const resolvedVisualAsset = imageAnalysisAsset ?? selectedVisualAsset;
+        const imageAnalysisObjectId = resolvedVisualAsset
+            ? (resolvedVisualAsset.visualAssetId ?? resolvedVisualAsset.id ?? null)
             : null;
-        const sourceImageStorageObjectId = imageAnalysisAsset?.sourceImageStorageObjectId;
+        const sourceImageStorageObjectId = resolvedVisualAsset?.sourceImageStorageObjectId;
+        const imageAnalysisMarkdown = resolvedVisualAsset?.imageAnalysisMarkdown;
+        const textWeight = resolvedVisualAsset?.textWeight;
+        const imageWeight = resolvedVisualAsset?.imageWeight;
         if (
-            capability === "image_analysis" &&
+            (capability === "image_analysis" || capability === "visual") &&
             (imageAnalysisObjectId == null || sourceImageStorageObjectId == null)
         ) {
-            messageApi.warning("当前视觉资产缺少原图，无法创建图片理解任务");
+            messageApi.warning("当前视觉资产缺少原图，无法创建图片相关任务");
             return;
         }
-        if (capability !== "image_analysis" && !selectedEntry.originalText?.trim()) {
+        if (
+            capability === "fusion" &&
+            (imageAnalysisObjectId == null ||
+                sourceImageStorageObjectId == null ||
+                !imageAnalysisMarkdown?.trim())
+        ) {
+            messageApi.warning("当前视觉资产缺少图片理解结果，无法创建信息融合任务");
+            return;
+        }
+        if (
+            capability === "fusion" &&
+            (!Number.isInteger(textWeight) || !Number.isInteger(imageWeight))
+        ) {
+            messageApi.warning("当前视觉资产权重未正确设置，无法创建信息融合任务");
+            return;
+        }
+        if (
+            capability !== "image_analysis" &&
+            capability !== "visual" &&
+            capability !== "fusion" &&
+            !selectedEntry.originalText?.trim()
+        ) {
             messageApi.warning("当前条目缺少原文，无法创建 AI 精修任务");
             return;
         }
@@ -276,7 +357,12 @@ export const useSancaiEntryPanelState = ({
             scope: "classics",
             contentType: "SANCAI_ENTRY",
             contentId: selectedEntry.id,
-            objectId: capability === "image_analysis" ? imageAnalysisObjectId : null,
+            objectId:
+                capability === "image_analysis" ||
+                capability === "visual" ||
+                capability === "fusion"
+                    ? imageAnalysisObjectId
+                    : null,
             requestedBy: Number(currentUserId),
             serviceRole: DEFAULT_REFINEMENT_SERVICE_ROLE,
             modelId: DEFAULT_REFINEMENT_MODEL_ID,
@@ -290,7 +376,14 @@ export const useSancaiEntryPanelState = ({
             inputPayloadJson: buildInputPayloadJson(
                 capability,
                 selectedEntry,
-                capability === "image_analysis" ? imageAnalysisObjectId : null
+                capability === "image_analysis" ||
+                    capability === "visual" ||
+                    capability === "fusion"
+                    ? imageAnalysisObjectId
+                    : null,
+                textWeight,
+                imageWeight,
+                imageAnalysisMarkdown
             ),
             locale: "zh-CN"
         });
@@ -300,22 +393,13 @@ export const useSancaiEntryPanelState = ({
         await Promise.all([
             refreshSancaiEntryDetail(),
             refreshSancaiVisualAssets(),
-            queryClient.invalidateQueries({
-                queryKey: [
-                    "ai",
-                    "candidates",
-                    "SANCAI_ENTRY",
-                    selectedEntryId,
-                    selectedVisualAssetId
-                ]
-            })
+            invalidateSancaiContentCandidates(selectedVisualAssetId)
         ]);
     }, [
-        queryClient,
         refreshSancaiEntryDetail,
         refreshSancaiVisualAssets,
-        selectedEntryId,
-        selectedVisualAssetId
+        selectedVisualAssetId,
+        invalidateSancaiContentCandidates
     ]);
 
     return {
@@ -324,6 +408,7 @@ export const useSancaiEntryPanelState = ({
         entryTagNames,
         creatingRefinementCapability,
         invalidateSancaiContentGovernance,
+        invalidateSancaiContentCandidates,
         refreshSancaiEntryDetail,
         createRefinementTask,
         refreshAfterImageAnalysisApplied,

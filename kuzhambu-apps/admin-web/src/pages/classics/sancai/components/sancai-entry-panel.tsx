@@ -622,6 +622,18 @@ export const SancaiEntryPanel = ({
                                     >
                                         创建摘要任务
                                     </Button>
+                                    <Button
+                                        loading={creatingRefinementCapability === "visual"}
+                                        onClick={() => createRefinementTask("visual")}
+                                    >
+                                        创建视觉描述任务
+                                    </Button>
+                                    <Button
+                                        loading={creatingRefinementCapability === "fusion"}
+                                        onClick={() => createRefinementTask("fusion")}
+                                    >
+                                        创建信息融合任务
+                                    </Button>
                                 </div>
                                 <div style={{ marginTop: 12, display: "grid", gap: 8 }}>
                                     {refinementTasks
@@ -629,7 +641,9 @@ export const SancaiEntryPanel = ({
                                             (task) =>
                                                 task.capability === "translate" ||
                                                 task.capability === "summary" ||
-                                                task.capability === "image_analysis"
+                                                task.capability === "image_analysis" ||
+                                                task.capability === "visual" ||
+                                                task.capability === "fusion"
                                         )
                                         .slice(0, 4)
                                         .map((task) => (
@@ -644,7 +658,7 @@ export const SancaiEntryPanel = ({
                             </Card>
                             {selectedVisualAssetId ? (
                                 <AiCandidatePanel
-                                    capabilities={["image_analysis"]}
+                                    capabilities={["image_analysis", "visual", "fusion"]}
                                     contentId={selectedEntry.id}
                                     contentType="SANCAI_ENTRY"
                                     objectId={selectedVisualAssetId}

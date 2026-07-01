@@ -7,7 +7,8 @@ import * as aiCandidateService from "../ai-candidate-service";
 import type { AiCandidateRecord } from "../ai-candidate-types";
 import { AiCandidatePayloadEditor } from "./ai-candidate-payload-editor";
 
-type AiCandidateCapability = "translate" | "summary" | "tags" | "qa" | "image_analysis";
+type AiCandidateCapability =
+    "translate" | "summary" | "tags" | "qa" | "image_analysis" | "visual" | "fusion";
 type CandidateContentType = "SANCAI_ENTRY" | "WANGQI_DOCUMENT" | "MING_CUSTOMS";
 
 interface AiCandidatePanelProps {
@@ -51,7 +52,9 @@ const formatDateTime = (value?: string | null) => {
 };
 
 const isSupportCapability = (capability: string): capability is AiCandidateCapability => {
-    return ["translate", "summary", "tags", "qa", "image_analysis"].includes(capability);
+    return ["translate", "summary", "tags", "qa", "image_analysis", "visual", "fusion"].includes(
+        capability
+    );
 };
 
 export const AiCandidatePanel = ({
@@ -92,10 +95,11 @@ export const AiCandidatePanel = ({
             (candidate) =>
                 candidate.status === "PENDING" &&
                 isSupportCapability(candidate.capability) &&
-                capabilityFilter.has(candidate.capability)
+                capabilityFilter.has(candidate.capability) &&
+                (objectId == null || candidate.objectId === objectId)
         );
         return result;
-    }, [capabilityFilter, pendingCandidatesQuery.data]);
+    }, [capabilityFilter, objectId, pendingCandidatesQuery.data]);
 
     const refreshCandidates = async () => {
         await queryClient.invalidateQueries({

@@ -9,15 +9,7 @@
 
 ## 当前任务项
 
-- [ ] `sancai/candidate-scope`：按 visual asset 收紧候选治理边界
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-VISUAL-ASSET-WORKFLOW-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/common/components/ai-candidate-panel.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/hooks/use-sancai-entry-panel-state.ts`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/service/impl/ClassicsContentApplicationServiceImpl.java`
-    - 处理动作：将 visual asset 级候选与 entry 级候选彻底分离
-    - 验收点：同一 entry 下摘要/标签/问答对候选不会出现在视觉资产候选区，objectId 边界稳定
-    - 重要度：9/10
-
-- [ ] `sancai/image-gen-capability`：补齐生图能力入口与 capability 识别
+- [x] `sancai/image-gen-capability`：补齐生图能力入口与 capability 识别
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-VISUAL-ASSET-WORKFLOW-CLOSURE.md`
     - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/hooks/use-sancai-entry-panel-state.ts`、`kuzhambu-workers/src/kuzhambu_workers/schemas/ai.py`、`kuzhambu-workers/src/kuzhambu_workers/ai/usecase_registry.py`

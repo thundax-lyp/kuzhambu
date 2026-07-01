@@ -23,7 +23,7 @@ def test_ai_invoke_request_accepts_contract_shape() -> None:
 
 @pytest.mark.parametrize(
     "capability",
-    ["image_gen", "fusion", "version_summary"],
+    ["image_gen", "fusion", "version_summary", "visual"],
 )
 def test_ai_capability_contains_canonical_values(capability: str) -> None:
     request = AiInvokeRequest.model_validate(_request_payload(capability))

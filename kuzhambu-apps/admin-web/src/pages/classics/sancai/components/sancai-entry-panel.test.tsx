@@ -488,6 +488,58 @@ describe("SancaiEntryPanel sharing", () => {
         });
     }, 30000);
 
+    it("keeps visual asset candidate panel scoped by capability and visual objectId", async () => {
+        const user = userEvent.setup();
+        vi.mocked(aiCandidateService.list).mockResolvedValue([
+            {
+                candidateId: 8005,
+                capability: "image_analysis",
+                contentType: "SANCAI_ENTRY",
+                contentId: 3001,
+                objectId: 5002,
+                resultFormat: "TEXT",
+                resultPayload: "候选 画像",
+                status: "PENDING",
+                requestedAt: "2026-06-20T01:00:00.000+08:00"
+            },
+            {
+                candidateId: 8006,
+                capability: "summary",
+                contentType: "SANCAI_ENTRY",
+                contentId: 3001,
+                objectId: 5002,
+                resultFormat: "STRUCTURED",
+                resultPayload: "候选 摘要",
+                status: "PENDING",
+                requestedAt: "2026-06-20T01:00:00.000+08:00"
+            },
+            {
+                candidateId: 8007,
+                capability: "visual",
+                contentType: "SANCAI_ENTRY",
+                contentId: 3001,
+                objectId: 5001,
+                resultFormat: "TEXT",
+                resultPayload: "历史 画像",
+                status: "PENDING",
+                requestedAt: "2026-06-20T01:00:00.000+08:00"
+            }
+        ]);
+
+        renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        await user.click(await within(entryTable).findByRole("button", { name: "查看 天地" }));
+
+        await waitFor(() => {
+            expect(screen.queryByText("能力：image_analysis")).toBeInTheDocument();
+        });
+        expect(screen.queryByText("能力：summary")).not.toBeInTheDocument();
+        expect(screen.queryByText("候选 画像")).toBeInTheDocument();
+        expect(screen.queryByText("候选 摘要")).not.toBeInTheDocument();
+        expect(screen.queryByText("历史 画像")).not.toBeInTheDocument();
+    }, 30000);
+
     it("refreshes entry detail, visual assets, and candidate list after applying image analysis", async () => {
         const user = userEvent.setup();
         vi.mocked(aiCandidateService.list).mockResolvedValue([
@@ -671,7 +723,7 @@ describe("SancaiEntryPanel sharing", () => {
         );
 
         expect(
-            await screen.findByText("当前视觉资产缺少原图，无法创建图片理解任务")
+            await screen.findByText("当前视觉资产缺少原图，无法创建图片相关任务")
         ).toBeInTheDocument();
         expect(aiRefinementTaskService.createTask).not.toHaveBeenCalled();
     }, 30000);
