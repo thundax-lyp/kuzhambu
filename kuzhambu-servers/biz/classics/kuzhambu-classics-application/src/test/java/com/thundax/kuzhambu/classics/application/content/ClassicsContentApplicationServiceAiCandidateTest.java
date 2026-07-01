@@ -152,7 +152,6 @@ class ClassicsContentApplicationServiceAiCandidateTest {
 
         SancaiAssetApplicationService assetService = org.mockito.Mockito.mock(SancaiAssetApplicationService.class);
         when(assetService.listVisualAssets(SancaiEntryId.of(11L))).thenReturn(List.of(visualAsset));
-        when(assetService.updateVisualAsset(visualAsset)).thenReturn(SancaiVisualAssetId.of(111L));
 
         AiFacade aiFacade = mockAiFacade(
                 request -> {
@@ -281,13 +280,10 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         assertEquals(11L, result.getContentId());
         assertEquals(null, result.getVersionId());
         assertEquals(null, result.getVersionNo());
-        assertEquals("融合说明", visualAsset.getFusionDescription());
-        assertEquals("old image analysis", visualAsset.getImageAnalysisMarkdown());
-        assertEquals("old visual", visualAsset.getVisualDescription());
         assertEquals(0, repository.insertVersionCount);
         assertEquals(0, repository.updateSancaiEntryAiCount);
         verify(aiFacade).markCandidateApplied(any(MarkAiCandidateAppliedFacadeRequest.class));
-        verify(assetService).updateVisualAsset(visualAsset);
+        verify(assetService).applyFusionDescription(SancaiEntryId.of(11L), SancaiVisualAssetId.of(111L), "融合说明");
     }
 
     @Test

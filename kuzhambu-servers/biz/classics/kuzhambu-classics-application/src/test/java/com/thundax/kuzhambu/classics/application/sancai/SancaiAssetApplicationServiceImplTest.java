@@ -141,8 +141,7 @@ class SancaiAssetApplicationServiceImplTest {
         SancaiVisualAsset olderAsset = visualAsset(4001L, 3001L);
         olderAsset.setVersionNo(5);
         when(repository.getVisualAssetById(SancaiVisualAssetId.of(5001L))).thenReturn(currentAsset);
-        when(repository.listVisualAssetsByEntryId(SancaiEntryId.of(3001L)))
-                .thenReturn(List.of(currentAsset, olderAsset));
+        when(repository.maxVisualAssetVersionNo(SancaiEntryId.of(3001L))).thenReturn(5);
         when(repository.insertVisualAsset(org.mockito.ArgumentMatchers.any()))
                 .thenReturn(SancaiVisualAssetId.of(5002L));
 
