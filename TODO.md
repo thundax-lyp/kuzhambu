@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Workers export regression`：锁定 Classics export worker 对 Wangqi/Ming payload 的兼容性
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-AI-WORKERS-CLOSURE.md`
-    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/render/classics_export.py`、`kuzhambu-workers/tests/test_classics_export.py`、`kuzhambu-workers/tests/test_render_routes.py`、`docs/40-readiness/WORKERS-IMPLEMENTATION-COVERAGE.md`
-    - 处理动作：补或调整 worker export 回归测试，必要时只做向后兼容处理。
-    - 验收点：CSV/JSON/HTML/ZIP 至少稳定保留 `id`、`title`、`text`，且现有 route contract 不回退。
-    - 重要度：7/10
-
 - [ ] `Batch result model`：新增 Classics 共享批量操作结果模型
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-AI-WORKERS-CLOSURE.md`

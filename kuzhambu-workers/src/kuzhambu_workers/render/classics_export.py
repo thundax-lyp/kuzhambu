@@ -99,6 +99,7 @@ def _render_html(title: str, items: list[dict]) -> str:
     rows = "\n".join(
         "<article>"
         f"<h2>{escape(str(item.get('title') or item.get('id') or 'Untitled'))}</h2>"
+        f"<p><strong>ID:</strong> {escape(str(item.get('id') or ''))}</p>"
         f"<p>{escape(str(item.get('text') or ''))}</p>"
         "</article>"
         for item in items

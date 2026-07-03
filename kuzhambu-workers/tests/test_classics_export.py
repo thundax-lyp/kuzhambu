@@ -64,6 +64,66 @@ def test_classics_export_renders_zip_and_can_chunk(tmp_path) -> None:
     assert chunks[-1].chunk_index == metadata.chunk_count - 1
 
 
+@pytest.mark.parametrize(
+    "payload",
+    [
+        {
+            "title": "王圻文档导出",
+            "contentType": "WANGQI_DOCUMENT",
+            "scopeType": "SELECTED_ITEMS",
+            "items": [
+                {
+                    "id": 400000000001,
+                    "title": "王圻文档",
+                    "text": "## 王圻文献正文",
+                    "summary": "记录王圻古籍条目。",
+                    "visibility": "PUBLIC",
+                    "documentTime": "2026-01-01T00:00:00.000+00:00",
+                    "sourceFileStorageObjectId": 7001,
+                }
+            ],
+        },
+        {
+            "title": "明代习俗导出",
+            "contentType": "MING_CUSTOMS",
+            "scopeType": "SELECTED_ITEMS",
+            "items": [
+                {
+                    "id": 500000000001,
+                    "title": "岁时礼仪: 元旦朝贺",
+                    "text": "## 正旦朝贺",
+                    "summary": "记录明代正旦朝贺与家族拜礼。",
+                    "visibility": "PUBLIC",
+                    "category": "RITUAL",
+                }
+            ],
+        },
+    ],
+)
+@pytest.mark.parametrize("output_format", ["CSV", "JSON", "HTML", "ZIP"])
+def test_classics_export_preserves_wangqi_and_ming_item_fields(
+    payload: dict, output_format: str
+) -> None:
+    artifact = render_classics_export(
+        _request(output_format, f"export.{output_format.lower()}", payload)
+    )
+
+    item = payload["items"][0]
+    expected_values = [str(item["id"]), str(item["title"]), str(item["text"])]
+
+    if output_format == "ZIP":
+        with ZipFile(BytesIO(artifact.data)) as archive:
+            for filename in ["data.csv", "data.json", "index.html"]:
+                content = archive.read(filename).decode("utf-8")
+                for expected in expected_values:
+                    assert expected in content
+        return
+
+    decoded = artifact.data.decode("utf-8")
+    for expected in expected_values:
+        assert expected in decoded
+
+
 def test_classics_export_rejects_invalid_items() -> None:
     request = _request("CSV", "export.csv")
     request.input.payload["items"] = {"bad": "shape"}
@@ -72,7 +132,7 @@ def test_classics_export_rejects_invalid_items() -> None:
         render_classics_export(request)
 
 
-def _request(output_format: str, filename: str) -> RenderRequest:
+def _request(output_format: str, filename: str, payload: dict | None = None) -> RenderRequest:
     return RenderRequest.model_validate(
         {
             "requestId": "req-1",
@@ -92,7 +152,8 @@ def _request(output_format: str, filename: str) -> RenderRequest:
             "input": {
                 "snapshotId": "snapshot-1",
                 "contentType": "CLASSICS_EXPORT_SNAPSHOT",
-                "payload": {
+                "payload": payload
+                or {
                     "title": "三才图会导出",
                     "items": [
                         {"id": "1", "title": "第一条", "text": "天地玄黄"},
