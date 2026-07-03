@@ -6,6 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationItemResult;
+import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationResult;
+import com.thundax.kuzhambu.classics.application.sharing.command.BatchShareCreateCommand;
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkCreateCommand;
 import com.thundax.kuzhambu.classics.application.sharing.query.ShareAccessQuery;
 import com.thundax.kuzhambu.classics.application.sharing.result.ShareLinkCreateResult;
@@ -24,7 +27,9 @@ import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsSharedCo
 import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareAccessRecordId;
 import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareLinkId;
 import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareTargetId;
+import com.thundax.kuzhambu.classics.interfaces.admin.common.response.ClassicsBatchOperationResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller.ClassicsSharingAdminController;
+import com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller.request.ClassicsBatchShareCreateRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller.request.ClassicsSharingRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller.response.ClassicsSharingResponse;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
@@ -46,6 +51,11 @@ class ClassicsSharingAdminControllerTest {
     void routesShouldKeepAdminSharingApiPaths() throws Exception {
         assertRequestMapping(ClassicsSharingAdminController.class, "/api/classics/shares");
         assertPostMapping(ClassicsSharingAdminController.class, "create", "create", ClassicsSharingRequest.class);
+        assertPostMapping(
+                ClassicsSharingAdminController.class,
+                "batchCreate",
+                "batch-create",
+                ClassicsBatchShareCreateRequest.class);
         assertPostMapping(ClassicsSharingAdminController.class, "page", "page", ClassicsSharingRequest.class);
         assertPostMapping(
                 ClassicsSharingAdminController.class, "updateStatus", "status/update", ClassicsSharingRequest.class);
@@ -90,6 +100,42 @@ class ClassicsSharingAdminControllerTest {
         assertJsonFields(responseJson, "id", "shareToken", "shareUrl", "title", "visibility", "status", "targets");
         assertEquals("正式标题", response.getTargets().get(0).getTitleSnapshot());
         assertFalse(responseJson.at("/targets/0").has("contentSnapshotJson"), responseJson::toString);
+    }
+
+    @Test
+    void batchCreateRequestAndResponseJsonFieldsShouldRemainStable() throws Exception {
+        ClassicsBatchShareCreateRequest request = OBJECT_MAPPER.readValue(
+                """
+                {
+                  "titlePrefix": "批量-",
+                  "visibility": "PUBLIC",
+                  "status": "ACTIVE",
+                  "visibilityRiskStatus": "PUBLIC_ONLY",
+                  "privateContentConfirmed": true,
+                  "targets": [
+                    {
+                      "contentType": "SANCAI_ENTRY",
+                      "contentId": 100,
+                      "titleSnapshot": "不应接收"
+                    }
+                  ]
+                }
+                """,
+                ClassicsBatchShareCreateRequest.class);
+        JsonNode requestJson = OBJECT_MAPPER.valueToTree(request);
+        assertTrue(requestJson.has("titlePrefix"), requestJson::toString);
+        assertTrue(requestJson.has("privateContentConfirmed"), requestJson::toString);
+        assertFalse(requestJson.at("/targets/0").has("titleSnapshot"), requestJson::toString);
+
+        ClassicsSharingAdminController controller = new ClassicsSharingAdminController(sharingService());
+        ClassicsBatchOperationResponse response = controller.batchCreate(request);
+
+        assertEquals(1, response.getSuccessCount());
+        assertEquals(0, response.getFailureCount());
+        JsonNode responseJson = OBJECT_MAPPER.valueToTree(response);
+        assertJsonFields(responseJson, "successCount", "failureCount", "successes", "failures");
+        assertEquals(10L, responseJson.at("/successes/0/resultId").asLong());
+        assertEquals("ACTIVE", responseJson.at("/successes/0/status").asText());
     }
 
     @Test
@@ -141,6 +187,23 @@ class ClassicsSharingAdminControllerTest {
                                 ClassicsShareLinkStatus.ACTIVE,
                                 null,
                                 List.of(target()));
+                    }
+                    if ("batchCreateLinks".equals(method.getName())) {
+                        BatchShareCreateCommand command = (BatchShareCreateCommand) args[0];
+                        assertEquals("批量-", command.getTitlePrefix());
+                        assertEquals(ClassicsShareVisibility.PUBLIC, command.getVisibility());
+                        assertEquals(ClassicsShareLinkStatus.ACTIVE, command.getStatus());
+                        assertTrue(command.isPrivateContentConfirmed());
+                        assertEquals(
+                                ClassicsContentType.SANCAI_ENTRY,
+                                command.getTargets().get(0).getContentType());
+                        assertEquals(
+                                ClassicsContentId.of(100L),
+                                command.getTargets().get(0).getContentId());
+                        return ClassicsBatchOperationResult.of(
+                                List.of(ClassicsBatchOperationItemResult.success(
+                                        ClassicsContentType.SANCAI_ENTRY.value(), 100L, 10L, "ACTIVE")),
+                                List.of());
                     }
                     if ("pageLinks".equals(method.getName())) {
                         assertEquals("ACTIVE", args[0]);

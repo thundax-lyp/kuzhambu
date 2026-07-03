@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Batch share interface`：新增批量分享 Admin API
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-AI-WORKERS-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/sharing/controller/request/ClassicsBatchShareCreateRequest.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/sharing/assembler/ClassicsSharingInterfaceAssembler.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/sharing/controller/ClassicsSharingAdminController.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/test/java/com/thundax/kuzhambu/classics/interfaces/admin/sharing/ClassicsSharingAdminControllerTest.java`
-    - 处理动作：新增 `POST /api/classics/shares/batch-create` 和 request/assembler/controller 测试。
-    - 验收点：接口返回 `ClassicsBatchOperationResponse`，且不新增 Portal controller 或 Portal endpoint。
-    - 重要度：9/10
-
 - [ ] `Admin Web batch share contract`：新增批量分享前端 service contract
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-AI-WORKERS-CLOSURE.md`
