@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `ClassicsContentAdminController`：接通批量可见性接口分发
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-BATCH-VISIBILITY-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/content/controller/ClassicsContentAdminController.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/test/java/com/thundax/kuzhambu/classics/interfaces/admin/content/ClassicsContentAdminControllerTest.java`
-    - 处理动作：将 `POST /api/classics/content/visibility/change` 按 `contentType` 分发到三类内容 application service，并移除占位失败结果。
-    - 验收点：controller test 覆盖 `SANCAI_ENTRY`、`WANGQI_DOCUMENT`、`MING_CUSTOMS` 分发，且 unsupported `contentType`、unsupported `visibility`、重复 `contentIds` 仍失败。
-    - 重要度：10/10
-
 - [ ] `admin-web classics common`：新增批量可见性服务契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-BATCH-VISIBILITY-CLOSURE.md`
