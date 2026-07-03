@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Admin Web batch share contract`：新增批量分享前端 service contract
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-AI-WORKERS-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/common/classics-share-service.ts`、`kuzhambu-apps/admin-web/src/pages/classics/common/classics-share-types.ts`、`kuzhambu-apps/admin-web/src/pages/classics/common/classics-share-service-contract.test.ts`
-    - 处理动作：新增 batch request/result TS 类型和 `batchCreate` service 方法。
-    - 验收点：contract test 固定 `/classics/shares/batch-create` 请求和批量结果字段。
-    - 重要度：8/10
-
 - [ ] `Sancai Admin batch share`：接入 Sancai 页面批量分享入口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-AI-WORKERS-CLOSURE.md`
