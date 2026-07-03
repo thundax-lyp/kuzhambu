@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.application.sancai.service;
 
+import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationResult;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiCategoryCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiCategorySortCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryCommand;
@@ -59,6 +60,8 @@ public interface SancaiApplicationService {
     void changeEntryStatus(SancaiEntryStatusCommand command);
 
     void changeEntryVisibility(SancaiEntryId id, String visibility);
+
+    ClassicsBatchOperationResult batchChangeEntryVisibility(List<SancaiEntryId> ids, String visibility);
 
     void deleteEntry(SancaiEntryId id);
 }

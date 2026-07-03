@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Sancai batch visibility`：实现 Sancai 批量公开/私有状态修改
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-AI-WORKERS-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sancai/service/SancaiApplicationService.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sancai/service/impl/SancaiApplicationServiceImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/sancai/SancaiApplicationServiceImplTest.java`
-    - 处理动作：批量调用现有 `changeEntryVisibility` 语义并记录 item 级失败。
-    - 验收点：批量修改保留 version、content updated time、search sync，并支持部分失败。
-    - 重要度：8/10
-
 - [ ] `Wangqi batch visibility`：实现 Wangqi 批量公开/私有状态修改
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-AI-WORKERS-CLOSURE.md`
