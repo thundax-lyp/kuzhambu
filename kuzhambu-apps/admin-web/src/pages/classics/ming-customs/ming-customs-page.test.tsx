@@ -34,6 +34,14 @@ const apiResponse = (data: unknown) =>
         )
     );
 
+interface CapturedCall {
+    body: unknown;
+    method: string | undefined;
+    path: string;
+}
+
+const capturedCalls: CapturedCall[] = [];
+
 const readFetchUrl = (input: RequestInfo | URL) => {
     if (typeof input === "string") {
         return input;
@@ -42,6 +50,13 @@ const readFetchUrl = (input: RequestInfo | URL) => {
         return input.href;
     }
     return input.url;
+};
+
+const readFetchBody = (body: BodyInit | null | undefined) => {
+    if (!body) {
+        return undefined;
+    }
+    return JSON.parse(String(body));
 };
 
 const createTestQueryClient = () =>
@@ -54,8 +69,13 @@ const createTestQueryClient = () =>
     });
 
 const installFetchMock = () => {
-    vi.spyOn(globalThis, "fetch").mockImplementation((input) => {
+    vi.spyOn(globalThis, "fetch").mockImplementation((input, init) => {
         const path = readFetchUrl(input).replace("/kuzhambu-admin-api/api", "");
+        capturedCalls.push({
+            body: readFetchBody(init?.body),
+            method: init?.method,
+            path
+        });
 
         if (path.endsWith("/classics/ming-customs/page")) {
             return apiResponse({
@@ -149,6 +169,29 @@ const installFetchMock = () => {
                 ]
             });
         }
+        if (path.endsWith("/classics/content/visibility/change")) {
+            return apiResponse({
+                failureCount: 1,
+                failures: [
+                    {
+                        contentId: 500000000002,
+                        contentType: "MING_CUSTOMS",
+                        failureCode: "BATCH_VISIBILITY_FAILED",
+                        failureReason: "习俗条目不存在",
+                        status: "FAILED"
+                    }
+                ],
+                successCount: 1,
+                successes: [
+                    {
+                        contentId: 500000000001,
+                        contentType: "MING_CUSTOMS",
+                        resultId: 500000000001,
+                        status: "PUBLIC"
+                    }
+                ]
+            });
+        }
 
         return apiResponse(true);
     });
@@ -159,6 +202,7 @@ describe("MingCustomsPage", () => {
 
     beforeEach(() => {
         queryClient = createTestQueryClient();
+        capturedCalls.length = 0;
         localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
         installFetchMock();
     });
@@ -237,6 +281,40 @@ describe("MingCustomsPage", () => {
 
         await waitFor(() => {
             expect(screen.getByText("批量分享结果：成功 1，失败 1")).toBeInTheDocument();
+        });
+        expect(screen.getByText("MING_CUSTOMS#500000000002: 习俗条目不存在")).toBeInTheDocument();
+    }, 30000);
+
+    it("changes selected entries visibility and shows item failures", async () => {
+        const user = userEvent.setup();
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <MingCustomsPage />
+                </AntdApp>
+            </QueryClientProvider>
+        );
+
+        const table = await screen.findByLabelText("明代习俗表格");
+        const batchPublicButton = screen.getByRole("button", { name: "批量公开" });
+        await user.click(within(table).getByRole("checkbox", { name: "Select all" }));
+        await waitFor(() => {
+            expect(batchPublicButton).not.toBeDisabled();
+        });
+        await user.click(batchPublicButton);
+
+        await waitFor(() => {
+            expect(screen.getByText("批量可见性结果：成功 1，失败 1")).toBeInTheDocument();
+        });
+        expect(capturedCalls).toContainEqual({
+            body: {
+                contentIds: [500000000001],
+                contentType: "MING_CUSTOMS",
+                visibility: "PUBLIC"
+            },
+            method: "POST",
+            path: "/classics/content/visibility/change"
         });
         expect(screen.getByText("MING_CUSTOMS#500000000002: 习俗条目不存在")).toBeInTheDocument();
     }, 30000);

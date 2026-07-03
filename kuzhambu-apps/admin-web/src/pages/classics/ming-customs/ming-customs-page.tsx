@@ -6,14 +6,15 @@ import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import { AiCandidatePanel } from "@/pages/classics/common/components/ai-candidate-panel";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import { ClassicsExportJobSection } from "@/pages/classics/common/components/classics-export-job-section";
+import * as contentService from "@/pages/classics/common/classics-content-service";
 import * as exportService from "@/pages/classics/common/classics-export-service";
 import * as shareService from "@/pages/classics/common/classics-share-service";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { ClassicsContentTagPanel } from "@/pages/classics/common/components/classics-content-tag-panel";
 import { ClassicsContentQaPanel } from "@/pages/classics/common/components/classics-content-qa-panel";
 import * as currentUserService from "@/service/current-user-service";
+import type { ClassicsBatchOperationRecord } from "@/pages/classics/common/classics-content-types";
 import type { ClassicsExportScopePayload } from "@/pages/classics/common/classics-export-types";
-import type { ClassicsBatchOperationRecord } from "@/pages/classics/common/classics-share-types";
 import { MingCustomsKeywordCloud } from "./components/ming-customs-keyword-cloud";
 import { MingCustomsList } from "./components/ming-customs-list";
 import { MingCustomsModel } from "./components/ming-customs-model";
@@ -131,6 +132,8 @@ export const MingCustomsPage = () => {
     const [batchShareResult, setBatchShareResult] = useState<ClassicsBatchOperationRecord | null>(
         null
     );
+    const [batchVisibilityResult, setBatchVisibilityResult] =
+        useState<ClassicsBatchOperationRecord | null>(null);
     const [creatingRefinementCapability, setCreatingRefinementCapability] = useState<
         "summary" | null
     >(null);
@@ -292,6 +295,19 @@ export const MingCustomsPage = () => {
             messageApi.error(error instanceof Error ? error.message : "批量分享创建失败");
         }
     });
+    const batchVisibilityMutation = useMutation({
+        mutationFn: contentService.changeVisibilityBatch,
+        onSuccess: async (result) => {
+            setBatchVisibilityResult(result);
+            await invalidateMingCustoms();
+            messageApi.success(
+                `批量可见性完成：成功 ${result.successCount}，失败 ${result.failureCount}`
+            );
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "批量可见性修改失败");
+        }
+    });
     const exportMutation = useMutation({
         mutationFn: (entry: MingCustomsRecord) =>
             exportService.create({
@@ -437,6 +453,18 @@ export const MingCustomsPage = () => {
             })),
             titlePrefix: "明代习俗批量分享 - ",
             visibility: "PUBLIC"
+        });
+    };
+
+    const changeSelectedVisibility = (visibility: "PRIVATE" | "PUBLIC") => {
+        if (!selectedEntries.length) {
+            messageApi.warning("请先选择要批量修改可见性的明代习俗");
+            return;
+        }
+        batchVisibilityMutation.mutate({
+            contentIds: selectedEntries.map((entry) => entry.id),
+            contentType: "MING_CUSTOMS",
+            visibility
         });
     };
 
@@ -591,6 +619,22 @@ export const MingCustomsPage = () => {
                             >
                                 批量分享
                             </Button>
+                            <Button
+                                disabled={!selectedEntries.length}
+                                loading={batchVisibilityMutation.isPending}
+                                style={{ marginLeft: 8 }}
+                                onClick={() => changeSelectedVisibility("PUBLIC")}
+                            >
+                                批量公开
+                            </Button>
+                            <Button
+                                disabled={!selectedEntries.length}
+                                loading={batchVisibilityMutation.isPending}
+                                style={{ marginLeft: 8 }}
+                                onClick={() => changeSelectedVisibility("PRIVATE")}
+                            >
+                                批量私有
+                            </Button>
                         </div>
                         {batchShareResult ? (
                             <Alert
@@ -607,6 +651,26 @@ export const MingCustomsPage = () => {
                                               )
                                               .join("；")
                                         : "全部选中明代习俗已创建分享记录。"
+                                }
+                            />
+                        ) : null}
+                        {batchVisibilityResult ? (
+                            <Alert
+                                showIcon
+                                type={
+                                    batchVisibilityResult.failureCount > 0 ? "warning" : "success"
+                                }
+                                style={{ marginBottom: 12 }}
+                                message={`批量可见性结果：成功 ${batchVisibilityResult.successCount}，失败 ${batchVisibilityResult.failureCount}`}
+                                description={
+                                    batchVisibilityResult.failures.length
+                                        ? batchVisibilityResult.failures
+                                              .map(
+                                                  (item) =>
+                                                      `${item.contentType}#${item.contentId}: ${item.failureReason || item.failureCode || "未知失败"}`
+                                              )
+                                              .join("；")
+                                        : "全部选中明代习俗已更新可见性。"
                                 }
                             />
                         ) : null}
