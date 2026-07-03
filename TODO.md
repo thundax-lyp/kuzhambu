@@ -11,12 +11,4 @@
 
 ## 待审阅任务项
 
-- [ ] `Workers full verification`：执行 Python workers 全量 format -> lint -> compile -> test
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`kuzhambu-workers/`
-    - 处理动作：按顺序执行 Python workers 全量格式检查、lint、编译检查和测试。
-    - 验收点：按 `format -> lint -> compile -> test` 顺序通过 `ruff format --check`、`ruff check`、`python -m compileall src`、`pytest -p no:capture`。
-    - 重要度：10/10
-
 ## 待讨论项
