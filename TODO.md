@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Servers full verification`：执行 Java servers 全量 format -> checkstyle -> compile -> test
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`kuzhambu-servers/`
-    - 处理动作：按顺序执行 Java servers 全量格式检查、静态检查、编译和测试。
-    - 验收点：按 `format -> checkstyle -> compile -> test` 顺序通过 `mvn spotless:check`、`mvn checkstyle:check`、`mvn -DskipTests compile`、`mvn test`。
-    - 重要度：10/10
-
 - [ ] `Apps full verification`：执行 frontend apps 全量 format -> lint -> build -> test
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`
