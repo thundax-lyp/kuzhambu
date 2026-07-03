@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Implementation Coverage`：更新已关闭能力的 implementation coverage
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-AI-WORKERS-CLOSURE.md`
-    - 范围对象：`docs/40-readiness/CLASSICS-IMPLEMENTATION-COVERAGE.md`、`docs/40-readiness/AI-IMPLEMENTATION-COVERAGE.md`、`docs/40-readiness/WORKERS-IMPLEMENTATION-COVERAGE.md`
-    - 处理动作：在代码和测试通过后，将已关闭项更新为完成并保留剩余未完成项。
-    - 验收点：coverage 状态与实际交付和测试结果一致。
-    - 重要度：9/10
-
 - [ ] `RUNBOOK closure`：清理阶段性 RUNBOOK
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`
