@@ -45,8 +45,10 @@ export interface WangqiDocumentListProps {
     onExport: (record: WangqiDocumentRecord) => void;
     onOpenEdit: (record: WangqiDocumentRecord) => void;
     onShare: (record: WangqiDocumentRecord) => void;
+    onSelectedDocumentIdsChange: (ids: number[]) => void;
     onSortDirectionChange: (sortDirection: "ASC" | "DESC") => void;
     pagination: KuzhambuTableProps<WangqiDocumentRecord>["pagination"];
+    selectedDocumentIds: number[];
     sortDirection: "ASC" | "DESC";
 }
 
@@ -57,8 +59,10 @@ export const WangqiDocumentList = ({
     onExport,
     onOpenEdit,
     onShare,
+    onSelectedDocumentIdsChange,
     onSortDirectionChange,
     pagination,
+    selectedDocumentIds,
     sortDirection
 }: WangqiDocumentListProps) => {
     const columns: KuzhambuTableProps<WangqiDocumentRecord>["columns"] = [
@@ -163,6 +167,10 @@ export const WangqiDocumentList = ({
                 onSortDirectionChange(activeSorter.order === "ascend" ? "ASC" : "DESC");
             }}
             pagination={pagination}
+            rowSelection={{
+                selectedRowKeys: selectedDocumentIds,
+                onChange: (keys) => onSelectedDocumentIdsChange(keys.map((key) => Number(key)))
+            }}
         />
     );
 };

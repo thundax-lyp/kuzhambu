@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { App as AntdApp } from "antd";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
@@ -91,6 +91,29 @@ const installFetchMock = () => {
         if (path.endsWith("/classics/wangqi/documents/timeline/list")) {
             return apiResponse([]);
         }
+        if (path.endsWith("/classics/shares/batch-create")) {
+            return apiResponse({
+                failureCount: 1,
+                failures: [
+                    {
+                        contentId: 400000000002,
+                        contentType: "WANGQI_DOCUMENT",
+                        failureCode: "CONTENT_NOT_FOUND",
+                        failureReason: "文档不存在",
+                        status: "FAILED"
+                    }
+                ],
+                successCount: 1,
+                successes: [
+                    {
+                        contentId: 400000000001,
+                        contentType: "WANGQI_DOCUMENT",
+                        resultId: 9101,
+                        status: "ACTIVE"
+                    }
+                ]
+            });
+        }
         return apiResponse(true);
     });
 };
@@ -153,5 +176,27 @@ describe("WangqiPage", () => {
                 locale: "zh-CN"
             })
         );
+    }, 30000);
+
+    it("creates batch shares from selected documents and shows item failures", async () => {
+        const user = userEvent.setup();
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <WangqiPage />
+                </AntdApp>
+            </QueryClientProvider>
+        );
+
+        const table = await screen.findByLabelText("王圻文档表格");
+        const rowCheckbox = within(table).getAllByRole("checkbox")[1];
+        await user.click(rowCheckbox);
+        await user.click(screen.getByRole("button", { name: "批量分享" }));
+
+        await waitFor(() => {
+            expect(screen.getByText("批量分享结果：成功 1，失败 1")).toBeInTheDocument();
+        });
+        expect(screen.getByText("WANGQI_DOCUMENT#400000000002: 文档不存在")).toBeInTheDocument();
     }, 30000);
 });

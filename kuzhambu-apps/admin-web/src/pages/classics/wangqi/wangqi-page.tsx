@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Button, Card, Select } from "antd";
+import { Alert, App, Button, Card, Select } from "antd";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
@@ -13,6 +13,7 @@ import { ClassicsExportJobSection } from "@/pages/classics/common/components/cla
 import * as shareService from "@/pages/classics/common/classics-share-service";
 import * as currentUserService from "@/service/current-user-service";
 import type { ClassicsExportScopePayload } from "@/pages/classics/common/classics-export-types";
+import type { ClassicsBatchOperationRecord } from "@/pages/classics/common/classics-share-types";
 import { WangqiDocumentList } from "./components/wangqi-document-list";
 import { WangqiDocumentModel } from "./components/wangqi-document-model";
 import { WangqiStorageFilePanel } from "./components/wangqi-storage-file-panel";
@@ -121,6 +122,10 @@ export const WangqiPage = () => {
     const [editorOpen, setEditorOpen] = useState(false);
     const [editingDocument, setEditingDocument] = useState<WangqiDocumentRecord | null>(null);
     const [selectedVersionId, setSelectedVersionId] = useState<number | null>(null);
+    const [selectedDocumentIds, setSelectedDocumentIds] = useState<number[]>([]);
+    const [batchShareResult, setBatchShareResult] = useState<ClassicsBatchOperationRecord | null>(
+        null
+    );
     const [creatingRefinementCapability, setCreatingRefinementCapability] = useState<
         "summary" | null
     >(null);
@@ -215,6 +220,10 @@ export const WangqiPage = () => {
         [refinementTasksQuery.data?.items]
     );
     const exportJobs = exportJobsQuery.data?.records || [];
+    const selectedDocuments = useMemo(
+        () => records.filter((record) => selectedDocumentIds.includes(record.id)),
+        [records, selectedDocumentIds]
+    );
 
     const invalidateWangqi = useCallback(async () => {
         await Promise.all([
@@ -314,6 +323,18 @@ export const WangqiPage = () => {
         },
         onError: (error) => {
             messageApi.error(error instanceof Error ? error.message : "分享创建失败");
+        }
+    });
+    const batchShareMutation = useMutation({
+        mutationFn: shareService.createBatch,
+        onSuccess: (result) => {
+            setBatchShareResult(result);
+            messageApi.success(
+                `批量分享完成：成功 ${result.successCount}，失败 ${result.failureCount}`
+            );
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "批量分享创建失败");
         }
     });
     const exportMutation = useMutation({
@@ -465,6 +486,23 @@ export const WangqiPage = () => {
         });
     };
 
+    const shareSelectedDocuments = () => {
+        if (!selectedDocuments.length) {
+            messageApi.warning("请先选择要批量分享的王圻文档");
+            return;
+        }
+        batchShareMutation.mutate({
+            privateContentConfirmed: false,
+            status: "ACTIVE",
+            targets: selectedDocuments.map((document) => ({
+                contentId: document.id,
+                contentType: "WANGQI_DOCUMENT"
+            })),
+            titlePrefix: "王圻批量分享 - ",
+            visibility: "PUBLIC"
+        });
+    };
+
     const exportDocument = (document: WangqiDocumentRecord) => {
         exportMutation.mutate(document);
     };
@@ -580,6 +618,33 @@ export const WangqiPage = () => {
                                 void invalidateExportJobs();
                             }}
                         />
+                        <div style={{ marginBottom: 12 }}>
+                            <Button
+                                disabled={!selectedDocuments.length}
+                                loading={batchShareMutation.isPending}
+                                onClick={shareSelectedDocuments}
+                            >
+                                批量分享
+                            </Button>
+                        </div>
+                        {batchShareResult ? (
+                            <Alert
+                                showIcon
+                                type={batchShareResult.failureCount > 0 ? "warning" : "success"}
+                                style={{ marginBottom: 12 }}
+                                message={`批量分享结果：成功 ${batchShareResult.successCount}，失败 ${batchShareResult.failureCount}`}
+                                description={
+                                    batchShareResult.failures.length
+                                        ? batchShareResult.failures
+                                              .map(
+                                                  (item) =>
+                                                      `${item.contentType}#${item.contentId}: ${item.failureReason || item.failureCode || "未知失败"}`
+                                              )
+                                              .join("；")
+                                        : "全部选中王圻文档已创建分享记录。"
+                                }
+                            />
+                        ) : null}
                         <WangqiDocumentList
                             loading={pageQuery.isLoading}
                             dataSource={records}
@@ -587,6 +652,7 @@ export const WangqiPage = () => {
                             onExport={exportDocument}
                             onOpenEdit={openEditEditor}
                             onShare={shareDocument}
+                            onSelectedDocumentIdsChange={setSelectedDocumentIds}
                             onSortDirectionChange={sortWangqiDocuments}
                             pagination={{
                                 current: currentPageNo,
@@ -597,6 +663,7 @@ export const WangqiPage = () => {
                             sortDirection={
                                 query.sortDirection || DEFAULT_WANGQI_FILTERS.sortDirection
                             }
+                            selectedDocumentIds={selectedDocumentIds}
                         />
                     </>
                 }
