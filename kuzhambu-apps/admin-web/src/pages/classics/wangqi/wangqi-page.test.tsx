@@ -190,9 +190,12 @@ describe("WangqiPage", () => {
         );
 
         const table = await screen.findByLabelText("王圻文档表格");
-        const rowCheckbox = within(table).getAllByRole("checkbox")[1];
-        await user.click(rowCheckbox);
-        await user.click(screen.getByRole("button", { name: "批量分享" }));
+        const batchShareButton = screen.getByRole("button", { name: "批量分享" });
+        await user.click(within(table).getByRole("checkbox", { name: "Select all" }));
+        await waitFor(() => {
+            expect(batchShareButton).not.toBeDisabled();
+        });
+        await user.click(batchShareButton);
 
         await waitFor(() => {
             expect(screen.getByText("批量分享结果：成功 1，失败 1")).toBeInTheDocument();
