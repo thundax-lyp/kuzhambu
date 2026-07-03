@@ -42,6 +42,7 @@ export interface WangqiDocumentListProps {
     dataSource: WangqiDocumentRecord[];
     loading?: boolean;
     onDelete: (record: WangqiDocumentRecord) => void;
+    onExport: (record: WangqiDocumentRecord) => void;
     onOpenEdit: (record: WangqiDocumentRecord) => void;
     onShare: (record: WangqiDocumentRecord) => void;
     onSortDirectionChange: (sortDirection: "ASC" | "DESC") => void;
@@ -53,6 +54,7 @@ export const WangqiDocumentList = ({
     dataSource,
     loading = false,
     onDelete,
+    onExport,
     onOpenEdit,
     onShare,
     onSortDirectionChange,
@@ -127,6 +129,12 @@ export const WangqiDocumentList = ({
                     text: "分享",
                     ariaLabel: `分享 ${record.title || "未命名文档"}`,
                     onClick: () => onShare(record)
+                },
+                {
+                    key: "export",
+                    text: "导出",
+                    ariaLabel: `导出 ${record.title || "未命名文档"}`,
+                    onClick: () => onExport(record)
                 },
                 { type: "divider" },
                 {

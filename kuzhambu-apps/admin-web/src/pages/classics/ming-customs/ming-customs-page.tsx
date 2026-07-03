@@ -12,6 +12,7 @@ import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { ClassicsContentTagPanel } from "@/pages/classics/common/components/classics-content-tag-panel";
 import { ClassicsContentQaPanel } from "@/pages/classics/common/components/classics-content-qa-panel";
 import * as currentUserService from "@/service/current-user-service";
+import type { ClassicsExportScopePayload } from "@/pages/classics/common/classics-export-types";
 import { MingCustomsKeywordCloud } from "./components/ming-customs-keyword-cloud";
 import { MingCustomsList } from "./components/ming-customs-list";
 import { MingCustomsModel } from "./components/ming-customs-model";
@@ -67,6 +68,27 @@ const buildInputPayloadJson = (entry: MingCustomsRecord) => {
         content: entry.content || null,
         contentFormat: entry.contentFormat || null
     });
+};
+
+const buildExportScopeJson = (entry: MingCustomsRecord) => {
+    const title = readTitle(entry);
+    const scopePayload: ClassicsExportScopePayload = {
+        title: `${title} 导出`,
+        contentType: "MING_CUSTOMS",
+        scopeType: "SELECTED_ITEMS",
+        items: [
+            {
+                id: entry.id,
+                title,
+                text: entry.content || entry.originalExcerpts || "",
+                summary: entry.summary || null,
+                visibility: entry.visibility || null,
+                category: entry.category || null
+            }
+        ]
+    };
+
+    return JSON.stringify(scopePayload);
 };
 
 interface MingCustomsFilters {
@@ -250,19 +272,14 @@ export const MingCustomsPage = () => {
         }
     });
     const exportMutation = useMutation({
-        mutationFn: (entry: MingCustomsRecord) => {
-            const title = `${readTitle(entry)} 导出`;
-            return exportService.create({
+        mutationFn: (entry: MingCustomsRecord) =>
+            exportService.create({
                 contentType: "MING_CUSTOMS",
                 exportKind: "CONTENT_DATASET",
                 exportFormat: "HTML",
                 scopeType: "SELECTED_ITEMS",
-                scopeJson: JSON.stringify({
-                    title,
-                    ids: [entry.id]
-                })
-            });
-        },
+                scopeJson: buildExportScopeJson(entry)
+            }),
         onSuccess: async () => {
             await invalidateExportJobs();
             messageApi.success("导出任务已提交，请到下方任务列表查看进度。");

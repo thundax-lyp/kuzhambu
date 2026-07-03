@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Admin Web export`：接入 Wangqi/Ming 导出请求与下载 contract
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-AI-WORKERS-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/common/classics-export-service.ts`、`kuzhambu-apps/admin-web/src/pages/classics/common/classics-export-types.ts`、`kuzhambu-apps/admin-web/src/pages/classics/common/classics-export-service-contract.test.ts`、`kuzhambu-apps/admin-web/src/pages/classics/wangqi/wangqi-page.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/ming-customs/ming-customs-page.tsx`
-    - 处理动作：让 Admin Web 为 Wangqi/Ming 生成符合 RUNBOOK 字段约束的 export `scopeJson` 并保留下载字段。
-    - 验收点：contract test 固定 create/page/content download 字段，页面能发起对应 content type 的导出。
-    - 重要度：8/10
-
 - [ ] `Workers export regression`：锁定 Classics export worker 对 Wangqi/Ming payload 的兼容性
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-AI-WORKERS-CLOSURE.md`

@@ -5,11 +5,14 @@ import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/us
 import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import { AiCandidatePanel } from "@/pages/classics/common/components/ai-candidate-panel";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
+import * as exportService from "@/pages/classics/common/classics-export-service";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { ClassicsContentQaPanel } from "@/pages/classics/common/components/classics-content-qa-panel";
 import { ClassicsContentTagPanel } from "@/pages/classics/common/components/classics-content-tag-panel";
+import { ClassicsExportJobSection } from "@/pages/classics/common/components/classics-export-job-section";
 import * as shareService from "@/pages/classics/common/classics-share-service";
 import * as currentUserService from "@/service/current-user-service";
+import type { ClassicsExportScopePayload } from "@/pages/classics/common/classics-export-types";
 import { WangqiDocumentList } from "./components/wangqi-document-list";
 import { WangqiDocumentModel } from "./components/wangqi-document-model";
 import { WangqiStorageFilePanel } from "./components/wangqi-storage-file-panel";
@@ -33,6 +36,7 @@ const DEFAULT_WANGQI_FILTERS: WangqiFilters = {
     visibility: "ALL"
 };
 const TASK_POLL_INTERVAL_MS = 3000;
+const EXPORT_PAGE_SIZE = 8;
 const DEFAULT_REFINEMENT_MODEL_ID = 1;
 const DEFAULT_REFINEMENT_MODEL_NAME = "gpt-5.5";
 const DEFAULT_REFINEMENT_SERVICE_ROLE = "PRIMARY";
@@ -76,6 +80,32 @@ const buildInputPayloadJson = (document: WangqiDocumentRecord) => {
     });
 };
 
+const readDocumentTitle = (document: WangqiDocumentRecord) => {
+    return document.title?.trim() || `王圻文档 ${document.id}`;
+};
+
+const buildExportScopeJson = (document: WangqiDocumentRecord) => {
+    const title = readDocumentTitle(document);
+    const scopePayload: ClassicsExportScopePayload = {
+        title: `${title} 导出`,
+        contentType: "WANGQI_DOCUMENT",
+        scopeType: "SELECTED_ITEMS",
+        items: [
+            {
+                id: document.id,
+                title,
+                text: document.content || "",
+                summary: document.summary || null,
+                visibility: document.visibility || null,
+                documentTime: document.documentTime || null,
+                sourceFileStorageObjectId: document.storageObjectId || null
+            }
+        ]
+    };
+
+    return JSON.stringify(scopePayload);
+};
+
 export const WangqiPage = () => {
     const { message: messageApi } = App.useApp();
     const confirm = useKuzhambuConfirm();
@@ -116,6 +146,17 @@ export const WangqiPage = () => {
     const currentUserQuery = useQuery({
         queryKey: ["sys", "current-user", "info"],
         queryFn: currentUserService.getCurrentUserInfo,
+        retry: false
+    });
+    const exportJobsQuery = useQuery({
+        queryKey: ["classics", "wangqi", "exports", "jobs"],
+        queryFn: () =>
+            exportService.page({
+                pageNo: 1,
+                pageSize: EXPORT_PAGE_SIZE,
+                contentType: "WANGQI_DOCUMENT",
+                exportKind: "CONTENT_DATASET"
+            }),
         retry: false
     });
     const currentUserId = Number(currentUserQuery.data?.id ?? 0);
@@ -173,6 +214,7 @@ export const WangqiPage = () => {
         () => refinementTasksQuery.data?.items || [],
         [refinementTasksQuery.data?.items]
     );
+    const exportJobs = exportJobsQuery.data?.records || [];
 
     const invalidateWangqi = useCallback(async () => {
         await Promise.all([
@@ -196,6 +238,11 @@ export const WangqiPage = () => {
     const invalidateRefinementTasks = async () => {
         await queryClient.invalidateQueries({
             queryKey: ["classics", "wangqi", "refinement", "tasks", activeDocument?.id]
+        });
+    };
+    const invalidateExportJobs = async () => {
+        await queryClient.invalidateQueries({
+            queryKey: ["classics", "wangqi", "exports", "jobs"]
         });
     };
 
@@ -267,6 +314,23 @@ export const WangqiPage = () => {
         },
         onError: (error) => {
             messageApi.error(error instanceof Error ? error.message : "分享创建失败");
+        }
+    });
+    const exportMutation = useMutation({
+        mutationFn: (document: WangqiDocumentRecord) =>
+            exportService.create({
+                contentType: "WANGQI_DOCUMENT",
+                exportKind: "CONTENT_DATASET",
+                exportFormat: "HTML",
+                scopeType: "SELECTED_ITEMS",
+                scopeJson: buildExportScopeJson(document)
+            }),
+        onSuccess: async () => {
+            await invalidateExportJobs();
+            messageApi.success("导出任务已提交，请到下方任务列表查看进度。");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "导出提交失败");
         }
     });
     const createRefinementTaskMutation = useMutation({
@@ -388,7 +452,7 @@ export const WangqiPage = () => {
     };
 
     const shareDocument = (document: WangqiDocumentRecord) => {
-        const title = document.title?.trim() || `王圻文档 ${document.id}`;
+        const title = readDocumentTitle(document);
         shareDocumentMutation.mutate({
             targets: [
                 {
@@ -399,6 +463,10 @@ export const WangqiPage = () => {
             title: `${title} 分享`,
             visibility: "PUBLIC"
         });
+    };
+
+    const exportDocument = (document: WangqiDocumentRecord) => {
+        exportMutation.mutate(document);
     };
 
     const createRefinementTask = (document: WangqiDocumentRecord) => {
@@ -499,21 +567,38 @@ export const WangqiPage = () => {
                 searchValue={searchText}
                 onSearchChange={searchWangqi}
                 content={
-                    <WangqiDocumentList
-                        loading={pageQuery.isLoading}
-                        dataSource={records}
-                        onDelete={deleteDocument}
-                        onOpenEdit={openEditEditor}
-                        onShare={shareDocument}
-                        onSortDirectionChange={sortWangqiDocuments}
-                        pagination={{
-                            current: currentPageNo,
-                            pageSize: currentPageSize,
-                            total: totalCount,
-                            onChange: (pageNo, pageSize) => updateQuery({ pageNo, pageSize })
-                        }}
-                        sortDirection={query.sortDirection || DEFAULT_WANGQI_FILTERS.sortDirection}
-                    />
+                    <>
+                        <ClassicsExportJobSection
+                            items={exportJobs}
+                            loading={exportJobsQuery.isLoading || exportMutation.isPending}
+                            onDownload={(job) => {
+                                if (job.downloadUrl) {
+                                    window.open(job.downloadUrl, "_blank", "noopener,noreferrer");
+                                }
+                            }}
+                            onRefresh={() => {
+                                void invalidateExportJobs();
+                            }}
+                        />
+                        <WangqiDocumentList
+                            loading={pageQuery.isLoading}
+                            dataSource={records}
+                            onDelete={deleteDocument}
+                            onExport={exportDocument}
+                            onOpenEdit={openEditEditor}
+                            onShare={shareDocument}
+                            onSortDirectionChange={sortWangqiDocuments}
+                            pagination={{
+                                current: currentPageNo,
+                                pageSize: currentPageSize,
+                                total: totalCount,
+                                onChange: (pageNo, pageSize) => updateQuery({ pageNo, pageSize })
+                            }}
+                            sortDirection={
+                                query.sortDirection || DEFAULT_WANGQI_FILTERS.sortDirection
+                            }
+                        />
+                    </>
                 }
             />
             <WangqiDocumentModel
