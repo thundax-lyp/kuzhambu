@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Sancai Admin batch share`：接入 Sancai 页面批量分享入口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-AI-WORKERS-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-page.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-page.test.tsx`
-    - 处理动作：在已有选择态基础上调用 `classics-share-service.batchCreate`。
-    - 验收点：页面展示批量分享成功数、失败数和失败原因。
-    - 重要度：7/10
-
 - [ ] `Wangqi Admin batch share`：接入 Wangqi 页面批量分享入口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-AI-WORKERS-CLOSURE.md`

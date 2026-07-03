@@ -1,9 +1,11 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { App, Button, Empty, Skeleton, Tag, Typography } from "antd";
+import { Alert, App, Button, Empty, Skeleton, Tag, Typography } from "antd";
 import { useMemo, useState } from "react";
 import { KuzhambuTable } from "@/components/kuzhambu-table";
 import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import * as shareService from "@/pages/classics/common/classics-share-service";
+import type { ClassicsBatchOperationRecord } from "@/pages/classics/common/classics-share-types";
 import * as entryService from "../services/sancai-entry-service";
 import type { SancaiEntryRecord, SancaiVolumeRecord } from "../sancai-types";
 
@@ -67,6 +69,9 @@ export const SancaiEntryList = ({
     const { message: messageApi } = App.useApp();
     const [selectedRowKeys, setSelectedRowKeys] = useState<number[]>([]);
     const [activeBatchId, setActiveBatchId] = useState<number | null>(null);
+    const [batchShareResult, setBatchShareResult] = useState<ClassicsBatchOperationRecord | null>(
+        null
+    );
 
     const activeBatchQuery = useQuery({
         queryKey: ["classics", "sancai", "refinement", "batch", activeBatchId],
@@ -102,6 +107,19 @@ export const SancaiEntryList = ({
         }
     });
 
+    const createBatchShareMutation = useMutation({
+        mutationFn: shareService.createBatch,
+        onSuccess: (result) => {
+            setBatchShareResult(result);
+            messageApi.success(
+                `批量分享完成：成功 ${result.successCount}，失败 ${result.failureCount}`
+            );
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "批量分享创建失败");
+        }
+    });
+
     const selectedEntries = useMemo(
         () => entries.filter((entry) => selectedRowKeys.includes(entry.id)),
         [entries, selectedRowKeys]
@@ -121,6 +139,23 @@ export const SancaiEntryList = ({
             capability,
             contentType: "SANCAI_ENTRY",
             totalCount: selectedEntries.length
+        });
+    };
+
+    const startBatchShare = () => {
+        if (!selectedEntries.length) {
+            messageApi.warning("请先选择要批量分享的条目");
+            return;
+        }
+        createBatchShareMutation.mutate({
+            privateContentConfirmed: false,
+            status: "ACTIVE",
+            targets: selectedEntries.map((entry) => ({
+                contentId: entry.id,
+                contentType: "SANCAI_ENTRY"
+            })),
+            titlePrefix: "三才图会批量分享 - ",
+            visibility: "PUBLIC"
         });
     };
 
@@ -230,6 +265,13 @@ export const SancaiEntryList = ({
                     >
                         批量视觉处理
                     </Button>
+                    <Button
+                        disabled={!selectedEntries.length}
+                        loading={createBatchShareMutation.isPending}
+                        onClick={startBatchShare}
+                    >
+                        批量分享
+                    </Button>
                 </KuzhambuSpace>
                 {activeBatch ? (
                     <KuzhambuSpace wrap>
@@ -255,6 +297,24 @@ export const SancaiEntryList = ({
                     </KuzhambuSpace>
                 ) : null}
             </KuzhambuSpace>
+            {batchShareResult ? (
+                <Alert
+                    showIcon
+                    type={batchShareResult.failureCount > 0 ? "warning" : "success"}
+                    style={{ marginBottom: 12 }}
+                    message={`批量分享结果：成功 ${batchShareResult.successCount}，失败 ${batchShareResult.failureCount}`}
+                    description={
+                        batchShareResult.failures.length
+                            ? batchShareResult.failures
+                                  .map(
+                                      (item) =>
+                                          `${item.contentType}#${item.contentId}: ${item.failureReason || item.failureCode || "未知失败"}`
+                                  )
+                                  .join("；")
+                            : "全部选中条目已创建分享记录。"
+                    }
+                />
+            ) : null}
             <KuzhambuTable
                 className="sancai-entry-table"
                 ariaLabel="三才图会条目表格"

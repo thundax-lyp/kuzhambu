@@ -111,6 +111,27 @@ vi.mock("@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm", () => 
 }));
 
 vi.mock("@/pages/classics/common/classics-share-service", () => ({
+    createBatch: vi.fn(async () => ({
+        failureCount: 1,
+        failures: [
+            {
+                contentId: 3002,
+                contentType: "SANCAI_ENTRY",
+                failureCode: "DUPLICATE_TARGET",
+                failureReason: "重复目标",
+                status: "FAILED"
+            }
+        ],
+        successCount: 1,
+        successes: [
+            {
+                contentId: 3001,
+                contentType: "SANCAI_ENTRY",
+                resultId: 9001,
+                status: "ACTIVE"
+            }
+        ]
+    })),
     create: vi.fn(async () => ({
         id: 9001,
         shareToken: "abc123_-",
@@ -460,6 +481,35 @@ describe("SancaiEntryPanel sharing", () => {
             title: "天地 分享",
             visibility: "PUBLIC"
         });
+    }, 30000);
+
+    it("creates public shares from selected entries and shows item failures", async () => {
+        const user = userEvent.setup();
+
+        renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        const rowCheckbox = within(entryTable).getAllByRole("checkbox")[1];
+        await user.click(rowCheckbox);
+        await user.click(screen.getByRole("button", { name: "批量分享" }));
+
+        await waitFor(() => {
+            expect(shareService.createBatch).toHaveBeenCalled();
+        });
+        expect(vi.mocked(shareService.createBatch).mock.calls[0]?.[0]).toEqual({
+            privateContentConfirmed: false,
+            status: "ACTIVE",
+            targets: [
+                {
+                    contentId: 3001,
+                    contentType: "SANCAI_ENTRY"
+                }
+            ],
+            titlePrefix: "三才图会批量分享 - ",
+            visibility: "PUBLIC"
+        });
+        expect(await screen.findByText("批量分享结果：成功 1，失败 1")).toBeInTheDocument();
+        expect(await screen.findByText("SANCAI_ENTRY#3002: 重复目标")).toBeInTheDocument();
     }, 30000);
 
     it("creates image analysis task from selected visual asset and carries visual asset objectId", async () => {
