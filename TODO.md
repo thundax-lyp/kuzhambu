@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `CLASSICS-IMPLEMENTATION-COVERAGE`：更新批量可见性覆盖状态
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-BATCH-VISIBILITY-CLOSURE.md`
-    - 范围对象：`docs/40-readiness/CLASSICS-IMPLEMENTATION-COVERAGE.md`
-    - 处理动作：将批量公开/私有状态完整入口更新为已收口，并保留细粒度权限过滤为剩余项。
-    - 验收点：文档不再把“批量公开/私有状态完整入口”描述为未收口，且明确 `classics_share_target.content_visibility_snapshot` 不重算历史快照。
-    - 重要度：8/10
-
 - [ ] `kuzhambu-servers`：执行 Classics 批量可见性 servers 验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-BATCH-VISIBILITY-CLOSURE.md`
