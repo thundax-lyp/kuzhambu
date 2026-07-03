@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as contentService from "@/pages/classics/common/classics-content-service";
 import type {
+    ClassicsBatchVisibilityCommand,
     ClassicsContentQaPairCommand,
     ClassicsContentQaPairSortCommand,
     ClassicsContentTagCommand,
@@ -38,17 +39,46 @@ const readFetchBody = (body: BodyInit | null | undefined) => {
 const installFetchRecorder = () => {
     vi.spyOn(globalThis, "fetch").mockImplementation(async (input, init) => {
         const url = readFetchUrl(input);
+        const path = url.replace(API_PREFIX, "").replace(DEV_PROXY_PREFIX, "");
         capturedCalls.push({
             body: readFetchBody(init?.body),
             method: init?.method,
-            path: url.replace(API_PREFIX, "").replace(DEV_PROXY_PREFIX, "")
+            path
         });
+
+        const data =
+            path === "/classics/content/visibility/change"
+                ? {
+                      failureCount: 1,
+                      failures: [
+                          {
+                              contentId: 4002,
+                              contentType: "WANGQI_DOCUMENT",
+                              failureCode: "BATCH_VISIBILITY_FAILED",
+                              failureReason: "内容不存在",
+                              resultId: null,
+                              status: null
+                          }
+                      ],
+                      successCount: 1,
+                      successes: [
+                          {
+                              contentId: 4001,
+                              contentType: "WANGQI_DOCUMENT",
+                              failureCode: null,
+                              failureReason: null,
+                              resultId: 4001,
+                              status: "PUBLIC"
+                          }
+                      ]
+                  }
+                : true;
 
         return new Response(
             JSON.stringify({
                 code: "COMMON-00000",
                 message: "success",
-                data: true
+                data
             }),
             {
                 headers: {
@@ -167,5 +197,35 @@ describe("classics content service request contracts", () => {
 
         await contentService.sortQaPairs(sortQaCommand);
         expectLastCall("POST", "/classics/content/qa-pairs/sort", sortQaCommand);
+    });
+
+    it("sends batch visibility commands and preserves operation result fields", async () => {
+        const command: ClassicsBatchVisibilityCommand = {
+            contentIds: [4001, 4002],
+            contentType: "WANGQI_DOCUMENT",
+            visibility: "PUBLIC"
+        };
+
+        const response = await contentService.changeVisibilityBatch(command);
+
+        expectLastCall("POST", "/classics/content/visibility/change", command);
+        expect(response.successCount).toBe(1);
+        expect(response.successes[0]).toEqual({
+            contentId: 4001,
+            contentType: "WANGQI_DOCUMENT",
+            failureCode: null,
+            failureReason: null,
+            resultId: 4001,
+            status: "PUBLIC"
+        });
+        expect(response.failureCount).toBe(1);
+        expect(response.failures[0]).toEqual({
+            contentId: 4002,
+            contentType: "WANGQI_DOCUMENT",
+            failureCode: "BATCH_VISIBILITY_FAILED",
+            failureReason: "内容不存在",
+            resultId: null,
+            status: null
+        });
     });
 });

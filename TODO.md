@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `admin-web classics common`：新增批量可见性服务契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-BATCH-VISIBILITY-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/common/classics-content-service.ts`、`kuzhambu-apps/admin-web/src/pages/classics/common/classics-content-types.ts`、`kuzhambu-apps/admin-web/src/pages/classics/common/classics-content-service-contract.test.ts`
-    - 处理动作：新增 `changeVisibilityBatch` service、请求类型和批量操作响应类型。
-    - 验收点：contract test 断言请求 method、path、body，以及 `successCount`、`failureCount`、`successes`、`failures` 明细字段透传。
-    - 重要度：10/10
-
 - [ ] `sancai-entry-list`：接入三才图会批量可见性入口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-BATCH-VISIBILITY-CLOSURE.md`
