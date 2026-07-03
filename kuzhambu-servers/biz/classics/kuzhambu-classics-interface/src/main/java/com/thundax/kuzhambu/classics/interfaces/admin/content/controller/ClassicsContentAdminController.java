@@ -5,6 +5,8 @@ import com.thundax.kuzhambu.classics.application.content.command.ContentTagSortC
 import com.thundax.kuzhambu.classics.application.content.result.AiCandidateApplyContentResult;
 import com.thundax.kuzhambu.classics.application.content.result.ClassicsExportJobResult;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
+import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationItemResult;
+import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationResult;
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentExportJobIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
@@ -13,7 +15,9 @@ import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentTagIdCo
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentQaPairId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentTagId;
+import com.thundax.kuzhambu.classics.interfaces.admin.common.response.ClassicsBatchOperationResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.content.assembler.ClassicsContentInterfaceAssembler;
+import com.thundax.kuzhambu.classics.interfaces.admin.content.controller.request.ClassicsBatchVisibilityRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.content.controller.request.ClassicsContentQaPairSortRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.content.controller.request.ClassicsContentRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.content.controller.request.ClassicsContentTagSortRequest;
@@ -37,6 +41,7 @@ import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -51,6 +56,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequestMapping("/api/classics/content")
 @WrappedApiController
 public class ClassicsContentAdminController {
+    private static final Set<String> BATCH_VISIBILITY_CONTENT_TYPES =
+            Set.of("SANCAI_ENTRY", "WANGQI_DOCUMENT", "MING_CUSTOMS");
+    private static final Set<String> BATCH_VISIBILITIES = Set.of("PUBLIC", "PRIVATE");
+
     private final ClassicsContentApplicationService service;
 
     public ClassicsContentAdminController(ClassicsContentApplicationService service) {
@@ -146,6 +155,30 @@ public class ClassicsContentAdminController {
         AiCandidateApplyContentResult result =
                 service.applyAiCandidate(ClassicsContentInterfaceAssembler.toAiCandidateApplyCommand(request));
         return ClassicsContentInterfaceAssembler.toAiCandidateApplyResponse(result);
+    }
+
+    @Operation(summary = "批量修改古籍内容可见性", description = "classics:content:edit")
+    @ApiImplicitParams({})
+    @HasPermission("classics:content:edit")
+    @SysLogger(value = "批量可见性")
+    @PostMapping("visibility/change")
+    public ClassicsBatchOperationResponse changeBatchVisibility(
+            @Valid @RequestBody ClassicsBatchVisibilityRequest request) {
+        String contentType = validBatchContentType(request == null ? null : request.getContentType());
+        String visibility = validBatchVisibility(request == null ? null : request.getVisibility());
+        List<Long> contentIds = RequestListHelper.presentUnique(
+                request == null ? null : request.getContentIds(),
+                "contentIds",
+                AdminResponseExceptions::invalidParameter);
+        return ClassicsBatchOperationResponse.from(ClassicsBatchOperationResult.of(
+                List.of(),
+                contentIds.stream()
+                        .map(contentId -> ClassicsBatchOperationItemResult.failure(
+                                contentType,
+                                contentId,
+                                "BATCH_VISIBILITY_NOT_IMPLEMENTED",
+                                "批量可见性修改服务尚未接入: " + visibility))
+                        .toList()));
     }
 
     @Operation(summary = "更新古籍内容问答", description = "classics:content:edit")
@@ -246,6 +279,22 @@ public class ClassicsContentAdminController {
         String encodedFilename =
                 URLEncoder.encode(filename, StandardCharsets.UTF_8).replace("+", "%20");
         return disposition + "; filename=\"" + asciiFilename + "\"; filename*=UTF-8''" + encodedFilename;
+    }
+
+    private static String validBatchContentType(String contentType) {
+        String value = StringUtils.trimToNull(contentType);
+        if (!BATCH_VISIBILITY_CONTENT_TYPES.contains(value)) {
+            throw AdminResponseExceptions.invalidParameter("contentType");
+        }
+        return value;
+    }
+
+    private static String validBatchVisibility(String visibility) {
+        String value = StringUtils.trimToNull(visibility);
+        if (!BATCH_VISIBILITIES.contains(value)) {
+            throw AdminResponseExceptions.invalidParameter("visibility");
+        }
+        return value;
     }
 
     private static String fileName(String path) {

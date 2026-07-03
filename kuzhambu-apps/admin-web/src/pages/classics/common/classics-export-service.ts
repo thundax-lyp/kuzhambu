@@ -1,5 +1,5 @@
 import { ADMIN_API_BASE_URL, postJson } from "@/api/http";
-import type { ClassicsExportJobRecord, ClassicsExportStatus } from "../export/export-types";
+import type { ClassicsExportJobRecord, ClassicsExportStatus } from "./classics-export-types";
 import type { Page, PageQuery } from "@/types/page";
 
 export interface ClassicsExportCreateCommand {

@@ -80,12 +80,28 @@ describe("classics export service request contracts", () => {
     });
 
     it("sends classics export requests and builds content urls", async () => {
+        const scopePayload = {
+            title: "王圻文档 导出",
+            contentType: "WANGQI_DOCUMENT",
+            scopeType: "SELECTED_ITEMS",
+            items: [
+                {
+                    id: 400000000001,
+                    title: "王圻文档",
+                    text: "## 王圻",
+                    summary: "记录王圻古籍条目。",
+                    visibility: "PUBLIC",
+                    documentTime: "2026-01-01T00:00:00.000+00:00",
+                    sourceFileStorageObjectId: 7001
+                }
+            ]
+        };
         const command: ClassicsExportCreateCommand = {
-            contentType: "SANCAI_ENTRY",
-            exportKind: "SELECTED_ENTRIES",
-            exportFormat: "ZIP",
-            scopeType: "SEARCH_RESULT",
-            scopeJson: JSON.stringify({ ids: [3001, 3002] })
+            contentType: "WANGQI_DOCUMENT",
+            exportKind: "CONTENT_DATASET",
+            exportFormat: "HTML",
+            scopeType: "SELECTED_ITEMS",
+            scopeJson: JSON.stringify(scopePayload)
         };
 
         await exportService.create(command);
@@ -94,15 +110,15 @@ describe("classics export service request contracts", () => {
         await exportService.page({
             pageNo: 1,
             pageSize: 20,
-            contentType: "SANCAI_ENTRY",
-            exportKind: "SELECTED_ENTRIES",
+            contentType: "WANGQI_DOCUMENT",
+            exportKind: "CONTENT_DATASET",
             status: "COMPLETED"
         });
         expectLastCall("POST", "/classics/content/exports/page", {
             pageNo: 1,
             pageSize: 20,
-            contentType: "SANCAI_ENTRY",
-            exportKind: "SELECTED_ENTRIES",
+            contentType: "WANGQI_DOCUMENT",
+            exportKind: "CONTENT_DATASET",
             status: "COMPLETED"
         });
 

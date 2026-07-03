@@ -9,6 +9,22 @@ export interface ClassicsShareTargetRef {
     contentType: ClassicsShareContentType;
 }
 
+export interface ClassicsBatchOperationItemRecord {
+    contentId: number;
+    contentType: ClassicsShareContentType;
+    failureCode?: string | null;
+    failureReason?: string | null;
+    resultId?: number | null;
+    status?: string | null;
+}
+
+export interface ClassicsBatchOperationRecord {
+    failureCount: number;
+    failures: ClassicsBatchOperationItemRecord[];
+    successCount: number;
+    successes: ClassicsBatchOperationItemRecord[];
+}
+
 export interface ClassicsShareTargetRecord {
     contentChangedAfterShare?: boolean | null;
     contentId?: number | null;

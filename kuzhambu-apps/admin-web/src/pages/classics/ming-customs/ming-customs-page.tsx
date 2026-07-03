@@ -12,6 +12,8 @@ import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { ClassicsContentTagPanel } from "@/pages/classics/common/components/classics-content-tag-panel";
 import { ClassicsContentQaPanel } from "@/pages/classics/common/components/classics-content-qa-panel";
 import * as currentUserService from "@/service/current-user-service";
+import type { ClassicsExportScopePayload } from "@/pages/classics/common/classics-export-types";
+import type { ClassicsBatchOperationRecord } from "@/pages/classics/common/classics-share-types";
 import { MingCustomsKeywordCloud } from "./components/ming-customs-keyword-cloud";
 import { MingCustomsList } from "./components/ming-customs-list";
 import { MingCustomsModel } from "./components/ming-customs-model";
@@ -69,6 +71,27 @@ const buildInputPayloadJson = (entry: MingCustomsRecord) => {
     });
 };
 
+const buildExportScopeJson = (entry: MingCustomsRecord) => {
+    const title = readTitle(entry);
+    const scopePayload: ClassicsExportScopePayload = {
+        title: `${title} 导出`,
+        contentType: "MING_CUSTOMS",
+        scopeType: "SELECTED_ITEMS",
+        items: [
+            {
+                id: entry.id,
+                title,
+                text: entry.content || entry.originalExcerpts || "",
+                summary: entry.summary || null,
+                visibility: entry.visibility || null,
+                category: entry.category || null
+            }
+        ]
+    };
+
+    return JSON.stringify(scopePayload);
+};
+
 interface MingCustomsFilters {
     category: string;
     sortDirection: MingCustomsSortDirectionFilter;
@@ -104,6 +127,10 @@ export const MingCustomsPage = () => {
     const [editorMode, setEditorMode] = useState<"create" | "edit">("create");
     const [editorOpen, setEditorOpen] = useState(false);
     const [editingEntry, setEditingEntry] = useState<MingCustomsRecord | null>(null);
+    const [selectedEntryIds, setSelectedEntryIds] = useState<number[]>([]);
+    const [batchShareResult, setBatchShareResult] = useState<ClassicsBatchOperationRecord | null>(
+        null
+    );
     const [creatingRefinementCapability, setCreatingRefinementCapability] = useState<
         "summary" | null
     >(null);
@@ -180,6 +207,10 @@ export const MingCustomsPage = () => {
     const currentPageSize = pageResult?.pageSize || query.pageSize || DEFAULT_PAGE_SIZE;
     const editorEntry = detailQuery.data || editingEntry;
     const exportJobs = exportJobsQuery.data?.records || [];
+    const selectedEntries = useMemo(
+        () => records.filter((record) => selectedEntryIds.includes(record.id)),
+        [records, selectedEntryIds]
+    );
     const refinementTasks = useMemo(
         () => refinementTasksQuery.data?.items || [],
         [refinementTasksQuery.data?.items]
@@ -249,20 +280,27 @@ export const MingCustomsPage = () => {
             messageApi.error(error instanceof Error ? error.message : "分享创建失败");
         }
     });
+    const batchShareMutation = useMutation({
+        mutationFn: shareService.createBatch,
+        onSuccess: (result) => {
+            setBatchShareResult(result);
+            messageApi.success(
+                `批量分享完成：成功 ${result.successCount}，失败 ${result.failureCount}`
+            );
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "批量分享创建失败");
+        }
+    });
     const exportMutation = useMutation({
-        mutationFn: (entry: MingCustomsRecord) => {
-            const title = `${readTitle(entry)} 导出`;
-            return exportService.create({
+        mutationFn: (entry: MingCustomsRecord) =>
+            exportService.create({
                 contentType: "MING_CUSTOMS",
                 exportKind: "CONTENT_DATASET",
                 exportFormat: "HTML",
                 scopeType: "SELECTED_ITEMS",
-                scopeJson: JSON.stringify({
-                    title,
-                    ids: [entry.id]
-                })
-            });
-        },
+                scopeJson: buildExportScopeJson(entry)
+            }),
         onSuccess: async () => {
             await invalidateExportJobs();
             messageApi.success("导出任务已提交，请到下方任务列表查看进度。");
@@ -385,6 +423,23 @@ export const MingCustomsPage = () => {
             visibility: "PUBLIC"
         });
     };
+    const shareSelectedEntries = () => {
+        if (!selectedEntries.length) {
+            messageApi.warning("请先选择要批量分享的明代习俗");
+            return;
+        }
+        batchShareMutation.mutate({
+            privateContentConfirmed: false,
+            status: "ACTIVE",
+            targets: selectedEntries.map((entry) => ({
+                contentId: entry.id,
+                contentType: "MING_CUSTOMS"
+            })),
+            titlePrefix: "明代习俗批量分享 - ",
+            visibility: "PUBLIC"
+        });
+    };
+
     const exportEntry = (entry: MingCustomsRecord) => {
         exportMutation.mutate(entry);
     };
@@ -528,6 +583,33 @@ export const MingCustomsPage = () => {
                                 void invalidateExportJobs();
                             }}
                         />
+                        <div style={{ marginBottom: 12 }}>
+                            <Button
+                                disabled={!selectedEntries.length}
+                                loading={batchShareMutation.isPending}
+                                onClick={shareSelectedEntries}
+                            >
+                                批量分享
+                            </Button>
+                        </div>
+                        {batchShareResult ? (
+                            <Alert
+                                showIcon
+                                type={batchShareResult.failureCount > 0 ? "warning" : "success"}
+                                style={{ marginBottom: 12 }}
+                                message={`批量分享结果：成功 ${batchShareResult.successCount}，失败 ${batchShareResult.failureCount}`}
+                                description={
+                                    batchShareResult.failures.length
+                                        ? batchShareResult.failures
+                                              .map(
+                                                  (item) =>
+                                                      `${item.contentType}#${item.contentId}: ${item.failureReason || item.failureCode || "未知失败"}`
+                                              )
+                                              .join("；")
+                                        : "全部选中明代习俗已创建分享记录。"
+                                }
+                            />
+                        ) : null}
                         <MingCustomsList
                             categoryLabels={categoryLabels}
                             loading={mingCustomsQuery.isLoading}
@@ -535,6 +617,7 @@ export const MingCustomsPage = () => {
                             onDelete={deleteEntry}
                             onExport={exportEntry}
                             onOpenEdit={openEditEditor}
+                            onSelectedEntryIdsChange={setSelectedEntryIds}
                             onShare={shareEntry}
                             pagination={{
                                 current: currentPageNo,
@@ -547,6 +630,7 @@ export const MingCustomsPage = () => {
                                         pageSize
                                     }))
                             }}
+                            selectedEntryIds={selectedEntryIds}
                         />
                     </>
                 }

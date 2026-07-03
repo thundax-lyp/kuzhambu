@@ -20,6 +20,14 @@ class ClassicsAiWorkerUsecaseResolverTest {
     }
 
     @Test
+    void resolveSanCaiTranslateBatchItem() {
+        ClassicsAiWorkerUsecaseSpec spec = resolver.resolve("SANCAI_ENTRY", "translate_batch_item");
+        assertNotNull(spec);
+        assertEquals("CLASSICS_SANCAI_TRANSLATE_BATCH_ITEM", spec.operation());
+        assertEquals("/internal/ai/classics/sancai/translate-batch-item", spec.workerPath());
+    }
+
+    @Test
     void resolveWangqiQa() {
         ClassicsAiWorkerUsecaseSpec spec = resolver.resolve("WANGQI_DOCUMENT", "qa");
         assertNotNull(spec);

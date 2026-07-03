@@ -8,7 +8,9 @@ import com.thundax.kuzhambu.classics.domain.sharing.codec.ClassicsShareLinkIdCod
 import com.thundax.kuzhambu.classics.domain.sharing.codec.ClassicsShareTargetIdCodec;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareLinkStatus;
 import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareLinkId;
+import com.thundax.kuzhambu.classics.interfaces.admin.common.response.ClassicsBatchOperationResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.sharing.assembler.ClassicsSharingInterfaceAssembler;
+import com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller.request.ClassicsBatchShareCreateRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller.request.ClassicsShareTargetSortRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller.request.ClassicsSharingRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller.response.ClassicsSharingAccessRecordResponse;
@@ -50,6 +52,16 @@ public class ClassicsSharingAdminController {
     public ClassicsSharingResponse create(@Valid @RequestBody ClassicsSharingRequest request) {
         return ClassicsSharingInterfaceAssembler.toResponse(
                 service.createLink(ClassicsSharingInterfaceAssembler.toCreateCommand(request)));
+    }
+
+    @Operation(summary = "批量创建古籍分享", description = "classics:sharing:edit")
+    @ApiImplicitParams({})
+    @HasPermission("classics:sharing:edit")
+    @SysLogger(value = "批量创建分享")
+    @PostMapping("batch/create")
+    public ClassicsBatchOperationResponse createBatch(@Valid @RequestBody ClassicsBatchShareCreateRequest request) {
+        return ClassicsBatchOperationResponse.from(
+                service.batchCreateLinks(ClassicsSharingInterfaceAssembler.toBatchCreateCommand(request)));
     }
 
     @Operation(summary = "分页查询古籍分享", description = "classics:sharing:view")

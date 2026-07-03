@@ -893,7 +893,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             StorageObjectId storageObjectId = toStorageObjectId(uploadResponse);
             int itemCount =
                     response.getSummary() == null || response.getSummary().getItemCount() == null
-                            ? 0
+                            ? payloadItemCount(job.getScopeJson())
                             : response.getSummary().getItemCount();
             repository.markExportJobCompleted(
                     jobId,
@@ -1000,7 +1000,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         request.setTemplate(renderTemplate());
         request.setOutput(renderOutput(
                 job.getExportFormat() == null ? null : job.getExportFormat().value(), jobId));
-        request.setInput(renderInput(job.getScopeJson()));
+        request.setInput(renderInput(job));
         request.setOptions(renderOptions());
         return request;
     }
@@ -1024,16 +1024,16 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         return format == null ? "zip" : format.toLowerCase();
     }
 
-    private WorkerRenderDtos.Input renderInput(String scopeJson) {
+    private WorkerRenderDtos.Input renderInput(ClassicsContentExportJob job) {
         WorkerRenderDtos.Input input = new WorkerRenderDtos.Input();
         input.setSnapshotId(null);
         input.setContentType("CLASSICS_EXPORT_SNAPSHOT");
-        input.setPayloadJson(renderPayloadJson(scopeJson));
+        input.setPayloadJson(renderPayloadJson(job));
         return input;
     }
 
-    private String renderPayloadJson(String scopeJson) {
-        JsonNode payload = normalizePayload(scopeJson);
+    private String renderPayloadJson(ClassicsContentExportJob job) {
+        JsonNode payload = normalizePayload(job);
         try {
             return objectMapper.writeValueAsString(payload);
         } catch (JsonProcessingException ex) {
@@ -1048,27 +1048,52 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         return options;
     }
 
-    private JsonNode normalizePayload(String scopeJson) {
-        JsonNode payload = parsePayload(scopeJson);
+    private JsonNode normalizePayload(ClassicsContentExportJob job) {
+        JsonNode payload = parsePayload(job == null ? null : job.getScopeJson());
         if (payload.isObject()) {
-            ensurePayloadDefaults((ObjectNode) payload);
+            ensurePayloadDefaults((ObjectNode) payload, job);
             return payload;
         }
         ObjectNode wrapped = objectMapper.createObjectNode();
         wrapped.put("title", DEFAULT_TITLE);
+        appendExportContext(wrapped, job);
         ArrayNode items = objectMapper.createArrayNode();
         items.add(payload == null ? "" : payload.asText());
         wrapped.set("items", items);
         return wrapped;
     }
 
-    private void ensurePayloadDefaults(ObjectNode payload) {
+    private void ensurePayloadDefaults(ObjectNode payload, ClassicsContentExportJob job) {
         if (!payload.has("title")) {
             payload.put("title", DEFAULT_TITLE);
         }
+        appendExportContext(payload, job);
         if (!payload.has("items")) {
             payload.set("items", objectMapper.createArrayNode());
         }
+    }
+
+    private void appendExportContext(ObjectNode payload, ClassicsContentExportJob job) {
+        if (job == null) {
+            return;
+        }
+        if (!payload.has("contentType") && job.getContentType() != null) {
+            payload.put("contentType", job.getContentType().value());
+        }
+        if (!payload.has("scopeType") && job.getScopeType() != null) {
+            payload.put("scopeType", job.getScopeType().value());
+        }
+    }
+
+    private int payloadItemCount(String scopeJson) {
+        JsonNode payload = parsePayload(scopeJson);
+        if (payload != null
+                && payload.isObject()
+                && payload.get("items") != null
+                && payload.get("items").isArray()) {
+            return payload.get("items").size();
+        }
+        return 0;
     }
 
     private JsonNode parsePayload(String scopeJson) {

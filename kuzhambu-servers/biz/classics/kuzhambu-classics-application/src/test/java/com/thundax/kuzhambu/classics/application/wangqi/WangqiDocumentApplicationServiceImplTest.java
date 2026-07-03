@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
+import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationResult;
 import com.thundax.kuzhambu.classics.application.searchsync.support.ClassicsSearchIndexSyncPublishSupport;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentCommand;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentSourceFileCommand;
@@ -34,6 +35,7 @@ import com.thundax.kuzhambu.storage.facade.request.UploadStorageFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.response.OpenStorageFacadeResponse;
 import com.thundax.kuzhambu.storage.facade.response.UploadStorageFacadeResponse;
 import java.io.ByteArrayInputStream;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -127,6 +129,32 @@ class WangqiDocumentApplicationServiceImplTest {
         service.changeVisibility(new WangqiDocumentVisibilityCommand(400000000003L, WangqiDocumentVisibility.PRIVATE));
 
         verify(publishSupport).publishDeleteAfterCommit(ClassicsContentType.WANGQI_DOCUMENT, "400000000003", 5);
+    }
+
+    @Test
+    void batchChangeVisibilityShouldReturnPartialResultAndKeepSearchSync() {
+        WangqiDocumentRepository repository = mock(WangqiDocumentRepository.class);
+        ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
+        ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
+        WangqiDocumentApplicationServiceImpl service =
+                new WangqiDocumentApplicationServiceImpl(repository, contentApplicationService, publishSupport, null);
+        WangqiDocument document = new WangqiDocument();
+        document.setId(WangqiDocumentId.of(400000000004L));
+        document.setVisibility(WangqiDocumentVisibility.PUBLIC);
+        when(repository.getById(WangqiDocumentId.of(400000000004L))).thenReturn(document);
+        when(repository.getById(WangqiDocumentId.of(400000000005L))).thenReturn(null);
+        versionDocumentOnEnsure(contentApplicationService, 6);
+
+        ClassicsBatchOperationResult result = service.batchChangeVisibility(
+                List.of(WangqiDocumentId.of(400000000004L), WangqiDocumentId.of(400000000005L)),
+                WangqiDocumentVisibility.PRIVATE);
+
+        assertEquals(1, result.getSuccessCount());
+        assertEquals(1, result.getFailureCount());
+        assertEquals("PRIVATE", result.getSuccesses().get(0).getStatus());
+        assertEquals(400000000005L, result.getFailures().get(0).getContentId());
+        assertEquals("CONTENT_NOT_FOUND", result.getFailures().get(0).getFailureCode());
+        verify(publishSupport).publishDeleteAfterCommit(ClassicsContentType.WANGQI_DOCUMENT, "400000000004", 6);
     }
 
     @Test

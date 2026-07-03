@@ -1,5 +1,8 @@
 import json
+from base64 import b64decode
+from io import BytesIO
 from time import time
+from zipfile import ZipFile
 
 from fastapi.testclient import TestClient
 
@@ -23,6 +26,46 @@ def test_render_sync_returns_inline_artifact(monkeypatch) -> None:
     assert payload["renderType"] == "CLASSICS_EXPORT"
     assert payload["artifact"]["encoding"] == "BASE64"
     assert payload["artifact"]["sha256"].startswith("sha256:")
+
+
+def test_render_sync_preserves_wangqi_export_payload(monkeypatch) -> None:
+    _configure(monkeypatch, "kuzhambu-classics")
+    body = _body(
+        "CLASSICS_EXPORT",
+        "ZIP",
+        stream=False,
+        payload={
+            "title": "王圻文档导出",
+            "contentType": "WANGQI_DOCUMENT",
+            "scopeType": "SELECTED_ITEMS",
+            "items": [
+                {
+                    "id": 400000000001,
+                    "title": "王圻文档",
+                    "text": "## 王圻文献正文",
+                    "summary": "记录王圻古籍条目。",
+                    "visibility": "PUBLIC",
+                    "documentTime": "2026-01-01T00:00:00.000+00:00",
+                    "sourceFileStorageObjectId": 7001,
+                }
+            ],
+        },
+    )
+
+    response = TestClient(app).post(
+        "/internal/render/classics-export",
+        content=body,
+        headers=_headers(body, "/internal/render/classics-export", "kuzhambu-classics"),
+    )
+
+    assert response.status_code == 200
+    artifact = response.json()["artifact"]
+    with ZipFile(BytesIO(b64decode(artifact["content"]))) as archive:
+        for filename in ["data.csv", "data.json", "index.html"]:
+            content = archive.read(filename).decode("utf-8")
+            assert "400000000001" in content
+            assert "王圻文档" in content
+            assert "## 王圻文献正文" in content
 
 
 def test_render_stream_returns_progress_artifact_and_completed(monkeypatch, tmp_path) -> None:
@@ -83,8 +126,10 @@ def _configure(monkeypatch, service: str) -> None:
     monkeypatch.setenv("KUZHAMBU_WORKER_INTERNAL_SECRET", "worker-secret")
 
 
-def _body(render_type: str, output_format: str, *, stream: bool) -> bytes:
-    payload = {
+def _body(
+    render_type: str, output_format: str, *, stream: bool, payload: dict | None = None
+) -> bytes:
+    body = {
         "requestId": "req-1",
         "traceId": "trace-1",
         "callerDomain": "CLASSICS",
@@ -102,7 +147,8 @@ def _body(render_type: str, output_format: str, *, stream: bool) -> bytes:
         "input": {
             "snapshotId": "snapshot-1",
             "contentType": f"{render_type}_SNAPSHOT",
-            "payload": {
+            "payload": payload
+            or {
                 "title": "三才图会导出",
                 "metadata": {"title": "三才图会"},
                 "catalog": [{"id": "cat-1", "label": "目录"}],
@@ -112,7 +158,7 @@ def _body(render_type: str, output_format: str, *, stream: bool) -> bytes:
         },
         "options": {"stream": stream, "includeMetadata": True},
     }
-    return json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode()
+    return json.dumps(body, ensure_ascii=False, separators=(",", ":")).encode()
 
 
 def _headers(body: bytes, path: str, service: str) -> dict[str, str]:

@@ -59,6 +59,29 @@ const installFetchRecorder = () => {
                 records: [data]
             };
         }
+        if (url.includes("/classics/shares/batch/create")) {
+            data = {
+                failureCount: 1,
+                failures: [
+                    {
+                        contentId: 3002,
+                        contentType: "SANCAI_ENTRY",
+                        failureCode: "DUPLICATE_TARGET",
+                        failureReason: "重复目标",
+                        status: "FAILED"
+                    }
+                ],
+                successCount: 1,
+                successes: [
+                    {
+                        contentId: 3001,
+                        contentType: "SANCAI_ENTRY",
+                        resultId: 9001,
+                        status: "ACTIVE"
+                    }
+                ]
+            };
+        }
         if (url.includes("/classics/shares/access-records/page")) {
             data = {
                 pageNo: 1,
@@ -135,6 +158,62 @@ describe("classics share service request contracts", () => {
             path: "/classics/shares/create"
         });
         expect(response.shareUrl).toBe("http://localhost:5174/share/abc123_-");
+    });
+
+    it("creates batch shares with target references and reads item results", async () => {
+        const response = await shareService.createBatch({
+            privateContentConfirmed: true,
+            status: "ACTIVE",
+            targets: [
+                {
+                    contentId: 3001,
+                    contentType: "SANCAI_ENTRY"
+                },
+                {
+                    contentId: 3002,
+                    contentType: "SANCAI_ENTRY"
+                }
+            ],
+            titlePrefix: "批量-",
+            visibility: "PRIVATE",
+            visibilityRiskStatus: "CONFIRMED_PRIVATE"
+        });
+
+        expect(capturedCalls.at(-1)).toEqual({
+            body: {
+                privateContentConfirmed: true,
+                status: "ACTIVE",
+                targets: [
+                    {
+                        contentId: 3001,
+                        contentType: "SANCAI_ENTRY"
+                    },
+                    {
+                        contentId: 3002,
+                        contentType: "SANCAI_ENTRY"
+                    }
+                ],
+                titlePrefix: "批量-",
+                visibility: "PRIVATE",
+                visibilityRiskStatus: "CONFIRMED_PRIVATE"
+            },
+            method: "POST",
+            path: "/classics/shares/batch/create"
+        });
+        expect(response.successCount).toBe(1);
+        expect(response.successes[0]).toMatchObject({
+            contentId: 3001,
+            contentType: "SANCAI_ENTRY",
+            resultId: 9001,
+            status: "ACTIVE"
+        });
+        expect(response.failureCount).toBe(1);
+        expect(response.failures[0]).toMatchObject({
+            contentId: 3002,
+            contentType: "SANCAI_ENTRY",
+            failureCode: "DUPLICATE_TARGET",
+            failureReason: "重复目标"
+        });
     });
 
     it("loads shares by page request", async () => {

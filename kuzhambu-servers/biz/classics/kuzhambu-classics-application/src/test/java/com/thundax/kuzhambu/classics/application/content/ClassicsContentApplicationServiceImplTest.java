@@ -195,6 +195,68 @@ class ClassicsContentApplicationServiceImplTest {
     }
 
     @Test
+    void createWangqiExportJobShouldPassRenderableScopePayload() throws Exception {
+        ClassicsContentRepository repository = mock(ClassicsContentRepository.class);
+        WorkerRenderClient workerRenderClient = mock(WorkerRenderClient.class);
+        StorageFacade storageFacade = mock(StorageFacade.class);
+        ContentExportCommand command = new ContentExportCommand();
+        command.setExportKind(ClassicsExportKind.CONTENT_DATASET);
+        command.setContentType(ClassicsContentType.WANGQI_DOCUMENT);
+        command.setExportFormat(ClassicsExportFormat.JSON);
+        command.setScopeType(ClassicsExportScopeType.SELECTED_ITEMS);
+        command.setScopeJson("{\"title\":\"王圻导出\",\"items\":[{\"id\":101,\"title\":\"文档一\",\"text\":\"正文一\"}]}");
+        when(repository.insertExportJob(any())).thenReturn(ClassicsContentExportJobId.of(900000000003L));
+        when(workerRenderClient.renderClassicsExport(any())).thenReturn(renderSuccessResponse("wangqi.json"));
+        when(storageFacade.upload(any(UploadStorageFacadeRequest.class))).thenReturn(uploadResponse());
+        ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
+                repository, null, null, null, workerRenderClient, storageFacade, null, null, null);
+
+        service.createExportJob(command);
+
+        ArgumentCaptor<WorkerRenderDtos.WorkerRenderRequest> renderCaptor =
+                ArgumentCaptor.forClass(WorkerRenderDtos.WorkerRenderRequest.class);
+        verify(workerRenderClient).renderClassicsExport(renderCaptor.capture());
+        ObjectMapper objectMapper = new ObjectMapper();
+        var payload = objectMapper.readTree(renderCaptor.getValue().getInput().getPayloadJson());
+        assertEquals("王圻导出", payload.get("title").asText());
+        assertEquals("WANGQI_DOCUMENT", payload.get("contentType").asText());
+        assertEquals("SELECTED_ITEMS", payload.get("scopeType").asText());
+        assertEquals(1, payload.get("items").size());
+        assertEquals("文档一", payload.get("items").get(0).get("title").asText());
+        assertEquals("正文一", payload.get("items").get(0).get("text").asText());
+    }
+
+    @Test
+    void createMingCustomsExportJobShouldFallbackItemCountFromPayloadWhenRenderSummaryMissing() {
+        ClassicsContentRepository repository = mock(ClassicsContentRepository.class);
+        WorkerRenderClient workerRenderClient = mock(WorkerRenderClient.class);
+        StorageFacade storageFacade = mock(StorageFacade.class);
+        ContentExportCommand command = new ContentExportCommand();
+        command.setExportKind(ClassicsExportKind.CONTENT_DATASET);
+        command.setContentType(ClassicsContentType.MING_CUSTOMS);
+        command.setExportFormat(ClassicsExportFormat.HTML);
+        command.setScopeType(ClassicsExportScopeType.SELECTED_ITEMS);
+        command.setScopeJson("{\"title\":\"明俗导出\",\"items\":[{\"id\":201,\"title\":\"习俗一\",\"text\":\"正文一\"}]}");
+        WorkerRenderDtos.WorkerRenderResponse response = renderSuccessResponse("ming.html");
+        response.setSummary(null);
+        when(repository.insertExportJob(any())).thenReturn(ClassicsContentExportJobId.of(900000000004L));
+        when(workerRenderClient.renderClassicsExport(any())).thenReturn(response);
+        when(storageFacade.upload(any(UploadStorageFacadeRequest.class))).thenReturn(uploadResponse());
+        ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
+                repository, null, null, null, workerRenderClient, storageFacade, null, null, null);
+
+        service.createExportJob(command);
+
+        verify(repository)
+                .markExportJobCompleted(
+                        eq(ClassicsContentExportJobId.of(900000000004L)),
+                        eq(StorageObjectId.of(7001L)),
+                        any(),
+                        eq(1),
+                        eq(0));
+    }
+
+    @Test
     void createExportJobShouldMarkFailedWhenRenderFailed() {
         ClassicsContentRepository repository = mock(ClassicsContentRepository.class);
         WorkerRenderClient workerRenderClient = mock(WorkerRenderClient.class);

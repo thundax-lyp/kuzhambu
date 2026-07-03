@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.sharing.assembler;
 
+import com.thundax.kuzhambu.classics.application.sharing.command.BatchShareCreateCommand;
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkCreateCommand;
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareTargetCreateCommand;
 import com.thundax.kuzhambu.classics.application.sharing.result.ShareLinkCreateResult;
@@ -11,6 +12,7 @@ import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareLi
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareTarget;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareLinkStatus;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareVisibility;
+import com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller.request.ClassicsBatchShareCreateRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller.request.ClassicsShareTargetRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller.request.ClassicsSharingRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller.response.ClassicsSharingAccessRecordResponse;
@@ -32,6 +34,21 @@ public final class ClassicsSharingInterfaceAssembler {
                         : SancaiVisibilityRiskStatus.from(request.getVisibilityRiskStatus()),
                 null,
                 request.getExpiresAt(),
+                toTargetCommands(request.getTargets()));
+    }
+
+    public static BatchShareCreateCommand toBatchCreateCommand(ClassicsBatchShareCreateRequest request) {
+        return new BatchShareCreateCommand(
+                request.getTitlePrefix(),
+                ClassicsShareVisibility.from(request.getVisibility()),
+                StringUtils.isBlank(request.getStatus())
+                        ? ClassicsShareLinkStatus.ACTIVE
+                        : ClassicsShareLinkStatus.from(request.getStatus()),
+                StringUtils.isBlank(request.getVisibilityRiskStatus())
+                        ? null
+                        : SancaiVisibilityRiskStatus.from(request.getVisibilityRiskStatus()),
+                request.getExpiresAt(),
+                request.isPrivateContentConfirmed(),
                 toTargetCommands(request.getTargets()));
     }
 

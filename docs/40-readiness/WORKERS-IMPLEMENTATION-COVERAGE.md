@@ -23,6 +23,7 @@
 - Workers 已补齐 `GET /internal/artifacts/{artifactId}` 临时产物下载入口，并提供超过 `12` 小时 artifact 的后台清理任务。
 - Workers 设计文档要求的 graph registry、按 usecase 路由分发、统一最终态协议和临时 artifact 下载入口，当前都能在 `ai_routes.py`、`graph_registry.py`、`usecase_registry.py` 与对应测试中找到实现落点。
 - 三才图会视觉资产相关 workers 能力已补齐稳定测试：`fusion` 路由契约、`image_gen` stream final-state、三类视觉 usecase 注册元信息，以及 `artifact` 持久化 `request_id / chunk_count / sha256` 元信息均已覆盖。
+- Classics export render worker 已补齐 Wangqi / Ming Customs 快照 payload 回归：CSV、JSON、HTML、ZIP 均稳定保留 `items[].id`、`items[].title`、`items[].text`，route contract 继续返回可下载 inline artifact。
 
 ## Requirement Coverage Matrix
 

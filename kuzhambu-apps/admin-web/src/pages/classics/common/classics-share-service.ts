@@ -1,5 +1,6 @@
 import { getJson, postJson } from "@/api/http";
 import type {
+    ClassicsBatchOperationRecord,
     ClassicsShareLinkStatus,
     ClassicsShareAccessRecord,
     ClassicsShareRecord,
@@ -14,6 +15,16 @@ export interface ClassicsShareCreateCommand {
     targets: ClassicsShareTargetRef[];
     title?: string | null;
     visibility?: ClassicsShareVisibility | null;
+}
+
+export interface ClassicsBatchShareCreateCommand {
+    expiresAt?: string | null;
+    privateContentConfirmed: boolean;
+    status?: ClassicsShareLinkStatus | null;
+    targets: ClassicsShareTargetRef[];
+    titlePrefix?: string | null;
+    visibility: ClassicsShareVisibility;
+    visibilityRiskStatus?: string | null;
 }
 
 export interface ClassicsShareQuery {
@@ -45,6 +56,15 @@ export const create = (request: ClassicsShareCreateCommand) => {
     return postJson<ClassicsShareRecord, ClassicsShareCreateCommand>(`${SHARE_PATH}/create`, {
         body: request
     });
+};
+
+export const createBatch = (request: ClassicsBatchShareCreateCommand) => {
+    return postJson<ClassicsBatchOperationRecord, ClassicsBatchShareCreateCommand>(
+        `${SHARE_PATH}/batch/create`,
+        {
+            body: request
+        }
+    );
 };
 
 export const page = (request: ClassicsShareQuery = {}) => {

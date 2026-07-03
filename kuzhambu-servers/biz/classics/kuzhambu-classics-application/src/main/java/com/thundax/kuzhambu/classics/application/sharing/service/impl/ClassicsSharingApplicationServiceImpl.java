@@ -5,7 +5,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
+import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationItemResult;
+import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationResult;
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
+import com.thundax.kuzhambu.classics.application.sharing.command.BatchShareCreateCommand;
 import com.thundax.kuzhambu.classics.application.sharing.command.ClassicsShareTargetSortCommand;
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkCreateCommand;
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkStatusCommand;
@@ -56,8 +59,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -130,6 +135,10 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ShareLinkCreateResult createLink(ShareLinkCreateCommand command) {
+        return createLink(command, false);
+    }
+
+    private ShareLinkCreateResult createLink(ShareLinkCreateCommand command, boolean allowPrivateContent) {
         String shareToken = shareTokenGenerator.generate();
         ClassicsShareLink link = command.toLink(shareToken, shareTokenHasher.hash(shareToken));
         if (link.getIssuedAt() == null) {
@@ -142,7 +151,7 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
         List<ClassicsShareTarget> savedTargets = new ArrayList<>(targetCommands.size());
         for (ShareTargetCreateCommand targetCommand : targetCommands) {
             ClassicsShareTarget target = targetCommand.toTarget();
-            bindVersionSnapshot(target, link.getVisibility());
+            bindVersionSnapshot(target, link.getVisibility(), allowPrivateContent);
             target.setShareLinkId(linkId == null ? null : linkId);
             target.setPriority(nextPriority++);
             repository.insertTarget(target);
@@ -157,6 +166,57 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
                 link.getStatus(),
                 link.getExpiresAt(),
                 savedTargets);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ClassicsBatchOperationResult batchCreateLinks(BatchShareCreateCommand command) {
+        if (command == null
+                || command.getTargets() == null
+                || command.getTargets().isEmpty()) {
+            return ClassicsBatchOperationResult.empty();
+        }
+        if (!command.isPrivateContentConfirmed()) {
+            ensureNoPrivateBatchTarget(command.getTargets());
+        }
+        List<ClassicsBatchOperationItemResult> successes = new ArrayList<>();
+        List<ClassicsBatchOperationItemResult> failures = new ArrayList<>();
+        Set<String> targetKeys = new HashSet<>();
+        for (ShareTargetCreateCommand target : command.getTargets()) {
+            String targetKey = targetKey(target);
+            String contentType = target == null || target.getContentType() == null
+                    ? null
+                    : target.getContentType().value();
+            Long contentId = target == null || target.getContentId() == null
+                    ? null
+                    : target.getContentId().value();
+            if (targetKey == null || !targetKeys.add(targetKey)) {
+                failures.add(
+                        ClassicsBatchOperationItemResult.failure(contentType, contentId, "DUPLICATE_TARGET", "重复分享目标"));
+                continue;
+            }
+            try {
+                ShareLinkCreateResult result = createLink(
+                        new ShareLinkCreateCommand(
+                                batchTitle(command.getTitlePrefix(), target),
+                                command.getVisibility(),
+                                command.getStatus(),
+                                command.getVisibilityRiskStatus(),
+                                null,
+                                command.getExpiresAt(),
+                                List.of(target)),
+                        command.isPrivateContentConfirmed());
+                successes.add(ClassicsBatchOperationItemResult.success(
+                        contentType,
+                        contentId,
+                        result.getId() == null ? null : result.getId().value(),
+                        result.getStatus() == null ? null : result.getStatus().value()));
+            } catch (RuntimeException ex) {
+                failures.add(ClassicsBatchOperationItemResult.failure(
+                        contentType, contentId, "BATCH_SHARE_FAILED", ex.getMessage()));
+            }
+        }
+        return ClassicsBatchOperationResult.of(successes, failures);
     }
 
     @Override
@@ -459,10 +519,16 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
     }
 
     private void bindVersionSnapshot(ClassicsShareTarget target, ClassicsShareVisibility shareVisibility) {
+        bindVersionSnapshot(target, shareVisibility, false);
+    }
+
+    private void bindVersionSnapshot(
+            ClassicsShareTarget target, ClassicsShareVisibility shareVisibility, boolean allowPrivateContent) {
         Versionable content = loadContent(target);
         ClassicsSharedContentVisibility contentVisibility = visibilityOf(content);
         if (shareVisibility == ClassicsShareVisibility.PUBLIC
-                && contentVisibility != ClassicsSharedContentVisibility.PUBLIC) {
+                && contentVisibility != ClassicsSharedContentVisibility.PUBLIC
+                && !allowPrivateContent) {
             throw privateContentCannotBePublicShared();
         }
 
@@ -478,6 +544,37 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
         target.setTitleSnapshot(titleOf(content));
         target.setContentVisibilitySnapshot(contentVisibility);
         persistVersionMarker(content);
+    }
+
+    private void ensureNoPrivateBatchTarget(List<ShareTargetCreateCommand> targets) {
+        for (ShareTargetCreateCommand target : targets) {
+            if (target == null || target.getContentType() == null || target.getContentId() == null) {
+                continue;
+            }
+            Versionable content =
+                    loadContent(target.getContentType(), target.getContentId().value());
+            if (content != null && visibilityOf(content) != ClassicsSharedContentVisibility.PUBLIC) {
+                throw privateContentCannotBePublicShared();
+            }
+        }
+    }
+
+    private String batchTitle(String titlePrefix, ShareTargetCreateCommand target) {
+        Versionable content = target == null || target.getContentType() == null || target.getContentId() == null
+                ? null
+                : loadContent(target.getContentType(), target.getContentId().value());
+        String title = content == null ? "分享" : titleOf(content);
+        if (titlePrefix == null || titlePrefix.isBlank()) {
+            return title;
+        }
+        return titlePrefix + title;
+    }
+
+    private static String targetKey(ShareTargetCreateCommand target) {
+        if (target == null || target.getContentType() == null || target.getContentId() == null) {
+            return null;
+        }
+        return target.getContentType().value() + ":" + target.getContentId().value();
     }
 
     private Versionable loadContent(ClassicsShareTarget target) {

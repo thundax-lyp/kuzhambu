@@ -15,7 +15,7 @@
 
 已完成：
 
-- Classics 精修入口已对接六类同步候选能力（`translate/summary/tags/qa/visual/split`）的 Java → Worker 调用链路（Sancai、Wangqi、Ming Customs）。
+- Classics 精修入口已对接同步候选能力（`translate/summary/tags/qa/visual/split`）与 Sancai batch item 翻译的 Java → Worker 调用链路。
 - AI 设计文档定义的默认精修任务协议（`task/add -> task/get/page -> task/cancel`）已经在代码中落地；当前实现覆盖任务受理、查询、分页、取消、12 小时超时清理与 `TASK_EXPIRED` 失败态收口。
 - Knowledge 图谱抽取已对接三类候选能力（`relation_extraction/knowledge_graph/lineage_extraction`）的 Knowledge → AI → Worker 调用链路，并补齐批量任务、取消和重生成所需的 AI 协作台账。
 - AI 域当前已具备候选结果台账读取、拒绝和“标记已应用”协作入口，可支持 Classics / Knowledge 在业务确认后回写 AI 候选状态。
@@ -26,7 +26,6 @@
 
 未完成：
 
-- Classics 的 `translate-batch-item` usecase 仍只存在于 worker 侧，Java 精修 resolver 目前未消费。
 - Knowledge `tag_extraction` 与 Platform 两类能力在 worker 表内存在，但当前 Java 侧尚未提供对应调用入口。
 
 ## 已完成
@@ -34,6 +33,7 @@
 | domain | contentType | capability | javaEntry | operation | workerPath | status | note |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | classics | SANCAI_ENTRY | translate | AiRefinementController#translate | CLASSICS_SANCAI_TRANSLATE | /internal/ai/classics/sancai/translate | 已完成 | 六类同步候选型精修能力接入 usecase path |
+| classics | SANCAI_ENTRY | translate_batch_item | ClassicsAiWorkerUsecaseResolver#resolve | CLASSICS_SANCAI_TRANSLATE_BATCH_ITEM | /internal/ai/classics/sancai/translate-batch-item | 已完成 | Java 精修 resolver 已接入 worker batch item usecase path |
 | classics | SANCAI_ENTRY | summary | AiRefinementController#summarize | CLASSICS_SANCAI_SUMMARY | /internal/ai/classics/sancai/summary | 已完成 | 六类同步候选型精修能力接入 usecase path |
 | classics | SANCAI_ENTRY | tags | AiRefinementController#generateTags | CLASSICS_SANCAI_TAGS | /internal/ai/classics/sancai/tags | 已完成 | 六类同步候选型精修能力接入 usecase path |
 | classics | SANCAI_ENTRY | qa | AiRefinementController#generateQa | CLASSICS_SANCAI_QA | /internal/ai/classics/sancai/qa | 已完成 | 六类同步候选型精修能力接入 usecase path |
@@ -62,7 +62,6 @@
 
 | domain | contentType | capability | javaEntry | operation | workerPath | status | note |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| classics | SANCAI_ENTRY | translate | - | CLASSICS_SANCAI_TRANSLATE_BATCH_ITEM | /internal/ai/classics/sancai/translate-batch-item | 未完成 | 对应 usecase 未在 Classics 精修 resolver 中配置 |
 | knowledge | - | tags | - | KNOWLEDGE_TAG_EXTRACTION | /internal/ai/knowledge/tag-extraction | 未完成 | 当前 Java AI 精修未提供该域的调用入口 |
 | platform | - | prompt_suggestion | - | PLATFORM_PROMPT_SUGGESTION | /internal/ai/platform/prompt-suggestion | 未完成 | 当前 Java AI 精修未提供该域的调用入口 |
 | platform | - | version_summary | - | PLATFORM_VERSION_SUMMARY | /internal/ai/platform/version-summary | 未完成 | 当前 Java AI 精修未提供该域的调用入口 |

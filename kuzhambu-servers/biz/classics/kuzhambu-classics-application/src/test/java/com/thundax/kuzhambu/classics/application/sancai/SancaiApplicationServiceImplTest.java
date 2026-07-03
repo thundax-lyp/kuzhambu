@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.application.sancai;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -7,6 +8,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
+import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationResult;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryStatusCommand;
 import com.thundax.kuzhambu.classics.application.sancai.service.impl.SancaiApplicationServiceImpl;
@@ -22,6 +24,7 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisual
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVolumeId;
 import com.thundax.kuzhambu.classics.domain.sancai.repository.SancaiRepository;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class SancaiApplicationServiceImplTest {
@@ -90,6 +93,30 @@ class SancaiApplicationServiceImplTest {
         service.changeEntryVisibility(SancaiEntryId.of(1004L), "PRIVATE");
 
         verify(publishSupport).publishDeleteAfterCommit(ClassicsContentType.SANCAI_ENTRY, "1004", 6);
+    }
+
+    @Test
+    void batchChangeEntryVisibilityShouldReturnPartialResultAndKeepSearchSync() {
+        SancaiRepository repository = mock(SancaiRepository.class);
+        ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
+        ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
+        SancaiApplicationServiceImpl service =
+                new SancaiApplicationServiceImpl(repository, contentApplicationService, publishSupport);
+        SancaiEntry entry = existingEntry(1006L, SancaiEntryLifecycleStatus.PUBLISHED, SancaiEntryVisibility.PUBLIC);
+        when(repository.getEntryById(SancaiEntryId.of(1006L))).thenReturn(entry);
+        when(repository.getEntryById(SancaiEntryId.of(1007L))).thenReturn(null);
+        when(repository.updateEntry(any())).thenReturn(1);
+        versionEntryOnEnsure(contentApplicationService, 8);
+
+        ClassicsBatchOperationResult result = service.batchChangeEntryVisibility(
+                List.of(SancaiEntryId.of(1006L), SancaiEntryId.of(1007L)), "PRIVATE");
+
+        assertEquals(1, result.getSuccessCount());
+        assertEquals(1, result.getFailureCount());
+        assertEquals("PRIVATE", result.getSuccesses().get(0).getStatus());
+        assertEquals(1007L, result.getFailures().get(0).getContentId());
+        assertEquals("CONTENT_NOT_FOUND", result.getFailures().get(0).getFailureCode());
+        verify(publishSupport).publishDeleteAfterCommit(ClassicsContentType.SANCAI_ENTRY, "1006", 8);
     }
 
     @Test

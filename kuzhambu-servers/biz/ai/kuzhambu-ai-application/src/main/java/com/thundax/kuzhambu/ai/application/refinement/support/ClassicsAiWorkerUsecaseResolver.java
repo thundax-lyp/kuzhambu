@@ -11,6 +11,10 @@ public class ClassicsAiWorkerUsecaseResolver {
                     "translate",
                             new ClassicsAiWorkerUsecaseSpec(
                                     "CLASSICS_SANCAI_TRANSLATE", "/internal/ai/classics/sancai/translate"),
+                    "translate_batch_item",
+                            new ClassicsAiWorkerUsecaseSpec(
+                                    "CLASSICS_SANCAI_TRANSLATE_BATCH_ITEM",
+                                    "/internal/ai/classics/sancai/translate-batch-item"),
                     "summary",
                             new ClassicsAiWorkerUsecaseSpec(
                                     "CLASSICS_SANCAI_SUMMARY", "/internal/ai/classics/sancai/summary"),

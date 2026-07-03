@@ -42,10 +42,13 @@ export interface WangqiDocumentListProps {
     dataSource: WangqiDocumentRecord[];
     loading?: boolean;
     onDelete: (record: WangqiDocumentRecord) => void;
+    onExport: (record: WangqiDocumentRecord) => void;
     onOpenEdit: (record: WangqiDocumentRecord) => void;
     onShare: (record: WangqiDocumentRecord) => void;
+    onSelectedDocumentIdsChange: (ids: number[]) => void;
     onSortDirectionChange: (sortDirection: "ASC" | "DESC") => void;
     pagination: KuzhambuTableProps<WangqiDocumentRecord>["pagination"];
+    selectedDocumentIds: number[];
     sortDirection: "ASC" | "DESC";
 }
 
@@ -53,10 +56,13 @@ export const WangqiDocumentList = ({
     dataSource,
     loading = false,
     onDelete,
+    onExport,
     onOpenEdit,
     onShare,
+    onSelectedDocumentIdsChange,
     onSortDirectionChange,
     pagination,
+    selectedDocumentIds,
     sortDirection
 }: WangqiDocumentListProps) => {
     const columns: KuzhambuTableProps<WangqiDocumentRecord>["columns"] = [
@@ -128,6 +134,12 @@ export const WangqiDocumentList = ({
                     ariaLabel: `分享 ${record.title || "未命名文档"}`,
                     onClick: () => onShare(record)
                 },
+                {
+                    key: "export",
+                    text: "导出",
+                    ariaLabel: `导出 ${record.title || "未命名文档"}`,
+                    onClick: () => onExport(record)
+                },
                 { type: "divider" },
                 {
                     key: "delete",
@@ -155,6 +167,10 @@ export const WangqiDocumentList = ({
                 onSortDirectionChange(activeSorter.order === "ascend" ? "ASC" : "DESC");
             }}
             pagination={pagination}
+            rowSelection={{
+                selectedRowKeys: selectedDocumentIds,
+                onChange: (keys) => onSelectedDocumentIdsChange(keys.map((key) => Number(key)))
+            }}
         />
     );
 };

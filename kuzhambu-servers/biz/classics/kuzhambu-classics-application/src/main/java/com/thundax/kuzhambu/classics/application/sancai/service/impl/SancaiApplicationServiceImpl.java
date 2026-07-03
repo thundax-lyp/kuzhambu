@@ -1,6 +1,8 @@
 package com.thundax.kuzhambu.classics.application.sancai.service.impl;
 
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
+import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationItemResult;
+import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationResult;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiCategoryCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiCategorySortCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryCommand;
@@ -457,10 +459,41 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
         if (entry == null) {
             return;
         }
-        entry.setVisibility(SancaiEntryVisibility.from(visibility));
-        entry.setContentUpdatedAt(new Date());
-        markManualSaveVersion(entry);
-        publishSearchSyncAfterCommit(entry);
+        changeExistingEntryVisibility(entry, visibility);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ClassicsBatchOperationResult batchChangeEntryVisibility(List<SancaiEntryId> ids, String visibility) {
+        if (ids == null || ids.isEmpty()) {
+            return ClassicsBatchOperationResult.empty();
+        }
+        List<ClassicsBatchOperationItemResult> successes = new ArrayList<>();
+        List<ClassicsBatchOperationItemResult> failures = new ArrayList<>();
+        for (SancaiEntryId id : ids) {
+            Long contentId = id == null ? null : id.value();
+            try {
+                SancaiEntry entry = id == null ? null : repository.getEntryById(id);
+                if (entry == null) {
+                    failures.add(ClassicsBatchOperationItemResult.failure(
+                            ClassicsContentType.SANCAI_ENTRY.value(), contentId, "CONTENT_NOT_FOUND", "三才图会条目不存在"));
+                    continue;
+                }
+                changeExistingEntryVisibility(entry, visibility);
+                successes.add(ClassicsBatchOperationItemResult.success(
+                        ClassicsContentType.SANCAI_ENTRY.value(),
+                        contentId,
+                        contentId,
+                        entry.getVisibility().value()));
+            } catch (RuntimeException ex) {
+                failures.add(ClassicsBatchOperationItemResult.failure(
+                        ClassicsContentType.SANCAI_ENTRY.value(),
+                        contentId,
+                        "BATCH_VISIBILITY_FAILED",
+                        ex.getMessage()));
+            }
+        }
+        return ClassicsBatchOperationResult.of(successes, failures);
     }
 
     @Override
@@ -591,6 +624,13 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
     private void markManualSaveVersion(SancaiEntry entry) {
         contentApplicationService.ensureVersioned(entry, ClassicsContentChangeType.MANUAL_SAVE, "手动保存");
         repository.updateEntry(entry);
+    }
+
+    private void changeExistingEntryVisibility(SancaiEntry entry, String visibility) {
+        entry.setVisibility(SancaiEntryVisibility.from(visibility));
+        entry.setContentUpdatedAt(new Date());
+        markManualSaveVersion(entry);
+        publishSearchSyncAfterCommit(entry);
     }
 
     private void publishSearchSyncAfterCommit(SancaiEntry entry) {
