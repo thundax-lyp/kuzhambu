@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Batch visibility API`：新增批量公开/私有状态接口入口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-AI-WORKERS-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/content/controller/request/ClassicsBatchVisibilityRequest.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/content/controller/ClassicsContentAdminController.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/test/java/com/thundax/kuzhambu/classics/interfaces/admin/content/ClassicsContentAdminControllerTest.java`
-    - 处理动作：新增批量 visibility request、endpoint 和接口测试。
-    - 验收点：接口校验 `contentType`、`contentIds`、`visibility`，并返回 `ClassicsBatchOperationResponse`。
-    - 重要度：8/10
-
 - [ ] `Sancai batch visibility`：实现 Sancai 批量公开/私有状态修改
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-AI-WORKERS-CLOSURE.md`

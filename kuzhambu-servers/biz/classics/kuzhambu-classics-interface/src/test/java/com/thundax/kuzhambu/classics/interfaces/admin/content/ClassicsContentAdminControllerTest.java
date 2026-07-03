@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.content;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -21,7 +22,9 @@ import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsExportSc
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsExportStatus;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentExportJobId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisibilityRiskStatus;
+import com.thundax.kuzhambu.classics.interfaces.admin.common.response.ClassicsBatchOperationResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.content.controller.ClassicsContentAdminController;
+import com.thundax.kuzhambu.classics.interfaces.admin.content.controller.request.ClassicsBatchVisibilityRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.content.controller.request.ClassicsContentRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.content.controller.response.ClassicsContentResponse;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
@@ -58,6 +61,12 @@ class ClassicsContentAdminControllerTest {
                 "exports/page",
                 "classics:content:view",
                 ClassicsContentRequest.class);
+        assertPostMapping(
+                ClassicsContentAdminController.class,
+                "batchChangeVisibility",
+                "visibility/batch-change",
+                "classics:content:edit",
+                ClassicsBatchVisibilityRequest.class);
         assertPostMapping(
                 ClassicsContentAdminController.class,
                 "changeAiCandidate",
@@ -142,6 +151,44 @@ class ClassicsContentAdminControllerTest {
         assertEquals("SANCAI_ENTRY", response.getContentType());
         assertEquals(790L, response.getVersionId());
         assertEquals(4, response.getVersionNo());
+    }
+
+    @Test
+    void batchVisibilityRequestShouldValidateAndReturnBatchResponse() {
+        ClassicsBatchVisibilityRequest request = new ClassicsBatchVisibilityRequest();
+        request.setContentType("WANGQI_DOCUMENT");
+        request.setContentIds(List.of(4001L, 4002L));
+        request.setVisibility("PUBLIC");
+
+        ClassicsBatchOperationResponse response = controller().batchChangeVisibility(request);
+
+        assertEquals(0, response.getSuccessCount());
+        assertEquals(2, response.getFailureCount());
+        JsonNode firstFailure = OBJECT_MAPPER.valueToTree(response.getFailures().get(0));
+        assertEquals("WANGQI_DOCUMENT", firstFailure.get("contentType").asText());
+        assertEquals(4001L, firstFailure.get("contentId").asLong());
+        assertEquals(
+                "BATCH_VISIBILITY_NOT_IMPLEMENTED",
+                firstFailure.get("failureCode").asText());
+    }
+
+    @Test
+    void batchVisibilityRequestShouldRejectUnsupportedFields() {
+        ClassicsContentAdminController controller = controller();
+        ClassicsBatchVisibilityRequest request = new ClassicsBatchVisibilityRequest();
+        request.setContentType("UNKNOWN");
+        request.setContentIds(List.of(4001L));
+        request.setVisibility("PUBLIC");
+
+        assertThrows(RuntimeException.class, () -> controller.batchChangeVisibility(request));
+
+        request.setContentType("WANGQI_DOCUMENT");
+        request.setVisibility("ARCHIVED");
+        assertThrows(RuntimeException.class, () -> controller.batchChangeVisibility(request));
+
+        request.setVisibility("PUBLIC");
+        request.setContentIds(List.of(4001L, 4001L));
+        assertThrows(RuntimeException.class, () -> controller.batchChangeVisibility(request));
     }
 
     @Test
