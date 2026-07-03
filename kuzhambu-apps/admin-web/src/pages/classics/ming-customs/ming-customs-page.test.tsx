@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { App as AntdApp } from "antd";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
@@ -126,6 +126,29 @@ const installFetchMock = () => {
                 visibility: "PUBLIC"
             });
         }
+        if (path.endsWith("/classics/shares/batch-create")) {
+            return apiResponse({
+                failureCount: 1,
+                failures: [
+                    {
+                        contentId: 500000000002,
+                        contentType: "MING_CUSTOMS",
+                        failureCode: "CONTENT_NOT_FOUND",
+                        failureReason: "习俗条目不存在",
+                        status: "FAILED"
+                    }
+                ],
+                successCount: 1,
+                successes: [
+                    {
+                        contentId: 500000000001,
+                        contentType: "MING_CUSTOMS",
+                        resultId: 9201,
+                        status: "ACTIVE"
+                    }
+                ]
+            });
+        }
 
         return apiResponse(true);
     });
@@ -191,5 +214,27 @@ describe("MingCustomsPage", () => {
                 locale: "zh-CN"
             })
         );
+    }, 30000);
+
+    it("creates batch shares from selected entries and shows item failures", async () => {
+        const user = userEvent.setup();
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <MingCustomsPage />
+                </AntdApp>
+            </QueryClientProvider>
+        );
+
+        const table = await screen.findByLabelText("明代习俗表格");
+        const rowCheckbox = within(table).getAllByRole("checkbox")[1];
+        await user.click(rowCheckbox);
+        await user.click(screen.getByRole("button", { name: "批量分享" }));
+
+        await waitFor(() => {
+            expect(screen.getByText("批量分享结果：成功 1，失败 1")).toBeInTheDocument();
+        });
+        expect(screen.getByText("MING_CUSTOMS#500000000002: 习俗条目不存在")).toBeInTheDocument();
     }, 30000);
 });

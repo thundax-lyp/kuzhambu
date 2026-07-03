@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Ming Customs Admin batch share`：接入 Ming Customs 页面批量分享入口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-AI-WORKERS-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/ming-customs/ming-customs-page.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/ming-customs/ming-customs-page.test.tsx`
-    - 处理动作：在已有选择态基础上调用 `classics-share-service.batchCreate`。
-    - 验收点：页面展示批量分享成功数、失败数和失败原因。
-    - 重要度：7/10
-
 - [ ] `Sharing Admin regression`：验证批量分享记录仍可在分享管理页维护
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-AI-WORKERS-CLOSURE.md`

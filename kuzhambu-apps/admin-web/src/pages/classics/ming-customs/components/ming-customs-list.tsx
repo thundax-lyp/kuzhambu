@@ -31,8 +31,10 @@ export interface MingCustomsListProps {
     onDelete: (record: MingCustomsRecord) => void;
     onOpenEdit: (record: MingCustomsRecord) => void;
     onExport: (record: MingCustomsRecord) => void;
+    onSelectedEntryIdsChange: (ids: number[]) => void;
     onShare: (record: MingCustomsRecord) => void;
     pagination: KuzhambuTableProps<MingCustomsRecord>["pagination"];
+    selectedEntryIds: number[];
 }
 
 export const MingCustomsList = ({
@@ -42,8 +44,10 @@ export const MingCustomsList = ({
     onDelete,
     onOpenEdit,
     onExport,
+    onSelectedEntryIdsChange,
     onShare,
-    pagination
+    pagination,
+    selectedEntryIds
 }: MingCustomsListProps) => {
     const columns: KuzhambuTableProps<MingCustomsRecord>["columns"] = [
         {
@@ -148,6 +152,10 @@ export const MingCustomsList = ({
             dataSource={dataSource}
             columns={columns}
             pagination={pagination}
+            rowSelection={{
+                selectedRowKeys: selectedEntryIds,
+                onChange: (keys) => onSelectedEntryIdsChange(keys.map((key) => Number(key)))
+            }}
         />
     );
 };
