@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Apps full verification`：执行 frontend apps 全量 format -> lint -> build -> test
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`kuzhambu-apps/`
-    - 处理动作：按顺序执行 frontend apps 全量格式检查、lint、构建和测试。
-    - 验收点：按 `format -> lint -> build -> test` 顺序通过 `npm run format:check`、`npm run lint`、`npm run build`、`npm run test`。
-    - 重要度：10/10
-
 - [ ] `Workers full verification`：执行 Python workers 全量 format -> lint -> compile -> test
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`
