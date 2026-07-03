@@ -5,6 +5,7 @@ import { App as AntdApp } from "antd";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import * as aiCandidateService from "@/pages/classics/common/ai-candidate-service";
 import * as exportService from "@/pages/classics/common/classics-export-service";
+import * as contentService from "@/pages/classics/common/classics-content-service";
 import * as shareService from "@/pages/classics/common/classics-share-service";
 import * as currentUserService from "@/service/current-user-service";
 import { SancaiEntryPanel } from "./sancai-entry-panel";
@@ -17,6 +18,27 @@ const confirmDangerMock = vi.hoisted(() =>
 vi.mock("@/pages/classics/common/classics-content-service", () => ({
     addQaPair: vi.fn(),
     addTag: vi.fn(),
+    changeVisibilityBatch: vi.fn(async () => ({
+        failureCount: 1,
+        failures: [
+            {
+                contentId: 3002,
+                contentType: "SANCAI_ENTRY",
+                failureCode: "BATCH_VISIBILITY_FAILED",
+                failureReason: "内容不存在",
+                status: "FAILED"
+            }
+        ],
+        successCount: 1,
+        successes: [
+            {
+                contentId: 3001,
+                contentType: "SANCAI_ENTRY",
+                resultId: 3001,
+                status: "PRIVATE"
+            }
+        ]
+    })),
     listQaPairs: vi.fn(async () => [
         {
             id: 6001,
@@ -510,6 +532,28 @@ describe("SancaiEntryPanel sharing", () => {
         });
         expect(await screen.findByText("批量分享结果：成功 1，失败 1")).toBeInTheDocument();
         expect(await screen.findByText("SANCAI_ENTRY#3002: 重复目标")).toBeInTheDocument();
+    }, 30000);
+
+    it("changes selected entries visibility and shows item failures", async () => {
+        const user = userEvent.setup();
+
+        renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        const rowCheckbox = within(entryTable).getAllByRole("checkbox")[1];
+        await user.click(rowCheckbox);
+        await user.click(screen.getByRole("button", { name: "批量私有" }));
+
+        await waitFor(() => {
+            expect(contentService.changeVisibilityBatch).toHaveBeenCalled();
+        });
+        expect(vi.mocked(contentService.changeVisibilityBatch).mock.calls[0]?.[0]).toEqual({
+            contentIds: [3001],
+            contentType: "SANCAI_ENTRY",
+            visibility: "PRIVATE"
+        });
+        expect(await screen.findByText("批量可见性结果：成功 1，失败 1")).toBeInTheDocument();
+        expect(await screen.findByText("SANCAI_ENTRY#3002: 内容不存在")).toBeInTheDocument();
     }, 30000);
 
     it("creates image analysis task from selected visual asset and carries visual asset objectId", async () => {
