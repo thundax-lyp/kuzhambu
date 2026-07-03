@@ -161,8 +161,8 @@ public class ClassicsContentAdminController {
     @ApiImplicitParams({})
     @HasPermission("classics:content:edit")
     @SysLogger(value = "批量可见性")
-    @PostMapping("visibility/batch-change")
-    public ClassicsBatchOperationResponse batchChangeVisibility(
+    @PostMapping("visibility/change")
+    public ClassicsBatchOperationResponse changeBatchVisibility(
             @Valid @RequestBody ClassicsBatchVisibilityRequest request) {
         String contentType = validBatchContentType(request == null ? null : request.getContentType());
         String visibility = validBatchVisibility(request == null ? null : request.getVisibility());

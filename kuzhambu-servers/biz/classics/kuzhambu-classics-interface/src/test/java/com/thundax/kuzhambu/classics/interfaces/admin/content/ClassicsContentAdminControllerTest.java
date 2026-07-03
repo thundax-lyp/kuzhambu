@@ -63,8 +63,8 @@ class ClassicsContentAdminControllerTest {
                 ClassicsContentRequest.class);
         assertPostMapping(
                 ClassicsContentAdminController.class,
-                "batchChangeVisibility",
-                "visibility/batch-change",
+                "changeBatchVisibility",
+                "visibility/change",
                 "classics:content:edit",
                 ClassicsBatchVisibilityRequest.class);
         assertPostMapping(
@@ -160,7 +160,7 @@ class ClassicsContentAdminControllerTest {
         request.setContentIds(List.of(4001L, 4002L));
         request.setVisibility("PUBLIC");
 
-        ClassicsBatchOperationResponse response = controller().batchChangeVisibility(request);
+        ClassicsBatchOperationResponse response = controller().changeBatchVisibility(request);
 
         assertEquals(0, response.getSuccessCount());
         assertEquals(2, response.getFailureCount());
@@ -180,15 +180,15 @@ class ClassicsContentAdminControllerTest {
         request.setContentIds(List.of(4001L));
         request.setVisibility("PUBLIC");
 
-        assertThrows(RuntimeException.class, () -> controller.batchChangeVisibility(request));
+        assertThrows(RuntimeException.class, () -> controller.changeBatchVisibility(request));
 
         request.setContentType("WANGQI_DOCUMENT");
         request.setVisibility("ARCHIVED");
-        assertThrows(RuntimeException.class, () -> controller.batchChangeVisibility(request));
+        assertThrows(RuntimeException.class, () -> controller.changeBatchVisibility(request));
 
         request.setVisibility("PUBLIC");
         request.setContentIds(List.of(4001L, 4001L));
-        assertThrows(RuntimeException.class, () -> controller.batchChangeVisibility(request));
+        assertThrows(RuntimeException.class, () -> controller.changeBatchVisibility(request));
     }
 
     @Test

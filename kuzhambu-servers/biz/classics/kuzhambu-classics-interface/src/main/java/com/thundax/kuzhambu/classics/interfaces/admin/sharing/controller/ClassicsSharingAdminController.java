@@ -58,8 +58,8 @@ public class ClassicsSharingAdminController {
     @ApiImplicitParams({})
     @HasPermission("classics:sharing:edit")
     @SysLogger(value = "批量创建分享")
-    @PostMapping("batch-create")
-    public ClassicsBatchOperationResponse batchCreate(@Valid @RequestBody ClassicsBatchShareCreateRequest request) {
+    @PostMapping("batch/create")
+    public ClassicsBatchOperationResponse createBatch(@Valid @RequestBody ClassicsBatchShareCreateRequest request) {
         return ClassicsBatchOperationResponse.from(
                 service.batchCreateLinks(ClassicsSharingInterfaceAssembler.toBatchCreateCommand(request)));
     }

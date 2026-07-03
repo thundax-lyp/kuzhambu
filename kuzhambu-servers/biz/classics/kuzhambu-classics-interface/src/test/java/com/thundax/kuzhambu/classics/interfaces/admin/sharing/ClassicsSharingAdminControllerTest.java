@@ -53,8 +53,8 @@ class ClassicsSharingAdminControllerTest {
         assertPostMapping(ClassicsSharingAdminController.class, "create", "create", ClassicsSharingRequest.class);
         assertPostMapping(
                 ClassicsSharingAdminController.class,
-                "batchCreate",
-                "batch-create",
+                "createBatch",
+                "batch/create",
                 ClassicsBatchShareCreateRequest.class);
         assertPostMapping(ClassicsSharingAdminController.class, "page", "page", ClassicsSharingRequest.class);
         assertPostMapping(
@@ -128,7 +128,7 @@ class ClassicsSharingAdminControllerTest {
         assertFalse(requestJson.at("/targets/0").has("titleSnapshot"), requestJson::toString);
 
         ClassicsSharingAdminController controller = new ClassicsSharingAdminController(sharingService());
-        ClassicsBatchOperationResponse response = controller.batchCreate(request);
+        ClassicsBatchOperationResponse response = controller.createBatch(request);
 
         assertEquals(1, response.getSuccessCount());
         assertEquals(0, response.getFailureCount());

@@ -126,7 +126,7 @@ const installFetchMock = () => {
                 visibility: "PUBLIC"
             });
         }
-        if (path.endsWith("/classics/shares/batch-create")) {
+        if (path.endsWith("/classics/shares/batch/create")) {
             return apiResponse({
                 failureCount: 1,
                 failures: [

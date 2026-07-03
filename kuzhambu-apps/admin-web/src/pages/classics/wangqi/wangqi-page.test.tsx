@@ -91,7 +91,7 @@ const installFetchMock = () => {
         if (path.endsWith("/classics/wangqi/documents/timeline/list")) {
             return apiResponse([]);
         }
-        if (path.endsWith("/classics/shares/batch-create")) {
+        if (path.endsWith("/classics/shares/batch/create")) {
             return apiResponse({
                 failureCount: 1,
                 failures: [

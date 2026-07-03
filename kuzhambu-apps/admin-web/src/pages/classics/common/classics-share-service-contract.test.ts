@@ -59,7 +59,7 @@ const installFetchRecorder = () => {
                 records: [data]
             };
         }
-        if (url.includes("/classics/shares/batch-create")) {
+        if (url.includes("/classics/shares/batch/create")) {
             data = {
                 failureCount: 1,
                 failures: [
@@ -198,7 +198,7 @@ describe("classics share service request contracts", () => {
                 visibilityRiskStatus: "CONFIRMED_PRIVATE"
             },
             method: "POST",
-            path: "/classics/shares/batch-create"
+            path: "/classics/shares/batch/create"
         });
         expect(response.successCount).toBe(1);
         expect(response.successes[0]).toMatchObject({

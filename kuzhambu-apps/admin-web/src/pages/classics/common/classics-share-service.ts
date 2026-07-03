@@ -60,7 +60,7 @@ export const create = (request: ClassicsShareCreateCommand) => {
 
 export const createBatch = (request: ClassicsBatchShareCreateCommand) => {
     return postJson<ClassicsBatchOperationRecord, ClassicsBatchShareCreateCommand>(
-        `${SHARE_PATH}/batch-create`,
+        `${SHARE_PATH}/batch/create`,
         {
             body: request
         }
