@@ -1,6 +1,8 @@
 package com.thundax.kuzhambu.classics.application.sharing.service;
 
+import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationResult;
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
+import com.thundax.kuzhambu.classics.application.sharing.command.BatchShareCreateCommand;
 import com.thundax.kuzhambu.classics.application.sharing.command.ClassicsShareTargetSortCommand;
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkCreateCommand;
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkStatusCommand;
@@ -29,6 +31,8 @@ public interface ClassicsSharingApplicationService {
             String contentType, String title, Date issuedAfter, Date issuedBefore, PageQuery page);
 
     ShareLinkCreateResult createLink(ShareLinkCreateCommand command);
+
+    ClassicsBatchOperationResult batchCreateLinks(BatchShareCreateCommand command);
 
     SharePortalResult getPortalShare(String shareToken);
 

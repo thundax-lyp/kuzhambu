@@ -12,7 +12,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
+import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationResult;
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
+import com.thundax.kuzhambu.classics.application.sharing.command.BatchShareCreateCommand;
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkCreateCommand;
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareTargetCreateCommand;
 import com.thundax.kuzhambu.classics.application.sharing.result.ShareLinkCreateResult;
@@ -261,6 +263,142 @@ class ClassicsSharingApplicationServiceImplTest {
         verify(contentApplicationService, never())
                 .ensureVersioned(eq(entry), eq(ClassicsContentChangeType.SHARE_CREATED), eq("创建分享"));
         verify(sharingRepository, never()).insertTarget(org.mockito.ArgumentMatchers.any());
+    }
+
+    @Test
+    void batchCreateLinksShouldCreatePerTargetLinkAndReturnDuplicateFailure() {
+        ClassicsSharingRepository sharingRepository = mock(ClassicsSharingRepository.class);
+        ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
+        SancaiRepository sancaiRepository = mock(SancaiRepository.class);
+        WangqiDocumentRepository wangqiDocumentRepository = mock(WangqiDocumentRepository.class);
+        MingCustomsRepository mingCustomsRepository = mock(MingCustomsRepository.class);
+        ClassicsShareTokenGenerator shareTokenGenerator = mock(ClassicsShareTokenGenerator.class);
+        ClassicsShareTokenHasher shareTokenHasher = mock(ClassicsShareTokenHasher.class);
+        ClassicsSharingApplicationServiceImpl service = new ClassicsSharingApplicationServiceImpl(
+                sharingRepository,
+                contentApplicationService,
+                sancaiRepository,
+                wangqiDocumentRepository,
+                mingCustomsRepository,
+                shareTokenGenerator,
+                shareTokenHasher,
+                null);
+        SancaiEntry entry = new SancaiEntry();
+        entry.setId(SancaiEntryId.of(100L));
+        entry.setTitle("三才");
+        entry.setVisibility(SancaiEntryVisibility.PUBLIC);
+        ClassicsContentVersion version = version(21L, 1, "{\"title\":\"三才\"}");
+
+        when(sancaiRepository.getEntryById(SancaiEntryId.of(100L))).thenReturn(entry);
+        when(sharingRepository.insertLink(any())).thenReturn(ClassicsShareLinkId.of(31L));
+        when(sharingRepository.maxTargetPriority()).thenReturn(2);
+        when(shareTokenGenerator.generate()).thenReturn("batch-token");
+        when(shareTokenHasher.hash("batch-token")).thenReturn("batch-hash");
+        when(contentApplicationService.ensureVersioned(
+                        eq(entry), eq(ClassicsContentChangeType.SHARE_CREATED), eq("创建分享")))
+                .thenReturn(version);
+        when(sancaiRepository.updateEntry(entry)).thenReturn(1);
+        ShareTargetCreateCommand target =
+                new ShareTargetCreateCommand(ClassicsContentType.SANCAI_ENTRY, ClassicsContentId.of(100L));
+
+        ClassicsBatchOperationResult result = service.batchCreateLinks(new BatchShareCreateCommand(
+                "批量-",
+                ClassicsShareVisibility.PUBLIC,
+                ClassicsShareLinkStatus.ACTIVE,
+                null,
+                null,
+                false,
+                List.of(target, target)));
+
+        assertEquals(1, result.getSuccessCount());
+        assertEquals(1, result.getFailureCount());
+        assertEquals(31L, result.getSuccesses().get(0).getResultId());
+        assertEquals("DUPLICATE_TARGET", result.getFailures().get(0).getFailureCode());
+        ArgumentCaptor<ClassicsShareLink> linkCaptor = ArgumentCaptor.forClass(ClassicsShareLink.class);
+        verify(sharingRepository).insertLink(linkCaptor.capture());
+        assertEquals("批量-三才", linkCaptor.getValue().getTitle());
+        verify(sharingRepository).insertTarget(any());
+    }
+
+    @Test
+    void batchCreateLinksShouldRejectUnconfirmedPrivateContentBeforeWriting() {
+        ClassicsSharingRepository sharingRepository = mock(ClassicsSharingRepository.class);
+        ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
+        SancaiRepository sancaiRepository = mock(SancaiRepository.class);
+        ClassicsShareTokenGenerator shareTokenGenerator = mock(ClassicsShareTokenGenerator.class);
+        ClassicsShareTokenHasher shareTokenHasher = mock(ClassicsShareTokenHasher.class);
+        ClassicsSharingApplicationServiceImpl service = new ClassicsSharingApplicationServiceImpl(
+                sharingRepository,
+                contentApplicationService,
+                sancaiRepository,
+                null,
+                null,
+                shareTokenGenerator,
+                shareTokenHasher,
+                null);
+        SancaiEntry entry = new SancaiEntry();
+        entry.setId(SancaiEntryId.of(101L));
+        entry.setTitle("私有三才");
+        entry.setVisibility(SancaiEntryVisibility.PRIVATE);
+        when(sancaiRepository.getEntryById(SancaiEntryId.of(101L))).thenReturn(entry);
+
+        assertThrows(
+                BizException.class,
+                () -> service.batchCreateLinks(new BatchShareCreateCommand(
+                        null,
+                        ClassicsShareVisibility.PUBLIC,
+                        ClassicsShareLinkStatus.ACTIVE,
+                        null,
+                        null,
+                        false,
+                        List.of(new ShareTargetCreateCommand(
+                                ClassicsContentType.SANCAI_ENTRY, ClassicsContentId.of(101L))))));
+        verify(sharingRepository, never()).insertLink(any());
+        verify(sharingRepository, never()).insertTarget(any());
+    }
+
+    @Test
+    void batchCreateLinksShouldAllowConfirmedPrivateContent() {
+        ClassicsSharingRepository sharingRepository = mock(ClassicsSharingRepository.class);
+        ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
+        SancaiRepository sancaiRepository = mock(SancaiRepository.class);
+        ClassicsShareTokenGenerator shareTokenGenerator = mock(ClassicsShareTokenGenerator.class);
+        ClassicsShareTokenHasher shareTokenHasher = mock(ClassicsShareTokenHasher.class);
+        ClassicsSharingApplicationServiceImpl service = new ClassicsSharingApplicationServiceImpl(
+                sharingRepository,
+                contentApplicationService,
+                sancaiRepository,
+                null,
+                null,
+                shareTokenGenerator,
+                shareTokenHasher,
+                null);
+        SancaiEntry entry = new SancaiEntry();
+        entry.setId(SancaiEntryId.of(102L));
+        entry.setTitle("私有三才");
+        entry.setVisibility(SancaiEntryVisibility.PRIVATE);
+        ClassicsContentVersion version = version(22L, 2, "{\"title\":\"私有三才\"}");
+        when(sancaiRepository.getEntryById(SancaiEntryId.of(102L))).thenReturn(entry);
+        when(sharingRepository.insertLink(any())).thenReturn(ClassicsShareLinkId.of(32L));
+        when(shareTokenGenerator.generate()).thenReturn("private-token");
+        when(shareTokenHasher.hash("private-token")).thenReturn("private-hash");
+        when(contentApplicationService.ensureVersioned(
+                        eq(entry), eq(ClassicsContentChangeType.SHARE_CREATED), eq("创建分享")))
+                .thenReturn(version);
+        when(sancaiRepository.updateEntry(entry)).thenReturn(1);
+
+        ClassicsBatchOperationResult result = service.batchCreateLinks(new BatchShareCreateCommand(
+                null,
+                ClassicsShareVisibility.PUBLIC,
+                ClassicsShareLinkStatus.ACTIVE,
+                null,
+                null,
+                true,
+                List.of(new ShareTargetCreateCommand(ClassicsContentType.SANCAI_ENTRY, ClassicsContentId.of(102L)))));
+
+        assertEquals(1, result.getSuccessCount());
+        assertEquals(0, result.getFailureCount());
+        verify(sharingRepository).insertTarget(any());
     }
 
     @Test
