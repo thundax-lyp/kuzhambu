@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Classics export backend`：补齐 Wangqi/Ming 导出 payload 到 artifact 闭环
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-AI-WORKERS-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/service/impl/ClassicsContentApplicationServiceImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-domain/src/main/java/com/thundax/kuzhambu/classics/domain/content/repository/ClassicsContentRepository.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/java/com/thundax/kuzhambu/classics/infra/content/repository/impl/ClassicsContentRepositoryImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/content/ClassicsContentApplicationServiceImplTest.java`
-    - 处理动作：确保 Wangqi/Ming export job 使用字段完整的 `scope_json` 调用 Render Worker 并写回 Storage artifact 元数据。
-    - 验收点：Wangqi 和 Ming export job 完成后有 `storage_object_id`、`item_count`、`asset_count` 和可下载内容。
-    - 重要度：9/10
-
 - [ ] `Admin Web export`：接入 Wangqi/Ming 导出请求与下载 contract
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-AI-WORKERS-CLOSURE.md`
