@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Portal Web share regression`：验证 Portal 分享读取状态语义
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-AI-WORKERS-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/portal-web/src/pages/share/share-service.ts`、`kuzhambu-apps/portal-web/src/pages/share/share-types.ts`、`kuzhambu-apps/portal-web/src/pages/share/share-service.test.ts`、`kuzhambu-apps/portal-web/src/pages/share/share-page.tsx`、`kuzhambu-apps/portal-web/src/pages/share/share-form.tsx`
-    - 处理动作：补充 Portal Web 分享读取回归，不新增 Portal 批量入口。
-    - 验收点：`ACTIVE` 可读，`EXPIRED` / `REVOKED` 按现有错误语义处理，response 字段不变时不新增 Portal 类型字段。
-    - 重要度：8/10
-
 - [ ] `Implementation Coverage`：更新已关闭能力的 implementation coverage
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-AI-WORKERS-CLOSURE.md`

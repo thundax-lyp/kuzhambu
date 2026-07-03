@@ -32,6 +32,58 @@ describe("classics share service", () => {
         expect(getJsonSpy).toHaveBeenCalledWith("/portal/classics/shares/abc-123");
     });
 
+    it("passes through active batch-created share payload without adding portal-only fields", async () => {
+        vi.spyOn(http, "getJson").mockResolvedValue({
+            status: "ACTIVE",
+            targets: [
+                {
+                    contentId: 400000000001,
+                    contentSnapshotJson: '{"title":"王圻文档"}',
+                    contentType: "WANGQI_DOCUMENT",
+                    contentVersionId: 8101,
+                    contentVersionNo: 1,
+                    contentVisibilitySnapshot: "PUBLIC",
+                    targetStatus: "ACTIVE",
+                    titleSnapshot: "王圻文档"
+                }
+            ],
+            title: "王圻批量分享 - 王圻文档",
+            visibility: "PUBLIC"
+        });
+
+        const response = await shareService.getShare("active-token");
+
+        expect(response).toEqual({
+            status: "ACTIVE",
+            targets: [
+                {
+                    contentId: 400000000001,
+                    contentSnapshotJson: '{"title":"王圻文档"}',
+                    contentType: "WANGQI_DOCUMENT",
+                    contentVersionId: 8101,
+                    contentVersionNo: 1,
+                    contentVisibilitySnapshot: "PUBLIC",
+                    targetStatus: "ACTIVE",
+                    titleSnapshot: "王圻文档"
+                }
+            ],
+            title: "王圻批量分享 - 王圻文档",
+            visibility: "PUBLIC"
+        });
+    });
+
+    it.each(["EXPIRED", "REVOKED"])(
+        "keeps %s share rejection in the existing getShare error path",
+        async (status) => {
+            const error = new Error(`share ${status.toLowerCase()}`);
+            vi.spyOn(http, "getJson").mockRejectedValue(error);
+
+            await expect(shareService.getShare(`${status.toLowerCase()}-token`)).rejects.toThrow(
+                error.message
+            );
+        }
+    );
+
     it("getShareResourceContentUrl sets download flag only for preview/download mode", () => {
         const buildApiUrlSpy = vi.spyOn(http, "buildApiUrl");
         buildApiUrlSpy.mockReturnValue("http://example.com");
