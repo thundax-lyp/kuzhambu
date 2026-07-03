@@ -4,6 +4,7 @@ import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustoms
 import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsKeywordCommand;
 import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsKeywordSortCommand;
 import com.thundax.kuzhambu.classics.application.mingcustoms.query.MingCustomsPageQuery;
+import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationResult;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsKeyword;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsEntryId;
@@ -24,6 +25,8 @@ public interface MingCustomsApplicationService {
     MingCustomsEntryId update(MingCustomsCommand command);
 
     void changeVisibility(MingCustomsEntryId id, String visibility);
+
+    ClassicsBatchOperationResult batchChangeVisibility(List<MingCustomsEntryId> ids, String visibility);
 
     void delete(MingCustomsEntryId id);
 

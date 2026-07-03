@@ -6,6 +6,8 @@ import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustoms
 import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsKeywordSortCommand;
 import com.thundax.kuzhambu.classics.application.mingcustoms.query.MingCustomsPageQuery;
 import com.thundax.kuzhambu.classics.application.mingcustoms.service.MingCustomsApplicationService;
+import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationItemResult;
+import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationResult;
 import com.thundax.kuzhambu.classics.application.searchsync.support.ClassicsSearchIndexSyncPublishSupport;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentChangeType;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
@@ -105,10 +107,41 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
         if (entry == null) {
             return;
         }
-        entry.setVisibility(MingCustomsVisibility.from(visibility));
-        entry.setContentUpdatedAt(new Date());
-        markManualSaveVersion(entry);
-        publishSearchSyncAfterCommit(entry);
+        changeExistingVisibility(entry, visibility);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ClassicsBatchOperationResult batchChangeVisibility(List<MingCustomsEntryId> ids, String visibility) {
+        if (ids == null || ids.isEmpty()) {
+            return ClassicsBatchOperationResult.empty();
+        }
+        List<ClassicsBatchOperationItemResult> successes = new ArrayList<>();
+        List<ClassicsBatchOperationItemResult> failures = new ArrayList<>();
+        for (MingCustomsEntryId id : ids) {
+            Long contentId = id == null ? null : id.value();
+            try {
+                MingCustomsEntry entry = id == null ? null : repository.getById(id);
+                if (entry == null) {
+                    failures.add(ClassicsBatchOperationItemResult.failure(
+                            ClassicsContentType.MING_CUSTOMS.value(), contentId, "CONTENT_NOT_FOUND", "明代海关条目不存在"));
+                    continue;
+                }
+                changeExistingVisibility(entry, visibility);
+                successes.add(ClassicsBatchOperationItemResult.success(
+                        ClassicsContentType.MING_CUSTOMS.value(),
+                        contentId,
+                        contentId,
+                        entry.getVisibility().value()));
+            } catch (RuntimeException ex) {
+                failures.add(ClassicsBatchOperationItemResult.failure(
+                        ClassicsContentType.MING_CUSTOMS.value(),
+                        contentId,
+                        "BATCH_VISIBILITY_FAILED",
+                        ex.getMessage()));
+            }
+        }
+        return ClassicsBatchOperationResult.of(successes, failures);
     }
 
     @Override
@@ -265,6 +298,13 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
     private void markManualSaveVersion(MingCustomsEntry entry) {
         contentApplicationService.ensureVersioned(entry, ClassicsContentChangeType.MANUAL_SAVE, "手动保存");
         repository.update(entry);
+    }
+
+    private void changeExistingVisibility(MingCustomsEntry entry, String visibility) {
+        entry.setVisibility(MingCustomsVisibility.from(visibility));
+        entry.setContentUpdatedAt(new Date());
+        markManualSaveVersion(entry);
+        publishSearchSyncAfterCommit(entry);
     }
 
     private void publishSearchSyncAfterCommit(MingCustomsEntry entry) {

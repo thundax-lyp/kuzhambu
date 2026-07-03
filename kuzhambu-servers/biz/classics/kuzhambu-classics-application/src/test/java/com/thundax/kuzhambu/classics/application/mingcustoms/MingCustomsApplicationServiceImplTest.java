@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.application.mingcustoms;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -9,6 +10,7 @@ import static org.mockito.Mockito.when;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsCommand;
 import com.thundax.kuzhambu.classics.application.mingcustoms.service.impl.MingCustomsApplicationServiceImpl;
+import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationResult;
 import com.thundax.kuzhambu.classics.application.searchsync.support.ClassicsSearchIndexSyncPublishSupport;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
@@ -16,6 +18,7 @@ import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsC
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsVisibility;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsEntryId;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.repository.MingCustomsRepository;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class MingCustomsApplicationServiceImplTest {
@@ -51,6 +54,31 @@ class MingCustomsApplicationServiceImplTest {
         service.changeVisibility(MingCustomsEntryId.of(3002L), "PRIVATE");
 
         verify(publishSupport).publishDeleteAfterCommit(ClassicsContentType.MING_CUSTOMS, "3002", 4);
+    }
+
+    @Test
+    void batchChangeVisibilityShouldReturnPartialResultAndKeepSearchSync() {
+        MingCustomsRepository repository = mock(MingCustomsRepository.class);
+        ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
+        ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
+        MingCustomsApplicationServiceImpl service =
+                new MingCustomsApplicationServiceImpl(repository, contentApplicationService, publishSupport);
+        MingCustomsEntry entry = new MingCustomsEntry();
+        entry.setId(MingCustomsEntryId.of(3004L));
+        entry.setVisibility(MingCustomsVisibility.PUBLIC);
+        when(repository.getById(MingCustomsEntryId.of(3004L))).thenReturn(entry);
+        when(repository.getById(MingCustomsEntryId.of(3005L))).thenReturn(null);
+        versionEntryOnEnsure(contentApplicationService, 6);
+
+        ClassicsBatchOperationResult result = service.batchChangeVisibility(
+                List.of(MingCustomsEntryId.of(3004L), MingCustomsEntryId.of(3005L)), "PRIVATE");
+
+        assertEquals(1, result.getSuccessCount());
+        assertEquals(1, result.getFailureCount());
+        assertEquals("PRIVATE", result.getSuccesses().get(0).getStatus());
+        assertEquals(3005L, result.getFailures().get(0).getContentId());
+        assertEquals("CONTENT_NOT_FOUND", result.getFailures().get(0).getFailureCode());
+        verify(publishSupport).publishDeleteAfterCommit(ClassicsContentType.MING_CUSTOMS, "3004", 6);
     }
 
     @Test
