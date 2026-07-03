@@ -1,6 +1,8 @@
 package com.thundax.kuzhambu.classics.application.wangqi.service.impl;
 
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
+import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationItemResult;
+import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationResult;
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
 import com.thundax.kuzhambu.classics.application.searchsync.support.ClassicsSearchIndexSyncPublishSupport;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentCommand;
@@ -33,6 +35,7 @@ import com.thundax.kuzhambu.storage.facade.request.UnbindStorageOwnerFacadeReque
 import com.thundax.kuzhambu.storage.facade.request.UploadStorageFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.response.OpenStorageFacadeResponse;
 import com.thundax.kuzhambu.storage.facade.response.UploadStorageFacadeResponse;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import org.springframework.stereotype.Service;
@@ -181,10 +184,42 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
     @Transactional(rollbackFor = Exception.class)
     public void changeVisibility(WangqiDocumentVisibilityCommand command) {
         WangqiDocument document = requireDocument(WangqiDocumentIdCodec.toDomain(command.getId()));
-        document.setVisibility(command.getVisibility());
-        document.setContentUpdatedAt(new Date());
-        markVersion(document, "更新可见性");
-        publishSearchSyncAfterCommit(document);
+        changeExistingVisibility(document, command.getVisibility());
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ClassicsBatchOperationResult batchChangeVisibility(
+            List<WangqiDocumentId> ids, WangqiDocumentVisibility visibility) {
+        if (ids == null || ids.isEmpty()) {
+            return ClassicsBatchOperationResult.empty();
+        }
+        List<ClassicsBatchOperationItemResult> successes = new ArrayList<>();
+        List<ClassicsBatchOperationItemResult> failures = new ArrayList<>();
+        for (WangqiDocumentId id : ids) {
+            Long contentId = id == null ? null : id.value();
+            try {
+                WangqiDocument document = id == null ? null : get(id);
+                if (document == null) {
+                    failures.add(ClassicsBatchOperationItemResult.failure(
+                            ClassicsContentType.WANGQI_DOCUMENT.value(), contentId, "CONTENT_NOT_FOUND", "王圻文档不存在"));
+                    continue;
+                }
+                changeExistingVisibility(document, visibility);
+                successes.add(ClassicsBatchOperationItemResult.success(
+                        ClassicsContentType.WANGQI_DOCUMENT.value(),
+                        contentId,
+                        contentId,
+                        document.getVisibility().value()));
+            } catch (RuntimeException ex) {
+                failures.add(ClassicsBatchOperationItemResult.failure(
+                        ClassicsContentType.WANGQI_DOCUMENT.value(),
+                        contentId,
+                        "BATCH_VISIBILITY_FAILED",
+                        ex.getMessage()));
+            }
+        }
+        return ClassicsBatchOperationResult.of(successes, failures);
     }
 
     @Override
@@ -229,6 +264,13 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
     private void markVersion(WangqiDocument document, String changeSummary) {
         contentApplicationService.ensureVersioned(document, ClassicsContentChangeType.MANUAL_SAVE, changeSummary);
         repository.update(document);
+    }
+
+    private void changeExistingVisibility(WangqiDocument document, WangqiDocumentVisibility visibility) {
+        document.setVisibility(visibility);
+        document.setContentUpdatedAt(new Date());
+        markVersion(document, "更新可见性");
+        publishSearchSyncAfterCommit(document);
     }
 
     private void publishSearchSyncAfterCommit(WangqiDocument document) {
