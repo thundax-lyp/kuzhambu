@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `RUNBOOK closure`：清理阶段性 RUNBOOK
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`docs/30-designs/RUNBOOK-CLASSICS-AI-WORKERS-CLOSURE.md`、`TODO.md`
-    - 处理动作：阶段目标关闭后删除 RUNBOOK，并从 TODO 中删除或收窄已完成任务。
-    - 验收点：PR 收口前不保留已完成的临时 RUNBOOK 和已完成 TODO。
-    - 重要度：8/10
-
 - [ ] `Servers full verification`：执行 Java servers 全量 format -> checkstyle -> compile -> test
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`
