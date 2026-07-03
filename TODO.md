@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `AI Sancai resolver`：接入 Sancai 批量翻译 item usecase
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-AI-WORKERS-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/refinement/support/ClassicsAiWorkerUsecaseResolver.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/test/java/com/thundax/kuzhambu/ai/application/refinement/support/ClassicsAiWorkerUsecaseResolverTest.java`、`docs/40-readiness/AI-IMPLEMENTATION-COVERAGE.md`
-    - 处理动作：新增 `CLASSICS_SANCAI_TRANSLATE_BATCH_ITEM` 到 `/internal/ai/classics/sancai/translate-batch-item` 的 Java resolver 映射和测试。
-    - 验收点：resolver 能用 `SANCAI_ENTRY` + `translate_batch_item` 解析到正确 operation 与 worker path。
-    - 重要度：9/10
-
 - [ ] `Classics export backend`：补齐 Wangqi/Ming 导出 payload 到 artifact 闭环
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-AI-WORKERS-CLOSURE.md`
