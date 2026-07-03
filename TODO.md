@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Sharing Admin regression`：验证批量分享记录仍可在分享管理页维护
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-AI-WORKERS-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sharing/sharing-page.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sharing/sharing-page.test.tsx`
-    - 处理动作：验证批量创建出的 share link 可列表展示并继续使用现有 status update。
-    - 验收点：`ACTIVE`、`EXPIRED`、`REVOKED` 管理行为不回退。
-    - 重要度：7/10
-
 - [ ] `Portal Web share regression`：验证 Portal 分享读取状态语义
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-AI-WORKERS-CLOSURE.md`
