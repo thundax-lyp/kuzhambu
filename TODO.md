@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `wangqi-page`：接入王圻文档批量可见性入口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-BATCH-VISIBILITY-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/wangqi/wangqi-page.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/wangqi/wangqi-page.test.tsx`
-    - 处理动作：在王圻文档多选工具区新增批量公开、批量私有动作，固定提交 `contentType: "WANGQI_DOCUMENT"`。
-    - 验收点：页面测试覆盖选中文档后发起批量公开或批量私有，且展示成功数、失败数和失败原因。
-    - 重要度：9/10
-
 - [ ] `ming-customs-page`：接入明代习俗批量可见性入口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-BATCH-VISIBILITY-CLOSURE.md`

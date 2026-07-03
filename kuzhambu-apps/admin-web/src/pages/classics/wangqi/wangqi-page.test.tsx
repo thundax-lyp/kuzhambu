@@ -33,6 +33,14 @@ const apiResponse = (data: unknown) =>
         })
     );
 
+interface CapturedCall {
+    body: unknown;
+    method: string | undefined;
+    path: string;
+}
+
+const capturedCalls: CapturedCall[] = [];
+
 const readFetchUrl = (input: RequestInfo | URL) => {
     if (typeof input === "string") {
         return input;
@@ -41,6 +49,13 @@ const readFetchUrl = (input: RequestInfo | URL) => {
         return input.href;
     }
     return input.url;
+};
+
+const readFetchBody = (body: BodyInit | null | undefined) => {
+    if (!body) {
+        return undefined;
+    }
+    return JSON.parse(String(body));
 };
 
 const createTestQueryClient = () =>
@@ -53,8 +68,13 @@ const createTestQueryClient = () =>
     });
 
 const installFetchMock = () => {
-    vi.spyOn(globalThis, "fetch").mockImplementation((input) => {
+    vi.spyOn(globalThis, "fetch").mockImplementation((input, init) => {
         const path = readFetchUrl(input).replace("/kuzhambu-admin-api/api", "");
+        capturedCalls.push({
+            body: readFetchBody(init?.body),
+            method: init?.method,
+            path
+        });
         if (path.endsWith("/classics/wangqi/documents/page")) {
             return apiResponse({
                 pageNo: 1,
@@ -114,6 +134,29 @@ const installFetchMock = () => {
                 ]
             });
         }
+        if (path.endsWith("/classics/content/visibility/change")) {
+            return apiResponse({
+                failureCount: 1,
+                failures: [
+                    {
+                        contentId: 400000000002,
+                        contentType: "WANGQI_DOCUMENT",
+                        failureCode: "BATCH_VISIBILITY_FAILED",
+                        failureReason: "文档不存在",
+                        status: "FAILED"
+                    }
+                ],
+                successCount: 1,
+                successes: [
+                    {
+                        contentId: 400000000001,
+                        contentType: "WANGQI_DOCUMENT",
+                        resultId: 400000000001,
+                        status: "PRIVATE"
+                    }
+                ]
+            });
+        }
         return apiResponse(true);
     });
 };
@@ -123,6 +166,7 @@ describe("WangqiPage", () => {
 
     beforeEach(() => {
         queryClient = createTestQueryClient();
+        capturedCalls.length = 0;
         localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
         installFetchMock();
     });
@@ -199,6 +243,40 @@ describe("WangqiPage", () => {
 
         await waitFor(() => {
             expect(screen.getByText("批量分享结果：成功 1，失败 1")).toBeInTheDocument();
+        });
+        expect(screen.getByText("WANGQI_DOCUMENT#400000000002: 文档不存在")).toBeInTheDocument();
+    }, 30000);
+
+    it("changes selected documents visibility and shows item failures", async () => {
+        const user = userEvent.setup();
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <WangqiPage />
+                </AntdApp>
+            </QueryClientProvider>
+        );
+
+        const table = await screen.findByLabelText("王圻文档表格");
+        const batchPrivateButton = screen.getByRole("button", { name: "批量私有" });
+        await user.click(within(table).getByRole("checkbox", { name: "Select all" }));
+        await waitFor(() => {
+            expect(batchPrivateButton).not.toBeDisabled();
+        });
+        await user.click(batchPrivateButton);
+
+        await waitFor(() => {
+            expect(screen.getByText("批量可见性结果：成功 1，失败 1")).toBeInTheDocument();
+        });
+        expect(capturedCalls).toContainEqual({
+            body: {
+                contentIds: [400000000001],
+                contentType: "WANGQI_DOCUMENT",
+                visibility: "PRIVATE"
+            },
+            method: "POST",
+            path: "/classics/content/visibility/change"
         });
         expect(screen.getByText("WANGQI_DOCUMENT#400000000002: 文档不存在")).toBeInTheDocument();
     }, 30000);
