@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Batch result model`：新增 Classics 共享批量操作结果模型
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-AI-WORKERS-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/result/ClassicsBatchOperationResult.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/result/ClassicsBatchOperationItemResult.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/common/response/ClassicsBatchOperationResponse.java`
-    - 处理动作：新增 success/failure 计数和 item 级成功/失败明细模型。
-    - 验收点：应用层和接口层都能表达 `successCount`、`failureCount`、`successes[]`、`failures[]`。
-    - 重要度：9/10
-
 - [ ] `Batch visibility API`：新增批量公开/私有状态接口入口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-AI-WORKERS-CLOSURE.md`
