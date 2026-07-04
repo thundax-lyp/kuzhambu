@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics-sancai-image-portal-display`：同步 portal 分享三才多图展示
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-IMAGE-GOVERNANCE-CLOSEOUT.md`
-    - 范围对象：`kuzhambu-apps/portal-web/src/pages/share/share-page.tsx`、`kuzhambu-apps/portal-web/src/pages/share/share-form.tsx`、`kuzhambu-apps/portal-web/src/pages/share/share-types.ts`、`kuzhambu-apps/portal-web/src/pages/share/share-form.test.tsx`
-    - 处理动作：三才分享详情按 `currentUsed` 选择主图，按 `priority ASC` 展示缩略图并支持点击切换主图。
-    - 验收点：Portal 不生成或暴露 admin 图片 API，主图和下载链接均来自分享资源。
-    - 重要度：8/10
-
 - [ ] `classics-sancai-image-portal-contract`：补齐 portal 分享图片 service 契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-IMAGE-GOVERNANCE-CLOSEOUT.md`
