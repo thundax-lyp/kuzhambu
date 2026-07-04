@@ -144,6 +144,27 @@ describe("DiscoverySearchPage", () => {
         expect(container.textContent).toContain("礼器条目");
         expect(container.textContent).toContain("礼器条目摘要");
 
+        const resultLink = container.querySelector(
+            'a[href="/shares/1001"]'
+        ) as HTMLAnchorElement | null;
+        expect(resultLink?.textContent).toContain("礼器条目");
+
+        await act(async () => {
+            resultLink?.click();
+        });
+
+        expect(mocks.recordSearchClick).toHaveBeenCalledWith({
+            contentDomain: "CLASSICS",
+            contentId: "1001",
+            contentTitle: "礼器条目",
+            contentType: "SANCAI_ENTRY",
+            groupRank: 1,
+            resultGroupKey: "SANCAI_ENTRY",
+            resultRank: 1,
+            searchLogId: "LOG-1001",
+            targetPath: "/shares/1001"
+        });
+
         act(() => {
             root.unmount();
         });
@@ -221,6 +242,98 @@ describe("DiscoverySearchPage", () => {
                 queryText: "官制"
             })
         );
+
+        act(() => {
+            root.unmount();
+        });
+    });
+
+    it("renders whitelisted highlight marks without parsing arbitrary html", async () => {
+        mocks.searchDiscovery.mockResolvedValueOnce({
+            displayQueryText: "礼器",
+            groupCount: 1,
+            groups: [
+                {
+                    count: 1,
+                    groupKey: "SANCAI_ENTRY",
+                    groupTitle: "三才图会",
+                    items: [
+                        {
+                            contentDomain: "CLASSICS",
+                            contentId: "1002",
+                            contentType: "SANCAI_ENTRY",
+                            groupRank: 1,
+                            highlightText: "命中 <mark>礼器</mark> <script>alert(1)</script>",
+                            resultRank: 1,
+                            summary: "普通摘要",
+                            title: "礼器条目"
+                        }
+                    ]
+                }
+            ],
+            queryText: "礼器",
+            searchLogId: "LOG-1004",
+            totalCount: 1
+        });
+
+        const { container, root } = renderPage("/discovery/search?q=%E7%A4%BC%E5%99%A8");
+        await flushMutations();
+
+        expect(container.querySelector("mark")?.textContent).toBe("礼器");
+        expect(container.querySelector("script")).toBeNull();
+        expect(container.textContent).toContain("<script>alert(1)</script>");
+
+        act(() => {
+            root.unmount();
+        });
+    });
+
+    it("shows zero result state and clears filters while keeping query text", async () => {
+        mocks.searchDiscovery
+            .mockResolvedValueOnce({
+                displayQueryText: "官制",
+                groupCount: 0,
+                groups: [],
+                queryText: "官制",
+                searchLogId: "LOG-1005",
+                totalCount: 0
+            })
+            .mockResolvedValueOnce({
+                displayQueryText: "官制",
+                groupCount: 0,
+                groups: [],
+                queryText: "官制",
+                searchLogId: "LOG-1006",
+                totalCount: 0
+            });
+
+        const { container, getLocation, root } = renderPage(
+            "/discovery/search?q=%E5%AE%98%E5%88%B6&categoryCodes=WANGQI_DOCUMENT&tagNames=%E5%88%B6%E5%BA%A6"
+        );
+        await flushMutations();
+
+        expect(container.textContent).toContain("没有找到匹配内容");
+
+        const clearButton = Array.from(container.querySelectorAll("button")).find(
+            (button) => button.textContent === "清除筛选条件"
+        );
+        expect(clearButton).toBeDefined();
+
+        await act(async () => {
+            clearButton?.click();
+        });
+        await flushMutations();
+
+        expect(mocks.searchDiscovery).toHaveBeenLastCalledWith(
+            expect.objectContaining({
+                categoryCodes: [],
+                queryText: "官制",
+                tagNames: []
+            })
+        );
+        expect(getLocation()).toContain("q=%E5%AE%98%E5%88%B6");
+        expect(getLocation()).not.toContain("categoryCodes");
+        expect(getLocation()).not.toContain("tagNames");
 
         act(() => {
             root.unmount();

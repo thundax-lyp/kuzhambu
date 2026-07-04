@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Portal Discovery Search Results`：收口 Portal 搜索结果展示
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-QA-CLOSEOUT.md`
-    - 范围对象：`kuzhambu-apps/portal-web/src/pages/discovery/search-page.tsx`、`kuzhambu-apps/portal-web/src/pages/discovery/search-page.test.tsx`、`kuzhambu-apps/portal-web/src/pages/discovery/search-service.ts`、`kuzhambu-apps/portal-web/src/pages/discovery/search-types.ts`
-    - 处理动作：渲染结果深链、高亮片段、点击日志和无结果空状态。
-    - 验收点：点击结果先记录日志，无结果展示 `没有找到匹配内容` 和 `清除筛选条件`，高亮不使用 `dangerouslySetInnerHTML`。
-    - 重要度：10/10
-
 - [ ] `Admin Discovery Search Service`：补齐 Admin 搜索分析前端契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-QA-CLOSEOUT.md`

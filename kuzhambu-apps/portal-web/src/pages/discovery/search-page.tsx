@@ -187,6 +187,33 @@ const formatItemMeta = (item: DiscoverySearchItemResponse) => {
     ].join(" · ");
 };
 
+const renderHighlightText = (highlightText: string | null | undefined) => {
+    if (!highlightText) {
+        return null;
+    }
+
+    const nodes: Array<string | JSX.Element> = [];
+    const markPattern = /<mark>(.*?)<\/mark>/giu;
+    let lastIndex = 0;
+    let match = markPattern.exec(highlightText);
+
+    while (match) {
+        if (match.index > lastIndex) {
+            nodes.push(highlightText.slice(lastIndex, match.index));
+        }
+
+        nodes.push(<mark key={`mark-${match.index}`}>{match[1]}</mark>);
+        lastIndex = match.index + match[0].length;
+        match = markPattern.exec(highlightText);
+    }
+
+    if (lastIndex < highlightText.length) {
+        nodes.push(highlightText.slice(lastIndex));
+    }
+
+    return nodes;
+};
+
 const createClickCommand = (
     searchLogId: string,
     group: DiscoverySearchGroupResponse,
@@ -277,6 +304,23 @@ export const DiscoverySearchPage = () => {
         setSearchParams(new URLSearchParams());
     };
 
+    const handleClearFilters = () => {
+        const nextForm: SearchFormState = {
+            ...INITIAL_FORM_STATE,
+            queryText: form.queryText
+        };
+        setForm(nextForm);
+
+        const nextSearchParams = toSearchParams(nextForm);
+        const request = toRequest(nextForm);
+        if (nextSearchParams.toString() === searchParams.toString()) {
+            runSearch(request);
+            return;
+        }
+
+        setSearchParams(nextSearchParams);
+    };
+
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const request = toRequest(form);
@@ -307,6 +351,9 @@ export const DiscoverySearchPage = () => {
             void discoverySearchService.recordSearchClick(command);
         }
     };
+
+    const shouldShowZeroResult =
+        !searchMutation.isPending && !searchMutation.isError && response?.totalCount === 0;
 
     return (
         <main className="portal-shell">
@@ -518,8 +565,8 @@ export const DiscoverySearchPage = () => {
                                                     <h3>{item.title || "未命名结果"}</h3>
                                                 </div>
                                                 <p className="portal-discovery-hit-summary">
-                                                    {item.summary ||
-                                                        item.highlightText ||
+                                                    {renderHighlightText(item.highlightText) ||
+                                                        item.summary ||
                                                         "暂无摘要"}
                                                 </p>
                                                 <div className="portal-discovery-hit-meta">
@@ -556,6 +603,16 @@ export const DiscoverySearchPage = () => {
                         </Card>
                     );
                 })}
+
+                {shouldShowZeroResult ? (
+                    <Card className="portal-empty">
+                        <strong>没有找到匹配内容</strong>
+                        <p>可以保留搜索词，先清除筛选条件再重新检索。</p>
+                        <Button type="button" variant="outline" onClick={handleClearFilters}>
+                            清除筛选条件
+                        </Button>
+                    </Card>
+                ) : null}
             </section>
         </main>
     );
