@@ -7,11 +7,12 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.common.knowledge.configure.KuzhambuKnowledgeProperties;
-import com.thundax.kuzhambu.common.knowledge.model.KnowledgeChatMessage;
-import com.thundax.kuzhambu.common.knowledge.model.KnowledgeChatRequest;
-import com.thundax.kuzhambu.common.knowledge.model.KnowledgeDatasetListRequest;
+import com.thundax.kuzhambu.common.knowledge.model.base.KnowledgeBaseListRequest;
+import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatMessage;
+import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatRequest;
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpHeaders;
@@ -22,7 +23,7 @@ import org.springframework.web.client.RestTemplate;
 public class FastGptKnowledgeBaseClientTest {
 
     @Test
-    public void shouldListDatasetsWithAuthorizationHeader() {
+    public void shouldListKnowledgeBasesWithAuthorizationHeader() {
         RestTemplate restTemplate =
                 new RestTemplateBuilder().rootUri("http://fastgpt.local").build();
         MockRestServiceServer server =
@@ -40,10 +41,10 @@ public class FastGptKnowledgeBaseClientTest {
 
         assertEquals(
                 "dataset-1",
-                client.listDatasets(new KnowledgeDatasetListRequest(1, 20, "Discovery"))
-                        .datasets()
+                client.listKnowledgeBases(new KnowledgeBaseListRequest(1, 20, "Discovery"))
+                        .knowledgeBases()
                         .get(0)
-                        .datasetId());
+                        .knowledgeBaseId());
         server.verify();
     }
 
@@ -67,7 +68,14 @@ public class FastGptKnowledgeBaseClientTest {
         assertEquals(
                 "answer from fastgpt",
                 client.chat(new KnowledgeChatRequest(
-                                "app-1", "chat-1", List.of(new KnowledgeChatMessage("user", "question")), false, null))
+                                "kuzhambu-qa",
+                                List.of(new KnowledgeChatMessage("user", "question")),
+                                false,
+                                Map.of("chatId", "chat-1", "knowledgeBases", List.of("WANGQI_DOCUMENT")),
+                                null))
+                        .choices()
+                        .get(0)
+                        .message()
                         .content());
         server.verify();
     }
@@ -76,6 +84,7 @@ public class FastGptKnowledgeBaseClientTest {
         KuzhambuKnowledgeProperties.FastGpt properties = new KuzhambuKnowledgeProperties.FastGpt();
         properties.setBaseUrl(baseUrl);
         properties.setApiKey(apiKey);
+        properties.setAppId("app-1");
         properties.setTimeout(Duration.ofSeconds(10));
         return properties;
     }

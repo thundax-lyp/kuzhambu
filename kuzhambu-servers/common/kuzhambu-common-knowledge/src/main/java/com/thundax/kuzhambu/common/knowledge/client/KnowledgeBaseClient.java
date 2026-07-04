@@ -1,32 +1,35 @@
 package com.thundax.kuzhambu.common.knowledge.client;
 
-import com.thundax.kuzhambu.common.knowledge.model.KnowledgeChatRequest;
-import com.thundax.kuzhambu.common.knowledge.model.KnowledgeChatResult;
-import com.thundax.kuzhambu.common.knowledge.model.KnowledgeCollectionCreateRequest;
-import com.thundax.kuzhambu.common.knowledge.model.KnowledgeCollectionListRequest;
-import com.thundax.kuzhambu.common.knowledge.model.KnowledgeCollectionPageResult;
-import com.thundax.kuzhambu.common.knowledge.model.KnowledgeCollectionResult;
-import com.thundax.kuzhambu.common.knowledge.model.KnowledgeDatasetCreateRequest;
-import com.thundax.kuzhambu.common.knowledge.model.KnowledgeDatasetListRequest;
-import com.thundax.kuzhambu.common.knowledge.model.KnowledgeDatasetPageResult;
-import com.thundax.kuzhambu.common.knowledge.model.KnowledgeDatasetResult;
-import com.thundax.kuzhambu.common.knowledge.model.KnowledgeHealthResult;
-import com.thundax.kuzhambu.common.knowledge.model.KnowledgeSyncRequest;
-import com.thundax.kuzhambu.common.knowledge.model.KnowledgeSyncResult;
+import com.thundax.kuzhambu.common.knowledge.model.base.KnowledgeBaseEnsureRequest;
+import com.thundax.kuzhambu.common.knowledge.model.base.KnowledgeBaseListRequest;
+import com.thundax.kuzhambu.common.knowledge.model.base.KnowledgeBasePageResult;
+import com.thundax.kuzhambu.common.knowledge.model.base.KnowledgeBaseResult;
+import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatRequest;
+import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatResult;
+import com.thundax.kuzhambu.common.knowledge.model.health.KnowledgeHealthResult;
+import com.thundax.kuzhambu.common.knowledge.model.item.KnowledgeItemDeleteRequest;
+import com.thundax.kuzhambu.common.knowledge.model.item.KnowledgeItemListRequest;
+import com.thundax.kuzhambu.common.knowledge.model.item.KnowledgeItemPageResult;
+import com.thundax.kuzhambu.common.knowledge.model.item.KnowledgeItemResult;
+import com.thundax.kuzhambu.common.knowledge.model.item.KnowledgeItemUpsertRequest;
+import com.thundax.kuzhambu.common.knowledge.model.sync.KnowledgeSyncRequest;
+import com.thundax.kuzhambu.common.knowledge.model.sync.KnowledgeSyncResult;
 
 public interface KnowledgeBaseClient {
 
     KnowledgeHealthResult health();
 
-    KnowledgeDatasetPageResult listDatasets(KnowledgeDatasetListRequest request);
+    KnowledgeBasePageResult listKnowledgeBases(KnowledgeBaseListRequest request);
 
-    KnowledgeDatasetResult createDataset(KnowledgeDatasetCreateRequest request);
+    KnowledgeBaseResult ensureKnowledgeBase(KnowledgeBaseEnsureRequest request);
 
-    KnowledgeCollectionPageResult listCollections(KnowledgeCollectionListRequest request);
+    KnowledgeItemPageResult listKnowledgeItems(KnowledgeItemListRequest request);
 
-    KnowledgeCollectionResult createCollection(KnowledgeCollectionCreateRequest request);
+    KnowledgeItemResult upsertKnowledgeItem(KnowledgeItemUpsertRequest request);
 
-    KnowledgeSyncResult syncCollection(KnowledgeSyncRequest request);
+    KnowledgeSyncResult syncKnowledgeItem(KnowledgeSyncRequest request);
+
+    KnowledgeSyncResult deleteKnowledgeItem(KnowledgeItemDeleteRequest request);
 
     KnowledgeChatResult chat(KnowledgeChatRequest request);
 }

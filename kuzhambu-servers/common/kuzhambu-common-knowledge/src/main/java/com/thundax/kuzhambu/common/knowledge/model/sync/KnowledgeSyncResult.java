@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.common.knowledge.model;
+package com.thundax.kuzhambu.common.knowledge.model.sync;
 
 import java.util.Map;
 
