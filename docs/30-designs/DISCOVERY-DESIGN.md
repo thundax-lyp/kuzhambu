@@ -4,7 +4,7 @@
 
 本文档定义 Discovery 域设计，覆盖跨库搜索和智能问答。
 
-当前阶段已完成 `Search` 子能力域运行时第一阶段闭环；问答相关能力继续保留在本设计文档中，但本轮不进入运行时代码交付范围。
+当前阶段已完成 `Search` 子能力域运行时闭环，并完成 Discovery QA 的 Portal 问答和 Admin 运维闭环。
 
 ## Module
 
@@ -18,14 +18,14 @@ kuzhambu-servers/biz/discovery/
 
 ## Business Boundary
 
-Discovery 拥有搜索查询、搜索日志、问答会话、问答消息、来源引用和调试信息。Discovery 消费 Classics 内容、Knowledge 同义词和实体、AI 回答生成能力、System 权限上下文。
+Discovery 拥有搜索查询、搜索日志、问答会话、问答消息、来源引用、provider trace 和知识同步状态。Discovery 消费 Classics 内容、Knowledge 同义词和实体、公共 Knowledge Base adapter、System 权限上下文。
 
 当前阶段固定边界：
 
 - Search 内容源只接 `SANCAI_ENTRY`、`WANGQI_DOCUMENT`、`MING_CUSTOMS`。
 - Search 结果只消费用户当前可见内容；权限过滤必须发生在结果出参前。
 - Search 当前不接入 Knowledge 图谱读取，不以知识图谱作为必需前置。
-- Search 当前不直接调用 AI 域，不实现查询改写和实体增强的真实执行链路。
+- Search 查询理解可通过 AI 域 usecase 调度；正式 Discovery QA 问答不依赖 Workers 作为运行时入口。
 
 ## DDD Model
 
@@ -37,7 +37,8 @@ Discovery 拥有搜索查询、搜索日志、问答会话、问答消息、来�
 - `QaSession`
 - `QaMessage`
 - `QaSource`
-- `QaDebugContext`
+- `QaRetrievalTrace`
+- `KnowledgeSyncItem`
 
 ### Search 子域模型
 
@@ -59,8 +60,9 @@ Discovery 拥有搜索查询、搜索日志、问答会话、问答消息、来�
 - `discovery_query_understanding`
 - `discovery_qa_session`
 - `discovery_qa_message`
-- `discovery_qa_source`
-- `discovery_qa_debug_context`
+- `discovery_qa_message_source`
+- `discovery_qa_retrieval_trace`
+- `discovery_qa_knowledge_sync_item`
 
 搜索索引不是业务真相源，索引结构由 infra 适配维护。
 
@@ -129,8 +131,9 @@ Discovery 拥有搜索查询、搜索日志、问答会话、问答消息、来�
 - `QueryUnderstandingApplicationService`
 - `QaApplicationService`
 - `QaSessionApplicationService`
+- `KnowledgeSyncApplicationService`
 
-Application 层负责权限过滤、查询理解、同义词扩展、实体增强、搜索结果分组、问答上下文组装、来源引用和会话管理。
+Application 层负责权限过滤、查询理解、同义词扩展、实体增强、搜索结果分组、问答会话管理、知识库同步、来源引用和 provider trace 记录。
 
 ### Search Application Service
 
@@ -158,12 +161,12 @@ Application 层负责权限过滤、查询理解、同义词扩展、实体增�
 Admin 入口：
 
 - 搜索质量分析。
-- 问答上下文调试。
+- 问答知识库健康、重建、同步状态、来源和 provider trace 运维。
 
 Portal/Admin 通用入口：
 
 - 跨库搜索。
-- 智能问答。
+- OpenAI-compatible 智能问答。
 - 王圻文档单文档追加式问答。
 - 会话列表、删除和导出。
 
@@ -187,10 +190,37 @@ Admin：
 - 结果项固定保留 `highlightText` 字段，即使当前阶段不实现高亮。
 - Admin 日志接口权限码固定为 `discovery:search:view`。
 
+### QA 当前接口口径
+
+Portal：
+
+- `POST /api/portal/discovery/qa/session/open`
+- `POST /api/portal/discovery/qa/session/page`
+- `POST /api/portal/discovery/qa/session/get`
+- `POST /api/portal/discovery/qa/chat/completions`
+
+Admin：
+
+- `POST /api/discovery/qa-admin/knowledge/health`
+- `POST /api/discovery/qa-admin/knowledge/rebuild`
+- `POST /api/discovery/qa-admin/knowledge/sync`
+- `POST /api/discovery/qa-admin/knowledge/sync/page`
+- `POST /api/discovery/qa-admin/session/get`
+- `POST /api/discovery/qa-admin/source/list`
+- `POST /api/discovery/qa-admin/trace/get`
+
+当前协议要求：
+
+- Portal QA 问答入口采用 OpenAI-compatible `model/messages/choices` 响应习惯，答案从 `choices[0].message.content` 读取。
+- Portal QA 请求中的 `model` 是逻辑知识库名，不是 provider app id。
+- Portal QA 只暴露 Discovery API，不接收 provider app、dataset、collection 或 file 路由配置。
+- 来源列表从回答顶层 `sources` 返回；返回前必须按当前 Kuzhambu 可见性重新校验，不可见来源标记为 `UNAVAILABLE`。
+- Admin QA 只暴露知识库健康、重建、同步状态、会话详情、来源列表和 provider trace，不暴露 provider 路由配置。
+
 ## Infrastructure Layer
 
 - Elasticsearch 或等价检索适配。
-- AI 回答生成客户端通过 AI 域 application 能力访问。
+- QA 回答生成通过 `kuzhambu-common-knowledge` 的 OpenAI-compatible adapter 访问。
 - 内容读取必须通过 Classics application 能力，不直接读 Classics 表。
 
 ### Search Infra 适配
@@ -207,6 +237,21 @@ Admin：
 - application 层只能依赖 `SearchIndexGateway`，不得直接依赖 ES 客户端。
 - Search 运行时已实现真实检索、全量 `rebuild`、增量 `upsert`、删除态写入和删除态物理清理。
 - Elasticsearch 查询必须过滤 `deleted = true` 的文档。
+
+### QA Knowledge Base 适配
+
+当前阶段固定采用：
+
+- Discovery 通过 `kuzhambu-common-knowledge` 的 OpenAI-compatible adapter 访问外部知识库能力。
+- Discovery 负责将 Classics 可消费内容同步为知识条目，并记录 `sourceId`、`contentType`、`contentId`、`knowledgeBaseName`、`currentVersionNo`、`knowledgeRevision`、`syncStatus`、`failureReason`、`syncedAt` 和 `updatedAt`。
+- Discovery 问答请求只接收会话、消息、上下文内容和逻辑模型，不接收 provider 路由参数。
+- provider 请求、外部知识库、外部条目、外部会话、耗时、失败原因和 raw 响应写入 provider trace。
+
+当前阶段不采用：
+
+- Portal/Admin 前端直连 provider。
+- Workers 承载正式 Discovery QA 问答运行时或知识同步任务。
+- Discovery API 透出 provider app、dataset、collection 或 file 控制。
 
 ### Search 索引同步
 
@@ -237,8 +282,8 @@ Search 索引同步消息由 Classics 写路径发出，但 Elasticsearch 文档
 
 ## Observability
 
-- 记录查询词、识别意图、结果数量、点击、问答来源和失败原因。
-- 管理员可查看问答调试上下文。
+- 记录查询词、识别意图、结果数量、点击、问答来源、同步状态、provider trace 和失败原因。
+- 管理员可查看问答知识库健康、同步记录、来源和 provider trace。
 
 当前阶段至少记录：
 
@@ -256,6 +301,9 @@ Search 索引同步消息由 Classics 写路径发出，但 Elasticsearch 文档
 
 - 搜索和问答不依赖知识图谱作为必需前置。
 - 权限过滤发生在结果展示和问答上下文生成前。
+- Portal QA 正式问答入口固定为 `POST /api/portal/discovery/qa/chat/completions`。
+- Admin QA 可查看知识库健康、同步状态、来源列表和 provider trace。
+- Frontend 不直连 provider，Workers 不承载正式 Discovery QA 问答运行时或知识同步任务。
 
 ### Search 当前阶段验收
 

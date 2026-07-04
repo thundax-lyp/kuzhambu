@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `DISCOVERY-DESIGN.md; DISCOVERY-IMPLEMENTATION-COVERAGE.md; RUNBOOK-DISCOVERY-QA-KNOWLEDGE-BASE-REWRITE.md`：收口设计和 readiness 文档
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-KNOWLEDGE-BASE-REWRITE.md`
-    - 范围对象：`docs/30-designs/DISCOVERY-DESIGN.md`; `docs/40-readiness/DISCOVERY-IMPLEMENTATION-COVERAGE.md`; `docs/30-designs/RUNBOOK-DISCOVERY-QA-KNOWLEDGE-BASE-REWRITE.md`
-    - 处理动作：同步最终 QA 知识库设计、覆盖状态，并在实现合并后删除 RUNBOOK。
-    - 验收点：目标状态文档不再把旧 QA source、debug context 或 `/question/ask` 当成目标。
-    - 重要度：8/10
-
 ## 待审阅任务项
 
 ## 待讨论项
