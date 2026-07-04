@@ -7,6 +7,7 @@ import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
 import com.thundax.kuzhambu.discovery.application.qa.command.DeleteQaSessionCommand;
+import com.thundax.kuzhambu.discovery.application.qa.command.ExportQaSessionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.command.SyncKnowledgeContentCommand;
 import com.thundax.kuzhambu.discovery.application.qa.query.KnowledgeSyncItemPageQuery;
 import com.thundax.kuzhambu.discovery.application.qa.result.KnowledgeSyncItemResult;
@@ -95,6 +96,16 @@ public class DiscoveryQaAdminController {
         qaApplicationService.deleteSession(toDeleteSessionCommand(request));
     }
 
+    @Operation(summary = "导出会话", description = "Discovery QA Admin 导出会话 CSV")
+    @HasPermission("discovery:qa:view")
+    @IgnoreSysLogger
+    @PostMapping("session/export")
+    public DiscoveryQaAdminResponses.QaSessionExportResponse exportSession(
+            @Valid @RequestBody DiscoveryQaAdminRequests.QaSessionExportRequest request) {
+        return DiscoveryQaAdminInterfaceAssembler.toSessionExportResponse(
+                qaApplicationService.exportSession(toExportSessionCommand(request)));
+    }
+
     @Operation(summary = "获取来源列表", description = "Discovery QA 来源列表")
     @HasPermission("discovery:qa:view")
     @IgnoreSysLogger
@@ -140,5 +151,16 @@ public class DiscoveryQaAdminController {
     private static DeleteQaSessionCommand toDeleteSessionCommand(
             DiscoveryQaAdminRequests.QaSessionDeleteRequest request) {
         return new DeleteQaSessionCommand(request == null ? null : request.getSessionId(), null, null, true);
+    }
+
+    private static ExportQaSessionCommand toExportSessionCommand(
+            DiscoveryQaAdminRequests.QaSessionExportRequest request) {
+        return new ExportQaSessionCommand(
+                request == null ? null : request.getSessionId(),
+                request == null ? null : request.getRequesterUserId(),
+                null,
+                null,
+                true,
+                request == null ? null : request.getFormat());
     }
 }

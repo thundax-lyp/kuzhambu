@@ -13,12 +13,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.discovery.application.qa.command.DeleteQaSessionCommand;
+import com.thundax.kuzhambu.discovery.application.qa.command.ExportQaSessionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.command.SyncKnowledgeContentCommand;
 import com.thundax.kuzhambu.discovery.application.qa.query.KnowledgeSyncItemPageQuery;
 import com.thundax.kuzhambu.discovery.application.qa.result.KnowledgeHealthResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.KnowledgeSyncItemResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaMessageResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionDetailResult;
+import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionExportResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSourceResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaTraceResult;
 import com.thundax.kuzhambu.discovery.application.qa.service.KnowledgeSyncApplicationService;
@@ -53,6 +55,11 @@ class DiscoveryQaAdminControllerTest {
                 DiscoveryQaAdminRequests.QaSessionDeleteRequest.class);
         assertPostMapping(
                 DiscoveryQaAdminController.class,
+                "exportSession",
+                "session/export",
+                DiscoveryQaAdminRequests.QaSessionExportRequest.class);
+        assertPostMapping(
+                DiscoveryQaAdminController.class,
                 "listSources",
                 "source/list",
                 DiscoveryQaAdminRequests.QaSourceListRequest.class);
@@ -78,6 +85,11 @@ class DiscoveryQaAdminControllerTest {
                 "deleteSession",
                 "discovery:qa:edit",
                 DiscoveryQaAdminRequests.QaSessionDeleteRequest.class);
+        assertHasPermission(
+                DiscoveryQaAdminController.class,
+                "exportSession",
+                "discovery:qa:view",
+                DiscoveryQaAdminRequests.QaSessionExportRequest.class);
     }
 
     @Test
@@ -97,6 +109,16 @@ class DiscoveryQaAdminControllerTest {
                 DiscoveryQaAdminRequests.QaSessionDeleteRequest.class);
         assertEquals(5001L, sessionDeleteRequest.getSessionId());
         assertJsonFields(sessionDeleteRequest, "sessionId");
+
+        DiscoveryQaAdminRequests.QaSessionExportRequest sessionExportRequest = OBJECT_MAPPER.readValue(
+                """
+                        {"sessionId":5001,"requesterUserId":1001,"format":"CSV"}
+                        """,
+                DiscoveryQaAdminRequests.QaSessionExportRequest.class);
+        assertEquals(5001L, sessionExportRequest.getSessionId());
+        assertEquals(1001L, sessionExportRequest.getRequesterUserId());
+        assertEquals("CSV", sessionExportRequest.getFormat());
+        assertJsonFields(sessionExportRequest, "sessionId", "requesterUserId", "format");
 
         DiscoveryQaAdminRequests.QaSourceListRequest sourceListRequest = OBJECT_MAPPER.readValue(
                 """
@@ -143,6 +165,7 @@ class DiscoveryQaAdminControllerTest {
         DiscoveryQaAdminController controller = new DiscoveryQaAdminController(qaService, syncService);
 
         when(qaService.getSessionDetail(5001L)).thenReturn(sampleSessionDetail());
+        when(qaService.exportSession(any(ExportQaSessionCommand.class))).thenReturn(sampleExportResult());
         when(qaService.listSourcesByMessageId(7002L)).thenReturn(List.of(sampleSource()));
         when(qaService.getTraceByTraceId(8001L)).thenReturn(sampleTrace());
         when(syncService.health())
@@ -163,6 +186,17 @@ class DiscoveryQaAdminControllerTest {
                 new DiscoveryQaAdminRequests.QaSessionDeleteRequest();
         deleteRequest.setSessionId(5001L);
         controller.deleteSession(deleteRequest);
+
+        DiscoveryQaAdminRequests.QaSessionExportRequest exportRequest =
+                new DiscoveryQaAdminRequests.QaSessionExportRequest();
+        exportRequest.setSessionId(5001L);
+        exportRequest.setRequesterUserId(1001L);
+        exportRequest.setFormat("CSV");
+        var exportResponse = controller.exportSession(exportRequest);
+        assertEquals(7001L, exportResponse.getExportId());
+        assertEquals(8001L, exportResponse.getStorageObjectId());
+        assertEquals("SUCCEEDED", exportResponse.getExportStatus());
+        assertEquals("discovery-qa-session-5001-7001.csv", exportResponse.getFilename());
 
         DiscoveryQaAdminRequests.QaSourceListRequest sourceRequest = new DiscoveryQaAdminRequests.QaSourceListRequest();
         sourceRequest.setMessageId(7002L);
@@ -209,6 +243,12 @@ class DiscoveryQaAdminControllerTest {
         verify(qaService).deleteSession(deleteCommand.capture());
         assertEquals(5001L, deleteCommand.getValue().getSessionId());
         assertEquals(Boolean.TRUE, deleteCommand.getValue().getAdminOperation());
+        ArgumentCaptor<ExportQaSessionCommand> exportCommand = ArgumentCaptor.forClass(ExportQaSessionCommand.class);
+        verify(qaService).exportSession(exportCommand.capture());
+        assertEquals(5001L, exportCommand.getValue().getSessionId());
+        assertEquals(1001L, exportCommand.getValue().getRequesterUserId());
+        assertEquals(Boolean.TRUE, exportCommand.getValue().getAdminOperation());
+        assertEquals("CSV", exportCommand.getValue().getFormat());
         verify(qaService).listSourcesByMessageId(7002L);
         verify(qaService).getTraceByTraceId(8001L);
 
@@ -252,6 +292,20 @@ class DiscoveryQaAdminControllerTest {
     private QaSourceResult sampleSource() {
         return new QaSourceResult(
                 9001L, "SANCAI_ENTRY", 1001L, "SANCAI", "黄帝", "卷一", "上古帝王", 1, BigDecimal.ONE, "CITED");
+    }
+
+    private QaSessionExportResult sampleExportResult() {
+        return new QaSessionExportResult(
+                7001L,
+                5001L,
+                "CSV",
+                8001L,
+                "SUCCEEDED",
+                null,
+                1_718_000_000_000L,
+                1_718_000_001_000L,
+                "discovery-qa-session-5001-7001.csv",
+                "text/csv; charset=UTF-8");
     }
 
     private QaTraceResult sampleTrace() {

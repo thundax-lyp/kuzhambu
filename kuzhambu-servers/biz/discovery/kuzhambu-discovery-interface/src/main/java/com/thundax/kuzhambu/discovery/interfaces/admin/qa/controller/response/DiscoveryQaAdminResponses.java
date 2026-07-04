@@ -72,6 +72,54 @@ public final class DiscoveryQaAdminResponses {
 
     @Getter
     @Builder
+    @Schema(name = "DiscoveryQaSessionExportResponse", description = "Discovery QA 会话导出响应")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class QaSessionExportResponse implements Serializable {
+
+        @Schema(name = "exportId", description = "导出号")
+        @JsonProperty(value = "exportId")
+        private Long exportId;
+
+        @Schema(name = "sessionId", description = "会话号")
+        @JsonProperty(value = "sessionId")
+        private Long sessionId;
+
+        @Schema(name = "format", description = "导出格式")
+        @JsonProperty(value = "format")
+        private String format;
+
+        @Schema(name = "storageObjectId", description = "Storage 对象号")
+        @JsonProperty(value = "storageObjectId")
+        private Long storageObjectId;
+
+        @Schema(name = "exportStatus", description = "导出状态")
+        @JsonProperty(value = "exportStatus")
+        private String exportStatus;
+
+        @Schema(name = "failureReason", description = "失败原因")
+        @JsonProperty(value = "failureReason")
+        private String failureReason;
+
+        @Schema(name = "requestedAt", description = "请求时间")
+        @JsonProperty(value = "requestedAt")
+        private Long requestedAt;
+
+        @Schema(name = "completedAt", description = "完成时间")
+        @JsonProperty(value = "completedAt")
+        private Long completedAt;
+
+        @Schema(name = "filename", description = "文件名")
+        @JsonProperty(value = "filename")
+        private String filename;
+
+        @Schema(name = "contentType", description = "内容类型")
+        @JsonProperty(value = "contentType")
+        private String contentType;
+    }
+
+    @Getter
+    @Builder
     @Schema(name = "DiscoveryQaMessageResponse", description = "Discovery QA 消息响应")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)

@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `discovery-qa-admin-export-interface`：补齐 Admin 会话导出接口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-SESSION-DELETE-EXPORT.md`
-    - 范围对象：`DiscoveryQaAdminController.java`、`DiscoveryQaAdminRequests.java`、`DiscoveryQaAdminResponses.java`、`DiscoveryQaAdminInterfaceAssembler.java`、`DiscoveryQaAdminControllerTest.java`
-    - 处理动作：新增 Admin `session/export` 接口和 CSV 导出请求响应映射。
-    - 验收点：Admin 导出路由、权限注解、请求反序列化和响应字段测试通过。
-    - 重要度：9/10
-
 - [ ] `portal-web-discovery-qa-delete-export`：实现 Portal QA 会话删除和导出前端闭环
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-SESSION-DELETE-EXPORT.md`
