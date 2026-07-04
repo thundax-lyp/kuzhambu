@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Discovery Coverage Update`：更新 Discovery 覆盖矩阵
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-QA-CLOSEOUT.md`
-    - 范围对象：`docs/40-readiness/DISCOVERY-IMPLEMENTATION-COVERAGE.md`
-    - 处理动作：按代码事实更新 Discovery Implementation Coverage。
-    - 验收点：本轮搜索和问答需求项状态更新为 `已完成`。
-    - 重要度：10/10
-
 - [ ] `Discovery Runbook Cleanup`：清理 Discovery 闭环 RUNBOOK
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`
