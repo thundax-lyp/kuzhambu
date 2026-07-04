@@ -9,21 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `KnowledgeDocument.java; KnowledgeDocumentAssembler.java; KnowledgeItemTextRenderer.java; KnowledgeDocumentAssemblerTest.java`：组装知识库文档
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-KNOWLEDGE-BASE-REWRITE.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/qa/support/KnowledgeDocument.java`; `kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/qa/support/KnowledgeDocumentAssembler.java`; `kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/qa/support/KnowledgeItemTextRenderer.java`; `kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/test/java/com/thundax/kuzhambu/discovery/application/qa/support/KnowledgeDocumentAssemblerTest.java`
-    - 处理动作：按设计生成 `metadata` 与 `knowledge`，并仅渲染知识字段。
-    - 验收点：测试证明 metadata 不进入知识文本且确认问答对参与渲染。
-    - 重要度：10/10
-
-- [ ] `KnowledgeRevisionCalculator.java; KnowledgeSourceResolver.java; KnowledgeRevisionCalculatorTest.java; KnowledgeSourceResolverTest.java`：实现知识版本和来源可见性解析
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-KNOWLEDGE-BASE-REWRITE.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/qa/support/KnowledgeRevisionCalculator.java`; `kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/qa/support/KnowledgeSourceResolver.java`; `kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/test/java/com/thundax/kuzhambu/discovery/application/qa/support/KnowledgeRevisionCalculatorTest.java`; `kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/test/java/com/thundax/kuzhambu/discovery/application/qa/support/KnowledgeSourceResolverTest.java`
-    - 处理动作：计算知识修订号并在返回来源前重查当前可见性。
-    - 验收点：标签、确认问答对会改变修订号，私有来源返回 `UNAVAILABLE`。
-    - 重要度：10/10
 
 - [ ] `SyncKnowledgeContentCommand.java; KnowledgeSyncItemPageQuery.java; KnowledgeSyncItemResult.java; KnowledgeSyncApplicationService.java`：定义知识同步应用契约
     - 任务类型：执行任务
