@@ -21,7 +21,7 @@ vi.mock("@/api/http", () => ({
 
 vi.mock("./qa-service", () => mocks);
 
-const renderPage = () => {
+const renderPage = (initialEntry = "/discovery/qa") => {
     const container = document.createElement("div");
     document.body.appendChild(container);
 
@@ -40,7 +40,7 @@ const renderPage = () => {
     act(() => {
         root.render(
             <QueryClientProvider client={queryClient}>
-                <MemoryRouter>
+                <MemoryRouter initialEntries={[initialEntry]}>
                     <DiscoveryQaPage />
                 </MemoryRouter>
             </QueryClientProvider>
@@ -176,6 +176,42 @@ describe("DiscoveryQaPage", () => {
         expect(container.textContent).toContain("礼器常见于典章与礼仪条目。");
         expect(container.textContent).toContain("礼器条目");
         expect(container.querySelector('a[href="/shares/1001"]')).not.toBeNull();
+
+        act(() => {
+            root.unmount();
+        });
+    });
+
+    it("restores Wangqi single document context from url", async () => {
+        mocks.pageQaSessions.mockResolvedValue({
+            items: []
+        });
+
+        const { container, root } = renderPage(
+            "/discovery/qa?contextContentType=WANGQI_DOCUMENT&contextContentId=3001&contextMode=SINGLE_DOCUMENT&title=%E7%8E%8B%E5%9C%BB%E5%AE%98%E5%88%B6"
+        );
+        await flushAsyncWork();
+
+        expect(container.textContent).toContain("当前围绕王圻文档追问");
+        expect(container.textContent).toContain("WANGQI_DOCUMENT #3001");
+
+        const titleInput = container.querySelector(
+            'input[name="sessionTitle"]'
+        ) as HTMLInputElement | null;
+        const contextModeInput = container.querySelector(
+            'input[name="contextMode"]'
+        ) as HTMLInputElement | null;
+        const contextTypeInput = container.querySelector(
+            'input[name="contextContentType"]'
+        ) as HTMLInputElement | null;
+        const contextIdInput = container.querySelector(
+            'input[name="contextContentId"]'
+        ) as HTMLInputElement | null;
+
+        expect(titleInput?.value).toBe("王圻官制");
+        expect(contextModeInput?.value).toBe("SINGLE_DOCUMENT");
+        expect(contextTypeInput?.value).toBe("WANGQI_DOCUMENT");
+        expect(contextIdInput?.value).toBe("3001");
 
         act(() => {
             root.unmount();

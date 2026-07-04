@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Portal Discovery QA URL Context`：收口王圻单文档追问 URL 入口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-QA-CLOSEOUT.md`
-    - 范围对象：`kuzhambu-apps/portal-web/src/pages/discovery/qa-page.tsx`、`kuzhambu-apps/portal-web/src/pages/discovery/qa-page.test.tsx`
-    - 处理动作：通过 URL 参数进入 `WANGQI_DOCUMENT + SINGLE_DOCUMENT` 追问模式。
-    - 验收点：页面展示 `当前围绕王圻文档追问`，会话元数据展示 `WANGQI_DOCUMENT #<contextContentId>`。
-    - 重要度：10/10
-
 - [ ] `Portal Discovery QA Request Context`：收口王圻单文档追问请求上下文
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-QA-CLOSEOUT.md`

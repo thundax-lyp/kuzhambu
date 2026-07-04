@@ -1,7 +1,7 @@
 import { useMemo, useState, type FormEvent } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { CircleSlash2, Download, RefreshCw, Sparkles, Trash2, Workflow } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -45,6 +45,8 @@ type QaTimeline = Record<number, QaTimelineMessage[]>;
 
 const DEFAULT_SESSION_SIZE = 20;
 const FIXED_MODEL = "kuzhambu-qa";
+const SINGLE_DOCUMENT_MODE = "SINGLE_DOCUMENT";
+const WANGQI_DOCUMENT_TYPE = "WANGQI_DOCUMENT";
 
 const INITIAL_FORM_STATE: QaFormState = {
     contextContentId: "",
@@ -57,6 +59,28 @@ const INITIAL_FORM_STATE: QaFormState = {
     sessionTitle: "知识中心问答",
     traceId: "",
     question: ""
+};
+
+const toInitialFormState = (searchParams: URLSearchParams): QaFormState => {
+    const contextMode = searchParams.get("contextMode");
+    const contextContentType = searchParams.get("contextContentType");
+    const contextContentId = searchParams.get("contextContentId");
+    const title = searchParams.get("title");
+    if (
+        contextMode === SINGLE_DOCUMENT_MODE &&
+        contextContentType === WANGQI_DOCUMENT_TYPE &&
+        contextContentId
+    ) {
+        return {
+            ...INITIAL_FORM_STATE,
+            contextContentId,
+            contextContentType,
+            contextMode,
+            sessionTitle: title?.trim() || "王圻文档问答"
+        };
+    }
+
+    return INITIAL_FORM_STATE;
 };
 
 const parseNumber = (value: string) => {
@@ -107,6 +131,17 @@ const sessionTitle = (session?: DiscoveryQaOpenSessionResponse) => {
     return session?.sessionId ? `会话 ${session.sessionId}` : "未命名会话";
 };
 
+const formatContextLabel = (
+    contextContentType?: string | null,
+    contextContentId?: number | string | null
+) => {
+    if (!contextContentType) {
+        return "-";
+    }
+
+    return contextContentId ? `${contextContentType} #${contextContentId}` : contextContentType;
+};
+
 const extractCompletionMessage = (response?: DiscoveryQaChatCompletionResponse | null) => {
     const choices: QaChatCompletionChoice[] = response?.choices ?? [];
     const firstChoice = choices[0];
@@ -143,7 +178,8 @@ const toChatCompletionSourceKey = (source: DiscoveryQaChatCompletionSource, inde
 };
 
 export const DiscoveryQaPage = () => {
-    const [form, setForm] = useState<QaFormState>(INITIAL_FORM_STATE);
+    const [searchParams] = useSearchParams();
+    const [form, setForm] = useState<QaFormState>(() => toInitialFormState(searchParams));
     const [operationMessage, setOperationMessage] = useState<string | null>(null);
     const [selectedSessionId, setSelectedSessionId] = useState<number | null>(null);
     const [timelineBySession, setTimelineBySession] = useState<QaTimeline>({});
@@ -186,6 +222,17 @@ export const DiscoveryQaPage = () => {
         null;
 
     const hasNoSession = selectedSessionId === null;
+    const hasWangqiSingleDocumentContext =
+        form.contextMode === SINGLE_DOCUMENT_MODE &&
+        form.contextContentType === WANGQI_DOCUMENT_TYPE &&
+        Boolean(form.contextContentId);
+    const currentContextLabel =
+        selectedSession?.contextContentType || selectedSession?.contextContentId
+            ? formatContextLabel(
+                  selectedSession?.contextContentType,
+                  selectedSession?.contextContentId
+              )
+            : formatContextLabel(form.contextContentType, form.contextContentId);
 
     const summaryText = useMemo(() => {
         if (chatCompletionMutation.isPending) {
@@ -495,6 +542,13 @@ export const DiscoveryQaPage = () => {
                 </div>
             </section>
 
+            {hasWangqiSingleDocumentContext ? (
+                <Card className="portal-qa-panel">
+                    <strong>当前围绕王圻文档追问</strong>
+                    <p>{formatContextLabel(form.contextContentType, form.contextContentId)}</p>
+                </Card>
+            ) : null}
+
             <section className="portal-qa-grid">
                 <Card className="portal-qa-panel">
                     <div className="portal-qa-panel-header">
@@ -545,7 +599,7 @@ export const DiscoveryQaPage = () => {
                         </div>
                         <div>
                             <dt>上下文</dt>
-                            <dd>{selectedSession?.contextContentType ?? "-"}</dd>
+                            <dd>{currentContextLabel}</dd>
                         </div>
                     </dl>
                 </Card>
