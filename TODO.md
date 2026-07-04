@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics-sancai-image-portal-contract`：补齐 portal 分享图片 service 契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-IMAGE-GOVERNANCE-CLOSEOUT.md`
-    - 范围对象：`kuzhambu-apps/portal-web/src/pages/share/share-service.ts`、`kuzhambu-apps/portal-web/src/pages/share/share-service.test.ts`、`kuzhambu-apps/portal-web/src/pages/share/share-types.ts`
-    - 处理动作：锁定 `images[].storageObject.previewUrl/downloadUrl` 和多图字段解析。
-    - 验收点：portal service 不丢弃 `currentUsed=false` 图片且不拼接 admin URL。
-    - 重要度：7/10
-
 - [ ] `classics-sancai-image-worker-showcase`：同步 worker 三才静态展示多图渲染
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-IMAGE-GOVERNANCE-CLOSEOUT.md`
