@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `portal qa-service; admin qa-admin-service; discovery-service-contract.test.ts; portal qa-page.test.tsx`：增加跨前端契约检查
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-KNOWLEDGE-BASE-REWRITE.md`
-    - 范围对象：`kuzhambu-apps/portal-web/src/pages/discovery/qa-service.ts`; `kuzhambu-apps/admin-web/src/pages/discovery/qa-admin/qa-admin-service.ts`; `kuzhambu-apps/admin-web/src/pages/discovery/discovery-service-contract.test.ts`; `kuzhambu-apps/portal-web/src/pages/discovery/qa-page.test.tsx`
-    - 处理动作：锁定 Portal/Admin 只调用 Discovery API 且不直连 provider。
-    - 验收点：前端测试证明无 `/question/ask` 和 provider direct URL。
-    - 重要度：9/10
-
 - [ ] `DISCOVERY-DESIGN.md; DISCOVERY-IMPLEMENTATION-COVERAGE.md; RUNBOOK-DISCOVERY-QA-KNOWLEDGE-BASE-REWRITE.md`：收口设计和 readiness 文档
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-KNOWLEDGE-BASE-REWRITE.md`

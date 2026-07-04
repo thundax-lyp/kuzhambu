@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { readFileSync } from "node:fs";
 import * as qaService from "./qa-admin/qa-admin-service";
 import * as searchService from "./search-admin/search-admin-service";
 
@@ -80,6 +81,19 @@ describe("discovery admin service contracts", () => {
 
         const calledUrls = postJson.mock.calls.map(([url]) => String(url));
         expect(calledUrls.join("\n")).not.toMatch(/fastgpt|provider|dataset|collection/iu);
+    });
+
+    it("keeps qa admin service on Discovery APIs without provider direct urls", () => {
+        const serviceSource = readFileSync(
+            new URL("./qa-admin/qa-admin-service.ts", import.meta.url),
+            "utf-8"
+        );
+
+        expect(serviceSource).toContain("/discovery/qa-admin/knowledge/health");
+        expect(serviceSource).toContain("/discovery/qa-admin/knowledge/rebuild");
+        expect(serviceSource).toContain("/discovery/qa-admin/knowledge/sync");
+        expect(serviceSource).toContain("/discovery/qa-admin/knowledge/sync/page");
+        expect(serviceSource).not.toMatch(/https?:\/\/|fastgpt|dataset|collection|appId|baseUrl/iu);
     });
 
     it("maps search admin endpoints and request bodies", async () => {

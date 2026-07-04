@@ -9,7 +9,12 @@ const mocks = vi.hoisted(() => ({
     createQaChatCompletion: vi.fn(),
     getQaSession: vi.fn(),
     openQaSession: vi.fn(),
-    pageQaSessions: vi.fn()
+    pageQaSessions: vi.fn(),
+    postJson: vi.fn()
+}));
+
+vi.mock("@/api/http", () => ({
+    postJson: mocks.postJson
 }));
 
 vi.mock("./qa-service", () => mocks);
@@ -78,6 +83,7 @@ describe("DiscoveryQaPage", () => {
         mocks.getQaSession.mockReset();
         mocks.openQaSession.mockReset();
         mocks.pageQaSessions.mockReset();
+        mocks.postJson.mockReset();
         document.body.innerHTML = "";
     });
 
@@ -329,5 +335,26 @@ describe("DiscoveryQaPage", () => {
         act(() => {
             root.unmount();
         });
+    });
+
+    it("locks portal qa service to Discovery APIs without provider direct urls", async () => {
+        const qaService = await vi.importActual<typeof import("./qa-service")>("./qa-service");
+
+        await qaService.openQaSession({ scope: "PORTAL", title: "知识中心问答" });
+        await qaService.pageQaSessions({ pageNo: 1, pageSize: 10, scope: "PORTAL" });
+        await qaService.getQaSession({ sessionId: 2001 });
+        await qaService.createQaChatCompletion({
+            messages: [{ content: "礼器是什么？", role: "user" }],
+            metadata: { sessionId: 2001 },
+            model: "kuzhambu-qa",
+            stream: false
+        });
+
+        const calledUrls = mocks.postJson.mock.calls.map(([url]) => String(url));
+        expect(calledUrls).toContain("/portal/discovery/qa/chat/completions");
+        expect(calledUrls.join("\n")).not.toContain("/portal/discovery/qa/question/ask");
+        expect(calledUrls.join("\n")).not.toMatch(
+            /https?:\/\/|fastgpt|dataset|collection|appId|baseUrl/iu
+        );
     });
 });
