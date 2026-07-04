@@ -43,6 +43,8 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
     private static final String ANSWER_STATUS_SUCCEEDED = "SUCCEEDED";
     private static final String ANSWER_STATUS_FAILED = "FAILED";
     private static final String DEFAULT_FAILURE_REASON = "Knowledge base chat request failed";
+    private static final String SINGLE_DOCUMENT_CONTEXT_MODE = "SINGLE_DOCUMENT";
+    private static final String WANGQI_DOCUMENT_CONTEXT_TYPE = "WANGQI_DOCUMENT";
 
     private final KnowledgeBaseClient knowledgeBaseClient;
     private final QaSessionRepository qaSessionRepository;
@@ -83,6 +85,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
                     "discovery.qa.session.already-removed",
                     "QA session has already been removed");
         }
+        validateContextMetadata(command, session);
 
         String model = resolveModel(command, session);
         String question = extractLatestQuestion(command.getMessages());
@@ -106,11 +109,12 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
         Long questionMessagePk = qaMessageRepository.save(questionMessage);
         questionMessage.setId(questionMessagePk);
         questionMessage.setMessageId(questionMessagePk);
+        KnowledgeChatRequest providerRequest = toKnowledgeChatRequest(command, session, model);
 
         KnowledgeChatResult chatResult = null;
         String failureReason = null;
         try {
-            chatResult = knowledgeBaseClient.chat(toKnowledgeChatRequest(command, model));
+            chatResult = knowledgeBaseClient.chat(providerRequest);
         } catch (Exception ex) {
             failureReason = StringUtils.defaultIfBlank(ex.getMessage(), DEFAULT_FAILURE_REASON);
         } finally {
@@ -124,7 +128,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
             Long failedMessagePk = qaMessageRepository.save(failedMessage);
             failedMessage.setId(failedMessagePk);
             failedMessage.setMessageId(failedMessagePk);
-            saveTrace(command, session, failedMessage, question, null, now, now, failureReason);
+            saveTrace(command, session, failedMessage, question, providerRequest, null, now, now, failureReason);
 
             return new ChatCompletionResult(
                     command.getSessionId(),
@@ -158,7 +162,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
             }
         }
 
-        saveTrace(command, session, answerMessage, question, chatResult, now, new Date(), null);
+        saveTrace(command, session, answerMessage, question, providerRequest, chatResult, now, new Date(), null);
 
         return new ChatCompletionResult(
                 command.getSessionId(),
@@ -223,6 +227,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
             QaSession session,
             QaMessage answerMessage,
             String question,
+            KnowledgeChatRequest providerRequest,
             KnowledgeChatResult chatResult,
             Date startedAt,
             Date endAt,
@@ -233,6 +238,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
                 session,
                 answerMessage.getMessageId(),
                 question,
+                providerRequest,
                 chatResult,
                 sources,
                 Math.max(0L, endAt.getTime() - startedAt.getTime()),
@@ -253,13 +259,14 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
         return StringUtils.defaultString(firstChoice.message().content(), null);
     }
 
-    private KnowledgeChatRequest toKnowledgeChatRequest(ChatCompletionCommand command, String model) {
+    private KnowledgeChatRequest toKnowledgeChatRequest(
+            ChatCompletionCommand command, QaSession session, String model) {
         return new KnowledgeChatRequest(
                 model,
                 toKnowledgeMessages(command.getMessages()),
                 command.isStream(),
                 enrichedMetadata(command),
-                command.getOptions());
+                enrichedOptions(command, session));
     }
 
     private String resolveModel(ChatCompletionCommand command, QaSession session) {
@@ -284,6 +291,19 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
             metadata.putIfAbsent("traceId", command.getTraceId());
         }
         return metadata;
+    }
+
+    private Map<String, Object> enrichedOptions(ChatCompletionCommand command, QaSession session) {
+        Map<String, Object> options = new LinkedHashMap<>();
+        if (command.getOptions() != null) {
+            options.putAll(command.getOptions());
+        }
+        if (isSingleDocumentSession(session)) {
+            options.put("contextMode", session.getContextMode());
+            options.put("contextContentType", session.getContextContentType());
+            options.put("contextContentId", session.getContextContentId());
+        }
+        return options;
     }
 
     private List<KnowledgeChatMessage> toKnowledgeMessages(List<ChatCompletionCommand.ChatMessage> messages) {
@@ -363,6 +383,50 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
                 || command.getMessages().isEmpty()) {
             throw new BizException(
                     "DISCOVERY-30003", "discovery.qa.chat-completion.invalid", "Chat completion command is invalid");
+        }
+    }
+
+    private void validateContextMetadata(ChatCompletionCommand command, QaSession session) {
+        if (!isSingleDocumentSession(session)) {
+            return;
+        }
+        Map<String, Object> metadata = command.getMetadata() == null ? Map.of() : command.getMetadata();
+        if (!StringUtils.equals(session.getContextMode(), metadataString(metadata.get("contextMode")))
+                || !StringUtils.equals(
+                        session.getContextContentType(), metadataString(metadata.get("contextContentType")))
+                || !Objects.equals(session.getContextContentId(), metadataLong(metadata.get("contextContentId")))) {
+            throw new BizException(
+                    "DISCOVERY-30013",
+                    "discovery.qa.context-metadata.mismatch",
+                    "QA chat metadata context does not match session context");
+        }
+        if (!WANGQI_DOCUMENT_CONTEXT_TYPE.equals(session.getContextContentType())) {
+            throw new BizException(
+                    "DISCOVERY-30012",
+                    "discovery.qa.single-document-context.unsupported",
+                    "Single document context only supports WANGQI_DOCUMENT");
+        }
+    }
+
+    private boolean isSingleDocumentSession(QaSession session) {
+        return session != null && SINGLE_DOCUMENT_CONTEXT_MODE.equals(session.getContextMode());
+    }
+
+    private String metadataString(Object value) {
+        return value == null ? null : String.valueOf(value);
+    }
+
+    private Long metadataLong(Object value) {
+        if (value instanceof Number number) {
+            return number.longValue();
+        }
+        if (value == null || StringUtils.isBlank(String.valueOf(value))) {
+            return null;
+        }
+        try {
+            return Long.valueOf(String.valueOf(value));
+        } catch (NumberFormatException exception) {
+            return null;
         }
     }
 }

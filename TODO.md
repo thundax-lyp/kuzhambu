@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Discovery QA Provider Context`：收口后端问答 provider 上下文
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-QA-CLOSEOUT.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/qa/service/impl/KnowledgeQaApplicationServiceImpl.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/qa/support/QaTraceAssembler.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/test/java/com/thundax/kuzhambu/discovery/application/qa/service/impl/KnowledgeQaApplicationServiceImplTest.java`
-    - 处理动作：校验 chat metadata 与 session 上下文一致，并把上下文写入 provider options 和 trace。
-    - 验收点：上下文不一致抛业务异常，trace 保留 `contextMode/contextContentType/contextContentId`。
-    - 重要度：10/10
-
 - [ ] `Workers Discovery Contract`：收口 Workers Discovery usecase 契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-QA-CLOSEOUT.md`

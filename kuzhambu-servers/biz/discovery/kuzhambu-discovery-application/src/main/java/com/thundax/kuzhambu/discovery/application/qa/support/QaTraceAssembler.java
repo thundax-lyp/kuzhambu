@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.discovery.application.qa.support;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.common.core.exception.BizException;
+import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatRequest;
 import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatResult;
 import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatSource;
 import com.thundax.kuzhambu.discovery.application.qa.command.ChatCompletionCommand;
@@ -10,7 +11,9 @@ import com.thundax.kuzhambu.discovery.application.qa.result.QaTraceResult;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaRetrievalTrace;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSession;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
@@ -26,6 +29,7 @@ public class QaTraceAssembler {
             QaSession session,
             Long messageId,
             String question,
+            KnowledgeChatRequest providerRequest,
             KnowledgeChatResult chatResult,
             List<KnowledgeChatSource> sources,
             Long latencyMs,
@@ -42,7 +46,7 @@ public class QaTraceAssembler {
                 resolveProviderRequestId(command, chatResult),
                 latencyMs,
                 failureReason,
-                chatResult == null ? null : writeJson(chatResult.raw()),
+                writeJson(traceRaw(providerRequest, chatResult)),
                 new Date());
     }
 
@@ -99,6 +103,23 @@ public class QaTraceAssembler {
             throw new BizException(
                     "DISCOVERY-30005", "discovery.qa.trace-json-build-failed", "QA trace json build failed", exception);
         }
+    }
+
+    private Map<String, Object> traceRaw(KnowledgeChatRequest providerRequest, KnowledgeChatResult chatResult) {
+        Map<String, Object> raw = new LinkedHashMap<>();
+        if (providerRequest != null) {
+            Map<String, Object> request = new LinkedHashMap<>();
+            request.put("model", providerRequest.model());
+            request.put("messages", providerRequest.messages());
+            request.put("stream", providerRequest.stream());
+            request.put("metadata", providerRequest.metadata());
+            request.put("options", providerRequest.options());
+            raw.put("providerRequest", request);
+        }
+        if (chatResult != null) {
+            raw.put("providerResponse", chatResult.raw());
+        }
+        return raw.isEmpty() ? null : raw;
     }
 
     private String extractExternalKnowledgeItemIds(List<KnowledgeChatSource> sources) {
