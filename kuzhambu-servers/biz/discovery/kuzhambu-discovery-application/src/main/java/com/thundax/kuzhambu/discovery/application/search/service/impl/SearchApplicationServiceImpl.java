@@ -6,9 +6,11 @@ import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.discovery.application.search.command.SearchClickCreateCommand;
+import com.thundax.kuzhambu.discovery.application.search.query.SearchAnalysisSummaryQuery;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchLogPageQuery;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchQuery;
 import com.thundax.kuzhambu.discovery.application.search.result.QueryUnderstandingResult;
+import com.thundax.kuzhambu.discovery.application.search.result.SearchAnalysisSummaryResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchGroupResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchLogResult;
 import com.thundax.kuzhambu.discovery.application.search.service.QueryUnderstandingApplicationService;
@@ -137,6 +139,11 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
             throw new BizException("Search log id is required");
         }
         return toSearchLogResult(searchLogRepository.getBySearchLogId(searchLogId));
+    }
+
+    @Override
+    public SearchAnalysisSummaryResult getAnalysisSummary(SearchAnalysisSummaryQuery query) {
+        throw new UnsupportedOperationException("Discovery search analysis summary is not implemented yet");
     }
 
     private SearchLog buildSucceededSearchLog(

@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Discovery Search Analysis Model`：定义搜索分析 application 契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-QA-CLOSEOUT.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/search/query/SearchAnalysisSummaryQuery.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/search/result/SearchAnalysisSummaryResult.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/search/service/SearchApplicationService.java`
-    - 处理动作：新增搜索分析查询、结果模型和 application service 方法签名。
-    - 验收点：契约字段固定包含 `searchCount`、`failedSearchCount`、`zeroResultSearchCount`、`clickCount` 和 `topQueries`。
-    - 重要度：9/10
-
 - [ ] `Discovery Search Analysis Aggregation`：实现搜索分析聚合
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-QA-CLOSEOUT.md`
