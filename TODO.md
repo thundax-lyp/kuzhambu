@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics-sancai-image-interface-doc`：更新三才内容版本快照接口文档
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-IMAGE-GOVERNANCE-CLOSEOUT.md`
-    - 范围对象：`docs/20-interfaces/CLASSICS-CONTENT-VERSION-SNAPSHOT-INTERFACE.md`
-    - 处理动作：将 `SANCAI_ENTRY.images` 明确为按 `priority ASC` 输出的多图列表，并说明 `currentUsed` 标识当前图。
-    - 验收点：接口文档与 Java snapshot 输出字段一致，且不承诺新增数据库字段。
-    - 重要度：9/10
-
 - [ ] `classics-sancai-image-coverage-runbook-closeout`：更新覆盖状态并清理 RUNBOOK
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-IMAGE-GOVERNANCE-CLOSEOUT.md`
