@@ -96,6 +96,58 @@ class ElasticsearchSearchIndexGatewayTest {
         assertTrue(groups.size() == 1);
         assertTrue(groups.get(0).getItems().size() == 1);
         assertTrue(groups.get(0).getItems().get(0).getTargetPath().contains("/classics/sancai/1001"));
+        assertTrue(groups.get(0).getItems().get(0).getHighlightText().contains("<mark>黄帝</mark>"));
+        assertTrue(groups.get(0).getItems().get(0).getGroupRank() == 1);
+    }
+
+    @Test
+    void searchShouldHighlightSummaryBodyAndFallbackText() {
+        DiscoverySearchIndexProperties properties = new DiscoverySearchIndexProperties();
+        ElasticsearchOperations operations = mock(ElasticsearchOperations.class);
+        @SuppressWarnings("unchecked")
+        SearchHits<DiscoverySearchDocument> searchHits = mock(SearchHits.class);
+        when(searchHits.getSearchHits())
+                .thenReturn(List.of(
+                        searchHit(document("1001", "标题", "包含天地的摘要", "正文", 1)),
+                        searchHit(document("1002", "标题", "摘要", "正文包含天地", 2)),
+                        searchHit(document("1003", "标题", "没有命中", "正文", 3))));
+        when(operations.search(
+                        any(org.springframework.data.elasticsearch.core.query.CriteriaQuery.class),
+                        eq(DiscoverySearchDocument.class),
+                        any(org.springframework.data.elasticsearch.core.mapping.IndexCoordinates.class)))
+                .thenReturn(searchHits);
+        ElasticsearchSearchIndexGateway gateway =
+                new ElasticsearchSearchIndexGateway(properties, operations, new DiscoverySearchDocumentAssembler());
+
+        var groups = gateway.search(new SearchKeyword("天地", "天地", "天地"), new SearchScope(), 1, 20);
+
+        var items = groups.get(0).getItems();
+        assertTrue(items.get(0).getHighlightText().contains("<mark>天地</mark>"));
+        assertTrue(items.get(1).getHighlightText().contains("<mark>天地</mark>"));
+        assertTrue(items.get(2).getHighlightText().equals("没有命中"));
+        assertTrue(items.get(0).getGroupRank() == 1);
+        assertTrue(items.get(1).getGroupRank() == 2);
+        assertTrue(items.get(2).getGroupRank() == 3);
+    }
+
+    @Test
+    void searchShouldFallbackWhenKeywordIsBlank() {
+        DiscoverySearchIndexProperties properties = new DiscoverySearchIndexProperties();
+        ElasticsearchOperations operations = mock(ElasticsearchOperations.class);
+        @SuppressWarnings("unchecked")
+        SearchHits<DiscoverySearchDocument> searchHits = mock(SearchHits.class);
+        when(searchHits.getSearchHits()).thenReturn(List.of(searchHit(document("1001", "标题", "", "正文", 1))));
+        when(operations.search(
+                        any(org.springframework.data.elasticsearch.core.query.CriteriaQuery.class),
+                        eq(DiscoverySearchDocument.class),
+                        any(org.springframework.data.elasticsearch.core.mapping.IndexCoordinates.class)))
+                .thenReturn(searchHits);
+        ElasticsearchSearchIndexGateway gateway =
+                new ElasticsearchSearchIndexGateway(properties, operations, new DiscoverySearchDocumentAssembler());
+
+        var groups = gateway.search(new SearchKeyword("", "", ""), new SearchScope(), 1, 20);
+
+        assertTrue(groups.get(0).getItems().get(0).getHighlightText().equals("标题"));
     }
 
     @Test
@@ -177,5 +229,36 @@ class ElasticsearchSearchIndexGatewayTest {
                 .delete(
                         eq("SANCAI_ENTRY:1001"),
                         any(org.springframework.data.elasticsearch.core.mapping.IndexCoordinates.class));
+    }
+
+    private SearchHit<DiscoverySearchDocument> searchHit(DiscoverySearchDocument document) {
+        @SuppressWarnings("unchecked")
+        SearchHit<DiscoverySearchDocument> searchHit = mock(SearchHit.class);
+        when(searchHit.getContent()).thenReturn(document);
+        return searchHit;
+    }
+
+    private DiscoverySearchDocument document(
+            String contentId, String title, String summary, String bodyText, int rank) {
+        return new DiscoverySearchDocument(
+                "SANCAI_ENTRY:" + contentId,
+                "CLASSICS",
+                "SANCAI_ENTRY",
+                contentId,
+                "SANCAI_ENTRY",
+                "11",
+                "天文",
+                title,
+                summary,
+                bodyText,
+                List.of(),
+                "PUBLISHED",
+                "PUBLIC",
+                rank,
+                null,
+                null,
+                false,
+                null,
+                "/classics/sancai/" + contentId);
     }
 }

@@ -24,6 +24,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
 
+    private static final int HIGHLIGHT_CONTEXT_LENGTH = 60;
+    private static final int FALLBACK_LENGTH = 160;
+
     private final DiscoverySearchIndexProperties properties;
     private final ElasticsearchOperations elasticsearchOperations;
     private final DiscoverySearchDocumentAssembler documentAssembler;
@@ -55,7 +58,7 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
         List<SearchHit<DiscoverySearchDocument>> hits = operations
                 .search(query, DiscoverySearchDocument.class, indexCoordinates())
                 .getSearchHits();
-        return toGroupedResults(hits);
+        return toGroupedResults(hits, keyword == null ? null : keyword.getNormalizedText());
     }
 
     @Override
@@ -213,7 +216,7 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
         return criteria.and(new Criteria(fieldName).in(filteredValues.toArray()));
     }
 
-    private List<SearchGroupResult> toGroupedResults(List<SearchHit<DiscoverySearchDocument>> hits) {
+    private List<SearchGroupResult> toGroupedResults(List<SearchHit<DiscoverySearchDocument>> hits, String keyword) {
         if (hits == null || hits.isEmpty()) {
             return Collections.emptyList();
         }
@@ -232,7 +235,7 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
                     document.getContentId(),
                     document.getTitle(),
                     document.getSummary(),
-                    null,
+                    buildHighlightText(document, keyword),
                     resultRank++,
                     items.size() + 1,
                     document.getSourcePath()));
@@ -253,6 +256,56 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
             case "MING_CUSTOMS" -> "明代习俗";
             default -> contentType;
         };
+    }
+
+    private String buildHighlightText(DiscoverySearchDocument document, String keyword) {
+        if (document == null) {
+            return "";
+        }
+        String normalizedKeyword = keyword == null ? null : keyword.trim();
+        if (normalizedKeyword != null && !normalizedKeyword.isBlank()) {
+            String highlighted = highlightFirstMatch(document.getTitle(), normalizedKeyword);
+            if (highlighted != null) {
+                return highlighted;
+            }
+            highlighted = highlightFirstMatch(document.getSummary(), normalizedKeyword);
+            if (highlighted != null) {
+                return highlighted;
+            }
+            highlighted = highlightFirstMatch(document.getBodyText(), normalizedKeyword);
+            if (highlighted != null) {
+                return highlighted;
+            }
+        }
+        return fallbackHighlightText(document);
+    }
+
+    private String highlightFirstMatch(String text, String keyword) {
+        if (text == null || text.isBlank() || keyword == null || keyword.isBlank()) {
+            return null;
+        }
+        int matchIndex = text.indexOf(keyword);
+        if (matchIndex < 0) {
+            return null;
+        }
+        int start = Math.max(0, matchIndex - HIGHLIGHT_CONTEXT_LENGTH);
+        int end = Math.min(text.length(), matchIndex + keyword.length() + HIGHLIGHT_CONTEXT_LENGTH);
+        return text.substring(start, matchIndex)
+                + "<mark>"
+                + text.substring(matchIndex, matchIndex + keyword.length())
+                + "</mark>"
+                + text.substring(matchIndex + keyword.length(), end);
+    }
+
+    private String fallbackHighlightText(DiscoverySearchDocument document) {
+        String fallback = document.getSummary();
+        if (fallback == null || fallback.isBlank()) {
+            fallback = document.getTitle();
+        }
+        if (fallback == null) {
+            return "";
+        }
+        return fallback.length() <= FALLBACK_LENGTH ? fallback : fallback.substring(0, FALLBACK_LENGTH);
     }
 
     private IndexCoordinates indexCoordinates() {

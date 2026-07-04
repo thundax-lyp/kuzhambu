@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Discovery Search Highlight Gateway`：实现搜索高亮生成
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-QA-CLOSEOUT.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/client/ElasticsearchSearchIndexGateway.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/test/java/com/thundax/kuzhambu/discovery/infra/client/ElasticsearchSearchIndexGatewayTest.java`
-    - 处理动作：在 ES Gateway 内生成 `highlightText` 并保持 ES 返回顺序。
-    - 验收点：title、summary、bodyText 命中均返回 `<mark>` 高亮，未命中或空关键词返回非空 fallback。
-    - 重要度：10/10
-
 - [ ] `Discovery Search Highlight Contract`：锁定搜索高亮透传
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-QA-CLOSEOUT.md`
