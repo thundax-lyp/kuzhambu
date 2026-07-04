@@ -6,15 +6,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.thundax.kuzhambu.ai.facade.AiFacade;
-import com.thundax.kuzhambu.classics.facade.ClassicsFacade;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaMessageResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionDetailResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaTraceResult;
-import com.thundax.kuzhambu.discovery.application.qa.support.QaContextAssembler;
 import com.thundax.kuzhambu.discovery.application.qa.support.QaSourceAssembler;
 import com.thundax.kuzhambu.discovery.application.qa.support.QaTraceAssembler;
-import com.thundax.kuzhambu.discovery.application.search.service.QueryUnderstandingApplicationService;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaMessage;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaRetrievalTrace;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSession;
@@ -35,19 +31,11 @@ class QaApplicationServiceImplAdminReadTest {
         QaMessageRepository messageRepository = mock(QaMessageRepository.class);
         QaSourceRepository sourceRepository = mock(QaSourceRepository.class);
         QaRetrievalTraceRepository traceRepository = mock(QaRetrievalTraceRepository.class);
-        QueryUnderstandingApplicationService queryUnderstandingApplicationService =
-                mock(QueryUnderstandingApplicationService.class);
-        ClassicsFacade classicsFacade = mock(ClassicsFacade.class);
-        AiFacade aiFacade = mock(AiFacade.class);
         QaApplicationServiceImpl service = new QaApplicationServiceImpl(
                 sessionRepository,
                 messageRepository,
                 sourceRepository,
                 traceRepository,
-                queryUnderstandingApplicationService,
-                classicsFacade,
-                aiFacade,
-                new QaContextAssembler(),
                 new QaSourceAssembler(),
                 new QaTraceAssembler());
 
@@ -55,10 +43,12 @@ class QaApplicationServiceImplAdminReadTest {
                 .thenReturn(new QaSession(
                         1L,
                         5001L,
-                        1001L,
+                        "USER",
+                        "1001",
+                        "kuzhambu-qa",
                         "黄帝问答",
                         "GLOBAL",
-                        "SEARCH",
+                        "GENERAL",
                         "SANCAI_ENTRY",
                         10001L,
                         "OPEN",
@@ -67,11 +57,24 @@ class QaApplicationServiceImplAdminReadTest {
                         null));
         when(messageRepository.listBySessionId(5001L))
                 .thenReturn(List.of(new QaMessage(
-                        7001L, 7001L, 5001L, "USER", "黄帝是谁", "SENT", 1, null, new Date(1_718_000_050_000L), null)));
+                        7001L,
+                        7001L,
+                        5001L,
+                        "USER",
+                        "黄帝是谁",
+                        "SENT",
+                        "kuzhambu-qa",
+                        1,
+                        null,
+                        null,
+                        null,
+                        new Date(1_718_000_050_000L),
+                        null)));
         when(sourceRepository.listByMessageId(7002L))
                 .thenReturn(List.of(new QaSource(
                         9001L,
                         9001L,
+                        "SANCAI_ENTRY:1001",
                         7002L,
                         "SANCAI_ENTRY",
                         1001L,
@@ -79,6 +82,7 @@ class QaApplicationServiceImplAdminReadTest {
                         "黄帝",
                         "卷一",
                         "上古帝王",
+                        null,
                         1,
                         java.math.BigDecimal.ONE,
                         "CITED",
@@ -98,7 +102,7 @@ class QaApplicationServiceImplAdminReadTest {
 
         QaTraceResult trace = service.getTraceByTraceId(8001L);
         assertNotNull(trace);
-        assertEquals("GLOBAL", trace.getScope());
+        assertEquals("黄帝是谁", trace.getRawQuestion());
 
         verify(sessionRepository).getBySessionId(5001L);
         verify(messageRepository).listBySessionId(5001L);
@@ -112,13 +116,13 @@ class QaApplicationServiceImplAdminReadTest {
         trace.setTraceId(8001L);
         trace.setMessageId(7002L);
         trace.setRawQuestion("黄帝是谁");
-        trace.setRewrittenQuestion("黄帝是谁");
-        trace.setScope("GLOBAL");
-        trace.setFiltersJson("{\"sessionId\":5001}");
-        trace.setExpandedTermsJson("[\"轩辕\"]");
-        trace.setLinkedEntitiesJson("[{\"name\":\"黄帝\"}]");
-        trace.setCandidateCount(1);
-        trace.setContextSnapshot("{\"sources\":[]}");
+        trace.setProvider("kuzhambu-qa");
+        trace.setExternalKnowledgeBaseId("kb-1");
+        trace.setExternalKnowledgeItemIds("[\"item-1\",\"item-2\"]");
+        trace.setExternalChatId("chat-1");
+        trace.setProviderRequestId("1001");
+        trace.setLatencyMs(120L);
+        trace.setFailureReason("none");
         trace.setRetrievedAt(new Date(1_718_000_070_000L));
         return trace;
     }

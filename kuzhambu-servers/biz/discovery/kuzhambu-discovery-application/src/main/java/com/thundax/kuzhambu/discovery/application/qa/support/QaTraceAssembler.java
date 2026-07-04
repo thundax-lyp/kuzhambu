@@ -3,56 +3,47 @@ package com.thundax.kuzhambu.discovery.application.qa.support;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.common.core.exception.BizException;
-import com.thundax.kuzhambu.discovery.application.qa.command.AskQuestionCommand;
-import com.thundax.kuzhambu.discovery.application.qa.result.QaAnswerResult;
+import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatResult;
+import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatSource;
+import com.thundax.kuzhambu.discovery.application.qa.command.ChatCompletionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaTraceResult;
-import com.thundax.kuzhambu.discovery.application.search.result.QueryUnderstandingResult;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaRetrievalTrace;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSession;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.Date;
+import java.util.List;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 @Component
 public class QaTraceAssembler {
 
+    private static final String DEFAULT_PROVIDER = "unknown";
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public QaRetrievalTrace toDomain(
-            AskQuestionCommand command,
+            ChatCompletionCommand command,
             QaSession session,
-            QueryUnderstandingResult understandingResult,
-            QaContextAssembler.QaContext qaContext,
             Long messageId,
-            Long callId) {
+            String question,
+            KnowledgeChatResult chatResult,
+            List<KnowledgeChatSource> sources,
+            Long latencyMs,
+            String failureReason) {
         return new QaRetrievalTrace(
                 null,
                 null,
                 messageId,
-                callId,
-                command.getQuestion(),
-                qaContext.rewrittenQuestion(),
-                session == null ? null : session.getScope(),
-                writeJson(buildFilters(command, session, qaContext)),
-                writeJson(qaContext.expandedTerms()),
-                writeJson(qaContext.recognizedEntities()),
-                qaContext.candidateCount(),
-                qaContext.contextSnapshotJson(),
-                new java.util.Date());
-    }
-
-    public QaAnswerResult.TraceSummaryResult toTraceSummary(
-            QaRetrievalTrace trace,
-            QueryUnderstandingResult understandingResult,
-            QaContextAssembler.QaContext qaContext) {
-        return new QaAnswerResult.TraceSummaryResult(
-                trace.getTraceId(),
-                understandingResult == null
-                        ? qaContext.rewrittenQuestion()
-                        : understandingResult.getRewrittenQueryText(),
-                trace.getCandidateCount(),
-                trace.getExpandedTermsJson(),
-                trace.getLinkedEntitiesJson());
+                question,
+                resolveProvider(session, command, chatResult),
+                command == null ? null : command.getModel(),
+                extractExternalKnowledgeItemIds(sources),
+                chatResult == null ? null : chatResult.id(),
+                resolveProviderRequestId(command, chatResult),
+                latencyMs,
+                failureReason,
+                chatResult == null ? null : writeJson(chatResult.raw()),
+                new Date());
     }
 
     public QaTraceResult toTraceResult(QaRetrievalTrace trace) {
@@ -62,36 +53,61 @@ public class QaTraceAssembler {
         return new QaTraceResult(
                 trace.getTraceId(),
                 trace.getMessageId(),
-                trace.getCallId(),
                 trace.getRawQuestion(),
-                trace.getRewrittenQuestion(),
-                trace.getScope(),
-                trace.getFiltersJson(),
-                trace.getExpandedTermsJson(),
-                trace.getLinkedEntitiesJson(),
-                trace.getCandidateCount(),
-                trace.getContextSnapshot(),
+                trace.getProvider(),
+                trace.getExternalKnowledgeBaseId(),
+                trace.getExternalKnowledgeItemIds(),
+                trace.getExternalChatId(),
+                trace.getProviderRequestId(),
+                trace.getLatencyMs(),
+                trace.getFailureReason(),
+                trace.getRaw(),
                 trace.getRetrievedAt());
     }
 
-    private Map<String, Object> buildFilters(
-            AskQuestionCommand command, QaSession session, QaContextAssembler.QaContext qaContext) {
-        Map<String, Object> filters = new LinkedHashMap<>();
-        filters.put("sessionId", command.getSessionId());
-        filters.put("scope", session == null ? null : session.getScope());
-        filters.put("contextMode", session == null ? null : session.getContextMode());
-        filters.put("operatorType", command.getOperatorType());
-        filters.put("operatorId", command.getOperatorId());
-        filters.put("sourceCount", qaContext.candidateCount());
-        return filters;
+    private String resolveProvider(QaSession session, ChatCompletionCommand command, KnowledgeChatResult chatResult) {
+        String configuredModel = command == null ? null : command.getModel();
+        if (StringUtils.isNotBlank(configuredModel)) {
+            return configuredModel;
+        }
+        if (session != null && StringUtils.isNotBlank(session.getKnowledgeBaseName())) {
+            return session.getKnowledgeBaseName();
+        }
+        if (chatResult != null && StringUtils.isNotBlank(chatResult.model())) {
+            return chatResult.model();
+        }
+        return DEFAULT_PROVIDER;
+    }
+
+    private String resolveProviderRequestId(ChatCompletionCommand command, KnowledgeChatResult chatResult) {
+        if (chatResult != null && StringUtils.isNotBlank(chatResult.id())) {
+            return chatResult.id();
+        }
+        if (command != null && StringUtils.isNotBlank(command.getTraceId())) {
+            return command.getTraceId();
+        }
+        return null;
     }
 
     private String writeJson(Object value) {
+        if (value == null) {
+            return null;
+        }
         try {
             return objectMapper.writeValueAsString(value);
         } catch (JsonProcessingException exception) {
             throw new BizException(
                     "DISCOVERY-30005", "discovery.qa.trace-json-build-failed", "QA trace json build failed", exception);
         }
+    }
+
+    private String extractExternalKnowledgeItemIds(List<KnowledgeChatSource> sources) {
+        if (sources == null || sources.isEmpty()) {
+            return null;
+        }
+        return writeJson(sources.stream()
+                .filter(source -> StringUtils.isNotBlank(source.sourceId()))
+                .map(KnowledgeChatSource::sourceId)
+                .toList());
     }
 }
