@@ -227,6 +227,61 @@ class ClassicsContentApplicationServiceImplTest {
     }
 
     @Test
+    void createSancaiExportJobShouldPassMultiImageMetadataPayload() throws Exception {
+        ClassicsContentRepository repository = mock(ClassicsContentRepository.class);
+        WorkerRenderClient workerRenderClient = mock(WorkerRenderClient.class);
+        StorageFacade storageFacade = mock(StorageFacade.class);
+        ContentExportCommand command = new ContentExportCommand();
+        command.setExportKind(ClassicsExportKind.CONTENT_DATASET);
+        command.setContentType(ClassicsContentType.SANCAI_ENTRY);
+        command.setExportFormat(ClassicsExportFormat.JSON);
+        command.setScopeType(ClassicsExportScopeType.SELECTED_ITEMS);
+        command.setScopeJson("{\"title\":\"三才导出\",\"items\":["
+                + "{\"id\":101,\"title\":\"条目一\",\"images\":["
+                + "{\"imageId\":12,\"storageObjectId\":702,\"imageType\":\"GENERATED\","
+                + "\"title\":\"生成图\",\"currentUsed\":false,\"priority\":2,"
+                + "\"originalFilename\":\"generated.png\",\"contentType\":\"image/png\",\"size\":20},"
+                + "{\"imageId\":11,\"storageObjectId\":701,\"imageType\":\"ORIGINAL\","
+                + "\"title\":\"原图\",\"currentUsed\":true,\"priority\":1}"
+                + "]},"
+                + "{\"id\":102,\"title\":\"条目二\"}"
+                + "]}");
+        when(repository.insertExportJob(any())).thenReturn(ClassicsContentExportJobId.of(900000000005L));
+        when(workerRenderClient.renderClassicsExport(any())).thenReturn(renderSuccessResponse("sancai.json"));
+        when(storageFacade.upload(any(UploadStorageFacadeRequest.class))).thenReturn(uploadResponse());
+        ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
+                repository, null, null, null, workerRenderClient, storageFacade, null, null, null);
+
+        service.createExportJob(command);
+
+        ArgumentCaptor<WorkerRenderDtos.WorkerRenderRequest> renderCaptor =
+                ArgumentCaptor.forClass(WorkerRenderDtos.WorkerRenderRequest.class);
+        verify(workerRenderClient).renderClassicsExport(renderCaptor.capture());
+        ObjectMapper objectMapper = new ObjectMapper();
+        var payload = objectMapper.readTree(renderCaptor.getValue().getInput().getPayloadJson());
+        assertEquals("SANCAI_ENTRY", payload.get("contentType").asText());
+        assertEquals("SELECTED_ITEMS", payload.get("scopeType").asText());
+        assertEquals(2, payload.get("items").size());
+        var images = payload.get("items").get(0).get("images");
+        assertEquals(2, images.size());
+        assertEquals(11L, images.get(0).get("imageId").asLong());
+        assertEquals(701L, images.get(0).get("storageObjectId").asLong());
+        assertEquals("ORIGINAL", images.get(0).get("imageType").asText());
+        assertEquals("原图", images.get(0).get("title").asText());
+        assertEquals(true, images.get(0).get("currentUsed").asBoolean());
+        assertEquals(1, images.get(0).get("priority").asInt());
+        assertEquals(true, images.get(0).get("originalFilename").isNull());
+        assertEquals(true, images.get(0).get("contentType").isNull());
+        assertEquals(true, images.get(0).get("size").isNull());
+        assertEquals(12L, images.get(1).get("imageId").asLong());
+        assertEquals("generated.png", images.get(1).get("originalFilename").asText());
+        assertEquals("image/png", images.get(1).get("contentType").asText());
+        assertEquals(20L, images.get(1).get("size").asLong());
+        assertEquals(false, images.get(1).get("currentUsed").asBoolean());
+        assertEquals(0, payload.get("items").get(1).get("images").size());
+    }
+
+    @Test
     void createMingCustomsExportJobShouldFallbackItemCountFromPayloadWhenRenderSummaryMissing() {
         ClassicsContentRepository repository = mock(ClassicsContentRepository.class);
         WorkerRenderClient workerRenderClient = mock(WorkerRenderClient.class);
