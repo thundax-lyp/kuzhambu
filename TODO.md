@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `portal-web qa-service.ts; qa-types.ts; qa-page.tsx; qa-page.test.tsx`：实现 Portal QA 页面闭环
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-KNOWLEDGE-BASE-REWRITE.md`
-    - 范围对象：`kuzhambu-apps/portal-web/src/pages/discovery/qa-service.ts`; `kuzhambu-apps/portal-web/src/pages/discovery/qa-types.ts`; `kuzhambu-apps/portal-web/src/pages/discovery/qa-page.tsx`; `kuzhambu-apps/portal-web/src/pages/discovery/qa-page.test.tsx`
-    - 处理动作：将 Portal QA 页面改为 Discovery `chat/completions`、会话消息流和来源展示。
-    - 验收点：Portal QA 测试覆盖首问、追问、答案、来源、失败态和移除 `/question/ask`。
-    - 重要度：10/10
-
 - [ ] `admin-web qa-admin-service.ts; qa-admin-types.ts; qa-admin-page.tsx; qa-admin-page.test.tsx; discovery-service-contract.test.ts`：实现 Admin QA 运维页面
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-KNOWLEDGE-BASE-REWRITE.md`

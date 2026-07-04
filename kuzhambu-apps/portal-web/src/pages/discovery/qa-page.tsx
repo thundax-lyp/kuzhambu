@@ -1,6 +1,6 @@
 import { useMemo, useState, type FormEvent } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { MessageSquareQuote, Play, Sparkles, Workflow } from "lucide-react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { CircleSlash2, RefreshCw, Sparkles, Workflow } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -9,44 +9,55 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import * as qaService from "./qa-service";
 import type {
-    DiscoveryQaAskQuestionRequest,
-    DiscoveryQaAskQuestionResponse,
-    DiscoveryQaOpenSessionRequest
+    QaChatCompletionChoice,
+    DiscoveryQaChatCompletionResponse,
+    DiscoveryQaChatCompletionSource,
+    DiscoveryQaGetSessionRequest,
+    DiscoveryQaOpenSessionRequest,
+    DiscoveryQaOpenSessionResponse,
+    DiscoveryQaSessionPageResponse
 } from "./qa-types";
 
 interface QaFormState {
     contextContentId: string;
     contextContentType: string;
     contextMode: string;
-    contextTurnCount: string;
-    ownerUserId: string;
-    operatorId: string;
-    operatorType: string;
-    question: string;
     requestId: string;
     scope: string;
     sessionId: string;
     sessionTitle: string;
     traceId: string;
+    question: string;
 }
+
+interface QaTimelineMessage {
+    content: string;
+    id: string;
+    sources?: DiscoveryQaChatCompletionSource[];
+    status: "failed" | "loading" | "succeeded";
+    failureReason?: string | null;
+    role: "assistant" | "user";
+    retryQuestion?: string;
+}
+
+type QaTimeline = Record<number, QaTimelineMessage[]>;
+
+const DEFAULT_SESSION_SIZE = 20;
+const FIXED_MODEL = "kuzhambu-qa";
 
 const INITIAL_FORM_STATE: QaFormState = {
     contextContentId: "",
     contextContentType: "",
-    contextMode: "",
-    contextTurnCount: "3",
-    ownerUserId: "1",
-    operatorId: "portal-user",
-    operatorType: "PORTAL",
-    question: "",
+    contextMode: "GENERAL",
     requestId: "",
-    scope: "",
+    scope: "PORTAL",
     sessionId: "",
     sessionTitle: "知识中心问答",
-    traceId: ""
+    traceId: "",
+    question: ""
 };
 
-const toOptionalNumber = (value: string) => {
+const parseNumber = (value: string) => {
     if (!value.trim()) {
         return null;
     }
@@ -55,40 +66,51 @@ const toOptionalNumber = (value: string) => {
     return Number.isNaN(parsed) ? null : parsed;
 };
 
-const toOptionalString = (value: string) => {
+const parseString = (value: string) => {
     const trimmed = value.trim();
     return trimmed.length ? trimmed : null;
 };
 
 const toOpenSessionRequest = (form: QaFormState): DiscoveryQaOpenSessionRequest => {
     return {
-        contextContentId: toOptionalNumber(form.contextContentId),
-        contextContentType: toOptionalString(form.contextContentType),
-        contextMode: toOptionalString(form.contextMode),
-        ownerUserId: Number.parseInt(form.ownerUserId, 10) || 1,
-        requestId: toOptionalString(form.requestId),
-        scope: toOptionalString(form.scope),
-        title: toOptionalString(form.sessionTitle),
-        traceId: toOptionalString(form.traceId)
+        contextContentId: parseNumber(form.contextContentId),
+        contextContentType: parseString(form.contextContentType),
+        contextMode: parseString(form.contextMode),
+        requestId: parseString(form.requestId),
+        scope: parseString(form.scope),
+        title: parseString(form.sessionTitle),
+        traceId: parseString(form.traceId)
     };
 };
 
-const toAskQuestionRequest = (
-    form: QaFormState,
-    sessionId: number
-): DiscoveryQaAskQuestionRequest => {
-    return {
-        contextTurnCount: toOptionalNumber(form.contextTurnCount),
-        operatorId: toOptionalString(form.operatorId),
-        operatorType: toOptionalString(form.operatorType),
-        requestId: toOptionalString(form.requestId),
-        question: form.question.trim(),
-        sessionId,
-        traceId: toOptionalString(form.traceId)
-    };
+const getSessionList = () => {
+    return qaService.pageQaSessions({
+        pageNo: 1,
+        pageSize: DEFAULT_SESSION_SIZE,
+        scope: "PORTAL"
+    });
 };
 
-const formatTimestamp = (value?: number | null) => {
+const toSessionId = (value?: number | null): number | null => {
+    return typeof value === "number" ? value : null;
+};
+
+const sessionTitle = (session?: DiscoveryQaOpenSessionResponse) => {
+    if (session?.title) {
+        return session.title;
+    }
+
+    return session?.sessionId ? `会话 ${session.sessionId}` : "未命名会话";
+};
+
+const extractCompletionMessage = (response?: DiscoveryQaChatCompletionResponse | null) => {
+    const choices: QaChatCompletionChoice[] = response?.choices ?? [];
+    const firstChoice = choices[0];
+    const message = firstChoice?.message;
+    return message?.content?.trim() ?? "";
+};
+
+const formatTime = (value?: number | null) => {
     if (!value) {
         return "未设置";
     }
@@ -99,48 +121,109 @@ const formatTimestamp = (value?: number | null) => {
     }).format(new Date(value));
 };
 
-const formatSourceScore = (value?: number | string | null) => {
-    if (value === null || value === undefined || value === "") {
-        return "-";
-    }
-
-    return typeof value === "number" ? value.toFixed(3) : value;
+const isUnavailableSource = (source: DiscoveryQaChatCompletionSource) => {
+    return source.sourceStatus?.toUpperCase() === "UNAVAILABLE" || !source.sourceId;
 };
 
-const sourceSummary = (response?: DiscoveryQaAskQuestionResponse | null) => {
-    const count = response?.sources?.length ?? 0;
-    const status = response?.answerStatus || "待回答";
-    return `答案状态 ${status} · 来源 ${count} 条`;
+const toSessionQuery = (sessionId: number): DiscoveryQaGetSessionRequest => {
+    return { sessionId };
+};
+
+const createTimelineMessageId = () => {
+    const randomSuffix = globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
+    return `qa-message-${randomSuffix}`;
+};
+
+const toChatCompletionSourceKey = (source: DiscoveryQaChatCompletionSource, index: number) => {
+    return source.sourceId ?? `${source.contentType}-${source.contentId}-${index}`;
 };
 
 export const DiscoveryQaPage = () => {
     const [form, setForm] = useState<QaFormState>(INITIAL_FORM_STATE);
-    const [sessionId, setSessionId] = useState<number | null>(null);
-    const [answerResult, setAnswerResult] = useState<DiscoveryQaAskQuestionResponse | null>(null);
+    const [selectedSessionId, setSelectedSessionId] = useState<number | null>(null);
+    const [timelineBySession, setTimelineBySession] = useState<QaTimeline>({});
 
-    const openSessionMutation = useMutation({
-        mutationFn: (request: DiscoveryQaOpenSessionRequest) => qaService.openQaSession(request)
+    const sessionsQuery = useQuery<DiscoveryQaSessionPageResponse>({
+        queryFn: getSessionList,
+        queryKey: ["portal-qa-session-page"]
     });
-    const askQuestionMutation = useMutation({
-        mutationFn: (request: DiscoveryQaAskQuestionRequest) => qaService.askQaQuestion(request)
+    const selectedSessionQuery = useQuery<DiscoveryQaOpenSessionResponse>({
+        enabled: selectedSessionId !== null,
+        queryFn: () => {
+            if (selectedSessionId === null) {
+                throw new Error("会话尚未选中");
+            }
+            return qaService.getQaSession(toSessionQuery(selectedSessionId));
+        },
+        queryKey: ["portal-qa-session", selectedSessionId]
     });
+
+    const openSessionMutation = useMutation({ mutationFn: qaService.openQaSession });
+    const chatCompletionMutation = useMutation({ mutationFn: qaService.createQaChatCompletion });
+
+    const sessions = sessionsQuery.data?.items ?? [];
+    const selectedSession = selectedSessionQuery.data;
+    const hasSessions = sessions.length > 0;
+    const messages = useMemo(() => {
+        return selectedSessionId ? (timelineBySession[selectedSessionId] ?? []) : [];
+    }, [selectedSessionId, timelineBySession]);
+    const selectedSessionForComposer =
+        toSessionId(selectedSession?.sessionId) ??
+        toSessionId(
+            sessions.find((session) => session.sessionId === selectedSessionId)?.sessionId
+        ) ??
+        null;
+
+    const hasNoSession = selectedSessionId === null;
 
     const summaryText = useMemo(() => {
-        if (askQuestionMutation.isPending) {
+        if (chatCompletionMutation.isPending) {
             return "正在生成回答";
         }
-        if (askQuestionMutation.isError) {
-            return "回答生成失败";
+
+        if (!messages.length) {
+            return hasNoSession ? "先输入问题，系统将自动创建会话" : "会话已就绪，继续追问";
         }
-        if (answerResult) {
-            return sourceSummary(answerResult);
+
+        const latest = messages[messages.length - 1];
+        if (latest.role === "assistant" && latest.status === "failed") {
+            return "最近一次回答失败，可尝试重试";
         }
-        if (sessionId) {
-            return `会话 ${sessionId} 已就绪，可以直接提问`;
+
+        return `已展示 ${messages.length} 条消息`;
+    }, [chatCompletionMutation.isPending, hasNoSession, messages]);
+
+    const sessionListContent = (() => {
+        if (sessionsQuery.isPending) {
+            return <div className="portal-empty">会话列表加载中...</div>;
         }
-        return "先创建会话，再发送问题";
-    }, [answerResult, askQuestionMutation.isError, askQuestionMutation.isPending, sessionId]);
-    const visibleSessionId = sessionId ?? toOptionalNumber(form.sessionId);
+
+        if (!hasSessions) {
+            return <div className="portal-empty">暂无历史会话。首次提问将自动创建新会话。</div>;
+        }
+
+        return (
+            <div className="portal-qa-session-list">
+                {sessions.map((session) => {
+                    const sessionId = toSessionId(session.sessionId);
+                    if (sessionId === null) {
+                        return null;
+                    }
+
+                    return (
+                        <Button
+                            key={sessionId}
+                            type="button"
+                            variant={sessionId === selectedSessionId ? "default" : "outline"}
+                            onClick={() => handleSelectSession(sessionId)}
+                        >
+                            {sessionTitle(session)}
+                        </Button>
+                    );
+                })}
+            </div>
+        );
+    })();
 
     const updateField = (key: keyof QaFormState, value: string) => {
         setForm((current) => ({
@@ -149,34 +232,177 @@ export const DiscoveryQaPage = () => {
         }));
     };
 
-    const handleOpenSession = async (event: FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        const response = await openSessionMutation.mutateAsync(toOpenSessionRequest(form));
-        setSessionId(response.sessionId ?? null);
-        if (response.title && !form.sessionTitle.trim()) {
-            setForm((current) => ({
+    const updateTimeline = (
+        sessionId: number,
+        messageId: string,
+        patch: Partial<QaTimelineMessage>
+    ) => {
+        setTimelineBySession((current) => {
+            const timeline = current[sessionId] ?? [];
+            const nextTimeline = timeline.map((item) => {
+                if (item.id !== messageId) {
+                    return item;
+                }
+
+                return { ...item, ...patch };
+            });
+
+            return {
                 ...current,
-                sessionTitle: response.title ?? current.sessionTitle
-            }));
-        }
+                [sessionId]: nextTimeline
+            };
+        });
     };
 
-    const handleAskQuestion = async (event: FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        const activeSessionId = sessionId ?? toOptionalNumber(form.sessionId);
+    const appendMessage = (sessionId: number, message: QaTimelineMessage) => {
+        setTimelineBySession((current) => ({
+            ...current,
+            [sessionId]: [...(current[sessionId] ?? []), message]
+        }));
+    };
 
-        if (!activeSessionId) {
+    const ensureSessionId = async () => {
+        if (selectedSessionId !== null) {
+            return selectedSessionId;
+        }
+
+        const openResponse = await openSessionMutation.mutateAsync(toOpenSessionRequest(form));
+        const openedSessionId = toSessionId(openResponse.sessionId);
+        if (openedSessionId === null) {
+            throw new Error("会话未返回会话号");
+        }
+
+        setTimelineBySession((current) => ({
+            ...current,
+            [openedSessionId]: current[openedSessionId] ?? []
+        }));
+        setSelectedSessionId(openedSessionId);
+        void sessionsQuery.refetch();
+        return openedSessionId;
+    };
+
+    const sendQuestion = async (
+        questionText: string,
+        sessionId: number,
+        existingMessageId?: string
+    ) => {
+        const assistantMessageId = existingMessageId ?? createTimelineMessageId();
+        if (!existingMessageId) {
+            appendMessage(sessionId, {
+                content: questionText,
+                id: createTimelineMessageId(),
+                role: "user",
+                status: "succeeded"
+            });
+            appendMessage(sessionId, {
+                content: "",
+                id: assistantMessageId,
+                role: "assistant",
+                status: "loading",
+                retryQuestion: questionText
+            });
+        } else {
+            updateTimeline(sessionId, assistantMessageId, {
+                content: "",
+                retryQuestion: questionText,
+                sources: [],
+                status: "loading",
+                failureReason: null
+            });
+        }
+
+        const selectedContext = selectedSession ?? null;
+        const response = await chatCompletionMutation.mutateAsync({
+            messages: [
+                {
+                    content: questionText,
+                    role: "user"
+                }
+            ],
+            metadata: {
+                contextContentId:
+                    parseNumber(form.contextContentId) ??
+                    parseNumber(String(selectedContext?.contextContentId ?? "")),
+                contextContentType:
+                    parseString(form.contextContentType) ??
+                    parseString(selectedContext?.contextContentType ?? ""),
+                sessionId
+            },
+            model: FIXED_MODEL,
+            options: {},
+            requestId: parseString(form.requestId),
+            stream: false,
+            traceId: parseString(form.traceId)
+        });
+
+        const answerText = extractCompletionMessage(response);
+        const hasAnswer = Boolean(answerText);
+        const isSucceeded = hasAnswer && response.answerStatus !== "FAILED";
+
+        updateTimeline(sessionId, assistantMessageId, {
+            content: answerText || "未返回回答内容。",
+            failureReason: isSucceeded ? null : (response.failureReason ?? "回答失败"),
+            sources: response.sources ?? [],
+            status: isSucceeded ? "succeeded" : "failed",
+            retryQuestion: isSucceeded ? undefined : questionText
+        });
+        setForm((current) => ({
+            ...current,
+            question: ""
+        }));
+    };
+
+    const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        const questionText = parseString(form.question);
+        if (!questionText) {
             return;
         }
 
-        const response = await askQuestionMutation.mutateAsync(
-            toAskQuestionRequest(form, activeSessionId)
-        );
-        setSessionId(response.sessionId ?? activeSessionId);
-        setAnswerResult(response);
+        try {
+            const currentSessionId = await ensureSessionId();
+            await sendQuestion(questionText, currentSessionId);
+        } catch {
+            const currentSessionId = selectedSessionId;
+            if (currentSessionId === null) {
+                return;
+            }
+
+            const assistantMessages = timelineBySession[currentSessionId];
+            const failedMessage = assistantMessages?.[assistantMessages.length - 1];
+            if (
+                failedMessage &&
+                failedMessage.role === "assistant" &&
+                failedMessage.status === "loading"
+            ) {
+                updateTimeline(currentSessionId, failedMessage.id, {
+                    content: "发送失败，请重试。",
+                    failureReason: "发送失败",
+                    status: "failed",
+                    sources: [],
+                    retryQuestion: questionText
+                });
+            }
+        }
     };
 
-    const sources = answerResult?.sources ?? [];
+    const handleRetry = async (messageId: string) => {
+        if (!selectedSessionId) {
+            return;
+        }
+
+        const timeline = timelineBySession[selectedSessionId] ?? [];
+        const targetMessage = timeline.find((message) => message.id === messageId);
+        if (!targetMessage?.retryQuestion) {
+            return;
+        }
+
+        await sendQuestion(targetMessage.retryQuestion, selectedSessionId, messageId);
+    };
+
+    const handleSelectSession = (sessionId: number) => {
+        setSelectedSessionId(sessionId);
+    };
 
     return (
         <main className="portal-shell">
@@ -193,20 +419,18 @@ export const DiscoveryQaPage = () => {
             <section className="portal-qa-hero">
                 <div className="portal-qa-copy">
                     <p className="portal-qa-tag">
-                        <MessageSquareQuote aria-hidden="true" size={16} />
-                        会话、来源、轨迹三者一起看
+                        <Sparkles aria-hidden="true" size={16} />
+                        对话式问答闭环，先建会话再追问
                     </p>
-                    <h2>最小问答入口，直连 Discovery 与 AI</h2>
-                    <p>
-                        先创建一个问答会话，再围绕知识库内容发问。回答返回后会同时展示来源列表和检索摘要，方便验证知识增强是否真正进入了回答链路。
-                    </p>
+                    <h2>固定模型、无 Provider 直连，一律走 Discovery</h2>
+                    <p>首问自动创建会话，后续消息复用会话，来源展示在每条回答下方。</p>
                 </div>
                 <div className="portal-qa-stat">
                     <span>当前状态</span>
                     <strong>{summaryText}</strong>
                     <small>
-                        会话 {visibleSessionId ?? "未创建"} · 提问
-                        {answerResult?.questionMessageId ?? "-"}
+                        已选会话 {selectedSessionId ?? "未选择"}
+                        {selectedSession?.status ? ` · ${selectedSession.status}` : ""}
                     </small>
                 </div>
             </section>
@@ -215,117 +439,30 @@ export const DiscoveryQaPage = () => {
                 <Card className="portal-qa-panel">
                     <div className="portal-qa-panel-header">
                         <div>
-                            <p className="portal-kicker">步骤 1</p>
-                            <h2>创建会话</h2>
+                            <p className="portal-kicker">会话列表</p>
+                            <h2>选择会话继续追问</h2>
                         </div>
                         <Workflow aria-hidden="true" size={18} />
                     </div>
 
-                    <form className="portal-qa-form" onSubmit={handleOpenSession}>
-                        <div className="portal-qa-form-grid">
-                            <Label className="portal-filter-field">
-                                <span>拥有者用户号</span>
-                                <Input
-                                    name="ownerUserId"
-                                    type="number"
-                                    value={form.ownerUserId}
-                                    onChange={(event) =>
-                                        updateField("ownerUserId", event.target.value)
-                                    }
-                                />
-                            </Label>
-                            <Label className="portal-filter-field">
-                                <span>会话标题</span>
-                                <Input
-                                    name="sessionTitle"
-                                    value={form.sessionTitle}
-                                    onChange={(event) =>
-                                        updateField("sessionTitle", event.target.value)
-                                    }
-                                />
-                            </Label>
-                            <Label className="portal-filter-field">
-                                <span>作用域</span>
-                                <Input
-                                    name="scope"
-                                    value={form.scope}
-                                    onChange={(event) => updateField("scope", event.target.value)}
-                                />
-                            </Label>
-                            <Label className="portal-filter-field">
-                                <span>上下文模式</span>
-                                <Input
-                                    name="contextMode"
-                                    value={form.contextMode}
-                                    onChange={(event) =>
-                                        updateField("contextMode", event.target.value)
-                                    }
-                                />
-                            </Label>
-                            <Label className="portal-filter-field">
-                                <span>上下文内容类型</span>
-                                <Input
-                                    name="contextContentType"
-                                    value={form.contextContentType}
-                                    onChange={(event) =>
-                                        updateField("contextContentType", event.target.value)
-                                    }
-                                />
-                            </Label>
-                            <Label className="portal-filter-field">
-                                <span>上下文内容标识</span>
-                                <Input
-                                    name="contextContentId"
-                                    type="number"
-                                    value={form.contextContentId}
-                                    onChange={(event) =>
-                                        updateField("contextContentId", event.target.value)
-                                    }
-                                />
-                            </Label>
-                            <Label className="portal-filter-field">
-                                <span>请求号</span>
-                                <Input
-                                    name="requestId"
-                                    value={form.requestId}
-                                    onChange={(event) =>
-                                        updateField("requestId", event.target.value)
-                                    }
-                                />
-                            </Label>
-                            <Label className="portal-filter-field">
-                                <span>链路号</span>
-                                <Input
-                                    name="traceId"
-                                    value={form.traceId}
-                                    onChange={(event) => updateField("traceId", event.target.value)}
-                                />
-                            </Label>
-                        </div>
-
-                        <div className="portal-qa-actions">
-                            <Button disabled={openSessionMutation.isPending} type="submit">
-                                {openSessionMutation.isPending ? "创建中..." : "创建会话"}
-                            </Button>
-                        </div>
-                    </form>
+                    {sessionListContent}
 
                     <dl className="portal-qa-session-meta">
                         <div>
                             <dt>会话号</dt>
-                            <dd>{sessionId ?? "-"}</dd>
+                            <dd>{selectedSession?.sessionId ?? "-"}</dd>
                         </div>
                         <div>
                             <dt>状态</dt>
-                            <dd>{openSessionMutation.data?.status ?? "未创建"}</dd>
+                            <dd>{selectedSession?.status ?? "-"}</dd>
                         </div>
                         <div>
-                            <dt>创建时间</dt>
-                            <dd>{formatTimestamp(openSessionMutation.data?.openedAt)}</dd>
+                            <dt>最近消息</dt>
+                            <dd>{formatTime(selectedSession?.lastMessageAt)}</dd>
                         </div>
                         <div>
-                            <dt>最后消息</dt>
-                            <dd>{formatTimestamp(openSessionMutation.data?.lastMessageAt)}</dd>
+                            <dt>上下文</dt>
+                            <dd>{selectedSession?.contextContentType ?? "-"}</dd>
                         </div>
                     </dl>
                 </Card>
@@ -333,101 +470,225 @@ export const DiscoveryQaPage = () => {
                 <Card className="portal-qa-panel">
                     <div className="portal-qa-panel-header">
                         <div>
-                            <p className="portal-kicker">步骤 2</p>
-                            <h2>发送问题</h2>
+                            <p className="portal-kicker">会话元数据</p>
+                            <h2>上下文与追踪</h2>
                         </div>
-                        <Play aria-hidden="true" size={18} />
                     </div>
 
-                    <form className="portal-qa-form" onSubmit={handleAskQuestion}>
-                        <div className="portal-qa-form-grid">
-                            <Label className="portal-filter-field">
-                                <span>会话号</span>
-                                <Input
-                                    name="sessionId"
-                                    type="number"
-                                    value={form.sessionId || sessionId?.toString() || ""}
-                                    onChange={(event) =>
-                                        updateField("sessionId", event.target.value)
-                                    }
-                                />
-                            </Label>
-                            <Label className="portal-filter-field">
-                                <span>上下文轮次</span>
-                                <Input
-                                    name="contextTurnCount"
-                                    type="number"
-                                    value={form.contextTurnCount}
-                                    onChange={(event) =>
-                                        updateField("contextTurnCount", event.target.value)
-                                    }
-                                />
-                            </Label>
-                            <Label className="portal-filter-field">
-                                <span>操作者类型</span>
-                                <Input
-                                    name="operatorType"
-                                    value={form.operatorType}
-                                    onChange={(event) =>
-                                        updateField("operatorType", event.target.value)
-                                    }
-                                />
-                            </Label>
-                            <Label className="portal-filter-field">
-                                <span>操作者号</span>
-                                <Input
-                                    name="operatorId"
-                                    value={form.operatorId}
-                                    onChange={(event) =>
-                                        updateField("operatorId", event.target.value)
-                                    }
-                                />
-                            </Label>
-                            <Label className="portal-filter-field">
-                                <span>请求号</span>
-                                <Input
-                                    name="questionRequestId"
-                                    value={form.requestId}
-                                    onChange={(event) =>
-                                        updateField("requestId", event.target.value)
-                                    }
-                                />
-                            </Label>
-                            <Label className="portal-filter-field">
-                                <span>链路号</span>
-                                <Input
-                                    name="questionTraceId"
-                                    value={form.traceId}
-                                    onChange={(event) => updateField("traceId", event.target.value)}
-                                />
-                            </Label>
-                        </div>
+                    <div className="portal-qa-form-grid">
+                        <Label className="portal-filter-field">
+                            <span>会话标题</span>
+                            <Input
+                                name="sessionTitle"
+                                value={form.sessionTitle}
+                                onChange={(event) =>
+                                    updateField("sessionTitle", event.target.value)
+                                }
+                            />
+                        </Label>
+                        <Label className="portal-filter-field">
+                            <span>上下文模式</span>
+                            <Input
+                                name="contextMode"
+                                value={form.contextMode}
+                                onChange={(event) => updateField("contextMode", event.target.value)}
+                            />
+                        </Label>
+                        <Label className="portal-filter-field">
+                            <span>上下文类型</span>
+                            <Input
+                                name="contextContentType"
+                                value={form.contextContentType}
+                                onChange={(event) =>
+                                    updateField("contextContentType", event.target.value)
+                                }
+                            />
+                        </Label>
+                        <Label className="portal-filter-field">
+                            <span>上下文 ID</span>
+                            <Input
+                                name="contextContentId"
+                                type="number"
+                                value={form.contextContentId}
+                                onChange={(event) =>
+                                    updateField("contextContentId", event.target.value)
+                                }
+                            />
+                        </Label>
+                        <Label className="portal-filter-field">
+                            <span>请求号</span>
+                            <Input
+                                name="requestId"
+                                value={form.requestId}
+                                onChange={(event) => updateField("requestId", event.target.value)}
+                            />
+                        </Label>
+                        <Label className="portal-filter-field">
+                            <span>链路号</span>
+                            <Input
+                                name="traceId"
+                                value={form.traceId}
+                                onChange={(event) => updateField("traceId", event.target.value)}
+                            />
+                        </Label>
+                        <Label className="portal-filter-field">
+                            <span>会话号</span>
+                            <Input
+                                name="sessionId"
+                                type="number"
+                                value={form.sessionId}
+                                onChange={(event) => updateField("sessionId", event.target.value)}
+                            />
+                            <em>当前仅展示，不强制使用</em>
+                        </Label>
+                    </div>
+                </Card>
+            </section>
 
+            <section className="portal-qa-grid">
+                <Card className="portal-qa-panel">
+                    <div className="portal-qa-panel-header">
+                        <div>
+                            <p className="portal-kicker">问题输入</p>
+                            <h2>Composer</h2>
+                        </div>
+                        <CircleSlash2 aria-hidden="true" size={18} />
+                    </div>
+
+                    <form className="portal-qa-form" onSubmit={handleSubmit}>
                         <Label className="portal-filter-field portal-qa-question">
                             <span>问题</span>
                             <Textarea
                                 name="question"
-                                placeholder="例如：这类古籍中的礼器常见在哪些章节？"
-                                rows={7}
+                                placeholder="例如：礼器常见于哪类篇章？"
+                                rows={6}
                                 value={form.question}
                                 onChange={(event) => updateField("question", event.target.value)}
                             />
                         </Label>
-
                         <div className="portal-qa-actions">
-                            <Button disabled={askQuestionMutation.isPending} type="submit">
-                                {askQuestionMutation.isPending ? "回答中..." : "发送问题"}
+                            <Button disabled={chatCompletionMutation.isPending} type="submit">
+                                {chatCompletionMutation.isPending ? "回答中..." : "发送问题"}
                             </Button>
                         </div>
                     </form>
 
-                    <div className="portal-qa-answer">
+                    <dl className="portal-qa-trace">
                         <div>
-                            <p className="portal-kicker">回答</p>
-                            <h2>{answerResult?.answerStatus || "等待提问"}</h2>
+                            <dt>当前会话</dt>
+                            <dd>{selectedSessionForComposer ?? "未选择"}</dd>
                         </div>
-                        <p>{answerResult?.answer || answerResult?.failureReason || "尚无回答。"}</p>
+                        <div>
+                            <dt>模型</dt>
+                            <dd>{FIXED_MODEL}</dd>
+                        </div>
+                        <div>
+                            <dt>请求状态</dt>
+                            <dd>{chatCompletionMutation.isPending ? "进行中" : "空闲"}</dd>
+                        </div>
+                        <div>
+                            <dt>列表加载</dt>
+                            <dd>{sessionsQuery.isPending ? "进行中" : "完成"}</dd>
+                        </div>
+                    </dl>
+                </Card>
+
+                <Card className="portal-qa-panel">
+                    <div className="portal-qa-panel-header">
+                        <div>
+                            <p className="portal-kicker">消息流</p>
+                            <h2>消息时间线</h2>
+                        </div>
+                        <Workflow aria-hidden="true" size={18} />
                     </div>
+
+                    {messages.length ? (
+                        <div className="portal-qa-timeline">
+                            {messages.map((message, index) => (
+                                <article className="portal-qa-message" key={message.id}>
+                                    <header>
+                                        <strong>{message.role}</strong>
+                                        <small>
+                                            {index + 1} · {message.status}
+                                        </small>
+                                    </header>
+                                    {message.role === "assistant" ? (
+                                        <div>
+                                            <p>{message.content}</p>
+                                            {message.status === "loading" ? (
+                                                <p>正在从 Discovery 取回回答...</p>
+                                            ) : null}
+                                            {message.status === "failed" ? (
+                                                <p>
+                                                    回答失败：{message.failureReason ?? "未知错误"}
+                                                </p>
+                                            ) : null}
+                                            {message.sources && message.sources.length ? (
+                                                <div className="portal-qa-source-list">
+                                                    {message.sources.map((source, sourceIndex) => {
+                                                        const key = toChatCompletionSourceKey(
+                                                            source,
+                                                            sourceIndex
+                                                        );
+                                                        const hasSourcePath =
+                                                            source.sourcePath !== null &&
+                                                            source.sourcePath !== undefined;
+                                                        const sourcePath = source.sourcePath ?? "";
+                                                        const unavailable =
+                                                            isUnavailableSource(source) ||
+                                                            !hasSourcePath;
+                                                        return (
+                                                            <div key={key}>
+                                                                <p>
+                                                                    {unavailable ? (
+                                                                        <span>
+                                                                            {source.titleSnapshot ??
+                                                                                source.sourceId}
+                                                                        </span>
+                                                                    ) : (
+                                                                        <a href={sourcePath}>
+                                                                            {source.titleSnapshot ??
+                                                                                source.sourceId}
+                                                                        </a>
+                                                                    )}
+                                                                </p>
+                                                                <p>
+                                                                    来源状态：
+                                                                    {source.sourceStatus ?? "-"}
+                                                                </p>
+                                                                <p>
+                                                                    置信来源：{source.score ?? "-"}
+                                                                </p>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            ) : null}
+                                            {message.status === "failed" ? (
+                                                <Button
+                                                    size="sm"
+                                                    type="button"
+                                                    variant="outline"
+                                                    onClick={() => handleRetry(message.id)}
+                                                >
+                                                    重试
+                                                </Button>
+                                            ) : null}
+                                        </div>
+                                    ) : (
+                                        <p>{message.content}</p>
+                                    )}
+                                    {message.role === "user" && selectedSessionId ? (
+                                        <p className="portal-empty">
+                                            会话 {selectedSessionId} 的用户提问
+                                        </p>
+                                    ) : null}
+                                </article>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="portal-empty">发送问题后会出现在这里。</div>
+                    )}
                 </Card>
             </section>
 
@@ -435,92 +696,14 @@ export const DiscoveryQaPage = () => {
                 <Card className="portal-qa-panel">
                     <div className="portal-qa-panel-header">
                         <div>
-                            <p className="portal-kicker">来源</p>
-                            <h2>引用证据</h2>
+                            <p className="portal-kicker">操作提示</p>
+                            <h2>会话与追问规则</h2>
                         </div>
-                        <Sparkles aria-hidden="true" size={18} />
+                        <RefreshCw aria-hidden="true" size={18} />
                     </div>
-
-                    {sources.length ? (
-                        <div className="portal-qa-source-list">
-                            {sources.map((source) => (
-                                <article
-                                    key={
-                                        source.sourceId ??
-                                        `${source.contentType}-${source.contentId}`
-                                    }
-                                >
-                                    <div className="portal-qa-source-title">
-                                        <h3>
-                                            {source.titleSnapshot ||
-                                                `来源 ${source.sourceId ?? "-"}`}
-                                        </h3>
-                                        <span>
-                                            {source.knowledgeBase || source.contentType || "-"}
-                                        </span>
-                                    </div>
-                                    <p>{source.snippet || "暂无摘录。"}</p>
-                                    <dl>
-                                        <div>
-                                            <dt>位置</dt>
-                                            <dd>{source.locationLabel || "-"}</dd>
-                                        </div>
-                                        <div>
-                                            <dt>排序</dt>
-                                            <dd>{source.sourceRank ?? "-"}</dd>
-                                        </div>
-                                        <div>
-                                            <dt>得分</dt>
-                                            <dd>{formatSourceScore(source.score)}</dd>
-                                        </div>
-                                        <div>
-                                            <dt>状态</dt>
-                                            <dd>{source.sourceStatus || "-"}</dd>
-                                        </div>
-                                    </dl>
-                                </article>
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="portal-empty">回答生成后，这里会列出 cited sources。</div>
-                    )}
-                </Card>
-
-                <Card className="portal-qa-panel">
-                    <div className="portal-qa-panel-header">
-                        <div>
-                            <p className="portal-kicker">轨迹</p>
-                            <h2>Trace Summary</h2>
-                        </div>
-                        <MessageSquareQuote aria-hidden="true" size={18} />
-                    </div>
-
-                    {answerResult?.traceSummary ? (
-                        <dl className="portal-qa-trace">
-                            <div>
-                                <dt>Trace ID</dt>
-                                <dd>{answerResult.traceSummary.traceId ?? "-"}</dd>
-                            </div>
-                            <div>
-                                <dt>改写问题</dt>
-                                <dd>{answerResult.traceSummary.rewrittenQuestion || "-"}</dd>
-                            </div>
-                            <div>
-                                <dt>候选数</dt>
-                                <dd>{answerResult.traceSummary.candidateCount ?? "-"}</dd>
-                            </div>
-                            <div>
-                                <dt>扩展词</dt>
-                                <dd>{answerResult.traceSummary.expandedTermsJson || "-"}</dd>
-                            </div>
-                            <div>
-                                <dt>关联实体</dt>
-                                <dd>{answerResult.traceSummary.linkedEntitiesJson || "-"}</dd>
-                            </div>
-                        </dl>
-                    ) : (
-                        <div className="portal-empty">生成回答后，这里会展示检索摘要。</div>
-                    )}
+                    <p>当前实现默认使用 OpenAI-compatible 的 chat/completions。</p>
+                    <p>第一条问题会先创建会话，再在同会话下追加后续问题。</p>
+                    <p>回答可见即展示，失败会展示重试入口。</p>
                 </Card>
             </section>
         </main>
