@@ -37,16 +37,18 @@
 - Discovery Search 已补齐 `search / click / rebuild` 共享动作白名单，并完成最小 Maven 运行时测试闭环。
 - Discovery Query Understanding 已接通 Knowledge 同义词、标签和实体提示读协作，并通过 AI 域完成 query-understanding / query-rewrite 调度。
 - Discovery QA 已接通 Portal `chat/completions`、Admin 知识库运维、会话持久化、来源引用、知识同步状态和 provider trace 读取，形成问答闭环。
+- Discovery QA 已完成会话软删除、Portal owner 删除保护、Portal 删除后不可见/不可详情/不可追问/不可导出、Admin 删除和已删除会话审计读取。
+- Discovery QA 已完成会话 CSV 导出，导出记录写入 `discovery_qa_session_export`，文件上传 Storage 并返回 `exportId`、`storageObjectId`、`filename` 和 `contentType`。
+- Portal Web 已完成 QA 会话删除确认、删除后清空当前会话、CSV 导出成功/失败提示；Admin Web 已完成 QA 会话删除、`REMOVED` 状态展示和已删除会话 CSV 导出入口。
 
 部分完成：
 
 - Discovery Search 已完成后端运行时闭环，Portal 搜索页面和 Admin 搜索分析页面已落地，但高亮、复杂排序与分析深化仍需继续完善。
-- Discovery QA 已完成 Portal 会话列表、首问自动建会话、追问复用会话、来源展示和 Admin 运维页；删除和导出能力仍未形成交付。
 - Discovery 设计文档已明确 Elasticsearch 默认适配、增量同步和删除态清理规则；高级增强能力仍保留未实现状态。
 
 未完成：
 
-- 会话删除和导出，以及更细粒度的搜索分析和 QA 生命周期能力仍未形成完整交付物。
+- 更细粒度的搜索分析和高级 QA 生命周期能力仍未形成完整交付物。
 
 ## Requirement Coverage Matrix
 
@@ -85,7 +87,7 @@
 | 王圻单文档追加式问答 | 部分完成 | 通用 QA 已接通 `knowledgeBase` 维度和内容源上下文                                                                            | 专用单文档追加式入口尚未单独拆分 | Discovery, Classics, AI |
 | 多轮会话             | 已完成   | `QaSession`、`QaMessage`、`openSession`、`chat/completions`、会话分页和会话详情读取已落地                                    | 无                               | Discovery               |
 | 来源引用             | 已完成   | `QaSource`、`discovery_qa_message_source`、来源写入、可见性重检与按消息查询接口已落地                                        | 无                               | Discovery               |
-| 会话删除和导出       | 未完成   | 会话列表已落地                                                                                                               | 删除和导出运行时代码未实现       | Discovery               |
+| 会话删除和导出       | 已完成   | Portal/Admin 会话删除接口、软删除状态机、Portal 已删除会话访问拦截、Admin 已删除会话审计导出、CSV 生成、Storage 上传和前端入口均已落地 | 无                               | Discovery               |
 | 管理员调试信息       | 已完成   | Admin QA 运维页已覆盖知识库健康、重建、同步分页、来源列表和 provider trace                                                   | 无                               | Discovery               |
 | 知识库同步状态       | 已完成   | Admin QA 已提供 `knowledge/health`、`knowledge/rebuild`、`knowledge/sync` 和 `knowledge/sync/page`，可查看同步状态和失败原因 | 无                               | Discovery               |
 
@@ -104,7 +106,7 @@
 | 索引增量同步           | 已完成   | 已实现 `afterCommit + RocketMQ` 发送、Discovery 消费、`currentVersionNo` 幂等和删除态清理                            |
 | Portal 搜索入口        | 已完成   | Portal 搜索和点击接口已可运行，Portal 搜索页面已落地                                                                 |
 | Admin 搜索分析入口     | 已完成   | Admin 搜索日志分页、详情和索引重建入口已落地，搜索分析页面已落地                                                     |
-| QA 子域                | 部分完成 | QA 核心运行时、Portal `chat/completions` 页面、Admin 运维页、知识同步和 provider trace 已落地，但删除 / 导出仍未实现 |
+| QA 子域                | 已完成   | QA 核心运行时、Portal `chat/completions` 页面、Admin 运维页、知识同步、provider trace、会话删除和 CSV 导出已落地 |
 
 ## Residual Risks
 
@@ -113,3 +115,4 @@
 - Search 当前增量同步采用 `afterCommit` 直接发 MQ，不采用 outbox；当数据库提交成功但 MQ 发送失败时，仍需依赖重试或 Admin `rebuild` 做恢复。
 - 本地 Elasticsearch 虽已验证 HTTPS 地址和认证可达，但当前集群健康状态不是绿态；若后续索引重建或检索异常，需要继续排查未分配分片与证书信任配置。
 - Discovery QA 知识同步依赖外部 Knowledge Base provider；provider 不可用时需要依靠同步失败原因、provider trace 和 Admin 重建入口排查。
+- Discovery QA CSV 导出依赖 Storage 上传链路；Storage 不可用时导出记录会标记 `FAILED` 并返回失败原因，需要由 Admin 侧排查 Storage 和对象权限配置。
