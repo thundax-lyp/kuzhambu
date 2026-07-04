@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `ClassicsFacade.java; ClassicsQaKnowledgeFacadeDto.java; ClassicsQaKnowledgeFacadeRequest.java; ClassicsQaKnowledgeFacadeResponse.java`：定义 Classics QA 知识读取 Facade
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-KNOWLEDGE-BASE-REWRITE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-facade/src/main/java/com/thundax/kuzhambu/classics/facade/ClassicsFacade.java`; `kuzhambu-servers/biz/classics/kuzhambu-classics-facade/src/main/java/com/thundax/kuzhambu/classics/facade/dto/ClassicsQaKnowledgeFacadeDto.java`; `kuzhambu-servers/biz/classics/kuzhambu-classics-facade/src/main/java/com/thundax/kuzhambu/classics/facade/request/ClassicsQaKnowledgeFacadeRequest.java`; `kuzhambu-servers/biz/classics/kuzhambu-classics-facade/src/main/java/com/thundax/kuzhambu/classics/facade/response/ClassicsQaKnowledgeFacadeResponse.java`
-    - 处理动作：定义只暴露公开、确认、可问答字段的 Classics 知识读取契约。
-    - 验收点：Classics facade 架构测试通过。
-    - 重要度：9/10
-
 - [ ] `ClassicsFacadeImpl.java; ClassicsFacadeAssembler.java; ClassicsFacadeImplTest.java`：实现 Classics QA 知识读取
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-KNOWLEDGE-BASE-REWRITE.md`
