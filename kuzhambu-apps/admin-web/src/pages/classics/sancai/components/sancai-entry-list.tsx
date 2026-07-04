@@ -1,11 +1,12 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Alert, App, Button, Empty, Skeleton, Tag, Typography } from "antd";
 import { useMemo, useState } from "react";
 import { KuzhambuTable } from "@/components/kuzhambu-table";
 import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import * as contentService from "@/pages/classics/common/classics-content-service";
 import * as shareService from "@/pages/classics/common/classics-share-service";
-import type { ClassicsBatchOperationRecord } from "@/pages/classics/common/classics-share-types";
+import type { ClassicsBatchOperationRecord } from "@/pages/classics/common/classics-content-types";
 import * as entryService from "../services/sancai-entry-service";
 import type { SancaiEntryRecord, SancaiVolumeRecord } from "../sancai-types";
 
@@ -67,11 +68,14 @@ export const SancaiEntryList = ({
     volumes
 }: SancaiEntryListProps) => {
     const { message: messageApi } = App.useApp();
+    const queryClient = useQueryClient();
     const [selectedRowKeys, setSelectedRowKeys] = useState<number[]>([]);
     const [activeBatchId, setActiveBatchId] = useState<number | null>(null);
     const [batchShareResult, setBatchShareResult] = useState<ClassicsBatchOperationRecord | null>(
         null
     );
+    const [batchVisibilityResult, setBatchVisibilityResult] =
+        useState<ClassicsBatchOperationRecord | null>(null);
 
     const activeBatchQuery = useQuery({
         queryKey: ["classics", "sancai", "refinement", "batch", activeBatchId],
@@ -120,6 +124,20 @@ export const SancaiEntryList = ({
         }
     });
 
+    const changeVisibilityBatchMutation = useMutation({
+        mutationFn: contentService.changeVisibilityBatch,
+        onSuccess: async (result) => {
+            setBatchVisibilityResult(result);
+            await queryClient.invalidateQueries({ queryKey: ["classics", "sancai", "entries"] });
+            messageApi.success(
+                `批量可见性完成：成功 ${result.successCount}，失败 ${result.failureCount}`
+            );
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "批量可见性修改失败");
+        }
+    });
+
     const selectedEntries = useMemo(
         () => entries.filter((entry) => selectedRowKeys.includes(entry.id)),
         [entries, selectedRowKeys]
@@ -156,6 +174,18 @@ export const SancaiEntryList = ({
             })),
             titlePrefix: "三才图会批量分享 - ",
             visibility: "PUBLIC"
+        });
+    };
+
+    const changeBatchVisibility = (visibility: "PRIVATE" | "PUBLIC") => {
+        if (!selectedEntries.length) {
+            messageApi.warning("请先选择要批量修改可见性的条目");
+            return;
+        }
+        changeVisibilityBatchMutation.mutate({
+            contentIds: selectedEntries.map((entry) => entry.id),
+            contentType: "SANCAI_ENTRY",
+            visibility
         });
     };
 
@@ -272,6 +302,20 @@ export const SancaiEntryList = ({
                     >
                         批量分享
                     </Button>
+                    <Button
+                        disabled={!selectedEntries.length}
+                        loading={changeVisibilityBatchMutation.isPending}
+                        onClick={() => changeBatchVisibility("PUBLIC")}
+                    >
+                        批量公开
+                    </Button>
+                    <Button
+                        disabled={!selectedEntries.length}
+                        loading={changeVisibilityBatchMutation.isPending}
+                        onClick={() => changeBatchVisibility("PRIVATE")}
+                    >
+                        批量私有
+                    </Button>
                 </KuzhambuSpace>
                 {activeBatch ? (
                     <KuzhambuSpace wrap>
@@ -312,6 +356,24 @@ export const SancaiEntryList = ({
                                   )
                                   .join("；")
                             : "全部选中条目已创建分享记录。"
+                    }
+                />
+            ) : null}
+            {batchVisibilityResult ? (
+                <Alert
+                    showIcon
+                    type={batchVisibilityResult.failureCount > 0 ? "warning" : "success"}
+                    style={{ marginBottom: 12 }}
+                    message={`批量可见性结果：成功 ${batchVisibilityResult.successCount}，失败 ${batchVisibilityResult.failureCount}`}
+                    description={
+                        batchVisibilityResult.failures.length
+                            ? batchVisibilityResult.failures
+                                  .map(
+                                      (item) =>
+                                          `${item.contentType}#${item.contentId}: ${item.failureReason || item.failureCode || "未知失败"}`
+                                  )
+                                  .join("；")
+                            : "全部选中条目已更新可见性。"
                     }
                 />
             ) : null}

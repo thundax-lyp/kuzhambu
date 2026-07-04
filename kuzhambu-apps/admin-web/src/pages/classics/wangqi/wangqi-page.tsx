@@ -5,6 +5,7 @@ import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/us
 import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import { AiCandidatePanel } from "@/pages/classics/common/components/ai-candidate-panel";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
+import * as contentService from "@/pages/classics/common/classics-content-service";
 import * as exportService from "@/pages/classics/common/classics-export-service";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { ClassicsContentQaPanel } from "@/pages/classics/common/components/classics-content-qa-panel";
@@ -12,8 +13,8 @@ import { ClassicsContentTagPanel } from "@/pages/classics/common/components/clas
 import { ClassicsExportJobSection } from "@/pages/classics/common/components/classics-export-job-section";
 import * as shareService from "@/pages/classics/common/classics-share-service";
 import * as currentUserService from "@/service/current-user-service";
+import type { ClassicsBatchOperationRecord } from "@/pages/classics/common/classics-content-types";
 import type { ClassicsExportScopePayload } from "@/pages/classics/common/classics-export-types";
-import type { ClassicsBatchOperationRecord } from "@/pages/classics/common/classics-share-types";
 import { WangqiDocumentList } from "./components/wangqi-document-list";
 import { WangqiDocumentModel } from "./components/wangqi-document-model";
 import { WangqiStorageFilePanel } from "./components/wangqi-storage-file-panel";
@@ -126,6 +127,8 @@ export const WangqiPage = () => {
     const [batchShareResult, setBatchShareResult] = useState<ClassicsBatchOperationRecord | null>(
         null
     );
+    const [batchVisibilityResult, setBatchVisibilityResult] =
+        useState<ClassicsBatchOperationRecord | null>(null);
     const [creatingRefinementCapability, setCreatingRefinementCapability] = useState<
         "summary" | null
     >(null);
@@ -337,6 +340,19 @@ export const WangqiPage = () => {
             messageApi.error(error instanceof Error ? error.message : "批量分享创建失败");
         }
     });
+    const batchVisibilityMutation = useMutation({
+        mutationFn: contentService.changeVisibilityBatch,
+        onSuccess: async (result) => {
+            setBatchVisibilityResult(result);
+            await invalidateWangqi();
+            messageApi.success(
+                `批量可见性完成：成功 ${result.successCount}，失败 ${result.failureCount}`
+            );
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "批量可见性修改失败");
+        }
+    });
     const exportMutation = useMutation({
         mutationFn: (document: WangqiDocumentRecord) =>
             exportService.create({
@@ -503,6 +519,18 @@ export const WangqiPage = () => {
         });
     };
 
+    const changeSelectedVisibility = (visibility: "PRIVATE" | "PUBLIC") => {
+        if (!selectedDocuments.length) {
+            messageApi.warning("请先选择要批量修改可见性的王圻文档");
+            return;
+        }
+        batchVisibilityMutation.mutate({
+            contentIds: selectedDocuments.map((document) => document.id),
+            contentType: "WANGQI_DOCUMENT",
+            visibility
+        });
+    };
+
     const exportDocument = (document: WangqiDocumentRecord) => {
         exportMutation.mutate(document);
     };
@@ -626,6 +654,22 @@ export const WangqiPage = () => {
                             >
                                 批量分享
                             </Button>
+                            <Button
+                                disabled={!selectedDocuments.length}
+                                loading={batchVisibilityMutation.isPending}
+                                style={{ marginLeft: 8 }}
+                                onClick={() => changeSelectedVisibility("PUBLIC")}
+                            >
+                                批量公开
+                            </Button>
+                            <Button
+                                disabled={!selectedDocuments.length}
+                                loading={batchVisibilityMutation.isPending}
+                                style={{ marginLeft: 8 }}
+                                onClick={() => changeSelectedVisibility("PRIVATE")}
+                            >
+                                批量私有
+                            </Button>
                         </div>
                         {batchShareResult ? (
                             <Alert
@@ -642,6 +686,26 @@ export const WangqiPage = () => {
                                               )
                                               .join("；")
                                         : "全部选中王圻文档已创建分享记录。"
+                                }
+                            />
+                        ) : null}
+                        {batchVisibilityResult ? (
+                            <Alert
+                                showIcon
+                                type={
+                                    batchVisibilityResult.failureCount > 0 ? "warning" : "success"
+                                }
+                                style={{ marginBottom: 12 }}
+                                message={`批量可见性结果：成功 ${batchVisibilityResult.successCount}，失败 ${batchVisibilityResult.failureCount}`}
+                                description={
+                                    batchVisibilityResult.failures.length
+                                        ? batchVisibilityResult.failures
+                                              .map(
+                                                  (item) =>
+                                                      `${item.contentType}#${item.contentId}: ${item.failureReason || item.failureCode || "未知失败"}`
+                                              )
+                                              .join("；")
+                                        : "全部选中王圻文档已更新可见性。"
                                 }
                             />
                         ) : null}

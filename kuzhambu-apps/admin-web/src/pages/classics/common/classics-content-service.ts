@@ -1,5 +1,7 @@
 import { getJson, postJson } from "@/api/http";
 import type {
+    ClassicsBatchOperationRecord,
+    ClassicsBatchVisibilityPayload,
     ClassicsContentListPayload,
     ClassicsContentQaPairPayload,
     ClassicsContentQaPairRecord,
@@ -16,6 +18,7 @@ export type ClassicsContentTagCommand = ClassicsContentTagPayload;
 export type ClassicsContentTagSortCommand = ClassicsContentTagSortPayload;
 export type ClassicsContentQaPairCommand = ClassicsContentQaPairPayload;
 export type ClassicsContentQaPairSortCommand = ClassicsContentQaPairSortPayload;
+export type ClassicsBatchVisibilityCommand = ClassicsBatchVisibilityPayload;
 
 const buildTagsListPath = ({ contentType, contentId }: ClassicsContentListQuery) => {
     const search = new URLSearchParams({ contentType, contentId: String(contentId) }).toString();
@@ -80,6 +83,15 @@ export const updateQaPair = (request: ClassicsContentQaPairCommand) => {
 export const sortQaPairs = (request: ClassicsContentQaPairSortCommand) => {
     return postJson<boolean, ClassicsContentQaPairSortCommand>(
         `${CLASSICS_CONTENT_PATH}/qa-pairs/sort`,
+        {
+            body: request
+        }
+    );
+};
+
+export const changeVisibilityBatch = (request: ClassicsBatchVisibilityCommand) => {
+    return postJson<ClassicsBatchOperationRecord, ClassicsBatchVisibilityCommand>(
+        `${CLASSICS_CONTENT_PATH}/visibility/change`,
         {
             body: request
         }

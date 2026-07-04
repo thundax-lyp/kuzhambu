@@ -1,4 +1,5 @@
 export type ClassicsContentType = "SANCAI_ENTRY" | "WANGQI_DOCUMENT" | "MING_CUSTOMS" | string;
+export type ClassicsContentVisibility = "PRIVATE" | "PUBLIC";
 
 export interface ClassicsContentRef {
     contentId: number;
@@ -52,4 +53,26 @@ export interface ClassicsContentQaPairSortPayload {
 export interface ClassicsContentListPayload {
     contentType: ClassicsContentType;
     contentId: number;
+}
+
+export interface ClassicsBatchVisibilityPayload {
+    contentIds: number[];
+    contentType: ClassicsContentType;
+    visibility: ClassicsContentVisibility;
+}
+
+export interface ClassicsBatchOperationItemRecord {
+    contentId: number | null;
+    contentType: ClassicsContentType | string | null;
+    failureCode?: string | null;
+    failureReason?: string | null;
+    resultId?: number | null;
+    status?: string | null;
+}
+
+export interface ClassicsBatchOperationRecord {
+    failureCount: number;
+    failures: ClassicsBatchOperationItemRecord[];
+    successCount: number;
+    successes: ClassicsBatchOperationItemRecord[];
 }

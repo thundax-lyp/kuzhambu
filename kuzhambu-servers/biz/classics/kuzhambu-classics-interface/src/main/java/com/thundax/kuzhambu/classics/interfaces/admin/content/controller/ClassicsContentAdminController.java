@@ -5,9 +5,11 @@ import com.thundax.kuzhambu.classics.application.content.command.ContentTagSortC
 import com.thundax.kuzhambu.classics.application.content.result.AiCandidateApplyContentResult;
 import com.thundax.kuzhambu.classics.application.content.result.ClassicsExportJobResult;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
-import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationItemResult;
+import com.thundax.kuzhambu.classics.application.mingcustoms.service.MingCustomsApplicationService;
 import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationResult;
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
+import com.thundax.kuzhambu.classics.application.sancai.service.SancaiApplicationService;
+import com.thundax.kuzhambu.classics.application.wangqi.service.WangqiDocumentApplicationService;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentExportJobIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentQaPairIdCodec;
@@ -15,6 +17,10 @@ import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentTagIdCo
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentQaPairId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentTagId;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsEntryIdCodec;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
+import com.thundax.kuzhambu.classics.domain.wangqi.codec.WangqiDocumentIdCodec;
+import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
 import com.thundax.kuzhambu.classics.interfaces.admin.common.response.ClassicsBatchOperationResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.content.assembler.ClassicsContentInterfaceAssembler;
 import com.thundax.kuzhambu.classics.interfaces.admin.content.controller.request.ClassicsBatchVisibilityRequest;
@@ -61,9 +67,19 @@ public class ClassicsContentAdminController {
     private static final Set<String> BATCH_VISIBILITIES = Set.of("PUBLIC", "PRIVATE");
 
     private final ClassicsContentApplicationService service;
+    private final SancaiApplicationService sancaiService;
+    private final WangqiDocumentApplicationService wangqiDocumentService;
+    private final MingCustomsApplicationService mingCustomsService;
 
-    public ClassicsContentAdminController(ClassicsContentApplicationService service) {
+    public ClassicsContentAdminController(
+            ClassicsContentApplicationService service,
+            SancaiApplicationService sancaiService,
+            WangqiDocumentApplicationService wangqiDocumentService,
+            MingCustomsApplicationService mingCustomsService) {
         this.service = service;
+        this.sancaiService = sancaiService;
+        this.wangqiDocumentService = wangqiDocumentService;
+        this.mingCustomsService = mingCustomsService;
     }
 
     @Operation(summary = "查询古籍内容标签", description = "classics:content:view")
@@ -170,15 +186,7 @@ public class ClassicsContentAdminController {
                 request == null ? null : request.getContentIds(),
                 "contentIds",
                 AdminResponseExceptions::invalidParameter);
-        return ClassicsBatchOperationResponse.from(ClassicsBatchOperationResult.of(
-                List.of(),
-                contentIds.stream()
-                        .map(contentId -> ClassicsBatchOperationItemResult.failure(
-                                contentType,
-                                contentId,
-                                "BATCH_VISIBILITY_NOT_IMPLEMENTED",
-                                "批量可见性修改服务尚未接入: " + visibility))
-                        .toList()));
+        return ClassicsBatchOperationResponse.from(changeBatchVisibility(contentType, contentIds, visibility));
     }
 
     @Operation(summary = "更新古籍内容问答", description = "classics:content:edit")
@@ -295,6 +303,23 @@ public class ClassicsContentAdminController {
             throw AdminResponseExceptions.invalidParameter("visibility");
         }
         return value;
+    }
+
+    private ClassicsBatchOperationResult changeBatchVisibility(
+            String contentType, List<Long> contentIds, String visibility) {
+        return switch (contentType) {
+            case "SANCAI_ENTRY" ->
+                sancaiService.batchChangeEntryVisibility(
+                        RequestListHelper.map(contentIds, SancaiEntryIdCodec::toDomain), visibility);
+            case "WANGQI_DOCUMENT" ->
+                wangqiDocumentService.batchChangeVisibility(
+                        RequestListHelper.map(contentIds, WangqiDocumentIdCodec::toDomain),
+                        WangqiDocumentVisibility.from(visibility));
+            case "MING_CUSTOMS" ->
+                mingCustomsService.batchChangeVisibility(
+                        RequestListHelper.map(contentIds, MingCustomsEntryIdCodec::toDomain), visibility);
+            default -> throw AdminResponseExceptions.invalidParameter("contentType");
+        };
     }
 
     private static String fileName(String path) {
