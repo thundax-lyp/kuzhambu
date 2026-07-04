@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Admin Discovery Search Page`：收口 Admin 搜索分析页面
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-QA-CLOSEOUT.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/discovery/search-admin/search-admin-page.tsx`、`kuzhambu-apps/admin-web/src/pages/discovery/search-admin/search-admin-page.test.tsx`
-    - 处理动作：新增搜索分析摘要卡片和热门搜索词展示。
-    - 验收点：页面提供 `刷新分析`、`搜索次数`、`失败次数`、`零结果次数`、`点击次数` 和 `热门搜索词` 控件。
-    - 重要度：8/10
-
 - [ ] `Portal Discovery QA URL Context`：收口王圻单文档追问 URL 入口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-QA-CLOSEOUT.md`

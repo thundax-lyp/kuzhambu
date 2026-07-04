@@ -5,3 +5,22 @@
 .search-admin-page .ant-card + .ant-card {
     margin-top: 12px;
 }
+
+.search-admin-top-query-list {
+    display: grid;
+    gap: 8px;
+}
+
+.search-admin-top-query-list ol {
+    display: grid;
+    gap: 6px;
+    margin: 0;
+    padding-left: 20px;
+}
+
+.search-admin-top-query-list li {
+    align-items: center;
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+}
