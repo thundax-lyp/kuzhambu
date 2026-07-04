@@ -12,6 +12,7 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImageSortCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImageUploadCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiShowcaseCommand;
 import com.thundax.kuzhambu.classics.application.sancai.result.SancaiEntryImageContent;
@@ -36,6 +37,7 @@ import com.thundax.kuzhambu.storage.facade.dto.StorageObjectFacadeDto;
 import com.thundax.kuzhambu.storage.facade.request.BindStorageOwnerFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.MarkStorageUsageFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.OpenStorageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.UnbindStorageOwnerFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.UploadStorageFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.response.OpenStorageFacadeResponse;
 import com.thundax.kuzhambu.storage.facade.response.UploadStorageFacadeResponse;
@@ -336,6 +338,83 @@ class SancaiAssetApplicationServiceImplTest {
                 ArgumentCaptor.forClass(MarkStorageUsageFacadeRequest.class);
         verify(storageFacade).markUnused(usageCaptor.capture());
         assertEquals(7001L, usageCaptor.getValue().getStorageObjectId());
+    }
+
+    @Test
+    void useImageShouldClearCurrentImagesAndMarkTargetCurrent() {
+        SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
+        SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(repository, null, null, null);
+        SancaiEntryImage image = image(8002L, 3001L, 7001L);
+        when(repository.getImageById(SancaiEntryImageId.of(8002L))).thenReturn(image);
+        when(repository.markImageCurrent(SancaiEntryId.of(3001L), SancaiEntryImageId.of(8002L)))
+                .thenReturn(1);
+
+        service.useImage(SancaiEntryId.of(3001L), SancaiEntryImageId.of(8002L));
+
+        verify(repository).clearCurrentImagesByEntryId(SancaiEntryId.of(3001L));
+        verify(repository).markImageCurrent(SancaiEntryId.of(3001L), SancaiEntryImageId.of(8002L));
+    }
+
+    @Test
+    void deleteCurrentImageShouldUnbindStorageAndPromoteFirstRemainingImage() {
+        SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
+        StorageFacade storageFacade = mock(StorageFacade.class);
+        SancaiAssetApplicationServiceImpl service =
+                new SancaiAssetApplicationServiceImpl(repository, null, storageFacade, null);
+        SancaiEntryImage deletedImage = image(8002L, 3001L, 7001L);
+        SancaiEntryImage remainingImage = image(8003L, 3001L, 7002L);
+        remainingImage.setCurrentUsed(false);
+        when(repository.getImageById(SancaiEntryImageId.of(8002L))).thenReturn(deletedImage);
+        when(repository.listImagesByEntryId(
+                        SancaiEntryId.of(3001L), com.thundax.kuzhambu.common.core.sort.SortDirection.ASC))
+                .thenReturn(List.of(remainingImage));
+
+        service.deleteImage(SancaiEntryImageId.of(8002L));
+
+        verify(repository).deleteImageById(SancaiEntryImageId.of(8002L));
+        ArgumentCaptor<UnbindStorageOwnerFacadeRequest> unbindCaptor =
+                ArgumentCaptor.forClass(UnbindStorageOwnerFacadeRequest.class);
+        verify(storageFacade).unbindOwner(unbindCaptor.capture());
+        assertEquals("CLASSICS_SANCAI_ENTRY_IMAGE", unbindCaptor.getValue().getOwnerType());
+        assertEquals("entry:3001:image:8002", unbindCaptor.getValue().getOwnerId());
+        verify(repository).markImageCurrent(SancaiEntryId.of(3001L), SancaiEntryImageId.of(8003L));
+    }
+
+    @Test
+    void sortImagesShouldUseEntryScopedImageList() {
+        SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
+        SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(repository, null, null, null);
+        SancaiEntryImage first = image(8001L, 3001L, 7001L);
+        first.setPriority(1);
+        SancaiEntryImage second = image(8002L, 3001L, 7002L);
+        second.setPriority(2);
+        when(repository.listImagesByEntryId(
+                        SancaiEntryId.of(3001L), com.thundax.kuzhambu.common.core.sort.SortDirection.ASC))
+                .thenReturn(List.of(first, second));
+        when(repository.maxPriority()).thenReturn(9);
+        when(repository.updatePriority(org.mockito.ArgumentMatchers.any())).thenReturn(1);
+
+        service.sortImages(new SancaiEntryImageSortCommand(
+                SancaiEntryId.of(3001L),
+                List.of(SancaiEntryImageId.of(8002L), SancaiEntryImageId.of(8001L)),
+                com.thundax.kuzhambu.common.core.sort.SortDirection.ASC));
+
+        verify(repository)
+                .listImagesByEntryId(SancaiEntryId.of(3001L), com.thundax.kuzhambu.common.core.sort.SortDirection.ASC);
+        ArgumentCaptor<SancaiEntryImage> priorityCaptor = ArgumentCaptor.forClass(SancaiEntryImage.class);
+        verify(repository, times(3)).updatePriority(priorityCaptor.capture());
+        assertEquals(
+                SancaiEntryImageId.of(8002L),
+                priorityCaptor.getAllValues().get(0).getId());
+        assertEquals(10, priorityCaptor.getAllValues().get(0).getPriority());
+        assertEquals(
+                SancaiEntryImageId.of(8001L),
+                priorityCaptor.getAllValues().get(1).getId());
+        assertEquals(2, priorityCaptor.getAllValues().get(1).getPriority());
+        assertEquals(
+                SancaiEntryImageId.of(8002L),
+                priorityCaptor.getAllValues().get(2).getId());
+        assertEquals(1, priorityCaptor.getAllValues().get(2).getPriority());
     }
 
     @Test

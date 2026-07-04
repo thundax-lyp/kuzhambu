@@ -93,6 +93,18 @@ class SancaiAssetAdminControllerTest {
                 SancaiAssetAdminController.class, "listImages", "images/{entryId}", "classics:sancai:view", Long.class);
         assertPostMapping(
                 SancaiAssetAdminController.class,
+                "deleteImage",
+                "images/delete",
+                "classics:sancai:edit",
+                SancaiAssetRequest.class);
+        assertPostMapping(
+                SancaiAssetAdminController.class,
+                "changeCurrentImage",
+                "images/current/change",
+                "classics:sancai:edit",
+                SancaiAssetRequest.class);
+        assertPostMapping(
+                SancaiAssetAdminController.class,
                 "sortImages",
                 "images/sort",
                 "classics:sancai:edit",
@@ -195,6 +207,28 @@ class SancaiAssetAdminControllerTest {
         assertTrue(disposition.startsWith("attachment;"));
         assertTrue(disposition.contains("filename=\"三才图.png\""));
         assertTrue(disposition.contains("filename*=UTF-8''%E4%B8%89%E6%89%8D%E5%9B%BE.png"));
+    }
+
+    @Test
+    void imageMutationApisShouldUseEntryScopedRequestMapping() {
+        SancaiAssetAdminController controller = controller();
+        SancaiAssetRequest deleteRequest = new SancaiAssetRequest();
+        deleteRequest.setEntryId(3001L);
+        deleteRequest.setId(8002L);
+
+        assertEquals(true, controller.deleteImage(deleteRequest));
+
+        SancaiAssetRequest currentRequest = new SancaiAssetRequest();
+        currentRequest.setEntryId(3001L);
+        currentRequest.setId(8002L);
+
+        assertEquals(true, controller.changeCurrentImage(currentRequest));
+
+        SancaiEntryImageSortRequest sortRequest = new SancaiEntryImageSortRequest();
+        sortRequest.setEntryId(3001L);
+        sortRequest.setOrderedIds(List.of(8002L));
+
+        assertEquals(true, controller.sortImages(sortRequest));
     }
 
     @Test
@@ -356,10 +390,17 @@ class SancaiAssetAdminControllerTest {
                     }
                     if ("sortImages".equals(method.getName())) {
                         SancaiEntryImageSortCommand command = (SancaiEntryImageSortCommand) args[0];
+                        assertEquals(SancaiEntryId.of(3001L), command.getEntryId());
                         assertEquals(List.of(SancaiEntryImageId.of(8002L)), command.getOrderedIds());
                         return null;
                     }
                     if ("deleteImage".equals(method.getName())) {
+                        assertEquals(SancaiEntryImageId.of(8002L), args[0]);
+                        return null;
+                    }
+                    if ("useImage".equals(method.getName())) {
+                        assertEquals(SancaiEntryId.of(3001L), args[0]);
+                        assertEquals(SancaiEntryImageId.of(8002L), args[1]);
                         return null;
                     }
                     if ("listImages".equals(method.getName())) {
