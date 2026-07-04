@@ -13,6 +13,7 @@ DISCOVERY_USECASES = tuple(
     usecase for usecase in USECASES if usecase.domain == AiUsecaseDomain.DISCOVERY
 )
 DISCOVERY_QA_FORBIDDEN_PATH_PARTS = (
+    "/internal/ai/discovery/qa/session",
     "/internal/discovery/qa",
     "/internal/qa/discovery",
     "chat/completions",
@@ -85,8 +86,33 @@ def test_discovery_answer_path_rejects_stream_request(monkeypatch) -> None:
     assert response.json()["error"]["code"] == "BAD_REQUEST"
 
 
+def test_discovery_answer_path_accepts_single_document_context(monkeypatch) -> None:
+    monkeypatch.setenv("KUZHAMBU_WORKER_ALLOWED_SERVICES", "kuzhambu-ai")
+    monkeypatch.setenv("KUZHAMBU_WORKER_INTERNAL_SECRET", "worker-secret")
+    path = "/internal/ai/discovery/answer-generation"
+    body = _body(
+        operation="DISCOVERY_ANSWER_GENERATION",
+        capability=AiCapability.ANSWER_GENERATION.value,
+        stream=False,
+        input_payload={
+            "query": "这篇文档讲什么?",
+            "contextMode": "SINGLE_DOCUMENT",
+            "contextContentType": "WANGQI_DOCUMENT",
+            "contextContentId": "10001",
+        },
+    )
+
+    response = TestClient(app).post(path, content=body, headers=_headers(body, path))
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "SUCCEEDED"
+    assert payload["capability"] == AiCapability.ANSWER_GENERATION.value
+
+
 def test_discovery_usecase_routes_do_not_expose_formal_qa_or_sync_runtime() -> None:
     paths = {usecase.path for usecase in DISCOVERY_USECASES}
+    openapi_paths = set(TestClient(app).app.openapi()["paths"])
 
     assert paths == {
         "/internal/ai/discovery/query-understanding",
@@ -96,9 +122,16 @@ def test_discovery_usecase_routes_do_not_expose_formal_qa_or_sync_runtime() -> N
     }
     for path in paths:
         assert not any(part in path for part in DISCOVERY_QA_FORBIDDEN_PATH_PARTS)
+    assert not any(path.startswith("/internal/ai/discovery/qa/session") for path in openapi_paths)
 
 
-def _body(*, operation: str, capability: str, stream: bool) -> bytes:
+def _body(
+    *,
+    operation: str,
+    capability: str,
+    stream: bool,
+    input_payload: dict[str, str] | None = None,
+) -> bytes:
     payload = {
         "requestId": "req-1",
         "traceId": "trace-1",
@@ -119,7 +152,10 @@ def _body(*, operation: str, capability: str, stream: bool) -> bytes:
                 {"role": "user", "content": "user"},
             ]
         },
-        "input": {"contentType": "DISCOVERY_QUERY", "payload": {"query": "hello"}},
+        "input": {
+            "contentType": "DISCOVERY_QUERY",
+            "payload": input_payload or {"query": "hello"},
+        },
         "outputSchema": {"type": "text"},
         "options": {"stream": stream, "forceJson": False, "locale": "zh-CN"},
     }

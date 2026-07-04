@@ -115,6 +115,14 @@ Workers 不使用回调接口。任何回调能力都不得复用当前 AI 执�
 
 完整 usecase path、capability、stream 和输入快照要求见 [`WORKERS-AI-USECASE-INTERFACE.md`](./WORKERS-AI-USECASE-INTERFACE.md)。
 
+Discovery `answer_generation` usecase 可以在 `input.payload` 接收单文档问答上下文：
+
+- `contextMode`：单文档追问时固定为 `SINGLE_DOCUMENT`。
+- `contextContentType`：当前支持 `WANGQI_DOCUMENT`。
+- `contextContentId`：单文档内容 ID，字符串格式。
+
+这些字段只作为 workers 本次无状态回答生成的输入上下文。正式 Discovery QA 会话、消息、来源、trace、知识同步状态和业务写入仍由 Java Discovery 域拥有；workers 不暴露 `/internal/ai/discovery/qa/session/*` 路径，也不提供 Discovery QA 会话运行时接口。
+
 健康与能力发现接口：
 
 - `GET /internal/health`

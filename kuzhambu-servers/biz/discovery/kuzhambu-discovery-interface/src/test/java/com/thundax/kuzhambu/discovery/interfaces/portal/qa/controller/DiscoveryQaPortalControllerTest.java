@@ -209,6 +209,45 @@ class DiscoveryQaPortalControllerTest {
     }
 
     @Test
+    void openSessionShouldMapWangqiSingleDocumentContext() {
+        QaApplicationService service = mock(QaApplicationService.class);
+        KnowledgeQaApplicationService knowledgeQaApplicationService = mock(KnowledgeQaApplicationService.class);
+        DiscoveryQaPortalController controller =
+                new DiscoveryQaPortalController(service, knowledgeQaApplicationService);
+        DiscoveryQaRequests.OpenSessionRequest request = new DiscoveryQaRequests.OpenSessionRequest();
+        request.setOwnerUserId(1001L);
+        request.setTitle("王圻文档问答");
+        request.setScope("PORTAL");
+        request.setContextMode("SINGLE_DOCUMENT");
+        request.setContextContentType("WANGQI_DOCUMENT");
+        request.setContextContentId(3001L);
+        when(service.openSession(any()))
+                .thenReturn(new QaSessionResult(
+                        9002L,
+                        1001L,
+                        "王圻文档问答",
+                        "PORTAL",
+                        "SINGLE_DOCUMENT",
+                        "WANGQI_DOCUMENT",
+                        3001L,
+                        "OPEN",
+                        1_718_000_000_000L,
+                        null,
+                        null));
+
+        var response = controller.openSession(request);
+
+        verify(service)
+                .openSession(argThat(command -> command != null
+                        && "SINGLE_DOCUMENT".equals(command.getContextMode())
+                        && "WANGQI_DOCUMENT".equals(command.getContextContentType())
+                        && Long.valueOf(3001L).equals(command.getContextContentId())));
+        assertEquals("SINGLE_DOCUMENT", response.getContextMode());
+        assertEquals("WANGQI_DOCUMENT", response.getContextContentType());
+        assertEquals(3001L, response.getContextContentId());
+    }
+
+    @Test
     void pageSessionsShouldDelegateToApplicationService() {
         QaApplicationService service = mock(QaApplicationService.class);
         KnowledgeQaApplicationService knowledgeQaApplicationService = mock(KnowledgeQaApplicationService.class);

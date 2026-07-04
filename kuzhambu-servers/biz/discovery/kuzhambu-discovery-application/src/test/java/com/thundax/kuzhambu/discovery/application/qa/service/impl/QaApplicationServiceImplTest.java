@@ -74,6 +74,45 @@ class QaApplicationServiceImplTest {
     }
 
     @Test
+    void openSessionShouldAcceptWangqiSingleDocumentContext() {
+        QaSessionRepository sessionRepository = mock(QaSessionRepository.class);
+        QaApplicationServiceImpl service = service(sessionRepository);
+        when(sessionRepository.save(any(QaSession.class))).thenReturn(9002L);
+
+        QaSessionResult result = service.openSession(new OpenQaSessionCommand(
+                1001L, "王圻文档问答", "PORTAL", "SINGLE_DOCUMENT", "WANGQI_DOCUMENT", 3001L, null, null));
+
+        assertEquals("SINGLE_DOCUMENT", result.getContextMode());
+        assertEquals("WANGQI_DOCUMENT", result.getContextContentType());
+        assertEquals(3001L, result.getContextContentId());
+        verify(sessionRepository).save(any(QaSession.class));
+    }
+
+    @Test
+    void openSessionShouldRejectSingleDocumentWithoutContentContext() {
+        QaApplicationServiceImpl service = service(mock(QaSessionRepository.class));
+
+        BizException exception = assertThrows(
+                BizException.class,
+                () -> service.openSession(new OpenQaSessionCommand(
+                        1001L, "王圻文档问答", "PORTAL", "SINGLE_DOCUMENT", "WANGQI_DOCUMENT", null, null, null)));
+
+        assertEquals("DISCOVERY-30011", exception.getCode());
+    }
+
+    @Test
+    void openSessionShouldRejectNonWangqiSingleDocumentContext() {
+        QaApplicationServiceImpl service = service(mock(QaSessionRepository.class));
+
+        BizException exception = assertThrows(
+                BizException.class,
+                () -> service.openSession(new OpenQaSessionCommand(
+                        1001L, "三才问答", "PORTAL", "SINGLE_DOCUMENT", "SANCAI_ENTRY", 3001L, null, null)));
+
+        assertEquals("DISCOVERY-30012", exception.getCode());
+    }
+
+    @Test
     void getSessionDetailShouldAssembleMessages() {
         QaSessionRepository sessionRepository = mock(QaSessionRepository.class);
         QaMessageRepository messageRepository = mock(QaMessageRepository.class);

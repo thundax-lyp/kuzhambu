@@ -54,6 +54,8 @@ public class QaApplicationServiceImpl implements QaApplicationService {
     private static final String EXPORT_STATUS_FAILED = "FAILED";
     private static final String EXPORT_CONTENT_TYPE = "text/csv; charset=UTF-8";
     private static final String EXPORT_OWNER_TYPE = "DISCOVERY_QA_SESSION_EXPORT";
+    private static final String SINGLE_DOCUMENT_CONTEXT_MODE = "SINGLE_DOCUMENT";
+    private static final String WANGQI_DOCUMENT_CONTEXT_TYPE = "WANGQI_DOCUMENT";
     private final QaSessionRepository qaSessionRepository;
     private final QaMessageRepository qaMessageRepository;
     private final QaSourceRepository qaSourceRepository;
@@ -295,6 +297,21 @@ public class QaApplicationServiceImpl implements QaApplicationService {
         if (command == null || command.getOwnerUserId() == null) {
             throw new BizException(
                     "DISCOVERY-30002", "discovery.qa.open-session.invalid", "Open QA session command is invalid");
+        }
+        if (!SINGLE_DOCUMENT_CONTEXT_MODE.equals(command.getContextMode())) {
+            return;
+        }
+        if (StringUtils.isBlank(command.getContextContentType()) || command.getContextContentId() == null) {
+            throw new BizException(
+                    "DISCOVERY-30011",
+                    "discovery.qa.single-document-context.required",
+                    "Single document context requires content type and content id");
+        }
+        if (!WANGQI_DOCUMENT_CONTEXT_TYPE.equals(command.getContextContentType())) {
+            throw new BizException(
+                    "DISCOVERY-30012",
+                    "discovery.qa.single-document-context.unsupported",
+                    "Single document context only supports WANGQI_DOCUMENT");
         }
     }
 

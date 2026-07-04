@@ -1,5 +1,6 @@
 import { postJson } from "@/api/http";
 import type {
+    DiscoverySearchAnalysisSummaryRecord,
     DiscoverySearchLogDetailRecord,
     DiscoverySearchLogPageRecord
 } from "./search-admin-types";
@@ -21,6 +22,11 @@ export interface DiscoverySearchLogGetCommand {
 
 export interface DiscoverySearchIndexRebuildCommand {
     confirm: boolean;
+}
+
+export interface DiscoverySearchAnalysisSummaryQuery {
+    dateFrom?: string | null;
+    dateTo?: string | null;
 }
 
 export const pageSearchLogs = (query: DiscoverySearchLogPageQuery = {}) => {
@@ -46,6 +52,15 @@ export const rebuildSearchIndex = (command: DiscoverySearchIndexRebuildCommand) 
         "/discovery/search-admin/index/rebuild",
         {
             body: command
+        }
+    );
+};
+
+export const getSearchAnalysisSummary = (query: DiscoverySearchAnalysisSummaryQuery = {}) => {
+    return postJson<DiscoverySearchAnalysisSummaryRecord, DiscoverySearchAnalysisSummaryQuery>(
+        "/discovery/search-admin/analysis/summary",
+        {
+            body: query
         }
     );
 };

@@ -21,7 +21,7 @@ vi.mock("@/api/http", () => ({
 
 vi.mock("./qa-service", () => mocks);
 
-const renderPage = () => {
+const renderPage = (initialEntry = "/discovery/qa") => {
     const container = document.createElement("div");
     document.body.appendChild(container);
 
@@ -40,7 +40,7 @@ const renderPage = () => {
     act(() => {
         root.render(
             <QueryClientProvider client={queryClient}>
-                <MemoryRouter>
+                <MemoryRouter initialEntries={[initialEntry]}>
                     <DiscoveryQaPage />
                 </MemoryRouter>
             </QueryClientProvider>
@@ -176,6 +176,104 @@ describe("DiscoveryQaPage", () => {
         expect(container.textContent).toContain("礼器常见于典章与礼仪条目。");
         expect(container.textContent).toContain("礼器条目");
         expect(container.querySelector('a[href="/shares/1001"]')).not.toBeNull();
+
+        act(() => {
+            root.unmount();
+        });
+    });
+
+    it("restores Wangqi single document context from url", async () => {
+        mocks.pageQaSessions.mockResolvedValue({
+            items: []
+        });
+
+        const { container, root } = renderPage(
+            "/discovery/qa?contextContentType=WANGQI_DOCUMENT&contextContentId=3001&contextMode=SINGLE_DOCUMENT&title=%E7%8E%8B%E5%9C%BB%E5%AE%98%E5%88%B6"
+        );
+        await flushAsyncWork();
+
+        expect(container.textContent).toContain("当前围绕王圻文档追问");
+        expect(container.textContent).toContain("WANGQI_DOCUMENT #3001");
+
+        const titleInput = container.querySelector(
+            'input[name="sessionTitle"]'
+        ) as HTMLInputElement | null;
+        const contextModeInput = container.querySelector(
+            'input[name="contextMode"]'
+        ) as HTMLInputElement | null;
+        const contextTypeInput = container.querySelector(
+            'input[name="contextContentType"]'
+        ) as HTMLInputElement | null;
+        const contextIdInput = container.querySelector(
+            'input[name="contextContentId"]'
+        ) as HTMLInputElement | null;
+
+        expect(titleInput?.value).toBe("王圻官制");
+        expect(contextModeInput?.value).toBe("SINGLE_DOCUMENT");
+        expect(contextTypeInput?.value).toBe("WANGQI_DOCUMENT");
+        expect(contextIdInput?.value).toBe("3001");
+
+        act(() => {
+            root.unmount();
+        });
+    });
+
+    it("sends Wangqi single document context in open session and chat metadata", async () => {
+        mocks.pageQaSessions.mockResolvedValue({
+            items: []
+        });
+        mocks.openQaSession.mockResolvedValueOnce({
+            contextContentId: 3001,
+            contextContentType: "WANGQI_DOCUMENT",
+            contextMode: "SINGLE_DOCUMENT",
+            lastMessageAt: null,
+            openedAt: 1699999999000,
+            scope: "PORTAL",
+            sessionId: 3002,
+            status: "OPEN",
+            title: "王圻官制"
+        });
+        mocks.createQaChatCompletion.mockResolvedValueOnce({
+            answerStatus: "SUCCEEDED",
+            choices: [
+                {
+                    index: 0,
+                    message: { content: "王圻文档答案", role: "assistant" },
+                    finishReason: "stop"
+                }
+            ],
+            sessionId: 3002
+        });
+
+        const { container, root } = renderPage(
+            "/discovery/qa?contextContentType=WANGQI_DOCUMENT&contextContentId=3001&contextMode=SINGLE_DOCUMENT&title=%E7%8E%8B%E5%9C%BB%E5%AE%98%E5%88%B6"
+        );
+        await flushAsyncWork();
+        setTextareaValue(container, "question", "这份文档说了什么？");
+
+        const submitButton = container.querySelector(
+            'button[type="submit"]'
+        ) as HTMLButtonElement | null;
+        expect(submitButton).not.toBeNull();
+        await act(async () => {
+            submitButton?.click();
+            await new Promise((resolve) => setTimeout(resolve, 0));
+        });
+
+        expect(mocks.openQaSession.mock.calls[0]?.[0]).toMatchObject({
+            contextContentId: 3001,
+            contextContentType: "WANGQI_DOCUMENT",
+            contextMode: "SINGLE_DOCUMENT",
+            title: "王圻官制"
+        });
+        expect(mocks.createQaChatCompletion.mock.calls[0]?.[0]).toMatchObject({
+            metadata: {
+                contextContentId: 3001,
+                contextContentType: "WANGQI_DOCUMENT",
+                contextMode: "SINGLE_DOCUMENT",
+                sessionId: 3002
+            }
+        });
 
         act(() => {
             root.unmount();

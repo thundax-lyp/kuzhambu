@@ -5,6 +5,7 @@ import { useState } from "react";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import * as service from "./search-admin-service";
 import type {
+    DiscoverySearchAnalysisSummaryRecord,
     DiscoverySearchLogDetailRecord,
     DiscoverySearchLogPageRecord,
     DiscoverySearchLogRecord
@@ -41,6 +42,8 @@ export const SearchAdminPage = () => {
     const [pageResult, setPageResult] = useState<DiscoverySearchLogPageRecord | null>(null);
     const [detailResult, setDetailResult] = useState<DiscoverySearchLogDetailRecord | null>(null);
     const [rebuildResult, setRebuildResult] = useState<number | null>(null);
+    const [analysisResult, setAnalysisResult] =
+        useState<DiscoverySearchAnalysisSummaryRecord | null>(null);
 
     const pageMutation = useMutation({
         mutationFn: service.pageSearchLogs,
@@ -58,6 +61,12 @@ export const SearchAdminPage = () => {
         mutationFn: service.rebuildSearchIndex,
         onSuccess: (nextCount) => {
             setRebuildResult(nextCount);
+        }
+    });
+    const analysisMutation = useMutation({
+        mutationFn: service.getSearchAnalysisSummary,
+        onSuccess: (nextSummary) => {
+            setAnalysisResult(nextSummary);
         }
     });
 
@@ -90,6 +99,76 @@ export const SearchAdminPage = () => {
                 </header>
 
                 <KuzhambuSpace orientation="vertical" size={16} style={{ width: "100%" }}>
+                    <Card title="搜索分析摘要" size="small">
+                        <KuzhambuSpace orientation="vertical" size={12} style={{ width: "100%" }}>
+                            <KuzhambuSpace wrap>
+                                <Button
+                                    loading={analysisMutation.isPending}
+                                    onClick={() =>
+                                        analysisMutation.mutate({
+                                            dateFrom: dateFrom || null,
+                                            dateTo: dateTo || null
+                                        })
+                                    }
+                                    type="primary"
+                                >
+                                    刷新分析
+                                </Button>
+                                <Text type="secondary">
+                                    分析范围复用下方搜索日志的起始时间和结束时间。
+                                </Text>
+                            </KuzhambuSpace>
+                            <Descriptions
+                                bordered
+                                column={4}
+                                items={[
+                                    {
+                                        key: "searchCount",
+                                        label: "搜索次数",
+                                        children: analysisResult?.searchCount ?? 0
+                                    },
+                                    {
+                                        key: "failedSearchCount",
+                                        label: "失败次数",
+                                        children: analysisResult?.failedSearchCount ?? 0
+                                    },
+                                    {
+                                        key: "zeroResultSearchCount",
+                                        label: "零结果次数",
+                                        children: analysisResult?.zeroResultSearchCount ?? 0
+                                    },
+                                    {
+                                        key: "clickCount",
+                                        label: "点击次数",
+                                        children: analysisResult?.clickCount ?? 0
+                                    }
+                                ]}
+                                size="small"
+                            />
+                            <div className="search-admin-top-query-list">
+                                <Text strong>热门搜索词</Text>
+                                {(analysisResult?.topQueries ?? []).length ? (
+                                    <ol>
+                                        {(analysisResult?.topQueries ?? []).map(
+                                            (topQuery, index) => (
+                                                <li
+                                                    key={`${topQuery.queryText ?? "query"}-${index}`}
+                                                >
+                                                    <span>{topQuery.queryText ?? "-"}</span>
+                                                    <Text type="secondary">
+                                                        {topQuery.count ?? 0} 次
+                                                    </Text>
+                                                </li>
+                                            )
+                                        )}
+                                    </ol>
+                                ) : (
+                                    <Text type="secondary">暂无热门搜索词。</Text>
+                                )}
+                            </div>
+                        </KuzhambuSpace>
+                    </Card>
+
                     <Card title="搜索日志分页" size="small">
                         <KuzhambuSpace orientation="vertical" size={12} style={{ width: "100%" }}>
                             <KuzhambuSpace wrap>
