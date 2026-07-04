@@ -253,6 +253,35 @@ describe("sancai service request contracts", () => {
         await entryService.listImages(3001);
         expectLastCall("GET", "/classics/sancai/assets/images/3001", undefined);
 
+        await entryService.deleteImage({
+            entryId: 3001,
+            imageId: 8002
+        });
+        expectLastCall("POST", "/classics/sancai/assets/images/delete", {
+            entryId: 3001,
+            id: 8002
+        });
+
+        await entryService.changeCurrentImage({
+            entryId: 3001,
+            imageId: 8002
+        });
+        expectLastCall("POST", "/classics/sancai/assets/images/current/change", {
+            entryId: 3001,
+            id: 8002
+        });
+
+        await entryService.sortImages({
+            entryId: 3001,
+            orderedIds: [8002, 8003],
+            sortDirection: "ASC"
+        });
+        expectLastCall("POST", "/classics/sancai/assets/images/sort", {
+            entryId: 3001,
+            orderedIds: [8002, 8003],
+            sortDirection: "ASC"
+        });
+
         await entryService.listVisualAssets(3001);
         expectLastCall("GET", "/classics/sancai/assets/visual-assets/3001", undefined);
 

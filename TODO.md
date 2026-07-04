@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics-sancai-image-admin-service`：补齐 admin-web 三才图片 service 契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-IMAGE-GOVERNANCE-CLOSEOUT.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/services/sancai-entry-service.ts`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-types.ts`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-service-contract.test.ts`
-    - 处理动作：新增 `deleteImage`、`changeCurrentImage`、`sortImages` service 契约并锁定 URL、method、body。
-    - 验收点：页面只通过同域 service 调用图片删除、当前图切换和排序 API。
-    - 重要度：9/10
-
 - [ ] `classics-sancai-image-admin-controls`：实现 admin-web 配图管理控件
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-IMAGE-GOVERNANCE-CLOSEOUT.md`

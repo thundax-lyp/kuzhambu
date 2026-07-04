@@ -68,6 +68,17 @@ export interface SancaiEntryImageContentUrlCommand {
     mode?: SancaiEntryImageContentMode;
 }
 
+export interface SancaiEntryImageMutationCommand {
+    entryId: number;
+    imageId: number;
+}
+
+export interface SancaiEntryImageSortCommand {
+    entryId: number;
+    orderedIds: number[];
+    sortDirection?: "ASC" | "DESC" | null;
+}
+
 export interface SancaiVisualAssetContentUrlCommand {
     entryId: number;
     mode?: SancaiEntryImageContentMode;
@@ -166,6 +177,33 @@ export const sort = (request: SancaiEntrySortCommand) => {
 
 export const listImages = (entryId: number) => {
     return getJson<SancaiEntryImageRecord[]>(`${ASSET_IMAGES_PATH}/${entryId}`);
+};
+
+export const deleteImage = (command: SancaiEntryImageMutationCommand) => {
+    return postJson<boolean, { entryId: number; id: number }>(`${ASSET_IMAGES_PATH}/delete`, {
+        body: {
+            entryId: command.entryId,
+            id: command.imageId
+        }
+    });
+};
+
+export const changeCurrentImage = (command: SancaiEntryImageMutationCommand) => {
+    return postJson<boolean, { entryId: number; id: number }>(
+        `${ASSET_IMAGES_PATH}/current/change`,
+        {
+            body: {
+                entryId: command.entryId,
+                id: command.imageId
+            }
+        }
+    );
+};
+
+export const sortImages = (command: SancaiEntryImageSortCommand) => {
+    return postJson<boolean, SancaiEntryImageSortCommand>(`${ASSET_IMAGES_PATH}/sort`, {
+        body: command
+    });
 };
 
 export const listVisualAssets = (entryId: number) => {
