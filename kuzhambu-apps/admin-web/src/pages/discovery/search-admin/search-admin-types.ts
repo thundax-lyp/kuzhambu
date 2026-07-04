@@ -31,3 +31,16 @@ export interface DiscoverySearchLogDetailRecord {
 }
 
 export type DiscoverySearchLogPageRecord = Page<DiscoverySearchLogRecord>;
+
+export interface DiscoverySearchAnalysisTopQueryRecord {
+    count?: number | null;
+    queryText?: string | null;
+}
+
+export interface DiscoverySearchAnalysisSummaryRecord {
+    clickCount?: number | null;
+    failedSearchCount?: number | null;
+    searchCount?: number | null;
+    topQueries?: DiscoverySearchAnalysisTopQueryRecord[] | null;
+    zeroResultSearchCount?: number | null;
+}

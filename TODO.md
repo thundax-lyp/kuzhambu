@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Admin Discovery Search Service`：补齐 Admin 搜索分析前端契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-QA-CLOSEOUT.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/discovery/search-admin/search-admin-service.ts`、`kuzhambu-apps/admin-web/src/pages/discovery/search-admin/search-admin-types.ts`
-    - 处理动作：新增搜索分析摘要 service 方法和前端类型。
-    - 验收点：`getSearchAnalysisSummary(...)` 调用 `/discovery/search-admin/analysis/summary` 并返回固定类型。
-    - 重要度：8/10
-
 - [ ] `Admin Discovery Search Page`：收口 Admin 搜索分析页面
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-QA-CLOSEOUT.md`
