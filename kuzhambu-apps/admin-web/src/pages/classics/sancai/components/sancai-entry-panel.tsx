@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Alert, App, Button, Card } from "antd";
+import { Alert, App, Button, Card, Empty, Tag, Typography } from "antd";
 import { useCallback, useMemo, useState } from "react";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
+import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import type { KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import * as exportService from "@/pages/classics/common/classics-export-service";
@@ -20,10 +21,13 @@ import { useSancaiEntryPanelState } from "../hooks/use-sancai-entry-panel-state"
 import * as entryService from "../services/sancai-entry-service";
 import type {
     SancaiContentVersionRecord,
+    SancaiEntryImageRecord,
     SancaiEntryRecord,
     SancaiVisualAssetRecord,
     SancaiVolumeRecord
 } from "../sancai-types";
+
+const { Text } = Typography;
 
 const EXPORT_PAGE_SIZE = 8;
 const SHOWCASE_PAGE_SIZE = 8;
@@ -31,6 +35,23 @@ const TASK_POLL_INTERVAL_MS = 3000;
 
 const readEntryTitle = (entry: SancaiEntryRecord) => {
     return entry.title?.trim() || `条目 ${entry.id}`;
+};
+
+const readImageTitle = (image: SancaiEntryImageRecord) => {
+    return image.title?.trim() || image.originalFilename?.trim() || `图片 ${image.id}`;
+};
+
+const formatImageSize = (size?: number | null) => {
+    if (!size) {
+        return "-";
+    }
+    if (size < 1024) {
+        return `${size} B`;
+    }
+    if (size < 1024 * 1024) {
+        return `${(size / 1024).toFixed(1)} KB`;
+    }
+    return `${(size / 1024 / 1024).toFixed(1)} MB`;
 };
 
 interface SancaiEntryPanelProps {
@@ -98,6 +119,22 @@ export const SancaiEntryPanel = ({
     });
     const selectedEntry = isCreating ? undefined : (detailQuery.data ?? editingEntry ?? undefined);
     const selectedEntryId = selectedEntry?.id ?? null;
+    const imagesQuery = useQuery({
+        queryKey: ["classics", "sancai", "entries", "images", selectedEntryId],
+        queryFn: () => entryService.listImages(selectedEntryId ?? 0),
+        enabled: isModelOpen && !isCreating && Boolean(selectedEntryId),
+        retry: false
+    });
+    const entryImages = useMemo(
+        () =>
+            [...(imagesQuery.data || [])].sort((left, right) => {
+                if ((left.priority ?? 0) !== (right.priority ?? 0)) {
+                    return (left.priority ?? 0) - (right.priority ?? 0);
+                }
+                return left.id - right.id;
+            }),
+        [imagesQuery.data]
+    );
     const versionsQuery = useQuery({
         queryKey: ["classics", "sancai", "entries", "versions", selectedEntry?.id],
         queryFn: () => entryService.listVersions(selectedEntry?.id ?? 0),
@@ -219,6 +256,14 @@ export const SancaiEntryPanel = ({
         await queryClient.invalidateQueries({
             queryKey: ["classics", "sancai", "showcases", "jobs"]
         });
+    };
+    const invalidateEntryImages = async () => {
+        await Promise.all([
+            queryClient.invalidateQueries({
+                queryKey: ["classics", "sancai", "entries", "images", selectedEntryId]
+            }),
+            queryClient.invalidateQueries({ queryKey: ["classics", "sancai", "entries"] })
+        ]);
     };
     const addEntryMutation = useMutation({
         mutationFn: entryService.add,
@@ -366,6 +411,26 @@ export const SancaiEntryPanel = ({
             messageApi.error(error instanceof Error ? error.message : "视觉资产切换失败");
         }
     });
+    const changeCurrentImageMutation = useMutation({
+        mutationFn: entryService.changeCurrentImage,
+        onSuccess: async () => {
+            await invalidateEntryImages();
+            messageApi.success("当前配图已切换");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "配图切换失败");
+        }
+    });
+    const deleteImageMutation = useMutation({
+        mutationFn: entryService.deleteImage,
+        onSuccess: async () => {
+            await invalidateEntryImages();
+            messageApi.success("配图已删除");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "配图删除失败");
+        }
+    });
 
     const selectEntry = (entry: SancaiEntryRecord) => {
         setIsCreating(false);
@@ -502,6 +567,59 @@ export const SancaiEntryPanel = ({
             visualAssetId
         });
     };
+    const previewImage = (image: SancaiEntryImageRecord) => {
+        if (!selectedEntryId) {
+            return;
+        }
+        window.open(
+            entryService.getImageContentUrl({
+                entryId: selectedEntryId,
+                imageId: image.id
+            }),
+            "_blank",
+            "noopener,noreferrer"
+        );
+    };
+    const downloadImage = (image: SancaiEntryImageRecord) => {
+        if (!selectedEntryId) {
+            return;
+        }
+        window.open(
+            entryService.getImageContentUrl({
+                entryId: selectedEntryId,
+                imageId: image.id,
+                mode: "download"
+            }),
+            "_blank",
+            "noopener,noreferrer"
+        );
+    };
+    const changeCurrentImage = (image: SancaiEntryImageRecord) => {
+        if (!selectedEntryId || image.currentUsed) {
+            return;
+        }
+        changeCurrentImageMutation.mutate({
+            entryId: selectedEntryId,
+            imageId: image.id
+        });
+    };
+    const deleteImage = (image: SancaiEntryImageRecord) => {
+        if (!selectedEntryId) {
+            return;
+        }
+        const title = readImageTitle(image);
+        confirm.danger({
+            title: "删除三才图会配图",
+            message: `确认删除 ${title}？`,
+            description: "删除后当前条目的配图列表会立即刷新；若删除当前图，系统会自动补位。",
+            okText: "删除",
+            onConfirm: () =>
+                deleteImageMutation.mutateAsync({
+                    entryId: selectedEntryId,
+                    imageId: image.id
+                })
+        });
+    };
 
     const sortEntry = (
         sourceEntry: SancaiEntryRecord,
@@ -616,6 +734,97 @@ export const SancaiEntryPanel = ({
                 afterForm={
                     !isCreating && selectedEntry ? (
                         <>
+                            <Card
+                                size="small"
+                                title="配图管理"
+                                aria-label="三才图会配图管理"
+                                loading={imagesQuery.isLoading}
+                            >
+                                {entryImages.length > 0 ? (
+                                    <div className="sancai-image-card-list">
+                                        {entryImages.map((image) => {
+                                            const title = readImageTitle(image);
+                                            return (
+                                                <article
+                                                    key={image.id}
+                                                    className="sancai-image-card"
+                                                    aria-label={`配图 ${title}`}
+                                                >
+                                                    <div className="sancai-image-card-main">
+                                                        <div>
+                                                            <Text strong>{title}</Text>
+                                                            <KuzhambuSpace wrap>
+                                                                {image.currentUsed ? (
+                                                                    <Tag color="green">
+                                                                        当前使用
+                                                                    </Tag>
+                                                                ) : null}
+                                                                <Text type="secondary">
+                                                                    {image.imageType || "UNKNOWN"}
+                                                                </Text>
+                                                                <Text type="secondary">
+                                                                    优先级 {image.priority ?? "-"}
+                                                                </Text>
+                                                                <Text type="secondary">
+                                                                    {formatImageSize(image.size)}
+                                                                </Text>
+                                                            </KuzhambuSpace>
+                                                        </div>
+                                                        <KuzhambuSpace wrap>
+                                                            <Button
+                                                                size="small"
+                                                                onClick={() => previewImage(image)}
+                                                            >
+                                                                预览图片
+                                                            </Button>
+                                                            <Button
+                                                                size="small"
+                                                                onClick={() => downloadImage(image)}
+                                                            >
+                                                                下载图片
+                                                            </Button>
+                                                            <Button
+                                                                size="small"
+                                                                disabled={Boolean(
+                                                                    image.currentUsed
+                                                                )}
+                                                                loading={
+                                                                    changeCurrentImageMutation.isPending
+                                                                }
+                                                                onClick={() =>
+                                                                    changeCurrentImage(image)
+                                                                }
+                                                            >
+                                                                设为当前使用图片
+                                                            </Button>
+                                                            <Button
+                                                                danger
+                                                                size="small"
+                                                                loading={
+                                                                    deleteImageMutation.isPending
+                                                                }
+                                                                onClick={() => deleteImage(image)}
+                                                            >
+                                                                删除图片
+                                                            </Button>
+                                                        </KuzhambuSpace>
+                                                    </div>
+                                                    <Text type="secondary">
+                                                        存储对象：{image.storageObjectId ?? "-"} /
+                                                        文件：
+                                                        {image.originalFilename || "-"}
+                                                    </Text>
+                                                </article>
+                                            );
+                                        })}
+                                    </div>
+                                ) : (
+                                    <Empty
+                                        image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                        description="暂无配图"
+                                    />
+                                )}
+                            </Card>
                             <Card size="small" title="AI 精修任务">
                                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                                     <Button

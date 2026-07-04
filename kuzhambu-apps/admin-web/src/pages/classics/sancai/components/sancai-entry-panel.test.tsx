@@ -287,8 +287,21 @@ vi.mock("../services/sancai-entry-service", () => ({
             size: 10,
             storageObjectId: 7001,
             title: "sancai.png"
+        },
+        {
+            currentUsed: false,
+            entryId: 3001,
+            id: 8002,
+            imageType: "GENERATED",
+            originalFilename: "generated.png",
+            priority: 2,
+            size: 2048,
+            storageObjectId: 7002,
+            title: "生成图"
         }
     ]),
+    deleteImage: vi.fn(async () => true),
+    changeCurrentImage: vi.fn(async () => true),
     listVisualAssets: vi.fn(async () => [
         {
             id: 5002,
@@ -1101,6 +1114,53 @@ describe("SancaiEntryPanel sharing", () => {
         const contextSection = await screen.findByLabelText("三才图会内容上下文");
         expect(within(contextSection).getByText("三才")).toBeInTheDocument();
         expect(await screen.findByText("天地为何不变？")).toBeInTheDocument();
+    });
+
+    it("renders image management controls and supports current switch and delete", async () => {
+        const user = userEvent.setup();
+        renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        await user.click(await within(entryTable).findByRole("button", { name: "查看 天地" }));
+
+        const imagePanel = await screen.findByLabelText("三才图会配图管理");
+        expect(within(imagePanel).getByText("sancai.png")).toBeInTheDocument();
+        expect(within(imagePanel).getByText("生成图")).toBeInTheDocument();
+        expect(within(imagePanel).getAllByRole("button", { name: "预览图片" })).toHaveLength(2);
+        expect(within(imagePanel).getAllByRole("button", { name: "下载图片" })).toHaveLength(2);
+        expect(
+            within(imagePanel).getAllByRole("button", { name: "设为当前使用图片" })
+        ).toHaveLength(2);
+        expect(within(imagePanel).getAllByRole("button", { name: "删除图片" })).toHaveLength(2);
+
+        const generatedImage = within(imagePanel).getByLabelText("配图 生成图");
+        await user.click(within(generatedImage).getByRole("button", { name: "设为当前使用图片" }));
+        await waitFor(() => {
+            expect(entryService.changeCurrentImage).toHaveBeenCalledWith({
+                entryId: 3001,
+                imageId: 8002
+            });
+        });
+
+        await user.click(within(generatedImage).getByRole("button", { name: "删除图片" }));
+        await waitFor(() => {
+            expect(entryService.deleteImage).toHaveBeenCalledWith({
+                entryId: 3001,
+                imageId: 8002
+            });
+        });
+    });
+
+    it("renders empty image management state", async () => {
+        vi.mocked(entryService.listImages).mockResolvedValueOnce([]);
+        const user = userEvent.setup();
+        renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        await user.click(await within(entryTable).findByRole("button", { name: "查看 天地" }));
+
+        const imagePanel = await screen.findByLabelText("三才图会配图管理");
+        expect(await within(imagePanel).findByText("暂无配图")).toBeInTheDocument();
     });
 
     it("renders visual asset section and supports switching current version", async () => {
