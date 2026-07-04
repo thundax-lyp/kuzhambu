@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics-sancai-image-worker-showcase`：同步 worker 三才静态展示多图渲染
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-IMAGE-GOVERNANCE-CLOSEOUT.md`
-    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/render/sancai_showcase.py`、`kuzhambu-workers/src/kuzhambu_workers/render/templates/sancai_showcase.html`、`kuzhambu-workers/tests/test_sancai_showcase.py`
-    - 处理动作：按 `priority ASC` 渲染多图、当前图标记和缺图占位。
-    - 验收点：HTML 多图顺序稳定，当前图有 `data-current="true"`，缺图不阻断正文。
-    - 重要度：8/10
-
 - [ ] `classics-sancai-image-worker-export`：同步 worker Classics 导出图片元数据输出
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-IMAGE-GOVERNANCE-CLOSEOUT.md`
