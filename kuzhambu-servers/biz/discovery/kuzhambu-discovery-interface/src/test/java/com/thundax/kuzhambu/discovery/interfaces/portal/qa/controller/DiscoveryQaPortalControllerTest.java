@@ -333,7 +333,7 @@ class DiscoveryQaPortalControllerTest {
         result.setOpenedAt(1_718_000_000_000L);
         result.setLastMessageAt(1_718_000_001_000L);
         result.setMessages(List.of(new QaMessageResult(
-                7001L, 5001L, "user", "黄帝是谁", "SENT", null, null, 0, new Date(1_718_000_001_000L), null)));
+                7001L, 5001L, "user", "黄帝是谁", "SENT", 0, null, new Date(1_718_000_001_000L), null)));
         return result;
     }
 
