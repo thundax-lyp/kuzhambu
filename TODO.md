@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `QaSource.java; QaRetrievalTrace.java; QaSourceRepository.java; QaRetrievalTraceRepository.java`：调整 QA 来源和 trace 领域模型
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-KNOWLEDGE-BASE-REWRITE.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-domain/src/main/java/com/thundax/kuzhambu/discovery/domain/qa/model/entity/QaSource.java`; `kuzhambu-servers/biz/discovery/kuzhambu-discovery-domain/src/main/java/com/thundax/kuzhambu/discovery/domain/qa/model/entity/QaRetrievalTrace.java`; `kuzhambu-servers/biz/discovery/kuzhambu-discovery-domain/src/main/java/com/thundax/kuzhambu/discovery/domain/qa/repository/QaSourceRepository.java`; `kuzhambu-servers/biz/discovery/kuzhambu-discovery-domain/src/main/java/com/thundax/kuzhambu/discovery/domain/qa/repository/QaRetrievalTraceRepository.java`
-    - 处理动作：将来源和 trace 字段调整为 Knowledge Base provider trace 目标结构。
-    - 验收点：领域代码无旧理解、扩展词、候选数量和上下文快照字段。
-    - 重要度：10/10
-
 - [ ] `QaKnowledgeSyncItem.java; QaKnowledgeSyncBatch.java; QaKnowledgeSyncItemRepository.java; QaKnowledgeSyncBatchRepository.java`：新增知识同步领域模型
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-KNOWLEDGE-BASE-REWRITE.md`

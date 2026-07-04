@@ -14,14 +14,14 @@ public class QaRetrievalTrace {
     private Long id;
     private Long traceId;
     private Long messageId;
-    private Long callId;
     private String rawQuestion;
-    private String rewrittenQuestion;
-    private String scope;
-    private String filtersJson;
-    private String expandedTermsJson;
-    private String linkedEntitiesJson;
-    private Integer candidateCount;
-    private String contextSnapshot;
+    private String provider;
+    private String externalKnowledgeBaseId;
+    private String externalKnowledgeItemIds;
+    private String externalChatId;
+    private String providerRequestId;
+    private Long latencyMs;
+    private String failureReason;
+    private String raw;
     private Date retrievedAt;
 }

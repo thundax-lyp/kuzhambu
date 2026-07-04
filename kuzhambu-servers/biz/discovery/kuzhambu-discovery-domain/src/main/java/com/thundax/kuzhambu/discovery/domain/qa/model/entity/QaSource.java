@@ -14,6 +14,7 @@ import lombok.Setter;
 public class QaSource {
     private Long id;
     private Long sourceId;
+    private String sourceBusinessId;
     private Long messageId;
     private String contentType;
     private Long contentId;
@@ -21,6 +22,7 @@ public class QaSource {
     private String titleSnapshot;
     private String locationLabel;
     private String snippet;
+    private String sourcePath;
     private Integer sourceRank;
     private BigDecimal score;
     private String sourceStatus;
