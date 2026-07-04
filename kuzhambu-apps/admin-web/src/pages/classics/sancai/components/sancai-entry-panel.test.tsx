@@ -1141,7 +1141,7 @@ describe("SancaiEntryPanel sharing", () => {
         const generatedImage = within(imagePanel).getByLabelText("配图 生成图");
         await user.click(within(generatedImage).getByRole("button", { name: "设为当前使用图片" }));
         await waitFor(() => {
-            expect(entryService.changeCurrentImage).toHaveBeenCalledWith({
+            expect(vi.mocked(entryService.changeCurrentImage).mock.calls.at(-1)?.at(0)).toEqual({
                 entryId: 3001,
                 imageId: 8002
             });
@@ -1149,7 +1149,7 @@ describe("SancaiEntryPanel sharing", () => {
 
         await user.click(within(generatedImage).getByRole("button", { name: "删除图片" }));
         await waitFor(() => {
-            expect(entryService.deleteImage).toHaveBeenCalledWith({
+            expect(vi.mocked(entryService.deleteImage).mock.calls.at(-1)?.at(0)).toEqual({
                 entryId: 3001,
                 imageId: 8002
             });
@@ -1202,7 +1202,7 @@ describe("SancaiEntryPanel sharing", () => {
         await user.click(within(currentImage).getByRole("button", { name: "下移图片" }));
 
         await waitFor(() => {
-            expect(entryService.sortImages).toHaveBeenCalledWith({
+            expect(vi.mocked(entryService.sortImages).mock.calls.at(-1)?.at(0)).toEqual({
                 entryId: 3001,
                 orderedIds: [8002, 8001],
                 sortDirection: "ASC"
@@ -1227,7 +1227,7 @@ describe("SancaiEntryPanel sharing", () => {
             "/kuzhambu-admin-api/api/classics/sancai/assets/images/3001/8002/content"
         );
         expect(within(previewDrawer).getByRole("button", { name: "下一张" })).toBeDisabled();
-        expect(within(previewDrawer).getByRole("button", { name: "下载当前图片" })).toHaveAttribute(
+        expect(within(previewDrawer).getByRole("link", { name: "下载当前图片" })).toHaveAttribute(
             "href",
             "/kuzhambu-admin-api/api/classics/sancai/assets/images/3001/8002/content?download=true"
         );
