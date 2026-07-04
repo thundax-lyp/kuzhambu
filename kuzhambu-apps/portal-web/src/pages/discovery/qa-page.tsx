@@ -1,6 +1,6 @@
 import { useMemo, useState, type FormEvent } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { CircleSlash2, RefreshCw, Sparkles, Workflow } from "lucide-react";
+import { CircleSlash2, Download, RefreshCw, Sparkles, Trash2, Workflow } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -22,6 +22,7 @@ interface QaFormState {
     contextContentId: string;
     contextContentType: string;
     contextMode: string;
+    ownerUserId: string;
     requestId: string;
     scope: string;
     sessionId: string;
@@ -49,6 +50,7 @@ const INITIAL_FORM_STATE: QaFormState = {
     contextContentId: "",
     contextContentType: "",
     contextMode: "GENERAL",
+    ownerUserId: "1001",
     requestId: "",
     scope: "PORTAL",
     sessionId: "",
@@ -76,6 +78,7 @@ const toOpenSessionRequest = (form: QaFormState): DiscoveryQaOpenSessionRequest 
         contextContentId: parseNumber(form.contextContentId),
         contextContentType: parseString(form.contextContentType),
         contextMode: parseString(form.contextMode),
+        ownerUserId: parseNumber(form.ownerUserId),
         requestId: parseString(form.requestId),
         scope: parseString(form.scope),
         title: parseString(form.sessionTitle),
@@ -83,8 +86,9 @@ const toOpenSessionRequest = (form: QaFormState): DiscoveryQaOpenSessionRequest 
     };
 };
 
-const getSessionList = () => {
+const getSessionList = (ownerUserId: number | null) => {
     return qaService.pageQaSessions({
+        ownerUserId,
         pageNo: 1,
         pageSize: DEFAULT_SESSION_SIZE,
         scope: "PORTAL"
@@ -126,7 +130,7 @@ const isUnavailableSource = (source: DiscoveryQaChatCompletionSource) => {
 };
 
 const toSessionQuery = (sessionId: number): DiscoveryQaGetSessionRequest => {
-    return { sessionId };
+    return { ownerUserId: null, sessionId };
 };
 
 const createTimelineMessageId = () => {
@@ -140,12 +144,14 @@ const toChatCompletionSourceKey = (source: DiscoveryQaChatCompletionSource, inde
 
 export const DiscoveryQaPage = () => {
     const [form, setForm] = useState<QaFormState>(INITIAL_FORM_STATE);
+    const [operationMessage, setOperationMessage] = useState<string | null>(null);
     const [selectedSessionId, setSelectedSessionId] = useState<number | null>(null);
     const [timelineBySession, setTimelineBySession] = useState<QaTimeline>({});
+    const ownerUserId = parseNumber(form.ownerUserId);
 
     const sessionsQuery = useQuery<DiscoveryQaSessionPageResponse>({
-        queryFn: getSessionList,
-        queryKey: ["portal-qa-session-page"]
+        queryFn: () => getSessionList(ownerUserId),
+        queryKey: ["portal-qa-session-page", ownerUserId]
     });
     const selectedSessionQuery = useQuery<DiscoveryQaOpenSessionResponse>({
         enabled: selectedSessionId !== null,
@@ -153,16 +159,21 @@ export const DiscoveryQaPage = () => {
             if (selectedSessionId === null) {
                 throw new Error("会话尚未选中");
             }
-            return qaService.getQaSession(toSessionQuery(selectedSessionId));
+            return qaService.getQaSession({
+                ...toSessionQuery(selectedSessionId),
+                ownerUserId
+            });
         },
-        queryKey: ["portal-qa-session", selectedSessionId]
+        queryKey: ["portal-qa-session", selectedSessionId, ownerUserId]
     });
 
     const openSessionMutation = useMutation({ mutationFn: qaService.openQaSession });
     const chatCompletionMutation = useMutation({ mutationFn: qaService.createQaChatCompletion });
+    const deleteSessionMutation = useMutation({ mutationFn: qaService.deleteQaSession });
+    const exportSessionMutation = useMutation({ mutationFn: qaService.exportQaSession });
 
     const sessions = sessionsQuery.data?.items ?? [];
-    const selectedSession = selectedSessionQuery.data;
+    const selectedSession = selectedSessionId === null ? undefined : selectedSessionQuery.data;
     const hasSessions = sessions.length > 0;
     const messages = useMemo(() => {
         return selectedSessionId ? (timelineBySession[selectedSessionId] ?? []) : [];
@@ -394,7 +405,63 @@ export const DiscoveryQaPage = () => {
     };
 
     const handleSelectSession = (sessionId: number) => {
+        setOperationMessage(null);
         setSelectedSessionId(sessionId);
+    };
+
+    const handleDeleteSession = async () => {
+        if (selectedSessionId === null) {
+            return;
+        }
+
+        const confirmed = window.confirm(`确认删除会话 ${selectedSessionId}？`);
+        if (!confirmed) {
+            return;
+        }
+
+        try {
+            await deleteSessionMutation.mutateAsync({
+                ownerUserId,
+                sessionId: selectedSessionId
+            });
+            const deletedSessionId = selectedSessionId;
+            setSelectedSessionId(null);
+            setTimelineBySession((current) => {
+                const next = { ...current };
+                delete next[deletedSessionId];
+                return next;
+            });
+            setOperationMessage(`会话 ${deletedSessionId} 已删除`);
+            await sessionsQuery.refetch();
+        } catch (error) {
+            setOperationMessage(error instanceof Error ? error.message : "会话删除失败");
+        }
+    };
+
+    const handleExportSession = async () => {
+        if (selectedSessionId === null) {
+            return;
+        }
+
+        try {
+            const result = await exportSessionMutation.mutateAsync({
+                format: "CSV",
+                ownerUserId,
+                sessionId: selectedSessionId
+            });
+            if (result.exportStatus === "FAILED") {
+                setOperationMessage(result.failureReason ?? "会话导出失败");
+                return;
+            }
+
+            const filename = result.filename ?? `discovery-qa-session-${selectedSessionId}.csv`;
+            const storageObjectText = result.storageObjectId
+                ? `，对象号 ${result.storageObjectId}`
+                : "";
+            setOperationMessage(`导出成功：${filename}${storageObjectText}`);
+        } catch (error) {
+            setOperationMessage(error instanceof Error ? error.message : "会话导出失败");
+        }
     };
 
     return (
@@ -440,6 +507,29 @@ export const DiscoveryQaPage = () => {
 
                     {sessionListContent}
 
+                    <div className="portal-qa-actions">
+                        <Button
+                            disabled={selectedSessionId === null || deleteSessionMutation.isPending}
+                            type="button"
+                            variant="outline"
+                            onClick={handleDeleteSession}
+                        >
+                            <Trash2 aria-hidden="true" size={16} />
+                            {deleteSessionMutation.isPending ? "删除中..." : "删除会话"}
+                        </Button>
+                        <Button
+                            disabled={selectedSessionId === null || exportSessionMutation.isPending}
+                            type="button"
+                            variant="outline"
+                            onClick={handleExportSession}
+                        >
+                            <Download aria-hidden="true" size={16} />
+                            {exportSessionMutation.isPending ? "导出中..." : "导出 CSV"}
+                        </Button>
+                    </div>
+
+                    {operationMessage ? <p className="portal-empty">{operationMessage}</p> : null}
+
                     <dl className="portal-qa-session-meta">
                         <div>
                             <dt>会话号</dt>
@@ -469,6 +559,15 @@ export const DiscoveryQaPage = () => {
                     </div>
 
                     <div className="portal-qa-form-grid">
+                        <Label className="portal-filter-field">
+                            <span>拥有者用户号</span>
+                            <Input
+                                name="ownerUserId"
+                                type="number"
+                                value={form.ownerUserId}
+                                onChange={(event) => updateField("ownerUserId", event.target.value)}
+                            />
+                        </Label>
                         <Label className="portal-filter-field">
                             <span>会话标题</span>
                             <Input

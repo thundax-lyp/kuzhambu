@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `portal-web-discovery-qa-delete-export`：实现 Portal QA 会话删除和导出前端闭环
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-SESSION-DELETE-EXPORT.md`
-    - 范围对象：`qa-types.ts`、`qa-service.ts`、`qa-page.tsx`、`qa-page.test.tsx`
-    - 处理动作：新增删除和导出类型、服务调用、页面入口和交互测试。
-    - 验收点：删除确认、删除后清空当前会话、导出成功和导出失败提示测试通过。
-    - 重要度：8/10
-
 - [ ] `admin-web-discovery-qa-delete-export`：实现 Admin QA 会话删除和导出前端闭环
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-SESSION-DELETE-EXPORT.md`

@@ -7,6 +7,8 @@ import { DiscoveryQaPage } from "./qa-page";
 
 const mocks = vi.hoisted(() => ({
     createQaChatCompletion: vi.fn(),
+    deleteQaSession: vi.fn(),
+    exportQaSession: vi.fn(),
     getQaSession: vi.fn(),
     openQaSession: vi.fn(),
     pageQaSessions: vi.fn(),
@@ -86,6 +88,8 @@ const flushAsyncWork = async () => {
 describe("DiscoveryQaPage", () => {
     afterEach(() => {
         mocks.createQaChatCompletion.mockReset();
+        mocks.deleteQaSession.mockReset();
+        mocks.exportQaSession.mockReset();
         mocks.getQaSession.mockReset();
         mocks.openQaSession.mockReset();
         mocks.pageQaSessions.mockReset();
@@ -157,6 +161,7 @@ describe("DiscoveryQaPage", () => {
             contextContentId: null,
             contextContentType: null,
             contextMode: "GENERAL",
+            ownerUserId: 1001,
             requestId: null,
             scope: "PORTAL",
             title: "知识中心问答",
@@ -171,6 +176,121 @@ describe("DiscoveryQaPage", () => {
         expect(container.textContent).toContain("礼器常见于典章与礼仪条目。");
         expect(container.textContent).toContain("礼器条目");
         expect(container.querySelector('a[href="/shares/1001"]')).not.toBeNull();
+
+        act(() => {
+            root.unmount();
+        });
+    });
+
+    it("confirms delete and clears selected session after deletion", async () => {
+        mocks.pageQaSessions.mockResolvedValue({
+            items: [
+                {
+                    lastMessageAt: 1700000000000,
+                    scope: "PORTAL",
+                    sessionId: 5001,
+                    status: "OPEN",
+                    title: "待删除会话"
+                }
+            ]
+        });
+        mocks.getQaSession.mockResolvedValue({
+            sessionId: 5001,
+            status: "OPEN",
+            title: "待删除会话"
+        });
+        mocks.deleteQaSession.mockResolvedValue(undefined);
+        const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
+
+        const { container, root } = renderPage();
+        await flushAsyncWork();
+
+        const sessionButton = findButtonByText(container, "待删除会话");
+        await act(async () => {
+            sessionButton.click();
+            await new Promise((resolve) => setTimeout(resolve, 0));
+        });
+
+        const deleteButton = findButtonByText(container, "删除会话");
+        await act(async () => {
+            deleteButton.click();
+            await new Promise((resolve) => setTimeout(resolve, 0));
+        });
+
+        expect(confirmSpy).toHaveBeenCalledWith("确认删除会话 5001？");
+        expect(mocks.deleteQaSession).toHaveBeenCalledWith({
+            ownerUserId: 1001,
+            sessionId: 5001
+        });
+        expect(container.textContent).toContain("会话 5001 已删除");
+        expect(container.textContent).toContain("已选会话 未选择");
+
+        confirmSpy.mockRestore();
+        act(() => {
+            root.unmount();
+        });
+    });
+
+    it("shows export success and failure feedback", async () => {
+        mocks.pageQaSessions.mockResolvedValue({
+            items: [
+                {
+                    scope: "PORTAL",
+                    sessionId: 5002,
+                    status: "OPEN",
+                    title: "可导出会话"
+                }
+            ]
+        });
+        mocks.getQaSession.mockResolvedValue({
+            sessionId: 5002,
+            status: "OPEN",
+            title: "可导出会话"
+        });
+        mocks.exportQaSession
+            .mockResolvedValueOnce({
+                exportId: 7001,
+                exportStatus: "SUCCEEDED",
+                filename: "discovery-qa-session-5002-7001.csv",
+                sessionId: 5002,
+                storageObjectId: 8001
+            })
+            .mockResolvedValueOnce({
+                exportId: 7002,
+                exportStatus: "FAILED",
+                failureReason: "storage unavailable",
+                sessionId: 5002
+            });
+
+        const { container, root } = renderPage();
+        await flushAsyncWork();
+
+        const sessionButton = findButtonByText(container, "可导出会话");
+        await act(async () => {
+            sessionButton.click();
+            await new Promise((resolve) => setTimeout(resolve, 0));
+        });
+
+        const exportButton = findButtonByText(container, "导出 CSV");
+        await act(async () => {
+            exportButton.click();
+            await new Promise((resolve) => setTimeout(resolve, 0));
+        });
+
+        expect(mocks.exportQaSession).toHaveBeenCalledWith({
+            format: "CSV",
+            ownerUserId: 1001,
+            sessionId: 5002
+        });
+        expect(container.textContent).toContain("导出成功：discovery-qa-session-5002-7001.csv");
+        expect(container.textContent).toContain("对象号 8001");
+
+        await act(async () => {
+            exportButton.click();
+            await new Promise((resolve) => setTimeout(resolve, 0));
+        });
+
+        expect(container.textContent).toContain("storage unavailable");
 
         act(() => {
             root.unmount();
@@ -342,8 +462,15 @@ describe("DiscoveryQaPage", () => {
         const qaService = await vi.importActual<typeof import("./qa-service")>("./qa-service");
 
         await qaService.openQaSession({ scope: "PORTAL", title: "知识中心问答" });
-        await qaService.pageQaSessions({ pageNo: 1, pageSize: 10, scope: "PORTAL" });
-        await qaService.getQaSession({ sessionId: 2001 });
+        await qaService.pageQaSessions({
+            ownerUserId: 1001,
+            pageNo: 1,
+            pageSize: 10,
+            scope: "PORTAL"
+        });
+        await qaService.getQaSession({ ownerUserId: 1001, sessionId: 2001 });
+        await qaService.deleteQaSession({ ownerUserId: 1001, sessionId: 2001 });
+        await qaService.exportQaSession({ format: "CSV", ownerUserId: 1001, sessionId: 2001 });
         await qaService.createQaChatCompletion({
             messages: [{ content: "礼器是什么？", role: "user" }],
             metadata: { sessionId: 2001 },
@@ -353,6 +480,8 @@ describe("DiscoveryQaPage", () => {
 
         const calledUrls = mocks.postJson.mock.calls.map(([url]) => String(url));
         expect(calledUrls).toContain("/portal/discovery/qa/chat/completions");
+        expect(calledUrls).toContain("/portal/discovery/qa/session/delete");
+        expect(calledUrls).toContain("/portal/discovery/qa/session/export");
         expect(calledUrls.join("\n")).not.toContain("/portal/discovery/qa/question/ask");
         expect(calledUrls.join("\n")).not.toMatch(
             /https?:\/\/|fastgpt|dataset|collection|appId|baseUrl/iu
