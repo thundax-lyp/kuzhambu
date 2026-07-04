@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Discovery QA Session Context`：收口后端会话上下文校验
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-QA-CLOSEOUT.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/qa/service/impl/QaApplicationServiceImpl.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-interface/src/test/java/com/thundax/kuzhambu/discovery/interfaces/portal/qa/controller/DiscoveryQaPortalControllerTest.java`
-    - 处理动作：校验 `SINGLE_DOCUMENT` 会话上下文并锁定 Portal 请求字段映射。
-    - 验收点：单文档模式仅支持 `WANGQI_DOCUMENT`，缺少内容类型或内容 ID 时抛业务异常。
-    - 重要度：10/10
-
 - [ ] `Discovery QA Provider Context`：收口后端问答 provider 上下文
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-QA-CLOSEOUT.md`
