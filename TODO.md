@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `discovery-qa-session-delete-application`：实现 QA 会话删除应用服务
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-SESSION-DELETE-EXPORT.md`
-    - 范围对象：`DeleteQaSessionCommand.java`、`QaApplicationService.java`、`QaApplicationServiceImpl.java`、`KnowledgeQaApplicationServiceImpl.java`、`QaApplicationServiceImplTest.java`
-    - 处理动作：增加删除、Portal 会话列表详情读取和已删除会话追问拦截。
-    - 验收点：owner 校验、Admin 删除、重复删除错误和已删除会话追问失败均有测试覆盖。
-    - 重要度：10/10
-
 - [ ] `discovery-qa-portal-session-interface`：补齐 Portal 会话列表、详情和删除接口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-SESSION-DELETE-EXPORT.md`

@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.discovery.application.qa.service.impl;
 
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
+import com.thundax.kuzhambu.discovery.application.qa.command.DeleteQaSessionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.command.OpenQaSessionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaMessageResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionDetailResult;
@@ -30,6 +31,8 @@ public class QaApplicationServiceImpl implements QaApplicationService {
 
     private static final String DEFAULT_OWNER_TYPE = "USER";
     private static final String DEFAULT_KNOWLEDGE_BASE_NAME = "kuzhambu-qa";
+    private static final String SESSION_ALREADY_REMOVED_CODE = "QA_SESSION_ALREADY_REMOVED";
+    private static final String SESSION_ALREADY_REMOVED_MESSAGE = "QA session has already been removed";
     private final QaSessionRepository qaSessionRepository;
     private final QaMessageRepository qaMessageRepository;
     private final QaSourceRepository qaSourceRepository;
@@ -78,14 +81,56 @@ public class QaApplicationServiceImpl implements QaApplicationService {
     }
 
     @Override
+    public void deleteSession(DeleteQaSessionCommand command) {
+        if (command == null || command.getSessionId() == null) {
+            throw new BizException("DISCOVERY-30006", "discovery.qa.session-id.required", "Session id is required");
+        }
+        QaSession session = requireSession(command.getSessionId());
+        if (session.isRemoved()) {
+            throw removedSessionException();
+        }
+        if (!Boolean.TRUE.equals(command.getAdminOperation())) {
+            requireOwner(session, command.getOwnerType(), command.getOwnerId());
+        }
+        int updated = qaSessionRepository.markRemoved(command.getSessionId(), new Date());
+        if (updated == 0) {
+            QaSession latest = qaSessionRepository.getBySessionId(command.getSessionId());
+            if (latest == null) {
+                throw sessionNotFoundException();
+            }
+            if (latest.isRemoved()) {
+                throw removedSessionException();
+            }
+        }
+    }
+
+    @Override
+    public List<QaSessionResult> listPortalSessions(String ownerType, String ownerId, Integer limit) {
+        return qaSessionRepository.listByOwnerUserId(ownerType, ownerId, limit).stream()
+                .map(this::toSessionResult)
+                .toList();
+    }
+
+    @Override
+    public QaSessionDetailResult getPortalSessionDetail(Long sessionId, String ownerType, String ownerId) {
+        QaSession session = requireSession(sessionId);
+        requireOwner(session, ownerType, ownerId);
+        if (session.isRemoved()) {
+            throw removedSessionException();
+        }
+        return toSessionDetailResult(session);
+    }
+
+    @Override
     public QaSessionDetailResult getSessionDetail(Long sessionId) {
         if (sessionId == null) {
             throw new BizException("DISCOVERY-30006", "discovery.qa.session-id.required", "Session id is required");
         }
-        QaSession session = qaSessionRepository.getBySessionId(sessionId);
-        if (session == null) {
-            throw new BizException("DISCOVERY-30001", "discovery.qa.session.not-found", "QA session does not exist");
-        }
+        QaSession session = requireSession(sessionId);
+        return toSessionDetailResult(session);
+    }
+
+    private QaSessionDetailResult toSessionDetailResult(QaSession session) {
         QaSessionDetailResult result = new QaSessionDetailResult();
         result.setSessionId(session.getSessionId());
         result.setOwnerUserId(parseOwnerUserId(session.getOwnerId()));
@@ -101,9 +146,9 @@ public class QaApplicationServiceImpl implements QaApplicationService {
                 session.getLastMessageAt() == null
                         ? null
                         : session.getLastMessageAt().getTime());
-        result.setMessages(qaMessageRepository.listBySessionId(sessionId).stream()
-                .map(this::toMessageResult)
-                .toList());
+        List<QaMessage> messages = qaMessageRepository.listBySessionId(session.getSessionId());
+        result.setMessages((messages == null ? List.<QaMessage>of() : messages)
+                .stream().map(this::toMessageResult).toList());
         return result;
     }
 
@@ -144,6 +189,35 @@ public class QaApplicationServiceImpl implements QaApplicationService {
             throw new BizException(
                     "DISCOVERY-30002", "discovery.qa.open-session.invalid", "Open QA session command is invalid");
         }
+    }
+
+    private QaSession requireSession(Long sessionId) {
+        if (sessionId == null) {
+            throw new BizException("DISCOVERY-30006", "discovery.qa.session-id.required", "Session id is required");
+        }
+        QaSession session = qaSessionRepository.getBySessionId(sessionId);
+        if (session == null) {
+            throw sessionNotFoundException();
+        }
+        return session;
+    }
+
+    private void requireOwner(QaSession session, String ownerType, String ownerId) {
+        if (session == null
+                || !StringUtils.equals(session.getOwnerType(), ownerType)
+                || !StringUtils.equals(session.getOwnerId(), ownerId)) {
+            throw new BizException(
+                    "DISCOVERY-30009", "discovery.qa.session.forbidden", "QA session owner does not match");
+        }
+    }
+
+    private BizException sessionNotFoundException() {
+        return new BizException("DISCOVERY-30001", "discovery.qa.session.not-found", "QA session does not exist");
+    }
+
+    private BizException removedSessionException() {
+        return new BizException(
+                SESSION_ALREADY_REMOVED_CODE, "discovery.qa.session.already-removed", SESSION_ALREADY_REMOVED_MESSAGE);
     }
 
     private Long parseOwnerUserId(String ownerId) {

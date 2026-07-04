@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.discovery.application.qa.service;
 
+import com.thundax.kuzhambu.discovery.application.qa.command.DeleteQaSessionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.command.OpenQaSessionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionDetailResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionResult;
@@ -10,6 +11,12 @@ import java.util.List;
 public interface QaApplicationService {
 
     QaSessionResult openSession(OpenQaSessionCommand command);
+
+    void deleteSession(DeleteQaSessionCommand command);
+
+    List<QaSessionResult> listPortalSessions(String ownerType, String ownerId, Integer limit);
+
+    QaSessionDetailResult getPortalSessionDetail(Long sessionId, String ownerType, String ownerId);
 
     QaSessionDetailResult getSessionDetail(Long sessionId);
 
