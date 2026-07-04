@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `QaKnowledgeSyncItemRepositoryImpl.java; QaKnowledgeSyncBatchRepositoryImpl.java; QaKnowledgeSyncItemRepositoryImplTest.java; QaKnowledgeSyncBatchRepositoryImplTest.java`：实现同步仓储
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-KNOWLEDGE-BASE-REWRITE.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/qa/repository/impl/QaKnowledgeSyncItemRepositoryImpl.java`; `kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/qa/repository/impl/QaKnowledgeSyncBatchRepositoryImpl.java`; `kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/test/java/com/thundax/kuzhambu/discovery/infra/qa/repository/impl/QaKnowledgeSyncItemRepositoryImplTest.java`; `kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/test/java/com/thundax/kuzhambu/discovery/infra/qa/repository/impl/QaKnowledgeSyncBatchRepositoryImplTest.java`
-    - 处理动作：实现同步 item 和 batch 仓储并覆盖状态流转测试。
-    - 验收点：新增同步仓储测试通过。
-    - 重要度：9/10
-
 - [ ] `ClassicsFacade.java; ClassicsQaKnowledgeFacadeDto.java; ClassicsQaKnowledgeFacadeRequest.java; ClassicsQaKnowledgeFacadeResponse.java`：定义 Classics QA 知识读取 Facade
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-KNOWLEDGE-BASE-REWRITE.md`
