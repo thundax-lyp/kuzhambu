@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `discovery-qa-portal-session-interface`：补齐 Portal 会话列表、详情和删除接口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-SESSION-DELETE-EXPORT.md`
-    - 范围对象：`DiscoveryQaPortalController.java`、`DiscoveryQaRequests.java`、`DiscoveryQaResponses.java`、`DiscoveryQaPortalInterfaceAssembler.java`、`DiscoveryQaPortalControllerTest.java`
-    - 处理动作：新增 `session/page`、`session/get`、`session/delete` 后端接口和请求响应映射。
-    - 验收点：三个 Portal 路由、请求反序列化和响应字段测试通过。
-    - 重要度：9/10
-
 - [ ] `discovery-qa-admin-session-delete-interface`：补齐 Admin 会话删除接口和删除状态响应
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-SESSION-DELETE-EXPORT.md`

@@ -58,6 +58,67 @@ public final class DiscoveryQaRequests {
 
     @Getter
     @Setter
+    @Schema(name = "DiscoveryQaSessionPageRequest", description = "Discovery Portal 问答会话分页请求")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class QaSessionPageRequest {
+
+        @Schema(name = "ownerUserId", description = "拥有者用户号")
+        @JsonProperty(value = "ownerUserId")
+        @NotNull(message = "\"拥有者用户号\"不能为空")
+        private Long ownerUserId;
+
+        @Schema(name = "pageNo", description = "页码")
+        @JsonProperty(value = "pageNo")
+        private Integer pageNo;
+
+        @Schema(name = "pageSize", description = "每页条数")
+        @JsonProperty(value = "pageSize")
+        private Integer pageSize;
+
+        @Schema(name = "limit", description = "最大返回条数")
+        @JsonProperty(value = "limit")
+        private Integer limit;
+    }
+
+    @Getter
+    @Setter
+    @Schema(name = "DiscoveryQaSessionGetRequest", description = "Discovery Portal 问答会话详情请求")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class QaSessionGetRequest {
+
+        @Schema(name = "sessionId", description = "会话号")
+        @JsonProperty(value = "sessionId")
+        @NotNull(message = "\"会话号\"不能为空")
+        private Long sessionId;
+
+        @Schema(name = "ownerUserId", description = "拥有者用户号")
+        @JsonProperty(value = "ownerUserId")
+        @NotNull(message = "\"拥有者用户号\"不能为空")
+        private Long ownerUserId;
+    }
+
+    @Getter
+    @Setter
+    @Schema(name = "DiscoveryQaSessionDeleteRequest", description = "Discovery Portal 问答会话删除请求")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class QaSessionDeleteRequest {
+
+        @Schema(name = "sessionId", description = "会话号")
+        @JsonProperty(value = "sessionId")
+        @NotNull(message = "\"会话号\"不能为空")
+        private Long sessionId;
+
+        @Schema(name = "ownerUserId", description = "拥有者用户号")
+        @JsonProperty(value = "ownerUserId")
+        @NotNull(message = "\"拥有者用户号\"不能为空")
+        private Long ownerUserId;
+    }
+
+    @Getter
+    @Setter
     @Schema(name = "DiscoveryQaChatCompletionsRequest", description = "Discovery Portal 问答提问请求")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)

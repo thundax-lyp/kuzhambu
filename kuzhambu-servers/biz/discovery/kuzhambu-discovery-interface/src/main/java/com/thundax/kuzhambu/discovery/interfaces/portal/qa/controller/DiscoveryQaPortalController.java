@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.discovery.interfaces.portal.qa.controller;
 
 import com.thundax.kuzhambu.common.security.annotation.PublicApi;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
+import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.discovery.application.qa.service.KnowledgeQaApplicationService;
 import com.thundax.kuzhambu.discovery.application.qa.service.QaApplicationService;
 import com.thundax.kuzhambu.discovery.interfaces.portal.qa.assembler.DiscoveryQaPortalInterfaceAssembler;
@@ -35,6 +36,34 @@ public class DiscoveryQaPortalController {
             @Valid @RequestBody DiscoveryQaRequests.OpenSessionRequest request) {
         return DiscoveryQaPortalInterfaceAssembler.toOpenSessionResponse(
                 qaApplicationService.openSession(DiscoveryQaPortalInterfaceAssembler.toOpenSessionCommand(request)));
+    }
+
+    @Operation(summary = "分页查询问答会话", description = "Portal 查询自己的未删除问答会话")
+    @PostMapping("session/page")
+    public PageResponse<DiscoveryQaResponses.QaSessionResponse> pageSessions(
+            @Valid @RequestBody DiscoveryQaRequests.QaSessionPageRequest request) {
+        return DiscoveryQaPortalInterfaceAssembler.toSessionPageResponse(
+                qaApplicationService.listPortalSessions(
+                        DiscoveryQaPortalInterfaceAssembler.ownerType(),
+                        DiscoveryQaPortalInterfaceAssembler.ownerId(request.getOwnerUserId()),
+                        DiscoveryQaPortalInterfaceAssembler.limit(request)),
+                request);
+    }
+
+    @Operation(summary = "获取问答会话详情", description = "Portal 获取自己的未删除问答会话详情")
+    @PostMapping("session/get")
+    public DiscoveryQaResponses.QaSessionDetailResponse getSession(
+            @Valid @RequestBody DiscoveryQaRequests.QaSessionGetRequest request) {
+        return DiscoveryQaPortalInterfaceAssembler.toSessionDetailResponse(qaApplicationService.getPortalSessionDetail(
+                request.getSessionId(),
+                DiscoveryQaPortalInterfaceAssembler.ownerType(),
+                DiscoveryQaPortalInterfaceAssembler.ownerId(request.getOwnerUserId())));
+    }
+
+    @Operation(summary = "删除问答会话", description = "Portal 软删除自己的问答会话")
+    @PostMapping("session/delete")
+    public void deleteSession(@Valid @RequestBody DiscoveryQaRequests.QaSessionDeleteRequest request) {
+        qaApplicationService.deleteSession(DiscoveryQaPortalInterfaceAssembler.toDeleteSessionCommand(request));
     }
 
     @Operation(summary = "OpenAI 风格提问", description = "Portal 问答 OpenAI 风格提问")

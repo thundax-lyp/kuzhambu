@@ -1,12 +1,17 @@
 package com.thundax.kuzhambu.discovery.interfaces.portal.qa.assembler;
 
+import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.discovery.application.qa.command.ChatCompletionCommand;
+import com.thundax.kuzhambu.discovery.application.qa.command.DeleteQaSessionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.command.OpenQaSessionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.result.ChatCompletionResult;
+import com.thundax.kuzhambu.discovery.application.qa.result.QaMessageResult;
+import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionDetailResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionResult;
 import com.thundax.kuzhambu.discovery.interfaces.portal.qa.controller.request.DiscoveryQaRequests;
 import com.thundax.kuzhambu.discovery.interfaces.portal.qa.controller.response.DiscoveryQaResponses;
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -17,6 +22,9 @@ public final class DiscoveryQaPortalInterfaceAssembler {
 
     private static final String AVAILABLE = "AVAILABLE";
     private static final String UNAVAILABLE = "UNAVAILABLE";
+    private static final String OWNER_TYPE_USER = "USER";
+    private static final int DEFAULT_PAGE_NO = 1;
+    private static final int DEFAULT_PAGE_SIZE = 20;
 
     private DiscoveryQaPortalInterfaceAssembler() {}
 
@@ -56,6 +64,35 @@ public final class DiscoveryQaPortalInterfaceAssembler {
                 request.getTraceId());
     }
 
+    public static DeleteQaSessionCommand toDeleteSessionCommand(DiscoveryQaRequests.QaSessionDeleteRequest request) {
+        if (request == null) {
+            return null;
+        }
+        return new DeleteQaSessionCommand(
+                request.getSessionId(), ownerType(), ownerId(request.getOwnerUserId()), false);
+    }
+
+    public static String ownerType() {
+        return OWNER_TYPE_USER;
+    }
+
+    public static String ownerId(Long ownerUserId) {
+        return ownerUserId == null ? null : String.valueOf(ownerUserId);
+    }
+
+    public static Integer limit(DiscoveryQaRequests.QaSessionPageRequest request) {
+        if (request == null) {
+            return DEFAULT_PAGE_SIZE;
+        }
+        if (request.getLimit() != null) {
+            return request.getLimit();
+        }
+        if (request.getPageSize() != null) {
+            return request.getPageSize();
+        }
+        return DEFAULT_PAGE_SIZE;
+    }
+
     public static DiscoveryQaResponses.OpenSessionResponse toOpenSessionResponse(QaSessionResult result) {
         if (result == null) {
             return null;
@@ -71,6 +108,48 @@ public final class DiscoveryQaPortalInterfaceAssembler {
         response.setStatus(result.getStatus());
         response.setOpenedAt(result.getOpenedAt());
         response.setLastMessageAt(result.getLastMessageAt());
+        return response;
+    }
+
+    public static PageResponse<DiscoveryQaResponses.QaSessionResponse> toSessionPageResponse(
+            List<QaSessionResult> results, DiscoveryQaRequests.QaSessionPageRequest request) {
+        List<QaSessionResult> safeResults = results == null ? List.of() : results;
+        int pageNo = request == null || request.getPageNo() == null ? DEFAULT_PAGE_NO : request.getPageNo();
+        int pageSize = limit(request);
+        PageResponse<DiscoveryQaResponses.QaSessionResponse> response = new PageResponse<>();
+        response.setPageNo(pageNo);
+        response.setPageSize(pageSize);
+        response.setCount(safeResults.size());
+        response.setTotalPage(safeResults.isEmpty() ? 0 : 1);
+        response.setRecords(safeResults.stream()
+                .filter(Objects::nonNull)
+                .map(DiscoveryQaPortalInterfaceAssembler::toSessionResponse)
+                .toList());
+        return response;
+    }
+
+    public static DiscoveryQaResponses.QaSessionResponse toSessionResponse(QaSessionResult result) {
+        if (result == null) {
+            return null;
+        }
+        DiscoveryQaResponses.QaSessionResponse response = new DiscoveryQaResponses.QaSessionResponse();
+        fillSessionResponse(response, result);
+        return response;
+    }
+
+    public static DiscoveryQaResponses.QaSessionDetailResponse toSessionDetailResponse(QaSessionDetailResult result) {
+        if (result == null) {
+            return null;
+        }
+        DiscoveryQaResponses.QaSessionDetailResponse response = new DiscoveryQaResponses.QaSessionDetailResponse();
+        fillSessionResponse(response, result);
+        response.setMessages(
+                result.getMessages() == null
+                        ? List.of()
+                        : result.getMessages().stream()
+                                .filter(Objects::nonNull)
+                                .map(DiscoveryQaPortalInterfaceAssembler::toMessageResponse)
+                                .toList());
         return response;
     }
 
@@ -103,6 +182,37 @@ public final class DiscoveryQaPortalInterfaceAssembler {
         }
         response.setRaw(result.getRaw());
         return response;
+    }
+
+    private static void fillSessionResponse(DiscoveryQaResponses.QaSessionResponse response, QaSessionResult result) {
+        response.setSessionId(result.getSessionId());
+        response.setOwnerUserId(result.getOwnerUserId());
+        response.setTitle(result.getTitle());
+        response.setScope(result.getScope());
+        response.setContextMode(result.getContextMode());
+        response.setContextContentType(result.getContextContentType());
+        response.setContextContentId(result.getContextContentId());
+        response.setStatus(result.getStatus());
+        response.setOpenedAt(result.getOpenedAt());
+        response.setLastMessageAt(result.getLastMessageAt());
+    }
+
+    private static DiscoveryQaResponses.QaMessageResponse toMessageResponse(QaMessageResult result) {
+        DiscoveryQaResponses.QaMessageResponse response = new DiscoveryQaResponses.QaMessageResponse();
+        response.setMessageId(result.getMessageId());
+        response.setSessionId(result.getSessionId());
+        response.setRole(result.getRole());
+        response.setContent(result.getContent());
+        response.setMessageStatus(result.getMessageStatus());
+        response.setContextTurnCount(result.getContextTurnCount());
+        response.setFailureReason(result.getFailureReason());
+        response.setSentAt(toTimestamp(result.getSentAt()));
+        response.setAnsweredAt(toTimestamp(result.getAnsweredAt()));
+        return response;
+    }
+
+    private static Long toTimestamp(Date date) {
+        return date == null ? null : date.getTime();
     }
 
     private static DiscoveryQaResponses.ChatCompletionChoice toChatCompletionChoice(
