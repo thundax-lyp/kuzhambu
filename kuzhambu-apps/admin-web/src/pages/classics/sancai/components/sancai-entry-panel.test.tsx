@@ -1210,6 +1210,64 @@ describe("SancaiEntryPanel sharing", () => {
         });
     });
 
+    it("opens image preview drawer and switches between images", async () => {
+        const user = userEvent.setup();
+        renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        await user.click(await within(entryTable).findByRole("button", { name: "查看 天地" }));
+
+        const imagePanel = await screen.findByLabelText("三才图会配图管理");
+        const generatedImage = within(imagePanel).getByLabelText("配图 生成图");
+        await user.click(within(generatedImage).getByRole("button", { name: "预览图片" }));
+
+        const previewDrawer = await screen.findByLabelText("配图预览");
+        expect(within(previewDrawer).getByAltText("生成图")).toHaveAttribute(
+            "src",
+            "/kuzhambu-admin-api/api/classics/sancai/assets/images/3001/8002/content"
+        );
+        expect(within(previewDrawer).getByRole("button", { name: "下一张" })).toBeDisabled();
+        expect(within(previewDrawer).getByRole("button", { name: "下载当前图片" })).toHaveAttribute(
+            "href",
+            "/kuzhambu-admin-api/api/classics/sancai/assets/images/3001/8002/content?download=true"
+        );
+
+        await user.click(within(previewDrawer).getByRole("button", { name: "上一张" }));
+
+        expect(within(previewDrawer).getByAltText("sancai.png")).toHaveAttribute(
+            "src",
+            "/kuzhambu-admin-api/api/classics/sancai/assets/images/3001/8001/content"
+        );
+    });
+
+    it("disables image preview navigation for a single image", async () => {
+        vi.mocked(entryService.listImages).mockResolvedValueOnce([
+            {
+                currentUsed: true,
+                entryId: 3001,
+                id: 8001,
+                imageType: "ORIGINAL",
+                originalFilename: "sancai.png",
+                priority: 1,
+                size: 10,
+                storageObjectId: 7001,
+                title: "sancai.png"
+            }
+        ]);
+        const user = userEvent.setup();
+        renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        await user.click(await within(entryTable).findByRole("button", { name: "查看 天地" }));
+
+        const imagePanel = await screen.findByLabelText("三才图会配图管理");
+        await user.click(within(imagePanel).getByRole("button", { name: "预览图片" }));
+
+        const previewDrawer = await screen.findByLabelText("配图预览");
+        expect(within(previewDrawer).getByRole("button", { name: "上一张" })).toBeDisabled();
+        expect(within(previewDrawer).getByRole("button", { name: "下一张" })).toBeDisabled();
+    });
+
     it("renders visual asset section and supports switching current version", async () => {
         const user = userEvent.setup();
         renderEntryPanel();

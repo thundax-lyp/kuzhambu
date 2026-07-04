@@ -338,6 +338,32 @@ html[data-theme="dark"] .sancai-page {
     gap: 12px;
 }
 
+.sancai-image-preview {
+    display: grid;
+    gap: 14px;
+}
+
+.sancai-image-preview-main {
+    display: grid;
+    min-height: 280px;
+    place-items: center;
+    padding: 12px;
+    background: var(--sancai-soft);
+    border: 1px solid var(--sancai-line);
+    border-radius: 8px;
+}
+
+.sancai-image-preview-main .ant-image {
+    max-width: 100%;
+}
+
+.sancai-image-preview-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
 .sancai-drawer-footer {
     display: flex;
     justify-content: flex-end;

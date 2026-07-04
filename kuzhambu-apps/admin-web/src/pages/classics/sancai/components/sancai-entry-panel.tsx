@@ -13,6 +13,7 @@ import { ClassicsShowcaseJobSection } from "@/pages/classics/common/components/c
 import { AiCandidatePanel } from "@/pages/classics/common/components/ai-candidate-panel";
 import { ClassicsContentQaPanel } from "@/pages/classics/common/components/classics-content-qa-panel";
 import { ClassicsContentTagPanel } from "@/pages/classics/common/components/classics-content-tag-panel";
+import { SancaiEntryImagePreview } from "./sancai-entry-image-preview";
 import { SancaiEntryList } from "./sancai-entry-list";
 import { SancaiEntryModel } from "./sancai-entry-model";
 import type { SancaiEntryFormValues } from "./sancai-form-values";
@@ -83,6 +84,7 @@ export const SancaiEntryPanel = ({
     const [isModelOpen, setIsModelOpen] = useState(defaultCreateOpen);
     const [editingEntry, setEditingEntry] = useState<SancaiEntryRecord | null>(null);
     const [selectedVersionId, setSelectedVersionId] = useState<number | null>(null);
+    const [previewImageId, setPreviewImageId] = useState<number | null>(null);
     const [imageUploadTitle, setImageUploadTitle] = useState("");
     const [imageUploadType, setImageUploadType] = useState("ORIGINAL");
     const [imageUploadCurrentUsed, setImageUploadCurrentUsed] = useState(true);
@@ -481,6 +483,7 @@ export const SancaiEntryPanel = ({
         setSelectedVisualAsset(null);
         setEditingEntry(null);
         setSelectedVersionId(null);
+        setPreviewImageId(null);
         resetHandledSucceededTaskIds();
         setIsModelOpen(false);
     };
@@ -604,17 +607,7 @@ export const SancaiEntryPanel = ({
         });
     };
     const previewImage = (image: SancaiEntryImageRecord) => {
-        if (!selectedEntryId) {
-            return;
-        }
-        window.open(
-            entryService.getImageContentUrl({
-                entryId: selectedEntryId,
-                imageId: image.id
-            }),
-            "_blank",
-            "noopener,noreferrer"
-        );
+        setPreviewImageId(image.id);
     };
     const downloadImage = (image: SancaiEntryImageRecord) => {
         if (!selectedEntryId) {
@@ -1088,6 +1081,13 @@ export const SancaiEntryPanel = ({
                         </>
                     ) : null
                 }
+            />
+            <SancaiEntryImagePreview
+                key={previewImageId ?? "closed"}
+                entryId={selectedEntryId}
+                images={entryImages}
+                openImageId={previewImageId}
+                onClose={() => setPreviewImageId(null)}
             />
         </>
     );
