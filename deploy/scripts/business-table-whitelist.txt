@@ -34,6 +34,8 @@ classics_wangqi_document
 discovery_qa_message
 discovery_qa_message_source
 discovery_qa_retrieval_trace
+discovery_qa_knowledge_sync_batch
+discovery_qa_knowledge_sync_item
 discovery_qa_session
 discovery_query_understanding
 discovery_search_click

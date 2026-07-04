@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `db/schema/discovery.sql; db/data/discovery.sql; deploy/scripts/business-table-whitelist.txt`：重写 Discovery QA 数据表结构
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-KNOWLEDGE-BASE-REWRITE.md`
-    - 范围对象：`db/schema/discovery.sql`; `db/data/discovery.sql`; `deploy/scripts/business-table-whitelist.txt`
-    - 处理动作：按 RUNBOOK 最终字段替换 QA 会话、消息、来源、trace 表并新增知识同步表。
-    - 验收点：旧字段已删除，新同步表进入白名单。
-    - 重要度：10/10
-
 - [ ] `QaSession.java; QaMessage.java; QaSessionRepository.java; QaMessageRepository.java`：调整 QA 会话和消息领域模型
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-KNOWLEDGE-BASE-REWRITE.md`
