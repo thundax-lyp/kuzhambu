@@ -76,6 +76,12 @@ OpenAPI 和 Swagger UI 只暴露在 `/internal/*` 路径下，用于内网开发
 
 AI usecase 路径只允许 `kuzhambu-ai` 服务身份调用；Classics、Discovery、Knowledge 等业务域不得绕过 AI 域直接访问 workers AI 接口。完整 usecase path、capability 和 stream 约束见 `docs/20-interfaces/WORKERS-AI-USECASE-INTERFACE.md`。
 
+## Discovery QA Boundary
+
+Workers 不承载正式 Discovery QA 问答运行时，不提供 Discovery QA `chat/completions`、`question/ask` 或知识同步 task。
+
+`/internal/ai/discovery/*` 仅是 AI 域调用的模型能力 usecase，用于 query understanding、query rewrite 和 answer generation 等 AI 计算。正式 Discovery QA 会话、权限、知识库同步、来源回显和 provider trace 由 Java Discovery 服务负责。
+
 ## Local Development
 
 ```sh

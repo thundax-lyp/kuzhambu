@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `kuzhambu-workers README/main/tests`：锁定 Workers 边界
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-KNOWLEDGE-BASE-REWRITE.md`
-    - 范围对象：`kuzhambu-workers/README.md`; `kuzhambu-workers/src/kuzhambu_workers/__init__.py`; `kuzhambu-workers/src/kuzhambu_workers/main.py`; `kuzhambu-workers/tests/test_ai_usecase_routes_discovery.py`; `kuzhambu-workers/tests/test_workers_architecture.py`
-    - 处理动作：确认并测试 Workers 不承载正式 Discovery QA 问答或知识同步能力。
-    - 验收点：Workers 无 Discovery QA runtime endpoint 或知识同步 task。
-    - 重要度：8/10
-
 - [ ] `portal qa-service; admin qa-admin-service; discovery-service-contract.test.ts; portal qa-page.test.tsx`：增加跨前端契约检查
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-KNOWLEDGE-BASE-REWRITE.md`
