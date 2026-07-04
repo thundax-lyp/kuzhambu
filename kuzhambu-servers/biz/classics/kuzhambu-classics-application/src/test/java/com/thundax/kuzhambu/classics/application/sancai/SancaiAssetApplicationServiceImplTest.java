@@ -1,7 +1,6 @@
 package com.thundax.kuzhambu.classics.application.sancai;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
@@ -170,13 +169,11 @@ class SancaiAssetApplicationServiceImplTest {
     }
 
     @Test
-    void uploadImageShouldCreateReplacementAndBindStorageReference() {
+    void uploadImageShouldClearCurrentImagesAndBindStorageReference() {
         SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
         StorageFacade storageFacade = mock(StorageFacade.class);
         SancaiAssetApplicationServiceImpl service =
                 new SancaiAssetApplicationServiceImpl(repository, null, storageFacade, null);
-        SancaiEntryImage replacedImage = image(8001L, 3001L, 7000L);
-        when(repository.getImageById(SancaiEntryImageId.of(8001L))).thenReturn(replacedImage);
         when(repository.maxPriority()).thenReturn(5);
         when(repository.insertImage(org.mockito.ArgumentMatchers.any())).thenReturn(SancaiEntryImageId.of(8002L));
         when(storageFacade.upload(org.mockito.ArgumentMatchers.any())).thenReturn(uploadResponse());
@@ -197,12 +194,12 @@ class SancaiAssetApplicationServiceImplTest {
         assertEquals(7001L, result.getStorageObjectId());
         assertEquals("/api/classics/sancai/assets/images/3001/8002/content", result.getPreviewUrl());
         assertEquals("/api/classics/sancai/assets/images/3001/8002/content?download=true", result.getDownloadUrl());
-        assertFalse(replacedImage.isCurrentUsed());
         ArgumentCaptor<SancaiEntryImage> insertCaptor = ArgumentCaptor.forClass(SancaiEntryImage.class);
         verify(repository).insertImage(insertCaptor.capture());
         assertEquals(StorageObjectId.of(7001L), insertCaptor.getValue().getStorageObjectId());
         assertEquals(6, insertCaptor.getValue().getPriority());
-        verify(repository).updateImage(replacedImage);
+        verify(repository).clearCurrentImagesByEntryId(SancaiEntryId.of(3001L));
+        verify(repository, never()).updateImage(org.mockito.ArgumentMatchers.any());
         ArgumentCaptor<UploadStorageFacadeRequest> uploadCaptor =
                 ArgumentCaptor.forClass(UploadStorageFacadeRequest.class);
         verify(storageFacade).upload(uploadCaptor.capture());
