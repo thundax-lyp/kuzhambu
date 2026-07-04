@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `discovery-qa-export-repository`：实现 QA 会话导出仓储
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-SESSION-DELETE-EXPORT.md`
-    - 范围对象：`QaSessionExportMapper.java`、`QaSessionExportRepositoryImpl.java`、`QaPersistenceAssembler.java`、`QaSessionExportRepositoryImplTest.java`
-    - 处理动作：实现导出记录保存、更新、按 `export_id` 查询和持久化映射。
-    - 验收点：`save` 自动生成 ID、`update`、`getByExportId` 测试通过。
-    - 重要度：9/10
-
 - [ ] `discovery-qa-export-application`：实现 QA 会话 CSV 导出应用服务
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-SESSION-DELETE-EXPORT.md`

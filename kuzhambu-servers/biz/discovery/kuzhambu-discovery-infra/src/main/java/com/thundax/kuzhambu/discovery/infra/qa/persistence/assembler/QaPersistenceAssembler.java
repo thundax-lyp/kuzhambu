@@ -3,10 +3,12 @@ package com.thundax.kuzhambu.discovery.infra.qa.persistence.assembler;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaMessage;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaRetrievalTrace;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSession;
+import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSessionExport;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSource;
 import com.thundax.kuzhambu.discovery.infra.qa.persistence.dataobject.QaMessageDO;
 import com.thundax.kuzhambu.discovery.infra.qa.persistence.dataobject.QaRetrievalTraceDO;
 import com.thundax.kuzhambu.discovery.infra.qa.persistence.dataobject.QaSessionDO;
+import com.thundax.kuzhambu.discovery.infra.qa.persistence.dataobject.QaSessionExportDO;
 import com.thundax.kuzhambu.discovery.infra.qa.persistence.dataobject.QaSourceDO;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,6 +58,42 @@ public final class QaPersistenceAssembler {
         entity.setOpenedAt(dataObject.getOpenedAt());
         entity.setLastMessageAt(dataObject.getLastMessageAt());
         entity.setRemovedAt(dataObject.getRemovedAt());
+        return entity;
+    }
+
+    public static QaSessionExportDO toObject(QaSessionExport entity) {
+        if (entity == null) {
+            return null;
+        }
+        QaSessionExportDO dataObject = new QaSessionExportDO();
+        dataObject.setId(entity.getId());
+        dataObject.setExportId(entity.getExportId());
+        dataObject.setSessionId(entity.getSessionId());
+        dataObject.setFormat(entity.getFormat());
+        dataObject.setStorageObjectId(entity.getStorageObjectId());
+        dataObject.setExportStatus(entity.getExportStatus());
+        dataObject.setFailureReason(entity.getFailureReason());
+        dataObject.setRequesterUserId(entity.getRequesterUserId());
+        dataObject.setRequestedAt(entity.getRequestedAt());
+        dataObject.setCompletedAt(entity.getCompletedAt());
+        return dataObject;
+    }
+
+    public static QaSessionExport toSessionExportDomain(QaSessionExportDO dataObject) {
+        if (dataObject == null) {
+            return null;
+        }
+        QaSessionExport entity = new QaSessionExport();
+        entity.setId(dataObject.getId());
+        entity.setExportId(dataObject.getExportId());
+        entity.setSessionId(dataObject.getSessionId());
+        entity.setFormat(dataObject.getFormat());
+        entity.setStorageObjectId(dataObject.getStorageObjectId());
+        entity.setExportStatus(dataObject.getExportStatus());
+        entity.setFailureReason(dataObject.getFailureReason());
+        entity.setRequesterUserId(dataObject.getRequesterUserId());
+        entity.setRequestedAt(dataObject.getRequestedAt());
+        entity.setCompletedAt(dataObject.getCompletedAt());
         return entity;
     }
 
