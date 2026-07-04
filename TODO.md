@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web-discovery-qa-delete-export`：实现 Admin QA 会话删除和导出前端闭环
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-SESSION-DELETE-EXPORT.md`
-    - 范围对象：`qa-admin-types.ts`、`qa-admin-service.ts`、`qa-admin-page.tsx`、`qa-admin-page.test.tsx`、`discovery-service-contract.test.ts`
-    - 处理动作：新增删除和导出类型、服务调用、页面入口、删除状态展示和契约测试。
-    - 验收点：删除、已删除状态展示、导出已删除会话和服务路径契约测试通过。
-    - 重要度：8/10
-
 - [ ] `discovery-qa-delete-export-tests`：补齐 Discovery QA 删除和导出测试
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-SESSION-DELETE-EXPORT.md`

@@ -69,6 +69,19 @@ export interface DiscoveryQaSessionDetailRecord {
     title?: string | null;
 }
 
+export interface DiscoveryQaSessionExportRecord {
+    completedAt?: number | null;
+    contentType?: string | null;
+    exportId?: number | null;
+    exportStatus?: string | null;
+    failureReason?: string | null;
+    filename?: string | null;
+    format?: string | null;
+    requestedAt?: number | null;
+    sessionId?: number | null;
+    storageObjectId?: number | null;
+}
+
 export interface DiscoveryQaSourceRecord {
     contentId?: number | null;
     contentType?: string | null;

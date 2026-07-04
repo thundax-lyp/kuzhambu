@@ -6,6 +6,8 @@ import { queryClient } from "@/query/query-client";
 import { QaAdminPage } from "./qa-admin-page";
 
 const mocks = vi.hoisted(() => ({
+    createQaSessionExport: vi.fn(),
+    deleteQaSession: vi.fn(),
     getKnowledgeHealth: vi.fn(),
     getQaSession: vi.fn(),
     getQaTrace: vi.fn(),
@@ -16,6 +18,8 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("./qa-admin-service", () => ({
+    createQaSessionExport: mocks.createQaSessionExport,
+    deleteQaSession: mocks.deleteQaSession,
     getKnowledgeHealth: mocks.getKnowledgeHealth,
     getQaSession: mocks.getQaSession,
     getQaSessionDetail: mocks.getQaSession,
@@ -54,6 +58,7 @@ describe("QaAdminPage", () => {
             status: "AVAILABLE"
         });
         mocks.getQaSession.mockResolvedValue({
+            ownerUserId: 1001,
             sessionId: 2001,
             title: "礼器问答",
             status: "OPEN",
@@ -120,6 +125,14 @@ describe("QaAdminPage", () => {
             contentType: "SANCAI_ENTRY",
             contentId: 1001,
             syncStatus: "SYNCED"
+        });
+        mocks.deleteQaSession.mockResolvedValue(undefined);
+        mocks.createQaSessionExport.mockResolvedValue({
+            exportId: 7001,
+            exportStatus: "SUCCEEDED",
+            filename: "discovery-qa-session-2001-7001.csv",
+            sessionId: 2001,
+            storageObjectId: 8001
         });
     });
 
@@ -196,5 +209,40 @@ describe("QaAdminPage", () => {
         await user.click(screen.getByRole("button", { name: "加载轨迹" }));
         expect(await screen.findByText("kb-1")).toBeInTheDocument();
         expect(screen.getByText(/"answer": "礼器答案"/u)).toBeInTheDocument();
+    }, 30000);
+
+    it("deletes session, shows removed status, and exports deleted session", async () => {
+        const user = userEvent.setup();
+        const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
+        renderPage();
+
+        await user.click(screen.getByRole("button", { name: "加载会话" }));
+        expect(await screen.findByText("礼器问答")).toBeInTheDocument();
+
+        await user.click(screen.getByRole("button", { name: "删除会话" }));
+        await waitFor(() => {
+            expect(mocks.deleteQaSession.mock.calls[0]?.[0]).toEqual({
+                requesterUserId: 1001,
+                sessionId: 2001
+            });
+        });
+        expect(confirmSpy).toHaveBeenCalledWith("确认删除会话 2001？");
+        expect(await screen.findByText("REMOVED")).toBeInTheDocument();
+        expect(screen.getByText("会话 2001 已删除")).toBeInTheDocument();
+
+        await user.click(screen.getByRole("button", { name: "导出 CSV" }));
+        await waitFor(() => {
+            expect(mocks.createQaSessionExport.mock.calls[0]?.[0]).toEqual({
+                format: "CSV",
+                requesterUserId: 1001,
+                sessionId: 2001
+            });
+        });
+        expect(
+            await screen.findByText(/导出成功：discovery-qa-session-2001-7001\.csv/u)
+        ).toBeInTheDocument();
+        expect(screen.getByText(/对象号 8001/u)).toBeInTheDocument();
+
+        confirmSpy.mockRestore();
     }, 30000);
 });

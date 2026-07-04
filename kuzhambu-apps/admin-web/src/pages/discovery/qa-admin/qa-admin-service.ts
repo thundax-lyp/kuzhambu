@@ -1,5 +1,6 @@
 import { postJson } from "@/api/http";
 import type {
+    DiscoveryQaSessionExportRecord,
     DiscoveryQaSessionDetailRecord,
     DiscoveryQaSourceRecord,
     KnowledgeHealthRecord,
@@ -9,6 +10,17 @@ import type {
 } from "./qa-admin-types";
 
 export interface DiscoveryQaSessionGetCommand {
+    sessionId: number;
+}
+
+export interface DiscoveryQaSessionDeleteCommand {
+    requesterUserId?: number | null;
+    sessionId: number;
+}
+
+export interface DiscoveryQaSessionExportCommand {
+    format?: string | null;
+    requesterUserId?: number | null;
     sessionId: number;
 }
 
@@ -71,6 +83,21 @@ export const pageKnowledgeSyncItems = (query: KnowledgeSyncItemPageQuery = {}) =
 export const getQaSession = (command: DiscoveryQaSessionGetCommand) => {
     return postJson<DiscoveryQaSessionDetailRecord, DiscoveryQaSessionGetCommand>(
         "/discovery/qa-admin/session/get",
+        {
+            body: command
+        }
+    );
+};
+
+export const deleteQaSession = (command: DiscoveryQaSessionDeleteCommand) => {
+    return postJson<void, DiscoveryQaSessionDeleteCommand>("/discovery/qa-admin/session/delete", {
+        body: command
+    });
+};
+
+export const createQaSessionExport = (command: DiscoveryQaSessionExportCommand) => {
+    return postJson<DiscoveryQaSessionExportRecord, DiscoveryQaSessionExportCommand>(
+        "/discovery/qa-admin/session/export",
         {
             body: command
         }
