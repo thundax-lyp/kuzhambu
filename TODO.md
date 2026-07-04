@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `QaKnowledgeSyncItem.java; QaKnowledgeSyncBatch.java; QaKnowledgeSyncItemRepository.java; QaKnowledgeSyncBatchRepository.java`：新增知识同步领域模型
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-KNOWLEDGE-BASE-REWRITE.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-domain/src/main/java/com/thundax/kuzhambu/discovery/domain/qa/model/entity/QaKnowledgeSyncItem.java`; `kuzhambu-servers/biz/discovery/kuzhambu-discovery-domain/src/main/java/com/thundax/kuzhambu/discovery/domain/qa/model/entity/QaKnowledgeSyncBatch.java`; `kuzhambu-servers/biz/discovery/kuzhambu-discovery-domain/src/main/java/com/thundax/kuzhambu/discovery/domain/qa/repository/QaKnowledgeSyncItemRepository.java`; `kuzhambu-servers/biz/discovery/kuzhambu-discovery-domain/src/main/java/com/thundax/kuzhambu/discovery/domain/qa/repository/QaKnowledgeSyncBatchRepository.java`
-    - 处理动作：新增同步 item、batch 领域对象和仓储接口。
-    - 验收点：领域架构测试通过。
-    - 重要度：9/10
-
 - [ ] `QaSessionDO.java; QaMessageDO.java; QaSourceDO.java; QaRetrievalTraceDO.java`：调整 QA 持久化 DO
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-KNOWLEDGE-BASE-REWRITE.md`
