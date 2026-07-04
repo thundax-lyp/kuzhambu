@@ -9,39 +9,6 @@
 
 ## 当前任务项
 
-
-- [ ] `KnowledgeQaApplicationServiceImpl.java; QaSourceAssembler.java; QaTraceAssembler.java; KnowledgeQaApplicationServiceImplTest.java`：实现 Knowledge Base QA 应用服务
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-KNOWLEDGE-BASE-REWRITE.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/qa/service/impl/KnowledgeQaApplicationServiceImpl.java`; `kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/qa/support/QaSourceAssembler.java`; `kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/qa/support/QaTraceAssembler.java`; `kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/test/java/com/thundax/kuzhambu/discovery/application/qa/service/impl/KnowledgeQaApplicationServiceImplTest.java`
-    - 处理动作：调用 `KnowledgeBaseClient.chat()` 并保存消息、来源快照和 provider trace。
-    - 验收点：测试覆盖成功回答、provider 失败和不可用来源。
-    - 重要度：10/10
-
-- [ ] `QaApplicationServiceImpl.java; QaContextAssembler.java; QaApplicationServiceImplTest.java`：删除旧 QA 回答路径
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-KNOWLEDGE-BASE-REWRITE.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/qa/service/impl/QaApplicationServiceImpl.java`; `kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/qa/support/QaContextAssembler.java`; `kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/test/java/com/thundax/kuzhambu/discovery/application/qa/service/impl/QaApplicationServiceImplTest.java`
-    - 处理动作：删除上下文拼装和 `AiFacade`、查询理解、运行时 Classics 语料依赖。
-    - 验收点：Discovery application 正式 QA 路径无旧回答链路引用。
-    - 重要度：10/10
-
-- [ ] `DiscoveryQaPortalController.java; DiscoveryQaRequests.java; DiscoveryQaResponses.java; DiscoveryQaPortalInterfaceAssembler.java`：改造 Portal QA 接口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-KNOWLEDGE-BASE-REWRITE.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-interface/src/main/java/com/thundax/kuzhambu/discovery/interfaces/portal/qa/controller/DiscoveryQaPortalController.java`; `kuzhambu-servers/biz/discovery/kuzhambu-discovery-interface/src/main/java/com/thundax/kuzhambu/discovery/interfaces/portal/qa/controller/request/DiscoveryQaRequests.java`; `kuzhambu-servers/biz/discovery/kuzhambu-discovery-interface/src/main/java/com/thundax/kuzhambu/discovery/interfaces/portal/qa/controller/response/DiscoveryQaResponses.java`; `kuzhambu-servers/biz/discovery/kuzhambu-discovery-interface/src/main/java/com/thundax/kuzhambu/discovery/interfaces/portal/qa/assembler/DiscoveryQaPortalInterfaceAssembler.java`
-    - 处理动作：删除 `question/ask` 并新增 OpenAI-compatible `chat/completions` 接口。
-    - 验收点：Portal controller 测试覆盖 session open 和 chat completions。
-    - 重要度：10/10
-
-- [ ] `DiscoveryQaAdminController.java; DiscoveryQaAdminRequests.java; DiscoveryQaAdminResponses.java; DiscoveryQaAdminInterfaceAssembler.java`：改造 Admin QA 接口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-KNOWLEDGE-BASE-REWRITE.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-interface/src/main/java/com/thundax/kuzhambu/discovery/interfaces/admin/qa/controller/DiscoveryQaAdminController.java`; `kuzhambu-servers/biz/discovery/kuzhambu-discovery-interface/src/main/java/com/thundax/kuzhambu/discovery/interfaces/admin/qa/controller/request/DiscoveryQaAdminRequests.java`; `kuzhambu-servers/biz/discovery/kuzhambu-discovery-interface/src/main/java/com/thundax/kuzhambu/discovery/interfaces/admin/qa/controller/response/DiscoveryQaAdminResponses.java`; `kuzhambu-servers/biz/discovery/kuzhambu-discovery-interface/src/main/java/com/thundax/kuzhambu/discovery/interfaces/admin/qa/assembler/DiscoveryQaAdminInterfaceAssembler.java`
-    - 处理动作：新增知识库 health、rebuild、sync、sync page 接口并调整 trace 响应。
-    - 验收点：Admin controller 测试覆盖全部 QA admin 接口。
-    - 重要度：10/10
-
 - [ ] `portal-web qa-service.ts; qa-types.ts; qa-page.tsx; qa-page.test.tsx`：实现 Portal QA 页面闭环
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-KNOWLEDGE-BASE-REWRITE.md`

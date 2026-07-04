@@ -160,6 +160,102 @@ public final class DiscoveryQaAdminResponses {
 
     @Getter
     @Builder
+    @Schema(name = "DiscoveryQaKnowledgeHealthResponse", description = "Discovery QA 知识库健康响应")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class QaKnowledgeHealthResponse implements Serializable {
+
+        @Schema(name = "knowledgeBaseName", description = "知识库名称")
+        @JsonProperty(value = "knowledgeBaseName")
+        private String knowledgeBaseName;
+
+        @Schema(name = "status", description = "健康状态")
+        @JsonProperty(value = "status")
+        private String status;
+
+        @Schema(name = "provider", description = "Provider")
+        @JsonProperty(value = "provider")
+        private String provider;
+
+        @Schema(name = "checkedAt", description = "检查时间")
+        @JsonProperty(value = "checkedAt")
+        private Long checkedAt;
+
+        @Schema(name = "failureReason", description = "失败原因")
+        @JsonProperty(value = "failureReason")
+        private String failureReason;
+
+        @Schema(name = "raw", description = "原始响应")
+        @JsonProperty(value = "raw")
+        private Object raw;
+    }
+
+    @Getter
+    @Builder
+    @Schema(name = "DiscoveryQaSyncItemResponse", description = "Discovery QA 同步条目响应")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class QaSyncItemResponse implements Serializable {
+
+        @Schema(name = "sourceId", description = "来源号")
+        @JsonProperty(value = "sourceId")
+        private String sourceId;
+
+        @Schema(name = "contentType", description = "内容类型")
+        @JsonProperty(value = "contentType")
+        private String contentType;
+
+        @Schema(name = "contentId", description = "内容号")
+        @JsonProperty(value = "contentId")
+        private Long contentId;
+
+        @Schema(name = "knowledgeBaseName", description = "知识库名称")
+        @JsonProperty(value = "knowledgeBaseName")
+        private String knowledgeBaseName;
+
+        @Schema(name = "currentVersionNo", description = "当前版本号")
+        @JsonProperty(value = "currentVersionNo")
+        private Integer currentVersionNo;
+
+        @Schema(name = "knowledgeRevision", description = "知识版本哈希")
+        @JsonProperty(value = "knowledgeRevision")
+        private String knowledgeRevision;
+
+        @Schema(name = "provider", description = "Provider")
+        @JsonProperty(value = "provider")
+        private String provider;
+
+        @Schema(name = "externalKnowledgeBaseId", description = "外部知识库ID")
+        @JsonProperty(value = "externalKnowledgeBaseId")
+        private String externalKnowledgeBaseId;
+
+        @Schema(name = "externalKnowledgeItemId", description = "外部知识条目ID")
+        @JsonProperty(value = "externalKnowledgeItemId")
+        private String externalKnowledgeItemId;
+
+        @Schema(name = "syncStatus", description = "同步状态")
+        @JsonProperty(value = "syncStatus")
+        private String syncStatus;
+
+        @Schema(name = "failureReason", description = "失败原因")
+        @JsonProperty(value = "failureReason")
+        private String failureReason;
+
+        @Schema(name = "syncedAt", description = "同步时间")
+        @JsonProperty(value = "syncedAt")
+        private Long syncedAt;
+
+        @Schema(name = "createdAt", description = "创建时间")
+        @JsonProperty(value = "createdAt")
+        private Long createdAt;
+
+        @Schema(name = "updatedAt", description = "更新时间")
+        @JsonProperty(value = "updatedAt")
+        private Long updatedAt;
+    }
+
+    @Getter
+    @Builder
     @Schema(name = "DiscoveryQaTraceResponse", description = "Discovery QA 轨迹响应")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -177,33 +273,37 @@ public final class DiscoveryQaAdminResponses {
         @JsonProperty(value = "rawQuestion")
         private String rawQuestion;
 
-        @Schema(name = "rewrittenQuestion", description = "改写问题")
-        @JsonProperty(value = "rewrittenQuestion")
-        private String rewrittenQuestion;
+        @Schema(name = "provider", description = "Provider")
+        @JsonProperty(value = "provider")
+        private String provider;
 
-        @Schema(name = "scope", description = "作用域")
-        @JsonProperty(value = "scope")
-        private String scope;
+        @Schema(name = "externalKnowledgeBaseId", description = "外部知识库ID")
+        @JsonProperty(value = "externalKnowledgeBaseId")
+        private String externalKnowledgeBaseId;
 
-        @Schema(name = "filtersJson", description = "过滤条件 JSON")
-        @JsonProperty(value = "filtersJson")
-        private String filtersJson;
+        @Schema(name = "externalKnowledgeItemIds", description = "外部知识条目ID集合")
+        @JsonProperty(value = "externalKnowledgeItemIds")
+        private String externalKnowledgeItemIds;
 
-        @Schema(name = "expandedTermsJson", description = "扩展词 JSON")
-        @JsonProperty(value = "expandedTermsJson")
-        private String expandedTermsJson;
+        @Schema(name = "externalChatId", description = "外部会话ID")
+        @JsonProperty(value = "externalChatId")
+        private String externalChatId;
 
-        @Schema(name = "linkedEntitiesJson", description = "关联实体 JSON")
-        @JsonProperty(value = "linkedEntitiesJson")
-        private String linkedEntitiesJson;
+        @Schema(name = "providerRequestId", description = "Provider 请求ID")
+        @JsonProperty(value = "providerRequestId")
+        private String providerRequestId;
 
-        @Schema(name = "candidateCount", description = "候选数")
-        @JsonProperty(value = "candidateCount")
-        private Integer candidateCount;
+        @Schema(name = "latencyMs", description = "耗时（ms）")
+        @JsonProperty(value = "latencyMs")
+        private Long latencyMs;
 
-        @Schema(name = "contextSnapshot", description = "上下文快照")
-        @JsonProperty(value = "contextSnapshot")
-        private String contextSnapshot;
+        @Schema(name = "failureReason", description = "失败原因")
+        @JsonProperty(value = "failureReason")
+        private String failureReason;
+
+        @Schema(name = "raw", description = "原始响应")
+        @JsonProperty(value = "raw")
+        private String raw;
 
         @Schema(name = "retrievedAt", description = "检索时间")
         @JsonProperty(value = "retrievedAt")
