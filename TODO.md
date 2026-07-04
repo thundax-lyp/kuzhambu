@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics-sancai-image-worker-export`：同步 worker Classics 导出图片元数据输出
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-IMAGE-GOVERNANCE-CLOSEOUT.md`
-    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/render/classics_export.py`、`kuzhambu-workers/src/kuzhambu_workers/render/templates/classics_export.html`、`kuzhambu-workers/tests/test_classics_export.py`
-    - 处理动作：JSON 保留 `items[].images[]`，HTML 渲染图片元数据，CSV 不展开多图为多行。
-    - 验收点：导出不丢失图片元数据且 CSV 行数仍等于内容条目数。
-    - 重要度：7/10
-
 - [ ] `classics-sancai-image-interface-doc`：更新三才内容版本快照接口文档
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-IMAGE-GOVERNANCE-CLOSEOUT.md`

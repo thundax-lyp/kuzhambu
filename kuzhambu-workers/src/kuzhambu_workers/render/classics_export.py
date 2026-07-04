@@ -101,10 +101,38 @@ def _render_html(title: str, items: list[dict]) -> str:
         f"<h2>{escape(str(item.get('title') or item.get('id') or 'Untitled'))}</h2>"
         f"<p><strong>ID:</strong> {escape(str(item.get('id') or ''))}</p>"
         f"<p>{escape(str(item.get('text') or ''))}</p>"
+        f"{_images_html(item)}"
         "</article>"
         for item in items
     )
     return template.replace("{{ title }}", escape(title)).replace("{{ items }}", rows)
+
+
+def _images_html(item: dict) -> str:
+    images = item.get("images", [])
+    if not isinstance(images, list):
+        return ""
+    image_items = [image for image in images if isinstance(image, dict)]
+    if not image_items:
+        return ""
+    rows = "\n".join(_image_metadata_html(image) for image in image_items)
+    return f'<section class="item-images"><h3>图片元数据</h3><ul>{rows}</ul></section>'
+
+
+def _image_metadata_html(image: dict) -> str:
+    title = image.get("title") or image.get("originalFilename") or image.get("imageId") or "图片"
+    fields = [
+        ("图片ID", image.get("imageId")),
+        ("类型", image.get("imageType")),
+        ("当前", "是" if image.get("currentUsed") is True else "否"),
+        ("优先级", image.get("priority")),
+        ("文件名", image.get("originalFilename")),
+        ("大小", image.get("size")),
+    ]
+    metadata = "; ".join(
+        f"{label}: {escape(str(value))}" for label, value in fields if value is not None
+    )
+    return f"<li><strong>{escape(str(title))}</strong><span>{metadata}</span></li>"
 
 
 def _render_zip(title: str, items: list[dict], payload: dict) -> bytes:
