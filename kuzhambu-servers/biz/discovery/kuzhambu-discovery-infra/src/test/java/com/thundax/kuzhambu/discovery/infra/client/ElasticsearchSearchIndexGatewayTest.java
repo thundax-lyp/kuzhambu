@@ -106,11 +106,10 @@ class ElasticsearchSearchIndexGatewayTest {
         ElasticsearchOperations operations = mock(ElasticsearchOperations.class);
         @SuppressWarnings("unchecked")
         SearchHits<DiscoverySearchDocument> searchHits = mock(SearchHits.class);
-        when(searchHits.getSearchHits())
-                .thenReturn(List.of(
-                        searchHit(document("1001", "标题", "包含天地的摘要", "正文", 1)),
-                        searchHit(document("1002", "标题", "摘要", "正文包含天地", 2)),
-                        searchHit(document("1003", "标题", "没有命中", "正文", 3))));
+        SearchHit<DiscoverySearchDocument> summaryHit = searchHit(document("1001", "标题", "包含天地的摘要", "正文", 1));
+        SearchHit<DiscoverySearchDocument> bodyHit = searchHit(document("1002", "标题", "摘要", "正文包含天地", 2));
+        SearchHit<DiscoverySearchDocument> fallbackHit = searchHit(document("1003", "标题", "没有命中", "正文", 3));
+        when(searchHits.getSearchHits()).thenReturn(List.of(summaryHit, bodyHit, fallbackHit));
         when(operations.search(
                         any(org.springframework.data.elasticsearch.core.query.CriteriaQuery.class),
                         eq(DiscoverySearchDocument.class),
@@ -136,7 +135,8 @@ class ElasticsearchSearchIndexGatewayTest {
         ElasticsearchOperations operations = mock(ElasticsearchOperations.class);
         @SuppressWarnings("unchecked")
         SearchHits<DiscoverySearchDocument> searchHits = mock(SearchHits.class);
-        when(searchHits.getSearchHits()).thenReturn(List.of(searchHit(document("1001", "标题", "", "正文", 1))));
+        SearchHit<DiscoverySearchDocument> searchHit = searchHit(document("1001", "标题", "", "正文", 1));
+        when(searchHits.getSearchHits()).thenReturn(List.of(searchHit));
         when(operations.search(
                         any(org.springframework.data.elasticsearch.core.query.CriteriaQuery.class),
                         eq(DiscoverySearchDocument.class),
