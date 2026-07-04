@@ -204,6 +204,7 @@ describe("DiscoveryQaPage", () => {
 
         const { container, root } = renderPage();
         await flushAsyncWork();
+        await flushAsyncWork();
 
         const sessionButton = findButtonByText(container, "待删除会话");
         await act(async () => {
@@ -218,7 +219,7 @@ describe("DiscoveryQaPage", () => {
         });
 
         expect(confirmSpy).toHaveBeenCalledWith("确认删除会话 5001？");
-        expect(mocks.deleteQaSession).toHaveBeenCalledWith({
+        expect(mocks.deleteQaSession.mock.calls[0]?.[0]).toEqual({
             ownerUserId: 1001,
             sessionId: 5001
         });
@@ -264,6 +265,7 @@ describe("DiscoveryQaPage", () => {
 
         const { container, root } = renderPage();
         await flushAsyncWork();
+        await flushAsyncWork();
 
         const sessionButton = findButtonByText(container, "可导出会话");
         await act(async () => {
@@ -277,7 +279,7 @@ describe("DiscoveryQaPage", () => {
             await new Promise((resolve) => setTimeout(resolve, 0));
         });
 
-        expect(mocks.exportQaSession).toHaveBeenCalledWith({
+        expect(mocks.exportQaSession.mock.calls[0]?.[0]).toEqual({
             format: "CSV",
             ownerUserId: 1001,
             sessionId: 5002
