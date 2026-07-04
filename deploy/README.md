@@ -50,6 +50,10 @@ cp .env.example .env
 docker compose --env-file .env up --build
 ```
 
+## External Knowledge Base
+
+FastGPT is intentionally kept in a separate compose project because its dependency stack is large. See `deploy/fastgpt/README.md`.
+
 ## Images
 
 Compose uses project-prefixed image names by default:
