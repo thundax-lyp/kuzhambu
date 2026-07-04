@@ -6,6 +6,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import java.util.List;
+import java.util.Map;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -56,32 +58,35 @@ public final class DiscoveryQaRequests {
 
     @Getter
     @Setter
-    @Schema(name = "DiscoveryQaAskQuestionRequest", description = "Discovery Portal 问答提问请求")
+    @Schema(name = "DiscoveryQaChatCompletionsRequest", description = "Discovery Portal 问答提问请求")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class AskQuestionRequest {
+    public static class ChatCompletionsRequest {
 
         @Schema(name = "sessionId", description = "会话号")
         @JsonProperty(value = "sessionId")
         @NotNull(message = "\"会话号\"不能为空")
         private Long sessionId;
 
-        @Schema(name = "question", description = "问题")
-        @JsonProperty(value = "question")
-        @NotBlank(message = "\"问题\"不能为空")
-        private String question;
+        @Schema(name = "model", description = "知识库名")
+        @JsonProperty(value = "model")
+        private String model;
 
-        @Schema(name = "contextTurnCount", description = "上下文轮次")
-        @JsonProperty(value = "contextTurnCount")
-        private Integer contextTurnCount;
+        @Schema(name = "messages", description = "OpenAI-compatible 消息列表")
+        @JsonProperty(value = "messages")
+        private List<ChatMessage> messages;
 
-        @Schema(name = "operatorType", description = "操作者类型")
-        @JsonProperty(value = "operatorType")
-        private String operatorType;
+        @Schema(name = "stream", description = "是否流式返回")
+        @JsonProperty(value = "stream")
+        private Boolean stream;
 
-        @Schema(name = "operatorId", description = "操作者号")
-        @JsonProperty(value = "operatorId")
-        private String operatorId;
+        @Schema(name = "metadata", description = "元数据")
+        @JsonProperty(value = "metadata")
+        private Map<String, Object> metadata;
+
+        @Schema(name = "options", description = "模型参数")
+        @JsonProperty(value = "options")
+        private Map<String, Object> options;
 
         @Schema(name = "requestId", description = "请求号")
         @JsonProperty(value = "requestId")
@@ -90,5 +95,23 @@ public final class DiscoveryQaRequests {
         @Schema(name = "traceId", description = "链路号")
         @JsonProperty(value = "traceId")
         private String traceId;
+    }
+
+    @Getter
+    @Setter
+    @Schema(name = "DiscoveryQaChatCompletionMessage", description = "聊天消息")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class ChatMessage {
+
+        @Schema(name = "role", description = "角色")
+        @JsonProperty(value = "role")
+        @NotBlank(message = "\"角色\"不能为空")
+        private String role;
+
+        @Schema(name = "content", description = "内容")
+        @JsonProperty(value = "content")
+        @NotBlank(message = "\"内容\"不能为空")
+        private String content;
     }
 }

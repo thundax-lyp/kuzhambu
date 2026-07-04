@@ -1,4 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import * as qaService from "./qa-admin/qa-admin-service";
 import * as searchService from "./search-admin/search-admin-service";
 
@@ -14,7 +16,50 @@ describe("discovery admin service contracts", () => {
     });
 
     it("maps qa admin endpoints and request bodies", async () => {
-        await qaService.getQaSessionDetail({ sessionId: 2001 });
+        await qaService.getKnowledgeHealth();
+        expect(postJson).toHaveBeenLastCalledWith("/discovery/qa-admin/knowledge/health");
+
+        await qaService.rebuildKnowledge({ requestId: "REQ-1", traceId: "TRACE-1" });
+        expect(postJson).toHaveBeenLastCalledWith("/discovery/qa-admin/knowledge/rebuild", {
+            body: {
+                requestId: "REQ-1",
+                traceId: "TRACE-1"
+            }
+        });
+
+        await qaService.createKnowledgeSync({
+            contentId: 1001,
+            contentType: "SANCAI_ENTRY",
+            currentVersionNo: 2,
+            requestId: "REQ-2",
+            traceId: "TRACE-2"
+        });
+        expect(postJson).toHaveBeenLastCalledWith("/discovery/qa-admin/knowledge/sync", {
+            body: {
+                contentId: 1001,
+                contentType: "SANCAI_ENTRY",
+                currentVersionNo: 2,
+                requestId: "REQ-2",
+                traceId: "TRACE-2"
+            }
+        });
+
+        await qaService.pageKnowledgeSyncItems({
+            contentType: "SANCAI_ENTRY",
+            pageNo: 1,
+            pageSize: 10,
+            syncStatus: "SYNCED"
+        });
+        expect(postJson).toHaveBeenLastCalledWith("/discovery/qa-admin/knowledge/sync/page", {
+            body: {
+                contentType: "SANCAI_ENTRY",
+                pageNo: 1,
+                pageSize: 10,
+                syncStatus: "SYNCED"
+            }
+        });
+
+        await qaService.getQaSession({ sessionId: 2001 });
         expect(postJson).toHaveBeenLastCalledWith("/discovery/qa-admin/session/get", {
             body: {
                 sessionId: 2001
@@ -34,6 +79,22 @@ describe("discovery admin service contracts", () => {
                 traceId: 9001
             }
         });
+
+        const calledUrls = postJson.mock.calls.map(([url]) => String(url));
+        expect(calledUrls.join("\n")).not.toMatch(/fastgpt|provider|dataset|collection/iu);
+    });
+
+    it("keeps qa admin service on Discovery APIs without provider direct urls", () => {
+        const serviceSource = readFileSync(
+            resolve(process.cwd(), "src/pages/discovery/qa-admin/qa-admin-service.ts"),
+            "utf-8"
+        );
+
+        expect(serviceSource).toContain("/discovery/qa-admin/knowledge/health");
+        expect(serviceSource).toContain("/discovery/qa-admin/knowledge/rebuild");
+        expect(serviceSource).toContain("/discovery/qa-admin/knowledge/sync");
+        expect(serviceSource).toContain("/discovery/qa-admin/knowledge/sync/page");
+        expect(serviceSource).not.toMatch(/https?:\/\/|fastgpt|dataset|collection|appId|baseUrl/iu);
     });
 
     it("maps search admin endpoints and request bodies", async () => {

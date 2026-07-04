@@ -1,5 +1,7 @@
 package com.thundax.kuzhambu.discovery.interfaces.admin.qa.assembler;
 
+import com.thundax.kuzhambu.discovery.application.qa.result.KnowledgeHealthResult;
+import com.thundax.kuzhambu.discovery.application.qa.result.KnowledgeSyncItemResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaMessageResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionDetailResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSourceResult;
@@ -10,6 +12,8 @@ import java.util.List;
 public final class DiscoveryQaAdminInterfaceAssembler {
 
     private DiscoveryQaAdminInterfaceAssembler() {}
+
+    private static final String DEFAULT_KNOWLEDGE_BASE_NAME = "kuzhambu-qa";
 
     public static DiscoveryQaAdminResponses.QaSessionDetailResponse toSessionDetailResponse(
             QaSessionDetailResult result) {
@@ -59,14 +63,51 @@ public final class DiscoveryQaAdminInterfaceAssembler {
                 .traceId(result.getTraceId())
                 .messageId(result.getMessageId())
                 .rawQuestion(result.getRawQuestion())
-                .rewrittenQuestion(result.getRewrittenQuestion())
-                .scope(result.getScope())
-                .filtersJson(result.getFiltersJson())
-                .expandedTermsJson(result.getExpandedTermsJson())
-                .linkedEntitiesJson(result.getLinkedEntitiesJson())
-                .candidateCount(result.getCandidateCount())
-                .contextSnapshot(result.getContextSnapshot())
+                .provider(result.getProvider())
+                .externalKnowledgeBaseId(result.getExternalKnowledgeBaseId())
+                .externalKnowledgeItemIds(result.getExternalKnowledgeItemIds())
+                .externalChatId(result.getExternalChatId())
+                .providerRequestId(result.getProviderRequestId())
+                .latencyMs(result.getLatencyMs())
+                .failureReason(result.getFailureReason())
+                .raw(result.getRaw())
                 .retrievedAt(result.getRetrievedAt())
+                .build();
+    }
+
+    public static DiscoveryQaAdminResponses.QaKnowledgeHealthResponse toHealthResponse(KnowledgeHealthResult result) {
+        if (result == null) {
+            return null;
+        }
+        return DiscoveryQaAdminResponses.QaKnowledgeHealthResponse.builder()
+                .knowledgeBaseName(DEFAULT_KNOWLEDGE_BASE_NAME)
+                .status(result.isAvailable() ? "AVAILABLE" : "UNAVAILABLE")
+                .provider(result.getProvider())
+                .checkedAt(System.currentTimeMillis())
+                .failureReason(result.isAvailable() ? null : result.getMessage())
+                .raw(result.getRaw())
+                .build();
+    }
+
+    public static DiscoveryQaAdminResponses.QaSyncItemResponse toSyncItemResponse(KnowledgeSyncItemResult result) {
+        if (result == null) {
+            return null;
+        }
+        return DiscoveryQaAdminResponses.QaSyncItemResponse.builder()
+                .sourceId(result.getSourceId())
+                .contentType(result.getContentType())
+                .contentId(result.getContentId())
+                .knowledgeBaseName(result.getKnowledgeBaseName())
+                .currentVersionNo(result.getCurrentVersionNo())
+                .knowledgeRevision(result.getKnowledgeRevision())
+                .provider(result.getProvider())
+                .externalKnowledgeBaseId(result.getExternalKnowledgeBaseId())
+                .externalKnowledgeItemId(result.getExternalKnowledgeItemId())
+                .syncStatus(result.getSyncStatus())
+                .failureReason(result.getFailureReason())
+                .syncedAt(result.getSyncedAt())
+                .createdAt(result.getCreatedAt())
+                .updatedAt(result.getUpdatedAt())
                 .build();
     }
 

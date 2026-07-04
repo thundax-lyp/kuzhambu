@@ -41,6 +41,15 @@ EXPECTED_IMPORT_LINTER_CONTRACTS = {
     "WORKERS_RENDER_NO_AI_DEPENDENCY",
     "WORKERS_STREAMING_NO_FEATURE_DEPENDENCY",
 }
+FORMAL_DISCOVERY_QA_FORBIDDEN_TOKENS = {
+    "DiscoveryQa",
+    "chat/completions",
+    "question/ask",
+    "knowledge/sync",
+    "knowledge_sync",
+    "sync_knowledge",
+    "syncKnowledge",
+}
 
 
 def test_WORKERS_PACKAGE_GROUPS_and_WORKERS_FORBID_BUCKET_DIR() -> None:
@@ -79,6 +88,20 @@ def test_WORKERS_AI_USECASE_SERVICE_BOUNDARY_path_allowlist_is_shared() -> None:
     assert set(service_paths.AI_USECASE_PATHS).issubset(ai_paths), (
         "WORKERS_AI_USECASE_SERVICE_BOUNDARY"
     )
+
+
+def test_WORKERS_NO_FORMAL_DISCOVERY_QA_RUNTIME_OR_KNOWLEDGE_SYNC() -> None:
+    source_text = "\n".join(
+        path.read_text(encoding="utf-8")
+        for path in PACKAGE_ROOT.rglob("*.py")
+        if "__pycache__" not in path.parts
+    )
+    app_routes = set(service_paths.AI_USECASE_PATHS)
+
+    assert not any(token in source_text for token in FORMAL_DISCOVERY_QA_FORBIDDEN_TOKENS), (
+        "WORKERS_NO_DISCOVERY_QA_RUNTIME / WORKERS_NO_KNOWLEDGE_SYNC_TASK"
+    )
+    assert "/internal/discovery/qa" not in app_routes, "WORKERS_NO_DISCOVERY_QA_RUNTIME"
 
 
 def _pyproject() -> dict:

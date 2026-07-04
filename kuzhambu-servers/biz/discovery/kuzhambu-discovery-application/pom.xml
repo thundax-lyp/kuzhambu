@@ -32,6 +32,11 @@
     </dependency>
     <dependency>
       <groupId>com.thundax</groupId>
+      <artifactId>kuzhambu-common-knowledge</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thundax</groupId>
       <artifactId>kuzhambu-ai-facade</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -64,4 +69,21 @@
       <optional>true</optional>
     </dependency>
   </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <proc>full</proc>
+          <annotationProcessorPaths>
+            <path>
+              <groupId>org.projectlombok</groupId>
+              <artifactId>lombok</artifactId>
+              <version>1.18.42</version>
+            </path>
+          </annotationProcessorPaths>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>

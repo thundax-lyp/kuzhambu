@@ -50,7 +50,8 @@ SET NAMES utf8mb4;
 CREATE TABLE IF NOT EXISTS `discovery_qa_session` (
     `id` bigint NOT NULL AUTO_INCREMENT,
     `session_id` bigint NOT NULL,
-    `owner_user_id` bigint NOT NULL,
+    `owner_type` varchar(32) NOT NULL,
+    `owner_id` varchar(64) NOT NULL,
     `title` varchar(256) NOT NULL,
     `scope` varchar(32) NOT NULL,
     `context_mode` varchar(32) NOT NULL,
@@ -62,7 +63,8 @@ CREATE TABLE IF NOT EXISTS `discovery_qa_session` (
     `removed_at` datetime(3) DEFAULT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_discovery_qa_session_id` (`session_id`),
-    KEY `idx_discovery_qa_session_owner` (`owner_user_id`, `last_message_at`),
+    `knowledge_base_name` varchar(128) NOT NULL DEFAULT 'kuzhambu-qa',
+    KEY `idx_discovery_qa_session_owner` (`owner_type`, `owner_id`, `last_message_at`),
     KEY `idx_discovery_qa_session_context` (`context_content_type`, `context_content_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='问答会话表';
 
@@ -72,27 +74,32 @@ CREATE TABLE IF NOT EXISTS `discovery_qa_message` (
     `session_id` bigint NOT NULL,
     `role` varchar(32) NOT NULL,
     `content` mediumtext NOT NULL,
-    `message_status` varchar(32) NOT NULL,
+    `answer_status` varchar(32) NOT NULL,
+    `model` varchar(128) NOT NULL DEFAULT 'kuzhambu-qa',
     `context_turn_count` int NOT NULL DEFAULT 0,
     `failure_reason` varchar(1024) DEFAULT NULL,
+    `provider_chat_id` varchar(128) DEFAULT NULL,
+    `finish_reason` varchar(32) DEFAULT NULL,
     `sent_at` datetime(3) NOT NULL,
     `answered_at` datetime(3) DEFAULT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_discovery_qa_message_id` (`message_id`),
     KEY `idx_discovery_qa_message_session` (`session_id`, `sent_at`),
-    KEY `idx_discovery_qa_message_status` (`message_status`, `sent_at`)
+    KEY `idx_discovery_qa_message_status` (`answer_status`, `sent_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='问答消息表';
 
 CREATE TABLE IF NOT EXISTS `discovery_qa_message_source` (
     `id` bigint NOT NULL AUTO_INCREMENT,
     `source_id` bigint NOT NULL,
+    `source_business_id` varchar(128) NOT NULL,
     `message_id` bigint NOT NULL,
-    `content_type` varchar(32) NOT NULL,
+    `content_type` varchar(64) NOT NULL,
     `content_id` bigint NOT NULL,
     `knowledge_base` varchar(64) NOT NULL,
-    `title_snapshot` varchar(512) NOT NULL,
+    `title_snapshot` varchar(256) NOT NULL,
     `location_label` varchar(256) DEFAULT NULL,
     `snippet` text DEFAULT NULL,
+    `source_path` varchar(512) DEFAULT NULL,
     `source_rank` int NOT NULL DEFAULT 0,
     `score` decimal(10,6) DEFAULT NULL,
     `source_status` varchar(32) NOT NULL,
@@ -108,19 +115,58 @@ CREATE TABLE IF NOT EXISTS `discovery_qa_retrieval_trace` (
     `trace_id` bigint NOT NULL,
     `message_id` bigint NOT NULL,
     `raw_question` varchar(1024) NOT NULL,
-    `rewritten_question` varchar(2048) DEFAULT NULL,
-    `scope` varchar(32) NOT NULL,
-    `filters_json` text DEFAULT NULL,
-    `expanded_terms_json` text DEFAULT NULL,
-    `linked_entities_json` text DEFAULT NULL,
-    `candidate_count` int NOT NULL DEFAULT 0,
-    `context_snapshot` mediumtext DEFAULT NULL,
+    `provider` varchar(64) DEFAULT NULL,
+    `external_knowledge_base_id` varchar(128) NOT NULL,
+    `external_knowledge_item_ids` text DEFAULT NULL,
+    `external_chat_id` varchar(128) DEFAULT NULL,
+    `provider_request_id` varchar(128) DEFAULT NULL,
+    `latency_ms` bigint DEFAULT NULL,
+    `failure_reason` varchar(1024) DEFAULT NULL,
+    `raw` mediumtext DEFAULT NULL,
     `retrieved_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_discovery_qa_retrieval_trace_id` (`trace_id`),
     KEY `idx_discovery_qa_retrieval_trace_message` (`message_id`),
-    KEY `idx_discovery_qa_retrieval_trace_scope` (`scope`, `retrieved_at`)
+    KEY `idx_discovery_qa_retrieval_trace_provider` (`provider`, `retrieved_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='问答检索追溯表';
+
+CREATE TABLE IF NOT EXISTS `discovery_qa_knowledge_sync_batch` (
+    `id` bigint NOT NULL AUTO_INCREMENT,
+    `batch_id` bigint NOT NULL,
+    `trigger_type` varchar(32) NOT NULL,
+    `provider` varchar(64) NOT NULL,
+    `total_count` int NOT NULL DEFAULT 0,
+    `success_count` int NOT NULL DEFAULT 0,
+    `failure_count` int NOT NULL DEFAULT 0,
+    `started_at` datetime(3) NOT NULL,
+    `finished_at` datetime(3) DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_discovery_qa_knowledge_sync_batch_id` (`batch_id`),
+    KEY `idx_discovery_qa_knowledge_sync_batch_trigger` (`trigger_type`, `started_at`),
+    KEY `idx_discovery_qa_knowledge_sync_batch_provider` (`provider`, `started_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='问答知识同步批次表';
+
+CREATE TABLE IF NOT EXISTS `discovery_qa_knowledge_sync_item` (
+    `id` bigint NOT NULL AUTO_INCREMENT,
+    `source_id` varchar(128) NOT NULL,
+    `content_type` varchar(64) NOT NULL,
+    `content_id` bigint NOT NULL,
+    `knowledge_base_name` varchar(128) NOT NULL DEFAULT 'kuzhambu-qa',
+    `current_version_no` int NOT NULL DEFAULT 0,
+    `knowledge_revision` varchar(128) DEFAULT NULL,
+    `provider` varchar(64) NOT NULL,
+    `external_knowledge_base_id` varchar(128) NOT NULL,
+    `external_knowledge_item_id` varchar(128) DEFAULT NULL,
+    `sync_status` varchar(32) NOT NULL DEFAULT 'PENDING',
+    `failure_reason` varchar(1024) DEFAULT NULL,
+    `synced_at` datetime(3) DEFAULT NULL,
+    `created_at` datetime(3) NOT NULL,
+    `updated_at` datetime(3) NOT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_discovery_qa_knowledge_sync_item_source` (`source_id`),
+    KEY `idx_discovery_qa_knowledge_sync_item_type` (`content_type`, `content_id`),
+    KEY `idx_discovery_qa_knowledge_sync_item_status` (`sync_status`, `updated_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='问答知识同步项表';
 
 CREATE TABLE IF NOT EXISTS `discovery_qa_session_export` (
     `id` bigint NOT NULL AUTO_INCREMENT,

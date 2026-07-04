@@ -1,0 +1,345 @@
+name: kuzhambu-fastgpt
+
+x-fastgpt-storage-env: &fastgpt-storage-env
+  STORAGE_VENDOR: minio
+  STORAGE_REGION: ${FASTGPT_STORAGE_REGION:-us-east-1}
+  STORAGE_ACCESS_KEY_ID: ${FASTGPT_MINIO_ACCESS_KEY:-fastgptminio}
+  STORAGE_SECRET_ACCESS_KEY: ${FASTGPT_MINIO_SECRET_KEY:-fastgptminio}
+  STORAGE_PUBLIC_BUCKET: ${FASTGPT_STORAGE_PUBLIC_BUCKET:-fastgpt-public}
+  STORAGE_PRIVATE_BUCKET: ${FASTGPT_STORAGE_PRIVATE_BUCKET:-fastgpt-private}
+  STORAGE_EXTERNAL_ENDPOINT: ${FASTGPT_STORAGE_EXTERNAL_ENDPOINT:-http://fastgpt-minio:9000}
+  STORAGE_S3_ENDPOINT: http://fastgpt-minio:9000
+  STORAGE_S3_FORCE_PATH_STYLE: "true"
+
+services:
+  fastgpt-vector:
+    container_name: fastgpt-vector
+    image: "${FASTGPT_VECTOR_IMAGE:-registry.cn-hangzhou.aliyuncs.com/fastgpt/pgvector:0.8.0-pg15}"
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${FASTGPT_VECTOR_USERNAME:-fastgpt}
+      POSTGRES_PASSWORD: ${FASTGPT_VECTOR_PASSWORD:-fastgpt}
+      POSTGRES_DB: ${FASTGPT_VECTOR_DATABASE:-postgres}
+    volumes:
+      - fastgpt-vector-data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        - CMD
+        - pg_isready
+        - -U
+        - ${FASTGPT_VECTOR_USERNAME:-fastgpt}
+        - -d
+        - ${FASTGPT_VECTOR_DATABASE:-postgres}
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  fastgpt-mongo:
+    container_name: fastgpt-mongo
+    image: "${FASTGPT_MONGO_IMAGE:-registry.cn-hangzhou.aliyuncs.com/fastgpt/mongo:5.0.32}"
+    restart: unless-stopped
+    command: mongod --keyFile /data/mongodb.key --replSet rs0
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${FASTGPT_MONGO_USERNAME:-fastgpt}
+      MONGO_INITDB_ROOT_PASSWORD: ${FASTGPT_MONGO_PASSWORD:-fastgpt}
+    volumes:
+      - fastgpt-mongo-data:/data/db
+    entrypoint:
+      - bash
+      - -c
+      - |
+        openssl rand -base64 128 > /data/mongodb.key
+        chmod 400 /data/mongodb.key
+        chown 999:999 /data/mongodb.key
+        echo 'const isInited = rs.status().ok === 1
+        if(!isInited){
+          rs.initiate({
+            _id: "rs0",
+            members: [
+              { _id: 0, host: "fastgpt-mongo:27017" }
+            ]
+          })
+        }' > /data/initReplicaSet.js
+        exec docker-entrypoint.sh "$$@" &
+        until mongo -u "$${MONGO_INITDB_ROOT_USERNAME}" -p "$${MONGO_INITDB_ROOT_PASSWORD}" --authenticationDatabase admin --eval "print('waited for connection')"; do
+          echo "Waiting for MongoDB to start..."
+          sleep 2
+        done
+        mongo -u "$${MONGO_INITDB_ROOT_USERNAME}" -p "$${MONGO_INITDB_ROOT_PASSWORD}" --authenticationDatabase admin /data/initReplicaSet.js
+        wait $$!
+    healthcheck:
+      test:
+        - CMD
+        - mongo
+        - -u
+        - ${FASTGPT_MONGO_USERNAME:-fastgpt}
+        - -p
+        - ${FASTGPT_MONGO_PASSWORD:-fastgpt}
+        - --authenticationDatabase
+        - admin
+        - --eval
+        - db.adminCommand('ping')
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  fastgpt-redis:
+    container_name: fastgpt-redis
+    image: "${FASTGPT_REDIS_IMAGE:-registry.cn-hangzhou.aliyuncs.com/fastgpt/redis:7.2-alpine}"
+    restart: unless-stopped
+    command:
+      - redis-server
+      - --requirepass
+      - ${FASTGPT_REDIS_PASSWORD:-fastgpt}
+      - --loglevel
+      - warning
+      - --maxclients
+      - "10000"
+      - --appendonly
+      - "yes"
+      - --save
+      - "60"
+      - "10"
+      - --maxmemory
+      - 4gb
+      - --maxmemory-policy
+      - noeviction
+    volumes:
+      - fastgpt-redis-data:/data
+    healthcheck:
+      test:
+        - CMD
+        - redis-cli
+        - -a
+        - ${FASTGPT_REDIS_PASSWORD:-fastgpt}
+        - ping
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 30s
+
+  fastgpt-minio:
+    container_name: fastgpt-minio
+    image: "${FASTGPT_MINIO_IMAGE:-registry.cn-hangzhou.aliyuncs.com/fastgpt/minio:RELEASE.2025-09-07T16-13-09Z}"
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: ${FASTGPT_MINIO_ACCESS_KEY:-fastgptminio}
+      MINIO_ROOT_PASSWORD: ${FASTGPT_MINIO_SECRET_KEY:-fastgptminio}
+    volumes:
+      - fastgpt-minio-data:/data
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - -f
+        - http://localhost:9000/minio/health/live
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  fastgpt-code-sandbox:
+    container_name: fastgpt-code-sandbox
+    image: "${FASTGPT_CODE_SANDBOX_IMAGE:-registry.cn-hangzhou.aliyuncs.com/fastgpt/fastgpt-code-sandbox:v4.15.0}"
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      SANDBOX_TOKEN: ${FASTGPT_CODE_SANDBOX_TOKEN:-fastgpt-code-sandbox-token}
+      SANDBOX_API_MAX_BODY_MB: ${FASTGPT_SANDBOX_API_MAX_BODY_MB:-8}
+      SANDBOX_MAX_TIMEOUT: ${FASTGPT_SANDBOX_MAX_TIMEOUT:-60000}
+      SANDBOX_MAX_MEMORY_MB: ${FASTGPT_SANDBOX_MAX_MEMORY_MB:-256}
+      SANDBOX_MAX_OUTPUT_MB: ${FASTGPT_SANDBOX_MAX_OUTPUT_MB:-10}
+      CHECK_INTERNAL_IP: "true"
+      SANDBOX_REQUEST_MAX_COUNT: ${FASTGPT_SANDBOX_REQUEST_MAX_COUNT:-30}
+      SANDBOX_REQUEST_TIMEOUT: ${FASTGPT_SANDBOX_REQUEST_TIMEOUT:-60000}
+      SANDBOX_REQUEST_MAX_RESPONSE_MB: ${FASTGPT_SANDBOX_REQUEST_MAX_RESPONSE_MB:-10}
+      SANDBOX_REQUEST_MAX_BODY_MB: ${FASTGPT_SANDBOX_REQUEST_MAX_BODY_MB:-5}
+      SANDBOX_JS_ALLOWED_MODULES: ${FASTGPT_SANDBOX_JS_ALLOWED_MODULES:-lodash,dayjs,moment,uuid,crypto-js,qs,url,querystring}
+      SANDBOX_PYTHON_ALLOWED_MODULES: ${FASTGPT_SANDBOX_PYTHON_ALLOWED_MODULES:-math,cmath,decimal,fractions,random,statistics,collections,array,heapq,bisect,queue,copy,itertools,functools,operator,string,re,difflib,textwrap,unicodedata,codecs,datetime,time,calendar,_strptime,json,csv,base64,binascii,struct,hashlib,hmac,secrets,uuid,typing,abc,enum,dataclasses,contextlib,pprint,weakref,numpy,pandas,matplotlib}
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - fetch('http://localhost:3000/health').then((res) => { if (!res.ok) throw new Error(String(res.status)); })
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  fastgpt-plugin:
+    container_name: fastgpt-plugin
+    image: "${FASTGPT_PLUGIN_IMAGE:-registry.cn-hangzhou.aliyuncs.com/fastgpt/fastgpt-plugin:v1.0.1}"
+    restart: unless-stopped
+    depends_on:
+      fastgpt-mongo:
+        condition: service_healthy
+      fastgpt-minio:
+        condition: service_healthy
+    environment:
+      <<: *fastgpt-storage-env
+      MONGODB_URI: mongodb://${FASTGPT_MONGO_USERNAME:-fastgpt}:${FASTGPT_MONGO_PASSWORD:-fastgpt}@fastgpt-mongo:27017/fastgpt-plugin?authSource=admin
+      REDIS_URL: redis://default:${FASTGPT_REDIS_PASSWORD:-fastgpt}@fastgpt-redis:6379
+      DB_MAX_LINK: ${FASTGPT_PLUGIN_DB_MAX_LINK:-100}
+      AUTH_TOKEN: ${FASTGPT_PLUGIN_AUTH_TOKEN:-fastgpt-plugin-token-please-change-32}
+      SERVICE_REQUEST_MAX_CONTENT_LENGTH: ${FASTGPT_SERVICE_REQUEST_MAX_CONTENT_LENGTH:-10}
+      MAX_API_SIZE: ${FASTGPT_PLUGIN_MAX_API_SIZE:-10}
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - -f
+        - http://localhost:3000/health
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  fastgpt-aiproxy-pg:
+    container_name: fastgpt-aiproxy-pg
+    image: "${FASTGPT_AIPROXY_PG_IMAGE:-registry.cn-hangzhou.aliyuncs.com/fastgpt/pgvector:0.8.0-pg15}"
+    restart: unless-stopped
+    environment:
+      TZ: Asia/Shanghai
+      POSTGRES_USER: ${FASTGPT_AIPROXY_PG_USERNAME:-postgres}
+      POSTGRES_DB: ${FASTGPT_AIPROXY_PG_DATABASE:-aiproxy}
+      POSTGRES_PASSWORD: ${FASTGPT_AIPROXY_PG_PASSWORD:-aiproxy}
+    volumes:
+      - fastgpt-aiproxy-pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        - CMD
+        - pg_isready
+        - -U
+        - ${FASTGPT_AIPROXY_PG_USERNAME:-postgres}
+        - -d
+        - ${FASTGPT_AIPROXY_PG_DATABASE:-aiproxy}
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  fastgpt-aiproxy:
+    container_name: fastgpt-aiproxy
+    image: "${FASTGPT_AIPROXY_IMAGE:-registry.cn-hangzhou.aliyuncs.com/labring/aiproxy:v0.6.5}"
+    restart: unless-stopped
+    depends_on:
+      fastgpt-aiproxy-pg:
+        condition: service_healthy
+    environment:
+      ADMIN_KEY: ${FASTGPT_AIPROXY_TOKEN:-fastgpt-aiproxy-token}
+      LOG_DETAIL_STORAGE_HOURS: ${FASTGPT_AIPROXY_LOG_DETAIL_STORAGE_HOURS:-1}
+      SQL_DSN: postgres://${FASTGPT_AIPROXY_PG_USERNAME:-postgres}:${FASTGPT_AIPROXY_PG_PASSWORD:-aiproxy}@fastgpt-aiproxy-pg:5432/${FASTGPT_AIPROXY_PG_DATABASE:-aiproxy}
+      RETRY_TIMES: ${FASTGPT_AIPROXY_RETRY_TIMES:-3}
+      BILLING_ENABLED: "false"
+      DISABLE_MODEL_CONFIG: "true"
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - -f
+        - http://localhost:3000/api/status
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  fastgpt-app:
+    container_name: fastgpt-app
+    image: "${FASTGPT_APP_IMAGE:-registry.cn-hangzhou.aliyuncs.com/fastgpt/fastgpt:v4.15.1}"
+    restart: unless-stopped
+    depends_on:
+      fastgpt-mongo:
+        condition: service_healthy
+      fastgpt-vector:
+        condition: service_healthy
+      fastgpt-redis:
+        condition: service_healthy
+      fastgpt-minio:
+        condition: service_healthy
+      fastgpt-code-sandbox:
+        condition: service_healthy
+      fastgpt-plugin:
+        condition: service_healthy
+      fastgpt-aiproxy:
+        condition: service_healthy
+    ports:
+      - "${FASTGPT_HTTP_PORT:-13000}:3000"
+    environment:
+      <<: *fastgpt-storage-env
+      DEFAULT_ROOT_PSW: ${FASTGPT_DEFAULT_ROOT_PSW:-1234}
+      SYSTEM_NAME: ${FASTGPT_SYSTEM_NAME:-FastGPT}
+      HOSTNAME: 0.0.0.0
+      NEXT_PUBLIC_BASE_URL: ${FASTGPT_PUBLIC_BASE_URL:-}
+      ROOT_KEY: ${FASTGPT_ROOT_KEY:-fastgpt-root-key-change-me}
+      DB_MAX_LINK: ${FASTGPT_DB_MAX_LINK:-5}
+      SYNC_INDEX: "true"
+      FILE_TOKEN_KEY: ${FASTGPT_FILE_TOKEN_KEY:-fastgpt-file-token-key}
+      AES256_SECRET_KEY: ${FASTGPT_AES256_SECRET_KEY:-fastgpt-aes256-secret}
+      INVOKE_TOKEN_SECRET: ${FASTGPT_INVOKE_TOKEN_SECRET:-fastgpt-invoke-token-secret-32chars}
+      MULTIPLE_DATA_TO_BASE64: "true"
+      USE_IP_LIMIT: "false"
+      CHECK_INTERNAL_IP: "false"
+      TRUSTED_PROXY_ENABLE: "false"
+      AGENT_ENGINE: default
+      HELPER_BOT_MODEL: ${FASTGPT_HELPER_BOT_MODEL:-qwen-max}
+      SKIP_FILE_TYPE_CHECK: "false"
+      PARSE_FILE_WORKERS: ${FASTGPT_PARSE_FILE_WORKERS:-10}
+      PARSE_FILE_TIMEOUT_SECONDS: ${FASTGPT_PARSE_FILE_TIMEOUT_SECONDS:-600}
+      HTML_TO_MARKDOWN_WORKERS: ${FASTGPT_HTML_TO_MARKDOWN_WORKERS:-10}
+      TEXT_TO_CHUNKS_WORKERS: ${FASTGPT_TEXT_TO_CHUNKS_WORKERS:-10}
+      WORKFLOW_MAX_RUN_TIMES: ${FASTGPT_WORKFLOW_MAX_RUN_TIMES:-500}
+      WORKFLOW_MAX_LOOP_TIMES: ${FASTGPT_WORKFLOW_MAX_LOOP_TIMES:-100}
+      WORKFLOW_PARALLEL_MAX_CONCURRENCY: ${FASTGPT_WORKFLOW_PARALLEL_MAX_CONCURRENCY:-10}
+      CHAT_MAX_QPM: ${FASTGPT_CHAT_MAX_QPM:-5000}
+      SYSTEM_MAX_STRING_LENGTH_M: ${FASTGPT_SYSTEM_MAX_STRING_LENGTH_M:-100}
+      SERVICE_REQUEST_MAX_CONTENT_LENGTH: ${FASTGPT_SERVICE_REQUEST_MAX_CONTENT_LENGTH:-10}
+      MAX_FOLDER_DEPTH: ${FASTGPT_MAX_FOLDER_DEPTH:-4}
+      APP_FOLDER_MAX_AMOUNT: ${FASTGPT_APP_FOLDER_MAX_AMOUNT:-1000}
+      DATASET_FOLDER_MAX_AMOUNT: ${FASTGPT_DATASET_FOLDER_MAX_AMOUNT:-1000}
+      UPLOAD_FILE_MAX_SIZE: ${FASTGPT_UPLOAD_FILE_MAX_SIZE:-1000}
+      UPLOAD_FILE_MAX_AMOUNT: ${FASTGPT_UPLOAD_FILE_MAX_AMOUNT:-1000}
+      LLM_REQUEST_TRACKING_RETENTION_HOURS: ${FASTGPT_LLM_REQUEST_TRACKING_RETENTION_HOURS:-6}
+      MAX_HTML_TRANSFORM_CHARS: ${FASTGPT_MAX_HTML_TRANSFORM_CHARS:-1000000}
+      DATASET_PARSE_MAX_PROCESS: ${FASTGPT_DATASET_PARSE_MAX_PROCESS:-10}
+      VECTOR_MAX_PROCESS: ${FASTGPT_VECTOR_MAX_PROCESS:-10}
+      QA_MAX_PROCESS: ${FASTGPT_QA_MAX_PROCESS:-10}
+      VLM_MAX_PROCESS: ${FASTGPT_VLM_MAX_PROCESS:-10}
+      HNSW_EF_SEARCH: ${FASTGPT_HNSW_EF_SEARCH:-100}
+      HNSW_MAX_SCAN_TUPLES: ${FASTGPT_HNSW_MAX_SCAN_TUPLES:-100000}
+      MONGODB_URI: mongodb://${FASTGPT_MONGO_USERNAME:-fastgpt}:${FASTGPT_MONGO_PASSWORD:-fastgpt}@fastgpt-mongo:27017/fastgpt?authSource=admin
+      REDIS_URL: redis://default:${FASTGPT_REDIS_PASSWORD:-fastgpt}@fastgpt-redis:6379
+      STORAGE_S3_MAX_RETRIES: ${FASTGPT_STORAGE_S3_MAX_RETRIES:-3}
+      PG_URL: postgresql://${FASTGPT_VECTOR_USERNAME:-fastgpt}:${FASTGPT_VECTOR_PASSWORD:-fastgpt}@fastgpt-vector:5432/${FASTGPT_VECTOR_DATABASE:-postgres}
+      PLUGIN_BASE_URL: http://fastgpt-plugin:3000
+      PLUGIN_TOKEN: ${FASTGPT_PLUGIN_AUTH_TOKEN:-fastgpt-plugin-token-please-change-32}
+      CODE_SANDBOX_URL: http://fastgpt-code-sandbox:3000
+      CODE_SANDBOX_TOKEN: ${FASTGPT_CODE_SANDBOX_TOKEN:-fastgpt-code-sandbox-token}
+      AIPROXY_API_ENDPOINT: http://fastgpt-aiproxy:3000
+      AIPROXY_API_TOKEN: ${FASTGPT_AIPROXY_TOKEN:-fastgpt-aiproxy-token}
+      AGENT_SANDBOX_PROVIDER: ${FASTGPT_AGENT_SANDBOX_PROVIDER:-}
+      AGENT_SANDBOX_PROXY_SECRET: ${FASTGPT_AGENT_SANDBOX_PROXY_SECRET:-default-fastgpt-agent-sandbox-proxy-secret}
+      AGENT_SANDBOX_PROXY_URL: ${FASTGPT_AGENT_SANDBOX_PROXY_URL:-}
+      SSE_MCP_SERVER_PROXY_ENDPOINT: ${FASTGPT_SSE_MCP_SERVER_PROXY_ENDPOINT:-}
+      MARKETPLACE_URL: ${FASTGPT_MARKETPLACE_URL:-https://v2.marketplace.fastgpt.cn}
+      OPENAPI_KEY_MAX_COUNT: ${FASTGPT_OPENAPI_KEY_MAX_COUNT:-100}
+      FE_DOMAIN: ${FASTGPT_FE_DOMAIN:-}
+      FILE_DOMAIN: ${FASTGPT_FILE_DOMAIN:-}
+      OPENAI_BASE_URL: ${FASTGPT_OPENAI_BASE_URL:-}
+      CHAT_API_KEY: ${FASTGPT_CHAT_API_KEY:-}
+      NO_PROXY: localhost,127.0.0.1,::1,fastgpt-app,fastgpt-plugin,fastgpt-code-sandbox,fastgpt-aiproxy,fastgpt-aiproxy-pg,fastgpt-minio,fastgpt-mongo,fastgpt-redis,fastgpt-vector,fastgpt-mcp-server,host.docker.internal
+      no_proxy: localhost,127.0.0.1,::1,fastgpt-app,fastgpt-plugin,fastgpt-code-sandbox,fastgpt-aiproxy,fastgpt-aiproxy-pg,fastgpt-minio,fastgpt-mongo,fastgpt-redis,fastgpt-vector,fastgpt-mcp-server,host.docker.internal
+
+  fastgpt-mcp-server:
+    container_name: fastgpt-mcp-server
+    image: "${FASTGPT_MCP_SERVER_IMAGE:-registry.cn-hangzhou.aliyuncs.com/fastgpt/fastgpt-mcp_server:v4.14.23}"
+    restart: unless-stopped
+    depends_on:
+      - fastgpt-app
+    environment:
+      FASTGPT_ENDPOINT: http://fastgpt-app:3000
+
+volumes:
+  fastgpt-aiproxy-pg-data:
+  fastgpt-minio-data:
+  fastgpt-mongo-data:
+  fastgpt-redis-data:
+  fastgpt-vector-data:

@@ -24,6 +24,7 @@ class QaSourceRepositoryImplTest {
         QaSource entity = new QaSource(
                 null,
                 null,
+                "SANCAI:1001",
                 2001L,
                 "SANCAI_ENTRY",
                 1001L,
@@ -31,6 +32,7 @@ class QaSourceRepositoryImplTest {
                 "黄帝",
                 "卷一",
                 "上古帝王",
+                "/knowledge/sancai/1001",
                 1,
                 new BigDecimal("0.98"),
                 "CITED",
@@ -49,6 +51,7 @@ class QaSourceRepositoryImplTest {
         QaSourceDO dataObject = new QaSourceDO(
                 1L,
                 6001L,
+                "SANCAI:1001",
                 2001L,
                 "SANCAI_ENTRY",
                 1001L,
@@ -56,6 +59,7 @@ class QaSourceRepositoryImplTest {
                 "黄帝",
                 "卷一",
                 "上古帝王",
+                "/knowledge/sancai/1001",
                 1,
                 new BigDecimal("0.98"),
                 "CITED",

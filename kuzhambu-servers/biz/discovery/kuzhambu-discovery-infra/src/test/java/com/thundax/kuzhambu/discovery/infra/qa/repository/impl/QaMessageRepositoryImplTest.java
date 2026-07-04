@@ -20,7 +20,8 @@ class QaMessageRepositoryImplTest {
     void saveShouldAssignIdentifiersWhenMessageIdIsMissing() {
         QaMessageMapper mapper = mock(QaMessageMapper.class);
         QaMessageRepositoryImpl repository = new QaMessageRepositoryImpl(mapper);
-        QaMessage entity = new QaMessage(null, null, 3001L, "USER", "黄帝是谁", "SENT", 0, null, new Date(), null);
+        QaMessage entity = new QaMessage(
+                null, null, 3001L, "USER", "黄帝是谁", "SENT", "kuzhambu-qa", 0, null, null, null, new Date(), null);
 
         Long savedId = repository.save(entity);
 
@@ -33,7 +34,19 @@ class QaMessageRepositoryImplTest {
         QaMessageMapper mapper = mock(QaMessageMapper.class);
         QaMessageRepositoryImpl repository = new QaMessageRepositoryImpl(mapper);
         QaMessageDO dataObject = new QaMessageDO(
-                1L, 2001L, 3001L, "ASSISTANT", "黄帝是上古传说人物", "ANSWERED", 1, null, new Date(), new Date());
+                1L,
+                2001L,
+                3001L,
+                "ASSISTANT",
+                "黄帝是上古传说人物",
+                "ANSWERED",
+                "kuzhambu-qa",
+                1,
+                null,
+                null,
+                null,
+                new Date(),
+                new Date());
         when(mapper.selectList(any())).thenReturn(List.of(dataObject));
 
         List<QaMessage> result = repository.listBySessionId(3001L);

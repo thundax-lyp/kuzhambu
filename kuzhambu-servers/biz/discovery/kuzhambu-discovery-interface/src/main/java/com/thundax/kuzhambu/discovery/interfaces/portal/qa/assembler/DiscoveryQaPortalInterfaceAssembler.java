@@ -1,15 +1,22 @@
 package com.thundax.kuzhambu.discovery.interfaces.portal.qa.assembler;
 
-import com.thundax.kuzhambu.discovery.application.qa.command.AskQuestionCommand;
+import com.thundax.kuzhambu.discovery.application.qa.command.ChatCompletionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.command.OpenQaSessionCommand;
-import com.thundax.kuzhambu.discovery.application.qa.result.QaAnswerResult;
+import com.thundax.kuzhambu.discovery.application.qa.result.ChatCompletionResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionResult;
 import com.thundax.kuzhambu.discovery.interfaces.portal.qa.controller.request.DiscoveryQaRequests;
 import com.thundax.kuzhambu.discovery.interfaces.portal.qa.controller.response.DiscoveryQaResponses;
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.IntStream;
+import org.apache.commons.lang3.StringUtils;
 
 public final class DiscoveryQaPortalInterfaceAssembler {
+
+    private static final String AVAILABLE = "AVAILABLE";
+    private static final String UNAVAILABLE = "UNAVAILABLE";
 
     private DiscoveryQaPortalInterfaceAssembler() {}
 
@@ -28,16 +35,23 @@ public final class DiscoveryQaPortalInterfaceAssembler {
                 request.getTraceId());
     }
 
-    public static AskQuestionCommand toAskQuestionCommand(DiscoveryQaRequests.AskQuestionRequest request) {
+    public static ChatCompletionCommand toChatCompletionCommand(DiscoveryQaRequests.ChatCompletionsRequest request) {
         if (request == null) {
             return null;
         }
-        return new AskQuestionCommand(
+        return new ChatCompletionCommand(
                 request.getSessionId(),
-                request.getQuestion(),
-                request.getContextTurnCount(),
-                request.getOperatorType(),
-                request.getOperatorId(),
+                request.getModel(),
+                request.getMessages() == null
+                        ? List.of()
+                        : request.getMessages().stream()
+                                .filter(Objects::nonNull)
+                                .map(message ->
+                                        new ChatCompletionCommand.ChatMessage(message.getRole(), message.getContent()))
+                                .toList(),
+                Boolean.TRUE.equals(request.getStream()),
+                request.getMetadata(),
+                request.getOptions(),
                 request.getRequestId(),
                 request.getTraceId());
     }
@@ -60,49 +74,114 @@ public final class DiscoveryQaPortalInterfaceAssembler {
         return response;
     }
 
-    public static DiscoveryQaResponses.AskQuestionResponse toAskQuestionResponse(QaAnswerResult result) {
+    public static DiscoveryQaResponses.ChatCompletionsResponse toChatCompletionsResponse(ChatCompletionResult result) {
         if (result == null) {
             return null;
         }
-        DiscoveryQaResponses.AskQuestionResponse response = new DiscoveryQaResponses.AskQuestionResponse();
+        DiscoveryQaResponses.ChatCompletionsResponse response = new DiscoveryQaResponses.ChatCompletionsResponse();
         response.setSessionId(result.getSessionId());
         response.setQuestionMessageId(result.getQuestionMessageId());
         response.setAnswerMessageId(result.getAnswerMessageId());
         response.setQuestion(result.getQuestion());
-        response.setAnswer(result.getAnswer());
+        response.setAnswer(getFirstChoiceAnswer(result.getChoices()));
         response.setAnswerStatus(result.getAnswerStatus());
         response.setFailureReason(result.getFailureReason());
-        response.setSources(
-                result.getSources() == null
+        response.setSources(toSourceResponses(result.getSources()));
+        response.setChoices(
+                result.getChoices() == null
                         ? List.of()
-                        : result.getSources().stream()
+                        : result.getChoices().stream()
                                 .filter(Objects::nonNull)
-                                .map(source -> {
-                                    DiscoveryQaResponses.QaSourceResponse item =
-                                            new DiscoveryQaResponses.QaSourceResponse();
-                                    item.setSourceId(source.getSourceId());
-                                    item.setContentType(source.getContentType());
-                                    item.setContentId(source.getContentId());
-                                    item.setKnowledgeBase(source.getKnowledgeBase());
-                                    item.setTitleSnapshot(source.getTitleSnapshot());
-                                    item.setLocationLabel(source.getLocationLabel());
-                                    item.setSnippet(source.getSnippet());
-                                    item.setSourceRank(source.getSourceRank());
-                                    item.setScore(source.getScore());
-                                    item.setSourceStatus(source.getSourceStatus());
-                                    return item;
-                                })
+                                .map(DiscoveryQaPortalInterfaceAssembler::toChatCompletionChoice)
                                 .toList());
-        if (result.getTraceSummary() != null) {
-            DiscoveryQaResponses.QaTraceSummaryResponse traceSummary =
-                    new DiscoveryQaResponses.QaTraceSummaryResponse();
-            traceSummary.setTraceId(result.getTraceSummary().getTraceId());
-            traceSummary.setRewrittenQuestion(result.getTraceSummary().getRewrittenQuestion());
-            traceSummary.setCandidateCount(result.getTraceSummary().getCandidateCount());
-            traceSummary.setExpandedTermsJson(result.getTraceSummary().getExpandedTermsJson());
-            traceSummary.setLinkedEntitiesJson(result.getTraceSummary().getLinkedEntitiesJson());
-            response.setTraceSummary(traceSummary);
+        if (result.getUsage() != null) {
+            DiscoveryQaResponses.ChatCompletionUsage usage = new DiscoveryQaResponses.ChatCompletionUsage();
+            usage.setPromptTokens(result.getUsage().getPromptTokens());
+            usage.setCompletionTokens(result.getUsage().getCompletionTokens());
+            usage.setTotalTokens(result.getUsage().getTotalTokens());
+            response.setUsage(usage);
+        }
+        response.setRaw(result.getRaw());
+        return response;
+    }
+
+    private static DiscoveryQaResponses.ChatCompletionChoice toChatCompletionChoice(
+            ChatCompletionResult.ChatCompletionChoice choice) {
+        if (choice == null) {
+            return null;
+        }
+        DiscoveryQaResponses.ChatCompletionChoice response = new DiscoveryQaResponses.ChatCompletionChoice();
+        response.setIndex(choice.getIndex());
+        response.setFinishReason(choice.getFinishReason());
+        if (choice.getMessage() != null) {
+            DiscoveryQaResponses.ChatCompletionMessage message = new DiscoveryQaResponses.ChatCompletionMessage();
+            message.setRole(choice.getMessage().getRole());
+            message.setContent(choice.getMessage().getContent());
+            response.setMessage(message);
         }
         return response;
+    }
+
+    private static List<DiscoveryQaResponses.QaSourceResponse> toSourceResponses(
+            List<ChatCompletionResult.ChatCompletionSource> sources) {
+        if (sources == null || sources.isEmpty()) {
+            return List.of();
+        }
+        return IntStream.range(0, sources.size())
+                .filter(i -> sources.get(i) != null)
+                .mapToObj(i -> toQaSourceResponse(sources.get(i), i + 1))
+                .toList();
+    }
+
+    private static DiscoveryQaResponses.QaSourceResponse toQaSourceResponse(
+            ChatCompletionResult.ChatCompletionSource source, int rank) {
+        if (source == null) {
+            return null;
+        }
+        DiscoveryQaResponses.QaSourceResponse response = new DiscoveryQaResponses.QaSourceResponse();
+        response.setSourceId(source.getSourceId());
+        response.setContentType(source.getContentType());
+        response.setContentId(source.getContentId());
+        response.setKnowledgeBase(source.getKnowledgeBase());
+        response.setTitleSnapshot(source.getTitle());
+        response.setSnippet(source.getSnippet());
+        response.setScore(toBigDecimal(source.getScore()));
+        response.setSourceStatus(toSourceStatus(source));
+        response.setSourceRank(rank);
+        response.setLocationLabel(sourceLabel(source.getRaw()));
+        return response;
+    }
+
+    private static BigDecimal toBigDecimal(Double value) {
+        return value == null ? null : BigDecimal.valueOf(value);
+    }
+
+    private static String sourceLabel(Map<String, Object> raw) {
+        if (raw == null) {
+            return null;
+        }
+        Object locationLabel = raw.get("locationLabel");
+        return locationLabel == null ? null : locationLabel.toString();
+    }
+
+    private static String toSourceStatus(ChatCompletionResult.ChatCompletionSource source) {
+        return StringUtils.isNotBlank(source.getSourceId())
+                        && StringUtils.isNotBlank(source.getContentType())
+                        && StringUtils.isNotBlank(source.getContentId())
+                        && StringUtils.isNotBlank(source.getTitle())
+                ? AVAILABLE
+                : UNAVAILABLE;
+    }
+
+    private static String getFirstChoiceAnswer(List<ChatCompletionResult.ChatCompletionChoice> choices) {
+        if (choices == null || choices.isEmpty()) {
+            return null;
+        }
+        for (ChatCompletionResult.ChatCompletionChoice choice : choices) {
+            if (choice != null && choice.getMessage() != null) {
+                return choice.getMessage().getContent();
+            }
+        }
+        return null;
     }
 }

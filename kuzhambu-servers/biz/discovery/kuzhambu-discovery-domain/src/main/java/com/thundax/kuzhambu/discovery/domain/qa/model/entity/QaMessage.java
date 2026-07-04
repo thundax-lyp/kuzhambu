@@ -16,9 +16,12 @@ public class QaMessage {
     private Long sessionId;
     private String role;
     private String content;
-    private String messageStatus;
+    private String answerStatus;
+    private String model;
     private Integer contextTurnCount;
     private String failureReason;
+    private String providerChatId;
+    private String finishReason;
     private Date sentAt;
     private Date answeredAt;
 }

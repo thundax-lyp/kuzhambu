@@ -12,6 +12,14 @@ from kuzhambu_workers.schemas.ai import AiCapability
 DISCOVERY_USECASES = tuple(
     usecase for usecase in USECASES if usecase.domain == AiUsecaseDomain.DISCOVERY
 )
+DISCOVERY_QA_FORBIDDEN_PATH_PARTS = (
+    "/internal/discovery/qa",
+    "/internal/qa/discovery",
+    "chat/completions",
+    "question/ask",
+    "knowledge/sync",
+    "knowledge-sync",
+)
 
 
 @pytest.mark.parametrize("usecase", DISCOVERY_USECASES)
@@ -75,6 +83,19 @@ def test_discovery_answer_path_rejects_stream_request(monkeypatch) -> None:
     assert response.status_code == 400
     assert response.json()["status"] == "FAILED"
     assert response.json()["error"]["code"] == "BAD_REQUEST"
+
+
+def test_discovery_usecase_routes_do_not_expose_formal_qa_or_sync_runtime() -> None:
+    paths = {usecase.path for usecase in DISCOVERY_USECASES}
+
+    assert paths == {
+        "/internal/ai/discovery/query-understanding",
+        "/internal/ai/discovery/query-rewrite",
+        "/internal/ai/discovery/answer-generation",
+        "/internal/ai/discovery/answer-generation/stream",
+    }
+    for path in paths:
+        assert not any(part in path for part in DISCOVERY_QA_FORBIDDEN_PATH_PARTS)
 
 
 def _body(*, operation: str, capability: str, stream: bool) -> bytes:

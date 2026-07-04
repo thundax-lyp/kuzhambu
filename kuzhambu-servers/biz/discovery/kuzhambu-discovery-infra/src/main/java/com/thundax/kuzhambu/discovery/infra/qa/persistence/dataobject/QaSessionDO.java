@@ -18,7 +18,9 @@ public class QaSessionDO {
     private Long id;
 
     private Long sessionId;
-    private Long ownerUserId;
+    private String ownerType;
+    private String ownerId;
+    private String knowledgeBaseName;
     private String title;
     private String scope;
     private String contextMode;

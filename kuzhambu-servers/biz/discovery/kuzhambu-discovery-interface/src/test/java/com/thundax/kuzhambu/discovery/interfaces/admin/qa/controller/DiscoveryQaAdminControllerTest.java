@@ -1,24 +1,33 @@
 package com.thundax.kuzhambu.discovery.interfaces.admin.qa.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.argThat;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.discovery.application.qa.command.SyncKnowledgeContentCommand;
+import com.thundax.kuzhambu.discovery.application.qa.query.KnowledgeSyncItemPageQuery;
+import com.thundax.kuzhambu.discovery.application.qa.result.KnowledgeHealthResult;
+import com.thundax.kuzhambu.discovery.application.qa.result.KnowledgeSyncItemResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaMessageResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionDetailResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSourceResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaTraceResult;
+import com.thundax.kuzhambu.discovery.application.qa.service.KnowledgeSyncApplicationService;
 import com.thundax.kuzhambu.discovery.application.qa.service.QaApplicationService;
 import com.thundax.kuzhambu.discovery.interfaces.admin.qa.controller.request.DiscoveryQaAdminRequests;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -44,42 +53,83 @@ class DiscoveryQaAdminControllerTest {
                 "getTrace",
                 "trace/get",
                 DiscoveryQaAdminRequests.QaTraceGetRequest.class);
+        assertPostMapping(DiscoveryQaAdminController.class, "getKnowledgeHealth", "knowledge/health");
+        assertPostMapping(DiscoveryQaAdminController.class, "rebuildKnowledge", "knowledge/rebuild");
+        assertPostMapping(
+                DiscoveryQaAdminController.class,
+                "syncKnowledge",
+                "knowledge/sync",
+                DiscoveryQaAdminRequests.KnowledgeSyncRequest.class);
+        assertPostMapping(
+                DiscoveryQaAdminController.class,
+                "pageKnowledgeSyncItems",
+                "knowledge/sync/page",
+                DiscoveryQaAdminRequests.KnowledgeSyncPageRequest.class);
     }
 
     @Test
     void requestAndResponseJsonFieldsShouldRemainStable() throws Exception {
         DiscoveryQaAdminRequests.QaSessionGetRequest sessionGetRequest = OBJECT_MAPPER.readValue(
                 """
-                {"sessionId":5001}
-                """,
+                        {"sessionId":5001}
+                        """,
                 DiscoveryQaAdminRequests.QaSessionGetRequest.class);
         assertEquals(5001L, sessionGetRequest.getSessionId());
         assertJsonFields(sessionGetRequest, "sessionId");
 
         DiscoveryQaAdminRequests.QaSourceListRequest sourceListRequest = OBJECT_MAPPER.readValue(
                 """
-                {"messageId":7002}
-                """,
+                        {"messageId":7002}
+                        """,
                 DiscoveryQaAdminRequests.QaSourceListRequest.class);
         assertEquals(7002L, sourceListRequest.getMessageId());
         assertJsonFields(sourceListRequest, "messageId");
 
         DiscoveryQaAdminRequests.QaTraceGetRequest traceGetRequest = OBJECT_MAPPER.readValue(
                 """
-                {"traceId":8001}
-                """,
+                        {"traceId":8001}
+                        """,
                 DiscoveryQaAdminRequests.QaTraceGetRequest.class);
         assertEquals(8001L, traceGetRequest.getTraceId());
         assertJsonFields(traceGetRequest, "traceId");
+
+        DiscoveryQaAdminRequests.KnowledgeSyncRequest syncRequest = OBJECT_MAPPER.readValue(
+                """
+                        {"contentType":"SANCAI_ENTRY","contentId":10001,"currentVersionNo":3}
+                        """,
+                DiscoveryQaAdminRequests.KnowledgeSyncRequest.class);
+        assertEquals("SANCAI_ENTRY", syncRequest.getContentType());
+        assertEquals(10001L, syncRequest.getContentId());
+        assertEquals(3, syncRequest.getCurrentVersionNo());
+        assertJsonFields(syncRequest, "contentType", "contentId");
+
+        DiscoveryQaAdminRequests.KnowledgeSyncPageRequest syncPageRequest = OBJECT_MAPPER.readValue(
+                """
+                        {"contentType":"SANCAI_ENTRY","syncStatus":"FAILED","pageNo":2,"pageSize":10}
+                        """,
+                DiscoveryQaAdminRequests.KnowledgeSyncPageRequest.class);
+        assertEquals("SANCAI_ENTRY", syncPageRequest.getContentType());
+        assertEquals("FAILED", syncPageRequest.getSyncStatus());
+        assertEquals(2, syncPageRequest.getPageNo());
+        assertEquals(10, syncPageRequest.getPageSize());
+        assertJsonFields(syncPageRequest, "contentType", "syncStatus", "pageNo", "pageSize");
     }
 
     @Test
     void endpointsShouldDelegateToApplicationService() {
-        QaApplicationService service = mock(QaApplicationService.class);
-        DiscoveryQaAdminController controller = new DiscoveryQaAdminController(service);
-        when(service.getSessionDetail(5001L)).thenReturn(sampleSessionDetail());
-        when(service.listSourcesByMessageId(7002L)).thenReturn(List.of(sampleSource()));
-        when(service.getTraceByTraceId(8001L)).thenReturn(sampleTrace());
+        QaApplicationService qaService = mock(QaApplicationService.class);
+        KnowledgeSyncApplicationService syncService = mock(KnowledgeSyncApplicationService.class);
+        DiscoveryQaAdminController controller = new DiscoveryQaAdminController(qaService, syncService);
+
+        when(qaService.getSessionDetail(5001L)).thenReturn(sampleSessionDetail());
+        when(qaService.listSourcesByMessageId(7002L)).thenReturn(List.of(sampleSource()));
+        when(qaService.getTraceByTraceId(8001L)).thenReturn(sampleTrace());
+        when(syncService.health())
+                .thenReturn(new KnowledgeHealthResult(true, "fastgpt", null, Map.of("provider", "fastgpt")));
+        when(syncService.rebuild()).thenReturn(9001L);
+        when(syncService.syncContent(any(SyncKnowledgeContentCommand.class))).thenReturn(sampleSyncItem());
+        when(syncService.pageSyncItems(any(KnowledgeSyncItemPageQuery.class)))
+                .thenReturn(PageResult.of(2, 10, 1, List.of(sampleSyncItem())));
 
         DiscoveryQaAdminRequests.QaSessionGetRequest sessionRequest =
                 new DiscoveryQaAdminRequests.QaSessionGetRequest();
@@ -96,11 +146,58 @@ class DiscoveryQaAdminControllerTest {
         DiscoveryQaAdminRequests.QaTraceGetRequest traceRequest = new DiscoveryQaAdminRequests.QaTraceGetRequest();
         traceRequest.setTraceId(8001L);
         var traceResponse = controller.getTrace(traceRequest);
+        assertNotNull(traceResponse);
         assertEquals(8001L, traceResponse.getTraceId());
 
-        verify(service).getSessionDetail(argThat(sessionId -> sessionId != null && sessionId.equals(5001L)));
-        verify(service).listSourcesByMessageId(argThat(messageId -> messageId != null && messageId.equals(7002L)));
-        verify(service).getTraceByTraceId(argThat(traceId -> traceId != null && traceId.equals(8001L)));
+        var healthResponse = controller.getKnowledgeHealth();
+        assertEquals("AVAILABLE", healthResponse.getStatus());
+        assertEquals("fastgpt", healthResponse.getProvider());
+
+        var rebuildBatchId = controller.rebuildKnowledge();
+        assertEquals(9001L, rebuildBatchId);
+
+        DiscoveryQaAdminRequests.KnowledgeSyncRequest syncRequest = new DiscoveryQaAdminRequests.KnowledgeSyncRequest();
+        syncRequest.setContentType("SANCAI_ENTRY");
+        syncRequest.setContentId(10001L);
+        syncRequest.setCurrentVersionNo(3);
+        var syncResponse = controller.syncKnowledge(syncRequest);
+        assertNotNull(syncResponse);
+        assertEquals("SANCAI_ENTRY", syncResponse.getContentType());
+        assertEquals("SYNCHRONIZED", syncResponse.getSyncStatus());
+
+        DiscoveryQaAdminRequests.KnowledgeSyncPageRequest syncPageRequest =
+                new DiscoveryQaAdminRequests.KnowledgeSyncPageRequest();
+        syncPageRequest.setContentType("SANCAI_ENTRY");
+        syncPageRequest.setSyncStatus("FAILED");
+        syncPageRequest.setPageNo(2);
+        syncPageRequest.setPageSize(10);
+        var syncPageResponse = controller.pageKnowledgeSyncItems(syncPageRequest);
+        assertNotNull(syncPageResponse);
+        assertEquals(2, syncPageResponse.getPageNo());
+        assertEquals(10, syncPageResponse.getPageSize());
+        assertEquals(1, syncPageResponse.getCount());
+
+        verify(qaService).getSessionDetail(5001L);
+        verify(qaService).listSourcesByMessageId(7002L);
+        verify(qaService).getTraceByTraceId(8001L);
+
+        verify(syncService).health();
+        verify(syncService).rebuild();
+
+        ArgumentCaptor<SyncKnowledgeContentCommand> syncContentCommand =
+                ArgumentCaptor.forClass(SyncKnowledgeContentCommand.class);
+        verify(syncService).syncContent(syncContentCommand.capture());
+        assertEquals("SANCAI_ENTRY", syncContentCommand.getValue().getContentType());
+        assertEquals(10001L, syncContentCommand.getValue().getContentId());
+        assertEquals(3, syncContentCommand.getValue().getCurrentVersionNo());
+
+        ArgumentCaptor<KnowledgeSyncItemPageQuery> syncPageQuery =
+                ArgumentCaptor.forClass(KnowledgeSyncItemPageQuery.class);
+        verify(syncService).pageSyncItems(syncPageQuery.capture());
+        assertEquals("SANCAI_ENTRY", syncPageQuery.getValue().getContentType());
+        assertEquals("FAILED", syncPageQuery.getValue().getSyncStatus());
+        assertEquals(2, syncPageQuery.getValue().getPageNo());
+        assertEquals(10, syncPageQuery.getValue().getPageSize());
     }
 
     private QaSessionDetailResult sampleSessionDetail() {
@@ -126,19 +223,38 @@ class DiscoveryQaAdminControllerTest {
     }
 
     private QaTraceResult sampleTrace() {
-        return new QaTraceResult(
-                8001L,
-                7002L,
-                6001L,
-                "黄帝是谁",
-                "黄帝是谁",
-                "GLOBAL",
-                "{\"sessionId\":5001}",
-                "[\"轩辕\"]",
-                "[{\"name\":\"黄帝\"}]",
-                1,
-                "{\"sources\":[]}",
-                new Date(1_718_000_070_000L));
+        QaTraceResult trace = new QaTraceResult();
+        trace.setTraceId(8001L);
+        trace.setMessageId(7002L);
+        trace.setRawQuestion("黄帝是谁");
+        trace.setProvider("kuzhambu-qa");
+        trace.setExternalKnowledgeBaseId("kb-1");
+        trace.setExternalKnowledgeItemIds("[\"item-1\",\"item-2\"]");
+        trace.setExternalChatId("chat-1");
+        trace.setProviderRequestId("1001");
+        trace.setLatencyMs(120L);
+        trace.setFailureReason("none");
+        trace.setRaw("{\"foo\":\"bar\"}");
+        trace.setRetrievedAt(new Date(1_718_000_070_000L));
+        return trace;
+    }
+
+    private KnowledgeSyncItemResult sampleSyncItem() {
+        return new KnowledgeSyncItemResult(
+                "SANCAI_ENTRY:10001",
+                "SANCAI_ENTRY",
+                10001L,
+                "kuzhambu-qa",
+                3,
+                "hash-xxx",
+                "fastgpt",
+                "kb-1",
+                "item-1",
+                "SYNCHRONIZED",
+                null,
+                1_718_000_100_000L,
+                1_718_000_000_000L,
+                1_718_000_050_000L);
     }
 
     private void assertRequestMapping(Class<?> type, String expectedPath) {
@@ -156,7 +272,9 @@ class DiscoveryQaAdminControllerTest {
     private void assertJsonFields(Object value, String... fieldNames) throws Exception {
         var node = OBJECT_MAPPER.valueToTree(value);
         for (String fieldName : fieldNames) {
-            assertTrue(node.has(fieldName), "missing field " + fieldName);
+            if (!node.has(fieldName)) {
+                fail("missing field " + fieldName);
+            }
         }
     }
 }
