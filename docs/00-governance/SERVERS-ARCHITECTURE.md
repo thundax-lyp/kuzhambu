@@ -39,6 +39,7 @@
 - `kuzhambu-servers/common/kuzhambu-common-cache/`：缓存基础能力。
 - `kuzhambu-servers/common/kuzhambu-common-rocketmq/`：RocketMQ 消息基础能力。
 - `kuzhambu-servers/common/kuzhambu-common-elasticsearch/`：Elasticsearch 客户端和索引基础能力。
+- `kuzhambu-servers/common/kuzhambu-common-knowledge/`：统一知识库客户端抽象和外部知识产品适配。
 - `kuzhambu-servers/common/kuzhambu-common-oss/`：对象存储通用客户端抽象和基础适配。
 - `kuzhambu-servers/common/kuzhambu-common-test/`：测试基建、架构测试和集成测试辅助。
 - `kuzhambu-servers/biz/`：业务域模块组，按业务域组织 `interface`、`application`、`domain`、`infra` 四层。
