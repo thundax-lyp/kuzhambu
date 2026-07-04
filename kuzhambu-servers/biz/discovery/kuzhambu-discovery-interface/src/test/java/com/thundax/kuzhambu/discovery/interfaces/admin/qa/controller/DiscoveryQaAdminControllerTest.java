@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.discovery.interfaces.admin.qa.controller;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -305,7 +306,7 @@ class DiscoveryQaAdminControllerTest {
         Method method = type.getDeclaredMethod(methodName, parameters);
         HasPermission annotation = method.getAnnotation(HasPermission.class);
         assertNotNull(annotation);
-        assertEquals(permission, annotation.value());
+        assertArrayEquals(new String[] {permission}, annotation.value());
     }
 
     private void assertJsonFields(Object value, String... fieldNames) throws Exception {
