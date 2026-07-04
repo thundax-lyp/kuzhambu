@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `ClassicsFacadeImpl.java; ClassicsFacadeAssembler.java; ClassicsFacadeImplTest.java`：实现 Classics QA 知识读取
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-KNOWLEDGE-BASE-REWRITE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/facade/impl/ClassicsFacadeImpl.java`; `kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/facade/assembler/ClassicsFacadeAssembler.java`; `kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/facade/impl/ClassicsFacadeImplTest.java`
-    - 处理动作：实现三类 Classics 内容的 QA 知识读取和字段映射。
-    - 验收点：测试覆盖 `SANCAI_ENTRY`、`WANGQI_DOCUMENT`、`MING_CUSTOMS`。
-    - 重要度：9/10
-
 - [ ] `KnowledgeDocument.java; KnowledgeDocumentAssembler.java; KnowledgeItemTextRenderer.java; KnowledgeDocumentAssemblerTest.java`：组装知识库文档
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-KNOWLEDGE-BASE-REWRITE.md`

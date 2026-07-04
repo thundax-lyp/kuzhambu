@@ -2,14 +2,20 @@ package com.thundax.kuzhambu.classics.application.facade.assembler;
 
 import com.thundax.kuzhambu.classics.application.report.result.ClassicsReportSummaryResult;
 import com.thundax.kuzhambu.classics.application.search.result.ClassicsSearchSourceContent;
+import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentQaPair;
+import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentTagStatus;
 import com.thundax.kuzhambu.classics.facade.dto.ClassicsContentGrowthPointFacadeDto;
 import com.thundax.kuzhambu.classics.facade.dto.ClassicsPublicContentFacadeDto;
+import com.thundax.kuzhambu.classics.facade.dto.ClassicsQaKnowledgeFacadeDto;
 import com.thundax.kuzhambu.classics.facade.dto.ClassicsTopContentFacadeDto;
 import com.thundax.kuzhambu.classics.facade.response.ClassicsPublicContentFacadeResponse;
 import com.thundax.kuzhambu.classics.facade.response.ClassicsPublicContentsFacadeResponse;
+import com.thundax.kuzhambu.classics.facade.response.ClassicsQaKnowledgeFacadeResponse;
 import com.thundax.kuzhambu.classics.facade.response.ClassicsSummaryFacadeResponse;
 import java.util.Collections;
 import java.util.List;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -42,6 +48,44 @@ public class ClassicsFacadeAssembler {
     public ClassicsPublicContentFacadeResponse toPublicContentFacadeResponse(ClassicsSearchSourceContent content) {
         return ClassicsPublicContentFacadeResponse.builder()
                 .content(toPublicContentFacadeDto(content))
+                .build();
+    }
+
+    public ClassicsQaKnowledgeFacadeResponse toQaKnowledgeFacadeResponse(ClassicsQaKnowledgeFacadeDto knowledge) {
+        return ClassicsQaKnowledgeFacadeResponse.builder().knowledge(knowledge).build();
+    }
+
+    public ClassicsQaKnowledgeFacadeDto toQaKnowledgeFacadeDto(
+            ClassicsSearchSourceContent sourceContent,
+            String originalText,
+            String translationText,
+            String body,
+            String originalExcerpts,
+            List<ClassicsContentTag> tags,
+            List<ClassicsContentQaPair> qaPairs) {
+        if (sourceContent == null) {
+            return null;
+        }
+        return ClassicsQaKnowledgeFacadeDto.builder()
+                .sourceId(sourceContent.getContentType() + ":" + sourceContent.getContentId())
+                .contentType(sourceContent.getContentType())
+                .contentId(sourceContent.getContentId())
+                .knowledgeBase(sourceContent.getKnowledgeBase())
+                .currentVersionNo(sourceContent.getCurrentVersionNo())
+                .knowledgeRevision(null)
+                .visibility(sourceContent.getVisibility())
+                .status(sourceContent.getStatus())
+                .sourcePath(buildSourcePath(sourceContent.getContentType(), sourceContent.getContentId()))
+                .updatedAt(sourceContent.getUpdatedAt())
+                .title(sourceContent.getTitle())
+                .categoryPath(sourceContent.getCategoryName())
+                .summary(sourceContent.getSummary())
+                .body(body)
+                .originalText(originalText)
+                .translationText(translationText)
+                .originalExcerpts(originalExcerpts)
+                .tags(toTagNames(tags))
+                .qaPairs(toQaPairs(qaPairs))
                 .build();
     }
 
@@ -100,5 +144,41 @@ public class ClassicsFacadeAssembler {
                 .publishedAt(content.getPublishedAt())
                 .updatedAt(content.getUpdatedAt())
                 .build();
+    }
+
+    private String buildSourcePath(String contentType, String contentId) {
+        return switch (contentType) {
+            case "SANCAI_ENTRY" -> "/classics/sancai/" + contentId;
+            case "WANGQI_DOCUMENT" -> "/classics/wangqi/" + contentId;
+            case "MING_CUSTOMS" -> "/classics/ming-customs/" + contentId;
+            default -> "/classics/unknown/" + contentId;
+        };
+    }
+
+    private List<String> toTagNames(List<ClassicsContentTag> tags) {
+        if (tags == null || tags.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return tags.stream()
+                .filter(tag -> tag != null
+                        && (tag.getStatus() == null || tag.getStatus() == ClassicsContentTagStatus.ACTIVE)
+                        && StringUtils.isNotBlank(tag.getTagNameSnapshot()))
+                .map(ClassicsContentTag::getTagNameSnapshot)
+                .toList();
+    }
+
+    private List<ClassicsQaKnowledgeFacadeDto.QaPair> toQaPairs(List<ClassicsContentQaPair> qaPairs) {
+        if (qaPairs == null || qaPairs.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return qaPairs.stream()
+                .filter(pair -> pair != null
+                        && StringUtils.isNotBlank(pair.getQuestion())
+                        && StringUtils.isNotBlank(pair.getAnswer()))
+                .map(pair -> ClassicsQaKnowledgeFacadeDto.QaPair.builder()
+                        .question(pair.getQuestion())
+                        .answer(pair.getAnswer())
+                        .build())
+                .toList();
     }
 }
