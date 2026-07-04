@@ -1,7 +1,7 @@
-import { useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { ArrowRight, Search } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -105,6 +105,44 @@ const INITIAL_FORM_STATE: SearchFormState = {
     visibilityScopes: ""
 };
 
+const toFormState = (searchParams: URLSearchParams): SearchFormState => {
+    return {
+        categoryCodes: searchParams.get("categoryCodes") ?? "",
+        contentStatuses: searchParams.get("contentStatuses") ?? "",
+        dateFrom: searchParams.get("dateFrom") ?? "",
+        dateTo: searchParams.get("dateTo") ?? "",
+        knowledgeBases: searchParams.get("knowledgeBases") ?? "",
+        pageNo: searchParams.get("pageNo") ?? INITIAL_FORM_STATE.pageNo,
+        pageSize: searchParams.get("pageSize") ?? INITIAL_FORM_STATE.pageSize,
+        queryText: searchParams.get("q") ?? "",
+        tagNames: searchParams.get("tagNames") ?? "",
+        visibilityScopes: searchParams.get("visibilityScopes") ?? ""
+    };
+};
+
+const appendParam = (searchParams: URLSearchParams, key: string, value: string) => {
+    const normalizedValue = value.trim();
+    if (normalizedValue) {
+        searchParams.set(key, normalizedValue);
+    }
+};
+
+const toSearchParams = (form: SearchFormState) => {
+    const searchParams = new URLSearchParams();
+    appendParam(searchParams, "q", form.queryText);
+    appendParam(searchParams, "knowledgeBases", form.knowledgeBases);
+    appendParam(searchParams, "categoryCodes", form.categoryCodes);
+    appendParam(searchParams, "tagNames", form.tagNames);
+    appendParam(searchParams, "contentStatuses", form.contentStatuses);
+    appendParam(searchParams, "visibilityScopes", form.visibilityScopes);
+    appendParam(searchParams, "dateFrom", form.dateFrom);
+    appendParam(searchParams, "dateTo", form.dateTo);
+    appendParam(searchParams, "pageNo", form.pageNo);
+    appendParam(searchParams, "pageSize", form.pageSize);
+
+    return searchParams;
+};
+
 const splitList = (value: string) => {
     const tokens = value
         .split(/[\n,，、\s]+/gu)
@@ -180,11 +218,25 @@ const createClickCommand = (
 };
 
 export const DiscoverySearchPage = () => {
-    const [form, setForm] = useState<SearchFormState>(INITIAL_FORM_STATE);
+    const [searchParams, setSearchParams] = useSearchParams();
+    const [form, setForm] = useState<SearchFormState>(() => toFormState(searchParams));
     const searchMutation = useMutation({
         mutationFn: (request: DiscoverySearchRequest) =>
             discoverySearchService.searchDiscovery(request)
     });
+    const { mutate: runSearch, reset: resetSearch } = searchMutation;
+
+    useEffect(() => {
+        const nextForm = toFormState(searchParams);
+        const request = toRequest(nextForm);
+
+        if (request.queryText) {
+            runSearch(request);
+            return;
+        }
+
+        resetSearch();
+    }, [runSearch, resetSearch, searchParams]);
 
     const requestPreview = useMemo(() => toRequest(form), [form]);
     const response = searchMutation.data;
@@ -222,7 +274,7 @@ export const DiscoverySearchPage = () => {
 
     const handleReset = () => {
         setForm(INITIAL_FORM_STATE);
-        searchMutation.reset();
+        setSearchParams(new URLSearchParams());
     };
 
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -230,11 +282,17 @@ export const DiscoverySearchPage = () => {
         const request = toRequest(form);
 
         if (!request.queryText) {
-            searchMutation.reset();
+            setSearchParams(new URLSearchParams());
             return;
         }
 
-        searchMutation.mutate(request);
+        const nextSearchParams = toSearchParams(form);
+        if (nextSearchParams.toString() === searchParams.toString()) {
+            runSearch(request);
+            return;
+        }
+
+        setSearchParams(nextSearchParams);
     };
 
     const handleClick = (

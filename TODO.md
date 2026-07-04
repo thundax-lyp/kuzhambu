@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Portal Discovery Search URL State`：收口 Portal 搜索 URL 状态
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-QA-CLOSEOUT.md`
-    - 范围对象：`kuzhambu-apps/portal-web/src/pages/discovery/search-page.tsx`、`kuzhambu-apps/portal-web/src/pages/discovery/search-page.test.tsx`
-    - 处理动作：使用 URL 参数恢复搜索条件并在检索后同步 URL。
-    - 验收点：页面刷新后按 `q` 等参数自动恢复表单并发起搜索。
-    - 重要度：10/10
-
 - [ ] `Portal Discovery Search Results`：收口 Portal 搜索结果展示
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-QA-CLOSEOUT.md`
