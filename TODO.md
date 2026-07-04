@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web qa-admin-service.ts; qa-admin-types.ts; qa-admin-page.tsx; qa-admin-page.test.tsx; discovery-service-contract.test.ts`：实现 Admin QA 运维页面
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-KNOWLEDGE-BASE-REWRITE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/discovery/qa-admin/qa-admin-service.ts`; `kuzhambu-apps/admin-web/src/pages/discovery/qa-admin/qa-admin-types.ts`; `kuzhambu-apps/admin-web/src/pages/discovery/qa-admin/qa-admin-page.tsx`; `kuzhambu-apps/admin-web/src/pages/discovery/qa-admin/qa-admin-page.test.tsx`; `kuzhambu-apps/admin-web/src/pages/discovery/discovery-service-contract.test.ts`
-    - 处理动作：实现 QA 知识库健康、重建、同步、同步列表、来源和 trace 运维视图。
-    - 验收点：Admin QA 页面和 service contract 测试覆盖 health、rebuild、sync、trace 和无 provider 直连。
-    - 重要度：10/10
-
 - [ ] `kuzhambu-workers README/main/tests`：锁定 Workers 边界
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-KNOWLEDGE-BASE-REWRITE.md`

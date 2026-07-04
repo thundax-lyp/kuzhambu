@@ -1,16 +1,35 @@
-import { useMutation } from "@tanstack/react-query";
-import { Button, Card, Descriptions, Input, Typography } from "antd";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { Button, Card, Descriptions, Input, Table, Tag, Typography } from "antd";
+import type { ColumnsType } from "antd/es/table";
 import { useState } from "react";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import * as service from "./qa-admin-service";
 import type {
     DiscoveryQaSessionDetailRecord,
     DiscoveryQaSourceRecord,
-    DiscoveryQaTraceRecord
+    KnowledgeSyncItemRecord,
+    ProviderTraceRecord
 } from "./qa-admin-types";
 import "./qa-admin-page.css";
 
 const { Text, Title } = Typography;
+
+const DEFAULT_PAGE_SIZE = 10;
+
+const parseNumber = (value: string) => {
+    const trimmed = value.trim();
+    if (!trimmed) {
+        return null;
+    }
+
+    const parsed = Number.parseInt(trimmed, 10);
+    return Number.isNaN(parsed) ? null : parsed;
+};
+
+const parseString = (value: string) => {
+    const trimmed = value.trim();
+    return trimmed.length ? trimmed : null;
+};
 
 const formatTime = (value?: number | string | null) => {
     if (value === null || value === undefined || value === "") {
@@ -26,16 +45,56 @@ const formatTime = (value?: number | string | null) => {
     }).format(new Date(timestamp));
 };
 
+const formatRawJson = (value?: string | object | null) => {
+    if (value === null || value === undefined || value === "") {
+        return "-";
+    }
+    if (typeof value === "string") {
+        try {
+            return JSON.stringify(JSON.parse(value), null, 2);
+        } catch {
+            return value;
+        }
+    }
+    return JSON.stringify(value, null, 2);
+};
+
+const formatSyncItemKey = (record: KnowledgeSyncItemRecord) => {
+    return record.sourceId ?? `${record.contentType ?? "UNKNOWN"}-${record.contentId ?? "0"}`;
+};
+
 export const QaAdminPage = () => {
     const [sessionId, setSessionId] = useState("2001");
     const [messageId, setMessageId] = useState("4001");
     const [traceId, setTraceId] = useState("9001");
+    const [contentType, setContentType] = useState("SANCAI_ENTRY");
+    const [contentId, setContentId] = useState("1001");
+    const [currentVersionNo, setCurrentVersionNo] = useState("1");
+    const [syncStatus, setSyncStatus] = useState("");
     const [sessionDetail, setSessionDetail] = useState<DiscoveryQaSessionDetailRecord | null>(null);
     const [sources, setSources] = useState<DiscoveryQaSourceRecord[]>([]);
-    const [trace, setTrace] = useState<DiscoveryQaTraceRecord | null>(null);
+    const [trace, setTrace] = useState<ProviderTraceRecord | null>(null);
+    const [lastSyncResult, setLastSyncResult] = useState<KnowledgeSyncItemRecord | null>(null);
 
+    const healthQuery = useQuery({
+        queryFn: service.getKnowledgeHealth,
+        queryKey: ["discovery-qa-admin-knowledge-health"]
+    });
+
+    const rebuildMutation = useMutation({
+        mutationFn: service.rebuildKnowledge
+    });
+    const syncMutation = useMutation({
+        mutationFn: service.createKnowledgeSync,
+        onSuccess: (nextItem) => {
+            setLastSyncResult(nextItem);
+        }
+    });
+    const syncPageMutation = useMutation({
+        mutationFn: service.pageKnowledgeSyncItems
+    });
     const sessionMutation = useMutation({
-        mutationFn: service.getQaSessionDetail,
+        mutationFn: service.getQaSession,
         onSuccess: (nextDetail) => {
             setSessionDetail(nextDetail);
         }
@@ -53,20 +112,239 @@ export const QaAdminPage = () => {
         }
     });
 
+    const syncItems = syncPageMutation.data?.records ?? [];
+    const syncColumns: ColumnsType<KnowledgeSyncItemRecord> = [
+        { title: "来源号", dataIndex: "sourceId", key: "sourceId", width: 180 },
+        { title: "内容类型", dataIndex: "contentType", key: "contentType", width: 140 },
+        { title: "内容号", dataIndex: "contentId", key: "contentId", width: 120 },
+        {
+            title: "知识库",
+            dataIndex: "knowledgeBaseName",
+            key: "knowledgeBaseName",
+            width: 160
+        },
+        {
+            title: "版本",
+            key: "version",
+            width: 160,
+            render: (_, record) =>
+                `${record.currentVersionNo ?? "-"} / ${record.knowledgeRevision ?? "-"}`
+        },
+        {
+            title: "状态",
+            dataIndex: "syncStatus",
+            key: "syncStatus",
+            width: 120,
+            render: (value?: string | null) => <Tag>{value ?? "-"}</Tag>
+        },
+        {
+            title: "同步时间",
+            dataIndex: "syncedAt",
+            key: "syncedAt",
+            width: 180,
+            render: (value?: number | null) => formatTime(value)
+        },
+        {
+            title: "更新时间",
+            dataIndex: "updatedAt",
+            key: "updatedAt",
+            width: 180,
+            render: (value?: number | null) => formatTime(value)
+        },
+        {
+            title: "操作",
+            key: "action",
+            width: 120,
+            render: (_, record) => (
+                <Button
+                    loading={syncMutation.isPending}
+                    onClick={() =>
+                        syncMutation.mutate({
+                            contentId: record.contentId ?? 0,
+                            contentType: record.contentType ?? "",
+                            currentVersionNo: record.currentVersionNo ?? null
+                        })
+                    }
+                    size="small"
+                >
+                    同步
+                </Button>
+            )
+        }
+    ];
+
+    const loadSyncItems = () => {
+        syncPageMutation.mutate({
+            contentType: parseString(contentType),
+            pageNo: 1,
+            pageSize: DEFAULT_PAGE_SIZE,
+            syncStatus: parseString(syncStatus)
+        });
+    };
+
+    const syncCurrentContent = () => {
+        const nextContentId = parseNumber(contentId);
+        if (nextContentId === null) {
+            return;
+        }
+
+        syncMutation.mutate({
+            contentId: nextContentId,
+            contentType: parseString(contentType) ?? "",
+            currentVersionNo: parseNumber(currentVersionNo)
+        });
+    };
+
     return (
         <main className="kuzhambu-page discovery-admin-page qa-admin-page">
             <section className="kuzhambu-page-panel">
                 <header className="kuzhambu-page-header">
                     <div>
                         <Text className="kuzhambu-page-eyebrow">Discovery / QA Admin</Text>
-                        <Title level={2}>问答调试台</Title>
+                        <Title level={2}>问答运维台</Title>
                         <Text type="secondary">
-                            查看会话、来源和检索轨迹，验证知识中心的问答链路。
+                            查看知识库健康、同步状态、会话来源和 Provider 轨迹。
                         </Text>
                     </div>
                 </header>
 
                 <KuzhambuSpace orientation="vertical" size={16} style={{ width: "100%" }}>
+                    <Card title="知识库健康" size="small">
+                        <KuzhambuSpace orientation="vertical" size={12} style={{ width: "100%" }}>
+                            <KuzhambuSpace wrap>
+                                <Button
+                                    loading={healthQuery.isFetching}
+                                    onClick={() => void healthQuery.refetch()}
+                                    type="primary"
+                                >
+                                    刷新健康
+                                </Button>
+                                <Button
+                                    danger
+                                    loading={rebuildMutation.isPending}
+                                    onClick={() => rebuildMutation.mutate({})}
+                                >
+                                    重建知识库
+                                </Button>
+                            </KuzhambuSpace>
+                            <Descriptions
+                                bordered
+                                column={2}
+                                items={[
+                                    {
+                                        key: "knowledgeBaseName",
+                                        label: "知识库",
+                                        children: healthQuery.data?.knowledgeBaseName ?? "-"
+                                    },
+                                    {
+                                        key: "status",
+                                        label: "状态",
+                                        children: healthQuery.data?.status ?? "-"
+                                    },
+                                    {
+                                        key: "provider",
+                                        label: "Provider",
+                                        children: healthQuery.data?.provider ?? "-"
+                                    },
+                                    {
+                                        key: "checkedAt",
+                                        label: "检查时间",
+                                        children: formatTime(healthQuery.data?.checkedAt)
+                                    },
+                                    {
+                                        key: "failureReason",
+                                        label: "失败原因",
+                                        children: healthQuery.data?.failureReason ?? "-"
+                                    },
+                                    {
+                                        key: "rebuildResult",
+                                        label: "重建结果",
+                                        children: rebuildMutation.data ?? "-"
+                                    }
+                                ]}
+                                size="small"
+                            />
+                        </KuzhambuSpace>
+                    </Card>
+
+                    <Card title="知识同步" size="small">
+                        <KuzhambuSpace orientation="vertical" size={12} style={{ width: "100%" }}>
+                            <KuzhambuSpace align="end" wrap>
+                                <label>
+                                    <Text type="secondary">内容类型</Text>
+                                    <Input
+                                        aria-label="内容类型"
+                                        value={contentType}
+                                        onChange={(event) => setContentType(event.target.value)}
+                                        style={{ width: 180 }}
+                                    />
+                                </label>
+                                <label>
+                                    <Text type="secondary">同步状态</Text>
+                                    <Input
+                                        aria-label="同步状态"
+                                        value={syncStatus}
+                                        onChange={(event) => setSyncStatus(event.target.value)}
+                                        style={{ width: 160 }}
+                                    />
+                                </label>
+                                <label>
+                                    <Text type="secondary">内容号</Text>
+                                    <Input
+                                        aria-label="内容号"
+                                        value={contentId}
+                                        onChange={(event) => setContentId(event.target.value)}
+                                        style={{ width: 140 }}
+                                    />
+                                </label>
+                                <label>
+                                    <Text type="secondary">版本号</Text>
+                                    <Input
+                                        aria-label="版本号"
+                                        value={currentVersionNo}
+                                        onChange={(event) =>
+                                            setCurrentVersionNo(event.target.value)
+                                        }
+                                        style={{ width: 120 }}
+                                    />
+                                </label>
+                                <Button
+                                    loading={syncPageMutation.isPending}
+                                    onClick={loadSyncItems}
+                                    type="primary"
+                                >
+                                    查询同步
+                                </Button>
+                                <Button
+                                    loading={syncMutation.isPending}
+                                    onClick={syncCurrentContent}
+                                >
+                                    同步内容
+                                </Button>
+                            </KuzhambuSpace>
+                            <Table
+                                aria-label="知识同步表格"
+                                columns={syncColumns}
+                                dataSource={syncItems}
+                                pagination={false}
+                                rowKey={formatSyncItemKey}
+                                scroll={{ x: 1240 }}
+                                size="small"
+                            />
+                            <Text type="secondary">
+                                {syncPageMutation.data
+                                    ? `共 ${syncPageMutation.data.count ?? syncPageMutation.data.totalCount ?? 0} 条同步记录`
+                                    : "暂无同步记录。"}
+                            </Text>
+                            <Text type="secondary">
+                                最近同步：
+                                {lastSyncResult
+                                    ? `${lastSyncResult.sourceId ?? "-"} / ${lastSyncResult.syncStatus ?? "-"}`
+                                    : "-"}
+                            </Text>
+                        </KuzhambuSpace>
+                    </Card>
+
                     <Card title="会话详情" size="small">
                         <KuzhambuSpace align="end" style={{ flexWrap: "wrap", width: "100%" }}>
                             <label>
@@ -138,30 +416,20 @@ export const QaAdminPage = () => {
                             <Text strong>消息列表</Text>
                             {sessionDetail?.messages?.length ? (
                                 sessionDetail.messages.map((message) => (
-                                    <Card
-                                        key={
-                                            message.messageId ??
-                                            `${message.role}-${message.content}`
-                                        }
-                                        size="small"
+                                    <div
+                                        className="qa-admin-message"
+                                        key={message.messageId ?? message.content}
                                     >
-                                        <KuzhambuSpace
-                                            orientation="vertical"
-                                            size={4}
-                                            style={{ width: "100%" }}
-                                        >
-                                            <Text strong>
-                                                {message.role ?? "-"} ·{" "}
-                                                {message.messageStatus ?? "-"}
-                                            </Text>
-                                            <Text>{message.content ?? "-"}</Text>
-                                            <Text type="secondary">
-                                                轮次 {message.contextTurnCount ?? "-"} · 发送
-                                                {formatTime(message.sentAt)} · 回答
-                                                {formatTime(message.answeredAt)}
-                                            </Text>
-                                        </KuzhambuSpace>
-                                    </Card>
+                                        <Text strong>
+                                            {message.role ?? "-"} · {message.messageStatus ?? "-"}
+                                        </Text>
+                                        <Text>{message.content ?? "-"}</Text>
+                                        <Text type="secondary">
+                                            轮次 {message.contextTurnCount ?? "-"} · 发送
+                                            {formatTime(message.sentAt)} · 回答
+                                            {formatTime(message.answeredAt)}
+                                        </Text>
+                                    </div>
                                 ))
                             ) : (
                                 <Text type="secondary">暂无消息。</Text>
@@ -200,28 +468,22 @@ export const QaAdminPage = () => {
                         >
                             {sources.length ? (
                                 sources.map((source) => (
-                                    <Card
+                                    <div
+                                        className="qa-admin-source"
                                         key={
                                             source.sourceId ??
                                             `${source.contentType}-${source.contentId}`
                                         }
-                                        size="small"
                                     >
-                                        <KuzhambuSpace
-                                            orientation="vertical"
-                                            size={4}
-                                            style={{ width: "100%" }}
-                                        >
-                                            <Text strong>{source.titleSnapshot ?? "-"}</Text>
-                                            <Text type="secondary">
-                                                {source.knowledgeBase ?? "-"} ·{" "}
-                                                {source.contentType ?? "-"} · 排序{" "}
-                                                {source.sourceRank ?? "-"} · 得分{" "}
-                                                {source.score ?? "-"}
-                                            </Text>
-                                            <Text>{source.snippet ?? "-"}</Text>
-                                        </KuzhambuSpace>
-                                    </Card>
+                                        <Text strong>{source.titleSnapshot ?? "-"}</Text>
+                                        <Text type="secondary">
+                                            {source.knowledgeBase ?? "-"} ·{" "}
+                                            {source.contentType ?? "-"} · 排序
+                                            {source.sourceRank ?? "-"} · 得分 {source.score ?? "-"}{" "}
+                                            · {source.sourceStatus ?? "-"}
+                                        </Text>
+                                        <Text>{source.snippet ?? "-"}</Text>
+                                    </div>
                                 ))
                             ) : (
                                 <Text type="secondary">暂无来源。</Text>
@@ -229,7 +491,7 @@ export const QaAdminPage = () => {
                         </KuzhambuSpace>
                     </Card>
 
-                    <Card title="检索轨迹" size="small">
+                    <Card title="Provider Trace" size="small">
                         <KuzhambuSpace align="end" style={{ flexWrap: "wrap", width: "100%" }}>
                             <label>
                                 <Text type="secondary">轨迹号</Text>
@@ -258,21 +520,40 @@ export const QaAdminPage = () => {
                             column={2}
                             items={[
                                 {
-                                    key: "rawQuestion",
-                                    label: "原始问题",
-                                    children: trace?.rawQuestion ?? "-"
+                                    key: "provider",
+                                    label: "Provider",
+                                    children: trace?.provider ?? "-"
                                 },
                                 {
-                                    key: "rewrittenQuestion",
-                                    label: "改写问题",
-                                    children: trace?.rewrittenQuestion ?? "-"
+                                    key: "knowledgeBase",
+                                    label: "外部知识库",
+                                    children: trace?.externalKnowledgeBaseId ?? "-"
                                 },
                                 {
-                                    key: "candidateCount",
-                                    label: "候选数",
-                                    children: trace?.candidateCount ?? "-"
+                                    key: "itemIds",
+                                    label: "外部条目",
+                                    children: trace?.externalKnowledgeItemIds ?? "-"
                                 },
-                                { key: "scope", label: "作用域", children: trace?.scope ?? "-" },
+                                {
+                                    key: "externalChatId",
+                                    label: "外部会话",
+                                    children: trace?.externalChatId ?? "-"
+                                },
+                                {
+                                    key: "providerRequestId",
+                                    label: "Provider 请求号",
+                                    children: trace?.providerRequestId ?? "-"
+                                },
+                                {
+                                    key: "latency",
+                                    label: "耗时",
+                                    children: trace?.latencyMs ?? "-"
+                                },
+                                {
+                                    key: "failure",
+                                    label: "失败原因",
+                                    children: trace?.failureReason ?? "-"
+                                },
                                 {
                                     key: "retrievedAt",
                                     label: "检索时间",
@@ -282,35 +563,9 @@ export const QaAdminPage = () => {
                             size="small"
                             style={{ marginTop: 16 }}
                         />
-
-                        <Descriptions
-                            bordered
-                            column={1}
-                            items={[
-                                {
-                                    key: "filtersJson",
-                                    label: "过滤条件 JSON",
-                                    children: trace?.filtersJson ?? "-"
-                                },
-                                {
-                                    key: "expandedTermsJson",
-                                    label: "扩展词 JSON",
-                                    children: trace?.expandedTermsJson ?? "-"
-                                },
-                                {
-                                    key: "linkedEntitiesJson",
-                                    label: "关联实体 JSON",
-                                    children: trace?.linkedEntitiesJson ?? "-"
-                                },
-                                {
-                                    key: "contextSnapshot",
-                                    label: "上下文快照",
-                                    children: trace?.contextSnapshot ?? "-"
-                                }
-                            ]}
-                            size="small"
-                            style={{ marginTop: 16 }}
-                        />
+                        <Text code className="qa-admin-raw-json">
+                            {formatRawJson(trace?.raw)}
+                        </Text>
                     </Card>
                 </KuzhambuSpace>
             </section>

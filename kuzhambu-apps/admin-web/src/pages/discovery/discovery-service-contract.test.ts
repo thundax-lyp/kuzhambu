@@ -14,7 +14,50 @@ describe("discovery admin service contracts", () => {
     });
 
     it("maps qa admin endpoints and request bodies", async () => {
-        await qaService.getQaSessionDetail({ sessionId: 2001 });
+        await qaService.getKnowledgeHealth();
+        expect(postJson).toHaveBeenLastCalledWith("/discovery/qa-admin/knowledge/health");
+
+        await qaService.rebuildKnowledge({ requestId: "REQ-1", traceId: "TRACE-1" });
+        expect(postJson).toHaveBeenLastCalledWith("/discovery/qa-admin/knowledge/rebuild", {
+            body: {
+                requestId: "REQ-1",
+                traceId: "TRACE-1"
+            }
+        });
+
+        await qaService.createKnowledgeSync({
+            contentId: 1001,
+            contentType: "SANCAI_ENTRY",
+            currentVersionNo: 2,
+            requestId: "REQ-2",
+            traceId: "TRACE-2"
+        });
+        expect(postJson).toHaveBeenLastCalledWith("/discovery/qa-admin/knowledge/sync", {
+            body: {
+                contentId: 1001,
+                contentType: "SANCAI_ENTRY",
+                currentVersionNo: 2,
+                requestId: "REQ-2",
+                traceId: "TRACE-2"
+            }
+        });
+
+        await qaService.pageKnowledgeSyncItems({
+            contentType: "SANCAI_ENTRY",
+            pageNo: 1,
+            pageSize: 10,
+            syncStatus: "SYNCED"
+        });
+        expect(postJson).toHaveBeenLastCalledWith("/discovery/qa-admin/knowledge/sync/page", {
+            body: {
+                contentType: "SANCAI_ENTRY",
+                pageNo: 1,
+                pageSize: 10,
+                syncStatus: "SYNCED"
+            }
+        });
+
+        await qaService.getQaSession({ sessionId: 2001 });
         expect(postJson).toHaveBeenLastCalledWith("/discovery/qa-admin/session/get", {
             body: {
                 sessionId: 2001
@@ -34,6 +77,9 @@ describe("discovery admin service contracts", () => {
                 traceId: 9001
             }
         });
+
+        const calledUrls = postJson.mock.calls.map(([url]) => String(url));
+        expect(calledUrls.join("\n")).not.toMatch(/fastgpt|provider|dataset|collection/iu);
     });
 
     it("maps search admin endpoints and request bodies", async () => {
