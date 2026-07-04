@@ -10,30 +10,6 @@
 ## 当前任务项
 
 
-- [ ] `SyncKnowledgeContentCommand.java; KnowledgeSyncItemPageQuery.java; KnowledgeSyncItemResult.java; KnowledgeSyncApplicationService.java`：定义知识同步应用契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-KNOWLEDGE-BASE-REWRITE.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/qa/command/SyncKnowledgeContentCommand.java`; `kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/qa/query/KnowledgeSyncItemPageQuery.java`; `kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/qa/result/KnowledgeSyncItemResult.java`; `kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/qa/service/KnowledgeSyncApplicationService.java`
-    - 处理动作：定义 health、rebuild、syncContent、deleteContent、pageSyncItems 应用契约。
-    - 验收点：Discovery application 编译通过。
-    - 重要度：9/10
-
-- [ ] `KnowledgeSyncApplicationServiceImpl.java; KnowledgeHealthResult.java; KnowledgeSyncBatchResult.java; KnowledgeSyncApplicationServiceImplTest.java`：实现知识同步应用服务
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-KNOWLEDGE-BASE-REWRITE.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/qa/service/impl/KnowledgeSyncApplicationServiceImpl.java`; `kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/qa/result/KnowledgeHealthResult.java`; `kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/qa/result/KnowledgeSyncBatchResult.java`; `kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/test/java/com/thundax/kuzhambu/discovery/application/qa/service/impl/KnowledgeSyncApplicationServiceImplTest.java`
-    - 处理动作：通过 `KnowledgeBaseClient` 实现知识库确保、upsert、delete 和同步状态持久化。
-    - 验收点：测试覆盖成功同步、失败同步和 provider 删除。
-    - 重要度：10/10
-
-- [ ] `ChatCompletionCommand.java; ChatCompletionResult.java; KnowledgeQaApplicationService.java; QaApplicationService.java`：定义 OpenAI-compatible QA 应用契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-KNOWLEDGE-BASE-REWRITE.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/qa/command/ChatCompletionCommand.java`; `kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/qa/result/ChatCompletionResult.java`; `kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/qa/service/KnowledgeQaApplicationService.java`; `kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/qa/service/QaApplicationService.java`
-    - 处理动作：新增 chat completion 契约并从正式 QA 契约移除 `askQuestion`。
-    - 验收点：Application 编译无正式 QA `AskQuestionCommand` 引用。
-    - 重要度：10/10
-
 - [ ] `KnowledgeQaApplicationServiceImpl.java; QaSourceAssembler.java; QaTraceAssembler.java; KnowledgeQaApplicationServiceImplTest.java`：实现 Knowledge Base QA 应用服务
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-KNOWLEDGE-BASE-REWRITE.md`
