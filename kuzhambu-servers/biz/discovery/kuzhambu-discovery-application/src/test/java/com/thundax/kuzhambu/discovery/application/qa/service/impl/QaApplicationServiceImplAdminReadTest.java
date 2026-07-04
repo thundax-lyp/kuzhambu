@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaMessageResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionDetailResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaTraceResult;
+import com.thundax.kuzhambu.discovery.application.qa.support.QaSessionCsvExporter;
 import com.thundax.kuzhambu.discovery.application.qa.support.QaSourceAssembler;
 import com.thundax.kuzhambu.discovery.application.qa.support.QaTraceAssembler;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaMessage;
@@ -17,8 +18,10 @@ import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSession;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSource;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaMessageRepository;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaRetrievalTraceRepository;
+import com.thundax.kuzhambu.discovery.domain.qa.repository.QaSessionExportRepository;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaSessionRepository;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaSourceRepository;
+import com.thundax.kuzhambu.storage.facade.StorageFacade;
 import java.util.Date;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -36,6 +39,9 @@ class QaApplicationServiceImplAdminReadTest {
                 messageRepository,
                 sourceRepository,
                 traceRepository,
+                mock(QaSessionExportRepository.class),
+                mock(StorageFacade.class),
+                new QaSessionCsvExporter(),
                 new QaSourceAssembler(),
                 new QaTraceAssembler());
 

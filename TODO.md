@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `discovery-qa-export-application`：实现 QA 会话 CSV 导出应用服务
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-SESSION-DELETE-EXPORT.md`
-    - 范围对象：`ExportQaSessionCommand.java`、`QaSessionExportResult.java`、`QaSessionCsvExporter.java`、`QaApplicationServiceImpl.java`、`QaApplicationServiceImplTest.java`
-    - 处理动作：生成标准转义 CSV，写入导出记录，上传 Storage，并维护成功或失败状态。
-    - 验收点：CSV 转义、Portal 禁止导出删除会话、Admin 允许导出删除会话、Storage 上传参数和失败状态测试通过。
-    - 重要度：10/10
-
 - [ ] `discovery-qa-portal-export-interface`：补齐 Portal 会话导出接口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-SESSION-DELETE-EXPORT.md`
