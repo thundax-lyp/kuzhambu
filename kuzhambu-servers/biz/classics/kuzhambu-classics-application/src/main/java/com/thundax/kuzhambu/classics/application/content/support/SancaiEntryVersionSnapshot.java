@@ -73,7 +73,6 @@ public record SancaiEntryVersionSnapshot(
                 images == null
                         ? List.of()
                         : images.stream()
-                                .filter(ImageResource::currentUsed)
                                 .sorted(Comparator.comparingInt(ImageResource::priority))
                                 .toList());
     }
@@ -103,7 +102,6 @@ public record SancaiEntryVersionSnapshot(
         return images == null
                 ? List.of()
                 : images.stream()
-                        .filter(SancaiEntryImage::isCurrentUsed)
                         .sorted(Comparator.comparingInt(SancaiEntryImage::getPriority))
                         .map(ImageResource::from)
                         .toList();

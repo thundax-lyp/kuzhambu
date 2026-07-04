@@ -62,7 +62,7 @@ class ClassicsContentSnapshotAssemblerTest {
     }
 
     @Test
-    void shouldAssembleCurrentSancaiImagesInPriorityOrder() {
+    void shouldAssembleAllSancaiImagesInPriorityOrder() {
         SancaiEntry entry = new SancaiEntry();
         entry.setId(SancaiEntryId.of(100L));
         entry.setVolumeId(SancaiVolumeId.of(2L));
@@ -83,6 +83,9 @@ class ClassicsContentSnapshotAssemblerTest {
                         + "\"translationStatus\":null,\"imageStatus\":null,\"visualAssetStatus\":null,"
                         + "\"refinementStatus\":null,\"priority\":7,"
                         + "\"images\":["
+                        + "{\"imageId\":21,\"storageObjectId\":801,\"originalFilename\":null,"
+                        + "\"contentType\":null,\"size\":null,\"imageType\":\"ORIGINAL\","
+                        + "\"title\":\"旧图\",\"currentUsed\":false,\"priority\":1},"
                         + "{\"imageId\":23,\"storageObjectId\":803,\"originalFilename\":null,"
                         + "\"contentType\":null,\"size\":null,\"imageType\":\"ORIGINAL\","
                         + "\"title\":\"首图\",\"currentUsed\":true,\"priority\":1},"
@@ -99,10 +102,14 @@ class ClassicsContentSnapshotAssemblerTest {
         entry.setId(SancaiEntryId.of(100L));
         entry.setTitle("三才");
         entry.setPriority(7);
-        SancaiEntryImage image = image(22L, 802L, "次图", true, 2);
+        SancaiEntryImage currentImage = image(22L, 802L, "次图", true, 2);
+        SancaiEntryImage inactiveImage = image(21L, 801L, "旧图", false, 1);
 
         String snapshotJson = assembler.toSnapshotJsonWithImageResources(
-                entry, List.of(SancaiEntryVersionSnapshot.ImageResource.from(image, storage())));
+                entry,
+                List.of(
+                        SancaiEntryVersionSnapshot.ImageResource.from(currentImage, storage()),
+                        SancaiEntryVersionSnapshot.ImageResource.from(inactiveImage, null)));
 
         assertEquals(
                 "{\"contentType\":\"SANCAI_ENTRY\",\"contentId\":100,\"contentUpdatedAt\":null,"
@@ -111,6 +118,9 @@ class ClassicsContentSnapshotAssemblerTest {
                         + "\"translationStatus\":null,\"imageStatus\":null,\"visualAssetStatus\":null,"
                         + "\"refinementStatus\":null,\"priority\":7,"
                         + "\"images\":["
+                        + "{\"imageId\":21,\"storageObjectId\":801,\"originalFilename\":null,"
+                        + "\"contentType\":null,\"size\":null,\"imageType\":\"ORIGINAL\","
+                        + "\"title\":\"旧图\",\"currentUsed\":false,\"priority\":1},"
                         + "{\"imageId\":22,\"storageObjectId\":802,\"originalFilename\":\"三才图.png\","
                         + "\"contentType\":\"image/png\",\"size\":9,\"imageType\":\"ORIGINAL\","
                         + "\"title\":\"次图\",\"currentUsed\":true,\"priority\":2}"

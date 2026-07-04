@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics-sancai-image-snapshot-payload`：将三才内容快照图片改为多图列表
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-IMAGE-GOVERNANCE-CLOSEOUT.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/support/SancaiEntryVersionSnapshot.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/support/ClassicsContentSnapshotAssembler.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/content/support/ClassicsContentSnapshotAssemblerTest.java`
-    - 处理动作：移除 snapshot `images` 只保留当前图的过滤逻辑，保留全部图片并按 `priority ASC` 输出。
-    - 验收点：snapshot `images` 同时包含 `currentUsed=true` 和 `currentUsed=false` 图片，字段列表不变且顺序稳定。
-    - 重要度：10/10
-
 - [ ] `classics-sancai-image-showcase-payload`：补齐三才静态展示多图 payload
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-IMAGE-GOVERNANCE-CLOSEOUT.md`
