@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `discovery-qa-export-domain-storage`：建立 QA 会话导出领域结构和 Storage owner 类型
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-SESSION-DELETE-EXPORT.md`
-    - 范围对象：`StorageOwnerType.java`、`kuzhambu-discovery-application/pom.xml`、`QaSessionExport.java`、`QaSessionExportRepository.java`、`QaSessionExportDO.java`
-    - 处理动作：新增 `DISCOVERY_QA_SESSION_EXPORT`、Storage facade 依赖和导出记录领域数据结构。
-    - 验收点：导出记录字段与 `discovery_qa_session_export` 表字段一致，Discovery 应用层可依赖 Storage facade。
-    - 重要度：10/10
-
 - [ ] `discovery-qa-export-repository`：实现 QA 会话导出仓储
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-SESSION-DELETE-EXPORT.md`
