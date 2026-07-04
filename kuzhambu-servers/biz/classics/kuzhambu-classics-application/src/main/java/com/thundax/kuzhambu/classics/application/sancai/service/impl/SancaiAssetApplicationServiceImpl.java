@@ -41,6 +41,7 @@ import com.thundax.kuzhambu.storage.facade.dto.StorageObjectFacadeDto;
 import com.thundax.kuzhambu.storage.facade.request.BindStorageOwnerFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.MarkStorageUsageFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.OpenStorageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.UnbindStorageOwnerFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.UploadStorageFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.response.OpenStorageFacadeResponse;
 import com.thundax.kuzhambu.storage.facade.response.UploadStorageFacadeResponse;
@@ -136,7 +137,6 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     @Transactional(rollbackFor = Exception.class)
     public SancaiEntryImageResource uploadImage(SancaiEntryImageUploadCommand command) {
         SancaiEntryId entryId = SancaiEntryIdCodec.toDomain(command == null ? null : command.getEntryId());
-        SancaiEntryImage replacedImage = currentImageToReplace(command, entryId);
         validateImageUpload(command);
 
         UploadStorageFacadeResponse uploadResponse = storageFacade.upload(UploadStorageFacadeRequest.builder()
@@ -157,13 +157,10 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
         image.setTitle(command.getTitle());
         image.setCurrentUsed(command.isCurrentUsed());
         image.setPriority(repository.maxPriority() + 1);
+        clearCurrentImagesIfNeeded(command, entryId);
         SancaiEntryImageId imageId = repository.insertImage(image);
         image.setId(imageId);
 
-        if (replacedImage != null) {
-            replacedImage.setCurrentUsed(false);
-            repository.updateImage(replacedImage);
-        }
         bindStorageOwner(uploadResponse == null ? null : uploadResponse.getStorageObjectId(), entryId, imageId);
         return toResource(image, uploadResponse);
     }
@@ -205,13 +202,17 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     public void sortImages(SancaiEntryImageSortCommand command) {
         SortDirection effectiveDirection =
                 command == null || command.getSortDirection() == null ? SortDirection.ASC : command.getSortDirection();
+        SancaiEntryId entryId = command == null ? null : command.getEntryId();
+        if (entryId == null) {
+            throw sortMissingId();
+        }
         List<SancaiEntryImageId> orderedIdList =
                 command == null || command.getOrderedIds() == null ? Collections.emptyList() : command.getOrderedIds();
         if (orderedIdList.isEmpty()) {
             throw sortEmptyInput();
         }
 
-        List<SancaiEntryImage> currentImages = repository.listImages(effectiveDirection);
+        List<SancaiEntryImage> currentImages = repository.listImagesByEntryId(entryId, effectiveDirection);
         if (currentImages == null || currentImages.isEmpty() || currentImages.size() != orderedIdList.size()) {
             throw sortMissingId();
         }
@@ -263,14 +264,29 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    public void useImage(SancaiEntryId entryId, SancaiEntryImageId imageId) {
+        requireImage(entryId, imageId);
+        repository.clearCurrentImagesByEntryId(entryId);
+        if (repository.markImageCurrent(entryId, imageId) != 1) {
+            throw new BizException("三才当前使用图片切换失败");
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public void deleteImage(SancaiEntryImageId id) {
         SancaiEntryImage image = getImage(id);
+        if (image == null) {
+            throw new BizException("三才图片不存在");
+        }
         repository.deleteImageById(id);
-        if (storageFacade != null && image != null && image.getStorageObjectId() != null) {
+        unbindStorageOwner(image);
+        if (storageFacade != null && image.getStorageObjectId() != null) {
             storageFacade.markUnused(MarkStorageUsageFacadeRequest.builder()
                     .storageObjectId(image.getStorageObjectId().value())
                     .build());
         }
+        useFirstRemainingImageIfNeeded(image);
     }
 
     @Override
@@ -576,18 +592,11 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
                 ErrorCode.SORT_DB_FAILURE.getMessage());
     }
 
-    private SancaiEntryImage currentImageToReplace(SancaiEntryImageUploadCommand command, SancaiEntryId entryId) {
+    private void clearCurrentImagesIfNeeded(SancaiEntryImageUploadCommand command, SancaiEntryId entryId) {
         if (command == null || !command.isCurrentUsed()) {
-            return null;
+            return;
         }
-        if (command.getReplaceImageId() == null) {
-            throw new BizException("替换当前图片时必须指定 replaceImageId");
-        }
-        SancaiEntryImage image = requireImage(entryId, SancaiEntryImageIdCodec.toDomain(command.getReplaceImageId()));
-        if (!image.isCurrentUsed()) {
-            throw new BizException("被替换图片不是当前使用图");
-        }
-        return image;
+        repository.clearCurrentImagesByEntryId(entryId);
     }
 
     private SancaiEntryImage requireImage(SancaiEntryId entryId, SancaiEntryImageId imageId) {
@@ -671,6 +680,31 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
                 .ownerType(IMAGE_OWNER_TYPE)
                 .ownerParams("usage=SANCAI_ENTRY_IMAGE;entryId=" + entryId.value() + ";imageId=" + imageId.value())
                 .build());
+    }
+
+    private void unbindStorageOwner(SancaiEntryImage image) {
+        if (storageFacade == null || image == null || image.getEntryId() == null || image.getId() == null) {
+            return;
+        }
+        storageFacade.unbindOwner(UnbindStorageOwnerFacadeRequest.builder()
+                .ownerType(IMAGE_OWNER_TYPE)
+                .ownerId(imageOwnerId(image.getEntryId(), image.getId()))
+                .build());
+    }
+
+    private void useFirstRemainingImageIfNeeded(SancaiEntryImage deletedImage) {
+        if (deletedImage == null || !deletedImage.isCurrentUsed() || deletedImage.getEntryId() == null) {
+            return;
+        }
+        List<SancaiEntryImage> remainingImages =
+                repository.listImagesByEntryId(deletedImage.getEntryId(), SortDirection.ASC);
+        if (remainingImages == null || remainingImages.isEmpty()) {
+            return;
+        }
+        SancaiEntryImage nextImage = remainingImages.get(0);
+        if (nextImage != null && nextImage.getId() != null) {
+            repository.markImageCurrent(deletedImage.getEntryId(), nextImage.getId());
+        }
     }
 
     private static SancaiEntryImageResource toResource(SancaiEntryImage image, UploadStorageFacadeResponse response) {

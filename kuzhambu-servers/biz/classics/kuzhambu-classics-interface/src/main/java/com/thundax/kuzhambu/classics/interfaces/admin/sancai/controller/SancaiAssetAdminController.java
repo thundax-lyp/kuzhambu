@@ -135,6 +135,7 @@ public class SancaiAssetAdminController {
     @PostMapping("images/sort")
     public Boolean sortImages(@Valid @RequestBody SancaiEntryImageSortRequest request) {
         service.sortImages(new SancaiEntryImageSortCommand(
+                null,
                 RequestListHelper.map(
                         RequestListHelper.presentUnique(
                                 request == null ? null : request.getOrderedIds(),
