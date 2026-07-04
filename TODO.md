@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `discovery-qa-session-delete-domain`：实现 QA 会话软删除领域与仓储能力
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-SESSION-DELETE-EXPORT.md`
-    - 范围对象：`QaSession.java`、`QaSessionRepository.java`、`QaSessionRepositoryImpl.java`、`QaSessionMapper.java`、`QaSessionRepositoryImplTest.java`
-    - 处理动作：增加 `REMOVED` 状态流转、`removed_at` 过滤和条件软删除更新。
-    - 验收点：Portal 会话列表只返回未删除会话，首次删除更新成功，重复删除更新行数为 0。
-    - 重要度：10/10
-
 - [ ] `discovery-qa-session-delete-application`：实现 QA 会话删除应用服务
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-SESSION-DELETE-EXPORT.md`

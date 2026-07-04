@@ -11,6 +11,8 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class QaSession {
+    private static final String REMOVED_STATUS = "REMOVED";
+
     private Long id;
     private Long sessionId;
     private String ownerType;
@@ -25,4 +27,13 @@ public class QaSession {
     private Date openedAt;
     private Date lastMessageAt;
     private Date removedAt;
+
+    public void markRemoved(Date removedAt) {
+        this.status = REMOVED_STATUS;
+        this.removedAt = removedAt;
+    }
+
+    public boolean isRemoved() {
+        return removedAt != null || REMOVED_STATUS.equals(status);
+    }
 }

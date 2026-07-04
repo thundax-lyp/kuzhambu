@@ -14,6 +14,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class QaSessionRepositoryImpl implements QaSessionRepository {
 
+    private static final String REMOVED_AT_COLUMN = "removed_at";
+
     private final QaSessionMapper mapper;
     private final SnowflakeIdGenerator idGenerator = new SnowflakeIdGenerator();
 
@@ -43,6 +45,7 @@ public class QaSessionRepositoryImpl implements QaSessionRepository {
         QueryWrapper<QaSessionDO> wrapper = new QueryWrapper<QaSessionDO>()
                 .eq("owner_type", ownerType)
                 .eq("owner_id", ownerId)
+                .isNull(REMOVED_AT_COLUMN)
                 .orderByDesc("last_message_at");
         if (limit != null && limit > 0) {
             wrapper.last("limit " + limit);
@@ -65,5 +68,13 @@ public class QaSessionRepositoryImpl implements QaSessionRepository {
     @Override
     public int update(QaSession entity) {
         return mapper.updateById(QaPersistenceAssembler.toObject(entity));
+    }
+
+    @Override
+    public int markRemoved(Long sessionId, Date removedAt) {
+        if (sessionId == null || removedAt == null) {
+            return 0;
+        }
+        return mapper.markRemoved(sessionId, removedAt);
     }
 }

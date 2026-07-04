@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.discovery.domain.qa.repository;
 
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSession;
+import java.util.Date;
 import java.util.List;
 
 public interface QaSessionRepository {
@@ -14,4 +15,6 @@ public interface QaSessionRepository {
     Long save(QaSession entity);
 
     int update(QaSession entity);
+
+    int markRemoved(Long sessionId, Date removedAt);
 }
