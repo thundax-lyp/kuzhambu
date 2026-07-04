@@ -129,7 +129,7 @@ class DiscoveryQaAdminControllerTest {
         when(syncService.rebuild()).thenReturn(9001L);
         when(syncService.syncContent(any(SyncKnowledgeContentCommand.class))).thenReturn(sampleSyncItem());
         when(syncService.pageSyncItems(any(KnowledgeSyncItemPageQuery.class)))
-                .thenReturn(new PageResult<>(2, 10, 1, List.of(sampleSyncItem())));
+                .thenReturn(PageResult.of(2, 10, 1, List.of(sampleSyncItem())));
 
         DiscoveryQaAdminRequests.QaSessionGetRequest sessionRequest =
                 new DiscoveryQaAdminRequests.QaSessionGetRequest();

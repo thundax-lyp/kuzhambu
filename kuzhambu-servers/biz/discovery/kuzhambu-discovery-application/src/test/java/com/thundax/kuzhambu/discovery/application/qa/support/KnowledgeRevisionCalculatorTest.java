@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import com.thundax.kuzhambu.classics.facade.dto.ClassicsQaKnowledgeFacadeDto.QaPair;
+import com.thundax.kuzhambu.discovery.application.qa.support.KnowledgeDocument.QaPair;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 

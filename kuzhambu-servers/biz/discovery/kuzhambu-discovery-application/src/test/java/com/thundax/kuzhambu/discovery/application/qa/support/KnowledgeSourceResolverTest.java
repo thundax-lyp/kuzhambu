@@ -73,6 +73,7 @@ class KnowledgeSourceResolverTest {
         return new QaSource(
                 1L,
                 1001L,
+                "SANCAI_ENTRY:1001",
                 10L,
                 "SANCAI_ENTRY",
                 1001L,

@@ -70,7 +70,7 @@ class KnowledgeDocumentAssemblerTest {
                         .translationText("   ")
                         .originalExcerpts("摘录")
                         .tags(List.of("礼制", "", "历法"))
-                        .qaPairs(List.of(new QaPair("为什么", ""), new QaPair("什么是节令", "天文纪时")))
+                        .qaPairs(List.of(qaPair("为什么", ""), qaPair("什么是节令", "天文纪时")))
                         .build())
                 .build());
         String rendered = textRenderer.render(document.knowledge());
@@ -101,8 +101,12 @@ class KnowledgeDocumentAssemblerTest {
                         .translationText("译文")
                         .originalExcerpts("摘录")
                         .tags(List.of("礼制", "天文"))
-                        .qaPairs(List.of(new QaPair("谁问", "黄帝")))
+                        .qaPairs(List.of(qaPair("谁问", "黄帝")))
                         .build())
                 .build();
+    }
+
+    private QaPair qaPair(String question, String answer) {
+        return QaPair.builder().question(question).answer(answer).build();
     }
 }
