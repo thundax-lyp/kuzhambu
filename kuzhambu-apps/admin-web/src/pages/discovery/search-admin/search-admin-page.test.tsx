@@ -87,10 +87,13 @@ describe("SearchAdminPage", () => {
 
         await user.click(screen.getByRole("button", { name: "刷新分析" }));
 
-        expect(mocks.getSearchAnalysisSummary).toHaveBeenCalledWith({
-            dateFrom: null,
-            dateTo: null
-        });
+        expect(mocks.getSearchAnalysisSummary).toHaveBeenCalledWith(
+            {
+                dateFrom: null,
+                dateTo: null
+            },
+            expect.anything()
+        );
         expect(await screen.findByText("礼器")).toBeInTheDocument();
         expect(screen.getByText("5 次")).toBeInTheDocument();
     }, 30000);
