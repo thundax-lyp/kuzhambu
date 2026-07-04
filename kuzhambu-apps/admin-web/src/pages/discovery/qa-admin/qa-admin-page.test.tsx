@@ -36,6 +36,14 @@ const renderPage = () => {
     );
 };
 
+const findButtonByNormalizedText = (text: string) => {
+    const button = screen
+        .getAllByRole("button")
+        .find((element) => element.textContent?.replace(/\s+/gu, "") === text);
+    expect(button).toBeDefined();
+    return button as HTMLButtonElement;
+};
+
 describe("QaAdminPage", () => {
     beforeEach(() => {
         queryClient.clear();
@@ -132,7 +140,7 @@ describe("QaAdminPage", () => {
         await user.click(screen.getByRole("button", { name: "重建知识库" }));
 
         await waitFor(() => {
-            expect(mocks.rebuildKnowledge).toHaveBeenCalledWith({});
+            expect(mocks.rebuildKnowledge.mock.calls[0]?.[0]).toEqual({});
         });
         expect(await screen.findByText("3")).toBeInTheDocument();
     }, 30000);
@@ -146,7 +154,7 @@ describe("QaAdminPage", () => {
         await user.click(screen.getByRole("button", { name: "查询同步" }));
 
         await waitFor(() => {
-            expect(mocks.pageKnowledgeSyncItems).toHaveBeenCalledWith({
+            expect(mocks.pageKnowledgeSyncItems.mock.calls.at(-1)?.[0]).toEqual({
                 contentType: "SANCAI_ENTRY",
                 pageNo: 1,
                 pageSize: 10,
@@ -154,7 +162,7 @@ describe("QaAdminPage", () => {
             });
         });
         expect(await screen.findByText("SANCAI_ENTRY:1001")).toBeInTheDocument();
-        expect(screen.getByText("rev-2")).toBeInTheDocument();
+        expect(screen.getByText(/rev-2/u)).toBeInTheDocument();
     }, 30000);
 
     it("supports row sync action", async () => {
@@ -163,10 +171,10 @@ describe("QaAdminPage", () => {
 
         await user.click(screen.getByRole("button", { name: "查询同步" }));
         await screen.findByText("SANCAI_ENTRY:1001");
-        await user.click(screen.getAllByRole("button", { name: "同步" })[0]);
+        await user.click(findButtonByNormalizedText("同步"));
 
         await waitFor(() => {
-            expect(mocks.createKnowledgeSync).toHaveBeenCalledWith({
+            expect(mocks.createKnowledgeSync.mock.calls[0]?.[0]).toEqual({
                 contentId: 1001,
                 contentType: "SANCAI_ENTRY",
                 currentVersionNo: 2

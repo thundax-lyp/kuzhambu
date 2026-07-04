@@ -312,28 +312,40 @@ export const DiscoveryQaPage = () => {
         }
 
         const selectedContext = selectedSession ?? null;
-        const response = await chatCompletionMutation.mutateAsync({
-            messages: [
-                {
-                    content: questionText,
-                    role: "user"
-                }
-            ],
-            metadata: {
-                contextContentId:
-                    parseNumber(form.contextContentId) ??
-                    parseNumber(String(selectedContext?.contextContentId ?? "")),
-                contextContentType:
-                    parseString(form.contextContentType) ??
-                    parseString(selectedContext?.contextContentType ?? ""),
-                sessionId
-            },
-            model: FIXED_MODEL,
-            options: {},
-            requestId: parseString(form.requestId),
-            stream: false,
-            traceId: parseString(form.traceId)
-        });
+        let response: DiscoveryQaChatCompletionResponse;
+        try {
+            response = await chatCompletionMutation.mutateAsync({
+                messages: [
+                    {
+                        content: questionText,
+                        role: "user"
+                    }
+                ],
+                metadata: {
+                    contextContentId:
+                        parseNumber(form.contextContentId) ??
+                        parseNumber(String(selectedContext?.contextContentId ?? "")),
+                    contextContentType:
+                        parseString(form.contextContentType) ??
+                        parseString(selectedContext?.contextContentType ?? ""),
+                    sessionId
+                },
+                model: FIXED_MODEL,
+                options: {},
+                requestId: parseString(form.requestId),
+                stream: false,
+                traceId: parseString(form.traceId)
+            });
+        } catch (error) {
+            updateTimeline(sessionId, assistantMessageId, {
+                content: "发送失败，请重试。",
+                failureReason: error instanceof Error ? error.message : "发送失败",
+                status: "failed",
+                sources: [],
+                retryQuestion: questionText
+            });
+            throw error;
+        }
 
         const answerText = extractCompletionMessage(response);
         const hasAnswer = Boolean(answerText);
@@ -363,26 +375,7 @@ export const DiscoveryQaPage = () => {
             const currentSessionId = await ensureSessionId();
             await sendQuestion(questionText, currentSessionId);
         } catch {
-            const currentSessionId = selectedSessionId;
-            if (currentSessionId === null) {
-                return;
-            }
-
-            const assistantMessages = timelineBySession[currentSessionId];
-            const failedMessage = assistantMessages?.[assistantMessages.length - 1];
-            if (
-                failedMessage &&
-                failedMessage.role === "assistant" &&
-                failedMessage.status === "loading"
-            ) {
-                updateTimeline(currentSessionId, failedMessage.id, {
-                    content: "发送失败，请重试。",
-                    failureReason: "发送失败",
-                    status: "failed",
-                    sources: [],
-                    retryQuestion: questionText
-                });
-            }
+            return;
         }
     };
 

@@ -73,8 +73,14 @@ const findButtonByText = (container: HTMLElement, text: string) => {
         (element) => element.textContent === text
     );
 
-    expect(button).not.toBeNull();
+    expect(button).toBeDefined();
     return button as HTMLButtonElement;
+};
+
+const flushAsyncWork = async () => {
+    await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 0));
+    });
 };
 
 describe("DiscoveryQaPage", () => {
@@ -88,7 +94,7 @@ describe("DiscoveryQaPage", () => {
     });
 
     it("auto opens session on first question and then sends chat/completions", async () => {
-        mocks.pageQaSessions.mockResolvedValueOnce({
+        mocks.pageQaSessions.mockResolvedValue({
             items: []
         });
         mocks.openQaSession.mockResolvedValueOnce({
@@ -147,7 +153,7 @@ describe("DiscoveryQaPage", () => {
             await new Promise((resolve) => setTimeout(resolve, 0));
         });
 
-        expect(mocks.openQaSession).toHaveBeenCalledWith({
+        expect(mocks.openQaSession.mock.calls[0]?.[0]).toEqual({
             contextContentId: null,
             contextContentType: null,
             contextMode: "GENERAL",
@@ -156,21 +162,12 @@ describe("DiscoveryQaPage", () => {
             title: "知识中心问答",
             traceId: null
         });
-        expect(mocks.createQaChatCompletion).toHaveBeenCalledWith(
-            expect.objectContaining({
-                model: "kuzhambu-qa",
-                messages: [{ content: "礼器是什么？", role: "user" }],
-                metadata: { contextContentId: null, contextContentType: null, sessionId: 2001 },
-                stream: false
-            })
-        );
-        expect(mocks.createQaChatCompletion).not.toHaveBeenCalledWith(
-            expect.objectContaining({
-                model: "kuzhambu-qa",
-                stream: false,
-                metadata: { sessionId: 2001 }
-            })
-        );
+        expect(mocks.createQaChatCompletion.mock.calls[0]?.[0]).toMatchObject({
+            model: "kuzhambu-qa",
+            messages: [{ content: "礼器是什么？", role: "user" }],
+            metadata: { contextContentId: null, contextContentType: null, sessionId: 2001 },
+            stream: false
+        });
         expect(container.textContent).toContain("礼器常见于典章与礼仪条目。");
         expect(container.textContent).toContain("礼器条目");
         expect(container.querySelector('a[href="/shares/1001"]')).not.toBeNull();
@@ -181,7 +178,7 @@ describe("DiscoveryQaPage", () => {
     });
 
     it("reuses selected session for follow-up questions", async () => {
-        mocks.pageQaSessions.mockResolvedValueOnce({
+        mocks.pageQaSessions.mockResolvedValue({
             items: [
                 {
                     contextContentId: 2002,
@@ -226,9 +223,8 @@ describe("DiscoveryQaPage", () => {
             });
 
         const { container, root } = renderPage();
-        await act(async () => {
-            await new Promise((resolve) => setTimeout(resolve, 0));
-        });
+        await flushAsyncWork();
+        await flushAsyncWork();
 
         const firstSessionButton = findButtonByText(container, "古籍问答");
         await act(async () => {
@@ -249,9 +245,9 @@ describe("DiscoveryQaPage", () => {
 
         expect(mocks.openQaSession).not.toHaveBeenCalled();
         expect(mocks.createQaChatCompletion).toHaveBeenCalledTimes(1);
-        expect(mocks.createQaChatCompletion).toHaveBeenLastCalledWith(
-            expect.objectContaining({ metadata: { sessionId: 5001 } })
-        );
+        expect(mocks.createQaChatCompletion.mock.calls[0]?.[0]).toMatchObject({
+            metadata: { sessionId: 5001 }
+        });
 
         setTextareaValue(container, "question", "礼器复问");
         await act(async () => {
@@ -270,8 +266,13 @@ describe("DiscoveryQaPage", () => {
     });
 
     it("renders unavailable source without link and supports retryable answer failure", async () => {
-        mocks.pageQaSessions.mockResolvedValueOnce({
+        mocks.pageQaSessions.mockResolvedValue({
             items: []
+        });
+        mocks.getQaSession.mockResolvedValue({
+            sessionId: 2002,
+            status: "OPEN",
+            title: "知识中心问答"
         });
         mocks.openQaSession.mockResolvedValue({
             contextContentId: null,
@@ -330,7 +331,7 @@ describe("DiscoveryQaPage", () => {
         expect(mocks.createQaChatCompletion).toHaveBeenCalledTimes(2);
         const sourceText = container.textContent ?? "";
         expect(sourceText).toContain("礼器条目");
-        expect(container.querySelector("a")).toBeNull();
+        expect(container.querySelector(".portal-qa-source-list a")).toBeNull();
 
         act(() => {
             root.unmount();

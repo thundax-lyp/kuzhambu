@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import * as qaService from "./qa-admin/qa-admin-service";
 import * as searchService from "./search-admin/search-admin-service";
 
@@ -85,7 +86,7 @@ describe("discovery admin service contracts", () => {
 
     it("keeps qa admin service on Discovery APIs without provider direct urls", () => {
         const serviceSource = readFileSync(
-            new URL("./qa-admin/qa-admin-service.ts", import.meta.url),
+            resolve(process.cwd(), "src/pages/discovery/qa-admin/qa-admin-service.ts"),
             "utf-8"
         );
 
