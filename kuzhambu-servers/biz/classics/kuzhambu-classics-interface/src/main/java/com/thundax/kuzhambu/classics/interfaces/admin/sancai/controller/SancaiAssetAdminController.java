@@ -9,6 +9,7 @@ import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObje
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryImageIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiVisualAssetIdCodec;
+import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryImage;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryImageType;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryDraftId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryImageId;
@@ -128,6 +129,36 @@ public class SancaiAssetAdminController {
                 .toList();
     }
 
+    @Operation(summary = "删除三才图会图片", description = "classics:sancai:edit")
+    @ApiImplicitParams({})
+    @HasPermission("classics:sancai:edit")
+    @SysLogger(value = "图片删除")
+    @PostMapping("images/delete")
+    public Boolean deleteImage(@Valid @RequestBody SancaiAssetRequest request) {
+        Long entryId = requireLong(request == null ? null : request.getEntryId(), "entryId");
+        Long imageId = requireLong(request == null ? null : request.getId(), "id");
+        SancaiEntryImage image = service.getImage(SancaiEntryImageIdCodec.toDomain(imageId));
+        if (image == null
+                || image.getEntryId() == null
+                || !SancaiEntryIdCodec.toDomain(entryId).equals(image.getEntryId())) {
+            throw AdminResponseExceptions.invalidParameter("id");
+        }
+        service.deleteImage(SancaiEntryImageIdCodec.toDomain(imageId));
+        return true;
+    }
+
+    @Operation(summary = "切换三才图会当前图片", description = "classics:sancai:edit")
+    @ApiImplicitParams({})
+    @HasPermission("classics:sancai:edit")
+    @SysLogger(value = "切换当前图片")
+    @PostMapping("images/current/change")
+    public Boolean changeCurrentImage(@Valid @RequestBody SancaiAssetRequest request) {
+        service.useImage(
+                SancaiEntryIdCodec.toDomain(requireLong(request == null ? null : request.getEntryId(), "entryId")),
+                SancaiEntryImageIdCodec.toDomain(requireLong(request == null ? null : request.getId(), "id")));
+        return true;
+    }
+
     @Operation(summary = "排序三才图会图片", description = "classics:sancai:edit")
     @ApiImplicitParams({})
     @HasPermission("classics:sancai:edit")
@@ -135,7 +166,7 @@ public class SancaiAssetAdminController {
     @PostMapping("images/sort")
     public Boolean sortImages(@Valid @RequestBody SancaiEntryImageSortRequest request) {
         service.sortImages(new SancaiEntryImageSortCommand(
-                null,
+                SancaiEntryIdCodec.toDomain(requireLong(request == null ? null : request.getEntryId(), "entryId")),
                 RequestListHelper.map(
                         RequestListHelper.presentUnique(
                                 request == null ? null : request.getOrderedIds(),
@@ -298,6 +329,13 @@ public class SancaiAssetAdminController {
                 SancaiEntryIdCodec.toDomain(request.getEntryId()),
                 SancaiVisualAssetIdCodec.toDomain(request.getVisualAssetId()));
         return true;
+    }
+
+    private static Long requireLong(Long value, String fieldName) {
+        if (value == null) {
+            throw AdminResponseExceptions.invalidParameter(fieldName);
+        }
+        return value;
     }
 
     private static String contentDisposition(String originalFilename, boolean download) {
