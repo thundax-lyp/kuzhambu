@@ -36,12 +36,14 @@ public class QaSessionRepositoryImpl implements QaSessionRepository {
     }
 
     @Override
-    public List<QaSession> listByOwnerUserId(Long ownerUserId, Integer limit) {
-        if (ownerUserId == null) {
+    public List<QaSession> listByOwnerUserId(String ownerType, String ownerId, Integer limit) {
+        if (ownerType == null || ownerId == null) {
             return List.of();
         }
-        QueryWrapper<QaSessionDO> wrapper =
-                new QueryWrapper<QaSessionDO>().eq("owner_user_id", ownerUserId).orderByDesc("last_message_at");
+        QueryWrapper<QaSessionDO> wrapper = new QueryWrapper<QaSessionDO>()
+                .eq("owner_type", ownerType)
+                .eq("owner_id", ownerId)
+                .orderByDesc("last_message_at");
         if (limit != null && limit > 0) {
             wrapper.last("limit " + limit);
         }

@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `QaSessionDO.java; QaMessageDO.java; QaSourceDO.java; QaRetrievalTraceDO.java`：调整 QA 持久化 DO
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-KNOWLEDGE-BASE-REWRITE.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/qa/persistence/dataobject/QaSessionDO.java`; `kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/qa/persistence/dataobject/QaMessageDO.java`; `kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/qa/persistence/dataobject/QaSourceDO.java`; `kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/qa/persistence/dataobject/QaRetrievalTraceDO.java`
-    - 处理动作：让四个 DO 与最终表字段一致。
-    - 验收点：MyBatis 映射编译通过。
-    - 重要度：10/10
-
 - [ ] `QaPersistenceAssembler.java; QaSessionRepositoryImpl.java; QaMessageRepositoryImpl.java`：调整会话和消息持久化映射
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-KNOWLEDGE-BASE-REWRITE.md`
