@@ -213,7 +213,8 @@ USECASES: tuple[AiUsecase, ...] = (
         False,
         ResultFormat.TEXT,
         "Discovery answer generation",
-        "Discovery 回答生成 usecase。输入必须包含已完成权限过滤的来源和上下文片段。",
+        "Discovery 回答生成 usecase。输入必须包含已完成权限过滤的来源和上下文片段；"
+        "可在 input.payload 携带 contextMode/contextContentType/contextContentId 单文档上下文。",
     ),
     AiUsecase(
         "/internal/ai/discovery/answer-generation/stream",
@@ -223,7 +224,8 @@ USECASES: tuple[AiUsecase, ...] = (
         True,
         ResultFormat.TEXT,
         "Discovery answer generation stream",
-        "Discovery 流式回答生成 usecase。stream 片段只用于展示，最终结果以 completed 为准。",
+        "Discovery 流式回答生成 usecase。input.payload 可携带单文档上下文；"
+        "stream 片段只用于展示，最终结果以 completed 为准。",
     ),
     AiUsecase(
         "/internal/ai/knowledge/relation-extraction",

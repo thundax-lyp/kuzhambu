@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Workers Discovery Contract`：收口 Workers Discovery usecase 契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-QA-CLOSEOUT.md`
-    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/ai/usecase_registry.py`、`kuzhambu-workers/tests/test_ai_usecase_routes_discovery.py`、`docs/20-interfaces/WORKERS-AI-INTERFACE.md`
-    - 处理动作：锁定 Discovery answer-generation 单文档上下文契约并禁止新增正式 QA 会话路径。
-    - 验收点：Workers 支持 `contextMode/contextContentType/contextContentId`，且不暴露 `/internal/ai/discovery/qa/session/*`。
-    - 重要度：8/10
-
 - [ ] `Discovery Coverage Update`：更新 Discovery 覆盖矩阵
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-QA-CLOSEOUT.md`
