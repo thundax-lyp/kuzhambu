@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.classics.application.sancai.service.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiDraftCommand;
@@ -49,6 +50,7 @@ import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -481,7 +483,7 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     }
 
     private String renderPayloadJson(String scopeJson) {
-        JsonNode payload = parsePayload(scopeJson);
+        JsonNode payload = normalizeShowcasePayload(parsePayload(scopeJson));
         try {
             return objectMapper.writeValueAsString(payload);
         } catch (JsonProcessingException ex) {
@@ -509,6 +511,102 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
         defaultPayload.set("assets", objectMapper.createArrayNode());
         defaultPayload.set("metadata", objectMapper.createObjectNode());
         return defaultPayload;
+    }
+
+    private JsonNode normalizeShowcasePayload(JsonNode payload) {
+        if (payload == null || !payload.isObject()) {
+            return defaultPayload();
+        }
+        ObjectNode payloadObject = (ObjectNode) payload;
+        JsonNode entries = payloadObject.get("entries");
+        if (entries == null || !entries.isArray()) {
+            payloadObject.set("entries", objectMapper.createArrayNode());
+            return payloadObject;
+        }
+        for (JsonNode entry : entries) {
+            if (entry instanceof ObjectNode entryObject) {
+                entryObject.set("images", normalizeShowcaseImages(entryObject.get("images")));
+            }
+        }
+        return payloadObject;
+    }
+
+    private ArrayNode normalizeShowcaseImages(JsonNode images) {
+        ArrayNode normalized = objectMapper.createArrayNode();
+        if (images == null || !images.isArray()) {
+            return normalized;
+        }
+        List<ObjectNode> imageObjects = new ArrayList<>();
+        for (JsonNode image : images) {
+            ObjectNode imageObject =
+                    image instanceof ObjectNode object ? object.deepCopy() : objectMapper.createObjectNode();
+            normalizeShowcaseImage(imageObject);
+            imageObjects.add(imageObject);
+        }
+        imageObjects.stream()
+                .sorted(Comparator.comparingInt(SancaiAssetApplicationServiceImpl::imagePriority))
+                .forEach(normalized::add);
+        return normalized;
+    }
+
+    private void normalizeShowcaseImage(ObjectNode image) {
+        putTextIfMissing(image, "src", imageSource(image));
+        putTextIfMissing(image, "alt", imageAlt(image));
+        putTextIfMissing(image, "caption", image.path("title").asText(""));
+        putBooleanIfMissing(image, "currentUsed", false);
+        putIntIfMissing(image, "priority", 0);
+    }
+
+    private static String imageSource(ObjectNode image) {
+        String source = textValue(image, "src");
+        if (StringUtils.isNotBlank(source)) {
+            return source;
+        }
+        source = textValue(image, "previewUrl");
+        if (StringUtils.isNotBlank(source)) {
+            return source;
+        }
+        JsonNode storageObject = image.get("storageObject");
+        if (storageObject != null && storageObject.isObject()) {
+            source = textValue((ObjectNode) storageObject, "previewUrl");
+            if (StringUtils.isNotBlank(source)) {
+                return source;
+            }
+        }
+        return "";
+    }
+
+    private static String imageAlt(ObjectNode image) {
+        String imageType = textValue(image, "imageType");
+        return "GENERATED".equalsIgnoreCase(imageType) ? "三才图会生成图" : "三才图会原图";
+    }
+
+    private static int imagePriority(ObjectNode image) {
+        JsonNode priority = image.get("priority");
+        return priority == null || !priority.canConvertToInt() ? 0 : priority.asInt();
+    }
+
+    private static String textValue(ObjectNode object, String fieldName) {
+        JsonNode value = object.get(fieldName);
+        return value == null || value.isNull() ? null : value.asText();
+    }
+
+    private static void putTextIfMissing(ObjectNode object, String fieldName, String value) {
+        if (!object.has(fieldName) || object.get(fieldName).isNull()) {
+            object.put(fieldName, value == null ? "" : value);
+        }
+    }
+
+    private static void putBooleanIfMissing(ObjectNode object, String fieldName, boolean value) {
+        if (!object.has(fieldName) || object.get(fieldName).isNull()) {
+            object.put(fieldName, value);
+        }
+    }
+
+    private static void putIntIfMissing(ObjectNode object, String fieldName, int value) {
+        if (!object.has(fieldName) || object.get(fieldName).isNull()) {
+            object.put(fieldName, value);
+        }
     }
 
     private UploadStorageFacadeResponse saveShowcaseArtifact(

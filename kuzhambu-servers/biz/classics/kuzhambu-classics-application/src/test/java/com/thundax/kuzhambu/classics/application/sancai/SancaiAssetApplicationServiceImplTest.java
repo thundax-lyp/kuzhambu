@@ -10,6 +10,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImageUploadCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiShowcaseCommand;
@@ -44,6 +46,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 class SancaiAssetApplicationServiceImplTest {
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     @Test
     void updateVisualAssetShouldInsertWithoutImplicitCurrentSwitch() {
@@ -351,11 +354,47 @@ class SancaiAssetApplicationServiceImplTest {
                 .thenReturn(successRenderResponse());
         when(storageFacade.upload(org.mockito.ArgumentMatchers.any())).thenReturn(showcaseUploadResponse());
 
-        SancaiShowcaseId result = service.requestShowcase(
-                new SancaiShowcaseCommand(null, SancaiShowcaseStatus.REQUESTED, "{\"title\":\"demo\"}", null, 0, null));
+        SancaiShowcaseId result = service.requestShowcase(new SancaiShowcaseCommand(
+                null,
+                SancaiShowcaseStatus.REQUESTED,
+                "{\"title\":\"demo\",\"entries\":["
+                        + "{\"entryId\":1,\"images\":["
+                        + "{\"imageId\":12,\"storageObjectId\":702,\"imageType\":\"GENERATED\","
+                        + "\"title\":\"生成图\",\"currentUsed\":false,\"priority\":2,"
+                        + "\"storageObject\":{\"previewUrl\":\"/share/resources/702/preview\"}},"
+                        + "{\"imageId\":11,\"storageObjectId\":701,\"imageType\":\"ORIGINAL\","
+                        + "\"title\":\"原图\",\"currentUsed\":true,\"priority\":1,"
+                        + "\"previewUrl\":\"/share/resources/701/preview\"}"
+                        + "]},"
+                        + "{\"entryId\":2}"
+                        + "]}",
+                null,
+                0,
+                null));
 
         assertEquals(9001L, result.value());
         verify(repository).markShowcaseCompleted(showcaseId, StorageObjectId.of(7001L), 2);
+        ArgumentCaptor<WorkerRenderDtos.WorkerRenderRequest> renderCaptor =
+                ArgumentCaptor.forClass(WorkerRenderDtos.WorkerRenderRequest.class);
+        verify(workerRenderClient).renderSancaiShowcase(renderCaptor.capture());
+        JsonNode entries =
+                readJson(renderCaptor.getValue().getInput().getPayloadJson()).get("entries");
+        JsonNode firstImages = entries.get(0).get("images");
+        assertEquals(2, firstImages.size());
+        assertEquals(11L, firstImages.get(0).get("imageId").asLong());
+        assertEquals(
+                "/share/resources/701/preview", firstImages.get(0).get("src").asText());
+        assertEquals("三才图会原图", firstImages.get(0).get("alt").asText());
+        assertEquals("原图", firstImages.get(0).get("caption").asText());
+        assertEquals(true, firstImages.get(0).get("currentUsed").asBoolean());
+        assertEquals(1, firstImages.get(0).get("priority").asInt());
+        assertEquals(12L, firstImages.get(1).get("imageId").asLong());
+        assertEquals(
+                "/share/resources/702/preview", firstImages.get(1).get("src").asText());
+        assertEquals("三才图会生成图", firstImages.get(1).get("alt").asText());
+        assertEquals("生成图", firstImages.get(1).get("caption").asText());
+        assertEquals(false, firstImages.get(1).get("currentUsed").asBoolean());
+        assertEquals(0, entries.get(1).get("images").size());
         ArgumentCaptor<UploadStorageFacadeRequest> uploadCaptor =
                 ArgumentCaptor.forClass(UploadStorageFacadeRequest.class);
         verify(storageFacade).upload(uploadCaptor.capture());
@@ -466,5 +505,13 @@ class SancaiAssetApplicationServiceImplTest {
                 .ownerType("CLASSICS_SANCAI_ENTRY_IMAGE")
                 .size(4L)
                 .build();
+    }
+
+    private static JsonNode readJson(String json) {
+        try {
+            return OBJECT_MAPPER.readTree(json);
+        } catch (Exception ex) {
+            throw new AssertionError("Invalid JSON: " + json, ex);
+        }
     }
 }
