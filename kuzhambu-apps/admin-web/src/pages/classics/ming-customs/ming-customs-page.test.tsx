@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { App as AntdApp } from "antd";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
@@ -41,6 +41,17 @@ interface CapturedCall {
 }
 
 const capturedCalls: CapturedCall[] = [];
+
+const selectFirstRow = (table: HTMLElement) => {
+    const checkbox = within(table).getAllByRole("checkbox")[1];
+    fireEvent.click(checkbox.closest("label") ?? checkbox);
+};
+
+const waitForSelectableRow = async (table: HTMLElement) => {
+    await waitFor(() => {
+        expect(within(table).getAllByRole("checkbox").length).toBeGreaterThan(1);
+    });
+};
 
 const readFetchUrl = (input: RequestInfo | URL) => {
     if (typeof input === "string") {
@@ -272,8 +283,9 @@ describe("MingCustomsPage", () => {
         );
 
         const table = await screen.findByLabelText("明代习俗表格");
+        await waitForSelectableRow(table);
         const batchShareButton = screen.getByRole("button", { name: "批量分享" });
-        await user.click(within(table).getByRole("checkbox", { name: "Select all" }));
+        selectFirstRow(table);
         await waitFor(() => {
             expect(batchShareButton).not.toBeDisabled();
         });
@@ -297,8 +309,9 @@ describe("MingCustomsPage", () => {
         );
 
         const table = await screen.findByLabelText("明代习俗表格");
+        await waitForSelectableRow(table);
         const batchPublicButton = screen.getByRole("button", { name: "批量公开" });
-        await user.click(within(table).getByRole("checkbox", { name: "Select all" }));
+        selectFirstRow(table);
         await waitFor(() => {
             expect(batchPublicButton).not.toBeDisabled();
         });

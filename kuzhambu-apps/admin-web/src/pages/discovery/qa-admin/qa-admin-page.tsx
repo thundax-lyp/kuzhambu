@@ -65,6 +65,7 @@ const formatSyncItemKey = (record: KnowledgeSyncItemRecord) => {
 
 export const QaAdminPage = () => {
     const [sessionId, setSessionId] = useState("2001");
+    const [requesterUserId, setRequesterUserId] = useState("1001");
     const [messageId, setMessageId] = useState("4001");
     const [traceId, setTraceId] = useState("9001");
     const [contentType, setContentType] = useState("SANCAI_ENTRY");
@@ -75,6 +76,7 @@ export const QaAdminPage = () => {
     const [sources, setSources] = useState<DiscoveryQaSourceRecord[]>([]);
     const [trace, setTrace] = useState<ProviderTraceRecord | null>(null);
     const [lastSyncResult, setLastSyncResult] = useState<KnowledgeSyncItemRecord | null>(null);
+    const [sessionOperationText, setSessionOperationText] = useState<string | null>(null);
 
     const healthQuery = useQuery({
         queryFn: service.getKnowledgeHealth,
@@ -97,6 +99,40 @@ export const QaAdminPage = () => {
         mutationFn: service.getQaSession,
         onSuccess: (nextDetail) => {
             setSessionDetail(nextDetail);
+            setSessionOperationText(null);
+        }
+    });
+    const deleteSessionMutation = useMutation({
+        mutationFn: service.deleteQaSession,
+        onSuccess: () => {
+            const deletedSessionId = parseNumber(sessionId);
+            setSessionDetail((current) => ({
+                ...(current ?? {}),
+                sessionId: current?.sessionId ?? deletedSessionId,
+                status: "REMOVED"
+            }));
+            setSessionOperationText(`会话 ${deletedSessionId ?? sessionId} 已删除`);
+        },
+        onError: (error) => {
+            setSessionOperationText(error instanceof Error ? error.message : "会话删除失败");
+        }
+    });
+    const exportSessionMutation = useMutation({
+        mutationFn: service.createQaSessionExport,
+        onSuccess: (result) => {
+            if (result.exportStatus === "FAILED") {
+                setSessionOperationText(result.failureReason ?? "会话导出失败");
+                return;
+            }
+
+            const filename = result.filename ?? `discovery-qa-session-${sessionId}.csv`;
+            const storageObjectText = result.storageObjectId
+                ? `，对象号 ${result.storageObjectId}`
+                : "";
+            setSessionOperationText(`导出成功：${filename}${storageObjectText}`);
+        },
+        onError: (error) => {
+            setSessionOperationText(error instanceof Error ? error.message : "会话导出失败");
         }
     });
     const sourceMutation = useMutation({
@@ -192,6 +228,36 @@ export const QaAdminPage = () => {
             contentId: nextContentId,
             contentType: parseString(contentType) ?? "",
             currentVersionNo: parseNumber(currentVersionNo)
+        });
+    };
+
+    const deleteCurrentSession = () => {
+        const nextSessionId = parseNumber(sessionId);
+        if (nextSessionId === null) {
+            return;
+        }
+
+        const confirmed = window.confirm(`确认删除会话 ${nextSessionId}？`);
+        if (!confirmed) {
+            return;
+        }
+
+        deleteSessionMutation.mutate({
+            requesterUserId: parseNumber(requesterUserId),
+            sessionId: nextSessionId
+        });
+    };
+
+    const exportCurrentSession = () => {
+        const nextSessionId = parseNumber(sessionId);
+        if (nextSessionId === null) {
+            return;
+        }
+
+        exportSessionMutation.mutate({
+            format: "CSV",
+            requesterUserId: parseNumber(requesterUserId),
+            sessionId: nextSessionId
         });
     };
 
@@ -356,6 +422,15 @@ export const QaAdminPage = () => {
                                     style={{ width: 220 }}
                                 />
                             </label>
+                            <label>
+                                <Text type="secondary">操作者用户号</Text>
+                                <Input
+                                    aria-label="操作者用户号"
+                                    value={requesterUserId}
+                                    onChange={(event) => setRequesterUserId(event.target.value)}
+                                    style={{ width: 180 }}
+                                />
+                            </label>
                             <Button
                                 loading={sessionMutation.isPending}
                                 onClick={() =>
@@ -367,7 +442,24 @@ export const QaAdminPage = () => {
                             >
                                 加载会话
                             </Button>
+                            <Button
+                                danger
+                                loading={deleteSessionMutation.isPending}
+                                onClick={deleteCurrentSession}
+                            >
+                                删除会话
+                            </Button>
+                            <Button
+                                loading={exportSessionMutation.isPending}
+                                onClick={exportCurrentSession}
+                            >
+                                导出 CSV
+                            </Button>
                         </KuzhambuSpace>
+
+                        {sessionOperationText ? (
+                            <Text type="secondary">{sessionOperationText}</Text>
+                        ) : null}
 
                         <Descriptions
                             bordered
@@ -381,7 +473,24 @@ export const QaAdminPage = () => {
                                 {
                                     key: "status",
                                     label: "状态",
-                                    children: sessionDetail?.status ?? "-"
+                                    children: sessionDetail?.status ? (
+                                        <Tag
+                                            color={
+                                                sessionDetail.status === "REMOVED"
+                                                    ? "red"
+                                                    : undefined
+                                            }
+                                        >
+                                            {sessionDetail.status}
+                                        </Tag>
+                                    ) : (
+                                        "-"
+                                    )
+                                },
+                                {
+                                    key: "ownerUserId",
+                                    label: "拥有者用户号",
+                                    children: sessionDetail?.ownerUserId ?? "-"
                                 },
                                 {
                                     key: "scope",

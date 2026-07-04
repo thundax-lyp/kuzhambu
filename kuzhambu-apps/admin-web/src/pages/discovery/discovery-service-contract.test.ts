@@ -66,6 +66,27 @@ describe("discovery admin service contracts", () => {
             }
         });
 
+        await qaService.deleteQaSession({ requesterUserId: 1001, sessionId: 2001 });
+        expect(postJson).toHaveBeenLastCalledWith("/discovery/qa-admin/session/delete", {
+            body: {
+                requesterUserId: 1001,
+                sessionId: 2001
+            }
+        });
+
+        await qaService.createQaSessionExport({
+            format: "CSV",
+            requesterUserId: 1001,
+            sessionId: 2001
+        });
+        expect(postJson).toHaveBeenLastCalledWith("/discovery/qa-admin/session/export", {
+            body: {
+                format: "CSV",
+                requesterUserId: 1001,
+                sessionId: 2001
+            }
+        });
+
         await qaService.listQaSources({ messageId: 4001 });
         expect(postJson).toHaveBeenLastCalledWith("/discovery/qa-admin/source/list", {
             body: {
@@ -94,6 +115,8 @@ describe("discovery admin service contracts", () => {
         expect(serviceSource).toContain("/discovery/qa-admin/knowledge/rebuild");
         expect(serviceSource).toContain("/discovery/qa-admin/knowledge/sync");
         expect(serviceSource).toContain("/discovery/qa-admin/knowledge/sync/page");
+        expect(serviceSource).toContain("/discovery/qa-admin/session/delete");
+        expect(serviceSource).toContain("/discovery/qa-admin/session/export");
         expect(serviceSource).not.toMatch(/https?:\/\/|fastgpt|dataset|collection|appId|baseUrl/iu);
     });
 

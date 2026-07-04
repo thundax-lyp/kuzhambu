@@ -63,6 +63,7 @@ Discovery 拥有搜索查询、搜索日志、问答会话、问答消息、来�
 - `discovery_qa_message_source`
 - `discovery_qa_retrieval_trace`
 - `discovery_qa_knowledge_sync_item`
+- `discovery_qa_session_export`
 
 搜索索引不是业务真相源，索引结构由 infra 适配维护。
 
@@ -197,6 +198,8 @@ Portal：
 - `POST /api/portal/discovery/qa/session/open`
 - `POST /api/portal/discovery/qa/session/page`
 - `POST /api/portal/discovery/qa/session/get`
+- `POST /api/portal/discovery/qa/session/delete`
+- `POST /api/portal/discovery/qa/session/export`
 - `POST /api/portal/discovery/qa/chat/completions`
 
 Admin：
@@ -206,6 +209,8 @@ Admin：
 - `POST /api/discovery/qa-admin/knowledge/sync`
 - `POST /api/discovery/qa-admin/knowledge/sync/page`
 - `POST /api/discovery/qa-admin/session/get`
+- `POST /api/discovery/qa-admin/session/delete`
+- `POST /api/discovery/qa-admin/session/export`
 - `POST /api/discovery/qa-admin/source/list`
 - `POST /api/discovery/qa-admin/trace/get`
 
@@ -214,8 +219,11 @@ Admin：
 - Portal QA 问答入口采用 OpenAI-compatible `model/messages/choices` 响应习惯，答案从 `choices[0].message.content` 读取。
 - Portal QA 请求中的 `model` 是逻辑知识库名，不是 provider app id。
 - Portal QA 只暴露 Discovery API，不接收 provider app、dataset、collection 或 file 路由配置。
+- Portal QA 会话删除是软删除，只允许删除 owner 匹配的未删除会话；删除后 Portal 列表、详情、追问和导出均不可再访问该会话。
+- Portal QA 会话导出固定生成 CSV，写入 `discovery_qa_session_export`，上传到 Storage，返回 `exportId`、`storageObjectId`、`filename`、`contentType` 和导出状态。
 - 来源列表从回答顶层 `sources` 返回；返回前必须按当前 Kuzhambu 可见性重新校验，不可见来源标记为 `UNAVAILABLE`。
-- Admin QA 只暴露知识库健康、重建、同步状态、会话详情、来源列表和 provider trace，不暴露 provider 路由配置。
+- Admin QA 暴露知识库健康、重建、同步状态、会话详情、会话删除、会话 CSV 导出、来源列表和 provider trace，不暴露 provider 路由配置。
+- Admin QA 可以读取和导出已删除会话，导出 CSV 保留会话删除状态用于审计。
 
 ## Infrastructure Layer
 

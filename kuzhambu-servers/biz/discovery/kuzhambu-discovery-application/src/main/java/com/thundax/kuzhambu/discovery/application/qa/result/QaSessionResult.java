@@ -20,4 +20,5 @@ public class QaSessionResult {
     private String status;
     private Long openedAt;
     private Long lastMessageAt;
+    private Long removedAt;
 }

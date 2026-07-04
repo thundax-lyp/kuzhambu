@@ -2,6 +2,7 @@ export interface DiscoveryQaOpenSessionRequest {
     contextContentId?: number | null;
     contextContentType?: string | null;
     contextMode?: string | null;
+    ownerUserId?: number | null;
     requestId?: string | null;
     scope?: string | null;
     title?: string | null;
@@ -21,6 +22,7 @@ export interface DiscoveryQaOpenSessionResponse {
 }
 
 export interface DiscoveryQaSessionPageQuery {
+    ownerUserId?: number | null;
     pageNo?: number | null;
     pageSize?: number | null;
     scope?: string | null;
@@ -34,7 +36,32 @@ export interface DiscoveryQaSessionPageResponse {
 }
 
 export interface DiscoveryQaGetSessionRequest {
+    ownerUserId?: number | null;
     sessionId: number;
+}
+
+export interface DiscoveryQaDeleteSessionRequest {
+    ownerUserId?: number | null;
+    sessionId: number;
+}
+
+export interface DiscoveryQaExportSessionRequest {
+    format?: string | null;
+    ownerUserId?: number | null;
+    sessionId: number;
+}
+
+export interface DiscoveryQaExportSessionResponse {
+    completedAt?: number | null;
+    contentType?: string | null;
+    exportId?: number | null;
+    exportStatus?: string | null;
+    failureReason?: string | null;
+    filename?: string | null;
+    format?: string | null;
+    requestedAt?: number | null;
+    sessionId?: number | null;
+    storageObjectId?: number | null;
 }
 
 export interface QaChatCompletionMessage {

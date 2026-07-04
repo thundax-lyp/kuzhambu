@@ -77,6 +77,12 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
         if (session == null) {
             throw new BizException("DISCOVERY-30001", "discovery.qa.session.not-found", "QA session does not exist");
         }
+        if (session.isRemoved()) {
+            throw new BizException(
+                    "QA_SESSION_ALREADY_REMOVED",
+                    "discovery.qa.session.already-removed",
+                    "QA session has already been removed");
+        }
 
         String model = resolveModel(command, session);
         String question = extractLatestQuestion(command.getMessages());

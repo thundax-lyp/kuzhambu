@@ -4,6 +4,7 @@ import com.thundax.kuzhambu.discovery.application.qa.result.KnowledgeHealthResul
 import com.thundax.kuzhambu.discovery.application.qa.result.KnowledgeSyncItemResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaMessageResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionDetailResult;
+import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionExportResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSourceResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaTraceResult;
 import com.thundax.kuzhambu.discovery.interfaces.admin.qa.controller.response.DiscoveryQaAdminResponses;
@@ -31,7 +32,27 @@ public final class DiscoveryQaAdminInterfaceAssembler {
                 .status(result.getStatus())
                 .openedAt(result.getOpenedAt())
                 .lastMessageAt(result.getLastMessageAt())
+                .removedAt(result.getRemovedAt())
                 .messages(toMessageResponses(result.getMessages()))
+                .build();
+    }
+
+    public static DiscoveryQaAdminResponses.QaSessionExportResponse toSessionExportResponse(
+            QaSessionExportResult result) {
+        if (result == null) {
+            return null;
+        }
+        return DiscoveryQaAdminResponses.QaSessionExportResponse.builder()
+                .exportId(result.getExportId())
+                .sessionId(result.getSessionId())
+                .format(result.getFormat())
+                .storageObjectId(result.getStorageObjectId())
+                .exportStatus(result.getExportStatus())
+                .failureReason(result.getFailureReason())
+                .requestedAt(result.getRequestedAt())
+                .completedAt(result.getCompletedAt())
+                .filename(result.getFilename())
+                .contentType(result.getContentType())
                 .build();
     }
 

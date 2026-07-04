@@ -2,6 +2,9 @@ import { postJson } from "@/api/http";
 import type {
     DiscoveryQaChatCompletionRequest,
     DiscoveryQaChatCompletionResponse,
+    DiscoveryQaDeleteSessionRequest,
+    DiscoveryQaExportSessionRequest,
+    DiscoveryQaExportSessionResponse,
     DiscoveryQaGetSessionRequest,
     DiscoveryQaOpenSessionRequest,
     DiscoveryQaOpenSessionResponse,
@@ -26,6 +29,20 @@ export const pageQaSessions = (query: DiscoveryQaSessionPageQuery) => {
 export const getQaSession = (request: DiscoveryQaGetSessionRequest) => {
     return postJson<DiscoveryQaOpenSessionResponse, DiscoveryQaGetSessionRequest>(
         "/portal/discovery/qa/session/get",
+        request
+    );
+};
+
+export const deleteQaSession = (request: DiscoveryQaDeleteSessionRequest) => {
+    return postJson<void, DiscoveryQaDeleteSessionRequest>(
+        "/portal/discovery/qa/session/delete",
+        request
+    );
+};
+
+export const exportQaSession = (request: DiscoveryQaExportSessionRequest) => {
+    return postJson<DiscoveryQaExportSessionResponse, DiscoveryQaExportSessionRequest>(
+        "/portal/discovery/qa/session/export",
         request
     );
 };
