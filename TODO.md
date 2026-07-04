@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `QaSession.java; QaMessage.java; QaSessionRepository.java; QaMessageRepository.java`：调整 QA 会话和消息领域模型
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-KNOWLEDGE-BASE-REWRITE.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-domain/src/main/java/com/thundax/kuzhambu/discovery/domain/qa/model/entity/QaSession.java`; `kuzhambu-servers/biz/discovery/kuzhambu-discovery-domain/src/main/java/com/thundax/kuzhambu/discovery/domain/qa/model/entity/QaMessage.java`; `kuzhambu-servers/biz/discovery/kuzhambu-discovery-domain/src/main/java/com/thundax/kuzhambu/discovery/domain/qa/repository/QaSessionRepository.java`; `kuzhambu-servers/biz/discovery/kuzhambu-discovery-domain/src/main/java/com/thundax/kuzhambu/discovery/domain/qa/repository/QaMessageRepository.java`
-    - 处理动作：将会话和消息领域字段收敛到最终 owner、model 和 answer status 结构。
-    - 验收点：领域代码无 `ownerUserId` 和 `messageStatus` 引用。
-    - 重要度：10/10
-
 - [ ] `QaSource.java; QaRetrievalTrace.java; QaSourceRepository.java; QaRetrievalTraceRepository.java`：调整 QA 来源和 trace 领域模型
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-KNOWLEDGE-BASE-REWRITE.md`
