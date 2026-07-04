@@ -101,7 +101,7 @@ class SearchApplicationServiceImplTest {
                                 "1001",
                                 "黄帝",
                                 "上古帝王",
-                                null,
+                                "<mark>黄帝</mark>上古帝王",
                                 1,
                                 1,
                                 "/classics/sancai/1001")))));
@@ -136,6 +136,9 @@ class SearchApplicationServiceImplTest {
         assertEquals("黄帝 传说", searchLogCaptor.getValue().getDisplayQueryText());
         assertEquals(searchLogCaptor.getValue().getSearchLogId(), result.getSearchLogId());
         assertTrue(result.getSearchScopesJson().contains("SANCAI_ENTRY"));
+        assertEquals(
+                "<mark>黄帝</mark>上古帝王",
+                result.getGroups().get(0).getItems().get(0).getHighlightText());
     }
 
     @Test

@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Discovery Search Highlight Contract`：锁定搜索高亮透传
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-QA-CLOSEOUT.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/test/java/com/thundax/kuzhambu/discovery/application/search/service/impl/SearchApplicationServiceImplTest.java`
-    - 处理动作：补充 application 层搜索结果高亮透传断言。
-    - 验收点：`SearchApplicationServiceImpl.search(...)` 返回的结果项保留 Gateway 生成的 `highlightText`。
-    - 重要度：8/10
-
 - [ ] `Discovery Search Click Analytics`：补齐搜索点击聚合能力
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-QA-CLOSEOUT.md`
