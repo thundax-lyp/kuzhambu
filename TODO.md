@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Portal Discovery QA Request Context`：收口王圻单文档追问请求上下文
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-QA-CLOSEOUT.md`
-    - 范围对象：`kuzhambu-apps/portal-web/src/pages/discovery/qa-page.tsx`、`kuzhambu-apps/portal-web/src/pages/discovery/qa-page.test.tsx`、`kuzhambu-apps/portal-web/src/pages/discovery/qa-service.ts`、`kuzhambu-apps/portal-web/src/pages/discovery/qa-types.ts`
-    - 处理动作：首问和追问请求携带固定单文档上下文字段。
-    - 验收点：`session/open` 和 `chat/completions` 请求均携带 `WANGQI_DOCUMENT`、`SINGLE_DOCUMENT` 和 `contextContentId`。
-    - 重要度：10/10
-
 - [ ] `Discovery QA Session Context`：收口后端会话上下文校验
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-QA-CLOSEOUT.md`

@@ -386,6 +386,9 @@ export const DiscoveryQaPage = () => {
                     contextContentType:
                         parseString(form.contextContentType) ??
                         parseString(selectedContext?.contextContentType ?? ""),
+                    contextMode:
+                        parseString(form.contextMode) ??
+                        parseString(selectedContext?.contextMode ?? ""),
                     sessionId
                 },
                 model: FIXED_MODEL,

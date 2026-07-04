@@ -218,6 +218,68 @@ describe("DiscoveryQaPage", () => {
         });
     });
 
+    it("sends Wangqi single document context in open session and chat metadata", async () => {
+        mocks.pageQaSessions.mockResolvedValue({
+            items: []
+        });
+        mocks.openQaSession.mockResolvedValueOnce({
+            contextContentId: 3001,
+            contextContentType: "WANGQI_DOCUMENT",
+            contextMode: "SINGLE_DOCUMENT",
+            lastMessageAt: null,
+            openedAt: 1699999999000,
+            scope: "PORTAL",
+            sessionId: 3002,
+            status: "OPEN",
+            title: "王圻官制"
+        });
+        mocks.createQaChatCompletion.mockResolvedValueOnce({
+            answerStatus: "SUCCEEDED",
+            choices: [
+                {
+                    index: 0,
+                    message: { content: "王圻文档答案", role: "assistant" },
+                    finishReason: "stop"
+                }
+            ],
+            sessionId: 3002
+        });
+
+        const { container, root } = renderPage(
+            "/discovery/qa?contextContentType=WANGQI_DOCUMENT&contextContentId=3001&contextMode=SINGLE_DOCUMENT&title=%E7%8E%8B%E5%9C%BB%E5%AE%98%E5%88%B6"
+        );
+        await flushAsyncWork();
+        setTextareaValue(container, "question", "这份文档说了什么？");
+
+        const submitButton = container.querySelector(
+            'button[type="submit"]'
+        ) as HTMLButtonElement | null;
+        expect(submitButton).not.toBeNull();
+        await act(async () => {
+            submitButton?.click();
+            await new Promise((resolve) => setTimeout(resolve, 0));
+        });
+
+        expect(mocks.openQaSession.mock.calls[0]?.[0]).toMatchObject({
+            contextContentId: 3001,
+            contextContentType: "WANGQI_DOCUMENT",
+            contextMode: "SINGLE_DOCUMENT",
+            title: "王圻官制"
+        });
+        expect(mocks.createQaChatCompletion.mock.calls[0]?.[0]).toMatchObject({
+            metadata: {
+                contextContentId: 3001,
+                contextContentType: "WANGQI_DOCUMENT",
+                contextMode: "SINGLE_DOCUMENT",
+                sessionId: 3002
+            }
+        });
+
+        act(() => {
+            root.unmount();
+        });
+    });
+
     it("confirms delete and clears selected session after deletion", async () => {
         mocks.pageQaSessions.mockResolvedValue({
             items: [

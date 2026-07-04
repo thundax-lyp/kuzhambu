@@ -72,6 +72,7 @@ export interface QaChatCompletionMessage {
 export interface QaChatCompletionMetadata {
     contextContentId?: number | null;
     contextContentType?: string | null;
+    contextMode?: string | null;
     sessionId: number;
 }
 
