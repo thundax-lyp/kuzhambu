@@ -21,7 +21,20 @@ class QaSessionRepositoryImplTest {
         QaSessionMapper mapper = mock(QaSessionMapper.class);
         QaSessionRepositoryImpl repository = new QaSessionRepositoryImpl(mapper);
         QaSession entity = new QaSession(
-                null, null, 1001L, "黄帝问答", "GLOBAL", "SEARCH", null, null, "OPEN", new Date(), new Date(), null);
+                null,
+                null,
+                "USER",
+                "1001",
+                "kuzhambu-qa",
+                "黄帝问答",
+                "GLOBAL",
+                "SEARCH",
+                null,
+                null,
+                "OPEN",
+                new Date(),
+                new Date(),
+                null);
 
         Long savedId = repository.save(entity);
 
@@ -34,10 +47,23 @@ class QaSessionRepositoryImplTest {
         QaSessionMapper mapper = mock(QaSessionMapper.class);
         QaSessionRepositoryImpl repository = new QaSessionRepositoryImpl(mapper);
         QaSessionDO dataObject = new QaSessionDO(
-                1L, 4001L, 1001L, "黄帝问答", "GLOBAL", "SEARCH", null, null, "OPEN", new Date(), new Date(), null);
+                1L,
+                4001L,
+                "USER",
+                "1001",
+                "kuzhambu-qa",
+                "黄帝问答",
+                "GLOBAL",
+                "SEARCH",
+                null,
+                null,
+                "OPEN",
+                new Date(),
+                new Date(),
+                null);
         when(mapper.selectList(any())).thenReturn(List.of(dataObject));
 
-        List<QaSession> result = repository.listByOwnerUserId(1001L, 10);
+        List<QaSession> result = repository.listByOwnerUserId("USER", "1001", 10);
 
         assertEquals(1, result.size());
         assertEquals(4001L, result.get(0).getSessionId());

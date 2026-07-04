@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `QaPersistenceAssembler.java; QaSessionRepositoryImpl.java; QaMessageRepositoryImpl.java`：调整会话和消息持久化映射
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-KNOWLEDGE-BASE-REWRITE.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/qa/persistence/assembler/QaPersistenceAssembler.java`; `kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/qa/repository/impl/QaSessionRepositoryImpl.java`; `kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/qa/repository/impl/QaMessageRepositoryImpl.java`
-    - 处理动作：映射最终会话和消息字段并将 owner 查询改为 `ownerType + ownerId`。
-    - 验收点：会话和消息仓储测试通过。
-    - 重要度：9/10
-
 - [ ] `QaPersistenceAssembler.java; QaSourceRepositoryImpl.java; QaRetrievalTraceRepositoryImpl.java`：调整来源和 trace 持久化映射
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-KNOWLEDGE-BASE-REWRITE.md`
