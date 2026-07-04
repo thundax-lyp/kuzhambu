@@ -25,9 +25,13 @@ import com.thundax.kuzhambu.discovery.domain.search.repository.SearchClickReposi
 import com.thundax.kuzhambu.discovery.domain.search.repository.SearchLogRepository;
 import com.thundax.kuzhambu.discovery.domain.service.SearchDomainService;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -143,7 +147,17 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
 
     @Override
     public SearchAnalysisSummaryResult getAnalysisSummary(SearchAnalysisSummaryQuery query) {
-        throw new UnsupportedOperationException("Discovery search analysis summary is not implemented yet");
+        Date dateFrom = query == null ? null : query.getDateFrom();
+        Date dateTo = query == null ? null : query.getDateTo();
+        List<SearchLog> searchLogs = searchLogRepository.listByCreatedAtRange(dateFrom, dateTo);
+        List<SearchLog> logs = searchLogs == null ? Collections.emptyList() : searchLogs;
+        long clickCount = searchClickRepository.countByCreatedAtRange(dateFrom, dateTo);
+        return new SearchAnalysisSummaryResult(
+                logs.size(),
+                logs.stream().filter(this::isFailedSearch).count(),
+                logs.stream().filter(this::isZeroResultSucceededSearch).count(),
+                clickCount,
+                topQueries(logs));
     }
 
     private SearchLog buildSucceededSearchLog(
@@ -329,6 +343,31 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
 
     private String newSearchLogId() {
         return UUID.randomUUID().toString();
+    }
+
+    private boolean isFailedSearch(SearchLog searchLog) {
+        return searchLog != null && "FAILED".equals(searchLog.getSearchStatus());
+    }
+
+    private boolean isZeroResultSucceededSearch(SearchLog searchLog) {
+        return searchLog != null
+                && "SUCCEEDED".equals(searchLog.getSearchStatus())
+                && searchLog.getResultTotalCount() != null
+                && searchLog.getResultTotalCount() == 0;
+    }
+
+    private List<SearchAnalysisSummaryResult.TopQuery> topQueries(List<SearchLog> searchLogs) {
+        Map<String, Long> countByQueryText = searchLogs.stream()
+                .map(SearchLog::getQueryText)
+                .filter(queryText -> !isBlank(queryText))
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+        return countByQueryText.entrySet().stream()
+                .sorted(Comparator.<Map.Entry<String, Long>>comparingLong(Map.Entry::getValue)
+                        .reversed()
+                        .thenComparing(Map.Entry::getKey))
+                .limit(10)
+                .map(entry -> new SearchAnalysisSummaryResult.TopQuery(entry.getKey(), entry.getValue()))
+                .toList();
     }
 
     private String writeScope(SearchScope searchScope) {

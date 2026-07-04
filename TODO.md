@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Discovery Search Analysis Aggregation`：实现搜索分析聚合
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-QA-CLOSEOUT.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/search/service/impl/SearchApplicationServiceImpl.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/test/java/com/thundax/kuzhambu/discovery/application/search/service/impl/SearchApplicationServiceImplTest.java`
-    - 处理动作：基于搜索日志和点击聚合生成搜索分析摘要。
-    - 验收点：热门搜索词按 `count DESC`、`queryText ASC` 排序且最多返回 10 条。
-    - 重要度：9/10
-
 - [ ] `Discovery Search Analysis Admin API`：新增 Admin 搜索分析接口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-QA-CLOSEOUT.md`

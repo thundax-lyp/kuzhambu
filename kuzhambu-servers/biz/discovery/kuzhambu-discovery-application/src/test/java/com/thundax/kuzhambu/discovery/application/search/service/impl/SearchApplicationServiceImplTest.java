@@ -12,6 +12,7 @@ import static org.mockito.Mockito.when;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.discovery.application.search.command.SearchClickCreateCommand;
+import com.thundax.kuzhambu.discovery.application.search.query.SearchAnalysisSummaryQuery;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchLogPageQuery;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchQuery;
 import com.thundax.kuzhambu.discovery.application.search.result.QueryUnderstandingResult;
@@ -277,6 +278,77 @@ class SearchApplicationServiceImplTest {
     }
 
     @Test
+    void getAnalysisSummaryShouldAggregateSearchLogsAndClicks() {
+        SearchLogRepository searchLogRepository = mock(SearchLogRepository.class);
+        SearchClickRepository searchClickRepository = mock(SearchClickRepository.class);
+        SearchIndexGateway searchIndexGateway = mock(SearchIndexGateway.class);
+        QueryUnderstandingApplicationService queryUnderstandingApplicationService =
+                mock(QueryUnderstandingApplicationService.class);
+        SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
+                searchLogRepository,
+                searchClickRepository,
+                new SearchDomainService(),
+                searchIndexGateway,
+                new DefaultSearchPermissionFilter(),
+                queryUnderstandingApplicationService);
+        Date dateFrom = new Date(1_718_000_000_000L);
+        Date dateTo = new Date(1_720_419_200_000L);
+        when(searchLogRepository.listByCreatedAtRange(dateFrom, dateTo))
+                .thenReturn(List.of(
+                        searchLog("黄帝", "SUCCEEDED", 3),
+                        searchLog("黄帝", "SUCCEEDED", 0),
+                        searchLog("天文", "FAILED", 0),
+                        searchLog("地理", "SUCCEEDED", 1),
+                        searchLog("地理", "SUCCEEDED", 2),
+                        searchLog("礼制", "SUCCEEDED", 1)));
+        when(searchClickRepository.countByCreatedAtRange(dateFrom, dateTo)).thenReturn(7L);
+
+        var result = service.getAnalysisSummary(new SearchAnalysisSummaryQuery(dateFrom, dateTo));
+
+        assertEquals(6L, result.getSearchCount());
+        assertEquals(1L, result.getFailedSearchCount());
+        assertEquals(1L, result.getZeroResultSearchCount());
+        assertEquals(7L, result.getClickCount());
+        assertEquals(4, result.getTopQueries().size());
+        assertEquals("地理", result.getTopQueries().get(0).getQueryText());
+        assertEquals(2L, result.getTopQueries().get(0).getCount());
+        assertEquals("黄帝", result.getTopQueries().get(1).getQueryText());
+        assertEquals("礼制", result.getTopQueries().get(3).getQueryText());
+    }
+
+    @Test
+    void getAnalysisSummaryShouldLimitTopQueriesToTen() {
+        SearchLogRepository searchLogRepository = mock(SearchLogRepository.class);
+        SearchClickRepository searchClickRepository = mock(SearchClickRepository.class);
+        SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
+                searchLogRepository,
+                searchClickRepository,
+                new SearchDomainService(),
+                mock(SearchIndexGateway.class),
+                new DefaultSearchPermissionFilter(),
+                mock(QueryUnderstandingApplicationService.class));
+        when(searchLogRepository.listByCreatedAtRange(null, null))
+                .thenReturn(List.of(
+                        searchLog("q01", "SUCCEEDED", 1),
+                        searchLog("q02", "SUCCEEDED", 1),
+                        searchLog("q03", "SUCCEEDED", 1),
+                        searchLog("q04", "SUCCEEDED", 1),
+                        searchLog("q05", "SUCCEEDED", 1),
+                        searchLog("q06", "SUCCEEDED", 1),
+                        searchLog("q07", "SUCCEEDED", 1),
+                        searchLog("q08", "SUCCEEDED", 1),
+                        searchLog("q09", "SUCCEEDED", 1),
+                        searchLog("q10", "SUCCEEDED", 1),
+                        searchLog("q11", "SUCCEEDED", 1)));
+
+        var result = service.getAnalysisSummary(new SearchAnalysisSummaryQuery(null, null));
+
+        assertEquals(10, result.getTopQueries().size());
+        assertEquals("q01", result.getTopQueries().get(0).getQueryText());
+        assertEquals("q10", result.getTopQueries().get(9).getQueryText());
+    }
+
+    @Test
     void searchShouldPersistFailureLogAndRethrowBizException() {
         SearchLogRepository searchLogRepository = mock(SearchLogRepository.class);
         SearchClickRepository searchClickRepository = mock(SearchClickRepository.class);
@@ -319,5 +391,26 @@ class SearchApplicationServiceImplTest {
         assertEquals("FAILED", searchLogCaptor.getValue().getSearchStatus());
         assertEquals("DISCOVERY-29999", searchLogCaptor.getValue().getFailureCode());
         assertEquals("boom", searchLogCaptor.getValue().getFailureMessage());
+    }
+
+    private SearchLog searchLog(String queryText, String searchStatus, Integer resultTotalCount) {
+        return new SearchLog(
+                1L,
+                "s-" + queryText + "-" + searchStatus + "-" + resultTotalCount,
+                queryText,
+                queryText,
+                queryText,
+                SearchIntentType.KEYWORD_SEARCH,
+                null,
+                resultTotalCount,
+                resultTotalCount == null ? 0 : Math.min(resultTotalCount, 1),
+                searchStatus,
+                null,
+                null,
+                "ANONYMOUS",
+                null,
+                null,
+                null,
+                new Date());
     }
 }
