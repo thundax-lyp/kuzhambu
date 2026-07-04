@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `discovery-qa-delete-export-tests`：补齐 Discovery QA 删除和导出测试
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-SESSION-DELETE-EXPORT.md`
-    - 范围对象：`DiscoveryQaPortalControllerTest.java`、`DiscoveryQaAdminControllerTest.java`、`QaApplicationServiceImplTest.java`、`QaSessionExportRepositoryImplTest.java`
-    - 处理动作：补齐 Controller、应用服务和导出仓储测试覆盖。
-    - 验收点：Portal/Admin 接口、删除状态机、导出 CSV、Storage 上传和导出仓储测试通过。
-    - 重要度：9/10
-
 - [ ] `discovery-qa-delete-export-closeout`：更新交付覆盖并清理现场
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-SESSION-DELETE-EXPORT.md`

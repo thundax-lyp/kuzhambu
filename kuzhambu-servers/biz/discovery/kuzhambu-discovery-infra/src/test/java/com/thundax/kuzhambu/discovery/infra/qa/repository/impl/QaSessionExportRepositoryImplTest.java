@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.discovery.infra.qa.repository.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -67,5 +68,16 @@ class QaSessionExportRepositoryImplTest {
         verify(mapper).selectOne(wrapperCaptor.capture());
         assertTrue(wrapperCaptor.getValue().getSqlSegment().contains("export_id"));
         assertTrue(wrapperCaptor.getValue().getSqlSegment().contains("limit 1"));
+    }
+
+    @Test
+    void getByExportIdShouldReturnNullWhenMissing() {
+        QaSessionExportMapper mapper = mock(QaSessionExportMapper.class);
+        QaSessionExportRepositoryImpl repository = new QaSessionExportRepositoryImpl(mapper);
+        when(mapper.selectOne(any())).thenReturn(null);
+
+        QaSessionExport result = repository.getByExportId(6001L);
+
+        assertNull(result);
     }
 }

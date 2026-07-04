@@ -161,6 +161,23 @@ class QaApplicationServiceImplTest {
     }
 
     @Test
+    void deleteSessionShouldRejectWhenConcurrentDeletionWins() {
+        QaSessionRepository sessionRepository = mock(QaSessionRepository.class);
+        QaApplicationServiceImpl service = service(sessionRepository);
+        QaSession latest = openSession();
+        latest.markRemoved(new Date());
+        when(sessionRepository.getBySessionId(5001L)).thenReturn(openSession(), latest);
+        when(sessionRepository.markRemoved(eq(5001L), any(Date.class))).thenReturn(0);
+
+        BizException exception = assertThrows(
+                BizException.class,
+                () -> service.deleteSession(new DeleteQaSessionCommand(5001L, "USER", "1001", false)));
+
+        assertEquals("QA_SESSION_ALREADY_REMOVED", exception.getCode());
+        verify(sessionRepository).markRemoved(eq(5001L), any(Date.class));
+    }
+
+    @Test
     void deleteSessionShouldRejectOwnerMismatch() {
         QaSessionRepository sessionRepository = mock(QaSessionRepository.class);
         QaApplicationServiceImpl service = service(sessionRepository);
@@ -264,12 +281,19 @@ class QaApplicationServiceImplTest {
     }
 
     @Test
-    void exportSessionShouldAllowRemovedAdminSession() {
+    void exportSessionShouldAllowRemovedAdminSession() throws Exception {
         QaSessionRepository sessionRepository = mock(QaSessionRepository.class);
-        QaApplicationServiceImpl service = service(sessionRepository);
+        QaMessageRepository messageRepository = mock(QaMessageRepository.class);
+        QaSourceRepository sourceRepository = mock(QaSourceRepository.class);
+        QaRetrievalTraceRepository traceRepository = mock(QaRetrievalTraceRepository.class);
+        QaApplicationServiceImpl service =
+                service(sessionRepository, messageRepository, sourceRepository, traceRepository);
         QaSession session = openSession();
         session.markRemoved(new Date());
         when(sessionRepository.getBySessionId(5001L)).thenReturn(session);
+        when(messageRepository.listBySessionId(5001L)).thenReturn(List.of(answerMessage()));
+        when(sourceRepository.listByMessageId(6001L)).thenReturn(List.of(source()));
+        when(traceRepository.getByMessageId(6001L)).thenReturn(trace());
         when(exportRepository.save(any(QaSessionExport.class))).thenReturn(7001L);
         when(storageFacade.upload(any(UploadStorageFacadeRequest.class)))
                 .thenReturn(UploadStorageFacadeResponse.builder()
@@ -280,7 +304,12 @@ class QaApplicationServiceImplTest {
                 service.exportSession(new ExportQaSessionCommand(5001L, 1001L, null, null, true, "CSV"));
 
         assertEquals("SUCCEEDED", result.getExportStatus());
-        verify(storageFacade).upload(any(UploadStorageFacadeRequest.class));
+        ArgumentCaptor<UploadStorageFacadeRequest> uploadCaptor =
+                ArgumentCaptor.forClass(UploadStorageFacadeRequest.class);
+        verify(storageFacade).upload(uploadCaptor.capture());
+        String csv = new String(uploadCaptor.getValue().getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        assertTrue(csv.contains("\"SESSION\""));
+        assertTrue(csv.contains("\"REMOVED\""));
     }
 
     @Test

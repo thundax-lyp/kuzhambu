@@ -196,7 +196,10 @@ class DiscoveryQaAdminControllerTest {
         assertEquals(7001L, exportResponse.getExportId());
         assertEquals(8001L, exportResponse.getStorageObjectId());
         assertEquals("SUCCEEDED", exportResponse.getExportStatus());
+        assertEquals(1_718_000_000_000L, exportResponse.getRequestedAt());
+        assertEquals(1_718_000_001_000L, exportResponse.getCompletedAt());
         assertEquals("discovery-qa-session-5001-7001.csv", exportResponse.getFilename());
+        assertEquals("text/csv; charset=UTF-8", exportResponse.getContentType());
 
         DiscoveryQaAdminRequests.QaSourceListRequest sourceRequest = new DiscoveryQaAdminRequests.QaSourceListRequest();
         sourceRequest.setMessageId(7002L);

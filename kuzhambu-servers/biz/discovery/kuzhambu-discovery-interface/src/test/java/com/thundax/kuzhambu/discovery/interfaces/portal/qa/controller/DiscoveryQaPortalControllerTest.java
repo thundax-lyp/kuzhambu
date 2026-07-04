@@ -294,6 +294,8 @@ class DiscoveryQaPortalControllerTest {
         assertEquals("CSV", response.getFormat());
         assertEquals(8001L, response.getStorageObjectId());
         assertEquals("SUCCEEDED", response.getExportStatus());
+        assertEquals(1_718_000_000_000L, response.getRequestedAt());
+        assertEquals(1_718_000_001_000L, response.getCompletedAt());
         assertEquals("discovery-qa-session-5001-7001.csv", response.getFilename());
         assertEquals("text/csv; charset=UTF-8", response.getContentType());
     }
