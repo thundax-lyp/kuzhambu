@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Discovery Search Click Analytics`：补齐搜索点击聚合能力
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-QA-CLOSEOUT.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-domain/src/main/java/com/thundax/kuzhambu/discovery/domain/search/repository/SearchClickRepository.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/search/persistence/mapper/SearchClickMapper.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/search/repository/impl/SearchClickRepositoryImpl.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/test/java/com/thundax/kuzhambu/discovery/infra/search/repository/impl/SearchClickRepositoryImplTest.java`
-    - 处理动作：增加按 `createdAt` 范围统计点击总数的只读能力。
-    - 验收点：点击聚合只读 `discovery_search_click`，空结果返回 `0`。
-    - 重要度：9/10
-
 - [ ] `Discovery Search Analysis Model`：定义搜索分析 application 契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-QA-CLOSEOUT.md`

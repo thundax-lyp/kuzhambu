@@ -7,6 +7,7 @@ import com.thundax.kuzhambu.discovery.domain.search.repository.SearchClickReposi
 import com.thundax.kuzhambu.discovery.infra.search.persistence.assembler.SearchClickPersistenceAssembler;
 import com.thundax.kuzhambu.discovery.infra.search.persistence.dataobject.SearchClickDO;
 import com.thundax.kuzhambu.discovery.infra.search.persistence.mapper.SearchClickMapper;
+import java.util.Date;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Repository;
 
@@ -37,5 +38,11 @@ public class SearchClickRepositoryImpl implements SearchClickRepository {
         }
         mapper.insert(dataObject);
         return dataObject.getId();
+    }
+
+    @Override
+    public long countByCreatedAtRange(Date createdAtStart, Date createdAtEnd) {
+        Long count = mapper.countByCreatedAtRange(createdAtStart, createdAtEnd);
+        return count == null ? 0L : count;
     }
 }
