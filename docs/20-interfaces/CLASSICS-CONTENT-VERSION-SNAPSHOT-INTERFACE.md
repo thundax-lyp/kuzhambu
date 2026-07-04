@@ -48,6 +48,17 @@
       "title": "天地图",
       "currentUsed": true,
       "priority": 1
+    },
+    {
+      "imageId": 8003,
+      "storageObjectId": 2002,
+      "originalFilename": "三才生成图.png",
+      "contentType": "image/png",
+      "size": 204800,
+      "imageType": "GENERATED",
+      "title": "天地图生成稿",
+      "currentUsed": false,
+      "priority": 2
     }
   ]
 }
@@ -72,7 +83,7 @@
 | `visualAssetStatus` | string/null | 视觉资产状态 |
 | `refinementStatus` | string/null | 精修状态 |
 | `priority` | number | 卷内排序值 |
-| `images` | array | 当前使用图片资源快照，只包含 `currentUsed=true` 图片，按 `priority ASC` 排序 |
+| `images` | array | 三才条目图片资源快照，包含该条目的全部图片，按 `priority ASC` 排序 |
 
 `images[]` 字段：
 
@@ -85,10 +96,10 @@
 | `size` | number/null | 创建快照时的文件大小，单位字节 |
 | `imageType` | string/null | 图片类型 |
 | `title` | string/null | 图片标题 |
-| `currentUsed` | boolean | 是否当前使用图。快照内应固定为 `true` |
+| `currentUsed` | boolean | 是否当前使用图。`true` 标识当前展示主图，`false` 标识同条目其他备选图 |
 | `priority` | number | 图片展示排序值 |
 
-`SANCAI_ENTRY.images` 不包含历史备选图、未启用图、`previewUrl` 或 `downloadUrl`。Portal 分享响应层会根据 `storageObjectId` 动态装配资源对象和读取 URL。
+`SANCAI_ENTRY.images` 不包含 `previewUrl` 或 `downloadUrl`，不承诺新增数据库字段。Portal 分享响应层会根据 `storageObjectId` 动态装配资源对象和读取 URL。已创建分享的 `classics_share_target.content_snapshot_json` 不回写；当前图变化只影响后续版本、分享、导出和展示 payload。
 
 ## WANGQI_DOCUMENT
 

@@ -50,6 +50,8 @@ export interface ClassicsSharePortalImage {
     size?: number | null;
     storageObject?: ClassicsShareResource | null;
     storageObjectId?: number | null;
+    previewUrl?: string | null;
+    downloadUrl?: string | null;
     title?: string | null;
 }
 

@@ -17,6 +17,10 @@ import lombok.Setter;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SancaiEntryImageSortRequest {
 
+    @Schema(name = "entryId", description = "三才条目ID")
+    @JsonProperty("entryId")
+    private Long entryId;
+
     @Schema(name = "orderedIds", description = "排序实体ID序列")
     @JsonProperty("orderedIds")
     @NotEmpty(message = "orderedIds不能为空")

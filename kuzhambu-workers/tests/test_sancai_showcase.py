@@ -16,7 +16,11 @@ def test_sancai_showcase_renders_offline_html() -> None:
     assert artifact.summary.itemCount == 2
     assert "三才图会" in html
     assert "天地玄黄" in html
-    assert "data:image/png;base64," in html
+    assert html.index("generated.png") < html.index("original.png")
+    assert 'src="generated.png"' in html
+    assert 'src="original.png"' in html
+    assert 'data-current="true"><img src="original.png"' in html
+    assert "暂无配图" in html
 
 
 def test_sancai_showcase_rejects_non_html_output() -> None:
@@ -65,10 +69,21 @@ def _request(output_format: str) -> RenderRequest:
                             "text": "天地玄黄",
                             "images": [
                                 {
-                                    "src": "data:image/png;base64,iVBORw0KGgo=",
-                                    "alt": "示例图",
-                                    "caption": "内联图片",
-                                }
+                                    "imageId": 8001,
+                                    "src": "original.png",
+                                    "alt": "原图",
+                                    "caption": "当前图片",
+                                    "currentUsed": True,
+                                    "priority": 2,
+                                },
+                                {
+                                    "imageId": 8002,
+                                    "src": "generated.png",
+                                    "alt": "生成图",
+                                    "caption": "生成图片",
+                                    "currentUsed": False,
+                                    "priority": 1,
+                                },
                             ],
                         },
                         {"id": "entry-2", "title": "第二条", "body": "宇宙洪荒"},

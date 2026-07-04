@@ -136,6 +136,25 @@ public class SancaiAssetRepositoryImpl implements SancaiAssetRepository {
     }
 
     @Override
+    public int clearCurrentImagesByEntryId(SancaiEntryId entryId) {
+        return imageMapper.update(
+                null,
+                new LambdaUpdateWrapper<SancaiEntryImageDO>()
+                        .eq(SancaiEntryImageDO::getEntryId, SancaiEntryIdCodec.toValue(entryId))
+                        .set(SancaiEntryImageDO::getCurrentUsed, false));
+    }
+
+    @Override
+    public int markImageCurrent(SancaiEntryId entryId, SancaiEntryImageId imageId) {
+        return imageMapper.update(
+                null,
+                new LambdaUpdateWrapper<SancaiEntryImageDO>()
+                        .eq(SancaiEntryImageDO::getEntryId, SancaiEntryIdCodec.toValue(entryId))
+                        .eq(SancaiEntryImageDO::getId, SancaiEntryImageIdCodec.toValue(imageId))
+                        .set(SancaiEntryImageDO::getCurrentUsed, true));
+    }
+
+    @Override
     public int maxPriority() {
         return maxPriority(imageMapper.selectObjs(new QueryWrapper<SancaiEntryImageDO>().select("max(priority)")));
     }

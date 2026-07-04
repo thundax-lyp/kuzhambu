@@ -73,6 +73,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -1071,6 +1072,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         if (!payload.has("items")) {
             payload.set("items", objectMapper.createArrayNode());
         }
+        normalizeSancaiExportImages(payload, job);
     }
 
     private void appendExportContext(ObjectNode payload, ClassicsContentExportJob job) {
@@ -1094,6 +1096,75 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             return payload.get("items").size();
         }
         return 0;
+    }
+
+    private void normalizeSancaiExportImages(ObjectNode payload, ClassicsContentExportJob job) {
+        if (job == null || job.getContentType() != ClassicsContentType.SANCAI_ENTRY) {
+            return;
+        }
+        JsonNode items = payload.get("items");
+        if (items == null || !items.isArray()) {
+            payload.set("items", objectMapper.createArrayNode());
+            return;
+        }
+        for (JsonNode item : items) {
+            if (item instanceof ObjectNode itemObject) {
+                itemObject.set("images", normalizeSancaiExportImageArray(itemObject.get("images")));
+            }
+        }
+    }
+
+    private ArrayNode normalizeSancaiExportImageArray(JsonNode images) {
+        ArrayNode normalized = objectMapper.createArrayNode();
+        if (images == null || !images.isArray()) {
+            return normalized;
+        }
+        List<ObjectNode> imageObjects = new ArrayList<>();
+        for (JsonNode image : images) {
+            ObjectNode imageObject =
+                    image instanceof ObjectNode object ? object.deepCopy() : objectMapper.createObjectNode();
+            normalizeSancaiExportImage(imageObject);
+            imageObjects.add(imageObject);
+        }
+        imageObjects.stream()
+                .sorted(Comparator.comparingInt(ClassicsContentApplicationServiceImpl::imagePriority))
+                .forEach(normalized::add);
+        return normalized;
+    }
+
+    private static void normalizeSancaiExportImage(ObjectNode image) {
+        putNullIfMissing(image, "imageId");
+        putNullIfMissing(image, "storageObjectId");
+        putNullIfMissing(image, "imageType");
+        putNullIfMissing(image, "title");
+        putBooleanIfMissing(image, "currentUsed", false);
+        putIntIfMissing(image, "priority", 0);
+        putNullIfMissing(image, "originalFilename");
+        putNullIfMissing(image, "contentType");
+        putNullIfMissing(image, "size");
+    }
+
+    private static int imagePriority(ObjectNode image) {
+        JsonNode priority = image.get("priority");
+        return priority == null || !priority.canConvertToInt() ? 0 : priority.asInt();
+    }
+
+    private static void putNullIfMissing(ObjectNode object, String fieldName) {
+        if (!object.has(fieldName)) {
+            object.putNull(fieldName);
+        }
+    }
+
+    private static void putBooleanIfMissing(ObjectNode object, String fieldName, boolean value) {
+        if (!object.has(fieldName) || object.get(fieldName).isNull()) {
+            object.put(fieldName, value);
+        }
+    }
+
+    private static void putIntIfMissing(ObjectNode object, String fieldName, int value) {
+        if (!object.has(fieldName) || object.get(fieldName).isNull()) {
+            object.put(fieldName, value);
+        }
     }
 
     private JsonNode parsePayload(String scopeJson) {

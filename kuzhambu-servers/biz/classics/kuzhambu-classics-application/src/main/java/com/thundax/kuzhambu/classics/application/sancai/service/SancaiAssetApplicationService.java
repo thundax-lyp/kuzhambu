@@ -43,6 +43,8 @@ public interface SancaiAssetApplicationService {
 
     void sortImages(SancaiEntryImageSortCommand command);
 
+    void useImage(SancaiEntryId entryId, SancaiEntryImageId imageId);
+
     void deleteImage(SancaiEntryImageId id);
 
     List<SancaiEntryImage> listImages(SancaiEntryId entryId);

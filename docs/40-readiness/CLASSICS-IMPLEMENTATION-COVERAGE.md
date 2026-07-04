@@ -46,12 +46,12 @@
 - 导出和静态展示任务治理闭环收口：三类内容页面分别完成导出任务列表/创建闭环与状态可见性展示；Sancai 的静态展示列表与下载状态在页面内已收口。
 - 三才图会视觉资产 AI 闭环已补齐：页面内已接入 `image_analysis / fusion / visual / image_gen` 单条任务入口、任务状态轮询、失败提示与重试入口；候选区已接通按 `objectId` 限定的候选读取、编辑、应用、拒绝和刷新联动；`image_gen` 候选应用后的 `artifact -> Storage -> 新 version -> 页面预览/下载` 链路已稳定。
 - 三才图会视觉资产批量闭环已补齐：页面支持批量发起图片理解与视觉资产处理任务，后端已提供批量创建、分页查询、取消、失败聚合和已完成结果保留语义；前后端与 workers 已补齐对应回归测试。
+- 三才图会图片治理闭环已补齐：后端已支持图片上传、删除、当前图切换、同条目排序和全部图片 snapshot；Admin Web 已支持配图列表管理、原图上传、删除、当前图选择、缩略预览和放大浏览；Portal 分享和 Workers 静态展示/导出均使用分享或 payload 内的多图资源。
 - 结合需求文档、设计文档和代码现状，Classics 当前已实现“内容维护 + 候选确认 + 任务型 AI 入口 + 批量视觉资产治理 + 导出/批量分享治理 + 批量公开/私有状态修改”的主干闭环；细粒度权限过滤和更复杂的候选流式治理仍保留在未完成项中。
 
 未完成：
 
 - 复杂业务闭环仍未完全接通：细粒度权限过滤和部分确认流程仍需联调。
-- 三才图会仍保留缩略图生成、多图放大浏览和图片列表管理等补充项。
 
 ## Requirement Coverage Matrix
 
@@ -65,10 +65,10 @@
 | 条目查看、创建、编辑、删除 | 部分完成 | 条目查询、详情、保存、删除接口与运行时代码已到位；Admin Web 已完成列表进入详情、编辑保存和列表刷新闭环 | 删除后分享目标状态同步、风险态重算未完成；删除不纳入本轮 Admin Web 页面闭环 | Classics, Admin Web |
 | 编辑标题、门类、卷、原文、译文和标签 | 部分完成 | 条目编辑核心字段（标题/门类/卷/正文等）与保存链路已实现；Admin Web 已支持标题、原文、译文、摘要、公开状态编辑保存；后端通用标签新增、更新、删除已接入 Knowledge 协作语义 | 标签前端编辑入口和更细的入参治理规则仍待补齐；门类/卷迁移不纳入本轮页面闭环 | Classics, Admin Web, Knowledge |
 | 展示原文、译文、标签、配图和状态 | 部分完成 | 条目详情、标签列表、配图列表均已提供独立接口；Admin Web 已展示条目列表状态、详情编辑核心文本字段、当前使用图片预览/下载入口，以及视觉资产历史列表、当前版本摘要和原图/生成图预览下载入口 | 标签仍未在三才条目详情内聚合展示；更复杂的视觉资产批量治理仍未闭环 | Classics, Admin Web |
-| 多张配图、缩略预览、放大浏览 | 部分完成 | 图片保存、列表、类型、Storage 对象引用、业务上传、业务读取和 Admin Web 当前图预览/下载链路已落地；分享快照只带 `currentUsed=true` 图片并按 `priority ASC` 展示；Admin Web 已支持视觉资产历史版本切换查看原图/生成图 | 缩略图生成、多图放大浏览交互和图片列表管理仍未闭环 | Classics, Storage, Admin Web |
+| 多张配图、缩略预览、放大浏览 | 已完成 | 图片保存、列表、类型、Storage 对象引用、业务上传、业务读取、删除、当前图切换和同条目排序已落地；Admin Web 已提供配图列表管理、缩略预览、放大浏览抽屉、下载和当前图选择；分享快照与 Portal 分享详情保留多图并按 `priority ASC` 展示缩略图切换主图；Workers 静态展示按多图稳定渲染并标记当前图 | 无 | Classics, Storage, Admin Web, Portal Web, Worker |
 | 区分原始配图和视觉资产生成图 | 已完成 | `image_type`、图片模型、资产模型与保存入口已实现；Admin Web 已区分展示视觉资产原图与生成图，并分别提供预览/下载入口；`image_gen` 结果会新建 visual asset version 并绑定正式 Storage 对象 | 无 | Classics, Admin Web |
 | 从条目上下文进入视觉资产工作流 | 已完成 | 资产草稿、图片、展示任务接口与服务可用；Admin Web 已在条目详情弹窗中接入视觉资产历史列表、当前版本切换、权重与描述字段维护、原图/生成图预览下载，以及 `image_analysis / fusion / visual / image_gen` 的页面内任务入口、任务状态轮询、失败提示与重试入口；后端已接通候选读取/应用/拒绝和 `image_gen` 候选应用后的版本化落库与页面展示 | 无 | Classics, Admin Web, AI |
-| 原图上传、删除和预览 | 部分完成 | 原图业务上传、列表、Storage owner/reference 绑定、业务读取、inline/attachment 响应头和 Admin Web 当前图预览/下载已实现 | 删除接口虽有应用层能力但未形成 Admin Web 删除闭环；批量图片管理未完成 | Classics, Storage, Admin Web |
+| 原图上传、删除和预览 | 已完成 | 原图业务上传、列表、Storage owner/reference 绑定、业务读取、inline/attachment 响应头、Admin Web 上传/预览/下载/删除闭环已实现；删除当前图后按 `priority ASC` 自动补位，删除最后一张图后展示空状态 | 无 | Classics, Storage, Admin Web |
 | 图片理解、信息融合、权重调节、视觉描述、AI 生图入口 | 已完成 | 视觉资产字段建模完成，三才视觉资产已接入图片理解/视觉描述/信息融合/AI 生图的任务与候选确认链路，`textWeight`、`imageWeight`、`imageAnalysisMarkdown`、`fusionDescription`、`visualDescription`、`generationParamsJson` 已可保存并按字段边界写回；`image_gen` 候选应用已接通 `artifact -> Storage -> 新 version -> 页面预览/下载` 闭环，失败提示与重试入口已在页面内收口 | 无 | Classics, AI |
 | 视觉资产历史和当前使用版本选择 | 已完成 | 视觉资产持久化、列表查询、当前版本切换服务、Admin API 和 Admin Web 已接通；条目详情内可查看历史版本、切换当前使用版本并保存基础字段 | 无 | Classics, Admin Web |
 | 多选条目批量视觉资产处理 | 已完成 | Admin Web 已支持多选条目批量发起图片理解与视觉资产处理任务，并展示成功数、失败数、失败原因、运行中状态和取消入口；后端已提供批量创建、分页、取消、失败聚合和已完成结果保留语义 | 无 | Classics, AI |
@@ -77,7 +77,7 @@
 | 生命周期：草稿、发布、归档、恢复 | 部分完成 | 状态枚举与变更能力在服务层已有实现；Admin Web 已支持按生命周期筛选条目 | 管理接口未完整暴露、恢复策略与版本链路未闭环；本轮页面未提供生命周期编辑 | Classics, Admin Web |
 | 公开和私有可见性管理 | 部分完成 | 条目可见性字段、变更能力已落地；Admin Web 已支持单条目公开状态编辑保存和当前页多选批量公开/私有；Java interface 已通过统一入口分发到三类内容应用服务，并返回批量结果和失败明细 | 细粒度权限过滤调用点仍未收口；本轮不重算历史分享快照，`classics_share_target.content_visibility_snapshot` 继续表示创建分享时的内容可见性快照 | Classics, Admin Web, System |
 | 版本历史、版本对比和历史恢复 | 已完成 | 后端已暴露三才图会条目版本列表、版本详情和历史恢复端点，并校验版本归属；恢复采用追加式版本语义，目标卷内排序值使用当前 `max(priority) + 1`；Admin Web 已提供版本历史列表、当前/历史字段对比、恢复确认、恢复后详情刷新和成功提示 | 无 | Classics, Admin Web |
-| CSV、JSON、HTML 设定集导出 | 已完成 | 导出任务表、异步接入决策、通用创建能力、worker 渲染产物落库与下载闭环已打通，前端可查看任务状态与下载成功产物；底层产物对象生命周期已复用 Storage 自动 orphan 清理 | 无 | Classics, Worker, Storage |
+| CSV、JSON、HTML 设定集导出 | 已完成 | 导出任务表、异步接入决策、通用创建能力、worker 渲染产物落库与下载闭环已打通，前端可查看任务状态与下载成功产物；Sancai JSON/ZIP 保留 `items[].images[]`，HTML 输出图片元数据，CSV 仍按内容条目一行输出；底层产物对象生命周期已复用 Storage 自动 orphan 清理 | 无 | Classics, Worker, Storage |
 | HTML 视觉资产设定集导出 | 已完成 | 视觉资产字段与导出任务结构已覆盖，worker 渲染产物已写入 Storage，任务状态与下载入口已闭环；底层产物对象生命周期已复用 Storage 自动 orphan 清理 | 无 | Classics, Worker, Storage |
 | 导出记录查看、下载、删除和过期 | 部分完成 | 导出任务列表、下载链接、状态与过期时间透传，后端支持过期任务 404、前端展示“已过期”并禁用下载，产物已落库存储并可读取；底层产物对象生命周期已复用 Storage 自动 orphan 清理 | 删除、批量清理策略与权限过滤 API 未形成闭环 | Classics, System, Storage |
 | 静态展示内容生成 | 部分完成 | 展示任务记录、策略与 worker 产物落库、状态回写和下载能力已完成 | 列表搜索、筛选与回源流程边界未完整 | Classics, Worker, Storage |
@@ -126,7 +126,7 @@
 | 过期时间、撤销和恢复 | 部分完成 | 过期时间与状态更新字段已实现 | 过期清理、恢复/恢复到位自动流未实现 | Classics |
 | 只读访问页 | 已完成 | Portal 已提供公开分享列表、详情和分享资源读取端点；Portal Web 已提供首页、分享列表和分享详情路由，展示固化快照、Wangqi 原始文件资源和 Sancai 图片资源 | 无 | Classics, System, Portal Web |
 | 访问统计 | 部分完成 | 访问记录实体与应用服务接口（写入/分页查询）已实现；分享资源读取成功会写入访问记录 | 分享详情浏览统计和对外统计 API 未接通 | Classics |
-| 分享完整内容快照 | 已完成 | 分享创建时先确保正式内容版本，再将 `classics_content_version.snapshot_json` 固化到 `classics_share_target.content_snapshot_json`；target 记录 `content_version_id/content_version_no`；三类正式版本快照 schema 已沉淀到 `docs/20-interfaces/CLASSICS-CONTENT-VERSION-SNAPSHOT-INTERFACE.md`；Sancai 快照包含当前使用图片资源 ID，Portal 响应层动态补资源对象 | 无 | Classics |
+| 分享完整内容快照 | 已完成 | 分享创建时先确保正式内容版本，再将 `classics_content_version.snapshot_json` 固化到 `classics_share_target.content_snapshot_json`；target 记录 `content_version_id/content_version_no`；三类正式版本快照 schema 已沉淀到 `docs/20-interfaces/CLASSICS-CONTENT-VERSION-SNAPSHOT-INTERFACE.md`；Sancai 快照包含全部图片资源 ID，使用 `currentUsed` 标识当前图，Portal 响应层动态补资源对象 | 无 | Classics |
 | 私有内容分享确认文案 | 已完成 | 分享创建与状态模型已支持风险状态表达，确认文案由前端按风险状态渲染 | 无 | Classics |
 | 目标被删除后占位展示 | 已完成 | 目标快照和目标状态可持久化，查询接口可返回状态供前端按状态展示 | 无 | Classics |
 

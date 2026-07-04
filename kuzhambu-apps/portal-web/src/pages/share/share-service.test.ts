@@ -72,6 +72,65 @@ describe("classics share service", () => {
         });
     });
 
+    it("keeps sancai image resource urls and non-current images in share payload", async () => {
+        vi.spyOn(http, "getJson").mockResolvedValue({
+            status: "ACTIVE",
+            targets: [
+                {
+                    contentId: 3001,
+                    contentSnapshotJson: '{"title":"天地"}',
+                    contentType: "SANCAI_ENTRY",
+                    images: [
+                        {
+                            currentUsed: true,
+                            imageId: 8001,
+                            priority: 2,
+                            storageObject: {
+                                downloadUrl:
+                                    "/portal/classics/shares/token/resources/7001/content?download=true",
+                                previewUrl: "/portal/classics/shares/token/resources/7001/content",
+                                storageObjectId: 7001
+                            },
+                            storageObjectId: 7001,
+                            title: "原图"
+                        },
+                        {
+                            currentUsed: false,
+                            imageId: 8002,
+                            priority: 1,
+                            storageObject: {
+                                downloadUrl:
+                                    "/portal/classics/shares/token/resources/7002/content?download=true",
+                                previewUrl: "/portal/classics/shares/token/resources/7002/content",
+                                storageObjectId: 7002
+                            },
+                            storageObjectId: 7002,
+                            title: "生成图"
+                        }
+                    ],
+                    targetStatus: "ACTIVE",
+                    titleSnapshot: "天地"
+                }
+            ],
+            title: "三才分享",
+            visibility: "PUBLIC"
+        });
+
+        const response = await shareService.getShare("token");
+        const images = response.targets?.[0]?.images ?? [];
+
+        expect(images).toHaveLength(2);
+        expect(images.map((image) => image.currentUsed)).toEqual([true, false]);
+        expect(images.map((image) => image.priority)).toEqual([2, 1]);
+        expect(images[0]?.storageObject?.previewUrl).toBe(
+            "/portal/classics/shares/token/resources/7001/content"
+        );
+        expect(images[1]?.storageObject?.downloadUrl).toBe(
+            "/portal/classics/shares/token/resources/7002/content?download=true"
+        );
+        expect(JSON.stringify(images)).not.toContain("/api/classics/sancai/assets/images");
+    });
+
     it.each(["EXPIRED", "REVOKED"])(
         "keeps %s share rejection in the existing getShare error path",
         async (status) => {

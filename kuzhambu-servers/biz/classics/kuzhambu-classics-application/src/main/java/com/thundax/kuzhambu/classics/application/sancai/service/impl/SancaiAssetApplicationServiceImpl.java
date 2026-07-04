@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.classics.application.sancai.service.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiDraftCommand;
@@ -41,6 +42,7 @@ import com.thundax.kuzhambu.storage.facade.dto.StorageObjectFacadeDto;
 import com.thundax.kuzhambu.storage.facade.request.BindStorageOwnerFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.MarkStorageUsageFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.OpenStorageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.UnbindStorageOwnerFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.UploadStorageFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.response.OpenStorageFacadeResponse;
 import com.thundax.kuzhambu.storage.facade.response.UploadStorageFacadeResponse;
@@ -48,6 +50,7 @@ import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -136,7 +139,6 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     @Transactional(rollbackFor = Exception.class)
     public SancaiEntryImageResource uploadImage(SancaiEntryImageUploadCommand command) {
         SancaiEntryId entryId = SancaiEntryIdCodec.toDomain(command == null ? null : command.getEntryId());
-        SancaiEntryImage replacedImage = currentImageToReplace(command, entryId);
         validateImageUpload(command);
 
         UploadStorageFacadeResponse uploadResponse = storageFacade.upload(UploadStorageFacadeRequest.builder()
@@ -157,13 +159,10 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
         image.setTitle(command.getTitle());
         image.setCurrentUsed(command.isCurrentUsed());
         image.setPriority(repository.maxPriority() + 1);
+        clearCurrentImagesIfNeeded(command, entryId);
         SancaiEntryImageId imageId = repository.insertImage(image);
         image.setId(imageId);
 
-        if (replacedImage != null) {
-            replacedImage.setCurrentUsed(false);
-            repository.updateImage(replacedImage);
-        }
         bindStorageOwner(uploadResponse == null ? null : uploadResponse.getStorageObjectId(), entryId, imageId);
         return toResource(image, uploadResponse);
     }
@@ -205,13 +204,17 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     public void sortImages(SancaiEntryImageSortCommand command) {
         SortDirection effectiveDirection =
                 command == null || command.getSortDirection() == null ? SortDirection.ASC : command.getSortDirection();
+        SancaiEntryId entryId = command == null ? null : command.getEntryId();
+        if (entryId == null) {
+            throw sortMissingId();
+        }
         List<SancaiEntryImageId> orderedIdList =
                 command == null || command.getOrderedIds() == null ? Collections.emptyList() : command.getOrderedIds();
         if (orderedIdList.isEmpty()) {
             throw sortEmptyInput();
         }
 
-        List<SancaiEntryImage> currentImages = repository.listImages(effectiveDirection);
+        List<SancaiEntryImage> currentImages = repository.listImagesByEntryId(entryId, effectiveDirection);
         if (currentImages == null || currentImages.isEmpty() || currentImages.size() != orderedIdList.size()) {
             throw sortMissingId();
         }
@@ -263,14 +266,29 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    public void useImage(SancaiEntryId entryId, SancaiEntryImageId imageId) {
+        requireImage(entryId, imageId);
+        repository.clearCurrentImagesByEntryId(entryId);
+        if (repository.markImageCurrent(entryId, imageId) != 1) {
+            throw new BizException("三才当前使用图片切换失败");
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public void deleteImage(SancaiEntryImageId id) {
         SancaiEntryImage image = getImage(id);
+        if (image == null) {
+            throw new BizException("三才图片不存在");
+        }
         repository.deleteImageById(id);
-        if (storageFacade != null && image != null && image.getStorageObjectId() != null) {
+        unbindStorageOwner(image);
+        if (storageFacade != null && image.getStorageObjectId() != null) {
             storageFacade.markUnused(MarkStorageUsageFacadeRequest.builder()
                     .storageObjectId(image.getStorageObjectId().value())
                     .build());
         }
+        useFirstRemainingImageIfNeeded(image);
     }
 
     @Override
@@ -465,7 +483,7 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     }
 
     private String renderPayloadJson(String scopeJson) {
-        JsonNode payload = parsePayload(scopeJson);
+        JsonNode payload = normalizeShowcasePayload(parsePayload(scopeJson));
         try {
             return objectMapper.writeValueAsString(payload);
         } catch (JsonProcessingException ex) {
@@ -493,6 +511,102 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
         defaultPayload.set("assets", objectMapper.createArrayNode());
         defaultPayload.set("metadata", objectMapper.createObjectNode());
         return defaultPayload;
+    }
+
+    private JsonNode normalizeShowcasePayload(JsonNode payload) {
+        if (payload == null || !payload.isObject()) {
+            return defaultPayload();
+        }
+        ObjectNode payloadObject = (ObjectNode) payload;
+        JsonNode entries = payloadObject.get("entries");
+        if (entries == null || !entries.isArray()) {
+            payloadObject.set("entries", objectMapper.createArrayNode());
+            return payloadObject;
+        }
+        for (JsonNode entry : entries) {
+            if (entry instanceof ObjectNode entryObject) {
+                entryObject.set("images", normalizeShowcaseImages(entryObject.get("images")));
+            }
+        }
+        return payloadObject;
+    }
+
+    private ArrayNode normalizeShowcaseImages(JsonNode images) {
+        ArrayNode normalized = objectMapper.createArrayNode();
+        if (images == null || !images.isArray()) {
+            return normalized;
+        }
+        List<ObjectNode> imageObjects = new ArrayList<>();
+        for (JsonNode image : images) {
+            ObjectNode imageObject =
+                    image instanceof ObjectNode object ? object.deepCopy() : objectMapper.createObjectNode();
+            normalizeShowcaseImage(imageObject);
+            imageObjects.add(imageObject);
+        }
+        imageObjects.stream()
+                .sorted(Comparator.comparingInt(SancaiAssetApplicationServiceImpl::imagePriority))
+                .forEach(normalized::add);
+        return normalized;
+    }
+
+    private void normalizeShowcaseImage(ObjectNode image) {
+        putTextIfMissing(image, "src", imageSource(image));
+        putTextIfMissing(image, "alt", imageAlt(image));
+        putTextIfMissing(image, "caption", image.path("title").asText(""));
+        putBooleanIfMissing(image, "currentUsed", false);
+        putIntIfMissing(image, "priority", 0);
+    }
+
+    private static String imageSource(ObjectNode image) {
+        String source = textValue(image, "src");
+        if (StringUtils.isNotBlank(source)) {
+            return source;
+        }
+        source = textValue(image, "previewUrl");
+        if (StringUtils.isNotBlank(source)) {
+            return source;
+        }
+        JsonNode storageObject = image.get("storageObject");
+        if (storageObject != null && storageObject.isObject()) {
+            source = textValue((ObjectNode) storageObject, "previewUrl");
+            if (StringUtils.isNotBlank(source)) {
+                return source;
+            }
+        }
+        return "";
+    }
+
+    private static String imageAlt(ObjectNode image) {
+        String imageType = textValue(image, "imageType");
+        return "GENERATED".equalsIgnoreCase(imageType) ? "三才图会生成图" : "三才图会原图";
+    }
+
+    private static int imagePriority(ObjectNode image) {
+        JsonNode priority = image.get("priority");
+        return priority == null || !priority.canConvertToInt() ? 0 : priority.asInt();
+    }
+
+    private static String textValue(ObjectNode object, String fieldName) {
+        JsonNode value = object.get(fieldName);
+        return value == null || value.isNull() ? null : value.asText();
+    }
+
+    private static void putTextIfMissing(ObjectNode object, String fieldName, String value) {
+        if (!object.has(fieldName) || object.get(fieldName).isNull()) {
+            object.put(fieldName, value == null ? "" : value);
+        }
+    }
+
+    private static void putBooleanIfMissing(ObjectNode object, String fieldName, boolean value) {
+        if (!object.has(fieldName) || object.get(fieldName).isNull()) {
+            object.put(fieldName, value);
+        }
+    }
+
+    private static void putIntIfMissing(ObjectNode object, String fieldName, int value) {
+        if (!object.has(fieldName) || object.get(fieldName).isNull()) {
+            object.put(fieldName, value);
+        }
     }
 
     private UploadStorageFacadeResponse saveShowcaseArtifact(
@@ -576,18 +690,11 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
                 ErrorCode.SORT_DB_FAILURE.getMessage());
     }
 
-    private SancaiEntryImage currentImageToReplace(SancaiEntryImageUploadCommand command, SancaiEntryId entryId) {
+    private void clearCurrentImagesIfNeeded(SancaiEntryImageUploadCommand command, SancaiEntryId entryId) {
         if (command == null || !command.isCurrentUsed()) {
-            return null;
+            return;
         }
-        if (command.getReplaceImageId() == null) {
-            throw new BizException("替换当前图片时必须指定 replaceImageId");
-        }
-        SancaiEntryImage image = requireImage(entryId, SancaiEntryImageIdCodec.toDomain(command.getReplaceImageId()));
-        if (!image.isCurrentUsed()) {
-            throw new BizException("被替换图片不是当前使用图");
-        }
-        return image;
+        repository.clearCurrentImagesByEntryId(entryId);
     }
 
     private SancaiEntryImage requireImage(SancaiEntryId entryId, SancaiEntryImageId imageId) {
@@ -671,6 +778,31 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
                 .ownerType(IMAGE_OWNER_TYPE)
                 .ownerParams("usage=SANCAI_ENTRY_IMAGE;entryId=" + entryId.value() + ";imageId=" + imageId.value())
                 .build());
+    }
+
+    private void unbindStorageOwner(SancaiEntryImage image) {
+        if (storageFacade == null || image == null || image.getEntryId() == null || image.getId() == null) {
+            return;
+        }
+        storageFacade.unbindOwner(UnbindStorageOwnerFacadeRequest.builder()
+                .ownerType(IMAGE_OWNER_TYPE)
+                .ownerId(imageOwnerId(image.getEntryId(), image.getId()))
+                .build());
+    }
+
+    private void useFirstRemainingImageIfNeeded(SancaiEntryImage deletedImage) {
+        if (deletedImage == null || !deletedImage.isCurrentUsed() || deletedImage.getEntryId() == null) {
+            return;
+        }
+        List<SancaiEntryImage> remainingImages =
+                repository.listImagesByEntryId(deletedImage.getEntryId(), SortDirection.ASC);
+        if (remainingImages == null || remainingImages.isEmpty()) {
+            return;
+        }
+        SancaiEntryImage nextImage = remainingImages.get(0);
+        if (nextImage != null && nextImage.getId() != null) {
+            repository.markImageCurrent(deletedImage.getEntryId(), nextImage.getId());
+        }
     }
 
     private static SancaiEntryImageResource toResource(SancaiEntryImage image, UploadStorageFacadeResponse response) {

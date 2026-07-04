@@ -108,15 +108,48 @@ def _entries_html(entries: list[dict]) -> str:
 def _entry_images(entry: dict) -> str:
     images = entry.get("images", [])
     if not isinstance(images, list):
-        return ""
+        return _missing_image_html()
+    image_items = [image for image in images if isinstance(image, dict)]
+    if not image_items:
+        return _missing_image_html()
     return "".join(
-        "<figure>"
-        f'<img src="{escape(str(image.get("src") or ""), quote=True)}" '
-        f'alt="{escape(str(image.get("alt") or ""), quote=True)}">'
+        f'<figure class="entry-image" data-current="{_current_flag(image)}">'
+        f"{_image_content_html(image)}"
         f"<figcaption>{escape(str(image.get('caption') or ''))}</figcaption>"
         "</figure>"
-        for image in images
-        if isinstance(image, dict)
+        for image in sorted(image_items, key=_image_sort_key)
+    )
+
+
+def _image_sort_key(image: dict) -> tuple[int, int]:
+    priority = image.get("priority")
+    image_id = image.get("imageId")
+    return (
+        priority if isinstance(priority, int) else 2_147_483_647,
+        image_id if isinstance(image_id, int) else 0,
+    )
+
+
+def _current_flag(image: dict) -> str:
+    return "true" if image.get("currentUsed") is True else "false"
+
+
+def _image_content_html(image: dict) -> str:
+    src = str(image.get("src") or "")
+    if not src:
+        return '<div class="image-placeholder">图片资源暂缺</div>'
+    return (
+        f'<img src="{escape(src, quote=True)}" '
+        f'alt="{escape(str(image.get("alt") or ""), quote=True)}">'
+    )
+
+
+def _missing_image_html() -> str:
+    return (
+        '<figure class="entry-image entry-image-missing" data-current="false">'
+        '<div class="image-placeholder">暂无配图</div>'
+        "<figcaption>暂无图片资源</figcaption>"
+        "</figure>"
     )
 
 

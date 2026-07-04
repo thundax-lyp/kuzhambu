@@ -981,6 +981,113 @@ a.portal-discovery-hit:hover {
     gap: 12px;
 }
 
+.portal-share-image-featured {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+}
+
+.portal-share-image-featured img,
+.portal-share-image-placeholder {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border: 1px solid var(--line-subtle);
+    border-radius: 12px;
+    background: var(--surface-muted);
+}
+
+.portal-share-image-placeholder {
+    display: grid;
+    place-items: center;
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+.portal-share-image-featured figcaption {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.portal-share-image-featured figcaption div {
+    display: grid;
+    gap: 4px;
+}
+
+.portal-share-image-featured strong {
+    color: var(--text-primary);
+    font-weight: 700;
+}
+
+.portal-share-image-featured span {
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+.portal-share-image-featured svg {
+    width: 15px;
+    height: 15px;
+}
+
+.portal-share-image-thumbnails {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+}
+
+.portal-share-image-thumb {
+    display: grid;
+    gap: 6px;
+    padding: 8px;
+    text-align: left;
+    border: 1px solid var(--line-subtle);
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--surface-panel) 88%, white);
+    cursor: pointer;
+}
+
+.portal-share-image-thumb[aria-current="true"] {
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-blue) 16%, transparent);
+}
+
+.portal-share-image-thumb img,
+.portal-share-image-thumb > span:first-child {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: 7px;
+    background: var(--surface-muted);
+}
+
+.portal-share-image-thumb > span:first-child {
+    display: grid;
+    place-items: center;
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+.portal-share-image-thumb strong {
+    min-width: 0;
+    overflow: hidden;
+    color: var(--text-primary);
+    font-size: 13px;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.portal-share-image-thumb span:last-child {
+    width: fit-content;
+    padding: 2px 6px;
+    color: var(--accent-blue);
+    font-size: 12px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--accent-blue) 12%, transparent);
+}
+
 .portal-share-image-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));

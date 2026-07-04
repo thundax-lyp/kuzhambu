@@ -36,6 +36,10 @@ public interface SancaiAssetRepository {
 
     List<SancaiEntryImage> listCurrentImagesByEntryId(SancaiEntryId entryId, SortDirection sortDirection);
 
+    int clearCurrentImagesByEntryId(SancaiEntryId entryId);
+
+    int markImageCurrent(SancaiEntryId entryId, SancaiEntryImageId imageId);
+
     int maxPriority();
 
     int updatePriority(SancaiEntryImage image);

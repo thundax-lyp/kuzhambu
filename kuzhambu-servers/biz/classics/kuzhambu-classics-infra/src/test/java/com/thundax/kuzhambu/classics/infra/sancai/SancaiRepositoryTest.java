@@ -10,6 +10,7 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisual
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVolumeType;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class SancaiRepositoryTest {
@@ -36,9 +37,40 @@ class SancaiRepositoryTest {
         SancaiEntryRefinementStatus.from("COMPLETE");
     }
 
+    @Test
+    void assetRepositoryShouldKeepEntryScopedImageCurrentAndSortOperations() {
+        String repositorySource = readFromKnownRoots(
+                "biz/classics/kuzhambu-classics-infra/src/main/java/com/thundax/kuzhambu/classics/infra/sancai/repository/impl/SancaiAssetRepositoryImpl.java");
+
+        assertTrue(
+                repositorySource.contains("listImagesByEntryId(SancaiEntryId entryId, SortDirection sortDirection)"));
+        assertTrue(
+                repositorySource.contains(".eq(SancaiEntryImageDO::getEntryId, SancaiEntryIdCodec.toValue(entryId))"));
+        assertTrue(repositorySource.contains("clearCurrentImagesByEntryId(SancaiEntryId entryId)"));
+        assertTrue(repositorySource.contains(".set(SancaiEntryImageDO::getCurrentUsed, false)"));
+        assertTrue(repositorySource.contains("markImageCurrent(SancaiEntryId entryId, SancaiEntryImageId imageId)"));
+        assertTrue(
+                repositorySource.contains(".eq(SancaiEntryImageDO::getId, SancaiEntryImageIdCodec.toValue(imageId))"));
+        assertTrue(repositorySource.contains(".set(SancaiEntryImageDO::getCurrentUsed, true)"));
+    }
+
     private static boolean existsInKnownRoots(String path) {
         return Files.exists(Path.of(path))
                 || Files.exists(Path.of("../" + path))
                 || Files.exists(Path.of("../../../../" + path));
+    }
+
+    private static String readFromKnownRoots(String path) {
+        for (Path candidate : List.of(
+                Path.of(path), Path.of("../" + path), Path.of("../../../" + path), Path.of("../../../../" + path))) {
+            if (Files.exists(candidate)) {
+                try {
+                    return Files.readString(candidate);
+                } catch (Exception exception) {
+                    throw new AssertionError("Unable to read " + candidate, exception);
+                }
+            }
+        }
+        throw new AssertionError("Missing file: " + path);
     }
 }
