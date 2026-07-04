@@ -102,6 +102,19 @@ public final class DiscoveryQaAdminRequests {
 
     @Getter
     @Setter
+    @Schema(name = "DiscoveryQaSessionDeleteRequest", description = "Discovery QA 会话删除请求")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class QaSessionDeleteRequest {
+
+        @Schema(name = "sessionId", description = "会话号")
+        @JsonProperty(value = "sessionId")
+        @NotNull(message = "\"会话号\"不能为空")
+        private Long sessionId;
+    }
+
+    @Getter
+    @Setter
     @Schema(name = "DiscoveryQaSourceListRequest", description = "Discovery QA 来源列表请求")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)

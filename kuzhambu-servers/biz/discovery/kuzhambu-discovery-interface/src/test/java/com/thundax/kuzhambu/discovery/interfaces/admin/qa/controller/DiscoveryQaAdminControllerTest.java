@@ -10,6 +10,8 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.common.security.annotation.HasPermission;
+import com.thundax.kuzhambu.discovery.application.qa.command.DeleteQaSessionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.command.SyncKnowledgeContentCommand;
 import com.thundax.kuzhambu.discovery.application.qa.query.KnowledgeSyncItemPageQuery;
 import com.thundax.kuzhambu.discovery.application.qa.result.KnowledgeHealthResult;
@@ -45,6 +47,11 @@ class DiscoveryQaAdminControllerTest {
                 DiscoveryQaAdminRequests.QaSessionGetRequest.class);
         assertPostMapping(
                 DiscoveryQaAdminController.class,
+                "deleteSession",
+                "session/delete",
+                DiscoveryQaAdminRequests.QaSessionDeleteRequest.class);
+        assertPostMapping(
+                DiscoveryQaAdminController.class,
                 "listSources",
                 "source/list",
                 DiscoveryQaAdminRequests.QaSourceListRequest.class);
@@ -65,6 +72,11 @@ class DiscoveryQaAdminControllerTest {
                 "pageKnowledgeSyncItems",
                 "knowledge/sync/page",
                 DiscoveryQaAdminRequests.KnowledgeSyncPageRequest.class);
+        assertHasPermission(
+                DiscoveryQaAdminController.class,
+                "deleteSession",
+                "discovery:qa:edit",
+                DiscoveryQaAdminRequests.QaSessionDeleteRequest.class);
     }
 
     @Test
@@ -76,6 +88,14 @@ class DiscoveryQaAdminControllerTest {
                 DiscoveryQaAdminRequests.QaSessionGetRequest.class);
         assertEquals(5001L, sessionGetRequest.getSessionId());
         assertJsonFields(sessionGetRequest, "sessionId");
+
+        DiscoveryQaAdminRequests.QaSessionDeleteRequest sessionDeleteRequest = OBJECT_MAPPER.readValue(
+                """
+                        {"sessionId":5001}
+                        """,
+                DiscoveryQaAdminRequests.QaSessionDeleteRequest.class);
+        assertEquals(5001L, sessionDeleteRequest.getSessionId());
+        assertJsonFields(sessionDeleteRequest, "sessionId");
 
         DiscoveryQaAdminRequests.QaSourceListRequest sourceListRequest = OBJECT_MAPPER.readValue(
                 """
@@ -136,6 +156,12 @@ class DiscoveryQaAdminControllerTest {
         sessionRequest.setSessionId(5001L);
         var sessionResponse = controller.getSession(sessionRequest);
         assertEquals(5001L, sessionResponse.getSessionId());
+        assertEquals(1_718_000_200_000L, sessionResponse.getRemovedAt());
+
+        DiscoveryQaAdminRequests.QaSessionDeleteRequest deleteRequest =
+                new DiscoveryQaAdminRequests.QaSessionDeleteRequest();
+        deleteRequest.setSessionId(5001L);
+        controller.deleteSession(deleteRequest);
 
         DiscoveryQaAdminRequests.QaSourceListRequest sourceRequest = new DiscoveryQaAdminRequests.QaSourceListRequest();
         sourceRequest.setMessageId(7002L);
@@ -178,6 +204,10 @@ class DiscoveryQaAdminControllerTest {
         assertEquals(1, syncPageResponse.getCount());
 
         verify(qaService).getSessionDetail(5001L);
+        ArgumentCaptor<DeleteQaSessionCommand> deleteCommand = ArgumentCaptor.forClass(DeleteQaSessionCommand.class);
+        verify(qaService).deleteSession(deleteCommand.capture());
+        assertEquals(5001L, deleteCommand.getValue().getSessionId());
+        assertEquals(Boolean.TRUE, deleteCommand.getValue().getAdminOperation());
         verify(qaService).listSourcesByMessageId(7002L);
         verify(qaService).getTraceByTraceId(8001L);
 
@@ -212,6 +242,7 @@ class DiscoveryQaAdminControllerTest {
         result.setStatus("OPEN");
         result.setOpenedAt(1_718_000_000_000L);
         result.setLastMessageAt(1_718_000_100_000L);
+        result.setRemovedAt(1_718_000_200_000L);
         result.setMessages(List.of(new QaMessageResult(
                 7001L, 5001L, "USER", "黄帝是谁", "SENT", 1, null, new Date(1_718_000_050_000L), null)));
         return result;
@@ -267,6 +298,14 @@ class DiscoveryQaAdminControllerTest {
         Method method = type.getDeclaredMethod(methodName, parameters);
         PostMapping mapping = method.getAnnotation(PostMapping.class);
         assertEquals(expectedPath, mapping.value()[0]);
+    }
+
+    private void assertHasPermission(Class<?> type, String methodName, String permission, Class<?>... parameters)
+            throws Exception {
+        Method method = type.getDeclaredMethod(methodName, parameters);
+        HasPermission annotation = method.getAnnotation(HasPermission.class);
+        assertNotNull(annotation);
+        assertEquals(permission, annotation.value());
     }
 
     private void assertJsonFields(Object value, String... fieldNames) throws Exception {

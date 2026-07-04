@@ -173,6 +173,7 @@ class DiscoveryQaPortalControllerTest {
                         10001L,
                         "OPEN",
                         1_718_000_000_000L,
+                        null,
                         null));
 
         var response = controller.openSession(request);
@@ -315,7 +316,8 @@ class DiscoveryQaPortalControllerTest {
                 10001L,
                 "OPEN",
                 1_718_000_000_000L,
-                1_718_000_001_000L);
+                1_718_000_001_000L,
+                null);
     }
 
     private static QaSessionDetailResult sessionDetailResult() {

@@ -31,6 +31,7 @@ public final class DiscoveryQaAdminInterfaceAssembler {
                 .status(result.getStatus())
                 .openedAt(result.getOpenedAt())
                 .lastMessageAt(result.getLastMessageAt())
+                .removedAt(result.getRemovedAt())
                 .messages(toMessageResponses(result.getMessages()))
                 .build();
     }

@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `discovery-qa-admin-session-delete-interface`：补齐 Admin 会话删除接口和删除状态响应
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-SESSION-DELETE-EXPORT.md`
-    - 范围对象：`DiscoveryQaAdminController.java`、`DiscoveryQaAdminRequests.java`、`DiscoveryQaAdminResponses.java`、`DiscoveryQaAdminInterfaceAssembler.java`、`DiscoveryQaAdminControllerTest.java`
-    - 处理动作：新增 Admin `session/delete` 接口并在会话详情响应中映射 `removedAt`。
-    - 验收点：Admin 删除路由、权限注解和 `removedAt` 响应字段测试通过。
-    - 重要度：9/10
-
 - [ ] `discovery-qa-export-domain-storage`：建立 QA 会话导出领域结构和 Storage owner 类型
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-SESSION-DELETE-EXPORT.md`

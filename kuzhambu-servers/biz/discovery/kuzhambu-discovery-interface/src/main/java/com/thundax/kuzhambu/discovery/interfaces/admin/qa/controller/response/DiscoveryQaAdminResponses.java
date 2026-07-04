@@ -61,6 +61,10 @@ public final class DiscoveryQaAdminResponses {
         @JsonProperty(value = "lastMessageAt")
         private Long lastMessageAt;
 
+        @Schema(name = "removedAt", description = "删除时间")
+        @JsonProperty(value = "removedAt")
+        private Long removedAt;
+
         @Schema(name = "messages", description = "会话消息")
         @JsonProperty(value = "messages")
         private List<QaMessageResponse> messages;

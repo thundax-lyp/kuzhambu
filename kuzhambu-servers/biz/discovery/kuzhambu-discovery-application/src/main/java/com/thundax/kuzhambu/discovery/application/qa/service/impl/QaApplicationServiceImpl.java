@@ -146,6 +146,8 @@ public class QaApplicationServiceImpl implements QaApplicationService {
                 session.getLastMessageAt() == null
                         ? null
                         : session.getLastMessageAt().getTime());
+        result.setRemovedAt(
+                session.getRemovedAt() == null ? null : session.getRemovedAt().getTime());
         List<QaMessage> messages = qaMessageRepository.listBySessionId(session.getSessionId());
         result.setMessages((messages == null ? List.<QaMessage>of() : messages)
                 .stream().map(this::toMessageResult).toList());
@@ -181,7 +183,8 @@ public class QaApplicationServiceImpl implements QaApplicationService {
                 session.getOpenedAt() == null ? null : session.getOpenedAt().getTime(),
                 session.getLastMessageAt() == null
                         ? null
-                        : session.getLastMessageAt().getTime());
+                        : session.getLastMessageAt().getTime(),
+                session.getRemovedAt() == null ? null : session.getRemovedAt().getTime());
     }
 
     private void validateOpenSessionCommand(OpenQaSessionCommand command) {
