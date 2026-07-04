@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics-sancai-image-admin-upload-sort`：实现 admin-web 配图上传和排序控件
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-IMAGE-GOVERNANCE-CLOSEOUT.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.test.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-page.css`
-    - 处理动作：新增 `上传配图`、`图片标题`、`图片类型`、`上传后设为当前使用`、`上移图片`、`下移图片` 控件。
-    - 验收点：上传调用带 `currentUsed`，排序调用带 `entryId` 和完整 `orderedIds`。
-    - 重要度：9/10
-
 - [ ] `classics-sancai-image-admin-preview`：实现 admin-web 多图放大浏览
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-IMAGE-GOVERNANCE-CLOSEOUT.md`

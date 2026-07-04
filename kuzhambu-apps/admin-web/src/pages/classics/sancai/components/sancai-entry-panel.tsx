@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Alert, App, Button, Card, Empty, Tag, Typography } from "antd";
+import { Alert, App, Button, Card, Empty, Input, Switch, Tag, Typography, Upload } from "antd";
 import { useCallback, useMemo, useState } from "react";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
@@ -32,6 +32,7 @@ const { Text } = Typography;
 const EXPORT_PAGE_SIZE = 8;
 const SHOWCASE_PAGE_SIZE = 8;
 const TASK_POLL_INTERVAL_MS = 3000;
+const IMAGE_ACCEPT = ".jpg,.jpeg,.png,.gif,.webp";
 
 const readEntryTitle = (entry: SancaiEntryRecord) => {
     return entry.title?.trim() || `条目 ${entry.id}`;
@@ -82,6 +83,9 @@ export const SancaiEntryPanel = ({
     const [isModelOpen, setIsModelOpen] = useState(defaultCreateOpen);
     const [editingEntry, setEditingEntry] = useState<SancaiEntryRecord | null>(null);
     const [selectedVersionId, setSelectedVersionId] = useState<number | null>(null);
+    const [imageUploadTitle, setImageUploadTitle] = useState("");
+    const [imageUploadType, setImageUploadType] = useState("ORIGINAL");
+    const [imageUploadCurrentUsed, setImageUploadCurrentUsed] = useState(true);
     const currentUserQuery = useQuery({
         queryKey: ["sys", "current-user", "info"],
         queryFn: currentUserService.getCurrentUserInfo,
@@ -421,6 +425,38 @@ export const SancaiEntryPanel = ({
             messageApi.error(error instanceof Error ? error.message : "配图切换失败");
         }
     });
+    const uploadImageMutation = useMutation({
+        mutationFn: (file: File) => {
+            if (!selectedEntryId) {
+                throw new Error("请先选择条目");
+            }
+            return entryService.uploadImage({
+                currentUsed: imageUploadCurrentUsed,
+                entryId: selectedEntryId,
+                file,
+                imageType: imageUploadType,
+                title: imageUploadTitle.trim() || file.name
+            });
+        },
+        onSuccess: async () => {
+            setImageUploadTitle("");
+            await invalidateEntryImages();
+            messageApi.success("配图已上传");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "配图上传失败");
+        }
+    });
+    const sortImagesMutation = useMutation({
+        mutationFn: entryService.sortImages,
+        onSuccess: async () => {
+            await invalidateEntryImages();
+            messageApi.success("配图顺序已保存");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "配图排序失败");
+        }
+    });
     const deleteImageMutation = useMutation({
         mutationFn: entryService.deleteImage,
         onSuccess: async () => {
@@ -620,6 +656,29 @@ export const SancaiEntryPanel = ({
                 })
         });
     };
+    const moveImage = (image: SancaiEntryImageRecord, direction: "up" | "down") => {
+        if (!selectedEntryId) {
+            return;
+        }
+        const currentIndex = entryImages.findIndex((item) => item.id === image.id);
+        if (currentIndex < 0) {
+            return;
+        }
+        const targetIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
+        if (targetIndex < 0 || targetIndex >= entryImages.length) {
+            return;
+        }
+        const nextImages = [...entryImages];
+        [nextImages[currentIndex], nextImages[targetIndex]] = [
+            nextImages[targetIndex],
+            nextImages[currentIndex]
+        ];
+        sortImagesMutation.mutate({
+            entryId: selectedEntryId,
+            orderedIds: nextImages.map((item) => item.id),
+            sortDirection: "ASC"
+        });
+    };
 
     const sortEntry = (
         sourceEntry: SancaiEntryRecord,
@@ -740,9 +799,53 @@ export const SancaiEntryPanel = ({
                                 aria-label="三才图会配图管理"
                                 loading={imagesQuery.isLoading}
                             >
+                                <div className="sancai-image-upload-bar">
+                                    <Input
+                                        aria-label="图片标题"
+                                        value={imageUploadTitle}
+                                        placeholder="图片标题"
+                                        onChange={(event) =>
+                                            setImageUploadTitle(event.target.value)
+                                        }
+                                    />
+                                    <label className="sancai-image-type-field">
+                                        <span>图片类型</span>
+                                        <select
+                                            aria-label="图片类型"
+                                            value={imageUploadType}
+                                            onChange={(event) =>
+                                                setImageUploadType(event.target.value)
+                                            }
+                                        >
+                                            <option value="ORIGINAL">ORIGINAL</option>
+                                            <option value="GENERATED">GENERATED</option>
+                                        </select>
+                                    </label>
+                                    <label className="sancai-image-current-field">
+                                        <span>上传后设为当前使用</span>
+                                        <Switch
+                                            aria-label="上传后设为当前使用"
+                                            checked={imageUploadCurrentUsed}
+                                            onChange={setImageUploadCurrentUsed}
+                                        />
+                                    </label>
+                                    <Upload
+                                        aria-label="上传配图"
+                                        accept={IMAGE_ACCEPT}
+                                        showUploadList={false}
+                                        beforeUpload={(file) => {
+                                            uploadImageMutation.mutate(file);
+                                            return Upload.LIST_IGNORE;
+                                        }}
+                                    >
+                                        <Button loading={uploadImageMutation.isPending}>
+                                            上传配图
+                                        </Button>
+                                    </Upload>
+                                </div>
                                 {entryImages.length > 0 ? (
                                     <div className="sancai-image-card-list">
-                                        {entryImages.map((image) => {
+                                        {entryImages.map((image, index) => {
                                             const title = readImageTitle(image);
                                             return (
                                                 <article
@@ -806,6 +909,31 @@ export const SancaiEntryPanel = ({
                                                                 onClick={() => deleteImage(image)}
                                                             >
                                                                 删除图片
+                                                            </Button>
+                                                            <Button
+                                                                size="small"
+                                                                disabled={
+                                                                    index === 0 ||
+                                                                    sortImagesMutation.isPending
+                                                                }
+                                                                onClick={() =>
+                                                                    moveImage(image, "up")
+                                                                }
+                                                            >
+                                                                上移图片
+                                                            </Button>
+                                                            <Button
+                                                                size="small"
+                                                                disabled={
+                                                                    index ===
+                                                                        entryImages.length - 1 ||
+                                                                    sortImagesMutation.isPending
+                                                                }
+                                                                onClick={() =>
+                                                                    moveImage(image, "down")
+                                                                }
+                                                            >
+                                                                下移图片
                                                             </Button>
                                                         </KuzhambuSpace>
                                                     </div>

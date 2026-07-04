@@ -293,6 +293,35 @@ html[data-theme="dark"] .sancai-page {
     gap: 10px;
 }
 
+.sancai-image-upload-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+.sancai-image-upload-bar .ant-input {
+    width: 180px;
+}
+
+.sancai-image-type-field,
+.sancai-image-current-field {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--sancai-copy);
+}
+
+.sancai-image-type-field select {
+    min-width: 128px;
+    height: 32px;
+    color: var(--sancai-ink);
+    background: var(--sancai-panel);
+    border: 1px solid var(--sancai-line);
+    border-radius: 6px;
+}
+
 .sancai-image-card {
     display: grid;
     gap: 8px;

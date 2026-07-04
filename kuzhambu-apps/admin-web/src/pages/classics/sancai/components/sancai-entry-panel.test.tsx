@@ -302,6 +302,7 @@ vi.mock("../services/sancai-entry-service", () => ({
     ]),
     deleteImage: vi.fn(async () => true),
     changeCurrentImage: vi.fn(async () => true),
+    sortImages: vi.fn(async () => true),
     listVisualAssets: vi.fn(async () => [
         {
             id: 5002,
@@ -396,7 +397,11 @@ vi.mock("../services/sancai-entry-service", () => ({
             return `/kuzhambu-admin-api/api/classics/sancai/assets/visual-assets/${request.entryId}/${request.visualAssetId}/${suffix}${search}`;
         }
     ),
-    uploadImage: vi.fn(),
+    uploadImage: vi.fn(async () => ({
+        id: 8003,
+        entryId: 3001,
+        storageObjectId: 7003
+    })),
     update: vi.fn(),
     createRefinementBatch: vi.fn(async () => ({
         batchId: 8801,
@@ -1161,6 +1166,48 @@ describe("SancaiEntryPanel sharing", () => {
 
         const imagePanel = await screen.findByLabelText("三才图会配图管理");
         expect(await within(imagePanel).findByText("暂无配图")).toBeInTheDocument();
+    });
+
+    it("uploads image with current flag and sorts images with complete ordered ids", async () => {
+        const user = userEvent.setup();
+        renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        await user.click(await within(entryTable).findByRole("button", { name: "查看 天地" }));
+
+        const imagePanel = await screen.findByLabelText("三才图会配图管理");
+        await user.type(within(imagePanel).getByLabelText("图片标题"), "新增配图");
+        await user.selectOptions(within(imagePanel).getByLabelText("图片类型"), "GENERATED");
+
+        const uploadButton = within(imagePanel).getByRole("button", { name: "上传配图" });
+        const uploadInput = uploadButton
+            .closest(".ant-upload")
+            ?.querySelector('input[type="file"]') as HTMLInputElement;
+        await user.upload(
+            uploadInput,
+            new File(["image-bin"], "new-image.png", { type: "image/png" })
+        );
+
+        await waitFor(() => {
+            expect(entryService.uploadImage).toHaveBeenCalledWith({
+                currentUsed: true,
+                entryId: 3001,
+                file: expect.any(File),
+                imageType: "GENERATED",
+                title: "新增配图"
+            });
+        });
+
+        const currentImage = within(imagePanel).getByLabelText("配图 sancai.png");
+        await user.click(within(currentImage).getByRole("button", { name: "下移图片" }));
+
+        await waitFor(() => {
+            expect(entryService.sortImages).toHaveBeenCalledWith({
+                entryId: 3001,
+                orderedIds: [8002, 8001],
+                sortDirection: "ASC"
+            });
+        });
     });
 
     it("renders visual asset section and supports switching current version", async () => {
