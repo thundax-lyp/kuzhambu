@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `kuzhambu-apps/admin-web`：执行 Classics 批量可见性 admin-web 验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-BATCH-VISIBILITY-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/`、`kuzhambu-apps/`
-    - 处理动作：按 RUNBOOK 对 admin-web 运行相关 prettier、lint、build 和测试验证。
-    - 验收点：相关 `format:check`、`lint`、`build`、四个 Classics 页面/契约测试通过，PR 前全量 apps 验证通过或记录明确阻塞。
-    - 重要度：10/10
-
 - [ ] `RUNBOOK cleanup`：清理 Classics 批量可见性现场
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-CLASSICS-BATCH-VISIBILITY-CLOSURE.md`
