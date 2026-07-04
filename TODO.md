@@ -9,22 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `QaPersistenceAssembler.java; QaSourceRepositoryImpl.java; QaRetrievalTraceRepositoryImpl.java`：调整来源和 trace 持久化映射
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-KNOWLEDGE-BASE-REWRITE.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/qa/persistence/assembler/QaPersistenceAssembler.java`; `kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/qa/repository/impl/QaSourceRepositoryImpl.java`; `kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/qa/repository/impl/QaRetrievalTraceRepositoryImpl.java`
-    - 处理动作：映射最终来源字段和 provider trace 字段。
-    - 验收点：来源和 trace 仓储测试通过。
-    - 重要度：9/10
-
-- [ ] `QaKnowledgeSyncItemDO.java; QaKnowledgeSyncBatchDO.java; QaKnowledgeSyncItemMapper.java; QaKnowledgeSyncBatchMapper.java`：新增同步表持久化对象和 Mapper
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-KNOWLEDGE-BASE-REWRITE.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/qa/persistence/dataobject/QaKnowledgeSyncItemDO.java`; `kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/qa/persistence/dataobject/QaKnowledgeSyncBatchDO.java`; `kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/qa/persistence/mapper/QaKnowledgeSyncItemMapper.java`; `kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/qa/persistence/mapper/QaKnowledgeSyncBatchMapper.java`
-    - 处理动作：新增知识同步 item、batch DO 和 MyBatis Mapper。
-    - 验收点：Discovery infra 编译通过。
-    - 重要度：9/10
-
 - [ ] `QaKnowledgeSyncItemRepositoryImpl.java; QaKnowledgeSyncBatchRepositoryImpl.java; QaKnowledgeSyncItemRepositoryImplTest.java; QaKnowledgeSyncBatchRepositoryImplTest.java`：实现同步仓储
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QA-KNOWLEDGE-BASE-REWRITE.md`
