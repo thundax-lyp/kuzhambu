@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Discovery Runbook Cleanup`：清理 Discovery 闭环 RUNBOOK
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`docs/30-designs/RUNBOOK-DISCOVERY-SEARCH-QA-CLOSEOUT.md`、`TODO.md`
-    - 处理动作：任务关闭时删除 RUNBOOK 并清空已完成 TODO。
-    - 验收点：最终收口提交不保留 RUNBOOK，`TODO.md` 不保留已完成任务。
-    - 重要度：10/10
-
 ## 待审阅任务项
 
 ## 待讨论项
