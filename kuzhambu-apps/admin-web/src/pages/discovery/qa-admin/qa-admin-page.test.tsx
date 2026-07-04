@@ -1,5 +1,5 @@
 import { QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { App as AntdApp } from "antd";
 import { queryClient } from "@/query/query-client";
@@ -184,7 +184,7 @@ describe("QaAdminPage", () => {
 
         await user.click(screen.getByRole("button", { name: "查询同步" }));
         await screen.findByText("SANCAI_ENTRY:1001");
-        await user.click(findButtonByNormalizedText("同步"));
+        fireEvent.click(findButtonByNormalizedText("同步"));
 
         await waitFor(() => {
             expect(mocks.createKnowledgeSync.mock.calls[0]?.[0]).toEqual({
