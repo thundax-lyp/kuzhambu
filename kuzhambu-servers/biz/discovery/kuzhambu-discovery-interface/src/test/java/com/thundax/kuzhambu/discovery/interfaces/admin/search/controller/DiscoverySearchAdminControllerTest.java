@@ -9,15 +9,20 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.discovery.application.search.query.SearchAnalysisSummaryQuery;
+import com.thundax.kuzhambu.discovery.application.search.result.SearchAnalysisSummaryResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchLogResult;
 import com.thundax.kuzhambu.discovery.application.search.service.SearchApplicationService;
 import com.thundax.kuzhambu.discovery.application.search.service.SearchIndexApplicationService;
+import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchAnalysisSummaryRequest;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchIndexRebuildRequest;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchLogGetRequest;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchLogPageRequest;
 import java.lang.reflect.Method;
+import java.util.Date;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -32,6 +37,11 @@ class DiscoverySearchAdminControllerTest {
                 DiscoverySearchAdminController.class, "pageLogs", "logs/page", DiscoverySearchLogPageRequest.class);
         assertPostMapping(
                 DiscoverySearchAdminController.class, "getLog", "logs/get", DiscoverySearchLogGetRequest.class);
+        assertPostMapping(
+                DiscoverySearchAdminController.class,
+                "getAnalysisSummary",
+                "analysis/summary",
+                DiscoverySearchAnalysisSummaryRequest.class);
         assertPostMapping(
                 DiscoverySearchAdminController.class,
                 "rebuildIndex",
@@ -73,6 +83,18 @@ class DiscoverySearchAdminControllerTest {
                 """, DiscoverySearchLogGetRequest.class);
         assertEquals("s-1", getRequest.getSearchLogId());
         assertJsonFields(getRequest, "searchLogId");
+
+        DiscoverySearchAnalysisSummaryRequest analysisRequest = OBJECT_MAPPER.readValue(
+                """
+                {
+                  "dateFrom": "2026-01-01T00:00:00Z",
+                  "dateTo": "2026-01-02T00:00:00Z"
+                }
+                """,
+                DiscoverySearchAnalysisSummaryRequest.class);
+        assertEquals("2026-01-01T00:00:00Z", analysisRequest.getDateFrom());
+        assertEquals("2026-01-02T00:00:00Z", analysisRequest.getDateTo());
+        assertJsonFields(analysisRequest, "dateFrom", "dateTo");
 
         DiscoverySearchIndexRebuildRequest rebuildRequest = OBJECT_MAPPER.readValue(
                 """
@@ -194,6 +216,34 @@ class DiscoverySearchAdminControllerTest {
         assertTrue(response.getSearchScopesJson().contains("visibilityScopes"));
         assertEquals("req-2", response.getRequestId());
         assertEquals("trace-2", response.getTraceId());
+    }
+
+    @Test
+    void getAnalysisSummaryShouldMapFixedResponseFields() {
+        SearchApplicationService service = mock(SearchApplicationService.class);
+        SearchIndexApplicationService searchIndexApplicationService = mock(SearchIndexApplicationService.class);
+        DiscoverySearchAdminController controller =
+                new DiscoverySearchAdminController(service, searchIndexApplicationService);
+        DiscoverySearchAnalysisSummaryRequest request = new DiscoverySearchAnalysisSummaryRequest();
+        request.setDateFrom("2026-01-01T00:00:00Z");
+        request.setDateTo("2026-01-02T00:00:00Z");
+        when(service.getAnalysisSummary(any()))
+                .thenReturn(new SearchAnalysisSummaryResult(
+                        12L, 2L, 3L, 9L, List.of(new SearchAnalysisSummaryResult.TopQuery("黄帝", 5L))));
+
+        var response = controller.getAnalysisSummary(request);
+
+        ArgumentCaptor<SearchAnalysisSummaryQuery> queryCaptor =
+                ArgumentCaptor.forClass(SearchAnalysisSummaryQuery.class);
+        verify(service).getAnalysisSummary(queryCaptor.capture());
+        assertEquals(new Date(1_767_225_600_000L), queryCaptor.getValue().getDateFrom());
+        assertEquals(new Date(1_767_312_000_000L), queryCaptor.getValue().getDateTo());
+        assertEquals(12L, response.getSearchCount());
+        assertEquals(2L, response.getFailedSearchCount());
+        assertEquals(3L, response.getZeroResultSearchCount());
+        assertEquals(9L, response.getClickCount());
+        assertEquals("黄帝", response.getTopQueries().get(0).getQueryText());
+        assertEquals(5L, response.getTopQueries().get(0).getCount());
     }
 
     @Test

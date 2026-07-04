@@ -1,9 +1,13 @@
 package com.thundax.kuzhambu.discovery.interfaces.admin.search.assembler;
 
 import com.thundax.kuzhambu.common.core.exception.BizException;
+import com.thundax.kuzhambu.discovery.application.search.query.SearchAnalysisSummaryQuery;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchLogPageQuery;
+import com.thundax.kuzhambu.discovery.application.search.result.SearchAnalysisSummaryResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchLogResult;
+import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchAnalysisSummaryRequest;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchLogPageRequest;
+import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.response.DiscoverySearchAnalysisSummaryResponse;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.response.DiscoverySearchLogDetailResponse;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.response.DiscoverySearchLogResponse;
 import java.time.Instant;
@@ -28,6 +32,14 @@ public final class DiscoverySearchAdminInterfaceAssembler {
                 parseDate(request.getDateTo(), "dateTo"),
                 request.getPageNo() == null ? 1 : request.getPageNo(),
                 request.getPageSize() == null ? 20 : request.getPageSize());
+    }
+
+    public static SearchAnalysisSummaryQuery toQuery(DiscoverySearchAnalysisSummaryRequest request) {
+        if (request == null) {
+            return null;
+        }
+        return new SearchAnalysisSummaryQuery(
+                parseDate(request.getDateFrom(), "dateFrom"), parseDate(request.getDateTo(), "dateTo"));
     }
 
     public static DiscoverySearchLogResponse toResponse(SearchLogResult result) {
@@ -70,6 +82,19 @@ public final class DiscoverySearchAdminInterfaceAssembler {
                 .build();
     }
 
+    public static DiscoverySearchAnalysisSummaryResponse toResponse(SearchAnalysisSummaryResult result) {
+        if (result == null) {
+            return null;
+        }
+        return DiscoverySearchAnalysisSummaryResponse.builder()
+                .searchCount(result.getSearchCount())
+                .failedSearchCount(result.getFailedSearchCount())
+                .zeroResultSearchCount(result.getZeroResultSearchCount())
+                .clickCount(result.getClickCount())
+                .topQueries(toTopQueryResponses(result.getTopQueries()))
+                .build();
+    }
+
     public static String firstValue(List<String> values) {
         if (values == null || values.isEmpty()) {
             return null;
@@ -82,6 +107,19 @@ public final class DiscoverySearchAdminInterfaceAssembler {
 
     private static Date toDate(Long value) {
         return value == null ? null : new Date(value);
+    }
+
+    private static List<DiscoverySearchAnalysisSummaryResponse.TopQueryResponse> toTopQueryResponses(
+            List<SearchAnalysisSummaryResult.TopQuery> topQueries) {
+        if (topQueries == null) {
+            return List.of();
+        }
+        return topQueries.stream()
+                .map(topQuery -> DiscoverySearchAnalysisSummaryResponse.TopQueryResponse.builder()
+                        .queryText(topQuery.getQueryText())
+                        .count(topQuery.getCount())
+                        .build())
+                .toList();
     }
 
     private static Date parseDate(String value, String fieldName) {

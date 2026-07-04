@@ -9,9 +9,11 @@ import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
 import com.thundax.kuzhambu.discovery.application.search.service.SearchApplicationService;
 import com.thundax.kuzhambu.discovery.application.search.service.SearchIndexApplicationService;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.assembler.DiscoverySearchAdminInterfaceAssembler;
+import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchAnalysisSummaryRequest;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchIndexRebuildRequest;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchLogGetRequest;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchLogPageRequest;
+import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.response.DiscoverySearchAnalysisSummaryResponse;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.response.DiscoverySearchLogDetailResponse;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.response.DiscoverySearchLogResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -55,6 +57,16 @@ public class DiscoverySearchAdminController {
     public DiscoverySearchLogDetailResponse getLog(@Valid @RequestBody DiscoverySearchLogGetRequest request) {
         return DiscoverySearchAdminInterfaceAssembler.toDetailResponse(
                 searchApplicationService.getLog(request.getSearchLogId()));
+    }
+
+    @Operation(summary = "获取搜索分析摘要", description = "Discovery 搜索分析摘要")
+    @HasPermission("discovery:search:view")
+    @IgnoreSysLogger
+    @PostMapping("analysis/summary")
+    public DiscoverySearchAnalysisSummaryResponse getAnalysisSummary(
+            @Valid @RequestBody DiscoverySearchAnalysisSummaryRequest request) {
+        return DiscoverySearchAdminInterfaceAssembler.toResponse(
+                searchApplicationService.getAnalysisSummary(DiscoverySearchAdminInterfaceAssembler.toQuery(request)));
     }
 
     @Operation(summary = "手动重建搜索索引", description = "Discovery 搜索索引全量重建")
