@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -64,10 +65,10 @@ public final class DiscoveryQaResponses {
 
     @Getter
     @Setter
-    @Schema(name = "DiscoveryQaAskQuestionResponse", description = "Discovery Portal 问答提问响应")
+    @Schema(name = "DiscoveryQaChatCompletionsResponse", description = "Discovery Portal 问答提问响应")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class AskQuestionResponse implements Serializable {
+    public static class ChatCompletionsResponse implements Serializable {
 
         @Schema(name = "sessionId", description = "会话号")
         @JsonProperty(value = "sessionId")
@@ -97,13 +98,77 @@ public final class DiscoveryQaResponses {
         @JsonProperty(value = "failureReason")
         private String failureReason;
 
+        @Schema(name = "usage", description = "用量")
+        @JsonProperty(value = "usage")
+        private ChatCompletionUsage usage;
+
         @Schema(name = "sources", description = "来源列表")
         @JsonProperty(value = "sources")
         private List<QaSourceResponse> sources;
 
-        @Schema(name = "traceSummary", description = "检索摘要")
-        @JsonProperty(value = "traceSummary")
-        private QaTraceSummaryResponse traceSummary;
+        @Schema(name = "choices", description = "返回选项")
+        @JsonProperty(value = "choices")
+        private List<ChatCompletionChoice> choices;
+
+        @Schema(name = "raw", description = "原始响应")
+        @JsonProperty(value = "raw")
+        private Map<String, Object> raw;
+    }
+
+    @Getter
+    @Setter
+    @Schema(name = "DiscoveryQaChatCompletionChoice", description = "聊天补全候选")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class ChatCompletionChoice implements Serializable {
+
+        @Schema(name = "index", description = "下标")
+        @JsonProperty(value = "index")
+        private Integer index;
+
+        @Schema(name = "message", description = "回复消息")
+        @JsonProperty(value = "message")
+        private ChatCompletionMessage message;
+
+        @Schema(name = "finishReason", description = "完成原因")
+        @JsonProperty(value = "finishReason")
+        private String finishReason;
+    }
+
+    @Getter
+    @Setter
+    @Schema(name = "DiscoveryQaChatCompletionMessage", description = "聊天补全消息")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class ChatCompletionMessage implements Serializable {
+
+        @Schema(name = "role", description = "角色")
+        @JsonProperty(value = "role")
+        private String role;
+
+        @Schema(name = "content", description = "内容")
+        @JsonProperty(value = "content")
+        private String content;
+    }
+
+    @Getter
+    @Setter
+    @Schema(name = "DiscoveryQaChatCompletionUsage", description = "token 用量")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class ChatCompletionUsage implements Serializable {
+
+        @Schema(name = "promptTokens", description = "提示词 tokens")
+        @JsonProperty(value = "promptTokens")
+        private Integer promptTokens;
+
+        @Schema(name = "completionTokens", description = "输出 tokens")
+        @JsonProperty(value = "completionTokens")
+        private Integer completionTokens;
+
+        @Schema(name = "totalTokens", description = "总 tokens")
+        @JsonProperty(value = "totalTokens")
+        private Integer totalTokens;
     }
 
     @Getter
@@ -115,7 +180,7 @@ public final class DiscoveryQaResponses {
 
         @Schema(name = "sourceId", description = "来源号")
         @JsonProperty(value = "sourceId")
-        private Long sourceId;
+        private String sourceId;
 
         @Schema(name = "contentType", description = "内容类型")
         @JsonProperty(value = "contentType")
@@ -123,7 +188,7 @@ public final class DiscoveryQaResponses {
 
         @Schema(name = "contentId", description = "内容号")
         @JsonProperty(value = "contentId")
-        private Long contentId;
+        private String contentId;
 
         @Schema(name = "knowledgeBase", description = "知识库")
         @JsonProperty(value = "knowledgeBase")
@@ -152,33 +217,5 @@ public final class DiscoveryQaResponses {
         @Schema(name = "sourceStatus", description = "来源状态")
         @JsonProperty(value = "sourceStatus")
         private String sourceStatus;
-    }
-
-    @Getter
-    @Setter
-    @Schema(name = "DiscoveryQaTraceSummaryResponse", description = "Discovery Portal 问答检索摘要响应")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class QaTraceSummaryResponse implements Serializable {
-
-        @Schema(name = "traceId", description = "检索轨迹号")
-        @JsonProperty(value = "traceId")
-        private Long traceId;
-
-        @Schema(name = "rewrittenQuestion", description = "改写问题")
-        @JsonProperty(value = "rewrittenQuestion")
-        private String rewrittenQuestion;
-
-        @Schema(name = "candidateCount", description = "候选数")
-        @JsonProperty(value = "candidateCount")
-        private Integer candidateCount;
-
-        @Schema(name = "expandedTermsJson", description = "扩展词 JSON")
-        @JsonProperty(value = "expandedTermsJson")
-        private String expandedTermsJson;
-
-        @Schema(name = "linkedEntitiesJson", description = "关联实体 JSON")
-        @JsonProperty(value = "linkedEntitiesJson")
-        private String linkedEntitiesJson;
     }
 }

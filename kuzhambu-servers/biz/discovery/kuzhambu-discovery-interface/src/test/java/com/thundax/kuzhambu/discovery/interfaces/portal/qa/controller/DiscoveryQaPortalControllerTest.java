@@ -9,14 +9,18 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.thundax.kuzhambu.discovery.application.qa.result.QaAnswerResult;
+import com.thundax.kuzhambu.discovery.application.qa.result.ChatCompletionResult;
+import com.thundax.kuzhambu.discovery.application.qa.result.ChatCompletionResult.ChatCompletionChoice;
+import com.thundax.kuzhambu.discovery.application.qa.result.ChatCompletionResult.ChatCompletionMessage;
+import com.thundax.kuzhambu.discovery.application.qa.result.ChatCompletionResult.ChatCompletionSource;
+import com.thundax.kuzhambu.discovery.application.qa.result.ChatCompletionResult.ChatUsageResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionResult;
-import com.thundax.kuzhambu.discovery.application.qa.result.QaSourceResult;
+import com.thundax.kuzhambu.discovery.application.qa.service.KnowledgeQaApplicationService;
 import com.thundax.kuzhambu.discovery.application.qa.service.QaApplicationService;
 import com.thundax.kuzhambu.discovery.interfaces.portal.qa.controller.request.DiscoveryQaRequests;
 import java.lang.reflect.Method;
-import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,9 +39,9 @@ class DiscoveryQaPortalControllerTest {
                 DiscoveryQaRequests.OpenSessionRequest.class);
         assertPostMapping(
                 DiscoveryQaPortalController.class,
-                "askQuestion",
-                "question/ask",
-                DiscoveryQaRequests.AskQuestionRequest.class);
+                "chatCompletions",
+                "chat/completions",
+                DiscoveryQaRequests.ChatCompletionsRequest.class);
     }
 
     @Test
@@ -68,35 +72,33 @@ class DiscoveryQaPortalControllerTest {
                 "requestId",
                 "traceId");
 
-        DiscoveryQaRequests.AskQuestionRequest askQuestionRequest = OBJECT_MAPPER.readValue(
+        DiscoveryQaRequests.ChatCompletionsRequest chatCompletionRequest = OBJECT_MAPPER.readValue(
                 """
                 {
                   "sessionId": 5001,
-                  "question": "黄帝是谁",
-                  "contextTurnCount": 1,
-                  "operatorType": "USER",
-                  "operatorId": "1001",
+                  "model": "kuzhambu-qa",
+                  "messages": [
+                    {"role": "user", "content": "黄帝是谁"},
+                    {"role": "assistant", "content": "上古帝王"}
+                  ],
+                  "stream": false,
+                  "metadata": {"traceId": "trace-1"},
+                  "options": {"temperature": 0.2},
                   "requestId": "req-1",
                   "traceId": "trace-1"
                 }
                 """,
-                DiscoveryQaRequests.AskQuestionRequest.class);
-        assertEquals(5001L, askQuestionRequest.getSessionId());
-        assertJsonFields(
-                askQuestionRequest,
-                "sessionId",
-                "question",
-                "contextTurnCount",
-                "operatorType",
-                "operatorId",
-                "requestId",
-                "traceId");
+                DiscoveryQaRequests.ChatCompletionsRequest.class);
+        assertEquals(5001L, chatCompletionRequest.getSessionId());
+        assertJsonFields(chatCompletionRequest, "sessionId", "model", "messages", "requestId", "traceId");
     }
 
     @Test
     void openSessionShouldDelegateToApplicationService() {
         QaApplicationService service = mock(QaApplicationService.class);
-        DiscoveryQaPortalController controller = new DiscoveryQaPortalController(service);
+        KnowledgeQaApplicationService knowledgeQaApplicationService = mock(KnowledgeQaApplicationService.class);
+        DiscoveryQaPortalController controller =
+                new DiscoveryQaPortalController(service, knowledgeQaApplicationService);
         DiscoveryQaRequests.OpenSessionRequest request = new DiscoveryQaRequests.OpenSessionRequest();
         request.setOwnerUserId(1001L);
         request.setTitle("黄帝问答");
@@ -132,51 +134,57 @@ class DiscoveryQaPortalControllerTest {
     }
 
     @Test
-    void askQuestionShouldDelegateToApplicationService() {
+    void chatCompletionsShouldDelegateToKnowledgeQaService() {
         QaApplicationService service = mock(QaApplicationService.class);
-        DiscoveryQaPortalController controller = new DiscoveryQaPortalController(service);
-        DiscoveryQaRequests.AskQuestionRequest request = new DiscoveryQaRequests.AskQuestionRequest();
+        KnowledgeQaApplicationService knowledgeQaApplicationService = mock(KnowledgeQaApplicationService.class);
+        DiscoveryQaPortalController controller =
+                new DiscoveryQaPortalController(service, knowledgeQaApplicationService);
+        DiscoveryQaRequests.ChatCompletionsRequest request = new DiscoveryQaRequests.ChatCompletionsRequest();
         request.setSessionId(5001L);
-        request.setQuestion("黄帝是谁");
-        request.setContextTurnCount(1);
-        request.setOperatorType("USER");
-        request.setOperatorId("1001");
+        request.setModel("kuzhambu-qa");
+        request.setMessages(List.of(message("user", "黄帝是谁"), message("assistant", "上古帝王")));
+        request.setStream(false);
+        request.setMetadata(Map.of("traceId", "trace-1"));
+        request.setOptions(Map.of("temperature", 0.2));
         request.setRequestId("req-1");
         request.setTraceId("trace-1");
-        when(service.askQuestion(any()))
-                .thenReturn(new QaAnswerResult(
+        when(knowledgeQaApplicationService.chatCompletion(any()))
+                .thenReturn(new ChatCompletionResult(
                         5001L,
                         7001L,
                         7002L,
                         "黄帝是谁",
-                        "黄帝是上古帝王",
                         "SUCCEEDED",
                         null,
-                        List.of(new QaSourceResult(
-                                9001L,
-                                "SANCAI_ENTRY",
-                                1001L,
-                                "SANCAI",
-                                "黄帝",
-                                "卷一",
-                                "上古帝王",
-                                1,
-                                BigDecimal.ONE,
-                                "CITED")),
-                        new QaAnswerResult.TraceSummaryResult(8001L, "黄帝是谁", 1, "[\"轩辕\"]", "[{\"name\":\"黄帝\"}]")));
+                        List.of(new ChatCompletionChoice(0, new ChatCompletionMessage("assistant", "黄帝是上古帝王"), "stop")),
+                        List.of(new ChatCompletionSource(
+                                "SANCAI_ENTRY:1001", "SANCAI", "SANCAI_ENTRY", "1001", "黄帝", "上古帝王", 0.88d, Map.of())),
+                        new ChatUsageResult(100, 80, 180),
+                        Map.of("id", "chatcmpl-1")));
 
-        var response = controller.askQuestion(request);
+        var response = controller.chatCompletions(request);
 
-        verify(service)
-                .askQuestion(argThat(command -> command != null
+        verify(knowledgeQaApplicationService)
+                .chatCompletion(argThat(command -> command != null
                         && command.getSessionId() != null
                         && command.getSessionId().equals(5001L)
-                        && "黄帝是谁".equals(command.getQuestion())
-                        && "USER".equals(command.getOperatorType())));
+                        && "kuzhambu-qa".equals(command.getModel())
+                        && command.getMessages() != null
+                        && command.getMessages().size() == 2));
         assertEquals("SUCCEEDED", response.getAnswerStatus());
+        assertEquals("黄帝是上古帝王", response.getAnswer());
         assertEquals(1, response.getSources().size());
-        assertEquals(9001L, response.getSources().get(0).getSourceId());
-        assertEquals(8001L, response.getTraceSummary().getTraceId());
+        assertEquals("SANCAI_ENTRY:1001", response.getSources().get(0).getSourceId());
+        assertEquals("1001", response.getSources().get(0).getContentId());
+        assertEquals("stop", response.getChoices().get(0).getFinishReason());
+        assertEquals("chatcmpl-1", response.getRaw().get("id"));
+    }
+
+    private DiscoveryQaRequests.ChatMessage message(String role, String content) {
+        DiscoveryQaRequests.ChatMessage message = new DiscoveryQaRequests.ChatMessage();
+        message.setRole(role);
+        message.setContent(content);
+        return message;
     }
 
     private void assertRequestMapping(Class<?> type, String expectedPath) {
