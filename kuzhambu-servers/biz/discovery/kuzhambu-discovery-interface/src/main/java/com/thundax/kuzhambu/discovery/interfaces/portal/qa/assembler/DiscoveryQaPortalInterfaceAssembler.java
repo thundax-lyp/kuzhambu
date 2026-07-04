@@ -3,10 +3,12 @@ package com.thundax.kuzhambu.discovery.interfaces.portal.qa.assembler;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.discovery.application.qa.command.ChatCompletionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.command.DeleteQaSessionCommand;
+import com.thundax.kuzhambu.discovery.application.qa.command.ExportQaSessionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.command.OpenQaSessionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.result.ChatCompletionResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaMessageResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionDetailResult;
+import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionExportResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionResult;
 import com.thundax.kuzhambu.discovery.interfaces.portal.qa.controller.request.DiscoveryQaRequests;
 import com.thundax.kuzhambu.discovery.interfaces.portal.qa.controller.response.DiscoveryQaResponses;
@@ -70,6 +72,19 @@ public final class DiscoveryQaPortalInterfaceAssembler {
         }
         return new DeleteQaSessionCommand(
                 request.getSessionId(), ownerType(), ownerId(request.getOwnerUserId()), false);
+    }
+
+    public static ExportQaSessionCommand toExportSessionCommand(DiscoveryQaRequests.QaSessionExportRequest request) {
+        if (request == null) {
+            return null;
+        }
+        return new ExportQaSessionCommand(
+                request.getSessionId(),
+                request.getOwnerUserId(),
+                ownerType(),
+                ownerId(request.getOwnerUserId()),
+                false,
+                request.getFormat());
     }
 
     public static String ownerType() {
@@ -150,6 +165,24 @@ public final class DiscoveryQaPortalInterfaceAssembler {
                                 .filter(Objects::nonNull)
                                 .map(DiscoveryQaPortalInterfaceAssembler::toMessageResponse)
                                 .toList());
+        return response;
+    }
+
+    public static DiscoveryQaResponses.QaSessionExportResponse toSessionExportResponse(QaSessionExportResult result) {
+        if (result == null) {
+            return null;
+        }
+        DiscoveryQaResponses.QaSessionExportResponse response = new DiscoveryQaResponses.QaSessionExportResponse();
+        response.setExportId(result.getExportId());
+        response.setSessionId(result.getSessionId());
+        response.setFormat(result.getFormat());
+        response.setStorageObjectId(result.getStorageObjectId());
+        response.setExportStatus(result.getExportStatus());
+        response.setFailureReason(result.getFailureReason());
+        response.setRequestedAt(result.getRequestedAt());
+        response.setCompletedAt(result.getCompletedAt());
+        response.setFilename(result.getFilename());
+        response.setContentType(result.getContentType());
         return response;
     }
 

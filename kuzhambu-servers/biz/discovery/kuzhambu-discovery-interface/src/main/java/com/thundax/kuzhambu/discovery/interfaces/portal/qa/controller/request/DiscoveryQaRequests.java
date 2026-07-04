@@ -119,6 +119,28 @@ public final class DiscoveryQaRequests {
 
     @Getter
     @Setter
+    @Schema(name = "DiscoveryQaSessionExportRequest", description = "Discovery Portal 问答会话导出请求")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class QaSessionExportRequest {
+
+        @Schema(name = "sessionId", description = "会话号")
+        @JsonProperty(value = "sessionId")
+        @NotNull(message = "\"会话号\"不能为空")
+        private Long sessionId;
+
+        @Schema(name = "ownerUserId", description = "拥有者用户号")
+        @JsonProperty(value = "ownerUserId")
+        @NotNull(message = "\"拥有者用户号\"不能为空")
+        private Long ownerUserId;
+
+        @Schema(name = "format", description = "导出格式")
+        @JsonProperty(value = "format")
+        private String format;
+    }
+
+    @Getter
+    @Setter
     @Schema(name = "DiscoveryQaChatCompletionsRequest", description = "Discovery Portal 问答提问请求")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)

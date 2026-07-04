@@ -66,6 +66,14 @@ public class DiscoveryQaPortalController {
         qaApplicationService.deleteSession(DiscoveryQaPortalInterfaceAssembler.toDeleteSessionCommand(request));
     }
 
+    @Operation(summary = "导出问答会话", description = "Portal 导出自己的未删除问答会话 CSV")
+    @PostMapping("session/export")
+    public DiscoveryQaResponses.QaSessionExportResponse exportSession(
+            @Valid @RequestBody DiscoveryQaRequests.QaSessionExportRequest request) {
+        return DiscoveryQaPortalInterfaceAssembler.toSessionExportResponse(qaApplicationService.exportSession(
+                DiscoveryQaPortalInterfaceAssembler.toExportSessionCommand(request)));
+    }
+
     @Operation(summary = "OpenAI 风格提问", description = "Portal 问答 OpenAI 风格提问")
     @PostMapping("chat/completions")
     public DiscoveryQaResponses.ChatCompletionsResponse chatCompletions(

@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.discovery.application.qa.command.DeleteQaSessionCommand;
+import com.thundax.kuzhambu.discovery.application.qa.command.ExportQaSessionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.result.ChatCompletionResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.ChatCompletionResult.ChatCompletionChoice;
 import com.thundax.kuzhambu.discovery.application.qa.result.ChatCompletionResult.ChatCompletionMessage;
@@ -17,6 +18,7 @@ import com.thundax.kuzhambu.discovery.application.qa.result.ChatCompletionResult
 import com.thundax.kuzhambu.discovery.application.qa.result.ChatCompletionResult.ChatUsageResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaMessageResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionDetailResult;
+import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionExportResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionResult;
 import com.thundax.kuzhambu.discovery.application.qa.service.KnowledgeQaApplicationService;
 import com.thundax.kuzhambu.discovery.application.qa.service.QaApplicationService;
@@ -56,6 +58,11 @@ class DiscoveryQaPortalControllerTest {
                 "deleteSession",
                 "session/delete",
                 DiscoveryQaRequests.QaSessionDeleteRequest.class);
+        assertPostMapping(
+                DiscoveryQaPortalController.class,
+                "exportSession",
+                "session/export",
+                DiscoveryQaRequests.QaSessionExportRequest.class);
         assertPostMapping(
                 DiscoveryQaPortalController.class,
                 "chatCompletions",
@@ -145,6 +152,19 @@ class DiscoveryQaPortalControllerTest {
                 DiscoveryQaRequests.QaSessionDeleteRequest.class);
         assertEquals(5001L, deleteRequest.getSessionId());
         assertJsonFields(deleteRequest, "sessionId", "ownerUserId");
+
+        DiscoveryQaRequests.QaSessionExportRequest exportRequest = OBJECT_MAPPER.readValue(
+                """
+                {
+                  "sessionId": 5001,
+                  "ownerUserId": 1001,
+                  "format": "CSV"
+                }
+                """,
+                DiscoveryQaRequests.QaSessionExportRequest.class);
+        assertEquals(5001L, exportRequest.getSessionId());
+        assertEquals("CSV", exportRequest.getFormat());
+        assertJsonFields(exportRequest, "sessionId", "ownerUserId", "format");
     }
 
     @Test
@@ -244,6 +264,41 @@ class DiscoveryQaPortalControllerTest {
     }
 
     @Test
+    void exportSessionShouldDelegateToApplicationService() {
+        QaApplicationService service = mock(QaApplicationService.class);
+        KnowledgeQaApplicationService knowledgeQaApplicationService = mock(KnowledgeQaApplicationService.class);
+        DiscoveryQaPortalController controller =
+                new DiscoveryQaPortalController(service, knowledgeQaApplicationService);
+        DiscoveryQaRequests.QaSessionExportRequest request = new DiscoveryQaRequests.QaSessionExportRequest();
+        request.setSessionId(5001L);
+        request.setOwnerUserId(1001L);
+        request.setFormat("CSV");
+        when(service.exportSession(any()))
+                .thenReturn(new QaSessionExportResult(
+                        7001L,
+                        5001L,
+                        "CSV",
+                        8001L,
+                        "SUCCEEDED",
+                        null,
+                        1_718_000_000_000L,
+                        1_718_000_001_000L,
+                        "discovery-qa-session-5001-7001.csv",
+                        "text/csv; charset=UTF-8"));
+
+        var response = controller.exportSession(request);
+
+        verify(service).exportSession(argThat(command -> matchesExportCommand(command)));
+        assertEquals(7001L, response.getExportId());
+        assertEquals(5001L, response.getSessionId());
+        assertEquals("CSV", response.getFormat());
+        assertEquals(8001L, response.getStorageObjectId());
+        assertEquals("SUCCEEDED", response.getExportStatus());
+        assertEquals("discovery-qa-session-5001-7001.csv", response.getFilename());
+        assertEquals("text/csv; charset=UTF-8", response.getContentType());
+    }
+
+    @Test
     void chatCompletionsShouldDelegateToKnowledgeQaService() {
         QaApplicationService service = mock(QaApplicationService.class);
         KnowledgeQaApplicationService knowledgeQaApplicationService = mock(KnowledgeQaApplicationService.class);
@@ -303,6 +358,16 @@ class DiscoveryQaPortalControllerTest {
                 && "USER".equals(command.getOwnerType())
                 && "1001".equals(command.getOwnerId())
                 && Boolean.FALSE.equals(command.getAdminOperation());
+    }
+
+    private static boolean matchesExportCommand(ExportQaSessionCommand command) {
+        return command != null
+                && Long.valueOf(5001L).equals(command.getSessionId())
+                && Long.valueOf(1001L).equals(command.getRequesterUserId())
+                && "USER".equals(command.getOwnerType())
+                && "1001".equals(command.getOwnerId())
+                && Boolean.FALSE.equals(command.getAdminOperation())
+                && "CSV".equals(command.getFormat());
     }
 
     private static QaSessionResult sessionResult() {
