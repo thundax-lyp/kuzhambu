@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `KnowledgePortalReadApplicationServiceImpl`：Portal 质量页改读报告快照
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-QUALITY-LOOP.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/portal/KnowledgePortalReadApplicationServiceImpl.java`
-    - 处理动作：将 `getQuality()` 改为读取最新 `PUBLISHED` 质量报告并映射为现有 Portal 响应模型。
-    - 验收点：Portal 有报告时展示报告快照，无报告时返回明确空态和 `尚未生成质量报告` 问题。
-    - 重要度：10/10
-
 - [ ] `admin-web refinement`：补齐精修页人工质量标注控件
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-QUALITY-LOOP.md`
