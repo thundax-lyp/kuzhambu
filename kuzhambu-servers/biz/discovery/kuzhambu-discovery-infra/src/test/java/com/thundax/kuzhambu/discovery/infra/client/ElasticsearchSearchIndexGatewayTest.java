@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.discovery.infra.client;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -72,12 +73,12 @@ class ElasticsearchSearchIndexGatewayTest {
                 "黄帝",
                 "摘要",
                 "正文",
-                List.of(),
+                List.of("上古"),
                 "PUBLISHED",
                 "PUBLIC",
                 3,
                 null,
-                null,
+                Instant.parse("2026-01-02T00:00:00Z"),
                 false,
                 null,
                 "/classics/sancai/1001");
@@ -98,6 +99,12 @@ class ElasticsearchSearchIndexGatewayTest {
         assertTrue(groups.get(0).getItems().get(0).getTargetPath().contains("/classics/sancai/1001"));
         assertTrue(groups.get(0).getItems().get(0).getHighlightText().contains("<mark>黄帝</mark>"));
         assertTrue(groups.get(0).getItems().get(0).getGroupRank() == 1);
+        assertEquals("SANCAI_ENTRY", groups.get(0).getItems().get(0).getKnowledgeBase());
+        assertEquals("11", groups.get(0).getItems().get(0).getCategoryCode());
+        assertEquals(List.of("上古"), groups.get(0).getItems().get(0).getTagNames());
+        assertEquals("PUBLISHED", groups.get(0).getItems().get(0).getContentStatus());
+        assertEquals("PUBLIC", groups.get(0).getItems().get(0).getVisibility());
+        assertEquals(1_767_312_000_000L, groups.get(0).getItems().get(0).getUpdatedAt());
     }
 
     @Test

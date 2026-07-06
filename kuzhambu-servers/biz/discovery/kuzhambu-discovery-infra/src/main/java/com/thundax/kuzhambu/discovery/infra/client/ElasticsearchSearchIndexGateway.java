@@ -233,9 +233,17 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
                     document.getContentDomain(),
                     document.getContentType(),
                     document.getContentId(),
+                    document.getKnowledgeBase(),
+                    document.getCategoryCode(),
                     document.getTitle(),
                     document.getSummary(),
                     buildHighlightText(document, keyword),
+                    document.getTagNames(),
+                    document.getStatus(),
+                    document.getVisibility(),
+                    document.getUpdatedAt() == null
+                            ? null
+                            : document.getUpdatedAt().toEpochMilli(),
                     resultRank++,
                     items.size() + 1,
                     document.getSourcePath()));

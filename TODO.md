@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Discovery Search 结果元数据`：补齐权限裁剪所需的检索结果元数据
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-FILTER-PERMISSION-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/search/result/SearchResult.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/client/ElasticsearchSearchIndexGateway.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/test/java/com/thundax/kuzhambu/discovery/infra/client/ElasticsearchSearchIndexGatewayTest.java`
-    - 处理动作：将 `knowledgeBase/categoryCode/tagNames/contentStatus/visibility/updatedAt` 从索引命中带入 application 结果模型
-    - 验收点：ES 命中结果具备权限过滤元数据且 Portal 搜索响应字段不新增
-    - 重要度：9/10
-
 - [ ] `Discovery Search 权限过滤`：实现非公开搜索结果的后端权限裁剪
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-FILTER-PERMISSION-CLOSURE.md`
