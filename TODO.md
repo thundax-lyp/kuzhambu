@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `06-admin-web-taxonomy-service`：补齐标签抽取前端 service 与类型
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-KNOWLEDGE-TAG-EXTRACTION.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/taxonomy/taxonomy-types.ts`、`kuzhambu-apps/admin-web/src/pages/knowledge/taxonomy/taxonomy-service.ts`、`kuzhambu-apps/admin-web/src/pages/knowledge/taxonomy/taxonomy-service.test.ts`
-    - 处理动作：新增标签抽取和候选应用 service 契约
-    - 验收点：service contract 测试断言 `/knowledge/taxonomy/tag/extract`、`/knowledge/taxonomy/tag/extract/apply` 和请求字段完全匹配 RUNBOOK
-    - 重要度：8/10
-
 - [ ] `07-admin-web-taxonomy-ui`：实现标签治理页 AI 抽取标签控件
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-KNOWLEDGE-TAG-EXTRACTION.md`
