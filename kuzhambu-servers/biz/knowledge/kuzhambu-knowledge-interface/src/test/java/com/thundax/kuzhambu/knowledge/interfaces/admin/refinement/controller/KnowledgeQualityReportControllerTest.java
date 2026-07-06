@@ -75,13 +75,11 @@ class KnowledgeQualityReportControllerTest {
     }
 
     private static void assertPostMapping(String methodName, String path, String permission) throws Exception {
-        Method method = KnowledgeQualityReportController.class.getDeclaredMethods().length == 0
-                ? null
-                : KnowledgeQualityReportController.class.getDeclaredMethod(methodName, requestType(methodName));
+        Method method = KnowledgeQualityReportController.class.getDeclaredMethod(methodName, requestType(methodName));
         PostMapping postMapping = method.getAnnotation(PostMapping.class);
         HasPermission hasPermission = method.getAnnotation(HasPermission.class);
         assertEquals(path, postMapping.value()[0]);
-        assertEquals(permission, hasPermission.value());
+        assertEquals(permission, hasPermission.value()[0]);
     }
 
     private static Class<?> requestType(String methodName) {

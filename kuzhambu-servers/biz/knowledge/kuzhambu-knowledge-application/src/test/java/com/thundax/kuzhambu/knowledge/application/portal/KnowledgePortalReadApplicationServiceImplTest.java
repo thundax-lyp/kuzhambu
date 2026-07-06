@@ -7,6 +7,9 @@ import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult;
+import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult.IssueRecord;
+import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult.ReportRecord;
+import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult.SourceDetailRecord;
 import com.thundax.kuzhambu.knowledge.application.refinement.service.KnowledgeQualityReportApplicationService;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphVersion;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeEntity;
@@ -15,10 +18,9 @@ import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphVersionReposi
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeEntityRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeRelationRepository;
 import com.thundax.kuzhambu.knowledge.domain.refinement.repository.RefinementTaskRepository;
-import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.TagSource;
-import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.readmodel.TagGovernanceMetrics;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagGovernanceMetricsRepository;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagRepository;
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -66,7 +68,8 @@ class KnowledgePortalReadApplicationServiceImplTest {
                 knowledgeEntityRepository,
                 knowledgeRelationRepository,
                 mock(TagGovernanceMetricsRepository.class),
-                mock(RefinementTaskRepository.class));
+                mock(RefinementTaskRepository.class),
+                mock(KnowledgeQualityReportApplicationService.class));
 
         KnowledgePortalHomeResult result = service.getHome();
 
@@ -106,7 +109,8 @@ class KnowledgePortalReadApplicationServiceImplTest {
                 knowledgeEntityRepository,
                 knowledgeRelationRepository,
                 mock(TagGovernanceMetricsRepository.class),
-                mock(RefinementTaskRepository.class));
+                mock(RefinementTaskRepository.class),
+                mock(KnowledgeQualityReportApplicationService.class));
 
         KnowledgePortalHomeResult result = service.getHome();
 
@@ -180,7 +184,8 @@ class KnowledgePortalReadApplicationServiceImplTest {
                 knowledgeEntityRepository,
                 knowledgeRelationRepository,
                 mock(TagGovernanceMetricsRepository.class),
-                mock(RefinementTaskRepository.class));
+                mock(RefinementTaskRepository.class),
+                mock(KnowledgeQualityReportApplicationService.class));
 
         KnowledgePortalAtlasQuery query = new KnowledgePortalAtlasQuery();
         query.setLevel("detail");
@@ -298,7 +303,8 @@ class KnowledgePortalReadApplicationServiceImplTest {
                 knowledgeEntityRepository,
                 knowledgeRelationRepository,
                 mock(TagGovernanceMetricsRepository.class),
-                mock(RefinementTaskRepository.class));
+                mock(RefinementTaskRepository.class),
+                mock(KnowledgeQualityReportApplicationService.class));
 
         KnowledgePortalAtlasQuery query = new KnowledgePortalAtlasQuery();
         query.setLevel("overview");
@@ -363,7 +369,8 @@ class KnowledgePortalReadApplicationServiceImplTest {
                 knowledgeEntityRepository,
                 knowledgeRelationRepository,
                 mock(TagGovernanceMetricsRepository.class),
-                mock(RefinementTaskRepository.class));
+                mock(RefinementTaskRepository.class),
+                mock(KnowledgeQualityReportApplicationService.class));
 
         KnowledgePortalAtlasQuery query = new KnowledgePortalAtlasQuery();
         query.setLevel("category");
@@ -380,122 +387,79 @@ class KnowledgePortalReadApplicationServiceImplTest {
     }
 
     @Test
-    void getQualityShouldAggregateRatiosMetricsAndRecentSources() {
-        GraphVersionRepository graphVersionRepository = mock(GraphVersionRepository.class);
-        KnowledgeEntityRepository knowledgeEntityRepository = mock(KnowledgeEntityRepository.class);
-        KnowledgeRelationRepository knowledgeRelationRepository = mock(KnowledgeRelationRepository.class);
-        TagGovernanceMetricsRepository tagGovernanceMetricsRepository = mock(TagGovernanceMetricsRepository.class);
-        RefinementTaskRepository refinementTaskRepository = mock(RefinementTaskRepository.class);
-
-        GraphVersion latestVersion = new GraphVersion(
-                1L,
-                71L,
-                null,
-                901L,
-                "GRAPH",
-                null,
-                null,
-                "SANCAI_ENTRY",
-                1001L,
-                "SANCAI",
-                "三才图会",
-                2,
-                "APPLIED",
-                new Date(1_700_000_000_000L));
-        when(graphVersionRepository.page(null, "APPLIED", null, null, 1, 1))
-                .thenReturn(PageResult.of(1, 1, 2, List.of(latestVersion)));
-        when(graphVersionRepository.page(null, "APPLIED", null, null, 1, 3))
-                .thenReturn(PageResult.of(1, 3, 2, List.of(latestVersion)));
-        when(knowledgeEntityRepository.listByVersionId(71L))
-                .thenReturn(List.of(
-                        new KnowledgeEntity(
-                                1L,
-                                3001L,
-                                "person:huangdi",
-                                "黄帝",
-                                "PERSON",
-                                "上古始祖",
-                                "CONFIRMED",
+    void getQualityShouldReadLatestPublishedReportSnapshot() {
+        KnowledgeQualityReportApplicationService qualityReportService =
+                mock(KnowledgeQualityReportApplicationService.class);
+        when(qualityReportService.latest(null))
+                .thenReturn(new QualityReportDetailResult(
+                        new ReportRecord(
+                                9001L,
+                                "KQR-20260706120000-71",
                                 71L,
-                                "[]",
-                                null,
-                                null,
-                                null),
-                        new KnowledgeEntity(
+                                "SANCAI_ENTRY",
+                                1001L,
+                                "SANCAI",
+                                "三才图会",
+                                "PUBLISHED",
                                 2L,
-                                3002L,
-                                "person:shaodian",
-                                "少典",
-                                "PERSON",
-                                "黄帝之父",
-                                "PENDING",
-                                71L,
-                                "[]",
-                                null,
-                                null,
-                                null)));
-        when(knowledgeRelationRepository.listByVersionId(71L))
-                .thenReturn(List.of(
-                        new KnowledgeRelation(
                                 1L,
-                                4001L,
-                                "rel:1",
-                                "person:huangdi",
-                                "person:shaodian",
-                                "黄帝",
-                                "少典",
-                                "ANCESTOR",
-                                "史料证据",
-                                "CONFIRMED",
+                                4L,
+                                3L,
+                                5L,
+                                4L,
+                                new BigDecimal("0.5000"),
+                                new BigDecimal("0.7500"),
+                                new BigDecimal("0.8000"),
+                                new BigDecimal("0.7273"),
+                                8L,
+                                1L,
+                                1L,
+                                new Date(1_700_000_000_000L),
+                                new Date(1_700_000_000_000L)),
+                        List.of(new IssueRecord(
+                                9101L,
+                                "LOW_ENTITY_COVERAGE",
+                                "medium",
+                                null,
+                                null,
+                                "实体覆盖率偏低",
+                                "实体确认率低于阈值。",
+                                "继续人工精修。",
+                                "/knowledge/quality-report",
+                                1)),
+                        List.of(new SourceDetailRecord(
+                                9201L,
+                                "SANCAI_ENTRY",
+                                1001L,
+                                "SANCAI",
+                                "三才图会",
                                 71L,
-                                "[]",
-                                null,
-                                null,
-                                null),
-                        new KnowledgeRelation(
-                                2L,
-                                4002L,
-                                "rel:2",
-                                "person:huangdi",
-                                "person:leizu",
-                                "黄帝",
-                                "嫘祖",
-                                "SPOUSE",
-                                "史料证据",
-                                "PENDING",
-                                71L,
-                                "[]",
-                                null,
-                                null,
-                                null)));
-        when(tagGovernanceMetricsRepository.getMetrics(5, 6))
-                .thenReturn(new TagGovernanceMetrics(
-                        List.of(),
-                        List.of(),
-                        List.of(new TagGovernanceMetrics.SourceRatioMetric(TagSource.MANUAL, 8L)),
-                        List.of(new TagGovernanceMetrics.MonthlyNewTagMetric("2026-05", 3L))));
-        when(refinementTaskRepository.page(null, null, null, null, "DRAFT", 1, 1))
-                .thenReturn(PageResult.of(1, 1, 2, List.of()));
-
+                                new Date(1_700_000_000_000L),
+                                8L,
+                                1L,
+                                "APPLIED",
+                                "/knowledge/atlas?level=category&categoryCode=SANCAI")),
+                        List.of()));
         KnowledgePortalReadApplicationServiceImpl service = new KnowledgePortalReadApplicationServiceImpl(
                 mock(TagRepository.class),
-                graphVersionRepository,
-                knowledgeEntityRepository,
-                knowledgeRelationRepository,
-                tagGovernanceMetricsRepository,
-                refinementTaskRepository);
+                mock(GraphVersionRepository.class),
+                mock(KnowledgeEntityRepository.class),
+                mock(KnowledgeRelationRepository.class),
+                mock(TagGovernanceMetricsRepository.class),
+                mock(RefinementTaskRepository.class),
+                qualityReportService);
 
         KnowledgePortalQualityResult result = service.getQuality();
 
         assertEquals("50%", result.getQualityStats().get(0).getValue());
-        assertEquals("50%", result.getQualityStats().get(1).getValue());
-        assertEquals("2", result.getQualityStats().get(2).getValue());
-        assertEquals("2", result.getQualityStats().get(3).getValue());
-        assertEquals(
-                "2026-05", result.getTrendSeries().get(0).getPoints().get(0).getLabel());
-        assertEquals("MANUAL", result.getSourceBreakdowns().get(0).getSourceKey());
+        assertEquals("75%", result.getQualityStats().get(1).getValue());
+        assertEquals("80%", result.getQualityStats().get(2).getValue());
+        assertEquals("73%", result.getQualityStats().get(3).getValue());
+        assertEquals(0, result.getTrendSeries().size());
+        assertEquals("SANCAI", result.getSourceBreakdowns().get(0).getSourceKey());
+        assertEquals(8L, result.getSourceBreakdowns().get(0).getValue());
         assertEquals("三才图会", result.getSourceDetails().get(0).getSourceTitle());
-        assertEquals(3, result.getFocusIssues().size());
+        assertEquals("实体覆盖率偏低", result.getFocusIssues().get(0).getTitle());
     }
 
     @Test

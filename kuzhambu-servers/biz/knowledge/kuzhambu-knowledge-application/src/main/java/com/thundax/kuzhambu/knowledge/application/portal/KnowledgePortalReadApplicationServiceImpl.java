@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,24 +46,6 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
     private final RefinementTaskRepository refinementTaskRepository;
     private final KnowledgeQualityReportApplicationService qualityReportApplicationService;
 
-    public KnowledgePortalReadApplicationServiceImpl(
-            TagRepository tagRepository,
-            GraphVersionRepository graphVersionRepository,
-            KnowledgeEntityRepository knowledgeEntityRepository,
-            KnowledgeRelationRepository knowledgeRelationRepository,
-            TagGovernanceMetricsRepository tagGovernanceMetricsRepository,
-            RefinementTaskRepository refinementTaskRepository) {
-        this(
-                tagRepository,
-                graphVersionRepository,
-                knowledgeEntityRepository,
-                knowledgeRelationRepository,
-                tagGovernanceMetricsRepository,
-                refinementTaskRepository,
-                null);
-    }
-
-    @Autowired
     public KnowledgePortalReadApplicationServiceImpl(
             TagRepository tagRepository,
             GraphVersionRepository graphVersionRepository,

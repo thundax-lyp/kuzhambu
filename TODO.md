@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `quality loop validation`：运行 Knowledge 质量闭环验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-QUALITY-LOOP.md`
-    - 范围对象：`kuzhambu-servers/`、`kuzhambu-apps/`
-    - 处理动作：运行 RUNBOOK 中 Java servers 与 admin-web 的格式化、静态检查和测试命令。
-    - 验收点：`mvn spotless:check`、`mvn checkstyle:check`、Knowledge 相关 Maven test、`npm run format:check`、`npm run lint`、admin-web test 均通过，或记录明确阻塞。
-    - 重要度：10/10
-
 - [ ] `Knowledge documentation closure`：更新覆盖矩阵并清理 RUNBOOK
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-KNOWLEDGE-QUALITY-LOOP.md`
