@@ -2,19 +2,26 @@ package com.thundax.kuzhambu.operations.infra.health.repository.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.operations.domain.health.model.entity.HealthCheckRecord;
+import com.thundax.kuzhambu.operations.domain.health.model.valueobject.HealthTrendBucket;
 import com.thundax.kuzhambu.operations.infra.health.persistence.dataobject.HealthCheckDO;
 import com.thundax.kuzhambu.operations.infra.health.persistence.mapper.HealthCheckMapper;
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 class HealthCheckRepositoryImplTest {
 
@@ -77,7 +84,80 @@ class HealthCheckRepositoryImplTest {
         assertEquals("DOWN", result.getRecords().get(0).getHealthStatus());
     }
 
+    @Test
+    void listTrendShouldMapHourlyBucketsAndCounts() {
+        HealthCheckMapper mapper = mock(HealthCheckMapper.class);
+        HealthCheckRepositoryImpl repository = new HealthCheckRepositoryImpl(mapper);
+        when(mapper.selectMaps(any()))
+                .thenReturn(List.of(Map.of(
+                        "bucket",
+                        "2026-07-06 10:00:00",
+                        "upCount",
+                        2L,
+                        "degradedCount",
+                        1L,
+                        "downCount",
+                        0L,
+                        "avgLatencyMs",
+                        new BigDecimal("12"))));
+
+        List<HealthTrendBucket> result = repository.listTrend(
+                "admin-server", "LOCAL", new Date(1_718_000_000_000L), new Date(1_718_086_400_000L), "HOUR");
+
+        assertEquals(1, result.size());
+        HealthTrendBucket bucket = result.get(0);
+        assertEquals("2026-07-06 10:00:00", bucket.getBucket());
+        assertEquals(2L, bucket.getUpCount());
+        assertEquals(1L, bucket.getDegradedCount());
+        assertEquals(0L, bucket.getDownCount());
+        assertEquals(12L, bucket.getAvgLatencyMs());
+
+        ArgumentCaptor<QueryWrapper<HealthCheckDO>> captor = ArgumentCaptor.forClass(QueryWrapper.class);
+        verify(mapper).selectMaps(captor.capture());
+        String sqlSegment = captor.getValue().getCustomSqlSegment();
+        assertTrue(sqlSegment.contains("component"));
+        assertTrue(sqlSegment.contains("probe_source"));
+        assertTrue(sqlSegment.contains("checked_at"));
+    }
+
+    @Test
+    void listTrendShouldSupportDayBucketWithoutOptionalFilters() {
+        HealthCheckMapper mapper = mock(HealthCheckMapper.class);
+        HealthCheckRepositoryImpl repository = new HealthCheckRepositoryImpl(mapper);
+        when(mapper.selectMaps(any()))
+                .thenReturn(List.of(Map.of(
+                        "bucket",
+                        "2026-07-06",
+                        "upCount",
+                        1,
+                        "degradedCount",
+                        0,
+                        "downCount",
+                        1,
+                        "avgLatencyMs",
+                        8.4D)));
+
+        List<HealthTrendBucket> result = repository.listTrend(null, null, null, null, "DAY");
+
+        assertEquals(1, result.size());
+        assertEquals("2026-07-06", result.get(0).getBucket());
+        assertEquals(1L, result.get(0).getUpCount());
+        assertEquals(0L, result.get(0).getDegradedCount());
+        assertEquals(1L, result.get(0).getDownCount());
+        assertEquals(8L, result.get(0).getAvgLatencyMs());
+    }
+
     private static HealthCheckDO dataObject(long checkId, String component, String status) {
-        return new HealthCheckDO(null, checkId, component, status, 5, "test-health", new Date(1_718_000_000_000L));
+        return new HealthCheckDO(
+                null,
+                checkId,
+                component,
+                status,
+                5,
+                "test-health",
+                "LOCAL",
+                component,
+                "{\"component\":\"" + component + "\"}",
+                new Date(1_718_000_000_000L));
     }
 }

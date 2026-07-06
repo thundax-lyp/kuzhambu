@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `HealthCheckRepository.listTrend`：补齐健康趋势聚合查询
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DASHBOARD-HEALTH-METRICS.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-domain/src/main/java/com/thundax/kuzhambu/operations/domain/health/model/valueobject/HealthTrendBucket.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-domain/src/main/java/com/thundax/kuzhambu/operations/domain/health/repository/HealthCheckRepository.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-infra/src/main/java/com/thundax/kuzhambu/operations/infra/health/repository/impl/HealthCheckRepositoryImpl.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-infra/src/test/java/com/thundax/kuzhambu/operations/infra/health/repository/impl/HealthCheckRepositoryImplTest.java`
-    - 处理动作：基于 `operations_health_check` 实现 `HOUR` 和 `DAY` 两种健康趋势聚合。
-    - 验收点：趋势查询返回 `bucket`、`upCount`、`degradedCount`、`downCount`、`avgLatencyMs`，且不新增趋势表。
-    - 重要度：9/10
-
 - [ ] `OperationsHealth trend API`：暴露健康趋势接口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DASHBOARD-HEALTH-METRICS.md`
