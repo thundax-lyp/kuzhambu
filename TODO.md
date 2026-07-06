@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `knowledge coverage 更新`：同步 Implementation Coverage
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-14-CLOSURE.md`
-    - 范围对象：`docs/40-readiness/KNOWLEDGE-IMPLEMENTATION-COVERAGE.md`
-    - 处理动作：只把实际完成的图谱可视化画布和固定 14 门类空位展示改为已完成，并保留一键重提取缺口
-    - 验收点：Implementation Coverage 状态与实际交付一致，未把质量报告低质量门类一键重提取改为已完成
-    - 重要度：9/10
-
 - [ ] `knowledge graph closure RUNBOOK 清理`：清理临时 RUNBOOK 和已完成 TODO
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-14-CLOSURE.md`
