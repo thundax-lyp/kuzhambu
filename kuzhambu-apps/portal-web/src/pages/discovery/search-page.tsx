@@ -23,13 +23,6 @@ const SEARCH_FIELDS = [
         placeholder: "例如：朱熹、礼制、三才图会"
     },
     {
-        description: "可用英文逗号或中文顿号分隔",
-        key: "knowledgeBases",
-        label: "知识库",
-        name: "knowledgeBases",
-        placeholder: "classics, knowledge"
-    },
-    {
         description: "面向分类门类的精确过滤",
         key: "categoryCodes",
         label: "门类",
@@ -42,36 +35,66 @@ const SEARCH_FIELDS = [
         label: "标签",
         name: "tagNames",
         placeholder: "礼制, 建筑, 民俗"
+    }
+] as const;
+
+const KNOWLEDGE_BASE_OPTIONS = [
+    {
+        label: "三才图会",
+        value: "SANCAI_ENTRY"
     },
     {
-        description: "内容状态筛选",
-        key: "contentStatuses",
-        label: "状态",
-        name: "contentStatuses",
-        placeholder: "PUBLISHED, DRAFT"
+        label: "王圻文档",
+        value: "WANGQI_DOCUMENT"
     },
     {
-        description: "可见性范围筛选",
-        key: "visibilityScopes",
-        label: "可见性",
-        name: "visibilityScopes",
-        placeholder: "PUBLIC, SHARED"
+        label: "明代习俗",
+        value: "MING_CUSTOMS"
+    }
+] as const;
+
+const STATUS_OPTIONS = [
+    {
+        label: "已发布",
+        value: "PUBLISHED"
+    },
+    {
+        label: "草稿",
+        value: "DRAFT"
+    },
+    {
+        label: "已归档",
+        value: "ARCHIVED"
+    }
+] as const;
+
+const VISIBILITY_OPTIONS = [
+    {
+        label: "公开内容",
+        value: "PUBLIC"
+    },
+    {
+        label: "非公开内容",
+        value: "PRIVATE"
     }
 ] as const;
 
 const SAMPLE_QUERIES = [
     {
-        categoryCodes: "SANCAI_ENTRY",
+        categoryCodes: "",
+        knowledgeBases: "SANCAI_ENTRY",
         label: "三才图会",
         queryText: "图谱里的礼器"
     },
     {
-        categoryCodes: "WANGQI_DOCUMENT",
+        categoryCodes: "",
+        knowledgeBases: "WANGQI_DOCUMENT",
         label: "王圻文档",
         queryText: "明代官制"
     },
     {
-        categoryCodes: "MING_CUSTOMS",
+        categoryCodes: "",
+        knowledgeBases: "MING_CUSTOMS",
         label: "明代习俗",
         queryText: "节令"
     }
@@ -151,6 +174,10 @@ const splitList = (value: string) => {
 
     return Array.from(new Set(tokens));
 };
+
+const joinList = (values: string[]) => values.join(", ");
+
+const hasListValue = (value: string, token: string) => splitList(value).includes(token);
 
 const toIsoStartOfDay = (value: string) => {
     return value ? new Date(`${value}T00:00:00`).toISOString() : null;
@@ -244,6 +271,52 @@ const createClickCommand = (
     };
 };
 
+interface MultiOptionControlProps {
+    description: string;
+    label: string;
+    name: keyof SearchFormState;
+    onToggle: (name: keyof SearchFormState, value: string) => void;
+    options: ReadonlyArray<{
+        label: string;
+        value: string;
+    }>;
+    value: string;
+}
+
+const MultiOptionControl = ({
+    description,
+    label,
+    name,
+    onToggle,
+    options,
+    value
+}: MultiOptionControlProps) => {
+    return (
+        <div className="portal-filter-field" role="group" aria-label={label}>
+            <span>{label}</span>
+            <input name={name} type="hidden" value={value} />
+            <div className="portal-discovery-samples">
+                {options.map((option) => {
+                    const selected = hasListValue(value, option.value);
+
+                    return (
+                        <Button
+                            aria-pressed={selected}
+                            key={option.value}
+                            type="button"
+                            variant={selected ? "default" : "outline"}
+                            onClick={() => onToggle(name, option.value)}
+                        >
+                            {option.label}
+                        </Button>
+                    );
+                })}
+            </div>
+            <em>{description}</em>
+        </div>
+    );
+};
+
 export const DiscoverySearchPage = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const [form, setForm] = useState<SearchFormState>(() => toFormState(searchParams));
@@ -291,10 +364,25 @@ export const DiscoverySearchPage = () => {
         }));
     };
 
+    const toggleListValue = (key: keyof SearchFormState, value: string) => {
+        setForm((current) => {
+            const values = splitList(current[key]);
+            const nextValues = values.includes(value)
+                ? values.filter((candidate) => candidate !== value)
+                : [...values, value];
+
+            return {
+                ...current,
+                [key]: joinList(nextValues)
+            };
+        });
+    };
+
     const applySample = (sample: (typeof SAMPLE_QUERIES)[number]) => {
         setForm((current) => ({
             ...current,
             categoryCodes: sample.categoryCodes,
+            knowledgeBases: sample.knowledgeBases,
             queryText: sample.queryText
         }));
     };
@@ -425,6 +513,33 @@ export const DiscoverySearchPage = () => {
                             </Label>
                         ))}
 
+                        <MultiOptionControl
+                            description="可多选，提交后由后端按知识库范围过滤"
+                            label="知识库"
+                            name="knowledgeBases"
+                            options={KNOWLEDGE_BASE_OPTIONS}
+                            value={form.knowledgeBases}
+                            onToggle={toggleListValue}
+                        />
+
+                        <MultiOptionControl
+                            description="可多选，只作为内容状态条件提交"
+                            label="状态"
+                            name="contentStatuses"
+                            options={STATUS_OPTIONS}
+                            value={form.contentStatuses}
+                            onToggle={toggleListValue}
+                        />
+
+                        <MultiOptionControl
+                            description="可多选，仅限定结果范围，不代表当前账号权限"
+                            label="可见性"
+                            name="visibilityScopes"
+                            options={VISIBILITY_OPTIONS}
+                            value={form.visibilityScopes}
+                            onToggle={toggleListValue}
+                        />
+
                         <Label className="portal-filter-field">
                             <span>起始日期</span>
                             <Input
@@ -475,6 +590,9 @@ export const DiscoverySearchPage = () => {
                     <div className="portal-discovery-actions">
                         <Button type="button" variant="outline" onClick={handleReset}>
                             重置条件
+                        </Button>
+                        <Button type="button" variant="outline" onClick={handleClearFilters}>
+                            清除筛选条件
                         </Button>
                         <Button disabled={searchMutation.isPending} type="submit">
                             {searchMutation.isPending ? "检索中..." : "开始检索"}
