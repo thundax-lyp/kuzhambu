@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Operations menu route permissions`：对齐运营看板菜单、路由和权限
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DASHBOARD-HEALTH-METRICS.md`
-    - 范围对象：`db/data-source/system.json`、`db/data/system.sql`、`kuzhambu-apps/admin-web/src/router/index.tsx`
-    - 处理动作：核对 `/operations/dashboard` 菜单、权限种子和前端路由一致性。
-    - 验收点：`运营看板` 使用 `operations:dashboard:view`，且 dashboard 不提供 `/operations/reports` 可点击死链。
-    - 重要度：8/10
-
 - [ ] `Operations readiness docs`：更新覆盖矩阵并清理 RUNBOOK
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DASHBOARD-HEALTH-METRICS.md`、`docs/00-governance/TODO-RULES.md`
