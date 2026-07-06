@@ -551,11 +551,51 @@ class ClassicsSharingApplicationServiceImplTest {
     }
 
     @Test
+    void getPortalShareShouldSignalPrivateShareAuthRequired() {
+        ClassicsSharingRepository sharingRepository = mock(ClassicsSharingRepository.class);
+        ClassicsShareTokenHasher shareTokenHasher = mock(ClassicsShareTokenHasher.class);
+        ClassicsSharingApplicationServiceImpl service = portalService(sharingRepository, shareTokenHasher);
+        ClassicsShareLink link = link(ClassicsShareVisibility.PRIVATE, ClassicsShareLinkStatus.ACTIVE, futureDate());
+
+        when(shareTokenHasher.hash("share-token")).thenReturn("hashed-share-token");
+        when(sharingRepository.getLinkByTokenHash("hashed-share-token")).thenReturn(link);
+
+        BizException exception = assertThrows(BizException.class, () -> service.getPortalShare("share-token"));
+
+        assertEquals(ClassicsSharingApplicationServiceImpl.PRIVATE_SHARE_AUTH_REQUIRED_CODE, exception.getCode());
+        verify(sharingRepository, never()).listTargetsByLinkId(any(), eq(SortDirection.ASC));
+    }
+
+    @Test
+    void getPrivatePortalShareShouldAllowCreatorAndShareManagerOnly() {
+        ClassicsSharingRepository sharingRepository = mock(ClassicsSharingRepository.class);
+        ClassicsShareTokenHasher shareTokenHasher = mock(ClassicsShareTokenHasher.class);
+        ClassicsSharingApplicationServiceImpl service = portalService(sharingRepository, shareTokenHasher);
+        ClassicsShareLink link = link(ClassicsShareVisibility.PRIVATE, ClassicsShareLinkStatus.ACTIVE, futureDate());
+        link.setCreatedByUserId(1001L);
+        ClassicsShareTarget target = new ClassicsShareTarget();
+        target.setTitleSnapshot("私有标题");
+
+        when(shareTokenHasher.hash("share-token")).thenReturn("hashed-share-token");
+        when(sharingRepository.getLinkByTokenHash("hashed-share-token")).thenReturn(link);
+        when(sharingRepository.listTargetsByLinkId(ClassicsShareLinkId.of(10L), SortDirection.ASC))
+                .thenReturn(List.of(target));
+
+        SharePortalResult creatorResult = service.getPrivatePortalShare("share-token", 1001L, Set.of());
+        SharePortalResult managerResult =
+                service.getPrivatePortalShare("share-token", 2002L, Set.of("classics:sharing:view"));
+
+        assertEquals("私有标题", creatorResult.getTargets().get(0).getTitleSnapshot());
+        assertEquals("私有标题", managerResult.getTargets().get(0).getTitleSnapshot());
+        assertThrows(BizException.class, () -> service.getPrivatePortalShare("share-token", 2002L, Set.of()));
+        assertThrows(BizException.class, () -> service.getPrivatePortalShare("share-token", null, Set.of()));
+    }
+
+    @Test
     void getPortalShareShouldHideMissingRevokedExpiredAndPrivateLinks() {
         assertPortalShareHidden(null);
         assertPortalShareHidden(link(ClassicsShareVisibility.PUBLIC, ClassicsShareLinkStatus.REVOKED, futureDate()));
         assertPortalShareHidden(link(ClassicsShareVisibility.PUBLIC, ClassicsShareLinkStatus.ACTIVE, pastDate()));
-        assertPortalShareHidden(link(ClassicsShareVisibility.PRIVATE, ClassicsShareLinkStatus.ACTIVE, futureDate()));
     }
 
     @Test

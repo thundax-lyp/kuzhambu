@@ -74,6 +74,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApplicationService {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    public static final String PRIVATE_SHARE_AUTH_REQUIRED_CODE = "CLASSICS-14002";
+    private static final String SHARE_VIEW_PERMISSION = "classics:sharing:view";
 
     private final ClassicsSharingRepository repository;
     private final ClassicsContentApplicationService contentApplicationService;
@@ -235,27 +237,59 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
     @Override
     public SharePortalResult getPortalShare(String shareToken) {
         ClassicsShareLink link = repository.getLinkByTokenHash(shareTokenHasher.hash(shareToken));
+        if (isPrivatePortalShareRequiringAuth(link)) {
+            throw privateShareAuthRequired();
+        }
         if (!isPortalVisible(link)) {
             throw shareContentNotFound();
         }
-        return new SharePortalResult(
-                link.getTitle(),
-                link.getVisibility(),
-                link.getStatus(),
-                link.getIssuedAt(),
-                link.getExpiresAt(),
-                enrichPortalTargets(listTargets(link.getId())));
+        return toPortalResult(link);
+    }
+
+    @Override
+    public SharePortalResult getPrivatePortalShare(
+            String shareToken, Long currentUserId, Set<String> currentPermissions) {
+        ClassicsShareLink link = repository.getLinkByTokenHash(shareTokenHasher.hash(shareToken));
+        if (!isPrivatePortalVisible(link, currentUserId, currentPermissions)) {
+            throw shareContentNotFound();
+        }
+        return toPortalResult(link);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ClassicsStoredContentResult getPortalShareResourceContent(
             String shareToken, Long storageObjectId, boolean download) {
+        return getPortalShareResourceContent(shareToken, storageObjectId, download, null, null, false);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ClassicsStoredContentResult getPrivatePortalShareResourceContent(
+            String shareToken,
+            Long storageObjectId,
+            boolean download,
+            Long currentUserId,
+            Set<String> currentPermissions) {
+        return getPortalShareResourceContent(
+                shareToken, storageObjectId, download, currentUserId, currentPermissions, true);
+    }
+
+    private ClassicsStoredContentResult getPortalShareResourceContent(
+            String shareToken,
+            Long storageObjectId,
+            boolean download,
+            Long currentUserId,
+            Set<String> currentPermissions,
+            boolean privateAccess) {
         if (storageObjectId == null || storageFacade == null) {
             throw shareContentNotFound();
         }
         ClassicsShareLink link = repository.getLinkByTokenHash(shareTokenHasher.hash(shareToken));
-        if (!isPortalVisible(link)) {
+        if (privateAccess && !isPrivatePortalVisible(link, currentUserId, currentPermissions)) {
+            throw shareContentNotFound();
+        }
+        if (!privateAccess && !isPortalVisible(link)) {
             throw shareContentNotFound();
         }
         ClassicsShareTarget matchedTarget = findReadableResourceTarget(link.getId(), storageObjectId, download);
@@ -276,6 +310,16 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
         return content;
     }
 
+    private SharePortalResult toPortalResult(ClassicsShareLink link) {
+        return new SharePortalResult(
+                link.getTitle(),
+                link.getVisibility(),
+                link.getStatus(),
+                link.getIssuedAt(),
+                link.getExpiresAt(),
+                enrichPortalTargets(listTargets(link.getId())));
+    }
+
     private static boolean isPortalVisible(ClassicsShareLink link) {
         if (link == null || link.getId() == null) {
             return false;
@@ -285,6 +329,25 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
             return false;
         }
         return link.getExpiresAt() == null || link.getExpiresAt().after(new Date());
+    }
+
+    private static boolean isPrivatePortalShareRequiringAuth(ClassicsShareLink link) {
+        return link != null
+                && link.getId() != null
+                && link.getVisibility() == ClassicsShareVisibility.PRIVATE
+                && link.getStatus() == ClassicsShareLinkStatus.ACTIVE
+                && (link.getExpiresAt() == null || link.getExpiresAt().after(new Date()));
+    }
+
+    private static boolean isPrivatePortalVisible(
+            ClassicsShareLink link, Long currentUserId, Set<String> currentPermissions) {
+        if (!isPrivatePortalShareRequiringAuth(link)) {
+            return false;
+        }
+        if (currentUserId != null && currentUserId.equals(link.getCreatedByUserId())) {
+            return true;
+        }
+        return currentPermissions != null && currentPermissions.contains(SHARE_VIEW_PERMISSION);
     }
 
     private List<ClassicsShareTarget> enrichPortalTargets(List<ClassicsShareTarget> targets) {
@@ -722,6 +785,11 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
 
     private static BizException shareContentNotFound() {
         return new BizException("分享内容不存在或不支持版本标定");
+    }
+
+    private static BizException privateShareAuthRequired() {
+        return new BizException(
+                PRIVATE_SHARE_AUTH_REQUIRED_CODE, "classics.share.private.auth-required", "私有分享需要登录后访问");
     }
 
     private static BizException privateContentCannotBePublicShared() {

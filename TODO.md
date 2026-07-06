@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `ClassicsSharingApplicationService`：实现私有分享访问判定
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-PRIVATE-SHARE-ACCESS.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sharing/service/ClassicsSharingApplicationService.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sharing/service/impl/ClassicsSharingApplicationServiceImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/sharing/ClassicsSharingApplicationServiceImplTest.java`
-    - 处理动作：新增私有分享详情和私有资源读取服务，并按创建者或 `classics:sharing:view` 权限放行。
-    - 验收点：未登录、创建者、管理员权限、无权限用户、过期或撤销链接的应用服务测试覆盖并通过。
-    - 重要度：10/10
-
 - [ ] `Portal 私有分享接口`：补齐私有详情与资源读取入口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-PRIVATE-SHARE-ACCESS.md`
