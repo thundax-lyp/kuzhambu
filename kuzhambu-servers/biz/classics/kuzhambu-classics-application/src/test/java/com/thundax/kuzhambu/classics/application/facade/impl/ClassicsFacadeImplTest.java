@@ -7,6 +7,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import com.thundax.kuzhambu.classics.application.cleanup.service.ClassicsCleanupApplicationService;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.facade.assembler.ClassicsFacadeAssembler;
 import com.thundax.kuzhambu.classics.application.mingcustoms.service.MingCustomsApplicationService;
@@ -343,12 +344,24 @@ class ClassicsFacadeImplTest {
 
     @Test
     void cleanupTargetsShouldExposeOnlyCleanupTypeAndTargetIds() {
+        ClassicsCleanupApplicationService cleanupApplicationService = mock(ClassicsCleanupApplicationService.class);
+        when(cleanupApplicationService.listTargets("EXPIRED_SHARE", null, null, null))
+                .thenReturn(List.of(
+                        ClassicsCleanupApplicationService.CleanupTarget.builder()
+                                .targetType("share")
+                                .targetId(11L)
+                                .build(),
+                        ClassicsCleanupApplicationService.CleanupTarget.builder()
+                                .targetType("share")
+                                .targetId(12L)
+                                .build()));
         ClassicsFacadeImpl facade = newFacade(
-                mock(ClassicsReportApplicationService.class), mock(ClassicsSearchContentApplicationService.class));
+                cleanupApplicationService,
+                mock(ClassicsReportApplicationService.class),
+                mock(ClassicsSearchContentApplicationService.class));
 
         var response = facade.listCleanupTargets(ClassicsCleanupTargetsFacadeRequest.builder()
                 .cleanupType("expired_share")
-                .targetIds(List.of(11L, 12L))
                 .build());
 
         assertEquals("EXPIRED_SHARE", response.getCleanupType());
@@ -395,7 +408,26 @@ class ClassicsFacadeImplTest {
             SancaiApplicationService sancaiApplicationService,
             WangqiDocumentApplicationService wangqiDocumentApplicationService,
             MingCustomsApplicationService mingCustomsApplicationService) {
+        return newFacade(
+                mock(ClassicsCleanupApplicationService.class),
+                classicsReportApplicationService,
+                classicsSearchContentApplicationService,
+                classicsContentApplicationService,
+                sancaiApplicationService,
+                wangqiDocumentApplicationService,
+                mingCustomsApplicationService);
+    }
+
+    private ClassicsFacadeImpl newFacade(
+            ClassicsCleanupApplicationService classicsCleanupApplicationService,
+            ClassicsReportApplicationService classicsReportApplicationService,
+            ClassicsSearchContentApplicationService classicsSearchContentApplicationService,
+            ClassicsContentApplicationService classicsContentApplicationService,
+            SancaiApplicationService sancaiApplicationService,
+            WangqiDocumentApplicationService wangqiDocumentApplicationService,
+            MingCustomsApplicationService mingCustomsApplicationService) {
         return new ClassicsFacadeImpl(
+                classicsCleanupApplicationService,
                 classicsContentApplicationService,
                 classicsReportApplicationService,
                 classicsSearchContentApplicationService,
@@ -403,6 +435,20 @@ class ClassicsFacadeImplTest {
                 wangqiDocumentApplicationService,
                 mingCustomsApplicationService,
                 new ClassicsFacadeAssembler());
+    }
+
+    private ClassicsFacadeImpl newFacade(
+            ClassicsCleanupApplicationService classicsCleanupApplicationService,
+            ClassicsReportApplicationService classicsReportApplicationService,
+            ClassicsSearchContentApplicationService classicsSearchContentApplicationService) {
+        return newFacade(
+                classicsCleanupApplicationService,
+                classicsReportApplicationService,
+                classicsSearchContentApplicationService,
+                mock(ClassicsContentApplicationService.class),
+                mock(SancaiApplicationService.class),
+                mock(WangqiDocumentApplicationService.class),
+                mock(MingCustomsApplicationService.class));
     }
 
     private ClassicsFacadeImpl newFacade(

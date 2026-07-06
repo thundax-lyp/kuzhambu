@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.application.facade.impl;
 
+import com.thundax.kuzhambu.classics.application.cleanup.service.ClassicsCleanupApplicationService;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.facade.assembler.ClassicsFacadeAssembler;
 import com.thundax.kuzhambu.classics.application.mingcustoms.service.MingCustomsApplicationService;
@@ -44,8 +45,8 @@ public class ClassicsFacadeImpl implements ClassicsFacade {
     private static final String CLEANUP_TARGET_TYPE_DRAFT = "draft";
     private static final String CLEANUP_TARGET_TYPE_EXPORT = "export";
     private static final String UNSUPPORTED_CLEANUP_TYPE = "UNSUPPORTED_CLEANUP_TYPE";
-    private static final String CLEANUP_APPLICATION_NOT_READY = "CLASSICS_CLEANUP_APPLICATION_NOT_READY";
 
+    private final ClassicsCleanupApplicationService classicsCleanupApplicationService;
     private final ClassicsContentApplicationService classicsContentApplicationService;
     private final ClassicsReportApplicationService classicsReportApplicationService;
     private final ClassicsSearchContentApplicationService classicsSearchContentApplicationService;
@@ -55,6 +56,7 @@ public class ClassicsFacadeImpl implements ClassicsFacade {
     private final ClassicsFacadeAssembler classicsFacadeAssembler;
 
     public ClassicsFacadeImpl(
+            ClassicsCleanupApplicationService classicsCleanupApplicationService,
             ClassicsContentApplicationService classicsContentApplicationService,
             ClassicsReportApplicationService classicsReportApplicationService,
             ClassicsSearchContentApplicationService classicsSearchContentApplicationService,
@@ -62,6 +64,7 @@ public class ClassicsFacadeImpl implements ClassicsFacade {
             WangqiDocumentApplicationService wangqiDocumentApplicationService,
             MingCustomsApplicationService mingCustomsApplicationService,
             ClassicsFacadeAssembler classicsFacadeAssembler) {
+        this.classicsCleanupApplicationService = classicsCleanupApplicationService;
         this.classicsContentApplicationService = classicsContentApplicationService;
         this.classicsReportApplicationService = classicsReportApplicationService;
         this.classicsSearchContentApplicationService = classicsSearchContentApplicationService;
@@ -141,10 +144,16 @@ public class ClassicsFacadeImpl implements ClassicsFacade {
                     .targets(List.of())
                     .build();
         }
-        List<ClassicsCleanupTargetsFacadeResponse.Target> targets = safeTargetIds(request).stream()
-                .map(targetId -> ClassicsCleanupTargetsFacadeResponse.Target.builder()
-                        .targetType(targetType)
-                        .targetId(targetId)
+        List<ClassicsCleanupTargetsFacadeResponse.Target> targets = classicsCleanupApplicationService
+                .listTargets(
+                        cleanupType,
+                        request == null ? null : request.getRequestedAt(),
+                        request == null ? null : request.getRetentionDays(),
+                        request == null ? null : request.getLimit())
+                .stream()
+                .map(target -> ClassicsCleanupTargetsFacadeResponse.Target.builder()
+                        .targetType(target.getTargetType())
+                        .targetId(target.getTargetId())
                         .build())
                 .toList();
         return ClassicsCleanupTargetsFacadeResponse.builder()
@@ -168,11 +177,12 @@ public class ClassicsFacadeImpl implements ClassicsFacade {
                     .build();
         }
         List<ClassicsCleanupExecutionFacadeResponse.ItemResult> itemResults = safeTargetIds(request).stream()
-                .map(targetId -> ClassicsCleanupExecutionFacadeResponse.ItemResult.builder()
-                        .targetType(targetType)
-                        .targetId(targetId)
-                        .success(false)
-                        .failureReason(CLEANUP_APPLICATION_NOT_READY)
+                .map(targetId -> classicsCleanupApplicationService.executeTarget(cleanupType, targetId))
+                .map(result -> ClassicsCleanupExecutionFacadeResponse.ItemResult.builder()
+                        .targetType(result.getTargetType())
+                        .targetId(result.getTargetId())
+                        .success(result.isSuccess())
+                        .failureReason(result.getFailureReason())
                         .build())
                 .toList();
         return ClassicsCleanupExecutionFacadeResponse.builder()
