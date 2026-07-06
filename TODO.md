@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `02-ai-facade`：暴露 Knowledge 标签抽取 AI Facade
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-KNOWLEDGE-TAG-EXTRACTION.md`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-facade/src/main/java/com/thundax/kuzhambu/ai/facade/AiFacade.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/facade/impl/AiFacadeImpl.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/facade/assembler/AiFacadeAssembler.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/test/java/com/thundax/kuzhambu/ai/application/facade/impl/AiFacadeImplTest.java`
-    - 处理动作：新增 `extractKnowledgeTags` facade 方法并保持 `KnowledgeAiExtractionFacadeRequest` 字段透传
-    - 验收点：facade 测试断言 `taskType=TAG`、`callId`、`candidateId`、`status` 和 `resultPayload` 不丢失
-    - 重要度：10/10
-
 - [ ] `03-knowledge-tag-extraction`：新增 Knowledge 标签同步抽取应用入口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-KNOWLEDGE-TAG-EXTRACTION.md`

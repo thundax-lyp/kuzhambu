@@ -31,6 +31,8 @@ public interface AiFacade {
 
     KnowledgeAiExtractionFacadeResponse extractKnowledgeLineage(KnowledgeAiExtractionFacadeRequest request);
 
+    KnowledgeAiExtractionFacadeResponse extractKnowledgeTags(KnowledgeAiExtractionFacadeRequest request);
+
     AiBatchJobFacadeResponse getBatchJob(Long batchId);
 
     AiBatchJobActionFacadeResponse createBatchJob(CreateAiBatchJobFacadeRequest request);

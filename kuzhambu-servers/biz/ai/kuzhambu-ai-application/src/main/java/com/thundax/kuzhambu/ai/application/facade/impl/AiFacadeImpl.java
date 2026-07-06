@@ -98,6 +98,12 @@ public class AiFacadeImpl implements AiFacade {
     }
 
     @Override
+    public KnowledgeAiExtractionFacadeResponse extractKnowledgeTags(KnowledgeAiExtractionFacadeRequest request) {
+        return aiFacadeAssembler.toFacadeResponse(
+                knowledgeAiExtractionDomainService.extractTags(aiFacadeAssembler.toDomainRequest(request)));
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public AiBatchJobFacadeResponse getBatchJob(Long batchId) {
         return aiFacadeAssembler.toFacadeResponse(aiBatchJobApplicationService.get(batchId));
