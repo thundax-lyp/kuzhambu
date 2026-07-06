@@ -99,12 +99,32 @@ export interface RefinementLineageRelationRecord {
 
 export interface QualityAnnotationRecord {
     annotationId: number;
-    objectType?: "ENTITY" | "RELATION" | string | null;
+    objectType?: QualityAnnotationObjectType | null;
     objectKey?: string | null;
     graphVersionId?: number | null;
-    annotationStatus?: string | null;
-    annotationLabel?: string | null;
+    annotationStatus?: QualityAnnotationStatus | null;
+    annotationLabel?: QualityAnnotationLabel | null;
     comment?: string | null;
+}
+
+export type QualityAnnotationObjectType =
+    "ENTITY" | "RELATION" | "LINEAGE_NODE" | "LINEAGE_RELATION" | string;
+export type QualityAnnotationStatus = "PASSED" | "ISSUE" | "IGNORED" | string;
+export type QualityAnnotationLabel =
+    | "MISSING_SOURCE"
+    | "WRONG_ENTITY"
+    | "WRONG_RELATION"
+    | "INCOMPLETE_LINEAGE"
+    | "DUPLICATED"
+    | "OTHER"
+    | string;
+
+export interface QualityAnnotationTarget {
+    objectType: QualityAnnotationObjectType;
+    objectKey: string;
+    sourceContentType?: string | null;
+    sourceContentId?: number | null;
+    graphVersionId?: number | null;
 }
 
 export interface QualitySummaryRecord {
@@ -232,14 +252,19 @@ export interface UpsertRefinementLineageRelationCommand {
 
 export interface UpsertQualityAnnotationCommand {
     annotationId?: number | null;
-    objectType?: "ENTITY" | "RELATION" | string | null;
+    objectType?: QualityAnnotationObjectType | null;
     objectKey?: string | null;
     sourceContentType?: string | null;
     sourceContentId?: number | null;
     graphVersionId?: number | null;
-    annotationStatus?: string | null;
-    annotationLabel?: string | null;
+    annotationStatus?: QualityAnnotationStatus | null;
+    annotationLabel?: QualityAnnotationLabel | null;
     comment?: string | null;
+    operatorId?: number | null;
+}
+
+export interface DeleteQualityAnnotationCommand {
+    annotationId: number;
     operatorId?: number | null;
 }
 

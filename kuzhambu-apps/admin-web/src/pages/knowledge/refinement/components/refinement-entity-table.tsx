@@ -7,6 +7,7 @@ interface RefinementEntityTableProps {
     canEdit?: boolean;
     entities: RefinementEntityRecord[];
     onAdd: () => void;
+    onAnnotate: (entity: RefinementEntityRecord) => void;
     onConfirm: (entity: RefinementEntityRecord) => void;
     onDelete: (entity: RefinementEntityRecord) => void;
     onEdit: (entity: RefinementEntityRecord) => void;
@@ -19,6 +20,7 @@ export const RefinementEntityTable = ({
     canEdit = false,
     entities,
     onAdd,
+    onAnnotate,
     onConfirm,
     onDelete,
     onEdit
@@ -48,6 +50,9 @@ export const RefinementEntityTable = ({
                         onClick={() => onConfirm(entity)}
                     >
                         确认
+                    </Button>
+                    <Button disabled={!canEdit} onClick={() => onAnnotate(entity)}>
+                        标注
                     </Button>
                     <Button danger disabled={!canEdit} onClick={() => onDelete(entity)}>
                         删除

@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web refinement`：补齐精修页人工质量标注控件
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-QUALITY-LOOP.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/refinement-types.ts`、`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/refinement-service.ts`、`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/refinement-page.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/components/refinement-quality-annotation-drawer.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/components/refinement-quality-annotation-table.tsx`
-    - 处理动作：在实体、关系、世系节点、世系关系行内增加 `标注` 操作并接入 Drawer 表单。
-    - 验收点：Drawer 包含 `annotationStatus` Select、`annotationLabel` Select、`comment` TextArea 和 `保存`、`删除标注`、`取消` 按钮，保存/删除后刷新详情、摘要和标注表。
-    - 重要度：10/10
-
 - [ ] `admin-web quality-report service`：新增质量报告前端 API 契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-QUALITY-LOOP.md`

@@ -6,6 +6,7 @@ import type { RefinementRelationRecord } from "../refinement-types";
 interface RefinementRelationTableProps {
     canEdit?: boolean;
     onAdd: () => void;
+    onAnnotate: (relation: RefinementRelationRecord) => void;
     onConfirm: (relation: RefinementRelationRecord) => void;
     onDelete: (relation: RefinementRelationRecord) => void;
     onEdit: (relation: RefinementRelationRecord) => void;
@@ -18,6 +19,7 @@ const readStatusColor = (status?: string | null) =>
 export const RefinementRelationTable = ({
     canEdit = false,
     onAdd,
+    onAnnotate,
     onConfirm,
     onDelete,
     onEdit,
@@ -49,6 +51,9 @@ export const RefinementRelationTable = ({
                         onClick={() => onConfirm(relation)}
                     >
                         确认
+                    </Button>
+                    <Button disabled={!canEdit} onClick={() => onAnnotate(relation)}>
+                        标注
                     </Button>
                     <Button danger disabled={!canEdit} onClick={() => onDelete(relation)}>
                         删除

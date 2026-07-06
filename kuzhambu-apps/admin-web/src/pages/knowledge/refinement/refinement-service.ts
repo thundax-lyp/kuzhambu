@@ -3,6 +3,7 @@ import type { Page } from "@/types/page";
 import type {
     ConfirmRefinementEntityCommand,
     ConfirmRefinementRelationCommand,
+    DeleteQualityAnnotationCommand,
     DeleteRefinementEntityCommand,
     DeleteRefinementRelationCommand,
     QualityAnnotationPageQuery,
@@ -133,6 +134,12 @@ export const updateAnnotation = (request: UpsertQualityAnnotationCommand) => {
         `${API_PREFIX}/annotation/update`,
         { body: request }
     );
+};
+
+export const deleteAnnotation = (request: DeleteQualityAnnotationCommand) => {
+    return postJson<void, DeleteQualityAnnotationCommand>(`${API_PREFIX}/annotation/delete`, {
+        body: request
+    });
 };
 
 export const pageAnnotations = (request: QualityAnnotationPageQuery) => {
