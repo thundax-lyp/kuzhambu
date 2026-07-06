@@ -17,6 +17,7 @@ import java.util.List;
 public final class ClassicsSharingPortalInterfaceAssembler {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final String PORTAL_RESOURCE_PATH_PREFIX = "/api/portal/classics/shares/";
+    private static final String PRIVATE_PORTAL_RESOURCE_PATH_PREFIX = "/api/portal/classics/private-shares/";
     private static final String PORTAL_RESOURCE_PATH_MIDDLE = "/resources/";
     private static final String PORTAL_RESOURCE_PATH_SUFFIX = "/content";
     private static final String DOWNLOAD_QUERY = "?download=true";
@@ -28,6 +29,23 @@ public final class ClassicsSharingPortalInterfaceAssembler {
     }
 
     public static ClassicsSharePortalResponse toResponse(SharePortalResult result, String shareToken) {
+        return toResponse(result, shareToken, PORTAL_RESOURCE_PATH_PREFIX);
+    }
+
+    public static ClassicsSharePortalResponse toPrivateResponse(SharePortalResult result, String shareToken) {
+        return toResponse(result, shareToken, PRIVATE_PORTAL_RESOURCE_PATH_PREFIX);
+    }
+
+    public static ClassicsSharePortalResponse privateAuthRequiredResponse() {
+        return ClassicsSharePortalResponse.builder()
+                .visibility("PRIVATE")
+                .loginRequired(Boolean.TRUE)
+                .targets(Collections.emptyList())
+                .build();
+    }
+
+    private static ClassicsSharePortalResponse toResponse(
+            SharePortalResult result, String shareToken, String resourcePathPrefix) {
         if (result == null) {
             return null;
         }
@@ -37,7 +55,8 @@ public final class ClassicsSharingPortalInterfaceAssembler {
                 .status(value(result.getStatus()))
                 .issuedAt(result.getIssuedAt())
                 .expiresAt(result.getExpiresAt())
-                .targets(toTargetResponses(result.getTargets(), shareToken))
+                .loginRequired(Boolean.FALSE)
+                .targets(toTargetResponses(result.getTargets(), shareToken, resourcePathPrefix))
                 .build();
     }
 
@@ -55,16 +74,17 @@ public final class ClassicsSharingPortalInterfaceAssembler {
     }
 
     private static List<ClassicsSharePortalTargetResponse> toTargetResponses(
-            List<ClassicsShareTarget> targets, String shareToken) {
+            List<ClassicsShareTarget> targets, String shareToken, String resourcePathPrefix) {
         if (targets == null || targets.isEmpty()) {
             return Collections.emptyList();
         }
         return targets.stream()
-                .map(target -> toTargetResponse(target, shareToken))
+                .map(target -> toTargetResponse(target, shareToken, resourcePathPrefix))
                 .toList();
     }
 
-    private static ClassicsSharePortalTargetResponse toTargetResponse(ClassicsShareTarget target, String shareToken) {
+    private static ClassicsSharePortalTargetResponse toTargetResponse(
+            ClassicsShareTarget target, String shareToken, String resourcePathPrefix) {
         if (target == null) {
             return null;
         }
@@ -82,8 +102,8 @@ public final class ClassicsSharingPortalInterfaceAssembler {
                 .contentVersionNo(target.getContentVersionNo())
                 .titleSnapshot(target.getTitleSnapshot())
                 .contentSnapshotJson(target.getContentSnapshotJson())
-                .storageObject(toStorageObject(target, snapshot, shareToken))
-                .images(toImageResponses(target, snapshot, shareToken))
+                .storageObject(toStorageObject(target, snapshot, shareToken, resourcePathPrefix))
+                .images(toImageResponses(target, snapshot, shareToken, resourcePathPrefix))
                 .contentVisibilitySnapshot(value(target.getContentVisibilitySnapshot()))
                 .targetStatus(value(target.getTargetStatus()))
                 .priority(target.getPriority())
@@ -91,7 +111,7 @@ public final class ClassicsSharingPortalInterfaceAssembler {
     }
 
     private static ClassicsSharePortalTargetResponse.ResourceResponse toStorageObject(
-            ClassicsShareTarget target, JsonNode snapshot, String shareToken) {
+            ClassicsShareTarget target, JsonNode snapshot, String shareToken, String resourcePathPrefix) {
         if (target == null || target.getContentType() != ClassicsContentType.WANGQI_DOCUMENT || snapshot == null) {
             return null;
         }
@@ -100,11 +120,12 @@ public final class ClassicsSharingPortalInterfaceAssembler {
                 textValue(snapshot.get("originalFilename")),
                 textValue(snapshot.get("contentType")),
                 longValue(snapshot.get("size")),
-                shareToken);
+                shareToken,
+                resourcePathPrefix);
     }
 
     private static List<ClassicsSharePortalTargetResponse.ImageResponse> toImageResponses(
-            ClassicsShareTarget target, JsonNode snapshot, String shareToken) {
+            ClassicsShareTarget target, JsonNode snapshot, String shareToken, String resourcePathPrefix) {
         if (target == null || target.getContentType() != ClassicsContentType.SANCAI_ENTRY || snapshot == null) {
             return null;
         }
@@ -113,11 +134,12 @@ public final class ClassicsSharingPortalInterfaceAssembler {
             return Collections.emptyList();
         }
         return java.util.stream.StreamSupport.stream(images.spliterator(), false)
-                .map(image -> toImageResponse(image, shareToken))
+                .map(image -> toImageResponse(image, shareToken, resourcePathPrefix))
                 .toList();
     }
 
-    private static ClassicsSharePortalTargetResponse.ImageResponse toImageResponse(JsonNode image, String shareToken) {
+    private static ClassicsSharePortalTargetResponse.ImageResponse toImageResponse(
+            JsonNode image, String shareToken, String resourcePathPrefix) {
         Long storageObjectId = longValue(image.get("storageObjectId"));
         return ClassicsSharePortalTargetResponse.ImageResponse.builder()
                 .imageId(longValue(image.get("imageId")))
@@ -134,16 +156,22 @@ public final class ClassicsSharingPortalInterfaceAssembler {
                         textValue(image.get("originalFilename")),
                         textValue(image.get("contentType")),
                         longValue(image.get("size")),
-                        shareToken))
+                        shareToken,
+                        resourcePathPrefix))
                 .build();
     }
 
     private static ClassicsSharePortalTargetResponse.ResourceResponse toResourceResponse(
-            Long storageObjectId, String originalFilename, String contentType, Long size, String shareToken) {
+            Long storageObjectId,
+            String originalFilename,
+            String contentType,
+            Long size,
+            String shareToken,
+            String resourcePathPrefix) {
         if (storageObjectId == null || shareToken == null) {
             return null;
         }
-        String contentUrl = PORTAL_RESOURCE_PATH_PREFIX
+        String contentUrl = resourcePathPrefix
                 + shareToken
                 + PORTAL_RESOURCE_PATH_MIDDLE
                 + storageObjectId
