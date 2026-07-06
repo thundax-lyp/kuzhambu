@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `portal-web-classics-public-regression`：Portal Web 公共访问回归
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-PERMISSION-OPERATIONS-CLEANUP-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/portal-web/src/pages/share/share-page.tsx`, `kuzhambu-apps/portal-web/src/pages/share/share-form.tsx`, `kuzhambu-apps/portal-web/src/pages/discovery/search-page.tsx`, `kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-home-page.tsx`, `kuzhambu-apps/portal-web/src/app.tsx`
-    - 处理动作：确认并最小兼容 Portal 公开分享、公开搜索、Knowledge 入口不受 Admin 权限过滤影响。
-    - 验收点：Portal 不引入登录态，公开分享查询与公开内容搜索仍可用。
-    - 重要度：8/10
-
 - [ ] `servers-full-validation`：Servers 全量验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-PERMISSION-OPERATIONS-CLEANUP-CLOSURE.md`
