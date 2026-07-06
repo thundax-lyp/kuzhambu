@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics-sancai-batch-visibility-permission`：Sancai 批量状态权限闭环
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-PERMISSION-OPERATIONS-CLEANUP-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sancai/service/impl/SancaiApplicationServiceImpl.java`, `kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sancai/query/SancaiEntryPageQuery.java`, `kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sancai/command/SancaiEntryStatusCommand.java`, `kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/sancai/SancaiAdminController.java`, `kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/sancai/SancaiApplicationServiceImplTest.java`
-    - 处理动作：让 Sancai 管理查询与批量公开/私有按 `classics:sancai:view/edit` 接收并应用权限上下文。
-    - 验收点：无 `classics:sancai:edit` 的批量目标返回 `PERMISSION_DENIED` 且不更新数据库。
-    - 重要度：10/10
-
 - [ ] `classics-wangqi-batch-visibility-permission`：Wangqi 批量状态权限闭环
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-PERMISSION-OPERATIONS-CLEANUP-CLOSURE.md`

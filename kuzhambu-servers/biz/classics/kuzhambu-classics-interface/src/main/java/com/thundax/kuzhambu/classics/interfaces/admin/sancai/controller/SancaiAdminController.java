@@ -30,6 +30,7 @@ import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response.SancaiVolumeResponse;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
+import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
@@ -190,9 +191,10 @@ public class SancaiAdminController {
     @SysLogger(value = "分页查询")
     @PostMapping("entries/page")
     public PageResponse<SancaiEntryResponse> pageEntries(@Valid @RequestBody SancaiEntryPageRequest request) {
+        var query = SancaiInterfaceAssembler.toQuery(request);
+        query.setOperatorPermissions(KuzhambuContextHolder.currentAuthorities());
         return PageResponseHelper.fromPageResult(
-                service.pageEntries(
-                        SancaiInterfaceAssembler.toQuery(request), PageInterfaceAssembler.toPageQuery(request)),
+                service.pageEntries(query, PageInterfaceAssembler.toPageQuery(request)),
                 SancaiInterfaceAssembler::toResponse);
     }
 
@@ -202,7 +204,9 @@ public class SancaiAdminController {
     @SysLogger(value = "条目列表")
     @PostMapping("entries/list")
     public List<SancaiEntryResponse> listEntries(@Valid @RequestBody SancaiEntryPageRequest request) {
-        return service.listEntries(SancaiInterfaceAssembler.toQuery(request)).stream()
+        var query = SancaiInterfaceAssembler.toQuery(request);
+        query.setOperatorPermissions(KuzhambuContextHolder.currentAuthorities());
+        return service.listEntries(query).stream()
                 .map(SancaiInterfaceAssembler::toResponse)
                 .toList();
     }

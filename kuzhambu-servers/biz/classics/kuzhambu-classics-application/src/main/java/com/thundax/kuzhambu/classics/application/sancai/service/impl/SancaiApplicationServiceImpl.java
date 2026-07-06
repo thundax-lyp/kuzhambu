@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.classics.application.sancai.service.impl;
 
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
+import com.thundax.kuzhambu.classics.application.content.support.ClassicsContentPermissionSupport;
 import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationItemResult;
 import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationResult;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiCategoryCommand;
@@ -39,6 +40,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -351,6 +353,9 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
 
     @Override
     public PageResult<SancaiEntry> pageEntries(SancaiEntryPageQuery query, PageQuery page) {
+        if (hasPermissionContext(query) && !canView(query.getOperatorPermissions())) {
+            return PageResult.of(page.getPageNo(), page.getPageSize(), 0, List.of());
+        }
         return repository.pageEntries(
                 query == null ? null : SancaiVolumeIdCodec.toDomain(query.getVolumeId()),
                 query == null ? null : query.getKeyword(),
@@ -379,6 +384,9 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
 
     @Override
     public List<SancaiEntry> listEntries(SancaiEntryPageQuery query) {
+        if (hasPermissionContext(query) && !canView(query.getOperatorPermissions())) {
+            return List.of();
+        }
         return repository.listEntries(
                 query == null ? null : SancaiCategoryIdCodec.toDomain(query.getCategoryId()),
                 query == null ? null : SancaiVolumeIdCodec.toDomain(query.getVolumeId()),
@@ -442,6 +450,9 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
         if (command == null || command.getId() == null) {
             return;
         }
+        if (hasPermissionContext(command.getOperatorPermissions()) && !canEdit(command.getOperatorPermissions())) {
+            throw permissionDenied();
+        }
         SancaiEntry entry = repository.getEntryById(SancaiEntryIdCodec.toDomain(command.getId()));
         if (entry == null) {
             return;
@@ -465,6 +476,13 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ClassicsBatchOperationResult batchChangeEntryVisibility(List<SancaiEntryId> ids, String visibility) {
+        return batchChangeEntryVisibility(ids, visibility, null);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ClassicsBatchOperationResult batchChangeEntryVisibility(
+            List<SancaiEntryId> ids, String visibility, Set<String> operatorPermissions) {
         if (ids == null || ids.isEmpty()) {
             return ClassicsBatchOperationResult.empty();
         }
@@ -472,6 +490,11 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
         List<ClassicsBatchOperationItemResult> failures = new ArrayList<>();
         for (SancaiEntryId id : ids) {
             Long contentId = id == null ? null : id.value();
+            if (hasPermissionContext(operatorPermissions) && !canEdit(operatorPermissions)) {
+                failures.add(ClassicsBatchOperationItemResult.failure(
+                        ClassicsContentType.SANCAI_ENTRY.value(), contentId, "PERMISSION_DENIED", "PERMISSION_DENIED"));
+                continue;
+            }
             try {
                 SancaiEntry entry = id == null ? null : repository.getEntryById(id);
                 if (entry == null) {
@@ -571,6 +594,26 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
                 ErrorCode.SORT_DB_FAILURE.getCode(),
                 ErrorCode.SORT_DB_FAILURE.getMessageKey(),
                 ErrorCode.SORT_DB_FAILURE.getMessage());
+    }
+
+    private static boolean hasPermissionContext(SancaiEntryPageQuery query) {
+        return query != null && hasPermissionContext(query.getOperatorPermissions());
+    }
+
+    private static boolean hasPermissionContext(Set<String> operatorPermissions) {
+        return operatorPermissions != null;
+    }
+
+    private static boolean canView(Set<String> operatorPermissions) {
+        return ClassicsContentPermissionSupport.canView(ClassicsContentType.SANCAI_ENTRY, operatorPermissions);
+    }
+
+    private static boolean canEdit(Set<String> operatorPermissions) {
+        return ClassicsContentPermissionSupport.canEdit(ClassicsContentType.SANCAI_ENTRY, operatorPermissions);
+    }
+
+    private static BizException permissionDenied() {
+        return new BizException("PERMISSION_DENIED");
     }
 
     private static BizException invalidCategory(String field) {
