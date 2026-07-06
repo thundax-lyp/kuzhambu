@@ -36,6 +36,13 @@ public class QualityAnnotationRepositoryImpl implements QualityAnnotationReposit
     }
 
     @Override
+    public List<QualityAnnotation> listByGraphVersionId(Long graphVersionId) {
+        QueryWrapper<QualityAnnotationDO> wrapper = new QueryWrapper<>();
+        wrapper.eq("graph_version_id", graphVersionId).orderByDesc("updated_at").orderByDesc("id");
+        return QualityAnnotationPersistenceAssembler.toDomainList(mapper.selectList(wrapper));
+    }
+
+    @Override
     public void saveOrUpdate(QualityAnnotation annotation) {
         QualityAnnotationDO dataObject = QualityAnnotationPersistenceAssembler.toObject(annotation);
         if (dataObject.getId() == null) {

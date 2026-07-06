@@ -8,6 +8,8 @@ public interface QualityAnnotationRepository {
     List<QualityAnnotation> listBySource(
             String objectType, String sourceContentType, Long sourceContentId, Long graphVersionId);
 
+    List<QualityAnnotation> listByGraphVersionId(Long graphVersionId);
+
     void saveOrUpdate(QualityAnnotation annotation);
 
     int deleteByAnnotationId(Long annotationId);

@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `QualityAnnotationRepository`：扩展质量标注查询能力
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-QUALITY-LOOP.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/refinement/repository/QualityAnnotationRepository.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/refinement/repository/impl/QualityAnnotationRepositoryImpl.java`
-    - 处理动作：新增按 `graphVersionId` 查询全部质量标注的方法，供报告生成和详情展示复用。
-    - 验收点：报告服务可一次读取图谱版本范围内 `ENTITY`、`RELATION`、`LINEAGE_NODE`、`LINEAGE_RELATION` 标注。
-    - 重要度：9/10
-
 - [ ] `KnowledgeQualityReportApplicationService`：新增质量报告生成和读取用例
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-QUALITY-LOOP.md`
