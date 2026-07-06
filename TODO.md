@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web quality-report page`：新增质量报告生成和历史页面
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-QUALITY-LOOP.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/quality-report/quality-report-page.tsx`、`quality-report-page.css`、`components/quality-report-generate-form.tsx`、`components/quality-report-summary.tsx`、`components/quality-report-history-table.tsx`
-    - 处理动作：新增独立 `质量报告` 页面，支持输入 `graphVersionId` 生成报告、展示四个指标和历史列表。
-    - 验收点：页面包含 `InputNumber`、`生成报告` 主按钮、四个 `Statistic` 和历史表，生成成功后刷新最新报告和历史列表。
-    - 重要度：10/10
-
 - [ ] `admin-web quality-report detail`：新增质量报告详情控件和路由
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-QUALITY-LOOP.md`
