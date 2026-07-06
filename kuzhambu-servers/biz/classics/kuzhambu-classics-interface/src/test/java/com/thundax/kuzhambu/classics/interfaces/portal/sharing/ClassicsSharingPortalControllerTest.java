@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
 import com.thundax.kuzhambu.classics.application.sharing.result.SharePortalResult;
 import com.thundax.kuzhambu.classics.application.sharing.service.ClassicsSharingApplicationService;
+import com.thundax.kuzhambu.classics.application.sharing.service.impl.ClassicsSharingApplicationServiceImpl;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentVersionId;
@@ -21,6 +22,7 @@ import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareVis
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsSharedContentVisibility;
 import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareLinkId;
 import com.thundax.kuzhambu.classics.interfaces.portal.sharing.controller.ClassicsSharingPortalController;
+import com.thundax.kuzhambu.classics.interfaces.portal.sharing.controller.ClassicsSharingPrivatePortalController;
 import com.thundax.kuzhambu.classics.interfaces.portal.sharing.controller.request.ClassicsSharePortalSearchRequest;
 import com.thundax.kuzhambu.classics.interfaces.portal.sharing.controller.response.ClassicsSharePortalListResponse;
 import com.thundax.kuzhambu.classics.interfaces.portal.sharing.controller.response.ClassicsSharePortalResponse;
@@ -69,6 +71,12 @@ class ClassicsSharingPortalControllerTest {
         assertEquals(
                 "{shareToken}/resources/{storageObjectId}/content",
                 content.getAnnotation(GetMapping.class).value()[0]);
+
+        RequestMapping privateMapping =
+                ClassicsSharingPrivatePortalController.class.getAnnotation(RequestMapping.class);
+        assertEquals("/api/portal/classics/private-shares", privateMapping.value()[0]);
+        Method privateGet = ClassicsSharingPrivatePortalController.class.getDeclaredMethod("get", String.class);
+        assertEquals("{shareToken}", privateGet.getAnnotation(GetMapping.class).value()[0]);
     }
 
     @Test
@@ -81,7 +89,7 @@ class ClassicsSharingPortalControllerTest {
         assertEquals("SANCAI_ENTRY", response.getTargets().get(0).getContentType());
         assertEquals(sancaiSnapshotJson(), response.getTargets().get(0).getContentSnapshotJson());
         JsonNode json = OBJECT_MAPPER.valueToTree(response);
-        assertJsonFields(json, "title", "visibility", "status", "issuedAt", "expiresAt", "targets");
+        assertJsonFields(json, "title", "visibility", "status", "issuedAt", "expiresAt", "loginRequired", "targets");
         assertFalse(json.has("tokenHash"), json::toString);
         assertFalse(json.has("shareToken"), json::toString);
         assertFalse(json.at("/targets/0").has("id"), json::toString);
@@ -102,6 +110,36 @@ class ClassicsSharingPortalControllerTest {
         assertEquals(
                 "/api/portal/classics/shares/share-token/resources/7002/content?download=true",
                 json.at("/targets/1/storageObject/downloadUrl").asText());
+    }
+
+    @Test
+    void publicDetailShouldReturnLoginRequiredResponseForPrivateShare() {
+        ClassicsSharingPortalController controller = new ClassicsSharingPortalController(sharingService());
+
+        ClassicsSharePortalResponse response = controller.get("private-token");
+
+        assertEquals("PRIVATE", response.getVisibility());
+        assertTrue(response.getLoginRequired());
+        assertTrue(response.getTargets().isEmpty());
+    }
+
+    @Test
+    void privateDetailResponseShouldUsePrivateResourcePath() {
+        ClassicsSharingPrivatePortalController controller =
+                new ClassicsSharingPrivatePortalController(sharingService());
+
+        ClassicsSharePortalResponse response = controller.get("private-token");
+
+        assertEquals("PRIVATE", response.getVisibility());
+        assertFalse(response.getLoginRequired());
+        assertEquals(
+                "/api/portal/classics/private-shares/private-token/resources/7001/content",
+                response.getTargets()
+                        .get(0)
+                        .getImages()
+                        .get(0)
+                        .getStorageObject()
+                        .getPreviewUrl());
     }
 
     @Test
@@ -171,6 +209,12 @@ class ClassicsSharingPortalControllerTest {
                 new Class<?>[] {ClassicsSharingApplicationService.class},
                 (proxy, method, args) -> {
                     if ("getPortalShare".equals(method.getName())) {
+                        if ("private-token".equals(args[0])) {
+                            throw new BizException(
+                                    ClassicsSharingApplicationServiceImpl.PRIVATE_SHARE_AUTH_REQUIRED_CODE,
+                                    "classics.share.private.auth-required",
+                                    "私有分享需要登录后访问");
+                        }
                         assertEquals("share-token", args[0]);
                         return new SharePortalResult(
                                 "公开分享",
@@ -179,6 +223,16 @@ class ClassicsSharingPortalControllerTest {
                                 new Date(1_000L),
                                 new Date(3_000L),
                                 List.of(target(), wangqiTarget()));
+                    }
+                    if ("getPrivatePortalShare".equals(method.getName())) {
+                        assertEquals("private-token", args[0]);
+                        return new SharePortalResult(
+                                "私有分享",
+                                ClassicsShareVisibility.PRIVATE,
+                                ClassicsShareLinkStatus.ACTIVE,
+                                new Date(1_000L),
+                                new Date(3_000L),
+                                List.of(target()));
                     }
                     if ("pagePortalShares".equals(method.getName())) {
                         assertEquals("SANCAI_ENTRY", args[0]);

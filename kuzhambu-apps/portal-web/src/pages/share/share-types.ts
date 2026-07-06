@@ -73,6 +73,7 @@ export type ClassicsShareResourceContentMode = "download" | "preview";
 
 export interface ClassicsShareResourceContentUrlCommand {
     mode?: ClassicsShareResourceContentMode;
+    privateAccess?: boolean;
     shareToken: string;
     storageObjectId: number;
 }
@@ -80,6 +81,7 @@ export interface ClassicsShareResourceContentUrlCommand {
 export interface ClassicsSharePortalResponse {
     expiresAt?: string | null;
     issuedAt?: string | null;
+    loginRequired?: boolean | null;
     status?: string | null;
     targets?: ClassicsSharePortalTarget[] | null;
     title?: string | null;

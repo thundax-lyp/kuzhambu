@@ -9,7 +9,9 @@
 | 方法 | 路径 | 说明 |
 | --- | --- | --- |
 | `GET` | `/api/portal/classics/shares` | 公开分享列表 |
-| `GET` | `/api/portal/classics/shares/{shareToken}` | 公开分享详情 |
+| `GET` | `/api/portal/classics/shares/{shareToken}` | 公开分享详情；私有分享返回登录引导 |
+| `GET` | `/api/portal/classics/private-shares/{shareToken}` | 私有分享详情 |
+| `GET` | `/api/portal/classics/private-shares/{shareToken}/resources/{storageObjectId}/content` | 私有分享资源读取 |
 
 ## ShareToken
 
@@ -17,6 +19,7 @@
 - Admin 创建分享和 Portal 分享列表可以返回 `shareToken`，用于拼接 `/share/{shareToken}`。
 - 数据库同时保存 `share_token` 和 `token_hash`：`share_token` 用于公开展示和列表跳转，`token_hash` 用于详情查询索引。
 - Portal 详情接收明文 `shareToken`，后端计算 hash 后查询 `token_hash`。
+- 私有分享详情和资源读取必须携带后台登录态，允许创建者或具备 `classics:sharing:view` 权限的管理员访问。
 
 ## List Query
 
@@ -87,6 +90,16 @@
 ```
 
 详情响应不返回 `shareToken` 或 `tokenHash`。
+
+私有分享通过公开详情入口访问时，不返回 `targets` 内容，只返回登录引导：
+
+```json
+{
+  "visibility": "PRIVATE",
+  "loginRequired": true,
+  "targets": []
+}
+```
 
 ## Not Found Rule
 

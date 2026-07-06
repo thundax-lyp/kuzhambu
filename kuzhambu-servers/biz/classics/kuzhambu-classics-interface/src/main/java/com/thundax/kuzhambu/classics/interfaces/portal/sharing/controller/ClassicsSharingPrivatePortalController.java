@@ -2,20 +2,17 @@ package com.thundax.kuzhambu.classics.interfaces.portal.sharing.controller;
 
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
 import com.thundax.kuzhambu.classics.application.sharing.service.ClassicsSharingApplicationService;
-import com.thundax.kuzhambu.classics.application.sharing.service.impl.ClassicsSharingApplicationServiceImpl;
 import com.thundax.kuzhambu.classics.interfaces.portal.sharing.assembler.ClassicsSharingPortalInterfaceAssembler;
-import com.thundax.kuzhambu.classics.interfaces.portal.sharing.controller.request.ClassicsSharePortalSearchRequest;
-import com.thundax.kuzhambu.classics.interfaces.portal.sharing.controller.response.ClassicsSharePortalListResponse;
 import com.thundax.kuzhambu.classics.interfaces.portal.sharing.controller.response.ClassicsSharePortalResponse;
 import com.thundax.kuzhambu.common.core.exception.BizException;
-import com.thundax.kuzhambu.common.core.page.PageQuery;
-import com.thundax.kuzhambu.common.security.annotation.PublicApi;
+import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,38 +20,19 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@PublicApi
-@RequestMapping("/api/portal/classics/shares")
+@RequestMapping("/api/portal/classics/private-shares")
 @WrappedApiController
-public class ClassicsSharingPortalController {
+public class ClassicsSharingPrivatePortalController {
     private final ClassicsSharingApplicationService service;
 
-    public ClassicsSharingPortalController(ClassicsSharingApplicationService service) {
+    public ClassicsSharingPrivatePortalController(ClassicsSharingApplicationService service) {
         this.service = service;
-    }
-
-    @GetMapping
-    public ClassicsSharePortalListResponse list(ClassicsSharePortalSearchRequest request) {
-        ClassicsSharePortalSearchRequest effectiveRequest =
-                request == null ? new ClassicsSharePortalSearchRequest() : request;
-        return ClassicsSharingPortalInterfaceAssembler.toListResponse(service.pagePortalShares(
-                effectiveRequest.getContentType(),
-                effectiveRequest.getTitle(),
-                effectiveRequest.getIssuedAfter(),
-                effectiveRequest.getIssuedBefore(),
-                new PageQuery(effectiveRequest.getPageNo(), effectiveRequest.getPageSize())));
     }
 
     @GetMapping("{shareToken}")
     public ClassicsSharePortalResponse get(@PathVariable("shareToken") String shareToken) {
-        try {
-            return ClassicsSharingPortalInterfaceAssembler.toResponse(service.getPortalShare(shareToken), shareToken);
-        } catch (BizException exception) {
-            if (ClassicsSharingApplicationServiceImpl.PRIVATE_SHARE_AUTH_REQUIRED_CODE.equals(exception.getCode())) {
-                return ClassicsSharingPortalInterfaceAssembler.privateAuthRequiredResponse();
-            }
-            throw exception;
-        }
+        return ClassicsSharingPortalInterfaceAssembler.toPrivateResponse(
+                service.getPrivatePortalShare(shareToken, currentUserId(), currentAuthorities()), shareToken);
     }
 
     @GetMapping("{shareToken}/resources/{storageObjectId}/content")
@@ -66,7 +44,8 @@ public class ClassicsSharingPortalController {
             throws IOException {
         ClassicsStoredContentResult content;
         try {
-            content = service.getPortalShareResourceContent(shareToken, storageObjectId, Boolean.TRUE.equals(download));
+            content = service.getPrivatePortalShareResourceContent(
+                    shareToken, storageObjectId, Boolean.TRUE.equals(download), currentUserId(), currentAuthorities());
         } catch (BizException exception) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
@@ -82,6 +61,22 @@ public class ClassicsSharingPortalController {
         try (InputStream inputStream = content.getInputStream()) {
             inputStream.transferTo(response.getOutputStream());
         }
+    }
+
+    private static Long currentUserId() {
+        String subjectId = KuzhambuContextHolder.currentSubjectId();
+        if (StringUtils.isBlank(subjectId)) {
+            return null;
+        }
+        try {
+            return Long.valueOf(subjectId);
+        } catch (NumberFormatException exception) {
+            return null;
+        }
+    }
+
+    private static Set<String> currentAuthorities() {
+        return KuzhambuContextHolder.currentAuthorities();
     }
 
     private static String contentDisposition(String originalFilename, boolean download) {

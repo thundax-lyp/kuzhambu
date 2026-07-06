@@ -1,6 +1,8 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller;
 
+import com.thundax.kuzhambu.classics.application.sharing.command.BatchShareCreateCommand;
 import com.thundax.kuzhambu.classics.application.sharing.command.ClassicsShareTargetSortCommand;
+import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkCreateCommand;
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkStatusCommand;
 import com.thundax.kuzhambu.classics.application.sharing.query.ShareAccessQuery;
 import com.thundax.kuzhambu.classics.application.sharing.service.ClassicsSharingApplicationService;
@@ -16,6 +18,7 @@ import com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller.request
 import com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller.response.ClassicsSharingAccessRecordResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller.response.ClassicsSharingResponse;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
+import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
@@ -27,6 +30,7 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.Set;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -50,8 +54,9 @@ public class ClassicsSharingAdminController {
     @SysLogger(value = "创建分享")
     @PostMapping("create")
     public ClassicsSharingResponse create(@Valid @RequestBody ClassicsSharingRequest request) {
-        return ClassicsSharingInterfaceAssembler.toResponse(
-                service.createLink(ClassicsSharingInterfaceAssembler.toCreateCommand(request)));
+        ShareLinkCreateCommand command = ClassicsSharingInterfaceAssembler.toCreateCommand(request);
+        bindOperator(command);
+        return ClassicsSharingInterfaceAssembler.toResponse(service.createLink(command));
     }
 
     @Operation(summary = "批量创建古籍分享", description = "classics:sharing:edit")
@@ -60,8 +65,9 @@ public class ClassicsSharingAdminController {
     @SysLogger(value = "批量创建分享")
     @PostMapping("batch/create")
     public ClassicsBatchOperationResponse createBatch(@Valid @RequestBody ClassicsBatchShareCreateRequest request) {
-        return ClassicsBatchOperationResponse.from(
-                service.batchCreateLinks(ClassicsSharingInterfaceAssembler.toBatchCreateCommand(request)));
+        BatchShareCreateCommand command = ClassicsSharingInterfaceAssembler.toBatchCreateCommand(request);
+        bindOperator(command);
+        return ClassicsBatchOperationResponse.from(service.batchCreateLinks(command));
     }
 
     @Operation(summary = "分页查询古籍分享", description = "classics:sharing:view")
@@ -136,5 +142,37 @@ public class ClassicsSharingAdminController {
             throw AdminResponseExceptions.invalidParameter(name);
         }
         return value;
+    }
+
+    private static void bindOperator(ShareLinkCreateCommand command) {
+        if (command == null) {
+            return;
+        }
+        command.setOperatorUserId(currentUserId());
+        command.setOperatorPermissions(currentAuthorities());
+    }
+
+    private static void bindOperator(BatchShareCreateCommand command) {
+        if (command == null) {
+            return;
+        }
+        command.setOperatorUserId(currentUserId());
+        command.setOperatorPermissions(currentAuthorities());
+    }
+
+    private static Long currentUserId() {
+        String subjectId = KuzhambuContextHolder.currentSubjectId();
+        if (subjectId == null || subjectId.isBlank()) {
+            return null;
+        }
+        try {
+            return Long.valueOf(subjectId);
+        } catch (NumberFormatException exception) {
+            return null;
+        }
+    }
+
+    private static Set<String> currentAuthorities() {
+        return KuzhambuContextHolder.currentAuthorities();
     }
 }

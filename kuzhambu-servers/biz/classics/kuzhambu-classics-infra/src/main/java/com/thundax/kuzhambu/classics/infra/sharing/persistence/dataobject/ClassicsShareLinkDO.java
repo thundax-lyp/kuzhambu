@@ -27,6 +27,7 @@ public class ClassicsShareLinkDO {
     private String visibility;
     private String status;
     private String visibilityRiskStatus;
+    private Long createdByUserId;
     private Date issuedAt;
     private Date expiresAt;
     private Long accessCount;

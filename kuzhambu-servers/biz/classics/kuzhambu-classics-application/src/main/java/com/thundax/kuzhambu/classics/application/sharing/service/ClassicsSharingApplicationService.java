@@ -18,6 +18,7 @@ import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 public interface ClassicsSharingApplicationService {
 
@@ -36,8 +37,17 @@ public interface ClassicsSharingApplicationService {
 
     SharePortalResult getPortalShare(String shareToken);
 
+    SharePortalResult getPrivatePortalShare(String shareToken, Long currentUserId, Set<String> currentPermissions);
+
     ClassicsStoredContentResult getPortalShareResourceContent(
             String shareToken, Long storageObjectId, boolean download);
+
+    ClassicsStoredContentResult getPrivatePortalShareResourceContent(
+            String shareToken,
+            Long storageObjectId,
+            boolean download,
+            Long currentUserId,
+            Set<String> currentPermissions);
 
     void changeStatus(ShareLinkStatusCommand command);
 

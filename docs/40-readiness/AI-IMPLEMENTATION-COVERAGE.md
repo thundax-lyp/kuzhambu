@@ -26,7 +26,7 @@
 
 未完成：
 
-- Knowledge `tag_extraction` 与 Platform 两类能力在 worker 表内存在，但当前 Java 侧尚未提供对应调用入口。
+- Platform 两类能力已补齐 Java 调用入口；Knowledge `tag_extraction` 在 worker 表内存在，但当前 Java 侧尚未提供对应调用入口。
 
 ## 已完成
 
@@ -57,11 +57,11 @@
 | knowledge | SANCAI_ENTRY | relation_extraction | KnowledgeGraphExtractionApplicationService#requestRelationExtraction | KNOWLEDGE_RELATION_EXTRACTION | /internal/ai/knowledge/relation-extraction | 已完成 | 已形成任务台账、AI 调用、候选应用、批量与重生成闭环 |
 | knowledge | SANCAI_ENTRY | knowledge_graph | KnowledgeGraphExtractionApplicationService#requestGraphExtraction | KNOWLEDGE_GRAPH_EXTRACTION | /internal/ai/knowledge/graph-extraction | 已完成 | 已形成任务台账、AI 调用、候选应用、批量与重生成闭环 |
 | knowledge | SANCAI_ENTRY | lineage_extraction | KnowledgeGraphExtractionApplicationService#requestLineageExtraction | KNOWLEDGE_LINEAGE_EXTRACTION | /internal/ai/knowledge/lineage-extraction | 已完成 | 已形成任务台账、AI 调用、候选应用、批量与重生成闭环 |
+| platform | - | prompt_suggestion | PlatformAiController#buildPromptSuggestion | PLATFORM_PROMPT_SUGGESTION | /internal/ai/platform/prompt-suggestion | 已完成 | 已接入 Java Platform AI 入口，默认创建候选结果供人工确认 |
+| platform | - | version_summary | PlatformAiController#summarizeVersion | PLATFORM_VERSION_SUMMARY | /internal/ai/platform/version-summary | 已完成 | 已接入 Java Platform AI 入口，默认只记录调用结果 |
 
 ## 未完成
 
 | domain | contentType | capability | javaEntry | operation | workerPath | status | note |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | knowledge | - | tags | - | KNOWLEDGE_TAG_EXTRACTION | /internal/ai/knowledge/tag-extraction | 未完成 | 当前 Java AI 精修未提供该域的调用入口 |
-| platform | - | prompt_suggestion | - | PLATFORM_PROMPT_SUGGESTION | /internal/ai/platform/prompt-suggestion | 未完成 | 当前 Java AI 精修未提供该域的调用入口 |
-| platform | - | version_summary | - | PLATFORM_VERSION_SUMMARY | /internal/ai/platform/version-summary | 未完成 | 当前 Java AI 精修未提供该域的调用入口 |

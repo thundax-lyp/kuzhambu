@@ -4,6 +4,7 @@ import * as shareService from "./share-service";
 
 describe("classics share service", () => {
     afterEach(() => {
+        window.localStorage.clear();
         vi.restoreAllMocks();
     });
 
@@ -30,6 +31,33 @@ describe("classics share service", () => {
         await shareService.getShare("abc-123");
 
         expect(getJsonSpy).toHaveBeenCalledWith("/portal/classics/shares/abc-123");
+    });
+
+    it("getAccessibleShare reads private share when public response requires login and token exists", async () => {
+        window.localStorage.setItem("kuzhambu.admin.accessToken", "admin-token");
+        const getJsonSpy = vi.spyOn(http, "getJson").mockResolvedValue({ loginRequired: true });
+        const getJsonWithAccessTokenSpy = vi
+            .spyOn(http, "getJsonWithAccessToken")
+            .mockResolvedValue({ title: "私有分享", visibility: "PRIVATE" });
+
+        const response = await shareService.getAccessibleShare("private-token");
+
+        expect(response.title).toBe("私有分享");
+        expect(getJsonSpy).toHaveBeenCalledWith("/portal/classics/shares/private-token");
+        expect(getJsonWithAccessTokenSpy).toHaveBeenCalledWith(
+            "/portal/classics/private-shares/private-token",
+            "admin-token"
+        );
+    });
+
+    it("getAccessibleShare keeps login-required response when no token exists", async () => {
+        vi.spyOn(http, "getJson").mockResolvedValue({ loginRequired: true, visibility: "PRIVATE" });
+        const getJsonWithAccessTokenSpy = vi.spyOn(http, "getJsonWithAccessToken");
+
+        const response = await shareService.getAccessibleShare("private-token");
+
+        expect(response.loginRequired).toBe(true);
+        expect(getJsonWithAccessTokenSpy).not.toHaveBeenCalled();
     });
 
     it("passes through active batch-created share payload without adding portal-only fields", async () => {
@@ -175,5 +203,24 @@ describe("classics share service", () => {
                 storageObjectId: 9001
             })
         ).toBe("http://example.com");
+    });
+
+    it("getShareResourceContentUrl uses private path and token query for private resources", () => {
+        window.localStorage.setItem("kuzhambu.admin.accessToken", "admin-token");
+        const buildApiUrlSpy = vi.spyOn(http, "buildApiUrl");
+        buildApiUrlSpy.mockReturnValue("http://example.com/private");
+
+        const url = shareService.getShareResourceContentUrl({
+            mode: "preview",
+            privateAccess: true,
+            shareToken: "abc-123",
+            storageObjectId: 9001
+        });
+
+        expect(url).toBe("http://example.com/private");
+        expect(buildApiUrlSpy).toHaveBeenCalledWith(
+            "/portal/classics/private-shares/abc-123/resources/9001/content",
+            { download: undefined, token: "admin-token" }
+        );
     });
 });
