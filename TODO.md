@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web /operations/dashboard`：实现运营看板页面
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DASHBOARD-HEALTH-METRICS.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/operations/dashboard/dashboard-page.tsx`、`kuzhambu-apps/admin-web/src/pages/operations/dashboard/dashboard-page.css`、`kuzhambu-apps/admin-web/src/pages/operations/dashboard/dashboard-page.test.tsx`、`kuzhambu-apps/admin-web/src/router/index.tsx`
-    - 处理动作：新增运营看板页面、路由、样式和页面测试。
-    - 验收点：页面具备周期选择、刷新、指标卡、趋势图、健康明细抽屉、排行区和运维入口，且无权限时不请求接口。
-    - 重要度：10/10
-
 - [ ] `admin-web operations tasks`：迁移健康摘要出任务页
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DASHBOARD-HEALTH-METRICS.md`
