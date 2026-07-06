@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `portal atlas 图谱控件`：实现只读 KnowledgeGraphCanvas
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-14-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-graph-canvas.tsx`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-graph-layout.ts`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-graph-canvas.css`
-    - 处理动作：封装 `ReactFlow` 只读画布、overview 径向布局、category/detail dagre 布局和节点点击跳转
-    - 验收点：画布支持缩放、平移、fit view 和节点跳转，不支持拖拽编辑、连线或删除
-    - 重要度：10/10
-
 - [ ] `portal atlas 页面接入`：接入画布并锁定页面交互
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-14-CLOSURE.md`
