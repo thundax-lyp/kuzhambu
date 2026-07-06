@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `KnowledgeQualityReportController`：新增后台质量报告接口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-QUALITY-LOOP.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/refinement/controller/KnowledgeQualityReportController.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/refinement/controller/request/QualityReportRequests.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/refinement/controller/response/QualityReportResponses.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/refinement/assembler/KnowledgeQualityReportInterfaceAssembler.java`
-    - 处理动作：新增 `/api/knowledge/quality/report/generate|page|detail|latest` 接口和协议转换。
-    - 验收点：查看接口使用 `knowledge:quality-report:view`，生成接口使用 `knowledge:quality-report:generate`，请求响应字段与 RUNBOOK 一致。
-    - 重要度：10/10
-
 - [ ] `KnowledgePortalReadApplicationServiceImpl`：Portal 质量页改读报告快照
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-QUALITY-LOOP.md`
