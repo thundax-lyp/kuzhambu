@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `T06 Branch sync`：同步 main 分支最新代码
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-DELETE-SHARE-RISK-CLOSURE.md`
-    - 范围对象：`codex/classics-delete-share-risk-runbook` worktree、`main` 分支
-    - 处理动作：实现完成后同步 `main` 最新代码并解决冲突
-    - 验收点：当前分支包含 `main` 最新代码，且没有未解决冲突
-    - 重要度：9/10
-
 - [ ] `T07 Verification`：完成后端和前端验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-DELETE-SHARE-RISK-CLOSURE.md`

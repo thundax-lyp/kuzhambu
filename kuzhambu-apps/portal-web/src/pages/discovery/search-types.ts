@@ -1,14 +1,14 @@
 export interface DiscoverySearchRequest {
-    categoryCodes?: string[] | null;
-    contentStatuses?: string[] | null;
-    dateFrom?: string | null;
-    dateTo?: string | null;
-    knowledgeBases?: string[] | null;
-    pageNo?: number | null;
-    pageSize?: number | null;
+    categoryCodes: string[];
+    contentStatuses: string[];
+    dateFrom: string | null;
+    dateTo: string | null;
+    knowledgeBases: string[];
+    pageNo: number;
+    pageSize: number;
     queryText: string;
-    tagNames?: string[] | null;
-    visibilityScopes?: string[] | null;
+    tagNames: string[];
+    visibilityScopes: string[];
 }
 
 export interface DiscoverySearchClickRequest {

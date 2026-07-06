@@ -37,6 +37,7 @@
 - Discovery Search 已补齐 `search / click / rebuild` 共享动作白名单，并完成最小 Maven 运行时测试闭环。
 - Discovery Search 已完成高亮文本生成、组内相关性排序、Portal URL 搜索状态恢复、结果深链点击、无结果空状态、清除筛选提示和安全高亮渲染。
 - Discovery Search 已完成点击聚合、搜索分析 summary application、Admin API、Admin Web 搜索分析摘要卡片和热门搜索词展示。
+- Discovery Search 已完成按知识库、门类、标签、状态、可见性和更新时间范围的高级筛选，并在出参前按 System 当前主体权限裁剪非公开结果。
 - Discovery Query Understanding 已接通 Knowledge 同义词、标签和实体提示读协作，并通过 AI 域完成 query-understanding / query-rewrite 调度。
 - Discovery QA 已接通 Portal `chat/completions`、Admin 知识库运维、会话持久化、来源引用、知识同步状态和 provider trace 读取，形成问答闭环。
 - Discovery QA 已完成王圻单文档 URL 入口、Portal 请求上下文透传、后端单文档会话上下文校验、provider 请求上下文透传和 Workers Discovery usecase 契约边界锁定。
@@ -46,7 +47,7 @@
 
 部分完成：
 
-- Discovery 设计文档已明确 Elasticsearch 默认适配、增量同步和删除态清理规则；高级增强能力仍保留未实现状态。
+- 无。
 
 未完成：
 
@@ -62,8 +63,8 @@
 | 结果按知识库分组展示                 | 已完成   | Search 返回固定按 `contentType` 分组，并映射为 Portal `groups/items` 结构；Portal 搜索页已按分组渲染结果                                                                       | 无                                             | Discovery             |
 | 组内相关性排序                       | 已完成   | Elasticsearch 检索已形成真实查询链路，结果按 ES score 与现有 result rank 返回并在组内稳定展示                                                                                  | 无                                             | Discovery             |
 | 关键词高亮                           | 已完成   | 后端生成 `highlightText`，命中词使用 `<mark>` 包裹；Portal Web 只对白名单 `<mark>` 标签做安全渲染，其余内容按普通文本处理                                                     | 无                                             | Discovery, Portal Web |
-| 按知识库、门类、标签、状态、时间筛选 | 部分完成 | `SearchScope`、请求字段和 Search Gateway 真实检索入口已形成                                                                                                                    | 当前筛选能力仍偏基础，复杂条件与标签增强未完成 | Discovery             |
-| 权限过滤                             | 部分完成 | 本轮固定只返回当前可公开消费内容，避免把不可前台消费内容暴露到结果中                                                                                                           | 通用权限过滤策略和与 System 的深度整合仍未完成 | Discovery, System     |
+| 按知识库、门类、标签、状态、时间筛选 | 已完成   | `SearchScope`、Portal 请求字段、Elasticsearch Gateway 和索引文档元数据已覆盖 `knowledgeBases`、`categoryCodes`、`tagNames`、`contentStatuses`、`visibilityScopes`、`dateFrom/dateTo`，搜索日志保留实际范围 JSON | 无                                             | Discovery             |
+| 权限过滤                             | 已完成   | Search 结果出参前按索引结果元数据和 System 当前主体权限裁剪：`PUBLIC` 内容可匿名访问，非公开内容需命中 `super`、`classics:content:view` 或对应三类 Classics `*:view` 权限，裁剪后重新计算分组和总数 | 无                                             | Discovery, System     |
 | 搜索日志记录                         | 已完成   | 搜索成功 / 失败都会写入 `discovery_search_log`，Admin 已可分页和查看详情；分析 summary 已统计搜索次数、失败次数、零结果次数和热门搜索词                                      | 无                                             | Discovery             |
 | 点击日志记录                         | 已完成   | Portal 点击接口已真实写入 `discovery_search_click`，并校验 `searchLogId` 存在；点击数已纳入搜索分析 summary                                                                    | 无                                             | Discovery             |
 | 搜索深链与状态保留                   | 已完成   | 结果项返回稳定 `targetPath`；Portal 搜索页通过 URL `q` 参数恢复搜索条件、自动搜索，并在搜索提交、清除筛选和返回结果页时保留状态                                               | 无                                             | Discovery, Portal Web |
