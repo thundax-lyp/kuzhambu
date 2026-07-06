@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics-cleanup-sharing-draft-infra`：Classics cleanup sharing/draft infra
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-PERMISSION-OPERATIONS-CLEANUP-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/java/com/thundax/kuzhambu/classics/infra/sharing/repository/impl/ClassicsSharingRepositoryImpl.java`, `kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/java/com/thundax/kuzhambu/classics/infra/sancai/repository/impl/SancaiAssetRepositoryImpl.java`, `kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/java/com/thundax/kuzhambu/classics/infra/sharing/persistence/mapper/ClassicsShareLinkMapper.java`, `kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/java/com/thundax/kuzhambu/classics/infra/sancai/persistence/mapper/SancaiEntryDraftMapper.java`
-    - 处理动作：补齐 expired share 与 expired draft 的 repository 实现和 mapper 查询/更新。
-    - 验收点：share 按 `expires_at <= now` 标记 `EXPIRED`，draft 按 `autosaved_at < now - 30 days` 删除。
-    - 重要度：9/10
-
 - [ ] `classics-cleanup-export-infra`：Classics cleanup export infra
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-PERMISSION-OPERATIONS-CLEANUP-CLOSURE.md`
