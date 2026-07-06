@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `T03 Classics sharing contract`：锁定删除目标的接口输出与资源读取拦截
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-DELETE-SHARE-RISK-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/sharing/controller/response/ClassicsSharingResponse.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/portal/sharing/controller/response/ClassicsSharePortalTargetResponse.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/test/java/com/thundax/kuzhambu/classics/interfaces/admin/sharing/ClassicsSharingAdminControllerTest.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/test/java/com/thundax/kuzhambu/classics/interfaces/portal/sharing/ClassicsSharingPortalControllerTest.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/test/java/com/thundax/kuzhambu/classics/infra/sharing/ClassicsSharingPersistenceMappingTest.java`
-    - 处理动作：确认 Admin/Portal 响应继续输出 `targetStatus`，并用测试锁定 `CONTENT_DELETED` 目标不可读取资源且不进入公开分享列表
-    - 验收点：接口测试覆盖 `targetStatus=CONTENT_DELETED`、`titleSnapshot` 和 Portal 资源 404 行为
-    - 重要度：9/10
-
 - [ ] `T04 Admin Web sharing detail`：分享详情抽屉展示删除目标占位
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-DELETE-SHARE-RISK-CLOSURE.md`

@@ -99,7 +99,20 @@ class ClassicsSharingAdminControllerTest {
         JsonNode responseJson = OBJECT_MAPPER.valueToTree(response);
         assertJsonFields(responseJson, "id", "shareToken", "shareUrl", "title", "visibility", "status", "targets");
         assertEquals("正式标题", response.getTargets().get(0).getTitleSnapshot());
+        assertEquals("AVAILABLE", responseJson.at("/targets/0/targetStatus").asText());
         assertFalse(responseJson.at("/targets/0").has("contentSnapshotJson"), responseJson::toString);
+    }
+
+    @Test
+    void detailResponseShouldExposeDeletedTargetStatusAndTitleSnapshot() {
+        ClassicsSharingAdminController controller = new ClassicsSharingAdminController(sharingService());
+
+        ClassicsSharingResponse response = controller.get(10L);
+
+        assertEquals("公开分享", response.getTitle());
+        JsonNode json = OBJECT_MAPPER.valueToTree(response);
+        assertEquals("已删标题", json.at("/targets/0/titleSnapshot").asText());
+        assertEquals("CONTENT_DELETED", json.at("/targets/0/targetStatus").asText());
     }
 
     @Test
@@ -222,6 +235,14 @@ class ClassicsSharingAdminControllerTest {
                         return PageResult.of(
                                 PageRules.firstPageIndex(), page.getPageSize(), 1, List.of(accessRecord()));
                     }
+                    if ("getLink".equals(method.getName())) {
+                        assertEquals(ClassicsShareLinkId.of(10L), args[0]);
+                        return link();
+                    }
+                    if ("listTargets".equals(method.getName())) {
+                        assertEquals(ClassicsShareLinkId.of(10L), args[0]);
+                        return List.of(deletedTarget());
+                    }
                     throw new UnsupportedOperationException(method.getName());
                 });
     }
@@ -261,6 +282,13 @@ class ClassicsSharingAdminControllerTest {
         target.setContentVisibilitySnapshot(ClassicsSharedContentVisibility.PUBLIC);
         target.setTargetStatus(ClassicsShareTargetStatus.AVAILABLE);
         target.setPriority(1);
+        return target;
+    }
+
+    private static ClassicsShareTarget deletedTarget() {
+        ClassicsShareTarget target = target();
+        target.setTitleSnapshot("已删标题");
+        target.setTargetStatus(ClassicsShareTargetStatus.CONTENT_DELETED);
         return target;
     }
 
