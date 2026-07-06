@@ -48,7 +48,14 @@ class OperationsHealthAdminControllerTest {
         OperationsHealthAdminController controller = new OperationsHealthAdminController(service);
         when(service.summary())
                 .thenReturn(List.of(new OperationsHealthSummaryResult(
-                        HealthCheckId.of(9101L), "db-master", "UP", 16, "ping ok", new Date(1_719_630_400_000L))));
+                        HealthCheckId.of(9101L),
+                        "db-master",
+                        "UP",
+                        16,
+                        "ping ok",
+                        "DATABASE",
+                        "primary",
+                        new Date(1_719_630_400_000L))));
         when(service.page(any(), any()))
                 .thenReturn(PageResult.of(
                         1,
@@ -60,11 +67,15 @@ class OperationsHealthAdminControllerTest {
                                 "UP",
                                 16,
                                 "ping ok",
+                                "DATABASE",
+                                "primary",
+                                "{\"pool\":\"ok\"}",
                                 new Date(1_719_630_400_000L)))));
 
         var summaryResponse = controller.summary(new OperationsHealthSummaryRequest());
         assertEquals(1, summaryResponse.size());
         assertEquals(9101L, summaryResponse.get(0).getCheckId());
+        assertEquals("DATABASE", summaryResponse.get(0).getProbeSource());
 
         OperationsHealthPageRequest pageRequest = new OperationsHealthPageRequest();
         pageRequest.setComponent("db-master");
@@ -74,6 +85,8 @@ class OperationsHealthAdminControllerTest {
         var pageResponse = controller.page(pageRequest);
         assertEquals(1L, pageResponse.getCount());
         assertEquals(9101L, pageResponse.getRecords().get(0).getCheckId());
+        assertEquals("primary", pageResponse.getRecords().get(0).getProbeTarget());
+        assertEquals("{\"pool\":\"ok\"}", pageResponse.getRecords().get(0).getDetailsJson());
 
         verify(service).summary();
         verify(service)

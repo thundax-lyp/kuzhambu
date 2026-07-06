@@ -17,5 +17,8 @@ public class OperationsHealthPageResult {
     private String healthStatus;
     private Integer latencyMs;
     private String message;
+    private String probeSource;
+    private String probeTarget;
+    private String detailsJson;
     private Date checkedAt;
 }

@@ -54,6 +54,8 @@ public class HealthCheckApplicationServiceImpl implements HealthCheckApplication
                 record.getHealthStatus(),
                 record.getLatencyMs(),
                 record.getMessage(),
+                record.getProbeSource(),
+                record.getProbeTarget(),
                 record.getCheckedAt());
     }
 
@@ -67,6 +69,9 @@ public class HealthCheckApplicationServiceImpl implements HealthCheckApplication
                 record.getHealthStatus(),
                 record.getLatencyMs(),
                 record.getMessage(),
+                record.getProbeSource(),
+                record.getProbeTarget(),
+                record.getDetailsJson(),
                 record.getCheckedAt());
     }
 }

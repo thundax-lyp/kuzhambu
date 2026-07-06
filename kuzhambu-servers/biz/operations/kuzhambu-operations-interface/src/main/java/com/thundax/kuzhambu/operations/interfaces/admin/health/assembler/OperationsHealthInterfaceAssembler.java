@@ -29,6 +29,8 @@ public final class OperationsHealthInterfaceAssembler {
                 .healthStatus(result.getHealthStatus())
                 .latencyMs(result.getLatencyMs())
                 .message(result.getMessage())
+                .probeSource(result.getProbeSource())
+                .probeTarget(result.getProbeTarget())
                 .checkedAt(result.getCheckedAt())
                 .build();
     }
@@ -44,6 +46,9 @@ public final class OperationsHealthInterfaceAssembler {
                 .healthStatus(result.getHealthStatus())
                 .latencyMs(result.getLatencyMs())
                 .message(result.getMessage())
+                .probeSource(result.getProbeSource())
+                .probeTarget(result.getProbeTarget())
+                .detailsJson(result.getDetailsJson())
                 .checkedAt(result.getCheckedAt())
                 .build();
     }

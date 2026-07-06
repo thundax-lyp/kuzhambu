@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `OperationsHealth summary/page`：返回健康采集来源字段
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DASHBOARD-HEALTH-METRICS.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/health/result/OperationsHealthSummaryResult.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/health/result/OperationsHealthPageResult.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/health/controller/response/OperationsHealthSummaryResponse.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/health/controller/response/OperationsHealthPageResponse.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/health/assembler/OperationsHealthInterfaceAssembler.java`
-    - 处理动作：让健康摘要和分页接口返回 `probeSource`、`probeTarget`，分页接口额外返回 `detailsJson`。
-    - 验收点：`/api/operations/health/summary` 与 `/api/operations/health/page` 的 response 字段与 RUNBOOK 契约一致。
-    - 重要度：9/10
-
 - [ ] `OperationsHealthCollector`：新增后台健康采集入口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DASHBOARD-HEALTH-METRICS.md`
