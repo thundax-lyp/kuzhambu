@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics-cleanup-export-infra`：Classics cleanup export infra
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-PERMISSION-OPERATIONS-CLEANUP-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/java/com/thundax/kuzhambu/classics/infra/content/repository/impl/ClassicsContentRepositoryImpl.java`, `kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/java/com/thundax/kuzhambu/classics/infra/content/persistence/mapper/ClassicsContentMapper.java`
-    - 处理动作：补齐 expired export 的 repository 实现和 mapper 查询/更新。
-    - 验收点：export job 按 `expires_at <= now` 标记 `EXPIRED`，且不删除 Storage 对象。
-    - 重要度：8/10
-
 - [ ] `operations-cleanup-executor`：Operations cleanup 真实执行
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-PERMISSION-OPERATIONS-CLEANUP-CLOSURE.md`

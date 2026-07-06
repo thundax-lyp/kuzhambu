@@ -378,8 +378,27 @@ public class ClassicsContentRepositoryImpl implements ClassicsContentRepository 
 
     @Override
     public int markExportJobExpired(ClassicsContentExportJobId id) {
-        return exportMapper.markExportJobStatus(
-                ClassicsContentExportJobIdCodec.toValue(id), ClassicsExportStatus.EXPIRED.value());
+        return exportMapper.update(
+                null,
+                new LambdaUpdateWrapper<ClassicsContentExportJobDO>()
+                        .eq(ClassicsContentExportJobDO::getId, ClassicsContentExportJobIdCodec.toValue(id))
+                        .eq(ClassicsContentExportJobDO::getStatus, ClassicsExportStatus.COMPLETED.value())
+                        .set(ClassicsContentExportJobDO::getStatus, ClassicsExportStatus.EXPIRED.value()));
+    }
+
+    @Override
+    public List<ClassicsContentExportJobId> listExpiredExportJobIds(Date now, int limit) {
+        return exportMapper
+                .selectList(new LambdaQueryWrapper<ClassicsContentExportJobDO>()
+                        .select(ClassicsContentExportJobDO::getId)
+                        .eq(ClassicsContentExportJobDO::getStatus, ClassicsExportStatus.COMPLETED.value())
+                        .le(ClassicsContentExportJobDO::getExpiresAt, now)
+                        .orderByAsc(ClassicsContentExportJobDO::getExpiresAt)
+                        .last("limit " + limit))
+                .stream()
+                .map(ClassicsContentExportJobDO::getId)
+                .map(ClassicsContentExportJobIdCodec::toDomain)
+                .toList();
     }
 
     public PageResult<ClassicsContentExportJob> pageExportJobs(
