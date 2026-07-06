@@ -6,6 +6,7 @@ import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationIt
 import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationResult;
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
 import com.thundax.kuzhambu.classics.application.searchsync.support.ClassicsSearchIndexSyncPublishSupport;
+import com.thundax.kuzhambu.classics.application.sharing.service.ClassicsSharingApplicationService;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentCommand;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentSourceFileCommand;
 import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentVisibilityCommand;
@@ -52,16 +53,19 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
     private final WangqiDocumentRepository repository;
     private final ClassicsContentApplicationService contentApplicationService;
     private final ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport;
+    private final ClassicsSharingApplicationService sharingApplicationService;
     private final StorageFacade storageFacade;
 
     public WangqiDocumentApplicationServiceImpl(
             WangqiDocumentRepository repository,
             ClassicsContentApplicationService contentApplicationService,
             ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport,
+            ClassicsSharingApplicationService sharingApplicationService,
             StorageFacade storageFacade) {
         this.repository = repository;
         this.contentApplicationService = contentApplicationService;
         this.searchIndexSyncPublishSupport = searchIndexSyncPublishSupport;
+        this.sharingApplicationService = sharingApplicationService;
         this.storageFacade = storageFacade;
     }
 
@@ -258,6 +262,9 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
         if (document != null) {
             document.setContentUpdatedAt(new Date());
             contentApplicationService.ensureVersioned(document, ClassicsContentChangeType.MANUAL_SAVE, "手动删除");
+            if (sharingApplicationService != null) {
+                sharingApplicationService.syncContentDeleted(ClassicsContentType.WANGQI_DOCUMENT, id.value());
+            }
             publishDeleteAfterCommit(document);
         }
         contentApplicationService.deleteVersions(

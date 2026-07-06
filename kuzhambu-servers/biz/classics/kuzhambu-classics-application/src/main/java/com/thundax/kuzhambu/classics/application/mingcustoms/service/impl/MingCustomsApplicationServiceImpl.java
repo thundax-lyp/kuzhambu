@@ -10,6 +10,7 @@ import com.thundax.kuzhambu.classics.application.mingcustoms.service.MingCustoms
 import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationItemResult;
 import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationResult;
 import com.thundax.kuzhambu.classics.application.searchsync.support.ClassicsSearchIndexSyncPublishSupport;
+import com.thundax.kuzhambu.classics.application.sharing.service.ClassicsSharingApplicationService;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentChangeType;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
@@ -43,14 +44,17 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
     private final MingCustomsRepository repository;
     private final ClassicsContentApplicationService contentApplicationService;
     private final ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport;
+    private final ClassicsSharingApplicationService sharingApplicationService;
 
     public MingCustomsApplicationServiceImpl(
             MingCustomsRepository repository,
             ClassicsContentApplicationService contentApplicationService,
-            ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport) {
+            ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport,
+            ClassicsSharingApplicationService sharingApplicationService) {
         this.repository = repository;
         this.contentApplicationService = contentApplicationService;
         this.searchIndexSyncPublishSupport = searchIndexSyncPublishSupport;
+        this.sharingApplicationService = sharingApplicationService;
     }
 
     @Override
@@ -177,6 +181,9 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
         }
         entry.setContentUpdatedAt(new Date());
         contentApplicationService.ensureVersioned(entry, ClassicsContentChangeType.MANUAL_SAVE, "手动删除");
+        if (sharingApplicationService != null) {
+            sharingApplicationService.syncContentDeleted(ClassicsContentType.MING_CUSTOMS, id.value());
+        }
         publishDeleteAfterCommit(entry);
         repository.deleteById(id);
     }

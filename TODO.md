@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `T02 Classics delete entrypoints`：三类内容删除入口接入分享同步
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-DELETE-SHARE-RISK-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sancai/service/impl/SancaiApplicationServiceImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/wangqi/service/impl/WangqiDocumentApplicationServiceImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/mingcustoms/service/impl/MingCustomsApplicationServiceImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/sharing/ClassicsSharingApplicationServiceImplTest.java`
-    - 处理动作：在 Sancai、Wangqi、Ming Customs 删除主记录前调用分享同步并补齐应用层测试
-    - 验收点：三类内容删除均会触发 `CONTENT_DELETED` 同步，且同步失败会随删除事务回滚
-    - 重要度：10/10
-
 - [ ] `T03 Classics sharing contract`：锁定删除目标的接口输出与资源读取拦截
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-DELETE-SHARE-RISK-CLOSURE.md`
