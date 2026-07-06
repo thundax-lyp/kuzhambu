@@ -20,7 +20,7 @@ export interface KnowledgeAtlasOverviewCategoryCard {
     entityCount: number;
     relationCount: number;
     appliedVersionCount: number;
-    latestVersionNo: number;
+    latestVersionNo: number | null;
     entryHref: string;
 }
 
@@ -90,8 +90,8 @@ export interface KnowledgeAtlasTimelineItem {
 export interface KnowledgeAtlasCategoryView {
     categoryCode: string;
     categoryName: string;
-    latestVersionId: number;
-    latestVersionNo: number;
+    latestVersionId: number | null;
+    latestVersionNo: number | null;
     entityHighlights: KnowledgeAtlasCategoryEntityHighlight[];
     relationGroups: KnowledgeAtlasRelationGroup[];
     sourceReferences: KnowledgeAtlasSourceReference[];
@@ -113,6 +113,44 @@ export interface KnowledgeAtlasAvailableFilters {
     timeRanges: string[];
 }
 
+export interface KnowledgeAtlasCanvasNode {
+    id: string;
+    kind: "root" | "category" | "entity" | string;
+    label: string;
+    subtitle: string | null;
+    metricLabel: string | null;
+    metricValue: number | null;
+    status: string | null;
+    categoryCode: string | null;
+    entityId: number | null;
+    href: string | null;
+    weight: number | null;
+    x: number | null;
+    y: number | null;
+}
+
+export interface KnowledgeAtlasCanvasEdge {
+    id: string;
+    source: string;
+    target: string;
+    label: string | null;
+    relationType: string | null;
+    weight: number | null;
+    dashed: boolean;
+}
+
+export interface KnowledgeAtlasCanvasView {
+    mode: "overview" | "category" | "detail" | string;
+    title: string;
+    description: string;
+    focusNodeId: string | null;
+    empty: boolean;
+    emptyTitle: string | null;
+    emptyDescription: string | null;
+    nodes: KnowledgeAtlasCanvasNode[];
+    edges: KnowledgeAtlasCanvasEdge[];
+}
+
 export interface KnowledgeAtlasResponse {
     currentLevel: "overview" | "category" | "detail";
     breadcrumbItems: KnowledgeAtlasBreadcrumbItem[];
@@ -120,4 +158,5 @@ export interface KnowledgeAtlasResponse {
     categoryView: KnowledgeAtlasCategoryView | null;
     detailView: KnowledgeAtlasDetailView | null;
     availableFilters: KnowledgeAtlasAvailableFilters;
+    canvasView: KnowledgeAtlasCanvasView | null;
 }

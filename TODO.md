@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `portal atlas 依赖与类型`：安装并固定图谱控件依赖
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-14-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/portal-web/package.json`、`kuzhambu-apps/package-lock.json`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-atlas-types.ts`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-atlas-service.ts`
-    - 处理动作：先用 `^` 范围安装 `@xyflow/react` 和 `@dagrejs/dagre`，再根据 lockfile 固定精确版本并补齐 atlas 画布类型和 fallback
-    - 验收点：`package.json` 依赖为精确版本，lockfile 保留实际解析版本，fallback 包含 14 门类和三层 `canvasView`
-    - 重要度：9/10
-
 - [ ] `portal atlas 图谱控件`：实现只读 KnowledgeGraphCanvas
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-14-CLOSURE.md`
