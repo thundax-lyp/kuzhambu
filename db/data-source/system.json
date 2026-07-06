@@ -130,6 +130,7 @@
         "仪表盘",
         "知识治理",
         "知识治理/知识图谱精修",
+        "知识治理/质量报告",
         "运营运维",
         "运营运维/备份恢复",
         "审计中心",
@@ -718,6 +719,14 @@
           "icon": "submissions",
           "url": "/knowledge/refinement",
           "remarks": "知识图谱精修工作台"
+        },
+        {
+          "name": "质量报告",
+          "perms": ["knowledge:quality-report:view", "knowledge:quality-report:generate"],
+          "priority": 78,
+          "icon": "logs",
+          "url": "/knowledge/quality-report",
+          "remarks": "Knowledge 质量报告生成和展示"
         },
         {
           "name": "标签与同义词",

@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `system menu seed`：新增后台质量报告菜单和权限种子
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-QUALITY-LOOP.md`
-    - 范围对象：`db/data-source/system.json`、`db/data/system.sql`
-    - 处理动作：新增 `质量报告` 菜单和 `knowledge:quality-report:view|generate` 权限种子，并重新生成系统数据 SQL。
-    - 验收点：后台菜单可导航到 `/knowledge/quality-report`，权限点与后端 `@HasPermission` 一致。
-    - 重要度：9/10
-
 - [ ] `knowledge tests`：补齐质量报告后端测试
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-QUALITY-LOOP.md`
