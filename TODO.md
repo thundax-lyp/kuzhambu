@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `09-final-validation`：运行 AI Knowledge Tag Extraction 最小闭环验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-KNOWLEDGE-TAG-EXTRACTION.md`
-    - 范围对象：`kuzhambu-servers`、`kuzhambu-apps/admin-web`、`docs/30-designs/RUNBOOK-AI-KNOWLEDGE-TAG-EXTRACTION.md`
-    - 处理动作：运行 RUNBOOK 指定的 Java 与 admin-web 格式化、静态检查和测试
-    - 验收点：相关 Maven、Prettier、ESLint 和 taxonomy 测试通过，失败项已定位并修复
-    - 重要度：10/10
-
 - [ ] `10-coverage-runbook-cleanup`：更新 AI Implementation Coverage 并清理 RUNBOOK
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-KNOWLEDGE-TAG-EXTRACTION.md`
