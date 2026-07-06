@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `10 Operations restore interface responses`：补齐恢复响应字段与接口契约测试
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-BACKUP-RESTORE-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/restore/controller/response/OperationsRestoreExecuteResponse.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/restore/controller/response/OperationsRestorePageResponse.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/restore/controller/response/OperationsRestoreDetailResponse.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/test/java/com/thundax/kuzhambu/operations/interfaces/admin/restore/controller/OperationsRestoreContractTest.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/test/java/com/thundax/kuzhambu/operations/interfaces/admin/restore/controller/OperationsRestoreAdminControllerTest.java`
-    - 处理动作：让恢复响应透出 `restoreMode`、`writeBlockStartedAt` 和 `writeBlockReleasedAt` 并更新契约测试。
-    - 验收点：请求字段、分页字段、响应字段和 controller 透传均有测试覆盖。
-    - 重要度：9/10
-
 - [ ] `11 Admin web backup restore service`：补齐前端备份恢复类型和接口契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-BACKUP-RESTORE-CLOSURE.md`

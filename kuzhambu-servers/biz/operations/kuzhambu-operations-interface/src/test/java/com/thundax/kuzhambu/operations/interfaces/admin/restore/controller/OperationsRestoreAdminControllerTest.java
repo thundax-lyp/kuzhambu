@@ -59,8 +59,11 @@ class OperationsRestoreAdminControllerTest {
                         RestoreId.of(9101L),
                         9001L,
                         9201L,
+                        "DRILL",
                         "SUCCEEDED",
                         Boolean.TRUE,
+                        new Date(1_719_630_410_000L),
+                        new Date(1_719_630_490_000L),
                         null,
                         new Date(1_719_630_400_000L),
                         new Date(1_719_630_500_000L)));
@@ -73,8 +76,11 @@ class OperationsRestoreAdminControllerTest {
                                 RestoreId.of(9101L),
                                 9001L,
                                 9201L,
+                                "DRILL",
                                 "SUCCEEDED",
                                 Boolean.TRUE,
+                                new Date(1_719_630_410_000L),
+                                new Date(1_719_630_490_000L),
                                 null,
                                 1001L,
                                 new Date(1_719_630_400_000L),
@@ -84,8 +90,11 @@ class OperationsRestoreAdminControllerTest {
                         RestoreId.of(9101L),
                         9001L,
                         9201L,
+                        "DRILL",
                         "SUCCEEDED",
                         Boolean.TRUE,
+                        new Date(1_719_630_410_000L),
+                        new Date(1_719_630_490_000L),
                         null,
                         1001L,
                         new Date(1_719_630_400_000L),
@@ -93,12 +102,17 @@ class OperationsRestoreAdminControllerTest {
 
         OperationsRestoreExecuteRequest executeRequest = new OperationsRestoreExecuteRequest();
         executeRequest.setBackupId(9001L);
+        executeRequest.setRestoreMode("DRILL");
         var executeResponse = controller.execute(executeRequest);
         assertEquals(9101L, executeResponse.getRestoreId());
+        assertEquals("DRILL", executeResponse.getRestoreMode());
         assertEquals("SUCCEEDED", executeResponse.getRestoreStatus());
+        assertEquals(new Date(1_719_630_410_000L), executeResponse.getWriteBlockStartedAt());
+        assertEquals(new Date(1_719_630_490_000L), executeResponse.getWriteBlockReleasedAt());
 
         OperationsRestorePageRequest pageRequest = new OperationsRestorePageRequest();
         pageRequest.setBackupId(9001L);
+        pageRequest.setRestoreMode("DRILL");
         pageRequest.setRestoreStatus("SUCCEEDED");
         pageRequest.setPageNo(1);
         pageRequest.setPageSize(10);
@@ -114,11 +128,13 @@ class OperationsRestoreAdminControllerTest {
         verify(service)
                 .execute(argThat(command -> command != null
                         && command.getBackupId() != null
-                        && command.getBackupId().value().equals(9001L)));
+                        && command.getBackupId().value().equals(9001L)
+                        && "DRILL".equals(command.getRestoreMode())));
         verify(service)
                 .page(
                         argThat(query -> query != null
                                 && Long.valueOf(9001L).equals(query.getBackupId())
+                                && "DRILL".equals(query.getRestoreMode())
                                 && "SUCCEEDED".equals(query.getRestoreStatus())),
                         argThat((PageQuery pageQuery) ->
                                 pageQuery != null && pageQuery.getPageNo() == 1 && pageQuery.getPageSize() == 10));
