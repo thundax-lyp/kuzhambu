@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `knowledge portal atlas 后端装配`：固定 14 门类与三层画布数据
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-14-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/portal/KnowledgePortalReadApplicationServiceImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/portal/KnowledgePortalReadApplicationServiceImplTest.java`
-    - 处理动作：让 overview 固定返回 14 门类，让有效空门类停留 category 空态，并装配 overview/category/detail 画布节点和边
-    - 验收点：后端测试覆盖 14 门类、空位零值、空门类 category 空态和 detail 焦点节点
-    - 重要度：10/10
-
 - [ ] `portal atlas 依赖与类型`：安装并固定图谱控件依赖
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-14-CLOSURE.md`

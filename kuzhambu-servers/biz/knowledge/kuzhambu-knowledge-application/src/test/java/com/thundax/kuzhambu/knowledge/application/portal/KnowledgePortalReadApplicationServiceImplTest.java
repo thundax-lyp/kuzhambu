@@ -1,7 +1,9 @@
 package com.thundax.kuzhambu.knowledge.application.portal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -141,8 +143,8 @@ class KnowledgePortalReadApplicationServiceImplTest {
                                 null,
                                 "SANCAI_ENTRY",
                                 1001L,
-                                "SANCAI",
-                                "三才图会",
+                                "ANIMALS",
+                                "鸟兽",
                                 2,
                                 "APPLIED",
                                 new Date(1_700_000_000_000L)))));
@@ -193,7 +195,7 @@ class KnowledgePortalReadApplicationServiceImplTest {
         KnowledgePortalAtlasResult result = service.getAtlas(query);
 
         assertEquals("detail", result.getCurrentLevel());
-        assertEquals("三才图会", result.getBreadcrumbItems().get(1).getLabel());
+        assertEquals("鸟兽", result.getBreadcrumbItems().get(1).getLabel());
         assertEquals("黄帝", result.getBreadcrumbItems().get(2).getLabel());
         assertEquals("3001", result.getDetailView().getFocusNode().getId());
         assertEquals("黄帝", result.getDetailView().getFocusNode().getTitle());
@@ -212,6 +214,12 @@ class KnowledgePortalReadApplicationServiceImplTest {
                 "SANCAI_ENTRY", result.getAvailableFilters().getKnowledgeBases().get(0));
         assertEquals("PERSON", result.getAvailableFilters().getEntityTypes().get(0));
         assertEquals(3, result.getDetailView().getTimelineItems().size());
+        assertNotNull(result.getCanvasView());
+        assertEquals("detail", result.getCanvasView().getMode());
+        assertEquals("entity:3001", result.getCanvasView().getFocusNodeId());
+        assertEquals("黄帝关系图谱", result.getCanvasView().getTitle());
+        assertEquals(2, result.getCanvasView().getNodes().size());
+        assertEquals(1, result.getCanvasView().getEdges().size());
     }
 
     @Test
@@ -231,8 +239,8 @@ class KnowledgePortalReadApplicationServiceImplTest {
                                 null,
                                 "SANCAI_ENTRY",
                                 1001L,
-                                "BIRDS",
-                                "羽族",
+                                "ANIMALS",
+                                "鸟兽",
                                 3,
                                 "APPLIED",
                                 new Date(1_700_000_000_000L)),
@@ -246,8 +254,8 @@ class KnowledgePortalReadApplicationServiceImplTest {
                                 null,
                                 "SANCAI_ENTRY",
                                 1002L,
-                                "BIRDS",
-                                "羽族",
+                                "ANIMALS",
+                                "鸟兽",
                                 2,
                                 "APPLIED",
                                 new Date(1_699_000_000_000L))));
@@ -313,12 +321,24 @@ class KnowledgePortalReadApplicationServiceImplTest {
         assertEquals("overview", result.getCurrentLevel());
         assertEquals("图谱总览", result.getBreadcrumbItems().get(0).getLabel());
         assertEquals("十四门类知识鸟瞰", result.getOverviewView().getSummaryTitle());
-        assertEquals(1, result.getOverviewView().getCategoryCards().size());
-        assertEquals("BIRDS", result.getOverviewView().getCategoryCards().get(0).getCategoryCode());
-        assertEquals("羽族", result.getOverviewView().getCategoryCards().get(0).getCategoryName());
-        assertEquals(2L, result.getOverviewView().getCategoryCards().get(0).getEntityCount());
-        assertEquals(1L, result.getOverviewView().getCategoryCards().get(0).getRelationCount());
-        assertEquals(2L, result.getOverviewView().getCategoryCards().get(0).getAppliedVersionCount());
+        assertEquals(14, result.getOverviewView().getCategoryCards().size());
+        assertEquals(
+                "ASTRONOMY", result.getOverviewView().getCategoryCards().get(0).getCategoryCode());
+        assertEquals("天文", result.getOverviewView().getCategoryCards().get(0).getCategoryName());
+        assertEquals(0L, result.getOverviewView().getCategoryCards().get(0).getEntityCount());
+        assertEquals(0L, result.getOverviewView().getCategoryCards().get(0).getAppliedVersionCount());
+        assertEquals(
+                "ANIMALS", result.getOverviewView().getCategoryCards().get(12).getCategoryCode());
+        assertEquals("鸟兽", result.getOverviewView().getCategoryCards().get(12).getCategoryName());
+        assertEquals(2L, result.getOverviewView().getCategoryCards().get(12).getEntityCount());
+        assertEquals(1L, result.getOverviewView().getCategoryCards().get(12).getRelationCount());
+        assertEquals(2L, result.getOverviewView().getCategoryCards().get(12).getAppliedVersionCount());
+        assertNotNull(result.getCanvasView());
+        assertEquals("overview", result.getCanvasView().getMode());
+        assertEquals("root:sancai", result.getCanvasView().getFocusNodeId());
+        assertEquals(15, result.getCanvasView().getNodes().size());
+        assertEquals(14, result.getCanvasView().getEdges().size());
+        assertTrue(result.getCanvasView().getEdges().stream().anyMatch(edge -> Boolean.TRUE.equals(edge.getDashed())));
     }
 
     @Test
@@ -326,7 +346,7 @@ class KnowledgePortalReadApplicationServiceImplTest {
         GraphVersionRepository graphVersionRepository = mock(GraphVersionRepository.class);
         KnowledgeEntityRepository knowledgeEntityRepository = mock(KnowledgeEntityRepository.class);
         KnowledgeRelationRepository knowledgeRelationRepository = mock(KnowledgeRelationRepository.class);
-        when(graphVersionRepository.findLatestAppliedByCategoryCode("BIRDS"))
+        when(graphVersionRepository.findLatestAppliedByCategoryCode("ANIMALS"))
                 .thenReturn(new GraphVersion(
                         1L,
                         71L,
@@ -337,8 +357,8 @@ class KnowledgePortalReadApplicationServiceImplTest {
                         null,
                         "SANCAI_ENTRY",
                         1001L,
-                        "BIRDS",
-                        "羽族",
+                        "ANIMALS",
+                        "鸟兽",
                         3,
                         "APPLIED",
                         new Date(1_700_000_000_000L)));
@@ -374,16 +394,52 @@ class KnowledgePortalReadApplicationServiceImplTest {
 
         KnowledgePortalAtlasQuery query = new KnowledgePortalAtlasQuery();
         query.setLevel("category");
-        query.setCategoryCode("BIRDS");
+        query.setCategoryCode("ANIMALS");
         KnowledgePortalAtlasResult result = service.getAtlas(query);
 
         assertEquals("category", result.getCurrentLevel());
-        assertEquals("羽族", result.getBreadcrumbItems().get(1).getLabel());
-        assertEquals("BIRDS", result.getCategoryView().getCategoryCode());
-        assertEquals("羽族", result.getCategoryView().getCategoryName());
+        assertEquals("鸟兽", result.getBreadcrumbItems().get(1).getLabel());
+        assertEquals("ANIMALS", result.getCategoryView().getCategoryCode());
+        assertEquals("鸟兽", result.getCategoryView().getCategoryName());
         assertEquals(1, result.getCategoryView().getEntityHighlights().size());
         assertEquals("鸾", result.getCategoryView().getEntityHighlights().get(0).getEntityName());
         assertEquals("KIN", result.getCategoryView().getRelationGroups().get(0).getGroupKey());
+        assertNotNull(result.getCanvasView());
+        assertEquals("category", result.getCanvasView().getMode());
+        assertEquals("category:ANIMALS", result.getCanvasView().getFocusNodeId());
+        assertEquals(3, result.getCanvasView().getNodes().size());
+        assertEquals(2, result.getCanvasView().getEdges().size());
+    }
+
+    @Test
+    void getAtlasShouldKeepValidEmptyCategoryAtCategoryLevel() {
+        GraphVersionRepository graphVersionRepository = mock(GraphVersionRepository.class);
+        when(graphVersionRepository.findLatestAppliedByCategoryCode("ASTRONOMY"))
+                .thenReturn(null);
+        KnowledgePortalReadApplicationServiceImpl service = new KnowledgePortalReadApplicationServiceImpl(
+                mock(TagRepository.class),
+                graphVersionRepository,
+                mock(KnowledgeEntityRepository.class),
+                mock(KnowledgeRelationRepository.class),
+                mock(TagGovernanceMetricsRepository.class),
+                mock(RefinementTaskRepository.class),
+                mock(KnowledgeQualityReportApplicationService.class));
+
+        KnowledgePortalAtlasQuery query = new KnowledgePortalAtlasQuery();
+        query.setLevel("category");
+        query.setCategoryCode("ASTRONOMY");
+        KnowledgePortalAtlasResult result = service.getAtlas(query);
+
+        assertEquals("category", result.getCurrentLevel());
+        assertEquals("ASTRONOMY", result.getCategoryView().getCategoryCode());
+        assertEquals("天文", result.getCategoryView().getCategoryName());
+        assertEquals(0, result.getCategoryView().getEntityHighlights().size());
+        assertNotNull(result.getCanvasView());
+        assertEquals("category", result.getCanvasView().getMode());
+        assertEquals("category:ASTRONOMY", result.getCanvasView().getFocusNodeId());
+        assertEquals(Boolean.TRUE, result.getCanvasView().getEmpty());
+        assertEquals(1, result.getCanvasView().getNodes().size());
+        assertEquals(0, result.getCanvasView().getEdges().size());
     }
 
     @Test
