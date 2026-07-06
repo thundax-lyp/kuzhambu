@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.operations.interfaces.admin.cleanup.controller.response;
 
 import java.util.Date;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -23,4 +24,19 @@ public class OperationsCleanupDetailResponse {
     private Long requesterUserId;
     private Date startedAt;
     private Date completedAt;
+    private List<Item> items;
+
+    @Getter
+    @Setter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class Item {
+        private Long cleanupItemId;
+        private String targetType;
+        private Long targetId;
+        private String itemStatus;
+        private String failureReason;
+        private Date processedAt;
+    }
 }

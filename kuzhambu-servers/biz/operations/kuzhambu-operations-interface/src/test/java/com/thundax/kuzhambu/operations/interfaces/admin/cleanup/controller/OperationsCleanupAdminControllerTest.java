@@ -13,6 +13,7 @@ import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.operations.application.cleanup.result.OperationsCleanupDetailResult;
 import com.thundax.kuzhambu.operations.application.cleanup.result.OperationsCleanupPageResult;
 import com.thundax.kuzhambu.operations.application.cleanup.service.CleanupApplicationService;
+import com.thundax.kuzhambu.operations.domain.cleanup.model.valueobject.CleanupItemId;
 import com.thundax.kuzhambu.operations.domain.cleanup.model.valueobject.CleanupJobId;
 import com.thundax.kuzhambu.operations.interfaces.admin.cleanup.controller.request.OperationsCleanupDetailRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.cleanup.controller.request.OperationsCleanupExecuteRequest;
@@ -64,7 +65,8 @@ class OperationsCleanupAdminControllerTest {
                         null,
                         1001L,
                         new Date(1_719_630_400_000L),
-                        new Date(1_719_630_500_000L)));
+                        new Date(1_719_630_500_000L),
+                        List.of()));
         when(service.page(any(), any()))
                 .thenReturn(PageResult.of(
                         1,
@@ -92,7 +94,14 @@ class OperationsCleanupAdminControllerTest {
                         null,
                         1001L,
                         new Date(1_719_630_400_000L),
-                        new Date(1_719_630_500_000L)));
+                        new Date(1_719_630_500_000L),
+                        List.of(new OperationsCleanupDetailResult.Item(
+                                CleanupItemId.of(9201L),
+                                "share",
+                                201L,
+                                "FAILED",
+                                "TARGET_NOT_FOUND",
+                                new Date(1_719_630_450_000L)))));
 
         OperationsCleanupExecuteRequest executeRequest = new OperationsCleanupExecuteRequest();
         executeRequest.setCleanupType("LONG_TASK");
@@ -113,6 +122,10 @@ class OperationsCleanupAdminControllerTest {
         detailRequest.setCleanupId(9101L);
         var detailResponse = controller.detail(detailRequest);
         assertEquals(9101L, detailResponse.getCleanupId());
+        assertEquals(1, detailResponse.getItems().size());
+        assertEquals(9201L, detailResponse.getItems().get(0).getCleanupItemId());
+        assertEquals("share", detailResponse.getItems().get(0).getTargetType());
+        assertEquals("TARGET_NOT_FOUND", detailResponse.getItems().get(0).getFailureReason());
 
         verify(service).execute(argThat(command -> command != null && "LONG_TASK".equals(command.getCleanupType())));
         verify(service)

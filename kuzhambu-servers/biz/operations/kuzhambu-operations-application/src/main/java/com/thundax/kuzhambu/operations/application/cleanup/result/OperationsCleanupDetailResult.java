@@ -1,7 +1,9 @@
 package com.thundax.kuzhambu.operations.application.cleanup.result;
 
+import com.thundax.kuzhambu.operations.domain.cleanup.model.valueobject.CleanupItemId;
 import com.thundax.kuzhambu.operations.domain.cleanup.model.valueobject.CleanupJobId;
 import java.util.Date;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,4 +24,18 @@ public class OperationsCleanupDetailResult {
     private Long requesterUserId;
     private Date startedAt;
     private Date completedAt;
+    private List<Item> items;
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class Item {
+        private CleanupItemId cleanupItemId;
+        private String targetType;
+        private Long targetId;
+        private String itemStatus;
+        private String failureReason;
+        private Date processedAt;
+    }
 }

@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `operations-cleanup-detail-api`：Operations cleanup detail API
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-PERMISSION-OPERATIONS-CLEANUP-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/cleanup/controller/OperationsCleanupAdminController.java`, `kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/cleanup/assembler/OperationsCleanupInterfaceAssembler.java`, `kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/cleanup/controller/response/OperationsCleanupDetailResponse.java`, `kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/cleanup/result/OperationsCleanupDetailResult.java`, `kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/test/java/com/thundax/kuzhambu/operations/interfaces/admin/cleanup/controller/OperationsCleanupAdminControllerTest.java`
-    - 处理动作：让 cleanup detail API 返回 item 明细。
-    - 验收点：detail response 包含 `items`，每项包含 `cleanupItemId`、`targetType`、`targetId`、`itemStatus`、`failureReason`、`processedAt`。
-    - 重要度：9/10
-
 - [ ] `admin-web-operations-cleanup-controls`：Admin Web cleanup 控件闭环
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-PERMISSION-OPERATIONS-CLEANUP-CLOSURE.md`

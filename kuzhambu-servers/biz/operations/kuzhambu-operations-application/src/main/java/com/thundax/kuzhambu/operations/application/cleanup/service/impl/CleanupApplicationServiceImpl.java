@@ -233,7 +233,18 @@ public class CleanupApplicationServiceImpl implements CleanupApplicationService 
                 cleanupJob.getFailureReason(),
                 cleanupJob.getRequesterUserId(),
                 cleanupJob.getStartedAt(),
-                cleanupJob.getCompletedAt());
+                cleanupJob.getCompletedAt(),
+                cleanupJob.getCleanupItems() == null
+                        ? List.of()
+                        : cleanupJob.getCleanupItems().stream()
+                                .map(item -> new OperationsCleanupDetailResult.Item(
+                                        item.getId(),
+                                        item.getTargetType(),
+                                        item.getTargetId(),
+                                        item.getItemStatus(),
+                                        item.getFailureReason(),
+                                        item.getProcessedAt()))
+                                .toList());
     }
 
     private OperationsCleanupPageResult toPageResult(CleanupJob cleanupJob) {
