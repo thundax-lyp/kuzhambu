@@ -129,6 +129,10 @@ export const CleanupPage = () => {
     const totalPage = cleanupPage?.totalPage || 1;
     const latestRecord = cleanupRecords[0] ?? null;
     const detailRecord = cleanupDetailQuery.data;
+    const detailItems = detailRecord?.items || [];
+    const visibleDetailItems = showFailureItems
+        ? detailItems.filter((item) => item.itemStatus === "FAILED")
+        : detailItems;
     const canOpenDrawer = selectedCleanupId !== null;
 
     const openCleanupDetail = (cleanupId: number, shouldShowFailureItems: boolean) => {
@@ -415,14 +419,67 @@ export const CleanupPage = () => {
 
                         {showFailureItems ? (
                             <div className="operations-cleanup-failure">
-                                <Title level={5}>
-                                    失败项
-                                    <Text type="secondary">（后端当前仅聚合失败原因）</Text>
-                                </Title>
+                                <Title level={5}>失败项</Title>
                                 <Text type="secondary">
-                                    {detailRecord.failedCount || 0} 条失败项
+                                    当前任务共 {detailRecord.failedCount || 0} 条失败项。
                                 </Text>
-                                <pre>{detailRecord.failureReason || "暂无失败原因"}</pre>
+                            </div>
+                        ) : null}
+
+                        <div className="operations-cleanup-items">
+                            <Title level={5}>
+                                {showFailureItems ? "失败项明细" : "清理项明细"}
+                            </Title>
+                            <table className="operations-cleanup-table operations-cleanup-items-table">
+                                <thead>
+                                    <tr>
+                                        <th>明细 ID</th>
+                                        <th>目标类型</th>
+                                        <th>目标 ID</th>
+                                        <th>状态</th>
+                                        <th>处理时间</th>
+                                        <th>失败原因</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {visibleDetailItems.length ? (
+                                        visibleDetailItems.map((item, index) => (
+                                            <tr
+                                                key={
+                                                    item.cleanupItemId ||
+                                                    `${item.targetType}-${item.targetId}-${index}`
+                                                }
+                                            >
+                                                <td>{item.cleanupItemId || "-"}</td>
+                                                <td>{item.targetType || "-"}</td>
+                                                <td>{item.targetId ?? "-"}</td>
+                                                <td>
+                                                    <KuzhambuTag type={statusTone(item.itemStatus)}>
+                                                        {item.itemStatus || "UNKNOWN"}
+                                                    </KuzhambuTag>
+                                                </td>
+                                                <td>{formatDateTime(item.processedAt)}</td>
+                                                <td>{item.failureReason || "-"}</td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td
+                                                className="operations-cleanup-empty-cell"
+                                                colSpan={6}
+                                            >
+                                                {showFailureItems ? "暂无失败项" : "暂无清理项"}
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {detailRecord.failureReason ? (
+                            <div className="operations-cleanup-failure">
+                                <Title level={5}>任务失败原因</Title>
+                                <pre>{detailRecord.failureReason}</pre>
                             </div>
                         ) : null}
                     </div>

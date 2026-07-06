@@ -85,6 +85,16 @@
     word-break: break-all;
 }
 
+.operations-cleanup-items {
+    display: grid;
+    gap: 8px;
+    overflow-x: auto;
+}
+
+.operations-cleanup-items-table {
+    min-width: 680px;
+}
+
 @media (max-width: 1100px) {
     .operations-cleanup-summary {
         grid-template-columns: 1fr;

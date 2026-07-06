@@ -39,11 +39,26 @@ describe("operations cleanup service contracts", () => {
             }
         });
 
-        await service.getCleanupDetail({ cleanupId: 901 });
+        postJson.mockResolvedValueOnce({
+            cleanupId: 901,
+            items: [
+                {
+                    cleanupItemId: 9201,
+                    targetType: "share",
+                    targetId: 201,
+                    itemStatus: "FAILED",
+                    failureReason: "TARGET_NOT_FOUND",
+                    processedAt: "2026-07-06T10:00:00Z"
+                }
+            ]
+        });
+        const detail = await service.getCleanupDetail({ cleanupId: 901 });
         expect(postJson).toHaveBeenLastCalledWith("/operations/cleanup/detail", {
             body: {
                 cleanupId: 901
             }
         });
+        expect(detail.items?.[0]?.targetType).toBe("share");
+        expect(detail.items?.[0]?.failureReason).toBe("TARGET_NOT_FOUND");
     });
 });

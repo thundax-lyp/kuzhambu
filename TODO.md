@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web-operations-cleanup-controls`：Admin Web cleanup 控件闭环
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-PERMISSION-OPERATIONS-CLEANUP-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/operations/cleanup/cleanup-types.ts`, `kuzhambu-apps/admin-web/src/pages/operations/cleanup/cleanup-service.ts`, `kuzhambu-apps/admin-web/src/pages/operations/cleanup/cleanup-page.tsx`, `kuzhambu-apps/admin-web/src/pages/operations/cleanup/cleanup-page.css`, `kuzhambu-apps/admin-web/src/pages/operations/cleanup/cleanup-service-contract.test.ts`
-    - 处理动作：补齐 cleanup 执行按钮、详情 drawer、失败项入口与 item 表展示。
-    - 验收点：Admin Web 可按权限执行四类 cleanup，并在 detail drawer 查看失败项 target 与原因。
-    - 重要度：9/10
-
 - [ ] `admin-web-classics-permission-controls`：Admin Web Classics 权限控件对齐
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-PERMISSION-OPERATIONS-CLEANUP-CLOSURE.md`
