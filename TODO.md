@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `13 Operations restore drill scripts`：补齐恢复演练脚本模式
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-BACKUP-RESTORE-CLOSURE.md`
-    - 范围对象：`deploy/scripts/restore-business-data.sh`、`deploy/scripts/backup-lib.sh`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/backup/support/DefaultOperationsBackupScriptExecutor.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/test/java/com/thundax/kuzhambu/operations/application/backup/support/DefaultOperationsBackupScriptExecutorTest.java`
-    - 处理动作：新增 `RESTORE_MODE=DRILL` 演练校验分支并让 executor 传入演练环境变量。
-    - 验收点：脚本语法检查通过，演练模式校验备份与存储产物但不导入 SQL 或覆盖存储。
-    - 重要度：9/10
-
 - [ ] `14 Branch sync main`：实现完成后同步 main 分支代码
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`
