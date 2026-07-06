@@ -44,15 +44,17 @@ describe("operations backup restore service contracts", () => {
     });
 
     it("maps restore endpoints and request bodies", async () => {
-        await service.recoverBackup({ backupId: 9001 });
+        await service.recoverBackup({ backupId: 9001, restoreMode: "DRILL" });
         expect(postJson).toHaveBeenLastCalledWith("/operations/restore/execute", {
             body: {
-                backupId: 9001
+                backupId: 9001,
+                restoreMode: "DRILL"
             }
         });
 
         await service.pageRestores({
             backupId: 9001,
+            restoreMode: "DRILL",
             restoreStatus: "SUCCEEDED",
             requesterUserId: 1001,
             pageNo: 1,
@@ -61,6 +63,7 @@ describe("operations backup restore service contracts", () => {
         expect(postJson).toHaveBeenLastCalledWith("/operations/restore/page", {
             body: {
                 backupId: 9001,
+                restoreMode: "DRILL",
                 restoreStatus: "SUCCEEDED",
                 requesterUserId: 1001,
                 pageNo: 1,
@@ -74,5 +77,24 @@ describe("operations backup restore service contracts", () => {
                 restoreId: 9101
             }
         });
+    });
+
+    it("keeps restore response fields available to callers", async () => {
+        postJson.mockResolvedValueOnce({
+            restoreId: 9101,
+            backupId: 9001,
+            preRestoreBackupId: 9201,
+            restoreMode: "DRILL",
+            restoreStatus: "SUCCEEDED",
+            writeBlockEnabled: true,
+            writeBlockStartedAt: "2026-07-06T02:00:00.000Z",
+            writeBlockReleasedAt: "2026-07-06T02:03:00.000Z"
+        });
+
+        const response = await service.recoverBackup({ backupId: 9001, restoreMode: "DRILL" });
+
+        expect(response.restoreMode).toBe("DRILL");
+        expect(response.writeBlockStartedAt).toBe("2026-07-06T02:00:00.000Z");
+        expect(response.writeBlockReleasedAt).toBe("2026-07-06T02:03:00.000Z");
     });
 });

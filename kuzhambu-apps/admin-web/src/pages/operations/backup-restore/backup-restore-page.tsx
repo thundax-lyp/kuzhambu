@@ -275,7 +275,8 @@ export const BackupRestorePage = () => {
                                     okText: "执行恢复",
                                     onConfirm: () =>
                                         restoreMutation.mutateAsync({
-                                            backupId: record.backupId
+                                            backupId: record.backupId,
+                                            restoreMode: "REAL"
                                         })
                                 })
                             }

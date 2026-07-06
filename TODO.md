@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `11 Admin web backup restore service`：补齐前端备份恢复类型和接口契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-BACKUP-RESTORE-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/operations/backup-restore/backup-restore-types.ts`、`kuzhambu-apps/admin-web/src/pages/operations/backup-restore/backup-restore-service.ts`、`kuzhambu-apps/admin-web/src/pages/operations/backup-restore/backup-restore-service-contract.test.ts`
-    - 处理动作：补齐 `AUTO`、`restoreMode`、写阻断时间字段和 restore execute/page 请求契约。
-    - 验收点：恢复演练请求 body、恢复模式筛选 body、恢复响应新增字段解析均有前端契约测试。
-    - 重要度：9/10
-
 - [ ] `12 Admin web backup restore controls`：补齐备份恢复页面控件和操作
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-BACKUP-RESTORE-CLOSURE.md`
