@@ -13,6 +13,7 @@ import com.thundax.kuzhambu.common.web.restore.RestoreWriteBlockFilter;
 import com.thundax.kuzhambu.common.web.restore.RestoreWriteBlockProperties;
 import com.thundax.kuzhambu.common.web.restore.RestoreWriteBlockState;
 import java.util.List;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -75,8 +76,9 @@ public class KuzhambuWebConfiguration {
     public RestoreWriteBlockFilter restoreWriteBlockFilter(
             RestoreWriteBlockState restoreWriteBlockState,
             RestoreWriteBlockProperties restoreWriteBlockProperties,
-            ObjectMapper objectMapper) {
-        return new RestoreWriteBlockFilter(restoreWriteBlockState, restoreWriteBlockProperties, objectMapper);
+            ObjectProvider<ObjectMapper> objectMapper) {
+        return new RestoreWriteBlockFilter(
+                restoreWriteBlockState, restoreWriteBlockProperties, objectMapper.getIfAvailable(ObjectMapper::new));
     }
 
     @Bean
