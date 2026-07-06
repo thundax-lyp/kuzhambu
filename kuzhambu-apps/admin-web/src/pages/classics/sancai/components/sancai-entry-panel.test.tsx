@@ -8,6 +8,7 @@ import * as exportService from "@/pages/classics/common/classics-export-service"
 import * as contentService from "@/pages/classics/common/classics-content-service";
 import * as shareService from "@/pages/classics/common/classics-share-service";
 import * as currentUserService from "@/service/current-user-service";
+import { clearPermissions, replacePermissions } from "@/auth/permission-storage";
 import { SancaiEntryPanel } from "./sancai-entry-panel";
 import * as entryService from "../services/sancai-entry-service";
 
@@ -24,8 +25,8 @@ vi.mock("@/pages/classics/common/classics-content-service", () => ({
             {
                 contentId: 3002,
                 contentType: "SANCAI_ENTRY",
-                failureCode: "BATCH_VISIBILITY_FAILED",
-                failureReason: "内容不存在",
+                failureCode: "PERMISSION_DENIED",
+                failureReason: "PERMISSION_DENIED",
                 status: "FAILED"
             }
         ],
@@ -139,8 +140,8 @@ vi.mock("@/pages/classics/common/classics-share-service", () => ({
             {
                 contentId: 3002,
                 contentType: "SANCAI_ENTRY",
-                failureCode: "DUPLICATE_TARGET",
-                failureReason: "重复目标",
+                failureCode: "PERMISSION_DENIED",
+                failureReason: "PERMISSION_DENIED",
                 status: "FAILED"
             }
         ],
@@ -493,11 +494,21 @@ const renderEntryPanel = () => {
 };
 
 describe("SancaiEntryPanel sharing", () => {
+    beforeEach(() => {
+        replacePermissions([
+            "classics:sancai:view",
+            "classics:sancai:edit",
+            "classics:sharing:edit",
+            "classics:content:export"
+        ]);
+    });
+
     afterEach(() => {
         cleanup();
         vi.clearAllMocks();
         confirmDangerMock.mockClear();
         entryState.restored = false;
+        clearPermissions();
     });
 
     it("creates a public share from an entry reference", async () => {
@@ -549,7 +560,7 @@ describe("SancaiEntryPanel sharing", () => {
             visibility: "PUBLIC"
         });
         expect(await screen.findByText("批量分享结果：成功 1，失败 1")).toBeInTheDocument();
-        expect(await screen.findByText("SANCAI_ENTRY#3002: 重复目标")).toBeInTheDocument();
+        expect(await screen.findByText("SANCAI_ENTRY#3002: PERMISSION_DENIED")).toBeInTheDocument();
     }, 30000);
 
     it("changes selected entries visibility and shows item failures", async () => {
@@ -571,7 +582,20 @@ describe("SancaiEntryPanel sharing", () => {
             visibility: "PRIVATE"
         });
         expect(await screen.findByText("批量可见性结果：成功 1，失败 1")).toBeInTheDocument();
-        expect(await screen.findByText("SANCAI_ENTRY#3002: 内容不存在")).toBeInTheDocument();
+        expect(await screen.findByText("SANCAI_ENTRY#3002: PERMISSION_DENIED")).toBeInTheDocument();
+    }, 30000);
+
+    it("disables share export and visibility controls without content permissions", async () => {
+        clearPermissions();
+
+        renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        expect(await within(entryTable).findByRole("button", { name: "分享 天地" })).toBeDisabled();
+        expect(within(entryTable).getByRole("button", { name: "导出 天地" })).toBeDisabled();
+        expect(screen.getByRole("button", { name: "批量分享" })).toBeDisabled();
+        expect(screen.getByRole("button", { name: "批量公开" })).toBeDisabled();
+        expect(screen.getByRole("button", { name: "批量私有" })).toBeDisabled();
     }, 30000);
 
     it("creates image analysis task from selected visual asset and carries visual asset objectId", async () => {

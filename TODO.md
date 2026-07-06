@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web-classics-permission-controls`：Admin Web Classics 权限控件对齐
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-PERMISSION-OPERATIONS-CLEANUP-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/common/classics-content-types.ts`, `kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-list.tsx`, `kuzhambu-apps/admin-web/src/pages/classics/wangqi/wangqi-page.tsx`, `kuzhambu-apps/admin-web/src/pages/classics/ming-customs/ming-customs-page.tsx`, `kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.test.tsx`
-    - 处理动作：按内容类型权限禁用或启用批量公开/私有、分享、导出控件并展示失败反馈。
-    - 验收点：无权限时相关按钮不可误触发，批量结果区可见 `PERMISSION_DENIED` 失败项。
-    - 重要度：9/10
-
 - [ ] `portal-web-classics-public-regression`：Portal Web 公共访问回归
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-PERMISSION-OPERATIONS-CLEANUP-CLOSURE.md`

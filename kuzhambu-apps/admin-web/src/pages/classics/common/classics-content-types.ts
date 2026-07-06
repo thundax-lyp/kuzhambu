@@ -1,5 +1,44 @@
 export type ClassicsContentType = "SANCAI_ENTRY" | "WANGQI_DOCUMENT" | "MING_CUSTOMS" | string;
 export type ClassicsContentVisibility = "PRIVATE" | "PUBLIC";
+export type ClassicsContentPermissionAction = "edit" | "export" | "share";
+
+export const CLASSICS_CONTENT_EXPORT_PERMISSION = "classics:content:export";
+export const CLASSICS_SHARING_EDIT_PERMISSION = "classics:sharing:edit";
+
+const CLASSICS_CONTENT_VIEW_PERMISSIONS: Record<string, string> = {
+    MING_CUSTOMS: "classics:mingcustoms:view",
+    SANCAI_ENTRY: "classics:sancai:view",
+    WANGQI_DOCUMENT: "classics:wangqi:view"
+};
+
+const CLASSICS_CONTENT_EDIT_PERMISSIONS: Record<string, string> = {
+    MING_CUSTOMS: "classics:mingcustoms:edit",
+    SANCAI_ENTRY: "classics:sancai:edit",
+    WANGQI_DOCUMENT: "classics:wangqi:edit"
+};
+
+export const hasClassicsContentPermission = (
+    contentType: ClassicsContentType,
+    action: ClassicsContentPermissionAction,
+    hasPermission: (permission: string) => boolean
+) => {
+    const viewPermission = CLASSICS_CONTENT_VIEW_PERMISSIONS[contentType];
+    const editPermission = CLASSICS_CONTENT_EDIT_PERMISSIONS[contentType];
+
+    if (action === "edit") {
+        return Boolean(editPermission && hasPermission(editPermission));
+    }
+
+    if (!viewPermission || !hasPermission(viewPermission)) {
+        return false;
+    }
+
+    if (action === "export") {
+        return hasPermission(CLASSICS_CONTENT_EXPORT_PERMISSION);
+    }
+
+    return hasPermission(CLASSICS_SHARING_EDIT_PERMISSION);
+};
 
 export interface ClassicsContentRef {
     contentId: number;

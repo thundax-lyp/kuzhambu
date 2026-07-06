@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Alert, App, Button, Card, Select } from "antd";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { hasPermission } from "@/auth/permission-storage";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import { AiCandidatePanel } from "@/pages/classics/common/components/ai-candidate-panel";
@@ -13,7 +14,10 @@ import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { ClassicsContentTagPanel } from "@/pages/classics/common/components/classics-content-tag-panel";
 import { ClassicsContentQaPanel } from "@/pages/classics/common/components/classics-content-qa-panel";
 import * as currentUserService from "@/service/current-user-service";
-import type { ClassicsBatchOperationRecord } from "@/pages/classics/common/classics-content-types";
+import {
+    hasClassicsContentPermission,
+    type ClassicsBatchOperationRecord
+} from "@/pages/classics/common/classics-content-types";
 import type { ClassicsExportScopePayload } from "@/pages/classics/common/classics-export-types";
 import { MingCustomsKeywordCloud } from "./components/ming-customs-keyword-cloud";
 import { MingCustomsList } from "./components/ming-customs-list";
@@ -213,6 +217,13 @@ export const MingCustomsPage = () => {
     const selectedEntries = useMemo(
         () => records.filter((record) => selectedEntryIds.includes(record.id)),
         [records, selectedEntryIds]
+    );
+    const canShareEntries = hasClassicsContentPermission("MING_CUSTOMS", "share", hasPermission);
+    const canExportEntries = hasClassicsContentPermission("MING_CUSTOMS", "export", hasPermission);
+    const canChangeEntryVisibility = hasClassicsContentPermission(
+        "MING_CUSTOMS",
+        "edit",
+        hasPermission
     );
     const refinementTasks = useMemo(
         () => refinementTasksQuery.data?.items || [],
@@ -427,6 +438,10 @@ export const MingCustomsPage = () => {
     };
 
     const shareEntry = (entry: MingCustomsRecord) => {
+        if (!canShareEntries) {
+            messageApi.warning("当前账号缺少明代习俗分享权限");
+            return;
+        }
         const title = entry.title?.trim() || `条目 ${entry.id}`;
         shareMutation.mutate({
             targets: [
@@ -440,6 +455,10 @@ export const MingCustomsPage = () => {
         });
     };
     const shareSelectedEntries = () => {
+        if (!canShareEntries) {
+            messageApi.warning("当前账号缺少明代习俗分享权限");
+            return;
+        }
         if (!selectedEntries.length) {
             messageApi.warning("请先选择要批量分享的明代习俗");
             return;
@@ -457,6 +476,10 @@ export const MingCustomsPage = () => {
     };
 
     const changeSelectedVisibility = (visibility: "PRIVATE" | "PUBLIC") => {
+        if (!canChangeEntryVisibility) {
+            messageApi.warning("当前账号缺少明代习俗编辑权限");
+            return;
+        }
         if (!selectedEntries.length) {
             messageApi.warning("请先选择要批量修改可见性的明代习俗");
             return;
@@ -469,6 +492,10 @@ export const MingCustomsPage = () => {
     };
 
     const exportEntry = (entry: MingCustomsRecord) => {
+        if (!canExportEntries) {
+            messageApi.warning("当前账号缺少明代习俗导出权限");
+            return;
+        }
         exportMutation.mutate(entry);
     };
 
@@ -613,14 +640,14 @@ export const MingCustomsPage = () => {
                         />
                         <div style={{ marginBottom: 12 }}>
                             <Button
-                                disabled={!selectedEntries.length}
+                                disabled={!selectedEntries.length || !canShareEntries}
                                 loading={batchShareMutation.isPending}
                                 onClick={shareSelectedEntries}
                             >
                                 批量分享
                             </Button>
                             <Button
-                                disabled={!selectedEntries.length}
+                                disabled={!selectedEntries.length || !canChangeEntryVisibility}
                                 loading={batchVisibilityMutation.isPending}
                                 style={{ marginLeft: 8 }}
                                 onClick={() => changeSelectedVisibility("PUBLIC")}
@@ -628,7 +655,7 @@ export const MingCustomsPage = () => {
                                 批量公开
                             </Button>
                             <Button
-                                disabled={!selectedEntries.length}
+                                disabled={!selectedEntries.length || !canChangeEntryVisibility}
                                 loading={batchVisibilityMutation.isPending}
                                 style={{ marginLeft: 8 }}
                                 onClick={() => changeSelectedVisibility("PRIVATE")}
@@ -675,6 +702,8 @@ export const MingCustomsPage = () => {
                             />
                         ) : null}
                         <MingCustomsList
+                            canExport={canExportEntries}
+                            canShare={canShareEntries}
                             categoryLabels={categoryLabels}
                             loading={mingCustomsQuery.isLoading}
                             dataSource={records}

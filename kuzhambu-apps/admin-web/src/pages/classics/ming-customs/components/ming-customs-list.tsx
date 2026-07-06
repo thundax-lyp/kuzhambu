@@ -25,6 +25,8 @@ const visibilityTagType = (visibility?: string | null) => {
 };
 
 export interface MingCustomsListProps {
+    canExport?: boolean;
+    canShare?: boolean;
     categoryLabels: Record<string, string>;
     dataSource: MingCustomsRecord[];
     loading?: boolean;
@@ -38,6 +40,8 @@ export interface MingCustomsListProps {
 }
 
 export const MingCustomsList = ({
+    canExport = true,
+    canShare = true,
     categoryLabels,
     dataSource,
     loading = false,
@@ -124,12 +128,14 @@ export const MingCustomsList = ({
                     key: "share",
                     text: "分享",
                     ariaLabel: `分享 ${record.title || "未命名条目"}`,
+                    disabled: !canShare,
                     onClick: () => onShare(record)
                 },
                 {
                     key: "export",
                     text: "导出",
                     ariaLabel: `导出 ${record.title || "未命名条目"}`,
+                    disabled: !canExport,
                     onClick: () => onExport(record)
                 },
                 { type: "divider" },
