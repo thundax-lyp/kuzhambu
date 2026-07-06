@@ -22,6 +22,7 @@ public class ClassicsShareLink {
     private ClassicsShareVisibility visibility;
     private ClassicsShareLinkStatus status;
     private SancaiVisibilityRiskStatus visibilityRiskStatus;
+    private Long createdByUserId;
     private Date issuedAt;
     private Date expiresAt;
     private long accessCount;

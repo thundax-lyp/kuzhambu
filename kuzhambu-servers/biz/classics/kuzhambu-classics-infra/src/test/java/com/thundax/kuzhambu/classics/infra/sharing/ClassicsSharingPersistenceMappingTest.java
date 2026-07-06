@@ -23,6 +23,7 @@ class ClassicsSharingPersistenceMappingTest {
                 ClassicsShareVisibility.PUBLIC,
                 ClassicsShareLinkStatus.ACTIVE,
                 null,
+                1001L,
                 null,
                 null,
                 0L);
@@ -33,6 +34,7 @@ class ClassicsSharingPersistenceMappingTest {
 
         assertEquals("share-token", dataObject.getShareToken());
         assertEquals("hashed-share-token", dataObject.getTokenHash());
+        assertEquals(1001L, dataObject.getCreatedByUserId());
         assertEquals(
                 "share_token", shareTokenField.getAnnotation(TableField.class).value());
         assertEquals(

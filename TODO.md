@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `classics_share_link`：补齐私有分享创建者数据结构
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-PRIVATE-SHARE-ACCESS.md`
-    - 范围对象：`db/schema/classics.sql`、`kuzhambu-servers/biz/classics/kuzhambu-classics-domain/src/main/java/com/thundax/kuzhambu/classics/domain/sharing/model/entity/ClassicsShareLink.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/java/com/thundax/kuzhambu/classics/infra/sharing/persistence/dataobject/ClassicsShareLinkDO.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/java/com/thundax/kuzhambu/classics/infra/sharing/persistence/assembler/ClassicsSharingPersistenceAssembler.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/test/java/com/thundax/kuzhambu/classics/infra/sharing/ClassicsSharingPersistenceMappingTest.java`
-    - 处理动作：为分享链接新增 `created_by_user_id` 字段、创建者索引和持久化双向映射。
-    - 验收点：schema、领域实体、DO、assembler 和持久化映射测试均能读写 `createdByUserId`。
-    - 重要度：10/10
-
 - [ ] `Admin 分享创建`：写入当前创建者用户 ID
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-PRIVATE-SHARE-ACCESS.md`
