@@ -12,13 +12,6 @@ describe("operations tasks service contracts", () => {
         postJson.mockReset();
     });
 
-    it("maps health summary endpoint", async () => {
-        await service.getHealthSummary();
-        expect(postJson).toHaveBeenCalledWith("/operations/health/summary", {
-            body: {}
-        });
-    });
-
     it("maps task page and detail endpoints", async () => {
         await service.pageTasks({
             sourceDomain: "operations",

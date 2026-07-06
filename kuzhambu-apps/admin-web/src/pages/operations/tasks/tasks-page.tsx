@@ -1,6 +1,6 @@
-import { SettingOutlined } from "@ant-design/icons";
+import { DashboardOutlined, SettingOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { Button, Card, Descriptions, Empty, Input, Select, Spin, Typography } from "antd";
+import { Button, Card, Descriptions, Input, Select, Spin, Typography } from "antd";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { hasPermission } from "@/auth/permission-storage";
@@ -72,22 +72,22 @@ const buildTaskQuery = (query: OperationsTaskPageQuery, pageNo: number, pageSize
 
 const operationEntries = [
     {
+        description: "返回运营看板，查看健康指标和趋势",
+        icon: <DashboardOutlined />,
+        title: "运营看板",
+        to: "/operations/dashboard"
+    },
+    {
         description: "查看备份和恢复任务记录",
-        icon: "🗃",
+        icon: <SettingOutlined />,
         title: "备份恢复",
         to: "/operations/backup-restore"
     },
     {
         description: "查看清理任务和失败明细",
-        icon: "🧹",
+        icon: <SettingOutlined />,
         title: "清理维护",
         to: "/operations/cleanup"
-    },
-    {
-        description: "查看报表生成台账与历史",
-        icon: "📊",
-        title: "报表记录",
-        to: "/operations/reports"
     }
 ];
 
@@ -97,12 +97,6 @@ export const OperationsTasksPage = () => {
     const [taskPageNo, setTaskPageNo] = useState(DEFAULT_PAGE_NO);
     const [taskPageSize, setTaskPageSize] = useState(DEFAULT_PAGE_SIZE);
     const [detailSnapshotId, setDetailSnapshotId] = useState<number | null>(null);
-
-    const healthQuery = useQuery({
-        queryKey: ["operations", "health", "summary"],
-        queryFn: service.getHealthSummary,
-        retry: false
-    });
 
     const taskQuery = useQuery({
         queryKey: ["operations", "task", "page", filters, taskPageNo, taskPageSize],
@@ -118,7 +112,6 @@ export const OperationsTasksPage = () => {
         retry: false
     });
 
-    const healthSummary = healthQuery.data || [];
     const taskPage = taskQuery.data;
     const tasks: OperationsTaskRecord[] = taskPage?.records || [];
     const totalCount = taskPage?.totalCount ?? taskPage?.count ?? 0;
@@ -159,53 +152,11 @@ export const OperationsTasksPage = () => {
     return (
         <KuzhambuPage
             className="tasks-page operations-tasks-page"
-            description="集中查看健康摘要与长任务状态，并快速跳转到运维相关入口。"
+            description="集中查看长任务状态、筛选执行记录，并快速返回运营看板或相关运维入口。"
             title="运营任务台账"
             eyebrow="Operations"
         >
             <div>
-                <section className="operations-tasks-summary">
-                    <Title level={4}>健康摘要</Title>
-                    {healthQuery.isLoading && !healthSummary.length ? (
-                        <Spin size="large" />
-                    ) : (
-                        <div className="operations-tasks-summary-grid">
-                            {healthSummary.length ? (
-                                healthSummary.map((summary) => (
-                                    <Card
-                                        className="operations-tasks-summary-card"
-                                        key={summary.checkId}
-                                        size="small"
-                                        title={summary.component || "未知组件"}
-                                    >
-                                        <KuzhambuSpace orientation="vertical" size={5} wrap>
-                                            <KuzhambuSpace size={8} wrap>
-                                                <Text>状态：</Text>
-                                                <KuzhambuTag
-                                                    type={toStatusTone(summary.healthStatus)}
-                                                >
-                                                    {summary.healthStatus || "-"}
-                                                </KuzhambuTag>
-                                            </KuzhambuSpace>
-                                            <Text type="secondary">
-                                                延迟：{formatNumber(summary.latencyMs)} ms
-                                            </Text>
-                                            <Text type="secondary">
-                                                检查时间：{formatDateTime(summary.checkedAt)}
-                                            </Text>
-                                            {summary.message ? (
-                                                <Text>{summary.message}</Text>
-                                            ) : null}
-                                        </KuzhambuSpace>
-                                    </Card>
-                                ))
-                            ) : (
-                                <Empty description="暂无健康检查摘要" />
-                            )}
-                        </div>
-                    )}
-                </section>
-
                 <section className="operations-tasks-body">
                     <Card className="operations-tasks-section-card" title="长任务列表" size="small">
                         <KuzhambuSpace
