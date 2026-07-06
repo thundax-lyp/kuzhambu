@@ -17,6 +17,7 @@ import com.thundax.kuzhambu.operations.domain.backup.model.entity.BackupRecord;
 import com.thundax.kuzhambu.operations.domain.backup.model.valueobject.BackupId;
 import com.thundax.kuzhambu.operations.domain.backup.repository.BackupRepository;
 import com.thundax.kuzhambu.operations.domain.restore.model.entity.RestoreRecord;
+import com.thundax.kuzhambu.operations.domain.restore.model.enums.RestoreMode;
 import com.thundax.kuzhambu.operations.domain.restore.model.valueobject.RestoreId;
 import com.thundax.kuzhambu.operations.domain.restore.repository.RestoreRepository;
 import java.nio.file.Path;
@@ -50,10 +51,11 @@ class RestoreApplicationServiceImplTest {
         RestoreApplicationServiceImpl service = new RestoreApplicationServiceImpl(
                 restoreRepository, backupRepository, new SuccessfulRestoreScriptExecutor());
 
-        OperationsRestoreExecuteResult result =
-                service.execute(new OperationsRestoreExecuteCommand(BackupId.of(9001L), 1001L));
+        OperationsRestoreExecuteResult result = service.execute(
+                new OperationsRestoreExecuteCommand(BackupId.of(9001L), RestoreMode.REAL.value(), 1001L));
 
         assertNotNull(result.getRestoreId());
+        assertEquals(RestoreMode.REAL.value(), result.getRestoreMode());
         assertEquals("SUCCEEDED", result.getRestoreStatus());
         assertNotNull(result.getPreRestoreBackupId());
         assertEquals(
@@ -83,8 +85,8 @@ class RestoreApplicationServiceImplTest {
         RestoreApplicationServiceImpl service = new RestoreApplicationServiceImpl(
                 restoreRepository, backupRepository, new FailedRestoreScriptExecutor());
 
-        OperationsRestoreExecuteResult result =
-                service.execute(new OperationsRestoreExecuteCommand(BackupId.of(9001L), 1001L));
+        OperationsRestoreExecuteResult result = service.execute(
+                new OperationsRestoreExecuteCommand(BackupId.of(9001L), RestoreMode.REAL.value(), 1001L));
 
         assertEquals("FAILED", result.getRestoreStatus());
         assertNotNull(result.getPreRestoreBackupId());
@@ -97,17 +99,19 @@ class RestoreApplicationServiceImplTest {
     void pageAndDetailShouldMapRepositoryRecords() {
         InMemoryBackupRepository backupRepository = new InMemoryBackupRepository();
         InMemoryRestoreRepository restoreRepository = new InMemoryRestoreRepository();
+        Date writeBlockStartedAt = new Date(1_719_630_410_000L);
+        Date writeBlockReleasedAt = new Date(1_719_630_490_000L);
         restoreRepository.records.put(
                 9101L,
                 new RestoreRecord(
                         RestoreId.of(9101L),
                         9001L,
                         9201L,
-                        "REAL",
+                        RestoreMode.DRILL.value(),
                         "SUCCEEDED",
                         Boolean.TRUE,
-                        null,
-                        null,
+                        writeBlockStartedAt,
+                        writeBlockReleasedAt,
                         null,
                         1001L,
                         new Date(1_719_630_400_000L),
@@ -115,13 +119,17 @@ class RestoreApplicationServiceImplTest {
         RestoreApplicationServiceImpl service = new RestoreApplicationServiceImpl(
                 restoreRepository, backupRepository, new SuccessfulRestoreScriptExecutor());
 
-        PageResult<OperationsRestorePageResult> pageResult =
-                service.page(new OperationsRestorePageQuery(9001L, "SUCCEEDED", 1001L), new PageQuery(1, 10));
+        PageResult<OperationsRestorePageResult> pageResult = service.page(
+                new OperationsRestorePageQuery(9001L, RestoreMode.DRILL.value(), "SUCCEEDED", 1001L),
+                new PageQuery(1, 10));
         OperationsRestoreDetailResult detailResult =
                 service.detail(new OperationsRestoreDetailQuery(RestoreId.of(9101L)));
 
         assertEquals(1, pageResult.getRecords().size());
         assertEquals(9101L, pageResult.getRecords().get(0).getRestoreId().value());
+        assertEquals(RestoreMode.DRILL.value(), pageResult.getRecords().get(0).getRestoreMode());
+        assertEquals(writeBlockStartedAt, pageResult.getRecords().get(0).getWriteBlockStartedAt());
+        assertEquals(writeBlockReleasedAt, detailResult.getWriteBlockReleasedAt());
         assertEquals(9201L, detailResult.getPreRestoreBackupId());
     }
 

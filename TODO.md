@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `06 Operations restore application models`：补齐恢复 application 命令、查询和结果字段
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-BACKUP-RESTORE-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/restore/command/OperationsRestoreExecuteCommand.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/restore/query/OperationsRestorePageQuery.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/restore/result/OperationsRestoreExecuteResult.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/restore/result/OperationsRestorePageResult.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/restore/result/OperationsRestoreDetailResult.java`
-    - 处理动作：为恢复 command/query/result 增加 `restoreMode` 和写阻断时间字段。
-    - 验收点：application 模型能表达真实恢复、恢复演练、写阻断开启时间和释放时间。
-    - 重要度：9/10
-
 - [ ] `07 Operations restore application flow`：补齐真实恢复/演练和写阻断编排
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-BACKUP-RESTORE-CLOSURE.md`

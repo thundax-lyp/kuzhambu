@@ -11,6 +11,13 @@ import lombok.Setter;
 @AllArgsConstructor
 public class OperationsRestorePageQuery {
     private Long backupId;
+    private String restoreMode;
     private String restoreStatus;
     private Long requesterUserId;
+
+    public OperationsRestorePageQuery(Long backupId, String restoreStatus, Long requesterUserId) {
+        this.backupId = backupId;
+        this.restoreStatus = restoreStatus;
+        this.requesterUserId = requesterUserId;
+    }
 }

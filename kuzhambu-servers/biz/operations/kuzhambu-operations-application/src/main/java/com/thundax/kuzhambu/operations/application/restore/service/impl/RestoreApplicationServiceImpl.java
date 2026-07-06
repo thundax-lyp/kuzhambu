@@ -76,7 +76,7 @@ public class RestoreApplicationServiceImpl implements RestoreApplicationService 
                 null,
                 command.getBackupId().value(),
                 preRestoreBackupId.value(),
-                RestoreMode.REAL.value(),
+                resolveRestoreMode(command).value(),
                 RestoreStatus.RUNNING.value(),
                 Boolean.TRUE,
                 null,
@@ -109,7 +109,7 @@ public class RestoreApplicationServiceImpl implements RestoreApplicationService 
         effectivePage.normalize();
         PageResult<RestoreRecord> recordPage = restoreRepository.page(
                 query == null ? null : query.getBackupId(),
-                null,
+                query == null ? null : query.getRestoreMode(),
                 query == null ? null : query.getRestoreStatus(),
                 query == null ? null : query.getRequesterUserId(),
                 effectivePage.getPageNo(),
@@ -178,8 +178,11 @@ public class RestoreApplicationServiceImpl implements RestoreApplicationService 
                 record.getId(),
                 record.getBackupId(),
                 record.getPreRestoreBackupId(),
+                record.getRestoreMode(),
                 record.getRestoreStatus(),
                 record.getWriteBlockEnabled(),
+                record.getWriteBlockStartedAt(),
+                record.getWriteBlockReleasedAt(),
                 record.getFailureReason(),
                 record.getStartedAt(),
                 record.getCompletedAt());
@@ -193,8 +196,11 @@ public class RestoreApplicationServiceImpl implements RestoreApplicationService 
                 record.getId(),
                 record.getBackupId(),
                 record.getPreRestoreBackupId(),
+                record.getRestoreMode(),
                 record.getRestoreStatus(),
                 record.getWriteBlockEnabled(),
+                record.getWriteBlockStartedAt(),
+                record.getWriteBlockReleasedAt(),
                 record.getFailureReason(),
                 record.getRequesterUserId(),
                 record.getStartedAt(),
@@ -209,8 +215,11 @@ public class RestoreApplicationServiceImpl implements RestoreApplicationService 
                 record.getId(),
                 record.getBackupId(),
                 record.getPreRestoreBackupId(),
+                record.getRestoreMode(),
                 record.getRestoreStatus(),
                 record.getWriteBlockEnabled(),
+                record.getWriteBlockStartedAt(),
+                record.getWriteBlockReleasedAt(),
                 record.getFailureReason(),
                 record.getRequesterUserId(),
                 record.getStartedAt(),
@@ -227,6 +236,12 @@ public class RestoreApplicationServiceImpl implements RestoreApplicationService 
         if (command.getRequesterUserId() == null) {
             throw new IllegalArgumentException("Operations restore requesterUserId must not be null.");
         }
+    }
+
+    private RestoreMode resolveRestoreMode(OperationsRestoreExecuteCommand command) {
+        return StringUtils.isBlank(command.getRestoreMode())
+                ? RestoreMode.REAL
+                : RestoreMode.from(command.getRestoreMode());
     }
 
     private String stripSqlSuffix(String fileName) {
