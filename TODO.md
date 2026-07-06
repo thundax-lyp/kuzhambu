@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Portal Web 分享服务`：实现私有分享读取回退
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-PRIVATE-SHARE-ACCESS.md`
-    - 范围对象：`kuzhambu-apps/portal-web/src/api/http.ts`、`kuzhambu-apps/portal-web/src/pages/share/share-service.ts`、`kuzhambu-apps/portal-web/src/pages/share/share-types.ts`、`kuzhambu-apps/portal-web/src/pages/share/share-service.test.ts`
-    - 处理动作：分享服务先读公开接口，收到 `loginRequired=true` 且本地有 token 时改读私有接口。
-    - 验收点：服务测试覆盖无 token 登录引导、有 token 私有详情回退、私有资源 URL 携带 `token` 查询参数。
-    - 重要度：9/10
-
 - [ ] `Portal Web 分享详情页`：补齐私有分享控件与操作
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-PRIVATE-SHARE-ACCESS.md`
