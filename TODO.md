@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Discovery 收口文档`：更新 coverage 并清理阶段性 RUNBOOK
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-DISCOVERY-FILTER-PERMISSION-CLOSURE.md`
-    - 范围对象：`docs/40-readiness/DISCOVERY-IMPLEMENTATION-COVERAGE.md`、`docs/30-designs/RUNBOOK-DISCOVERY-FILTER-PERMISSION-CLOSURE.md`、`TODO.md`
-    - 处理动作：将对应能力标记为 `已完成`，删除已无剩余价值的 RUNBOOK，并按完成范围清理 TODO
-    - 验收点：coverage 无中间状态，RUNBOOK 已清理，TODO 只保留未完成任务
-    - 重要度：10/10
-
 ## 待审阅任务项
 
 ## 待讨论项
