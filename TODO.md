@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `knowledge-infra repository`：新增质量报告持久化转换和仓储实现
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-QUALITY-LOOP.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/refinement/persistence/mapper/QualityReportSourceDetailMapper.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/refinement/persistence/assembler/QualityReportPersistenceAssembler.java`、`QualityReportIssuePersistenceAssembler.java`、`QualityReportSourceDetailPersistenceAssembler.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/refinement/repository/impl/QualityReportRepositoryImpl.java`
-    - 处理动作：实现报告快照的领域/DO 转换、来源明细 Mapper 和报告仓储。
-    - 验收点：保存报告时主表、问题和来源明细整体写入，最新报告按 `report_status=PUBLISHED` 与 `generated_at` 倒序读取。
-    - 重要度：10/10
-
 - [ ] `QualityAnnotationRepository`：扩展质量标注查询能力
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-QUALITY-LOOP.md`
