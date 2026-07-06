@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Knowledge documentation closure`：更新覆盖矩阵并清理 RUNBOOK
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-KNOWLEDGE-QUALITY-LOOP.md`
-    - 范围对象：`docs/30-designs/KNOWLEDGE-DESIGN.md`、`docs/40-readiness/KNOWLEDGE-IMPLEMENTATION-COVERAGE.md`、`docs/30-designs/RUNBOOK-KNOWLEDGE-QUALITY-LOOP.md`、`TODO.md`
-    - 处理动作：将质量标注报告闭环写入 Knowledge 设计和 Implementation Coverage，删除已完成 RUNBOOK，并按完成情况清理或收窄 TODO。
-    - 验收点：Coverage 不再把质量报告闭环标为未完成，RUNBOOK 文件已删除，`TODO.md` 不保留已完成任务。
-    - 重要度：10/10
-
 ## 待审阅任务项
 
 ## 待讨论项
