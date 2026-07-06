@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Discovery 分支同步`：同步 main 分支最新代码
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-DISCOVERY-FILTER-PERMISSION-CLOSURE.md`
-    - 范围对象：`codex/discovery-filter-permission-loop`、`main`、`/Volumes/storage/workspace/kuzhambu-discovery-filter-permission-loop`
-    - 处理动作：在验证前同步 `main` 分支最新代码并解决本任务范围内冲突
-    - 验收点：工作分支包含 `main` 最新代码，冲突处理不混入无关改动
-    - 重要度：9/10
-
 - [ ] `Discovery 筛选权限验证`：运行后端与 Portal 最小验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-FILTER-PERMISSION-CLOSURE.md`

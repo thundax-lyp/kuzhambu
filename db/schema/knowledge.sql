@@ -370,3 +370,76 @@ CREATE TABLE IF NOT EXISTS `knowledge_quality_annotation` (
     KEY `idx_knowledge_quality_annotation_object` (`object_type`, `object_key`),
     KEY `idx_knowledge_quality_annotation_source` (`source_content_type`, `source_content_id`, `graph_version_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='知识质量标注表';
+
+CREATE TABLE IF NOT EXISTS `knowledge_quality_report` (
+    `id` bigint NOT NULL AUTO_INCREMENT,
+    `report_id` bigint NOT NULL,
+    `report_no` varchar(64) NOT NULL,
+    `graph_version_id` bigint NOT NULL,
+    `source_content_type` varchar(32) NOT NULL,
+    `source_content_id` bigint NOT NULL,
+    `source_category_code` varchar(64) NOT NULL,
+    `source_category_name` varchar(128) NOT NULL,
+    `report_status` varchar(32) NOT NULL,
+    `entity_total_count` bigint NOT NULL,
+    `entity_confirmed_count` bigint NOT NULL,
+    `relation_total_count` bigint NOT NULL,
+    `relation_confirmed_count` bigint NOT NULL,
+    `lineage_total_count` bigint NOT NULL,
+    `lineage_confirmed_count` bigint NOT NULL,
+    `entity_coverage_rate` decimal(10,4) NOT NULL,
+    `relation_accuracy_rate` decimal(10,4) NOT NULL,
+    `lineage_coverage_rate` decimal(10,4) NOT NULL,
+    `completeness_rate` decimal(10,4) NOT NULL,
+    `annotation_count` bigint NOT NULL,
+    `issue_count` bigint NOT NULL,
+    `generated_by` bigint NOT NULL,
+    `generated_at` datetime(3) NOT NULL,
+    `published_at` datetime(3) NOT NULL,
+    `created_at` datetime(3) NOT NULL,
+    `updated_at` datetime(3) NOT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_knowledge_quality_report_id` (`report_id`),
+    UNIQUE KEY `uk_knowledge_quality_report_no` (`report_no`),
+    KEY `idx_knowledge_quality_report_version_status` (`graph_version_id`, `report_status`, `generated_at`),
+    KEY `idx_knowledge_quality_report_latest` (`report_status`, `generated_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='知识质量报告表';
+
+CREATE TABLE IF NOT EXISTS `knowledge_quality_report_issue` (
+    `id` bigint NOT NULL AUTO_INCREMENT,
+    `issue_id` bigint NOT NULL,
+    `report_id` bigint NOT NULL,
+    `issue_type` varchar(64) NOT NULL,
+    `severity` varchar(16) NOT NULL,
+    `object_type` varchar(32) DEFAULT NULL,
+    `object_key` varchar(256) DEFAULT NULL,
+    `title` varchar(128) NOT NULL,
+    `description` varchar(1024) NOT NULL,
+    `suggestion` varchar(1024) DEFAULT NULL,
+    `href` varchar(256) DEFAULT NULL,
+    `priority` int NOT NULL,
+    `created_at` datetime(3) NOT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_knowledge_quality_report_issue_id` (`issue_id`),
+    KEY `idx_knowledge_quality_report_issue_report` (`report_id`, `severity`, `priority`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='知识质量报告问题快照表';
+
+CREATE TABLE IF NOT EXISTS `knowledge_quality_report_source_detail` (
+    `id` bigint NOT NULL AUTO_INCREMENT,
+    `detail_id` bigint NOT NULL,
+    `report_id` bigint NOT NULL,
+    `source_content_type` varchar(32) NOT NULL,
+    `source_content_id` bigint NOT NULL,
+    `source_category_code` varchar(64) NOT NULL,
+    `source_category_name` varchar(128) NOT NULL,
+    `graph_version_id` bigint NOT NULL,
+    `applied_at` datetime(3) NOT NULL,
+    `annotation_count` bigint NOT NULL,
+    `issue_count` bigint NOT NULL,
+    `status` varchar(32) NOT NULL,
+    `href` varchar(256) DEFAULT NULL,
+    `created_at` datetime(3) NOT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_knowledge_quality_report_source_detail_id` (`detail_id`),
+    KEY `idx_knowledge_quality_report_source_detail_report` (`report_id`, `graph_version_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='知识质量报告来源明细快照表';
