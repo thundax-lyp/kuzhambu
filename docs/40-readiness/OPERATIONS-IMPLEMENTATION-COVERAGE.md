@@ -17,7 +17,7 @@
 
 部分完成：
 
-- `cleanup` 已完成领域模型、持久化实现、应用层与接口层闭环，并已接通 admin 列表与详情查询；当前清理目标发现与执行逻辑仍为占位实现，未形成真实清理能力。
+- `cleanup` 已完成领域模型、持久化实现、应用层、接口层、admin 列表、详情查询、详情 item 展示和当前范围真实执行；当前已能发现并执行过期备份记录、Classics 过期导出任务、过期分享链接和草稿分享链接清理。长期规则策略、调度化清理和更多目标类型仍待后续扩展。
 - `health` 与 `long task` 已完成领域模型、持久化、应用层、接口层闭环，支持健康摘要、组件级分页和长任务分页/详情查询，前端 `Operations` 台账页已接入健康摘要与长任务运行态展示；运行指标采集源仍未接入。
 - 备份恢复链路具备基础闭环，但自动备份调度、恢复期间真实写入阻断、统一运维首页与系统/审计入口仍未全部补齐。
 
@@ -49,10 +49,10 @@
 | 仪表盘与聚合展示 | 未完成 | 仅有需求/设计边界定义 | 内容统计、访问统计、活跃用户、功能频率、热门内容、趋势图、标签覆盖率变化、按权限聚合与图表化展示未见代码落地；已有 `Operations` 任务门面页实现健康摘要与长任务运行态展示 | Operations |
 | 报表 | 已完成 | 已完成周报/月报任务生成、HTML/PDF worker 渲染、Storage 产物回写、报表记录分页/详情查询、状态流转、独立 response、`operations:report:view` / `operations:report:generate` 权限控制，以及跨域 summary 聚合读取 | admin 页面接入与专属下载表现不在本矩阵范围内；后续如增加调度报表可另行扩展 | Operations |
 | 备份与恢复 | 部分完成 | 已完成 `BackupRecord`、`RestoreRecord`、各自 persistence、手动备份执行、恢复前 `PRE_RESTORE` 快照创建、备份/恢复 `execute/page/detail` 接口、`admin-web` 备份恢复页面、菜单与权限种子，以及脚本执行结果回写 | 启动自动备份、24 小时自动备份、恢复期间真实写入阻断、真实恢复演练与长期调度仍未完成 | Operations |
-| 清理任务 | 部分完成 | `CleanupJob` / `CleanupItem` 已完成领域模型与持久化，应用层 `execute/page/detail` 与 admin 接口已上线，前端清理台账页已接通，`operations:cleanup:view/execute` 与页面基础回归测试已存在；若清理目标涉及导出产物对象，其底层生命周期已可复用 Storage 自动 orphan 清理能力 | 清理目标发现与真实执行逻辑待接入，失败项失败原因链路与长期规则策略未闭环 | Operations |
+| 清理任务 | 部分完成 | `CleanupJob` / `CleanupItem` 已完成领域模型与持久化，应用层 `execute/page/detail` 与 admin 接口已上线，前端清理台账页已接通，`operations:cleanup:view/execute` 与页面基础回归测试已存在；当前真实执行覆盖过期备份、Classics 过期导出、过期分享和草稿分享，详情页可展示每条 cleanup item 的目标、状态、失败原因和处理时间；若清理目标涉及导出产物对象，其底层生命周期已可复用 Storage 自动 orphan 清理能力 | 调度化清理、长期规则策略和更多目标类型扩展未闭环 | Operations |
 | 健康检查与运行状态 | 部分完成 | `HealthCheckRecord`、`LongTaskSnapshot` 已完成 domain + persistence + application + interface，支持健康摘要、组件分页查询、长任务分页与详情查询，`operations:health:view`/`operations:task:view` 接口已就绪 | 健康指标采集源、运行态趋势展示、告警策略与失败恢复联动未完成 | Operations |
 | 运维入口 | 部分完成 | 已完成备份恢复与报表 admin 入口、路由与菜单种子；清理/健康/长任务接口可用于统一运维入口聚合消费；`Operations` 门面页已提供清理、备份恢复、报表快速跳转 | 健康细分页、System 日志/审计入口、统一运维首页仍未完成 | Operations |
-| 台账记录 | 部分完成 | report、backup、restore、cleanup 已完成 domain + persistence + application + interface + admin page；health 与 long task 已完成 domain + persistence + application + interface，基础查询能力可消费 | 清理真实执行归档、健康指标来源写入、长任务异常恢复与跨模块联调验证未完成 | Operations |
+| 台账记录 | 部分完成 | report、backup、restore、cleanup 已完成 domain + persistence + application + interface + admin page；cleanup 真实执行会写入 job summary 和 item 明细；health 与 long task 已完成 domain + persistence + application + interface，基础查询能力可消费 | 健康指标来源写入、长任务异常恢复与跨模块联调验证未完成 | Operations |
 | TODO 与治理文档清理 | 已完成 | `TODO.md` 已清空，备份恢复专项 RUNBOOK 已删除 | 无 | Governance |
 
 ## Follow-up Backlog
@@ -60,7 +60,7 @@
 ### B1 Operations 非报表剩余应用层闭环
 
 状态：进行中  
-目标：补齐清理任务真实执行逻辑、健康组件采集来源入库、长任务写入源接入，以及统一运维入口编排层的状态聚合与阈值策略。
+目标：清理任务当前范围真实执行逻辑已补齐；后续继续补齐健康组件采集来源入库、长任务写入源接入，以及统一运维入口编排层的状态聚合与阈值策略。
 
 ### B2 Operations 剩余接口与入口
 
@@ -74,10 +74,10 @@
 
 ### B4 调度、阻断与运行态接入
 
-状态：未开始  
+状态：未开始
 目标：接入自动备份调度、运行指标/组件健康采集源、恢复期间真实写入阻断、长任务写入源，以及 System 日志/审计入口。
 
 ### B5 剩余非报表任务交付验证
 
-状态：未开始  
-目标：补齐 cleanup/health/task 关键链路的契约与集成测试，并补一轮 backup/restore 真实恢复演练记录，覆盖创建、更新、查询，以及清理/恢复失败原因可追溯能力。
+状态：进行中
+目标：cleanup 关键链路已补齐真实执行与详情 item 回归；后续补齐 health/task 关键链路的契约与集成测试，并补一轮 backup/restore 真实恢复演练记录，覆盖创建、更新、查询，以及恢复失败原因可追溯能力。
