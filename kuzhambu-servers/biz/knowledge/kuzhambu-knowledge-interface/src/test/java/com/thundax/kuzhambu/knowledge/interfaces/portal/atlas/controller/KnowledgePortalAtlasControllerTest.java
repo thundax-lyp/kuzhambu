@@ -39,7 +39,7 @@ class KnowledgePortalAtlasControllerTest {
                         """
                         {
                           "level": "detail",
-                          "categoryCode": "BIRDS",
+                          "categoryCode": "ANIMALS",
                           "entityId": 3001,
                           "knowledgeBase": "SANCAI_ENTRY",
                           "keyword": "黄帝",
@@ -85,16 +85,36 @@ class KnowledgePortalAtlasControllerTest {
                                 "首次抽取", "知识首次进入图谱", "说明", "/knowledge/atlas")),
                         List.of(new KnowledgePortalAtlasResponse.RelatedTagResponse("11", "上古", "时代", 0.88D))),
                 new KnowledgePortalAtlasResponse.AvailableFiltersResponse(
-                        List.of("SANCAI_ENTRY"),
-                        List.of("PERSON"),
-                        List.of("ANCESTOR"),
-                        List.of("上古"),
-                        List.of("30d")));
+                        List.of("SANCAI_ENTRY"), List.of("PERSON"), List.of("ANCESTOR"), List.of("上古"), List.of("30d")),
+                new KnowledgePortalAtlasResponse.CanvasViewResponse(
+                        "detail",
+                        "黄帝关系图谱",
+                        "展示实体及其一跳关系。",
+                        "entity:3001",
+                        false,
+                        null,
+                        null,
+                        List.of(new KnowledgePortalAtlasResponse.CanvasNodeResponse(
+                                "entity:3001",
+                                "entity",
+                                "黄帝",
+                                "PERSON",
+                                "置信度",
+                                95L,
+                                "CONFIRMED",
+                                "PEOPLE",
+                                3001L,
+                                "/knowledge/atlas?level=detail&entityId=3001",
+                                0.95D,
+                                0D,
+                                0D)),
+                        List.of()));
         var node = OBJECT_MAPPER.valueToTree(response);
         assertTrue(node.has("currentLevel"));
         assertTrue(node.has("breadcrumbItems"));
         assertTrue(node.has("detailView"));
         assertTrue(node.has("availableFilters"));
+        assertTrue(node.has("canvasView"));
     }
 
     @Test
@@ -110,13 +130,13 @@ class KnowledgePortalAtlasControllerTest {
                                 "十四门类知识鸟瞰",
                                 "先看门类分布，再进入单门类浏览与单实体详情。",
                                 List.of(new KnowledgePortalAtlasResult.OverviewCategoryCard(
-                                        "BIRDS",
-                                        "羽族",
+                                        "ANIMALS",
+                                        "鸟兽",
                                         2L,
                                         1L,
                                         2L,
                                         3,
-                                        "/knowledge/atlas?level=category&categoryCode=BIRDS"))),
+                                        "/knowledge/atlas?level=category&categoryCode=ANIMALS"))),
                         null,
                         null,
                         new KnowledgePortalAtlasResult.AvailableFilters(
@@ -129,7 +149,7 @@ class KnowledgePortalAtlasControllerTest {
         verify(service).getAtlas(any(KnowledgePortalAtlasQuery.class));
         assertEquals("overview", response.getCurrentLevel());
         assertEquals(
-                "BIRDS", response.getOverviewView().getCategoryCards().get(0).getCategoryCode());
+                "ANIMALS", response.getOverviewView().getCategoryCards().get(0).getCategoryCode());
         assertEquals(
                 "SANCAI_ENTRY",
                 response.getAvailableFilters().getKnowledgeBases().get(0));
@@ -146,11 +166,11 @@ class KnowledgePortalAtlasControllerTest {
                                 new KnowledgePortalAtlasResult.BreadcrumbItem(
                                         "overview", "图谱总览", "/knowledge/atlas?level=overview"),
                                 new KnowledgePortalAtlasResult.BreadcrumbItem(
-                                        "category", "羽族", "/knowledge/atlas?level=category&categoryCode=BIRDS")),
+                                        "category", "鸟兽", "/knowledge/atlas?level=category&categoryCode=ANIMALS")),
                         null,
                         new KnowledgePortalAtlasResult.CategoryView(
-                                "BIRDS",
-                                "羽族",
+                                "ANIMALS",
+                                "鸟兽",
                                 71L,
                                 3,
                                 List.of(new KnowledgePortalAtlasResult.CategoryEntityHighlight(
@@ -178,7 +198,7 @@ class KnowledgePortalAtlasControllerTest {
                 new com.thundax.kuzhambu.knowledge.interfaces.portal.atlas.controller.request
                         .KnowledgePortalAtlasQuery();
         request.setLevel("category");
-        request.setCategoryCode("BIRDS");
+        request.setCategoryCode("ANIMALS");
         var response = controller.getAtlas(request);
 
         verify(service).getAtlas(any(KnowledgePortalAtlasQuery.class));
@@ -200,7 +220,7 @@ class KnowledgePortalAtlasControllerTest {
                                 new KnowledgePortalAtlasResult.BreadcrumbItem(
                                         "overview", "图谱总览", "/knowledge/atlas?level=overview"),
                                 new KnowledgePortalAtlasResult.BreadcrumbItem(
-                                        "category", "三才图会", "/knowledge/atlas?level=category&categoryCode=BIRDS"),
+                                        "category", "鸟兽", "/knowledge/atlas?level=category&categoryCode=ANIMALS"),
                                 new KnowledgePortalAtlasResult.BreadcrumbItem(
                                         "detail", "黄帝", "/knowledge/atlas?level=detail&entityId=3001")),
                         null,

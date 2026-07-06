@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `knowledge graph closure 初次验证`：运行实现后的相关验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-14-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge`、`kuzhambu-apps/portal-web`、`/knowledge/atlas`
-    - 处理动作：在功能实现完成后运行 RUNBOOK 中的 Maven、npm 和桌面/移动端视觉冒烟验证
-    - 验收点：格式、lint、测试、build 和四个 atlas URL 的视觉检查均通过且无抽取类网络调用
-    - 重要度：9/10
-
 - [ ] `knowledge graph closure main 同步`：收口前同步 main 分支代码
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-14-CLOSURE.md`

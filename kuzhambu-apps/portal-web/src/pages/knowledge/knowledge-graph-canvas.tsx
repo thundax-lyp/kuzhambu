@@ -2,7 +2,9 @@ import {
     Background,
     BackgroundVariant,
     Controls,
+    Handle,
     MiniMap,
+    Position,
     ReactFlow,
     type Node,
     type NodeProps
@@ -34,6 +36,18 @@ const KnowledgeGraphNode = ({ data, selected }: NodeProps<Node<KnowledgeGraphNod
                 .filter(Boolean)
                 .join(" ")}
         >
+            <Handle
+                className="knowledge-graph-node-handle"
+                isConnectable={false}
+                position={Position.Left}
+                type="target"
+            />
+            <Handle
+                className="knowledge-graph-node-handle"
+                isConnectable={false}
+                position={Position.Right}
+                type="source"
+            />
             <div className="knowledge-graph-node-topline">
                 <span>{data.kind}</span>
                 {data.status ? <strong>{data.status}</strong> : null}
