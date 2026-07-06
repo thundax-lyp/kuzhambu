@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `07-admin-web-taxonomy-ui`：实现标签治理页 AI 抽取标签控件
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-KNOWLEDGE-TAG-EXTRACTION.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/taxonomy/taxonomy-page.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/taxonomy/components/tag-extraction-drawer.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/taxonomy/components/tag-extraction-candidate-table.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/taxonomy/taxonomy-page.css`、`kuzhambu-apps/admin-web/src/pages/knowledge/taxonomy/taxonomy-page.test.tsx`
-    - 处理动作：新增 `AI 抽取标签` 按钮、抽取 drawer、候选表格和应用确认操作
-    - 验收点：页面测试覆盖打开 drawer、填写控件、开始抽取、勾选候选、确认应用和刷新标签查询
-    - 重要度：8/10
-
 - [ ] `08-main-sync`：收口前同步 main 分支代码
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`

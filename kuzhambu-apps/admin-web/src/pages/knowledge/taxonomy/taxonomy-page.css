@@ -58,6 +58,29 @@
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 }
 
+.knowledge-taxonomy-tag-extraction-form,
+.knowledge-taxonomy-tag-extraction-result {
+    display: grid;
+    gap: 16px;
+}
+
+.knowledge-taxonomy-tag-extraction-model-grid {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.knowledge-taxonomy-tag-extraction-model-grid .ant-input-number {
+    width: 100%;
+}
+
+.knowledge-taxonomy-tag-extraction-footer {
+    align-items: center;
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
 @media (max-width: 768px) {
     .knowledge-taxonomy-merge-header {
         flex-direction: column;

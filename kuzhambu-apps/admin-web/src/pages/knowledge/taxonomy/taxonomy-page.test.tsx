@@ -7,6 +7,14 @@ import { queryClient } from "@/query/query-client";
 import * as service from "./taxonomy-service";
 import { TaxonomyPage } from "./taxonomy-page";
 
+const confirmDangerMock = vi.hoisted(() =>
+    vi.fn(({ onConfirm }: { onConfirm: () => unknown }) => onConfirm())
+);
+
+vi.mock("@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm", () => ({
+    useKuzhambuConfirm: () => ({ danger: confirmDangerMock })
+}));
+
 vi.mock("./taxonomy-service", () => ({
     pageCategories: vi.fn(async () => ({
         pageNo: 1,
@@ -65,6 +73,24 @@ vi.mock("./taxonomy-service", () => ({
     createTag: vi.fn(async () => true),
     updateTag: vi.fn(async () => true),
     reviewTag: vi.fn(async () => true),
+    requestTagExtraction: vi.fn(async () => ({
+        aiCallId: 501,
+        aiCandidateId: 601,
+        status: "SUCCEEDED",
+        resultFormat: "STRUCTURED",
+        resultPayload: '{"tags":[]}',
+        candidates: [
+            {
+                name: "岁时礼俗",
+                categoryId: "11",
+                categoryName: "礼学",
+                confidence: 0.91,
+                matchedExistingTagId: null,
+                reason: "内容片段集中描述岁时礼俗"
+            }
+        ]
+    })),
+    applyExtractedTags: vi.fn(async () => true),
     createTagAlias: vi.fn(async () => true),
     removeTagAlias: vi.fn(async () => true),
     changeCategoryStatus: vi.fn(async () => true),
@@ -105,5 +131,75 @@ describe("TaxonomyPage", () => {
             })
         );
         expect(await screen.findByText("标签治理统计")).toBeInTheDocument();
+    }, 30000);
+
+    it("extracts and applies AI tag candidates", async () => {
+        const user = userEvent.setup();
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <TaxonomyPage />
+                </AntdApp>
+            </QueryClientProvider>
+        );
+
+        await user.click(screen.getByRole("tab", { name: "统一标签" }));
+        await user.click(await screen.findByRole("button", { name: "AI 抽取标签" }));
+
+        expect(await screen.findByRole("dialog", { name: "AI 抽取标签" })).toBeInTheDocument();
+        await user.type(screen.getByLabelText("内容 ID"), "SANCAI_ENTRY:1001");
+        await user.type(screen.getByLabelText("内容片段"), "正月礼俗与乡饮酒礼相关内容");
+        await user.type(screen.getByLabelText("模型 ID"), "100");
+        await user.type(screen.getByLabelText("模型名称"), "gpt-5.5");
+        await user.click(screen.getByRole("button", { name: "开始抽取" }));
+
+        await waitFor(() =>
+            expect(service.requestTagExtraction).toHaveBeenCalledWith({
+                sourceContentType: "SANCAI_ENTRY",
+                sourceContentId: "SANCAI_ENTRY:1001",
+                contentTitle: undefined,
+                contentText: "正月礼俗与乡饮酒礼相关内容",
+                modelId: 100,
+                modelName: "gpt-5.5",
+                promptVersionId: undefined,
+                maxTags: 10,
+                allowNewTags: true
+            })
+        );
+
+        expect(await screen.findByText("岁时礼俗")).toBeInTheDocument();
+        const rowCheckbox = screen.getAllByRole("checkbox")[1];
+        await user.click(rowCheckbox);
+        await user.type(screen.getByLabelText("审核备注"), "人工确认后进入审核");
+        await user.click(screen.getByRole("button", { name: "应用选中标签" }));
+
+        await waitFor(() =>
+            expect(service.applyExtractedTags).toHaveBeenCalledWith({
+                aiCandidateId: 601,
+                selectedTags: [
+                    {
+                        name: "岁时礼俗",
+                        categoryId: "11",
+                        categoryName: "礼学",
+                        confidence: 0.91,
+                        matchedExistingTagId: null,
+                        reason: "内容片段集中描述岁时礼俗"
+                    }
+                ],
+                reviewNote: "人工确认后进入审核"
+            })
+        );
+        expect(confirmDangerMock).toHaveBeenCalledWith(
+            expect.objectContaining({
+                title: "应用 AI 标签候选",
+                okText: "应用"
+            })
+        );
+        await waitFor(() =>
+            expect(screen.getByRole("tab", { name: "待审核标签" })).toHaveAttribute(
+                "aria-selected",
+                "true"
+            )
+        );
     }, 30000);
 });
