@@ -9,6 +9,8 @@ import com.thundax.kuzhambu.common.web.context.KuzhambuContextResolver;
 import com.thundax.kuzhambu.common.web.exception.DefaultExceptionTranslator;
 import com.thundax.kuzhambu.common.web.exception.GlobalExceptionHandler;
 import com.thundax.kuzhambu.common.web.i18n.I18nMessageResolver;
+import com.thundax.kuzhambu.common.web.restore.RestoreWriteBlockFilter;
+import com.thundax.kuzhambu.common.web.restore.RestoreWriteBlockState;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
@@ -31,15 +33,28 @@ public class KuzhambuWebConfigurationTest {
             context.getBean(ApiResponseBodyAdvice.class);
             context.getBean(KuzhambuContextResolver.class);
             context.getBean(KuzhambuContextFilter.class);
+            context.getBean(RestoreWriteBlockState.class);
+            context.getBean(RestoreWriteBlockFilter.class);
         });
     }
 
     @Test
     public void shouldRegisterContextFilterWithHighestPrecedence() {
         contextRunner.run(context -> {
-            FilterRegistrationBean<?> registration = context.getBean(FilterRegistrationBean.class);
+            FilterRegistrationBean<?> registration =
+                    context.getBean("kuzhambuContextFilterRegistration", FilterRegistrationBean.class);
 
             assertEquals(Ordered.HIGHEST_PRECEDENCE, registration.getOrder());
+        });
+    }
+
+    @Test
+    public void shouldRegisterRestoreWriteBlockFilterAfterContextFilter() {
+        contextRunner.run(context -> {
+            FilterRegistrationBean<?> registration =
+                    context.getBean("restoreWriteBlockFilterRegistration", FilterRegistrationBean.class);
+
+            assertEquals(Ordered.HIGHEST_PRECEDENCE + 1, registration.getOrder());
         });
     }
 

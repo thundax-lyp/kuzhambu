@@ -21,15 +21,18 @@ class OperationsRestoreContractTest {
     void requestJsonFieldsShouldRemainStable() throws Exception {
         OperationsRestoreExecuteRequest executeRequest = OBJECT_MAPPER.readValue(
                 """
-                {"backupId":9001}
-                """, OperationsRestoreExecuteRequest.class);
+                {"backupId":9001,"restoreMode":"DRILL"}
+                """,
+                OperationsRestoreExecuteRequest.class);
         assertEquals(9001L, executeRequest.getBackupId());
-        assertJsonFields(executeRequest, "backupId");
+        assertEquals("DRILL", executeRequest.getRestoreMode());
+        assertJsonFields(executeRequest, "backupId", "restoreMode");
 
         OperationsRestorePageRequest pageRequest = OBJECT_MAPPER.readValue(
                 """
                 {
                   "backupId":9001,
+                  "restoreMode":"DRILL",
                   "restoreStatus":"SUCCEEDED",
                   "requesterUserId":1001,
                   "pageNo":1,
@@ -37,8 +40,10 @@ class OperationsRestoreContractTest {
                 }
                 """,
                 OperationsRestorePageRequest.class);
+        assertEquals("DRILL", pageRequest.getRestoreMode());
         assertEquals("SUCCEEDED", pageRequest.getRestoreStatus());
-        assertJsonFields(pageRequest, "backupId", "restoreStatus", "requesterUserId", "pageNo", "pageSize");
+        assertJsonFields(
+                pageRequest, "backupId", "restoreMode", "restoreStatus", "requesterUserId", "pageNo", "pageSize");
 
         OperationsRestoreDetailRequest detailRequest = OBJECT_MAPPER.readValue(
                 """
@@ -54,8 +59,11 @@ class OperationsRestoreContractTest {
                 .restoreId(9101L)
                 .backupId(9001L)
                 .preRestoreBackupId(9201L)
+                .restoreMode("DRILL")
                 .restoreStatus("SUCCEEDED")
                 .writeBlockEnabled(Boolean.TRUE)
+                .writeBlockStartedAt(new Date(1_719_630_410_000L))
+                .writeBlockReleasedAt(new Date(1_719_630_490_000L))
                 .failureReason(null)
                 .startedAt(new Date(1_719_630_400_000L))
                 .completedAt(new Date(1_719_630_500_000L))
@@ -65,8 +73,11 @@ class OperationsRestoreContractTest {
                 "restoreId",
                 "backupId",
                 "preRestoreBackupId",
+                "restoreMode",
                 "restoreStatus",
                 "writeBlockEnabled",
+                "writeBlockStartedAt",
+                "writeBlockReleasedAt",
                 "failureReason",
                 "startedAt",
                 "completedAt");
@@ -75,8 +86,11 @@ class OperationsRestoreContractTest {
                 .restoreId(9101L)
                 .backupId(9001L)
                 .preRestoreBackupId(9201L)
+                .restoreMode("DRILL")
                 .restoreStatus("SUCCEEDED")
                 .writeBlockEnabled(Boolean.TRUE)
+                .writeBlockStartedAt(new Date(1_719_630_410_000L))
+                .writeBlockReleasedAt(new Date(1_719_630_490_000L))
                 .failureReason(null)
                 .requesterUserId(1001L)
                 .startedAt(new Date(1_719_630_400_000L))
@@ -87,8 +101,11 @@ class OperationsRestoreContractTest {
                 "restoreId",
                 "backupId",
                 "preRestoreBackupId",
+                "restoreMode",
                 "restoreStatus",
                 "writeBlockEnabled",
+                "writeBlockStartedAt",
+                "writeBlockReleasedAt",
                 "failureReason",
                 "requesterUserId",
                 "startedAt",
@@ -98,8 +115,11 @@ class OperationsRestoreContractTest {
                 .restoreId(9101L)
                 .backupId(9001L)
                 .preRestoreBackupId(9201L)
+                .restoreMode("DRILL")
                 .restoreStatus("SUCCEEDED")
                 .writeBlockEnabled(Boolean.TRUE)
+                .writeBlockStartedAt(new Date(1_719_630_410_000L))
+                .writeBlockReleasedAt(new Date(1_719_630_490_000L))
                 .failureReason(null)
                 .requesterUserId(1001L)
                 .startedAt(new Date(1_719_630_400_000L))
@@ -110,8 +130,11 @@ class OperationsRestoreContractTest {
                 "restoreId",
                 "backupId",
                 "preRestoreBackupId",
+                "restoreMode",
                 "restoreStatus",
                 "writeBlockEnabled",
+                "writeBlockStartedAt",
+                "writeBlockReleasedAt",
                 "failureReason",
                 "requesterUserId",
                 "startedAt",

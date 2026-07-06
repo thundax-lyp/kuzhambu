@@ -25,7 +25,8 @@ public final class OperationsRestoreInterfaceAssembler {
         if (request == null || request.getBackupId() == null) {
             return null;
         }
-        return new OperationsRestoreExecuteCommand(BackupId.of(request.getBackupId()), currentAdminUserId());
+        return new OperationsRestoreExecuteCommand(
+                BackupId.of(request.getBackupId()), request.getRestoreMode(), currentAdminUserId());
     }
 
     public static OperationsRestorePageQuery toQuery(OperationsRestorePageRequest request) {
@@ -33,7 +34,10 @@ public final class OperationsRestoreInterfaceAssembler {
             return null;
         }
         return new OperationsRestorePageQuery(
-                request.getBackupId(), request.getRestoreStatus(), request.getRequesterUserId());
+                request.getBackupId(),
+                request.getRestoreMode(),
+                request.getRestoreStatus(),
+                request.getRequesterUserId());
     }
 
     public static OperationsRestoreDetailQuery toQuery(OperationsRestoreDetailRequest request) {
@@ -54,8 +58,11 @@ public final class OperationsRestoreInterfaceAssembler {
                                 : result.getRestoreId().value())
                 .backupId(result.getBackupId())
                 .preRestoreBackupId(result.getPreRestoreBackupId())
+                .restoreMode(result.getRestoreMode())
                 .restoreStatus(result.getRestoreStatus())
                 .writeBlockEnabled(result.getWriteBlockEnabled())
+                .writeBlockStartedAt(result.getWriteBlockStartedAt())
+                .writeBlockReleasedAt(result.getWriteBlockReleasedAt())
                 .failureReason(result.getFailureReason())
                 .startedAt(result.getStartedAt())
                 .completedAt(result.getCompletedAt())
@@ -73,8 +80,11 @@ public final class OperationsRestoreInterfaceAssembler {
                                 : result.getRestoreId().value())
                 .backupId(result.getBackupId())
                 .preRestoreBackupId(result.getPreRestoreBackupId())
+                .restoreMode(result.getRestoreMode())
                 .restoreStatus(result.getRestoreStatus())
                 .writeBlockEnabled(result.getWriteBlockEnabled())
+                .writeBlockStartedAt(result.getWriteBlockStartedAt())
+                .writeBlockReleasedAt(result.getWriteBlockReleasedAt())
                 .failureReason(result.getFailureReason())
                 .requesterUserId(result.getRequesterUserId())
                 .startedAt(result.getStartedAt())
@@ -93,8 +103,11 @@ public final class OperationsRestoreInterfaceAssembler {
                                 : result.getRestoreId().value())
                 .backupId(result.getBackupId())
                 .preRestoreBackupId(result.getPreRestoreBackupId())
+                .restoreMode(result.getRestoreMode())
                 .restoreStatus(result.getRestoreStatus())
                 .writeBlockEnabled(result.getWriteBlockEnabled())
+                .writeBlockStartedAt(result.getWriteBlockStartedAt())
+                .writeBlockReleasedAt(result.getWriteBlockReleasedAt())
                 .failureReason(result.getFailureReason())
                 .requesterUserId(result.getRequesterUserId())
                 .startedAt(result.getStartedAt())

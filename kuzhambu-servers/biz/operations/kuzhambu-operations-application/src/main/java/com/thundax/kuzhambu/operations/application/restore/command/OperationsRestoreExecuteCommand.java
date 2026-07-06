@@ -12,5 +12,11 @@ import lombok.Setter;
 @AllArgsConstructor
 public class OperationsRestoreExecuteCommand {
     private BackupId backupId;
+    private String restoreMode;
     private Long requesterUserId;
+
+    public OperationsRestoreExecuteCommand(BackupId backupId, Long requesterUserId) {
+        this.backupId = backupId;
+        this.requesterUserId = requesterUserId;
+    }
 }

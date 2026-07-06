@@ -1,6 +1,10 @@
 import { postJson } from "@/api/http";
 import type { Page, PageQuery } from "@/types/page";
-import type { OperationsBackupRecord, OperationsRestoreRecord } from "./backup-restore-types";
+import type {
+    OperationsBackupRecord,
+    OperationsRestoreMode,
+    OperationsRestoreRecord
+} from "./backup-restore-types";
 
 export interface BackupLedgerQuery {
     backupType?: string | null;
@@ -14,10 +18,12 @@ export interface BackupDetailCommand {
 
 export interface RestoreExecuteCommand {
     backupId: number;
+    restoreMode: OperationsRestoreMode;
 }
 
 export interface RestoreLedgerQuery {
     backupId?: number | null;
+    restoreMode?: OperationsRestoreMode | null;
     restoreStatus?: string | null;
     requesterUserId?: number | null;
 }

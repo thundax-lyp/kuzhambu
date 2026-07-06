@@ -19,6 +19,10 @@ public class OperationsRestorePageRequest extends PageRequest {
     @JsonProperty(value = "backupId")
     private Long backupId;
 
+    @Schema(name = "restoreMode", description = "恢复模式筛选")
+    @JsonProperty(value = "restoreMode")
+    private String restoreMode;
+
     @Schema(name = "restoreStatus", description = "恢复状态筛选")
     @JsonProperty(value = "restoreStatus")
     private String restoreStatus;

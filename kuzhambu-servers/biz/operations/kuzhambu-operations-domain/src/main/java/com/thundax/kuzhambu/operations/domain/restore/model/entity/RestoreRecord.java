@@ -16,8 +16,11 @@ public class RestoreRecord {
     private RestoreId id;
     private Long backupId;
     private Long preRestoreBackupId;
+    private String restoreMode;
     private String restoreStatus;
     private Boolean writeBlockEnabled;
+    private Date writeBlockStartedAt;
+    private Date writeBlockReleasedAt;
     private String failureReason;
     private Long requesterUserId;
     private Date startedAt;

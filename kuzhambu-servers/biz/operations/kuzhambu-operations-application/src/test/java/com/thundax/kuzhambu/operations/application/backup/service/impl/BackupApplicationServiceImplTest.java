@@ -2,6 +2,8 @@ package com.thundax.kuzhambu.operations.application.backup.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
@@ -11,6 +13,7 @@ import com.thundax.kuzhambu.operations.application.backup.query.OperationsBackup
 import com.thundax.kuzhambu.operations.application.backup.result.OperationsBackupDetailResult;
 import com.thundax.kuzhambu.operations.application.backup.result.OperationsBackupExecuteResult;
 import com.thundax.kuzhambu.operations.application.backup.result.OperationsBackupPageResult;
+import com.thundax.kuzhambu.operations.application.backup.support.OperationsBackupExecutionGuard;
 import com.thundax.kuzhambu.operations.application.backup.support.OperationsBackupScriptExecutor;
 import com.thundax.kuzhambu.operations.application.backup.support.OperationsBackupSupportModels.OperationsBackupArtifactResult;
 import com.thundax.kuzhambu.operations.domain.backup.model.entity.BackupRecord;
@@ -29,8 +32,8 @@ class BackupApplicationServiceImplTest {
     @Test
     void executeShouldPersistSucceededBackupRecord() {
         InMemoryBackupRepository repository = new InMemoryBackupRepository();
-        BackupApplicationServiceImpl service =
-                new BackupApplicationServiceImpl(repository, new SuccessfulBackupScriptExecutor());
+        BackupApplicationServiceImpl service = new BackupApplicationServiceImpl(
+                repository, new SuccessfulBackupScriptExecutor(), new OperationsBackupExecutionGuard());
         OperationsBackupExecuteCommand command = new OperationsBackupExecuteCommand(1001L);
 
         OperationsBackupExecuteResult result = service.execute(command);
@@ -41,6 +44,65 @@ class BackupApplicationServiceImplTest {
         assertEquals("backup_20260629-120000.sql", result.getFileName());
         assertEquals(4096L, result.getFileSizeBytes());
         assertEquals("sha256-backup", result.getChecksum());
+    }
+
+    @Test
+    void executeAutoBackupShouldPersistAutoBackupWithoutRequester() {
+        InMemoryBackupRepository repository = new InMemoryBackupRepository();
+        BackupApplicationServiceImpl service = new BackupApplicationServiceImpl(
+                repository, new SuccessfulBackupScriptExecutor(), new OperationsBackupExecutionGuard());
+
+        OperationsBackupExecuteResult result = service.executeAutoBackup();
+        BackupRecord record = repository.getById(result.getBackupId());
+
+        assertNotNull(result.getBackupId());
+        assertEquals("AUTO", result.getBackupType());
+        assertEquals("SUCCEEDED", result.getBackupStatus());
+        assertNull(record.getRequesterUserId());
+    }
+
+    @Test
+    void executeAutoBackupShouldPersistFailedRecordWhenScriptFails() {
+        InMemoryBackupRepository repository = new InMemoryBackupRepository();
+        BackupApplicationServiceImpl service = new BackupApplicationServiceImpl(
+                repository, new FailingBackupScriptExecutor(), new OperationsBackupExecutionGuard());
+
+        OperationsBackupExecuteResult result = service.executeAutoBackup();
+
+        assertEquals("AUTO", result.getBackupType());
+        assertEquals("FAILED", result.getBackupStatus());
+        assertEquals("script failed", result.getFailureReason());
+    }
+
+    @Test
+    void executeAutoBackupShouldPersistSkippedRecordWhenGuardIsOccupied() {
+        InMemoryBackupRepository repository = new InMemoryBackupRepository();
+        CountingBackupScriptExecutor scriptExecutor = new CountingBackupScriptExecutor();
+        OperationsBackupExecutionGuard guard = new OperationsBackupExecutionGuard();
+        guard.tryEnterRestore();
+        BackupApplicationServiceImpl service = new BackupApplicationServiceImpl(repository, scriptExecutor, guard);
+
+        OperationsBackupExecuteResult result = service.executeAutoBackup();
+
+        assertEquals("AUTO", result.getBackupType());
+        assertEquals("FAILED", result.getBackupStatus());
+        assertEquals(
+                "Operations backup skipped because another backup or restore is running.", result.getFailureReason());
+        assertEquals(0, scriptExecutor.executeBackupCount);
+        guard.exit();
+    }
+
+    @Test
+    void executeManualBackupShouldRejectWhenGuardIsOccupied() {
+        InMemoryBackupRepository repository = new InMemoryBackupRepository();
+        CountingBackupScriptExecutor scriptExecutor = new CountingBackupScriptExecutor();
+        OperationsBackupExecutionGuard guard = new OperationsBackupExecutionGuard();
+        guard.tryEnterRestore();
+        BackupApplicationServiceImpl service = new BackupApplicationServiceImpl(repository, scriptExecutor, guard);
+
+        assertThrows(IllegalStateException.class, () -> service.execute(new OperationsBackupExecuteCommand(1001L)));
+        assertEquals(0, scriptExecutor.executeBackupCount);
+        guard.exit();
     }
 
     @Test
@@ -60,8 +122,8 @@ class BackupApplicationServiceImplTest {
                 new Date(1_719_630_500_000L),
                 new Date(1_722_222_400_000L));
         repository.records.put(9001L, record);
-        BackupApplicationServiceImpl service =
-                new BackupApplicationServiceImpl(repository, new SuccessfulBackupScriptExecutor());
+        BackupApplicationServiceImpl service = new BackupApplicationServiceImpl(
+                repository, new SuccessfulBackupScriptExecutor(), new OperationsBackupExecutionGuard());
 
         PageResult<OperationsBackupPageResult> pageResult =
                 service.page(new OperationsBackupPageQuery("MANUAL", "SUCCEEDED", 1001L), new PageQuery(1, 10));
@@ -72,7 +134,7 @@ class BackupApplicationServiceImplTest {
         assertEquals("backup_20260629-120000.sql", detailResult.getFileName());
     }
 
-    private static final class SuccessfulBackupScriptExecutor implements OperationsBackupScriptExecutor {
+    private static class SuccessfulBackupScriptExecutor implements OperationsBackupScriptExecutor {
 
         @Override
         public OperationsBackupArtifactResult executeBackup(BackupType backupType, String timestamp) {
@@ -90,8 +152,40 @@ class BackupApplicationServiceImplTest {
         public void executeRestore(String backupBaseName, String preRestoreTimestamp) {}
 
         @Override
+        public void executeRestoreDrill(String backupBaseName, String preRestoreTimestamp) {}
+
+        @Override
         public OperationsBackupArtifactResult loadArtifact(String baseName) {
             return executeBackup(BackupType.MANUAL, "20260629-120000");
+        }
+    }
+
+    private static final class FailingBackupScriptExecutor implements OperationsBackupScriptExecutor {
+
+        @Override
+        public OperationsBackupArtifactResult executeBackup(BackupType backupType, String timestamp) {
+            throw new IllegalStateException("script failed");
+        }
+
+        @Override
+        public void executeRestore(String backupBaseName, String preRestoreTimestamp) {}
+
+        @Override
+        public void executeRestoreDrill(String backupBaseName, String preRestoreTimestamp) {}
+
+        @Override
+        public OperationsBackupArtifactResult loadArtifact(String baseName) {
+            throw new IllegalStateException("script failed");
+        }
+    }
+
+    private static final class CountingBackupScriptExecutor extends SuccessfulBackupScriptExecutor {
+        private int executeBackupCount;
+
+        @Override
+        public OperationsBackupArtifactResult executeBackup(BackupType backupType, String timestamp) {
+            executeBackupCount++;
+            return super.executeBackup(backupType, timestamp);
         }
     }
 

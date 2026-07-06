@@ -33,10 +33,10 @@ public class RestoreRepositoryImpl implements RestoreRepository {
 
     @Override
     public PageResult<RestoreRecord> page(
-            Long backupId, String restoreStatus, Long requesterUserId, int pageNo, int pageSize) {
+            Long backupId, String restoreMode, String restoreStatus, Long requesterUserId, int pageNo, int pageSize) {
         Page<RestoreDO> page = new Page<>(pageNo, pageSize);
         IPage<RestoreDO> dataObjectPage =
-                mapper.selectPage(page, buildPageWrapper(backupId, restoreStatus, requesterUserId));
+                mapper.selectPage(page, buildPageWrapper(backupId, restoreMode, restoreStatus, requesterUserId));
         return PageResult.of(
                 (int) dataObjectPage.getCurrent(),
                 (int) dataObjectPage.getSize(),
@@ -60,8 +60,11 @@ public class RestoreRepositoryImpl implements RestoreRepository {
                         .eq(RestoreDO::getRestoreId, dataObject.getRestoreId())
                         .set(RestoreDO::getBackupId, dataObject.getBackupId())
                         .set(RestoreDO::getPreRestoreBackupId, dataObject.getPreRestoreBackupId())
+                        .set(RestoreDO::getRestoreMode, dataObject.getRestoreMode())
                         .set(RestoreDO::getRestoreStatus, dataObject.getRestoreStatus())
                         .set(RestoreDO::getWriteBlockEnabled, dataObject.getWriteBlockEnabled())
+                        .set(RestoreDO::getWriteBlockStartedAt, dataObject.getWriteBlockStartedAt())
+                        .set(RestoreDO::getWriteBlockReleasedAt, dataObject.getWriteBlockReleasedAt())
                         .set(RestoreDO::getFailureReason, dataObject.getFailureReason())
                         .set(RestoreDO::getRequesterUserId, dataObject.getRequesterUserId())
                         .set(RestoreDO::getStartedAt, dataObject.getStartedAt())
@@ -74,10 +77,14 @@ public class RestoreRepositoryImpl implements RestoreRepository {
                 new LambdaQueryWrapper<RestoreDO>().eq(RestoreDO::getRestoreId, RestoreIdCodec.toValue(id)));
     }
 
-    private QueryWrapper<RestoreDO> buildPageWrapper(Long backupId, String restoreStatus, Long requesterUserId) {
+    private QueryWrapper<RestoreDO> buildPageWrapper(
+            Long backupId, String restoreMode, String restoreStatus, Long requesterUserId) {
         QueryWrapper<RestoreDO> wrapper = new QueryWrapper<>();
         if (backupId != null) {
             wrapper.eq("backup_id", backupId);
+        }
+        if (StringUtils.isNotBlank(restoreMode)) {
+            wrapper.eq("restore_mode", restoreMode);
         }
         if (StringUtils.isNotBlank(restoreStatus)) {
             wrapper.eq("restore_status", restoreStatus);

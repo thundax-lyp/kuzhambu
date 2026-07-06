@@ -25,6 +25,16 @@ require_env() {
   fi
 }
 
+validate_restore_mode() {
+  case "$1" in
+    REAL | DRILL)
+      ;;
+    *)
+      backup_fail "unsupported restore mode: $1"
+      ;;
+  esac
+}
+
 resolve_now() {
   date '+%Y%m%d-%H%M%S'
 }
@@ -80,6 +90,12 @@ read_sha256_value() {
   local file_path="$1"
   [[ -f "${file_path}.sha256" ]] || backup_fail "checksum file not found: ${file_path}.sha256"
   awk '{print $1}' "${file_path}.sha256"
+}
+
+validate_storage_archive() {
+  local archive_file="$1"
+  [[ -f "${archive_file}" ]] || backup_fail "storage archive file not found: ${archive_file}"
+  tar -tzf "${archive_file}" >/dev/null
 }
 
 backup_local_storage() {

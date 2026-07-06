@@ -10,6 +10,7 @@ import com.thundax.kuzhambu.operations.application.backup.result.OperationsBacku
 import com.thundax.kuzhambu.operations.application.backup.result.OperationsBackupExecuteResult;
 import com.thundax.kuzhambu.operations.application.backup.result.OperationsBackupPageResult;
 import com.thundax.kuzhambu.operations.application.backup.service.BackupApplicationService;
+import com.thundax.kuzhambu.operations.application.backup.support.OperationsBackupExecutionGuard;
 import com.thundax.kuzhambu.operations.application.backup.support.OperationsBackupScriptExecutor;
 import com.thundax.kuzhambu.operations.application.backup.support.OperationsBackupSupportModels.OperationsBackupArtifactResult;
 import com.thundax.kuzhambu.operations.domain.backup.model.entity.BackupRecord;
@@ -30,20 +31,50 @@ import org.springframework.stereotype.Service;
 public class BackupApplicationServiceImpl implements BackupApplicationService {
 
     private static final long RETENTION_MILLIS = 30L * 24 * 60 * 60 * 1000;
+    private static final String RUNNING_FAILURE_REASON =
+            "Operations backup skipped because another backup or restore is running.";
 
     private final BackupRepository backupRepository;
     private final OperationsBackupScriptExecutor scriptExecutor;
+    private final OperationsBackupExecutionGuard executionGuard;
 
     public BackupApplicationServiceImpl(
-            BackupRepository backupRepository, OperationsBackupScriptExecutor scriptExecutor) {
+            BackupRepository backupRepository,
+            OperationsBackupScriptExecutor scriptExecutor,
+            OperationsBackupExecutionGuard executionGuard) {
         this.backupRepository = backupRepository;
         this.scriptExecutor = scriptExecutor;
+        this.executionGuard = executionGuard;
     }
 
     @Override
     public OperationsBackupExecuteResult execute(OperationsBackupExecuteCommand command) {
         validateExecuteCommand(command);
-        BackupType backupType = BackupType.MANUAL;
+        return executeBackup(BackupType.MANUAL, command.getRequesterUserId(), false);
+    }
+
+    @Override
+    public OperationsBackupExecuteResult executeAutoBackup() {
+        return executeBackup(BackupType.AUTO, null, true);
+    }
+
+    private OperationsBackupExecuteResult executeBackup(
+            BackupType backupType, Long requesterUserId, boolean autoBackup) {
+        boolean entered = executionGuard.tryEnterBackup();
+        if (!entered) {
+            if (autoBackup) {
+                return toExecuteResult(insertSkippedAutoBackup());
+            }
+            throw new IllegalStateException(RUNNING_FAILURE_REASON);
+        }
+        try {
+            return doExecuteBackup(backupType, requesterUserId);
+        } finally {
+            executionGuard.exit();
+        }
+    }
+
+    private OperationsBackupExecuteResult doExecuteBackup(BackupType backupType, Long requesterUserId) {
         Date startedAt = new Date();
         String timestamp = formatTimestamp(startedAt);
         BackupRecord record = new BackupRecord(
@@ -55,7 +86,7 @@ public class BackupApplicationServiceImpl implements BackupApplicationService {
                 null,
                 null,
                 null,
-                command.getRequesterUserId(),
+                requesterUserId,
                 startedAt,
                 null,
                 new Date(startedAt.getTime() + RETENTION_MILLIS));
@@ -76,6 +107,27 @@ public class BackupApplicationServiceImpl implements BackupApplicationService {
             backupRepository.update(record);
         }
         return toExecuteResult(backupRepository.getById(backupId));
+    }
+
+    private BackupRecord insertSkippedAutoBackup() {
+        Date startedAt = new Date();
+        String timestamp = formatTimestamp(startedAt);
+        BackupRecord record = new BackupRecord(
+                null,
+                BackupType.AUTO.value(),
+                BackupStatus.FAILED.value(),
+                null,
+                BackupType.AUTO.filePrefix() + "_" + timestamp + ".sql",
+                null,
+                null,
+                RUNNING_FAILURE_REASON,
+                null,
+                startedAt,
+                startedAt,
+                new Date(startedAt.getTime() + RETENTION_MILLIS));
+        BackupId backupId = backupRepository.insert(record);
+        record.setId(backupId);
+        return record;
     }
 
     @Override
