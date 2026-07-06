@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Portal Web 分享详情页`：补齐私有分享控件与操作
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-PRIVATE-SHARE-ACCESS.md`
-    - 范围对象：`kuzhambu-apps/portal-web/src/pages/share/share-form.tsx`、`kuzhambu-apps/portal-web/src/pages/share/share-form.test.tsx`
-    - 处理动作：详情页展示私有分享登录引导，并在鉴权成功后复用只读详情、资源预览和下载控件。
-    - 验收点：页面测试覆盖 `aria-label="私有分享登录引导"`、已有 token 私有分享展示、私有资源预览 URL。
-    - 重要度：9/10
-
 - [ ] `Classics 私有分享文档收口`：同步覆盖度并清理 RUNBOOK
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-CLASSICS-PRIVATE-SHARE-ACCESS.md`

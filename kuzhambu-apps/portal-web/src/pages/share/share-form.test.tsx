@@ -7,6 +7,7 @@ import { ShareForm } from "./share-form";
 import * as shareService from "./share-service";
 
 vi.mock("./share-service", () => ({
+    getAccessibleShare: vi.fn(),
     getShare: vi.fn(),
     getShareResourceContentUrl: vi.fn(() => "http://localhost/resource")
 }));
@@ -36,11 +37,12 @@ const renderShareForm = (shareToken: string) => {
 describe("ShareForm", () => {
     afterEach(() => {
         cleanup();
+        window.localStorage.clear();
         vi.restoreAllMocks();
     });
 
     it("renders an active batch-created share with the existing response fields", async () => {
-        vi.mocked(shareService.getShare).mockResolvedValue({
+        vi.mocked(shareService.getAccessibleShare).mockResolvedValue({
             issuedAt: "2026-01-01T00:00:00.000+08:00",
             status: "ACTIVE",
             targets: [
@@ -73,7 +75,7 @@ describe("ShareForm", () => {
 
     it("renders sancai share images from share resources with thumbnail switching", async () => {
         const user = userEvent.setup();
-        vi.mocked(shareService.getShare).mockResolvedValue({
+        vi.mocked(shareService.getAccessibleShare).mockResolvedValue({
             status: "ACTIVE",
             targets: [
                 {
@@ -163,7 +165,7 @@ describe("ShareForm", () => {
     it.each(["EXPIRED", "REVOKED"])(
         "keeps %s shares on the existing error state",
         async (status) => {
-            vi.mocked(shareService.getShare).mockRejectedValue(
+            vi.mocked(shareService.getAccessibleShare).mockRejectedValue(
                 new Error(`share ${status.toLowerCase()}`)
             );
 
@@ -173,4 +175,64 @@ describe("ShareForm", () => {
             expect(errorState.textContent).toContain("分享内容不存在或已过期");
         }
     );
+
+    it("shows login guidance for private share without local login", async () => {
+        vi.mocked(shareService.getAccessibleShare).mockResolvedValue({
+            loginRequired: true,
+            targets: [],
+            visibility: "PRIVATE"
+        });
+
+        renderShareForm("private-token");
+
+        const loginGuide = await screen.findByLabelText("私有分享登录引导");
+        expect(loginGuide.textContent).toContain("私有分享需要登录后访问");
+        expect(screen.queryByLabelText("分享快照")).toBeNull();
+    });
+
+    it("uses private resource urls for authenticated private shares", async () => {
+        vi.mocked(shareService.getShareResourceContentUrl).mockReturnValue(
+            "http://localhost/private-resource"
+        );
+        vi.mocked(shareService.getAccessibleShare).mockResolvedValue({
+            status: "ACTIVE",
+            targets: [
+                {
+                    contentId: 3001,
+                    contentSnapshotJson: JSON.stringify({ summary: "私有摘要" }),
+                    contentType: "SANCAI_ENTRY",
+                    images: [
+                        {
+                            currentUsed: true,
+                            imageId: 8001,
+                            priority: 1,
+                            storageObject: {
+                                previewUrl: "/public/preview",
+                                storageObjectId: 7001
+                            },
+                            storageObjectId: 7001,
+                            title: "私有图"
+                        }
+                    ],
+                    targetStatus: "ACTIVE",
+                    titleSnapshot: "私有条目"
+                }
+            ],
+            title: "私有分享",
+            visibility: "PRIVATE"
+        });
+
+        renderShareForm("private-token");
+
+        const imageSection = await screen.findByLabelText("三才图会图片");
+        expect(within(imageSection).getByRole("img", { name: "私有图" }).getAttribute("src")).toBe(
+            "http://localhost/private-resource"
+        );
+        expect(shareService.getShareResourceContentUrl).toHaveBeenCalledWith({
+            mode: "preview",
+            privateAccess: true,
+            shareToken: "private-token",
+            storageObjectId: 7001
+        });
+    });
 });
