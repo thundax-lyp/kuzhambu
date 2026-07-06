@@ -4,10 +4,13 @@ import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.operations.application.health.query.OperationsHealthPageQuery;
+import com.thundax.kuzhambu.operations.application.health.query.OperationsHealthTrendQuery;
 import com.thundax.kuzhambu.operations.application.health.result.OperationsHealthPageResult;
 import com.thundax.kuzhambu.operations.application.health.result.OperationsHealthSummaryResult;
+import com.thundax.kuzhambu.operations.application.health.result.OperationsHealthTrendResult;
 import com.thundax.kuzhambu.operations.application.health.service.HealthCheckApplicationService;
 import com.thundax.kuzhambu.operations.domain.health.model.entity.HealthCheckRecord;
+import com.thundax.kuzhambu.operations.domain.health.model.valueobject.HealthTrendBucket;
 import com.thundax.kuzhambu.operations.domain.health.repository.HealthCheckRepository;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -44,6 +47,21 @@ public class HealthCheckApplicationServiceImpl implements HealthCheckApplication
         return PageResult.of(recordPage.getPageNo(), recordPage.getPageSize(), recordPage.getTotalCount(), results);
     }
 
+    @Override
+    public List<OperationsHealthTrendResult> trend(OperationsHealthTrendQuery query) {
+        OperationsHealthTrendQuery effectiveQuery = query == null ? new OperationsHealthTrendQuery() : query;
+        return healthCheckRepository
+                .listTrend(
+                        effectiveQuery.getComponent(),
+                        effectiveQuery.getProbeSource(),
+                        effectiveQuery.getPeriodStart(),
+                        effectiveQuery.getPeriodEnd(),
+                        effectiveQuery.getBucketType())
+                .stream()
+                .map(this::toTrendResult)
+                .collect(Collectors.toList());
+    }
+
     private OperationsHealthSummaryResult toSummaryResult(HealthCheckRecord record) {
         if (record == null) {
             return null;
@@ -73,5 +91,17 @@ public class HealthCheckApplicationServiceImpl implements HealthCheckApplication
                 record.getProbeTarget(),
                 record.getDetailsJson(),
                 record.getCheckedAt());
+    }
+
+    private OperationsHealthTrendResult toTrendResult(HealthTrendBucket bucket) {
+        if (bucket == null) {
+            return null;
+        }
+        return new OperationsHealthTrendResult(
+                bucket.getBucket(),
+                bucket.getUpCount(),
+                bucket.getDegradedCount(),
+                bucket.getDownCount(),
+                bucket.getAvgLatencyMs());
     }
 }

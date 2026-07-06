@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `OperationsHealth trend API`：暴露健康趋势接口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DASHBOARD-HEALTH-METRICS.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/health/query/OperationsHealthTrendQuery.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/health/result/OperationsHealthTrendResult.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/health/controller/request/OperationsHealthTrendRequest.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/health/controller/response/OperationsHealthTrendResponse.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/health/controller/OperationsHealthAdminController.java`
-    - 处理动作：新增 `POST /api/operations/health/trend` 查询入口。
-    - 验收点：接口使用 `operations:health:view` 权限并由后端返回 `bucket`。
-    - 重要度：9/10
-
 - [ ] `OperationsDashboardApplicationService`：建立运营看板应用层契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DASHBOARD-HEALTH-METRICS.md`
