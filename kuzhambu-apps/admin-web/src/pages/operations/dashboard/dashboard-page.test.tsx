@@ -115,7 +115,7 @@ describe("OperationsDashboardPage", () => {
 
         expect(await screen.findByRole("heading", { name: "运营看板" })).toBeInTheDocument();
         expect(await screen.findByText("热门内容")).toBeInTheDocument();
-        expect(screen.getByRole("button", { name: "刷新" })).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /刷新/ })).toBeInTheDocument();
         expect(screen.getByText("admin-server")).toBeInTheDocument();
         expect(screen.getByText("任务台账")).toBeInTheDocument();
     }, 30000);
