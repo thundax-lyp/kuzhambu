@@ -41,6 +41,15 @@ public class DefaultOperationsBackupScriptExecutor implements OperationsBackupSc
 
     @Override
     public void executeRestore(String backupBaseName, String preRestoreTimestamp) {
+        executeRestoreWithMode(backupBaseName, preRestoreTimestamp, "REAL");
+    }
+
+    @Override
+    public void executeRestoreDrill(String backupBaseName, String preRestoreTimestamp) {
+        executeRestoreWithMode(backupBaseName, preRestoreTimestamp, "DRILL");
+    }
+
+    private void executeRestoreWithMode(String backupBaseName, String preRestoreTimestamp, String restoreMode) {
         if (StringUtils.isBlank(backupBaseName)) {
             throw new IllegalArgumentException("Operations restore backupBaseName must not be blank.");
         }
@@ -57,6 +66,8 @@ public class DefaultOperationsBackupScriptExecutor implements OperationsBackupSc
                         String.valueOf(properties.isRunPreRestore()),
                         "PRE_RESTORE_TIMESTAMP",
                         preRestoreTimestamp,
+                        "RESTORE_MODE",
+                        restoreMode,
                         "POST_RESTORE_COMMAND",
                         StringUtils.defaultString(properties.getPostRestoreCommand())));
     }

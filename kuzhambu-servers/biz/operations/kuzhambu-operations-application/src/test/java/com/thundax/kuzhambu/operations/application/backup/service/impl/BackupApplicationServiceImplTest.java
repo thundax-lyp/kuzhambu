@@ -152,6 +152,9 @@ class BackupApplicationServiceImplTest {
         public void executeRestore(String backupBaseName, String preRestoreTimestamp) {}
 
         @Override
+        public void executeRestoreDrill(String backupBaseName, String preRestoreTimestamp) {}
+
+        @Override
         public OperationsBackupArtifactResult loadArtifact(String baseName) {
             return executeBackup(BackupType.MANUAL, "20260629-120000");
         }
@@ -166,6 +169,9 @@ class BackupApplicationServiceImplTest {
 
         @Override
         public void executeRestore(String backupBaseName, String preRestoreTimestamp) {}
+
+        @Override
+        public void executeRestoreDrill(String backupBaseName, String preRestoreTimestamp) {}
 
         @Override
         public OperationsBackupArtifactResult loadArtifact(String baseName) {

@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.operations.application.restore.service.impl;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.operations.application.backup.support.OperationsBackupExecutionGuard;
 import com.thundax.kuzhambu.operations.application.backup.support.OperationsBackupScriptExecutor;
 import com.thundax.kuzhambu.operations.application.backup.support.OperationsBackupSupportModels.OperationsBackupArtifactResult;
 import com.thundax.kuzhambu.operations.application.restore.command.OperationsRestoreExecuteCommand;
@@ -12,6 +13,7 @@ import com.thundax.kuzhambu.operations.application.restore.result.OperationsRest
 import com.thundax.kuzhambu.operations.application.restore.result.OperationsRestoreExecuteResult;
 import com.thundax.kuzhambu.operations.application.restore.result.OperationsRestorePageResult;
 import com.thundax.kuzhambu.operations.application.restore.service.RestoreApplicationService;
+import com.thundax.kuzhambu.operations.application.restore.support.OperationsRestoreWriteBlocker;
 import com.thundax.kuzhambu.operations.domain.backup.model.entity.BackupRecord;
 import com.thundax.kuzhambu.operations.domain.backup.model.enums.BackupStatus;
 import com.thundax.kuzhambu.operations.domain.backup.model.enums.BackupType;
@@ -40,14 +42,20 @@ public class RestoreApplicationServiceImpl implements RestoreApplicationService 
     private final RestoreRepository restoreRepository;
     private final BackupRepository backupRepository;
     private final OperationsBackupScriptExecutor scriptExecutor;
+    private final OperationsBackupExecutionGuard executionGuard;
+    private final OperationsRestoreWriteBlocker writeBlocker;
 
     public RestoreApplicationServiceImpl(
             RestoreRepository restoreRepository,
             BackupRepository backupRepository,
-            OperationsBackupScriptExecutor scriptExecutor) {
+            OperationsBackupScriptExecutor scriptExecutor,
+            OperationsBackupExecutionGuard executionGuard,
+            OperationsRestoreWriteBlocker writeBlocker) {
         this.restoreRepository = restoreRepository;
         this.backupRepository = backupRepository;
         this.scriptExecutor = scriptExecutor;
+        this.executionGuard = executionGuard;
+        this.writeBlocker = writeBlocker;
     }
 
     @Override
@@ -64,43 +72,16 @@ public class RestoreApplicationServiceImpl implements RestoreApplicationService 
         if (StringUtils.isBlank(sourceBaseName)) {
             throw new IllegalArgumentException("Operations restore source backup filename is invalid.");
         }
-
-        Date startedAt = new Date();
-        String preRestoreTimestamp = formatTimestamp(startedAt);
-        BackupRecord preRestoreRecord =
-                buildPreRestoreRecord(command.getRequesterUserId(), startedAt, preRestoreTimestamp);
-        BackupId preRestoreBackupId = backupRepository.insert(preRestoreRecord);
-        preRestoreRecord.setId(preRestoreBackupId);
-
-        RestoreRecord restoreRecord = new RestoreRecord(
-                null,
-                command.getBackupId().value(),
-                preRestoreBackupId.value(),
-                resolveRestoreMode(command).value(),
-                RestoreStatus.RUNNING.value(),
-                Boolean.TRUE,
-                null,
-                null,
-                null,
-                command.getRequesterUserId(),
-                startedAt,
-                null);
-        RestoreId restoreId = restoreRepository.insert(restoreRecord);
-        restoreRecord.setId(restoreId);
-        try {
-            scriptExecutor.executeRestore(sourceBaseName, preRestoreTimestamp);
-            updatePreRestoreSuccess(preRestoreRecord, preRestoreTimestamp);
-            restoreRecord.setRestoreStatus(RestoreStatus.SUCCEEDED.value());
-            restoreRecord.setCompletedAt(new Date());
-            restoreRepository.update(restoreRecord);
-        } catch (RuntimeException exception) {
-            updatePreRestoreAfterFailure(preRestoreRecord, exception);
-            restoreRecord.setRestoreStatus(RestoreStatus.FAILED.value());
-            restoreRecord.setFailureReason(truncateFailureReason(exception.getMessage()));
-            restoreRecord.setCompletedAt(new Date());
-            restoreRepository.update(restoreRecord);
+        RestoreMode restoreMode = resolveRestoreMode(command);
+        if (!executionGuard.tryEnterRestore()) {
+            throw new IllegalStateException("Operations restore skipped because another backup or restore is running.");
         }
-        return toExecuteResult(restoreRepository.getById(restoreId));
+
+        try {
+            return executeWithGuard(command, sourceBaseName, restoreMode);
+        } finally {
+            executionGuard.exit();
+        }
     }
 
     @Override
@@ -123,6 +104,66 @@ public class RestoreApplicationServiceImpl implements RestoreApplicationService 
     public OperationsRestoreDetailResult detail(OperationsRestoreDetailQuery query) {
         RestoreRecord record = restoreRepository.getById(query == null ? null : query.getRestoreId());
         return toDetailResult(record);
+    }
+
+    private OperationsRestoreExecuteResult executeWithGuard(
+            OperationsRestoreExecuteCommand command, String sourceBaseName, RestoreMode restoreMode) {
+        Date startedAt = new Date();
+        String preRestoreTimestamp = formatTimestamp(startedAt);
+        BackupRecord preRestoreRecord =
+                buildPreRestoreRecord(command.getRequesterUserId(), startedAt, preRestoreTimestamp);
+        BackupId preRestoreBackupId = backupRepository.insert(preRestoreRecord);
+        preRestoreRecord.setId(preRestoreBackupId);
+
+        RestoreRecord restoreRecord = new RestoreRecord(
+                null,
+                command.getBackupId().value(),
+                preRestoreBackupId.value(),
+                restoreMode.value(),
+                RestoreStatus.RUNNING.value(),
+                Boolean.FALSE,
+                null,
+                null,
+                null,
+                command.getRequesterUserId(),
+                startedAt,
+                null);
+        RestoreId restoreId = restoreRepository.insert(restoreRecord);
+        restoreRecord.setId(restoreId);
+
+        boolean writeBlockEnabled = false;
+        try {
+            restoreRecord.setWriteBlockStartedAt(writeBlocker.enable(restoreId));
+            restoreRecord.setWriteBlockEnabled(Boolean.TRUE);
+            writeBlockEnabled = true;
+            restoreRepository.update(restoreRecord);
+            executeRestoreScript(restoreMode, sourceBaseName, preRestoreTimestamp);
+            updatePreRestoreSuccess(preRestoreRecord, preRestoreTimestamp);
+            restoreRecord.setRestoreStatus(RestoreStatus.SUCCEEDED.value());
+        } catch (RuntimeException exception) {
+            if (writeBlockEnabled) {
+                updatePreRestoreAfterFailure(preRestoreRecord, exception);
+            } else {
+                markPreRestoreFailed(preRestoreRecord, exception);
+            }
+            restoreRecord.setRestoreStatus(RestoreStatus.FAILED.value());
+            restoreRecord.setFailureReason(truncateFailureReason(exception.getMessage()));
+        } finally {
+            if (writeBlockEnabled) {
+                restoreRecord.setWriteBlockReleasedAt(writeBlocker.disable(restoreId));
+            }
+            restoreRecord.setCompletedAt(new Date());
+            restoreRepository.update(restoreRecord);
+        }
+        return toExecuteResult(restoreRepository.getById(restoreId));
+    }
+
+    private void executeRestoreScript(RestoreMode restoreMode, String sourceBaseName, String preRestoreTimestamp) {
+        if (RestoreMode.DRILL == restoreMode) {
+            scriptExecutor.executeRestoreDrill(sourceBaseName, preRestoreTimestamp);
+            return;
+        }
+        scriptExecutor.executeRestore(sourceBaseName, preRestoreTimestamp);
     }
 
     private BackupRecord buildPreRestoreRecord(Long requesterUserId, Date startedAt, String preRestoreTimestamp) {
@@ -168,6 +209,13 @@ public class RestoreApplicationServiceImpl implements RestoreApplicationService 
             preRestoreRecord.setCompletedAt(new Date());
             backupRepository.update(preRestoreRecord);
         }
+    }
+
+    private void markPreRestoreFailed(BackupRecord preRestoreRecord, RuntimeException exception) {
+        preRestoreRecord.setBackupStatus(BackupStatus.FAILED.value());
+        preRestoreRecord.setFailureReason(truncateFailureReason(exception.getMessage()));
+        preRestoreRecord.setCompletedAt(new Date());
+        backupRepository.update(preRestoreRecord);
     }
 
     private OperationsRestoreExecuteResult toExecuteResult(RestoreRecord record) {

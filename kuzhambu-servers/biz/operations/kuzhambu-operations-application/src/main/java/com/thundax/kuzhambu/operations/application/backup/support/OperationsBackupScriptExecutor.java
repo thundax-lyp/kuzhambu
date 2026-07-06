@@ -9,5 +9,7 @@ public interface OperationsBackupScriptExecutor {
 
     void executeRestore(String backupBaseName, String preRestoreTimestamp);
 
+    void executeRestoreDrill(String backupBaseName, String preRestoreTimestamp);
+
     OperationsBackupArtifactResult loadArtifact(String baseName);
 }

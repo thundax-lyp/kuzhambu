@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `07 Operations restore application flow`：补齐真实恢复/演练和写阻断编排
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-BACKUP-RESTORE-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/restore/service/impl/RestoreApplicationServiceImpl.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/restore/support/OperationsRestoreWriteBlocker.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/backup/support/OperationsBackupExecutionGuard.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/backup/support/OperationsBackupScriptExecutor.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/test/java/com/thundax/kuzhambu/operations/application/restore/service/impl/RestoreApplicationServiceImplTest.java`
-    - 处理动作：按 `REAL`/`DRILL` 分支执行真实恢复或演练，并在恢复全流程中开启、释放和记录写阻断。
-    - 验收点：真实恢复、恢复演练、脚本失败释放阻断、阻断开启失败不执行脚本、恢复期间自动备份无法进入 guard 均有测试覆盖。
-    - 重要度：10/10
-
 - [ ] `08 Common web restore write block`：补齐恢复期间 Web 写入阻断
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-BACKUP-RESTORE-CLOSURE.md`

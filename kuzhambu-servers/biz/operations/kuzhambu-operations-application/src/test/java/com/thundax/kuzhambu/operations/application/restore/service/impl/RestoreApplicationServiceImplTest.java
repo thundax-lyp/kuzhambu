@@ -1,10 +1,12 @@
 package com.thundax.kuzhambu.operations.application.restore.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.operations.application.backup.support.OperationsBackupExecutionGuard;
 import com.thundax.kuzhambu.operations.application.backup.support.OperationsBackupScriptExecutor;
 import com.thundax.kuzhambu.operations.application.backup.support.OperationsBackupSupportModels.OperationsBackupArtifactResult;
 import com.thundax.kuzhambu.operations.application.restore.command.OperationsRestoreExecuteCommand;
@@ -13,6 +15,7 @@ import com.thundax.kuzhambu.operations.application.restore.query.OperationsResto
 import com.thundax.kuzhambu.operations.application.restore.result.OperationsRestoreDetailResult;
 import com.thundax.kuzhambu.operations.application.restore.result.OperationsRestoreExecuteResult;
 import com.thundax.kuzhambu.operations.application.restore.result.OperationsRestorePageResult;
+import com.thundax.kuzhambu.operations.application.restore.support.OperationsRestoreWriteBlocker;
 import com.thundax.kuzhambu.operations.domain.backup.model.entity.BackupRecord;
 import com.thundax.kuzhambu.operations.domain.backup.model.valueobject.BackupId;
 import com.thundax.kuzhambu.operations.domain.backup.repository.BackupRepository;
@@ -48,8 +51,8 @@ class RestoreApplicationServiceImplTest {
                         new Date(1_719_630_500_000L),
                         new Date(1_722_222_400_000L)));
         InMemoryRestoreRepository restoreRepository = new InMemoryRestoreRepository();
-        RestoreApplicationServiceImpl service = new RestoreApplicationServiceImpl(
-                restoreRepository, backupRepository, new SuccessfulRestoreScriptExecutor());
+        SuccessfulRestoreScriptExecutor scriptExecutor = new SuccessfulRestoreScriptExecutor();
+        RestoreApplicationServiceImpl service = service(restoreRepository, backupRepository, scriptExecutor);
 
         OperationsRestoreExecuteResult result = service.execute(
                 new OperationsRestoreExecuteCommand(BackupId.of(9001L), RestoreMode.REAL.value(), 1001L));
@@ -57,10 +60,29 @@ class RestoreApplicationServiceImplTest {
         assertNotNull(result.getRestoreId());
         assertEquals(RestoreMode.REAL.value(), result.getRestoreMode());
         assertEquals("SUCCEEDED", result.getRestoreStatus());
+        assertEquals(1, scriptExecutor.realRestoreCount);
+        assertNotNull(result.getWriteBlockStartedAt());
+        assertNotNull(result.getWriteBlockReleasedAt());
         assertNotNull(result.getPreRestoreBackupId());
         assertEquals(
                 "SUCCEEDED",
                 backupRepository.records.get(result.getPreRestoreBackupId()).getBackupStatus());
+    }
+
+    @Test
+    void executeShouldPersistSucceededRestoreDrill() {
+        InMemoryBackupRepository backupRepository = backupRepositoryWithSucceededSource();
+        InMemoryRestoreRepository restoreRepository = new InMemoryRestoreRepository();
+        SuccessfulRestoreScriptExecutor scriptExecutor = new SuccessfulRestoreScriptExecutor();
+        RestoreApplicationServiceImpl service = service(restoreRepository, backupRepository, scriptExecutor);
+
+        OperationsRestoreExecuteResult result = service.execute(
+                new OperationsRestoreExecuteCommand(BackupId.of(9001L), RestoreMode.DRILL.value(), 1001L));
+
+        assertEquals(RestoreMode.DRILL.value(), result.getRestoreMode());
+        assertEquals("SUCCEEDED", result.getRestoreStatus());
+        assertEquals(0, scriptExecutor.realRestoreCount);
+        assertEquals(1, scriptExecutor.drillRestoreCount);
     }
 
     @Test
@@ -82,17 +104,54 @@ class RestoreApplicationServiceImplTest {
                         new Date(1_719_630_500_000L),
                         new Date(1_722_222_400_000L)));
         InMemoryRestoreRepository restoreRepository = new InMemoryRestoreRepository();
-        RestoreApplicationServiceImpl service = new RestoreApplicationServiceImpl(
-                restoreRepository, backupRepository, new FailedRestoreScriptExecutor());
+        RestoreApplicationServiceImpl service =
+                service(restoreRepository, backupRepository, new FailedRestoreScriptExecutor());
 
         OperationsRestoreExecuteResult result = service.execute(
                 new OperationsRestoreExecuteCommand(BackupId.of(9001L), RestoreMode.REAL.value(), 1001L));
 
         assertEquals("FAILED", result.getRestoreStatus());
+        assertNotNull(result.getWriteBlockReleasedAt());
         assertNotNull(result.getPreRestoreBackupId());
         assertEquals(
                 "SUCCEEDED",
                 backupRepository.records.get(result.getPreRestoreBackupId()).getBackupStatus());
+    }
+
+    @Test
+    void executeShouldNotRunScriptWhenWriteBlockEnableFails() {
+        InMemoryBackupRepository backupRepository = backupRepositoryWithSucceededSource();
+        InMemoryRestoreRepository restoreRepository = new InMemoryRestoreRepository();
+        SuccessfulRestoreScriptExecutor scriptExecutor = new SuccessfulRestoreScriptExecutor();
+        RestoreApplicationServiceImpl service = new RestoreApplicationServiceImpl(
+                restoreRepository,
+                backupRepository,
+                scriptExecutor,
+                new OperationsBackupExecutionGuard(),
+                new FailingRestoreWriteBlocker());
+
+        OperationsRestoreExecuteResult result = service.execute(
+                new OperationsRestoreExecuteCommand(BackupId.of(9001L), RestoreMode.REAL.value(), 1001L));
+
+        assertEquals("FAILED", result.getRestoreStatus());
+        assertEquals(0, scriptExecutor.realRestoreCount);
+        assertEquals(0, scriptExecutor.drillRestoreCount);
+    }
+
+    @Test
+    void executeShouldKeepBackupGuardDuringRestore() {
+        InMemoryBackupRepository backupRepository = backupRepositoryWithSucceededSource();
+        InMemoryRestoreRepository restoreRepository = new InMemoryRestoreRepository();
+        OperationsBackupExecutionGuard guard = new OperationsBackupExecutionGuard();
+        GuardAssertingRestoreScriptExecutor scriptExecutor = new GuardAssertingRestoreScriptExecutor(guard);
+        RestoreApplicationServiceImpl service = new RestoreApplicationServiceImpl(
+                restoreRepository, backupRepository, scriptExecutor, guard, new OperationsRestoreWriteBlocker());
+
+        OperationsRestoreExecuteResult result = service.execute(
+                new OperationsRestoreExecuteCommand(BackupId.of(9001L), RestoreMode.REAL.value(), 1001L));
+
+        assertEquals("SUCCEEDED", result.getRestoreStatus());
+        assertFalse(scriptExecutor.backupEnteredDuringRestore);
     }
 
     @Test
@@ -116,8 +175,8 @@ class RestoreApplicationServiceImplTest {
                         1001L,
                         new Date(1_719_630_400_000L),
                         new Date(1_719_630_500_000L)));
-        RestoreApplicationServiceImpl service = new RestoreApplicationServiceImpl(
-                restoreRepository, backupRepository, new SuccessfulRestoreScriptExecutor());
+        RestoreApplicationServiceImpl service =
+                service(restoreRepository, backupRepository, new SuccessfulRestoreScriptExecutor());
 
         PageResult<OperationsRestorePageResult> pageResult = service.page(
                 new OperationsRestorePageQuery(9001L, RestoreMode.DRILL.value(), "SUCCEEDED", 1001L),
@@ -133,7 +192,41 @@ class RestoreApplicationServiceImplTest {
         assertEquals(9201L, detailResult.getPreRestoreBackupId());
     }
 
+    private RestoreApplicationServiceImpl service(
+            InMemoryRestoreRepository restoreRepository,
+            InMemoryBackupRepository backupRepository,
+            OperationsBackupScriptExecutor scriptExecutor) {
+        return new RestoreApplicationServiceImpl(
+                restoreRepository,
+                backupRepository,
+                scriptExecutor,
+                new OperationsBackupExecutionGuard(),
+                new OperationsRestoreWriteBlocker());
+    }
+
+    private static InMemoryBackupRepository backupRepositoryWithSucceededSource() {
+        InMemoryBackupRepository backupRepository = new InMemoryBackupRepository();
+        backupRepository.records.put(
+                9001L,
+                new BackupRecord(
+                        BackupId.of(9001L),
+                        "MANUAL",
+                        "SUCCEEDED",
+                        null,
+                        "backup_20260629-120000.sql",
+                        4096L,
+                        "sha256-backup",
+                        null,
+                        1001L,
+                        new Date(1_719_630_400_000L),
+                        new Date(1_719_630_500_000L),
+                        new Date(1_722_222_400_000L)));
+        return backupRepository;
+    }
+
     private static class SuccessfulRestoreScriptExecutor implements OperationsBackupScriptExecutor {
+        protected int realRestoreCount;
+        protected int drillRestoreCount;
 
         @Override
         public OperationsBackupArtifactResult executeBackup(
@@ -142,7 +235,14 @@ class RestoreApplicationServiceImplTest {
         }
 
         @Override
-        public void executeRestore(String backupBaseName, String preRestoreTimestamp) {}
+        public void executeRestore(String backupBaseName, String preRestoreTimestamp) {
+            realRestoreCount++;
+        }
+
+        @Override
+        public void executeRestoreDrill(String backupBaseName, String preRestoreTimestamp) {
+            drillRestoreCount++;
+        }
 
         @Override
         public OperationsBackupArtifactResult loadArtifact(String baseName) {
@@ -160,7 +260,33 @@ class RestoreApplicationServiceImplTest {
     private static final class FailedRestoreScriptExecutor extends SuccessfulRestoreScriptExecutor {
         @Override
         public void executeRestore(String backupBaseName, String preRestoreTimestamp) {
+            realRestoreCount++;
             throw new IllegalStateException("restore failed");
+        }
+    }
+
+    private static final class GuardAssertingRestoreScriptExecutor extends SuccessfulRestoreScriptExecutor {
+        private final OperationsBackupExecutionGuard guard;
+        private boolean backupEnteredDuringRestore;
+
+        private GuardAssertingRestoreScriptExecutor(OperationsBackupExecutionGuard guard) {
+            this.guard = guard;
+        }
+
+        @Override
+        public void executeRestore(String backupBaseName, String preRestoreTimestamp) {
+            super.executeRestore(backupBaseName, preRestoreTimestamp);
+            backupEnteredDuringRestore = guard.tryEnterBackup();
+            if (backupEnteredDuringRestore) {
+                guard.exit();
+            }
+        }
+    }
+
+    private static final class FailingRestoreWriteBlocker extends OperationsRestoreWriteBlocker {
+        @Override
+        public Date enable(RestoreId restoreId) {
+            throw new IllegalStateException("write block failed");
         }
     }
 
