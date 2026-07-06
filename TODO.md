@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Discovery 筛选权限验证`：运行后端与 Portal 最小验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-FILTER-PERMISSION-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra`、`kuzhambu-apps/portal-web`
-    - 处理动作：在同步 `main` 后执行 RUNBOOK 指定的 Java Spotless/Test 与 Portal format/lint/test 验证
-    - 验收点：相关后端与前端验证命令通过，若无法运行则记录明确阻塞原因
-    - 重要度：9/10
-
 - [ ] `Discovery 收口文档`：更新 coverage 并清理阶段性 RUNBOOK
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-DISCOVERY-FILTER-PERMISSION-CLOSURE.md`
