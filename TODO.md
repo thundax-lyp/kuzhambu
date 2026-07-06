@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `OperationsHealthCollector`：新增后台健康采集入口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DASHBOARD-HEALTH-METRICS.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/health/support/OperationsHealthProbe.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/health/support/OperationsHealthCollector.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/health/support/LocalOperationsHealthProbe.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/test/java/com/thundax/kuzhambu/operations/application/health/support/OperationsHealthCollectorTest.java`
-    - 处理动作：新增 probe/collector 支持后台采集并写入 `operations_health_check`。
-    - 验收点：采集状态固定写入 `UP`、`DEGRADED`、`DOWN`，单个 probe 失败不阻断其他 probe。
-    - 重要度：10/10
-
 - [ ] `HealthCheckRepository.listTrend`：补齐健康趋势聚合查询
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DASHBOARD-HEALTH-METRICS.md`
