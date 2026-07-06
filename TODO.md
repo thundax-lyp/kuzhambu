@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `system-data-seed-validation`：System 数据种子验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-PERMISSION-OPERATIONS-CLEANUP-CLOSURE.md`
-    - 范围对象：`db/data-source/system.json`, `db/data/system.sql`, `scripts/generate-system-data-sql.ts`
-    - 处理动作：执行 System 数据种子一致性检查。
-    - 验收点：`node scripts/generate-system-data-sql.ts --check` 通过。
-    - 重要度：9/10
-
 - [ ] `coverage-runbook-cleanup`：Implementation Coverage 与 RUNBOOK 收口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-PERMISSION-OPERATIONS-CLEANUP-CLOSURE.md`, `docs/00-governance/TODO-RULES.md`
