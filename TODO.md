@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `04 Operations restore schema domain`：补齐恢复模式和写阻断时间领域结构
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-BACKUP-RESTORE-CLOSURE.md`
-    - 范围对象：`db/schema/operations.sql`、`kuzhambu-servers/biz/operations/kuzhambu-operations-domain/src/main/java/com/thundax/kuzhambu/operations/domain/restore/model/entity/RestoreRecord.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-domain/src/main/java/com/thundax/kuzhambu/operations/domain/restore/model/enums/RestoreMode.java`
-    - 处理动作：新增 `restore_mode`、`write_block_started_at`、`write_block_released_at` 字段和 `RestoreMode` 领域枚举。
-    - 验收点：schema 字段、默认值、索引和 Java 字段一一对应，`restore_mode` 默认 `REAL`。
-    - 重要度：10/10
-
 - [ ] `05 Operations restore persistence`：补齐恢复新增字段持久化读写
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-BACKUP-RESTORE-CLOSURE.md`
