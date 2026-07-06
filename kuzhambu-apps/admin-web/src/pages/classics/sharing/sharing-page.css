@@ -7,7 +7,23 @@
     font-weight: 500;
 }
 
+.sharing-page .sharing-target-row-deleted {
+    color: rgba(0, 0, 0, 0.55);
+}
+
+.sharing-page .sharing-target-row-deleted td {
+    background: rgba(0, 0, 0, 0.02);
+}
+
 html[data-theme="dark"] .sharing-page {
     --sharing-accent-color: #e8be93;
     --sharing-panel-bg: rgba(232, 190, 147, 0.12);
+}
+
+html[data-theme="dark"] .sharing-page .sharing-target-row-deleted {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+html[data-theme="dark"] .sharing-page .sharing-target-row-deleted td {
+    background: rgba(255, 255, 255, 0.04);
 }

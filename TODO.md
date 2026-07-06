@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `knowledge graph closure main 同步`：收口前同步 main 分支代码
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-14-CLOSURE.md`
-    - 范围对象：`codex/knowledge-graph-14-closure` worktree
-    - 处理动作：在初次验证通过后同步最新 `main` 并解决冲突
-    - 验收点：当前分支包含最新 `main` 代码，且同步后没有遗留冲突
-    - 重要度：9/10
-
 - [ ] `knowledge graph closure 最终复验`：同步 main 后重跑受影响验证
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-14-CLOSURE.md`

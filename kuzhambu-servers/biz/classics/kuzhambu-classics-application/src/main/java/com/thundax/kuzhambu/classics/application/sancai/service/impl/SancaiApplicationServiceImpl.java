@@ -14,6 +14,7 @@ import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVolumeSort
 import com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryPageQuery;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiApplicationService;
 import com.thundax.kuzhambu.classics.application.searchsync.support.ClassicsSearchIndexSyncPublishSupport;
+import com.thundax.kuzhambu.classics.application.sharing.service.ClassicsSharingApplicationService;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentChangeType;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiCategoryIdCodec;
@@ -53,14 +54,17 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
     private final SancaiRepository repository;
     private final ClassicsContentApplicationService contentApplicationService;
     private final ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport;
+    private final ClassicsSharingApplicationService sharingApplicationService;
 
     public SancaiApplicationServiceImpl(
             SancaiRepository repository,
             ClassicsContentApplicationService contentApplicationService,
-            ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport) {
+            ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport,
+            ClassicsSharingApplicationService sharingApplicationService) {
         this.repository = repository;
         this.contentApplicationService = contentApplicationService;
         this.searchIndexSyncPublishSupport = searchIndexSyncPublishSupport;
+        this.sharingApplicationService = sharingApplicationService;
     }
 
     @Override
@@ -528,6 +532,9 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
         }
         entry.setContentUpdatedAt(new Date());
         contentApplicationService.ensureVersioned(entry, ClassicsContentChangeType.MANUAL_SAVE, "手动删除");
+        if (sharingApplicationService != null) {
+            sharingApplicationService.syncContentDeleted(ClassicsContentType.SANCAI_ENTRY, id.value());
+        }
         publishDeleteAfterCommit(entry);
         repository.deleteEntryById(id);
     }

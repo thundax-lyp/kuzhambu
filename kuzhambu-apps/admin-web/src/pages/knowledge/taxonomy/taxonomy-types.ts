@@ -44,6 +44,26 @@ export interface TagGovernanceMetricsRecord {
     monthlyNewTags?: MonthlyNewTagMetricRecord[] | null;
 }
 
+export interface TagExtractionCandidateRecord {
+    name: string;
+    categoryId?: string | null;
+    categoryName?: string | null;
+    confidence?: number | null;
+    reason?: string | null;
+    matchedExistingTagId?: string | null;
+}
+
+export interface TagExtractionResultRecord {
+    aiCallId?: number | null;
+    aiCandidateId?: number | null;
+    status?: string | null;
+    resultFormat?: string | null;
+    resultPayload?: string | null;
+    errorType?: string | null;
+    errorMessage?: string | null;
+    candidates?: TagExtractionCandidateRecord[] | null;
+}
+
 export interface TagUsageMetricRecord {
     tagName?: string | null;
     contentRefCount?: number | null;

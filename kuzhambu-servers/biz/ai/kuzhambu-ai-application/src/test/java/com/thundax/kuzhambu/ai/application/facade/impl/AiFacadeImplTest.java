@@ -250,6 +250,76 @@ class AiFacadeImplTest {
     }
 
     @Test
+    void extractKnowledgeTagsShouldMapRequestAndResponse() {
+        KnowledgeAiExtractionApplicationServiceImpl knowledgeAiExtractionApplicationService =
+                mock(KnowledgeAiExtractionApplicationServiceImpl.class);
+        when(knowledgeAiExtractionApplicationService.extractTags(any())).thenAnswer(invocation -> {
+            KnowledgeAiExtractionRequest request = invocation.getArgument(0);
+            assertEquals("TAG", request.getTaskType());
+            assertEquals("CONTENT", request.getScopeType());
+            assertEquals("{\"contentType\":\"SANCAI_ENTRY\",\"contentIds\":[1001]}", request.getScopeJson());
+            assertEquals("SANCAI_ENTRY", request.getSourceContentType());
+            assertEquals(1001L, request.getSourceContentId());
+            assertEquals(2001L, request.getRequestedBy());
+            assertEquals(3001L, request.getServiceId());
+            assertEquals("KNOWLEDGE", request.getServiceRole());
+            assertEquals(4001L, request.getModelId());
+            assertEquals("gpt-5", request.getModelName());
+            assertEquals(5001L, request.getPromptVersionId());
+            assertEquals("req-tag", request.getRequestId());
+            assertEquals("trace-tag", request.getTraceId());
+            assertEquals("[\"tag-prompt\"]", request.getPromptMessagesJson());
+            assertEquals("{\"maxTags\":10}", request.getPromptVariablesJson());
+            assertEquals("tag-hash", request.getPromptHash());
+            assertEquals("{\"contentText\":\"正文\"}", request.getInputPayloadJson());
+            assertEquals("{\"type\":\"object\",\"required\":[\"tags\"]}", request.getOutputSchemaJson());
+            assertTrue(request.isForceJson());
+            assertEquals("zh-CN", request.getLocale());
+            return new KnowledgeAiExtractionResult(
+                    711L, 811L, "SUCCEEDED", "KNOWLEDGE_TAG_EXTRACTION", "STRUCTURED", "{\"tags\":[]}", null, null);
+        });
+        AiFacadeImpl facade = newFacade(
+                mock(AiReportApplicationService.class),
+                mock(AiBatchJobApplicationService.class),
+                mock(DiscoveryAiApplicationService.class),
+                knowledgeAiExtractionApplicationService,
+                mock(AiInvocationRepository.class),
+                mock(AiCandidateDomainService.class));
+
+        var response = facade.extractKnowledgeTags(KnowledgeAiExtractionFacadeRequest.builder()
+                .taskType("TAG")
+                .scopeType("CONTENT")
+                .scopeJson("{\"contentType\":\"SANCAI_ENTRY\",\"contentIds\":[1001]}")
+                .sourceContentType("SANCAI_ENTRY")
+                .sourceContentId(1001L)
+                .requestedBy(2001L)
+                .serviceId(3001L)
+                .serviceRole("KNOWLEDGE")
+                .modelId(4001L)
+                .modelName("gpt-5")
+                .promptVersionId(5001L)
+                .requestId("req-tag")
+                .traceId("trace-tag")
+                .promptMessagesJson("[\"tag-prompt\"]")
+                .promptVariablesJson("{\"maxTags\":10}")
+                .promptHash("tag-hash")
+                .inputPayloadJson("{\"contentText\":\"正文\"}")
+                .outputSchemaJson("{\"type\":\"object\",\"required\":[\"tags\"]}")
+                .forceJson(true)
+                .locale("zh-CN")
+                .build());
+
+        assertEquals(711L, response.getCallId());
+        assertEquals(811L, response.getCandidateId());
+        assertEquals("SUCCEEDED", response.getStatus());
+        assertEquals("KNOWLEDGE_TAG_EXTRACTION", response.getCapability());
+        assertEquals("STRUCTURED", response.getResultFormat());
+        assertEquals("{\"tags\":[]}", response.getResultPayload());
+        assertNull(response.getErrorType());
+        assertNull(response.getErrorMessage());
+    }
+
+    @Test
     void getCallRecordShouldMapUsageSnapshot() {
         AiInvocationRepository aiInvocationRepository = mock(AiInvocationRepository.class);
         when(aiInvocationRepository.getCallRecord(301L)).thenReturn(callRecord());

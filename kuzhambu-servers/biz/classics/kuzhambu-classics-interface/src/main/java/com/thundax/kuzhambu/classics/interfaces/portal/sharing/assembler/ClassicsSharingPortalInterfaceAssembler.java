@@ -6,6 +6,7 @@ import com.thundax.kuzhambu.classics.application.sharing.result.SharePortalResul
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsSharePortalListItem;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareTarget;
+import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareTargetStatus;
 import com.thundax.kuzhambu.classics.interfaces.portal.sharing.controller.response.ClassicsSharePortalListItemResponse;
 import com.thundax.kuzhambu.classics.interfaces.portal.sharing.controller.response.ClassicsSharePortalListResponse;
 import com.thundax.kuzhambu.classics.interfaces.portal.sharing.controller.response.ClassicsSharePortalResponse;
@@ -88,7 +89,8 @@ public final class ClassicsSharingPortalInterfaceAssembler {
         if (target == null) {
             return null;
         }
-        JsonNode snapshot = readSnapshot(target.getContentSnapshotJson());
+        boolean deleted = isDeletedTarget(target);
+        JsonNode snapshot = deleted ? null : readSnapshot(target.getContentSnapshotJson());
         return ClassicsSharePortalTargetResponse.builder()
                 .contentType(value(target.getContentType()))
                 .contentId(
@@ -101,13 +103,17 @@ public final class ClassicsSharingPortalInterfaceAssembler {
                                 : target.getContentVersionId().value())
                 .contentVersionNo(target.getContentVersionNo())
                 .titleSnapshot(target.getTitleSnapshot())
-                .contentSnapshotJson(target.getContentSnapshotJson())
-                .storageObject(toStorageObject(target, snapshot, shareToken, resourcePathPrefix))
-                .images(toImageResponses(target, snapshot, shareToken, resourcePathPrefix))
+                .contentSnapshotJson(deleted ? null : target.getContentSnapshotJson())
+                .storageObject(deleted ? null : toStorageObject(target, snapshot, shareToken, resourcePathPrefix))
+                .images(deleted ? null : toImageResponses(target, snapshot, shareToken, resourcePathPrefix))
                 .contentVisibilitySnapshot(value(target.getContentVisibilitySnapshot()))
                 .targetStatus(value(target.getTargetStatus()))
                 .priority(target.getPriority())
                 .build();
+    }
+
+    private static boolean isDeletedTarget(ClassicsShareTarget target) {
+        return target != null && target.getTargetStatus() == ClassicsShareTargetStatus.CONTENT_DELETED;
     }
 
     private static ClassicsSharePortalTargetResponse.ResourceResponse toStorageObject(

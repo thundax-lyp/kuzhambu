@@ -10,4 +10,6 @@ public interface KnowledgeAiExtractionDomainService {
     KnowledgeAiExtractionResult extractGraph(KnowledgeAiExtractionRequest request);
 
     KnowledgeAiExtractionResult extractLineage(KnowledgeAiExtractionRequest request);
+
+    KnowledgeAiExtractionResult extractTags(KnowledgeAiExtractionRequest request);
 }

@@ -10,6 +10,7 @@ interface CapturedCall {
 const API_PREFIX = "http://localhost:20010";
 const DEV_PROXY_PREFIX = "/kuzhambu-admin-api/api";
 const capturedCalls: CapturedCall[] = [];
+let responseData: unknown = true;
 
 const readFetchUrl = (input: RequestInfo | URL) => {
     if (typeof input === "string") {
@@ -40,7 +41,7 @@ const installFetchRecorder = () => {
             JSON.stringify({
                 code: "COMMON-00000",
                 message: "success",
-                data: true
+                data: responseData
             }),
             {
                 headers: { "Content-Type": "application/json" },
@@ -61,6 +62,7 @@ const expectLastCall = (method: string, path: string, body: unknown) => {
 describe("taxonomy service merge contracts", () => {
     beforeEach(() => {
         capturedCalls.length = 0;
+        responseData = true;
         localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
         localStorage.setItem(
             "kuzhambu.admin.accessTokenExpireAt",
@@ -96,5 +98,53 @@ describe("taxonomy service merge contracts", () => {
             topLimit: 10,
             recentMonths: 6
         });
+    });
+
+    it("sends tag extraction and candidate apply requests", async () => {
+        responseData = {
+            aiCallId: 501,
+            aiCandidateId: 601,
+            status: "SUCCEEDED",
+            resultFormat: "STRUCTURED",
+            resultPayload:
+                '{"tags":[{"name":"礼制","categoryId":"11","categoryName":"制度","confidence":0.91,"reason":"匹配既有标签","matchedExistingTagId":"21"}]}'
+        };
+        const extractionRequest = {
+            sourceContentType: "SANCAI_ENTRY",
+            sourceContentId: "1001",
+            contentTitle: "条目标题",
+            contentText: "正文片段",
+            modelId: 401,
+            modelName: "gpt-5",
+            promptVersionId: 301,
+            maxTags: 8,
+            allowNewTags: true
+        };
+
+        const result = await service.requestTagExtraction(extractionRequest);
+
+        expectLastCall("POST", "/knowledge/taxonomy/tag/extract", extractionRequest);
+        expect(result.aiCallId).toBe(501);
+        expect(result.aiCandidateId).toBe(601);
+        expect(result.candidates).toEqual([
+            {
+                name: "礼制",
+                categoryId: "11",
+                categoryName: "制度",
+                confidence: 0.91,
+                reason: "匹配既有标签",
+                matchedExistingTagId: "21"
+            }
+        ]);
+
+        responseData = true;
+        const applyRequest = {
+            aiCandidateId: 601,
+            selectedTags: result.candidates ?? [],
+            reviewNote: "AI 审核",
+            reviewedBy: 201
+        };
+        await service.applyExtractedTags(applyRequest);
+        expectLastCall("POST", "/knowledge/taxonomy/tag/extract/apply", applyRequest);
     });
 });

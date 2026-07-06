@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Tabs } from "antd";
+import { App, Button, Tabs } from "antd";
 import { useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
@@ -9,6 +9,7 @@ import { SynonymEdit } from "./components/synonym-edit";
 import { SynonymTable } from "./components/synonym-table";
 import { TagDetailDrawer } from "./components/tag-detail-drawer";
 import { TagEdit } from "./components/tag-edit";
+import { TagExtractionDrawer } from "./components/tag-extraction-drawer";
 import { TagGovernanceMetricsPanel } from "./components/tag-governance-metrics-panel";
 import { TagMergePanel } from "./components/tag-merge-panel";
 import { TagReviewTable } from "./components/tag-review-table";
@@ -34,6 +35,7 @@ import type {
     SynonymRecord,
     TagCategoryPageQuery,
     TagCategoryRecord,
+    TagExtractionResultRecord,
     TagGovernanceMetricsRecord,
     TagMergePreviewRecord,
     TagPageQuery,
@@ -93,6 +95,9 @@ export const TaxonomyPage = () => {
     const [tagDetailReviewMode, setTagDetailReviewMode] = useState(false);
     const [removingAliasId, setRemovingAliasId] = useState<string | null>(null);
     const [tagMergePreview, setTagMergePreview] = useState<TagMergePreviewRecord | null>(null);
+    const [tagExtractionOpen, setTagExtractionOpen] = useState(false);
+    const [tagExtractionResult, setTagExtractionResult] =
+        useState<TagExtractionResultRecord | null>(null);
 
     const categoryPageQuery = useQuery({
         queryKey: ["knowledge", "taxonomy", "categories", categoryQuery],
@@ -328,6 +333,33 @@ export const TaxonomyPage = () => {
             messageApi.error(error instanceof Error ? error.message : "同义词删除失败");
         }
     });
+    const requestTagExtractionMutation = useMutation({
+        mutationFn: service.requestTagExtraction,
+        onSuccess: (result) => {
+            setTagExtractionResult(result);
+            messageApi.success("AI 标签候选已生成");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "AI 标签抽取失败");
+        }
+    });
+    const applyExtractedTagsMutation = useMutation({
+        mutationFn: service.applyExtractedTags,
+        onSuccess: async () => {
+            setTagExtractionOpen(false);
+            setTagExtractionResult(null);
+            setActiveTabKey("reviews");
+            await Promise.all([
+                queryClient.invalidateQueries({ queryKey: ["knowledge", "taxonomy", "tags"] }),
+                queryClient.invalidateQueries({ queryKey: ["knowledge", "taxonomy", "reviews"] }),
+                queryClient.invalidateQueries({ queryKey: ["knowledge", "taxonomy", "metrics"] })
+            ]);
+            messageApi.success("AI 标签候选已进入待审核");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "AI 标签候选应用失败");
+        }
+    });
 
     const categoryPage = categoryPageQuery.data;
     const tagPage = tagPageQuery.data;
@@ -359,6 +391,11 @@ export const TaxonomyPage = () => {
     const openCreateTag = () => {
         setEditingTag(null);
         setTagEditorOpen(true);
+    };
+
+    const openTagExtraction = () => {
+        setTagExtractionResult(null);
+        setTagExtractionOpen(true);
     };
 
     const openEditTag = (tag: TagRecord) => {
@@ -406,6 +443,14 @@ export const TaxonomyPage = () => {
         setTagDetailReviewMode(false);
         setSelectedTag(null);
         setRemovingAliasId(null);
+    };
+
+    const closeTagExtraction = () => {
+        if (requestTagExtractionMutation.isPending || applyExtractedTagsMutation.isPending) {
+            return;
+        }
+        setTagExtractionOpen(false);
+        setTagExtractionResult(null);
     };
 
     const createAlias = (request: TagAliasCreateCommand) => {
@@ -491,6 +536,13 @@ export const TaxonomyPage = () => {
                                         onEdit={openEditTag}
                                         onOpenDetail={(tag) => openTagDetail(tag)}
                                         onRefresh={() => tagPageQuery.refetch()}
+                                        pageActions={
+                                            canEditTaxonomy ? (
+                                                <Button type="primary" onClick={openTagExtraction}>
+                                                    AI 抽取标签
+                                                </Button>
+                                            ) : null
+                                        }
                                         onStatusChange={(request) =>
                                             tagStatusMutation.mutate(request)
                                         }
@@ -599,6 +651,19 @@ export const TaxonomyPage = () => {
                 onReject={(request: TagReviewCommand) => reviewTagMutation.mutate(request)}
                 onRemoveAlias={removeAlias}
             />
+
+            {tagExtractionOpen ? (
+                <TagExtractionDrawer
+                    open={tagExtractionOpen}
+                    extracting={requestTagExtractionMutation.isPending}
+                    applying={applyExtractedTagsMutation.isPending}
+                    result={tagExtractionResult}
+                    onClose={closeTagExtraction}
+                    onExtract={(request) => requestTagExtractionMutation.mutate(request)}
+                    onApply={(request) => applyExtractedTagsMutation.mutate(request)}
+                    onResetResult={() => setTagExtractionResult(null)}
+                />
+            ) : null}
         </div>
     );
 };

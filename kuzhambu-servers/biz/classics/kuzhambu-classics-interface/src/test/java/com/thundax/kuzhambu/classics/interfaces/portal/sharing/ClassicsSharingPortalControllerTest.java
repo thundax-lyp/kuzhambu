@@ -110,6 +110,11 @@ class ClassicsSharingPortalControllerTest {
         assertEquals(
                 "/api/portal/classics/shares/share-token/resources/7002/content?download=true",
                 json.at("/targets/1/storageObject/downloadUrl").asText());
+        assertEquals("CONTENT_DELETED", json.at("/targets/2/targetStatus").asText());
+        assertEquals("已删标题", json.at("/targets/2/titleSnapshot").asText());
+        assertFalse(json.at("/targets/2").has("contentSnapshotJson"), json::toString);
+        assertFalse(json.at("/targets/2").has("images"), json::toString);
+        assertFalse(json.at("/targets/2").has("storageObject"), json::toString);
     }
 
     @Test
@@ -195,12 +200,15 @@ class ClassicsSharingPortalControllerTest {
         ClassicsSharingPortalController controller = new ClassicsSharingPortalController(sharingService());
         MockHttpServletResponse missingResponse = new MockHttpServletResponse();
         MockHttpServletResponse sancaiDownloadResponse = new MockHttpServletResponse();
+        MockHttpServletResponse deletedResponse = new MockHttpServletResponse();
 
         controller.content("share-token", 9999L, false, missingResponse);
         controller.content("share-token", 7001L, true, sancaiDownloadResponse);
+        controller.content("share-token", 7010L, false, deletedResponse);
 
         assertEquals(404, missingResponse.getStatus());
         assertEquals(404, sancaiDownloadResponse.getStatus());
+        assertEquals(404, deletedResponse.getStatus());
     }
 
     private static ClassicsSharingApplicationService sharingService() {
@@ -222,7 +230,7 @@ class ClassicsSharingPortalControllerTest {
                                 ClassicsShareLinkStatus.ACTIVE,
                                 new Date(1_000L),
                                 new Date(3_000L),
-                                List.of(target(), wangqiTarget()));
+                                List.of(target(), wangqiTarget(), deletedTarget()));
                     }
                     if ("getPrivatePortalShare".equals(method.getName())) {
                         assertEquals("private-token", args[0]);
@@ -286,6 +294,22 @@ class ClassicsSharingPortalControllerTest {
         target.setContentVisibilitySnapshot(ClassicsSharedContentVisibility.PUBLIC);
         target.setTargetStatus(ClassicsShareTargetStatus.AVAILABLE);
         target.setPriority(2);
+        return target;
+    }
+
+    private static ClassicsShareTarget deletedTarget() {
+        ClassicsShareTarget target = new ClassicsShareTarget();
+        target.setContentType(ClassicsContentType.SANCAI_ENTRY);
+        target.setContentId(ClassicsContentId.of(101L));
+        target.setContentVersionId(ClassicsContentVersionId.of(31L));
+        target.setContentVersionNo(1);
+        target.setTitleSnapshot("已删标题");
+        target.setContentSnapshotJson("{\"contentType\":\"SANCAI_ENTRY\",\"contentId\":101,"
+                + "\"images\":[{\"imageId\":8003,\"storageObjectId\":7010,"
+                + "\"originalFilename\":\"deleted.png\",\"contentType\":\"image/png\",\"size\":9}]}");
+        target.setContentVisibilitySnapshot(ClassicsSharedContentVisibility.PUBLIC);
+        target.setTargetStatus(ClassicsShareTargetStatus.CONTENT_DELETED);
+        target.setPriority(3);
         return target;
     }
 

@@ -7,11 +7,14 @@ import com.thundax.kuzhambu.knowledge.application.taxonomy.command.SynonymStatus
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.SynonymUpdateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagAliasCreateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagAliasRemoveCommand;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCandidateApplyCommand;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCandidateApplyCommand.TagCandidateApplyItemCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCategoryCreateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCategoryStatusCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCategoryUpdateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCreateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagDeprecateCommand;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagMergeCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagReviewCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagStatusCommand;
@@ -27,6 +30,7 @@ import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagAliasResult
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagCategoryResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagContentRefResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagDetailResult;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagExtractionResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagGovernanceMetricsResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagMergePreviewResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagResult;
@@ -46,6 +50,8 @@ import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.reque
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.SynonymUpdateRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagAliasCreateRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagAliasRemoveRequest;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagCandidateApplyRequest;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagCandidateApplyRequest.TagCandidateApplyItemRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagCategoryCreateRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagCategoryPageRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagCategoryStatusRequest;
@@ -53,6 +59,7 @@ import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.reque
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagCreateRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagDeprecateRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagDetailRequest;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagExtractionRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagGovernanceMetricsRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagMergeRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagPageRequest;
@@ -65,6 +72,7 @@ import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.respo
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.response.TagCategoryResponse;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.response.TagContentRefResponse;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.response.TagDetailResponse;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.response.TagExtractionResponse;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.response.TagGovernanceMetricsResponse;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.response.TagMergePreviewResponse;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.response.TagResponse;
@@ -188,6 +196,42 @@ public final class KnowledgeTaxonomyInterfaceAssembler {
     public static TagReviewCommand toReviewCommand(TagReviewRequest request) {
         return new TagReviewCommand(
                 TagIdCodec.toDomain(request.getId()), request.getDecision(), request.getReviewNote());
+    }
+
+    public static TagExtractionCommand toExtractionCommand(TagExtractionRequest request) {
+        return new TagExtractionCommand(
+                request == null ? null : request.getSourceContentType(),
+                request == null ? null : request.getSourceContentId(),
+                request == null ? null : request.getContentTitle(),
+                request == null ? null : request.getContentText(),
+                request == null ? null : request.getModelId(),
+                request == null ? null : request.getModelName(),
+                request == null ? null : request.getPromptVersionId(),
+                request == null ? null : request.getMaxTags(),
+                request == null ? null : request.getAllowNewTags(),
+                request == null ? null : request.getRequestedBy());
+    }
+
+    public static TagCandidateApplyCommand toCandidateApplyCommand(TagCandidateApplyRequest request) {
+        return new TagCandidateApplyCommand(
+                request == null ? null : request.getAiCandidateId(),
+                request == null || request.getSelectedTags() == null
+                        ? null
+                        : request.getSelectedTags().stream()
+                                .map(KnowledgeTaxonomyInterfaceAssembler::toCandidateApplyItemCommand)
+                                .toList(),
+                request == null ? null : request.getReviewNote(),
+                request == null ? null : request.getReviewedBy());
+    }
+
+    private static TagCandidateApplyItemCommand toCandidateApplyItemCommand(TagCandidateApplyItemRequest request) {
+        return new TagCandidateApplyItemCommand(
+                request == null ? null : request.getName(),
+                request == null ? null : request.getCategoryId(),
+                request == null ? null : request.getCategoryName(),
+                request == null ? null : request.getConfidence(),
+                request == null ? null : request.getReason(),
+                request == null ? null : request.getMatchedExistingTagId());
     }
 
     public static TagAliasCreateCommand toAliasCreateCommand(TagAliasCreateRequest request) {
@@ -345,6 +389,18 @@ public final class KnowledgeTaxonomyInterfaceAssembler {
                         : result.getMonthlyNewTags().stream()
                                 .map(KnowledgeTaxonomyInterfaceAssembler::toResponse)
                                 .toList());
+        return response;
+    }
+
+    public static TagExtractionResponse toResponse(TagExtractionResult result) {
+        TagExtractionResponse response = new TagExtractionResponse();
+        response.setAiCallId(result == null ? null : result.getAiCallId());
+        response.setAiCandidateId(result == null ? null : result.getAiCandidateId());
+        response.setStatus(result == null ? null : result.getStatus());
+        response.setResultFormat(result == null ? null : result.getResultFormat());
+        response.setResultPayload(result == null ? null : result.getResultPayload());
+        response.setErrorType(result == null ? null : result.getErrorType());
+        response.setErrorMessage(result == null ? null : result.getErrorMessage());
         return response;
     }
 
