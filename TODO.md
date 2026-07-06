@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `02 Operations backup scheduler`：补齐启动自动备份与每日 2:00 cron 调度
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-BACKUP-RESTORE-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/backup/support/OperationsBackupScheduleProperties.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/backup/support/OperationsBackupScheduler.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/test/java/com/thundax/kuzhambu/operations/application/backup/support/OperationsBackupSchedulerTest.java`
-    - 处理动作：新增 Operations application 调度组件，应用 ready 后触发启动备份并按 cron 每天凌晨 2:00 触发自动备份。
-    - 验收点：启动触发、关闭总开关、关闭启动备份和每日调度调用均有测试覆盖。
-    - 重要度：10/10
-
 - [ ] `03 Admin starter backup config`：补齐自动备份 starter 与环境变量配置
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-BACKUP-RESTORE-CLOSURE.md`
