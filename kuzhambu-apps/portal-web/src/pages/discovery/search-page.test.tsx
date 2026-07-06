@@ -78,6 +78,36 @@ const setInputValue = (container: HTMLElement, name: string, value: string) => {
     });
 };
 
+const clickFilterOption = async (
+    container: HTMLElement,
+    groupLabel: string,
+    optionText: string
+) => {
+    const group = container.querySelector(
+        `[role="group"][aria-label="${groupLabel}"]`
+    ) as HTMLElement | null;
+    expect(group).not.toBeNull();
+
+    const button = Array.from(group?.querySelectorAll("button") ?? []).find(
+        (candidate) => candidate.textContent === optionText
+    );
+    expect(button).toBeDefined();
+
+    await act(async () => {
+        button?.click();
+    });
+};
+
+const getFilterOption = (container: HTMLElement, groupLabel: string, optionText: string) => {
+    const group = container.querySelector(
+        `[role="group"][aria-label="${groupLabel}"]`
+    ) as HTMLElement | null;
+
+    return Array.from(group?.querySelectorAll("button") ?? []).find(
+        (candidate) => candidate.textContent === optionText
+    );
+};
+
 describe("DiscoverySearchPage", () => {
     afterEach(() => {
         mocks.recordSearchClick.mockReset();
@@ -181,7 +211,7 @@ describe("DiscoverySearchPage", () => {
         });
 
         const { container, root } = renderPage(
-            "/discovery/search?q=%E7%A4%BC%E5%99%A8&categoryCodes=SANCAI_ENTRY&pageNo=2&pageSize=20"
+            "/discovery/search?q=%E7%A4%BC%E5%99%A8&knowledgeBases=SANCAI_ENTRY&categoryCodes=SANCAI_ENTRY&visibilityScopes=PUBLIC&pageNo=2&pageSize=20"
         );
         await flushMutations();
 
@@ -193,17 +223,23 @@ describe("DiscoverySearchPage", () => {
         ) as HTMLInputElement | null;
         expect(queryInput?.value).toBe("礼器");
         expect(categoryInput?.value).toBe("SANCAI_ENTRY");
+        expect(getFilterOption(container, "知识库", "三才图会")?.getAttribute("aria-pressed")).toBe(
+            "true"
+        );
+        expect(getFilterOption(container, "可见性", "公开内容")?.getAttribute("aria-pressed")).toBe(
+            "true"
+        );
         expect(mocks.searchDiscovery).toHaveBeenCalledWith({
             categoryCodes: ["SANCAI_ENTRY"],
             contentStatuses: [],
             dateFrom: null,
             dateTo: null,
-            knowledgeBases: [],
+            knowledgeBases: ["SANCAI_ENTRY"],
             pageNo: 2,
             pageSize: 20,
             queryText: "礼器",
             tagNames: [],
-            visibilityScopes: []
+            visibilityScopes: ["PUBLIC"]
         });
 
         act(() => {
@@ -224,6 +260,7 @@ describe("DiscoverySearchPage", () => {
         const { container, getLocation, root } = renderPage();
         setInputValue(container, "queryText", "官制");
         setInputValue(container, "categoryCodes", "WANGQI_DOCUMENT");
+        await clickFilterOption(container, "知识库", "王圻文档");
 
         const submitButton = container.querySelector(
             'button[type="submit"]'
@@ -235,13 +272,65 @@ describe("DiscoverySearchPage", () => {
         await flushMutations();
 
         expect(getLocation()).toContain("q=%E5%AE%98%E5%88%B6");
+        expect(getLocation()).toContain("knowledgeBases=WANGQI_DOCUMENT");
         expect(getLocation()).toContain("categoryCodes=WANGQI_DOCUMENT");
         expect(mocks.searchDiscovery).toHaveBeenCalledWith(
             expect.objectContaining({
                 categoryCodes: ["WANGQI_DOCUMENT"],
+                knowledgeBases: ["WANGQI_DOCUMENT"],
                 queryText: "官制"
             })
         );
+
+        act(() => {
+            root.unmount();
+        });
+    });
+
+    it("submits advanced filter controls only after an explicit search action", async () => {
+        mocks.searchDiscovery.mockResolvedValueOnce({
+            displayQueryText: "礼俗",
+            groupCount: 0,
+            groups: [],
+            queryText: "礼俗",
+            searchLogId: "LOG-1004",
+            totalCount: 0
+        });
+
+        const { container, root } = renderPage();
+        setInputValue(container, "queryText", "礼俗");
+        setInputValue(container, "categoryCodes", "RITUAL, CUSTOM");
+        setInputValue(container, "tagNames", "礼制、民俗");
+        setInputValue(container, "dateFrom", "2026-01-02");
+        setInputValue(container, "dateTo", "2026-01-31");
+        await clickFilterOption(container, "知识库", "三才图会");
+        await clickFilterOption(container, "知识库", "明代习俗");
+        await clickFilterOption(container, "状态", "已发布");
+        await clickFilterOption(container, "可见性", "非公开内容");
+
+        expect(mocks.searchDiscovery).not.toHaveBeenCalled();
+
+        const submitButton = container.querySelector(
+            'button[type="submit"]'
+        ) as HTMLButtonElement | null;
+
+        await act(async () => {
+            submitButton?.click();
+        });
+        await flushMutations();
+
+        expect(mocks.searchDiscovery).toHaveBeenCalledWith({
+            categoryCodes: ["RITUAL", "CUSTOM"],
+            contentStatuses: ["PUBLISHED"],
+            dateFrom: new Date("2026-01-02T00:00:00").toISOString(),
+            dateTo: new Date("2026-01-31T23:59:59").toISOString(),
+            knowledgeBases: ["SANCAI_ENTRY", "MING_CUSTOMS"],
+            pageNo: 1,
+            pageSize: 10,
+            queryText: "礼俗",
+            tagNames: ["礼制", "民俗"],
+            visibilityScopes: ["PRIVATE"]
+        });
 
         act(() => {
             root.unmount();
@@ -272,7 +361,7 @@ describe("DiscoverySearchPage", () => {
                 }
             ],
             queryText: "礼器",
-            searchLogId: "LOG-1004",
+            searchLogId: "LOG-1005",
             totalCount: 1
         });
 
@@ -295,7 +384,7 @@ describe("DiscoverySearchPage", () => {
                 groupCount: 0,
                 groups: [],
                 queryText: "官制",
-                searchLogId: "LOG-1005",
+                searchLogId: "LOG-1006",
                 totalCount: 0
             })
             .mockResolvedValueOnce({
@@ -303,12 +392,12 @@ describe("DiscoverySearchPage", () => {
                 groupCount: 0,
                 groups: [],
                 queryText: "官制",
-                searchLogId: "LOG-1006",
+                searchLogId: "LOG-1007",
                 totalCount: 0
             });
 
         const { container, getLocation, root } = renderPage(
-            "/discovery/search?q=%E5%AE%98%E5%88%B6&categoryCodes=WANGQI_DOCUMENT&tagNames=%E5%88%B6%E5%BA%A6"
+            "/discovery/search?q=%E5%AE%98%E5%88%B6&knowledgeBases=WANGQI_DOCUMENT&categoryCodes=WANGQI_DOCUMENT&tagNames=%E5%88%B6%E5%BA%A6&visibilityScopes=PRIVATE"
         );
         await flushMutations();
 
@@ -327,13 +416,17 @@ describe("DiscoverySearchPage", () => {
         expect(mocks.searchDiscovery).toHaveBeenLastCalledWith(
             expect.objectContaining({
                 categoryCodes: [],
+                knowledgeBases: [],
                 queryText: "官制",
-                tagNames: []
+                tagNames: [],
+                visibilityScopes: []
             })
         );
         expect(getLocation()).toContain("q=%E5%AE%98%E5%88%B6");
+        expect(getLocation()).not.toContain("knowledgeBases");
         expect(getLocation()).not.toContain("categoryCodes");
         expect(getLocation()).not.toContain("tagNames");
+        expect(getLocation()).not.toContain("visibilityScopes");
 
         act(() => {
             root.unmount();
