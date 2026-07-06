@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import * as KnowledgeAtlasService from "./knowledge-atlas-service";
+import { KnowledgeGraphCanvas } from "./knowledge-graph-canvas";
 
 import "./knowledge-atlas-page.css";
 
@@ -133,6 +134,8 @@ export const KnowledgeAtlasPage = () => {
                             <h2>{content.currentLevel === "overview" ? "总览舞台" : "关系舞台"}</h2>
                         </div>
                     </div>
+
+                    <KnowledgeGraphCanvas canvasView={content.canvasView} />
 
                     {content.currentLevel === "overview" && content.overviewView ? (
                         <div className="knowledge-atlas-overview-stage">

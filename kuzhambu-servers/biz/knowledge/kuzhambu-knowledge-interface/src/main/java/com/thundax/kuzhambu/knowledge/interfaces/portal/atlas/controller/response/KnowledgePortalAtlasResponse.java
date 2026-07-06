@@ -17,6 +17,7 @@ public class KnowledgePortalAtlasResponse {
     private CategoryViewResponse categoryView;
     private DetailViewResponse detailView;
     private AvailableFiltersResponse availableFilters;
+    private CanvasViewResponse canvasView;
 
     @Getter
     @Setter
@@ -173,5 +174,55 @@ public class KnowledgePortalAtlasResponse {
         private List<String> relationTypes;
         private List<String> tagNames;
         private List<String> timeRanges;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CanvasViewResponse {
+        private String mode;
+        private String title;
+        private String description;
+        private String focusNodeId;
+        private Boolean empty;
+        private String emptyTitle;
+        private String emptyDescription;
+        private List<CanvasNodeResponse> nodes;
+        private List<CanvasEdgeResponse> edges;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CanvasNodeResponse {
+        private String id;
+        private String kind;
+        private String label;
+        private String subtitle;
+        private String metricLabel;
+        private Long metricValue;
+        private String status;
+        private String categoryCode;
+        private Long entityId;
+        private String href;
+        private Double weight;
+        private Double x;
+        private Double y;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CanvasEdgeResponse {
+        private String id;
+        private String source;
+        private String target;
+        private String label;
+        private String relationType;
+        private Double weight;
+        private Boolean dashed;
     }
 }

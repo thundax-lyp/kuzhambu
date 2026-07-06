@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
@@ -37,6 +38,21 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
     private static final int DEFAULT_METRICS_MONTHS = 6;
     private static final String GRAPH_VERSION_APPLIED_STATUS = "APPLIED";
     private static final String REFINEMENT_DRAFT_STATUS = "DRAFT";
+    private static final List<CategorySlot> SANCAI_CATEGORY_SLOTS = List.of(
+            new CategorySlot("ASTRONOMY", "天文"),
+            new CategorySlot("GEOGRAPHY", "地理"),
+            new CategorySlot("PEOPLE", "人物"),
+            new CategorySlot("SEASONS", "时令"),
+            new CategorySlot("PALACES", "宫室"),
+            new CategorySlot("TOOLS", "器用"),
+            new CategorySlot("BODY", "身体"),
+            new CategorySlot("CLOTHING", "衣服"),
+            new CategorySlot("AFFAIRS", "人事"),
+            new CategorySlot("RITUALS", "仪制"),
+            new CategorySlot("TREASURES", "珍宝"),
+            new CategorySlot("LITERATURE", "文史"),
+            new CategorySlot("ANIMALS", "鸟兽"),
+            new CategorySlot("PLANTS", "草木"));
 
     private final TagRepository tagRepository;
     private final GraphVersionRepository graphVersionRepository;
@@ -119,9 +135,8 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
                         && !version.getSourceCategoryCode().isBlank())
                 .collect(Collectors.groupingBy(
                         GraphVersion::getSourceCategoryCode, LinkedHashMap::new, Collectors.toList()));
-        List<KnowledgePortalAtlasResult.OverviewCategoryCard> categoryCards = versionsByCategory.entrySet().stream()
-                .map(entry -> toOverviewCategoryCard(entry.getKey(), entry.getValue()))
-                .filter(Objects::nonNull)
+        List<KnowledgePortalAtlasResult.OverviewCategoryCard> categoryCards = SANCAI_CATEGORY_SLOTS.stream()
+                .map(slot -> toOverviewCategoryCard(slot, versionsByCategory.get(slot.code())))
                 .toList();
         return new KnowledgePortalAtlasResult(
                 "overview",
@@ -137,13 +152,21 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
                         List.of(),
                         List.of(),
                         List.of(),
-                        defaultTimeRanges()));
+                        defaultTimeRanges()),
+                buildOverviewCanvas(categoryCards));
     }
 
     private KnowledgePortalAtlasResult.OverviewCategoryCard toOverviewCategoryCard(
-            String categoryCode, List<GraphVersion> versions) {
+            CategorySlot categorySlot, List<GraphVersion> versions) {
         if (versions == null || versions.isEmpty()) {
-            return null;
+            return new KnowledgePortalAtlasResult.OverviewCategoryCard(
+                    categorySlot.code(),
+                    categorySlot.name(),
+                    0L,
+                    0L,
+                    0L,
+                    null,
+                    "/knowledge/atlas?level=category&categoryCode=" + categorySlot.code());
         }
         GraphVersion latestVersion = versions.get(0);
         Long versionId = latestVersion.getVersionId();
@@ -152,22 +175,26 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
         List<KnowledgeRelation> relations =
                 versionId == null ? List.of() : defaultList(knowledgeRelationRepository.listByVersionId(versionId));
         return new KnowledgePortalAtlasResult.OverviewCategoryCard(
-                categoryCode,
-                latestVersion.getSourceCategoryName(),
+                categorySlot.code(),
+                categorySlot.name(),
                 (long) entities.size(),
                 (long) relations.size(),
                 (long) versions.size(),
                 latestVersion.getVersionNo(),
-                "/knowledge/atlas?level=category&categoryCode=" + categoryCode);
+                "/knowledge/atlas?level=category&categoryCode=" + categorySlot.code());
     }
 
     private KnowledgePortalAtlasResult buildCategoryAtlas(String categoryCode) {
         if (categoryCode == null || categoryCode.isBlank()) {
             return buildOverviewAtlas();
         }
+        CategorySlot categorySlot = findCategorySlot(categoryCode);
+        if (categorySlot == null) {
+            return buildOverviewAtlas();
+        }
         GraphVersion latestVersion = graphVersionRepository.findLatestAppliedByCategoryCode(categoryCode);
         if (latestVersion == null || latestVersion.getVersionId() == null) {
-            return buildOverviewAtlas();
+            return buildEmptyCategoryAtlas(categorySlot);
         }
         Long versionId = latestVersion.getVersionId();
         List<KnowledgeEntity> entities = defaultList(knowledgeEntityRepository.listByVersionId(versionId));
@@ -179,12 +206,12 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
                                 "overview", "图谱总览", "/knowledge/atlas?level=overview"),
                         new KnowledgePortalAtlasResult.BreadcrumbItem(
                                 "category",
-                                latestVersion.getSourceCategoryName(),
+                                categorySlot.name(),
                                 "/knowledge/atlas?level=category&categoryCode=" + categoryCode)),
                 null,
                 new KnowledgePortalAtlasResult.CategoryView(
-                        latestVersion.getSourceCategoryCode(),
-                        latestVersion.getSourceCategoryName(),
+                        categorySlot.code(),
+                        categorySlot.name(),
                         latestVersion.getVersionId(),
                         latestVersion.getVersionNo(),
                         entities.stream().map(this::toCategoryEntityHighlight).toList(),
@@ -200,7 +227,8 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
                                 .map(KnowledgeRelation::getRelationType)
                                 .toList()),
                         List.of(),
-                        defaultTimeRanges()));
+                        defaultTimeRanges()),
+                buildCategoryCanvas(categorySlot, latestVersion, entities, relations));
     }
 
     private KnowledgePortalAtlasResult buildDetailAtlas(Long entityId) {
@@ -246,7 +274,257 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
                                 .map(KnowledgeRelation::getRelationType)
                                 .toList()),
                         List.of(),
-                        defaultTimeRanges()));
+                        defaultTimeRanges()),
+                buildDetailCanvas(focusEntity, relations));
+    }
+
+    private KnowledgePortalAtlasResult buildEmptyCategoryAtlas(CategorySlot categorySlot) {
+        return new KnowledgePortalAtlasResult(
+                "category",
+                List.of(
+                        new KnowledgePortalAtlasResult.BreadcrumbItem(
+                                "overview", "图谱总览", "/knowledge/atlas?level=overview"),
+                        new KnowledgePortalAtlasResult.BreadcrumbItem(
+                                "category",
+                                categorySlot.name(),
+                                "/knowledge/atlas?level=category&categoryCode=" + categorySlot.code())),
+                null,
+                new KnowledgePortalAtlasResult.CategoryView(
+                        categorySlot.code(), categorySlot.name(), null, null, List.of(), List.of(), List.of()),
+                null,
+                new KnowledgePortalAtlasResult.AvailableFilters(
+                        List.of(), List.of(), List.of(), List.of(), defaultTimeRanges()),
+                new KnowledgePortalAtlasResult.CanvasView(
+                        "category",
+                        categorySlot.name() + "知识图谱",
+                        "该门类保留固定空位，等待图谱版本应用后展示实体关系。",
+                        "category:" + categorySlot.code(),
+                        true,
+                        "暂无" + categorySlot.name() + "图谱",
+                        "当前门类尚无已应用图谱版本，Portal 仅展示固定 14 门类空位。",
+                        List.of(new KnowledgePortalAtlasResult.CanvasNode(
+                                "category:" + categorySlot.code(),
+                                "category",
+                                categorySlot.name(),
+                                "固定十四门类空位",
+                                "实体",
+                                0L,
+                                "empty",
+                                categorySlot.code(),
+                                null,
+                                "/knowledge/atlas?level=category&categoryCode=" + categorySlot.code(),
+                                0D,
+                                0D,
+                                0D)),
+                        List.of()));
+    }
+
+    private KnowledgePortalAtlasResult.CanvasView buildOverviewCanvas(
+            List<KnowledgePortalAtlasResult.OverviewCategoryCard> categoryCards) {
+        List<KnowledgePortalAtlasResult.CanvasNode> nodes = new java.util.ArrayList<>();
+        List<KnowledgePortalAtlasResult.CanvasEdge> edges = new java.util.ArrayList<>();
+        nodes.add(new KnowledgePortalAtlasResult.CanvasNode(
+                "root:sancai",
+                "root",
+                "三才图会",
+                "固定十四门类",
+                "门类",
+                (long) SANCAI_CATEGORY_SLOTS.size(),
+                "active",
+                null,
+                null,
+                "/knowledge/atlas?level=overview",
+                1D,
+                0D,
+                0D));
+        int size = categoryCards == null ? 0 : categoryCards.size();
+        for (int index = 0; index < size; index++) {
+            KnowledgePortalAtlasResult.OverviewCategoryCard card = categoryCards.get(index);
+            double angle = (Math.PI * 2D * index) / size - Math.PI / 2D;
+            double radius = 280D;
+            String nodeId = "category:" + card.getCategoryCode();
+            boolean empty = card.getAppliedVersionCount() == null || card.getAppliedVersionCount() == 0L;
+            nodes.add(new KnowledgePortalAtlasResult.CanvasNode(
+                    nodeId,
+                    "category",
+                    card.getCategoryName(),
+                    empty ? "等待图谱版本" : "版本 " + card.getLatestVersionNo(),
+                    "实体",
+                    card.getEntityCount(),
+                    empty ? "empty" : "active",
+                    card.getCategoryCode(),
+                    null,
+                    card.getEntryHref(),
+                    card.getEntityCount() == null ? 0D : card.getEntityCount().doubleValue(),
+                    Math.cos(angle) * radius,
+                    Math.sin(angle) * radius));
+            edges.add(new KnowledgePortalAtlasResult.CanvasEdge(
+                    "root:sancai->" + nodeId,
+                    "root:sancai",
+                    nodeId,
+                    empty ? "空位" : "门类",
+                    "CATEGORY",
+                    empty ? 0.2D : 1D,
+                    empty));
+        }
+        return new KnowledgePortalAtlasResult.CanvasView(
+                "overview", "十四门类知识图谱", "固定展示三才图会十四个正式门类，空门类保留可进入空态。", "root:sancai", false, null, null, nodes, edges);
+    }
+
+    private KnowledgePortalAtlasResult.CanvasView buildCategoryCanvas(
+            CategorySlot categorySlot,
+            GraphVersion latestVersion,
+            List<KnowledgeEntity> entities,
+            List<KnowledgeRelation> relations) {
+        Map<String, KnowledgePortalAtlasResult.CanvasNode> nodes = new LinkedHashMap<>();
+        Map<String, String> nodeIdByEntityKey = new LinkedHashMap<>();
+        String categoryNodeId = "category:" + categorySlot.code();
+        nodes.put(
+                categoryNodeId,
+                new KnowledgePortalAtlasResult.CanvasNode(
+                        categoryNodeId,
+                        "category",
+                        categorySlot.name(),
+                        latestVersion.getVersionNo() == null ? "已应用版本" : "版本 " + latestVersion.getVersionNo(),
+                        "实体",
+                        (long) entities.size(),
+                        entities.isEmpty() ? "empty" : "active",
+                        categorySlot.code(),
+                        null,
+                        "/knowledge/atlas?level=category&categoryCode=" + categorySlot.code(),
+                        (double) entities.size(),
+                        0D,
+                        0D));
+        for (KnowledgeEntity entity : entities) {
+            KnowledgePortalAtlasResult.CanvasNode node = toEntityCanvasNode(entity);
+            nodes.put(node.getId(), node);
+            if (entity.getEntityKey() != null && !entity.getEntityKey().isBlank()) {
+                nodeIdByEntityKey.put(entity.getEntityKey(), node.getId());
+            }
+        }
+        List<KnowledgePortalAtlasResult.CanvasEdge> edges = new java.util.ArrayList<>();
+        for (KnowledgeEntity entity : entities) {
+            edges.add(new KnowledgePortalAtlasResult.CanvasEdge(
+                    categoryNodeId + "->entity:" + entity.getEntityId(),
+                    categoryNodeId,
+                    "entity:" + entity.getEntityId(),
+                    "包含",
+                    "CATEGORY_ENTITY",
+                    confidenceOf(entity.getConfirmationStatus()),
+                    false));
+        }
+        for (KnowledgeRelation relation : relations) {
+            String sourceId = ensureRelationNode(
+                    nodes, nodeIdByEntityKey, relation.getSourceEntityKey(), relation.getSourceName());
+            String targetId = ensureRelationNode(
+                    nodes, nodeIdByEntityKey, relation.getTargetEntityKey(), relation.getTargetName());
+            edges.add(toCanvasEdge(relation, sourceId, targetId));
+        }
+        return new KnowledgePortalAtlasResult.CanvasView(
+                "category",
+                categorySlot.name() + "知识图谱",
+                "展示当前门类最新已应用图谱版本中的实体与关系。",
+                categoryNodeId,
+                entities.isEmpty(),
+                entities.isEmpty() ? "暂无" + categorySlot.name() + "实体" : null,
+                entities.isEmpty() ? "当前版本尚未沉淀可展示实体，门类空位保持可见。" : null,
+                List.copyOf(nodes.values()),
+                edges);
+    }
+
+    private KnowledgePortalAtlasResult.CanvasView buildDetailCanvas(
+            KnowledgeEntity focusEntity, List<KnowledgeRelation> relations) {
+        Map<String, KnowledgePortalAtlasResult.CanvasNode> nodes = new LinkedHashMap<>();
+        KnowledgePortalAtlasResult.CanvasNode focusNode = toEntityCanvasNode(focusEntity);
+        nodes.put(focusNode.getId(), focusNode);
+        List<KnowledgePortalAtlasResult.CanvasEdge> edges = new java.util.ArrayList<>();
+        for (KnowledgeRelation relation : relations) {
+            String sourceId = Objects.equals(focusEntity.getEntityKey(), relation.getSourceEntityKey())
+                    ? focusNode.getId()
+                    : ensureRelationNode(nodes, Map.of(), relation.getSourceEntityKey(), relation.getSourceName());
+            String targetId = Objects.equals(focusEntity.getEntityKey(), relation.getTargetEntityKey())
+                    ? focusNode.getId()
+                    : ensureRelationNode(nodes, Map.of(), relation.getTargetEntityKey(), relation.getTargetName());
+            edges.add(toCanvasEdge(relation, sourceId, targetId));
+        }
+        return new KnowledgePortalAtlasResult.CanvasView(
+                "detail",
+                focusEntity.getName() + "关系图谱",
+                "展示焦点实体与直接相邻关系。",
+                focusNode.getId(),
+                edges.isEmpty(),
+                edges.isEmpty() ? "暂无相邻关系" : null,
+                edges.isEmpty() ? "该实体当前没有可展示的直接关系。" : null,
+                List.copyOf(nodes.values()),
+                edges);
+    }
+
+    private KnowledgePortalAtlasResult.CanvasNode toEntityCanvasNode(KnowledgeEntity entity) {
+        return new KnowledgePortalAtlasResult.CanvasNode(
+                "entity:" + entity.getEntityId(),
+                "entity",
+                entity.getName(),
+                entity.getEntityType(),
+                "置信",
+                Math.round(confidenceOf(entity.getConfirmationStatus()) * 100D),
+                entity.getConfirmationStatus(),
+                null,
+                entity.getEntityId(),
+                "/knowledge/atlas?level=detail&entityId=" + entity.getEntityId(),
+                confidenceOf(entity.getConfirmationStatus()),
+                null,
+                null);
+    }
+
+    private String ensureRelationNode(
+            Map<String, KnowledgePortalAtlasResult.CanvasNode> nodes,
+            Map<String, String> nodeIdByEntityKey,
+            String entityKey,
+            String label) {
+        String safeEntityKey = safeKey(entityKey);
+        String existingNodeId = nodeIdByEntityKey.get(safeEntityKey);
+        if (existingNodeId != null) {
+            return existingNodeId;
+        }
+        String nodeId = "entity-key:" + safeEntityKey;
+        if (!nodes.containsKey(nodeId)) {
+            nodes.put(
+                    nodeId,
+                    new KnowledgePortalAtlasResult.CanvasNode(
+                            nodeId,
+                            "entity",
+                            label == null || label.isBlank() ? safeEntityKey : label,
+                            "关系端点",
+                            "置信",
+                            null,
+                            "RELATED",
+                            null,
+                            null,
+                            null,
+                            0.7D,
+                            null,
+                            null));
+        }
+        return nodeId;
+    }
+
+    private KnowledgePortalAtlasResult.CanvasEdge toCanvasEdge(
+            KnowledgeRelation relation, String sourceId, String targetId) {
+        return new KnowledgePortalAtlasResult.CanvasEdge(
+                "relation:" + safeKey(relation.getRelationKey()),
+                sourceId,
+                targetId,
+                relation.getRelationType(),
+                relation.getRelationType(),
+                confidenceOf(relation.getConfirmationStatus()),
+                false);
+    }
+
+    private CategorySlot findCategorySlot(String categoryCode) {
+        return SANCAI_CATEGORY_SLOTS.stream()
+                .filter(slot -> slot.code().equals(categoryCode))
+                .findFirst()
+                .orElse(null);
     }
 
     private KnowledgePortalAtlasResult.CategoryEntityHighlight toCategoryEntityHighlight(KnowledgeEntity entity) {
@@ -613,6 +891,8 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
                         "/knowledge/atlas"))
                 .toList();
     }
+
+    private record CategorySlot(String code, String name) {}
 
     private KnowledgePortalQualityResult.QualityStatItem qualityStat(
             String key, String label, String value, String unit, String deltaText, String statusTone) {

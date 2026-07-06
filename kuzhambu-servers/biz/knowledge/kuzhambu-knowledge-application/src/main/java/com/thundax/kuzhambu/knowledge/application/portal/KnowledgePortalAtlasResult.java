@@ -17,6 +17,23 @@ public class KnowledgePortalAtlasResult {
     private CategoryView categoryView;
     private DetailView detailView;
     private AvailableFilters availableFilters;
+    private CanvasView canvasView;
+
+    public KnowledgePortalAtlasResult(
+            String currentLevel,
+            List<BreadcrumbItem> breadcrumbItems,
+            OverviewView overviewView,
+            CategoryView categoryView,
+            DetailView detailView,
+            AvailableFilters availableFilters) {
+        this.currentLevel = currentLevel;
+        this.breadcrumbItems = breadcrumbItems;
+        this.overviewView = overviewView;
+        this.categoryView = categoryView;
+        this.detailView = detailView;
+        this.availableFilters = availableFilters;
+        this.canvasView = null;
+    }
 
     public KnowledgePortalAtlasResult(
             FocusNode focusNode,
@@ -31,6 +48,7 @@ public class KnowledgePortalAtlasResult {
         this.categoryView = null;
         this.detailView = new DetailView(focusNode, relationGroups, sourceReferences, timelineItems, relatedTags);
         this.availableFilters = availableFilters;
+        this.canvasView = null;
     }
 
     @Getter
@@ -188,5 +206,55 @@ public class KnowledgePortalAtlasResult {
         private List<String> relationTypes;
         private List<String> tagNames;
         private List<String> timeRanges;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CanvasView {
+        private String mode;
+        private String title;
+        private String description;
+        private String focusNodeId;
+        private Boolean empty;
+        private String emptyTitle;
+        private String emptyDescription;
+        private List<CanvasNode> nodes;
+        private List<CanvasEdge> edges;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CanvasNode {
+        private String id;
+        private String kind;
+        private String label;
+        private String subtitle;
+        private String metricLabel;
+        private Long metricValue;
+        private String status;
+        private String categoryCode;
+        private Long entityId;
+        private String href;
+        private Double weight;
+        private Double x;
+        private Double y;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CanvasEdge {
+        private String id;
+        private String source;
+        private String target;
+        private String label;
+        private String relationType;
+        private Double weight;
+        private Boolean dashed;
     }
 }

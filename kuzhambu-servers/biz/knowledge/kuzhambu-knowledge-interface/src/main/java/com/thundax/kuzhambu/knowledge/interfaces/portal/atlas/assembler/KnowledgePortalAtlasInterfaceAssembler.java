@@ -20,6 +20,7 @@ public final class KnowledgePortalAtlasInterfaceAssembler {
         response.setCategoryView(toCategoryView(result.getCategoryView()));
         response.setDetailView(toDetailView(result.getDetailView()));
         response.setAvailableFilters(toAvailableFilters(result.getAvailableFilters()));
+        response.setCanvasView(toCanvasView(result.getCanvasView()));
         return response;
     }
 
@@ -195,5 +196,62 @@ public final class KnowledgePortalAtlasInterfaceAssembler {
                 filters.getRelationTypes(),
                 filters.getTagNames(),
                 filters.getTimeRanges());
+    }
+
+    private static KnowledgePortalAtlasResponse.CanvasViewResponse toCanvasView(
+            KnowledgePortalAtlasResult.CanvasView view) {
+        if (view == null) {
+            return null;
+        }
+        return new KnowledgePortalAtlasResponse.CanvasViewResponse(
+                view.getMode(),
+                view.getTitle(),
+                view.getDescription(),
+                view.getFocusNodeId(),
+                view.getEmpty(),
+                view.getEmptyTitle(),
+                view.getEmptyDescription(),
+                toCanvasNodes(view.getNodes()),
+                toCanvasEdges(view.getEdges()));
+    }
+
+    private static List<KnowledgePortalAtlasResponse.CanvasNodeResponse> toCanvasNodes(
+            List<KnowledgePortalAtlasResult.CanvasNode> nodes) {
+        if (nodes == null || nodes.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return nodes.stream()
+                .map(node -> new KnowledgePortalAtlasResponse.CanvasNodeResponse(
+                        node.getId(),
+                        node.getKind(),
+                        node.getLabel(),
+                        node.getSubtitle(),
+                        node.getMetricLabel(),
+                        node.getMetricValue(),
+                        node.getStatus(),
+                        node.getCategoryCode(),
+                        node.getEntityId(),
+                        node.getHref(),
+                        node.getWeight(),
+                        node.getX(),
+                        node.getY()))
+                .toList();
+    }
+
+    private static List<KnowledgePortalAtlasResponse.CanvasEdgeResponse> toCanvasEdges(
+            List<KnowledgePortalAtlasResult.CanvasEdge> edges) {
+        if (edges == null || edges.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return edges.stream()
+                .map(edge -> new KnowledgePortalAtlasResponse.CanvasEdgeResponse(
+                        edge.getId(),
+                        edge.getSource(),
+                        edge.getTarget(),
+                        edge.getLabel(),
+                        edge.getRelationType(),
+                        edge.getWeight(),
+                        edge.getDashed()))
+                .toList();
     }
 }
