@@ -100,13 +100,13 @@
 | `description` | `varchar(1000)` | 问题说明 |
 | `suggestion` | `varchar(1000)` | 处理建议 |
 | `href` | `varchar(256)` | 后台或 Portal 跳转地址 |
-| `sort_order` | `int` | 展示排序 |
+| `priority` | `int` | 展示排序 |
 | `created_at` | `datetime` | 创建时间 |
 
 索引：
 
 - 唯一索引：`uk_quality_report_issue_id(issue_id)`
-- 普通索引：`idx_quality_report_issue_report(report_id, severity, sort_order)`
+- 普通索引：`idx_quality_report_issue_report(report_id, severity, priority)`
 
 ### `knowledge_quality_report_source_detail`
 
@@ -276,7 +276,7 @@ Portal 规则：
 类型：
 
 - `QualityReportRecord` 包含报告主表展示字段。
-- `QualityReportIssueRecord` 包含 `issueId`、`issueType`、`severity`、`objectType`、`objectKey`、`title`、`description`、`suggestion`、`href`、`sortOrder`。
+- `QualityReportIssueRecord` 包含 `issueId`、`issueType`、`severity`、`objectType`、`objectKey`、`title`、`description`、`suggestion`、`href`、`priority`。
 - `QualityReportSourceDetailRecord` 包含来源明细字段。
 - `GenerateQualityReportCommand` 只包含 `graphVersionId`、`generatedBy`。
 - `QualityReportPageQuery` 包含 `graphVersionId`、`sourceContentType`、`sourceContentId`、`reportStatus`、`pageNo`、`pageSize`。

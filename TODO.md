@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `db/schema/knowledge.sql`：新增 Knowledge 质量报告表结构
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-QUALITY-LOOP.md`
-    - 范围对象：`db/schema/knowledge.sql`
-    - 处理动作：新增 `knowledge_quality_report`、`knowledge_quality_report_issue`、`knowledge_quality_report_source_detail` 表和索引，并扩展 `knowledge_quality_annotation.object_type` 说明口径。
-    - 验收点：三张报告表字段、类型、索引与 RUNBOOK 数据结构一致，标注对象支持 `ENTITY`、`RELATION`、`LINEAGE_NODE`、`LINEAGE_RELATION`。
-    - 重要度：10/10
-
 - [ ] `knowledge-domain`：新增质量报告领域对象和仓储边界
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-QUALITY-LOOP.md`
