@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics-content-share-permission-filter`：Classics 导出与分享权限过滤
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-PERMISSION-OPERATIONS-CLEANUP-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/service/impl/ClassicsContentApplicationServiceImpl.java`, `kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sharing/service/impl/ClassicsSharingApplicationServiceImpl.java`, `kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/content/ClassicsContentApplicationServiceImplTest.java`, `kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/sharing/ClassicsSharingApplicationServiceImplTest.java`
-    - 处理动作：为内容导出、单条分享、批量分享增加私有内容权限过滤或权限拒绝。
-    - 验收点：缺少内容 view 或分享/export 权限时私有目标不可导出或分享，且 Portal 公共访问路径不受影响。
-    - 重要度：10/10
-
 - [ ] `classics-sancai-batch-visibility-permission`：Sancai 批量状态权限闭环
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-PERMISSION-OPERATIONS-CLEANUP-CLOSURE.md`

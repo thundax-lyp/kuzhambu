@@ -19,6 +19,7 @@ import com.thundax.kuzhambu.classics.application.content.result.ClassicsExportJo
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.content.support.AiCandidateQaPairPayload;
 import com.thundax.kuzhambu.classics.application.content.support.ClassicsAiCandidatePayloadParser;
+import com.thundax.kuzhambu.classics.application.content.support.ClassicsContentPermissionSupport;
 import com.thundax.kuzhambu.classics.application.content.support.ClassicsContentSnapshotAssembler;
 import com.thundax.kuzhambu.classics.application.content.support.ClassicsTagBindingSupport;
 import com.thundax.kuzhambu.classics.application.content.support.SancaiEntryVersionSnapshot;
@@ -53,6 +54,7 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryImage;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVisualAsset;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryTranslationStatus;
+import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisibilityRiskStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.common.core.exception.BizException;
@@ -869,6 +871,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ClassicsExportJobResult createExportJob(ContentExportCommand command) {
+        requirePrivateExportPermission(command);
         ClassicsContentExportJob job = command.toEntity();
         if (job.getRequestedAt() == null) {
             job.setRequestedAt(new Date());
@@ -1278,5 +1281,24 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                 ErrorCode.SORT_DB_FAILURE.getCode(),
                 ErrorCode.SORT_DB_FAILURE.getMessageKey(),
                 ErrorCode.SORT_DB_FAILURE.getMessage());
+    }
+
+    private static void requirePrivateExportPermission(ContentExportCommand command) {
+        if (command == null || !containsPrivateContent(command.getVisibilityRiskStatus())) {
+            return;
+        }
+        if (command.getContentType() == null
+                || !ClassicsContentPermissionSupport.canExport(
+                        command.getContentType(), command.getOperatorPermissions())) {
+            throw permissionDenied();
+        }
+    }
+
+    private static boolean containsPrivateContent(SancaiVisibilityRiskStatus visibilityRiskStatus) {
+        return visibilityRiskStatus != null && visibilityRiskStatus != SancaiVisibilityRiskStatus.PUBLIC_ONLY;
+    }
+
+    private static BizException permissionDenied() {
+        return new BizException("PERMISSION_DENIED");
     }
 }

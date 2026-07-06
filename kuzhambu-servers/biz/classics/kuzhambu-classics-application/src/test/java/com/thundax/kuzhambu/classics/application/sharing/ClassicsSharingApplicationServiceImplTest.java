@@ -59,6 +59,7 @@ import com.thundax.kuzhambu.storage.facade.response.OpenStorageFacadeResponse;
 import java.io.ByteArrayInputStream;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -266,6 +267,47 @@ class ClassicsSharingApplicationServiceImplTest {
     }
 
     @Test
+    void createPrivateLinkShouldRejectPrivateContentWithoutSharePermissionBeforeWriting() {
+        ClassicsSharingRepository sharingRepository = mock(ClassicsSharingRepository.class);
+        ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
+        SancaiRepository sancaiRepository = mock(SancaiRepository.class);
+        ClassicsShareTokenGenerator shareTokenGenerator = mock(ClassicsShareTokenGenerator.class);
+        ClassicsShareTokenHasher shareTokenHasher = mock(ClassicsShareTokenHasher.class);
+        ClassicsSharingApplicationServiceImpl service = new ClassicsSharingApplicationServiceImpl(
+                sharingRepository,
+                contentApplicationService,
+                sancaiRepository,
+                null,
+                null,
+                shareTokenGenerator,
+                shareTokenHasher,
+                null);
+        SancaiEntry entry = new SancaiEntry();
+        entry.setId(SancaiEntryId.of(103L));
+        entry.setTitle("私有三才");
+        entry.setVisibility(SancaiEntryVisibility.PRIVATE);
+        when(sancaiRepository.getEntryById(SancaiEntryId.of(103L))).thenReturn(entry);
+
+        assertThrows(
+                BizException.class,
+                () -> service.createLink(new ShareLinkCreateCommand(
+                        "私有分享",
+                        ClassicsShareVisibility.PRIVATE,
+                        ClassicsShareLinkStatus.ACTIVE,
+                        null,
+                        null,
+                        null,
+                        List.of(new ShareTargetCreateCommand(
+                                ClassicsContentType.SANCAI_ENTRY, ClassicsContentId.of(103L))))));
+
+        verify(sharingRepository, never()).insertLink(any());
+        verify(sharingRepository, never()).insertTarget(any());
+        verify(shareTokenGenerator, never()).generate();
+        verify(contentApplicationService, never())
+                .ensureVersioned(eq(entry), eq(ClassicsContentChangeType.SHARE_CREATED), eq("创建分享"));
+    }
+
+    @Test
     void batchCreateLinksShouldCreatePerTargetLinkAndReturnDuplicateFailure() {
         ClassicsSharingRepository sharingRepository = mock(ClassicsSharingRepository.class);
         ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
@@ -387,6 +429,45 @@ class ClassicsSharingApplicationServiceImplTest {
                 .thenReturn(version);
         when(sancaiRepository.updateEntry(entry)).thenReturn(1);
 
+        BatchShareCreateCommand command = new BatchShareCreateCommand(
+                null,
+                ClassicsShareVisibility.PUBLIC,
+                ClassicsShareLinkStatus.ACTIVE,
+                null,
+                null,
+                true,
+                List.of(new ShareTargetCreateCommand(ClassicsContentType.SANCAI_ENTRY, ClassicsContentId.of(102L))));
+        command.setOperatorPermissions(Set.of("classics:sancai:view", "classics:sharing:edit"));
+
+        ClassicsBatchOperationResult result = service.batchCreateLinks(command);
+
+        assertEquals(1, result.getSuccessCount());
+        assertEquals(0, result.getFailureCount());
+        verify(sharingRepository).insertTarget(any());
+    }
+
+    @Test
+    void batchCreateLinksShouldReturnPermissionFailureForConfirmedPrivateContentWithoutSharePermission() {
+        ClassicsSharingRepository sharingRepository = mock(ClassicsSharingRepository.class);
+        ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
+        SancaiRepository sancaiRepository = mock(SancaiRepository.class);
+        ClassicsShareTokenGenerator shareTokenGenerator = mock(ClassicsShareTokenGenerator.class);
+        ClassicsShareTokenHasher shareTokenHasher = mock(ClassicsShareTokenHasher.class);
+        ClassicsSharingApplicationServiceImpl service = new ClassicsSharingApplicationServiceImpl(
+                sharingRepository,
+                contentApplicationService,
+                sancaiRepository,
+                null,
+                null,
+                shareTokenGenerator,
+                shareTokenHasher,
+                null);
+        SancaiEntry entry = new SancaiEntry();
+        entry.setId(SancaiEntryId.of(104L));
+        entry.setTitle("私有三才");
+        entry.setVisibility(SancaiEntryVisibility.PRIVATE);
+        when(sancaiRepository.getEntryById(SancaiEntryId.of(104L))).thenReturn(entry);
+
         ClassicsBatchOperationResult result = service.batchCreateLinks(new BatchShareCreateCommand(
                 null,
                 ClassicsShareVisibility.PUBLIC,
@@ -394,11 +475,16 @@ class ClassicsSharingApplicationServiceImplTest {
                 null,
                 null,
                 true,
-                List.of(new ShareTargetCreateCommand(ClassicsContentType.SANCAI_ENTRY, ClassicsContentId.of(102L)))));
+                List.of(new ShareTargetCreateCommand(ClassicsContentType.SANCAI_ENTRY, ClassicsContentId.of(104L)))));
 
-        assertEquals(1, result.getSuccessCount());
-        assertEquals(0, result.getFailureCount());
-        verify(sharingRepository).insertTarget(any());
+        assertEquals(0, result.getSuccessCount());
+        assertEquals(1, result.getFailureCount());
+        assertEquals("PERMISSION_DENIED", result.getFailures().get(0).getFailureCode());
+        verify(sharingRepository, never()).insertLink(any());
+        verify(sharingRepository, never()).insertTarget(any());
+        verify(shareTokenGenerator, never()).generate();
+        verify(contentApplicationService, never())
+                .ensureVersioned(eq(entry), eq(ClassicsContentChangeType.SHARE_CREATED), eq("创建分享"));
     }
 
     @Test

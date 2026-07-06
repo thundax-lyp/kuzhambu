@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.classics.application.content;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -53,9 +54,11 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryRefine
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryTranslationStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisibility;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisualAssetStatus;
+import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisibilityRiskStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVolumeId;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
+import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import com.thundax.kuzhambu.storage.facade.StorageFacade;
@@ -66,6 +69,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -192,6 +196,47 @@ class ClassicsContentApplicationServiceImplTest {
         assertEquals(
                 "usage=CLASSICS_EXPORT_JOB;jobId=900000000001",
                 bindOwnerCaptor.getValue().getOwnerParams());
+    }
+
+    @Test
+    void createExportJobShouldRejectPrivateScopeWithoutExportPermissionBeforeWriting() {
+        ClassicsContentRepository repository = mock(ClassicsContentRepository.class);
+        WorkerRenderClient workerRenderClient = mock(WorkerRenderClient.class);
+        ContentExportCommand command = new ContentExportCommand();
+        command.setContentType(ClassicsContentType.SANCAI_ENTRY);
+        command.setVisibilityRiskStatus(SancaiVisibilityRiskStatus.PRIVATE_CONFIRMED);
+        ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
+                repository, null, null, null, workerRenderClient, null, null, null, null);
+
+        assertThrows(BizException.class, () -> service.createExportJob(command));
+
+        verify(repository, never()).insertExportJob(any());
+        verify(workerRenderClient, never()).renderClassicsExport(any());
+    }
+
+    @Test
+    void createExportJobShouldAllowPrivateScopeWithContentViewAndExportPermission() {
+        ClassicsContentRepository repository = mock(ClassicsContentRepository.class);
+        WorkerRenderClient workerRenderClient = mock(WorkerRenderClient.class);
+        ContentExportCommand command = new ContentExportCommand();
+        command.setExportKind(ClassicsExportKind.CONTENT_DATASET);
+        command.setContentType(ClassicsContentType.SANCAI_ENTRY);
+        command.setExportFormat(ClassicsExportFormat.HTML);
+        command.setScopeType(ClassicsExportScopeType.CATEGORY);
+        command.setScopeJson("{\"title\":\"private export\"}");
+        command.setVisibilityRiskStatus(SancaiVisibilityRiskStatus.PRIVATE_CONFIRMED);
+        command.setOperatorPermissions(Set.of("classics:sancai:view", "classics:content:export"));
+        when(repository.insertExportJob(any())).thenReturn(ClassicsContentExportJobId.of(900000000006L));
+        when(workerRenderClient.renderClassicsExport(any())).thenReturn(renderFailedResponse());
+        ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
+                repository, null, null, null, workerRenderClient, null, null, null, null);
+
+        ClassicsExportJobResult result = service.createExportJob(command);
+
+        assertEquals(ClassicsContentExportJobId.of(900000000006L), result.getJobId());
+        assertEquals(ClassicsExportStatus.FAILED, result.getStatus());
+        verify(repository).insertExportJob(any());
+        verify(workerRenderClient).renderClassicsExport(any());
     }
 
     @Test
