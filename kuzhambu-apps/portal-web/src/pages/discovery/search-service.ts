@@ -5,10 +5,25 @@ import type {
     DiscoverySearchResponse
 } from "./search-types";
 
+export const toDiscoverySearchPayload = (
+    request: DiscoverySearchRequest
+): DiscoverySearchRequest => ({
+    categoryCodes: request.categoryCodes,
+    contentStatuses: request.contentStatuses,
+    dateFrom: request.dateFrom,
+    dateTo: request.dateTo,
+    knowledgeBases: request.knowledgeBases,
+    pageNo: request.pageNo,
+    pageSize: request.pageSize,
+    queryText: request.queryText,
+    tagNames: request.tagNames,
+    visibilityScopes: request.visibilityScopes
+});
+
 export const searchDiscovery = (request: DiscoverySearchRequest) => {
     return postJson<DiscoverySearchResponse, DiscoverySearchRequest>(
         "/portal/discovery/search/search",
-        request
+        toDiscoverySearchPayload(request)
     );
 };
 

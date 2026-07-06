@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Portal 搜索请求契约`：对齐前端搜索 payload 和响应消费字段
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-FILTER-PERMISSION-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/portal-web/src/pages/discovery/search-service.ts`、`kuzhambu-apps/portal-web/src/pages/discovery/search-types.ts`、`kuzhambu-apps/portal-web/src/pages/discovery/search-page.test.tsx`
-    - 处理动作：让请求 payload 精确包含后端高级筛选字段并保持响应只消费既有展示字段
-    - 验收点：前端请求字段与 `DiscoverySearchRequest` 一致且不依赖后端内部裁剪元数据
-    - 重要度：8/10
-
 - [ ] `Discovery 分支同步`：同步 main 分支最新代码
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-DISCOVERY-FILTER-PERMISSION-CLOSURE.md`

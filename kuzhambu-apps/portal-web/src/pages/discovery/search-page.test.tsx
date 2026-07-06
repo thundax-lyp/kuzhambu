@@ -130,6 +130,7 @@ describe("DiscoverySearchPage", () => {
                             contentId: "1001",
                             contentType: "SANCAI_ENTRY",
                             groupRank: 1,
+                            permissionDebugTrace: "DO_NOT_RENDER_ITEM_TRACE",
                             resultRank: 1,
                             summary: "礼器条目摘要",
                             targetPath: "/shares/1001",
@@ -138,6 +139,7 @@ describe("DiscoverySearchPage", () => {
                     ]
                 }
             ],
+            permissionDebugTrace: "DO_NOT_RENDER_RESPONSE_TRACE",
             queryText: "礼器",
             searchLogId: "LOG-1001",
             totalCount: 1
@@ -173,6 +175,8 @@ describe("DiscoverySearchPage", () => {
         expect(container.textContent).toContain("三才图会");
         expect(container.textContent).toContain("礼器条目");
         expect(container.textContent).toContain("礼器条目摘要");
+        expect(container.textContent).not.toContain("DO_NOT_RENDER_RESPONSE_TRACE");
+        expect(container.textContent).not.toContain("DO_NOT_RENDER_ITEM_TRACE");
 
         const resultLink = container.querySelector(
             'a[href="/shares/1001"]'
