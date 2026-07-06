@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `T04 Admin Web sharing detail`：分享详情抽屉展示删除目标占位
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-DELETE-SHARE-RISK-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sharing/sharing-page.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sharing/sharing-page.css`、`kuzhambu-apps/admin-web/src/pages/classics/sharing/sharing-page.test.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/common/classics-share-types.ts`
-    - 处理动作：在“关联内容”表格增加目标状态列，`CONTENT_DELETED` 显示“内容已删除”并隐藏失效操作
-    - 验收点：详情抽屉中删除目标保留标题快照和状态标签，且不存在预览、下载或打开已删内容入口
-    - 重要度：8/10
-
 - [ ] `T05 Portal Web share detail`：读者侧分享详情隐藏已删除目标正文与资源
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-DELETE-SHARE-RISK-CLOSURE.md`

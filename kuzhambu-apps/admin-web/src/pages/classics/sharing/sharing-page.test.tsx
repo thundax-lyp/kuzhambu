@@ -72,6 +72,7 @@ const installFetchMock = () => {
                                 id: 800000000001,
                                 contentId: 400000000001,
                                 contentType: "WANGQI_DOCUMENT",
+                                targetStatus: "AVAILABLE",
                                 titleSnapshot: "王圻文档"
                             }
                         ]
@@ -90,6 +91,7 @@ const installFetchMock = () => {
                                 id: 800000000002,
                                 contentId: 3001,
                                 contentType: "SANCAI_ENTRY",
+                                targetStatus: "AVAILABLE",
                                 titleSnapshot: "天地"
                             }
                         ]
@@ -108,6 +110,7 @@ const installFetchMock = () => {
                                 id: 800000000003,
                                 contentId: 500000000001,
                                 contentType: "MING_CUSTOMS",
+                                targetStatus: "AVAILABLE",
                                 titleSnapshot: "岁时礼仪：元旦朝贺"
                             }
                         ]
@@ -117,6 +120,45 @@ const installFetchMock = () => {
         }
         if (path.endsWith("/classics/shares/status/update")) {
             return apiResponse(true);
+        }
+        if (path.endsWith("/classics/shares/access-records/page")) {
+            return apiResponse({
+                pageNo: 1,
+                pageSize: 20,
+                totalCount: 0,
+                count: 0,
+                totalPage: 0,
+                records: []
+            });
+        }
+        if (path.endsWith("/classics/shares/900000000001")) {
+            return apiResponse({
+                id: 900000000001,
+                title: "王圻批量分享 - 王圻文档",
+                shareToken: "token-abc",
+                shareUrl: "/classics/share/token-abc",
+                status: "ACTIVE",
+                visibility: "PUBLIC",
+                accessCount: 12,
+                issuedAt: "2026-01-01T00:00:00.000+00:00",
+                expiresAt: "2026-12-31T00:00:00.000+00:00",
+                targets: [
+                    {
+                        id: 800000000001,
+                        contentId: 400000000001,
+                        contentType: "WANGQI_DOCUMENT",
+                        targetStatus: "AVAILABLE",
+                        titleSnapshot: "王圻文档"
+                    },
+                    {
+                        id: 800000000004,
+                        contentId: 400000000099,
+                        contentType: "WANGQI_DOCUMENT",
+                        targetStatus: "CONTENT_DELETED",
+                        titleSnapshot: "已删除王圻文档"
+                    }
+                ]
+            });
         }
         return apiResponse(true);
     });
@@ -202,5 +244,38 @@ describe("SharingPage", () => {
                 }
             ]);
         });
+    }, 30000);
+
+    it("shows deleted target placeholder in sharing detail drawer", async () => {
+        const user = userEvent.setup();
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <SharingPage />
+                </AntdApp>
+            </QueryClientProvider>
+        );
+
+        expect(await screen.findByText("王圻批量分享 - 王圻文档")).toBeInTheDocument();
+
+        await user.click(
+            screen.getByRole("button", {
+                name: "查看 王圻批量分享 - 王圻文档-王圻文档"
+            })
+        );
+
+        expect(await screen.findByText("关联内容")).toBeInTheDocument();
+        expect(await screen.findByText("已删除王圻文档")).toBeInTheDocument();
+        expect(await screen.findByText("内容已删除")).toBeInTheDocument();
+        expect(
+            screen.queryByRole("button", { name: /打开已删除王圻文档/ })
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole("button", { name: /下载已删除王圻文档/ })
+        ).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole("button", { name: /预览已删除王圻文档/ })
+        ).not.toBeInTheDocument();
     }, 30000);
 });
