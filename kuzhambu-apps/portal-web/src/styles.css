@@ -929,7 +929,7 @@ a.portal-discovery-hit:hover {
     font-size: 13px;
 }
 
-.portal-share-deleted-copy {
+.portal-share-deleted-placeholder {
     margin: 0;
     color: var(--text-secondary);
     font-size: 15px;

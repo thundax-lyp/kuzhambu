@@ -70,7 +70,8 @@ describe("ShareForm", () => {
             await screen.findByRole("heading", { name: "王圻批量分享 - 王圻文档" })
         ).toBeTruthy();
         expect(await screen.findByText("王圻文档")).toBeTruthy();
-        expect(await screen.findAllByText("ACTIVE")).toHaveLength(2);
+        expect(await screen.findByText("ACTIVE")).toBeTruthy();
+        expect(await screen.findByText("可用")).toBeTruthy();
     });
 
     it("renders sancai share images from share resources with thumbnail switching", async () => {
@@ -268,8 +269,8 @@ describe("ShareForm", () => {
         renderShareForm("deleted-target-token");
 
         expect(await screen.findByText("已删除王圻文档")).toBeTruthy();
-        expect(await screen.findByText("内容已删除")).toBeTruthy();
-        expect(await screen.findByText("内容已删除，正文、图片和文件资源不可访问。")).toBeTruthy();
+        expect(await screen.findAllByText("内容已删除")).toHaveLength(2);
+        expect(await screen.findByText("内容已删除，分享仅保留标题快照。")).toBeTruthy();
         expect(screen.queryByText("王圻正文")).toBeNull();
         expect(screen.queryByText("王圻摘要")).toBeNull();
         expect(screen.queryByLabelText("王圻原始文件")).toBeNull();

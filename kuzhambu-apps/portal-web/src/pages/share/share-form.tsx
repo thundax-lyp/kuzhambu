@@ -322,7 +322,7 @@ const renderShareTargetCard = (
         >
             <header>
                 <div>
-                    {deleted ? null : <p>{formatContentType(target.contentType)}</p>}
+                    <p>{formatContentType(target.contentType)}</p>
                     <h2>{readTargetTitle(target, index)}</h2>
                 </div>
                 <Badge
@@ -335,9 +335,21 @@ const renderShareTargetCard = (
                 </Badge>
             </header>
             {deleted ? (
-                <p className="portal-share-deleted-copy">
-                    内容已删除，正文、图片和文件资源不可访问。
-                </p>
+                <>
+                    <dl>
+                        <div>
+                            <dt>内容 ID</dt>
+                            <dd>{target.contentId ?? "-"}</dd>
+                        </div>
+                        <div>
+                            <dt>目标状态</dt>
+                            <dd>{readTargetStatusLabel(target.targetStatus)}</dd>
+                        </div>
+                    </dl>
+                    <p className="portal-share-deleted-placeholder">
+                        内容已删除，分享仅保留标题快照。
+                    </p>
+                </>
             ) : (
                 <>
                     <dl>
