@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `09 Operations restore interface requests`：补齐恢复接口请求模式字段
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-BACKUP-RESTORE-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/restore/controller/request/OperationsRestoreExecuteRequest.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/restore/controller/request/OperationsRestorePageRequest.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/restore/assembler/OperationsRestoreInterfaceAssembler.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/restore/controller/OperationsRestoreAdminController.java`
-    - 处理动作：让恢复执行和分页请求透传 `restoreMode` 到 application command/query。
-    - 验收点：restore execute/page 路径不变，request 的 `restoreMode` 能进入 application。
-    - 重要度：9/10
-
 - [ ] `10 Operations restore interface responses`：补齐恢复响应字段与接口契约测试
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-BACKUP-RESTORE-CLOSURE.md`

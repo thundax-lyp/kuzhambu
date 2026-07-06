@@ -19,4 +19,8 @@ public class OperationsRestoreExecuteRequest {
     @Schema(name = "backupId", description = "恢复来源备份 ID")
     @JsonProperty(value = "backupId")
     private Long backupId;
+
+    @Schema(name = "restoreMode", description = "恢复模式：REAL 或 DRILL")
+    @JsonProperty(value = "restoreMode")
+    private String restoreMode;
 }
