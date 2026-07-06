@@ -9,13 +9,7 @@
 
 ## 当前任务项
 
-- [ ] `knowledge graph closure RUNBOOK 清理`：清理临时 RUNBOOK 和已完成 TODO
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-14-CLOSURE.md`
-    - 范围对象：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-14-CLOSURE.md`、`TODO.md`
-    - 处理动作：PR 收口前删除临时 RUNBOOK，并按完成状态删除或收窄对应 TODO
-    - 验收点：临时 RUNBOOK 已清理，TODO.md 不保留已完成任务
-    - 重要度：9/10
+当前无未关闭任务。
 
 ## 待审阅任务项
 
