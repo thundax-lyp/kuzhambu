@@ -13,6 +13,8 @@ public interface BackupApplicationService {
 
     OperationsBackupExecuteResult execute(OperationsBackupExecuteCommand command);
 
+    OperationsBackupExecuteResult executeAutoBackup();
+
     PageResult<OperationsBackupPageResult> page(OperationsBackupPageQuery query, PageQuery pageQuery);
 
     OperationsBackupDetailResult detail(OperationsBackupDetailQuery query);

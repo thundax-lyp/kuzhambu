@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `01 Operations backup application`：补齐自动备份入口与备份/恢复互斥
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-BACKUP-RESTORE-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/backup/service/BackupApplicationService.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/backup/service/impl/BackupApplicationServiceImpl.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/backup/command/OperationsBackupExecuteCommand.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/backup/support/OperationsBackupExecutionGuard.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/test/java/com/thundax/kuzhambu/operations/application/backup/service/impl/BackupApplicationServiceImplTest.java`
-    - 处理动作：新增 `AUTO` 自动备份 application 入口并用单实例 guard 互斥备份与恢复。
-    - 验收点：`AUTO` 成功、失败、空 requester 和 guard 占用不执行脚本均有单元测试覆盖。
-    - 重要度：10/10
-
 - [ ] `02 Operations backup scheduler`：补齐启动自动备份与每日 2:00 cron 调度
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-BACKUP-RESTORE-CLOSURE.md`
