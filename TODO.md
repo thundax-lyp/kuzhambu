@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `05-knowledge-taxonomy-interface`：暴露 Knowledge 标签抽取 HTTP API
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-KNOWLEDGE-TAG-EXTRACTION.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/taxonomy/controller/KnowledgeTaxonomyController.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/taxonomy/controller/request/TagExtractionRequest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/taxonomy/controller/request/TagCandidateApplyRequest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/taxonomy/controller/response/TagExtractionResponse.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/test/java/com/thundax/kuzhambu/knowledge/interfaces/admin/taxonomy/controller/KnowledgeTaxonomyControllerTest.java`
-    - 处理动作：新增 `tag/extract` 和 `tag/extract/apply` 后台接口
-    - 验收点：controller 测试断言 request 校验、command 转换和 response 字段与 RUNBOOK 一致
-    - 重要度：9/10
-
 - [ ] `06-admin-web-taxonomy-service`：补齐标签抽取前端 service 与类型
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-KNOWLEDGE-TAG-EXTRACTION.md`

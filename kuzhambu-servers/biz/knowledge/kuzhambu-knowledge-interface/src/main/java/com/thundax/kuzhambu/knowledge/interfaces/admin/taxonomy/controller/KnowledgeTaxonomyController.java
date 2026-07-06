@@ -18,6 +18,7 @@ import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.reque
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.SynonymUpdateRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagAliasCreateRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagAliasRemoveRequest;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagCandidateApplyRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagCategoryCreateRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagCategoryPageRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagCategoryStatusRequest;
@@ -25,6 +26,7 @@ import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.reque
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagCreateRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagDeprecateRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagDetailRequest;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagExtractionRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagGovernanceMetricsRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagMergeRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagPageRequest;
@@ -36,6 +38,7 @@ import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.respo
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.response.TagAliasResponse;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.response.TagCategoryResponse;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.response.TagDetailResponse;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.response.TagExtractionResponse;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.response.TagGovernanceMetricsResponse;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.response.TagMergePreviewResponse;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.response.TagResponse;
@@ -243,6 +246,38 @@ public class KnowledgeTaxonomyController {
     @PostMapping("tag/review")
     public Boolean reviewTag(@Valid @RequestBody TagReviewRequest request) {
         taxonomyService.reviewTag(KnowledgeTaxonomyInterfaceAssembler.toReviewCommand(request));
+        return true;
+    }
+
+    @Operation(summary = "AI 抽取标签", description = "knowledge:taxonomy:edit")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
+    @HasPermission("knowledge:taxonomy:edit")
+    @SysLogger(value = "AI抽取标签")
+    @PostMapping("tag/extract")
+    public TagExtractionResponse extractTags(@Valid @RequestBody TagExtractionRequest request) {
+        return KnowledgeTaxonomyInterfaceAssembler.toResponse(
+                taxonomyService.extractTags(KnowledgeTaxonomyInterfaceAssembler.toExtractionCommand(request)));
+    }
+
+    @Operation(summary = "应用 AI 标签候选", description = "knowledge:taxonomy:edit")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
+    @HasPermission("knowledge:taxonomy:edit")
+    @SysLogger(value = "应用AI标签候选")
+    @PostMapping("tag/extract/apply")
+    public Boolean applyExtractedTags(@Valid @RequestBody TagCandidateApplyRequest request) {
+        taxonomyService.applyExtractedTags(KnowledgeTaxonomyInterfaceAssembler.toCandidateApplyCommand(request));
         return true;
     }
 
