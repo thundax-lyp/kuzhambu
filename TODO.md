@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web quality-report detail`：新增质量报告详情控件和路由
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-QUALITY-LOOP.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/quality-report/components/quality-report-issue-table.tsx`、`quality-report-source-table.tsx`、`quality-report-annotation-table.tsx`、`kuzhambu-apps/admin-web/src/router/index.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/quality-report/quality-report-page.test.tsx`
-    - 处理动作：新增 `问题清单`、`来源明细`、`人工标注` Tabs 详情表并挂载 `/knowledge/quality-report` 路由。
-    - 验收点：三个 Tab 的表格列和 `打开` 操作符合 RUNBOOK，路由能进入质量报告页。
-    - 重要度：10/10
-
 - [ ] `system menu seed`：新增后台质量报告菜单和权限种子
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-QUALITY-LOOP.md`

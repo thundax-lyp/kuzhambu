@@ -1,12 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Alert, App, Card, Empty, Typography } from "antd";
+import { Alert, App, Card, Empty, Tabs, Typography } from "antd";
 import { useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { KuzhambuPage } from "@/components/kuzhambu-page";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { QualityReportGenerateForm } from "./components/quality-report-generate-form";
+import { QualityReportAnnotationTable } from "./components/quality-report-annotation-table";
 import { QualityReportHistoryTable } from "./components/quality-report-history-table";
+import { QualityReportIssueTable } from "./components/quality-report-issue-table";
+import { QualityReportSourceTable } from "./components/quality-report-source-table";
 import { QualityReportSummary } from "./components/quality-report-summary";
 import * as service from "./quality-report-service";
 import type { QualityReportDetailRecord, QualityReportRecord } from "./quality-report-types";
@@ -114,6 +117,39 @@ export const QualityReportPage = () => {
                             </div>
                             <QualityReportSummary report={currentReport} />
                         </section>
+                        <Card className="knowledge-quality-report-card" title="报告详情">
+                            <Tabs
+                                items={[
+                                    {
+                                        key: "issues",
+                                        label: "问题清单",
+                                        children: (
+                                            <QualityReportIssueTable
+                                                issues={currentDetail?.issues || []}
+                                            />
+                                        )
+                                    },
+                                    {
+                                        key: "sources",
+                                        label: "来源明细",
+                                        children: (
+                                            <QualityReportSourceTable
+                                                sourceDetails={currentDetail?.sourceDetails || []}
+                                            />
+                                        )
+                                    },
+                                    {
+                                        key: "annotations",
+                                        label: "人工标注",
+                                        children: (
+                                            <QualityReportAnnotationTable
+                                                annotations={currentDetail?.annotations || []}
+                                            />
+                                        )
+                                    }
+                                ]}
+                            />
+                        </Card>
                     </KuzhambuSpace>
                 ) : (
                     <Card className="knowledge-quality-report-card">
