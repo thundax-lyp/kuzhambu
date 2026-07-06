@@ -1,23 +1,30 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Alert, App, Card, Col, Empty, Row, Typography } from "antd";
+import { Alert, App, Button, Card, Col, Empty, Row, Table, Tag, Typography } from "antd";
 import { useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { KuzhambuPage } from "@/components/kuzhambu-page";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
+import type { ColumnsType } from "antd/es/table";
 import { RefinementEntityDeleteModal } from "./components/refinement-entity-delete-modal";
 import { RefinementEntityEditor } from "./components/refinement-entity-editor";
 import { RefinementEntityTable } from "./components/refinement-entity-table";
 import { RefinementFilterForm } from "./components/refinement-filter-form";
 import { RefinementProgressSummaryPanel } from "./components/refinement-progress-summary";
+import { RefinementQualityAnnotationDrawer } from "./components/refinement-quality-annotation-drawer";
+import { RefinementQualityAnnotationTable } from "./components/refinement-quality-annotation-table";
 import { RefinementRelationDeleteModal } from "./components/refinement-relation-delete-modal";
 import { RefinementRelationEditor } from "./components/refinement-relation-editor";
 import { RefinementRelationTable } from "./components/refinement-relation-table";
 import { RefinementWorkbenchTable } from "./components/refinement-workbench-table";
 import * as service from "./refinement-service";
 import type {
+    QualityAnnotationRecord,
+    QualityAnnotationTarget,
     RefinementDetailRecord,
     RefinementEntityRecord,
+    RefinementLineageNodeRecord,
+    RefinementLineageRelationRecord,
     RefinementRelationRecord,
     RefinementTaskPageQuery
 } from "./refinement-types";
@@ -26,6 +33,8 @@ import "./refinement-page.css";
 const { Text, Title } = Typography;
 
 const readDetailTaskId = (detail: RefinementDetailRecord | null) => detail?.refinementTaskId ?? 0;
+const readStatusColor = (status?: string | null) =>
+    status === "MANUAL_CONFIRMED" ? "green" : "blue";
 
 export const RefinementPage = () => {
     const { message: messageApi } = App.useApp();
@@ -43,6 +52,7 @@ export const RefinementPage = () => {
     const [relationEditorOpen, setRelationEditorOpen] = useState(false);
     const [editingRelation, setEditingRelation] = useState<RefinementRelationRecord | null>(null);
     const [deletingRelation, setDeletingRelation] = useState<RefinementRelationRecord | null>(null);
+    const [annotationTarget, setAnnotationTarget] = useState<QualityAnnotationTarget | null>(null);
 
     const taskPageQuery = useQuery({
         queryKey: ["knowledge", "refinement", "tasks", taskQuery],
@@ -58,6 +68,18 @@ export const RefinementPage = () => {
         retry: false
     });
 
+    const qualityAnnotationQuery = useQuery({
+        queryKey: ["knowledge", "refinement", "annotations", readDetailTaskId(detail)],
+        queryFn: () =>
+            service.pageAnnotations({
+                refinementTaskId: readDetailTaskId(detail),
+                pageNo: 1,
+                pageSize: 200
+            }),
+        enabled: detail !== null,
+        retry: false
+    });
+
     const refreshDetail = async (refinementTaskId: number) => {
         const nextDetail = await service.getTaskDetail({ refinementTaskId });
         setDetail(nextDetail);
@@ -67,6 +89,9 @@ export const RefinementPage = () => {
             }),
             queryClient.invalidateQueries({
                 queryKey: ["knowledge", "refinement", "tasks"]
+            }),
+            queryClient.invalidateQueries({
+                queryKey: ["knowledge", "refinement", "annotations", refinementTaskId]
             })
         ]);
         return nextDetail;
@@ -208,8 +233,72 @@ export const RefinementPage = () => {
         }
     });
 
+    const annotationMutation = useMutation({
+        mutationFn: async (
+            request: Pick<
+                QualityAnnotationRecord,
+                "annotationStatus" | "annotationLabel" | "comment"
+            >
+        ) => {
+            if (!annotationTarget) {
+                throw new Error("未选择标注对象");
+            }
+            const existingAnnotation = qualityAnnotationQuery.data?.records?.find(
+                (annotation) =>
+                    annotation.objectType === annotationTarget.objectType &&
+                    annotation.objectKey === annotationTarget.objectKey
+            );
+            return service.updateAnnotation({
+                annotationId: existingAnnotation?.annotationId,
+                ...annotationTarget,
+                ...request,
+                operatorId: 1
+            });
+        },
+        onSuccess: async () => {
+            await refreshDetail(readDetailTaskId(detail));
+            setAnnotationTarget(null);
+            messageApi.success("质量标注已保存");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "质量标注保存失败");
+        }
+    });
+
+    const annotationDeleteMutation = useMutation({
+        mutationFn: async (annotation: QualityAnnotationRecord) =>
+            service.deleteAnnotation({
+                annotationId: annotation.annotationId,
+                operatorId: 1
+            }),
+        onSuccess: async () => {
+            await refreshDetail(readDetailTaskId(detail));
+            setAnnotationTarget(null);
+            messageApi.success("质量标注已删除");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "质量标注删除失败");
+        }
+    });
+
     const progressSummary = detail?.progressSummary ?? null;
     const qualitySummary = qualitySummaryQuery.data;
+    const qualityAnnotations = useMemo(
+        () => qualityAnnotationQuery.data?.records || [],
+        [qualityAnnotationQuery.data?.records]
+    );
+    const editingAnnotation = useMemo(() => {
+        if (!annotationTarget) {
+            return null;
+        }
+        return (
+            qualityAnnotations.find(
+                (annotation) =>
+                    annotation.objectType === annotationTarget.objectType &&
+                    annotation.objectKey === annotationTarget.objectKey
+            ) || null
+        );
+    }, [annotationTarget, qualityAnnotations]);
     const taskItems = taskPageQuery.data?.records || [];
     const detailReady = detail !== null;
     const detailEyebrow = useMemo(() => {
@@ -218,6 +307,93 @@ export const RefinementPage = () => {
         }
         return `${detail.taskType || "GRAPH"} / ${detail.sourceCategoryName || detail.sourceCategoryCode || "-"}`;
     }, [detail]);
+    const openAnnotation = (target: Omit<QualityAnnotationTarget, "graphVersionId">) => {
+        if (!target.objectKey) {
+            messageApi.warning("当前对象缺少稳定键，无法标注");
+            return;
+        }
+        setAnnotationTarget({
+            ...target,
+            graphVersionId: detail?.graphVersionId
+        });
+    };
+    const openAnnotationFromRecord = (annotation: QualityAnnotationRecord) => {
+        if (!annotation.objectType || !annotation.objectKey) {
+            messageApi.warning("当前标注缺少对象信息，无法编辑");
+            return;
+        }
+        setAnnotationTarget({
+            objectType: annotation.objectType,
+            objectKey: annotation.objectKey,
+            sourceContentType: detail?.sourceContentType,
+            sourceContentId: detail?.sourceContentId,
+            graphVersionId: annotation.graphVersionId ?? detail?.graphVersionId
+        });
+    };
+    const lineageNodeColumns: ColumnsType<RefinementLineageNodeRecord> = [
+        { title: "名称", dataIndex: "name", key: "name" },
+        { title: "类型", dataIndex: "nodeType", key: "nodeType" },
+        { title: "代际", dataIndex: "generation", key: "generation" },
+        {
+            title: "确认状态",
+            dataIndex: "confirmationStatus",
+            key: "confirmationStatus",
+            render: (status?: string | null) => (
+                <Tag color={readStatusColor(status)}>{status || "-"}</Tag>
+            )
+        },
+        { title: "操作类型", dataIndex: "operationType", key: "operationType" },
+        {
+            key: "actions",
+            render: (_, node) => (
+                <Button
+                    disabled={!canEdit}
+                    onClick={() =>
+                        openAnnotation({
+                            objectType: "LINEAGE_NODE",
+                            objectKey: node.nodeKey || "",
+                            sourceContentType: detail?.sourceContentType,
+                            sourceContentId: detail?.sourceContentId
+                        })
+                    }
+                >
+                    标注
+                </Button>
+            )
+        }
+    ];
+    const lineageRelationColumns: ColumnsType<RefinementLineageRelationRecord> = [
+        { title: "源名称", dataIndex: "sourceName", key: "sourceName" },
+        { title: "目标名称", dataIndex: "targetName", key: "targetName" },
+        { title: "关系类型", dataIndex: "relationType", key: "relationType" },
+        {
+            title: "确认状态",
+            dataIndex: "confirmationStatus",
+            key: "confirmationStatus",
+            render: (status?: string | null) => (
+                <Tag color={readStatusColor(status)}>{status || "-"}</Tag>
+            )
+        },
+        { title: "操作类型", dataIndex: "operationType", key: "operationType" },
+        {
+            key: "actions",
+            render: (_, relation) => (
+                <Button
+                    disabled={!canEdit}
+                    onClick={() =>
+                        openAnnotation({
+                            objectType: "LINEAGE_RELATION",
+                            objectKey: relation.relationKey || "",
+                            sourceContentType: detail?.sourceContentType,
+                            sourceContentId: detail?.sourceContentId
+                        })
+                    }
+                >
+                    标注
+                </Button>
+            )
+        }
+    ];
 
     return (
         <KuzhambuPage
@@ -229,7 +405,7 @@ export const RefinementPage = () => {
             <KuzhambuSpace className="knowledge-refinement-layout" orientation="vertical" size={16}>
                 <Alert
                     banner
-                    title="本页支持打开精修任务、修订实体关系草稿并应用回正式事实。世系结构已打通后端契约，但当前页面暂不开放交互。"
+                    title="本页支持打开精修任务、修订实体关系草稿、标注质量问题并应用回正式事实。"
                     type="info"
                 />
 
@@ -296,6 +472,14 @@ export const RefinementPage = () => {
                                                 setEditingEntity(null);
                                                 setEntityEditorOpen(true);
                                             }}
+                                            onAnnotate={(entity) =>
+                                                openAnnotation({
+                                                    objectType: "ENTITY",
+                                                    objectKey: entity.entityKey || "",
+                                                    sourceContentType: detail?.sourceContentType,
+                                                    sourceContentId: detail?.sourceContentId
+                                                })
+                                            }
                                             onConfirm={(entity) =>
                                                 entityMutation.mutate({
                                                     ...entity,
@@ -354,6 +538,14 @@ export const RefinementPage = () => {
                                         setEditingRelation(null);
                                         setRelationEditorOpen(true);
                                     }}
+                                    onAnnotate={(relation) =>
+                                        openAnnotation({
+                                            objectType: "RELATION",
+                                            objectKey: relation.relationKey || "",
+                                            sourceContentType: detail?.sourceContentType,
+                                            sourceContentId: detail?.sourceContentId
+                                        })
+                                    }
                                     onConfirm={(relation) =>
                                         relationMutation.mutate({
                                             ...relation,
@@ -366,6 +558,53 @@ export const RefinementPage = () => {
                                         setRelationEditorOpen(true);
                                     }}
                                     relations={detail?.relations || []}
+                                />
+                            </Card>
+                            <Row gutter={[16, 16]}>
+                                <Col xs={24} lg={12}>
+                                    <Card
+                                        className="knowledge-refinement-card"
+                                        title="世系节点草稿"
+                                    >
+                                        <Table<RefinementLineageNodeRecord>
+                                            aria-label="知识图谱精修世系节点表格"
+                                            columns={lineageNodeColumns}
+                                            dataSource={detail?.lineageNodes || []}
+                                            pagination={false}
+                                            rowKey={(node) =>
+                                                node.draftId ||
+                                                node.nodeKey ||
+                                                node.name ||
+                                                "lineage-node"
+                                            }
+                                        />
+                                    </Card>
+                                </Col>
+                                <Col xs={24} lg={12}>
+                                    <Card
+                                        className="knowledge-refinement-card"
+                                        title="世系关系草稿"
+                                    >
+                                        <Table<RefinementLineageRelationRecord>
+                                            aria-label="知识图谱精修世系关系表格"
+                                            columns={lineageRelationColumns}
+                                            dataSource={detail?.lineageRelations || []}
+                                            pagination={false}
+                                            rowKey={(relation) =>
+                                                relation.draftId ||
+                                                relation.relationKey ||
+                                                relation.relationType ||
+                                                "lineage-relation"
+                                            }
+                                        />
+                                    </Card>
+                                </Col>
+                            </Row>
+                            <Card className="knowledge-refinement-card" title="质量标注">
+                                <RefinementQualityAnnotationTable
+                                    annotations={qualityAnnotations}
+                                    loading={qualityAnnotationQuery.isLoading}
+                                    onEdit={openAnnotationFromRecord}
                                 />
                             </Card>
                         </KuzhambuSpace>
@@ -421,6 +660,16 @@ export const RefinementPage = () => {
                         relationDeleteMutation.mutate(deletingRelation);
                     }
                 }}
+            />
+            <RefinementQualityAnnotationDrawer
+                deleting={annotationDeleteMutation.isPending}
+                existingAnnotation={editingAnnotation}
+                open={annotationTarget !== null}
+                saving={annotationMutation.isPending}
+                target={annotationTarget}
+                onCancel={() => setAnnotationTarget(null)}
+                onDelete={(annotation) => annotationDeleteMutation.mutate(annotation)}
+                onSave={(values) => annotationMutation.mutate(values)}
             />
         </KuzhambuPage>
     );

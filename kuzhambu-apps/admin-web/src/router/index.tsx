@@ -11,6 +11,7 @@ import { SharingPage } from "../pages/classics/sharing/sharing-page";
 import { DashboardPage } from "../pages/dashboard/dashboard/dashboard-page";
 import { GraphExtractionPage } from "../pages/knowledge/graph-extraction/graph-extraction-page";
 import { GraphResultsPage } from "../pages/knowledge/graph-results/graph-results-page";
+import { QualityReportPage } from "../pages/knowledge/quality-report/quality-report-page";
 import { BackupRestorePage } from "../pages/operations/backup-restore/backup-restore-page";
 import { CleanupPage } from "../pages/operations/cleanup/cleanup-page";
 import { OperationsDashboardPage } from "../pages/operations/dashboard/dashboard-page";
@@ -107,6 +108,10 @@ const router = createBrowserRouter(
                         {
                             path: "knowledge/graph-results",
                             element: <GraphResultsPage />
+                        },
+                        {
+                            path: "knowledge/quality-report",
+                            element: <QualityReportPage />
                         },
                         {
                             path: "knowledge/refinement",
