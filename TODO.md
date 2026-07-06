@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `T07 Verification`：完成后端和前端验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-DELETE-SHARE-RISK-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers`、`kuzhambu-apps`
-    - 处理动作：同步 `main` 后运行 RUNBOOK 中 Maven 和 npm 格式、静态检查、测试命令
-    - 验收点：后端 Maven 检查与测试通过，前端 npm format、lint、test 通过
-    - 重要度：9/10
-
 - [ ] `T08 Classics implementation coverage`：更新 Classics 实现覆盖口径
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-CLASSICS-DELETE-SHARE-RISK-CLOSURE.md`
