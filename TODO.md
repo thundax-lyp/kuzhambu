@@ -9,22 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `14 Branch sync main`：实现完成后同步 main 分支代码
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`main` 分支、`codex/operations-backup-restore-runbook` 分支、`/Volumes/storage/workspace/kuzhambu-operations-backup-restore-runbook`
-    - 处理动作：在收口前把最新 `main` 合入当前 worktree 分支并处理冲突。
-    - 验收点：当前分支包含最新 `main`，且无未解决冲突。
-    - 重要度：8/10
-
-- [ ] `15 Operations backup restore final verification`：同步 main 后运行最终验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-BACKUP-RESTORE-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/`、`kuzhambu-apps/`、`deploy/scripts/`
-    - 处理动作：在合入最新 `main` 后运行后端、前端和脚本验证。
-    - 验收点：Maven formatter/static/test、admin-web format/lint/test 和备份恢复脚本语法检查均通过。
-    - 重要度：10/10
-
 - [ ] `16 Operations backup restore coverage closure`：更新覆盖矩阵并清理 RUNBOOK
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-BACKUP-RESTORE-CLOSURE.md`
