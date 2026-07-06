@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `system-seed-cleanup-permission`：System 权限种子对齐
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-PERMISSION-OPERATIONS-CLEANUP-CLOSURE.md`
-    - 范围对象：`db/data-source/system.json`, `db/data/system.sql`
-    - 处理动作：将清理维护菜单权限从 `operations:cleanup:edit` 调整为 `operations:cleanup:execute` 并同步 SQL 种子。
-    - 验收点：`operations:cleanup:execute` 存在于 JSON 与 SQL 种子，且 `node scripts/generate-system-data-sql.ts --check` 通过。
-    - 重要度：9/10
-
 - [ ] `classics-permission-context-support`：Classics 权限上下文字段与策略基础
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-PERMISSION-OPERATIONS-CLEANUP-CLOSURE.md`
