@@ -12,10 +12,14 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.ai.facade.AiFacade;
+import com.thundax.kuzhambu.ai.facade.dto.AiCandidateFacadeDto;
 import com.thundax.kuzhambu.ai.facade.request.KnowledgeAiExtractionFacadeRequest;
+import com.thundax.kuzhambu.ai.facade.request.MarkAiCandidateAppliedFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.response.KnowledgeAiExtractionFacadeResponse;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCandidateApplyCommand;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCandidateApplyCommand.TagCandidateApplyItemCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagDeprecateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagMergeCommand;
@@ -44,6 +48,7 @@ import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagCategoryRepo
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagContentRefRepository;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagGovernanceMetricsRepository;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagRepository;
+import java.math.BigDecimal;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -320,5 +325,65 @@ class TaxonomyApplicationServiceImplTest {
         assertEquals("SUCCEEDED", result.getStatus());
         assertEquals("STRUCTURED", result.getResultFormat());
         assertEquals("{\"tags\":[]}", result.getResultPayload());
+    }
+
+    @Test
+    void applyExtractedTagsShouldReuseExistingCreatePendingAndMarkCandidateApplied() throws Exception {
+        AiFacade aiFacade = mock(AiFacade.class);
+        TagRepository tagRepository = mock(TagRepository.class);
+        TaxonomyApplicationService service = new TaxonomyApplicationServiceImpl(
+                aiFacade,
+                mock(TagCategoryRepository.class),
+                tagRepository,
+                mock(TagAliasRepository.class),
+                mock(TagContentRefRepository.class),
+                mock(SynonymRepository.class),
+                mock(KnowledgeTagBindingDomainService.class),
+                mock(TagGovernanceMetricsRepository.class));
+        AiCandidateFacadeDto candidate = AiCandidateFacadeDto.builder()
+                .candidateId(601L)
+                .capability("KNOWLEDGE_TAG_EXTRACTION")
+                .contentType("SANCAI_ENTRY")
+                .contentId(1001L)
+                .resultFormat("STRUCTURED")
+                .resultPayload("{\"tags\":[]}")
+                .status("PENDING")
+                .build();
+        Tag existing = new Tag();
+        existing.setTagId(TagId.of(21L));
+        existing.setName("礼制");
+        when(aiFacade.getCandidate(any())).thenReturn(candidate);
+        when(aiFacade.requirePendingCandidate(any())).thenReturn(candidate);
+        when(tagRepository.getByTagId(TagId.of(21L))).thenReturn(existing);
+        when(tagRepository.countByName("新礼俗", null)).thenReturn(0);
+
+        service.applyExtractedTags(new TagCandidateApplyCommand(
+                601L,
+                List.of(
+                        new TagCandidateApplyItemCommand("礼制", "11", "制度", new BigDecimal("0.91"), "匹配既有标签", "21"),
+                        new TagCandidateApplyItemCommand("新礼俗", "12", "民俗", new BigDecimal("0.82"), "新的候选标签", null)),
+                "AI 审核",
+                201L));
+
+        ArgumentCaptor<Tag> tagCaptor = ArgumentCaptor.forClass(Tag.class);
+        verify(tagRepository).insert(tagCaptor.capture());
+        Tag inserted = tagCaptor.getValue();
+        assertEquals("新礼俗", inserted.getName());
+        assertEquals(TagCategoryId.of(12L), inserted.getCategoryId());
+        assertEquals(TagSource.AI_EXTRACTED, inserted.getSource());
+        assertEquals(TagReviewStatus.PENDING, inserted.getReviewStatus());
+        assertEquals("AI 审核", inserted.getReviewNote());
+        ArgumentCaptor<MarkAiCandidateAppliedFacadeRequest> markCaptor =
+                ArgumentCaptor.forClass(MarkAiCandidateAppliedFacadeRequest.class);
+        verify(aiFacade).markCandidateApplied(markCaptor.capture());
+        assertEquals(601L, markCaptor.getValue().getCandidateId());
+        assertEquals("STRUCTURED", markCaptor.getValue().getResultFormat());
+        JsonNode payload = OBJECT_MAPPER.readTree(markCaptor.getValue().getResultPayload());
+        assertEquals(201L, payload.get("reviewedBy").asLong());
+        assertEquals("AI 审核", payload.get("reviewNote").asText());
+        assertEquals(2, payload.get("selectedTags").size());
+        assertEquals(
+                "21",
+                payload.get("selectedTags").get(0).get("matchedExistingTagId").asText());
     }
 }

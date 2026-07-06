@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `04-knowledge-tag-candidate-apply`：新增 Knowledge 标签候选应用入口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-KNOWLEDGE-TAG-EXTRACTION.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/service/TaxonomyApplicationService.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/service/impl/TaxonomyApplicationServiceImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/command/TagCandidateApplyCommand.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/taxonomy/service/impl/TaxonomyApplicationServiceImplTest.java`
-    - 处理动作：新增 `applyExtractedTags` 并把选中候选接入标签审核治理
-    - 验收点：测试断言既有标签复用、新标签为 `source=AI_EXTRACTED` 且 `reviewStatus=PENDING`、应用后调用 `markCandidateApplied`
-    - 重要度：10/10
-
 - [ ] `05-knowledge-taxonomy-interface`：暴露 Knowledge 标签抽取 HTTP API
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-KNOWLEDGE-TAG-EXTRACTION.md`

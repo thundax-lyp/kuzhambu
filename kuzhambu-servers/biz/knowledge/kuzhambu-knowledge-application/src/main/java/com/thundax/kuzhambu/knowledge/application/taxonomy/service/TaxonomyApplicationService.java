@@ -8,6 +8,7 @@ import com.thundax.kuzhambu.knowledge.application.taxonomy.command.SynonymStatus
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.SynonymUpdateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagAliasCreateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagAliasRemoveCommand;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCandidateApplyCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCategoryCreateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCategoryStatusCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCategoryUpdateCommand;
@@ -71,6 +72,8 @@ public interface TaxonomyApplicationService {
     void reviewTag(TagReviewCommand command);
 
     TagExtractionResult extractTags(TagExtractionCommand command);
+
+    void applyExtractedTags(TagCandidateApplyCommand command);
 
     List<TagAliasResult> listTagAliases(TagId tagId);
 
