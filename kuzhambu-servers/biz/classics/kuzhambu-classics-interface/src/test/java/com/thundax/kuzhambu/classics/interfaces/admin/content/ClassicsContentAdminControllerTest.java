@@ -358,6 +358,7 @@ class ClassicsContentAdminControllerTest {
                                 List.of(5001L, 5002L),
                                 ids.stream().map(WangqiDocumentId::value).toList());
                         assertEquals(WangqiDocumentVisibility.PRIVATE, args[1]);
+                        assertTrue(args[2] instanceof java.util.Set<?>);
                         return batchResult(
                                 "WANGQI_DOCUMENT",
                                 ids.stream().map(WangqiDocumentId::value).toList(),

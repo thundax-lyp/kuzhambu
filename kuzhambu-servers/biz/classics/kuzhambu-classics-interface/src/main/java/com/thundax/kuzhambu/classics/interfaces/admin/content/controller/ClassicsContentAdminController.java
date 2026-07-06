@@ -319,7 +319,8 @@ public class ClassicsContentAdminController {
             case "WANGQI_DOCUMENT" ->
                 wangqiDocumentService.batchChangeVisibility(
                         RequestListHelper.map(contentIds, WangqiDocumentIdCodec::toDomain),
-                        WangqiDocumentVisibility.from(visibility));
+                        WangqiDocumentVisibility.from(visibility),
+                        KuzhambuContextHolder.currentAuthorities());
             case "MING_CUSTOMS" ->
                 mingCustomsService.batchChangeVisibility(
                         RequestListHelper.map(contentIds, MingCustomsEntryIdCodec::toDomain), visibility);
