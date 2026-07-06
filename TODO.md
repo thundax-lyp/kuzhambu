@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `knowledge-domain`：新增质量报告领域对象和仓储边界
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-QUALITY-LOOP.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/refinement/model/entity/QualityReport.java`、`QualityReportIssue.java`、`QualityReportSourceDetail.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/refinement/repository/QualityReportRepository.java`
-    - 处理动作：新增报告主表、问题快照、来源明细领域实体和报告仓储接口。
-    - 验收点：领域对象字段与 RUNBOOK 表字段一致，仓储接口覆盖保存、详情、分页和最新 `PUBLISHED` 报告读取。
-    - 重要度：10/10
-
 - [ ] `knowledge-infra dataobject`：新增质量报告持久化对象和 Mapper
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-QUALITY-LOOP.md`
