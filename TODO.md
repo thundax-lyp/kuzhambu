@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `AI Platform admin entry`：补齐 Platform AI admin HTTP 入口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-PLATFORM-ENTRY-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/platform/controller/PlatformAiController.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/platform/controller/request/PlatformAiRequests.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/platform/controller/response/PlatformAiResponses.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/platform/assembler/PlatformAiInterfaceAssembler.java`
-    - 处理动作：新增 `/api/ai/platform/prompt-suggestion` 与 `/api/ai/platform/version-summary` admin 接口并完成请求响应协议转换。
-    - 验收点：两个接口分别委托 `PlatformAiApplicationService#buildPromptSuggestion` 和 `PlatformAiApplicationService#summarizeVersion`，权限分别为 `ai:prompt:edit` 与 `ai:prompt:view`。
-    - 重要度：9/10
-
 - [ ] `AI Platform test coverage`：锁定 Platform AI 入口测试覆盖
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-PLATFORM-ENTRY-CLOSURE.md`
