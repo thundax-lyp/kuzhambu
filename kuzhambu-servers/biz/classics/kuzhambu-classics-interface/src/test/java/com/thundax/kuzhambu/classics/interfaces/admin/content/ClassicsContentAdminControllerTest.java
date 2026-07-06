@@ -380,6 +380,7 @@ class ClassicsContentAdminControllerTest {
                                 List.of(6001L, 6002L),
                                 ids.stream().map(MingCustomsEntryId::value).toList());
                         assertEquals("PUBLIC", args[1]);
+                        assertTrue(args[2] instanceof java.util.Set<?>);
                         return batchResult(
                                 "MING_CUSTOMS",
                                 ids.stream().map(MingCustomsEntryId::value).toList(),

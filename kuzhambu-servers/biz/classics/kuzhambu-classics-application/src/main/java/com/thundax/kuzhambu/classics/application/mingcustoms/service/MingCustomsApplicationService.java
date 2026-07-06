@@ -13,6 +13,7 @@ import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCu
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import java.util.List;
+import java.util.Set;
 
 public interface MingCustomsApplicationService {
 
@@ -27,6 +28,9 @@ public interface MingCustomsApplicationService {
     void changeVisibility(MingCustomsEntryId id, String visibility);
 
     ClassicsBatchOperationResult batchChangeVisibility(List<MingCustomsEntryId> ids, String visibility);
+
+    ClassicsBatchOperationResult batchChangeVisibility(
+            List<MingCustomsEntryId> ids, String visibility, Set<String> operatorPermissions);
 
     void delete(MingCustomsEntryId id);
 

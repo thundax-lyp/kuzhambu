@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.classics.application.mingcustoms.service.impl;
 
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
+import com.thundax.kuzhambu.classics.application.content.support.ClassicsContentPermissionSupport;
 import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsCommand;
 import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsKeywordCommand;
 import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsKeywordSortCommand;
@@ -30,6 +31,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -58,6 +60,9 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
 
     @Override
     public PageResult<MingCustomsEntry> page(MingCustomsPageQuery query, PageQuery page) {
+        if (hasPermissionContext(query) && !canView(query.getOperatorPermissions())) {
+            return PageResult.of(page.getPageNo(), page.getPageSize(), 0, List.of());
+        }
         return repository.page(
                 query == null ? null : query.getCategory(),
                 query == null ? null : query.getKeyword(),
@@ -103,6 +108,14 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void changeVisibility(MingCustomsEntryId id, String visibility) {
+        changeVisibility(id, visibility, null);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    void changeVisibility(MingCustomsEntryId id, String visibility, Set<String> operatorPermissions) {
+        if (hasPermissionContext(operatorPermissions) && !canEdit(operatorPermissions)) {
+            throw permissionDenied();
+        }
         MingCustomsEntry entry = repository.getById(id);
         if (entry == null) {
             return;
@@ -113,6 +126,13 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ClassicsBatchOperationResult batchChangeVisibility(List<MingCustomsEntryId> ids, String visibility) {
+        return batchChangeVisibility(ids, visibility, null);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ClassicsBatchOperationResult batchChangeVisibility(
+            List<MingCustomsEntryId> ids, String visibility, Set<String> operatorPermissions) {
         if (ids == null || ids.isEmpty()) {
             return ClassicsBatchOperationResult.empty();
         }
@@ -120,6 +140,11 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
         List<ClassicsBatchOperationItemResult> failures = new ArrayList<>();
         for (MingCustomsEntryId id : ids) {
             Long contentId = id == null ? null : id.value();
+            if (hasPermissionContext(operatorPermissions) && !canEdit(operatorPermissions)) {
+                failures.add(ClassicsBatchOperationItemResult.failure(
+                        ClassicsContentType.MING_CUSTOMS.value(), contentId, "PERMISSION_DENIED", "PERMISSION_DENIED"));
+                continue;
+            }
             try {
                 MingCustomsEntry entry = id == null ? null : repository.getById(id);
                 if (entry == null) {
@@ -331,5 +356,25 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
                 && entry.getId() != null
                 && entry.getCurrentVersionNo() != null
                 && entry.getVisibility() == MingCustomsVisibility.PUBLIC;
+    }
+
+    private static boolean hasPermissionContext(MingCustomsPageQuery query) {
+        return query != null && hasPermissionContext(query.getOperatorPermissions());
+    }
+
+    private static boolean hasPermissionContext(Set<String> operatorPermissions) {
+        return operatorPermissions != null;
+    }
+
+    private static boolean canView(Set<String> operatorPermissions) {
+        return ClassicsContentPermissionSupport.canView(ClassicsContentType.MING_CUSTOMS, operatorPermissions);
+    }
+
+    private static boolean canEdit(Set<String> operatorPermissions) {
+        return ClassicsContentPermissionSupport.canEdit(ClassicsContentType.MING_CUSTOMS, operatorPermissions);
+    }
+
+    private static BizException permissionDenied() {
+        return new BizException("PERMISSION_DENIED");
     }
 }

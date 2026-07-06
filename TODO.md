@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics-mingcustoms-batch-visibility-permission`：Ming Customs 批量状态权限闭环
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-PERMISSION-OPERATIONS-CLEANUP-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/mingcustoms/service/impl/MingCustomsApplicationServiceImpl.java`, `kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/mingcustoms/query/MingCustomsPageQuery.java`, `kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/mingcustoms/command/MingCustomsCommand.java`, `kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/mingcustoms/MingCustomsAdminController.java`, `kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/mingcustoms/MingCustomsApplicationServiceImplTest.java`
-    - 处理动作：让 Ming Customs 管理查询与批量公开/私有按 `classics:mingcustoms:view/edit` 接收并应用权限上下文。
-    - 验收点：无 `classics:mingcustoms:edit` 的批量目标返回 `PERMISSION_DENIED` 且不更新数据库。
-    - 重要度：10/10
-
 - [ ] `classics-cleanup-facade`：Classics cleanup facade
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-PERMISSION-OPERATIONS-CLEANUP-CLOSURE.md`

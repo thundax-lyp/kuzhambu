@@ -323,7 +323,9 @@ public class ClassicsContentAdminController {
                         KuzhambuContextHolder.currentAuthorities());
             case "MING_CUSTOMS" ->
                 mingCustomsService.batchChangeVisibility(
-                        RequestListHelper.map(contentIds, MingCustomsEntryIdCodec::toDomain), visibility);
+                        RequestListHelper.map(contentIds, MingCustomsEntryIdCodec::toDomain),
+                        visibility,
+                        KuzhambuContextHolder.currentAuthorities());
             default -> throw AdminResponseExceptions.invalidParameter("contentType");
         };
     }
