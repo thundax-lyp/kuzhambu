@@ -108,3 +108,10 @@ kuzhambu:
         consumer-enabled: ${KUZHAMBU_DISCOVERY_SEARCH_INDEX_SYNC_CONSUMER_ENABLED:true}
         deleted-retention-days: ${KUZHAMBU_DISCOVERY_SEARCH_INDEX_SYNC_DELETED_RETENTION_DAYS:7}
         deleted-cleanup-cron: ${KUZHAMBU_DISCOVERY_SEARCH_INDEX_SYNC_DELETED_CLEANUP_CRON:0 0 3 * * ?}
+  operations:
+    backup:
+      root-path: ${KUZHAMBU_BACKUP_ROOT_PATH:/backup/kuzhambu}
+      schedule:
+        enabled: ${KUZHAMBU_OPERATIONS_BACKUP_SCHEDULE_ENABLED:true}
+        startup-enabled: ${KUZHAMBU_OPERATIONS_BACKUP_STARTUP_ENABLED:true}
+        daily-cron: ${KUZHAMBU_OPERATIONS_BACKUP_DAILY_CRON:0 0 2 * * ?}

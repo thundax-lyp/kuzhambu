@@ -4,6 +4,9 @@ import com.thundax.kuzhambu.common.test.architecture.AbstractArchitectureTest;
 import com.thundax.kuzhambu.common.test.architecture.SpringBeanArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.StarterArchitectureRuleSupport;
 import com.tngtech.archunit.core.domain.JavaClasses;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -52,5 +55,23 @@ class AdminStarterArchitectureTest extends AbstractArchitectureTest {
     void adminStarterShouldEnableSchedulingForRuntimeCleanupTasks() {
         Assertions.assertThat(KuzhambuAdminApplication.class.getAnnotation(EnableScheduling.class))
                 .isNotNull();
+    }
+
+    @Test
+    void adminStarterShouldExposeOperationsBackupScheduleConfiguration() throws IOException {
+        String applicationYaml = loadApplicationYaml();
+
+        Assertions.assertThat(applicationYaml)
+                .contains("root-path: ${KUZHAMBU_BACKUP_ROOT_PATH:/backup/kuzhambu}")
+                .contains("enabled: ${KUZHAMBU_OPERATIONS_BACKUP_SCHEDULE_ENABLED:true}")
+                .contains("startup-enabled: ${KUZHAMBU_OPERATIONS_BACKUP_STARTUP_ENABLED:true}")
+                .contains("daily-cron: ${KUZHAMBU_OPERATIONS_BACKUP_DAILY_CRON:0 0 2 * * ?}");
+    }
+
+    private String loadApplicationYaml() throws IOException {
+        try (InputStream inputStream = KuzhambuAdminApplication.class.getResourceAsStream("/application.yml")) {
+            Assertions.assertThat(inputStream).isNotNull();
+            return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+        }
     }
 }

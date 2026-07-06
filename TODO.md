@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `03 Admin starter backup config`：补齐自动备份 starter 与环境变量配置
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-BACKUP-RESTORE-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/starter/kuzhambu-admin-starter/src/main/resources/application.yml`、`kuzhambu-servers/starter/kuzhambu-admin-starter/src/test/java/com/thundax/kuzhambu/starter/admin/AdminStarterArchitectureTest.java`、`.env.example`、`deploy/.env.example`
-    - 处理动作：把自动备份开关、启动备份开关和每日 cron 配置接入 starter 与本地/部署样例。
-    - 验收点：配置默认值明确为每天凌晨 2:00，`@EnableScheduling` 验证保留，样例变量名一致。
-    - 重要度：9/10
-
 - [ ] `04 Operations restore schema domain`：补齐恢复模式和写阻断时间领域结构
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-BACKUP-RESTORE-CLOSURE.md`
