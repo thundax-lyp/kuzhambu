@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `knowledge-infra dataobject`：新增质量报告持久化对象和 Mapper
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-QUALITY-LOOP.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/refinement/persistence/dataobject/QualityReportDO.java`、`QualityReportIssueDO.java`、`QualityReportSourceDetailDO.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-infra/src/main/java/com/thundax/kuzhambu/knowledge/infra/refinement/persistence/mapper/QualityReportMapper.java`、`QualityReportIssueMapper.java`
-    - 处理动作：新增三张报告表的 MyBatis DO 和主表/问题 Mapper。
-    - 验收点：DO 字段与数据库字段一一对应，Mapper 能被 Spring 扫描并支持基础 CRUD。
-    - 重要度：9/10
-
 - [ ] `knowledge-infra repository`：新增质量报告持久化转换和仓储实现
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-QUALITY-LOOP.md`
