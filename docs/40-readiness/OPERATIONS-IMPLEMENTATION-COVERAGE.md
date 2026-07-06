@@ -19,7 +19,7 @@
 
 - `cleanup` 已完成领域模型、持久化实现、应用层、接口层、admin 列表、详情查询、详情 item 展示和当前范围真实执行；当前已能发现并执行过期备份记录、Classics 过期导出任务、过期分享链接和草稿分享链接清理。长期规则策略、调度化清理和更多目标类型仍待后续扩展。
 - `dashboard` 已完成 Operations 聚合接口、admin 页面、菜单权限和任务页迁移；当前跨域内容/AI/搜索/标签统计仍以稳定 `0` 或空数组占位，后续需要接入各业务域真实 summary 读取源。
-- 备份恢复链路具备基础闭环，但自动备份调度、恢复期间真实写入阻断、统一运维首页与系统/审计入口仍未全部补齐。
+- 统一运维首页已完成基础入口，System 日志/审计入口仍未全部补齐。
 
 已完成：
 
@@ -38,16 +38,21 @@
   - 已存在 application / infra / interface / 跨域 summary 对应测试，报表链路具备基本验证闭环。
 - 备份恢复闭环已形成当前阶段可运行交付：
   - `backup`、`restore` 已完成 domain + persistence + application + interface + admin page + 菜单权限种子数据。
-  - `kuzhambu-operations-application` 已完成手动备份执行、恢复前 `PRE_RESTORE` 快照创建、备份/恢复分页与详情查询，以及脚本执行结果回写台账。
+  - `kuzhambu-operations-application` 已完成手动备份执行、启动自动备份、每日 2:00 自动备份调度、恢复前 `PRE_RESTORE` 快照创建、备份/恢复分页与详情查询，以及脚本执行结果回写台账。
+  - 自动备份由 `OperationsBackupScheduler` 调度，默认配置为 `startupEnabled=true`、`scheduleEnabled=true`、`dailyCron=0 0 2 * * ?`；环境变量为 `KUZHAMBU_OPERATIONS_BACKUP_STARTUP_ENABLED`、`KUZHAMBU_OPERATIONS_BACKUP_SCHEDULE_ENABLED`、`KUZHAMBU_OPERATIONS_BACKUP_DAILY_CRON`。
+  - `operations_backup` 已精确使用 `backup_type` 区分 `MANUAL` / `AUTO` / `PRE_RESTORE`，自动备份 `requester` 为空；`BackupRequestContext` 增加 `source`、`reason`、`targetRestoreId` 以支撑互斥与来源追踪。
+  - `operations_restore` 已精确补齐 `restore_mode`、`write_block_enabled`、`write_block_started_at`、`write_block_released_at` 字段；`RestoreMode` 支持 `REAL` / `DRILL`。
+  - 恢复执行期间由 `OperationsRestoreWriteBlocker` 联动 `RestoreWriteBlockState`，通过 `RestoreWriteBlockFilter` 对非只读 Web 请求返回 `RESTORE_WRITE_BLOCKED`，并在恢复结束后释放阻断状态。
   - `kuzhambu-operations-interface` 已完成 admin `execute/page/detail` 接口、独立 `XxxResponse`、`operations:backup:view` / `operations:backup:execute` / `operations:restore:view` / `operations:restore:execute` 权限约束。
-  - `admin-web` 已完成 `/operations/backup-restore` 页面、台账展示、详情抽屉、手动备份与恢复动作触发。
+  - `admin-web` 已完成 `/operations/backup-restore` 页面、台账展示、详情抽屉、手动备份与恢复动作触发；恢复卡片提供“真实恢复”和“恢复演练”两个按钮，详情抽屉展示恢复模式、写阻断状态、写阻断开始时间和释放时间。
+  - `deploy/scripts/restore-business-data.sh` 已支持 `RESTORE_MODE=REAL|DRILL`；演练模式执行 SQL 语法、checksum、Storage 归档与白名单校验，不执行数据导入或对象覆盖。
   - `db/data-source/system.json` 与 `db/data/system.sql` 已对齐 `Operations/备份恢复` 菜单、路由与权限口径。
 - 备份恢复部署与执行器配套已形成：
   - 已完成专项设计文档、Docker Compose 挂载调整、`admin-starter` 下的备份/恢复/清理脚本、业务表白名单和校验输出格式。
 
 未完成：
 
-- 跨业务域真实 Dashboard 指标接入、按权限裁剪聚合图表、自动备份、恢复期间真实写入阻断、健康告警策略和 System 日志/审计入口仍未形成可运行交付。
+- 跨业务域真实 Dashboard 指标接入、按权限裁剪聚合图表、健康告警策略和 System 日志/审计入口仍未形成可运行交付。
 
 ## Requirement Coverage Matrix
 
@@ -55,12 +60,12 @@
 | --- | --- | --- | --- | --- |
 | 仪表盘与聚合展示 | 部分完成 | 已完成 `OperationsDashboardApplicationService`、`POST /api/operations/dashboard/overview`、`OperationsDashboardOverviewResponse`、`/operations/dashboard` 前端页面、周期切换、刷新、指标卡、趋势区、排行区、健康明细抽屉和运维入口；接口在未接入真实跨域统计源时返回稳定 `0` 或空数组 | 内容、访问、AI、搜索、问答、标签等跨域指标仍需接入真实 summary 源；按权限裁剪聚合图表仍未完成 | Operations, Admin Web |
 | 报表 | 已完成 | 已完成周报/月报任务生成、HTML/PDF worker 渲染、Storage 产物回写、报表记录分页/详情查询、状态流转、独立 response、`operations:report:view` / `operations:report:generate` 权限控制，以及跨域 summary 聚合读取 | admin 页面接入与专属下载表现不在本矩阵范围内；后续如增加调度报表可另行扩展 | Operations |
-| 备份与恢复 | 部分完成 | 已完成 `BackupRecord`、`RestoreRecord`、各自 persistence、手动备份执行、恢复前 `PRE_RESTORE` 快照创建、备份/恢复 `execute/page/detail` 接口、`admin-web` 备份恢复页面、菜单与权限种子，以及脚本执行结果回写 | 启动自动备份、24 小时自动备份、恢复期间真实写入阻断、真实恢复演练与长期调度仍未完成 | Operations |
+| 备份与恢复 | 已完成 | 已完成 `BackupRecord`、`RestoreRecord`、各自 persistence、手动备份执行、启动自动备份、每日 2:00 自动备份、恢复前 `PRE_RESTORE` 快照创建、恢复期间 Web 写阻断、`REAL` / `DRILL` 恢复台账、备份/恢复 `execute/page/detail` 接口、`admin-web` 备份恢复页面与详情字段、菜单与权限种子，以及脚本执行结果回写 | 无 | Operations |
 | 清理任务 | 部分完成 | `CleanupJob` / `CleanupItem` 已完成领域模型与持久化，应用层 `execute/page/detail` 与 admin 接口已上线，前端清理台账页已接通，`operations:cleanup:view/execute` 与页面基础回归测试已存在；当前真实执行覆盖过期备份、Classics 过期导出、过期分享和草稿分享，详情页可展示每条 cleanup item 的目标、状态、失败原因和处理时间；若清理目标涉及导出产物对象，其底层生命周期已可复用 Storage 自动 orphan 清理能力 | 调度化清理、长期规则策略和更多目标类型扩展未闭环 | Operations |
 | 健康检查与运行状态 | 部分完成 | `HealthCheckRecord`、`LongTaskSnapshot` 已完成 domain + persistence + application + interface；健康记录已包含 `probeSource`、`probeTarget`、`detailsJson`；已具备本地健康采集器、健康摘要、组件分页、健康趋势、长任务分页与详情查询；`admin-web` 看板已消费健康摘要/趋势，任务页保留长任务台账 | 健康告警策略、失败恢复联动、更多外部探针和长任务异常恢复仍未完成 | Operations, Admin Web |
 | 运维入口 | 部分完成 | 已完成 `/operations/dashboard` 统一入口、任务台账、备份恢复和清理维护跳转；菜单种子中 `运营看板` 使用 `operations:dashboard:view`；未实现的报表记录菜单已隐藏且 URL 为空，避免 `/operations/reports` 可点击死链 | System 日志/审计入口、健康细分页和更多运维操作编排仍未完成 | Operations, Admin Web, System |
 | 台账记录 | 部分完成 | report、backup、restore、cleanup 已完成 domain + persistence + application + interface + admin page；cleanup 真实执行会写入 job summary 和 item 明细；health 与 long task 已完成 domain + persistence + application + interface，健康来源字段、趋势查询和看板消费已落地 | 长任务异常恢复与跨模块联调验证未完成 | Operations |
-| TODO 与治理文档清理 | 已完成 | `TODO.md` 已清空，Operations Dashboard + Health Metrics 临时 RUNBOOK 已删除 | 无 | Governance |
+| TODO 与治理文档清理 | 已完成 | `TODO.md` 已清空，Operations Backup Restore Closure 临时 RUNBOOK 已删除 | 无 | Governance |
 
 ## Follow-up Backlog
 
@@ -79,12 +84,12 @@
 状态：已完成  
 目标：清理台账持久化基础设施已就绪，进入接入真实清理执行规则与任务编排层阶段。
 
-### B4 调度、阻断与运行态接入
+### B4 运行态接入
 
-状态：未开始
-目标：接入自动备份调度、更多运行指标探针、恢复期间真实写入阻断、长任务写入源，以及 System 日志/审计入口。
+状态：进行中
+目标：自动备份调度和恢复期间真实写入阻断已补齐；后续接入更多运行指标探针、长任务写入源，以及 System 日志/审计入口。
 
 ### B5 剩余非报表任务交付验证
 
 状态：进行中
-目标：cleanup 关键链路已补齐真实执行与详情 item 回归；health/task 看板消费与接口趋势已补齐基础契约；后续补一轮 backup/restore 真实恢复演练记录，覆盖创建、更新、查询，以及恢复失败原因可追溯能力。
+目标：cleanup 关键链路已补齐真实执行与详情 item 回归；health/task 看板消费与接口趋势已补齐基础契约；backup/restore 已覆盖自动备份、真实恢复、恢复演练、写阻断字段和失败原因可追溯能力。后续验证聚焦跨域 Dashboard、健康告警和 System 日志/审计入口。
