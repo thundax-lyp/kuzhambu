@@ -11,12 +11,4 @@
 
 ## 待审阅任务项
 
-- [ ] `T09 Runbook and TODO closure`：清理临时 RUNBOOK 并收窄 TODO
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-CLASSICS-DELETE-SHARE-RISK-CLOSURE.md`
-    - 范围对象：`docs/30-designs/RUNBOOK-CLASSICS-DELETE-SHARE-RISK-CLOSURE.md`、`TODO.md`
-    - 处理动作：删除临时 RUNBOOK，并按实际完成情况删除或收窄 TODO
-    - 验收点：临时 RUNBOOK 已清理，`TODO.md` 不保留已完成任务
-    - 重要度：10/10
-
 ## 待讨论项
