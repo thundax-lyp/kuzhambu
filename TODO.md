@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `knowledge graph closure 最终复验`：同步 main 后重跑受影响验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-14-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge`、`kuzhambu-apps/portal-web`、`/knowledge/atlas`
-    - 处理动作：同步 `main` 后重跑受影响的 Maven、npm、build 和视觉冒烟验证
-    - 验收点：最终工作区基于最新 `main` 通过相关验证，且无抽取类网络调用回归
-    - 重要度：10/10
-
 - [ ] `knowledge coverage 更新`：同步 Implementation Coverage
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-14-CLOSURE.md`
