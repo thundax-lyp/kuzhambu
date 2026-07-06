@@ -11,6 +11,9 @@ import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
+import com.thundax.kuzhambu.common.security.context.KuzhambuSubject;
+import com.thundax.kuzhambu.common.security.context.KuzhambuSubjectType;
 import com.thundax.kuzhambu.discovery.application.search.command.SearchClickCreateCommand;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchAnalysisSummaryQuery;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchLogPageQuery;
@@ -28,10 +31,17 @@ import com.thundax.kuzhambu.discovery.domain.search.repository.SearchLogReposito
 import com.thundax.kuzhambu.discovery.domain.service.SearchDomainService;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 class SearchApplicationServiceImplTest {
+
+    @AfterEach
+    void clearContext() {
+        KuzhambuContextHolder.clear();
+    }
 
     @Test
     void searchShouldTranslateBackendNotImplementedToBizException() {
@@ -140,6 +150,144 @@ class SearchApplicationServiceImplTest {
         assertEquals(
                 "<mark>黄帝</mark>上古帝王",
                 result.getGroups().get(0).getItems().get(0).getHighlightText());
+    }
+
+    @Test
+    void searchShouldFilterPrivateResultsForAnonymousOperator() {
+        SearchLogRepository searchLogRepository = mock(SearchLogRepository.class);
+        SearchClickRepository searchClickRepository = mock(SearchClickRepository.class);
+        SearchIndexGateway searchIndexGateway = mock(SearchIndexGateway.class);
+        QueryUnderstandingApplicationService queryUnderstandingApplicationService =
+                mock(QueryUnderstandingApplicationService.class);
+        SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
+                searchLogRepository,
+                searchClickRepository,
+                new SearchDomainService(),
+                searchIndexGateway,
+                new DefaultSearchPermissionFilter(),
+                queryUnderstandingApplicationService);
+        SearchQuery query = new SearchQuery(
+                "黄帝",
+                List.of("SANCAI_ENTRY"),
+                List.of("11"),
+                List.of("上古"),
+                List.of("PUBLISHED"),
+                List.of("PUBLIC", "PRIVATE"),
+                null,
+                null,
+                1,
+                20,
+                "ANONYMOUS",
+                null,
+                "req-3",
+                "trace-3");
+        when(queryUnderstandingApplicationService.understand(query))
+                .thenReturn(
+                        new QueryUnderstandingResult("黄帝", "黄帝", "KEYWORD_SEARCH", List.of(), List.of(), null, null));
+        when(searchIndexGateway.search(any(), any(), any(Integer.class), any(Integer.class)))
+                .thenReturn(List.of(new SearchGroupResult(
+                        "SANCAI_ENTRY",
+                        "三才图会",
+                        2,
+                        List.of(
+                                searchResult("SANCAI_ENTRY", "1001", "PUBLIC"),
+                                searchResult("SANCAI_ENTRY", "1002", "PRIVATE")))));
+
+        var result = service.search(query);
+
+        assertEquals(1, result.getResultTotalCount());
+        assertEquals(1, result.getGroupTotalCount());
+        assertEquals(1, result.getGroups().get(0).getCount());
+        assertEquals("1001", result.getGroups().get(0).getItems().get(0).getContentId());
+    }
+
+    @Test
+    void searchShouldKeepPrivateResultsWhenSubjectHasContentPermission() {
+        KuzhambuContextHolder.setSubject(new KuzhambuSubject(
+                "admin-1", KuzhambuSubjectType.ADMIN_USER, "admin", "token-1", Set.of("classics:sancai:view")));
+        SearchLogRepository searchLogRepository = mock(SearchLogRepository.class);
+        SearchClickRepository searchClickRepository = mock(SearchClickRepository.class);
+        SearchIndexGateway searchIndexGateway = mock(SearchIndexGateway.class);
+        QueryUnderstandingApplicationService queryUnderstandingApplicationService =
+                mock(QueryUnderstandingApplicationService.class);
+        SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
+                searchLogRepository,
+                searchClickRepository,
+                new SearchDomainService(),
+                searchIndexGateway,
+                new DefaultSearchPermissionFilter(),
+                queryUnderstandingApplicationService);
+        SearchQuery query = new SearchQuery(
+                "黄帝",
+                List.of("SANCAI_ENTRY"),
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of("PRIVATE"),
+                null,
+                null,
+                1,
+                20,
+                "ADMIN",
+                "admin-1",
+                "req-4",
+                "trace-4");
+        when(queryUnderstandingApplicationService.understand(query))
+                .thenReturn(
+                        new QueryUnderstandingResult("黄帝", "黄帝", "KEYWORD_SEARCH", List.of(), List.of(), null, null));
+        when(searchIndexGateway.search(any(), any(), any(Integer.class), any(Integer.class)))
+                .thenReturn(List.of(new SearchGroupResult(
+                        "SANCAI_ENTRY", "三才图会", 1, List.of(searchResult("SANCAI_ENTRY", "1002", "PRIVATE")))));
+
+        var result = service.search(query);
+
+        assertEquals(1, result.getResultTotalCount());
+        assertEquals("1002", result.getGroups().get(0).getItems().get(0).getContentId());
+    }
+
+    @Test
+    void searchShouldRejectUnknownPrivateContentType() {
+        KuzhambuContextHolder.setSubject(new KuzhambuSubject(
+                "admin-1", KuzhambuSubjectType.ADMIN_USER, "admin", "token-1", Set.of("classics:content:view")));
+        SearchLogRepository searchLogRepository = mock(SearchLogRepository.class);
+        SearchClickRepository searchClickRepository = mock(SearchClickRepository.class);
+        SearchIndexGateway searchIndexGateway = mock(SearchIndexGateway.class);
+        QueryUnderstandingApplicationService queryUnderstandingApplicationService =
+                mock(QueryUnderstandingApplicationService.class);
+        SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
+                searchLogRepository,
+                searchClickRepository,
+                new SearchDomainService(),
+                searchIndexGateway,
+                new DefaultSearchPermissionFilter(),
+                queryUnderstandingApplicationService);
+        SearchQuery query = new SearchQuery(
+                "黄帝",
+                List.of("UNKNOWN_CONTENT"),
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of("PRIVATE"),
+                null,
+                null,
+                1,
+                20,
+                "ADMIN",
+                "admin-1",
+                "req-5",
+                "trace-5");
+        when(queryUnderstandingApplicationService.understand(query))
+                .thenReturn(
+                        new QueryUnderstandingResult("黄帝", "黄帝", "KEYWORD_SEARCH", List.of(), List.of(), null, null));
+        when(searchIndexGateway.search(any(), any(), any(Integer.class), any(Integer.class)))
+                .thenReturn(List.of(new SearchGroupResult(
+                        "UNKNOWN_CONTENT", "未知内容", 1, List.of(searchResult("UNKNOWN_CONTENT", "1003", "PRIVATE")))));
+
+        var result = service.search(query);
+
+        assertEquals(0, result.getResultTotalCount());
+        assertEquals(0, result.getGroupTotalCount());
+        assertTrue(result.getGroups().isEmpty());
     }
 
     @Test
@@ -412,5 +560,24 @@ class SearchApplicationServiceImplTest {
                 null,
                 null,
                 new Date());
+    }
+
+    private SearchResult searchResult(String contentType, String contentId, String visibility) {
+        return new SearchResult(
+                "CLASSICS",
+                contentType,
+                contentId,
+                contentType,
+                "11",
+                "黄帝",
+                "上古帝王",
+                "<mark>黄帝</mark>上古帝王",
+                List.of("上古"),
+                "PUBLISHED",
+                visibility,
+                1_718_000_000_000L,
+                1,
+                1,
+                "/classics/sancai/" + contentId);
     }
 }

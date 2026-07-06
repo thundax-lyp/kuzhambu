@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Discovery Search 权限过滤`：实现非公开搜索结果的后端权限裁剪
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-FILTER-PERMISSION-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/search/support/DefaultSearchPermissionFilter.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/search/service/impl/SearchApplicationServiceImpl.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/test/java/com/thundax/kuzhambu/discovery/application/search/service/impl/SearchApplicationServiceImplTest.java`
-    - 处理动作：按当前主体权限裁剪非公开结果并重算分组数量和搜索总数
-    - 验收点：匿名用户不能返回非公开结果，具备对应 Classics 权限的主体可返回对应非公开结果
-    - 重要度：10/10
-
 - [ ] `Discovery Search 筛选范围`：锁定高级筛选字段进入查询和日志
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-FILTER-PERMISSION-CLOSURE.md`
