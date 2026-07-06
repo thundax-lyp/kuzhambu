@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `10-coverage-runbook-cleanup`：更新 AI Implementation Coverage 并清理 RUNBOOK
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-KNOWLEDGE-TAG-EXTRACTION.md`
-    - 范围对象：`docs/40-readiness/AI-IMPLEMENTATION-COVERAGE.md`、`docs/30-designs/RUNBOOK-AI-KNOWLEDGE-TAG-EXTRACTION.md`
-    - 处理动作：把 `KNOWLEDGE_TAG_EXTRACTION` 移入已完成矩阵并删除已完成 RUNBOOK
-    - 验收点：`AI-IMPLEMENTATION-COVERAGE.md` 不再保留 `KNOWLEDGE_TAG_EXTRACTION` 未完成项，且 RUNBOOK 文件已清理
-    - 重要度：10/10
-
 ## 待审阅任务项
 
 ## 待讨论项
