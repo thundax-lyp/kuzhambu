@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics-permission-context-support`：Classics 权限上下文字段与策略基础
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-PERMISSION-OPERATIONS-CLEANUP-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/support/ClassicsContentPermissionSupport.java`, `kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/command/ContentExportCommand.java`, `kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sharing/command/ShareLinkCreateCommand.java`, `kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sharing/command/BatchShareCreateCommand.java`, `kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/content/support/ClassicsContentPermissionSupportTest.java`
-    - 处理动作：新增 Classics 内容权限支持类，并给导出与分享命令补充 `operatorUserId`、`operatorPermissions` 字段。
-    - 验收点：权限支持类可按内容类型返回 view/edit 权限判断，相关命令暴露新增字段并通过 application 模块编译。
-    - 重要度：10/10
-
 - [ ] `classics-content-share-permission-filter`：Classics 导出与分享权限过滤
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-PERMISSION-OPERATIONS-CLEANUP-CLOSURE.md`

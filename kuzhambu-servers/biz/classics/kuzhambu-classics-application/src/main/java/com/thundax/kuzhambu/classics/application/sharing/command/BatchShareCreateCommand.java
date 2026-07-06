@@ -5,6 +5,7 @@ import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareLin
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareVisibility;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,4 +23,26 @@ public class BatchShareCreateCommand {
     private Date expiresAt;
     private boolean privateContentConfirmed;
     private List<ShareTargetCreateCommand> targets;
+    private Long operatorUserId;
+    private Set<String> operatorPermissions;
+
+    public BatchShareCreateCommand(
+            String titlePrefix,
+            ClassicsShareVisibility visibility,
+            ClassicsShareLinkStatus status,
+            SancaiVisibilityRiskStatus visibilityRiskStatus,
+            Date expiresAt,
+            boolean privateContentConfirmed,
+            List<ShareTargetCreateCommand> targets) {
+        this(
+                titlePrefix,
+                visibility,
+                status,
+                visibilityRiskStatus,
+                expiresAt,
+                privateContentConfirmed,
+                targets,
+                null,
+                null);
+    }
 }
