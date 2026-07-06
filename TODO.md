@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `portal atlas 页面接入`：接入画布并锁定页面交互
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-14-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-atlas-page.tsx`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-atlas-page.css`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-atlas-page.test.tsx`
-    - 处理动作：在 overview、category 和 detail 三层主 stage 接入 `KnowledgeGraphCanvas` 并补齐空门类、实体跳转和详情展示测试
-    - 验收点：页面测试覆盖 14 门类展示、空门类 category 空态、实体节点跳转和 detail 焦点关系展示
-    - 重要度：10/10
-
 - [ ] `knowledge graph closure 初次验证`：运行实现后的相关验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-14-CLOSURE.md`
