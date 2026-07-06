@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics-cleanup-facade`：Classics cleanup facade
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-PERMISSION-OPERATIONS-CLEANUP-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-facade/src/main/java/com/thundax/kuzhambu/classics/facade/ClassicsFacade.java`, `kuzhambu-servers/biz/classics/kuzhambu-classics-facade/src/main/java/com/thundax/kuzhambu/classics/facade/request/ClassicsCleanupTargetsFacadeRequest.java`, `kuzhambu-servers/biz/classics/kuzhambu-classics-facade/src/main/java/com/thundax/kuzhambu/classics/facade/response/ClassicsCleanupTargetsFacadeResponse.java`, `kuzhambu-servers/biz/classics/kuzhambu-classics-facade/src/main/java/com/thundax/kuzhambu/classics/facade/response/ClassicsCleanupExecutionFacadeResponse.java`, `kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/facade/ClassicsFacadeImpl.java`
-    - 处理动作：为 Operations 提供 Classics cleanup 目标发现与执行 facade。
-    - 验收点：facade 支持 `EXPIRED_SHARE`、`EXPIRED_DRAFT`、`EXPIRED_EXPORT` 且不暴露 Classics 内部 entity。
-    - 重要度：9/10
-
 - [ ] `classics-cleanup-application`：Classics cleanup application
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-PERMISSION-OPERATIONS-CLEANUP-CLOSURE.md`

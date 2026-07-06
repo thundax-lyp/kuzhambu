@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.classics.application.sancai;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -112,7 +113,7 @@ class SancaiApplicationServiceImplTest {
         assertEquals(0, result.getTotalCount());
         assertEquals(0, result.getRecords().size());
         verify(repository, never())
-                .pageEntries(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any());
+                .pageEntries(any(), any(), any(), any(), any(), any(), any(), any(), any(), anyInt(), anyInt());
     }
 
     @Test

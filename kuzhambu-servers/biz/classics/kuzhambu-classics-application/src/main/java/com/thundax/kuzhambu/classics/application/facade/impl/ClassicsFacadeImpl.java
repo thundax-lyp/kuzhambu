@@ -20,19 +20,31 @@ import com.thundax.kuzhambu.classics.domain.wangqi.codec.WangqiDocumentIdCodec;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.classics.facade.ClassicsFacade;
 import com.thundax.kuzhambu.classics.facade.dto.ClassicsQaKnowledgeFacadeDto;
+import com.thundax.kuzhambu.classics.facade.request.ClassicsCleanupTargetsFacadeRequest;
 import com.thundax.kuzhambu.classics.facade.request.ClassicsPublicContentFacadeRequest;
 import com.thundax.kuzhambu.classics.facade.request.ClassicsQaKnowledgeFacadeRequest;
 import com.thundax.kuzhambu.classics.facade.request.ClassicsSummaryFacadeRequest;
+import com.thundax.kuzhambu.classics.facade.response.ClassicsCleanupExecutionFacadeResponse;
+import com.thundax.kuzhambu.classics.facade.response.ClassicsCleanupTargetsFacadeResponse;
 import com.thundax.kuzhambu.classics.facade.response.ClassicsPublicContentFacadeResponse;
 import com.thundax.kuzhambu.classics.facade.response.ClassicsPublicContentsFacadeResponse;
 import com.thundax.kuzhambu.classics.facade.response.ClassicsQaKnowledgeFacadeResponse;
 import com.thundax.kuzhambu.classics.facade.response.ClassicsSummaryFacadeResponse;
 import java.util.List;
+import java.util.Locale;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ClassicsFacadeImpl implements ClassicsFacade {
+    private static final String CLEANUP_TYPE_EXPIRED_SHARE = "EXPIRED_SHARE";
+    private static final String CLEANUP_TYPE_EXPIRED_DRAFT = "EXPIRED_DRAFT";
+    private static final String CLEANUP_TYPE_EXPIRED_EXPORT = "EXPIRED_EXPORT";
+    private static final String CLEANUP_TARGET_TYPE_SHARE = "share";
+    private static final String CLEANUP_TARGET_TYPE_DRAFT = "draft";
+    private static final String CLEANUP_TARGET_TYPE_EXPORT = "export";
+    private static final String UNSUPPORTED_CLEANUP_TYPE = "UNSUPPORTED_CLEANUP_TYPE";
+    private static final String CLEANUP_APPLICATION_NOT_READY = "CLASSICS_CLEANUP_APPLICATION_NOT_READY";
 
     private final ClassicsContentApplicationService classicsContentApplicationService;
     private final ClassicsReportApplicationService classicsReportApplicationService;
@@ -116,6 +128,60 @@ public class ClassicsFacadeImpl implements ClassicsFacade {
         };
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public ClassicsCleanupTargetsFacadeResponse listCleanupTargets(ClassicsCleanupTargetsFacadeRequest request) {
+        String cleanupType = normalizeCleanupType(request == null ? null : request.getCleanupType());
+        String targetType = cleanupTargetType(cleanupType);
+        if (targetType == null) {
+            return ClassicsCleanupTargetsFacadeResponse.builder()
+                    .cleanupType(cleanupType)
+                    .supported(false)
+                    .failureReason(UNSUPPORTED_CLEANUP_TYPE)
+                    .targets(List.of())
+                    .build();
+        }
+        List<ClassicsCleanupTargetsFacadeResponse.Target> targets = safeTargetIds(request).stream()
+                .map(targetId -> ClassicsCleanupTargetsFacadeResponse.Target.builder()
+                        .targetType(targetType)
+                        .targetId(targetId)
+                        .build())
+                .toList();
+        return ClassicsCleanupTargetsFacadeResponse.builder()
+                .cleanupType(cleanupType)
+                .supported(true)
+                .targets(targets)
+                .build();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ClassicsCleanupExecutionFacadeResponse executeCleanupTargets(ClassicsCleanupTargetsFacadeRequest request) {
+        String cleanupType = normalizeCleanupType(request == null ? null : request.getCleanupType());
+        String targetType = cleanupTargetType(cleanupType);
+        if (targetType == null) {
+            return ClassicsCleanupExecutionFacadeResponse.builder()
+                    .cleanupType(cleanupType)
+                    .supported(false)
+                    .failureReason(UNSUPPORTED_CLEANUP_TYPE)
+                    .itemResults(List.of())
+                    .build();
+        }
+        List<ClassicsCleanupExecutionFacadeResponse.ItemResult> itemResults = safeTargetIds(request).stream()
+                .map(targetId -> ClassicsCleanupExecutionFacadeResponse.ItemResult.builder()
+                        .targetType(targetType)
+                        .targetId(targetId)
+                        .success(false)
+                        .failureReason(CLEANUP_APPLICATION_NOT_READY)
+                        .build())
+                .toList();
+        return ClassicsCleanupExecutionFacadeResponse.builder()
+                .cleanupType(cleanupType)
+                .supported(true)
+                .itemResults(itemResults)
+                .build();
+    }
+
     private ClassicsQaKnowledgeFacadeDto getSancaiQaKnowledge(
             String contentType, String contentId, ClassicsContentId domainContentId) {
         var sourceContent = classicsSearchContentApplicationService.getPublicContent(contentType, contentId);
@@ -175,5 +241,25 @@ public class ClassicsFacadeImpl implements ClassicsFacade {
         } catch (NumberFormatException ex) {
             return null;
         }
+    }
+
+    private static String normalizeCleanupType(String cleanupType) {
+        return cleanupType == null ? null : cleanupType.trim().toUpperCase(Locale.ROOT);
+    }
+
+    private static String cleanupTargetType(String cleanupType) {
+        if (cleanupType == null) {
+            return null;
+        }
+        return switch (cleanupType) {
+            case CLEANUP_TYPE_EXPIRED_SHARE -> CLEANUP_TARGET_TYPE_SHARE;
+            case CLEANUP_TYPE_EXPIRED_DRAFT -> CLEANUP_TARGET_TYPE_DRAFT;
+            case CLEANUP_TYPE_EXPIRED_EXPORT -> CLEANUP_TARGET_TYPE_EXPORT;
+            default -> null;
+        };
+    }
+
+    private static List<Long> safeTargetIds(ClassicsCleanupTargetsFacadeRequest request) {
+        return request == null || request.getTargetIds() == null ? List.of() : request.getTargetIds();
     }
 }

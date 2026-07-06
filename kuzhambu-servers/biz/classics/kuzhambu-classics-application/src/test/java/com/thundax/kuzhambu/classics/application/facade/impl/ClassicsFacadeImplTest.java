@@ -25,6 +25,7 @@ import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsCo
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
+import com.thundax.kuzhambu.classics.facade.request.ClassicsCleanupTargetsFacadeRequest;
 import com.thundax.kuzhambu.classics.facade.request.ClassicsPublicContentFacadeRequest;
 import com.thundax.kuzhambu.classics.facade.request.ClassicsQaKnowledgeFacadeRequest;
 import com.thundax.kuzhambu.classics.facade.request.ClassicsSummaryFacadeRequest;
@@ -338,6 +339,39 @@ class ClassicsFacadeImplTest {
                 classicsReportApplicationService,
                 classicsContentApplicationService,
                 classicsSearchContentApplicationService);
+    }
+
+    @Test
+    void cleanupTargetsShouldExposeOnlyCleanupTypeAndTargetIds() {
+        ClassicsFacadeImpl facade = newFacade(
+                mock(ClassicsReportApplicationService.class), mock(ClassicsSearchContentApplicationService.class));
+
+        var response = facade.listCleanupTargets(ClassicsCleanupTargetsFacadeRequest.builder()
+                .cleanupType("expired_share")
+                .targetIds(List.of(11L, 12L))
+                .build());
+
+        assertEquals("EXPIRED_SHARE", response.getCleanupType());
+        assertEquals(true, response.isSupported());
+        assertEquals(2, response.getTargets().size());
+        assertEquals("share", response.getTargets().get(0).getTargetType());
+        assertEquals(11L, response.getTargets().get(0).getTargetId());
+    }
+
+    @Test
+    void cleanupExecutionShouldReturnFailureForUnsupportedTypeWithoutThrowing() {
+        ClassicsFacadeImpl facade = newFacade(
+                mock(ClassicsReportApplicationService.class), mock(ClassicsSearchContentApplicationService.class));
+
+        var response = facade.executeCleanupTargets(ClassicsCleanupTargetsFacadeRequest.builder()
+                .cleanupType("UNKNOWN")
+                .targetIds(List.of(1L))
+                .build());
+
+        assertEquals("UNKNOWN", response.getCleanupType());
+        assertEquals(false, response.isSupported());
+        assertEquals("UNSUPPORTED_CLEANUP_TYPE", response.getFailureReason());
+        assertEquals(0, response.getItemResults().size());
     }
 
     private ClassicsContentTag confirmedTag(String tagName) {

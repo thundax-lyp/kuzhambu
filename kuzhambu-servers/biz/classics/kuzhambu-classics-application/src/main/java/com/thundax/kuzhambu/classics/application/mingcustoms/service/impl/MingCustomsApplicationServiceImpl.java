@@ -111,7 +111,6 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
         changeVisibility(id, visibility, null);
     }
 
-    @Transactional(rollbackFor = Exception.class)
     void changeVisibility(MingCustomsEntryId id, String visibility, Set<String> operatorPermissions) {
         if (hasPermissionContext(operatorPermissions) && !canEdit(operatorPermissions)) {
             throw permissionDenied();
