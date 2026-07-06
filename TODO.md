@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `08 Common web restore write block`：补齐恢复期间 Web 写入阻断
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-BACKUP-RESTORE-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/common/kuzhambu-common-web/src/main/java/com/thundax/kuzhambu/common/web/restore/RestoreWriteBlockState.java`、`kuzhambu-servers/common/kuzhambu-common-web/src/main/java/com/thundax/kuzhambu/common/web/restore/RestoreWriteBlockFilter.java`、`kuzhambu-servers/common/kuzhambu-common-web/src/main/java/com/thundax/kuzhambu/common/web/restore/RestoreWriteBlockProperties.java`、`kuzhambu-servers/common/kuzhambu-common-web/src/test/java/com/thundax/kuzhambu/common/web/restore/RestoreWriteBlockFilterTest.java`
-    - 处理动作：新增 Web 层阻断状态、配置和 filter，阻断恢复期间业务写方法并放行必要路径。
-    - 验收点：业务写入被 423 阻断，Operations 查询和恢复执行路径放行，阻断响应结构稳定。
-    - 重要度：10/10
-
 - [ ] `09 Operations restore interface requests`：补齐恢复接口请求模式字段
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-BACKUP-RESTORE-CLOSURE.md`
