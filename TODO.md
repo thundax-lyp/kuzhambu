@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `AI Platform application entry`：补齐 Platform AI application 调用入口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-PLATFORM-ENTRY-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/platform/support/PlatformAiWorkerUsecaseSpec.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/platform/support/PlatformAiWorkerUsecaseResolver.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/platform/command/PlatformAiInvokeCommand.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/platform/service/PlatformAiApplicationService.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/platform/service/impl/PlatformAiApplicationServiceImpl.java`
-    - 处理动作：新增 Platform AI application 入口并固定 `PLATFORM_PROMPT_SUGGESTION`、`PLATFORM_VERSION_SUMMARY` 到 workers usecase path 的映射。
-    - 验收点：两个 Platform operation 都通过 `AiWorkerInvocationApplicationService#invoke` 调用，且 `prompt_suggestion` 默认创建候选、`version_summary` 默认不创建候选。
-    - 重要度：9/10
-
 - [ ] `AI Platform admin entry`：补齐 Platform AI admin HTTP 入口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-PLATFORM-ENTRY-CLOSURE.md`
