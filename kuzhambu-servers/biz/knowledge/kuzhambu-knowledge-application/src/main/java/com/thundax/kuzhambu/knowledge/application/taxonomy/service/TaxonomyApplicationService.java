@@ -8,11 +8,13 @@ import com.thundax.kuzhambu.knowledge.application.taxonomy.command.SynonymStatus
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.SynonymUpdateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagAliasCreateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagAliasRemoveCommand;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCandidateApplyCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCategoryCreateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCategoryStatusCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCategoryUpdateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCreateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagDeprecateCommand;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagMergeCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagReviewCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagStatusCommand;
@@ -27,6 +29,7 @@ import com.thundax.kuzhambu.knowledge.application.taxonomy.result.SynonymResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagAliasResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagCategoryResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagDetailResult;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagExtractionResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagGovernanceMetricsResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagMergePreviewResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagResult;
@@ -67,6 +70,10 @@ public interface TaxonomyApplicationService {
     PageResult<TagResult> pagePendingTags(TagReviewPageQuery query, PageQuery page);
 
     void reviewTag(TagReviewCommand command);
+
+    TagExtractionResult extractTags(TagExtractionCommand command);
+
+    void applyExtractedTags(TagCandidateApplyCommand command);
 
     List<TagAliasResult> listTagAliases(TagId tagId);
 

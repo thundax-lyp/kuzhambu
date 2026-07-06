@@ -60,6 +60,23 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
     }
 
     @Test
+    void extractTagsShouldUseTagExtractionUsecaseAndCreateCandidate() {
+        CapturingInvocationService invocationService = new CapturingInvocationService();
+        KnowledgeAiExtractionApplicationServiceImpl service =
+                new KnowledgeAiExtractionApplicationServiceImpl(invocationService, resolver, null);
+
+        service.extractTags(request());
+        AiInvokeCommand capturedCommand = invocationService.capturedCommand();
+
+        assertEquals("knowledge", capturedCommand.getScope());
+        assertEquals("KNOWLEDGE_TAG_EXTRACTION", capturedCommand.getOperation());
+        assertEquals("/internal/ai/knowledge/tag-extraction", capturedCommand.getWorkerPath());
+        assertEquals("tags", capturedCommand.getCapability());
+        assertEquals(true, capturedCommand.isForceJson());
+        assertEquals(true, capturedCommand.isCreateCandidate());
+    }
+
+    @Test
     void extractGraphShouldPreserveCallAndCandidateIdentifiers() {
         CapturingInvocationService invocationService = new CapturingInvocationService();
         KnowledgeAiExtractionApplicationServiceImpl service =

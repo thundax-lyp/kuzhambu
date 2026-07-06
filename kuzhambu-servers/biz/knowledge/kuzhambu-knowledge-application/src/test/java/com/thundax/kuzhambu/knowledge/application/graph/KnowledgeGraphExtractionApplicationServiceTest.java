@@ -976,6 +976,8 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         KnowledgeAiExtractionResult extractGraph(KnowledgeAiExtractionRequest request);
 
         KnowledgeAiExtractionResult extractLineage(KnowledgeAiExtractionRequest request);
+
+        KnowledgeAiExtractionResult extractTags(KnowledgeAiExtractionRequest request);
     }
 
     private static final class FakeKnowledgeAiExtractionDomainService implements KnowledgeAiExtractionDomainService {
@@ -1004,6 +1006,14 @@ class KnowledgeGraphExtractionApplicationServiceTest {
             lastTaskType = "LINEAGE";
             return new KnowledgeAiExtractionResult(
                     501L, 502L, "SUCCEEDED", "lineage_extraction", "STRUCTURED", "{}", null, null);
+        }
+
+        @Override
+        public KnowledgeAiExtractionResult extractTags(KnowledgeAiExtractionRequest request) {
+            lastRequest = request;
+            lastTaskType = "TAG";
+            return new KnowledgeAiExtractionResult(
+                    601L, 602L, "SUCCEEDED", "tag_extraction", "STRUCTURED", "{\"tags\":[]}", null, null);
         }
     }
 
@@ -1062,6 +1072,14 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                     knowledgeAiExtractionDomainService == null
                             ? null
                             : knowledgeAiExtractionDomainService.extractLineage(toLegacyRequest(request)));
+        }
+
+        @Override
+        public KnowledgeAiExtractionFacadeResponse extractKnowledgeTags(KnowledgeAiExtractionFacadeRequest request) {
+            return toFacadeResponse(
+                    knowledgeAiExtractionDomainService == null
+                            ? null
+                            : knowledgeAiExtractionDomainService.extractTags(toLegacyRequest(request)));
         }
 
         @Override

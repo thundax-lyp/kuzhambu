@@ -47,6 +47,11 @@ public class KnowledgeAiExtractionApplicationServiceImpl implements KnowledgeAiE
         return invoke(request, "LINEAGE");
     }
 
+    @Override
+    public KnowledgeAiExtractionResult extractTags(KnowledgeAiExtractionRequest request) {
+        return invoke(request, "TAG");
+    }
+
     private KnowledgeAiExtractionResult invoke(KnowledgeAiExtractionRequest request, String taskType) {
         validateRequest(request);
         KnowledgeAiWorkerUsecaseSpec spec = resolver.resolve(taskType);

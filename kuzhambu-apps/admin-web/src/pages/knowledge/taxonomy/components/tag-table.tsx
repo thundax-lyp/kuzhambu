@@ -1,5 +1,6 @@
 import { ReloadOutlined } from "@ant-design/icons";
 import { Button, Typography } from "antd";
+import type { ReactNode } from "react";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
@@ -72,6 +73,7 @@ const readSourceLabel = (source?: string | null) => {
 interface TagTableProps {
     canEditTag: boolean;
     loading: boolean;
+    pageActions?: ReactNode;
     query: TagPageQuery;
     tags: TagRecord[];
     totalCount: number;
@@ -86,6 +88,7 @@ interface TagTableProps {
 export const TagTable = ({
     canEditTag,
     loading,
+    pageActions,
     query,
     tags,
     totalCount,
@@ -219,9 +222,12 @@ export const TagTable = ({
             }
             onAdd={onAdd}
             pageActions={
-                <Button icon={<ReloadOutlined />} onClick={onRefresh}>
-                    刷新
-                </Button>
+                <>
+                    {pageActions}
+                    <Button icon={<ReloadOutlined />} onClick={onRefresh}>
+                        刷新
+                    </Button>
+                </>
             }
             filterActive={hasSearch}
             rowKey="id"

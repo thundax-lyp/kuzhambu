@@ -6,6 +6,8 @@ import type {
     TagCategoryPageQuery,
     TagCategoryRecord,
     TagDetailRecord,
+    TagExtractionCandidateRecord,
+    TagExtractionResultRecord,
     TagGovernanceMetricsRecord,
     TagMergePreviewRecord,
     TagPageQuery,
@@ -80,6 +82,25 @@ export interface TagReviewCommand {
     id: string;
     decision: "APPROVE" | "REJECT";
     reviewNote?: string | null;
+}
+
+export interface TagExtractionCommand {
+    sourceContentType: string;
+    sourceContentId: string;
+    contentTitle?: string | null;
+    contentText: string;
+    modelId: number;
+    modelName: string;
+    promptVersionId?: number | null;
+    maxTags?: number | null;
+    allowNewTags?: boolean | null;
+}
+
+export interface TagCandidateApplyCommand {
+    aiCandidateId: number;
+    selectedTags: TagExtractionCandidateRecord[];
+    reviewNote?: string | null;
+    reviewedBy?: number | null;
 }
 
 export interface TagAliasCreateCommand {
@@ -203,6 +224,22 @@ export const reviewTag = (request: TagReviewCommand) => {
     });
 };
 
+export const requestTagExtraction = async (request: TagExtractionCommand) => {
+    const result = await postJson<TagExtractionResultRecord, TagExtractionCommand>(
+        `${API_PREFIX}/tag/extract`,
+        {
+            body: request
+        }
+    );
+    return parseTagExtractionResult(result);
+};
+
+export const applyExtractedTags = (request: TagCandidateApplyCommand) => {
+    return postJson<boolean, TagCandidateApplyCommand>(`${API_PREFIX}/tag/extract/apply`, {
+        body: request
+    });
+};
+
 export const getTagGovernanceMetrics = (request: TagGovernanceMetricsQuery = {}) => {
     return postJson<TagGovernanceMetricsRecord, TagGovernanceMetricsQuery>(
         `${API_PREFIX}/tag/metrics`,
@@ -258,4 +295,25 @@ export const removeSynonym = (request: SynonymRemoveCommand) => {
     return postJson<boolean, SynonymRemoveCommand>(`${API_PREFIX}/synonym/remove`, {
         body: request
     });
+};
+
+const parseTagExtractionResult = (result: TagExtractionResultRecord): TagExtractionResultRecord => {
+    if (!result?.resultPayload) {
+        return result;
+    }
+    try {
+        const payload = JSON.parse(result.resultPayload) as {
+            tags?: TagExtractionCandidateRecord[];
+        };
+        return {
+            ...result,
+            candidates: Array.isArray(payload.tags) ? payload.tags : []
+        };
+    } catch {
+        return {
+            ...result,
+            candidates: [],
+            errorMessage: result.errorMessage ?? "AI 标签候选解析失败"
+        };
+    }
 };

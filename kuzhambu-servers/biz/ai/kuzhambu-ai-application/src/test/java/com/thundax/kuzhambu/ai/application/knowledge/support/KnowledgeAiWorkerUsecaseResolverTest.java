@@ -30,8 +30,17 @@ class KnowledgeAiWorkerUsecaseResolverTest {
     }
 
     @Test
+    void resolveTagTask() {
+        KnowledgeAiWorkerUsecaseSpec spec = resolver.resolve("TAG");
+        assertNotNull(spec);
+        assertEquals("KNOWLEDGE_TAG_EXTRACTION", spec.operation());
+        assertEquals("/internal/ai/knowledge/tag-extraction", spec.workerPath());
+        assertEquals("tags", spec.capability());
+    }
+
+    @Test
     void resolveUnsupportedTaskShouldThrow() {
-        BizException exception = assertThrows(BizException.class, () -> resolver.resolve("TAG"));
-        assertEquals("unsupported knowledge ai worker usecase: taskType=TAG", exception.getMessage());
+        BizException exception = assertThrows(BizException.class, () -> resolver.resolve("UNKNOWN"));
+        assertEquals("unsupported knowledge ai worker usecase: taskType=UNKNOWN", exception.getMessage());
     }
 }
