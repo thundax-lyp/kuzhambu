@@ -8,7 +8,8 @@ public interface RestoreRepository {
 
     RestoreRecord getById(RestoreId id);
 
-    PageResult<RestoreRecord> page(Long backupId, String restoreStatus, Long requesterUserId, int pageNo, int pageSize);
+    PageResult<RestoreRecord> page(
+            Long backupId, String restoreMode, String restoreStatus, Long requesterUserId, int pageNo, int pageSize);
 
     RestoreId insert(RestoreRecord record);
 

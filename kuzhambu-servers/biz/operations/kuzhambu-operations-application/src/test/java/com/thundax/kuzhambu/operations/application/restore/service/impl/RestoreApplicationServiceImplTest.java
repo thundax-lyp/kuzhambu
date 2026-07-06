@@ -103,8 +103,11 @@ class RestoreApplicationServiceImplTest {
                         RestoreId.of(9101L),
                         9001L,
                         9201L,
+                        "REAL",
                         "SUCCEEDED",
                         Boolean.TRUE,
+                        null,
+                        null,
                         null,
                         1001L,
                         new Date(1_719_630_400_000L),
@@ -208,7 +211,12 @@ class RestoreApplicationServiceImplTest {
 
         @Override
         public PageResult<RestoreRecord> page(
-                Long backupId, String restoreStatus, Long requesterUserId, int pageNo, int pageSize) {
+                Long backupId,
+                String restoreMode,
+                String restoreStatus,
+                Long requesterUserId,
+                int pageNo,
+                int pageSize) {
             return PageResult.of(pageNo, pageSize, records.size(), List.copyOf(records.values()));
         }
 

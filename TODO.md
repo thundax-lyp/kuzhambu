@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `05 Operations restore persistence`：补齐恢复新增字段持久化读写
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-BACKUP-RESTORE-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-infra/src/main/java/com/thundax/kuzhambu/operations/infra/restore/persistence/dataobject/RestoreDO.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-infra/src/main/java/com/thundax/kuzhambu/operations/infra/restore/persistence/assembler/RestorePersistenceAssembler.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-infra/src/main/java/com/thundax/kuzhambu/operations/infra/restore/persistence/mapper/RestoreMapper.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-infra/src/main/java/com/thundax/kuzhambu/operations/infra/restore/repository/impl/RestoreRepositoryImpl.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-infra/src/test/java/com/thundax/kuzhambu/operations/infra/restore/repository/impl/RestoreRepositoryImplTest.java`
-    - 处理动作：让恢复新增字段通过 DO、assembler、mapper 和 repository 完整 insert、update、select、page。
-    - 验收点：新增字段可插入、可更新、可查询，并支持 `restoreMode=DRILL` 分页过滤。
-    - 重要度：10/10
-
 - [ ] `06 Operations restore application models`：补齐恢复 application 命令、查询和结果字段
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-BACKUP-RESTORE-CLOSURE.md`

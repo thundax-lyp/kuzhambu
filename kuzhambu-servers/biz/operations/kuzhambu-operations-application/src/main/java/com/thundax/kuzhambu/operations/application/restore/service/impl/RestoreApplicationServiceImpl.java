@@ -18,6 +18,7 @@ import com.thundax.kuzhambu.operations.domain.backup.model.enums.BackupType;
 import com.thundax.kuzhambu.operations.domain.backup.model.valueobject.BackupId;
 import com.thundax.kuzhambu.operations.domain.backup.repository.BackupRepository;
 import com.thundax.kuzhambu.operations.domain.restore.model.entity.RestoreRecord;
+import com.thundax.kuzhambu.operations.domain.restore.model.enums.RestoreMode;
 import com.thundax.kuzhambu.operations.domain.restore.model.enums.RestoreStatus;
 import com.thundax.kuzhambu.operations.domain.restore.model.valueobject.RestoreId;
 import com.thundax.kuzhambu.operations.domain.restore.repository.RestoreRepository;
@@ -75,8 +76,11 @@ public class RestoreApplicationServiceImpl implements RestoreApplicationService 
                 null,
                 command.getBackupId().value(),
                 preRestoreBackupId.value(),
+                RestoreMode.REAL.value(),
                 RestoreStatus.RUNNING.value(),
                 Boolean.TRUE,
+                null,
+                null,
                 null,
                 command.getRequesterUserId(),
                 startedAt,
@@ -105,6 +109,7 @@ public class RestoreApplicationServiceImpl implements RestoreApplicationService 
         effectivePage.normalize();
         PageResult<RestoreRecord> recordPage = restoreRepository.page(
                 query == null ? null : query.getBackupId(),
+                null,
                 query == null ? null : query.getRestoreStatus(),
                 query == null ? null : query.getRequesterUserId(),
                 effectivePage.getPageNo(),
