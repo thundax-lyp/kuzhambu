@@ -124,7 +124,7 @@ INSERT INTO `system_menu` (
     (20, 16, 38, 39, '问答调试', 'discovery:qa:view', 70, 'VISIBLE', '{"icon":"logs"}', '/discovery/qa-admin', '_self', '问答上下文调试'),
     (21, NULL, 41, 52, '运营运维', 'operations', 70, 'VISIBLE', '{"icon":"dashboard"}', '/operations', '_self', '运营运维根菜单'),
     (22, 21, 42, 43, '运营看板', 'operations:dashboard:view', 70, 'VISIBLE', '{"icon":"dashboard"}', '/operations/dashboard', '_self', '内容、AI、搜索和问答统计'),
-    (23, 21, 44, 45, '报表记录', 'operations:report:view,operations:report:edit', 65, 'VISIBLE', '{"icon":"submissions"}', '/operations/reports', '_self', '周报月报生成记录'),
+    (23, 21, 44, 45, '报表记录', 'operations:report:view,operations:report:edit', 65, 'HIDDEN', '{"icon":"submissions"}', NULL, '_self', '周报月报生成记录'),
     (24, 21, 46, 47, '任务台账', 'operations:task:view', 60, 'VISIBLE', '{"icon":"logs"}', '/operations/tasks', '_self', '长任务和批量操作运行状态'),
     (25, 21, 48, 49, '备份恢复', 'operations:backup:view,operations:backup:execute,operations:restore:view,operations:restore:execute', 55, 'VISIBLE', '{"icon":"storage"}', '/operations/backup-restore', '_self', '备份台账、手动备份和恢复入口'),
     (26, 21, 50, 51, '清理维护', 'operations:cleanup:view,operations:cleanup:execute', 50, 'VISIBLE', '{"icon":"menus"}', '/operations/cleanup', '_self', '维护清理任务入口'),
@@ -293,7 +293,6 @@ INSERT IGNORE INTO `system_role_menu` (`role_id`, `menu_id`) VALUES
     (5, 20),
     (5, 21),
     (5, 22),
-    (5, 23),
     (5, 24),
     (5, 27),
     (5, 28),
@@ -316,7 +315,6 @@ INSERT IGNORE INTO `system_role_menu` (`role_id`, `menu_id`) VALUES
     (6, 19),
     (6, 21),
     (6, 22),
-    (6, 23),
     (6, 24)
 ;
 

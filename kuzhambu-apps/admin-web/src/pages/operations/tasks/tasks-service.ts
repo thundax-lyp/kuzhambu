@@ -1,6 +1,6 @@
 import { postJson } from "@/api/http";
 import type { Page, PageQuery } from "@/types/page";
-import type { OperationsHealthSummaryRecord, OperationsTaskRecord } from "./tasks-types";
+import type { OperationsTaskRecord } from "./tasks-types";
 
 export interface OperationsTaskPageQuery {
     sourceDomain?: string | null;
@@ -11,15 +11,6 @@ export interface OperationsTaskPageQuery {
 export interface OperationsTaskDetailCommand {
     snapshotId: number;
 }
-
-export const getHealthSummary = () => {
-    return postJson<OperationsHealthSummaryRecord[], Record<string, never>>(
-        "/operations/health/summary",
-        {
-            body: {}
-        }
-    );
-};
 
 export const pageTasks = (query: PageQuery<OperationsTaskPageQuery> = {}) => {
     return postJson<Page<OperationsTaskRecord>, PageQuery<OperationsTaskPageQuery>>(

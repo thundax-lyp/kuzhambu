@@ -11,8 +11,10 @@ import com.thundax.kuzhambu.operations.application.health.service.HealthCheckApp
 import com.thundax.kuzhambu.operations.interfaces.admin.health.assembler.OperationsHealthInterfaceAssembler;
 import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.request.OperationsHealthPageRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.request.OperationsHealthSummaryRequest;
+import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.request.OperationsHealthTrendRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.response.OperationsHealthPageResponse;
 import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.response.OperationsHealthSummaryResponse;
+import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.response.OperationsHealthTrendResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -54,5 +56,15 @@ public class OperationsHealthAdminController {
                         OperationsHealthInterfaceAssembler.toQuery(request),
                         PageInterfaceAssembler.toPageQuery(request)),
                 OperationsHealthInterfaceAssembler::toResponse);
+    }
+
+    @Operation(summary = "查询健康趋势", description = "operations:health:view")
+    @HasPermission("operations:health:view")
+    @IgnoreSysLogger
+    @PostMapping("trend")
+    public List<OperationsHealthTrendResponse> trend(@Valid @RequestBody OperationsHealthTrendRequest request) {
+        return healthCheckApplicationService.trend(OperationsHealthInterfaceAssembler.toQuery(request)).stream()
+                .map(OperationsHealthInterfaceAssembler::toResponse)
+                .collect(Collectors.toList());
     }
 }

@@ -193,7 +193,6 @@
         "搜索问答/问答调试",
         "运营运维",
         "运营运维/运营看板",
-        "运营运维/报表记录",
         "运营运维/任务台账",
         "审计中心",
         "审计中心/审计日志",
@@ -224,7 +223,6 @@
         "搜索问答/智能问答",
         "运营运维",
         "运营运维/运营看板",
-        "运营运维/报表记录",
         "运营运维/任务台账"
       ]
     }
@@ -797,8 +795,9 @@
           "name": "报表记录",
           "perms": ["operations:report:view", "operations:report:edit"],
           "priority": 65,
+          "visibility": "HIDDEN",
           "icon": "submissions",
-          "url": "/operations/reports",
+          "url": null,
           "remarks": "周报月报生成记录"
         },
         {

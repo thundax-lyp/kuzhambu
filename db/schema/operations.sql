@@ -100,11 +100,15 @@ CREATE TABLE IF NOT EXISTS `operations_health_check` (
     `health_status` varchar(16) NOT NULL,
     `latency_ms` int DEFAULT NULL,
     `message` varchar(1024) DEFAULT NULL,
+    `probe_source` varchar(64) NOT NULL DEFAULT 'LOCAL',
+    `probe_target` varchar(128) DEFAULT NULL,
+    `details_json` text DEFAULT NULL,
     `checked_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_operations_health_check_id` (`check_id`),
     KEY `idx_operations_health_component` (`component`, `checked_at`),
-    KEY `idx_operations_health_status` (`health_status`, `checked_at`)
+    KEY `idx_operations_health_status` (`health_status`, `checked_at`),
+    KEY `idx_operations_health_probe` (`probe_source`, `probe_target`, `checked_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='运维健康检查记录表';
 
 CREATE TABLE IF NOT EXISTS `operations_long_task_snapshot` (

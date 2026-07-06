@@ -1,12 +1,3 @@
-export interface OperationsHealthSummaryRecord {
-    checkId: number;
-    component?: string | null;
-    healthStatus?: string | null;
-    latencyMs?: number | null;
-    message?: string | null;
-    checkedAt?: string | null;
-}
-
 export interface OperationsTaskRecord {
     snapshotId: number;
     sourceDomain?: string | null;

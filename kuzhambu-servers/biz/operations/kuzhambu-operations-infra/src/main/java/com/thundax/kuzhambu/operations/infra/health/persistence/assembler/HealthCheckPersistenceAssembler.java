@@ -20,6 +20,9 @@ public final class HealthCheckPersistenceAssembler {
                         entity.getHealthStatus(),
                         entity.getLatencyMs(),
                         entity.getMessage(),
+                        entity.getProbeSource(),
+                        entity.getProbeTarget(),
+                        entity.getDetailsJson(),
                         entity.getCheckedAt());
     }
 
@@ -32,6 +35,9 @@ public final class HealthCheckPersistenceAssembler {
                         dataObject.getHealthStatus(),
                         dataObject.getLatencyMs(),
                         dataObject.getMessage(),
+                        dataObject.getProbeSource(),
+                        dataObject.getProbeTarget(),
+                        dataObject.getDetailsJson(),
                         dataObject.getCheckedAt());
     }
 
