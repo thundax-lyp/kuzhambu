@@ -19,6 +19,7 @@ import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.response
 import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.response.WangqiDocumentVersionResponse;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
+import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
@@ -64,9 +65,10 @@ public class WangqiDocumentAdminController {
     @SysLogger(value = "分页查询")
     @PostMapping("page")
     public PageResponse<WangqiDocumentResponse> page(@Valid @RequestBody WangqiDocumentRequest request) {
+        var query = WangqiDocumentInterfaceAssembler.toQuery(request);
+        query.setOperatorPermissions(KuzhambuContextHolder.currentAuthorities());
         return PageResponseHelper.fromPageResult(
-                service.page(
-                        WangqiDocumentInterfaceAssembler.toQuery(request), PageInterfaceAssembler.toPageQuery(request)),
+                service.page(query, PageInterfaceAssembler.toPageQuery(request)),
                 WangqiDocumentInterfaceAssembler::toResponse);
     }
 
@@ -86,7 +88,9 @@ public class WangqiDocumentAdminController {
     @SysLogger(value = "时间线")
     @PostMapping("timeline/list")
     public List<WangqiDocumentResponse> listTimeline(@Valid @RequestBody WangqiDocumentRequest request) {
-        return service.listTimeline(WangqiDocumentInterfaceAssembler.toQuery(request)).stream()
+        var query = WangqiDocumentInterfaceAssembler.toQuery(request);
+        query.setOperatorPermissions(KuzhambuContextHolder.currentAuthorities());
+        return service.listTimeline(query).stream()
                 .map(WangqiDocumentInterfaceAssembler::toResponse)
                 .toList();
     }

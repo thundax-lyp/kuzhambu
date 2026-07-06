@@ -101,6 +101,23 @@ public final class OperationsCleanupInterfaceAssembler {
                 .requesterUserId(result.getRequesterUserId())
                 .startedAt(result.getStartedAt())
                 .completedAt(result.getCompletedAt())
+                .items(
+                        result.getItems() == null
+                                ? java.util.List.of()
+                                : result.getItems().stream()
+                                        .map(item -> OperationsCleanupDetailResponse.Item.builder()
+                                                .cleanupItemId(
+                                                        item.getCleanupItemId() == null
+                                                                ? null
+                                                                : item.getCleanupItemId()
+                                                                        .value())
+                                                .targetType(item.getTargetType())
+                                                .targetId(item.getTargetId())
+                                                .itemStatus(item.getItemStatus())
+                                                .failureReason(item.getFailureReason())
+                                                .processedAt(item.getProcessedAt())
+                                                .build())
+                                        .toList())
                 .build();
     }
 

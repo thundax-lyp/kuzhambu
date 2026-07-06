@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
+import com.thundax.kuzhambu.classics.application.content.support.ClassicsContentPermissionSupport;
 import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationItemResult;
 import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationResult;
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
@@ -139,6 +140,8 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
     }
 
     private ShareLinkCreateResult createLink(ShareLinkCreateCommand command, boolean allowPrivateContent) {
+        requireSharePermission(
+                command.getTargets(), command.getOperatorPermissions(), command.getVisibility(), allowPrivateContent);
         String shareToken = shareTokenGenerator.generate();
         ClassicsShareLink link = command.toLink(shareToken, shareTokenHasher.hash(shareToken));
         if (link.getIssuedAt() == null) {
@@ -195,17 +198,27 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
                         ClassicsBatchOperationItemResult.failure(contentType, contentId, "DUPLICATE_TARGET", "重复分享目标"));
                 continue;
             }
+            if (!canShareTarget(
+                    target,
+                    command.getOperatorPermissions(),
+                    command.getVisibility(),
+                    command.isPrivateContentConfirmed())) {
+                failures.add(ClassicsBatchOperationItemResult.failure(
+                        contentType, contentId, "PERMISSION_DENIED", "PERMISSION_DENIED"));
+                continue;
+            }
             try {
-                ShareLinkCreateResult result = createLink(
-                        new ShareLinkCreateCommand(
-                                batchTitle(command.getTitlePrefix(), target),
-                                command.getVisibility(),
-                                command.getStatus(),
-                                command.getVisibilityRiskStatus(),
-                                null,
-                                command.getExpiresAt(),
-                                List.of(target)),
-                        command.isPrivateContentConfirmed());
+                ShareLinkCreateCommand linkCommand = new ShareLinkCreateCommand(
+                        batchTitle(command.getTitlePrefix(), target),
+                        command.getVisibility(),
+                        command.getStatus(),
+                        command.getVisibilityRiskStatus(),
+                        null,
+                        command.getExpiresAt(),
+                        List.of(target));
+                linkCommand.setOperatorUserId(command.getOperatorUserId());
+                linkCommand.setOperatorPermissions(command.getOperatorPermissions());
+                ShareLinkCreateResult result = createLink(linkCommand, command.isPrivateContentConfirmed());
                 successes.add(ClassicsBatchOperationItemResult.success(
                         contentType,
                         contentId,
@@ -559,6 +572,44 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
         }
     }
 
+    private void requireSharePermission(
+            List<ShareTargetCreateCommand> targets,
+            Set<String> operatorPermissions,
+            ClassicsShareVisibility shareVisibility,
+            boolean allowPrivateContent) {
+        List<ShareTargetCreateCommand> targetCommands = targets == null ? Collections.emptyList() : targets;
+        for (ShareTargetCreateCommand target : targetCommands) {
+            if (!canShareTarget(target, operatorPermissions, shareVisibility, allowPrivateContent)) {
+                throw permissionDenied();
+            }
+        }
+    }
+
+    private boolean canShareTarget(
+            ShareTargetCreateCommand target,
+            Set<String> operatorPermissions,
+            ClassicsShareVisibility shareVisibility,
+            boolean allowPrivateContent) {
+        if (target == null || target.getContentType() == null || target.getContentId() == null) {
+            return true;
+        }
+        Versionable content =
+                loadContent(target.getContentType(), target.getContentId().value());
+        if (content == null) {
+            throw shareContentNotFound();
+        }
+        if (!requiresPrivateSharePermission(content, shareVisibility, allowPrivateContent)) {
+            return true;
+        }
+        return ClassicsContentPermissionSupport.canShare(content.contentType(), operatorPermissions);
+    }
+
+    private static boolean requiresPrivateSharePermission(
+            Versionable content, ClassicsShareVisibility shareVisibility, boolean allowPrivateContent) {
+        return (shareVisibility != ClassicsShareVisibility.PUBLIC || allowPrivateContent)
+                && visibilityOf(content) != ClassicsSharedContentVisibility.PUBLIC;
+    }
+
     private String batchTitle(String titlePrefix, ShareTargetCreateCommand target) {
         Versionable content = target == null || target.getContentType() == null || target.getContentId() == null
                 ? null
@@ -675,6 +726,10 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
 
     private static BizException privateContentCannotBePublicShared() {
         return new BizException("私有古籍内容不允许公开分享");
+    }
+
+    private static BizException permissionDenied() {
+        return new BizException("PERMISSION_DENIED");
     }
 
     private static BizException sortEmptyInput() {

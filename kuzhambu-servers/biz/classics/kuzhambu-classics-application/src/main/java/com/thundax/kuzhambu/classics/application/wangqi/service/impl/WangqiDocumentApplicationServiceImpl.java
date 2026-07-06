@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.classics.application.wangqi.service.impl;
 
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
+import com.thundax.kuzhambu.classics.application.content.support.ClassicsContentPermissionSupport;
 import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationItemResult;
 import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationResult;
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
@@ -38,6 +39,7 @@ import com.thundax.kuzhambu.storage.facade.response.UploadStorageFacadeResponse;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -70,6 +72,9 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
 
     @Override
     public PageResult<WangqiDocument> page(WangqiDocumentPageQuery query, PageQuery page) {
+        if (hasPermissionContext(query) && !canView(query.getOperatorPermissions())) {
+            return PageResult.of(page.getPageNo(), page.getPageSize(), 0, List.of());
+        }
         return repository.page(
                 query == null ? null : query.getKeyword(),
                 query == null || query.getVisibility() == null
@@ -82,6 +87,9 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
 
     @Override
     public List<WangqiDocument> listTimeline(WangqiDocumentPageQuery query) {
+        if (hasPermissionContext(query) && !canView(query.getOperatorPermissions())) {
+            return List.of();
+        }
         return repository.listTimeline(
                 query == null ? null : query.getKeyword(),
                 query == null || query.getVisibility() == null
@@ -183,6 +191,9 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void changeVisibility(WangqiDocumentVisibilityCommand command) {
+        if (hasPermissionContext(command.getOperatorPermissions()) && !canEdit(command.getOperatorPermissions())) {
+            throw permissionDenied();
+        }
         WangqiDocument document = requireDocument(WangqiDocumentIdCodec.toDomain(command.getId()));
         changeExistingVisibility(document, command.getVisibility());
     }
@@ -191,6 +202,13 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
     @Transactional(rollbackFor = Exception.class)
     public ClassicsBatchOperationResult batchChangeVisibility(
             List<WangqiDocumentId> ids, WangqiDocumentVisibility visibility) {
+        return batchChangeVisibility(ids, visibility, null);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ClassicsBatchOperationResult batchChangeVisibility(
+            List<WangqiDocumentId> ids, WangqiDocumentVisibility visibility, Set<String> operatorPermissions) {
         if (ids == null || ids.isEmpty()) {
             return ClassicsBatchOperationResult.empty();
         }
@@ -198,6 +216,14 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
         List<ClassicsBatchOperationItemResult> failures = new ArrayList<>();
         for (WangqiDocumentId id : ids) {
             Long contentId = id == null ? null : id.value();
+            if (hasPermissionContext(operatorPermissions) && !canEdit(operatorPermissions)) {
+                failures.add(ClassicsBatchOperationItemResult.failure(
+                        ClassicsContentType.WANGQI_DOCUMENT.value(),
+                        contentId,
+                        "PERMISSION_DENIED",
+                        "PERMISSION_DENIED"));
+                continue;
+            }
             try {
                 WangqiDocument document = id == null ? null : get(id);
                 if (document == null) {
@@ -369,5 +395,25 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
 
     private static String ownerId(WangqiDocumentId documentId) {
         return String.valueOf(documentId.value());
+    }
+
+    private static boolean hasPermissionContext(WangqiDocumentPageQuery query) {
+        return query != null && hasPermissionContext(query.getOperatorPermissions());
+    }
+
+    private static boolean hasPermissionContext(Set<String> operatorPermissions) {
+        return operatorPermissions != null;
+    }
+
+    private static boolean canView(Set<String> operatorPermissions) {
+        return ClassicsContentPermissionSupport.canView(ClassicsContentType.WANGQI_DOCUMENT, operatorPermissions);
+    }
+
+    private static boolean canEdit(Set<String> operatorPermissions) {
+        return ClassicsContentPermissionSupport.canEdit(ClassicsContentType.WANGQI_DOCUMENT, operatorPermissions);
+    }
+
+    private static BizException permissionDenied() {
+        return new BizException("PERMISSION_DENIED");
     }
 }

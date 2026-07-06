@@ -7,6 +7,7 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryTransl
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisibility;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisualAssetStatus;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,4 +28,30 @@ public class SancaiEntryPageQuery {
     private SancaiEntryVisualAssetStatus visualAssetStatus;
     private SancaiEntryRefinementStatus refinementStatus;
     private SortDirection sortDirection = SortDirection.ASC;
+    private Set<String> operatorPermissions;
+
+    public SancaiEntryPageQuery(
+            Long categoryId,
+            Long volumeId,
+            String keyword,
+            SancaiEntryLifecycleStatus lifecycleStatus,
+            SancaiEntryVisibility visibility,
+            SancaiEntryTranslationStatus translationStatus,
+            SancaiEntryImageStatus imageStatus,
+            SancaiEntryVisualAssetStatus visualAssetStatus,
+            SancaiEntryRefinementStatus refinementStatus,
+            SortDirection sortDirection) {
+        this(
+                categoryId,
+                volumeId,
+                keyword,
+                lifecycleStatus,
+                visibility,
+                translationStatus,
+                imageStatus,
+                visualAssetStatus,
+                refinementStatus,
+                sortDirection,
+                null);
+    }
 }

@@ -9,6 +9,7 @@ import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsExportSc
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsExportStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisibilityRiskStatus;
 import java.util.Date;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -32,6 +33,40 @@ public class ContentExportCommand {
     private int assetCount;
     private SancaiVisibilityRiskStatus visibilityRiskStatus;
     private boolean contentChanged;
+    private Long operatorUserId;
+    private Set<String> operatorPermissions;
+
+    public ContentExportCommand(
+            ClassicsExportKind exportKind,
+            ClassicsContentType contentType,
+            ClassicsExportFormat exportFormat,
+            ClassicsExportScopeType scopeType,
+            String scopeJson,
+            Date requestedAt,
+            Date expiresAt,
+            ClassicsExportStatus status,
+            StorageObjectId storageObjectId,
+            int itemCount,
+            int assetCount,
+            SancaiVisibilityRiskStatus visibilityRiskStatus,
+            boolean contentChanged) {
+        this(
+                exportKind,
+                contentType,
+                exportFormat,
+                scopeType,
+                scopeJson,
+                requestedAt,
+                expiresAt,
+                status,
+                storageObjectId,
+                itemCount,
+                assetCount,
+                visibilityRiskStatus,
+                contentChanged,
+                null,
+                null);
+    }
 
     public ClassicsContentExportJob toEntity() {
         return new ClassicsContentExportJob(

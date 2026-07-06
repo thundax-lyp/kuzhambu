@@ -47,11 +47,13 @@
 - 三才图会视觉资产 AI 闭环已补齐：页面内已接入 `image_analysis / fusion / visual / image_gen` 单条任务入口、任务状态轮询、失败提示与重试入口；候选区已接通按 `objectId` 限定的候选读取、编辑、应用、拒绝和刷新联动；`image_gen` 候选应用后的 `artifact -> Storage -> 新 version -> 页面预览/下载` 链路已稳定。
 - 三才图会视觉资产批量闭环已补齐：页面支持批量发起图片理解与视觉资产处理任务，后端已提供批量创建、分页查询、取消、失败聚合和已完成结果保留语义；前后端与 workers 已补齐对应回归测试。
 - 三才图会图片治理闭环已补齐：后端已支持图片上传、删除、当前图切换、同条目排序和全部图片 snapshot；Admin Web 已支持配图列表管理、原图上传、删除、当前图选择、缩略预览和放大浏览；Portal 分享和 Workers 静态展示/导出均使用分享或 payload 内的多图资源。
-- 结合需求文档、设计文档和代码现状，Classics 当前已实现“内容维护 + 候选确认 + 任务型 AI 入口 + 批量视觉资产治理 + 导出/批量分享治理 + 批量公开/私有状态修改”的主干闭环；细粒度权限过滤和更复杂的候选流式治理仍保留在未完成项中。
+- Classics/System 权限过滤闭环已补齐：三类内容的 view/edit/export/share 权限在后端查询、详情、批量状态、分享和导出入口形成一致约束；Admin Web 三类 Classics 页面会按同一权限口径禁用分享、导出、批量公开和批量私有控件，并继续展示 `PERMISSION_DENIED` 批量失败项。
+- Classics 清理入口已对接 Operations cleanup：应用层可发现并清理过期导出任务、过期分享链接和草稿分享链接；导出清理会将任务标记为过期，分享/草稿清理会将分享记录标记为过期，底层产物对象生命周期继续复用 Storage 自动 orphan 清理。
+- 结合需求文档、设计文档和代码现状，Classics 当前已实现“内容维护 + 候选确认 + 任务型 AI 入口 + 批量视觉资产治理 + 导出/批量分享治理 + 批量公开/私有状态修改 + 细粒度权限过滤 + 清理协作”的主干闭环；更复杂的候选流式治理仍保留在后续项中。
 
 未完成：
 
-- 复杂业务闭环仍未完全接通：细粒度权限过滤和部分确认流程仍需联调。
+- 复杂业务闭环仍未完全接通：流式 AI 候选过程展示、跨内容批量候选治理和私有分享访问分支仍需后续专项补齐。
 
 ## Requirement Coverage Matrix
 
@@ -73,13 +75,13 @@
 | 视觉资产历史和当前使用版本选择 | 已完成 | 视觉资产持久化、列表查询、当前版本切换服务、Admin API 和 Admin Web 已接通；条目详情内可查看历史版本、切换当前使用版本并保存基础字段 | 无 | Classics, Admin Web |
 | 多选条目批量视觉资产处理 | 已完成 | Admin Web 已支持多选条目批量发起图片理解与视觉资产处理任务，并展示成功数、失败数、失败原因、运行中状态和取消入口；后端已提供批量创建、分页、取消、失败聚合和已完成结果保留语义 | 无 | Classics, AI |
 | 摘要、标签和问答对内联维护 | 部分完成 | 主表摘要、通用内容 tag/qa CRUD 已实现；手工标签绑定、删除标签同步和 AI 标签确认回写已接通 Knowledge 内容引用闭环；三才图会、王圻文档、明代习俗页面已接入 `summary / tags / qa` 内联维护入口，含 AI 候选应用后的刷新联动 | 候选预览与更多确认入口仍未完整对齐 | Classics, Knowledge, AI |
-| 分页、筛选、当前卷搜索和多选 | 部分完成 | 条目分页、筛选、卷过滤、排序查询已实现；Admin Web 已支持门类/卷筛选、关键词搜索、生命周期筛选、分页、pageSize 切换、批量视觉资产任务、批量分享和当前页多选批量公开/私有，并展示批量操作成功数、失败数和失败原因 | 细粒度权限过滤和更多跨页多选策略未完成 | Classics, Admin Web |
+| 分页、筛选、当前卷搜索和多选 | 部分完成 | 条目分页、筛选、卷过滤、排序查询已实现；Admin Web 已支持门类/卷筛选、关键词搜索、生命周期筛选、分页、pageSize 切换、批量视觉资产任务、批量分享和当前页多选批量公开/私有，并展示批量操作成功数、失败数和失败原因；权限不足时相关分享、导出、批量公开/私有控件已禁用 | 更多跨页多选策略未完成 | Classics, Admin Web |
 | 生命周期：草稿、发布、归档、恢复 | 部分完成 | 状态枚举与变更能力在服务层已有实现；Admin Web 已支持按生命周期筛选条目 | 管理接口未完整暴露、恢复策略与版本链路未闭环；本轮页面未提供生命周期编辑 | Classics, Admin Web |
-| 公开和私有可见性管理 | 部分完成 | 条目可见性字段、变更能力已落地；Admin Web 已支持单条目公开状态编辑保存和当前页多选批量公开/私有；Java interface 已通过统一入口分发到三类内容应用服务，并返回批量结果和失败明细 | 细粒度权限过滤调用点仍未收口；本轮不重算历史分享快照，`classics_share_target.content_visibility_snapshot` 继续表示创建分享时的内容可见性快照 | Classics, Admin Web, System |
+| 公开和私有可见性管理 | 已完成 | 条目可见性字段、变更能力已落地；Admin Web 已支持单条目公开状态编辑保存和当前页多选批量公开/私有；Java interface 已通过统一入口分发到三类内容应用服务，并返回批量结果和失败明细；后端按三类内容 edit 权限过滤批量状态修改，前端按同一口径禁用控件 | 无；本轮不重算历史分享快照，`classics_share_target.content_visibility_snapshot` 继续表示创建分享时的内容可见性快照 | Classics, Admin Web, System |
 | 版本历史、版本对比和历史恢复 | 已完成 | 后端已暴露三才图会条目版本列表、版本详情和历史恢复端点，并校验版本归属；恢复采用追加式版本语义，目标卷内排序值使用当前 `max(priority) + 1`；Admin Web 已提供版本历史列表、当前/历史字段对比、恢复确认、恢复后详情刷新和成功提示 | 无 | Classics, Admin Web |
 | CSV、JSON、HTML 设定集导出 | 已完成 | 导出任务表、异步接入决策、通用创建能力、worker 渲染产物落库与下载闭环已打通，前端可查看任务状态与下载成功产物；Sancai JSON/ZIP 保留 `items[].images[]`，HTML 输出图片元数据，CSV 仍按内容条目一行输出；底层产物对象生命周期已复用 Storage 自动 orphan 清理 | 无 | Classics, Worker, Storage |
 | HTML 视觉资产设定集导出 | 已完成 | 视觉资产字段与导出任务结构已覆盖，worker 渲染产物已写入 Storage，任务状态与下载入口已闭环；底层产物对象生命周期已复用 Storage 自动 orphan 清理 | 无 | Classics, Worker, Storage |
-| 导出记录查看、下载、删除和过期 | 部分完成 | 导出任务列表、下载链接、状态与过期时间透传，后端支持过期任务 404、前端展示“已过期”并禁用下载，产物已落库存储并可读取；底层产物对象生命周期已复用 Storage 自动 orphan 清理 | 删除、批量清理策略与权限过滤 API 未形成闭环 | Classics, System, Storage |
+| 导出记录查看、下载、删除和过期 | 部分完成 | 导出任务列表、下载链接、状态与过期时间透传，后端支持过期任务 404、前端展示“已过期”并禁用下载，产物已落库存储并可读取；过期导出任务已可被 Operations cleanup 发现并标记为过期；底层产物对象生命周期已复用 Storage 自动 orphan 清理 | 用户主动删除导出记录和更细的批量管理策略未形成闭环 | Classics, System, Storage |
 | 静态展示内容生成 | 部分完成 | 展示任务记录、策略与 worker 产物落库、状态回写和下载能力已完成 | 列表搜索、筛选与回源流程边界未完整 | Classics, Worker, Storage |
 | 静态展示包含私有内容确认 | 已完成 | 风险状态字段与展示任务模型已具备，静态展示所需的风险信息可直接传递 | 无 | Classics |
 
@@ -94,7 +96,7 @@
 | AI 摘要、标签、问答对生成入口和候选确认 | 部分完成 | Admin Web 编辑页已接入 AI 候选确认面板，可读取 `PENDING` 候选、编辑 payload、应用或拒绝候选；后端已接通候选应用后的正文摘要/标签/问答对写回、版本追加与 AI 候选状态回写 | AI 触发生成入口、流式过程展示和候选来源侧任务治理未实现 | Classics, AI |
 | 文档搜索和时间线浏览 | 已完成 | 文档搜索与时间线接口已实现；时间线支持关键词、可见性和排序入参；Admin Web 已提供列表搜索、筛选和时间线查询闭环 | 无 | Classics, Admin Web |
 | 列表标题、标签预览、摘要预览和时间信息 | 已完成 | 详情字段和查询可返回标题、摘要、时间、可见性、版本状态等信息；Admin Web 已展示列表摘要和时间信息 | 无 | Classics, Admin Web |
-| 批量修改公开或私有状态 | 部分完成 | 可见性变更能力已存在；应用层已补齐批量结果和失败原因模型；统一后端入口已分发到 Wangqi 应用服务，Admin Web 已支持当前页选中文档批量公开/私有并展示失败明细 | 细粒度权限过滤未完成 | Classics, Admin Web, System |
+| 批量修改公开或私有状态 | 已完成 | 可见性变更能力已存在；应用层已补齐批量结果和失败原因模型；统一后端入口已分发到 Wangqi 应用服务，Admin Web 已支持当前页选中文档批量公开/私有并展示失败明细；后端权限过滤与前端控件禁用已按 `classics:wangqi:edit` 对齐 | 无 | Classics, Admin Web, System |
 | 单文档问答入口 | 部分完成 | 问答入口需求已记录 | Discovery/AI 回答调用点及结果落库未实现 | Classics, Discovery, AI |
 | 版本历史、版本对比和历史恢复 | 已完成 | Wangqi 后端已暴露版本列表、版本详情和历史恢复端点，并校验版本归属；恢复采用追加式版本语义；Admin Web 已提供版本历史列表、当前/历史字段对比和恢复动作 | 无 | Classics, Admin Web |
 | 筛选结果或选中文档导出 | 已完成 | 通用导出任务创建能力已实现，字段模型完整；Wangqi 导出快照 payload 已接入 Render Worker，CSV/JSON/HTML/ZIP 产物可写入 Storage 并下载 | 无 | Classics, Worker, Storage |
@@ -109,7 +111,7 @@
 | 详情聚合查询 | 已完成 | 详情查询和关键词查询已实现；Admin Web 已组合详情、关键词和正文预览信息 | 无 | Classics, Admin Web |
 | Markdown 安全渲染 | 已完成 | `content_format` 与内容字段模型可追踪；Admin Web 已封装富文本展示控件，使用 Markdown/HTML 渲染与内容清洗策略展示正文 | 无 | Classics, Admin Web |
 | 标签云筛选 | 部分完成 | 通用标签模型、关键词云接口与状态筛选已实现；关键词云响应固定为 `List<KeywordCloudItem>`，字段为 `keyword` 和 `count` | 基于统一标签的真实标签云聚合、标签云权限过滤与输出限缩未实现 | Classics, Knowledge, System |
-| 批量修改公开或私有状态 | 部分完成 | 可见性枚举与变更能力已具备；应用层已补齐批量结果和失败原因模型；统一后端入口已分发到 Ming Customs 应用服务，Admin Web 已支持当前页选中习俗批量公开/私有并展示失败明细 | 细粒度权限过滤未完成 | Classics, Admin Web, System |
+| 批量修改公开或私有状态 | 已完成 | 可见性枚举与变更能力已具备；应用层已补齐批量结果和失败原因模型；统一后端入口已分发到 Ming Customs 应用服务，Admin Web 已支持当前页选中习俗批量公开/私有并展示失败明细；后端权限过滤与前端控件禁用已按 `classics:mingcustoms:edit` 对齐 | 无 | Classics, Admin Web, System |
 | 摘要、标签和问答对维护 | 部分完成 | 通用内容 tag/qa API 已可复用，摘要字段已覆盖；Admin Web 编辑页已接入 AI 候选确认面板、标签治理面板和问答对治理面板；通用标签写路径已接通 Knowledge 协作与内容引用同步 | 版本历史链路尚未覆盖明代习俗，问答对版本化确认仍未补齐 | Classics, Knowledge |
 | 版本历史、版本对比和历史恢复 | 部分完成 | 通用版本模型已建 | 版本对比接口与恢复生成策略未实现 | Classics |
 | 分类、标签、筛选结果或选中条目导出 | 已完成 | 任务创建与导出参数已支持；Ming Customs 导出快照 payload 已接入 Render Worker，CSV/JSON/HTML/ZIP 产物可写入 Storage 并下载 | 无 | Classics, Worker, Storage |
@@ -123,7 +125,7 @@
 | 单链接多个内容 | 部分完成 | 目标关系支持一对多，创建流程可写入多个 target；Portal 详情按 target 展示多内容快照和资源对象 | target 重复去重与回写策略未实现 | Classics, Portal Web |
 | 批量创建分享链接 | 已完成 | 后端已提供批量分享创建接口，每个 target 创建独立 share link 和 share target；返回成功数、失败数和每条失败原因；Admin Web 三类内容页已接入当前页多选批量分享并展示聚合结果；Portal Web 复用现有读取状态语义 | 无 | Classics, Admin Web, Portal Web |
 | 分享链接公开或私有 | 部分完成 | 可见性字段与管理接口（创建/状态变更）已实现；批量分享创建沿用 `privateContentConfirmed` 私有内容确认语义；Portal 公开分享访问无需登录，过期、撤销、不存在统一按 404 处理 | 私有分享访问分支、权限过滤与管理侧恢复策略未实现 | Classics, System |
-| 过期时间、撤销和恢复 | 部分完成 | 过期时间与状态更新字段已实现 | 过期清理、恢复/恢复到位自动流未实现 | Classics |
+| 过期时间、撤销和恢复 | 部分完成 | 过期时间与状态更新字段已实现；过期分享和草稿分享已可被 Operations cleanup 发现并标记为过期 | 恢复/恢复到位自动流未实现 | Classics |
 | 只读访问页 | 已完成 | Portal 已提供公开分享列表、详情和分享资源读取端点；Portal Web 已提供首页、分享列表和分享详情路由，展示固化快照、Wangqi 原始文件资源和 Sancai 图片资源 | 无 | Classics, System, Portal Web |
 | 访问统计 | 部分完成 | 访问记录实体与应用服务接口（写入/分页查询）已实现；分享资源读取成功会写入访问记录 | 分享详情浏览统计和对外统计 API 未接通 | Classics |
 | 分享完整内容快照 | 已完成 | 分享创建时先确保正式内容版本，再将 `classics_content_version.snapshot_json` 固化到 `classics_share_target.content_snapshot_json`；target 记录 `content_version_id/content_version_no`；三类正式版本快照 schema 已沉淀到 `docs/20-interfaces/CLASSICS-CONTENT-VERSION-SNAPSHOT-INTERFACE.md`；Sancai 快照包含全部图片资源 ID，使用 `currentUsed` 标识当前图，Portal 响应层动态补资源对象 | 无 | Classics |
@@ -134,8 +136,8 @@
 
 | 需求项 | 状态 | 已完成部分 | 未完成部分 | 责任域 |
 | --- | --- | --- | --- | --- |
-| 权限不足用户看不到私有内容 | 部分完成 | 可见性字段与规则已设计 | 权限策略来自 System，调用点和过滤实现未完成 | Classics, System |
-| 批量状态修改成功数、失败数和失败原因 | 部分完成 | 通用批量操作结果模型已落地，批量分享与批量公开/私有状态修改均已返回成功数、失败数和失败原因；三类内容应用层批量可见性修改已具备同一结果语义，Java interface 与 Admin Web 当前页多选入口已完成 | 细粒度权限过滤仍未收口 | Classics, Admin Web |
+| 权限不足用户看不到私有内容 | 已完成 | 可见性字段与规则已设计；三类内容查询、详情、导出、分享与批量状态入口已按 System 权限上下文过滤或拒绝；Admin Web 控件状态已按后端权限口径对齐 | 无 | Classics, System |
+| 批量状态修改成功数、失败数和失败原因 | 已完成 | 通用批量操作结果模型已落地，批量分享与批量公开/私有状态修改均已返回成功数、失败数和失败原因；三类内容应用层批量可见性修改已具备同一结果语义，Java interface 与 Admin Web 当前页多选入口已完成；权限不足项以 `PERMISSION_DENIED` 进入失败明细并可在前端展示 | 无 | Classics, Admin Web |
 | AI 生成候选预览、修改、确认和放弃 | 部分完成 | Classics 已接入 AI 候选列表读取、payload 编辑、应用和拒绝闭环；候选应用支持 `translate / summary / tags / qa / image_analysis` 写回正式内容，并追加版本和回写 AI 候选状态；三才视觉资产支持按 `objectId` 的候选限定与刷新联动，且已补齐 `fusion / visual / image_gen` 候选应用规则、失败提示和重试入口 | 流式过程展示、跨内容批量候选治理和更细粒度放弃策略未完成 | Classics, AI |
 | Knowledge 标签治理 | 外部依赖 | Classics 已保存标签主事实、标签名快照，并通过 Knowledge 协作语义解析统一标签、自动创建标签和同步内容引用投影 | 标签合并、同义词治理、分类运营规则仍不属于 Classics | Knowledge |
 | Storage 对象管理 | 外部依赖 | Classics 只保存 `storage_object_id`，但业务域已负责 Wangqi 原始文件和 Sancai 图片的上传入口、归属校验、读取 URL 和 Portal 分享资源访问控制 | 底层对象生命周期、物理删除、清理策略和通用对象管理仍由 Storage 实现 | Classics, Storage |
@@ -168,7 +170,7 @@
 
 ### B3 批量操作结果模型
 
-状态：部分完成。
+状态：已完成。
 
 已补充：
 
@@ -179,16 +181,17 @@
 
 需要补充：
 
-- 细粒度权限过滤。
-- 将取消保留已完成结果语义扩展到更多非 AI 批处理场景。
+- 后续如新增非 AI 批处理场景，可复用当前批量结果模型。
 
 ### B4 权限接入
 
-状态：未完成。
+状态：已完成。
 
-需要补充：
+已补充：
 
-- 权限不足时的错误语义和过滤策略。
+- 三类 Classics 内容 view/edit/export/share 权限过滤。
+- 批量公开/私有和批量分享的 `PERMISSION_DENIED` 失败项。
+- Admin Web 三类内容页面的分享、导出、批量公开和批量私有控件禁用。
 
 ### B5 导出和静态展示 Worker 对接
 

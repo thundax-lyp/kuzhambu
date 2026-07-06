@@ -18,6 +18,7 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVolum
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import java.util.List;
+import java.util.Set;
 
 public interface SancaiApplicationService {
 
@@ -62,6 +63,9 @@ public interface SancaiApplicationService {
     void changeEntryVisibility(SancaiEntryId id, String visibility);
 
     ClassicsBatchOperationResult batchChangeEntryVisibility(List<SancaiEntryId> ids, String visibility);
+
+    ClassicsBatchOperationResult batchChangeEntryVisibility(
+            List<SancaiEntryId> ids, String visibility, Set<String> operatorPermissions);
 
     void deleteEntry(SancaiEntryId id);
 }

@@ -23,6 +23,8 @@ public final class OperationsCleanupSupport {
     public static final String CLEANUP_ITEM_STATUS_SUCCEEDED = "SUCCEEDED";
     public static final String CLEANUP_ITEM_STATUS_FAILED = "FAILED";
 
+    public static final int DEFAULT_CLEANUP_TARGET_LIMIT = 200;
+
     private static final Set<String> SUPPORTED_CLEANUP_TYPES = Set.of(
             CLEANUP_TYPE_EXPIRED_BACKUP,
             CLEANUP_TYPE_EXPIRED_SHARE,

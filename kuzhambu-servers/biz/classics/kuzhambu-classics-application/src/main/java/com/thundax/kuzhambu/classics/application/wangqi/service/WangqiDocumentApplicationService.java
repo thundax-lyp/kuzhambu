@@ -14,6 +14,7 @@ import com.thundax.kuzhambu.classics.domain.wangqi.model.valueobject.WangqiDocum
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import java.util.List;
+import java.util.Set;
 
 public interface WangqiDocumentApplicationService {
 
@@ -38,6 +39,9 @@ public interface WangqiDocumentApplicationService {
     void changeVisibility(WangqiDocumentVisibilityCommand command);
 
     ClassicsBatchOperationResult batchChangeVisibility(List<WangqiDocumentId> ids, WangqiDocumentVisibility visibility);
+
+    ClassicsBatchOperationResult batchChangeVisibility(
+            List<WangqiDocumentId> ids, WangqiDocumentVisibility visibility, Set<String> operatorPermissions);
 
     void delete(WangqiDocumentId id);
 }

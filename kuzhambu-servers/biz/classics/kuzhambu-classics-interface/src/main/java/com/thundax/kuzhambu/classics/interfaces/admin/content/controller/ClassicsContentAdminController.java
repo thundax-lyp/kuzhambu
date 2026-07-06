@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.content.controller;
 
+import com.thundax.kuzhambu.classics.application.content.command.ContentExportCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairSortCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentTagSortCommand;
 import com.thundax.kuzhambu.classics.application.content.result.AiCandidateApplyContentResult;
@@ -30,6 +31,7 @@ import com.thundax.kuzhambu.classics.interfaces.admin.content.controller.request
 import com.thundax.kuzhambu.classics.interfaces.admin.content.controller.response.ClassicsContentResponse;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
+import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
@@ -224,8 +226,9 @@ public class ClassicsContentAdminController {
     @SysLogger(value = "创建导出任务")
     @PostMapping("exports/create")
     public ClassicsContentResponse createExport(@Valid @RequestBody ClassicsContentRequest request) {
-        ClassicsExportJobResult result =
-                service.createExportJob(ClassicsContentInterfaceAssembler.toExportCommand(request));
+        ContentExportCommand command = ClassicsContentInterfaceAssembler.toExportCommand(request);
+        command.setOperatorPermissions(KuzhambuContextHolder.currentAuthorities());
+        ClassicsExportJobResult result = service.createExportJob(command);
         return ClassicsContentResponse.builder()
                 .id(
                         result == null || result.getJobId() == null
@@ -310,14 +313,19 @@ public class ClassicsContentAdminController {
         return switch (contentType) {
             case "SANCAI_ENTRY" ->
                 sancaiService.batchChangeEntryVisibility(
-                        RequestListHelper.map(contentIds, SancaiEntryIdCodec::toDomain), visibility);
+                        RequestListHelper.map(contentIds, SancaiEntryIdCodec::toDomain),
+                        visibility,
+                        KuzhambuContextHolder.currentAuthorities());
             case "WANGQI_DOCUMENT" ->
                 wangqiDocumentService.batchChangeVisibility(
                         RequestListHelper.map(contentIds, WangqiDocumentIdCodec::toDomain),
-                        WangqiDocumentVisibility.from(visibility));
+                        WangqiDocumentVisibility.from(visibility),
+                        KuzhambuContextHolder.currentAuthorities());
             case "MING_CUSTOMS" ->
                 mingCustomsService.batchChangeVisibility(
-                        RequestListHelper.map(contentIds, MingCustomsEntryIdCodec::toDomain), visibility);
+                        RequestListHelper.map(contentIds, MingCustomsEntryIdCodec::toDomain),
+                        visibility,
+                        KuzhambuContextHolder.currentAuthorities());
             default -> throw AdminResponseExceptions.invalidParameter("contentType");
         };
     }

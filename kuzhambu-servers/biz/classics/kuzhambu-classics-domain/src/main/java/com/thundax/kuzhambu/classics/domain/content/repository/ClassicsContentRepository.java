@@ -115,6 +115,10 @@ public interface ClassicsContentRepository {
 
     int markExportJobExpired(ClassicsContentExportJobId id);
 
+    default List<ClassicsContentExportJobId> listExpiredExportJobIds(Date now, int limit) {
+        return List.of();
+    }
+
     PageResult<ClassicsContentExportJob> pageExportJobs(
             String contentType, String exportKind, String status, int pageNo, int pageSize);
 }

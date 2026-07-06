@@ -116,6 +116,31 @@ public class ClassicsSharingRepositoryImpl implements ClassicsSharingRepository 
                         .set(ClassicsShareLinkDO::getStatus, status));
     }
 
+    @Override
+    public List<ClassicsShareLinkId> listExpiredShareLinkIds(Date now, int limit) {
+        return linkMapper
+                .selectList(new LambdaQueryWrapper<ClassicsShareLinkDO>()
+                        .select(ClassicsShareLinkDO::getId)
+                        .eq(ClassicsShareLinkDO::getStatus, ClassicsShareLinkStatus.ACTIVE.value())
+                        .le(ClassicsShareLinkDO::getExpiresAt, now)
+                        .orderByAsc(ClassicsShareLinkDO::getExpiresAt)
+                        .last("limit " + limit))
+                .stream()
+                .map(ClassicsShareLinkDO::getId)
+                .map(ClassicsShareLinkIdCodec::toDomain)
+                .toList();
+    }
+
+    @Override
+    public int markShareLinkExpired(ClassicsShareLinkId id) {
+        return linkMapper.update(
+                null,
+                new LambdaUpdateWrapper<ClassicsShareLinkDO>()
+                        .eq(ClassicsShareLinkDO::getId, ClassicsShareLinkIdCodec.toValue(id))
+                        .eq(ClassicsShareLinkDO::getStatus, ClassicsShareLinkStatus.ACTIVE.value())
+                        .set(ClassicsShareLinkDO::getStatus, ClassicsShareLinkStatus.EXPIRED.value()));
+    }
+
     public int increaseAccessCount(ClassicsShareLinkId id) {
         return linkMapper.update(
                 null,

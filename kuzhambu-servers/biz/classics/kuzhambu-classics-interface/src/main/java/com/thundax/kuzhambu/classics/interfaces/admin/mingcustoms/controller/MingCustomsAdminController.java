@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller;
 
 import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsKeywordSortCommand;
+import com.thundax.kuzhambu.classics.application.mingcustoms.query.MingCustomsPageQuery;
 import com.thundax.kuzhambu.classics.application.mingcustoms.service.MingCustomsApplicationService;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsKeywordIdCodec;
@@ -11,6 +12,7 @@ import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.req
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.response.MingCustomsKeywordCloudItemResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.response.MingCustomsResponse;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
+import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
@@ -47,9 +49,10 @@ public class MingCustomsAdminController {
     @SysLogger(value = "分页查询")
     @PostMapping("page")
     public PageResponse<MingCustomsResponse> page(@Valid @RequestBody MingCustomsRequest request) {
+        MingCustomsPageQuery query = MingCustomsInterfaceAssembler.toQuery(request);
+        query.setOperatorPermissions(KuzhambuContextHolder.currentAuthorities());
         return PageResponseHelper.fromPageResult(
-                service.page(
-                        MingCustomsInterfaceAssembler.toQuery(request), PageInterfaceAssembler.toPageQuery(request)),
+                service.page(query, PageInterfaceAssembler.toPageQuery(request)),
                 MingCustomsInterfaceAssembler::toResponse);
     }
 

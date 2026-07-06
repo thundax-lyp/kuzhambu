@@ -2,8 +2,10 @@ package com.thundax.kuzhambu.classics.application.sancai;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -11,6 +13,7 @@ import com.thundax.kuzhambu.classics.application.content.service.ClassicsContent
 import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationResult;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryStatusCommand;
+import com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryPageQuery;
 import com.thundax.kuzhambu.classics.application.sancai.service.impl.SancaiApplicationServiceImpl;
 import com.thundax.kuzhambu.classics.application.searchsync.support.ClassicsSearchIndexSyncPublishSupport;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
@@ -24,7 +27,10 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisual
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVolumeId;
 import com.thundax.kuzhambu.classics.domain.sancai.repository.SancaiRepository;
+import com.thundax.kuzhambu.common.core.page.PageQuery;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import java.util.List;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 class SancaiApplicationServiceImplTest {
@@ -96,6 +102,21 @@ class SancaiApplicationServiceImplTest {
     }
 
     @Test
+    void pageEntriesShouldReturnEmptyWhenPermissionContextLacksSancaiView() {
+        SancaiRepository repository = mock(SancaiRepository.class);
+        SancaiApplicationServiceImpl service = new SancaiApplicationServiceImpl(repository, null, null);
+        SancaiEntryPageQuery query = new SancaiEntryPageQuery();
+        query.setOperatorPermissions(Set.of("classics:content:view"));
+
+        PageResult<SancaiEntry> result = service.pageEntries(query, new PageQuery(1, 20));
+
+        assertEquals(0, result.getTotalCount());
+        assertEquals(0, result.getRecords().size());
+        verify(repository, never())
+                .pageEntries(any(), any(), any(), any(), any(), any(), any(), any(), any(), anyInt(), anyInt());
+    }
+
+    @Test
     void batchChangeEntryVisibilityShouldReturnPartialResultAndKeepSearchSync() {
         SancaiRepository repository = mock(SancaiRepository.class);
         ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
@@ -117,6 +138,25 @@ class SancaiApplicationServiceImplTest {
         assertEquals(1007L, result.getFailures().get(0).getContentId());
         assertEquals("CONTENT_NOT_FOUND", result.getFailures().get(0).getFailureCode());
         verify(publishSupport).publishDeleteAfterCommit(ClassicsContentType.SANCAI_ENTRY, "1006", 8);
+    }
+
+    @Test
+    void batchChangeEntryVisibilityShouldReturnPermissionDeniedWhenPermissionContextLacksSancaiEdit() {
+        SancaiRepository repository = mock(SancaiRepository.class);
+        ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
+        ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
+        SancaiApplicationServiceImpl service =
+                new SancaiApplicationServiceImpl(repository, contentApplicationService, publishSupport);
+
+        ClassicsBatchOperationResult result = service.batchChangeEntryVisibility(
+                List.of(SancaiEntryId.of(1008L)), "PRIVATE", Set.of("classics:sancai:view"));
+
+        assertEquals(0, result.getSuccessCount());
+        assertEquals(1, result.getFailureCount());
+        assertEquals("PERMISSION_DENIED", result.getFailures().get(0).getFailureCode());
+        verify(repository, never()).getEntryById(any());
+        verify(repository, never()).updateEntry(any());
+        verify(publishSupport, never()).publishDeleteAfterCommit(any(), any(), any());
     }
 
     @Test

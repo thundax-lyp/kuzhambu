@@ -336,6 +336,7 @@ class ClassicsContentAdminControllerTest {
                                 List.of(4001L, 4002L),
                                 ids.stream().map(SancaiEntryId::value).toList());
                         assertEquals("PUBLIC", args[1]);
+                        assertTrue(args[2] instanceof java.util.Set<?>);
                         return batchResult(
                                 "SANCAI_ENTRY",
                                 ids.stream().map(SancaiEntryId::value).toList(),
@@ -357,6 +358,7 @@ class ClassicsContentAdminControllerTest {
                                 List.of(5001L, 5002L),
                                 ids.stream().map(WangqiDocumentId::value).toList());
                         assertEquals(WangqiDocumentVisibility.PRIVATE, args[1]);
+                        assertTrue(args[2] instanceof java.util.Set<?>);
                         return batchResult(
                                 "WANGQI_DOCUMENT",
                                 ids.stream().map(WangqiDocumentId::value).toList(),
@@ -378,6 +380,7 @@ class ClassicsContentAdminControllerTest {
                                 List.of(6001L, 6002L),
                                 ids.stream().map(MingCustomsEntryId::value).toList());
                         assertEquals("PUBLIC", args[1]);
+                        assertTrue(args[2] instanceof java.util.Set<?>);
                         return batchResult(
                                 "MING_CUSTOMS",
                                 ids.stream().map(MingCustomsEntryId::value).toList(),
@@ -406,6 +409,7 @@ class ClassicsContentAdminControllerTest {
                         assertEquals(ClassicsExportKind.CONTENT_DATASET, command.getExportKind());
                         assertEquals(ClassicsExportFormat.HTML, command.getExportFormat());
                         assertEquals(ClassicsExportScopeType.CATEGORY, command.getScopeType());
+                        assertTrue(command.getOperatorPermissions() != null);
                         return new ClassicsExportJobResult(
                                 ClassicsContentExportJobId.of(9001L),
                                 ClassicsExportStatus.COMPLETED,

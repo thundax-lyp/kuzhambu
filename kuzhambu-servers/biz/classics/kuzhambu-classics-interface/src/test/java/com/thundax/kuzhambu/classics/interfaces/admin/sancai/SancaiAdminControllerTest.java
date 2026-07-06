@@ -474,6 +474,7 @@ class SancaiAdminControllerTest {
                         assertEquals("天地", query.getKeyword());
                         assertEquals(SancaiEntryLifecycleStatus.PUBLISHED, query.getLifecycleStatus());
                         assertEquals(SancaiEntryVisibility.PUBLIC, query.getVisibility());
+                        assertEquals(true, query.getOperatorPermissions() != null);
                         assertEquals(1, page.getPageNo());
                         assertEquals(50, page.getPageSize());
                         return PageResult.of(1, 50, 1, List.of(entry()));
@@ -484,6 +485,7 @@ class SancaiAdminControllerTest {
                         assertEquals("天地", query.getKeyword());
                         assertEquals(SancaiEntryLifecycleStatus.PUBLISHED, query.getLifecycleStatus());
                         assertEquals(SancaiEntryVisibility.PUBLIC, query.getVisibility());
+                        assertEquals(true, query.getOperatorPermissions() != null);
                         return List.of(entry());
                     }
                     if ("getEntry".equals(method.getName())) {

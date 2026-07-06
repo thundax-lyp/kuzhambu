@@ -127,7 +127,7 @@ INSERT INTO `system_menu` (
     (23, 21, 44, 45, '报表记录', 'operations:report:view,operations:report:edit', 65, 'VISIBLE', '{"icon":"submissions"}', '/operations/reports', '_self', '周报月报生成记录'),
     (24, 21, 46, 47, '任务台账', 'operations:task:view', 60, 'VISIBLE', '{"icon":"logs"}', '/operations/tasks', '_self', '长任务和批量操作运行状态'),
     (25, 21, 48, 49, '备份恢复', 'operations:backup:view,operations:backup:execute,operations:restore:view,operations:restore:execute', 55, 'VISIBLE', '{"icon":"storage"}', '/operations/backup-restore', '_self', '备份台账、手动备份和恢复入口'),
-    (26, 21, 50, 51, '清理维护', 'operations:cleanup:view,operations:cleanup:edit', 50, 'VISIBLE', '{"icon":"menus"}', '/operations/cleanup', '_self', '维护清理任务入口'),
+    (26, 21, 50, 51, '清理维护', 'operations:cleanup:view,operations:cleanup:execute', 50, 'VISIBLE', '{"icon":"menus"}', '/operations/cleanup', '_self', '维护清理任务入口'),
     (27, NULL, 53, 56, '审计中心', 'audit:view', 65, 'VISIBLE', '{"icon":"audit"}', '/audit', '_self', '审计中心根菜单'),
     (28, 27, 54, 55, '审计日志', 'audit:view', 65, 'VISIBLE', '{"icon":"audit-logs"}', '/audit/logs', '_self', '业务审计日志'),
     (29, NULL, 57, 74, '系统管理', 'sys', 60, 'VISIBLE', '{"icon":"system"}', '/system', '_self', '系统管理根菜单'),

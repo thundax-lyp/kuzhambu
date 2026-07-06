@@ -2,8 +2,10 @@ package com.thundax.kuzhambu.classics.application.wangqi;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -25,6 +27,8 @@ import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiContentForm
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.valueobject.WangqiDocumentId;
 import com.thundax.kuzhambu.classics.domain.wangqi.repository.WangqiDocumentRepository;
+import com.thundax.kuzhambu.common.core.page.PageQuery;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import com.thundax.kuzhambu.storage.facade.StorageFacade;
 import com.thundax.kuzhambu.storage.facade.request.BindStorageOwnerFacadeRequest;
@@ -36,6 +40,7 @@ import com.thundax.kuzhambu.storage.facade.response.OpenStorageFacadeResponse;
 import com.thundax.kuzhambu.storage.facade.response.UploadStorageFacadeResponse;
 import java.io.ByteArrayInputStream;
 import java.util.List;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -56,6 +61,21 @@ class WangqiDocumentApplicationServiceImplTest {
 
         assertEquals(java.util.List.of(document), result);
         verify(repository).listTimeline("山川", "PUBLIC", SortDirection.DESC);
+    }
+
+    @Test
+    void pageShouldReturnEmptyWhenPermissionContextLacksWangqiView() {
+        WangqiDocumentRepository repository = mock(WangqiDocumentRepository.class);
+        WangqiDocumentApplicationServiceImpl service =
+                new WangqiDocumentApplicationServiceImpl(repository, null, null, null);
+        WangqiDocumentPageQuery query = new WangqiDocumentPageQuery();
+        query.setOperatorPermissions(Set.of("classics:content:view"));
+
+        PageResult<WangqiDocument> result = service.page(query, new PageQuery(1, 20));
+
+        assertEquals(0, result.getTotalCount());
+        assertEquals(0, result.getRecords().size());
+        verify(repository, never()).page(any(), any(), any(), anyInt(), anyInt());
     }
 
     @Test
@@ -155,6 +175,27 @@ class WangqiDocumentApplicationServiceImplTest {
         assertEquals(400000000005L, result.getFailures().get(0).getContentId());
         assertEquals("CONTENT_NOT_FOUND", result.getFailures().get(0).getFailureCode());
         verify(publishSupport).publishDeleteAfterCommit(ClassicsContentType.WANGQI_DOCUMENT, "400000000004", 6);
+    }
+
+    @Test
+    void batchChangeVisibilityShouldReturnPermissionDeniedWhenPermissionContextLacksWangqiEdit() {
+        WangqiDocumentRepository repository = mock(WangqiDocumentRepository.class);
+        ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
+        ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
+        WangqiDocumentApplicationServiceImpl service =
+                new WangqiDocumentApplicationServiceImpl(repository, contentApplicationService, publishSupport, null);
+
+        ClassicsBatchOperationResult result = service.batchChangeVisibility(
+                List.of(WangqiDocumentId.of(400000000006L)),
+                WangqiDocumentVisibility.PRIVATE,
+                Set.of("classics:wangqi:view"));
+
+        assertEquals(0, result.getSuccessCount());
+        assertEquals(1, result.getFailureCount());
+        assertEquals("PERMISSION_DENIED", result.getFailures().get(0).getFailureCode());
+        verify(repository, never()).getById(any());
+        verify(repository, never()).update(any());
+        verify(publishSupport, never()).publishDeleteAfterCommit(any(), any(), any());
     }
 
     @Test

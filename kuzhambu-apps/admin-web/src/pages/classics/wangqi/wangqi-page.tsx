@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Alert, App, Button, Card, Select } from "antd";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { hasPermission } from "@/auth/permission-storage";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import { AiCandidatePanel } from "@/pages/classics/common/components/ai-candidate-panel";
@@ -13,7 +14,10 @@ import { ClassicsContentTagPanel } from "@/pages/classics/common/components/clas
 import { ClassicsExportJobSection } from "@/pages/classics/common/components/classics-export-job-section";
 import * as shareService from "@/pages/classics/common/classics-share-service";
 import * as currentUserService from "@/service/current-user-service";
-import type { ClassicsBatchOperationRecord } from "@/pages/classics/common/classics-content-types";
+import {
+    hasClassicsContentPermission,
+    type ClassicsBatchOperationRecord
+} from "@/pages/classics/common/classics-content-types";
 import type { ClassicsExportScopePayload } from "@/pages/classics/common/classics-export-types";
 import { WangqiDocumentList } from "./components/wangqi-document-list";
 import { WangqiDocumentModel } from "./components/wangqi-document-model";
@@ -226,6 +230,21 @@ export const WangqiPage = () => {
     const selectedDocuments = useMemo(
         () => records.filter((record) => selectedDocumentIds.includes(record.id)),
         [records, selectedDocumentIds]
+    );
+    const canShareDocuments = hasClassicsContentPermission(
+        "WANGQI_DOCUMENT",
+        "share",
+        hasPermission
+    );
+    const canExportDocuments = hasClassicsContentPermission(
+        "WANGQI_DOCUMENT",
+        "export",
+        hasPermission
+    );
+    const canChangeDocumentVisibility = hasClassicsContentPermission(
+        "WANGQI_DOCUMENT",
+        "edit",
+        hasPermission
     );
 
     const invalidateWangqi = useCallback(async () => {
@@ -489,6 +508,10 @@ export const WangqiPage = () => {
     };
 
     const shareDocument = (document: WangqiDocumentRecord) => {
+        if (!canShareDocuments) {
+            messageApi.warning("当前账号缺少王圻文档分享权限");
+            return;
+        }
         const title = readDocumentTitle(document);
         shareDocumentMutation.mutate({
             targets: [
@@ -503,6 +526,10 @@ export const WangqiPage = () => {
     };
 
     const shareSelectedDocuments = () => {
+        if (!canShareDocuments) {
+            messageApi.warning("当前账号缺少王圻文档分享权限");
+            return;
+        }
         if (!selectedDocuments.length) {
             messageApi.warning("请先选择要批量分享的王圻文档");
             return;
@@ -520,6 +547,10 @@ export const WangqiPage = () => {
     };
 
     const changeSelectedVisibility = (visibility: "PRIVATE" | "PUBLIC") => {
+        if (!canChangeDocumentVisibility) {
+            messageApi.warning("当前账号缺少王圻文档编辑权限");
+            return;
+        }
         if (!selectedDocuments.length) {
             messageApi.warning("请先选择要批量修改可见性的王圻文档");
             return;
@@ -532,6 +563,10 @@ export const WangqiPage = () => {
     };
 
     const exportDocument = (document: WangqiDocumentRecord) => {
+        if (!canExportDocuments) {
+            messageApi.warning("当前账号缺少王圻文档导出权限");
+            return;
+        }
         exportMutation.mutate(document);
     };
 
@@ -648,14 +683,14 @@ export const WangqiPage = () => {
                         />
                         <div style={{ marginBottom: 12 }}>
                             <Button
-                                disabled={!selectedDocuments.length}
+                                disabled={!selectedDocuments.length || !canShareDocuments}
                                 loading={batchShareMutation.isPending}
                                 onClick={shareSelectedDocuments}
                             >
                                 批量分享
                             </Button>
                             <Button
-                                disabled={!selectedDocuments.length}
+                                disabled={!selectedDocuments.length || !canChangeDocumentVisibility}
                                 loading={batchVisibilityMutation.isPending}
                                 style={{ marginLeft: 8 }}
                                 onClick={() => changeSelectedVisibility("PUBLIC")}
@@ -663,7 +698,7 @@ export const WangqiPage = () => {
                                 批量公开
                             </Button>
                             <Button
-                                disabled={!selectedDocuments.length}
+                                disabled={!selectedDocuments.length || !canChangeDocumentVisibility}
                                 loading={batchVisibilityMutation.isPending}
                                 style={{ marginLeft: 8 }}
                                 onClick={() => changeSelectedVisibility("PRIVATE")}
@@ -710,6 +745,8 @@ export const WangqiPage = () => {
                             />
                         ) : null}
                         <WangqiDocumentList
+                            canExport={canExportDocuments}
+                            canShare={canShareDocuments}
                             loading={pageQuery.isLoading}
                             dataSource={records}
                             onDelete={deleteDocument}

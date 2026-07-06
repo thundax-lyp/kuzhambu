@@ -39,6 +39,8 @@ const formatDateTime = (value?: string | null) => {
 };
 
 export interface WangqiDocumentListProps {
+    canExport?: boolean;
+    canShare?: boolean;
     dataSource: WangqiDocumentRecord[];
     loading?: boolean;
     onDelete: (record: WangqiDocumentRecord) => void;
@@ -53,6 +55,8 @@ export interface WangqiDocumentListProps {
 }
 
 export const WangqiDocumentList = ({
+    canExport = true,
+    canShare = true,
     dataSource,
     loading = false,
     onDelete,
@@ -132,12 +136,14 @@ export const WangqiDocumentList = ({
                     key: "share",
                     text: "分享",
                     ariaLabel: `分享 ${record.title || "未命名文档"}`,
+                    disabled: !canShare,
                     onClick: () => onShare(record)
                 },
                 {
                     key: "export",
                     text: "导出",
                     ariaLabel: `导出 ${record.title || "未命名文档"}`,
+                    disabled: !canExport,
                     onClick: () => onExport(record)
                 },
                 { type: "divider" },

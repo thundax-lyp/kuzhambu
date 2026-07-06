@@ -1,12 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Alert, App, Button, Empty, Skeleton, Tag, Typography } from "antd";
 import { useMemo, useState } from "react";
+import { hasPermission } from "@/auth/permission-storage";
 import { KuzhambuTable } from "@/components/kuzhambu-table";
 import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import * as contentService from "@/pages/classics/common/classics-content-service";
 import * as shareService from "@/pages/classics/common/classics-share-service";
-import type { ClassicsBatchOperationRecord } from "@/pages/classics/common/classics-content-types";
+import {
+    hasClassicsContentPermission,
+    type ClassicsBatchOperationRecord
+} from "@/pages/classics/common/classics-content-types";
 import * as entryService from "../services/sancai-entry-service";
 import type { SancaiEntryRecord, SancaiVolumeRecord } from "../sancai-types";
 
@@ -76,6 +80,13 @@ export const SancaiEntryList = ({
     );
     const [batchVisibilityResult, setBatchVisibilityResult] =
         useState<ClassicsBatchOperationRecord | null>(null);
+    const canShareEntries = hasClassicsContentPermission("SANCAI_ENTRY", "share", hasPermission);
+    const canExportEntries = hasClassicsContentPermission("SANCAI_ENTRY", "export", hasPermission);
+    const canChangeEntryVisibility = hasClassicsContentPermission(
+        "SANCAI_ENTRY",
+        "edit",
+        hasPermission
+    );
 
     const activeBatchQuery = useQuery({
         queryKey: ["classics", "sancai", "refinement", "batch", activeBatchId],
@@ -161,6 +172,10 @@ export const SancaiEntryList = ({
     };
 
     const startBatchShare = () => {
+        if (!canShareEntries) {
+            messageApi.warning("当前账号缺少三才图会分享权限");
+            return;
+        }
         if (!selectedEntries.length) {
             messageApi.warning("请先选择要批量分享的条目");
             return;
@@ -178,6 +193,10 @@ export const SancaiEntryList = ({
     };
 
     const changeBatchVisibility = (visibility: "PRIVATE" | "PUBLIC") => {
+        if (!canChangeEntryVisibility) {
+            messageApi.warning("当前账号缺少三才图会编辑权限");
+            return;
+        }
         if (!selectedEntries.length) {
             messageApi.warning("请先选择要批量修改可见性的条目");
             return;
@@ -242,12 +261,14 @@ export const SancaiEntryList = ({
                     key: "share",
                     text: "分享",
                     ariaLabel: `分享 ${readTitle(entry, "条目")}`,
+                    disabled: !canShareEntries,
                     onClick: () => onShare(entry)
                 },
                 {
                     key: "export",
                     text: "导出",
                     ariaLabel: `导出 ${readTitle(entry, "条目")}`,
+                    disabled: !canExportEntries,
                     onClick: () => onExport(entry)
                 },
                 {
@@ -296,21 +317,21 @@ export const SancaiEntryList = ({
                         批量视觉处理
                     </Button>
                     <Button
-                        disabled={!selectedEntries.length}
+                        disabled={!selectedEntries.length || !canShareEntries}
                         loading={createBatchShareMutation.isPending}
                         onClick={startBatchShare}
                     >
                         批量分享
                     </Button>
                     <Button
-                        disabled={!selectedEntries.length}
+                        disabled={!selectedEntries.length || !canChangeEntryVisibility}
                         loading={changeVisibilityBatchMutation.isPending}
                         onClick={() => changeBatchVisibility("PUBLIC")}
                     >
                         批量公开
                     </Button>
                     <Button
-                        disabled={!selectedEntries.length}
+                        disabled={!selectedEntries.length || !canChangeEntryVisibility}
                         loading={changeVisibilityBatchMutation.isPending}
                         onClick={() => changeBatchVisibility("PRIVATE")}
                     >

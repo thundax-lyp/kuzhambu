@@ -2,13 +2,16 @@ package com.thundax.kuzhambu.classics.application.mingcustoms;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsCommand;
+import com.thundax.kuzhambu.classics.application.mingcustoms.query.MingCustomsPageQuery;
 import com.thundax.kuzhambu.classics.application.mingcustoms.service.impl.MingCustomsApplicationServiceImpl;
 import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationResult;
 import com.thundax.kuzhambu.classics.application.searchsync.support.ClassicsSearchIndexSyncPublishSupport;
@@ -18,7 +21,10 @@ import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsC
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsVisibility;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsEntryId;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.repository.MingCustomsRepository;
+import com.thundax.kuzhambu.common.core.page.PageQuery;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import java.util.List;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 class MingCustomsApplicationServiceImplTest {
@@ -57,6 +63,20 @@ class MingCustomsApplicationServiceImplTest {
     }
 
     @Test
+    void pageShouldReturnEmptyWhenPermissionContextLacksMingCustomsView() {
+        MingCustomsRepository repository = mock(MingCustomsRepository.class);
+        MingCustomsApplicationServiceImpl service = new MingCustomsApplicationServiceImpl(repository, null, null);
+        MingCustomsPageQuery query = new MingCustomsPageQuery();
+        query.setOperatorPermissions(Set.of("classics:content:view"));
+
+        PageResult<MingCustomsEntry> result = service.page(query, new PageQuery(1, 20));
+
+        assertEquals(0, result.getTotalCount());
+        assertEquals(0, result.getRecords().size());
+        verify(repository, never()).page(any(), any(), any(), any(), any(), anyInt(), anyInt());
+    }
+
+    @Test
     void batchChangeVisibilityShouldReturnPartialResultAndKeepSearchSync() {
         MingCustomsRepository repository = mock(MingCustomsRepository.class);
         ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
@@ -79,6 +99,25 @@ class MingCustomsApplicationServiceImplTest {
         assertEquals(3005L, result.getFailures().get(0).getContentId());
         assertEquals("CONTENT_NOT_FOUND", result.getFailures().get(0).getFailureCode());
         verify(publishSupport).publishDeleteAfterCommit(ClassicsContentType.MING_CUSTOMS, "3004", 6);
+    }
+
+    @Test
+    void batchChangeVisibilityShouldReturnPermissionDeniedWhenPermissionContextLacksMingCustomsEdit() {
+        MingCustomsRepository repository = mock(MingCustomsRepository.class);
+        ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
+        ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
+        MingCustomsApplicationServiceImpl service =
+                new MingCustomsApplicationServiceImpl(repository, contentApplicationService, publishSupport);
+
+        ClassicsBatchOperationResult result = service.batchChangeVisibility(
+                List.of(MingCustomsEntryId.of(3006L)), "PRIVATE", Set.of("classics:mingcustoms:view"));
+
+        assertEquals(0, result.getSuccessCount());
+        assertEquals(1, result.getFailureCount());
+        assertEquals("PERMISSION_DENIED", result.getFailures().get(0).getFailureCode());
+        verify(repository, never()).getById(any());
+        verify(repository, never()).update(any());
+        verify(publishSupport, never()).publishDeleteAfterCommit(any(), any(), any());
     }
 
     @Test

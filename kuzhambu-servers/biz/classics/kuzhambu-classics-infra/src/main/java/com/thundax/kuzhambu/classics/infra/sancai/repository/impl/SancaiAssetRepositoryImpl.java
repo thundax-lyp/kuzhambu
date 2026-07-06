@@ -33,6 +33,7 @@ import com.thundax.kuzhambu.classics.infra.sancai.persistence.mapper.SancaiShowc
 import com.thundax.kuzhambu.classics.infra.sancai.persistence.mapper.SancaiVisualAssetMapper;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
@@ -77,6 +78,25 @@ public class SancaiAssetRepositoryImpl implements SancaiAssetRepository {
     public int deleteDraftByEntryId(SancaiEntryId entryId) {
         return draftMapper.delete(new LambdaQueryWrapper<SancaiEntryDraftDO>()
                 .eq(SancaiEntryDraftDO::getEntryId, SancaiEntryIdCodec.toValue(entryId)));
+    }
+
+    @Override
+    public List<SancaiEntryDraftId> listExpiredDraftIds(Date cutoff, int limit) {
+        return draftMapper
+                .selectList(new LambdaQueryWrapper<SancaiEntryDraftDO>()
+                        .select(SancaiEntryDraftDO::getId)
+                        .lt(SancaiEntryDraftDO::getAutosavedAt, cutoff)
+                        .orderByAsc(SancaiEntryDraftDO::getAutosavedAt)
+                        .last("limit " + limit))
+                .stream()
+                .map(SancaiEntryDraftDO::getId)
+                .map(SancaiEntryDraftIdCodec::toDomain)
+                .toList();
+    }
+
+    @Override
+    public int deleteDraftById(SancaiEntryDraftId id) {
+        return draftMapper.deleteById(SancaiEntryDraftIdCodec.toValue(id));
     }
 
     @Override

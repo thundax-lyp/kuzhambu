@@ -315,6 +315,7 @@ class WangqiDocumentAdminControllerTest {
         assertEquals("王圻", query.getKeyword());
         assertEquals(WangqiDocumentVisibility.PUBLIC, query.getVisibility());
         assertEquals(SortDirection.DESC, query.getSortDirection());
+        assertEquals(true, query.getOperatorPermissions() != null);
     }
 
     private static WangqiDocumentRequest request() {

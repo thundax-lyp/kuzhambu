@@ -20,6 +20,10 @@ public interface ClassicsSharingRepository {
 
     PageResult<ClassicsShareLink> pageLinks(String status, String visibility, int pageNo, int pageSize);
 
+    default List<ClassicsShareLinkId> listExpiredShareLinkIds(Date now, int limit) {
+        return List.of();
+    }
+
     PageResult<ClassicsSharePortalListItem> pagePortalShares(
             String contentType, String title, Date issuedAfter, Date issuedBefore, int pageNo, int pageSize);
 
@@ -30,6 +34,10 @@ public interface ClassicsSharingRepository {
     int updateLink(ClassicsShareLink link);
 
     int updateLinkStatus(ClassicsShareLinkId id, String status);
+
+    default int markShareLinkExpired(ClassicsShareLinkId id) {
+        return updateLinkStatus(id, "EXPIRED");
+    }
 
     int increaseAccessCount(ClassicsShareLinkId id);
 
