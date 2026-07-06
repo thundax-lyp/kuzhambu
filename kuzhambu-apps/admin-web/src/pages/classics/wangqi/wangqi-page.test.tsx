@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { App as AntdApp } from "antd";
+import { clearPermissions, replacePermissions } from "@/auth/permission-storage";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import * as currentUserService from "@/service/current-user-service";
 import { WangqiPage } from "./wangqi-page";
@@ -179,12 +180,19 @@ describe("WangqiPage", () => {
         queryClient = createTestQueryClient();
         capturedCalls.length = 0;
         localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
+        replacePermissions([
+            "classics:wangqi:view",
+            "classics:wangqi:edit",
+            "classics:sharing:edit",
+            "classics:content:export"
+        ]);
         installFetchMock();
     });
 
     afterEach(() => {
         cleanup();
         queryClient.clear();
+        clearPermissions();
         localStorage.clear();
         vi.restoreAllMocks();
     });

@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web-full-validation`：Admin Web 全量验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-PERMISSION-OPERATIONS-CLEANUP-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web`
-    - 处理动作：执行 Admin Web 全量 format/lint/build/test 验证。
-    - 验收点：`npm --workspace admin-web run format:check`, `lint`, `build`, `test` 均通过。
-    - 重要度：9/10
-
 - [ ] `portal-web-full-validation`：Portal Web 全量验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-PERMISSION-OPERATIONS-CLEANUP-CLOSURE.md`
