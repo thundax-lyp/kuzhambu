@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `T08 Classics implementation coverage`：更新 Classics 实现覆盖口径
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-CLASSICS-DELETE-SHARE-RISK-CLOSURE.md`
-    - 范围对象：`docs/40-readiness/CLASSICS-IMPLEMENTATION-COVERAGE.md`
-    - 处理动作：把 Classics 删除后分享闭环标记为已完成，并同步 Admin Web / Portal Web 删除占位口径
-    - 验收点：Coverage 中不再保留“删除后分享目标状态同步、风险态重算未完成”的描述
-    - 重要度：10/10
-
 - [ ] `T09 Runbook and TODO closure`：清理临时 RUNBOOK 并收窄 TODO
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-CLASSICS-DELETE-SHARE-RISK-CLOSURE.md`
