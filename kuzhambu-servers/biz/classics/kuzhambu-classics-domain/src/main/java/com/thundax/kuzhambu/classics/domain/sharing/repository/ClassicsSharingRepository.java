@@ -1,5 +1,7 @@
 package com.thundax.kuzhambu.classics.domain.sharing.repository;
 
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
+import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisibilityRiskStatus;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareAccessRecord;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareLink;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsSharePortalListItem;
@@ -44,6 +46,12 @@ public interface ClassicsSharingRepository {
     List<ClassicsShareTarget> listTargets(SortDirection sortDirection);
 
     List<ClassicsShareTarget> listTargetsByLinkId(ClassicsShareLinkId shareLinkId, SortDirection sortDirection);
+
+    List<ClassicsShareTarget> listTargetsByContent(ClassicsContentType contentType, Long contentId);
+
+    int markTargetsContentDeleted(ClassicsContentType contentType, Long contentId);
+
+    int updateLinkVisibilityRiskStatus(ClassicsShareLinkId id, SancaiVisibilityRiskStatus visibilityRiskStatus);
 
     int maxTargetPriority();
 

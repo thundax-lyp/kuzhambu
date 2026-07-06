@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `T01 Classics sharing sync`：补齐删除内容后的分享目标同步与风险态重算
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-DELETE-SHARE-RISK-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sharing/service/ClassicsSharingApplicationService.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sharing/service/impl/ClassicsSharingApplicationServiceImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-domain/src/main/java/com/thundax/kuzhambu/classics/domain/sharing/repository/ClassicsSharingRepository.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/java/com/thundax/kuzhambu/classics/infra/sharing/repository/impl/ClassicsSharingRepositoryImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/java/com/thundax/kuzhambu/classics/infra/sharing/persistence/mapper/ClassicsShareTargetMapper.java`
-    - 处理动作：新增 `syncContentDeleted`，把匹配内容的 `classics_share_target.target_status` 更新为 `CONTENT_DELETED` 并按剩余可用目标重算 `classics_share_link.visibility_risk_status`
-    - 验收点：重复执行同步幂等，删除私有目标后风险态可从 `CONTAINS_PRIVATE` 回落为 `PUBLIC_ONLY`
-    - 重要度：10/10
-
 - [ ] `T02 Classics delete entrypoints`：三类内容删除入口接入分享同步
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-DELETE-SHARE-RISK-CLOSURE.md`
