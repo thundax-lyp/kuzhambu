@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `01-ai-knowledge-usecase`：补齐 Knowledge 标签抽取 AI usecase 映射
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-KNOWLEDGE-TAG-EXTRACTION.md`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-domain/src/main/java/com/thundax/kuzhambu/ai/domain/knowledge/service/KnowledgeAiExtractionDomainService.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/knowledge/service/impl/KnowledgeAiExtractionApplicationServiceImpl.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/knowledge/support/KnowledgeAiWorkerUsecaseResolver.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/test/java/com/thundax/kuzhambu/ai/application/knowledge/support/KnowledgeAiWorkerUsecaseResolverTest.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/test/java/com/thundax/kuzhambu/ai/application/knowledge/service/impl/KnowledgeAiExtractionApplicationServiceImplTest.java`
-    - 处理动作：新增 `extractTags` 并把 `TAG` 解析到 `KNOWLEDGE_TAG_EXTRACTION`
-    - 验收点：resolver 和 application service 测试断言 `operation / workerPath / capability / createCandidate` 均符合 RUNBOOK
-    - 重要度：10/10
-
 - [ ] `02-ai-facade`：暴露 Knowledge 标签抽取 AI Facade
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-KNOWLEDGE-TAG-EXTRACTION.md`

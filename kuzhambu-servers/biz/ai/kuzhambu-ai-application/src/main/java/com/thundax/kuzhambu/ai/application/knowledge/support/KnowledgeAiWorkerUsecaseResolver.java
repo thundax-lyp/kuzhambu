@@ -18,7 +18,10 @@ public class KnowledgeAiWorkerUsecaseResolver {
                     "KNOWLEDGE_GRAPH_EXTRACTION", "/internal/ai/knowledge/graph-extraction", "knowledge_graph"),
             "LINEAGE",
             new KnowledgeAiWorkerUsecaseSpec(
-                    "KNOWLEDGE_LINEAGE_EXTRACTION", "/internal/ai/knowledge/lineage-extraction", "lineage_extraction"));
+                    "KNOWLEDGE_LINEAGE_EXTRACTION", "/internal/ai/knowledge/lineage-extraction", "lineage_extraction"),
+            "TAG",
+            new KnowledgeAiWorkerUsecaseSpec(
+                    "KNOWLEDGE_TAG_EXTRACTION", "/internal/ai/knowledge/tag-extraction", "tags"));
 
     public KnowledgeAiWorkerUsecaseSpec resolve(String taskType) {
         KnowledgeAiWorkerUsecaseSpec spec = SUPPORTED_USECASES.get(taskType);
