@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web operations dashboard service`：建立运营看板前端服务契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DASHBOARD-HEALTH-METRICS.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/operations/dashboard/dashboard-types.ts`、`kuzhambu-apps/admin-web/src/pages/operations/dashboard/dashboard-service.ts`、`kuzhambu-apps/admin-web/src/pages/operations/dashboard/dashboard-service-contract.test.ts`
-    - 处理动作：新增 dashboard overview 与 health trend 的前端类型、请求方法和契约测试。
-    - 验收点：contract test 精确断言 `/operations/dashboard/overview`、`/operations/health/trend` 的 URL 与 body 字段。
-    - 重要度：9/10
-
 - [ ] `admin-web /operations/dashboard`：实现运营看板页面
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DASHBOARD-HEALTH-METRICS.md`
