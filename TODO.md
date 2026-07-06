@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `12 Admin web backup restore controls`：补齐备份恢复页面控件和操作
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-BACKUP-RESTORE-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/operations/backup-restore/backup-restore-page.tsx`、`kuzhambu-apps/admin-web/src/pages/operations/backup-restore/backup-restore-page.css`、`kuzhambu-apps/admin-web/src/pages/operations/backup-restore/backup-restore-page.test.tsx`
-    - 处理动作：新增自动备份展示、恢复模式筛选、演练按钮、真实恢复按钮、写阻断列和详情抽屉字段。
-    - 验收点：`AUTO` 显示、系统自动发起人、`DRILL` 筛选、演练/恢复按钮调用和详情抽屉新增字段均有页面测试。
-    - 重要度：9/10
-
 - [ ] `13 Operations restore drill scripts`：补齐恢复演练脚本模式
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-BACKUP-RESTORE-CLOSURE.md`

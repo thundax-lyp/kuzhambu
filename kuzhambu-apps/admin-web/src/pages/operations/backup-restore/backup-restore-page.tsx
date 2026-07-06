@@ -10,6 +10,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Button, Card, Descriptions, Select, Statistic, Table, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
+import type { ReactNode } from "react";
 import { useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
@@ -19,7 +20,12 @@ import { KuzhambuTag } from "@/components/kuzhambu-tag";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import * as service from "./backup-restore-service";
 import type { BackupLedgerQuery, RestoreLedgerQuery } from "./backup-restore-service";
-import type { OperationsBackupRecord, OperationsRestoreRecord } from "./backup-restore-types";
+import type {
+    OperationsBackupRecord,
+    OperationsBackupType,
+    OperationsRestoreMode,
+    OperationsRestoreRecord
+} from "./backup-restore-types";
 import "./backup-restore-page.css";
 
 const { Text, Title } = Typography;
@@ -83,6 +89,7 @@ const restoreStatusTone = (status?: string | null) => {
 
 const backupTypeOptions = [
     { label: "全部备份", value: "ALL" },
+    { label: "自动备份", value: "AUTO" },
     { label: "手动备份", value: "MANUAL" },
     { label: "恢复前快照", value: "PRE_RESTORE" }
 ];
@@ -94,8 +101,58 @@ const ledgerStatusOptions = [
     { label: "失败", value: "FAILED" }
 ];
 
+const restoreModeOptions = [
+    { label: "全部模式", value: "ALL" },
+    { label: "真实恢复", value: "REAL" },
+    { label: "恢复演练", value: "DRILL" }
+];
+
 const normalizeFilterValue = (value: string) => {
     return value === "ALL" ? undefined : value;
+};
+
+const normalizeRestoreMode = (value: string): RestoreLedgerQuery["restoreMode"] => {
+    if (value === "REAL" || value === "DRILL") {
+        return value;
+    }
+    return undefined;
+};
+
+const backupTypeLabel = (value?: OperationsBackupType | null) => {
+    if (value === "AUTO") {
+        return "自动备份";
+    }
+    if (value === "MANUAL") {
+        return "手动备份";
+    }
+    if (value === "PRE_RESTORE") {
+        return "恢复前快照";
+    }
+    return "-";
+};
+
+const restoreModeLabel = (value?: OperationsRestoreMode | null) => {
+    if (value === "REAL") {
+        return "真实恢复";
+    }
+    if (value === "DRILL") {
+        return "恢复演练";
+    }
+    return "-";
+};
+
+const requesterLabel = (value?: number | null) => {
+    return value == null ? "系统自动" : String(value);
+};
+
+const writeBlockLabel = (record: OperationsRestoreRecord) => {
+    if (record.restoreStatus === "RUNNING" && record.writeBlockEnabled) {
+        return <KuzhambuTag type="warning">阻断中</KuzhambuTag>;
+    }
+    if (record.writeBlockReleasedAt) {
+        return <KuzhambuTag type="success">已释放</KuzhambuTag>;
+    }
+    return <Text type="secondary">未启用</Text>;
 };
 
 const countByStatus = (
@@ -106,6 +163,12 @@ const countByStatus = (
         const currentStatus = "backupStatus" in record ? record.backupStatus : record.restoreStatus;
         return currentStatus === status;
     }).length;
+};
+
+const countRestoreDrillsByStatus = (records: OperationsRestoreRecord[], status: string) => {
+    return records.filter(
+        (record) => record.restoreMode === "DRILL" && record.restoreStatus === status
+    ).length;
 };
 
 export const BackupRestorePage = () => {
@@ -198,7 +261,8 @@ export const BackupRestorePage = () => {
 
     const backupRecords = backupQuery.data?.records || [];
     const restoreRecords = restoreQuery.data?.records || [];
-    const latestBackup = backupQuery.data?.records?.[0] || null;
+    const latestBackup =
+        backupRecords.find((record) => record.backupStatus === "SUCCEEDED") || null;
 
     const backupColumns: ColumnsType<OperationsBackupRecord> = [
         {
@@ -219,7 +283,14 @@ export const BackupRestorePage = () => {
             dataIndex: "backupType",
             key: "backupType",
             width: 120,
-            render: (value?: string | null) => value || "-"
+            render: (value?: OperationsBackupType | null) => backupTypeLabel(value)
+        },
+        {
+            title: "发起人",
+            dataIndex: "requesterUserId",
+            key: "requesterUserId",
+            width: 120,
+            render: (value?: number | null) => requesterLabel(value)
         },
         {
             title: "状态",
@@ -264,15 +335,37 @@ export const BackupRestorePage = () => {
                     </Button>
                     {canExecuteRestore && record.backupStatus === "SUCCEEDED" ? (
                         <Button
+                            icon={<PlayCircleOutlined />}
+                            onClick={() =>
+                                confirm.danger({
+                                    title: "执行恢复演练",
+                                    message: `确认从备份 #${record.backupId} 执行恢复演练吗？`,
+                                    description:
+                                        "演练会创建 PRE_RESTORE 快照并验证备份可恢复性，不覆盖生产业务数据。",
+                                    okText: "执行演练",
+                                    onConfirm: () =>
+                                        restoreMutation.mutateAsync({
+                                            backupId: record.backupId,
+                                            restoreMode: "DRILL"
+                                        })
+                                })
+                            }
+                            size="small"
+                        >
+                            演练
+                        </Button>
+                    ) : null}
+                    {canExecuteRestore && record.backupStatus === "SUCCEEDED" ? (
+                        <Button
                             danger
                             icon={<SyncOutlined />}
                             onClick={() =>
                                 confirm.danger({
-                                    title: "执行恢复",
+                                    title: "执行真实恢复",
                                     message: `确认从备份 #${record.backupId} 执行恢复吗？`,
                                     description:
-                                        "恢复会先创建 PRE_RESTORE 快照，并覆盖业务恢复集中的当前数据。",
-                                    okText: "执行恢复",
+                                        "真实恢复会创建 PRE_RESTORE 快照，开启写入阻断，并覆盖业务恢复集中的当前数据。",
+                                    okText: "执行真实恢复",
                                     onConfirm: () =>
                                         restoreMutation.mutateAsync({
                                             backupId: record.backupId,
@@ -311,6 +404,13 @@ export const BackupRestorePage = () => {
             render: (value?: number | null) => value || "-"
         },
         {
+            title: "模式",
+            dataIndex: "restoreMode",
+            key: "restoreMode",
+            width: 120,
+            render: (value?: OperationsRestoreMode | null) => restoreModeLabel(value)
+        },
+        {
             title: "状态",
             dataIndex: "restoreStatus",
             key: "restoreStatus",
@@ -324,12 +424,21 @@ export const BackupRestorePage = () => {
             dataIndex: "writeBlockEnabled",
             key: "writeBlockEnabled",
             width: 120,
-            render: (value?: boolean | null) =>
-                value ? (
-                    <KuzhambuTag type="warning">已启用</KuzhambuTag>
-                ) : (
-                    <Text type="secondary">未启用</Text>
-                )
+            render: (_, record) => writeBlockLabel(record)
+        },
+        {
+            title: "阻断开启",
+            dataIndex: "writeBlockStartedAt",
+            key: "writeBlockStartedAt",
+            width: 180,
+            render: (value?: string | null) => formatDateTime(value)
+        },
+        {
+            title: "阻断释放",
+            dataIndex: "writeBlockReleasedAt",
+            key: "writeBlockReleasedAt",
+            width: 180,
+            render: (value?: string | null) => formatDateTime(value)
         },
         {
             title: "开始时间",
@@ -399,16 +508,12 @@ export const BackupRestorePage = () => {
                     <Card className="backup-restore-page-summary-card">
                         <Statistic
                             prefix={<SafetyCertificateOutlined />}
-                            title="PRE_RESTORE 快照"
-                            value={countByStatus(
-                                backupRecords.filter(
-                                    (record) => record.backupType === "PRE_RESTORE"
-                                ),
-                                "SUCCEEDED"
-                            )}
+                            title="恢复演练"
+                            value={countRestoreDrillsByStatus(restoreRecords, "SUCCEEDED")}
                         />
                         <Text className="backup-restore-page-empty-copy" type="secondary">
-                            恢复失败时也会保留 PRE_RESTORE 快照记录，便于回退排查。
+                            成功 {countRestoreDrillsByStatus(restoreRecords, "SUCCEEDED")} 次，失败{" "}
+                            {countRestoreDrillsByStatus(restoreRecords, "FAILED")} 次。
                         </Text>
                     </Card>
                 </div>
@@ -456,6 +561,21 @@ export const BackupRestorePage = () => {
                                     setRestoreFilter((currentFilter) => ({
                                         ...currentFilter,
                                         restoreStatus: normalizeFilterValue(value)
+                                    }));
+                                }}
+                            />
+                        </label>
+                        <label className="backup-restore-page-toolbar-field">
+                            <Text type="secondary">恢复模式</Text>
+                            <Select
+                                aria-label="恢复模式"
+                                options={restoreModeOptions}
+                                value={restoreFilter.restoreMode || "ALL"}
+                                onChange={(value) => {
+                                    setRestorePageNo(DEFAULT_PAGE_NO);
+                                    setRestoreFilter((currentFilter) => ({
+                                        ...currentFilter,
+                                        restoreMode: normalizeRestoreMode(value)
                                     }));
                                 }}
                             />
@@ -534,7 +654,7 @@ export const BackupRestorePage = () => {
                                 onChange: (pageNo) => setRestorePageNo(pageNo)
                             }}
                             rowKey={(record) => record.restoreId}
-                            scroll={{ x: 1200 }}
+                            scroll={{ x: 1560 }}
                             size="small"
                         />
                     </Card>
@@ -562,7 +682,12 @@ export const BackupRestorePage = () => {
                                 {
                                     key: "backupType",
                                     label: "备份类型",
-                                    children: backupDetailQuery.data.backupType || "-"
+                                    children: backupTypeLabel(backupDetailQuery.data.backupType)
+                                },
+                                {
+                                    key: "requesterUserId",
+                                    label: "发起人",
+                                    children: requesterLabel(backupDetailQuery.data.requesterUserId)
                                 },
                                 {
                                     key: "backupStatus",
@@ -660,11 +785,28 @@ export const BackupRestorePage = () => {
                                     )
                                 },
                                 {
+                                    key: "restoreMode",
+                                    label: "恢复模式",
+                                    children: restoreModeLabel(restoreDetailQuery.data.restoreMode)
+                                },
+                                {
                                     key: "writeBlockEnabled",
                                     label: "写阻断",
-                                    children: restoreDetailQuery.data.writeBlockEnabled
-                                        ? "已启用"
-                                        : "未启用"
+                                    children: writeBlockLabel(restoreDetailQuery.data) as ReactNode
+                                },
+                                {
+                                    key: "writeBlockStartedAt",
+                                    label: "写阻断开启时间",
+                                    children: formatDateTime(
+                                        restoreDetailQuery.data.writeBlockStartedAt
+                                    )
+                                },
+                                {
+                                    key: "writeBlockReleasedAt",
+                                    label: "写阻断释放时间",
+                                    children: formatDateTime(
+                                        restoreDetailQuery.data.writeBlockReleasedAt
+                                    )
                                 },
                                 {
                                     key: "failureReason",
