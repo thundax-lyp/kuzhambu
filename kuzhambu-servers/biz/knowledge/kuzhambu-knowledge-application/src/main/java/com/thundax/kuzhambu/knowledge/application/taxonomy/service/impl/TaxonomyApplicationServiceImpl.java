@@ -1,5 +1,10 @@
 package com.thundax.kuzhambu.knowledge.application.taxonomy.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thundax.kuzhambu.ai.facade.AiFacade;
+import com.thundax.kuzhambu.ai.facade.request.KnowledgeAiExtractionFacadeRequest;
+import com.thundax.kuzhambu.ai.facade.response.KnowledgeAiExtractionFacadeResponse;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
@@ -16,6 +21,7 @@ import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCategorySt
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCategoryUpdateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCreateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagDeprecateCommand;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagMergeCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagReviewCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagStatusCommand;
@@ -30,6 +36,7 @@ import com.thundax.kuzhambu.knowledge.application.taxonomy.result.SynonymResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagAliasResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagCategoryResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagDetailResult;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagExtractionResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagGovernanceMetricsResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagMergePreviewResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagResult;
@@ -56,10 +63,14 @@ import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagCategoryRepo
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagContentRefRepository;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagGovernanceMetricsRepository;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagRepository;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -72,7 +83,10 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
 
     private static final String APPROVE_DECISION = "APPROVE";
     private static final String REJECT_DECISION = "REJECT";
+    private static final int TAXONOMY_CONTEXT_PAGE_SIZE = 200;
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
+    private final AiFacade aiFacade;
     private final TagCategoryRepository tagCategoryRepository;
     private final TagRepository tagRepository;
     private final TagAliasRepository tagAliasRepository;
@@ -82,6 +96,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     private final TagGovernanceMetricsRepository tagGovernanceMetricsRepository;
 
     public TaxonomyApplicationServiceImpl(
+            AiFacade aiFacade,
             TagCategoryRepository tagCategoryRepository,
             TagRepository tagRepository,
             TagAliasRepository tagAliasRepository,
@@ -89,6 +104,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
             SynonymRepository synonymRepository,
             KnowledgeTagBindingDomainService knowledgeTagBindingDomainService,
             TagGovernanceMetricsRepository tagGovernanceMetricsRepository) {
+        this.aiFacade = aiFacade;
         this.tagCategoryRepository = tagCategoryRepository;
         this.tagRepository = tagRepository;
         this.tagAliasRepository = tagAliasRepository;
@@ -466,6 +482,55 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     }
 
     @Override
+    public TagExtractionResult extractTags(TagExtractionCommand command) {
+        TagExtractionCommand effective = ensureCommand(command, "标签抽取命令");
+        String sourceContentType = trimText(effective.getSourceContentType(), "sourceContentType");
+        Long sourceContentId = ensureId(effective.getSourceContentId(), "sourceContentId");
+        String contentText = trimText(effective.getContentText(), "contentText");
+        Long modelId = ensureId(effective.getModelId(), "modelId");
+        String modelName = trimText(effective.getModelName(), "modelName");
+        Long requestedBy = ensureId(effective.getRequestedBy(), "requestedBy");
+        int maxTags = effective.getMaxTags() == null ? 10 : effective.getMaxTags();
+        if (maxTags < 1) {
+            throw new BizException("maxTags must be greater than 0");
+        }
+        boolean allowNewTags = effective.getAllowNewTags() == null || Boolean.TRUE.equals(effective.getAllowNewTags());
+
+        String requestId = "knowledge-tag-" + UUID.randomUUID();
+        KnowledgeAiExtractionFacadeResponse response =
+                aiFacade.extractKnowledgeTags(KnowledgeAiExtractionFacadeRequest.builder()
+                        .taskType("TAG")
+                        .scopeType("CONTENT")
+                        .scopeJson(toJson(scopePayload(sourceContentType, sourceContentId)))
+                        .sourceContentType(sourceContentType)
+                        .sourceContentId(sourceContentId)
+                        .requestedBy(requestedBy)
+                        .serviceRole("KNOWLEDGE")
+                        .modelId(modelId)
+                        .modelName(modelName)
+                        .promptVersionId(effective.getPromptVersionId())
+                        .requestId(requestId)
+                        .traceId(requestId)
+                        .promptMessagesJson(promptMessagesJson())
+                        .promptVariablesJson(toJson(promptVariables(maxTags, allowNewTags)))
+                        .inputPayloadJson(toJson(inputPayload(
+                                effective, sourceContentType, sourceContentId, contentText, maxTags, allowNewTags)))
+                        .outputSchemaJson(outputSchemaJson())
+                        .forceJson(true)
+                        .locale("zh-CN")
+                        .build());
+
+        return new TagExtractionResult(
+                response == null ? null : response.getCallId(),
+                response == null ? null : response.getCandidateId(),
+                response == null ? null : response.getStatus(),
+                response == null ? null : response.getResultFormat(),
+                response == null ? null : response.getResultPayload(),
+                response == null ? null : response.getErrorType(),
+                response == null ? null : response.getErrorMessage());
+    }
+
+    @Override
     public List<TagAliasResult> listTagAliases(TagId tagId) {
         Tag tag = ensureTagExists(tagId);
         return TaxonomyApplicationAssembler.toAliasResultList(tagAliasRepository.listByTagId(tag.getTagId()));
@@ -594,6 +659,154 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
         SynonymRemoveCommand effective = ensureCommand(command, "同义词删除命令");
         SynonymId id = ensureId(effective.getId(), "synonymId");
         synonymRepository.deleteById(id);
+    }
+
+    private Map<String, Object> scopePayload(String sourceContentType, Long sourceContentId) {
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("contentType", sourceContentType);
+        payload.put("contentIds", List.of(sourceContentId));
+        payload.put("includeExistingTags", true);
+        return payload;
+    }
+
+    private Map<String, Object> promptVariables(int maxTags, boolean allowNewTags) {
+        Map<String, Object> variables = new LinkedHashMap<>();
+        variables.put("locale", "zh-CN");
+        variables.put("maxTags", maxTags);
+        variables.put("allowNewTags", allowNewTags);
+        return variables;
+    }
+
+    private Map<String, Object> inputPayload(
+            TagExtractionCommand command,
+            String sourceContentType,
+            Long sourceContentId,
+            String contentText,
+            int maxTags,
+            boolean allowNewTags) {
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("contentType", sourceContentType);
+        payload.put("contentId", sourceContentId);
+        payload.put("contentTitle", trimOptionalText(command.getContentTitle()));
+        payload.put("contentText", contentText);
+        payload.put("existingTags", existingTagPayloads());
+        payload.put("categories", categoryPayloads());
+        payload.put("aliases", aliasPayloads());
+        payload.put("constraints", constraintsPayload(maxTags, allowNewTags));
+        return payload;
+    }
+
+    private List<Map<String, Object>> existingTagPayloads() {
+        return tagRepository
+                .page(null, null, TagStatus.ENABLED, null, null, 1, TAXONOMY_CONTEXT_PAGE_SIZE)
+                .getRecords()
+                .stream()
+                .filter(Objects::nonNull)
+                .map(tag -> {
+                    Map<String, Object> payload = new LinkedHashMap<>();
+                    payload.put(
+                            "tagId",
+                            tag.getTagId() == null
+                                    ? null
+                                    : String.valueOf(tag.getTagId().value()));
+                    payload.put("name", tag.getName());
+                    payload.put(
+                            "categoryId",
+                            tag.getCategoryId() == null
+                                    ? null
+                                    : String.valueOf(tag.getCategoryId().value()));
+                    payload.put("categoryName", getCategoryName(tag.getCategoryId()));
+                    return payload;
+                })
+                .collect(Collectors.toList());
+    }
+
+    private List<Map<String, Object>> categoryPayloads() {
+        return tagCategoryRepository
+                .page(null, TagCategoryStatus.ENABLED, 1, TAXONOMY_CONTEXT_PAGE_SIZE)
+                .getRecords()
+                .stream()
+                .filter(Objects::nonNull)
+                .map(category -> {
+                    Map<String, Object> payload = new LinkedHashMap<>();
+                    payload.put(
+                            "categoryId",
+                            category.getCategoryId() == null
+                                    ? null
+                                    : String.valueOf(category.getCategoryId().value()));
+                    payload.put("name", category.getName());
+                    return payload;
+                })
+                .collect(Collectors.toList());
+    }
+
+    private List<Map<String, Object>> aliasPayloads() {
+        List<Map<String, Object>> aliases = new ArrayList<>();
+        for (Tag tag : tagRepository
+                .page(null, null, TagStatus.ENABLED, null, null, 1, TAXONOMY_CONTEXT_PAGE_SIZE)
+                .getRecords()) {
+            if (tag == null || tag.getTagId() == null) {
+                continue;
+            }
+            for (TagAlias alias : tagAliasRepository.listByTagId(tag.getTagId())) {
+                if (alias == null) {
+                    continue;
+                }
+                Map<String, Object> payload = new LinkedHashMap<>();
+                payload.put("tagId", String.valueOf(tag.getTagId().value()));
+                payload.put("name", alias.getName());
+                aliases.add(payload);
+            }
+        }
+        return aliases;
+    }
+
+    private Map<String, Object> constraintsPayload(int maxTags, boolean allowNewTags) {
+        Map<String, Object> constraints = new LinkedHashMap<>();
+        constraints.put("maxTags", maxTags);
+        constraints.put("allowNewTags", allowNewTags);
+        constraints.put("reviewRequired", true);
+        return constraints;
+    }
+
+    private String promptMessagesJson() {
+        return toJson(List.of(
+                Map.of("role", "system", "content", "你是 Knowledge 标签治理助手，只返回符合 schema 的 JSON。"),
+                Map.of("role", "user", "content", "请基于内容片段抽取候选标签，优先匹配已有标签。")));
+    }
+
+    private String outputSchemaJson() {
+        Map<String, Object> name = Map.of("type", "string");
+        Map<String, Object> confidence = Map.of("type", "number");
+        Map<String, Object> itemProperties = new LinkedHashMap<>();
+        itemProperties.put("name", name);
+        itemProperties.put("categoryId", name);
+        itemProperties.put("categoryName", name);
+        itemProperties.put("confidence", confidence);
+        itemProperties.put("reason", name);
+        itemProperties.put("matchedExistingTagId", name);
+        Map<String, Object> tagItem = new LinkedHashMap<>();
+        tagItem.put("type", "object");
+        tagItem.put("properties", itemProperties);
+        tagItem.put("required", List.of("name", "confidence"));
+        Map<String, Object> tags = new LinkedHashMap<>();
+        tags.put("type", "array");
+        tags.put("items", tagItem);
+        Map<String, Object> properties = new LinkedHashMap<>();
+        properties.put("tags", tags);
+        Map<String, Object> schema = new LinkedHashMap<>();
+        schema.put("type", "object");
+        schema.put("properties", properties);
+        schema.put("required", List.of("tags"));
+        return toJson(schema);
+    }
+
+    private String toJson(Object value) {
+        try {
+            return OBJECT_MAPPER.writeValueAsString(value);
+        } catch (JsonProcessingException exception) {
+            throw new BizException("标签抽取 JSON 组装失败");
+        }
     }
 
     private TagCategory getExistingCategory(TagCategoryId categoryId) {

@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `03-knowledge-tag-extraction`：新增 Knowledge 标签同步抽取应用入口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-KNOWLEDGE-TAG-EXTRACTION.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/service/TaxonomyApplicationService.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/service/impl/TaxonomyApplicationServiceImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/command/TagExtractionCommand.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/result/TagExtractionResult.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/taxonomy/service/impl/TaxonomyApplicationServiceImplTest.java`
-    - 处理动作：新增 `extractTags` 并组装 `KnowledgeAiExtractionFacadeRequest`
-    - 验收点：测试断言 `taskType=TAG`、`scopeType=CONTENT`、`forceJson=true`、`locale=zh-CN` 和 `inputPayloadJson` 字段符合 RUNBOOK
-    - 重要度：10/10
-
 - [ ] `04-knowledge-tag-candidate-apply`：新增 Knowledge 标签候选应用入口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-KNOWLEDGE-TAG-EXTRACTION.md`
