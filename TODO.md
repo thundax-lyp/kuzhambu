@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `servers-full-validation`：Servers 全量验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-PERMISSION-OPERATIONS-CLEANUP-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers`
-    - 处理动作：执行 servers 全量 format/checkstyle/compile/test 验证。
-    - 验收点：`mvn spotless:check`, `mvn checkstyle:check`, `mvn -DskipTests compile`, `mvn test` 均通过。
-    - 重要度：10/10
-
 - [ ] `admin-web-full-validation`：Admin Web 全量验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-PERMISSION-OPERATIONS-CLEANUP-CLOSURE.md`
