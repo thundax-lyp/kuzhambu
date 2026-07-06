@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `knowledge portal atlas 后端协议`：补齐 atlas 画布读模型字段
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-14-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/portal/KnowledgePortalAtlasResult.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/portal/atlas/controller/response/KnowledgePortalAtlasResponse.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/portal/atlas/assembler/KnowledgePortalAtlasInterfaceAssembler.java`
-    - 处理动作：新增并映射 `canvasView`、`CanvasNode` 和 `CanvasEdge` 只读字段
-    - 验收点：Portal atlas response 保持原字段兼容，并额外返回完整 `canvasView`
-    - 重要度：10/10
-
 - [ ] `knowledge portal atlas 后端装配`：固定 14 门类与三层画布数据
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-14-CLOSURE.md`
