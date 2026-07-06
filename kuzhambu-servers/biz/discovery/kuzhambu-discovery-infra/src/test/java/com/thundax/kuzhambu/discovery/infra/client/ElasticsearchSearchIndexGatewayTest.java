@@ -14,15 +14,21 @@ import com.thundax.kuzhambu.discovery.application.search.result.SearchSourceCont
 import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchKeyword;
 import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchScope;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.IndexOperations;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.document.Document;
+import org.springframework.data.elasticsearch.core.query.Criteria;
+import org.springframework.data.elasticsearch.core.query.CriteriaQuery;
 
 class ElasticsearchSearchIndexGatewayTest {
 
@@ -158,6 +164,49 @@ class ElasticsearchSearchIndexGatewayTest {
     }
 
     @Test
+    void searchShouldApplyAdvancedScopeCriteria() {
+        DiscoverySearchIndexProperties properties = new DiscoverySearchIndexProperties();
+        ElasticsearchOperations operations = mock(ElasticsearchOperations.class);
+        @SuppressWarnings("unchecked")
+        SearchHits<DiscoverySearchDocument> searchHits = mock(SearchHits.class);
+        ArgumentCaptor<CriteriaQuery> queryCaptor = ArgumentCaptor.forClass(CriteriaQuery.class);
+        when(searchHits.getSearchHits()).thenReturn(List.of());
+        when(operations.search(
+                        queryCaptor.capture(),
+                        eq(DiscoverySearchDocument.class),
+                        any(org.springframework.data.elasticsearch.core.mapping.IndexCoordinates.class)))
+                .thenReturn(searchHits);
+        ElasticsearchSearchIndexGateway gateway =
+                new ElasticsearchSearchIndexGateway(properties, operations, new DiscoverySearchDocumentAssembler());
+
+        gateway.search(
+                new SearchKeyword("黄帝", "黄帝", "黄帝"),
+                new SearchScope(
+                        List.of("SANCAI_ENTRY"),
+                        List.of("11"),
+                        List.of("上古"),
+                        List.of("PUBLISHED"),
+                        List.of("PUBLIC"),
+                        new Date(1_718_000_000_000L),
+                        new Date(1_720_419_200_000L)),
+                1,
+                20);
+
+        Set<String> fieldNames = flattenCriteria(queryCaptor.getValue().getCriteria()).stream()
+                .map(Criteria::getField)
+                .filter(field -> field != null && field.getName() != null)
+                .map(field -> field.getName())
+                .collect(Collectors.toSet());
+        assertTrue(fieldNames.contains("knowledgeBase"));
+        assertTrue(fieldNames.contains("categoryCode"));
+        assertTrue(fieldNames.contains("tagNames"));
+        assertTrue(fieldNames.contains("status"));
+        assertTrue(fieldNames.contains("visibility"));
+        assertTrue(fieldNames.contains("updatedAt"));
+        assertTrue(fieldNames.contains("deleted"));
+    }
+
+    @Test
     void rebuildIndexShouldSaveAssembledDocuments() {
         DiscoverySearchIndexProperties properties = new DiscoverySearchIndexProperties();
         ElasticsearchOperations operations = mock(ElasticsearchOperations.class);
@@ -243,6 +292,23 @@ class ElasticsearchSearchIndexGatewayTest {
         SearchHit<DiscoverySearchDocument> searchHit = mock(SearchHit.class);
         when(searchHit.getContent()).thenReturn(document);
         return searchHit;
+    }
+
+    private List<Criteria> flattenCriteria(Criteria criteria) {
+        List<Criteria> result = new ArrayList<>();
+        if (criteria == null) {
+            return result;
+        }
+        result.add(criteria);
+        for (Criteria chainedCriteria : criteria.getCriteriaChain()) {
+            if (chainedCriteria != criteria) {
+                result.addAll(flattenCriteria(chainedCriteria));
+            }
+        }
+        for (Criteria subCriteria : criteria.getSubCriteria()) {
+            result.addAll(flattenCriteria(subCriteria));
+        }
+        return result;
     }
 
     private DiscoverySearchDocument document(

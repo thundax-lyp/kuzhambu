@@ -116,15 +116,17 @@ class SearchApplicationServiceImplTest {
                                 1,
                                 1,
                                 "/classics/sancai/1001")))));
+        Date dateFrom = new Date(1_718_000_000_000L);
+        Date dateTo = new Date(1_720_419_200_000L);
         SearchQuery query = new SearchQuery(
                 "黄帝",
                 List.of("SANCAI_ENTRY"),
-                List.of(),
-                List.of(),
-                List.of(),
-                List.of(),
-                null,
-                null,
+                List.of("11"),
+                List.of("上古"),
+                List.of("PUBLISHED"),
+                List.of("PUBLIC"),
+                dateFrom,
+                dateTo,
                 1,
                 20,
                 "ANONYMOUS",
@@ -147,6 +149,12 @@ class SearchApplicationServiceImplTest {
         assertEquals("黄帝 传说", searchLogCaptor.getValue().getDisplayQueryText());
         assertEquals(searchLogCaptor.getValue().getSearchLogId(), result.getSearchLogId());
         assertTrue(result.getSearchScopesJson().contains("SANCAI_ENTRY"));
+        assertTrue(result.getSearchScopesJson().contains("\"categoryCodes\":[\"11\"]"));
+        assertTrue(result.getSearchScopesJson().contains("\"tagNames\":[\"上古\"]"));
+        assertTrue(result.getSearchScopesJson().contains("\"contentStatuses\":[\"PUBLISHED\"]"));
+        assertTrue(result.getSearchScopesJson().contains("\"visibilityScopes\":[\"PUBLIC\"]"));
+        assertTrue(result.getSearchScopesJson().contains("\"dateFrom\":1718000000000"));
+        assertTrue(result.getSearchScopesJson().contains("\"dateTo\":1720419200000"));
         assertEquals(
                 "<mark>黄帝</mark>上古帝王",
                 result.getGroups().get(0).getItems().get(0).getHighlightText());
