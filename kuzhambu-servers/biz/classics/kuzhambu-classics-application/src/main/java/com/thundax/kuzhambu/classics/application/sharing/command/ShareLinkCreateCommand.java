@@ -40,6 +40,16 @@ public class ShareLinkCreateCommand {
 
     public ClassicsShareLink toLink(String shareToken, String tokenHash) {
         return new ClassicsShareLink(
-                null, shareToken, tokenHash, title, visibility, status, visibilityRiskStatus, issuedAt, expiresAt, 0L);
+                null,
+                shareToken,
+                tokenHash,
+                title,
+                visibility,
+                status,
+                visibilityRiskStatus,
+                operatorUserId,
+                issuedAt,
+                expiresAt,
+                0L);
     }
 }

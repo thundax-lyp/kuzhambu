@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Admin 分享创建`：写入当前创建者用户 ID
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-PRIVATE-SHARE-ACCESS.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sharing/command/ShareLinkCreateCommand.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/sharing/controller/ClassicsSharingAdminController.java`
-    - 处理动作：单条分享和批量分享创建时从 `KuzhambuContextHolder.currentSubjectId()` 绑定当前用户 ID。
-    - 验收点：创建命令的 `operatorUserId` 最终落到分享链接 `createdByUserId`，无法解析数字用户 ID 时不误写创建者。
-    - 重要度：10/10
-
 - [ ] `ClassicsSharingApplicationService`：实现私有分享访问判定
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-PRIVATE-SHARE-ACCESS.md`
