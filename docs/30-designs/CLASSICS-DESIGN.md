@@ -302,11 +302,12 @@ Classics 拥有古籍内容主数据和内容上下文内的维护数据。Stora
 | `visibility` | `varchar(16)` |  | 公开或私有分享 |
 | `status` | `varchar(16)` | KEY(status, expires_at) | 活跃、撤销等状态 |
 | `visibility_risk_status` | `varchar(16)` |  | 可见性风险状态，例如 `PUBLIC_ONLY`、`CONTAINS_PRIVATE` |
+| `created_by_user_id` | `bigint` | KEY(created_by_user_id, visibility) | 私有分享访问校验所需创建者 |
 | `issued_at` | `datetime(3)` |  | 分享创建时间 |
 | `expires_at` | `datetime(3)` | KEY(status, expires_at) | 分享过期时间 |
 | `access_count` | `bigint` |  | 访问统计 |
 
-约束：`id` 主键；`token_hash` 唯一。索引：`(status, expires_at)`。
+约束：`id` 主键；`token_hash` 唯一。索引：`(status, expires_at)`、`(created_by_user_id, visibility)`。
 
 ### classics_share_target
 

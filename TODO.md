@@ -11,12 +11,4 @@
 
 ## 待审阅任务项
 
-- [ ] `Classics 私有分享文档收口`：同步覆盖度并清理 RUNBOOK
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-CLASSICS-PRIVATE-SHARE-ACCESS.md`
-    - 范围对象：`docs/20-interfaces/CLASSICS-SHARE-PORTAL-INTERFACE.md`、`docs/30-designs/CLASSICS-DESIGN.md`、`docs/40-readiness/CLASSICS-IMPLEMENTATION-COVERAGE.md`、`docs/30-designs/RUNBOOK-CLASSICS-PRIVATE-SHARE-ACCESS.md`
-    - 处理动作：同步接口、设计和 Implementation Coverage，并在 PR 收口前删除已无剩余价值的 RUNBOOK。
-    - 验收点：Classics Implementation Coverage 不再列私有分享访问缺口，RUNBOOK 文件在闭环完成后被清理。
-    - 重要度：10/10
-
 ## 待讨论项
