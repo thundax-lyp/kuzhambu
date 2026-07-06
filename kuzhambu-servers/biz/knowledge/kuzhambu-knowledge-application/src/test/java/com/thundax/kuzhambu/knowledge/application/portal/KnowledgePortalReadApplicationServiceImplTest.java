@@ -6,6 +6,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult;
+import com.thundax.kuzhambu.knowledge.application.refinement.service.KnowledgeQualityReportApplicationService;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphVersion;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeEntity;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeRelation;
@@ -494,5 +496,31 @@ class KnowledgePortalReadApplicationServiceImplTest {
         assertEquals("MANUAL", result.getSourceBreakdowns().get(0).getSourceKey());
         assertEquals("三才图会", result.getSourceDetails().get(0).getSourceTitle());
         assertEquals(3, result.getFocusIssues().size());
+    }
+
+    @Test
+    void getQualityShouldReturnEmptyStateWhenNoQualityReportExists() {
+        KnowledgeQualityReportApplicationService qualityReportService =
+                mock(KnowledgeQualityReportApplicationService.class);
+        when(qualityReportService.latest(null))
+                .thenReturn(new QualityReportDetailResult(null, List.of(), List.of(), List.of()));
+        KnowledgePortalReadApplicationServiceImpl service = new KnowledgePortalReadApplicationServiceImpl(
+                mock(TagRepository.class),
+                mock(GraphVersionRepository.class),
+                mock(KnowledgeEntityRepository.class),
+                mock(KnowledgeRelationRepository.class),
+                mock(TagGovernanceMetricsRepository.class),
+                mock(RefinementTaskRepository.class),
+                qualityReportService);
+
+        KnowledgePortalQualityResult result = service.getQuality();
+
+        assertEquals(0, result.getQualityStats().size());
+        assertEquals(0, result.getTrendSeries().size());
+        assertEquals(0, result.getSourceBreakdowns().size());
+        assertEquals(0, result.getSourceDetails().size());
+        assertEquals("尚未生成质量报告", result.getFocusIssues().get(0).getTitle());
+        assertEquals("high", result.getFocusIssues().get(0).getSeverity());
+        assertEquals("/knowledge/quality", result.getFocusIssues().get(0).getHref());
     }
 }
