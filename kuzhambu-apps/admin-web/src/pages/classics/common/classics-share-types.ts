@@ -2,6 +2,8 @@ export type ClassicsShareContentType = "MING_CUSTOMS" | "SANCAI_ENTRY" | "WANGQI
 
 export type ClassicsShareLinkStatus = "ACTIVE" | "EXPIRED" | "REVOKED";
 
+export type ClassicsShareTargetStatus = "AVAILABLE" | "CONTENT_DELETED";
+
 export type ClassicsShareVisibility = "PRIVATE" | "PUBLIC";
 
 export interface ClassicsShareTargetRef {
@@ -36,7 +38,7 @@ export interface ClassicsShareTargetRecord {
     currentContentVersionNo?: number | null;
     id?: number | null;
     priority?: number | null;
-    targetStatus?: string | null;
+    targetStatus?: ClassicsShareTargetStatus | string | null;
     titleSnapshot?: string | null;
 }
 

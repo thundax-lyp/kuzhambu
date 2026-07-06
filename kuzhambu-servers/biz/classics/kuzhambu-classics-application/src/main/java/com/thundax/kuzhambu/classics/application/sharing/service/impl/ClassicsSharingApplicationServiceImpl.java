@@ -30,6 +30,7 @@ import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustoms
 import com.thundax.kuzhambu.classics.domain.mingcustoms.repository.MingCustomsRepository;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
+import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisibilityRiskStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.repository.SancaiRepository;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareAccessRecord;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareLink;
@@ -495,6 +496,24 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void syncContentDeleted(ClassicsContentType contentType, Long contentId) {
+        if (contentType == null || contentId == null) {
+            return;
+        }
+        List<ClassicsShareLinkId> affectedLinkIds = repository.listTargetsByContent(contentType, contentId).stream()
+                .filter(target -> target != null && target.getShareLinkId() != null)
+                .map(ClassicsShareTarget::getShareLinkId)
+                .distinct()
+                .toList();
+        if (affectedLinkIds.isEmpty()) {
+            return;
+        }
+        repository.markTargetsContentDeleted(contentType, contentId);
+        affectedLinkIds.forEach(this::refreshVisibilityRiskStatus);
+    }
+
+    @Override
     public List<ClassicsShareTarget> listTargets(ClassicsShareLinkId shareLinkId) {
         List<ClassicsShareTarget> targets = repository.listTargetsByLinkId(shareLinkId, SortDirection.ASC);
         if (targets == null) {
@@ -512,6 +531,22 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
         }
         repository.insertAccessRecord(record);
         repository.increaseAccessCount(record.getShareLinkId());
+    }
+
+    private void refreshVisibilityRiskStatus(ClassicsShareLinkId linkId) {
+        if (linkId == null) {
+            return;
+        }
+        repository.updateLinkVisibilityRiskStatus(linkId, calculateVisibilityRiskStatus(linkId));
+    }
+
+    private SancaiVisibilityRiskStatus calculateVisibilityRiskStatus(ClassicsShareLinkId linkId) {
+        List<ClassicsShareTarget> availableTargets = repository.listTargetsByLinkId(linkId, SortDirection.ASC).stream()
+                .filter(ClassicsSharingApplicationServiceImpl::isAvailableTarget)
+                .toList();
+        boolean containsPrivate = availableTargets.stream()
+                .anyMatch(target -> target.getContentVisibilitySnapshot() == ClassicsSharedContentVisibility.PRIVATE);
+        return containsPrivate ? SancaiVisibilityRiskStatus.CONTAINS_PRIVATE : SancaiVisibilityRiskStatus.PUBLIC_ONLY;
     }
 
     @Override

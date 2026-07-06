@@ -49,7 +49,8 @@
 - 三才图会图片治理闭环已补齐：后端已支持图片上传、删除、当前图切换、同条目排序和全部图片 snapshot；Admin Web 已支持配图列表管理、原图上传、删除、当前图选择、缩略预览和放大浏览；Portal 分享和 Workers 静态展示/导出均使用分享或 payload 内的多图资源。
 - Classics/System 权限过滤闭环已补齐：三类内容的 view/edit/export/share 权限在后端查询、详情、批量状态、分享和导出入口形成一致约束；Admin Web 三类 Classics 页面会按同一权限口径禁用分享、导出、批量公开和批量私有控件，并继续展示 `PERMISSION_DENIED` 批量失败项。
 - Classics 清理入口已对接 Operations cleanup：应用层可发现并清理过期导出任务、过期分享链接和草稿分享链接；导出清理会将任务标记为过期，分享/草稿清理会将分享记录标记为过期，底层产物对象生命周期继续复用 Storage 自动 orphan 清理。
-- 结合需求文档、设计文档和代码现状，Classics 当前已实现“内容维护 + 候选确认 + 任务型 AI 入口 + 批量视觉资产治理 + 导出/批量分享治理 + 批量公开/私有分享访问 + 批量公开/私有状态修改 + 细粒度权限过滤 + 清理协作”的主干闭环；更复杂的候选流式治理仍保留在后续项中。
+- Classics 删除内容与分享安全闭环已完成：三类内容删除后会将关联分享目标同步为 `CONTENT_DELETED`，按剩余可用目标重算 `classics_share_link.visibility_risk_status`，并且不再把已删除目标计入资源读取、公开列表和风险态。
+- 结合需求文档、设计文档和代码现状，Classics 当前已实现“内容维护 + 候选确认 + 任务型 AI 入口 + 批量视觉资产治理 + 导出/批量分享治理 + 删除分享安全闭环 + 批量公开/私有分享访问 + 批量公开/私有状态修改 + 细粒度权限过滤 + 清理协作”的主干闭环；更复杂的候选流式治理仍保留在后续项中。
 
 未完成：
 
@@ -64,7 +65,7 @@
 | 14 个正式门类、卷首辅助内容、卷和条目三级浏览 | 已完成 | 需求、设计、schema、初始化数据已覆盖；门类/卷/条目查询服务、条目查询 API 与 Admin Web 三级浏览页面已实现 | 无 | Classics, Admin Web |
 | 门类治理 CRUD | 已完成 | 门类列表、详情、保存和删除接口已实现；Admin Web 已支持新增、编辑和删除空门类；新增门类不输入 `priority`，由后端追加到末尾；删除有关联卷的门类由后端业务规则拦截 | 无 | Classics, Admin Web |
 | 门类和卷稳定排序 | 已完成 | `priority` 规则、schema 约束、service 排序参数与稳定排序 API 已支持；Admin Web 已提供门类独立排序表单，保存时提交 orderedIds | 无 | Classics, Admin Web |
-| 条目查看、创建、编辑、删除 | 部分完成 | 条目查询、详情、保存、删除接口与运行时代码已到位；Admin Web 已完成列表进入详情、编辑保存和列表刷新闭环 | 删除后分享目标状态同步、风险态重算未完成；删除不纳入本轮 Admin Web 页面闭环 | Classics, Admin Web |
+| 条目查看、创建、编辑、删除 | 已完成 | 条目查询、详情、保存、删除接口与运行时代码已到位；Admin Web 已完成列表进入详情、编辑保存和列表刷新闭环；三类内容删除后会同步关联分享目标为 `CONTENT_DELETED`，并按剩余可用目标重算分享风险态 | 无 | Classics, Admin Web, Portal Web |
 | 编辑标题、门类、卷、原文、译文和标签 | 部分完成 | 条目编辑核心字段（标题/门类/卷/正文等）与保存链路已实现；Admin Web 已支持标题、原文、译文、摘要、公开状态编辑保存；后端通用标签新增、更新、删除已接入 Knowledge 协作语义 | 标签前端编辑入口和更细的入参治理规则仍待补齐；门类/卷迁移不纳入本轮页面闭环 | Classics, Admin Web, Knowledge |
 | 展示原文、译文、标签、配图和状态 | 部分完成 | 条目详情、标签列表、配图列表均已提供独立接口；Admin Web 已展示条目列表状态、详情编辑核心文本字段、当前使用图片预览/下载入口，以及视觉资产历史列表、当前版本摘要和原图/生成图预览下载入口 | 标签仍未在三才条目详情内聚合展示；更复杂的视觉资产批量治理仍未闭环 | Classics, Admin Web |
 | 多张配图、缩略预览、放大浏览 | 已完成 | 图片保存、列表、类型、Storage 对象引用、业务上传、业务读取、删除、当前图切换和同条目排序已落地；Admin Web 已提供配图列表管理、缩略预览、放大浏览抽屉、下载和当前图选择；分享快照与 Portal 分享详情保留多图并按 `priority ASC` 展示缩略图切换主图；Workers 静态展示按多图稳定渲染并标记当前图 | 无 | Classics, Storage, Admin Web, Portal Web, Worker |
@@ -130,7 +131,7 @@
 | 访问统计 | 部分完成 | 访问记录实体与应用服务接口（写入/分页查询）已实现；分享资源读取成功会写入访问记录 | 分享详情浏览统计和对外统计 API 未接通 | Classics |
 | 分享完整内容快照 | 已完成 | 分享创建时先确保正式内容版本，再将 `classics_content_version.snapshot_json` 固化到 `classics_share_target.content_snapshot_json`；target 记录 `content_version_id/content_version_no`；三类正式版本快照 schema 已沉淀到 `docs/20-interfaces/CLASSICS-CONTENT-VERSION-SNAPSHOT-INTERFACE.md`；Sancai 快照包含全部图片资源 ID，使用 `currentUsed` 标识当前图，Portal 响应层动态补资源对象 | 无 | Classics |
 | 私有内容分享确认文案 | 已完成 | 分享创建与状态模型已支持风险状态表达，确认文案由前端按风险状态渲染 | 无 | Classics |
-| 目标被删除后占位展示 | 已完成 | 目标快照和目标状态可持久化，查询接口可返回状态供前端按状态展示 | 无 | Classics |
+| 目标被删除后占位展示 | 已完成 | 三类内容删除会触发分享目标状态同步和风险态重算；Admin Web 分享详情保留目标行、标题快照、内容类型、内容 ID 和“内容已删除”状态；Portal Web 分享详情保留原顺序标题占位并隐藏正文、图片、文件和预览/下载控件；Portal 公开分享列表防御过滤 `CONTENT_DELETED` 目标 | 无 | Classics, Admin Web, Portal Web |
 
 ### 通用内容和跨域能力
 
@@ -212,4 +213,4 @@
 
 - 明代习俗 Admin Web 已提供独立富文本展示控件，基于 Markdown/HTML 渲染和清洗策略展示正文。
 - 王圻文档 Admin Web 已复用独立富文本展示控件，基于 Markdown/HTML 渲染和清洗策略展示正文预览。
-- Portal Web 分享详情已从固化快照渲染只读内容，并对 Wangqi 原始文件与 Sancai 图片使用分享资源读取接口展示。
+- Portal Web 分享详情已从固化快照渲染只读内容，并对 Wangqi 原始文件与 Sancai 图片使用分享资源读取接口展示；已删除分享目标只展示标题快照和“内容已删除”占位，不再渲染正文、图片、文件或资源操作。

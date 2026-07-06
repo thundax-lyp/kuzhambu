@@ -18,6 +18,7 @@ import type {
     ClassicsShareLinkStatus,
     ClassicsShareRecord,
     ClassicsShareTargetRecord,
+    ClassicsShareTargetStatus,
     ClassicsShareVisibility
 } from "@/pages/classics/common/classics-share-types";
 import "./sharing-page.css";
@@ -66,6 +67,11 @@ const shareStatusTone: Record<string, ShareStatusTone> = {
     ACTIVE: "success",
     EXPIRED: "warning",
     REVOKED: "danger"
+};
+
+const shareTargetStatusTone: Record<string, ShareStatusTone> = {
+    AVAILABLE: "success",
+    CONTENT_DELETED: "danger"
 };
 
 const readShareStatusLabel = (status?: ClassicsShareLinkStatus | string | null) => {
@@ -121,6 +127,23 @@ const shareRecordLabel = (share: ClassicsShareRecord) => {
 
 const readStatusTagType = (status?: ClassicsShareLinkStatus | string | null) => {
     return shareStatusTone[status || ""] || "neutral";
+};
+
+const readTargetStatusLabel = (status?: ClassicsShareTargetStatus | string | null) => {
+    return (
+        {
+            AVAILABLE: "可用",
+            CONTENT_DELETED: "内容已删除"
+        }[status || ""] || "未知"
+    );
+};
+
+const readTargetStatusTagType = (status?: ClassicsShareTargetStatus | string | null) => {
+    return shareTargetStatusTone[status || ""] || "neutral";
+};
+
+const isDeletedShareTarget = (target?: ClassicsShareTargetRecord | null) => {
+    return target?.targetStatus === "CONTENT_DELETED";
 };
 
 const toShareLinkStatus = (
@@ -364,6 +387,17 @@ export const SharingPage = () => {
             dataIndex: "titleSnapshot",
             key: "titleSnapshot",
             render: (titleSnapshot?: string | null) => titleSnapshot || "-"
+        },
+        {
+            title: "目标状态",
+            dataIndex: "targetStatus",
+            key: "targetStatus",
+            width: 130,
+            render: (status?: ClassicsShareTargetStatus | string | null) => (
+                <KuzhambuTag type={readTargetStatusTagType(status)}>
+                    {readTargetStatusLabel(status)}
+                </KuzhambuTag>
+            )
         }
     ];
 
@@ -584,7 +618,10 @@ export const SharingPage = () => {
                         dataSource={targetRecords}
                         columns={targetColumns}
                         loading={detailQuery.isLoading}
-                        scroll={{ x: 620 }}
+                        rowClassName={(target) =>
+                            isDeletedShareTarget(target) ? "sharing-target-row-deleted" : ""
+                        }
+                        scroll={{ x: 760 }}
                     />
 
                     <Text strong>访问记录</Text>

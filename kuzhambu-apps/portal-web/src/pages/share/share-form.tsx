@@ -5,11 +5,13 @@ import { Link, useParams } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import * as shareService from "./share-service";
 import type {
     ClassicsSharePortalImage,
     ClassicsSharePortalTarget,
-    ClassicsShareResource
+    ClassicsShareResource,
+    ClassicsShareTargetStatus
 } from "./share-types";
 
 const CONTENT_TYPE_LABELS = new Map([
@@ -45,6 +47,20 @@ const parseSnapshot = (snapshot?: string | null) => {
 
 const readTargetTitle = (target: ClassicsSharePortalTarget, index: number) => {
     return target.titleSnapshot?.trim() || `分享内容 ${index + 1}`;
+};
+
+const isDeletedTarget = (target: ClassicsSharePortalTarget) => {
+    return target.targetStatus === "CONTENT_DELETED";
+};
+
+const readTargetStatusLabel = (status?: ClassicsShareTargetStatus | string | null) => {
+    return (
+        {
+            ACTIVE: "可用",
+            AVAILABLE: "可用",
+            CONTENT_DELETED: "内容已删除"
+        }[status || ""] || "未知"
+    );
 };
 
 const formatContentType = (value?: string | null) => {
@@ -292,6 +308,85 @@ const SancaiImageGallery = ({
     );
 };
 
+const renderShareTargetCard = (
+    target: ClassicsSharePortalTarget,
+    index: number,
+    token: string,
+    privateAccess: boolean
+) => {
+    const deleted = isDeletedTarget(target);
+    return (
+        <Card
+            className={cn("portal-share-target", deleted && "portal-share-target-deleted")}
+            key={`${target.contentType}-${target.contentId}-${target.priority}`}
+        >
+            <header>
+                <div>
+                    <p>{formatContentType(target.contentType)}</p>
+                    <h2>{readTargetTitle(target, index)}</h2>
+                </div>
+                <Badge
+                    className="portal-share-version"
+                    variant={deleted ? "destructive" : "secondary"}
+                >
+                    {deleted
+                        ? readTargetStatusLabel(target.targetStatus)
+                        : `v${target.contentVersionNo ?? "-"}`}
+                </Badge>
+            </header>
+            {deleted ? (
+                <>
+                    <dl>
+                        <div>
+                            <dt>内容 ID</dt>
+                            <dd>{target.contentId ?? "-"}</dd>
+                        </div>
+                        <div>
+                            <dt>目标状态</dt>
+                            <dd>{readTargetStatusLabel(target.targetStatus)}</dd>
+                        </div>
+                    </dl>
+                    <p className="portal-share-deleted-placeholder">
+                        内容已删除，分享仅保留标题快照。
+                    </p>
+                </>
+            ) : (
+                <>
+                    <dl>
+                        <div>
+                            <dt>内容 ID</dt>
+                            <dd>{target.contentId ?? "-"}</dd>
+                        </div>
+                        <div>
+                            <dt>版本 ID</dt>
+                            <dd>{target.contentVersionId ?? "-"}</dd>
+                        </div>
+                        <div>
+                            <dt>内容可见性</dt>
+                            <dd>{target.contentVisibilitySnapshot || "-"}</dd>
+                        </div>
+                        <div>
+                            <dt>目标状态</dt>
+                            <dd>{readTargetStatusLabel(target.targetStatus)}</dd>
+                        </div>
+                    </dl>
+                    {target.contentType === "WANGQI_DOCUMENT"
+                        ? renderWangqiResource(token, target.storageObject, privateAccess)
+                        : null}
+                    {target.contentType === "SANCAI_ENTRY" ? (
+                        <SancaiImageGallery
+                            privateAccess={privateAccess}
+                            token={token}
+                            images={target.images}
+                        />
+                    ) : null}
+                    {renderSnapshotSummary(target)}
+                </>
+            )}
+        </Card>
+    );
+};
+
 export const ShareForm = () => {
     const { shareToken } = useParams();
     const token = shareToken ?? "";
@@ -361,55 +456,9 @@ export const ShareForm = () => {
 
                     <section className="portal-share-targets" aria-label="分享快照">
                         {targets.length ? (
-                            targets.map((target, index) => (
-                                <Card
-                                    className="portal-share-target"
-                                    key={`${target.contentType}-${target.contentId}-${target.priority}`}
-                                >
-                                    <header>
-                                        <div>
-                                            <p>{formatContentType(target.contentType)}</p>
-                                            <h2>{readTargetTitle(target, index)}</h2>
-                                        </div>
-                                        <Badge className="portal-share-version" variant="secondary">
-                                            v{target.contentVersionNo ?? "-"}
-                                        </Badge>
-                                    </header>
-                                    <dl>
-                                        <div>
-                                            <dt>内容 ID</dt>
-                                            <dd>{target.contentId ?? "-"}</dd>
-                                        </div>
-                                        <div>
-                                            <dt>版本 ID</dt>
-                                            <dd>{target.contentVersionId ?? "-"}</dd>
-                                        </div>
-                                        <div>
-                                            <dt>内容可见性</dt>
-                                            <dd>{target.contentVisibilitySnapshot || "-"}</dd>
-                                        </div>
-                                        <div>
-                                            <dt>目标状态</dt>
-                                            <dd>{target.targetStatus || "-"}</dd>
-                                        </div>
-                                    </dl>
-                                    {target.contentType === "WANGQI_DOCUMENT"
-                                        ? renderWangqiResource(
-                                              token,
-                                              target.storageObject,
-                                              privateAccess
-                                          )
-                                        : null}
-                                    {target.contentType === "SANCAI_ENTRY" ? (
-                                        <SancaiImageGallery
-                                            privateAccess={privateAccess}
-                                            token={token}
-                                            images={target.images}
-                                        />
-                                    ) : null}
-                                    {renderSnapshotSummary(target)}
-                                </Card>
-                            ))
+                            targets.map((target, index) =>
+                                renderShareTargetCard(target, index, token, privateAccess)
+                            )
                         ) : (
                             <Card className="portal-empty">暂无分享快照。</Card>
                         )}

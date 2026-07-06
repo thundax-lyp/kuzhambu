@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `08-main-sync`：收口前同步 main 分支代码
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`
-    - 范围对象：当前工作分支与 `main`
-    - 处理动作：在实现完成后同步 `main` 最新代码并解决冲突
-    - 验收点：工作分支包含 `main` 最新代码且 `git status` 无未解释冲突
-    - 重要度：9/10
-
 - [ ] `09-final-validation`：运行 AI Knowledge Tag Extraction 最小闭环验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-KNOWLEDGE-TAG-EXTRACTION.md`

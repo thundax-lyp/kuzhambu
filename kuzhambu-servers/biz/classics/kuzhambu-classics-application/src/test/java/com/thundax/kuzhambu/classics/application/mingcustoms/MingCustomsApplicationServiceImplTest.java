@@ -15,6 +15,7 @@ import com.thundax.kuzhambu.classics.application.mingcustoms.query.MingCustomsPa
 import com.thundax.kuzhambu.classics.application.mingcustoms.service.impl.MingCustomsApplicationServiceImpl;
 import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationResult;
 import com.thundax.kuzhambu.classics.application.searchsync.support.ClassicsSearchIndexSyncPublishSupport;
+import com.thundax.kuzhambu.classics.application.sharing.service.ClassicsSharingApplicationService;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsContentFormat;
@@ -35,7 +36,7 @@ class MingCustomsApplicationServiceImplTest {
         ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
         ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
         MingCustomsApplicationServiceImpl service =
-                new MingCustomsApplicationServiceImpl(repository, contentApplicationService, publishSupport);
+                new MingCustomsApplicationServiceImpl(repository, contentApplicationService, publishSupport, null);
         when(repository.insert(any())).thenReturn(MingCustomsEntryId.of(3001L));
         versionEntryOnEnsure(contentApplicationService, 3);
 
@@ -50,7 +51,7 @@ class MingCustomsApplicationServiceImplTest {
         ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
         ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
         MingCustomsApplicationServiceImpl service =
-                new MingCustomsApplicationServiceImpl(repository, contentApplicationService, publishSupport);
+                new MingCustomsApplicationServiceImpl(repository, contentApplicationService, publishSupport, null);
         MingCustomsEntry entry = new MingCustomsEntry();
         entry.setId(MingCustomsEntryId.of(3002L));
         entry.setVisibility(MingCustomsVisibility.PUBLIC);
@@ -65,7 +66,7 @@ class MingCustomsApplicationServiceImplTest {
     @Test
     void pageShouldReturnEmptyWhenPermissionContextLacksMingCustomsView() {
         MingCustomsRepository repository = mock(MingCustomsRepository.class);
-        MingCustomsApplicationServiceImpl service = new MingCustomsApplicationServiceImpl(repository, null, null);
+        MingCustomsApplicationServiceImpl service = new MingCustomsApplicationServiceImpl(repository, null, null, null);
         MingCustomsPageQuery query = new MingCustomsPageQuery();
         query.setOperatorPermissions(Set.of("classics:content:view"));
 
@@ -82,7 +83,7 @@ class MingCustomsApplicationServiceImplTest {
         ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
         ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
         MingCustomsApplicationServiceImpl service =
-                new MingCustomsApplicationServiceImpl(repository, contentApplicationService, publishSupport);
+                new MingCustomsApplicationServiceImpl(repository, contentApplicationService, publishSupport, null);
         MingCustomsEntry entry = new MingCustomsEntry();
         entry.setId(MingCustomsEntryId.of(3004L));
         entry.setVisibility(MingCustomsVisibility.PUBLIC);
@@ -107,7 +108,7 @@ class MingCustomsApplicationServiceImplTest {
         ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
         ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
         MingCustomsApplicationServiceImpl service =
-                new MingCustomsApplicationServiceImpl(repository, contentApplicationService, publishSupport);
+                new MingCustomsApplicationServiceImpl(repository, contentApplicationService, publishSupport, null);
 
         ClassicsBatchOperationResult result = service.batchChangeVisibility(
                 List.of(MingCustomsEntryId.of(3006L)), "PRIVATE", Set.of("classics:mingcustoms:view"));
@@ -125,8 +126,9 @@ class MingCustomsApplicationServiceImplTest {
         MingCustomsRepository repository = mock(MingCustomsRepository.class);
         ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
         ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
-        MingCustomsApplicationServiceImpl service =
-                new MingCustomsApplicationServiceImpl(repository, contentApplicationService, publishSupport);
+        ClassicsSharingApplicationService sharingApplicationService = mock(ClassicsSharingApplicationService.class);
+        MingCustomsApplicationServiceImpl service = new MingCustomsApplicationServiceImpl(
+                repository, contentApplicationService, publishSupport, sharingApplicationService);
         MingCustomsEntry entry = new MingCustomsEntry();
         entry.setId(MingCustomsEntryId.of(3003L));
         entry.setVisibility(MingCustomsVisibility.PUBLIC);
@@ -135,6 +137,7 @@ class MingCustomsApplicationServiceImplTest {
 
         service.delete(MingCustomsEntryId.of(3003L));
 
+        verify(sharingApplicationService).syncContentDeleted(ClassicsContentType.MING_CUSTOMS, 3003L);
         verify(publishSupport).publishDeleteAfterCommit(ClassicsContentType.MING_CUSTOMS, "3003", 5);
         verify(repository).deleteById(MingCustomsEntryId.of(3003L));
     }

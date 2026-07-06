@@ -19,7 +19,7 @@ export interface ClassicsSharePortalListItem {
     shareLinkId?: number | null;
     shareToken?: string | null;
     shareTitle?: string | null;
-    targetStatus?: string | null;
+    targetStatus?: ClassicsShareTargetStatus | string | null;
     titleSnapshot?: string | null;
 }
 
@@ -65,9 +65,11 @@ export interface ClassicsSharePortalTarget {
     priority?: number | null;
     images?: ClassicsSharePortalImage[] | null;
     storageObject?: ClassicsShareResource | null;
-    targetStatus?: string | null;
+    targetStatus?: ClassicsShareTargetStatus | string | null;
     titleSnapshot?: string | null;
 }
+
+export type ClassicsShareTargetStatus = "ACTIVE" | "AVAILABLE" | "CONTENT_DELETED";
 
 export type ClassicsShareResourceContentMode = "download" | "preview";
 
