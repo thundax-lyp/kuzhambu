@@ -72,13 +72,15 @@ const formatFileSize = (size?: number | null) => {
 const resolveResourceUrl = (
     token: string,
     resource: ClassicsShareResource | null | undefined,
-    mode: "download" | "preview"
+    mode: "download" | "preview",
+    privateAccess: boolean
 ) => {
     if (!resource?.storageObjectId) {
         return undefined;
     }
     return shareService.getShareResourceContentUrl({
         mode,
+        privateAccess,
         shareToken: token,
         storageObjectId: resource.storageObjectId
     });
@@ -87,15 +89,18 @@ const resolveResourceUrl = (
 const resolveImageUrl = (
     token: string,
     image: ClassicsSharePortalImage,
-    mode: "download" | "preview"
+    mode: "download" | "preview",
+    privateAccess: boolean
 ) => {
     const directUrl = mode === "download" ? image.downloadUrl : image.previewUrl;
-    if (directUrl) {
+    if (directUrl && !privateAccess) {
         return directUrl;
     }
     const resourceUrl =
         mode === "download" ? image.storageObject?.downloadUrl : image.storageObject?.previewUrl;
-    return resourceUrl || resolveResourceUrl(token, image.storageObject, mode);
+    return !privateAccess && resourceUrl
+        ? resourceUrl
+        : resolveResourceUrl(token, image.storageObject, mode, privateAccess);
 };
 
 const renderSnapshotSummary = (target: ClassicsSharePortalTarget) => {
@@ -151,12 +156,16 @@ const renderResourceMeta = (resource: ClassicsShareResource) => {
     );
 };
 
-const renderWangqiResource = (token: string, resource?: ClassicsShareResource | null) => {
+const renderWangqiResource = (
+    token: string,
+    resource: ClassicsShareResource | null | undefined,
+    privateAccess: boolean
+) => {
     if (!resource?.storageObjectId) {
         return null;
     }
-    const previewUrl = resolveResourceUrl(token, resource, "preview");
-    const downloadUrl = resolveResourceUrl(token, resource, "download");
+    const previewUrl = resolveResourceUrl(token, resource, "preview", privateAccess);
+    const downloadUrl = resolveResourceUrl(token, resource, "download", privateAccess);
     return (
         <section className="portal-share-resource" aria-label="王圻原始文件">
             <div>
@@ -206,9 +215,11 @@ const sortSancaiImages = (images: ClassicsSharePortalImage[]) => {
 
 const SancaiImageGallery = ({
     images,
+    privateAccess,
     token
 }: {
     images?: ClassicsSharePortalImage[] | null;
+    privateAccess: boolean;
     token: string;
 }) => {
     const visibleImages = sortSancaiImages(
@@ -224,10 +235,10 @@ const SancaiImageGallery = ({
         return null;
     }
     const selectedPreviewUrl = selectedImage
-        ? resolveImageUrl(token, selectedImage, "preview")
+        ? resolveImageUrl(token, selectedImage, "preview", privateAccess)
         : undefined;
     const selectedDownloadUrl = selectedImage
-        ? resolveImageUrl(token, selectedImage, "download")
+        ? resolveImageUrl(token, selectedImage, "download", privateAccess)
         : undefined;
     const selectedTitle = selectedImage ? getSancaiImageTitle(selectedImage) : "三才图会图片";
 
@@ -258,7 +269,7 @@ const SancaiImageGallery = ({
             <div className="portal-share-image-thumbnails" aria-label="三才图会图片缩略图">
                 {visibleImages.map((image, index) => {
                     const imageKey = getSancaiImageKey(image, index);
-                    const previewUrl = resolveImageUrl(token, image, "preview");
+                    const previewUrl = resolveImageUrl(token, image, "preview", privateAccess);
                     const title = getSancaiImageTitle(image);
                     const selected = selectedImage === image;
                     return (
@@ -286,12 +297,14 @@ export const ShareForm = () => {
     const token = shareToken ?? "";
     const shareQuery = useQuery({
         enabled: token.length > 0,
-        queryFn: () => shareService.getShare(token),
+        queryFn: () => shareService.getAccessibleShare(token),
         queryKey: ["classics", "shares", token],
         retry: false
     });
     const share = shareQuery.data;
     const targets = share?.targets ?? [];
+    const loginRequired = Boolean(share?.loginRequired);
+    const privateAccess = share?.visibility === "PRIVATE" && !loginRequired;
 
     return (
         <main className="portal-shell">
@@ -317,7 +330,13 @@ export const ShareForm = () => {
                 </Card>
             ) : null}
 
-            {share ? (
+            {loginRequired ? (
+                <Card className="portal-empty" aria-label="私有分享登录引导">
+                    私有分享需要登录后访问。请先登录后台账号，再重新打开此分享链接。
+                </Card>
+            ) : null}
+
+            {share && !loginRequired ? (
                 <>
                     <Card className="portal-share-meta" aria-label="分享信息">
                         <dl>
@@ -375,10 +394,18 @@ export const ShareForm = () => {
                                         </div>
                                     </dl>
                                     {target.contentType === "WANGQI_DOCUMENT"
-                                        ? renderWangqiResource(token, target.storageObject)
+                                        ? renderWangqiResource(
+                                              token,
+                                              target.storageObject,
+                                              privateAccess
+                                          )
                                         : null}
                                     {target.contentType === "SANCAI_ENTRY" ? (
-                                        <SancaiImageGallery token={token} images={target.images} />
+                                        <SancaiImageGallery
+                                            privateAccess={privateAccess}
+                                            token={token}
+                                            images={target.images}
+                                        />
                                     ) : null}
                                     {renderSnapshotSummary(target)}
                                 </Card>

@@ -29,6 +29,9 @@ public class ClassicsSharePortalResponse implements Serializable {
     @JsonProperty("expiresAt")
     private Date expiresAt;
 
+    @JsonProperty("loginRequired")
+    private Boolean loginRequired;
+
     @JsonProperty("targets")
     private List<ClassicsSharePortalTargetResponse> targets;
 }

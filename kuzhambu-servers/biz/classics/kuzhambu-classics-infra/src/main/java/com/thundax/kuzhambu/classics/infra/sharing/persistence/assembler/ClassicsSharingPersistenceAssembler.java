@@ -47,6 +47,7 @@ public final class ClassicsSharingPersistenceAssembler {
                         value(entity.getVisibility()),
                         value(entity.getStatus()),
                         value(entity.getVisibilityRiskStatus()),
+                        entity.getCreatedByUserId(),
                         entity.getIssuedAt(),
                         entity.getExpiresAt(),
                         entity.getAccessCount());
@@ -67,6 +68,7 @@ public final class ClassicsSharingPersistenceAssembler {
                         dataObject.getVisibilityRiskStatus() == null
                                 ? null
                                 : SancaiVisibilityRiskStatus.from(dataObject.getVisibilityRiskStatus()),
+                        dataObject.getCreatedByUserId(),
                         dataObject.getIssuedAt(),
                         dataObject.getExpiresAt(),
                         dataObject.getAccessCount() == null ? 0L : dataObject.getAccessCount());

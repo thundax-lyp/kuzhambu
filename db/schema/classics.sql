@@ -227,12 +227,14 @@ CREATE TABLE IF NOT EXISTS `classics_share_link` (
     `visibility` varchar(16) NOT NULL COMMENT '分享可见性',
     `status` varchar(16) NOT NULL DEFAULT 'ACTIVE' COMMENT '分享状态',
     `visibility_risk_status` varchar(16) NOT NULL DEFAULT 'PUBLIC_ONLY' COMMENT '可见性风险状态',
+    `created_by_user_id` bigint DEFAULT NULL COMMENT '创建者用户ID',
     `issued_at` datetime(3) NOT NULL COMMENT '创建时间',
     `expires_at` datetime(3) DEFAULT NULL COMMENT '过期时间',
     `access_count` bigint NOT NULL DEFAULT 0 COMMENT '访问次数',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_classics_share_link_share_token` (`share_token`),
     UNIQUE KEY `uk_classics_share_link_token` (`token_hash`),
+    KEY `idx_classics_share_link_creator` (`created_by_user_id`, `visibility`),
     KEY `idx_classics_share_link_status` (`status`, `expires_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='分享链接表';
 
