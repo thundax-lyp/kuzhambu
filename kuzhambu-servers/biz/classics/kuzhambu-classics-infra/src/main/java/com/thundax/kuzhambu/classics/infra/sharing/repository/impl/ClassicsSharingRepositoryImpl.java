@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
+import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisibilityRiskStatus;
 import com.thundax.kuzhambu.classics.domain.sharing.codec.ClassicsShareAccessRecordIdCodec;
 import com.thundax.kuzhambu.classics.domain.sharing.codec.ClassicsShareLinkIdCodec;
 import com.thundax.kuzhambu.classics.domain.sharing.codec.ClassicsShareTargetIdCodec;
@@ -164,6 +166,48 @@ public class ClassicsSharingRepositoryImpl implements ClassicsSharingRepository 
                                 ClassicsShareTargetDO::getShareLinkId,
                                 ClassicsShareLinkIdCodec.toValue(shareLinkId))
                         .orderBy(true, sortDirection != SortDirection.DESC, ClassicsShareTargetDO::getPriority)));
+    }
+
+    @Override
+    public List<ClassicsShareTarget> listTargetsByContent(ClassicsContentType contentType, Long contentId) {
+        return ClassicsSharingPersistenceAssembler.toTargetDomainList(
+                targetMapper.selectList(new LambdaQueryWrapper<ClassicsShareTargetDO>()
+                        .eq(
+                                contentType != null,
+                                ClassicsShareTargetDO::getContentType,
+                                contentType == null ? null : contentType.value())
+                        .eq(contentId != null, ClassicsShareTargetDO::getContentId, contentId)));
+    }
+
+    @Override
+    public int markTargetsContentDeleted(ClassicsContentType contentType, Long contentId) {
+        if (contentType == null || contentId == null) {
+            return 0;
+        }
+        return targetMapper.update(
+                null,
+                new LambdaUpdateWrapper<ClassicsShareTargetDO>()
+                        .eq(ClassicsShareTargetDO::getContentType, contentType.value())
+                        .eq(ClassicsShareTargetDO::getContentId, contentId)
+                        .in(
+                                ClassicsShareTargetDO::getTargetStatus,
+                                ClassicsShareTargetStatus.AVAILABLE.value(),
+                                "ACTIVE")
+                        .set(
+                                ClassicsShareTargetDO::getTargetStatus,
+                                ClassicsShareTargetStatus.CONTENT_DELETED.value()));
+    }
+
+    @Override
+    public int updateLinkVisibilityRiskStatus(ClassicsShareLinkId id, SancaiVisibilityRiskStatus visibilityRiskStatus) {
+        if (id == null || visibilityRiskStatus == null) {
+            return 0;
+        }
+        return linkMapper.update(
+                null,
+                new LambdaUpdateWrapper<ClassicsShareLinkDO>()
+                        .eq(ClassicsShareLinkDO::getId, ClassicsShareLinkIdCodec.toValue(id))
+                        .set(ClassicsShareLinkDO::getVisibilityRiskStatus, visibilityRiskStatus.value()));
     }
 
     @Override

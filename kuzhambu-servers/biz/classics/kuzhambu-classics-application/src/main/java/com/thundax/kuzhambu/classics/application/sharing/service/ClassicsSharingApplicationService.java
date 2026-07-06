@@ -9,6 +9,7 @@ import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkStatus
 import com.thundax.kuzhambu.classics.application.sharing.query.ShareAccessQuery;
 import com.thundax.kuzhambu.classics.application.sharing.result.ShareLinkCreateResult;
 import com.thundax.kuzhambu.classics.application.sharing.result.SharePortalResult;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareAccessRecord;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareLink;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsSharePortalListItem;
@@ -52,6 +53,8 @@ public interface ClassicsSharingApplicationService {
     void changeStatus(ShareLinkStatusCommand command);
 
     void sortTargets(ClassicsShareTargetSortCommand command);
+
+    void syncContentDeleted(ClassicsContentType contentType, Long contentId);
 
     List<ClassicsShareTarget> listTargets(ClassicsShareLinkId shareLinkId);
 
