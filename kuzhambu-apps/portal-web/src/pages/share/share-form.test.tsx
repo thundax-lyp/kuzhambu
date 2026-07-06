@@ -235,4 +235,46 @@ describe("ShareForm", () => {
             storageObjectId: 7001
         });
     });
+
+    it("renders deleted target as a placeholder without body or resource controls", async () => {
+        vi.mocked(shareService.getShareResourceContentUrl).mockClear();
+        vi.mocked(shareService.getAccessibleShare).mockResolvedValue({
+            status: "ACTIVE",
+            targets: [
+                {
+                    contentId: 400000000099,
+                    contentSnapshotJson: JSON.stringify({
+                        content: "王圻正文",
+                        summary: "王圻摘要"
+                    }),
+                    contentType: "WANGQI_DOCUMENT",
+                    contentVersionId: 8109,
+                    contentVersionNo: 4,
+                    contentVisibilitySnapshot: "PUBLIC",
+                    storageObject: {
+                        downloadUrl: "/portal/resource/7010?download=true",
+                        originalFilename: "deleted.pdf",
+                        previewUrl: "/portal/resource/7010",
+                        storageObjectId: 7010
+                    },
+                    targetStatus: "CONTENT_DELETED",
+                    titleSnapshot: "已删除王圻文档"
+                }
+            ],
+            title: "删除目标分享",
+            visibility: "PUBLIC"
+        });
+
+        renderShareForm("deleted-target-token");
+
+        expect(await screen.findByText("已删除王圻文档")).toBeTruthy();
+        expect(await screen.findByText("内容已删除")).toBeTruthy();
+        expect(await screen.findByText("内容已删除，正文、图片和文件资源不可访问。")).toBeTruthy();
+        expect(screen.queryByText("王圻正文")).toBeNull();
+        expect(screen.queryByText("王圻摘要")).toBeNull();
+        expect(screen.queryByLabelText("王圻原始文件")).toBeNull();
+        expect(screen.queryByRole("link", { name: "预览" })).toBeNull();
+        expect(screen.queryByRole("link", { name: "下载" })).toBeNull();
+        expect(shareService.getShareResourceContentUrl).not.toHaveBeenCalled();
+    });
 });

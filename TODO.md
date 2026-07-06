@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `T05 Portal Web share detail`：读者侧分享详情隐藏已删除目标正文与资源
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-DELETE-SHARE-RISK-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/portal-web/src/pages/share/share-form.tsx`、`kuzhambu-apps/portal-web/src/pages/share/share-form.test.tsx`、`kuzhambu-apps/portal-web/src/pages/share/share-page.tsx`、`kuzhambu-apps/portal-web/src/pages/share/share-page.test.tsx`、`kuzhambu-apps/portal-web/src/styles.css`
-    - 处理动作：对 `CONTENT_DELETED` target 渲染删除占位，过滤公开列表中的删除目标，并补齐 Portal Web 测试
-    - 验收点：删除目标只显示标题快照和“内容已删除”说明，不渲染正文、图片、文件元信息、预览或下载控件
-    - 重要度：9/10
-
 - [ ] `T06 Branch sync`：同步 main 分支最新代码
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-DELETE-SHARE-RISK-CLOSURE.md`

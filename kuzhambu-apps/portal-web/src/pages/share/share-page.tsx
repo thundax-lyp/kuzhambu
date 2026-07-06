@@ -13,7 +13,7 @@ import {
     SelectValue
 } from "@/components/ui/select";
 import * as shareService from "./share-service";
-import type { ClassicsShareSearchQuery } from "./share-types";
+import type { ClassicsSharePortalListItem, ClassicsShareSearchQuery } from "./share-types";
 
 const ALL_CONTENT_TYPES = "ALL";
 
@@ -54,6 +54,10 @@ const formatContentType = (value?: string | null) => {
     return value ? (CONTENT_TYPE_LABELS.get(value) ?? value) : "-";
 };
 
+const isAvailableShareListItem = (record: ClassicsSharePortalListItem) => {
+    return record.targetStatus !== "CONTENT_DELETED";
+};
+
 export const SharePage = () => {
     const [title, setTitle] = useState("");
     const [contentType, setContentType] = useState("");
@@ -68,7 +72,10 @@ export const SharePage = () => {
         queryKey: ["classics", "shares", "list", query],
         retry: false
     });
-    const records = shareListQuery.data?.records ?? [];
+    const records = useMemo(
+        () => (shareListQuery.data?.records ?? []).filter(isAvailableShareListItem),
+        [shareListQuery.data?.records]
+    );
     const resultSummary = useMemo(() => {
         if (shareListQuery.isLoading) {
             return "正在加载分享列表";
@@ -76,8 +83,8 @@ export const SharePage = () => {
         if (shareListQuery.isError) {
             return "分享列表加载失败";
         }
-        return `共 ${shareListQuery.data?.totalCount ?? 0} 条公开分享`;
-    }, [shareListQuery.data?.totalCount, shareListQuery.isError, shareListQuery.isLoading]);
+        return `共 ${records.length} 条公开分享`;
+    }, [records.length, shareListQuery.isError, shareListQuery.isLoading]);
 
     const applyFilters = () => {
         setQuery({
