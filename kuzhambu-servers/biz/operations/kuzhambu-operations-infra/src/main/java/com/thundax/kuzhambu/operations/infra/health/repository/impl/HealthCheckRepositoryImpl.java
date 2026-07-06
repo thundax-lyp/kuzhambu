@@ -88,6 +88,9 @@ public class HealthCheckRepositoryImpl implements HealthCheckRepository {
                         .set(HealthCheckDO::getHealthStatus, dataObject.getHealthStatus())
                         .set(HealthCheckDO::getLatencyMs, dataObject.getLatencyMs())
                         .set(HealthCheckDO::getMessage, dataObject.getMessage())
+                        .set(HealthCheckDO::getProbeSource, dataObject.getProbeSource())
+                        .set(HealthCheckDO::getProbeTarget, dataObject.getProbeTarget())
+                        .set(HealthCheckDO::getDetailsJson, dataObject.getDetailsJson())
                         .set(HealthCheckDO::getCheckedAt, dataObject.getCheckedAt()));
     }
 

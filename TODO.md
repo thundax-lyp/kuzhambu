@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `operations_health_check`：补齐健康记录采集来源字段
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DASHBOARD-HEALTH-METRICS.md`
-    - 范围对象：`db/schema/operations.sql`、`kuzhambu-servers/biz/operations/kuzhambu-operations-domain/src/main/java/com/thundax/kuzhambu/operations/domain/health/model/entity/HealthCheckRecord.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-infra/src/main/java/com/thundax/kuzhambu/operations/infra/health/persistence/dataobject/HealthCheckDO.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-infra/src/main/java/com/thundax/kuzhambu/operations/infra/health/persistence/assembler/HealthCheckPersistenceAssembler.java`
-    - 处理动作：为健康检查记录增加 `probe_source`、`probe_target`、`details_json` 字段并同步 domain/infra 映射。
-    - 验收点：schema、DO、domain entity 和 assembler 字段一致，旧字段语义不变。
-    - 重要度：10/10
-
 - [ ] `OperationsHealth summary/page`：返回健康采集来源字段
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DASHBOARD-HEALTH-METRICS.md`
