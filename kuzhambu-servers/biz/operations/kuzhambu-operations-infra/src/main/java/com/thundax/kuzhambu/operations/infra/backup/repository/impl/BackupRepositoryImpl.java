@@ -8,11 +8,14 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.operations.domain.backup.codec.BackupIdCodec;
 import com.thundax.kuzhambu.operations.domain.backup.model.entity.BackupRecord;
+import com.thundax.kuzhambu.operations.domain.backup.model.enums.BackupStatus;
 import com.thundax.kuzhambu.operations.domain.backup.model.valueobject.BackupId;
 import com.thundax.kuzhambu.operations.domain.backup.repository.BackupRepository;
 import com.thundax.kuzhambu.operations.infra.backup.persistence.assembler.BackupPersistenceAssembler;
 import com.thundax.kuzhambu.operations.infra.backup.persistence.dataobject.BackupDO;
 import com.thundax.kuzhambu.operations.infra.backup.persistence.mapper.BackupMapper;
+import java.util.Date;
+import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Repository;
 
@@ -83,6 +86,21 @@ public class BackupRepositoryImpl implements BackupRepository {
     @Override
     public int deleteById(BackupId id) {
         return mapper.delete(new LambdaQueryWrapper<BackupDO>().eq(BackupDO::getBackupId, BackupIdCodec.toValue(id)));
+    }
+
+    @Override
+    public List<BackupId> listExpiredBackupIds(Date now, int limit) {
+        return mapper
+                .selectList(new LambdaQueryWrapper<BackupDO>()
+                        .select(BackupDO::getBackupId)
+                        .eq(BackupDO::getBackupStatus, BackupStatus.SUCCEEDED.value())
+                        .le(BackupDO::getExpiresAt, now)
+                        .orderByAsc(BackupDO::getExpiresAt)
+                        .last("limit " + limit))
+                .stream()
+                .map(BackupDO::getBackupId)
+                .map(BackupIdCodec::toDomain)
+                .toList();
     }
 
     private QueryWrapper<BackupDO> buildPageWrapper(String backupType, String backupStatus, Long requesterUserId) {

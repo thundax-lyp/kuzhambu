@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `operations-cleanup-executor`：Operations cleanup 真实执行
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-PERMISSION-OPERATIONS-CLEANUP-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/cleanup/service/impl/CleanupApplicationServiceImpl.java`, `kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/cleanup/support/OperationsCleanupSupport.java`, `kuzhambu-servers/biz/operations/kuzhambu-operations-domain/src/main/java/com/thundax/kuzhambu/operations/domain/backup/repository/BackupRepository.java`, `kuzhambu-servers/biz/operations/kuzhambu-operations-infra/src/main/java/com/thundax/kuzhambu/operations/infra/backup/repository/impl/BackupRepositoryImpl.java`, `kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/test/java/com/thundax/kuzhambu/operations/application/cleanup/service/impl/CleanupApplicationServiceImplTest.java`
-    - 处理动作：替换 cleanup 占位 discover/execute，真实执行 backup 与 Classics cleanup 并写入 job/item 结果。
-    - 验收点：`CleanupJob` 汇总字段与 `CleanupItem` 明细字段按真实执行结果落库。
-    - 重要度：10/10
-
 - [ ] `operations-cleanup-detail-api`：Operations cleanup detail API
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-PERMISSION-OPERATIONS-CLEANUP-CLOSURE.md`
