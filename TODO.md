@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `KnowledgeQualityReportApplicationService`：新增质量报告生成和读取用例
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-QUALITY-LOOP.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/service/KnowledgeQualityReportApplicationService.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/service/impl/KnowledgeQualityReportApplicationServiceImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/command/GenerateQualityReportCommand.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/query/QualityReportPageQuery.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/result/QualityReportDetailResult.java`
-    - 处理动作：实现按 `graphVersionId` 生成 `PUBLISHED` 报告、分页、详情和最新报告读取。
-    - 验收点：报告生成只消费 Knowledge 正式事实、refinement 状态和人工标注，不依赖 AI facade、图谱抽取接口或 worker client。
-    - 重要度：10/10
-
 - [ ] `KnowledgeQualityReportController`：新增后台质量报告接口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-QUALITY-LOOP.md`
