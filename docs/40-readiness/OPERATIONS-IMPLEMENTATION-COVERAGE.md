@@ -17,7 +17,7 @@
 
 部分完成：
 
-- `cleanup` 已完成领域模型、持久化实现、应用层、接口层、admin 列表、详情查询、详情 item 展示和当前范围真实执行；当前已能发现并执行过期备份记录、Classics 过期导出任务、过期分享链接和草稿分享链接清理。长期规则策略、调度化清理和更多目标类型仍待后续扩展。
+- `cleanup` 已完成领域模型、持久化实现、应用层、接口层、admin 列表、详情查询、详情 item 展示、当前范围真实执行、调度化清理和长期规则策略；当前已能发现并执行过期备份记录、Classics 过期导出任务、过期分享链接和草稿分享链接清理，并能通过默认每日 `03:30` 调度自动执行。更多目标类型仍待后续扩展。
 - 统一运维首页已完成基础入口，System 日志/审计入口仍未全部补齐。
 
 已完成：
@@ -73,7 +73,7 @@
 | 仪表盘与聚合展示 | 部分完成 | 已完成 `OperationsDashboardApplicationService`、`POST /api/operations/dashboard/overview`、`OperationsDashboardOverviewResponse`、`/operations/dashboard` 前端页面、周期切换、刷新、指标卡、趋势区、排行区、健康明细抽屉和运维入口；已通过 `OperationsDashboardSummaryGateway` 接入 Classics 内容/访问、AI 调用/成本/能力排行、Discovery 搜索/问答/平均搜索耗时、Knowledge 标签覆盖/增长/排行真实 summary | 按权限裁剪聚合图表仍未完成 | Operations, Admin Web |
 | 报表 | 已完成 | 已完成周报/月报任务生成、HTML/PDF worker 渲染、Storage 产物回写、报表记录分页/详情查询、状态流转、独立 response、`operations:report:view` / `operations:report:generate` 权限控制，以及跨域 summary 聚合读取 | admin 页面接入与专属下载表现不在本矩阵范围内；后续如增加调度报表可另行扩展 | Operations |
 | 备份与恢复 | 已完成 | 已完成 `BackupRecord`、`RestoreRecord`、各自 persistence、手动备份执行、启动自动备份、每日 2:00 自动备份、恢复前 `PRE_RESTORE` 快照创建、恢复期间 Web 写阻断、`REAL` / `DRILL` 恢复台账、备份/恢复 `execute/page/detail` 接口、`admin-web` 备份恢复页面与详情字段、菜单与权限种子，以及脚本执行结果回写 | 无 | Operations |
-| 清理任务 | 部分完成 | `CleanupJob` / `CleanupItem` 已完成领域模型与持久化，应用层 `execute/page/detail` 与 admin 接口已上线，前端清理台账页已接通，`operations:cleanup:view/execute` 与页面基础回归测试已存在；当前真实执行覆盖过期备份、Classics 过期导出、过期分享和草稿分享，详情页可展示每条 cleanup item 的目标、状态、失败原因和处理时间；若清理目标涉及导出产物对象，其底层生命周期已可复用 Storage 自动 orphan 清理能力 | 调度化清理、长期规则策略和更多目标类型扩展未闭环 | Operations |
+| 清理任务 | 部分完成 | `CleanupJob` / `CleanupItem` 已完成领域模型与持久化，应用层 `execute/page/detail` 与 admin 接口已上线，前端清理台账页已接通，`operations:cleanup:view/execute` 与页面基础回归测试已存在；当前真实执行覆盖过期备份、Classics 过期导出、过期分享和草稿分享，详情页可展示每条 cleanup item 的目标、状态、失败原因和处理时间；已完成 `kuzhambu.operations.cleanup.schedule` 调度配置、`OperationsCleanupScheduler` 默认每日 `03:30` 自动执行、启动清理默认关闭、按固定顺序执行四类 policy、单 policy disabled 跳过、单类型异常不阻断后续类型、自动任务 `requesterUserId = null` 识别为系统自动、admin 清理页自动/人工触发来源展示，以及 `.env.example` / `deploy/.env.example` 运行时样例；若清理目标涉及导出产物对象，其底层生命周期已可复用 Storage 自动 orphan 清理能力 | 更多目标类型扩展未闭环 | Operations |
 | 健康检查与运行状态 | 部分完成 | `HealthCheckRecord`、`LongTaskSnapshot` 已完成 domain + persistence + application + interface；健康记录已包含 `probeSource`、`probeTarget`、`detailsJson`；已具备本地健康采集器、健康摘要、组件分页、健康趋势、长任务分页与详情查询；`operations_health_alert`、`HealthAlertRecord`、`OperationsHealthAlertStrategy`、`HealthAlertApplicationService`、`OperationsHealthAlertAdminController` 已完成健康告警策略、异常状态记录、确认和恢复接口；长任务、备份、恢复、清理失败已联动告警来源和失败原因；`admin-web` 看板已消费健康摘要/趋势/告警，任务、备份恢复和清理页面已展示失败提示与告警入口 | 更多外部探针、健康细分页、自动化恢复动作编排仍未完成 | Operations, Admin Web |
 | 运维入口 | 部分完成 | 已完成 `/operations/dashboard` 统一入口、任务台账、备份恢复、清理维护和健康告警处置跳转；菜单种子中 `运营看板` 使用 `operations:dashboard:view`、`operations:health:view`、`operations:health:manage`；未实现的报表记录菜单已隐藏且 URL 为空，避免 `/operations/reports` 可点击死链 | System 日志/审计入口、健康细分页和更多运维操作编排仍未完成 | Operations, Admin Web, System |
 | 台账记录 | 部分完成 | report、backup、restore、cleanup 已完成 domain + persistence + application + interface + admin page；cleanup 真实执行会写入 job summary 和 item 明细；health、health alert 与 long task 已完成 domain + persistence + application + interface，健康来源字段、趋势查询、告警记录和看板消费已落地 | 自动化恢复动作编排与更多运行态来源接入未完成 | Operations |
@@ -84,7 +84,7 @@
 ### B1 Operations 非报表剩余应用层闭环
 
 状态：进行中  
-目标：清理任务当前范围真实执行逻辑、健康组件采集来源入库、健康告警策略、失败来源联动、统一运维入口基础聚合和跨域真实 summary 已补齐；后续继续补齐更多运行态来源接入和自动化恢复动作编排。
+目标：清理任务当前范围真实执行逻辑、调度化清理与长期规则策略、健康组件采集来源入库、健康告警策略、失败来源联动、统一运维入口基础聚合和跨域真实 summary 已补齐；后续继续补齐更多运行态来源接入和自动化恢复动作编排。
 
 ### B2 Operations 剩余接口与入口
 
@@ -94,7 +94,7 @@
 ### B3 Cleanup 持久化补齐
 
 状态：已完成  
-目标：清理台账持久化基础设施已就绪，进入接入真实清理执行规则与任务编排层阶段。
+目标：清理台账持久化基础设施、真实清理执行规则、调度器入口和长期 policy 配置已就绪。
 
 ### B4 运行态接入
 
@@ -104,4 +104,4 @@
 ### B5 剩余非报表任务交付验证
 
 状态：进行中
-目标：cleanup 关键链路已补齐真实执行与详情 item 回归；health/task 看板消费、接口趋势、健康告警策略、失败来源联动和页面失败提示已补齐基础契约；backup/restore 已覆盖自动备份、真实恢复、恢复演练、写阻断字段和失败原因可追溯能力；跨域 Dashboard 已接入真实 summary 并完成后端和 admin-web 定向验证。后续验证聚焦 System 日志/审计入口、健康细分页和更多外部探针。
+目标：cleanup 关键链路已补齐真实执行、调度化执行上下文、长期 policy、admin 自动/人工来源展示与详情 item 回归；health/task 看板消费、接口趋势、健康告警策略、失败来源联动和页面失败提示已补齐基础契约；backup/restore 已覆盖自动备份、真实恢复、恢复演练、写阻断字段和失败原因可追溯能力；跨域 Dashboard 已接入真实 summary 并完成后端和 admin-web 定向验证。后续验证聚焦 System 日志/审计入口、健康细分页和更多外部探针。
