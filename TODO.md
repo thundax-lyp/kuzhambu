@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics/sancai-lifecycle-application`：补齐三才条目生命周期状态流转与落库
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-LIFECYCLE-EDIT-LOOP.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sancai/service/impl/SancaiApplicationServiceImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sancai/command/SancaiEntryStatusCommand.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-domain/src/main/java/com/thundax/kuzhambu/classics/domain/sancai/model/enums/SancaiEntryLifecycleStatus.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-domain/src/main/java/com/thundax/kuzhambu/classics/domain/sancai/repository/SancaiRepository.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/java/com/thundax/kuzhambu/classics/infra/sancai/repository/impl/SancaiRepositoryImpl.java`
-    - 处理动作：实现 `DRAFT -> PUBLISHED`、`PUBLISHED -> ARCHIVED`、`ARCHIVED -> PUBLISHED` 三条允许流转，并拒绝 `PUBLISHED/ARCHIVED -> DRAFT`。
-    - 验收点：生命周期变更成功时写入 `classics_sancai_entry.lifecycle_status/content_updated_at/current_version_id/current_version_no/current_versioned_at`，并且新增正式版本快照中的 `lifecycleStatus` 与主表一致。
-    - 重要度：10/10
-
 - [ ] `classics/sancai-lifecycle-admin-api`：暴露单条生命周期变更 Admin 接口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-LIFECYCLE-EDIT-LOOP.md`

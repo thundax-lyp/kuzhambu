@@ -12,6 +12,12 @@ public enum SancaiEntryLifecycleStatus {
         return name();
     }
 
+    public boolean canChangeTo(SancaiEntryLifecycleStatus targetStatus) {
+        return (this == DRAFT && targetStatus == PUBLISHED)
+                || (this == PUBLISHED && targetStatus == ARCHIVED)
+                || (this == ARCHIVED && targetStatus == PUBLISHED);
+    }
+
     public static SancaiEntryLifecycleStatus from(String value) {
         return Arrays.stream(values())
                 .filter(item -> item.name().equalsIgnoreCase(value))
