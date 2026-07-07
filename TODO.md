@@ -17,7 +17,7 @@
     - 验收点：候选批量响应能输出候选维度字段，现有批量分享和批量可见性响应不被破坏。
     - 重要度：9/10
 
-- [ ] `classics batch candidate commands`：新增批量候选 command 和 service 入口
+- [x] `classics batch candidate commands`：新增批量候选 command 和 service 入口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-BATCH-CANDIDATE-GOVERNANCE.md`
     - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/service/ClassicsContentApplicationService.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/command/AiCandidateBatchApplyContentCommand.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/command/AiCandidateBatchRejectContentCommand.java`

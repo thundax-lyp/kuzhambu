@@ -9,6 +9,8 @@ import com.thundax.kuzhambu.ai.facade.AiFacade;
 import com.thundax.kuzhambu.ai.facade.request.MarkAiCandidateAppliedFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.RequirePendingAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.classics.application.content.command.AiCandidateApplyContentCommand;
+import com.thundax.kuzhambu.classics.application.content.command.AiCandidateBatchApplyContentCommand;
+import com.thundax.kuzhambu.classics.application.content.command.AiCandidateBatchRejectContentCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentExportCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairSortCommand;
@@ -23,6 +25,7 @@ import com.thundax.kuzhambu.classics.application.content.support.ClassicsContent
 import com.thundax.kuzhambu.classics.application.content.support.ClassicsContentSnapshotAssembler;
 import com.thundax.kuzhambu.classics.application.content.support.ClassicsTagBindingSupport;
 import com.thundax.kuzhambu.classics.application.content.support.SancaiEntryVersionSnapshot;
+import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationResult;
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiAssetApplicationService;
 import com.thundax.kuzhambu.classics.application.sancai.support.SancaiEntryVersionRestorer;
@@ -560,6 +563,16 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                         ? null
                         : version.getId() == null ? null : version.getId().value(),
                 version == null ? null : version.getVersionNo());
+    }
+
+    @Override
+    public ClassicsBatchOperationResult applyAiCandidates(AiCandidateBatchApplyContentCommand command) {
+        throw new UnsupportedOperationException("批量应用AI候选尚未实现");
+    }
+
+    @Override
+    public ClassicsBatchOperationResult rejectAiCandidates(AiCandidateBatchRejectContentCommand command) {
+        throw new UnsupportedOperationException("批量拒绝AI候选尚未实现");
     }
 
     private SancaiVisualAsset findVisualAsset(ClassicsContentId contentId, Long objectId) {
