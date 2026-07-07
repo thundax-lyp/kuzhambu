@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin taxonomy validation`：运行标签批量治理 Admin Web 验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-TAG-BATCH-GOVERNANCE.md`
-    - 范围对象：`kuzhambu-apps/package.json`、`kuzhambu-apps/package-lock.json`、`kuzhambu-apps/admin-web/package.json`、`kuzhambu-apps/admin-web/vite.config.ts`
-    - 处理动作：运行 Admin Web format、lint、test 和 build。
-    - 验收点：`format:check`、`lint`、Admin Web `test` 和 `build` 通过或记录明确阻塞。
-    - 重要度：10/10
-
 - [ ] `knowledge final sync and cleanup`：同步 main 后完成 coverage 与 RUNBOOK 收口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-TAG-BATCH-GOVERNANCE.md`
