@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin tag batch controls`：实现统一标签批量合并和批量废弃控件
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-TAG-BATCH-GOVERNANCE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/taxonomy/components/tag-table.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/taxonomy/components/tag-batch-merge-panel.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/taxonomy/taxonomy-page.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/taxonomy/taxonomy-page.css`、`kuzhambu-apps/admin-web/src/pages/knowledge/taxonomy/taxonomy-page.test.tsx`
-    - 处理动作：在统一标签表格接入多选、批量合并 Drawer、批量废弃确认和页面状态刷新。
-    - 验收点：批量合并和批量废弃控件 disabled、确认、提交、清空选择和 query 刷新行为符合 RUNBOOK。
-    - 重要度：10/10
-
 - [ ] `admin review batch controls`：实现待审核标签批量通过和批量拒绝控件
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-TAG-BATCH-GOVERNANCE.md`

@@ -1,5 +1,6 @@
-import { ReloadOutlined } from "@ant-design/icons";
+import { DeleteOutlined, MergeCellsOutlined, ReloadOutlined } from "@ant-design/icons";
 import { Button, Typography } from "antd";
+import type { Key } from "react";
 import type { ReactNode } from "react";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
@@ -75,13 +76,17 @@ interface TagTableProps {
     loading: boolean;
     pageActions?: ReactNode;
     query: TagPageQuery;
+    selectedRowKeys?: Key[];
     tags: TagRecord[];
     totalCount: number;
     onAdd: () => void;
+    onBatchDeprecate: () => void;
+    onBatchMerge: () => void;
     onChange: (values: TagPageQuery) => void;
     onEdit: (tag: TagRecord) => void;
     onOpenDetail: (tag: TagRecord) => void;
     onRefresh: () => void;
+    onSelectedRowKeysChange?: (keys: Key[]) => void;
     onStatusChange: (request: TagStatusCommand) => void;
 }
 
@@ -90,13 +95,17 @@ export const TagTable = ({
     loading,
     pageActions,
     query,
+    selectedRowKeys = [],
     tags,
     totalCount,
     onAdd,
+    onBatchDeprecate,
+    onBatchMerge,
     onChange,
     onEdit,
     onOpenDetail,
     onRefresh,
+    onSelectedRowKeysChange,
     onStatusChange
 }: TagTableProps) => {
     const currentPageNo = query.pageNo || DEFAULT_PAGE_NO;
@@ -229,8 +238,38 @@ export const TagTable = ({
                     </Button>
                 </>
             }
+            batchActions={
+                canEditTag ? (
+                    <>
+                        <Button
+                            icon={<MergeCellsOutlined />}
+                            disabled={selectedRowKeys.length < 2}
+                            onClick={onBatchMerge}
+                        >
+                            批量合并
+                        </Button>
+                        <Button
+                            danger
+                            icon={<DeleteOutlined />}
+                            disabled={selectedRowKeys.length < 1}
+                            onClick={onBatchDeprecate}
+                        >
+                            批量废弃
+                        </Button>
+                    </>
+                ) : null
+            }
+            selectedCount={selectedRowKeys.length}
             filterActive={hasSearch}
             rowKey="id"
+            rowSelection={
+                canEditTag
+                    ? {
+                          selectedRowKeys,
+                          onChange: (keys) => onSelectedRowKeysChange?.(keys)
+                      }
+                    : undefined
+            }
             columns={columns}
             dataSource={tags}
             loading={loading}

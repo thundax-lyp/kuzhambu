@@ -52,6 +52,38 @@
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
 }
 
+.knowledge-taxonomy-drawer-footer {
+    align-items: center;
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.knowledge-taxonomy-tag-batch-panel {
+    display: grid;
+    gap: 16px;
+}
+
+.knowledge-taxonomy-tag-batch-field {
+    display: grid;
+    gap: 8px;
+}
+
+.knowledge-taxonomy-tag-batch-field .ant-select {
+    width: 100%;
+}
+
+.knowledge-taxonomy-tag-batch-preview {
+    display: grid;
+    gap: 16px;
+}
+
+.knowledge-taxonomy-tag-batch-preview-grid {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
 .knowledge-taxonomy-metrics-grid {
     display: grid;
     gap: 16px;
