@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Portal lineage page`：11 实现 Portal 只读世系页面
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LINEAGE-VISUALIZATION.md`
-    - 范围对象：`kuzhambu-apps/portal-web/src/app.tsx`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-lineage-page.tsx`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-lineage-page.css`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-lineage-page.test.tsx`
-    - 处理动作：新增 `/knowledge/lineage` 页面和只读交互。
-    - 验收点：Portal 页面支持版本、搜索、节点类型、关系类型、清除筛选和只读详情，不出现后台操作按钮。
-    - 重要度：10/10
-
 - [ ] `Portal knowledge home`：12 接入 Portal 首页世系入口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LINEAGE-VISUALIZATION.md`
