@@ -221,7 +221,15 @@ class OperationsHealthAlertStrategyTest {
         }
 
         @Override
-        public PageResult<HealthCheckRecord> page(String component, String healthStatus, int pageNo, int pageSize) {
+        public PageResult<HealthCheckRecord> page(
+                String component,
+                String healthStatus,
+                String probeSource,
+                String probeTarget,
+                Date checkedAtStart,
+                Date checkedAtEnd,
+                int pageNo,
+                int pageSize) {
             List<HealthCheckRecord> matchedRecords = records.stream()
                     .filter(record -> component == null || component.equals(record.getComponent()))
                     .filter(record -> healthStatus == null || healthStatus.equals(record.getHealthStatus()))

@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `operations health page repository filters`：补齐健康分页持久化筛选
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-PROBE-LOOP.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-domain/src/main/java/com/thundax/kuzhambu/operations/domain/health/repository/HealthCheckRepository.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/health/service/impl/HealthCheckApplicationServiceImpl.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-infra/src/main/java/com/thundax/kuzhambu/operations/infra/health/repository/impl/HealthCheckRepositoryImpl.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-infra/src/main/java/com/thundax/kuzhambu/operations/infra/health/persistence/mapper/HealthCheckMapper.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-infra/src/test/java/com/thundax/kuzhambu/operations/infra/health/repository/impl/HealthCheckRepositoryImplTest.java`
-    - 处理动作：为健康记录分页 repository 增加来源、目标和检查时间范围筛选。
-    - 验收点：repository 测试覆盖 `probeSource`、`probeTarget`、`checkedAtStart`、`checkedAtEnd` 筛选和 `checked_at desc, check_id desc` 排序。
-    - 重要度：10/10
-
 - [ ] `operations external http health probe`：实现外部 HTTP 健康探针
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-PROBE-LOOP.md`

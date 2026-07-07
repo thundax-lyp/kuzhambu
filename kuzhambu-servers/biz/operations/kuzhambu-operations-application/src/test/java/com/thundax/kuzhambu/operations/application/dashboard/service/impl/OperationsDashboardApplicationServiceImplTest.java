@@ -215,7 +215,15 @@ class OperationsDashboardApplicationServiceImplTest {
         }
 
         @Override
-        public PageResult<HealthCheckRecord> page(String component, String healthStatus, int pageNo, int pageSize) {
+        public PageResult<HealthCheckRecord> page(
+                String component,
+                String healthStatus,
+                String probeSource,
+                String probeTarget,
+                Date checkedAtStart,
+                Date checkedAtEnd,
+                int pageNo,
+                int pageSize) {
             return PageResult.of(pageNo, pageSize, 0, List.of());
         }
 
