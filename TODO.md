@@ -11,13 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `07 Knowledge 低质量门类重提取后端验证`：运行 Knowledge 后端格式、静态和测试检查
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LOW-QUALITY-REEXTRACT.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface`
-    - 处理动作：运行 RUNBOOK 中 Knowledge 相关 Maven formatter、checkstyle 和测试命令。
-    - 验收点：Knowledge 后端格式检查、静态检查和相关测试通过。
-    - 重要度：10/10
 - [ ] `08 Admin Web 低质量门类重提取前端验证`：运行 Admin Web 格式、lint、测试和构建检查
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LOW-QUALITY-REEXTRACT.md`
