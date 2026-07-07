@@ -11,13 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `08 Admin Web 低质量门类重提取前端验证`：运行 Admin Web 格式、lint、测试和构建检查
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LOW-QUALITY-REEXTRACT.md`
-    - 范围对象：`kuzhambu-apps/admin-web`
-    - 处理动作：运行 RUNBOOK 中 Admin Web format、lint、test 和 build 命令。
-    - 验收点：Admin Web 格式检查、lint、测试和构建通过。
-    - 重要度：10/10
 - [ ] `09 Knowledge 低质量门类重提取冒烟`：验证质量报告页到任务台账闭环
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LOW-QUALITY-REEXTRACT.md`
