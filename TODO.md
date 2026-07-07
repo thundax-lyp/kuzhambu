@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Frontend lineage tests`：14 补齐前端世系页面测试
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-KNOWLEDGE-LINEAGE-VISUALIZATION.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/lineage/lineage-page.test.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/lineage/components/lineage-canvas.test.tsx`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-lineage-page.test.tsx`、`kuzhambu-apps/admin-web/src/app.test.tsx`
-    - 处理动作：补齐 Admin 和 Portal 世系前端测试。
-    - 验收点：测试覆盖权限空态、筛选控件、画布选中、列表联动、Portal 只读行为和菜单可达性。
-    - 重要度：9/10
-
 - [ ] `Branch sync`：15 同步 main 分支代码
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`

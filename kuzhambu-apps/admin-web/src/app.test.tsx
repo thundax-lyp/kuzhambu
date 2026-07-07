@@ -101,6 +101,18 @@ describe("App", () => {
                                     name: "三才图会",
                                     displayParams: '{"icon":"sancai"}',
                                     url: "/classics/sancai"
+                                },
+                                {
+                                    id: "30",
+                                    name: "知识管理",
+                                    displayParams: '{"icon":"knowledge"}'
+                                },
+                                {
+                                    id: "31",
+                                    parentId: "30",
+                                    name: "世系图浏览",
+                                    permission: "knowledge:graph:view",
+                                    url: "/knowledge/lineage"
                                 }
                             ]
                         }),
@@ -119,7 +131,7 @@ describe("App", () => {
                             code: "COMMON-00000",
                             message: "success",
                             data: {
-                                perms: ["sys:user:view", "sys:user:edit"]
+                                perms: ["sys:user:view", "sys:user:edit", "knowledge:graph:view"]
                             }
                         }),
                         {
@@ -182,6 +194,9 @@ describe("App", () => {
         await waitFor(() => expect(hasPermission("sys:user:view")).toBe(true));
         expect(hasPermission("sys:role:edit")).toBe(false);
         expect(await screen.findByText("古籍管理")).toBeInTheDocument();
+        expect(await screen.findByText("知识管理")).toBeInTheDocument();
+        await userEvent.click(await screen.findByRole("menuitem", { name: /知识管理/ }));
+        expect(await screen.findByText("世系图浏览")).toBeInTheDocument();
     });
 
     it("loads permissions as part of successful login", async () => {
@@ -873,7 +888,7 @@ describe("App", () => {
             }
         });
 
-        expect(await screen.findByText("upload.txt")).toBeInTheDocument();
+        expect((await screen.findAllByText("upload.txt")).length).toBeGreaterThan(0);
         expect(screen.getByRole("button", { name: "预览 upload.txt" })).toBeInTheDocument();
         expect(screen.getByRole("button", { name: "下载 upload.txt" })).toBeInTheDocument();
 

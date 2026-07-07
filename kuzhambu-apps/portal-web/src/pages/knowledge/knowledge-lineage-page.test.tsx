@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { waitFor } from "@testing-library/react";
+import { fireEvent, waitFor } from "@testing-library/react";
 import { act } from "react";
 import type { ReactNode } from "react";
 import { createRoot } from "react-dom/client";
@@ -21,17 +21,26 @@ vi.mock("@xyflow/react", () => ({
     Position: { Left: "left", Right: "right" },
     ReactFlow: ({
         children,
+        edges,
+        onEdgeClick,
         nodes,
         onNodeClick
     }: {
+        edges?: { id: string; label?: string }[];
         children: ReactNode;
         nodes: { data: { label?: string }; id: string }[];
+        onEdgeClick?: (event: unknown, edge: { id: string; label?: string }) => void;
         onNodeClick?: (event: unknown, node: { data: { label?: string }; id: string }) => void;
     }) => (
         <div data-testid="lineage-flow">
             {nodes.map((node) => (
                 <button key={node.id} type="button" onClick={() => onNodeClick?.({}, node)}>
                     {node.data.label}
+                </button>
+            ))}
+            {(edges ?? []).map((edge) => (
+                <button key={edge.id} type="button" onClick={() => onEdgeClick?.({}, edge)}>
+                    {edge.label}
                 </button>
             ))}
             {children}
@@ -188,6 +197,103 @@ describe("KnowledgeLineagePage", () => {
                 focusNodeId: 2,
                 focusRelationId: null
             })
+        );
+        expect(window.location.pathname).toBe("/");
+
+        act(() => {
+            root.unmount();
+        });
+    });
+
+    it("submits filters, clears them, and selects relations without write actions", async () => {
+        getKnowledgeLineage.mockResolvedValue(canvas);
+        const { container, root } = renderPage();
+
+        await flushQuery();
+        await waitFor(() => {
+            expect(container.textContent).toContain("贾代善");
+        });
+
+        const searchInput = container.querySelector(
+            'input[placeholder="搜索人物、谱系节点或关系"]'
+        );
+        expect(searchInput).toBeTruthy();
+        fireEvent.change(searchInput as HTMLInputElement, { target: { value: "贾政" } });
+        const searchButton = Array.from(container.querySelectorAll("button")).find((button) =>
+            button.textContent?.includes("搜索")
+        );
+        await act(async () => {
+            searchButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+        });
+
+        await waitFor(() =>
+            expect(getKnowledgeLineage).toHaveBeenLastCalledWith(
+                expect.objectContaining({
+                    keyword: "贾政",
+                    focusNodeId: null,
+                    focusRelationId: null
+                })
+            )
+        );
+
+        fireEvent.change(container.querySelectorAll("select")[1], { target: { value: "PERSON" } });
+        await waitFor(() =>
+            expect(getKnowledgeLineage).toHaveBeenLastCalledWith(
+                expect.objectContaining({
+                    nodeType: "PERSON",
+                    focusNodeId: null,
+                    focusRelationId: null
+                })
+            )
+        );
+        await flushQuery();
+        fireEvent.change(container.querySelectorAll("select")[2], {
+            target: { value: "PARENT_CHILD" }
+        });
+        await waitFor(() =>
+            expect(getKnowledgeLineage).toHaveBeenLastCalledWith(
+                expect.objectContaining({
+                    relationType: "PARENT_CHILD",
+                    focusNodeId: null,
+                    focusRelationId: null
+                })
+            )
+        );
+        await flushQuery();
+
+        const relationButton = Array.from(container.querySelectorAll("button")).find((button) => {
+            return button.textContent === "父子";
+        });
+        await act(async () => {
+            fireEvent.click(relationButton as HTMLButtonElement);
+        });
+        await waitFor(() =>
+            expect(getKnowledgeLineage).toHaveBeenLastCalledWith(
+                expect.objectContaining({
+                    focusNodeId: null,
+                    focusRelationId: 10
+                })
+            )
+        );
+        expect(container.textContent).not.toContain("编辑");
+        expect(container.textContent).not.toContain("删除");
+
+        const clearButton = Array.from(container.querySelectorAll("button")).find(
+            (button) => button.textContent === "清除筛选"
+        );
+        await act(async () => {
+            clearButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+        });
+        await waitFor(() =>
+            expect(getKnowledgeLineage).toHaveBeenLastCalledWith(
+                expect.objectContaining({
+                    keyword: null,
+                    nodeType: null,
+                    relationType: null,
+                    focusNodeId: null,
+                    focusRelationId: null
+                })
+            )
         );
 
         act(() => {
