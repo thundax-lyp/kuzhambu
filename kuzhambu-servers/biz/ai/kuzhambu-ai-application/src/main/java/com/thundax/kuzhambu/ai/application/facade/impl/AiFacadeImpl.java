@@ -20,6 +20,7 @@ import com.thundax.kuzhambu.ai.facade.request.GetAiCallRecordFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.GetAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.KnowledgeAiExtractionFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.MarkAiCandidateAppliedFacadeRequest;
+import com.thundax.kuzhambu.ai.facade.request.RejectAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.RequirePendingAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.response.AiBatchJobActionFacadeResponse;
 import com.thundax.kuzhambu.ai.facade.response.AiBatchJobFacadeResponse;
@@ -173,8 +174,14 @@ public class AiFacadeImpl implements AiFacade {
     @Override
     @Transactional(readOnly = true)
     public AiCandidateFacadeDto requirePendingCandidate(RequirePendingAiCandidateFacadeRequest request) {
+        if (request == null) {
+            return null;
+        }
         return aiFacadeAssembler.toFacadeDto(
-                aiCandidateDomainService.requirePendingForApply(aiFacadeAssembler.toDomainCheck(request)));
+                request.getObjectId() == null
+                        ? aiCandidateDomainService.requirePendingForApply(aiFacadeAssembler.toDomainCheck(request))
+                        : aiCandidateDomainService.requirePendingForApply(
+                                aiFacadeAssembler.toDomainCheck(request), request.getObjectId()));
     }
 
     @Override
@@ -188,6 +195,16 @@ public class AiFacadeImpl implements AiFacade {
                 request.getResultFormat(),
                 request.getResultPayload(),
                 request.getAppliedAt()));
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public AiCandidateFacadeDto rejectCandidate(RejectAiCandidateFacadeRequest request) {
+        if (request == null) {
+            return null;
+        }
+        return aiFacadeAssembler.toFacadeDto(aiCandidateDomainService.reject(
+                request.getCandidateId(), request.getErrorType(), request.getErrorMessage()));
     }
 
     private UnsupportedOperationException unsupported() {
