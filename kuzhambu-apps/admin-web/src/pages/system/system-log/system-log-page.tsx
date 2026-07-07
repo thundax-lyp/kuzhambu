@@ -6,8 +6,9 @@ import {
     UserOutlined
 } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { Button, Input, Typography } from "antd";
+import { Button, Empty, Input, Typography } from "antd";
 import { useMemo, useState } from "react";
+import { hasPermission } from "@/auth/permission-storage";
 import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { KuzhambuTag } from "@/components/kuzhambu-tag";
@@ -77,6 +78,7 @@ const methodTagType = (method?: string | null) => {
 };
 
 export const SystemLogPage = () => {
+    const canViewSystemLog = hasPermission("system:log:view");
     const [query, setQuery] = useState<LogPageQuery>({
         pageNo: DEFAULT_PAGE_NO,
         pageSize: DEFAULT_PAGE_SIZE
@@ -95,8 +97,13 @@ export const SystemLogPage = () => {
     const logQuery = useQuery({
         queryKey: ["system-log", "page", query],
         queryFn: () => service.pageLogs(query),
+        enabled: canViewSystemLog,
         retry: false
     });
+
+    if (!canViewSystemLog) {
+        return <Empty description="缺少 system:log:view 权限" />;
+    }
     const logPage = logQuery.data;
     const logs = useMemo(() => logPage?.records || [], [logPage?.records]);
     const totalCount = logPage?.count ?? logPage?.totalCount ?? 0;

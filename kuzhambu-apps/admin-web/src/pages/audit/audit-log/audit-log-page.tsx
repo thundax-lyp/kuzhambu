@@ -1,7 +1,8 @@
 import { ClockCircleOutlined, ReloadOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { Avatar, Button, Tag, Typography } from "antd";
+import { Avatar, Button, Empty, Tag, Typography } from "antd";
 import { useMemo, useState } from "react";
+import { hasPermission } from "@/auth/permission-storage";
 import { useCurrentAccessToken } from "@/auth/hooks/use-current-access-token";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
 import { ADMIN_API_BASE_URL } from "@/api/http";
@@ -110,6 +111,7 @@ const renderOperator = (log: AuditLogRecord, accessToken: string | null) => {
 };
 
 export const AuditLogPage = () => {
+    const canViewAuditLog = hasPermission("audit:view");
     const accessToken = useCurrentAccessToken();
     const [query, setQuery] = useState<AuditLogPageQuery>({
         pageNo: DEFAULT_PAGE_NO,
@@ -133,19 +135,25 @@ export const AuditLogPage = () => {
     const auditOptionsQuery = useQuery({
         queryKey: ["audit-log", "options"],
         queryFn: service.getAuditOptions,
+        enabled: canViewAuditLog,
         retry: false
     });
     const auditLogQuery = useQuery({
         queryKey: ["audit-log", "page", query],
         queryFn: () => service.pageAuditLogs(query),
+        enabled: canViewAuditLog,
         retry: false
     });
     const detailQuery = useQuery({
         queryKey: ["audit-log", "detail", detailLogId],
         queryFn: () => service.getAuditLogDetail(detailLogId || ""),
-        enabled: Boolean(detailLogId),
+        enabled: canViewAuditLog && Boolean(detailLogId),
         retry: false
     });
+
+    if (!canViewAuditLog) {
+        return <Empty description="缺少 audit:view 权限" />;
+    }
 
     const auditLogPage = auditLogQuery.data;
     const auditLogs = useMemo(() => auditLogPage?.records || [], [auditLogPage?.records]);
