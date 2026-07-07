@@ -236,6 +236,15 @@ describe("sancai service request contracts", () => {
             ...entryCommand
         });
 
+        await entryService.changeLifecycleStatus({
+            id: 3001,
+            lifecycleStatus: "ARCHIVED"
+        });
+        expectLastCall("POST", "/classics/sancai/entries/lifecycle/change", {
+            id: 3001,
+            lifecycleStatus: "ARCHIVED"
+        });
+
         await entryService.deleteById(3001);
         expectLastCall("POST", "/classics/sancai/entries/delete", {
             id: 3001
