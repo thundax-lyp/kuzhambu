@@ -12,6 +12,8 @@ public interface CleanupApplicationService {
 
     OperationsCleanupDetailResult execute(OperationsCleanupExecuteCommand command);
 
+    OperationsCleanupDetailResult executeScheduled(OperationsCleanupExecuteCommand command);
+
     PageResult<OperationsCleanupPageResult> page(OperationsCleanupPageQuery query, PageQuery pageQuery);
 
     OperationsCleanupDetailResult detail(OperationsCleanupDetailQuery query);

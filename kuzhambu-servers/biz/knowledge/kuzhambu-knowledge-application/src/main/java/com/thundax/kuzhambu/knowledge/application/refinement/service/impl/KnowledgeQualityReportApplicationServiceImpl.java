@@ -1,16 +1,26 @@
 package com.thundax.kuzhambu.knowledge.application.refinement.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.page.PageRules;
+import com.thundax.kuzhambu.knowledge.application.graph.command.RequestGraphExtractionCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.command.RequestLineageExtractionCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationExtractionCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
+import com.thundax.kuzhambu.knowledge.application.graph.service.KnowledgeGraphExtractionApplicationService;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.GenerateQualityReportCommand;
+import com.thundax.kuzhambu.knowledge.application.refinement.command.ReextractLowQualityCategoryCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.query.QualityReportPageQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityAnnotationResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult.IssueRecord;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult.ReportRecord;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult.SourceDetailRecord;
+import com.thundax.kuzhambu.knowledge.application.refinement.result.ReextractLowQualityCategoryResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.service.KnowledgeQualityReportApplicationService;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphVersion;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeEntity;
@@ -38,8 +48,13 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,8 +66,14 @@ public class KnowledgeQualityReportApplicationServiceImpl implements KnowledgeQu
     private static final BigDecimal LOW_RATE_THRESHOLD = new BigDecimal("0.8000");
     private static final String MANUAL_CONFIRMED = "MANUAL_CONFIRMED";
     private static final String PUBLISHED = "PUBLISHED";
+    private static final String TASK_TYPE_RELATION = "RELATION";
+    private static final String TASK_TYPE_GRAPH = "GRAPH";
+    private static final String TASK_TYPE_LINEAGE = "LINEAGE";
+    private static final String TRIGGER_SOURCE_QUALITY_REPORT = "QUALITY_REPORT";
+    private static final String DEFAULT_LOCALE = "zh-CN";
 
     private final GraphVersionRepository graphVersionRepository;
+    private final KnowledgeGraphExtractionApplicationService graphExtractionApplicationService;
     private final KnowledgeEntityRepository entityRepository;
     private final KnowledgeRelationRepository relationRepository;
     private final KnowledgeLineageNodeRepository lineageNodeRepository;
@@ -65,9 +86,11 @@ public class KnowledgeQualityReportApplicationServiceImpl implements KnowledgeQu
     private final QualityAnnotationRepository qualityAnnotationRepository;
     private final QualityReportRepository qualityReportRepository;
     private final SnowflakeIdGenerator idGenerator = new SnowflakeIdGenerator();
+    private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 
     public KnowledgeQualityReportApplicationServiceImpl(
             GraphVersionRepository graphVersionRepository,
+            KnowledgeGraphExtractionApplicationService graphExtractionApplicationService,
             KnowledgeEntityRepository entityRepository,
             KnowledgeRelationRepository relationRepository,
             KnowledgeLineageNodeRepository lineageNodeRepository,
@@ -80,6 +103,7 @@ public class KnowledgeQualityReportApplicationServiceImpl implements KnowledgeQu
             QualityAnnotationRepository qualityAnnotationRepository,
             QualityReportRepository qualityReportRepository) {
         this.graphVersionRepository = graphVersionRepository;
+        this.graphExtractionApplicationService = graphExtractionApplicationService;
         this.entityRepository = entityRepository;
         this.relationRepository = relationRepository;
         this.lineageNodeRepository = lineageNodeRepository;
@@ -169,6 +193,56 @@ public class KnowledgeQualityReportApplicationServiceImpl implements KnowledgeQu
     public QualityReportDetailResult latest(Long graphVersionId) {
         QualityReport report = qualityReportRepository.getLatestPublished(graphVersionId);
         return report == null ? emptyDetail() : detail(report.getReportId());
+    }
+
+    @Override
+    public ReextractLowQualityCategoryResult reextractLowQualityCategory(ReextractLowQualityCategoryCommand command) {
+        if (command == null || command.getReportId() == null) {
+            throw new BizException("Knowledge quality report id is required");
+        }
+        if (StringUtils.isBlank(command.getSourceCategoryCode())) {
+            throw new BizException("Knowledge quality report source category code is required");
+        }
+        QualityReportDetailResult detail = detail(command.getReportId());
+        ReportRecord report = detail.getReport();
+        if (report == null) {
+            throw new BizException("Knowledge quality report not found: " + command.getReportId());
+        }
+        List<SourceDetailRecord> targets = lowQualitySourceDetails(detail, command.getSourceCategoryCode());
+        if (targets.isEmpty()) {
+            throw new BizException("Knowledge quality report source category has no quality issues");
+        }
+        String sourceContentType = singleSourceContentType(targets);
+        List<Long> sourceContentIds = sourceContentIds(targets);
+        if (sourceContentIds.isEmpty()) {
+            throw new BizException("Knowledge quality report source category has no source content ids");
+        }
+        Long sourceContentId = sourceContentIds.get(0);
+        String taskType = StringUtils.defaultIfBlank(command.getTaskType(), TASK_TYPE_GRAPH);
+        Boolean replaceUnconfirmedOnly =
+                command.getReplaceUnconfirmedOnly() == null ? Boolean.TRUE : command.getReplaceUnconfirmedOnly();
+        String sourceCategoryName = sourceCategoryName(targets);
+        String selectionScopeJson = selectionScopeJson(
+                command.getReportId(),
+                report.getGraphVersionId(),
+                command.getSourceCategoryCode(),
+                sourceCategoryName,
+                sourceContentType,
+                sourceContentIds);
+        GraphExtractionTaskResult task = requestReextractTask(
+                taskType, selectionScopeJson, replaceUnconfirmedOnly, sourceContentType, sourceContentId, command);
+        return new ReextractLowQualityCategoryResult(
+                command.getReportId(),
+                command.getSourceCategoryCode(),
+                sourceCategoryName,
+                sourceContentType,
+                sourceContentId,
+                parseTaskId(task == null ? null : task.getTaskId()),
+                task == null ? null : task.getBatchJobId(),
+                taskType,
+                TRIGGER_SOURCE_QUALITY_REPORT,
+                selectionScopeJson,
+                replaceUnconfirmedOnly);
     }
 
     private QualityReport buildReport(
@@ -511,6 +585,168 @@ public class KnowledgeQualityReportApplicationServiceImpl implements KnowledgeQu
 
     private int size(List<?> values) {
         return values == null ? 0 : values.size();
+    }
+
+    private List<SourceDetailRecord> lowQualitySourceDetails(
+            QualityReportDetailResult detail, String sourceCategoryCode) {
+        List<SourceDetailRecord> sourceDetails = detail == null ? List.of() : detail.getSourceDetails();
+        return sourceDetails == null
+                ? List.of()
+                : sourceDetails.stream()
+                        .filter(item -> sourceCategoryCode.equals(item.getSourceCategoryCode()))
+                        .filter(item -> item.getIssueCount() != null && item.getIssueCount() > 0)
+                        .toList();
+    }
+
+    private String singleSourceContentType(List<SourceDetailRecord> targets) {
+        List<String> sourceContentTypes = targets.stream()
+                .map(SourceDetailRecord::getSourceContentType)
+                .filter(StringUtils::isNotBlank)
+                .distinct()
+                .toList();
+        if (sourceContentTypes.size() != 1) {
+            throw new BizException("低质量门类包含多个来源类型，请按来源类型拆分重提取");
+        }
+        return sourceContentTypes.get(0);
+    }
+
+    private List<Long> sourceContentIds(List<SourceDetailRecord> targets) {
+        return targets.stream()
+                .map(SourceDetailRecord::getSourceContentId)
+                .filter(item -> item != null)
+                .distinct()
+                .sorted(Comparator.naturalOrder())
+                .toList();
+    }
+
+    private String sourceCategoryName(List<SourceDetailRecord> targets) {
+        return targets.stream()
+                .map(SourceDetailRecord::getSourceCategoryName)
+                .filter(StringUtils::isNotBlank)
+                .findFirst()
+                .orElse(null);
+    }
+
+    private String selectionScopeJson(
+            Long reportId,
+            Long graphVersionId,
+            String sourceCategoryCode,
+            String sourceCategoryName,
+            String sourceContentType,
+            List<Long> sourceContentIds) {
+        Map<String, Object> scope = new LinkedHashMap<>();
+        scope.put("triggerSource", TRIGGER_SOURCE_QUALITY_REPORT);
+        scope.put("qualityReportId", reportId);
+        scope.put("graphVersionId", graphVersionId);
+        scope.put("sourceCategoryCode", sourceCategoryCode);
+        scope.put("sourceCategoryName", sourceCategoryName);
+        scope.put("sourceContentType", sourceContentType);
+        scope.put("sourceContentIds", sourceContentIds);
+        try {
+            return objectMapper.writeValueAsString(scope);
+        } catch (JsonProcessingException ex) {
+            throw new BizException("Knowledge quality report reextract scope is invalid");
+        }
+    }
+
+    private GraphExtractionTaskResult requestReextractTask(
+            String taskType,
+            String selectionScopeJson,
+            Boolean replaceUnconfirmedOnly,
+            String sourceContentType,
+            Long sourceContentId,
+            ReextractLowQualityCategoryCommand command) {
+        String requestId = "quality-reextract-" + UUID.randomUUID();
+        String traceId = "quality-reextract-trace-" + UUID.randomUUID();
+        return switch (taskType) {
+            case TASK_TYPE_RELATION ->
+                graphExtractionApplicationService.requestRelationExtraction(new RequestRelationExtractionCommand(
+                        sourceContentType,
+                        null,
+                        TRIGGER_SOURCE_QUALITY_REPORT,
+                        selectionScopeJson,
+                        replaceUnconfirmedOnly,
+                        null,
+                        sourceContentType,
+                        sourceContentId,
+                        command.getRequestedBy(),
+                        null,
+                        null,
+                        command.getModelId(),
+                        command.getModelName(),
+                        null,
+                        requestId,
+                        traceId,
+                        command.getPromptMessagesJson(),
+                        null,
+                        null,
+                        command.getInputPayloadJson(),
+                        null,
+                        false,
+                        DEFAULT_LOCALE));
+            case TASK_TYPE_GRAPH ->
+                graphExtractionApplicationService.requestGraphExtraction(new RequestGraphExtractionCommand(
+                        sourceContentType,
+                        null,
+                        TRIGGER_SOURCE_QUALITY_REPORT,
+                        selectionScopeJson,
+                        replaceUnconfirmedOnly,
+                        null,
+                        sourceContentType,
+                        sourceContentId,
+                        command.getRequestedBy(),
+                        null,
+                        null,
+                        command.getModelId(),
+                        command.getModelName(),
+                        null,
+                        requestId,
+                        traceId,
+                        command.getPromptMessagesJson(),
+                        null,
+                        null,
+                        command.getInputPayloadJson(),
+                        null,
+                        false,
+                        DEFAULT_LOCALE));
+            case TASK_TYPE_LINEAGE ->
+                graphExtractionApplicationService.requestLineageExtraction(new RequestLineageExtractionCommand(
+                        sourceContentType,
+                        null,
+                        TRIGGER_SOURCE_QUALITY_REPORT,
+                        selectionScopeJson,
+                        replaceUnconfirmedOnly,
+                        null,
+                        sourceContentType,
+                        sourceContentId,
+                        command.getRequestedBy(),
+                        null,
+                        null,
+                        command.getModelId(),
+                        command.getModelName(),
+                        null,
+                        requestId,
+                        traceId,
+                        command.getPromptMessagesJson(),
+                        null,
+                        null,
+                        command.getInputPayloadJson(),
+                        null,
+                        false,
+                        DEFAULT_LOCALE));
+            default -> throw new BizException("Unsupported knowledge quality reextract task type: " + taskType);
+        };
+    }
+
+    private Long parseTaskId(String taskId) {
+        if (StringUtils.isBlank(taskId)) {
+            return null;
+        }
+        try {
+            return Long.valueOf(taskId);
+        } catch (NumberFormatException ex) {
+            throw new BizException("Knowledge graph extraction task id is invalid: " + taskId);
+        }
     }
 
     private record RefinementCounts(long entityConfirmed, long relationConfirmed, long lineageConfirmed) {}

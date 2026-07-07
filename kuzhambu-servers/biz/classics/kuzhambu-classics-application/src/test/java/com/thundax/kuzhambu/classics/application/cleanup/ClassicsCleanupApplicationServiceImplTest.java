@@ -8,6 +8,7 @@ import com.thundax.kuzhambu.classics.application.cleanup.service.ClassicsCleanup
 import com.thundax.kuzhambu.classics.application.cleanup.service.ClassicsCleanupApplicationService.CleanupTarget;
 import com.thundax.kuzhambu.classics.application.cleanup.service.impl.ClassicsCleanupApplicationServiceImpl;
 import com.thundax.kuzhambu.classics.domain.content.repository.ClassicsContentRepository;
+import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryDraftId;
 import com.thundax.kuzhambu.classics.domain.sancai.repository.SancaiAssetRepository;
 import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareLinkId;
 import com.thundax.kuzhambu.classics.domain.sharing.repository.ClassicsSharingRepository;
@@ -31,6 +32,23 @@ class ClassicsCleanupApplicationServiceImplTest {
         assertEquals(2, targets.size());
         assertEquals("share", targets.get(0).getTargetType());
         assertEquals(11L, targets.get(0).getTargetId());
+    }
+
+    @Test
+    void listTargetsShouldApplyRetentionDaysAndLimitToExpiredDrafts() {
+        SancaiAssetRepository sancaiAssetRepository = mock(SancaiAssetRepository.class);
+        Date now = new Date(1_735_689_600_000L);
+        Date expectedCutoff = new Date(1_735_689_600_000L - 14L * 24L * 60L * 60L * 1000L);
+        when(sancaiAssetRepository.listExpiredDraftIds(expectedCutoff, 10))
+                .thenReturn(List.of(SancaiEntryDraftId.of(21L)));
+        ClassicsCleanupApplicationServiceImpl service = new ClassicsCleanupApplicationServiceImpl(
+                mock(ClassicsSharingRepository.class), sancaiAssetRepository, mock(ClassicsContentRepository.class));
+
+        List<CleanupTarget> targets = service.listTargets("expired_draft", now, 14, 10);
+
+        assertEquals(1, targets.size());
+        assertEquals("draft", targets.get(0).getTargetType());
+        assertEquals(21L, targets.get(0).getTargetId());
     }
 
     @Test

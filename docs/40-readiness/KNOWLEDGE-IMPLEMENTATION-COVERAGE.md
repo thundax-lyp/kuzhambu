@@ -45,6 +45,7 @@
 - Admin Web 已接入 `/knowledge/graph-results` 页面，支持图谱版本列表、版本详情，以及从版本下钻查看正式实体、正式关系和正式世系结果。
 - Admin Web 已在 `/knowledge/refinement` 工作台接入人工质量标注，实体、关系、世系节点和世系关系均可打开标注 Drawer，保存、查看和删除质量标注。
 - Admin Web 已接入 `/knowledge/quality-report` 页面，支持输入图谱版本生成报告、查看最新报告、历史报告、问题清单、来源明细和人工标注明细。
+- Admin Web `/knowledge/quality-report` 已支持从质量报告来源明细按低质量门类一键触发重提取；后端会从报告快照生成 `selectionScopeJson` 并复用 `/knowledge/graph-extraction` 任务台账、批次、候选应用和正式结果落库链路。
 - Knowledge 已新增质量报告快照模型和 `knowledge_quality_report`、`knowledge_quality_report_issue`、`knowledge_quality_report_source_detail` 三张表，报告生成即发布为 `PUBLISHED`。
 - Portal Web `/knowledge/quality` 已改为读取最新 `PUBLISHED` 质量报告快照；无报告时返回并展示明确空态，不再展示临时计算质量指标。
 - Portal Web 已接入 Knowledge 只读门户：首页 `/knowledge`、质量页 `/knowledge/quality` 和图谱分层浏览页 `/knowledge/atlas` 已形成入口闭环。
@@ -55,9 +56,7 @@
 
 - 当前已完成 Knowledge / AI 后端专项测试、workers 契约测试、Admin Web `format:check` / `lint` / `test` / `build` 和菜单 SQL 生成校验，但尚未补充 Playwright 闭环与跨服务联调冒烟记录。
 
-未完成：
-
-- 从质量报告低质量门类一键触发重提取仍未落地。
+未完成：无。
 
 ## Requirement Coverage Matrix
 
@@ -110,10 +109,10 @@
 | 详情层展示单实体信息、关系和来源条目       | 已完成 | Portal 实体层已展示实体卷宗、关系分组、来源条目、时间线和相关标签                                                                                           | 无                                   | Knowledge, Portal Web            |
 | 鸟瞰、门类和详情面包屑导航                 | 已完成 | Portal `/knowledge/atlas` 已使用后端 breadcrumb 驱动 overview/category/detail 返回导航                                                                      | 无                                   | Knowledge, Portal Web            |
 | 批量生成和重生成                           | 已完成 | 已支持按 `selectionScopeJson` 批量创建同类型图谱抽取任务、复用 AI 域 `batchId` 聚合子任务，并支持基于源任务重生成且区分 `replaceUnconfirmedOnly` 语义           | 无                                   | Knowledge, AI                     |
-| 从质量报告或筛选结果批量触发提取           | 部分完成 | Admin Web 图谱抽取页已支持 `QUALITY_REPORT` 触发模式并可携带批量范围快照创建任务，后端已保留 `triggerSource` 和 `selectionScopeJson` 追溯信息                      | 尚未从独立质量报告页直接一键下钻触发 | Knowledge, AI                     |
+| 从质量报告或筛选结果批量触发提取           | 已完成 | Admin Web 图谱抽取页已支持 `QUALITY_REPORT` 触发模式并可携带批量范围快照创建任务；质量报告来源明细已支持低质量门类一键触发，后端生成 `selectionScopeJson` 并保留 `triggerSource`、批次和请求快照 | 无 | Knowledge, AI                     |
 | 读取数据精修修正结果                       | 已完成 | 精修工作台应用动作会将实体、关系和世系草稿写回正式事实表；正式结果页继续从正式事实和图谱版本读取，因此已消费精修结果                                | 无                                   | Knowledge                         |
 | 质量报告与指标展示                         | 已完成 | 已提供质量报告快照生成服务、后台 `/knowledge/quality-report` 页面、历史报告列表、问题清单、来源明细、人工标注明细，以及 Portal `/knowledge/quality` 同源快照读取 | 无                                   | Knowledge, Admin Web, Portal Web |
-| 质量报告按门类分组并支持低质量门类触发提取 | 部分完成 | 质量报告来源明细已保留 `sourceCategoryCode`、`sourceCategoryName`、标注数、问题数和跳转链接，可支撑按门类查看报告来源 | 尚未从低质量门类直接一键触发重提取 | Knowledge, AI                     |
+| 质量报告按门类分组并支持低质量门类触发提取 | 已完成 | 质量报告来源明细已保留 `sourceCategoryCode`、`sourceCategoryName`、标注数、问题数和跳转链接；低质量门类可在质量报告页一键创建 `QUALITY_REPORT` 图谱抽取任务，并在任务台账查看 `selectionScopeJson` 与批次信息 | 无 | Knowledge, AI                     |
 | 最近提取版本和提取时间展示                 | 已完成 | 已在 `knowledge_graph_version` 建立版本台账，应用正式结果时会生成或续增版本号，并在 Admin Web 正式结果页提供版本列表、版本详情和应用时间展示                  | 无                                   | Knowledge, Admin Web              |
 | 世系图专用提取和展示                       | 已完成 | 已支持 `LINEAGE` 抽取任务、workers 世系候选输出、正式 `knowledge_lineage_node` / `knowledge_lineage_relation` 落库，以及 Admin Web 正式世系结果列表和详情读取 | 无                                   | Knowledge, AI, Workers, Admin Web |
 
@@ -128,7 +127,7 @@
 | 能力项                              | 状态   | 说明                                                                                                   |
 | ----------------------------------- | ------ | ------------------------------------------------------------------------------------------------------ |
 | 数据精修                            | 已完成 | 实体、关系和世系精修工作台已落地，正式事实回写、质量汇总和人工质量标注入口均已接通                  |
-| 图谱浏览与质量报告                  | 部分完成 | 当前已交付 Portal 图谱分层浏览页、Portal 图谱可视化画布、固定 14 门类空位、Portal 质量报告页、后台质量报告页、抽取任务、批量生成、重生成、候选应用、正式结果落库和后台读取页；仍缺从报告一键触发重提取 |
+| 图谱浏览与质量报告                  | 已完成 | 当前已交付 Portal 图谱分层浏览页、Portal 图谱可视化画布、固定 14 门类空位、Portal 质量报告页、后台质量报告页、抽取任务、批量生成、重生成、候选应用、正式结果落库、后台读取页，以及从质量报告低质量门类一键触发重提取 |
 | 世系图浏览                          | 部分完成 | 当前已交付世系抽取、正式结果落库和后台读取，并可在正式结果页查看世系节点/关系详情；Portal 图谱画布已覆盖实体关系浏览，但尚未提供独立世系可视化画布 |
 | Portal 页面                         | 已完成 | Portal 侧已形成 `/knowledge`、`/knowledge/quality`、`/knowledge/atlas` 三个可执行只读入口              |
 | 数据精修与图谱联动                  | 部分完成 | 精修应用已回写正式事实并被正式结果读取链路消费，图谱抽取也已具备批量重生成能力                             |
@@ -140,4 +139,4 @@
 - 菜单种子重生成后 `system_menu` 的树编号和自增值已随节点数收缩变化，后续若依赖固定菜单 ID，需要以当前生成结果为准重新校对。
 - taxonomy 页面、精修工作台和正式结果页目前以页面级查询和抽屉交互为主；后续再改权限、字段或接口返回时，建议补前端契约测试和 Playwright 冒烟。
 - 同义词、标签和实体提示已接通 Discovery 搜索 / 问答主链路，后续主要关注命中质量与提示规则调优。
-- 当前已补齐 Portal 只读入口、图谱分层浏览、图谱可视化画布、固定 14 门类空位、图谱抽取批量闭环和人工质量报告闭环，但仍未提供从低质量门类一键触发重提取；后续扩展前仍需先明确触发边界与回放策略。
+- 当前已补齐 Portal 只读入口、图谱分层浏览、图谱可视化画布、固定 14 门类空位、图谱抽取批量闭环、人工质量报告闭环和低质量门类一键触发重提取；后续扩展到更多触发来源或世系专用重提取前，仍需先明确触发边界与回放策略。

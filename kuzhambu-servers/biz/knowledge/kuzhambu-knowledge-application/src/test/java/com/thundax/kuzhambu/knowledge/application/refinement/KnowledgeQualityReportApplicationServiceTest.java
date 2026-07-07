@@ -2,11 +2,20 @@ package com.thundax.kuzhambu.knowledge.application.refinement;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.thundax.kuzhambu.common.core.exception.BizException;
+import com.thundax.kuzhambu.knowledge.application.graph.command.RequestGraphExtractionCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
+import com.thundax.kuzhambu.knowledge.application.graph.service.KnowledgeGraphExtractionApplicationService;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.GenerateQualityReportCommand;
+import com.thundax.kuzhambu.knowledge.application.refinement.command.ReextractLowQualityCategoryCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult;
+import com.thundax.kuzhambu.knowledge.application.refinement.result.ReextractLowQualityCategoryResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.service.impl.KnowledgeQualityReportApplicationServiceImpl;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphVersion;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeEntity;
@@ -48,6 +57,7 @@ class KnowledgeQualityReportApplicationServiceTest {
         QualityReportRepository reportRepository = mock(QualityReportRepository.class);
         KnowledgeQualityReportApplicationServiceImpl service = new KnowledgeQualityReportApplicationServiceImpl(
                 graphVersionRepository,
+                mock(KnowledgeGraphExtractionApplicationService.class),
                 entityRepository,
                 relationRepository,
                 lineageNodeRepository,
@@ -174,4 +184,158 @@ class KnowledgeQualityReportApplicationServiceTest {
         assertEquals(1L, sourceCaptor.getValue().get(0).getAnnotationCount());
         assertEquals(2L, sourceCaptor.getValue().get(0).getIssueCount());
     }
+
+    @Test
+    void reextractLowQualityCategoryShouldCreateSingleGraphTask() {
+        ServiceFixture fixture = reextractFixture(List.of(sourceDetail(2001L, "SANCAI_ENTRY", 2L)));
+        when(fixture.graphExtractionService.requestGraphExtraction(any()))
+                .thenReturn(graphExtractionTask("3001", 4001L));
+
+        ReextractLowQualityCategoryResult result = fixture.service.reextractLowQualityCategory(reextractCommand());
+
+        ArgumentCaptor<RequestGraphExtractionCommand> captor =
+                ArgumentCaptor.forClass(RequestGraphExtractionCommand.class);
+        verify(fixture.graphExtractionService).requestGraphExtraction(captor.capture());
+        assertEquals("QUALITY_REPORT", captor.getValue().getTriggerSource());
+        assertEquals("SANCAI_ENTRY", captor.getValue().getSourceContentType());
+        assertEquals(2001L, captor.getValue().getSourceContentId());
+        assertEquals(true, captor.getValue().getReplaceUnconfirmedOnly());
+        assertEquals(3001L, result.getTaskId());
+        assertEquals(4001L, result.getBatchJobId());
+        assertEquals("QUALITY_REPORT", result.getTriggerSource());
+    }
+
+    @Test
+    void reextractLowQualityCategoryShouldCreateBatchScope() {
+        ServiceFixture fixture = reextractFixture(List.of(
+                sourceDetail(3002L, "SANCAI_ENTRY", 1L),
+                sourceDetail(3001L, "SANCAI_ENTRY", 2L),
+                sourceDetail(3001L, "SANCAI_ENTRY", 3L)));
+        when(fixture.graphExtractionService.requestGraphExtraction(any()))
+                .thenReturn(graphExtractionTask("5001", 6001L));
+
+        ReextractLowQualityCategoryResult result = fixture.service.reextractLowQualityCategory(reextractCommand());
+
+        ArgumentCaptor<RequestGraphExtractionCommand> captor =
+                ArgumentCaptor.forClass(RequestGraphExtractionCommand.class);
+        verify(fixture.graphExtractionService).requestGraphExtraction(captor.capture());
+        assertEquals(3001L, captor.getValue().getSourceContentId());
+        assertEquals(
+                "{\"triggerSource\":\"QUALITY_REPORT\",\"qualityReportId\":1001,\"graphVersionId\":71,\"sourceCategoryCode\":\"myth\",\"sourceCategoryName\":\"神话\",\"sourceContentType\":\"SANCAI_ENTRY\",\"sourceContentIds\":[3001,3002]}",
+                captor.getValue().getSelectionScopeJson());
+        assertEquals(captor.getValue().getSelectionScopeJson(), result.getSelectionScopeJson());
+    }
+
+    @Test
+    void reextractLowQualityCategoryShouldRejectNoQualityIssues() {
+        ServiceFixture fixture = reextractFixture(List.of(sourceDetail(2001L, "SANCAI_ENTRY", 0L)));
+
+        BizException exception =
+                assertThrows(BizException.class, () -> fixture.service.reextractLowQualityCategory(reextractCommand()));
+
+        assertEquals("Knowledge quality report source category has no quality issues", exception.getMessage());
+    }
+
+    @Test
+    void reextractLowQualityCategoryShouldRejectMixedSourceTypes() {
+        ServiceFixture fixture = reextractFixture(
+                List.of(sourceDetail(2001L, "SANCAI_ENTRY", 1L), sourceDetail(2002L, "MING_CUSTOMS", 1L)));
+
+        BizException exception =
+                assertThrows(BizException.class, () -> fixture.service.reextractLowQualityCategory(reextractCommand()));
+
+        assertEquals("低质量门类包含多个来源类型，请按来源类型拆分重提取", exception.getMessage());
+    }
+
+    private static ServiceFixture reextractFixture(List<QualityReportSourceDetail> sourceDetails) {
+        GraphVersionRepository graphVersionRepository = mock(GraphVersionRepository.class);
+        KnowledgeGraphExtractionApplicationService graphExtractionService =
+                mock(KnowledgeGraphExtractionApplicationService.class);
+        QualityReportRepository reportRepository = mock(QualityReportRepository.class);
+        QualityAnnotationRepository annotationRepository = mock(QualityAnnotationRepository.class);
+        KnowledgeQualityReportApplicationServiceImpl service = new KnowledgeQualityReportApplicationServiceImpl(
+                graphVersionRepository,
+                graphExtractionService,
+                mock(KnowledgeEntityRepository.class),
+                mock(KnowledgeRelationRepository.class),
+                mock(KnowledgeLineageNodeRepository.class),
+                mock(KnowledgeLineageRelationRepository.class),
+                mock(RefinementTaskRepository.class),
+                mock(RefinementEntityDraftRepository.class),
+                mock(RefinementRelationDraftRepository.class),
+                mock(RefinementLineageNodeDraftRepository.class),
+                mock(RefinementLineageRelationDraftRepository.class),
+                annotationRepository,
+                reportRepository);
+        when(reportRepository.getByReportId(1001L)).thenReturn(report());
+        when(reportRepository.listIssuesByReportId(1001L)).thenReturn(List.of());
+        when(reportRepository.listSourceDetailsByReportId(1001L)).thenReturn(sourceDetails);
+        when(annotationRepository.listByGraphVersionId(71L)).thenReturn(List.of());
+        return new ServiceFixture(service, graphExtractionService);
+    }
+
+    private static ReextractLowQualityCategoryCommand reextractCommand() {
+        return new ReextractLowQualityCategoryCommand(1001L, "myth", "GRAPH", true, 1L, "gpt-5.5", "[]", "{}", 9L);
+    }
+
+    private static GraphExtractionTaskResult graphExtractionTask(String taskId, Long batchJobId) {
+        GraphExtractionTaskResult result = new GraphExtractionTaskResult();
+        result.setTaskId(taskId);
+        result.setBatchJobId(batchJobId);
+        result.setTaskType("GRAPH");
+        return result;
+    }
+
+    private static QualityReport report() {
+        return new QualityReport(
+                1L,
+                1001L,
+                "KQR-71",
+                71L,
+                "SANCAI_ENTRY",
+                2001L,
+                "myth",
+                "神话",
+                "PUBLISHED",
+                2L,
+                1L,
+                2L,
+                1L,
+                0L,
+                0L,
+                new BigDecimal("0.5000"),
+                new BigDecimal("0.5000"),
+                BigDecimal.ZERO,
+                new BigDecimal("0.5000"),
+                1L,
+                1L,
+                1L,
+                null,
+                null,
+                null,
+                null);
+    }
+
+    private static QualityReportSourceDetail sourceDetail(
+            Long sourceContentId, String sourceContentType, Long issueCount) {
+        return new QualityReportSourceDetail(
+                null,
+                null,
+                1001L,
+                sourceContentType,
+                sourceContentId,
+                "myth",
+                "神话",
+                71L,
+                null,
+                1L,
+                issueCount,
+                "APPLIED",
+                "/knowledge/atlas",
+                null);
+    }
+
+    private record ServiceFixture(
+            KnowledgeQualityReportApplicationServiceImpl service,
+            KnowledgeGraphExtractionApplicationService graphExtractionService) {}
 }

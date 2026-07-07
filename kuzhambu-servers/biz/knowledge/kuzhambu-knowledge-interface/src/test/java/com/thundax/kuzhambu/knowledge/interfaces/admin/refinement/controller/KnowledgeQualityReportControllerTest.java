@@ -9,9 +9,11 @@ import static org.mockito.Mockito.when;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.knowledge.application.refinement.command.GenerateQualityReportCommand;
+import com.thundax.kuzhambu.knowledge.application.refinement.command.ReextractLowQualityCategoryCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.query.QualityReportPageQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult.ReportRecord;
+import com.thundax.kuzhambu.knowledge.application.refinement.result.ReextractLowQualityCategoryResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.service.KnowledgeQualityReportApplicationService;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.refinement.controller.request.QualityReportRequests;
 import java.lang.reflect.Method;
@@ -32,6 +34,7 @@ class KnowledgeQualityReportControllerTest {
         assertPostMapping("page", "page", "knowledge:quality-report:view");
         assertPostMapping("detail", "detail", "knowledge:quality-report:view");
         assertPostMapping("latest", "latest", "knowledge:quality-report:view");
+        assertPostMapping("reextractLowQualityCategory", "reextract-low-quality-category", "knowledge:graph:edit");
     }
 
     @Test
@@ -74,6 +77,46 @@ class KnowledgeQualityReportControllerTest {
         assertEquals("KQR-71", response.getRecords().get(0).getReportNo());
     }
 
+    @Test
+    void reextractShouldMapRequestAndResponse() {
+        KnowledgeQualityReportApplicationService service = mock(KnowledgeQualityReportApplicationService.class);
+        KnowledgeQualityReportController controller = new KnowledgeQualityReportController(service);
+        QualityReportRequests.ReextractRequest request = new QualityReportRequests.ReextractRequest();
+        request.setReportId(1001L);
+        request.setSourceCategoryCode("myth");
+        request.setTaskType("GRAPH");
+        request.setReplaceUnconfirmedOnly(true);
+        request.setModelId(1L);
+        request.setModelName("gpt-5.5");
+        request.setPromptMessagesJson("[]");
+        request.setInputPayloadJson("{}");
+        request.setRequestedBy(9L);
+        when(service.reextractLowQualityCategory(any()))
+                .thenReturn(new ReextractLowQualityCategoryResult(
+                        1001L,
+                        "myth",
+                        "神话",
+                        "SANCAI_ENTRY",
+                        2001L,
+                        3001L,
+                        4001L,
+                        "GRAPH",
+                        "QUALITY_REPORT",
+                        "{\"sourceContentIds\":[2001]}",
+                        true));
+
+        var response = controller.reextractLowQualityCategory(request);
+
+        ArgumentCaptor<ReextractLowQualityCategoryCommand> captor =
+                ArgumentCaptor.forClass(ReextractLowQualityCategoryCommand.class);
+        verify(service).reextractLowQualityCategory(captor.capture());
+        assertEquals(1001L, captor.getValue().getReportId());
+        assertEquals("myth", captor.getValue().getSourceCategoryCode());
+        assertEquals("GRAPH", captor.getValue().getTaskType());
+        assertEquals(3001L, response.getTaskId());
+        assertEquals("QUALITY_REPORT", response.getTriggerSource());
+    }
+
     private static void assertPostMapping(String methodName, String path, String permission) throws Exception {
         Method method = KnowledgeQualityReportController.class.getDeclaredMethod(methodName, requestType(methodName));
         PostMapping postMapping = method.getAnnotation(PostMapping.class);
@@ -88,6 +131,7 @@ class KnowledgeQualityReportControllerTest {
             case "page" -> QualityReportRequests.PageRequestBody.class;
             case "detail" -> QualityReportRequests.DetailRequest.class;
             case "latest" -> QualityReportRequests.LatestRequest.class;
+            case "reextractLowQualityCategory" -> QualityReportRequests.ReextractRequest.class;
             default -> throw new IllegalArgumentException(methodName);
         };
     }

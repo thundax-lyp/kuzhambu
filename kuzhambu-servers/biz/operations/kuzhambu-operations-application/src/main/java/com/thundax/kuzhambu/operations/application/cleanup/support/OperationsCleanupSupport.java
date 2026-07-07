@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.operations.application.cleanup.support;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
@@ -25,11 +26,13 @@ public final class OperationsCleanupSupport {
 
     public static final int DEFAULT_CLEANUP_TARGET_LIMIT = 200;
 
-    private static final Set<String> SUPPORTED_CLEANUP_TYPES = Set.of(
+    private static final List<String> ORDERED_CLEANUP_TYPES = List.of(
             CLEANUP_TYPE_EXPIRED_BACKUP,
+            CLEANUP_TYPE_EXPIRED_EXPORT,
             CLEANUP_TYPE_EXPIRED_SHARE,
-            CLEANUP_TYPE_EXPIRED_DRAFT,
-            CLEANUP_TYPE_EXPIRED_EXPORT);
+            CLEANUP_TYPE_EXPIRED_DRAFT);
+
+    private static final Set<String> SUPPORTED_CLEANUP_TYPES = Set.copyOf(ORDERED_CLEANUP_TYPES);
 
     private OperationsCleanupSupport() {}
 
@@ -39,6 +42,10 @@ public final class OperationsCleanupSupport {
 
     public static String normalizeType(String cleanupType) {
         return cleanupType == null ? null : cleanupType.trim().toUpperCase(Locale.ROOT);
+    }
+
+    public static List<String> orderedCleanupTypes() {
+        return ORDERED_CLEANUP_TYPES;
     }
 
     public static String resolveItemType(String normalizedCleanupType) {
