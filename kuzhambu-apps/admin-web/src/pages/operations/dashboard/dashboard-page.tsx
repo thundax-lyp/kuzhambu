@@ -143,6 +143,16 @@ const resolveAlertActionPath = (alert: OperationsHealthAlertRecord) => {
     return "/operations/dashboard";
 };
 
+const filterAlertsByComponent = (
+    alerts: OperationsHealthAlertRecord[],
+    component?: string | null
+) => {
+    if (!component) {
+        return [];
+    }
+    return alerts.filter((alert) => alert.component === component);
+};
+
 const buildOverviewQuery = (
     periodType: OperationsDashboardPeriodType
 ): OperationsDashboardOverviewQuery => {
@@ -311,6 +321,10 @@ export const OperationsDashboardPage = () => {
         overview?.criticalAlertCount ||
             openHealthAlerts.filter((alert) => alert.alertLevel === "CRITICAL").length
     );
+    const selectedHealthAlerts = filterAlertsByComponent(
+        openHealthAlerts,
+        selectedHealth?.component
+    );
     const isLoading = dashboardQuery.isLoading || trendQuery.isLoading || alertQuery.isLoading;
 
     const topContents =
@@ -448,27 +462,40 @@ export const OperationsDashboardPage = () => {
                         >
                             {healthSummaries.length ? (
                                 <div className="operations-dashboard-health-list">
-                                    {healthSummaries.map((summary) => (
-                                        <button
-                                            className="operations-dashboard-health-item"
-                                            key={summary.checkId}
-                                            onClick={() => setSelectedHealth(summary)}
-                                            type="button"
-                                        >
-                                            <span>
-                                                <HeartOutlined />
-                                                <Text strong>
-                                                    {summary.component || "未知组件"}
+                                    {healthSummaries.map((summary) => {
+                                        const summaryAlertCount = filterAlertsByComponent(
+                                            openHealthAlerts,
+                                            summary.component
+                                        ).length;
+                                        return (
+                                            <button
+                                                className="operations-dashboard-health-item"
+                                                key={summary.checkId}
+                                                onClick={() => setSelectedHealth(summary)}
+                                                type="button"
+                                            >
+                                                <span>
+                                                    <HeartOutlined />
+                                                    <Text strong>
+                                                        {summary.component || "未知组件"}
+                                                    </Text>
+                                                </span>
+                                                {summaryAlertCount ? (
+                                                    <KuzhambuTag type="danger">
+                                                        告警 {formatNumber(summaryAlertCount)}
+                                                    </KuzhambuTag>
+                                                ) : null}
+                                                <KuzhambuTag
+                                                    type={statusTone(summary.healthStatus)}
+                                                >
+                                                    {summary.healthStatus || "UNKNOWN"}
+                                                </KuzhambuTag>
+                                                <Text type="secondary">
+                                                    {formatLatency(summary.latencyMs)}
                                                 </Text>
-                                            </span>
-                                            <KuzhambuTag type={statusTone(summary.healthStatus)}>
-                                                {summary.healthStatus || "UNKNOWN"}
-                                            </KuzhambuTag>
-                                            <Text type="secondary">
-                                                {formatLatency(summary.latencyMs)}
-                                            </Text>
-                                        </button>
-                                    ))}
+                                            </button>
+                                        );
+                                    })}
                                 </div>
                             ) : (
                                 <Empty
@@ -668,6 +695,39 @@ export const OperationsDashboardPage = () => {
                             <Text>延迟：{formatLatency(selectedHealth?.latencyMs)}</Text>
                             <Text>检查时间：{formatDateTime(selectedHealth?.checkedAt)}</Text>
                             <Text>消息：{selectedHealth?.message || "-"}</Text>
+                            <div className="operations-dashboard-health-related-alerts">
+                                <div className="operations-dashboard-health-related-alerts-header">
+                                    <Text strong>关联告警</Text>
+                                    <Button
+                                        onClick={() => setAlertDrawerOpen(true)}
+                                        size="small"
+                                        type="link"
+                                    >
+                                        查看全部告警
+                                    </Button>
+                                </div>
+                                {selectedHealthAlerts.length ? (
+                                    selectedHealthAlerts.map((alert) => (
+                                        <Alert
+                                            className="operations-dashboard-health-related-alert"
+                                            description={alert.suggestion || "暂无处置建议"}
+                                            key={alert.alertId}
+                                            message={alert.message || "未返回告警消息"}
+                                            showIcon
+                                            type={
+                                                alert.alertLevel === "CRITICAL"
+                                                    ? "error"
+                                                    : "warning"
+                                            }
+                                        />
+                                    ))
+                                ) : (
+                                    <Empty
+                                        description="暂无关联告警"
+                                        image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                    />
+                                )}
+                            </div>
                         </div>
                     </KuzhambuDrawer>
                 </div>

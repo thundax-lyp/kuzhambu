@@ -178,6 +178,33 @@ describe("OperationsDashboardPage", () => {
         expect(await screen.findByText("admin-server 健康明细")).toBeInTheDocument();
         expect(screen.getByText("采集来源：LOCAL")).toBeInTheDocument();
         expect(screen.getByText("消息：slow response")).toBeInTheDocument();
+        expect(screen.getByText("告警 1")).toBeInTheDocument();
+        expect(screen.getByText("关联告警")).toBeInTheDocument();
+        expect(screen.getByText("检查 admin-server")).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "查看全部告警" })).toBeInTheDocument();
+    }, 30000);
+
+    it("renders empty related alerts for health detail without component alerts", async () => {
+        vi.mocked(service.getDashboardOverview).mockResolvedValue({
+            healthSummaries: [
+                {
+                    checkId: 2,
+                    component: "worker",
+                    healthStatus: "UP",
+                    probeSource: "LOCAL"
+                }
+            ]
+        });
+        vi.mocked(service.getHealthAlerts).mockResolvedValue({
+            records: []
+        });
+
+        renderPage();
+
+        fireEvent.click(await screen.findByText("worker"));
+
+        expect(await screen.findByText("worker 健康明细")).toBeInTheDocument();
+        expect(screen.getByText("暂无关联告警")).toBeInTheDocument();
     }, 30000);
 
     it("opens health alert drawer and hides management buttons without manage permission", async () => {

@@ -199,6 +199,25 @@
     gap: 12px;
 }
 
+.operations-dashboard-health-related-alerts,
+.operations-dashboard-health-related-alerts-header {
+    display: grid;
+    gap: 10px;
+}
+
+.operations-dashboard-health-related-alerts {
+    padding-top: 4px;
+}
+
+.operations-dashboard-health-related-alerts-header {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+}
+
+.operations-dashboard-health-related-alert {
+    border-radius: 8px;
+}
+
 @media (max-width: 1180px) {
     .operations-dashboard-metrics,
     .operations-dashboard-grid-two,
@@ -217,5 +236,9 @@
 
     .operations-dashboard-health-item {
         align-items: start;
+    }
+
+    .operations-dashboard-health-related-alerts-header {
+        grid-template-columns: 1fr;
     }
 }

@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Admin Web dashboard health detail alerts`：实现健康明细关联告警控件
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-RECOVERY-LOOP.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/operations/dashboard/dashboard-page.tsx`、`kuzhambu-apps/admin-web/src/pages/operations/dashboard/dashboard-page.css`、`kuzhambu-apps/admin-web/src/pages/operations/dashboard/dashboard-page.test.tsx`
-    - 处理动作：为健康卡片增加告警角标，并在健康明细抽屉展示关联告警与查看全部告警按钮。
-    - 验收点：健康明细原字段仍可见，当前 component 无告警时显示“暂无关联告警”空状态。
-    - 重要度：8/10
-
 - [ ] `Admin Web task failure hint`：补齐任务页失败提示
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-RECOVERY-LOOP.md`
