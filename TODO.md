@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web ming customs batch candidate entry`：接入明代习俗批量候选治理入口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-BATCH-CANDIDATE-GOVERNANCE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/ming-customs/ming-customs-page.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/ming-customs/ming-customs-page.test.tsx`
-    - 处理动作：在习俗列表批量操作区新增 `批量候选治理` 按钮并接入 `AiCandidateBatchDrawer`。
-    - 验收点：未选习俗或无 `classics:mingcustoms:edit` 时按钮禁用，批量应用完成后展示成功数和失败数。
-    - 重要度：8/10
-
 - [ ] `main sync before validation`：最终验证前同步 main 分支代码
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`

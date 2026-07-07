@@ -204,6 +204,48 @@ const installFetchMock = () => {
                 ]
             });
         }
+        if (path.endsWith("/ai/invocation/candidate/list")) {
+            return apiResponse([
+                {
+                    candidateId: 6001,
+                    contentType: "MING_CUSTOMS",
+                    contentId: 500000000001,
+                    capability: "summary",
+                    objectId: null,
+                    resultFormat: "TEXT",
+                    resultPayload: "文献摘要候选",
+                    status: "PENDING",
+                    requestedAt: "2026-01-01T00:00:00.000+00:00"
+                }
+            ]);
+        }
+        if (path.endsWith("/classics/content/ai-candidates/batch/apply")) {
+            return apiResponse({
+                failureCount: 1,
+                failures: [
+                    {
+                        candidateId: 6002,
+                        contentType: "MING_CUSTOMS",
+                        contentId: 500000000002,
+                        capability: "summary",
+                        failureCode: "INVALID_FORMAT",
+                        failureReason: "payload invalid"
+                    }
+                ],
+                successCount: 1,
+                successes: [
+                    {
+                        candidateId: 6001,
+                        contentType: "MING_CUSTOMS",
+                        contentId: 500000000001,
+                        capability: "summary",
+                        objectId: null,
+                        resultId: 5001,
+                        status: "APPLIED"
+                    }
+                ]
+            });
+        }
 
         return apiResponse(true);
     });
@@ -338,5 +380,69 @@ describe("MingCustomsPage", () => {
             path: "/classics/content/visibility/change"
         });
         expect(screen.getByText("MING_CUSTOMS#500000000002: 习俗条目不存在")).toBeInTheDocument();
+    }, 30000);
+
+    it("opens batch candidate governance drawer from selected entries", async () => {
+        const user = userEvent.setup();
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <MingCustomsPage />
+                </AntdApp>
+            </QueryClientProvider>
+        );
+
+        const table = await screen.findByLabelText("明代习俗表格");
+        await waitForSelectableRow(table);
+        const batchCandidateButton = screen.getByRole("button", { name: "批量候选治理" });
+
+        expect(batchCandidateButton).toBeDisabled();
+        selectFirstRow(table);
+        await waitFor(() => {
+            expect(batchCandidateButton).not.toBeDisabled();
+        });
+        await user.click(batchCandidateButton);
+
+        expect(await screen.findByText("AI 候选批量治理")).toBeInTheDocument();
+        expect(screen.getByText(/已选内容\s*1\s*个/)).toBeInTheDocument();
+        const candidateTable = await screen.findByLabelText("AI 候选批量治理列表");
+        const candidateCheckbox = within(candidateTable).getByRole("checkbox", {
+            name: "select row"
+        });
+        expect(candidateCheckbox).toBeInTheDocument();
+        expect(
+            capturedCalls.some(
+                (call) =>
+                    call.path === "/ai/invocation/candidate/list" &&
+                    call.method === "POST" &&
+                    (call.body as { contentType: string; contentId: number; status: string })
+                        .contentId === 500000000001
+            )
+        ).toBeTruthy();
+
+        await user.click(candidateCheckbox);
+        await user.click(screen.getByRole("button", { name: "批量应用" }));
+
+        expect(await screen.findByText("批量候选应用结果：成功 1，失败 1")).toBeInTheDocument();
+        expect(screen.getByText("6002 / summary / payload invalid")).toBeInTheDocument();
+        expect(capturedCalls).toContainEqual({
+            body: {
+                items: [
+                    {
+                        candidateId: 6001,
+                        contentType: "MING_CUSTOMS",
+                        contentId: 500000000001,
+                        capability: "summary",
+                        objectId: null,
+                        resultFormat: "TEXT",
+                        resultPayload: "文献摘要候选",
+                        changeSummary: "AI 应用：summary"
+                    }
+                ]
+            },
+            method: "POST",
+            path: "/classics/content/ai-candidates/batch/apply"
+        });
     }, 30000);
 });
