@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Admin lineage menu`：06 补齐 Admin 世系图菜单记录
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LINEAGE-VISUALIZATION.md`
-    - 范围对象：`kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/core/controller/MenuController.java`、`kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/core/controller/request/MenuSaveRequest.java`、`kuzhambu-apps/admin-web/src/pages/system/menu/menu-service.ts`
-    - 处理动作：通过既有 System 菜单能力补齐「世系图浏览」菜单记录。
-    - 验收点：拥有 `knowledge:graph:view` 的 Admin 用户能从 Knowledge 侧栏菜单进入 `/knowledge/lineage`。
-    - 重要度：9/10
-
 - [ ] `Admin lineage service types`：07 定义 Admin 世系页面类型和服务
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LINEAGE-VISUALIZATION.md`
