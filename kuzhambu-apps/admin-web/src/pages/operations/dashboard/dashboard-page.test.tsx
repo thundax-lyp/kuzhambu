@@ -1,5 +1,5 @@
 import { QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { MemoryRouter } from "react-router-dom";
 import { replacePermissions } from "@/auth/permission-storage";
@@ -85,7 +85,7 @@ describe("OperationsDashboardPage", () => {
             ],
             topQueries: [{ queryText: "三彩", count: 12 }],
             topTags: [{ tagName: "陶瓷", contentRefCount: 6 }],
-            topAiCapabilities: []
+            topAiCapabilities: [{ capability: "TRANSLATE", invocationCount: 9 }]
         });
         vi.mocked(service.getHealthTrend).mockResolvedValue([
             {
@@ -105,31 +105,77 @@ describe("OperationsDashboardPage", () => {
     });
 
     it("renders dashboard controls and data", async () => {
-        render(
-            <MemoryRouter>
-                <QueryClientProvider client={queryClient}>
-                    <OperationsDashboardPage />
-                </QueryClientProvider>
-            </MemoryRouter>
-        );
+        renderPage();
 
         expect(await screen.findByRole("heading", { name: "运营看板" })).toBeInTheDocument();
         expect(await screen.findByText("热门内容")).toBeInTheDocument();
         expect(screen.getByRole("button", { name: /刷新/ })).toBeInTheDocument();
         expect(screen.getByText("admin-server")).toBeInTheDocument();
+        expect(screen.getByText("TRANSLATE")).toBeInTheDocument();
+        expect(screen.getByText(/分享访问\s+100/)).toBeInTheDocument();
         expect(screen.getByText("任务台账")).toBeInTheDocument();
+        expect(service.getDashboardOverview).toHaveBeenCalledWith({ periodType: "WEEK" });
+        expect(service.getHealthTrend).toHaveBeenCalledWith({ bucketType: "DAY" });
+    }, 30000);
+
+    it("requests overview again when period control changes", async () => {
+        renderPage();
+
+        await screen.findByText("热门内容");
+        fireEvent.click(screen.getByText("近 30 天"));
+
+        await waitFor(() => {
+            expect(service.getDashboardOverview).toHaveBeenCalledWith({ periodType: "MONTH" });
+        });
+    }, 30000);
+
+    it("refreshes overview and health trend when refresh button is clicked", async () => {
+        renderPage();
+
+        await screen.findByText("热门内容");
+        fireEvent.click(screen.getByRole("button", { name: /刷新/ }));
+
+        await waitFor(() => {
+            expect(service.getDashboardOverview).toHaveBeenCalledTimes(2);
+            expect(service.getHealthTrend).toHaveBeenCalledTimes(2);
+        });
+    }, 30000);
+
+    it("opens health detail drawer from health list item", async () => {
+        renderPage();
+
+        fireEvent.click(await screen.findByText("admin-server"));
+
+        expect(await screen.findByText("admin-server 健康明细")).toBeInTheDocument();
+        expect(screen.getByText("采集来源：LOCAL")).toBeInTheDocument();
+        expect(screen.getByText("消息：slow response")).toBeInTheDocument();
+    }, 30000);
+
+    it("renders real empty states when overview arrays are empty", async () => {
+        vi.mocked(service.getDashboardOverview).mockResolvedValue({
+            contentGrowthSeries: [],
+            searchTrendSeries: [],
+            healthSummaries: [],
+            topContents: [],
+            topQueries: [],
+            topTags: [],
+            topAiCapabilities: []
+        });
+        vi.mocked(service.getHealthTrend).mockResolvedValue([]);
+
+        renderPage();
+
+        await screen.findAllByText("暂无趋势数据");
+        expect(screen.getByText("暂无健康摘要")).toBeInTheDocument();
+        expect(screen.getByText("暂无健康趋势")).toBeInTheDocument();
+        expect(screen.getByText("暂无内容排行")).toBeInTheDocument();
+        expect(screen.getByText("暂无 AI 能力排行")).toBeInTheDocument();
     }, 30000);
 
     it("does not request dashboard data without permission", async () => {
         replacePermissions([]);
 
-        render(
-            <MemoryRouter>
-                <QueryClientProvider client={queryClient}>
-                    <OperationsDashboardPage />
-                </QueryClientProvider>
-            </MemoryRouter>
-        );
+        renderPage();
 
         expect(screen.getByText("缺少 operations:dashboard:view 权限")).toBeInTheDocument();
         await waitFor(() => {
@@ -138,3 +184,13 @@ describe("OperationsDashboardPage", () => {
         });
     }, 30000);
 });
+
+const renderPage = () => {
+    return render(
+        <MemoryRouter>
+            <QueryClientProvider client={queryClient}>
+                <OperationsDashboardPage />
+            </QueryClientProvider>
+        </MemoryRouter>
+    );
+};

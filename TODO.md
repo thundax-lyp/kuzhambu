@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `05 Admin Web Operations Dashboard`：前端控件消费真实 overview response
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DASHBOARD-SUMMARY.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/operations/dashboard/dashboard-page.tsx`；`kuzhambu-apps/admin-web/src/pages/operations/dashboard/dashboard-types.ts`；`kuzhambu-apps/admin-web/src/pages/operations/dashboard/dashboard-service.ts`；`kuzhambu-apps/admin-web/src/pages/operations/dashboard/dashboard-page.test.tsx`；`kuzhambu-apps/admin-web/src/pages/operations/dashboard/dashboard-service-contract.test.ts`
-    - 处理动作：让周期分段、刷新按钮、核心指标卡、趋势、排行、健康抽屉和运维入口按 RUNBOOK 控件矩阵消费后端真实字段。
-    - 验收点：周期切换请求正确，刷新重新拉取 overview 和 health trend，空数组显示真实空态，健康项点击打开明细抽屉，无 mock 和硬编码样例排行。
-    - 重要度：9/10
-
 - [ ] `06 main 分支同步`：在最终验证前同步 main 分支代码
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`
