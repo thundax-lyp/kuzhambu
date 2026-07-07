@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `三才视觉资产页面接入`：接通三才视觉任务流式展示、候选刷新和失败重试
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-AI-STREAMING-CANDIDATES.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/hooks/use-sancai-entry-panel-state.ts`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.test.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-page.css`
-    - 处理动作：在三才视觉资产编辑区展示流式过程卡片并在 completed 后刷新候选区。
-    - 验收点：点击 `创建图片理解任务` 或 `创建生图任务` 后出现 `AI 流式过程`，completed 后 `AI 候选确认` 出现候选，失败后 `重试` 创建新任务且 `requestId/traceId` 变化。
-    - 重要度：10/10
-
 - [ ] `同步 main 分支`：收口前同步最新 main 代码
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`

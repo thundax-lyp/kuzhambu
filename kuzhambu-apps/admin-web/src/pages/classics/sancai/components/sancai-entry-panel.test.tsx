@@ -84,14 +84,26 @@ vi.mock("@/service/current-user-service", () => ({
 }));
 
 vi.mock("@/pages/classics/common/ai-refinement-task-service", () => ({
-    createTask: vi.fn(async () => ({
-        taskId: 7001,
-        status: "PENDING",
-        capability: "translate",
+    createTask: vi.fn(
+        async (command: { capability: string; contentId: number; contentType: string }) => ({
+            taskId: 7001,
+            status: "PENDING",
+            capability: command.capability,
+            contentType: command.contentType,
+            contentId: command.contentId
+        })
+    ),
+    getTask: vi.fn(async ({ taskId }: { taskId: number }) => ({
+        taskId,
+        status: "RUNNING",
+        capability: "image_analysis",
         contentType: "SANCAI_ENTRY",
-        contentId: 3001
+        contentId: 3001,
+        objectId: 5002,
+        streamEnabled: true,
+        requestId: "req-stream-1",
+        traceId: "trace-stream-1"
     })),
-    getTask: vi.fn(),
     pageTasks: vi.fn(async () => ({
         items: [],
         total: 0,
@@ -99,6 +111,30 @@ vi.mock("@/pages/classics/common/ai-refinement-task-service", () => ({
         pageSize: 20
     })),
     cancelTask: vi.fn(),
+    requestTaskStream: vi.fn(
+        async ({
+            onEvent
+        }: {
+            onEvent: (event: {
+                deltaText?: string;
+                eventType: string;
+                resultFormat?: string;
+                resultPayload?: string;
+                status?: string;
+            }) => void;
+        }) => {
+            onEvent({
+                eventType: "delta",
+                deltaText: "流式片段"
+            });
+            onEvent({
+                eventType: "completed",
+                status: "SUCCEEDED",
+                resultFormat: "MARKDOWN",
+                resultPayload: "完整候选"
+            });
+        }
+    ),
     getTaskCapabilityLabel: vi.fn((capability: string) => capability),
     getTaskFailureText: vi.fn(
         (failureStage?: string | null, errorType?: string | null, errorMessage?: string | null) =>
@@ -625,6 +661,95 @@ describe("SancaiEntryPanel sharing", () => {
             modelName: "gpt-5.5",
             locale: "zh-CN"
         });
+    }, 30000);
+
+    it("shows AI stream panel after creating image analysis task", async () => {
+        const user = userEvent.setup();
+
+        renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        await user.click(await within(entryTable).findByRole("button", { name: "查看 天地" }));
+
+        const visualAssetPanel = await screen.findByLabelText("三才图会视觉资产面板");
+        await user.click(
+            within(visualAssetPanel).getByRole("button", { name: "创建图片理解任务" })
+        );
+
+        expect(await screen.findByLabelText("三才图会 AI 流式过程")).toBeInTheDocument();
+        expect(await screen.findByText("流式片段")).toBeInTheDocument();
+        expect(aiRefinementTaskService.requestTaskStream).toHaveBeenCalledWith(
+            expect.objectContaining({
+                taskId: 7001
+            })
+        );
+    }, 30000);
+
+    it("retries failed stream task with fresh request and trace ids", async () => {
+        const user = userEvent.setup();
+        vi.mocked(aiRefinementTaskService.requestTaskStream).mockImplementationOnce(
+            async ({ onEvent }) => {
+                onEvent({
+                    eventType: "error",
+                    failureStage: "WORKER_STREAM",
+                    errorType: "WORKER_PROTOCOL_FAILURE",
+                    errorMessage: "bad stream"
+                });
+            }
+        );
+        vi.mocked(aiRefinementTaskService.getTask)
+            .mockResolvedValueOnce({
+                taskId: 7001,
+                status: "RUNNING",
+                capability: "image_analysis",
+                contentType: "SANCAI_ENTRY",
+                contentId: 3001,
+                objectId: 5002,
+                streamEnabled: true,
+                requestId: "req-stream-1",
+                traceId: "trace-stream-1"
+            })
+            .mockResolvedValue({
+                taskId: 7001,
+                status: "FAILED",
+                capability: "image_analysis",
+                contentType: "SANCAI_ENTRY",
+                contentId: 3001,
+                objectId: 5002,
+                streamEnabled: true,
+                failureStage: "WORKER_STREAM",
+                errorType: "WORKER_PROTOCOL_FAILURE",
+                errorMessage: "bad stream",
+                requestId: "req-stream-1",
+                traceId: "trace-stream-1"
+            });
+
+        renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        await user.click(await within(entryTable).findByRole("button", { name: "查看 天地" }));
+
+        const visualAssetPanel = await screen.findByLabelText("三才图会视觉资产面板");
+        await user.click(
+            within(visualAssetPanel).getByRole("button", { name: "创建图片理解任务" })
+        );
+
+        expect(
+            await screen.findByText("WORKER_STREAM / WORKER_PROTOCOL_FAILURE / bad stream")
+        ).toBeInTheDocument();
+        await user.click(await screen.findByRole("button", { name: "重试" }));
+
+        await waitFor(() => {
+            expect(aiRefinementTaskService.createTask).toHaveBeenCalledTimes(2);
+        });
+        const firstCommand = vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0];
+        const retryCommand = vi.mocked(aiRefinementTaskService.createTask).mock.calls[1]?.[0];
+        expect(retryCommand).toMatchObject({
+            capability: "image_analysis",
+            objectId: 5002
+        });
+        expect(retryCommand?.requestId).not.toEqual(firstCommand?.requestId);
+        expect(retryCommand?.traceId).not.toEqual(firstCommand?.traceId);
     }, 30000);
 
     it("filters image analysis candidates by selected visual asset", async () => {
