@@ -1,21 +1,16 @@
 import { getJson, postJson } from "@/api/http";
+import type { AiCandidateApplyPayload } from "./ai-candidate-types";
 import type {
-    ClassicsAiCandidateBatchApplyPayload,
-    ClassicsAiCandidateBatchRejectPayload,
     ClassicsBatchOperationRecord,
     ClassicsBatchVisibilityPayload,
     ClassicsContentListPayload,
     ClassicsContentQaPairPayload,
     ClassicsContentQaPairRecord,
     ClassicsContentQaPairSortPayload,
+    ClassicsAiCandidateBatchRejectItemPayload,
     ClassicsContentTagPayload,
     ClassicsContentTagRecord,
     ClassicsContentTagSortPayload
-} from "./classics-content-types";
-
-export type {
-    ClassicsAiCandidateBatchApplyPayload,
-    ClassicsAiCandidateBatchRejectPayload
 } from "./classics-content-types";
 
 const CLASSICS_CONTENT_PATH = "/classics/content";
@@ -26,6 +21,14 @@ export type ClassicsContentTagSortCommand = ClassicsContentTagSortPayload;
 export type ClassicsContentQaPairCommand = ClassicsContentQaPairPayload;
 export type ClassicsContentQaPairSortCommand = ClassicsContentQaPairSortPayload;
 export type ClassicsBatchVisibilityCommand = ClassicsBatchVisibilityPayload;
+export type ClassicsAiCandidateBatchApplyCommand = {
+    items: AiCandidateApplyPayload[];
+};
+export type ClassicsAiCandidateBatchRejectCommand = {
+    errorType?: string | null;
+    errorMessage?: string | null;
+    items: ClassicsAiCandidateBatchRejectItemPayload[];
+};
 
 const buildTagsListPath = ({ contentType, contentId }: ClassicsContentListQuery) => {
     const search = new URLSearchParams({ contentType, contentId: String(contentId) }).toString();
@@ -96,8 +99,8 @@ export const sortQaPairs = (request: ClassicsContentQaPairSortCommand) => {
     );
 };
 
-export const applyAiCandidatesBatch = (request: ClassicsAiCandidateBatchApplyPayload) => {
-    return postJson<ClassicsBatchOperationRecord, ClassicsAiCandidateBatchApplyPayload>(
+export const applyAiCandidatesBatch = (request: ClassicsAiCandidateBatchApplyCommand) => {
+    return postJson<ClassicsBatchOperationRecord, ClassicsAiCandidateBatchApplyCommand>(
         `${CLASSICS_CONTENT_PATH}/ai-candidates/batch/apply`,
         {
             body: request
@@ -105,8 +108,8 @@ export const applyAiCandidatesBatch = (request: ClassicsAiCandidateBatchApplyPay
     );
 };
 
-export const rejectAiCandidatesBatch = (request: ClassicsAiCandidateBatchRejectPayload) => {
-    return postJson<ClassicsBatchOperationRecord, ClassicsAiCandidateBatchRejectPayload>(
+export const rejectAiCandidatesBatch = (request: ClassicsAiCandidateBatchRejectCommand) => {
+    return postJson<ClassicsBatchOperationRecord, ClassicsAiCandidateBatchRejectCommand>(
         `${CLASSICS_CONTENT_PATH}/ai-candidates/batch/reject`,
         {
             body: request

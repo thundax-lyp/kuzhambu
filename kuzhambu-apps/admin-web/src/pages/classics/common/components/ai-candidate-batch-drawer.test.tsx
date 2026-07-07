@@ -21,8 +21,8 @@ vi.mock("@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm", () => 
 
 vi.mock("@/pages/classics/common/ai-candidate-service", () => ({
     list: vi.fn(),
-    updateCandidateApplied: vi.fn(),
-    updateCandidateRejected: vi.fn()
+    apply: vi.fn(),
+    reject: vi.fn()
 }));
 
 vi.mock("@/pages/classics/common/classics-content-service", () => ({

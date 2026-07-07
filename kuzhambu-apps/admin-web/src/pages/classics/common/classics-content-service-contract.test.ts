@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as contentService from "@/pages/classics/common/classics-content-service";
 import type {
+    ClassicsAiCandidateBatchApplyCommand,
+    ClassicsAiCandidateBatchRejectCommand,
     ClassicsBatchVisibilityCommand,
-    ClassicsAiCandidateBatchApplyPayload,
-    ClassicsAiCandidateBatchRejectPayload,
     ClassicsContentQaPairCommand,
     ClassicsContentQaPairSortCommand,
     ClassicsContentTagCommand,
@@ -291,7 +291,7 @@ describe("classics content service request contracts", () => {
     });
 
     it("sends ai candidate batch apply commands and preserves operation result fields", async () => {
-        const command: ClassicsAiCandidateBatchApplyPayload = {
+        const command: ClassicsAiCandidateBatchApplyCommand = {
             items: [
                 {
                     candidateId: 7001,
@@ -338,7 +338,7 @@ describe("classics content service request contracts", () => {
     });
 
     it("sends ai candidate batch reject commands and preserves operation result fields", async () => {
-        const command: ClassicsAiCandidateBatchRejectPayload = {
+        const command: ClassicsAiCandidateBatchRejectCommand = {
             errorType: "USER_REJECTED",
             errorMessage: "用户已批量拒绝该 AI 候选",
             items: [

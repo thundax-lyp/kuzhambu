@@ -1,22 +1,16 @@
 import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
 import { Alert, App, Button, Empty, Typography } from "antd";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { KuzhambuTable, type KuzhambuTableProps } from "@/components/kuzhambu-table";
 import * as aiCandidateService from "../ai-candidate-service";
+import type { AiCandidateApplyCommand } from "../ai-candidate-service";
 import * as classicsContentService from "../classics-content-service";
-import {
-    type AiCandidateApplyCommand,
-    type AiCandidateCapability,
-    type AiCandidateRecord
-} from "../ai-candidate-types";
-import type {
-    ClassicsAiCandidateBatchApplyPayload,
-    ClassicsBatchOperationRecord,
-    ClassicsContentType
-} from "../classics-content-types";
+import { type AiCandidateCapability, type AiCandidateRecord } from "../ai-candidate-types";
+import type { ClassicsBatchOperationRecord, ClassicsContentType } from "../classics-content-types";
+import type { ClassicsAiCandidateBatchApplyCommand } from "../classics-content-service";
 import { AiCandidatePayloadEditor } from "./ai-candidate-payload-editor";
 
 const { Text } = Typography;
@@ -149,77 +143,24 @@ export const AiCandidateBatchDrawer = ({
     const hasLoadError = pendingCandidateQueries.some((query) => query.isError);
     const isLoading = pendingCandidateQueries.some((query) => query.isLoading);
 
-    useEffect(() => {
-        if (!open) {
-            setSelectedCandidateIds([]);
-            setPayloads({});
-            setSubmitEnabled({});
-            setOperationResult(null);
-            return;
-        }
-
-        const visibleCandidateIds = new Set(
-            pendingCandidates.map((candidate) => candidate.candidateId)
+    const effectivePayloads = useMemo(() => {
+        return Object.fromEntries(
+            pendingCandidates.map((candidate) => [
+                candidate.candidateId,
+                payloads[candidate.candidateId] ?? candidate.resultPayload?.trim() ?? ""
+            ])
         );
+    }, [payloads, pendingCandidates]);
 
-        if (!capabilitySet.size || !pendingCandidates.length) {
-            setSelectedCandidateIds((currentSelected) =>
-                currentSelected.filter((candidateId) => visibleCandidateIds.has(candidateId))
-            );
-            setPayloads((currentPayloads) => {
-                if (Object.keys(currentPayloads).length === 0) {
-                    return currentPayloads;
-                }
-                const nextPayloads = { ...currentPayloads };
-                Object.keys(nextPayloads).forEach((key) => {
-                    const candidateId = Number(key);
-                    if (!visibleCandidateIds.has(candidateId)) {
-                        delete nextPayloads[candidateId];
-                    }
-                });
-                return nextPayloads;
-            });
-            setSubmitEnabled((currentSubmitEnabled) => {
-                if (Object.keys(currentSubmitEnabled).length === 0) {
-                    return currentSubmitEnabled;
-                }
-                const nextSubmitEnabled = { ...currentSubmitEnabled };
-                Object.keys(nextSubmitEnabled).forEach((key) => {
-                    const candidateId = Number(key);
-                    if (!visibleCandidateIds.has(candidateId)) {
-                        delete nextSubmitEnabled[candidateId];
-                    }
-                });
-                return nextSubmitEnabled;
-            });
-            return;
-        }
-
-        setSelectedCandidateIds((currentSelected) =>
-            currentSelected.filter((candidateId) => visibleCandidateIds.has(candidateId))
+    const effectiveSubmitEnabled = useMemo(() => {
+        return Object.fromEntries(
+            pendingCandidates.map((candidate) => [
+                candidate.candidateId,
+                submitEnabled[candidate.candidateId] ??
+                    (candidate.resultPayload?.trim() || "").length > 0
+            ])
         );
-
-        setPayloads((currentPayloads) => {
-            const nextPayloads = { ...currentPayloads };
-            pendingCandidates.forEach((candidate) => {
-                if (nextPayloads[candidate.candidateId] === undefined) {
-                    nextPayloads[candidate.candidateId] = candidate.resultPayload?.trim() || "";
-                }
-            });
-            return nextPayloads;
-        });
-
-        setSubmitEnabled((currentSubmitEnabled) => {
-            const nextSubmitEnabled = { ...currentSubmitEnabled };
-            pendingCandidates.forEach((candidate) => {
-                if (nextSubmitEnabled[candidate.candidateId] === undefined) {
-                    nextSubmitEnabled[candidate.candidateId] =
-                        (candidate.resultPayload?.trim() || "").length > 0;
-                }
-            });
-            return nextSubmitEnabled;
-        });
-    }, [capabilitySet.size, open, pendingCandidates]);
+    }, [pendingCandidates, submitEnabled]);
 
     const refreshCandidates = async () => {
         await Promise.all(
@@ -278,8 +219,8 @@ export const AiCandidateBatchDrawer = ({
     const canApplySelected = useMemo(
         () =>
             selectedCandidates.length > 0 &&
-            selectedCandidates.every((candidate) => submitEnabled[candidate.candidateId]),
-        [selectedCandidates, submitEnabled]
+            selectedCandidates.every((candidate) => effectiveSubmitEnabled[candidate.candidateId]),
+        [effectiveSubmitEnabled, selectedCandidates]
     );
 
     const buildFailureSummary = (operationResult: ClassicsBatchOperationRecord) => {
@@ -306,9 +247,9 @@ export const AiCandidateBatchDrawer = ({
             return;
         }
 
-        const payload: ClassicsAiCandidateBatchApplyPayload = {
+        const payload: ClassicsAiCandidateBatchApplyCommand = {
             items: selectedCandidates.map((candidate) => {
-                const payload = payloads[candidate.candidateId] ?? "";
+                const payload = effectivePayloads[candidate.candidateId] ?? "";
                 const command: AiCandidateApplyCommand = {
                     candidateId: candidate.candidateId,
                     contentType: candidate.contentType,
@@ -358,6 +299,10 @@ export const AiCandidateBatchDrawer = ({
     };
 
     const closeDrawer = () => {
+        setSelectedCandidateIds([]);
+        setPayloads({});
+        setSubmitEnabled({});
+        setOperationResult(null);
         onClose();
     };
 
@@ -433,7 +378,7 @@ export const AiCandidateBatchDrawer = ({
                     key: "submitStatus",
                     width: 120,
                     render: (_: unknown, candidate: AiCandidateRecord) => {
-                        const canSubmit = submitEnabled[candidate.candidateId];
+                        const canSubmit = effectiveSubmitEnabled[candidate.candidateId];
                         return canSubmit ? (
                             <Text type="success">校验通过</Text>
                         ) : (
@@ -451,7 +396,8 @@ export const AiCandidateBatchDrawer = ({
                                 candidateId={candidate.candidateId}
                                 capability={candidate.capability as AiCandidateCapability}
                                 initialPayload={
-                                    payloads[candidate.candidateId] ?? candidate.resultPayload
+                                    effectivePayloads[candidate.candidateId] ??
+                                    candidate.resultPayload
                                 }
                                 onPayloadChange={updateCandidatePayload}
                                 onSubmitEnabledChange={updateCandidateSubmitEnabled}
@@ -460,7 +406,7 @@ export const AiCandidateBatchDrawer = ({
                     }
                 }
             ] as KuzhambuTableProps<AiCandidateRecord>["columns"],
-        [contentTitleById, payloads, submitEnabled]
+        [contentTitleById, effectivePayloads, effectiveSubmitEnabled]
     );
 
     return (

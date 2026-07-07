@@ -26,7 +26,7 @@ export interface AiCandidateApplyRecord {
     versionNo: number;
 }
 
-export interface AiCandidateApplyCommand {
+export interface AiCandidateApplyPayload {
     candidateId: number;
     contentType: string;
     contentId: number;
@@ -37,7 +37,7 @@ export interface AiCandidateApplyCommand {
     changeSummary?: string | null;
 }
 
-export interface AiCandidateRejectCommand {
+export interface AiCandidateRejectPayload {
     candidateId: number;
     errorType: string;
     errorMessage?: string | null;
