@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.operations.application.task.service.impl;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.operations.application.health.support.OperationsHealthAlertStrategy;
 import com.thundax.kuzhambu.operations.application.task.query.OperationsTaskDetailQuery;
 import com.thundax.kuzhambu.operations.application.task.query.OperationsTaskPageQuery;
 import com.thundax.kuzhambu.operations.application.task.result.OperationsTaskDetailResult;
@@ -12,16 +13,27 @@ import com.thundax.kuzhambu.operations.domain.task.model.entity.LongTaskSnapshot
 import com.thundax.kuzhambu.operations.domain.task.repository.LongTaskSnapshotRepository;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 @BizExceptionBoundary
 public class TaskApplicationServiceImpl implements TaskApplicationService {
 
+    private static final String TASK_STATUS_FAILED = "FAILED";
+
     private final LongTaskSnapshotRepository longTaskSnapshotRepository;
+    private final OperationsHealthAlertStrategy healthAlertStrategy;
 
     public TaskApplicationServiceImpl(LongTaskSnapshotRepository longTaskSnapshotRepository) {
+        this(longTaskSnapshotRepository, null);
+    }
+
+    @Autowired
+    public TaskApplicationServiceImpl(
+            LongTaskSnapshotRepository longTaskSnapshotRepository, OperationsHealthAlertStrategy healthAlertStrategy) {
         this.longTaskSnapshotRepository = longTaskSnapshotRepository;
+        this.healthAlertStrategy = healthAlertStrategy;
     }
 
     @Override
@@ -41,13 +53,16 @@ public class TaskApplicationServiceImpl implements TaskApplicationService {
 
     @Override
     public OperationsTaskDetailResult detail(OperationsTaskDetailQuery query) {
-        return toDetailResult(longTaskSnapshotRepository.getById(query == null ? null : query.getSnapshotId()));
+        LongTaskSnapshot snapshot = longTaskSnapshotRepository.getById(query == null ? null : query.getSnapshotId());
+        recordLongTaskFailure(snapshot);
+        return toDetailResult(snapshot);
     }
 
     private OperationsTaskPageResult toPageResult(LongTaskSnapshot snapshot) {
         if (snapshot == null) {
             return null;
         }
+        recordLongTaskFailure(snapshot);
         return new OperationsTaskPageResult(
                 snapshot.getId(),
                 snapshot.getSourceDomain(),
@@ -82,5 +97,15 @@ public class TaskApplicationServiceImpl implements TaskApplicationService {
                 snapshot.getStartedAt(),
                 snapshot.getCompletedAt(),
                 snapshot.getSnapshotAt());
+    }
+
+    private void recordLongTaskFailure(LongTaskSnapshot snapshot) {
+        if (healthAlertStrategy == null
+                || snapshot == null
+                || snapshot.getId() == null
+                || !TASK_STATUS_FAILED.equals(snapshot.getTaskStatus())) {
+            return;
+        }
+        healthAlertStrategy.recordLongTaskFailed(snapshot.getId().value(), snapshot.getFailureReason());
     }
 }
