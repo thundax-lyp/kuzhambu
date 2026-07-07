@@ -49,6 +49,10 @@ public class HealthCheckApplicationServiceImpl implements HealthCheckApplication
         PageResult<HealthCheckRecord> recordPage = healthCheckRepository.page(
                 query == null ? null : query.getComponent(),
                 query == null ? null : query.getHealthStatus(),
+                query == null ? null : query.getProbeSource(),
+                query == null ? null : query.getProbeTarget(),
+                query == null ? null : query.getCheckedAtStart(),
+                query == null ? null : query.getCheckedAtEnd(),
                 effectivePage.getPageNo(),
                 effectivePage.getPageSize());
         List<OperationsHealthPageResult> results =

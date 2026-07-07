@@ -30,6 +30,7 @@ export interface OperationsHealthAlertPageQuery {
     alertStatus?: OperationsHealthAlertStatus | null;
     sourceRefType?: string | null;
     sourceRefId?: number | null;
+    latestCheckId?: number | null;
     pageNo?: number | null;
     pageSize?: number | null;
 }

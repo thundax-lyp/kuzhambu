@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
+import { AiCandidateBatchDrawer } from "@/pages/classics/common/components/ai-candidate-batch-drawer";
 import { AiCandidatePanel } from "@/pages/classics/common/components/ai-candidate-panel";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import { ClassicsExportJobSection } from "@/pages/classics/common/components/classics-export-job-section";
@@ -133,6 +134,11 @@ export const MingCustomsPage = () => {
     const [editorOpen, setEditorOpen] = useState(false);
     const [editingEntry, setEditingEntry] = useState<MingCustomsRecord | null>(null);
     const [selectedEntryIds, setSelectedEntryIds] = useState<number[]>([]);
+    const [batchCandidateEntryIds, setBatchCandidateEntryIds] = useState<number[]>([]);
+    const [batchCandidateTitleById, setBatchCandidateTitleById] = useState<Record<number, string>>(
+        {}
+    );
+    const [batchCandidateDrawerOpen, setBatchCandidateDrawerOpen] = useState(false);
     const [batchShareResult, setBatchShareResult] = useState<ClassicsBatchOperationRecord | null>(
         null
     );
@@ -528,6 +534,22 @@ export const MingCustomsPage = () => {
         });
     };
 
+    const openBatchCandidateDrawer = () => {
+        if (!canChangeEntryVisibility) {
+            messageApi.warning("当前账号缺少明代习俗编辑权限");
+            return;
+        }
+        if (!selectedEntries.length) {
+            messageApi.warning("请先选择要批量治理的明代习俗");
+            return;
+        }
+        setBatchCandidateEntryIds(selectedEntries.map((entry) => entry.id));
+        setBatchCandidateTitleById(
+            Object.fromEntries(selectedEntries.map((entry) => [entry.id, readTitle(entry)]))
+        );
+        setBatchCandidateDrawerOpen(true);
+    };
+
     return (
         <>
             <KuzhambuListPage<MingCustomsRecord>
@@ -648,6 +670,13 @@ export const MingCustomsPage = () => {
                             </Button>
                             <Button
                                 disabled={!selectedEntries.length || !canChangeEntryVisibility}
+                                style={{ marginLeft: 8 }}
+                                onClick={openBatchCandidateDrawer}
+                            >
+                                批量候选治理
+                            </Button>
+                            <Button
+                                disabled={!selectedEntries.length || !canChangeEntryVisibility}
                                 loading={batchVisibilityMutation.isPending}
                                 style={{ marginLeft: 8 }}
                                 onClick={() => changeSelectedVisibility("PUBLIC")}
@@ -724,6 +753,16 @@ export const MingCustomsPage = () => {
                                     }))
                             }}
                             selectedEntryIds={selectedEntryIds}
+                        />
+                        <AiCandidateBatchDrawer
+                            open={batchCandidateDrawerOpen}
+                            contentType="MING_CUSTOMS"
+                            contentIds={batchCandidateEntryIds}
+                            capabilities={["summary", "tags", "qa"]}
+                            contentTitleById={batchCandidateTitleById}
+                            canEdit={canChangeEntryVisibility}
+                            onClose={() => setBatchCandidateDrawerOpen(false)}
+                            onChanged={invalidateMingCustoms}
                         />
                     </>
                 }

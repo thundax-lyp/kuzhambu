@@ -15,4 +15,5 @@ public class OperationsHealthAlertPageQuery {
     private String alertStatus;
     private String sourceRefType;
     private Long sourceRefId;
+    private Long latestCheckId;
 }

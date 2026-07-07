@@ -13,5 +13,6 @@ public class RequirePendingAiCandidateFacadeRequest {
     private final Long candidateId;
     private final String contentType;
     private final Long contentId;
+    private final Long objectId;
     private final String capability;
 }

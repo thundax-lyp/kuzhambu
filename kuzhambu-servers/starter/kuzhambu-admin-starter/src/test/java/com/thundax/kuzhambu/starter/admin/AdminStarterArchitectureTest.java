@@ -7,6 +7,8 @@ import com.tngtech.archunit.core.domain.JavaClasses;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -82,10 +84,53 @@ class AdminStarterArchitectureTest extends AbstractArchitectureTest {
                 .contains("limit: ${KUZHAMBU_OPERATIONS_CLEANUP_EXPIRED_BACKUP_LIMIT:200}");
     }
 
+    @Test
+    void adminStarterShouldExposeOperationsExternalHealthProbeConfiguration() throws IOException {
+        String applicationYaml = loadApplicationYaml();
+
+        Assertions.assertThat(applicationYaml)
+                .contains("enabled: ${KUZHAMBU_OPERATIONS_HEALTH_PROBES_ENABLED:false}")
+                .contains("timeout-ms: ${KUZHAMBU_OPERATIONS_HEALTH_PROBES_TIMEOUT_MS:3000}")
+                .contains("enabled: ${KUZHAMBU_OPERATIONS_HEALTH_PROBES_TARGETS_0_ENABLED:true}")
+                .contains("component: ${KUZHAMBU_OPERATIONS_HEALTH_PROBES_TARGETS_0_COMPONENT:admin-starter}")
+                .contains("url: ${KUZHAMBU_OPERATIONS_HEALTH_PROBES_TARGETS_0_URL:")
+                .contains("expected-status: ${KUZHAMBU_OPERATIONS_HEALTH_PROBES_TARGETS_0_EXPECTED_STATUS:200}")
+                .contains(
+                        "degraded-latency-ms: ${KUZHAMBU_OPERATIONS_HEALTH_PROBES_TARGETS_0_DEGRADED_LATENCY_MS:1000}");
+    }
+
+    @Test
+    void systemSeedShouldExposeOperationsHealthPageMenu() throws IOException {
+        Path repoRoot = findRepoRoot();
+        String systemJson = Files.readString(repoRoot.resolve("db/data-source/system.json"));
+        String systemSql = Files.readString(repoRoot.resolve("db/data/system.sql"));
+
+        Assertions.assertThat(systemJson)
+                .contains("\"name\": \"健康检查\"")
+                .contains("\"operations:health:view\"")
+                .contains("\"url\": \"/operations/health\"");
+        Assertions.assertThat(systemSql)
+                .contains("'健康检查'")
+                .contains("'operations:health:view'")
+                .contains("'/operations/health'");
+    }
+
     private String loadApplicationYaml() throws IOException {
         try (InputStream inputStream = KuzhambuAdminApplication.class.getResourceAsStream("/application.yml")) {
             Assertions.assertThat(inputStream).isNotNull();
             return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
         }
+    }
+
+    private Path findRepoRoot() {
+        Path currentPath = Path.of(System.getProperty("user.dir")).toAbsolutePath();
+        while (currentPath != null) {
+            if (Files.exists(currentPath.resolve("db/data-source/system.json"))
+                    && Files.exists(currentPath.resolve("db/data/system.sql"))) {
+                return currentPath;
+            }
+            currentPath = currentPath.getParent();
+        }
+        throw new IllegalStateException("Cannot locate repository root from user.dir");
     }
 }

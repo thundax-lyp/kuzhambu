@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Branch sync`：15 同步 main 分支代码
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`feat/knowledge-lineage-visualization`、`origin/main`
-    - 处理动作：在收口验证前把当前分支同步到最新 `origin/main`。
-    - 验收点：当前分支包含最新 `origin/main`，冲突已解决且无不相关文件改动。
-    - 重要度：10/10
-
 - [ ] `Final validation`：16 运行最终验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LINEAGE-VISUALIZATION.md`、`.github/workflows/pr-verify.yml`

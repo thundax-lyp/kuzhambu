@@ -89,6 +89,10 @@ class OperationsHealthAdminControllerTest {
         OperationsHealthPageRequest pageRequest = new OperationsHealthPageRequest();
         pageRequest.setComponent("db-master");
         pageRequest.setHealthStatus("UP");
+        pageRequest.setProbeSource("HTTP");
+        pageRequest.setProbeTarget("http://127.0.0.1:8080/internal/health");
+        pageRequest.setCheckedAtStart(new Date(1_719_630_400_000L));
+        pageRequest.setCheckedAtEnd(new Date(1_719_716_800_000L));
         pageRequest.setPageNo(1);
         pageRequest.setPageSize(10);
         var pageResponse = controller.page(pageRequest);
@@ -114,7 +118,11 @@ class OperationsHealthAdminControllerTest {
                 .page(
                         argThat(query -> query != null
                                 && "db-master".equals(query.getComponent())
-                                && "UP".equals(query.getHealthStatus())),
+                                && "UP".equals(query.getHealthStatus())
+                                && "HTTP".equals(query.getProbeSource())
+                                && "http://127.0.0.1:8080/internal/health".equals(query.getProbeTarget())
+                                && new Date(1_719_630_400_000L).equals(query.getCheckedAtStart())
+                                && new Date(1_719_716_800_000L).equals(query.getCheckedAtEnd())),
                         argThat((PageQuery pageQuery) ->
                                 pageQuery != null && pageQuery.getPageNo() == 1 && pageQuery.getPageSize() == 10));
         verify(service)

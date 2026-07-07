@@ -59,8 +59,8 @@ public class LogController {
         this.departmentService = departmentService;
     }
 
-    @Operation(summary = "获取列表", description = "super")
-    @HasPermission(value = "super")
+    @Operation(summary = "获取列表", description = "system:log:view")
+    @HasPermission(value = "system:log:view")
     @IgnoreSysLogger
     @ApiImplicitParams({
         @ApiImplicitParam(

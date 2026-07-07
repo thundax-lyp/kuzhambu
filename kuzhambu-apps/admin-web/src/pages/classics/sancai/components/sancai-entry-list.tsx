@@ -28,6 +28,7 @@ interface SancaiEntryListProps {
     onExport: (entry: SancaiEntryRecord) => void;
     onShowcase: (entry: SancaiEntryRecord) => void;
     onShare: (entry: SancaiEntryRecord) => void;
+    onBatchCandidateGovernance: (entries: SancaiEntryRecord[]) => void;
     onSort: (
         sourceEntry: SancaiEntryRecord,
         targetEntry: SancaiEntryRecord,
@@ -149,6 +150,7 @@ export const SancaiEntryList = ({
     onExport,
     onShowcase,
     onShare,
+    onBatchCandidateGovernance,
     onSort,
     onView,
     volumes
@@ -288,6 +290,18 @@ export const SancaiEntryList = ({
             contentType: "SANCAI_ENTRY",
             visibility
         });
+    };
+
+    const openBatchCandidateGovernance = () => {
+        if (!canChangeEntryVisibility) {
+            messageApi.warning("当前账号缺少三才图会编辑权限");
+            return;
+        }
+        if (!selectedEntries.length) {
+            messageApi.warning("请先选择要批量治理的条目");
+            return;
+        }
+        onBatchCandidateGovernance(selectedEntries);
     };
 
     if (isLoading) {
@@ -433,6 +447,12 @@ export const SancaiEntryList = ({
                         onClick={() => changeBatchVisibility("PRIVATE")}
                     >
                         批量私有
+                    </Button>
+                    <Button
+                        disabled={!selectedEntries.length || !canChangeEntryVisibility}
+                        onClick={openBatchCandidateGovernance}
+                    >
+                        批量候选治理
                     </Button>
                 </KuzhambuSpace>
                 {activeBatch ? (

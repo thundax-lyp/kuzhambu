@@ -176,7 +176,8 @@ public class OperationsHealthAlertStrategy {
     }
 
     private boolean isContinuousStatus(String component, String healthStatus, int threshold) {
-        PageResult<HealthCheckRecord> page = healthCheckRepository.page(component, null, 1, threshold);
+        PageResult<HealthCheckRecord> page =
+                healthCheckRepository.page(component, null, null, null, null, null, 1, threshold);
         List<HealthCheckRecord> records = page.getRecords();
         return records.size() >= threshold
                 && records.stream().allMatch(record -> healthStatus.equals(record.getHealthStatus()));

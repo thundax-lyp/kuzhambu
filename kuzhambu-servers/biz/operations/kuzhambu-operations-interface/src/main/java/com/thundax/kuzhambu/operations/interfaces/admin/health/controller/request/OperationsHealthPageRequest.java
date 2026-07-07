@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.thundax.kuzhambu.common.web.request.PageRequest;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.Date;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -22,4 +23,20 @@ public class OperationsHealthPageRequest extends PageRequest {
     @Schema(name = "healthStatus", description = "健康状态筛选")
     @JsonProperty(value = "healthStatus")
     private String healthStatus;
+
+    @Schema(name = "probeSource", description = "探针来源筛选")
+    @JsonProperty(value = "probeSource")
+    private String probeSource;
+
+    @Schema(name = "probeTarget", description = "探针目标筛选")
+    @JsonProperty(value = "probeTarget")
+    private String probeTarget;
+
+    @Schema(name = "checkedAtStart", description = "检查时间起点")
+    @JsonProperty(value = "checkedAtStart")
+    private Date checkedAtStart;
+
+    @Schema(name = "checkedAtEnd", description = "检查时间终点")
+    @JsonProperty(value = "checkedAtEnd")
+    private Date checkedAtEnd;
 }

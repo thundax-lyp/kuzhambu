@@ -4,6 +4,7 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import type { KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
+import { hasPermission } from "@/auth/permission-storage";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import * as exportService from "@/pages/classics/common/classics-export-service";
 import * as shareService from "@/pages/classics/common/classics-share-service";
@@ -14,6 +15,8 @@ import { AiCandidatePanel } from "@/pages/classics/common/components/ai-candidat
 import { AiRefinementStreamPanel } from "@/pages/classics/common/components/ai-refinement-stream-panel";
 import { ClassicsContentQaPanel } from "@/pages/classics/common/components/classics-content-qa-panel";
 import { ClassicsContentTagPanel } from "@/pages/classics/common/components/classics-content-tag-panel";
+import { AiCandidateBatchDrawer } from "@/pages/classics/common/components/ai-candidate-batch-drawer";
+import { hasClassicsContentPermission } from "@/pages/classics/common/classics-content-types";
 import { SancaiEntryImagePreview } from "./sancai-entry-image-preview";
 import { SancaiEntryList } from "./sancai-entry-list";
 import { SancaiEntryModel } from "./sancai-entry-model";
@@ -95,6 +98,11 @@ export const SancaiEntryPanel = ({
     const [editingEntry, setEditingEntry] = useState<SancaiEntryRecord | null>(null);
     const [selectedVersionId, setSelectedVersionId] = useState<number | null>(null);
     const [previewImageId, setPreviewImageId] = useState<number | null>(null);
+    const [batchCandidateContentIds, setBatchCandidateContentIds] = useState<number[]>([]);
+    const [batchCandidateTitleById, setBatchCandidateTitleById] = useState<Record<number, string>>(
+        {}
+    );
+    const [batchCandidateDrawerOpen, setBatchCandidateDrawerOpen] = useState(false);
     const [imageUploadTitle, setImageUploadTitle] = useState("");
     const [imageUploadType, setImageUploadType] = useState("ORIGINAL");
     const [imageUploadCurrentUsed, setImageUploadCurrentUsed] = useState(true);
@@ -176,6 +184,11 @@ export const SancaiEntryPanel = ({
         versionDetailQuery.data ||
         versions.find((version) => version.id === selectedVersionId) ||
         null;
+    const canChangeEntryVisibility = hasClassicsContentPermission(
+        "SANCAI_ENTRY",
+        "edit",
+        hasPermission
+    );
     const refinementTasksQuery = useQuery({
         queryKey: ["classics", "sancai", "refinement", "tasks", selectedEntry?.id],
         queryFn: () =>
@@ -321,6 +334,40 @@ export const SancaiEntryPanel = ({
             }),
             queryClient.invalidateQueries({ queryKey: ["classics", "sancai", "entries"] })
         ]);
+    };
+
+    const invalidateBatchCandidateData = useCallback(async () => {
+        await Promise.all([
+            queryClient.invalidateQueries({ queryKey: ["classics", "sancai", "entries"] }),
+            refreshSancaiEntryDetail(),
+            invalidateSancaiContentCandidates(selectedVisualAssetId),
+            queryClient.invalidateQueries({
+                queryKey: ["classics", "content", "qa-pairs", "SANCAI_ENTRY"]
+            }),
+            queryClient.invalidateQueries({
+                queryKey: ["classics", "content", "tags", "SANCAI_ENTRY", selectedEntryId]
+            })
+        ]);
+    }, [
+        queryClient,
+        refreshSancaiEntryDetail,
+        invalidateSancaiContentCandidates,
+        selectedVisualAssetId,
+        selectedEntryId
+    ]);
+
+    const openBatchCandidateDrawer = (selectedEntries: SancaiEntryRecord[]) => {
+        if (!selectedEntries.length) {
+            return;
+        }
+        const contentIds = selectedEntries.map((entry) => entry.id);
+        const contentTitleById = Object.fromEntries(
+            selectedEntries.map((entry) => [entry.id, readEntryTitle(entry)])
+        );
+
+        setBatchCandidateContentIds(contentIds);
+        setBatchCandidateTitleById(contentTitleById);
+        setBatchCandidateDrawerOpen(true);
     };
     const addEntryMutation = useMutation({
         mutationFn: entryService.add,
@@ -833,8 +880,28 @@ export const SancaiEntryPanel = ({
                 onExport={exportEntry}
                 onShowcase={showcaseEntry}
                 onShare={shareEntry}
+                onBatchCandidateGovernance={openBatchCandidateDrawer}
                 onSort={sortEntry}
                 onView={selectEntry}
+            />
+            <AiCandidateBatchDrawer
+                contentIds={batchCandidateContentIds}
+                capabilities={[
+                    "translate",
+                    "summary",
+                    "tags",
+                    "qa",
+                    "image_analysis",
+                    "fusion",
+                    "visual",
+                    "image_gen"
+                ]}
+                contentTitleById={batchCandidateTitleById}
+                contentType="SANCAI_ENTRY"
+                canEdit={canChangeEntryVisibility}
+                open={batchCandidateDrawerOpen}
+                onChanged={invalidateBatchCandidateData}
+                onClose={() => setBatchCandidateDrawerOpen(false)}
             />
             <SancaiEntryModel
                 key={modelKey}

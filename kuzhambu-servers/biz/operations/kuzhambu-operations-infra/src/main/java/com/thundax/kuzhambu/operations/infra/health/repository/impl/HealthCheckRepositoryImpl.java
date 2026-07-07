@@ -65,9 +65,19 @@ public class HealthCheckRepositoryImpl implements HealthCheckRepository {
     }
 
     @Override
-    public PageResult<HealthCheckRecord> page(String component, String healthStatus, int pageNo, int pageSize) {
+    public PageResult<HealthCheckRecord> page(
+            String component,
+            String healthStatus,
+            String probeSource,
+            String probeTarget,
+            Date checkedAtStart,
+            Date checkedAtEnd,
+            int pageNo,
+            int pageSize) {
         Page<HealthCheckDO> page = new Page<>(pageNo, pageSize);
-        IPage<HealthCheckDO> dataObjectPage = mapper.selectPage(page, buildPageWrapper(component, healthStatus));
+        IPage<HealthCheckDO> dataObjectPage = mapper.selectPage(
+                page,
+                buildPageWrapper(component, healthStatus, probeSource, probeTarget, checkedAtStart, checkedAtEnd));
         return PageResult.of(
                 (int) dataObjectPage.getCurrent(),
                 (int) dataObjectPage.getSize(),
@@ -113,13 +123,31 @@ public class HealthCheckRepositoryImpl implements HealthCheckRepository {
                 new LambdaQueryWrapper<HealthCheckDO>().eq(HealthCheckDO::getCheckId, HealthCheckIdCodec.toValue(id)));
     }
 
-    private QueryWrapper<HealthCheckDO> buildPageWrapper(String component, String healthStatus) {
+    private QueryWrapper<HealthCheckDO> buildPageWrapper(
+            String component,
+            String healthStatus,
+            String probeSource,
+            String probeTarget,
+            Date checkedAtStart,
+            Date checkedAtEnd) {
         QueryWrapper<HealthCheckDO> wrapper = new QueryWrapper<>();
         if (StringUtils.isNotBlank(component)) {
             wrapper.eq("component", component);
         }
         if (StringUtils.isNotBlank(healthStatus)) {
             wrapper.eq("health_status", healthStatus);
+        }
+        if (StringUtils.isNotBlank(probeSource)) {
+            wrapper.eq("probe_source", probeSource);
+        }
+        if (StringUtils.isNotBlank(probeTarget)) {
+            wrapper.like("probe_target", probeTarget);
+        }
+        if (checkedAtStart != null) {
+            wrapper.ge("checked_at", checkedAtStart);
+        }
+        if (checkedAtEnd != null) {
+            wrapper.le("checked_at", checkedAtEnd);
         }
         wrapper.orderByDesc("checked_at");
         wrapper.orderByDesc("check_id");

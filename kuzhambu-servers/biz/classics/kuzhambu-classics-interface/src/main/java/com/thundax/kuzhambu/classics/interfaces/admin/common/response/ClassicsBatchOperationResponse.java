@@ -53,6 +53,9 @@ public class ClassicsBatchOperationResponse implements Serializable {
 
     private static Item toItem(ClassicsBatchOperationItemResult item) {
         return Item.builder()
+                .candidateId(item.getCandidateId())
+                .objectId(item.getObjectId())
+                .capability(item.getCapability())
                 .contentType(item.getContentType())
                 .contentId(item.getContentId())
                 .resultId(item.getResultId())
@@ -67,6 +70,16 @@ public class ClassicsBatchOperationResponse implements Serializable {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Item implements Serializable {
+        @JsonProperty("candidateId")
+        private Long candidateId;
+
+        @JsonProperty("objectId")
+        @JsonInclude(JsonInclude.Include.ALWAYS)
+        private Long objectId;
+
+        @JsonProperty("capability")
+        private String capability;
+
         @JsonProperty("contentType")
         private String contentType;
 

@@ -15,6 +15,7 @@ import com.thundax.kuzhambu.ai.facade.request.GetAiCallRecordFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.GetAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.KnowledgeAiExtractionFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.MarkAiCandidateAppliedFacadeRequest;
+import com.thundax.kuzhambu.ai.facade.request.RejectAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.RequirePendingAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.response.AiBatchJobActionFacadeResponse;
 import com.thundax.kuzhambu.ai.facade.response.AiBatchJobFacadeResponse;
@@ -930,6 +931,18 @@ class KnowledgeGraphExtractionApplicationServiceTest {
             repository.updateCandidate(candidate);
             return candidate;
         }
+
+        private AiCandidate reject(Long candidateId, String errorType, String errorMessage) {
+            AiCandidate candidate = repository.getCandidate(candidateId);
+            if (candidate == null) {
+                throw new BizException("AI candidate not found: " + candidateId);
+            }
+            candidate.setStatus("REJECTED");
+            candidate.setErrorType(errorType);
+            candidate.setErrorMessage(errorMessage);
+            repository.updateCandidate(candidate);
+            return candidate;
+        }
     }
 
     @Getter
@@ -1164,6 +1177,15 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                     request.getResultFormat(),
                     request.getResultPayload(),
                     request.getAppliedAt()));
+        }
+
+        @Override
+        public AiCandidateFacadeDto rejectCandidate(RejectAiCandidateFacadeRequest request) {
+            if (aiCandidateDomainService == null) {
+                return null;
+            }
+            return toCandidateFacadeDto(aiCandidateDomainService.reject(
+                    request.getCandidateId(), request.getErrorType(), request.getErrorMessage()));
         }
 
         private KnowledgeAiExtractionRequest toLegacyRequest(KnowledgeAiExtractionFacadeRequest request) {

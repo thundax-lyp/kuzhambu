@@ -58,11 +58,12 @@ public class HealthAlertRepositoryImpl implements HealthAlertRepository {
             String alertStatus,
             String sourceRefType,
             Long sourceRefId,
+            Long latestCheckId,
             int pageNo,
             int pageSize) {
         Page<HealthAlertDO> page = new Page<>(pageNo, pageSize);
         IPage<HealthAlertDO> dataObjectPage = mapper.selectPage(
-                page, buildPageWrapper(component, alertLevel, alertStatus, sourceRefType, sourceRefId));
+                page, buildPageWrapper(component, alertLevel, alertStatus, sourceRefType, sourceRefId, latestCheckId));
         return PageResult.of(
                 (int) dataObjectPage.getCurrent(),
                 (int) dataObjectPage.getSize(),
@@ -121,7 +122,12 @@ public class HealthAlertRepositoryImpl implements HealthAlertRepository {
     }
 
     private QueryWrapper<HealthAlertDO> buildPageWrapper(
-            String component, String alertLevel, String alertStatus, String sourceRefType, Long sourceRefId) {
+            String component,
+            String alertLevel,
+            String alertStatus,
+            String sourceRefType,
+            Long sourceRefId,
+            Long latestCheckId) {
         QueryWrapper<HealthAlertDO> wrapper = new QueryWrapper<>();
         if (StringUtils.isNotBlank(component)) {
             wrapper.eq("component", component);
@@ -137,6 +143,9 @@ public class HealthAlertRepositoryImpl implements HealthAlertRepository {
         }
         if (sourceRefId != null) {
             wrapper.eq("source_ref_id", sourceRefId);
+        }
+        if (latestCheckId != null) {
+            wrapper.eq("latest_check_id", latestCheckId);
         }
         wrapper.orderByAsc("alert_status");
         wrapper.orderByDesc("alert_level");

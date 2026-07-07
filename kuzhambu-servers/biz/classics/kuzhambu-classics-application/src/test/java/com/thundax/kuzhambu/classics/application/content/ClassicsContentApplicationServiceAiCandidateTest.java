@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.classics.application.content;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -11,12 +12,17 @@ import static org.mockito.Mockito.when;
 import com.thundax.kuzhambu.ai.facade.AiFacade;
 import com.thundax.kuzhambu.ai.facade.dto.AiCandidateFacadeDto;
 import com.thundax.kuzhambu.ai.facade.request.MarkAiCandidateAppliedFacadeRequest;
+import com.thundax.kuzhambu.ai.facade.request.RejectAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.RequirePendingAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.classics.application.content.command.AiCandidateApplyContentCommand;
+import com.thundax.kuzhambu.classics.application.content.command.AiCandidateBatchApplyContentCommand;
+import com.thundax.kuzhambu.classics.application.content.command.AiCandidateBatchRejectContentCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentTagCommand;
 import com.thundax.kuzhambu.classics.application.content.result.AiCandidateApplyContentResult;
 import com.thundax.kuzhambu.classics.application.content.service.impl.ClassicsContentApplicationServiceImpl;
 import com.thundax.kuzhambu.classics.application.content.support.ClassicsTagBindingSupport;
+import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationItemResult;
+import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationResult;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiAssetApplicationService;
 import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentExportJob;
@@ -46,10 +52,14 @@ import com.thundax.kuzhambu.classics.domain.wangqi.model.valueobject.WangqiDocum
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.DomainException;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
+import com.thundax.kuzhambu.common.security.context.KuzhambuSubject;
+import com.thundax.kuzhambu.common.security.context.KuzhambuSubjectType;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 class ClassicsContentApplicationServiceAiCandidateTest {
@@ -677,6 +687,147 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         verify(aiFacade, never()).markCandidateApplied(any(MarkAiCandidateAppliedFacadeRequest.class));
     }
 
+    @Test
+    void applyAiCandidatesShouldProcessPartialSuccessAndFailByPermissionAndTargetMismatch() {
+        FakeRepository repository = new FakeRepository();
+        SancaiEntry entry = new SancaiEntry();
+        entry.setId(SancaiEntryId.of(11L));
+        entry.setTranslationText("old translation");
+        entry.setContentUpdatedAt(new Date(1L));
+        repository.sancaiEntryForAiApply = entry;
+
+        AiFacade aiFacade = mockAiFacade(
+                request -> {
+                    if (request.getCandidateId().equals(11L)
+                            || request.getCandidateId().equals(33L)) {
+                        assertEquals("SANCAI_ENTRY", request.getContentType());
+                        assertEquals("summary", request.getCapability());
+                        if (request.getCandidateId().equals(33L)) {
+                            throw new DomainException(
+                                    "AI-INVOCATION-409",
+                                    "ai.candidate.target-mismatch",
+                                    "AI candidate target mismatch");
+                        }
+                        return pendingCandidateWithId(request.getCandidateId());
+                    }
+                    throw new IllegalStateException("unexpected candidate: " + request.getCandidateId());
+                },
+                request -> candidateApplied());
+
+        ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
+                repository, null, null, null, null, null, aiFacade, null, null);
+
+        setPermissions(Set.of("classics:sancai:edit"));
+        try {
+            ClassicsBatchOperationResult result =
+                    service.applyAiCandidates(new AiCandidateBatchApplyContentCommand(List.of(
+                            applyCommand(11L, ClassicsContentType.SANCAI_ENTRY, 11L, "summary", "ok"),
+                            applyCommand(22L, ClassicsContentType.WANGQI_DOCUMENT, 22L, "summary", "ok"),
+                            applyCommand(33L, ClassicsContentType.SANCAI_ENTRY, 33L, "summary", "ok"))));
+
+            assertEquals(1, result.getSuccessCount());
+            assertEquals(2, result.getFailureCount());
+
+            ClassicsBatchOperationItemResult success = result.getSuccesses().get(0);
+            assertEquals(11L, success.getCandidateId());
+            assertEquals("APPLIED", success.getStatus());
+
+            assertEquals("PERMISSION_DENIED", result.getFailures().get(0).getFailureCode());
+            assertEquals(
+                    "CANDIDATE_TARGET_MISMATCH", result.getFailures().get(1).getFailureCode());
+            verify(aiFacade, times(1)).markCandidateApplied(any(MarkAiCandidateAppliedFacadeRequest.class));
+        } finally {
+            clearPermissions();
+        }
+    }
+
+    @Test
+    void rejectAiCandidatesShouldRejectAndReportNonPendingFailure() {
+        AiFacade aiFacade = org.mockito.Mockito.mock(AiFacade.class);
+        when(aiFacade.requirePendingCandidate(any(RequirePendingAiCandidateFacadeRequest.class)))
+                .thenAnswer(invocation -> {
+                    RequirePendingAiCandidateFacadeRequest request = invocation.getArgument(0);
+                    if (request.getCandidateId().equals(11L)) {
+                        return pendingCandidateWithId(11L);
+                    }
+                    throw new DomainException(
+                            "AI-INVOCATION-409", "ai.candidate.not-pending", "AI candidate is not pending");
+                });
+        when(aiFacade.rejectCandidate(any(RejectAiCandidateFacadeRequest.class)))
+                .thenAnswer(invocation -> {
+                    RejectAiCandidateFacadeRequest request = invocation.getArgument(0);
+                    return AiCandidateFacadeDto.builder()
+                            .candidateId(request.getCandidateId())
+                            .status("REJECTED")
+                            .rejectedAt(Instant.now())
+                            .build();
+                });
+
+        ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
+                new FakeRepository(), null, null, null, null, null, aiFacade, null, null);
+
+        setPermissions(Set.of("classics:sancai:edit"));
+        try {
+            ClassicsBatchOperationResult result = service.rejectAiCandidates(new AiCandidateBatchRejectContentCommand(
+                    List.of(
+                            rejectItem(11L, ClassicsContentType.SANCAI_ENTRY, 11L, "summary"),
+                            rejectItem(12L, ClassicsContentType.SANCAI_ENTRY, 12L, "summary")),
+                    null,
+                    null));
+
+            assertEquals(1, result.getSuccessCount());
+            assertEquals(1, result.getFailureCount());
+            assertEquals("REJECTED", result.getSuccesses().get(0).getStatus());
+            assertEquals("CANDIDATE_NOT_PENDING", result.getFailures().get(0).getFailureCode());
+
+            verify(aiFacade).rejectCandidate(any(RejectAiCandidateFacadeRequest.class));
+            verify(aiFacade, times(2)).requirePendingCandidate(any(RequirePendingAiCandidateFacadeRequest.class));
+        } finally {
+            clearPermissions();
+        }
+    }
+
+    @Test
+    void applyAiCandidatesShouldFailObjectMismatchWhenImageAnalysisObjectDoesNotMatch() {
+        FakeRepository repository = new FakeRepository();
+        SancaiEntry entry = new SancaiEntry();
+        entry.setId(SancaiEntryId.of(11L));
+        entry.setContentUpdatedAt(new Date(1L));
+        repository.sancaiEntryForAiApply = entry;
+
+        SancaiAssetApplicationService assetService = org.mockito.Mockito.mock(SancaiAssetApplicationService.class);
+        when(assetService.listVisualAssets(SancaiEntryId.of(11L))).thenReturn(List.of(visualAsset(111L)));
+
+        AiFacade aiFacade = mockAiFacade(
+                request -> {
+                    if (Long.valueOf(999L).equals(request.getObjectId())) {
+                        throw new DomainException(
+                                "AI-INVOCATION-409", "ai.candidate.target-mismatch", "AI candidate target mismatch");
+                    }
+                    return pendingCandidateWithObjectId(request.getCandidateId(), request.getObjectId());
+                },
+                request -> candidateApplied());
+
+        ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
+                repository, null, null, assetService, null, null, aiFacade, null, null);
+
+        setPermissions(Set.of("classics:sancai:edit"));
+        try {
+            ClassicsBatchOperationResult result =
+                    service.applyAiCandidates(new AiCandidateBatchApplyContentCommand(List.of(
+                            applyCommand(11L, ClassicsContentType.SANCAI_ENTRY, 11L, "image_analysis", "text", 111L),
+                            applyCommand(22L, ClassicsContentType.SANCAI_ENTRY, 11L, "image_analysis", "text", 999L))));
+
+            assertEquals(1, result.getSuccessCount());
+            assertEquals(1, result.getFailureCount());
+            assertEquals(
+                    "CANDIDATE_TARGET_MISMATCH", result.getFailures().get(0).getFailureCode());
+            assertNotNull(result.getFailures().get(0).getFailureReason());
+        } finally {
+            clearPermissions();
+        }
+    }
+
     private static ClassicsContentApplicationServiceImpl serviceWithAiFacade(
             ClassicsContentRepository repository, AiFacade aiFacade) {
         return serviceWithAiFacade(repository, aiFacade, null);
@@ -686,6 +837,52 @@ class ClassicsContentApplicationServiceAiCandidateTest {
             ClassicsContentRepository repository, AiFacade aiFacade, SancaiAssetApplicationService assetService) {
         return new ClassicsContentApplicationServiceImpl(
                 repository, null, null, assetService, null, null, aiFacade, null, null);
+    }
+
+    private static AiCandidateBatchRejectContentCommand.Item rejectItem(
+            Long candidateId, ClassicsContentType contentType, Long contentId, String capability) {
+        AiCandidateBatchRejectContentCommand.Item item = new AiCandidateBatchRejectContentCommand.Item();
+        item.setCandidateId(candidateId);
+        item.setContentType(contentType);
+        item.setContentId(contentId);
+        item.setCapability(capability);
+        return item;
+    }
+
+    private static SancaiVisualAsset visualAsset(Long objectId) {
+        SancaiVisualAsset visualAsset = new SancaiVisualAsset();
+        visualAsset.setId(SancaiVisualAssetId.of(objectId));
+        return visualAsset;
+    }
+
+    private static AiCandidateFacadeDto pendingCandidateWithId(Long candidateId) {
+        return AiCandidateFacadeDto.builder()
+                .candidateId(candidateId)
+                .contentType("SANCAI_ENTRY")
+                .contentId(candidateId)
+                .capability("summary")
+                .status("PENDING")
+                .build();
+    }
+
+    private static AiCandidateFacadeDto pendingCandidateWithObjectId(Long candidateId, Long objectId) {
+        return AiCandidateFacadeDto.builder()
+                .candidateId(candidateId)
+                .contentType("SANCAI_ENTRY")
+                .contentId(11L)
+                .objectId(objectId)
+                .capability("image_analysis")
+                .status("PENDING")
+                .build();
+    }
+
+    private static void setPermissions(Set<String> permissions) {
+        KuzhambuContextHolder.setSubject(
+                new KuzhambuSubject("operator", KuzhambuSubjectType.ADMIN_USER, "operator", null, permissions));
+    }
+
+    private static void clearPermissions() {
+        KuzhambuContextHolder.clear();
     }
 
     private static AiCandidateApplyContentCommand applyCommand(

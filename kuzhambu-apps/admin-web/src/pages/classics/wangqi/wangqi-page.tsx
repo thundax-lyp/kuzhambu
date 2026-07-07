@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
+import { AiCandidateBatchDrawer } from "@/pages/classics/common/components/ai-candidate-batch-drawer";
 import { AiCandidatePanel } from "@/pages/classics/common/components/ai-candidate-panel";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import * as contentService from "@/pages/classics/common/classics-content-service";
@@ -128,6 +129,11 @@ export const WangqiPage = () => {
     const [editingDocument, setEditingDocument] = useState<WangqiDocumentRecord | null>(null);
     const [selectedVersionId, setSelectedVersionId] = useState<number | null>(null);
     const [selectedDocumentIds, setSelectedDocumentIds] = useState<number[]>([]);
+    const [batchCandidateDocumentIds, setBatchCandidateDocumentIds] = useState<number[]>([]);
+    const [batchCandidateTitleById, setBatchCandidateTitleById] = useState<Record<number, string>>(
+        {}
+    );
+    const [batchCandidateDrawerOpen, setBatchCandidateDrawerOpen] = useState(false);
     const [batchShareResult, setBatchShareResult] = useState<ClassicsBatchOperationRecord | null>(
         null
     );
@@ -236,16 +242,34 @@ export const WangqiPage = () => {
         "share",
         hasPermission
     );
-    const canExportDocuments = hasClassicsContentPermission(
-        "WANGQI_DOCUMENT",
-        "export",
-        hasPermission
-    );
     const canChangeDocumentVisibility = hasClassicsContentPermission(
         "WANGQI_DOCUMENT",
         "edit",
         hasPermission
     );
+    const canExportDocuments = hasClassicsContentPermission(
+        "WANGQI_DOCUMENT",
+        "export",
+        hasPermission
+    );
+
+    const openBatchCandidateDrawer = () => {
+        if (!canChangeDocumentVisibility) {
+            messageApi.warning("当前账号缺少王圻文档编辑权限");
+            return;
+        }
+        if (!selectedDocuments.length) {
+            messageApi.warning("请先选择要批量治理的王圻文档");
+            return;
+        }
+        setBatchCandidateDocumentIds(selectedDocuments.map((document) => document.id));
+        setBatchCandidateTitleById(
+            Object.fromEntries(
+                selectedDocuments.map((document) => [document.id, readDocumentTitle(document)])
+            )
+        );
+        setBatchCandidateDrawerOpen(true);
+    };
 
     const invalidateWangqi = useCallback(async () => {
         await Promise.all([
@@ -691,6 +715,13 @@ export const WangqiPage = () => {
                             </Button>
                             <Button
                                 disabled={!selectedDocuments.length || !canChangeDocumentVisibility}
+                                style={{ marginLeft: 8 }}
+                                onClick={openBatchCandidateDrawer}
+                            >
+                                批量候选治理
+                            </Button>
+                            <Button
+                                disabled={!selectedDocuments.length || !canChangeDocumentVisibility}
                                 loading={batchVisibilityMutation.isPending}
                                 style={{ marginLeft: 8 }}
                                 onClick={() => changeSelectedVisibility("PUBLIC")}
@@ -765,6 +796,16 @@ export const WangqiPage = () => {
                                 query.sortDirection || DEFAULT_WANGQI_FILTERS.sortDirection
                             }
                             selectedDocumentIds={selectedDocumentIds}
+                        />
+                        <AiCandidateBatchDrawer
+                            open={batchCandidateDrawerOpen}
+                            contentType="WANGQI_DOCUMENT"
+                            contentIds={batchCandidateDocumentIds}
+                            capabilities={["summary", "tags", "qa"]}
+                            contentTitleById={batchCandidateTitleById}
+                            canEdit={canChangeDocumentVisibility}
+                            onClose={() => setBatchCandidateDrawerOpen(false)}
+                            onChanged={invalidateWangqi}
                         />
                     </>
                 }

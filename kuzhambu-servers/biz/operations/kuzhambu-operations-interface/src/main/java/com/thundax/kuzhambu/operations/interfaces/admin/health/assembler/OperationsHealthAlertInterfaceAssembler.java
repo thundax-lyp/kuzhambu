@@ -25,7 +25,8 @@ public final class OperationsHealthAlertInterfaceAssembler {
                 request.getAlertLevel(),
                 request.getAlertStatus(),
                 request.getSourceRefType(),
-                request.getSourceRefId());
+                request.getSourceRefId(),
+                request.getLatestCheckId());
     }
 
     public static OperationsHealthAlertAckCommand toCommand(OperationsHealthAlertAckRequest request) {

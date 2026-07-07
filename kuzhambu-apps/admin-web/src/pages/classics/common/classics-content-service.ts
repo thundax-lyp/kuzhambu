@@ -1,4 +1,5 @@
 import { getJson, postJson } from "@/api/http";
+import type { AiCandidateApplyPayload } from "./ai-candidate-types";
 import type {
     ClassicsBatchOperationRecord,
     ClassicsBatchVisibilityPayload,
@@ -6,6 +7,7 @@ import type {
     ClassicsContentQaPairPayload,
     ClassicsContentQaPairRecord,
     ClassicsContentQaPairSortPayload,
+    ClassicsAiCandidateBatchRejectItemPayload,
     ClassicsContentTagPayload,
     ClassicsContentTagRecord,
     ClassicsContentTagSortPayload
@@ -19,6 +21,14 @@ export type ClassicsContentTagSortCommand = ClassicsContentTagSortPayload;
 export type ClassicsContentQaPairCommand = ClassicsContentQaPairPayload;
 export type ClassicsContentQaPairSortCommand = ClassicsContentQaPairSortPayload;
 export type ClassicsBatchVisibilityCommand = ClassicsBatchVisibilityPayload;
+export type ClassicsAiCandidateBatchApplyCommand = {
+    items: AiCandidateApplyPayload[];
+};
+export type ClassicsAiCandidateBatchRejectCommand = {
+    errorType?: string | null;
+    errorMessage?: string | null;
+    items: ClassicsAiCandidateBatchRejectItemPayload[];
+};
 
 const buildTagsListPath = ({ contentType, contentId }: ClassicsContentListQuery) => {
     const search = new URLSearchParams({ contentType, contentId: String(contentId) }).toString();
@@ -83,6 +93,24 @@ export const updateQaPair = (request: ClassicsContentQaPairCommand) => {
 export const sortQaPairs = (request: ClassicsContentQaPairSortCommand) => {
     return postJson<boolean, ClassicsContentQaPairSortCommand>(
         `${CLASSICS_CONTENT_PATH}/qa-pairs/sort`,
+        {
+            body: request
+        }
+    );
+};
+
+export const applyAiCandidatesBatch = (request: ClassicsAiCandidateBatchApplyCommand) => {
+    return postJson<ClassicsBatchOperationRecord, ClassicsAiCandidateBatchApplyCommand>(
+        `${CLASSICS_CONTENT_PATH}/ai-candidates/batch/change`,
+        {
+            body: request
+        }
+    );
+};
+
+export const rejectAiCandidatesBatch = (request: ClassicsAiCandidateBatchRejectCommand) => {
+    return postJson<ClassicsBatchOperationRecord, ClassicsAiCandidateBatchRejectCommand>(
+        `${CLASSICS_CONTENT_PATH}/ai-candidates/batch/remove`,
         {
             body: request
         }
