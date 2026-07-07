@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Operations health alert API`：新增健康告警 admin API
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-RECOVERY-LOOP.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/health/service/HealthAlertApplicationService.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/health/service/impl/HealthAlertApplicationServiceImpl.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/health/controller/OperationsHealthAlertAdminController.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/health/assembler/OperationsHealthAlertInterfaceAssembler.java`
-    - 处理动作：新增告警分页、确认和手动恢复 admin API。
-    - 验收点：`alerts/page` 使用 `operations:health:view`，`alerts/ack` 和 `alerts/recover` 使用 `operations:health:manage`。
-    - 重要度：10/10
-
 - [ ] `Operations health alert API models`：新增健康告警接口请求和响应模型
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-RECOVERY-LOOP.md`
