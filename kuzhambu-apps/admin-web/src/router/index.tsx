@@ -10,6 +10,7 @@ import { WangqiPage } from "../pages/classics/wangqi/wangqi-page";
 import { SharingPage } from "../pages/classics/sharing/sharing-page";
 import { DashboardPage } from "../pages/dashboard/dashboard/dashboard-page";
 import { GraphExtractionPage } from "../pages/knowledge/graph-extraction/graph-extraction-page";
+import { LineagePage } from "../pages/knowledge/lineage/lineage-page";
 import { GraphResultsPage } from "../pages/knowledge/graph-results/graph-results-page";
 import { QualityReportPage } from "../pages/knowledge/quality-report/quality-report-page";
 import { BackupRestorePage } from "../pages/operations/backup-restore/backup-restore-page";
@@ -108,6 +109,10 @@ const router = createBrowserRouter(
                         {
                             path: "knowledge/graph-results",
                             element: <GraphResultsPage />
+                        },
+                        {
+                            path: "knowledge/lineage",
+                            element: <LineagePage />
                         },
                         {
                             path: "knowledge/quality-report",

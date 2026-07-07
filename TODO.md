@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Admin lineage route`：05 接入 Admin 世系图页面路由
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LINEAGE-VISUALIZATION.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/router/index.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/lineage/lineage-page.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/lineage/lineage-page.css`
-    - 处理动作：新增 `/knowledge/lineage` 页面壳和路由。
-    - 验收点：页面标题为「世系图浏览」，无权限时不请求业务接口。
-    - 重要度：9/10
-
 - [ ] `Admin lineage menu`：06 补齐 Admin 世系图菜单记录
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LINEAGE-VISUALIZATION.md`

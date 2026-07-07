@@ -1,0 +1,55 @@
+.knowledge-lineage-page {
+    width: 100%;
+}
+
+.knowledge-lineage-layout {
+    width: 100%;
+}
+
+.knowledge-lineage-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px;
+    border: 1px solid var(--ant-color-border-secondary);
+    border-radius: 8px;
+    background: var(--ant-color-bg-container);
+}
+
+.knowledge-lineage-toolbar h4 {
+    margin: 0 0 4px;
+}
+
+.knowledge-lineage-workspace {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
+    gap: 16px;
+    min-height: 560px;
+}
+
+.knowledge-lineage-canvas-shell,
+.knowledge-lineage-detail-shell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 560px;
+    border: 1px solid var(--ant-color-border-secondary);
+    border-radius: 8px;
+    background: var(--ant-color-bg-container);
+}
+
+.knowledge-lineage-detail-shell {
+    min-height: 560px;
+}
+
+@media (max-width: 960px) {
+    .knowledge-lineage-workspace {
+        grid-template-columns: 1fr;
+    }
+
+    .knowledge-lineage-canvas-shell,
+    .knowledge-lineage-detail-shell {
+        min-height: 360px;
+    }
+}
