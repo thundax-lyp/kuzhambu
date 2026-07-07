@@ -100,6 +100,33 @@ describe("taxonomy service merge contracts", () => {
         });
     });
 
+    it("sends batch merge, deprecate and review requests", async () => {
+        const batchMergeRequest = {
+            sourceTagIds: ["1001", "1003"],
+            targetTagId: "1002"
+        };
+
+        await service.previewTagBatchMergeImpact(batchMergeRequest);
+        expectLastCall("POST", "/knowledge/taxonomy/tag/merge/batch-preview", batchMergeRequest);
+
+        await service.applyTagBatchMerge(batchMergeRequest);
+        expectLastCall("POST", "/knowledge/taxonomy/tag/merge/batch-apply", batchMergeRequest);
+
+        await service.deprecateBatchTags({ tagIds: ["1001", "1003"] });
+        expectLastCall("POST", "/knowledge/taxonomy/tag/deprecate/batch", {
+            tagIds: ["1001", "1003"]
+        });
+
+        const batchReviewRequest = {
+            tagIds: ["1001", "1003"],
+            decision: "APPROVE" as const,
+            categoryId: "11",
+            reviewNote: "批量通过"
+        };
+        await service.reviewBatchTags(batchReviewRequest);
+        expectLastCall("POST", "/knowledge/taxonomy/tag/review/batch", batchReviewRequest);
+    });
+
     it("sends tag extraction and candidate apply requests", async () => {
         responseData = {
             aiCallId: 501,

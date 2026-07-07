@@ -60,6 +60,16 @@ class TagTest {
         assertThrows(DomainException.class, () -> tag.deprecate(null, null));
     }
 
+    @Test
+    void disabledTagShouldBeTreatedAsDeprecated() {
+        Tag tag = enabledTag(1001L);
+        tag.setStatus(TagStatus.DISABLED);
+
+        assertTrue(tag.isDeprecated());
+        assertFalse(tag.isUsableForNewBinding());
+        assertThrows(DomainException.class, () -> tag.deprecate(null, null));
+    }
+
     private static Tag enabledTag(Long tagId) {
         Tag tag = new Tag();
         tag.setTagId(TagId.of(tagId));

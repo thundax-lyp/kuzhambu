@@ -27,9 +27,9 @@ vi.mock("./taxonomy-service", () => ({
     pageTags: vi.fn(async () => ({
         pageNo: 1,
         pageSize: 20,
-        totalCount: 1,
+        totalCount: 3,
         totalPage: 1,
-        count: 1,
+        count: 3,
         records: [
             {
                 id: "1001",
@@ -40,6 +40,26 @@ vi.mock("./taxonomy-service", () => ({
                 source: "MANUAL",
                 reviewStatus: "APPROVED",
                 contentRefCount: 2
+            },
+            {
+                id: "1002",
+                name: "祭祀",
+                categoryId: "11",
+                categoryName: "礼学",
+                status: "ENABLED",
+                source: "MANUAL",
+                reviewStatus: "APPROVED",
+                contentRefCount: 3
+            },
+            {
+                id: "1003",
+                name: "礼典",
+                categoryId: "11",
+                categoryName: "礼学",
+                status: "ENABLED",
+                source: "AI_EXTRACTED",
+                reviewStatus: "APPROVED",
+                contentRefCount: 1
             }
         ]
     })),
@@ -62,7 +82,27 @@ vi.mock("./taxonomy-service", () => ({
     })),
     previewTagMergeImpact: vi.fn(async () => null),
     applyTagMerge: vi.fn(async () => true),
+    previewTagBatchMergeImpact: vi.fn(async () => ({
+        sourceTags: [
+            { id: "1001", name: "礼制" },
+            { id: "1003", name: "礼典" }
+        ],
+        targetTag: { id: "1002", name: "祭祀" },
+        aliasesToMerge: [{ id: "2001", name: "礼法", source: "MANUAL" }],
+        impactedContentRefs: [
+            {
+                id: "3001",
+                contentTitle: "周礼",
+                contentType: "CLASSICS",
+                source: "MANUAL"
+            }
+        ],
+        pendingReviewCount: 0,
+        governedRecordCount: 2
+    })),
+    applyTagBatchMerge: vi.fn(async () => true),
     deprecateTag: vi.fn(async () => true),
+    deprecateBatchTags: vi.fn(async () => true),
     getTagGovernanceMetrics: vi.fn(async () => ({
         topTags: [{ tagName: "礼制", contentRefCount: 4 }],
         categoryDistributions: [{ categoryName: "礼学", tagCount: 2 }],
@@ -73,6 +113,7 @@ vi.mock("./taxonomy-service", () => ({
     createTag: vi.fn(async () => true),
     updateTag: vi.fn(async () => true),
     reviewTag: vi.fn(async () => true),
+    reviewBatchTags: vi.fn(async () => true),
     requestTagExtraction: vi.fn(async () => ({
         aiCallId: 501,
         aiCandidateId: 601,
@@ -167,7 +208,7 @@ describe("TaxonomyPage", () => {
         });
 
         expect(await screen.findByText("岁时礼俗")).toBeInTheDocument();
-        const rowCheckbox = screen.getAllByRole("checkbox")[1];
+        const rowCheckbox = screen.getAllByRole("checkbox").at(-1)!;
         await user.click(rowCheckbox);
         await user.type(screen.getByLabelText("审核备注"), "人工确认后进入审核");
         await user.click(screen.getByRole("button", { name: "应用选中标签" }));

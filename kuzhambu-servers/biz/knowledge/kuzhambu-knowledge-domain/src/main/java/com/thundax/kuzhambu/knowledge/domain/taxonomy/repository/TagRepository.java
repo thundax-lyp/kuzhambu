@@ -7,6 +7,7 @@ import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.TagSource;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.TagStatus;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.valueobject.TagCategoryId;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.valueobject.TagId;
+import java.util.List;
 
 public interface TagRepository {
 
@@ -15,6 +16,8 @@ public interface TagRepository {
     Tag getByTagId(TagId tagId);
 
     Tag getByName(String name);
+
+    List<Tag> listByTagIds(List<TagId> tagIds);
 
     PageResult<Tag> page(
             String name,
