@@ -217,6 +217,36 @@ class ClassicsContentAdminControllerTest {
     }
 
     @Test
+    void classicsBatchOperationResponseShouldIncludeCandidateFieldsWhenPresent() {
+        ClassicsBatchOperationResponse response = ClassicsBatchOperationResponse.from(ClassicsBatchOperationResult.of(
+                List.of(ClassicsBatchOperationItemResult.successForCandidate(
+                        "SANCAI_ENTRY", 1001L, 3001L, "APPLIED", 7001L, 9001L, "summary")),
+                List.of(ClassicsBatchOperationItemResult.failureForCandidate(
+                        "WANGQI_DOCUMENT", 2001L, "PERMISSION_DENIED", "无权操作", 7002L, null, "qa"))));
+
+        assertEquals(1, response.getSuccessCount());
+        assertEquals(1, response.getFailureCount());
+
+        JsonNode firstSuccess =
+                OBJECT_MAPPER.valueToTree(response.getSuccesses().get(0));
+        assertEquals(7001L, firstSuccess.get("candidateId").asLong());
+        assertEquals("summary", firstSuccess.get("capability").asText());
+        assertEquals(9001L, firstSuccess.get("objectId").asLong());
+        assertEquals("SANCAI_ENTRY", firstSuccess.get("contentType").asText());
+        assertEquals(1001L, firstSuccess.get("contentId").asLong());
+        assertEquals("APPLIED", firstSuccess.get("status").asText());
+
+        JsonNode firstFailure = OBJECT_MAPPER.valueToTree(response.getFailures().get(0));
+        assertEquals(7002L, firstFailure.get("candidateId").asLong());
+        assertEquals("qa", firstFailure.get("capability").asText());
+        assertTrue(firstFailure.get("objectId").isNull());
+        assertEquals("WANGQI_DOCUMENT", firstFailure.get("contentType").asText());
+        assertEquals(2001L, firstFailure.get("contentId").asLong());
+        assertEquals("PERMISSION_DENIED", firstFailure.get("failureCode").asText());
+        assertEquals("无权操作", firstFailure.get("failureReason").asText());
+    }
+
+    @Test
     void batchVisibilityRequestShouldRejectUnsupportedFields() {
         ClassicsContentAdminController controller = controller();
         ClassicsBatchVisibilityRequest request = new ClassicsBatchVisibilityRequest();
