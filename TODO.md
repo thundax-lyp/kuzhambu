@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Operations health alert infra tests`：补齐健康告警持久化测试
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-RECOVERY-LOOP.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-infra/src/test/java/com/thundax/kuzhambu/operations/infra/health/repository/impl/HealthAlertRepositoryImplTest.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-infra/src/main/java/com/thundax/kuzhambu/operations/infra/health/repository/impl/HealthAlertRepositoryImpl.java`
-    - 处理动作：覆盖健康告警 insert、update、page 和 `getOpenBySource` 持久化行为。
-    - 验收点：测试能证明同来源未恢复告警可查重，分页排序符合 RUNBOOK。
-    - 重要度：9/10
-
 - [ ] `Operations health alert strategy`：实现健康采样告警策略
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-RECOVERY-LOOP.md`
