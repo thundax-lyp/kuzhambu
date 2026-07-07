@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web wangqi batch candidate entry`：接入王圻文档批量候选治理入口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-BATCH-CANDIDATE-GOVERNANCE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/wangqi/wangqi-page.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/wangqi/wangqi-page.test.tsx`
-    - 处理动作：在文档列表批量操作区新增 `批量候选治理` 按钮并接入 `AiCandidateBatchDrawer`。
-    - 验收点：未选文档或无 `classics:wangqi:edit` 时按钮禁用，批量拒绝完成后展示成功数和失败数。
-    - 重要度：8/10
-
 - [ ] `admin-web ming customs batch candidate entry`：接入明代习俗批量候选治理入口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-BATCH-CANDIDATE-GOVERNANCE.md`

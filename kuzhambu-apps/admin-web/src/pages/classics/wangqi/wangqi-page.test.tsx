@@ -9,7 +9,7 @@ import { WangqiPage } from "./wangqi-page";
 
 vi.mock("@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm", () => ({
     useKuzhambuConfirm: () => ({
-        danger: vi.fn()
+        danger: vi.fn(({ onConfirm }) => onConfirm?.())
     })
 }));
 
@@ -169,6 +169,39 @@ const installFetchMock = () => {
                 ]
             });
         }
+        if (path.endsWith("/ai/invocation/candidate/list")) {
+            return apiResponse([
+                {
+                    candidateId: 5001,
+                    contentType: "WANGQI_DOCUMENT",
+                    contentId: 400000000001,
+                    capability: "summary",
+                    objectId: null,
+                    resultFormat: "TEXT",
+                    resultPayload: "文档摘要候选",
+                    status: "PENDING",
+                    requestedAt: "2026-01-01T00:00:00.000+00:00"
+                }
+            ]);
+        }
+        if (path.endsWith("/classics/content/ai-candidates/batch/reject")) {
+            return apiResponse({
+                failureCount: 0,
+                failures: [],
+                successCount: 1,
+                successes: [
+                    {
+                        candidateId: 5001,
+                        contentId: 400000000001,
+                        contentType: "WANGQI_DOCUMENT",
+                        capability: "summary",
+                        objectId: null,
+                        resultId: 5001,
+                        status: "REJECTED"
+                    }
+                ]
+            });
+        }
         return apiResponse(true);
     });
 };
@@ -300,5 +333,67 @@ describe("WangqiPage", () => {
             path: "/classics/content/visibility/change"
         });
         expect(screen.getByText("WANGQI_DOCUMENT#400000000002: 文档不存在")).toBeInTheDocument();
+    }, 30000);
+
+    it("opens batch candidate governance drawer from selected documents", async () => {
+        const user = userEvent.setup();
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <WangqiPage />
+                </AntdApp>
+            </QueryClientProvider>
+        );
+
+        const table = await screen.findByLabelText("王圻文档表格");
+        await waitForSelectableRow(table);
+        const batchCandidateButton = screen.getByRole("button", { name: "批量候选治理" });
+
+        expect(batchCandidateButton).toBeDisabled();
+        selectFirstRow(table);
+        await waitFor(() => {
+            expect(batchCandidateButton).not.toBeDisabled();
+        });
+        await user.click(batchCandidateButton);
+
+        expect(await screen.findByText("AI 候选批量治理")).toBeInTheDocument();
+        expect(screen.getByText(/已选内容\s*1\s*个/)).toBeInTheDocument();
+        const candidateTable = await screen.findByLabelText("AI 候选批量治理列表");
+        const candidateCheckbox = within(candidateTable).getAllByRole("checkbox")[1];
+        expect(candidateCheckbox).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "批量应用" })).toBeEnabled();
+        expect(screen.getByRole("button", { name: "批量拒绝" })).toBeEnabled();
+        expect(capturedCalls).toContainEqual({
+            body: {
+                contentType: "WANGQI_DOCUMENT",
+                contentId: 400000000001,
+                status: "PENDING"
+            },
+            method: "POST",
+            path: "/ai/invocation/candidate/list"
+        });
+
+        await user.click(candidateCheckbox);
+        await user.click(screen.getByRole("button", { name: "批量拒绝" }));
+
+        expect(await screen.findByText("批量候选拒绝结果：成功 1，失败 0")).toBeInTheDocument();
+        expect(capturedCalls).toContainEqual({
+            body: {
+                errorType: "USER_REJECTED",
+                errorMessage: "用户已批量拒绝该 AI 候选",
+                items: [
+                    {
+                        candidateId: 5001,
+                        contentType: "WANGQI_DOCUMENT",
+                        contentId: 400000000001,
+                        capability: "summary",
+                        objectId: null
+                    }
+                ]
+            },
+            method: "POST",
+            path: "/classics/content/ai-candidates/batch/reject"
+        });
     }, 30000);
 });
