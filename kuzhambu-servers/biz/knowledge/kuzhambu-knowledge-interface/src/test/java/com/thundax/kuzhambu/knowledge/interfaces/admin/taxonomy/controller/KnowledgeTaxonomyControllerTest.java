@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -320,7 +321,9 @@ class KnowledgeTaxonomyControllerTest {
             throws Exception {
         Method method = KnowledgeTaxonomyController.class.getDeclaredMethod(methodName, requestType);
         assertEquals(path, method.getAnnotation(PostMapping.class).value()[0]);
-        assertEquals(permission, method.getAnnotation(HasPermission.class).value());
+        assertArrayEquals(
+                new String[] {permission},
+                method.getAnnotation(HasPermission.class).value());
         assertEquals(auditText, method.getAnnotation(SysLogger.class).value());
     }
 }

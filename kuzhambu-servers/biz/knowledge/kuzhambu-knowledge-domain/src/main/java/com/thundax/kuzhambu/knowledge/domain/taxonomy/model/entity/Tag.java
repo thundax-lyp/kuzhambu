@@ -99,7 +99,7 @@ public class Tag {
     }
 
     public boolean isDeprecated() {
-        return deprecatedAt != null;
+        return status == TagStatus.DISABLED || deprecatedAt != null;
     }
 
     public void mergeInto(Tag targetTag) {

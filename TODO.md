@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `knowledge backend validation`：运行标签批量治理后端验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-TAG-BATCH-GOVERNANCE.md`
-    - 范围对象：`kuzhambu-servers/pom.xml`、`kuzhambu-servers/biz/knowledge/pom.xml`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/pom.xml`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/pom.xml`
-    - 处理动作：运行 Knowledge 后端 formatter、静态检查和 Maven 测试。
-    - 验收点：`spotless:check`、`checkstyle:check` 和 Knowledge application/interface 相关 `test` 通过或记录明确阻塞。
-    - 重要度：10/10
-
 - [ ] `admin taxonomy validation`：运行标签批量治理 Admin Web 验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-TAG-BATCH-GOVERNANCE.md`
