@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Knowledge lineage application contract`：01 定义后端世系画布查询和结果模型
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LINEAGE-VISUALIZATION.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/lineage/query/LineageCanvasQuery.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/lineage/result/LineageCanvasResult.java`
-    - 处理动作：新增世系画布查询对象和结果对象。
-    - 验收点：字段覆盖版本、统计、节点、关系、选中对象、筛选项和空态。
-    - 重要度：10/10
-
 - [ ] `Knowledge lineage application service`：02 实现后端世系画布读取用例
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LINEAGE-VISUALIZATION.md`
