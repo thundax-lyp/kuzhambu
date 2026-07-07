@@ -101,14 +101,15 @@ export const SystemLogPage = () => {
         retry: false
     });
 
-    if (!canViewSystemLog) {
-        return <Empty description="缺少 system:log:view 权限" />;
-    }
     const logPage = logQuery.data;
     const logs = useMemo(() => logPage?.records || [], [logPage?.records]);
     const totalCount = logPage?.count ?? logPage?.totalCount ?? 0;
     const currentPageNo = logPage?.pageNo || query.pageNo || DEFAULT_PAGE_NO;
     const currentPageSize = logPage?.pageSize || query.pageSize || DEFAULT_PAGE_SIZE;
+
+    if (!canViewSystemLog) {
+        return <Empty description="缺少 system:log:view 权限" />;
+    }
 
     const updateQuery = (values: Partial<LogPageQuery>) => {
         setQuery((currentQuery) => {

@@ -148,11 +148,11 @@ describe("OperationsDashboardPage", () => {
         expect(screen.getByText("清理维护")).toBeInTheDocument();
         expect(screen.getByText("系统日志")).toBeInTheDocument();
         expect(screen.getByText("审计日志")).toBeInTheDocument();
-        expect(screen.getByRole("link", { name: "系统日志" })).toHaveAttribute(
+        expect(screen.getByTestId("operations-entry-system-log")).toHaveAttribute(
             "href",
             "/system/logs"
         );
-        expect(screen.getByRole("link", { name: "审计日志" })).toHaveAttribute(
+        expect(screen.getByTestId("operations-entry-audit-log")).toHaveAttribute(
             "href",
             "/audit/logs"
         );
@@ -235,6 +235,8 @@ describe("OperationsDashboardPage", () => {
     }, 30000);
 
     it("renders dashboard controls and data", async () => {
+        replacePermissions(["operations:dashboard:view", "operations:task:view"]);
+
         renderPage();
 
         expect(await screen.findByRole("heading", { name: "运营看板" })).toBeInTheDocument();

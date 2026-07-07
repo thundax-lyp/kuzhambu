@@ -165,7 +165,9 @@ test.describe("operations dashboard entries", () => {
         );
     });
 
-    test("renders system/audit entries and navigates from operations dashboard", async ({ page }) => {
+    test("renders system/audit entries and navigates from operations dashboard", async ({
+        page
+    }) => {
         await mockShellApis(page, DASHBOARD_USER_PERMISSIONS);
 
         await page.goto("/operations/dashboard");

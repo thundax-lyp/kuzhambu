@@ -151,16 +151,16 @@ export const AuditLogPage = () => {
         retry: false
     });
 
-    if (!canViewAuditLog) {
-        return <Empty description="缺少 audit:view 权限" />;
-    }
-
     const auditLogPage = auditLogQuery.data;
     const auditLogs = useMemo(() => auditLogPage?.records || [], [auditLogPage?.records]);
     const totalCount = auditLogPage?.count ?? auditLogPage?.totalCount ?? 0;
     const currentPageNo = auditLogPage?.pageNo || query.pageNo || DEFAULT_PAGE_NO;
     const currentPageSize = auditLogPage?.pageSize || query.pageSize || DEFAULT_PAGE_SIZE;
     const auditOptions = auditOptionsQuery.data;
+
+    if (!canViewAuditLog) {
+        return <Empty description="缺少 audit:view 权限" />;
+    }
 
     const updateQuery = (values: Partial<AuditLogPageQuery>) => {
         setQuery((currentQuery) => {
