@@ -21,6 +21,9 @@ import com.thundax.kuzhambu.knowledge.application.taxonomy.command.SynonymStatus
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.SynonymUpdateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagAliasCreateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagAliasRemoveCommand;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagBatchDeprecateCommand;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagBatchMergeCommand;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagBatchReviewCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCandidateApplyCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCandidateApplyCommand.TagCandidateApplyItemCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCategoryCreateCommand;
@@ -34,6 +37,7 @@ import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagReviewComm
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagStatusCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagUpdateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.SynonymPageQuery;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagBatchMergePreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagCategoryPageQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagGovernanceMetricsQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagMergePreviewQuery;
@@ -41,6 +45,7 @@ import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagPageQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagReviewPageQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.SynonymResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagAliasResult;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagBatchMergePreviewResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagCategoryResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagDetailResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagExtractionResult;
@@ -74,6 +79,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -277,6 +283,43 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     }
 
     @Override
+    public TagBatchMergePreviewResult previewTagBatchMergeImpact(TagBatchMergePreviewQuery query) {
+        TagBatchMergePreviewQuery effective = ensureCommand(query, "标签批量合并影响预览查询");
+        List<TagId> sourceTagIds = normalizeTagIds(effective.getSourceTagIds(), "sourceTagIds");
+        Tag targetTag = ensureTagUsableForBatchMergeTarget(ensureTagExists(effective.getTargetTagId()));
+        List<Tag> sourceTags = getExistingTags(sourceTagIds, "sourceTagIds");
+        ensureBatchMergeSourceTags(sourceTags, targetTag);
+
+        List<TagAlias> aliasesToMerge = new ArrayList<>();
+        List<TagContentRef> impactedContentRefs = new ArrayList<>();
+        int pendingReviewCount = 0;
+        for (Tag sourceTag : sourceTags) {
+            aliasesToMerge.addAll(tagAliasRepository.listByTagId(sourceTag.getTagId()));
+            impactedContentRefs.addAll(tagContentRefRepository.listByTagId(sourceTag.getTagId()));
+            if (sourceTag.getReviewStatus() == TagReviewStatus.PENDING) {
+                pendingReviewCount++;
+            }
+        }
+
+        int governedRecordCount = pendingReviewCount + aliasesToMerge.size() + impactedContentRefs.size();
+        return new TagBatchMergePreviewResult(
+                sourceTags.stream()
+                        .map(tag -> TaxonomyApplicationAssembler.toResult(
+                                tag,
+                                getCategoryName(tag.getCategoryId()),
+                                tagContentRefRepository.countByTagId(tag.getTagId())))
+                        .collect(Collectors.toList()),
+                TaxonomyApplicationAssembler.toResult(
+                        targetTag,
+                        getCategoryName(targetTag.getCategoryId()),
+                        tagContentRefRepository.countByTagId(targetTag.getTagId())),
+                TaxonomyApplicationAssembler.toAliasResultList(aliasesToMerge),
+                TaxonomyApplicationAssembler.toContentRefResultList(impactedContentRefs),
+                pendingReviewCount,
+                governedRecordCount);
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public void applyTagMerge(TagMergeCommand command) {
         TagMergeCommand effective = ensureCommand(command, "标签合并命令");
@@ -295,6 +338,37 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
                         ref.getContentId(),
                         ref.getContentTitle(),
                         ref.getSource()));
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void applyTagBatchMerge(TagBatchMergeCommand command) {
+        TagBatchMergeCommand effective = ensureCommand(command, "标签批量合并命令");
+        List<TagId> sourceTagIds = normalizeTagIds(effective.getSourceTagIds(), "sourceTagIds");
+        Tag targetTag = ensureTagUsableForBatchMergeTarget(ensureTagExists(effective.getTargetTagId()));
+        List<Tag> sourceTags = getExistingTags(sourceTagIds, "sourceTagIds");
+        ensureBatchMergeSourceTags(sourceTags, targetTag);
+
+        Map<TagId, List<TagContentRef>> contentRefsBySource = sourceTags.stream()
+                .collect(Collectors.toMap(
+                        Tag::getTagId,
+                        sourceTag -> tagContentRefRepository.listByTagId(sourceTag.getTagId()),
+                        (left, right) -> left,
+                        LinkedHashMap::new));
+        for (Tag sourceTag : sourceTags) {
+            sourceTag.mergeInto(targetTag);
+            if (tagRepository.update(sourceTag) != 1) {
+                throw new BizException("标签批量合并状态更新失败");
+            }
+            contentRefsBySource.getOrDefault(sourceTag.getTagId(), List.of()).stream()
+                    .filter(ref -> ref != null && ref.getContentType() != null && ref.getContentId() != null)
+                    .forEach(ref -> knowledgeTagBindingDomainService.syncContentTagRef(
+                            targetTag.getTagId(),
+                            ref.getContentType(),
+                            ref.getContentId(),
+                            ref.getContentTitle(),
+                            ref.getSource()));
+        }
     }
 
     @Override
@@ -404,6 +478,24 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void batchDeprecateTags(TagBatchDeprecateCommand command) {
+        TagBatchDeprecateCommand effective = ensureCommand(command, "标签批量废弃命令");
+        List<Tag> tags = getExistingTags(normalizeTagIds(effective.getTagIds(), "tagIds"), "tagIds");
+        for (Tag tag : tags) {
+            if (tag.isDeprecated()) {
+                throw new BizException("标签已废弃: " + tag.getTagId().value());
+            }
+        }
+        for (Tag tag : tags) {
+            tag.deprecate(new Date(), null);
+            if (tagRepository.update(tag) != 1) {
+                throw new BizException("标签批量废弃状态更新失败");
+            }
+        }
+    }
+
+    @Override
     public TagGovernanceMetricsResult getTagGovernanceMetrics(TagGovernanceMetricsQuery query) {
         TagGovernanceMetricsQuery effective = ensureCommand(query, "标签治理统计查询");
         TagGovernanceMetrics metrics =
@@ -487,6 +579,39 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
 
         if (tagRepository.updateReviewStatus(reviewed) != 1) {
             throw new BizException("标签审核失败");
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void batchReviewTags(TagBatchReviewCommand command) {
+        TagBatchReviewCommand effective = ensureCommand(command, "标签批量审核命令");
+        String decision = normalizeDecision(effective.getDecision());
+        String reviewNote = trimOptionalText(effective.getReviewNote());
+        List<Tag> tags = getExistingTags(normalizeTagIds(effective.getTagIds(), "tagIds"), "tagIds");
+        TagCategoryId categoryId = null;
+        if (APPROVE_DECISION.equals(decision)) {
+            categoryId = ensureId(effective.getCategoryId(), "categoryId");
+            TagCategory category = getExistingCategory(categoryId);
+            if (category.getStatus() != TagCategoryStatus.ENABLED) {
+                throw new BizException("审核通过标签必须关联启用中的分类");
+            }
+        } else if (REJECT_DECISION.equals(decision) && StringUtils.isBlank(reviewNote)) {
+            throw new BizException("拒绝标签必须填写审核说明");
+        } else if (!REJECT_DECISION.equals(decision)) {
+            throw new BizException("非法审核决策: " + decision);
+        }
+
+        for (Tag tag : tags) {
+            if (tag.getReviewStatus() != TagReviewStatus.PENDING) {
+                throw new BizException("标签不是待审核状态: " + tag.getTagId().value());
+            }
+        }
+        for (Tag tag : tags) {
+            Tag reviewed = buildReviewedTag(tag, decision, categoryId, reviewNote);
+            if (tagRepository.updateReviewStatus(reviewed) != 1) {
+                throw new BizException("标签批量审核失败");
+            }
         }
     }
 
@@ -950,6 +1075,69 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
 
         TagCategory category = tagCategoryRepository.getByCategoryId(categoryId);
         return category == null ? null : category.getName();
+    }
+
+    private List<TagId> normalizeTagIds(List<TagId> tagIds, String field) {
+        if (tagIds == null || tagIds.isEmpty()) {
+            throw new BizException("参数不能为空: " + field);
+        }
+        LinkedHashSet<TagId> normalized = new LinkedHashSet<>();
+        for (TagId tagId : tagIds) {
+            if (tagId == null) {
+                throw new BizException("参数不能为空: " + field);
+            }
+            normalized.add(tagId);
+        }
+        if (normalized.isEmpty()) {
+            throw new BizException("参数不能为空: " + field);
+        }
+        return new ArrayList<>(normalized);
+    }
+
+    private List<Tag> getExistingTags(List<TagId> tagIds, String field) {
+        List<Tag> tags = tagRepository.listByTagIds(tagIds);
+        Map<TagId, Tag> tagById = tags.stream().collect(Collectors.toMap(Tag::getTagId, tag -> tag));
+        for (TagId tagId : tagIds) {
+            if (!tagById.containsKey(tagId)) {
+                throw new BizException("标签不存在: " + tagId.value());
+            }
+        }
+        return tagIds.stream().map(tagById::get).collect(Collectors.toList());
+    }
+
+    private Tag ensureTagUsableForBatchMergeTarget(Tag tag) {
+        if (!tag.isUsableForNewBinding()) {
+            throw new BizException("目标标签当前不可作为合并目标: " + tag.getTagId().value());
+        }
+        return tag;
+    }
+
+    private void ensureBatchMergeSourceTags(List<Tag> sourceTags, Tag targetTag) {
+        for (Tag sourceTag : sourceTags) {
+            if (sourceTag.getTagId().equals(targetTag.getTagId())) {
+                throw new BizException("源标签不能包含目标标签: " + targetTag.getTagId().value());
+            }
+            if (!sourceTag.isUsableForNewBinding()) {
+                throw new BizException("源标签当前不可用于合并: " + sourceTag.getTagId().value());
+            }
+        }
+    }
+
+    private Tag buildReviewedTag(Tag tag, String decision, TagCategoryId categoryId, String reviewNote) {
+        Tag reviewed = new Tag();
+        reviewed.setId(tag.getId());
+        reviewed.setTagId(tag.getTagId());
+        reviewed.setName(tag.getName());
+        reviewed.setCategoryId(APPROVE_DECISION.equals(decision) ? categoryId : tag.getCategoryId());
+        reviewed.setDescription(tag.getDescription());
+        reviewed.setStatus(tag.getStatus());
+        reviewed.setSource(tag.getSource());
+        reviewed.setCreatedAt(tag.getCreatedAt());
+        reviewed.setReviewedAt(new Date());
+        reviewed.setReviewNote(reviewNote);
+        reviewed.setReviewStatus(
+                APPROVE_DECISION.equals(decision) ? TagReviewStatus.APPROVED : TagReviewStatus.REJECTED);
+        return reviewed;
     }
 
     private <T extends Enum<T>> T requireStatus(T status, String field) {
