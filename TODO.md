@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `最终验证`：运行后端和前端相关验证命令
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-AI-STREAMING-CANDIDATES.md`、`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`kuzhambu-servers/`、`kuzhambu-apps/`
-    - 处理动作：在同步 main 后运行 RUNBOOK 中列出的 Java 和 Admin Web 格式、静态检查与测试命令。
-    - 验收点：记录 `mvn spotless:check`、`mvn checkstyle:check`、相关 Maven test、`npm run format:check`、`npm run lint`、admin-web test 的结果。
-    - 重要度：10/10
-
 - [ ] `Implementation Coverage`：同步 AI 和 Classics 实现覆盖状态
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-AI-STREAMING-CANDIDATES.md`、`docs/00-governance/TODO-RULES.md`
