@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Admin lineage controls`：08 实现 Admin 世系筛选控件和详情面板
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LINEAGE-VISUALIZATION.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/lineage/components/lineage-filter-bar.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/lineage/components/lineage-detail-panel.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/lineage/lineage-page.tsx`
-    - 处理动作：实现版本选择、搜索、节点类型、关系类型、确认状态、深度、重置、刷新和详情展示。
-    - 验收点：控件操作能更新查询，节点或关系选中后详情面板展示对应字段。
-    - 重要度：10/10
-
 - [ ] `Admin lineage canvas`：09 实现 Admin 世系画布和列表联动
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LINEAGE-VISUALIZATION.md`
