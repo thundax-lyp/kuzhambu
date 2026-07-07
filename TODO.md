@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `knowledge final sync and cleanup`：同步 main 后完成 coverage 与 RUNBOOK 收口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-TAG-BATCH-GOVERNANCE.md`
-    - 范围对象：`main` 分支最新代码、`docs/40-readiness/KNOWLEDGE-IMPLEMENTATION-COVERAGE.md`、`docs/30-designs/RUNBOOK-KNOWLEDGE-TAG-BATCH-GOVERNANCE.md`、`TODO.md`
-    - 处理动作：最终收口前同步 `main` 最新代码，更新 Knowledge Implementation Coverage，并删除已完成 RUNBOOK 与对应 TODO。
-    - 验收点：分支包含最新 `main` 基线，coverage 中 `标签批量操作` 为 `已完成` 且未完成部分为 `无`，RUNBOOK 已删除，完成项已从 `TODO.md` 清理。
-    - 重要度：10/10
-
 ## 待审阅任务项
 
 ## 待讨论项
