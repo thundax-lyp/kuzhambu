@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `operations cleanup policy properties`：新增清理调度策略配置对象
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-CLEANUP-SCHEDULE-POLICY.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/cleanup/support/OperationsCleanupScheduleProperties.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/cleanup/support/OperationsCleanupSupport.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/test/java/com/thundax/kuzhambu/operations/application/cleanup/support/OperationsCleanupSchedulePropertiesTest.java`
-    - 处理动作：新增 cleanup schedule properties 并提供四类 policy 的 enabled、retentionDays、limit 和固定执行顺序。
-    - 验收点：策略对象能按默认值返回每日 03:30、启动不执行、默认 limit 200 和四类 cleanup policy。
-    - 重要度：9/10
-
 - [ ] `operations cleanup application context`：扩展清理执行上下文
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-CLEANUP-SCHEDULE-POLICY.md`
