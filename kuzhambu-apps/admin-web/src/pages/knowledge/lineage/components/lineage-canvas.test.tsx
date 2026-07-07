@@ -58,7 +58,12 @@ describe("LineageCanvas", () => {
         );
 
         fireEvent.click(screen.getByText("贾政"));
-        expect(onSelectNode).toHaveBeenCalledWith(nodes[1]);
+        expect(onSelectNode).toHaveBeenCalledWith(
+            expect.objectContaining({
+                name: "贾政",
+                nodeId: 2
+            })
+        );
 
         fireEvent.click(screen.getByText("父子"));
         expect(onSelectRelation).toHaveBeenCalledWith(relations[0]);

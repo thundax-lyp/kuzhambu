@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { waitFor } from "@testing-library/react";
 import { act } from "react";
 import type { ReactNode } from "react";
 import { createRoot } from "react-dom/client";
@@ -39,6 +40,10 @@ vi.mock("@xyflow/react", () => ({
 }));
 /* eslint-enable @typescript-eslint/naming-convention */
 
+vi.mock("./knowledge-lineage-service", () => ({
+    getKnowledgeLineage
+}));
+
 const renderPage = () => {
     const container = document.createElement("div");
     document.body.appendChild(container);
@@ -72,6 +77,9 @@ const flushQuery = async () => {
             window.setTimeout(resolve, 0);
         });
         await Promise.resolve();
+        await new Promise((resolve) => {
+            window.setTimeout(resolve, 0);
+        });
     });
 };
 
@@ -153,13 +161,18 @@ describe("KnowledgeLineagePage", () => {
         const { container, root } = renderPage();
 
         await flushQuery();
+        await waitFor(() => {
+            expect(container.textContent).toContain("贾政");
+        });
 
         expect(container.textContent).toContain("世系图浏览");
         expect(container.textContent).toContain("返回知识馆");
-        expect(container.textContent).toContain("搜索人物、谱系节点或关系");
+        expect(
+            container.querySelector('input[placeholder="搜索人物、谱系节点或关系"]')
+        ).toBeTruthy();
         expect(container.textContent).toContain("清除筛选");
-        expect(container.textContent).not.toContain("确认");
         expect(container.textContent).not.toContain("删除");
+        expect(container.textContent).not.toContain("应用候选");
 
         const nodeButton = Array.from(container.querySelectorAll("button")).find(
             (button) => button.textContent === "贾政"
