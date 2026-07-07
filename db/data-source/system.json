@@ -794,7 +794,11 @@
       "children": [
         {
           "name": "运营看板",
-          "perms": ["operations:dashboard:view"],
+          "perms": [
+            "operations:dashboard:view",
+            "operations:health:view",
+            "operations:health:manage"
+          ],
           "priority": 70,
           "icon": "dashboard",
           "url": "/operations/dashboard",

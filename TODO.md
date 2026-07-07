@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Operations health alert permissions seed`：补齐健康告警管理权限种子
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-RECOVERY-LOOP.md`
-    - 范围对象：`db/data/system.sql`、`db/data-source/system.json`、`kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/test/java/com/thundax/kuzhambu/operations/interfaces/admin/health/controller/OperationsHealthAlertAdminControllerTest.java`
-    - 处理动作：新增 `operations:health:manage` 权限种子并校验告警管理接口权限。
-    - 验收点：健康告警查看和管理权限分离，种子数据与 controller 权限一致。
-    - 重要度：9/10
-
 - [ ] `Operations validation`：运行 Operations 后端与 Admin Web 定向验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-RECOVERY-LOOP.md`
