@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Operations health alert domain`：新增健康告警领域模型与表结构
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-RECOVERY-LOOP.md`
-    - 范围对象：`db/schema/operations.sql`、`kuzhambu-servers/biz/operations/kuzhambu-operations-domain/src/main/java/com/thundax/kuzhambu/operations/domain/health/model/entity/HealthAlertRecord.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-domain/src/main/java/com/thundax/kuzhambu/operations/domain/health/model/valueobject/HealthAlertId.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-domain/src/main/java/com/thundax/kuzhambu/operations/domain/health/codec/HealthAlertIdCodec.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-domain/src/main/java/com/thundax/kuzhambu/operations/domain/health/repository/HealthAlertRepository.java`
-    - 处理动作：按 RUNBOOK 精确新增 `operations_health_alert` 表和健康告警 domain/repository 契约。
-    - 验收点：字段、索引、枚举语义与 RUNBOOK 一致，repository 契约能表达插入、更新、分页、来源查重和摘要查询。
-    - 重要度：10/10
-
 - [ ] `Operations health alert infra`：新增健康告警持久化映射
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-RECOVERY-LOOP.md`
@@ -29,7 +21,7 @@
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-RECOVERY-LOOP.md`
     - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-infra/src/test/java/com/thundax/kuzhambu/operations/infra/health/repository/impl/HealthAlertRepositoryImplTest.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-infra/src/main/java/com/thundax/kuzhambu/operations/infra/health/repository/impl/HealthAlertRepositoryImpl.java`
-    - 处理动作：覆盖健康告警 insert、update、page 和 `findOpenBySource` 持久化行为。
+    - 处理动作：覆盖健康告警 insert、update、page 和 `getOpenBySource` 持久化行为。
     - 验收点：测试能证明同来源未恢复告警可查重，分页排序符合 RUNBOOK。
     - 重要度：9/10
 

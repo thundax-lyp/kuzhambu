@@ -135,8 +135,8 @@ CREATE TABLE IF NOT EXISTS `operations_health_alert` (
 实现要求：
 
 - `HealthAlertRecord` 字段与 `operations_health_alert` 表业务字段一一对应。
-- `HealthAlertRepository` 至少提供 `insert`、`update`、`getById`、`page`、`findOpenBySource`、`listOpenByComponent`、`listOpenSummary`。
-- `findOpenBySource` 只查询 `ACTIVE` / `ACKED`，用于幂等更新未恢复告警。
+- `HealthAlertRepository` 至少提供 `insert`、`update`、`getById`、`page`、`getOpenBySource`、`listOpenByComponent`、`listOpenSummary`。
+- `getOpenBySource` 只查询 `ACTIVE` / `ACKED`，用于幂等更新未恢复告警。
 
 验收点：
 
@@ -160,7 +160,7 @@ CREATE TABLE IF NOT EXISTS `operations_health_alert` (
 
 验收点：
 
-- Repository 测试覆盖 insert、update、page、findOpenBySource。
+- Repository 测试覆盖 insert、update、page、getOpenBySource。
 - null `source_ref_id` 只能用于 `HEALTH_STALE`，其他类型必须由应用层拒绝。
 
 ### Task 3: Alert Application Strategy
