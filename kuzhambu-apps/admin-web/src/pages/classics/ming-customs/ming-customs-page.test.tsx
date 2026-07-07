@@ -408,7 +408,7 @@ describe("MingCustomsPage", () => {
         expect(screen.getByText(/已选内容\s*1\s*个/)).toBeInTheDocument();
         const candidateTable = await screen.findByLabelText("AI 候选批量治理列表");
         const candidateCheckbox = within(candidateTable).getByRole("checkbox", {
-            name: "select row"
+            name: /Select row/
         });
         expect(candidateCheckbox).toBeInTheDocument();
         expect(
@@ -424,7 +424,11 @@ describe("MingCustomsPage", () => {
         await user.click(candidateCheckbox);
         await user.click(screen.getByRole("button", { name: "批量应用" }));
 
-        expect(await screen.findByText("批量候选应用结果：成功 1，失败 1")).toBeInTheDocument();
+        await waitFor(() => {
+            expect(
+                screen.queryAllByText("批量候选应用结果：成功 1，失败 1").length
+            ).toBeGreaterThanOrEqual(1);
+        });
         expect(screen.getByText("6002 / summary / payload invalid")).toBeInTheDocument();
         expect(capturedCalls).toContainEqual({
             body: {

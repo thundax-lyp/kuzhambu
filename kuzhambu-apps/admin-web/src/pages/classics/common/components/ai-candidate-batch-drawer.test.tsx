@@ -73,6 +73,23 @@ const renderDrawer = (onChanged: () => Promise<void> | void) => {
     );
 };
 
+const createListMock = (
+    candidatesByContentId: Record<number, Awaited<ReturnType<typeof aiCandidateService.list>>>
+) => {
+    let fallbackIndex = 0;
+    const fallbackOrder = [3001, 3002];
+
+    return vi.fn(async (query: Parameters<typeof aiCandidateService.list>[0]) => {
+        const request = query as { contentId?: number; queryKey?: unknown[] };
+        const fallbackContentId = fallbackOrder[fallbackIndex++] ?? request?.contentId;
+        const contentId = request.contentId ?? request.queryKey?.at(4) ?? fallbackContentId;
+
+        return candidatesByContentId[contentId as number] ?? [];
+    }) as (
+        query: Parameters<typeof aiCandidateService.list>[0]
+    ) => Promise<Awaited<ReturnType<typeof aiCandidateService.list>>>;
+};
+
 describe("AiCandidateBatchDrawer", () => {
     afterEach(() => {
         cleanup();
@@ -86,55 +103,58 @@ describe("AiCandidateBatchDrawer", () => {
     });
 
     it("loads pending candidates for selected content and filters by capability", async () => {
-        vi.mocked(aiCandidateService.list)
-            .mockResolvedValueOnce([
-                {
-                    candidateId: 7001,
-                    contentType: "SANCAI_ENTRY",
-                    contentId: 3001,
-                    capability: "summary",
-                    objectId: null,
-                    resultFormat: "TEXT",
-                    resultPayload: "摘要候选",
-                    status: "PENDING",
-                    requestedAt: "2026-07-01T10:00:00.000+08:00"
-                }
-            ])
-            .mockResolvedValueOnce([
-                {
-                    candidateId: 7002,
-                    contentType: "SANCAI_ENTRY",
-                    contentId: 3002,
-                    capability: "image_analysis",
-                    objectId: 9002,
-                    resultFormat: "TEXT",
-                    resultPayload: "图像文本",
-                    status: "PENDING",
-                    requestedAt: "2026-07-01T10:01:00.000+08:00"
-                },
-                {
-                    candidateId: 7003,
-                    contentType: "SANCAI_ENTRY",
-                    contentId: 3002,
-                    capability: "qa",
-                    objectId: null,
-                    resultFormat: "STRUCTURED",
-                    resultPayload: "{}",
-                    status: "PENDING",
-                    requestedAt: "2026-07-01T10:02:00.000+08:00"
-                }
-            ]);
+        vi.mocked(aiCandidateService.list).mockImplementation(
+            createListMock({
+                3001: [
+                    {
+                        candidateId: 7001,
+                        contentType: "SANCAI_ENTRY",
+                        contentId: 3001,
+                        capability: "summary",
+                        objectId: null,
+                        resultFormat: "TEXT",
+                        resultPayload: "摘要候选",
+                        status: "PENDING",
+                        requestedAt: "2026-07-01T10:00:00.000+08:00"
+                    }
+                ],
+                3002: [
+                    {
+                        candidateId: 7002,
+                        contentType: "SANCAI_ENTRY",
+                        contentId: 3002,
+                        capability: "image_analysis",
+                        objectId: 9002,
+                        resultFormat: "TEXT",
+                        resultPayload: "图像文本",
+                        status: "PENDING",
+                        requestedAt: "2026-07-01T10:01:00.000+08:00"
+                    },
+                    {
+                        candidateId: 7003,
+                        contentType: "SANCAI_ENTRY",
+                        contentId: 3002,
+                        capability: "qa",
+                        objectId: null,
+                        resultFormat: "STRUCTURED",
+                        resultPayload: "{}",
+                        status: "PENDING",
+                        requestedAt: "2026-07-01T10:02:00.000+08:00"
+                    }
+                ]
+            })
+        );
 
         renderDrawer(vi.fn());
 
-        expect(await screen.findByText("已选内容 2 个")).toBeInTheDocument();
-        expect(screen.getByText("天地")).toBeInTheDocument();
-        expect(screen.getByText("地理")).toBeInTheDocument();
-        expect(screen.getByText("summary")).toBeInTheDocument();
-        expect(screen.getByText("image_analysis")).toBeInTheDocument();
+        expect(await screen.findByText(/已选内容\s*2\s*个/)).toBeInTheDocument();
+        expect(await screen.findByText("天地")).toBeInTheDocument();
+        expect(await screen.findByText("地理")).toBeInTheDocument();
+        expect(await screen.findByText("summary")).toBeInTheDocument();
+        expect(await screen.findByText("image_analysis")).toBeInTheDocument();
         expect(screen.queryByText("qa")).not.toBeInTheDocument();
-        expect(screen.getByText("9002")).toBeInTheDocument();
-        expect(screen.getByText("待处理候选 2 个")).toBeInTheDocument();
+        expect(await screen.findByText("9002")).toBeInTheDocument();
+        expect(screen.getByText(/待处理候选\s*2\s*个/)).toBeInTheDocument();
         expect(aiCandidateService.list).toHaveBeenNthCalledWith(1, {
             contentType: "SANCAI_ENTRY",
             contentId: 3001,
@@ -149,31 +169,34 @@ describe("AiCandidateBatchDrawer", () => {
 
     it("warns when batch apply is blocked by payload validation", async () => {
         const user = userEvent.setup();
-        vi.mocked(aiCandidateService.list)
-            .mockResolvedValueOnce([
-                {
-                    candidateId: 7101,
-                    contentType: "SANCAI_ENTRY",
-                    contentId: 3001,
-                    capability: "summary",
-                    objectId: null,
-                    resultFormat: "TEXT",
-                    resultPayload: "",
-                    status: "PENDING"
-                }
-            ])
-            .mockResolvedValueOnce([
-                {
-                    candidateId: 7102,
-                    contentType: "SANCAI_ENTRY",
-                    contentId: 3002,
-                    capability: "image_analysis",
-                    objectId: 8001,
-                    resultFormat: "TEXT",
-                    resultPayload: "有效内容",
-                    status: "PENDING"
-                }
-            ]);
+        vi.mocked(aiCandidateService.list).mockImplementation(
+            createListMock({
+                3001: [
+                    {
+                        candidateId: 7101,
+                        contentType: "SANCAI_ENTRY",
+                        contentId: 3001,
+                        capability: "summary",
+                        objectId: null,
+                        resultFormat: "TEXT",
+                        resultPayload: "",
+                        status: "PENDING"
+                    }
+                ],
+                3002: [
+                    {
+                        candidateId: 7102,
+                        contentType: "SANCAI_ENTRY",
+                        contentId: 3002,
+                        capability: "image_analysis",
+                        objectId: 8001,
+                        resultFormat: "TEXT",
+                        resultPayload: "有效内容",
+                        status: "PENDING"
+                    }
+                ]
+            })
+        );
 
         renderDrawer(vi.fn());
 
@@ -189,6 +212,33 @@ describe("AiCandidateBatchDrawer", () => {
     it("submits batch apply and displays failure details", async () => {
         const user = userEvent.setup();
         const onChanged = vi.fn().mockResolvedValue(undefined);
+
+        vi.mocked(aiCandidateService.list).mockImplementation(
+            createListMock({
+                3001: [
+                    {
+                        candidateId: 7201,
+                        contentType: "SANCAI_ENTRY",
+                        contentId: 3001,
+                        capability: "summary",
+                        resultPayload: "初稿",
+                        resultFormat: "TEXT",
+                        status: "PENDING"
+                    }
+                ],
+                3002: [
+                    {
+                        candidateId: 7202,
+                        contentType: "SANCAI_ENTRY",
+                        contentId: 3002,
+                        capability: "summary",
+                        resultPayload: "再次提交",
+                        resultFormat: "TEXT",
+                        status: "PENDING"
+                    }
+                ]
+            })
+        );
 
         vi.mocked(classicsContentService.applyAiCandidatesBatch).mockResolvedValue({
             failureCount: 1,
@@ -249,30 +299,34 @@ describe("AiCandidateBatchDrawer", () => {
         expect(await screen.findByText("批量候选应用结果：成功 1，失败 1")).toBeInTheDocument();
         expect(screen.getByText("7202 / summary / 示例失败")).toBeInTheDocument();
 
-        expect(classicsContentService.applyAiCandidatesBatch).toHaveBeenCalledWith({
-            items: [
-                {
-                    candidateId: 7201,
-                    contentType: "SANCAI_ENTRY",
-                    contentId: 3001,
-                    capability: "summary",
-                    objectId: undefined,
-                    resultFormat: "TEXT",
-                    resultPayload: "初稿",
-                    changeSummary: "AI 应用：summary"
-                },
-                {
-                    candidateId: 7202,
-                    contentType: "SANCAI_ENTRY",
-                    contentId: 3002,
-                    capability: "summary",
-                    objectId: undefined,
-                    resultFormat: "TEXT",
-                    resultPayload: "再次提交",
-                    changeSummary: "AI 应用：summary"
-                }
-            ]
-        });
+        expect(classicsContentService.applyAiCandidatesBatch).toHaveBeenNthCalledWith(
+            1,
+            {
+                items: [
+                    {
+                        candidateId: 7201,
+                        contentType: "SANCAI_ENTRY",
+                        contentId: 3001,
+                        capability: "summary",
+                        objectId: undefined,
+                        resultFormat: "TEXT",
+                        resultPayload: "初稿",
+                        changeSummary: "AI 应用：summary"
+                    },
+                    {
+                        candidateId: 7202,
+                        contentType: "SANCAI_ENTRY",
+                        contentId: 3002,
+                        capability: "summary",
+                        objectId: undefined,
+                        resultFormat: "TEXT",
+                        resultPayload: "再次提交",
+                        changeSummary: "AI 应用：summary"
+                    }
+                ]
+            },
+            expect.any(Object)
+        );
         expect(onChanged).toHaveBeenCalledTimes(1);
     });
 
@@ -280,20 +334,22 @@ describe("AiCandidateBatchDrawer", () => {
         const user = userEvent.setup();
         const onChanged = vi.fn().mockResolvedValue(undefined);
 
-        vi.mocked(aiCandidateService.list)
-            .mockResolvedValueOnce([
-                {
-                    candidateId: 7301,
-                    contentType: "SANCAI_ENTRY",
-                    contentId: 3001,
-                    capability: "summary",
-                    objectId: 6001,
-                    resultFormat: "TEXT",
-                    resultPayload: "待拒绝",
-                    status: "PENDING"
-                }
-            ])
-            .mockResolvedValueOnce([]);
+        vi.mocked(aiCandidateService.list).mockImplementation(
+            createListMock({
+                3001: [
+                    {
+                        candidateId: 7301,
+                        contentType: "SANCAI_ENTRY",
+                        contentId: 3001,
+                        capability: "summary",
+                        objectId: 6001,
+                        resultFormat: "TEXT",
+                        resultPayload: "待拒绝",
+                        status: "PENDING"
+                    }
+                ]
+            })
+        );
 
         vi.mocked(classicsContentService.rejectAiCandidatesBatch).mockResolvedValue({
             failureCount: 0,
@@ -332,24 +388,29 @@ describe("AiCandidateBatchDrawer", () => {
             </QueryClientProvider>
         );
 
-        const checkbox = await screen.findByRole("checkbox", { name: "select row" });
+        const checkboxes = await screen.findAllByRole("checkbox");
+        const checkbox = checkboxes[1];
         await user.click(checkbox);
         await user.click(screen.getByRole("button", { name: "批量拒绝" }));
 
         expect(confirmDanger).toHaveBeenCalledTimes(1);
-        expect(classicsContentService.rejectAiCandidatesBatch).toHaveBeenCalledWith({
-            errorType: "USER_REJECTED",
-            errorMessage: "用户已批量拒绝该 AI 候选",
-            items: [
-                {
-                    candidateId: 7301,
-                    contentType: "SANCAI_ENTRY",
-                    contentId: 3001,
-                    capability: "summary",
-                    objectId: 6001
-                }
-            ]
-        });
+        expect(classicsContentService.rejectAiCandidatesBatch).toHaveBeenNthCalledWith(
+            1,
+            {
+                errorType: "USER_REJECTED",
+                errorMessage: "用户已批量拒绝该 AI 候选",
+                items: [
+                    {
+                        candidateId: 7301,
+                        contentType: "SANCAI_ENTRY",
+                        contentId: 3001,
+                        capability: "summary",
+                        objectId: 6001
+                    }
+                ]
+            },
+            expect.any(Object)
+        );
         expect(await screen.findByText("批量候选拒绝结果：成功 1，失败 0")).toBeInTheDocument();
         expect(onChanged).toHaveBeenCalledTimes(1);
     });

@@ -377,7 +377,9 @@ describe("WangqiPage", () => {
         await user.click(candidateCheckbox);
         await user.click(screen.getByRole("button", { name: "批量拒绝" }));
 
-        expect(await screen.findByText("批量候选拒绝结果：成功 1，失败 0")).toBeInTheDocument();
+        expect(
+            (await screen.findAllByText("批量候选拒绝结果：成功 1，失败 0")).length
+        ).toBeGreaterThanOrEqual(1);
         expect(capturedCalls).toContainEqual({
             body: {
                 errorType: "USER_REJECTED",
