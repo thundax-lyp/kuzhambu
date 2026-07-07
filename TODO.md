@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `operations health menu seed`：补齐健康检查菜单与权限种子
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-PROBE-LOOP.md`
-    - 范围对象：`kuzhambu-servers/starter/kuzhambu-admin-starter/src/main/resources/db/data-source/system.json`、`kuzhambu-servers/starter/kuzhambu-admin-starter/src/main/resources/db/data/system.sql`、`kuzhambu-servers/starter/kuzhambu-admin-starter/src/test/java/com/thundax/kuzhambu/starter/admin/AdminStarterArchitectureTest.java`
-    - 处理动作：在 Operations 菜单下新增“健康检查”页面菜单并沿用 `operations:health:view` 权限。
-    - 验收点：JSON 和 SQL 种子菜单名称、路由 `/operations/health`、权限码一致，architecture 测试覆盖该入口。
-    - 重要度：9/10
-
 - [ ] `operations health backend targeted validation`：执行后端定向验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-PROBE-LOOP.md`
