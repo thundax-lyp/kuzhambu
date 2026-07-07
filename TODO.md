@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Operations health alert infra`：新增健康告警持久化映射
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-RECOVERY-LOOP.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-infra/src/main/java/com/thundax/kuzhambu/operations/infra/health/persistence/dataobject/HealthAlertDO.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-infra/src/main/java/com/thundax/kuzhambu/operations/infra/health/persistence/mapper/HealthAlertMapper.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-infra/src/main/java/com/thundax/kuzhambu/operations/infra/health/persistence/assembler/HealthAlertPersistenceAssembler.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-infra/src/main/java/com/thundax/kuzhambu/operations/infra/health/repository/impl/HealthAlertRepositoryImpl.java`
-    - 处理动作：实现 `operations_health_alert` 的 DO、Mapper、Assembler 和 Repository。
-    - 验收点：分页排序、未恢复来源查重、字符串透传 `recoveryTarget` 均可用。
-    - 重要度：10/10
-
 - [ ] `Operations health alert infra tests`：补齐健康告警持久化测试
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-RECOVERY-LOOP.md`
