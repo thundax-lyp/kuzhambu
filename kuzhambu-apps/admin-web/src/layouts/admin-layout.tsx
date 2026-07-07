@@ -45,6 +45,13 @@ const TOKEN_KEEP_ALIVE_INTERVAL_MS = 30 * 1000;
 const menuIconMap: Record<string, ReactNode> = {
     dashboard: <AppstoreOutlined />,
     system: <SafetyCertificateOutlined />,
+    "system-log": <AuditOutlined />,
+    "audit-log": <AuditOutlined />,
+    operations: <AppstoreOutlined />,
+    "operations-dashboard": <AppstoreOutlined />,
+    "operations-task": <FileTextOutlined />,
+    "operations-backup-restore": <FileTextOutlined />,
+    "operations-cleanup": <FileTextOutlined />,
     users: <TeamOutlined />,
     roles: <SafetyCertificateOutlined />,
     menus: <MenuOutlined />,

@@ -3,14 +3,16 @@ import {
     CheckCircleOutlined,
     ClockCircleOutlined,
     DatabaseOutlined,
+    FileTextOutlined,
     HeartOutlined,
     ReloadOutlined,
     SearchOutlined,
+    SecurityScanOutlined,
     WarningOutlined
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Alert, App, Button, Card, Empty, Segmented, Spin, Statistic, Typography } from "antd";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { Link } from "react-router-dom";
 import { hasPermission } from "@/auth/permission-storage";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
@@ -33,24 +35,55 @@ const periodOptions: Array<{ label: string; value: OperationsDashboardPeriodType
     { label: "近 30 天", value: "MONTH" }
 ];
 
-const operationEntries = [
+interface OperationEntry {
+    description: string;
+    icon: ReactNode;
+    permission: string;
+    testId: string;
+    title: string;
+    to: string;
+}
+
+const operationEntries: OperationEntry[] = [
     {
         description: "查看所有长任务、筛选执行状态并打开任务详情",
         icon: <ClockCircleOutlined />,
         title: "任务台账",
-        to: "/operations/tasks"
+        to: "/operations/tasks",
+        permission: "operations:task:view",
+        testId: "operations-entry-tasks"
     },
     {
         description: "查看备份、恢复记录并发起手动备份",
         icon: <DatabaseOutlined />,
         title: "备份恢复",
-        to: "/operations/backup-restore"
+        to: "/operations/backup-restore",
+        permission: "operations:backup:view",
+        testId: "operations-entry-backup-restore"
     },
     {
         description: "查看清理任务、失败项并触发维护清理",
         icon: <AppstoreOutlined />,
         title: "清理维护",
-        to: "/operations/cleanup"
+        to: "/operations/cleanup",
+        permission: "operations:cleanup:view",
+        testId: "operations-entry-cleanup"
+    },
+    {
+        description: "查看 System 提供的系统运行与访问日志",
+        icon: <SecurityScanOutlined />,
+        title: "系统日志",
+        to: "/system/logs",
+        permission: "system:log:view",
+        testId: "operations-entry-system-log"
+    },
+    {
+        description: "查看业务对象变更审计与操作者追踪",
+        icon: <FileTextOutlined />,
+        title: "审计日志",
+        to: "/audit/logs",
+        permission: "audit:view",
+        testId: "operations-entry-audit-log"
     }
 ];
 
@@ -238,6 +271,9 @@ export const OperationsDashboardPage = () => {
     const queryClient = useQueryClient();
     const canViewDashboard = hasPermission("operations:dashboard:view");
     const canManageHealthAlert = hasPermission("operations:health:manage");
+    const visibleOperationEntries = operationEntries.filter((entry) =>
+        hasPermission(entry.permission)
+    );
     const [periodType, setPeriodType] = useState<OperationsDashboardPeriodType>("WEEK");
     const [alertDrawerOpen, setAlertDrawerOpen] = useState(false);
     const [selectedHealth, setSelectedHealth] = useState<OperationsHealthSummaryRecord | null>(
@@ -558,21 +594,26 @@ export const OperationsDashboardPage = () => {
                     <section>
                         <Title level={5}>运维入口</Title>
                         <div className="operations-dashboard-entry-grid">
-                            {operationEntries.map((entry) => (
-                                <Link
-                                    className="operations-dashboard-entry"
-                                    key={entry.to}
-                                    to={entry.to}
-                                >
-                                    <Card size="small">
-                                        <KuzhambuSpace size={8}>
-                                            {entry.icon}
-                                            <Text strong>{entry.title}</Text>
-                                        </KuzhambuSpace>
-                                        <Text type="secondary">{entry.description}</Text>
-                                    </Card>
-                                </Link>
-                            ))}
+                            {visibleOperationEntries.length ? (
+                                visibleOperationEntries.map((entry) => (
+                                    <Link
+                                        className="operations-dashboard-entry"
+                                        data-testid={entry.testId}
+                                        key={entry.to}
+                                        to={entry.to}
+                                    >
+                                        <Card size="small">
+                                            <KuzhambuSpace size={8}>
+                                                {entry.icon}
+                                                <Text strong>{entry.title}</Text>
+                                            </KuzhambuSpace>
+                                            <Text type="secondary">{entry.description}</Text>
+                                        </Card>
+                                    </Link>
+                                ))
+                            ) : (
+                                <Empty description="暂无可访问的运维入口" />
+                            )}
                         </div>
                     </section>
 
