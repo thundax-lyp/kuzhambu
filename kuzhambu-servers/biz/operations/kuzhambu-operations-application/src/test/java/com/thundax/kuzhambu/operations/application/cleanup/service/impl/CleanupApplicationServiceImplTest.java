@@ -3,6 +3,8 @@ package com.thundax.kuzhambu.operations.application.cleanup.service.impl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 import com.thundax.kuzhambu.classics.facade.ClassicsFacade;
 import com.thundax.kuzhambu.classics.facade.request.ClassicsCleanupTargetsFacadeRequest;
@@ -22,6 +24,7 @@ import com.thundax.kuzhambu.operations.application.cleanup.query.OperationsClean
 import com.thundax.kuzhambu.operations.application.cleanup.query.OperationsCleanupPageQuery;
 import com.thundax.kuzhambu.operations.application.cleanup.result.OperationsCleanupDetailResult;
 import com.thundax.kuzhambu.operations.application.cleanup.result.OperationsCleanupPageResult;
+import com.thundax.kuzhambu.operations.application.health.support.OperationsHealthAlertStrategy;
 import com.thundax.kuzhambu.operations.domain.backup.model.entity.BackupRecord;
 import com.thundax.kuzhambu.operations.domain.backup.model.valueobject.BackupId;
 import com.thundax.kuzhambu.operations.domain.backup.repository.BackupRepository;
@@ -78,8 +81,9 @@ class CleanupApplicationServiceImplTest {
                 .success(false)
                 .failureReason("TARGET_NOT_FOUND")
                 .build());
-        CleanupApplicationServiceImpl service =
-                new CleanupApplicationServiceImpl(repository, new InMemoryBackupRepository(), classicsFacade);
+        OperationsHealthAlertStrategy alertStrategy = mock(OperationsHealthAlertStrategy.class);
+        CleanupApplicationServiceImpl service = new CleanupApplicationServiceImpl(
+                repository, new InMemoryBackupRepository(), classicsFacade, alertStrategy);
 
         OperationsCleanupDetailResult result =
                 service.execute(new OperationsCleanupExecuteCommand("EXPIRED_SHARE", 1001L));
@@ -91,6 +95,7 @@ class CleanupApplicationServiceImplTest {
         CleanupItem item = repository.listItemsByJobId(result.getCleanupId()).get(0);
         assertEquals("FAILED", item.getItemStatus());
         assertEquals("TARGET_NOT_FOUND", item.getFailureReason());
+        verify(alertStrategy).recordCleanupFailed(result.getCleanupId().value(), "cleanup failed items: 1");
     }
 
     @Test

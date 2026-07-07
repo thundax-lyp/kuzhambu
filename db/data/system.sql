@@ -124,7 +124,7 @@ INSERT INTO `system_menu` (
     (20, 17, 38, 39, '智能问答', 'discovery:qa:view,discovery:qa:edit', 75, 'VISIBLE', '{"icon":"open-api"}', '/discovery/qa', '_self', '跨知识库智能问答'),
     (21, 17, 40, 41, '问答调试', 'discovery:qa:view', 70, 'VISIBLE', '{"icon":"logs"}', '/discovery/qa-admin', '_self', '问答上下文调试'),
     (22, NULL, 43, 54, '运营运维', 'operations', 70, 'VISIBLE', '{"icon":"dashboard"}', '/operations', '_self', '运营运维根菜单'),
-    (23, 22, 44, 45, '运营看板', 'operations:dashboard:view', 70, 'VISIBLE', '{"icon":"dashboard"}', '/operations/dashboard', '_self', '内容、AI、搜索和问答统计'),
+    (23, 22, 44, 45, '运营看板', 'operations:dashboard:view,operations:health:view,operations:health:manage', 70, 'VISIBLE', '{"icon":"dashboard"}', '/operations/dashboard', '_self', '内容、AI、搜索和问答统计'),
     (24, 22, 46, 47, '报表记录', 'operations:report:view,operations:report:edit', 65, 'HIDDEN', '{"icon":"submissions"}', NULL, '_self', '周报月报生成记录'),
     (25, 22, 48, 49, '任务台账', 'operations:task:view', 60, 'VISIBLE', '{"icon":"logs"}', '/operations/tasks', '_self', '长任务和批量操作运行状态'),
     (26, 22, 50, 51, '备份恢复', 'operations:backup:view,operations:backup:execute,operations:restore:view,operations:restore:execute', 55, 'VISIBLE', '{"icon":"storage"}', '/operations/backup-restore', '_self', '备份台账、手动备份和恢复入口'),

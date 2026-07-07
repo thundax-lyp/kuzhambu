@@ -4,6 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.operations.application.health.support.OperationsHealthProbe.OperationsHealthProbeResult;
@@ -21,8 +24,9 @@ class OperationsHealthCollectorTest {
     @Test
     void collectShouldPersistSuccessfulProbeRecord() {
         InMemoryHealthCheckRepository repository = new InMemoryHealthCheckRepository();
+        OperationsHealthAlertStrategy alertStrategy = mock(OperationsHealthAlertStrategy.class);
         OperationsHealthCollector collector =
-                new OperationsHealthCollector(repository, List.of(successProbe("search", "UP", 12)));
+                new OperationsHealthCollector(repository, alertStrategy, List.of(successProbe("search", "UP", 12)));
 
         List<HealthCheckId> healthCheckIds = collector.collect();
 
@@ -36,13 +40,17 @@ class OperationsHealthCollectorTest {
         assertEquals("search", record.getProbeTarget());
         assertEquals("{\"component\":\"search\"}", record.getDetailsJson());
         assertNotNull(record.getCheckedAt());
+        verify(alertStrategy).evaluateAfterCollect(record);
     }
 
     @Test
     void collectShouldPersistDownRecordWhenProbeFailsAndContinue() {
         InMemoryHealthCheckRepository repository = new InMemoryHealthCheckRepository();
+        OperationsHealthAlertStrategy alertStrategy = mock(OperationsHealthAlertStrategy.class);
         OperationsHealthCollector collector = new OperationsHealthCollector(
-                repository, List.of(failingProbe("ai", "timeout"), successProbe("backup", "BROKEN", -1)));
+                repository,
+                alertStrategy,
+                List.of(failingProbe("ai", "timeout"), successProbe("backup", "BROKEN", -1)));
 
         collector.collect();
 
@@ -55,14 +63,33 @@ class OperationsHealthCollectorTest {
         assertEquals("backup", degradedRecord.getComponent());
         assertEquals("DEGRADED", degradedRecord.getHealthStatus());
         assertNull(degradedRecord.getLatencyMs());
+        verify(alertStrategy).evaluateAfterCollect(failedRecord);
+        verify(alertStrategy).evaluateAfterCollect(degradedRecord);
+    }
+
+    @Test
+    void collectShouldNotRollbackHealthRecordWhenAlertStrategyFails() {
+        InMemoryHealthCheckRepository repository = new InMemoryHealthCheckRepository();
+        OperationsHealthAlertStrategy alertStrategy = mock(OperationsHealthAlertStrategy.class);
+        doThrow(new IllegalStateException("alert failed"))
+                .when(alertStrategy)
+                .evaluateAfterCollect(org.mockito.Mockito.any());
+        OperationsHealthCollector collector =
+                new OperationsHealthCollector(repository, alertStrategy, List.of(successProbe("storage", "UP", 3)));
+
+        List<HealthCheckId> healthCheckIds = collector.collect();
+
+        assertEquals(1, healthCheckIds.size());
+        assertEquals(1, repository.records.size());
     }
 
     @Test
     void collectShouldSurfaceRepositoryFailure() {
         InMemoryHealthCheckRepository repository = new InMemoryHealthCheckRepository();
         repository.failInsert = true;
+        OperationsHealthAlertStrategy alertStrategy = mock(OperationsHealthAlertStrategy.class);
         OperationsHealthCollector collector =
-                new OperationsHealthCollector(repository, List.of(successProbe("storage", "UP", 3)));
+                new OperationsHealthCollector(repository, alertStrategy, List.of(successProbe("storage", "UP", 3)));
 
         assertThrows(IllegalStateException.class, collector::collect);
     }

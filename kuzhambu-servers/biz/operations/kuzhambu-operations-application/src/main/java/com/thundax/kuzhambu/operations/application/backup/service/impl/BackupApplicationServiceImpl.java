@@ -13,6 +13,7 @@ import com.thundax.kuzhambu.operations.application.backup.service.BackupApplicat
 import com.thundax.kuzhambu.operations.application.backup.support.OperationsBackupExecutionGuard;
 import com.thundax.kuzhambu.operations.application.backup.support.OperationsBackupScriptExecutor;
 import com.thundax.kuzhambu.operations.application.backup.support.OperationsBackupSupportModels.OperationsBackupArtifactResult;
+import com.thundax.kuzhambu.operations.application.health.support.OperationsHealthAlertStrategy;
 import com.thundax.kuzhambu.operations.domain.backup.model.entity.BackupRecord;
 import com.thundax.kuzhambu.operations.domain.backup.model.enums.BackupStatus;
 import com.thundax.kuzhambu.operations.domain.backup.model.enums.BackupType;
@@ -24,6 +25,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -37,14 +39,25 @@ public class BackupApplicationServiceImpl implements BackupApplicationService {
     private final BackupRepository backupRepository;
     private final OperationsBackupScriptExecutor scriptExecutor;
     private final OperationsBackupExecutionGuard executionGuard;
+    private final OperationsHealthAlertStrategy healthAlertStrategy;
 
     public BackupApplicationServiceImpl(
             BackupRepository backupRepository,
             OperationsBackupScriptExecutor scriptExecutor,
             OperationsBackupExecutionGuard executionGuard) {
+        this(backupRepository, scriptExecutor, executionGuard, null);
+    }
+
+    @Autowired
+    public BackupApplicationServiceImpl(
+            BackupRepository backupRepository,
+            OperationsBackupScriptExecutor scriptExecutor,
+            OperationsBackupExecutionGuard executionGuard,
+            OperationsHealthAlertStrategy healthAlertStrategy) {
         this.backupRepository = backupRepository;
         this.scriptExecutor = scriptExecutor;
         this.executionGuard = executionGuard;
+        this.healthAlertStrategy = healthAlertStrategy;
     }
 
     @Override
@@ -105,6 +118,7 @@ public class BackupApplicationServiceImpl implements BackupApplicationService {
             record.setFailureReason(truncateFailureReason(exception.getMessage()));
             record.setCompletedAt(new Date());
             backupRepository.update(record);
+            recordBackupFailure(record);
         }
         return toExecuteResult(backupRepository.getById(backupId));
     }
@@ -127,7 +141,14 @@ public class BackupApplicationServiceImpl implements BackupApplicationService {
                 new Date(startedAt.getTime() + RETENTION_MILLIS));
         BackupId backupId = backupRepository.insert(record);
         record.setId(backupId);
+        recordBackupFailure(record);
         return record;
+    }
+
+    private void recordBackupFailure(BackupRecord record) {
+        if (healthAlertStrategy != null && record != null && record.getId() != null) {
+            healthAlertStrategy.recordBackupFailed(record.getId().value(), record.getFailureReason());
+        }
     }
 
     @Override

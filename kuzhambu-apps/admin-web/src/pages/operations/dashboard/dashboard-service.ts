@@ -2,6 +2,10 @@ import { postJson } from "@/api/http";
 import type {
     OperationsDashboardOverviewRecord,
     OperationsDashboardPeriodType,
+    OperationsHealthAlertRecord,
+    OperationsHealthAlertLevel,
+    OperationsHealthAlertStatus,
+    OperationsPageRecord,
     OperationsHealthTrendBucketRecord,
     OperationsHealthTrendBucketType
 } from "./dashboard-types";
@@ -20,6 +24,20 @@ export interface OperationsHealthTrendQuery {
     bucketType?: OperationsHealthTrendBucketType | null;
 }
 
+export interface OperationsHealthAlertPageQuery {
+    component?: string | null;
+    alertLevel?: OperationsHealthAlertLevel | null;
+    alertStatus?: OperationsHealthAlertStatus | null;
+    sourceRefType?: string | null;
+    sourceRefId?: number | null;
+    pageNo?: number | null;
+    pageSize?: number | null;
+}
+
+export interface OperationsHealthAlertActionCommand {
+    alertId: number;
+}
+
 export const getDashboardOverview = (query: OperationsDashboardOverviewQuery = {}) => {
     return postJson<OperationsDashboardOverviewRecord, OperationsDashboardOverviewQuery>(
         "/operations/dashboard/overview",
@@ -27,6 +45,27 @@ export const getDashboardOverview = (query: OperationsDashboardOverviewQuery = {
             body: query
         }
     );
+};
+
+export const getHealthAlerts = (query: OperationsHealthAlertPageQuery = {}) => {
+    return postJson<
+        OperationsPageRecord<OperationsHealthAlertRecord>,
+        OperationsHealthAlertPageQuery
+    >("/operations/health/alerts/page", {
+        body: query
+    });
+};
+
+export const confirmHealthAlert = (command: OperationsHealthAlertActionCommand) => {
+    return postJson<void, OperationsHealthAlertActionCommand>("/operations/health/alerts/ack", {
+        body: command
+    });
+};
+
+export const recoverHealthAlert = (command: OperationsHealthAlertActionCommand) => {
+    return postJson<void, OperationsHealthAlertActionCommand>("/operations/health/alerts/recover", {
+        body: command
+    });
 };
 
 export const getHealthTrend = (query: OperationsHealthTrendQuery = {}) => {

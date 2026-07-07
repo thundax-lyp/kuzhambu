@@ -11,13 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `10 Knowledge 重提取分支同步 main`：收口前同步主分支最新代码
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`feat/knowledge-low-quality-reextract`、`main`
-    - 处理动作：在功能、后端验证、前端验证和冒烟通过后，同步最新 `main` 到当前分支并处理冲突。
-    - 验收点：当前分支基于最新 `main`，同步后重新确认工作区只包含本任务相关改动。
-    - 重要度：9/10
 - [ ] `11 Knowledge 同步 main 后回归验证`：同步主分支后重跑受影响验证
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`
