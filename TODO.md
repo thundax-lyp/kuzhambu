@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Portal lineage service types`：10 定义 Portal 世系页面类型和服务
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LINEAGE-VISUALIZATION.md`
-    - 范围对象：`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-lineage-types.ts`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-lineage-service.ts`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-lineage-service.test.ts`
-    - 处理动作：新增 Portal 世系画布 TypeScript 类型和 service。
-    - 验收点：service 调用 `/portal/knowledge/lineage`，URL query 字段与后端契约一致。
-    - 重要度：9/10
-
 - [ ] `Portal lineage page`：11 实现 Portal 只读世系页面
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LINEAGE-VISUALIZATION.md`
