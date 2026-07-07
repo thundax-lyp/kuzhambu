@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `knowledge application DTO`：新增标签批量治理 application 契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-TAG-BATCH-GOVERNANCE.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/command/TagBatchMergeCommand.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/command/TagBatchDeprecateCommand.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/command/TagBatchReviewCommand.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/query/TagBatchMergePreviewQuery.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/taxonomy/result/TagBatchMergePreviewResult.java`
-    - 处理动作：新增批量合并、批量废弃、批量审核 application 输入输出 DTO。
-    - 验收点：5 个 DTO 字段与 RUNBOOK 数据结构一致，且不依赖 interface 或 infra。
-    - 重要度：9/10
-
 - [ ] `knowledge application service`：实现标签批量治理 application 行为
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-TAG-BATCH-GOVERNANCE.md`
