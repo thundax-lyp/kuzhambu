@@ -1,6 +1,8 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.content.assembler;
 
 import com.thundax.kuzhambu.classics.application.content.command.AiCandidateApplyContentCommand;
+import com.thundax.kuzhambu.classics.application.content.command.AiCandidateBatchApplyContentCommand;
+import com.thundax.kuzhambu.classics.application.content.command.AiCandidateBatchRejectContentCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentExportCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentTagCommand;
@@ -170,6 +172,42 @@ public final class ClassicsContentInterfaceAssembler {
                 .versionId(result.getVersionId())
                 .versionNo(result.getVersionNo())
                 .build();
+    }
+
+    public static AiCandidateBatchApplyContentCommand toAiCandidateBatchApplyCommand(
+            ClassicsContentRequest.AiCandidateBatchApplyRequest request) {
+        return request == null
+                ? null
+                : new AiCandidateBatchApplyContentCommand(request.getItems().stream()
+                        .map(ClassicsContentInterfaceAssembler::toAiCandidateApplyCommand)
+                        .toList());
+    }
+
+    public static AiCandidateBatchRejectContentCommand toAiCandidateBatchRejectCommand(
+            ClassicsContentRequest.AiCandidateBatchRejectRequest request) {
+        if (request == null) {
+            return null;
+        }
+        return new AiCandidateBatchRejectContentCommand(
+                request.getItems().stream()
+                        .map(ClassicsContentInterfaceAssembler::toAiCandidateBatchRejectItem)
+                        .toList(),
+                request.getErrorType(),
+                request.getErrorMessage());
+    }
+
+    private static AiCandidateBatchRejectContentCommand.Item toAiCandidateBatchRejectItem(
+            ClassicsContentRequest.AiCandidateRejectItemRequest request) {
+        if (request == null) {
+            return null;
+        }
+        AiCandidateBatchRejectContentCommand.Item item = new AiCandidateBatchRejectContentCommand.Item();
+        item.setCandidateId(request.getCandidateId());
+        item.setContentType(type(request.getContentType()));
+        item.setContentId(request.getContentId());
+        item.setObjectId(request.getObjectId());
+        item.setCapability(request.getCapability());
+        return item;
     }
 
     private static ClassicsContentType type(String value) {

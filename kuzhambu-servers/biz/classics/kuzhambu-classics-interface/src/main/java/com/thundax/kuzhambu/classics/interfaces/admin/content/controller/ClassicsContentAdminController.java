@@ -50,6 +50,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -173,6 +174,30 @@ public class ClassicsContentAdminController {
         AiCandidateApplyContentResult result =
                 service.applyAiCandidate(ClassicsContentInterfaceAssembler.toAiCandidateApplyCommand(request));
         return ClassicsContentInterfaceAssembler.toAiCandidateApplyResponse(result);
+    }
+
+    @Operation(summary = "批量应用AI候选到内容", description = "classics:content:edit")
+    @ApiImplicitParams({})
+    @HasPermission("classics:content:edit")
+    @SysLogger(value = "AI候选批量应用")
+    @PostMapping("ai-candidates/batch/apply")
+    public ClassicsBatchOperationResponse changeAiCandidates(
+            @Valid @RequestBody ClassicsContentRequest.AiCandidateBatchApplyRequest request) {
+        validateCandidateIdUnique(request == null ? null : request.getItems());
+        return ClassicsBatchOperationResponse.from(
+                service.applyAiCandidates(ClassicsContentInterfaceAssembler.toAiCandidateBatchApplyCommand(request)));
+    }
+
+    @Operation(summary = "批量拒绝AI候选", description = "classics:content:edit")
+    @ApiImplicitParams({})
+    @HasPermission("classics:content:edit")
+    @SysLogger(value = "AI候选批量拒绝")
+    @PostMapping("ai-candidates/batch/reject")
+    public ClassicsBatchOperationResponse rejectAiCandidates(
+            @Valid @RequestBody ClassicsContentRequest.AiCandidateBatchRejectRequest request) {
+        validateCandidateIdUnique(request == null ? null : request.getItems());
+        return ClassicsBatchOperationResponse.from(
+                service.rejectAiCandidates(ClassicsContentInterfaceAssembler.toAiCandidateBatchRejectCommand(request)));
     }
 
     @Operation(summary = "批量修改古籍内容可见性", description = "classics:content:edit")
@@ -306,6 +331,31 @@ public class ClassicsContentAdminController {
             throw AdminResponseExceptions.invalidParameter("visibility");
         }
         return value;
+    }
+
+    private static void validateCandidateIdUnique(List<?> items) {
+        if (items == null || items.isEmpty()) {
+            throw AdminResponseExceptions.invalidParameter("items");
+        }
+        List<Long> ids = items.stream()
+                .map(item -> {
+                    if (item instanceof ClassicsContentRequest.AiCandidateApplyRequest applyRequest) {
+                        return applyRequest.getCandidateId();
+                    }
+                    if (item instanceof ClassicsContentRequest.AiCandidateRejectItemRequest rejectRequest) {
+                        return rejectRequest.getCandidateId();
+                    }
+                    return null;
+                })
+                .collect(Collectors.toList());
+        if (ids.isEmpty() || ids.contains(null)) {
+            throw AdminResponseExceptions.invalidParameter("candidateId");
+        }
+        if (ids.size()
+                != RequestListHelper.presentUnique(ids, "candidateId", AdminResponseExceptions::invalidParameter)
+                        .size()) {
+            throw AdminResponseExceptions.invalidParameter("candidateId");
+        }
     }
 
     private ClassicsBatchOperationResult changeBatchVisibility(
