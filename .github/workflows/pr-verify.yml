@@ -7,6 +7,10 @@ on:
             - thundax-work
     workflow_dispatch:
 
+concurrency:
+    group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+    cancel-in-progress: true
+
 permissions:
     contents: read
 
@@ -16,8 +20,12 @@ jobs:
         runs-on: ubuntu-latest
         outputs:
             servers_changed: ${{ steps.changes.outputs.servers_changed }}
+            backend_full_changed: ${{ steps.changes.outputs.backend_full_changed }}
+            backend_projects: ${{ steps.changes.outputs.backend_projects }}
             workers_changed: ${{ steps.changes.outputs.workers_changed }}
             apps_changed: ${{ steps.changes.outputs.apps_changed }}
+            apps_admin_changed: ${{ steps.changes.outputs.apps_admin_changed }}
+            apps_portal_changed: ${{ steps.changes.outputs.apps_portal_changed }}
             db_changed: ${{ steps.changes.outputs.db_changed }}
             workflow_changed: ${{ steps.changes.outputs.verify_workflow_changed }}
 
@@ -45,11 +53,61 @@ jobs:
                     verify_workflow_changed=false
                   fi
 
-                  if [ "$verify_workflow_changed" = "true" ] || echo "$changed_files" | grep -Eq '^(kuzhambu-servers/|pom.xml$)'; then
-                    echo "servers_changed=true" >> "$GITHUB_OUTPUT"
-                  else
-                    echo "servers_changed=false" >> "$GITHUB_OUTPUT"
+                  backend_full_changed=false
+                  backend_projects_file="$(mktemp)"
+
+                  resolve_backend_project() {
+                    changed_file="$1"
+                    changed_dir="${changed_file%/*}"
+
+                    while [ "$changed_dir" != "." ] && [ "$changed_dir" != "kuzhambu-servers" ]; do
+                      if [ -f "$changed_dir/pom.xml" ]; then
+                        if grep -q '<modules>' "$changed_dir/pom.xml"; then
+                          echo "__full__"
+                          return
+                        fi
+
+                        echo "${changed_dir#kuzhambu-servers/}"
+                        return
+                      fi
+
+                      changed_dir="${changed_dir%/*}"
+                    done
+
+                    echo "__full__"
+                  }
+
+                  if [ "$verify_workflow_changed" = "true" ] || echo "$changed_files" | grep -Eq '^(pom.xml$|kuzhambu-servers/(pom.xml|\.mvn/|checkstyle\.xml)|kuzhambu-servers/common/)'; then
+                    backend_full_changed=true
+                  elif echo "$changed_files" | grep -Eq '^kuzhambu-servers/'; then
+                    while IFS= read -r changed_file; do
+                      if ! echo "$changed_file" | grep -Eq '^kuzhambu-servers/'; then
+                        continue
+                      fi
+
+                      backend_project="$(resolve_backend_project "$changed_file")"
+                      if [ "$backend_project" = "__full__" ]; then
+                        backend_full_changed=true
+                        break
+                      fi
+
+                      echo "$backend_project" >> "$backend_projects_file"
+                    done <<EOF
+                  $changed_files
+                  EOF
                   fi
+
+                  backend_projects="$(sort -u "$backend_projects_file" | paste -sd, -)"
+
+                  if [ "$backend_full_changed" = "true" ] || [ -n "$backend_projects" ]; then
+                    servers_changed=true
+                  else
+                    servers_changed=false
+                  fi
+
+                  echo "servers_changed=$servers_changed" >> "$GITHUB_OUTPUT"
+                  echo "backend_full_changed=$backend_full_changed" >> "$GITHUB_OUTPUT"
+                  echo "backend_projects=$backend_projects" >> "$GITHUB_OUTPUT"
 
                   if [ "$verify_workflow_changed" = "true" ] || echo "$changed_files" | grep -Eq '^kuzhambu-workers/'; then
                     echo "workers_changed=true" >> "$GITHUB_OUTPUT"
@@ -57,11 +115,39 @@ jobs:
                     echo "workers_changed=false" >> "$GITHUB_OUTPUT"
                   fi
 
-                  if [ "$verify_workflow_changed" = "true" ] || echo "$changed_files" | grep -Eq '^kuzhambu-apps/'; then
-                    echo "apps_changed=true" >> "$GITHUB_OUTPUT"
-                  else
-                    echo "apps_changed=false" >> "$GITHUB_OUTPUT"
+                  apps_changed=false
+                  apps_admin_changed=false
+                  apps_portal_changed=false
+                  apps_root_changed=false
+
+                  if [ "$verify_workflow_changed" = "true" ]; then
+                    apps_changed=true
+                    apps_admin_changed=true
+                    apps_portal_changed=true
+                  elif echo "$changed_files" | grep -Eq '^kuzhambu-apps/'; then
+                    apps_changed=true
+
+                    if echo "$changed_files" | grep -Eq '^kuzhambu-apps/admin-web/'; then
+                      apps_admin_changed=true
+                    fi
+
+                    if echo "$changed_files" | grep -Eq '^kuzhambu-apps/portal-web/'; then
+                      apps_portal_changed=true
+                    fi
+
+                    if echo "$changed_files" | grep -E '^kuzhambu-apps/' | grep -Evq '^kuzhambu-apps/(admin-web|portal-web)/'; then
+                      apps_root_changed=true
+                    fi
+
+                    if [ "$apps_root_changed" = "true" ]; then
+                      apps_admin_changed=true
+                      apps_portal_changed=true
+                    fi
                   fi
+
+                  echo "apps_changed=$apps_changed" >> "$GITHUB_OUTPUT"
+                  echo "apps_admin_changed=$apps_admin_changed" >> "$GITHUB_OUTPUT"
+                  echo "apps_portal_changed=$apps_portal_changed" >> "$GITHUB_OUTPUT"
 
                   if [ "$verify_workflow_changed" = "true" ] || echo "$changed_files" | grep -Eq '^db/'; then
                     echo "db_changed=true" >> "$GITHUB_OUTPUT"
@@ -134,21 +220,41 @@ jobs:
                     exit 1
                   fi
 
-            - name: Verify backend clean
-              working-directory: kuzhambu-servers
-              run: mvn -q clean
-
             - name: Verify backend formatting
+              if: needs.detect-changes.outputs.backend_full_changed == 'true'
               working-directory: kuzhambu-servers
               run: mvn -q spotless:check
 
+            - name: Verify affected backend formatting
+              if: needs.detect-changes.outputs.backend_full_changed != 'true'
+              working-directory: kuzhambu-servers
+              run: mvn -q -pl "$BACKEND_PROJECTS" -am spotless:check
+              env:
+                  BACKEND_PROJECTS: ${{ needs.detect-changes.outputs.backend_projects }}
+
             - name: Verify backend style
+              if: needs.detect-changes.outputs.backend_full_changed == 'true'
               working-directory: kuzhambu-servers
               run: mvn -q checkstyle:check
 
+            - name: Verify affected backend style
+              if: needs.detect-changes.outputs.backend_full_changed != 'true'
+              working-directory: kuzhambu-servers
+              run: mvn -q -pl "$BACKEND_PROJECTS" -am checkstyle:check
+              env:
+                  BACKEND_PROJECTS: ${{ needs.detect-changes.outputs.backend_projects }}
+
             - name: Verify backend tests
+              if: needs.detect-changes.outputs.backend_full_changed == 'true'
               working-directory: kuzhambu-servers
               run: mvn -q test
+
+            - name: Verify affected backend tests
+              if: needs.detect-changes.outputs.backend_full_changed != 'true'
+              working-directory: kuzhambu-servers
+              run: mvn -q -pl "$BACKEND_PROJECTS" -am test
+              env:
+                  BACKEND_PROJECTS: ${{ needs.detect-changes.outputs.backend_projects }}
 
     verify-apps:
         name: Verify Frontend
@@ -167,6 +273,8 @@ jobs:
               uses: actions/setup-node@v4
               with:
                   node-version: "20"
+                  cache: npm
+                  cache-dependency-path: kuzhambu-apps/package-lock.json
 
             - name: Verify frontend package manifests
               run: |
@@ -176,19 +284,37 @@ jobs:
 
             - name: Install frontend dependencies
               working-directory: kuzhambu-apps
-              run: npm install
+              run: npm ci
 
-            - name: Verify frontend formatting
+            - name: Verify admin frontend formatting
+              if: needs.detect-changes.outputs.apps_admin_changed == 'true'
               working-directory: kuzhambu-apps
-              run: npm run format:check
+              run: npm --workspace admin-web run format:check
 
-            - name: Verify frontend lint
+            - name: Verify admin frontend lint
+              if: needs.detect-changes.outputs.apps_admin_changed == 'true'
               working-directory: kuzhambu-apps
-              run: npm run lint
+              run: npm --workspace admin-web run lint
 
-            - name: Verify frontend tests
+            - name: Verify admin frontend tests
+              if: needs.detect-changes.outputs.apps_admin_changed == 'true'
               working-directory: kuzhambu-apps
-              run: npm test
+              run: npm --workspace admin-web run test
+
+            - name: Verify portal frontend formatting
+              if: needs.detect-changes.outputs.apps_portal_changed == 'true'
+              working-directory: kuzhambu-apps
+              run: npm --workspace portal-web run format:check
+
+            - name: Verify portal frontend lint
+              if: needs.detect-changes.outputs.apps_portal_changed == 'true'
+              working-directory: kuzhambu-apps
+              run: npm --workspace portal-web run lint
+
+            - name: Verify portal frontend tests
+              if: needs.detect-changes.outputs.apps_portal_changed == 'true'
+              working-directory: kuzhambu-apps
+              run: npm --workspace portal-web run test
 
     verify-workers:
         name: Verify Python Workers
