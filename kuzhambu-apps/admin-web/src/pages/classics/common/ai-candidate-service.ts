@@ -1,5 +1,9 @@
 import { postJson } from "@/api/http";
-import type { AiCandidateApplyRecord, AiCandidateRecord } from "./ai-candidate-types";
+import type {
+    AiCandidateApplyRecord,
+    AiCandidateApplyPayload,
+    AiCandidateRecord
+} from "./ai-candidate-types";
 
 export interface AiCandidateListQuery {
     contentType?: string | null;
@@ -9,16 +13,7 @@ export interface AiCandidateListQuery {
     status?: "PENDING" | "APPLIED" | "REJECTED" | string | null;
 }
 
-export interface AiCandidateApplyCommand {
-    candidateId: number;
-    contentType: string;
-    contentId: number;
-    capability: string;
-    objectId?: number | null;
-    resultFormat: string;
-    resultPayload: string;
-    changeSummary?: string | null;
-}
+export type AiCandidateApplyCommand = AiCandidateApplyPayload;
 
 export interface AiCandidateRejectCommand {
     candidateId: number;
@@ -38,7 +33,7 @@ export const list = (query: AiCandidateListQuery) => {
     );
 };
 
-export const updateCandidateApplied = (command: AiCandidateApplyCommand) => {
+export const apply = (command: AiCandidateApplyCommand) => {
     return postJson<AiCandidateApplyRecord, AiCandidateApplyCommand>(
         `${CLASSICS_CONTENT_CANDIDATE_PATH}/change`,
         {
@@ -47,7 +42,7 @@ export const updateCandidateApplied = (command: AiCandidateApplyCommand) => {
     );
 };
 
-export const updateCandidateRejected = (command: AiCandidateRejectCommand) => {
+export const reject = (command: AiCandidateRejectCommand) => {
     return postJson<AiCandidateRecord, AiCandidateRejectCommand>(
         `${AI_INVOCATION_CANDIDATE_PATH}/reject`,
         {

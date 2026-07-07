@@ -117,7 +117,7 @@ describe("AI candidate service request contracts", () => {
             changeSummary: "AI 应用：摘要"
         };
 
-        await aiCandidateService.updateCandidateApplied(command);
+        await aiCandidateService.apply(command);
 
         expect(capturedCalls.at(-1)).toEqual({
             body: command,
@@ -133,7 +133,7 @@ describe("AI candidate service request contracts", () => {
             errorMessage: "invalid"
         };
 
-        await aiCandidateService.updateCandidateRejected(request);
+        await aiCandidateService.reject(request);
 
         expect(capturedCalls.at(-1)).toEqual({
             body: request,

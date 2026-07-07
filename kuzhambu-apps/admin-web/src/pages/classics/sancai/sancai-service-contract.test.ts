@@ -455,7 +455,7 @@ describe("sancai service request contracts", () => {
             status: "PENDING"
         });
 
-        await aiCandidateService.updateCandidateApplied({
+        await aiCandidateService.apply({
             candidateId: 7001,
             contentType: "SANCAI_ENTRY",
             contentId: 3001,

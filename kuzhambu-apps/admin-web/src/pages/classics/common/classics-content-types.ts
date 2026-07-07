@@ -1,3 +1,5 @@
+import type { AiCandidateApplyPayload } from "./ai-candidate-types";
+
 export type ClassicsContentType = "SANCAI_ENTRY" | "WANGQI_DOCUMENT" | "MING_CUSTOMS" | string;
 export type ClassicsContentVisibility = "PRIVATE" | "PUBLIC";
 export type ClassicsContentPermissionAction = "edit" | "export" | "share";
@@ -101,6 +103,9 @@ export interface ClassicsBatchVisibilityPayload {
 }
 
 export interface ClassicsBatchOperationItemRecord {
+    candidateId?: number | null;
+    objectId?: number | null;
+    capability?: string | null;
     contentId: number | null;
     contentType: ClassicsContentType | string | null;
     failureCode?: string | null;
@@ -114,4 +119,22 @@ export interface ClassicsBatchOperationRecord {
     failures: ClassicsBatchOperationItemRecord[];
     successCount: number;
     successes: ClassicsBatchOperationItemRecord[];
+}
+
+export interface ClassicsAiCandidateBatchApplyPayload {
+    items: AiCandidateApplyPayload[];
+}
+
+export interface ClassicsAiCandidateBatchRejectItemPayload {
+    candidateId: number;
+    contentType: ClassicsContentType;
+    contentId: number;
+    capability: string;
+    objectId?: number | null;
+}
+
+export interface ClassicsAiCandidateBatchRejectPayload {
+    errorMessage?: string | null;
+    errorType?: string | null;
+    items: ClassicsAiCandidateBatchRejectItemPayload[];
 }

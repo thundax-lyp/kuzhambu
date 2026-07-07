@@ -1,6 +1,8 @@
 package com.thundax.kuzhambu.classics.application.content.service;
 
 import com.thundax.kuzhambu.classics.application.content.command.AiCandidateApplyContentCommand;
+import com.thundax.kuzhambu.classics.application.content.command.AiCandidateBatchApplyContentCommand;
+import com.thundax.kuzhambu.classics.application.content.command.AiCandidateBatchRejectContentCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentExportCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairSortCommand;
@@ -8,6 +10,7 @@ import com.thundax.kuzhambu.classics.application.content.command.ContentTagComma
 import com.thundax.kuzhambu.classics.application.content.command.ContentTagSortCommand;
 import com.thundax.kuzhambu.classics.application.content.result.AiCandidateApplyContentResult;
 import com.thundax.kuzhambu.classics.application.content.result.ClassicsExportJobResult;
+import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationResult;
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
 import com.thundax.kuzhambu.classics.domain.content.model.Versionable;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentExportJob;
@@ -60,6 +63,10 @@ public interface ClassicsContentApplicationService {
     ClassicsContentVersion applyAiResult(Versionable content, String changeSummary);
 
     AiCandidateApplyContentResult applyAiCandidate(AiCandidateApplyContentCommand command);
+
+    ClassicsBatchOperationResult applyAiCandidates(AiCandidateBatchApplyContentCommand command);
+
+    ClassicsBatchOperationResult rejectAiCandidates(AiCandidateBatchRejectContentCommand command);
 
     ClassicsContentVersion restoreHistoryVersion(ClassicsContentVersionId versionId);
 

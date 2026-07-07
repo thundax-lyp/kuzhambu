@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -32,6 +33,7 @@ import com.thundax.kuzhambu.ai.facade.request.CreateAiBatchJobFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.DiscoveryAiFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.GetAiCallRecordFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.KnowledgeAiExtractionFacadeRequest;
+import com.thundax.kuzhambu.ai.facade.request.RejectAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.RequirePendingAiCandidateFacadeRequest;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -352,14 +354,15 @@ class AiFacadeImplTest {
     @Test
     void requirePendingCandidateShouldMapApplyCheckAndCandidateDto() {
         AiCandidateDomainService aiCandidateDomainService = mock(AiCandidateDomainService.class);
-        when(aiCandidateDomainService.requirePendingForApply(any())).thenAnswer(invocation -> {
-            AiCandidateApplyCheck check = invocation.getArgument(0);
-            assertEquals(901L, check.getCandidateId());
-            assertEquals("CLASSICS_CONTENT", check.getContentType());
-            assertEquals(902L, check.getContentId());
-            assertEquals("KNOWLEDGE_GRAPH", check.getCapability());
-            return candidate();
-        });
+        when(aiCandidateDomainService.requirePendingForApply(any(AiCandidateApplyCheck.class), eq(903L)))
+                .thenAnswer(invocation -> {
+                    AiCandidateApplyCheck check = invocation.getArgument(0);
+                    assertEquals(901L, check.getCandidateId());
+                    assertEquals("CLASSICS_CONTENT", check.getContentType());
+                    assertEquals(902L, check.getContentId());
+                    assertEquals("KNOWLEDGE_GRAPH", check.getCapability());
+                    return candidate();
+                });
         AiFacadeImpl facade = newFacade(
                 mock(AiReportApplicationService.class),
                 mock(AiBatchJobApplicationService.class),
@@ -372,6 +375,7 @@ class AiFacadeImplTest {
                 .candidateId(901L)
                 .contentType("CLASSICS_CONTENT")
                 .contentId(902L)
+                .objectId(903L)
                 .capability("KNOWLEDGE_GRAPH")
                 .build());
 
@@ -388,6 +392,29 @@ class AiFacadeImplTest {
         assertEquals(1001L, response.getPromptVersionId());
         assertEquals("gpt-5", response.getModelName());
         assertEquals(Instant.parse("2025-02-01T10:15:30Z"), response.getRequestedAt());
+    }
+
+    @Test
+    void rejectCandidateShouldDelegateToDomainServiceAndMapDto() {
+        AiCandidateDomainService aiCandidateDomainService = mock(AiCandidateDomainService.class);
+        when(aiCandidateDomainService.reject(901L, "USER_REJECTED", "not useful"))
+                .thenReturn(candidate());
+        AiFacadeImpl facade = newFacade(
+                mock(AiReportApplicationService.class),
+                mock(AiBatchJobApplicationService.class),
+                mock(DiscoveryAiApplicationService.class),
+                mock(KnowledgeAiExtractionApplicationServiceImpl.class),
+                mock(AiInvocationRepository.class),
+                aiCandidateDomainService);
+
+        var response = facade.rejectCandidate(RejectAiCandidateFacadeRequest.builder()
+                .candidateId(901L)
+                .errorType("USER_REJECTED")
+                .errorMessage("not useful")
+                .build());
+
+        assertEquals(901L, response.getCandidateId());
+        verify(aiCandidateDomainService).reject(901L, "USER_REJECTED", "not useful");
     }
 
     private static AiFacadeImpl newFacade(

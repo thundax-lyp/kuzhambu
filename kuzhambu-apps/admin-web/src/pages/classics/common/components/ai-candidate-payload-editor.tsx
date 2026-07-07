@@ -2,9 +2,7 @@ import { Button, Input } from "antd";
 import { useEffect, useState } from "react";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
-
-type AiCandidateCapability =
-    "translate" | "summary" | "tags" | "qa" | "image_analysis" | "visual" | "fusion" | "image_gen";
+import type { AiCandidateCapability } from "../ai-candidate-types";
 
 const TEXT_CAPABILITY_ARIA_LABEL: Record<
     "translate" | "summary" | "image_analysis" | "visual" | "fusion" | "image_gen",
