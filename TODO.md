@@ -9,7 +9,150 @@
 
 ## 当前任务项
 
-## 待审阅任务项
+- [ ] `Knowledge lineage application contract`：01 定义后端世系画布查询和结果模型
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LINEAGE-VISUALIZATION.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/lineage/query/LineageCanvasQuery.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/lineage/result/LineageCanvasResult.java`
+    - 处理动作：新增世系画布查询对象和结果对象。
+    - 验收点：字段覆盖版本、统计、节点、关系、选中对象、筛选项和空态。
+    - 重要度：10/10
 
+- [ ] `Knowledge lineage application service`：02 实现后端世系画布读取用例
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LINEAGE-VISUALIZATION.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/lineage/service/KnowledgeLineageReadApplicationService.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/lineage/service/impl/KnowledgeLineageReadApplicationServiceImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/graph/repository/KnowledgeLineageNodeRepository.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/graph/repository/KnowledgeLineageRelationRepository.java`
+    - 处理动作：新增只读世系画布读取服务。
+    - 验收点：读取正式世系节点和关系，不调用 AI，不写入 `knowledge_*` 表。
+    - 重要度：10/10
+
+- [ ] `Knowledge lineage admin api`：03 接入后端 Admin 世系画布接口
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LINEAGE-VISUALIZATION.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/lineage/controller/KnowledgeLineageController.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/lineage/controller/request/LineageCanvasRequest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/lineage/controller/response/LineageCanvasResponse.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/lineage/assembler/KnowledgeLineageInterfaceAssembler.java`
+    - 处理动作：新增 `POST /api/knowledge/lineage/canvas`。
+    - 验收点：接口受 `knowledge:graph:view` 保护，request/response 字段与 application 契约一一对应。
+    - 重要度：10/10
+
+- [ ] `Knowledge lineage portal api`：04 接入后端 Portal 世系画布接口
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LINEAGE-VISUALIZATION.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/portal/lineage/controller/KnowledgePortalLineageController.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/portal/lineage/controller/response/KnowledgePortalLineageResponse.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/portal/lineage/assembler/KnowledgePortalLineageInterfaceAssembler.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/portal/KnowledgePortalReadApplicationService.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/portal/KnowledgePortalReadApplicationServiceImpl.java`
+    - 处理动作：新增 `GET /api/portal/knowledge/lineage`。
+    - 验收点：Portal 查询参数完整透传，`versionId` 为空时读取最新已应用版本，返回只读同构画布数据。
+    - 重要度：10/10
+
+- [ ] `Admin lineage route`：05 接入 Admin 世系图页面路由
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LINEAGE-VISUALIZATION.md`
+    - 范围对象：`kuzhambu-apps/admin-web/src/router/index.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/lineage/lineage-page.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/lineage/lineage-page.css`
+    - 处理动作：新增 `/knowledge/lineage` 页面壳和路由。
+    - 验收点：页面标题为「世系图浏览」，无权限时不请求业务接口。
+    - 重要度：9/10
+
+- [ ] `Admin lineage menu`：06 补齐 Admin 世系图菜单记录
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LINEAGE-VISUALIZATION.md`
+    - 范围对象：`kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/core/controller/MenuController.java`、`kuzhambu-servers/biz/system/kuzhambu-system-interface/src/main/java/com/thundax/kuzhambu/system/interfaces/admin/core/controller/request/MenuSaveRequest.java`、`kuzhambu-apps/admin-web/src/pages/system/menu/menu-service.ts`
+    - 处理动作：通过既有 System 菜单能力补齐「世系图浏览」菜单记录。
+    - 验收点：拥有 `knowledge:graph:view` 的 Admin 用户能从 Knowledge 侧栏菜单进入 `/knowledge/lineage`。
+    - 重要度：9/10
+
+- [ ] `Admin lineage service types`：07 定义 Admin 世系页面类型和服务
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LINEAGE-VISUALIZATION.md`
+    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/lineage/lineage-types.ts`、`kuzhambu-apps/admin-web/src/pages/knowledge/lineage/lineage-service.ts`、`kuzhambu-apps/admin-web/src/pages/knowledge/lineage/lineage-service.test.ts`
+    - 处理动作：新增 Admin 世系画布 TypeScript 类型和 service。
+    - 验收点：service 调用 `/knowledge/lineage/canvas`，类型字段与 RUNBOOK 契约一致。
+    - 重要度：9/10
+
+- [ ] `Admin lineage controls`：08 实现 Admin 世系筛选控件和详情面板
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LINEAGE-VISUALIZATION.md`
+    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/lineage/components/lineage-filter-bar.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/lineage/components/lineage-detail-panel.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/lineage/lineage-page.tsx`
+    - 处理动作：实现版本选择、搜索、节点类型、关系类型、确认状态、深度、重置、刷新和详情展示。
+    - 验收点：控件操作能更新查询，节点或关系选中后详情面板展示对应字段。
+    - 重要度：10/10
+
+- [ ] `Admin lineage canvas`：09 实现 Admin 世系画布和列表联动
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LINEAGE-VISUALIZATION.md`
+    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/lineage/components/lineage-canvas.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/lineage/components/lineage-node-table.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/lineage/components/lineage-relation-table.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/lineage/components/lineage-canvas.test.tsx`
+    - 处理动作：实现画布节点/关系点击、高亮、fit view、缩放平移、节点列表和关系列表联动。
+    - 验收点：节点和关系点击可高亮并展示详情，列表点击可联动画布选中态。
+    - 重要度：10/10
+
+- [ ] `Portal lineage service types`：10 定义 Portal 世系页面类型和服务
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LINEAGE-VISUALIZATION.md`
+    - 范围对象：`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-lineage-types.ts`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-lineage-service.ts`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-lineage-service.test.ts`
+    - 处理动作：新增 Portal 世系画布 TypeScript 类型和 service。
+    - 验收点：service 调用 `/portal/knowledge/lineage`，URL query 字段与后端契约一致。
+    - 重要度：9/10
+
+- [ ] `Portal lineage page`：11 实现 Portal 只读世系页面
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LINEAGE-VISUALIZATION.md`
+    - 范围对象：`kuzhambu-apps/portal-web/src/app.tsx`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-lineage-page.tsx`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-lineage-page.css`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-lineage-page.test.tsx`
+    - 处理动作：新增 `/knowledge/lineage` 页面和只读交互。
+    - 验收点：Portal 页面支持版本、搜索、节点类型、关系类型、清除筛选和只读详情，不出现后台操作按钮。
+    - 重要度：10/10
+
+- [ ] `Portal knowledge home`：12 接入 Portal 首页世系入口
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LINEAGE-VISUALIZATION.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/portal/KnowledgePortalReadApplicationServiceImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/test/java/com/thundax/kuzhambu/knowledge/interfaces/portal/home/controller/KnowledgePortalHomeControllerTest.java`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-home-page.tsx`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-home-page.test.tsx`
+    - 处理动作：把 Knowledge 首页世系入口指向 `/knowledge/lineage`。
+    - 验收点：首页可见「世系图浏览」入口，点击进入独立世系页面而不是 `/knowledge/atlas`。
+    - 重要度：8/10
+
+- [ ] `Backend lineage tests`：13 补齐后端世系接口和用例测试
+    - 任务类型：执行任务
+    - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-KNOWLEDGE-LINEAGE-VISUALIZATION.md`
+    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/lineage/KnowledgeLineageReadApplicationServiceImplTest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/test/java/com/thundax/kuzhambu/knowledge/interfaces/admin/lineage/controller/KnowledgeLineageControllerTest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/test/java/com/thundax/kuzhambu/knowledge/interfaces/portal/lineage/controller/KnowledgePortalLineageControllerTest.java`
+    - 处理动作：补齐后端世系画布读取和接口测试。
+    - 验收点：测试覆盖字段映射、空态、权限、默认最新版本和只读边界。
+    - 重要度：9/10
+
+- [ ] `Frontend lineage tests`：14 补齐前端世系页面测试
+    - 任务类型：执行任务
+    - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-KNOWLEDGE-LINEAGE-VISUALIZATION.md`
+    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/lineage/lineage-page.test.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/lineage/components/lineage-canvas.test.tsx`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-lineage-page.test.tsx`、`kuzhambu-apps/admin-web/src/app.test.tsx`
+    - 处理动作：补齐 Admin 和 Portal 世系前端测试。
+    - 验收点：测试覆盖权限空态、筛选控件、画布选中、列表联动、Portal 只读行为和菜单可达性。
+    - 重要度：9/10
+
+- [ ] `Branch sync`：15 同步 main 分支代码
+    - 任务类型：执行任务
+    - 依据文档：`docs/00-governance/TODO-RULES.md`
+    - 范围对象：`feat/knowledge-lineage-visualization`、`origin/main`
+    - 处理动作：在收口验证前把当前分支同步到最新 `origin/main`。
+    - 验收点：当前分支包含最新 `origin/main`，冲突已解决且无不相关文件改动。
+    - 重要度：10/10
+
+- [ ] `Final validation`：16 运行最终验证
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LINEAGE-VISUALIZATION.md`、`.github/workflows/pr-verify.yml`
+    - 范围对象：`kuzhambu-servers/`、`kuzhambu-apps/admin-web/`、`kuzhambu-apps/portal-web/`
+    - 处理动作：运行 RUNBOOK 指定的 Java、Admin Web 和 Portal Web 验证。
+    - 验收点：格式、静态检查、后端测试、前端 lint/test/build 通过，失败项已修复或明确记录。
+    - 重要度：10/10
+
+- [ ] `Knowledge documentation coverage`：17 更新 Knowledge Implementation Coverage
+    - 任务类型：执行任务
+    - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-KNOWLEDGE-LINEAGE-VISUALIZATION.md`
+    - 范围对象：`docs/30-designs/KNOWLEDGE-DESIGN.md`、`docs/40-readiness/KNOWLEDGE-IMPLEMENTATION-COVERAGE.md`
+    - 处理动作：同步世系图独立可视化闭环的稳定设计和覆盖状态。
+    - 验收点：Implementation Coverage 将世系图浏览从部分完成更新为与实际交付一致，设计文档记录独立 Admin/Portal 入口。
+    - 重要度：10/10
+
+- [ ] `Task closeout`：18 清理 RUNBOOK 和 TODO
+    - 任务类型：执行任务
+    - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-KNOWLEDGE-LINEAGE-VISUALIZATION.md`
+    - 范围对象：`docs/30-designs/RUNBOOK-KNOWLEDGE-LINEAGE-VISUALIZATION.md`、`TODO.md`
+    - 处理动作：删除已完成 RUNBOOK 并按完成情况删除或收窄 TODO。
+    - 验收点：PR 收口前不保留已完成 RUNBOOK，`TODO.md` 不记录已完成任务历史。
+    - 重要度：10/10
+
+## 待审阅任务项
 
 ## 待讨论项
