@@ -17,6 +17,7 @@ public interface HealthAlertRepository {
             String alertStatus,
             String sourceRefType,
             Long sourceRefId,
+            Long latestCheckId,
             int pageNo,
             int pageSize);
 

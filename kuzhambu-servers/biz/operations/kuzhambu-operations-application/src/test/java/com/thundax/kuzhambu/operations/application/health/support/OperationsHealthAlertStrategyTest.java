@@ -294,6 +294,7 @@ class OperationsHealthAlertStrategyTest {
                 String alertStatus,
                 String sourceRefType,
                 Long sourceRefId,
+                Long latestCheckId,
                 int pageNo,
                 int pageSize) {
             return PageResult.of(pageNo, pageSize, alerts.size(), List.copyOf(alerts));
