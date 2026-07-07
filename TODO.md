@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web batch candidate service`：补齐前端批量候选类型和 service
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-BATCH-CANDIDATE-GOVERNANCE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/common/classics-content-types.ts`、`kuzhambu-apps/admin-web/src/pages/classics/common/classics-content-service.ts`、`kuzhambu-apps/admin-web/src/pages/classics/common/classics-content-service-contract.test.ts`、`kuzhambu-apps/admin-web/src/pages/classics/common/ai-candidate-types.ts`
-    - 处理动作：新增批量候选请求类型、结果字段和 `applyAiCandidatesBatch`、`rejectAiCandidatesBatch` service。
-    - 验收点：service contract 锁定两个批量接口路径和完整 body。
-    - 重要度：8/10
-
 - [ ] `admin-web batch candidate drawer`：实现通用批量候选治理抽屉
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-BATCH-CANDIDATE-GOVERNANCE.md`

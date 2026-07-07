@@ -1,5 +1,7 @@
 import { getJson, postJson } from "@/api/http";
 import type {
+    ClassicsAiCandidateBatchApplyPayload,
+    ClassicsAiCandidateBatchRejectPayload,
     ClassicsBatchOperationRecord,
     ClassicsBatchVisibilityPayload,
     ClassicsContentListPayload,
@@ -9,6 +11,11 @@ import type {
     ClassicsContentTagPayload,
     ClassicsContentTagRecord,
     ClassicsContentTagSortPayload
+} from "./classics-content-types";
+
+export type {
+    ClassicsAiCandidateBatchApplyPayload,
+    ClassicsAiCandidateBatchRejectPayload
 } from "./classics-content-types";
 
 const CLASSICS_CONTENT_PATH = "/classics/content";
@@ -83,6 +90,24 @@ export const updateQaPair = (request: ClassicsContentQaPairCommand) => {
 export const sortQaPairs = (request: ClassicsContentQaPairSortCommand) => {
     return postJson<boolean, ClassicsContentQaPairSortCommand>(
         `${CLASSICS_CONTENT_PATH}/qa-pairs/sort`,
+        {
+            body: request
+        }
+    );
+};
+
+export const applyAiCandidatesBatch = (request: ClassicsAiCandidateBatchApplyPayload) => {
+    return postJson<ClassicsBatchOperationRecord, ClassicsAiCandidateBatchApplyPayload>(
+        `${CLASSICS_CONTENT_PATH}/ai-candidates/batch/apply`,
+        {
+            body: request
+        }
+    );
+};
+
+export const rejectAiCandidatesBatch = (request: ClassicsAiCandidateBatchRejectPayload) => {
+    return postJson<ClassicsBatchOperationRecord, ClassicsAiCandidateBatchRejectPayload>(
+        `${CLASSICS_CONTENT_PATH}/ai-candidates/batch/reject`,
         {
             body: request
         }

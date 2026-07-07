@@ -1,9 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as aiCandidateService from "@/pages/classics/common/ai-candidate-service";
-import type {
-    AiCandidateApplyCommand,
-    AiCandidateRejectCommand
-} from "@/pages/classics/common/ai-candidate-service";
+import type { AiCandidateRejectCommand } from "@/pages/classics/common/ai-candidate-service";
+import type { AiCandidateApplyCommand } from "@/pages/classics/common/ai-candidate-types";
 
 interface CapturedCall {
     body: unknown;
