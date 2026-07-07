@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `AI interface stream 入口`：补齐精修任务 stream 响应入口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-AI-STREAMING-CANDIDATES.md`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/refinement/controller/AiRefinementTaskController.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/refinement/controller/response/AiRefinementResponses.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/refinement/assembler/AiRefinementInterfaceAssembler.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/test/java/com/thundax/kuzhambu/ai/interfaces/admin/refinement/controller/AiRefinementTaskControllerTest.java`
-    - 处理动作：新增 `task/stream` SSE 入口并在任务详情响应中返回 `streamEnabled`。
-    - 验收点：`task/get` 返回 `streamEnabled`，`GET /api/ai/refinement/task/stream?taskId=...` 具备 `ai:refinement:view` 权限和 `text/event-stream` 响应测试。
-    - 重要度：10/10
-
 - [ ] `Admin Web stream 服务组件`：新增 Classics 共用流式过程服务和展示组件
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-AI-STREAMING-CANDIDATES.md`

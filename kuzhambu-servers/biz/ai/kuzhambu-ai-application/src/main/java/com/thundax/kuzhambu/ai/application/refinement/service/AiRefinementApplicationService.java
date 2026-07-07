@@ -1,7 +1,9 @@
 package com.thundax.kuzhambu.ai.application.refinement.service;
 
+import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
 import com.thundax.kuzhambu.ai.application.refinement.command.AiRefinementRequestCommand;
 import com.thundax.kuzhambu.ai.application.refinement.result.AiCandidateResult;
+import java.util.function.Consumer;
 
 public interface AiRefinementApplicationService {
 
@@ -15,9 +17,19 @@ public interface AiRefinementApplicationService {
 
     AiCandidateResult analyzeImage(AiRefinementRequestCommand command);
 
+    default AiCandidateResult analyzeImage(
+            AiRefinementRequestCommand command, Consumer<AiStreamEventResult> eventConsumer) {
+        return analyzeImage(command);
+    }
+
     AiCandidateResult fuseVisualContext(AiRefinementRequestCommand command);
 
     AiCandidateResult generateImage(AiRefinementRequestCommand command);
+
+    default AiCandidateResult generateImage(
+            AiRefinementRequestCommand command, Consumer<AiStreamEventResult> eventConsumer) {
+        return generateImage(command);
+    }
 
     AiCandidateResult describeVisual(AiRefinementRequestCommand command);
 

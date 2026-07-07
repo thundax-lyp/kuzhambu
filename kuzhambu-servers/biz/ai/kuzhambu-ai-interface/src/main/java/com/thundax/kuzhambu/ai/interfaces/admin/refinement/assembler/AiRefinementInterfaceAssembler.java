@@ -84,6 +84,7 @@ public final class AiRefinementInterfaceAssembler {
                 .failureStage(task.getFailureStage())
                 .errorType(task.getErrorType())
                 .errorMessage(task.getErrorMessage())
+                .streamEnabled(task.isStreamEnabled())
                 .resultFormat(task.getResultFormat())
                 .resultPreview(task.getResultPreview())
                 .requestedAt(task.getRequestedAt())
