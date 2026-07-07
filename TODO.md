@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `08 Implementation Coverage 同步`：更新实现覆盖状态
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`docs/40-readiness/OPERATIONS-IMPLEMENTATION-COVERAGE.md`；`docs/40-readiness/DISCOVERY-IMPLEMENTATION-COVERAGE.md`
-    - 处理动作：将 Operations Dashboard 真实跨域 summary 和 Discovery 搜索耗时闭环同步到 Implementation Coverage。
-    - 验收点：Operations 仪表盘与聚合展示不再标记为跨域 summary 占位，Discovery 搜索日志记录说明包含搜索耗时真实统计。
-    - 重要度：8/10
-
 - [ ] `09 RUNBOOK 清理`：任务关闭前删除临时 RUNBOOK
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`
