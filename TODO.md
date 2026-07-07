@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web operations health targeted validation`：执行前端定向验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-PROBE-LOOP.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/operations/health/`、`kuzhambu-apps/admin-web/src/pages/operations/dashboard/`
-    - 处理动作：运行 admin-web 健康页和 Dashboard 入口相关 format 与定向测试。
-    - 验收点：健康分页 service、页面控件、详情抽屉、关联告警、Dashboard 跳转入口相关前端测试通过。
-    - 重要度：10/10
-
 - [ ] `operations health main sync before validation`：最终验证前同步 main 分支代码
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`
