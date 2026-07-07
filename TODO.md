@@ -11,13 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `03 Knowledge 质量报告重提取接口与后端测试`：开放并锁定一键重提取接口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LOW-QUALITY-REEXTRACT.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/refinement/controller/KnowledgeQualityReportController.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/test/java/com/thundax/kuzhambu/knowledge/interfaces/admin/refinement/controller/KnowledgeQualityReportControllerTest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/refinement/KnowledgeQualityReportApplicationServiceTest.java`
-    - 处理动作：新增 `POST /api/knowledge/quality/report/reextract-low-quality-category` 并补齐 controller 与 application 测试。
-    - 验收点：接口使用 `knowledge:graph:edit` 权限，测试覆盖单来源、多来源批任务、无质量问题拒绝、多来源类型拒绝和 `triggerSource=QUALITY_REPORT`。
-    - 重要度：10/10
 - [ ] `04 Admin Web 质量报告重提取服务`：补齐前端调用类型和 API
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LOW-QUALITY-REEXTRACT.md`
