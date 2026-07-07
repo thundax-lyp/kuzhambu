@@ -99,6 +99,48 @@ class CleanupApplicationServiceImplTest {
     }
 
     @Test
+    void executeScheduledShouldAllowSystemRequesterAndApplyPolicyLimit() {
+        InMemoryCleanupJobRepository repository = new InMemoryCleanupJobRepository();
+        InMemoryBackupRepository backupRepository = new InMemoryBackupRepository();
+        backupRepository.expiredBackupIds = List.of(BackupId.of(101L), BackupId.of(102L));
+        backupRepository.records.put(101L, new BackupRecord());
+        backupRepository.records.put(102L, new BackupRecord());
+        CleanupApplicationServiceImpl service =
+                new CleanupApplicationServiceImpl(repository, backupRepository, new FakeClassicsFacade());
+
+        OperationsCleanupDetailResult result = service.executeScheduled(
+                new OperationsCleanupExecuteCommand("EXPIRED_BACKUP", null, new Date(1_719_630_400_000L), 30, 1));
+
+        assertEquals(null, result.getRequesterUserId());
+        assertEquals(1, result.getTotalCount());
+        assertEquals(1, backupRepository.lastLimit);
+        assertEquals(new Date(1_717_038_400_000L), backupRepository.lastRequestedAt);
+    }
+
+    @Test
+    void executeScheduledShouldPassRetentionAndLimitToClassicsFacade() {
+        InMemoryCleanupJobRepository repository = new InMemoryCleanupJobRepository();
+        FakeClassicsFacade classicsFacade = new FakeClassicsFacade();
+        classicsFacade.targets = List.of(ClassicsCleanupTargetsFacadeResponse.Target.builder()
+                .targetType("share")
+                .targetId(201L)
+                .build());
+        classicsFacade.executionResults = List.of(ClassicsCleanupExecutionFacadeResponse.ItemResult.builder()
+                .targetType("share")
+                .targetId(201L)
+                .success(true)
+                .build());
+        CleanupApplicationServiceImpl service =
+                new CleanupApplicationServiceImpl(repository, new InMemoryBackupRepository(), classicsFacade);
+
+        service.executeScheduled(
+                new OperationsCleanupExecuteCommand("EXPIRED_SHARE", null, new Date(1_719_630_400_000L), 90, 5));
+
+        assertEquals(90, classicsFacade.lastListRequest.getRetentionDays());
+        assertEquals(5, classicsFacade.lastListRequest.getLimit());
+    }
+
+    @Test
     void executeShouldRejectUnsupportedCleanupType() {
         InMemoryCleanupJobRepository repository = new InMemoryCleanupJobRepository();
         CleanupApplicationServiceImpl service =
@@ -228,6 +270,8 @@ class CleanupApplicationServiceImplTest {
     private static final class InMemoryBackupRepository implements BackupRepository {
         private final Map<Long, BackupRecord> records = new LinkedHashMap<>();
         private List<BackupId> expiredBackupIds = List.of();
+        private Date lastRequestedAt;
+        private int lastLimit;
 
         @Override
         public BackupRecord getById(BackupId id) {
@@ -264,6 +308,8 @@ class CleanupApplicationServiceImplTest {
 
         @Override
         public List<BackupId> listExpiredBackupIds(Date now, int limit) {
+            lastRequestedAt = now;
+            lastLimit = limit;
             return expiredBackupIds.stream().limit(limit).toList();
         }
     }
@@ -271,6 +317,7 @@ class CleanupApplicationServiceImplTest {
     private static final class FakeClassicsFacade implements ClassicsFacade {
         private List<ClassicsCleanupTargetsFacadeResponse.Target> targets = List.of();
         private List<ClassicsCleanupExecutionFacadeResponse.ItemResult> executionResults = List.of();
+        private ClassicsCleanupTargetsFacadeRequest lastListRequest;
 
         @Override
         public ClassicsSummaryFacadeResponse summary(ClassicsSummaryFacadeRequest request) {
@@ -294,6 +341,7 @@ class CleanupApplicationServiceImplTest {
 
         @Override
         public ClassicsCleanupTargetsFacadeResponse listCleanupTargets(ClassicsCleanupTargetsFacadeRequest request) {
+            lastListRequest = request;
             return ClassicsCleanupTargetsFacadeResponse.builder()
                     .cleanupType(request.getCleanupType())
                     .supported(true)

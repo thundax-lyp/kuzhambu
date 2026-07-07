@@ -28,6 +28,7 @@ import com.thundax.kuzhambu.operations.domain.cleanup.model.entity.CleanupItem;
 import com.thundax.kuzhambu.operations.domain.cleanup.model.entity.CleanupJob;
 import com.thundax.kuzhambu.operations.domain.cleanup.model.valueobject.CleanupJobId;
 import com.thundax.kuzhambu.operations.domain.cleanup.repository.CleanupJobRepository;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -68,13 +69,24 @@ public class CleanupApplicationServiceImpl implements CleanupApplicationService 
 
     @Override
     public OperationsCleanupDetailResult execute(OperationsCleanupExecuteCommand command) {
-        validateExecuteCommand(command);
+        return executeInternal(command, true);
+    }
+
+    @Override
+    public OperationsCleanupDetailResult executeScheduled(OperationsCleanupExecuteCommand command) {
+        return executeInternal(command, false);
+    }
+
+    private OperationsCleanupDetailResult executeInternal(
+            OperationsCleanupExecuteCommand command, boolean requireRequesterUserId) {
+        validateExecuteCommand(command, requireRequesterUserId);
         String cleanupType = OperationsCleanupSupport.normalizeType(command.getCleanupType());
         if (!OperationsCleanupSupport.isSupportedType(cleanupType)) {
             throw new IllegalArgumentException("Operations cleanup type is not supported: " + command.getCleanupType());
         }
 
-        Date startedAt = new Date();
+        Date requestedAt = command.getRequestedAt() == null ? new Date() : command.getRequestedAt();
+        int limit = effectiveLimit(command.getLimit());
         CleanupJob cleanupJob = new CleanupJob(
                 null,
                 cleanupType,
@@ -84,13 +96,14 @@ public class CleanupApplicationServiceImpl implements CleanupApplicationService 
                 0,
                 null,
                 command.getRequesterUserId(),
-                startedAt,
+                requestedAt,
                 null,
                 new ArrayList<>());
         CleanupJobId cleanupId = cleanupJobRepository.insert(cleanupJob);
         cleanupJob.setId(cleanupId);
         try {
-            List<CleanupItem> cleanupItems = discoverCleanupItems(cleanupId.value(), cleanupType, startedAt);
+            List<CleanupItem> cleanupItems = discoverCleanupItems(
+                    cleanupId.value(), cleanupType, requestedAt, command.getRetentionDays(), limit);
             int successCount = 0;
             int failedCount = 0;
             for (CleanupItem item : cleanupItems) {
@@ -118,6 +131,13 @@ public class CleanupApplicationServiceImpl implements CleanupApplicationService 
             recordCleanupFailure(cleanupJob);
         }
         return toDetailResult(cleanupJobRepository.getById(cleanupId));
+    }
+
+    private int effectiveLimit(Integer commandLimit) {
+        if (commandLimit == null || commandLimit <= 0) {
+            return OperationsCleanupSupport.DEFAULT_CLEANUP_TARGET_LIMIT;
+        }
+        return commandLimit;
     }
 
     private void recordCleanupFailure(CleanupJob cleanupJob) {
@@ -151,8 +171,9 @@ public class CleanupApplicationServiceImpl implements CleanupApplicationService 
         return toDetailResult(cleanupJobRepository.getById(query == null ? null : query.getCleanupId()));
     }
 
-    private List<CleanupItem> discoverCleanupItems(Long cleanupJobId, String cleanupType, Date processedAt) {
-        List<DiscoveredCleanupTarget> targets = discoverCleanupTargets(cleanupType, processedAt);
+    private List<CleanupItem> discoverCleanupItems(
+            Long cleanupJobId, String cleanupType, Date processedAt, Integer retentionDays, int limit) {
+        List<DiscoveredCleanupTarget> targets = discoverCleanupTargets(cleanupType, processedAt, retentionDays, limit);
         return targets.stream()
                 .map(targetId -> new CleanupItem(
                         null, cleanupJobId, targetId.targetType(), targetId.targetId(), null, null, processedAt))
@@ -176,10 +197,11 @@ public class CleanupApplicationServiceImpl implements CleanupApplicationService 
         }
     }
 
-    private List<DiscoveredCleanupTarget> discoverCleanupTargets(String cleanupType, Date requestedAt) {
+    private List<DiscoveredCleanupTarget> discoverCleanupTargets(
+            String cleanupType, Date requestedAt, Integer retentionDays, int limit) {
         if (CLEANUP_TYPE_EXPIRED_BACKUP.equals(cleanupType)) {
             return backupRepository
-                    .listExpiredBackupIds(requestedAt, OperationsCleanupSupport.DEFAULT_CLEANUP_TARGET_LIMIT)
+                    .listExpiredBackupIds(backupCleanupThreshold(requestedAt, retentionDays), limit)
                     .stream()
                     .map(BackupId::value)
                     .map(targetId -> new DiscoveredCleanupTarget(
@@ -190,7 +212,8 @@ public class CleanupApplicationServiceImpl implements CleanupApplicationService 
                 classicsFacade.listCleanupTargets(ClassicsCleanupTargetsFacadeRequest.builder()
                         .cleanupType(cleanupType)
                         .requestedAt(requestedAt)
-                        .limit(OperationsCleanupSupport.DEFAULT_CLEANUP_TARGET_LIMIT)
+                        .retentionDays(retentionDays)
+                        .limit(limit)
                         .build());
         if (response == null || !response.isSupported() || response.getTargets() == null) {
             return List.of();
@@ -233,14 +256,21 @@ public class CleanupApplicationServiceImpl implements CleanupApplicationService 
         return null;
     }
 
-    private void validateExecuteCommand(OperationsCleanupExecuteCommand command) {
+    private Date backupCleanupThreshold(Date requestedAt, Integer retentionDays) {
+        if (retentionDays == null || retentionDays <= 0) {
+            return requestedAt;
+        }
+        return Date.from(requestedAt.toInstant().minus(Duration.ofDays(retentionDays)));
+    }
+
+    private void validateExecuteCommand(OperationsCleanupExecuteCommand command, boolean requireRequesterUserId) {
         if (command == null) {
             throw new IllegalArgumentException("Operations cleanup execute command must not be null.");
         }
         if (StringUtils.isBlank(command.getCleanupType())) {
             throw new IllegalArgumentException("Operations cleanup type must not be blank.");
         }
-        if (command.getRequesterUserId() == null) {
+        if (requireRequesterUserId && command.getRequesterUserId() == null) {
             throw new IllegalArgumentException("Operations cleanup requesterUserId must not be null.");
         }
     }
