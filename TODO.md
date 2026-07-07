@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web operations health service`：新增健康分页前端服务契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-PROBE-LOOP.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/operations/health/health-types.ts`、`kuzhambu-apps/admin-web/src/pages/operations/health/health-service.ts`、`kuzhambu-apps/admin-web/src/pages/operations/health/health-service-contract.test.ts`
-    - 处理动作：新增健康分页类型和 `getOperationsHealthPage` 服务，并锁定请求体字段。
-    - 验收点：service contract 测试证明 `/operations/health/page` 请求包含组件、状态、来源、目标、时间范围和分页字段。
-    - 重要度：9/10
-
 - [ ] `admin-web operations health page controls`：实现健康细分页控件和表格
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-PROBE-LOOP.md`
