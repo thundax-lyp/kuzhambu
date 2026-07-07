@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Alert, App, Card, Empty, Tabs, Typography } from "antd";
+import { Alert, App, Button, Card, Empty, Tabs, Typography } from "antd";
 import { useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
+import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuPage } from "@/components/kuzhambu-page";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
@@ -12,18 +13,33 @@ import { QualityReportIssueTable } from "./components/quality-report-issue-table
 import { QualityReportSourceTable } from "./components/quality-report-source-table";
 import { QualityReportSummary } from "./components/quality-report-summary";
 import * as service from "./quality-report-service";
-import type { QualityReportDetailRecord, QualityReportRecord } from "./quality-report-types";
+import type {
+    QualityReportDetailRecord,
+    QualityReportRecord,
+    QualityReportSourceDetailRecord,
+    ReextractLowQualityCategoryRecord
+} from "./quality-report-types";
 import "./quality-report-page.css";
 
 const { Text, Title } = Typography;
+const QUALITY_REEXTRACT_TASK_TYPE = "GRAPH";
+const QUALITY_REEXTRACT_MODEL_ID = 1;
+const QUALITY_REEXTRACT_MODEL_NAME = "gpt-5.5";
+const QUALITY_REEXTRACT_PROMPT_MESSAGES_JSON =
+    '[{"role":"system","content":"extract knowledge graph from quality report low quality category"}]';
+const QUALITY_REEXTRACT_INPUT_PAYLOAD_JSON = '{"triggerSource":"QUALITY_REPORT"}';
 
 export const QualityReportPage = () => {
     const { message: messageApi } = App.useApp();
+    const confirm = useKuzhambuConfirm();
     const queryClient = useQueryClient();
     const canView = hasPermission("knowledge:quality-report:view");
     const canGenerate = hasPermission("knowledge:quality-report:generate");
+    const canReextract = hasPermission("knowledge:graph:edit");
     const [graphVersionId, setGraphVersionId] = useState<number | null>(null);
     const [selectedDetail, setSelectedDetail] = useState<QualityReportDetailRecord | null>(null);
+    const [latestReextractTask, setLatestReextractTask] =
+        useState<ReextractLowQualityCategoryRecord | null>(null);
 
     const latestReportQuery = useQuery({
         queryKey: ["knowledge", "quality-report", "latest"],
@@ -76,6 +92,47 @@ export const QualityReportPage = () => {
     const currentReport = currentDetail?.report || null;
     const reportItems = reportPageQuery.data?.records || [];
 
+    const reextractMutation = useMutation({
+        mutationFn: (sourceDetail: QualityReportSourceDetailRecord) => {
+            if (!currentReport?.reportId) {
+                throw new Error("缺少质量报告 ID");
+            }
+            if (!sourceDetail.sourceCategoryCode) {
+                throw new Error("缺少来源门类编码");
+            }
+            return service.reextractLowQualityCategory({
+                reportId: currentReport.reportId,
+                sourceCategoryCode: sourceDetail.sourceCategoryCode,
+                taskType: QUALITY_REEXTRACT_TASK_TYPE,
+                replaceUnconfirmedOnly: true,
+                modelId: QUALITY_REEXTRACT_MODEL_ID,
+                modelName: QUALITY_REEXTRACT_MODEL_NAME,
+                promptMessagesJson: QUALITY_REEXTRACT_PROMPT_MESSAGES_JSON,
+                inputPayloadJson: QUALITY_REEXTRACT_INPUT_PAYLOAD_JSON,
+                requestedBy: 1
+            });
+        },
+        onSuccess: (task) => {
+            setLatestReextractTask(task);
+            messageApi.success("低质量门类重提取任务已创建");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "创建重提取任务失败");
+        }
+    });
+
+    const openReextractConfirm = (sourceDetail: QualityReportSourceDetailRecord) => {
+        const sourceTitle =
+            sourceDetail.sourceCategoryName || sourceDetail.sourceCategoryCode || "来源明细";
+        confirm.danger({
+            title: "确认重提取低质量门类",
+            message: `确认重提取 ${sourceTitle}？`,
+            description: "系统将创建图谱抽取任务，只替换未确认的实体、关系和谱系候选。",
+            okText: "重提取",
+            onConfirm: () => reextractMutation.mutateAsync(sourceDetail)
+        });
+    };
+
     return (
         <KuzhambuPage
             className="quality-report-page knowledge-quality-report-page"
@@ -117,6 +174,29 @@ export const QualityReportPage = () => {
                             </div>
                             <QualityReportSummary report={currentReport} />
                         </section>
+                        {latestReextractTask ? (
+                            <Alert
+                                action={
+                                    <Button href="/knowledge/graph-extraction" size="small">
+                                        打开任务台账
+                                    </Button>
+                                }
+                                className="knowledge-quality-report-reextract-alert"
+                                description={
+                                    <div className="knowledge-quality-report-reextract-fields">
+                                        <Text>任务号：{latestReextractTask.taskId || "-"}</Text>
+                                        <Text>任务类型：{latestReextractTask.taskType || "-"}</Text>
+                                        <Text>
+                                            触发来源：{latestReextractTask.triggerSource || "-"}
+                                        </Text>
+                                        <Text>批次号：{latestReextractTask.batchJobId || "-"}</Text>
+                                    </div>
+                                }
+                                showIcon
+                                title="低质量门类重提取任务已创建"
+                                type="success"
+                            />
+                        ) : null}
                         <Card className="knowledge-quality-report-card" title="报告详情">
                             <Tabs
                                 items={[
@@ -134,7 +214,15 @@ export const QualityReportPage = () => {
                                         label: "来源明细",
                                         children: (
                                             <QualityReportSourceTable
+                                                canReextract={canReextract}
+                                                reextractingDetailId={
+                                                    reextractMutation.isPending
+                                                        ? reextractMutation.variables?.detailId
+                                                        : null
+                                                }
+                                                reportNo={currentReport.reportNo}
                                                 sourceDetails={currentDetail?.sourceDetails || []}
+                                                onReextract={openReextractConfirm}
                                             />
                                         )
                                     },

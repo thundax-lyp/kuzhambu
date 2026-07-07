@@ -68,4 +68,14 @@ public class KnowledgeQualityReportController {
         return KnowledgeQualityReportInterfaceAssembler.toResponse(
                 qualityReportService.latest(request == null ? null : request.getGraphVersionId()));
     }
+
+    @Operation(summary = "重提取低质量门类", description = "knowledge:graph:edit")
+    @HasPermission("knowledge:graph:edit")
+    @SysLogger("重提取低质量门类")
+    @PostMapping("reextract-low-quality-category")
+    public QualityReportResponses.ReextractResponse reextractLowQualityCategory(
+            @Valid @RequestBody QualityReportRequests.ReextractRequest request) {
+        return KnowledgeQualityReportInterfaceAssembler.toResponse(qualityReportService.reextractLowQualityCategory(
+                KnowledgeQualityReportInterfaceAssembler.toCommand(request)));
+    }
 }

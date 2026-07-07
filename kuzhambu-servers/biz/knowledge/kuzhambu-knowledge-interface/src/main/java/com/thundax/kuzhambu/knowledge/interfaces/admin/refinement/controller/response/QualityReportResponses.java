@@ -89,4 +89,20 @@ public final class QualityReportResponses {
         private String annotationLabel;
         private String comment;
     }
+
+    @Getter
+    @Builder
+    public static class ReextractResponse {
+        private Long reportId;
+        private String sourceCategoryCode;
+        private String sourceCategoryName;
+        private String sourceContentType;
+        private Long sourceContentId;
+        private Long taskId;
+        private Long batchJobId;
+        private String taskType;
+        private String triggerSource;
+        private String selectionScopeJson;
+        private Boolean replaceUnconfirmedOnly;
+    }
 }
