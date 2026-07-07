@@ -11,13 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `01 Knowledge 质量报告重提取契约`：补齐低质量门类重提取请求与返回结构
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LOW-QUALITY-REEXTRACT.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/refinement/controller/request/QualityReportRequests.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/refinement/controller/response/QualityReportResponses.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/command/ReextractLowQualityCategoryCommand.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/result/ReextractLowQualityCategoryResult.java`
-    - 处理动作：新增低质量门类重提取的 request、command、result 和 response 字段结构。
-    - 验收点：字段包含 `reportId`、`sourceCategoryCode`、`taskType`、`replaceUnconfirmedOnly`、模型快照、任务号、批次号、`triggerSource` 和 `selectionScopeJson`，且不产生数据库表结构变更。
-    - 重要度：9/10
 - [ ] `02 Knowledge 质量报告轻编排服务`：从报告快照生成重提取任务范围
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LOW-QUALITY-REEXTRACT.md`
