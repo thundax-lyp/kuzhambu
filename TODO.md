@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics/lifecycle-doc-closure`：更新覆盖文档并清理 RUNBOOK
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-LIFECYCLE-EDIT-LOOP.md`
-    - 范围对象：`docs/40-readiness/CLASSICS-IMPLEMENTATION-COVERAGE.md`、`docs/30-designs/RUNBOOK-CLASSICS-LIFECYCLE-EDIT-LOOP.md`、`TODO.md`
-    - 处理动作：最终验证通过后更新 Implementation Coverage、删除临时 RUNBOOK，并按完成情况删除或收窄 TODO。
-    - 验收点：`CLASSICS-IMPLEMENTATION-COVERAGE.md` 标记生命周期闭环已完成，RUNBOOK 不再保留，`TODO.md` 不记录已完成任务。
-    - 重要度：10/10
-
 ## 待审阅任务项
 
 ## 待讨论项
