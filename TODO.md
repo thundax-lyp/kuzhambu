@@ -11,13 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `06 Admin Web 质量报告重提取编排`：接通确认弹窗、调用和成功反馈
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LOW-QUALITY-REEXTRACT.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/quality-report/quality-report-page.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/quality-report/quality-report-page.test.tsx`
-    - 处理动作：在质量报告页接入 `Modal.confirm`、重提取 mutation、页面常量快照和最近创建任务反馈。
-    - 验收点：确认后固定提交 `taskType=GRAPH`、`replaceUnconfirmedOnly=true` 和 `QUALITY_REEXTRACT_*` 常量，成功后展示任务号、任务类型、触发来源、批次号和“打开任务台账”按钮。
-    - 重要度：9/10
 - [ ] `07 Knowledge 低质量门类重提取后端验证`：运行 Knowledge 后端格式、静态和测试检查
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LOW-QUALITY-REEXTRACT.md`
