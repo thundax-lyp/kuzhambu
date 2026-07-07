@@ -140,7 +140,7 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
         } else {
             callRecord.recordFailureStage(result.getFailureStage());
             callRecord.markFailed(result.getErrorType(), result.getErrorMessage(), result.getUsage(), completedAt);
-            if (command.isCreateCandidate()) {
+            if (command.isCreateCandidate() && !command.isStream()) {
                 AiCandidate candidate = result.toCandidate(command, callRecord.getCallId());
                 candidate.reject(
                         result.getErrorType(), result.getErrorMessage(), result.getFailureStage(), completedAt);

@@ -94,6 +94,10 @@ html[data-theme="dark"] .sancai-page {
     padding-right: 2px;
 }
 
+.sancai-candidate-panel-anchor {
+    outline: none;
+}
+
 .sancai-catalog-tree-panel {
     display: grid;
     min-width: 0;

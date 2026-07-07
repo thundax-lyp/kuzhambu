@@ -21,6 +21,7 @@ export interface AiRefinementTaskRecord {
     failureStage?: string | null;
     errorType?: string | null;
     errorMessage?: string | null;
+    streamEnabled?: boolean | null;
     resultFormat?: string | null;
     resultPreview?: string | null;
     requestedAt?: string | null;
@@ -85,4 +86,26 @@ export interface AiRefinementTaskPageRecord {
     total: number;
     pageNo: number;
     pageSize: number;
+}
+
+export type AiRefinementStreamEventType =
+    "started" | "delta" | "progress" | "warning" | "error" | "completed" | string;
+
+export interface AiRefinementStreamEventRecord {
+    eventType: AiRefinementStreamEventType;
+    eventId?: string | null;
+    requestId?: string | null;
+    traceId?: string | null;
+    stage?: string | null;
+    timestamp?: string | null;
+    deltaText?: string | null;
+    status?: string | null;
+    resultFormat?: string | null;
+    resultPayload?: string | null;
+    artifactReferenceJson?: string | null;
+    usage?: Record<string, unknown> | null;
+    errorType?: string | null;
+    errorMessage?: string | null;
+    failureStage?: string | null;
+    fallbackUsed?: boolean | null;
 }

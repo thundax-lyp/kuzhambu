@@ -45,16 +45,24 @@
 - Classics 批量操作结果模型已落地到 Java application/interface 和 Admin Web service contract，当前已覆盖批量分享与批量公开/私有状态修改的成功数、失败数和每条失败原因展示；统一入口 `POST /api/classics/content/visibility/change` 已分发到三类内容应用服务，三类 Admin Web 页面已提供当前页多选批量公开/私有入口。
 - 导出和静态展示任务治理闭环收口：三类内容页面分别完成导出任务列表/创建闭环与状态可见性展示；Sancai 的静态展示列表与下载状态在页面内已收口。
 - 三才图会视觉资产 AI 闭环已补齐：页面内已接入 `image_analysis / fusion / visual / image_gen` 单条任务入口、任务状态轮询、失败提示与重试入口；候选区已接通按 `objectId` 限定的候选读取、编辑、应用、拒绝和刷新联动；`image_gen` 候选应用后的 `artifact -> Storage -> 新 version -> 页面预览/下载` 链路已稳定。
+- 三才图会视觉资产 AI 流式候选展示闭环已补齐：`image_analysis / image_gen` 创建后展示 `AI 流式过程` 卡片，过程卡片展示增量文本、阶段、warning 和失败原因；completed/error 后刷新任务与候选区，成功候选进入 `AI 候选确认`，失败可在流错误出现后直接重试并生成新的 `requestId/traceId`。
 - 三才图会视觉资产批量闭环已补齐：页面支持批量发起图片理解与视觉资产处理任务，后端已提供批量创建、分页查询、取消、失败聚合和已完成结果保留语义；前后端与 workers 已补齐对应回归测试。
 - 三才图会图片治理闭环已补齐：后端已支持图片上传、删除、当前图切换、同条目排序和全部图片 snapshot；Admin Web 已支持配图列表管理、原图上传、删除、当前图选择、缩略预览和放大浏览；Portal 分享和 Workers 静态展示/导出均使用分享或 payload 内的多图资源。
 - Classics/System 权限过滤闭环已补齐：三类内容的 view/edit/export/share 权限在后端查询、详情、批量状态、分享和导出入口形成一致约束；Admin Web 三类 Classics 页面会按同一权限口径禁用分享、导出、批量公开和批量私有控件，并继续展示 `PERMISSION_DENIED` 批量失败项。
 - Classics 清理入口已对接 Operations cleanup：应用层可发现并清理过期导出任务、过期分享链接和草稿分享链接；导出清理会将任务标记为过期，分享/草稿清理会将分享记录标记为过期，底层产物对象生命周期继续复用 Storage 自动 orphan 清理。
 - Classics 删除内容与分享安全闭环已完成：三类内容删除后会将关联分享目标同步为 `CONTENT_DELETED`，按剩余可用目标重算 `classics_share_link.visibility_risk_status`，并且不再把已删除目标计入资源读取、公开列表和风险态。
-- 结合需求文档、设计文档和代码现状，Classics 当前已实现“内容维护 + 候选确认 + 任务型 AI 入口 + 批量视觉资产治理 + 导出/批量分享治理 + 删除分享安全闭环 + 批量公开/私有分享访问 + 批量公开/私有状态修改 + 细粒度权限过滤 + 清理协作”的主干闭环；更复杂的候选流式治理仍保留在后续项中。
+- 结合需求文档、设计文档和代码现状，Classics 当前已实现“内容维护 + 候选确认 + 任务型 AI 入口 + 三才视觉资产流式候选展示 + 批量视觉资产治理 + 导出/批量分享治理 + 删除分享安全闭环 + 批量公开/私有分享访问 + 批量公开/私有状态修改 + 细粒度权限过滤 + 清理协作”的主干闭环；跨内容批量候选治理仍保留在后续项中。
 
 未完成：
 
-- 复杂业务闭环仍未完全接通：流式 AI 候选过程展示和跨内容批量候选治理仍需后续专项补齐。
+- 复杂业务闭环仍未完全接通：跨内容批量候选治理仍需后续专项补齐。
+
+## Recent Validation
+
+- 2026-07-07：`feat/classics-ai-streaming-candidates` 已合入最新 `origin/main`。
+- 2026-07-07：`cd kuzhambu-servers && mvn -pl biz/ai/kuzhambu-ai-interface,biz/ai/kuzhambu-ai-application,biz/ai/kuzhambu-ai-infra -am spotless:apply && mvn spotless:check && mvn checkstyle:check && mvn -pl biz/ai/kuzhambu-ai-interface,biz/ai/kuzhambu-ai-application,biz/ai/kuzhambu-ai-infra,biz/classics/kuzhambu-classics-application -am test` 通过。
+- 2026-07-07：`cd kuzhambu-apps && npm run format:check && npm run lint && npm --workspace kuzhambu-admin-web run build` 通过。
+- 2026-07-07：`npm --workspace kuzhambu-admin-web run test -- --maxWorkers=1` 通过，45 个 test files / 153 tests 全绿；原始 `npm --workspace kuzhambu-admin-web run test` 在全量并发下出现非本任务用例 30 秒超时波动，失败用例单独复跑通过。
 
 ## Requirement Coverage Matrix
 
@@ -70,9 +78,9 @@
 | 展示原文、译文、标签、配图和状态 | 部分完成 | 条目详情、标签列表、配图列表均已提供独立接口；Admin Web 已展示条目列表状态、详情编辑核心文本字段、当前使用图片预览/下载入口，以及视觉资产历史列表、当前版本摘要和原图/生成图预览下载入口 | 标签仍未在三才条目详情内聚合展示；更复杂的视觉资产批量治理仍未闭环 | Classics, Admin Web |
 | 多张配图、缩略预览、放大浏览 | 已完成 | 图片保存、列表、类型、Storage 对象引用、业务上传、业务读取、删除、当前图切换和同条目排序已落地；Admin Web 已提供配图列表管理、缩略预览、放大浏览抽屉、下载和当前图选择；分享快照与 Portal 分享详情保留多图并按 `priority ASC` 展示缩略图切换主图；Workers 静态展示按多图稳定渲染并标记当前图 | 无 | Classics, Storage, Admin Web, Portal Web, Worker |
 | 区分原始配图和视觉资产生成图 | 已完成 | `image_type`、图片模型、资产模型与保存入口已实现；Admin Web 已区分展示视觉资产原图与生成图，并分别提供预览/下载入口；`image_gen` 结果会新建 visual asset version 并绑定正式 Storage 对象 | 无 | Classics, Admin Web |
-| 从条目上下文进入视觉资产工作流 | 已完成 | 资产草稿、图片、展示任务接口与服务可用；Admin Web 已在条目详情弹窗中接入视觉资产历史列表、当前版本切换、权重与描述字段维护、原图/生成图预览下载，以及 `image_analysis / fusion / visual / image_gen` 的页面内任务入口、任务状态轮询、失败提示与重试入口；后端已接通候选读取/应用/拒绝和 `image_gen` 候选应用后的版本化落库与页面展示 | 无 | Classics, Admin Web, AI |
+| 从条目上下文进入视觉资产工作流 | 已完成 | 资产草稿、图片、展示任务接口与服务可用；Admin Web 已在条目详情弹窗中接入视觉资产历史列表、当前版本切换、权重与描述字段维护、原图/生成图预览下载，以及 `image_analysis / fusion / visual / image_gen` 的页面内任务入口、任务状态轮询、流式过程展示、失败提示与重试入口；后端已接通候选读取/应用/拒绝和 `image_gen` 候选应用后的版本化落库与页面展示 | 无 | Classics, Admin Web, AI |
 | 原图上传、删除和预览 | 已完成 | 原图业务上传、列表、Storage owner/reference 绑定、业务读取、inline/attachment 响应头、Admin Web 上传/预览/下载/删除闭环已实现；删除当前图后按 `priority ASC` 自动补位，删除最后一张图后展示空状态 | 无 | Classics, Storage, Admin Web |
-| 图片理解、信息融合、权重调节、视觉描述、AI 生图入口 | 已完成 | 视觉资产字段建模完成，三才视觉资产已接入图片理解/视觉描述/信息融合/AI 生图的任务与候选确认链路，`textWeight`、`imageWeight`、`imageAnalysisMarkdown`、`fusionDescription`、`visualDescription`、`generationParamsJson` 已可保存并按字段边界写回；`image_gen` 候选应用已接通 `artifact -> Storage -> 新 version -> 页面预览/下载` 闭环，失败提示与重试入口已在页面内收口 | 无 | Classics, AI |
+| 图片理解、信息融合、权重调节、视觉描述、AI 生图入口 | 已完成 | 视觉资产字段建模完成，三才视觉资产已接入图片理解/视觉描述/信息融合/AI 生图的任务与候选确认链路，`textWeight`、`imageWeight`、`imageAnalysisMarkdown`、`fusionDescription`、`visualDescription`、`generationParamsJson` 已可保存并按字段边界写回；`image_analysis / image_gen` 已支持流式过程卡片和失败重试；`image_gen` 候选应用已接通 `artifact -> Storage -> 新 version -> 页面预览/下载` 闭环，失败提示与重试入口已在页面内收口 | 无 | Classics, AI |
 | 视觉资产历史和当前使用版本选择 | 已完成 | 视觉资产持久化、列表查询、当前版本切换服务、Admin API 和 Admin Web 已接通；条目详情内可查看历史版本、切换当前使用版本并保存基础字段 | 无 | Classics, Admin Web |
 | 多选条目批量视觉资产处理 | 已完成 | Admin Web 已支持多选条目批量发起图片理解与视觉资产处理任务，并展示成功数、失败数、失败原因、运行中状态和取消入口；后端已提供批量创建、分页、取消、失败聚合和已完成结果保留语义 | 无 | Classics, AI |
 | 摘要、标签和问答对内联维护 | 部分完成 | 主表摘要、通用内容 tag/qa CRUD 已实现；手工标签绑定、删除标签同步和 AI 标签确认回写已接通 Knowledge 内容引用闭环；三才图会、王圻文档、明代习俗页面已接入 `summary / tags / qa` 内联维护入口，含 AI 候选应用后的刷新联动 | 候选预览与更多确认入口仍未完整对齐 | Classics, Knowledge, AI |
@@ -139,7 +147,7 @@
 | --- | --- | --- | --- | --- |
 | 权限不足用户看不到私有内容 | 已完成 | 可见性字段与规则已设计；三类内容查询、详情、导出、分享与批量状态入口已按 System 权限上下文过滤或拒绝；Admin Web 控件状态已按后端权限口径对齐 | 无 | Classics, System |
 | 批量状态修改成功数、失败数和失败原因 | 已完成 | 通用批量操作结果模型已落地，批量分享与批量公开/私有状态修改均已返回成功数、失败数和失败原因；三类内容应用层批量可见性修改已具备同一结果语义，Java interface 与 Admin Web 当前页多选入口已完成；权限不足项以 `PERMISSION_DENIED` 进入失败明细并可在前端展示 | 无 | Classics, Admin Web |
-| AI 生成候选预览、修改、确认和放弃 | 部分完成 | Classics 已接入 AI 候选列表读取、payload 编辑、应用和拒绝闭环；候选应用支持 `translate / summary / tags / qa / image_analysis` 写回正式内容，并追加版本和回写 AI 候选状态；三才视觉资产支持按 `objectId` 的候选限定与刷新联动，且已补齐 `fusion / visual / image_gen` 候选应用规则、失败提示和重试入口 | 流式过程展示、跨内容批量候选治理和更细粒度放弃策略未完成 | Classics, AI |
+| AI 生成候选预览、修改、确认和放弃 | 部分完成 | Classics 已接入 AI 候选列表读取、payload 编辑、应用和拒绝闭环；候选应用支持 `translate / summary / tags / qa / image_analysis` 写回正式内容，并追加版本和回写 AI 候选状态；三才视觉资产支持按 `objectId` 的候选限定与刷新联动，且已补齐 `fusion / visual / image_gen` 候选应用规则、流式过程展示、失败提示和重试入口 | 跨内容批量候选治理和更细粒度放弃策略未完成 | Classics, AI |
 | Knowledge 标签治理 | 外部依赖 | Classics 已保存标签主事实、标签名快照，并通过 Knowledge 协作语义解析统一标签、自动创建标签和同步内容引用投影 | 标签合并、同义词治理、分类运营规则仍不属于 Classics | Knowledge |
 | Storage 对象管理 | 外部依赖 | Classics 只保存 `storage_object_id`，但业务域已负责 Wangqi 原始文件和 Sancai 图片的上传入口、归属校验、读取 URL 和 Portal 分享资源访问控制 | 底层对象生命周期、物理删除、清理策略和通用对象管理仍由 Storage 实现 | Classics, Storage |
 | Discovery 搜索和问答 | 外部依赖 | Classics 可提供内容上下文和入口 | 索引、召回、问答生成由 Discovery/AI 实现 | Discovery, AI |
@@ -166,7 +174,6 @@
 
 需要补充：
 
-- 补齐流式过程展示与更细粒度失败分类。
 - 补齐跨内容批量候选治理与更细粒度放弃策略。
 
 ### B3 批量操作结果模型

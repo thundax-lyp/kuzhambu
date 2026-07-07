@@ -14,9 +14,15 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @Tag(name = "AI模块-精修任务", description = "Classics内容AI精修任务")
 @SysLogger(module = {"AI", "精修任务"})
@@ -53,6 +59,24 @@ public class AiRefinementTaskController {
     public AiRefinementResponses.TaskDetailResponse getTask(
             @Valid @RequestBody AiRefinementRequests.TaskIdRequest request) {
         return AiRefinementInterfaceAssembler.toTaskDetailResponse(taskApplicationService.getTask(request.getTaskId()));
+    }
+
+    @Operation(summary = "订阅AI精修任务流式过程", description = "ai:refinement:view")
+    @ApiImplicitParams({})
+    @HasPermission(value = "ai:refinement:view")
+    @SysLogger(value = "任务流式过程")
+    @GetMapping(value = "stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter streamTask(@RequestParam(value = "taskId") Long taskId) {
+        SseEmitter emitter = new SseEmitter(600_000L);
+        CompletableFuture.runAsync(() -> {
+            try {
+                taskApplicationService.streamTaskEvents(taskId, event -> sendEvent(emitter, event));
+                emitter.complete();
+            } catch (RuntimeException exception) {
+                emitter.completeWithError(exception);
+            }
+        });
+        return emitter;
     }
 
     @Operation(summary = "分页查询AI精修任务", description = "ai:refinement:view")
@@ -141,5 +165,17 @@ public class AiRefinementTaskController {
                 .cancelledAt(result.getCancelledAt())
                 .completedAt(result.getCompletedAt())
                 .build();
+    }
+
+    private static void sendEvent(
+            SseEmitter emitter, com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult event) {
+        try {
+            emitter.send(SseEmitter.event()
+                    .id(event.getEventId())
+                    .name(event.getEventType())
+                    .data(event));
+        } catch (IOException exception) {
+            throw new IllegalStateException("AI refinement task stream send failed", exception);
+        }
     }
 }

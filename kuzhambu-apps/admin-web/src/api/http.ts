@@ -29,6 +29,11 @@ interface FormDataProgressOptions {
     onProgress?: (uploadedBytes: number, totalBytes: number) => void;
 }
 
+interface EventStreamOptions {
+    onChunk: (chunk: string) => void;
+    signal?: AbortSignal;
+}
+
 interface AccessTokenPayload {
     token: string;
     refreshToken?: string;
@@ -377,4 +382,42 @@ export const postFormDataWithProgress = async <TResponse>(
     }
 
     return payload.data;
+};
+
+export const getEventStream = async (path: string, options: EventStreamOptions) => {
+    await refreshAccessTokenIfNeeded();
+
+    const token = getAccessToken();
+    const headers: HeadersInit = {};
+    if (token) {
+        headers[ACCESS_TOKEN_HEADER] = token;
+    }
+
+    const response = await fetch(`${ADMIN_API_BASE_URL}${path}`, {
+        headers,
+        method: "GET",
+        signal: options.signal
+    });
+
+    if (!response.ok) {
+        throw new ApiError(response.status, `流式请求失败：${response.status}`);
+    }
+    if (!response.body) {
+        throw new ApiError("EMPTY_STREAM", "流式响应为空");
+    }
+
+    const decoder = new TextDecoder();
+    const reader = response.body.getReader();
+    try {
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) {
+                break;
+            }
+            options.onChunk(decoder.decode(value, { stream: true }));
+        }
+        options.onChunk(decoder.decode());
+    } finally {
+        reader.releaseLock();
+    }
 };

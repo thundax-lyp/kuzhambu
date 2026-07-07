@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.ai.application.invocation;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
@@ -59,6 +60,46 @@ class AiWorkerInvocationApplicationServiceTest {
         assertEquals(100L, result.getCallId());
         assertEquals("FAILED", repository.updatedCallRecord.get().getStatus());
         assertFalse(repository.updatedCallRecord.get().isStreamCompleted());
+    }
+
+    @Test
+    void streamShouldNotPersistCandidateWhenWorkerFails() {
+        RecordingInvocationRepository repository = new RecordingInvocationRepository();
+        WorkerAiClient workerClient = new WorkerAiClient() {
+            @Override
+            public AiInvokeResult invoke(AiInvokeCommand command) {
+                throw new UnsupportedOperationException("not used");
+            }
+
+            @Override
+            public void stream(AiInvokeCommand command, Consumer<AiStreamEventResult> eventConsumer) {
+                AiStreamEventResult event = new AiStreamEventResult();
+                event.setEventType("error");
+                event.setRequestId(command.getRequestId());
+                event.setTraceId(command.getTraceId());
+                event.setErrorType("WORKER_PROTOCOL_FAILURE");
+                event.setErrorMessage("bad stream");
+                event.setFailureStage("WORKER_STREAM");
+                eventConsumer.accept(event);
+            }
+
+            @Override
+            public DownloadedArtifact downloadArtifact(String requestId, String traceId, String downloadPath) {
+                throw new UnsupportedOperationException("not used");
+            }
+        };
+        AiWorkerInvocationApplicationServiceImpl service =
+                new AiWorkerInvocationApplicationServiceImpl(repository, workerClient, unusedStorageFacade());
+        AiInvokeCommand command = command();
+        command.setCreateCandidate(true);
+
+        AiInvokeResult result = service.stream(command, event -> {});
+
+        assertEquals("FAILED", result.getStatus());
+        assertEquals(100L, result.getCallId());
+        assertNull(result.getCandidateId());
+        assertEquals("FAILED", repository.updatedCallRecord.get().getStatus());
+        assertNull(repository.savedCandidate.get());
     }
 
     @Test

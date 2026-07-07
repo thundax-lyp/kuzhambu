@@ -1,5 +1,6 @@
-import { postJson } from "@/api/http";
+import { getEventStream, postJson } from "@/api/http";
 import type {
+    AiRefinementStreamEventRecord,
     AiRefinementTaskAcceptedRecord,
     AiRefinementTaskCancelPayload,
     AiRefinementTaskCreatePayload,
@@ -15,6 +16,12 @@ export type AiRefinementTaskCreateCommand = AiRefinementTaskCreatePayload;
 export type AiRefinementTaskGetCommand = AiRefinementTaskGetPayload;
 export type AiRefinementTaskCancelCommand = AiRefinementTaskCancelPayload;
 export type AiRefinementTaskPageQuery = AiRefinementTaskPagePayload;
+
+interface AiRefinementTaskStreamCommand {
+    onEvent: (event: AiRefinementStreamEventRecord) => void;
+    signal?: AbortSignal;
+    taskId: number;
+}
 
 const RETRYABLE_STATUSES = new Set(["FAILED", "PARTIAL", "CANCELLED"]);
 
@@ -80,4 +87,70 @@ export const cancelTask = (command: AiRefinementTaskCancelCommand) => {
             body: command
         }
     );
+};
+
+export const requestTaskStream = async ({
+    onEvent,
+    signal,
+    taskId
+}: AiRefinementTaskStreamCommand) => {
+    let buffer = "";
+    await getEventStream(
+        `${AI_REFINEMENT_TASK_PATH}/stream?taskId=${encodeURIComponent(String(taskId))}`,
+        {
+            signal,
+            onChunk: (chunk) => {
+                buffer += chunk;
+                buffer = flushSseBuffer(buffer, onEvent);
+            }
+        }
+    );
+    flushSseBuffer(`${buffer}\n\n`, onEvent);
+};
+
+const flushSseBuffer = (
+    buffer: string,
+    onEvent: (event: AiRefinementStreamEventRecord) => void
+) => {
+    const normalizedBuffer = buffer.replace(/\r\n/g, "\n");
+    const blocks = normalizedBuffer.split("\n\n");
+    const rest = blocks.pop() ?? "";
+    blocks.forEach((block) => dispatchSseBlock(block, onEvent));
+    return rest;
+};
+
+const dispatchSseBlock = (
+    block: string,
+    onEvent: (event: AiRefinementStreamEventRecord) => void
+) => {
+    const lines = block.split("\n");
+    let eventType = "message";
+    let eventId: string | null = null;
+    const dataLines: string[] = [];
+
+    lines.forEach((line) => {
+        if (line.startsWith("event:")) {
+            eventType = line.slice("event:".length).trim();
+            return;
+        }
+        if (line.startsWith("id:")) {
+            eventId = line.slice("id:".length).trim();
+            return;
+        }
+        if (line.startsWith("data:")) {
+            dataLines.push(line.slice("data:".length).trimStart());
+        }
+    });
+
+    if (!dataLines.length) {
+        return;
+    }
+
+    const rawData = dataLines.join("\n");
+    const payload = JSON.parse(rawData) as Partial<AiRefinementStreamEventRecord>;
+    onEvent({
+        ...payload,
+        eventId: payload.eventId ?? eventId,
+        eventType: payload.eventType ?? eventType
+    });
 };
