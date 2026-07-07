@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `operations external http health probe`：实现外部 HTTP 健康探针
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-PROBE-LOOP.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/health/support/OperationsExternalHealthProbeProperties.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/health/support/OperationsExternalHealthProbeConfiguration.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/health/support/HttpOperationsHealthProbe.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/test/java/com/thundax/kuzhambu/operations/application/health/support/HttpOperationsHealthProbeTest.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/test/java/com/thundax/kuzhambu/operations/application/health/support/OperationsExternalHealthProbeConfigurationTest.java`
-    - 处理动作：新增配置驱动的 HTTP `OperationsHealthProbe` 并按 RUNBOOK 规则输出 `UP`、`DEGRADED`、`DOWN` 和 `detailsJson`。
-    - 验收点：测试覆盖禁用不注册、只注册有效 target、200 低耗时为 `UP`、200 高耗时为 `DEGRADED`、非期望状态/超时/异常为 `DOWN`。
-    - 重要度：10/10
-
 - [ ] `operations external probe runtime config`：补齐外部探针运行配置样例
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-PROBE-LOOP.md`
