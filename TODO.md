@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `同步 main 分支`：收口前同步最新 main 代码
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`feat/classics-ai-streaming-candidates` worktree 分支
-    - 处理动作：在收口前把最新 `main` 合入当前分支并处理冲突。
-    - 验收点：当前分支包含最新 `main`，且无未解决冲突。
-    - 重要度：10/10
-
 - [ ] `最终验证`：运行后端和前端相关验证命令
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-AI-STREAMING-CANDIDATES.md`、`docs/00-governance/TODO-RULES.md`
