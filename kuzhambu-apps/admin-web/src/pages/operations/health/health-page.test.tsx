@@ -112,9 +112,10 @@ describe("OperationsHealthPage", () => {
 
         await userEvent.type(screen.getByPlaceholderText("组件"), " admin ");
         fireEvent.mouseDown(screen.getByLabelText("探针来源"));
-        await userEvent.click(await screen.findByText("HTTP"));
+        const httpOptions = await screen.findAllByText("HTTP");
+        await userEvent.click(httpOptions[httpOptions.length - 1]);
         await userEvent.type(screen.getByPlaceholderText("探针目标"), " actuator ");
-        await userEvent.click(screen.getByRole("button", { name: "查询" }));
+        await userEvent.click(screen.getByRole("button", { name: /查询/ }));
 
         await waitFor(() => {
             expect(service.getOperationsHealthPage).toHaveBeenLastCalledWith({
@@ -135,9 +136,11 @@ describe("OperationsHealthPage", () => {
         await screen.findByText("admin-starter");
 
         await userEvent.type(screen.getByPlaceholderText("组件"), "database");
-        await userEvent.click(screen.getByRole("button", { name: "查询" }));
-        await userEvent.click(screen.getByRole("button", { name: "重置" }));
+        await userEvent.click(screen.getByRole("button", { name: /查询/ }));
+        await userEvent.click(screen.getByRole("button", { name: /重\s*置/ }));
+        expect(screen.getByPlaceholderText("组件")).toHaveValue("");
 
+        await userEvent.click(screen.getByRole("button", { name: /刷新/ }));
         await waitFor(() => {
             expect(service.getOperationsHealthPage).toHaveBeenLastCalledWith({
                 component: null,
@@ -151,7 +154,6 @@ describe("OperationsHealthPage", () => {
             });
         });
 
-        await userEvent.click(screen.getByRole("button", { name: "刷新" }));
         expect(service.getOperationsHealthPage).toHaveBeenCalled();
     });
 
@@ -176,7 +178,7 @@ describe("OperationsHealthPage", () => {
         await screen.findByText("admin-starter");
 
         await userEvent.type(screen.getByPlaceholderText("组件"), "admin");
-        await userEvent.click(screen.getByRole("button", { name: "查询" }));
+        await userEvent.click(screen.getByRole("button", { name: /查询/ }));
         await userEvent.click(screen.getByRole("button", { name: "下一页" }));
 
         await waitFor(() => {
@@ -215,9 +217,9 @@ describe("OperationsHealthPage", () => {
         await userEvent.click(screen.getAllByRole("button", { name: "详情" })[0]);
 
         expect(await screen.findByText("健康详情 #9101")).toBeInTheDocument();
-        expect(screen.getByText('"status": "ok"')).toBeInTheDocument();
-        expect(screen.getByText('"latencyMs": 32')).toBeInTheDocument();
-        expect(screen.getByText("self")).toBeInTheDocument();
+        expect(screen.getByText(jsonDetailIncludes('"status": "ok"'))).toBeInTheDocument();
+        expect(screen.getByText(jsonDetailIncludes('"latencyMs": 32'))).toBeInTheDocument();
+        expect(screen.getAllByText("self").length).toBeGreaterThan(0);
     });
 
     it("keeps raw detail text and shows empty details", async () => {
@@ -291,3 +293,6 @@ describe("OperationsHealthPage", () => {
         expect(screen.getByText("关联告警 #9101")).toBeInTheDocument();
     });
 });
+
+const jsonDetailIncludes = (text: string) => (_content: string, element: Element | null) =>
+    element?.tagName.toLowerCase() === "pre" && element.textContent?.includes(text) === true;

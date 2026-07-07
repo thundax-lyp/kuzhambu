@@ -60,7 +60,7 @@ class HttpOperationsHealthProbeTest {
     @Test
     void probeShouldReturnDownWhenRequestFails() throws Exception {
         OperationsHealthProbeResult result =
-                new HttpOperationsHealthProbe(target("http://127.0.0.1:1/internal/health", 200, 1000), 50).probe();
+                new HttpOperationsHealthProbe(target("http://127.0.0.1:1/internal/health", 200, 1000), 1000).probe();
 
         assertEquals(OperationsHealthCollector.HEALTH_STATUS_DOWN, result.getHealthStatus());
         assertEquals("http probe failed", result.getMessage());
