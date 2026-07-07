@@ -82,7 +82,8 @@ class HealthAlertRepositoryImplTest {
         dataObjectPage.setRecords(List.of(dataObject(9203L, "ACTIVE")));
         when(mapper.selectPage(any(Page.class), any())).thenReturn(dataObjectPage);
 
-        PageResult<HealthAlertRecord> result = repository.page("database", "CRITICAL", "ACTIVE", "BACKUP", 9001L, 2, 5);
+        PageResult<HealthAlertRecord> result =
+                repository.page("database", "CRITICAL", "ACTIVE", "BACKUP", 9001L, 9101L, 2, 5);
 
         assertEquals(2, result.getPageNo());
         assertEquals(5, result.getPageSize());
@@ -98,6 +99,7 @@ class HealthAlertRepositoryImplTest {
         assertTrue(sqlSegment.contains("alert_status"));
         assertTrue(sqlSegment.contains("source_ref_type"));
         assertTrue(sqlSegment.contains("source_ref_id"));
+        assertTrue(sqlSegment.contains("latest_check_id"));
         assertTrue(
                 sqlSegment.contains("ORDER BY alert_status ASC,alert_level DESC,last_triggered_at DESC,alert_id DESC"));
     }

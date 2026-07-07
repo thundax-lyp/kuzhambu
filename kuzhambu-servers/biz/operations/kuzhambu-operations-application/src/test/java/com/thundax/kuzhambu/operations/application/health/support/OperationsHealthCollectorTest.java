@@ -9,6 +9,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.operations.application.health.configure.OperationsExternalHealthProbeProperties;
+import com.thundax.kuzhambu.operations.application.health.configure.OperationsExternalHealthProbeProperties.Target;
 import com.thundax.kuzhambu.operations.application.health.support.OperationsHealthProbe.OperationsHealthProbeResult;
 import com.thundax.kuzhambu.operations.domain.health.model.entity.HealthCheckRecord;
 import com.thundax.kuzhambu.operations.domain.health.model.valueobject.HealthCheckId;
@@ -25,8 +27,8 @@ class OperationsHealthCollectorTest {
     void collectShouldPersistSuccessfulProbeRecord() {
         InMemoryHealthCheckRepository repository = new InMemoryHealthCheckRepository();
         OperationsHealthAlertStrategy alertStrategy = mock(OperationsHealthAlertStrategy.class);
-        OperationsHealthCollector collector =
-                new OperationsHealthCollector(repository, alertStrategy, List.of(successProbe("search", "UP", 12)));
+        OperationsHealthCollector collector = new OperationsHealthCollector(
+                repository, alertStrategy, List.of(successProbe("search", "UP", 12)), newExternalProperties(false));
 
         List<HealthCheckId> healthCheckIds = collector.collect();
 
@@ -50,7 +52,8 @@ class OperationsHealthCollectorTest {
         OperationsHealthCollector collector = new OperationsHealthCollector(
                 repository,
                 alertStrategy,
-                List.of(failingProbe("ai", "timeout"), successProbe("backup", "BROKEN", -1)));
+                List.of(failingProbe("ai", "timeout"), successProbe("backup", "BROKEN", -1)),
+                newExternalProperties(false));
 
         collector.collect();
 
@@ -74,8 +77,8 @@ class OperationsHealthCollectorTest {
         doThrow(new IllegalStateException("alert failed"))
                 .when(alertStrategy)
                 .evaluateAfterCollect(org.mockito.Mockito.any());
-        OperationsHealthCollector collector =
-                new OperationsHealthCollector(repository, alertStrategy, List.of(successProbe("storage", "UP", 3)));
+        OperationsHealthCollector collector = new OperationsHealthCollector(
+                repository, alertStrategy, List.of(successProbe("storage", "UP", 3)), newExternalProperties(false));
 
         List<HealthCheckId> healthCheckIds = collector.collect();
 
@@ -88,10 +91,32 @@ class OperationsHealthCollectorTest {
         InMemoryHealthCheckRepository repository = new InMemoryHealthCheckRepository();
         repository.failInsert = true;
         OperationsHealthAlertStrategy alertStrategy = mock(OperationsHealthAlertStrategy.class);
-        OperationsHealthCollector collector =
-                new OperationsHealthCollector(repository, alertStrategy, List.of(successProbe("storage", "UP", 3)));
+        OperationsHealthCollector collector = new OperationsHealthCollector(
+                repository, alertStrategy, List.of(successProbe("storage", "UP", 3)), newExternalProperties(false));
 
         assertThrows(IllegalStateException.class, collector::collect);
+    }
+
+    @Test
+    void collectShouldIncludeEnabledValidExternalTargets() {
+        InMemoryHealthCheckRepository repository = new InMemoryHealthCheckRepository();
+        OperationsHealthAlertStrategy alertStrategy = mock(OperationsHealthAlertStrategy.class);
+        OperationsExternalHealthProbeProperties properties = newExternalProperties(true);
+        properties.setTargets(List.of(
+                target(true, "admin", "http://127.0.0.1:1/internal/health"),
+                target(false, "disabled", "http://127.0.0.1:2/internal/health"),
+                target(true, "", "http://127.0.0.1:3/internal/health"),
+                target(true, "broken-url", "ftp://127.0.0.1/internal/health")));
+        OperationsHealthCollector collector =
+                new OperationsHealthCollector(repository, alertStrategy, List.of(), properties);
+
+        collector.collect();
+
+        assertEquals(1, repository.records.size());
+        HealthCheckRecord record = repository.records.get(0);
+        assertEquals("admin", record.getComponent());
+        assertEquals("HTTP", record.getProbeSource());
+        assertEquals("http://127.0.0.1:1/internal/health", record.getProbeTarget());
     }
 
     private static OperationsHealthProbe successProbe(String component, String status, Integer latencyMs) {
@@ -143,6 +168,21 @@ class OperationsHealthCollectorTest {
         };
     }
 
+    private static OperationsExternalHealthProbeProperties newExternalProperties(boolean enabled) {
+        OperationsExternalHealthProbeProperties properties = new OperationsExternalHealthProbeProperties();
+        properties.setEnabled(enabled);
+        properties.setTimeoutMs(1);
+        return properties;
+    }
+
+    private static Target target(boolean enabled, String component, String url) {
+        Target target = new Target();
+        target.setEnabled(enabled);
+        target.setComponent(component);
+        target.setUrl(url);
+        return target;
+    }
+
     private static final class InMemoryHealthCheckRepository implements HealthCheckRepository {
         private final List<HealthCheckRecord> records = new ArrayList<>();
         private boolean failInsert;
@@ -161,7 +201,15 @@ class OperationsHealthCollectorTest {
         }
 
         @Override
-        public PageResult<HealthCheckRecord> page(String component, String healthStatus, int pageNo, int pageSize) {
+        public PageResult<HealthCheckRecord> page(
+                String component,
+                String healthStatus,
+                String probeSource,
+                String probeTarget,
+                Date checkedAtStart,
+                Date checkedAtEnd,
+                int pageNo,
+                int pageSize) {
             return PageResult.of(pageNo, pageSize, records.size(), List.copyOf(records));
         }
 

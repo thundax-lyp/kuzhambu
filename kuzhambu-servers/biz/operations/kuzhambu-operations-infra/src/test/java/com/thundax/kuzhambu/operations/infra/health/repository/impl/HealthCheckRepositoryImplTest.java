@@ -72,7 +72,15 @@ class HealthCheckRepositoryImplTest {
         dataObjectPage.setRecords(List.of(dataObject(9002L, "cache", "DOWN")));
         when(mapper.selectPage(any(), any())).thenReturn(dataObjectPage);
 
-        PageResult<HealthCheckRecord> result = repository.page("cache", "DOWN", 2, 5);
+        PageResult<HealthCheckRecord> result = repository.page(
+                "cache",
+                "DOWN",
+                "HTTP",
+                "internal/health",
+                new Date(1_718_000_000_000L),
+                new Date(1_718_086_400_000L),
+                2,
+                5);
 
         assertEquals(2, result.getPageNo());
         assertEquals(5, result.getPageSize());
@@ -82,6 +90,16 @@ class HealthCheckRepositoryImplTest {
         assertEquals(9002L, result.getRecords().get(0).getId().value());
         assertEquals("cache", result.getRecords().get(0).getComponent());
         assertEquals("DOWN", result.getRecords().get(0).getHealthStatus());
+
+        ArgumentCaptor<QueryWrapper<HealthCheckDO>> captor = ArgumentCaptor.forClass(QueryWrapper.class);
+        verify(mapper).selectPage(any(), captor.capture());
+        String sqlSegment = captor.getValue().getCustomSqlSegment();
+        assertTrue(sqlSegment.contains("component"));
+        assertTrue(sqlSegment.contains("health_status"));
+        assertTrue(sqlSegment.contains("probe_source"));
+        assertTrue(sqlSegment.contains("probe_target"));
+        assertTrue(sqlSegment.contains("checked_at"));
+        assertTrue(sqlSegment.contains("ORDER BY checked_at DESC,check_id DESC"));
     }
 
     @Test

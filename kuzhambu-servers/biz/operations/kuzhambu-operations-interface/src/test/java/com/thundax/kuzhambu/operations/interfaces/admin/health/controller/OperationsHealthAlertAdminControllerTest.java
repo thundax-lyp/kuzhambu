@@ -88,6 +88,7 @@ class OperationsHealthAlertAdminControllerTest {
         pageRequest.setAlertStatus("ACTIVE");
         pageRequest.setSourceRefType("HEALTH");
         pageRequest.setSourceRefId(9001L);
+        pageRequest.setLatestCheckId(9101L);
         pageRequest.setPageNo(1);
         pageRequest.setPageSize(10);
         var pageResponse = controller.page(pageRequest);
@@ -112,7 +113,8 @@ class OperationsHealthAlertAdminControllerTest {
                                 && "CRITICAL".equals(query.getAlertLevel())
                                 && "ACTIVE".equals(query.getAlertStatus())
                                 && "HEALTH".equals(query.getSourceRefType())
-                                && Long.valueOf(9001L).equals(query.getSourceRefId())),
+                                && Long.valueOf(9001L).equals(query.getSourceRefId())
+                                && Long.valueOf(9101L).equals(query.getLatestCheckId())),
                         argThat((PageQuery pageQuery) ->
                                 pageQuery != null && pageQuery.getPageNo() == 1 && pageQuery.getPageSize() == 10));
         verify(service)

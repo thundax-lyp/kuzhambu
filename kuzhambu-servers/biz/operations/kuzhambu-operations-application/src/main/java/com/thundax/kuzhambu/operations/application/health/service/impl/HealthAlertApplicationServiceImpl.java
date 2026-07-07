@@ -39,6 +39,7 @@ public class HealthAlertApplicationServiceImpl implements HealthAlertApplication
                 query == null ? null : query.getAlertStatus(),
                 query == null ? null : query.getSourceRefType(),
                 query == null ? null : query.getSourceRefId(),
+                query == null ? null : query.getLatestCheckId(),
                 effectivePage.getPageNo(),
                 effectivePage.getPageSize());
         List<OperationsHealthAlertPageResult> results =

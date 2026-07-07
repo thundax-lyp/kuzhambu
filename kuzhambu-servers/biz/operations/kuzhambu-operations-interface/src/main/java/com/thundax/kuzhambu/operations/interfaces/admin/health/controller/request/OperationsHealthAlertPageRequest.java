@@ -34,4 +34,8 @@ public class OperationsHealthAlertPageRequest extends PageRequest {
     @Schema(name = "sourceRefId", description = "来源业务 ID 筛选")
     @JsonProperty(value = "sourceRefId")
     private Long sourceRefId;
+
+    @Schema(name = "latestCheckId", description = "最近关联健康检查 ID 筛选")
+    @JsonProperty(value = "latestCheckId")
+    private Long latestCheckId;
 }

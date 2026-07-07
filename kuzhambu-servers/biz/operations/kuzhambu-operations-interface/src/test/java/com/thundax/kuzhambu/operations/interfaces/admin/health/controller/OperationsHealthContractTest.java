@@ -7,14 +7,76 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.request.OperationsHealthAlertAckRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.request.OperationsHealthAlertPageRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.request.OperationsHealthAlertRecoverRequest;
+import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.request.OperationsHealthPageRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.response.OperationsHealthAlertPageResponse;
 import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.response.OperationsHealthAlertSummaryResponse;
+import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.response.OperationsHealthPageResponse;
 import java.util.Date;
 import org.junit.jupiter.api.Test;
 
 class OperationsHealthContractTest {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
+    @Test
+    void healthPageRequestJsonFieldsShouldRemainStable() throws Exception {
+        OperationsHealthPageRequest pageRequest = OBJECT_MAPPER.readValue(
+                """
+                {
+                  "component":"admin-starter",
+                  "healthStatus":"DOWN",
+                  "probeSource":"HTTP",
+                  "probeTarget":"internal/health",
+                  "checkedAtStart":1719630400000,
+                  "checkedAtEnd":1719716800000,
+                  "pageNo":1,
+                  "pageSize":20
+                }
+                """,
+                OperationsHealthPageRequest.class);
+        assertEquals("admin-starter", pageRequest.getComponent());
+        assertEquals("DOWN", pageRequest.getHealthStatus());
+        assertEquals("HTTP", pageRequest.getProbeSource());
+        assertEquals("internal/health", pageRequest.getProbeTarget());
+        assertEquals(new Date(1_719_630_400_000L), pageRequest.getCheckedAtStart());
+        assertEquals(new Date(1_719_716_800_000L), pageRequest.getCheckedAtEnd());
+        assertJsonFields(
+                pageRequest,
+                "component",
+                "healthStatus",
+                "probeSource",
+                "probeTarget",
+                "checkedAtStart",
+                "checkedAtEnd",
+                "pageNo",
+                "pageSize");
+    }
+
+    @Test
+    void healthPageResponseJsonFieldsShouldRemainStable() {
+        OperationsHealthPageResponse pageResponse = OperationsHealthPageResponse.builder()
+                .checkId(9101L)
+                .component("admin-starter")
+                .healthStatus("DOWN")
+                .latencyMs(3000)
+                .message("http probe timeout")
+                .probeSource("HTTP")
+                .probeTarget("http://127.0.0.1:8080/internal/health")
+                .detailsJson("{\"errorType\":\"TIMEOUT\"}")
+                .checkedAt(new Date(1_719_630_400_000L))
+                .build();
+        assertJsonFields(
+                pageResponse,
+                "checkId",
+                "component",
+                "healthStatus",
+                "latencyMs",
+                "message",
+                "probeSource",
+                "probeTarget",
+                "detailsJson",
+                "checkedAt");
+    }
 
     @Test
     void alertRequestJsonFieldsShouldRemainStable() throws Exception {
@@ -26,6 +88,7 @@ class OperationsHealthContractTest {
                   "alertStatus":"ACTIVE",
                   "sourceRefType":"HEALTH",
                   "sourceRefId":9001,
+                  "latestCheckId":9101,
                   "pageNo":1,
                   "pageSize":20
                 }
@@ -36,6 +99,7 @@ class OperationsHealthContractTest {
         assertEquals("ACTIVE", pageRequest.getAlertStatus());
         assertEquals("HEALTH", pageRequest.getSourceRefType());
         assertEquals(9001L, pageRequest.getSourceRefId());
+        assertEquals(9101L, pageRequest.getLatestCheckId());
         assertJsonFields(
                 pageRequest,
                 "component",
@@ -43,6 +107,7 @@ class OperationsHealthContractTest {
                 "alertStatus",
                 "sourceRefType",
                 "sourceRefId",
+                "latestCheckId",
                 "pageNo",
                 "pageSize");
 

@@ -1,6 +1,8 @@
 package com.thundax.kuzhambu.operations.application.health.support;
 
 import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
+import com.thundax.kuzhambu.operations.application.health.configure.OperationsExternalHealthProbeProperties;
+import com.thundax.kuzhambu.operations.application.health.configure.OperationsExternalHealthProbeProperties.Target;
 import com.thundax.kuzhambu.operations.application.health.support.OperationsHealthProbe.OperationsHealthProbeResult;
 import com.thundax.kuzhambu.operations.domain.health.model.entity.HealthCheckRecord;
 import com.thundax.kuzhambu.operations.domain.health.model.valueobject.HealthCheckId;
@@ -10,6 +12,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,10 +39,11 @@ public class OperationsHealthCollector {
     public OperationsHealthCollector(
             HealthCheckRepository healthCheckRepository,
             OperationsHealthAlertStrategy healthAlertStrategy,
-            List<OperationsHealthProbe> probes) {
+            List<OperationsHealthProbe> probes,
+            OperationsExternalHealthProbeProperties externalProbeProperties) {
         this.healthCheckRepository = healthCheckRepository;
         this.healthAlertStrategy = healthAlertStrategy;
-        this.probes = probes == null ? List.of() : List.copyOf(probes);
+        this.probes = buildProbes(probes, externalProbeProperties);
     }
 
     public List<HealthCheckId> collect() {
@@ -126,5 +130,35 @@ public class OperationsHealthCollector {
             return normalized;
         }
         return normalized.substring(0, MESSAGE_MAX_LENGTH);
+    }
+
+    private static List<OperationsHealthProbe> buildProbes(
+            List<OperationsHealthProbe> localProbes, OperationsExternalHealthProbeProperties externalProbeProperties) {
+        Stream<OperationsHealthProbe> localProbeStream = localProbes == null ? Stream.empty() : localProbes.stream();
+        Stream<OperationsHealthProbe> externalProbeStream = buildExternalProbes(externalProbeProperties).stream();
+        return Stream.concat(localProbeStream, externalProbeStream).toList();
+    }
+
+    private static List<OperationsHealthProbe> buildExternalProbes(
+            OperationsExternalHealthProbeProperties externalProbeProperties) {
+        if (externalProbeProperties == null
+                || !externalProbeProperties.isEnabled()
+                || externalProbeProperties.getTargets() == null) {
+            return List.of();
+        }
+        return externalProbeProperties.getTargets().stream()
+                .filter(OperationsHealthCollector::isValidExternalTarget)
+                .map(target -> new HttpOperationsHealthProbe(target, externalProbeProperties.getTimeoutMs()))
+                .map(OperationsHealthProbe.class::cast)
+                .toList();
+    }
+
+    private static boolean isValidExternalTarget(Target target) {
+        if (target == null || !target.isEnabled()) {
+            return false;
+        }
+        String url = StringUtils.trimToEmpty(target.getUrl()).toLowerCase(Locale.ROOT);
+        return StringUtils.isNotBlank(target.getComponent())
+                && (url.startsWith("http://") || url.startsWith("https://"));
     }
 }

@@ -13,7 +13,15 @@ public interface HealthCheckRepository {
 
     List<HealthCheckRecord> listLatestByComponent();
 
-    PageResult<HealthCheckRecord> page(String component, String healthStatus, int pageNo, int pageSize);
+    PageResult<HealthCheckRecord> page(
+            String component,
+            String healthStatus,
+            String probeSource,
+            String probeTarget,
+            Date checkedAtStart,
+            Date checkedAtEnd,
+            int pageNo,
+            int pageSize);
 
     List<HealthTrendBucket> listTrend(
             String component, String probeSource, Date periodStart, Date periodEnd, String bucketType);

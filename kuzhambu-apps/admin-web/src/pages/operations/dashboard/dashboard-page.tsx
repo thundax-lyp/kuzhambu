@@ -270,6 +270,7 @@ export const OperationsDashboardPage = () => {
     const { message: messageApi } = App.useApp();
     const queryClient = useQueryClient();
     const canViewDashboard = hasPermission("operations:dashboard:view");
+    const canViewHealthPage = hasPermission("operations:health:view");
     const canManageHealthAlert = hasPermission("operations:health:manage");
     const visibleOperationEntries = operationEntries.filter((entry) =>
         hasPermission(entry.permission)
@@ -493,6 +494,11 @@ export const OperationsDashboardPage = () => {
                     <section className="operations-dashboard-grid operations-dashboard-grid-two">
                         <Card
                             className="operations-dashboard-section-card"
+                            extra={
+                                canViewHealthPage ? (
+                                    <Link to="/operations/health">查看全部</Link>
+                                ) : null
+                            }
                             size="small"
                             title="健康巡检"
                         >
