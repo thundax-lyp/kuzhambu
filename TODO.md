@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Final validation`：16 运行最终验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LINEAGE-VISUALIZATION.md`、`.github/workflows/pr-verify.yml`
-    - 范围对象：`kuzhambu-servers/`、`kuzhambu-apps/admin-web/`、`kuzhambu-apps/portal-web/`
-    - 处理动作：运行 RUNBOOK 指定的 Java、Admin Web 和 Portal Web 验证。
-    - 验收点：格式、静态检查、后端测试、前端 lint/test/build 通过，失败项已修复或明确记录。
-    - 重要度：10/10
-
 - [ ] `Knowledge documentation coverage`：17 更新 Knowledge Implementation Coverage
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-KNOWLEDGE-LINEAGE-VISUALIZATION.md`
