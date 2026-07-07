@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.classics.interfaces.admin.sancai.assembler;
 
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiCategoryCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryCommand;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryStatusCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVolumeCommand;
 import com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryPageQuery;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
@@ -29,6 +30,7 @@ import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import com.thundax.kuzhambu.common.web.response.DictResponse;
 import java.util.List;
+import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 
 public final class SancaiInterfaceAssembler {
@@ -67,6 +69,14 @@ public final class SancaiInterfaceAssembler {
                 fromImage(request.getImageStatus()),
                 fromVisualAsset(request.getVisualAssetStatus()),
                 fromRefinement(request.getRefinementStatus()));
+    }
+
+    public static SancaiEntryStatusCommand toStatusCommand(
+            SancaiEntryRequest request, Set<String> operatorPermissions) {
+        return new SancaiEntryStatusCommand(
+                request == null ? null : request.getId(),
+                fromLifecycle(request == null ? null : request.getLifecycleStatus()),
+                operatorPermissions);
     }
 
     public static SancaiCategoryCommand toCommand(SancaiCategoryRequest request) {

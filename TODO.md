@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics/sancai-lifecycle-admin-api`：暴露单条生命周期变更 Admin 接口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-LIFECYCLE-EDIT-LOOP.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/sancai/controller/SancaiAdminController.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/sancai/controller/request/SancaiEntryRequest.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/sancai/assembler/SancaiInterfaceAssembler.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/test/java/com/thundax/kuzhambu/classics/interfaces/admin/sancai/SancaiAdminControllerTest.java`
-    - 处理动作：新增 `POST /api/classics/sancai/entries/lifecycle/change`，Controller 只读取 `id` 和 `lifecycleStatus` 并调用应用层生命周期入口。
-    - 验收点：接口使用 `classics:sancai:edit` 权限，接口测试覆盖路径、请求体字段、权限口径和成功返回。
-    - 重要度：10/10
-
 - [ ] `classics/sancai-lifecycle-application-test`：锁定生命周期应用层规则
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-LIFECYCLE-EDIT-LOOP.md`
