@@ -8,8 +8,8 @@ import {
     SearchOutlined,
     WarningOutlined
 } from "@ant-design/icons";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button, Card, Empty, Segmented, Spin, Statistic, Typography } from "antd";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Alert, App, Button, Card, Empty, Segmented, Spin, Statistic, Typography } from "antd";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { hasPermission } from "@/auth/permission-storage";
@@ -21,6 +21,7 @@ import * as service from "./dashboard-service";
 import type { OperationsDashboardOverviewQuery } from "./dashboard-service";
 import type {
     OperationsDashboardPeriodType,
+    OperationsHealthAlertRecord,
     OperationsHealthSummaryRecord
 } from "./dashboard-types";
 import "./dashboard-page.css";
@@ -98,6 +99,58 @@ const statusTone = (status?: string | null) => {
         return "danger";
     }
     return "neutral";
+};
+
+const alertLevelTone = (level?: string | null) => {
+    if (level === "CRITICAL") {
+        return "danger";
+    }
+    if (level === "WARNING") {
+        return "warning";
+    }
+    return "neutral";
+};
+
+const formatAlertStatus = (status?: string | null) => {
+    if (status === "ACTIVE") {
+        return "未确认";
+    }
+    if (status === "ACKED") {
+        return "已确认";
+    }
+    if (status === "RECOVERED") {
+        return "已恢复";
+    }
+    return status || "-";
+};
+
+const resolveAlertActionPath = (alert: OperationsHealthAlertRecord) => {
+    const sourceType = (alert.sourceRefType || "").toUpperCase();
+    const target = (alert.recoveryTarget || "").toLowerCase();
+    if (sourceType.includes("TASK") || target.includes("task")) {
+        return "/operations/tasks";
+    }
+    if (
+        sourceType.includes("BACKUP") ||
+        sourceType.includes("RESTORE") ||
+        target.includes("backup")
+    ) {
+        return "/operations/backup-restore";
+    }
+    if (sourceType.includes("CLEANUP") || target.includes("cleanup")) {
+        return "/operations/cleanup";
+    }
+    return "/operations/dashboard";
+};
+
+const filterAlertsByComponent = (
+    alerts: OperationsHealthAlertRecord[],
+    component?: string | null
+) => {
+    if (!component) {
+        return [];
+    }
+    return alerts.filter((alert) => alert.component === component);
 };
 
 const buildOverviewQuery = (
@@ -181,9 +234,12 @@ const RankingList = ({ emptyText, items, title }: RankingListProps) => {
 };
 
 export const OperationsDashboardPage = () => {
+    const { message: messageApi } = App.useApp();
     const queryClient = useQueryClient();
     const canViewDashboard = hasPermission("operations:dashboard:view");
+    const canManageHealthAlert = hasPermission("operations:health:manage");
     const [periodType, setPeriodType] = useState<OperationsDashboardPeriodType>("WEEK");
+    const [alertDrawerOpen, setAlertDrawerOpen] = useState(false);
     const [selectedHealth, setSelectedHealth] = useState<OperationsHealthSummaryRecord | null>(
         null
     );
@@ -205,18 +261,71 @@ export const OperationsDashboardPage = () => {
         retry: false
     });
 
+    const alertQuery = useQuery({
+        queryKey: ["operations", "health", "alerts", "dashboard"],
+        queryFn: () =>
+            service.getHealthAlerts({
+                pageNo: 1,
+                pageSize: 20
+            }),
+        enabled: canViewDashboard,
+        retry: false
+    });
+
+    const refreshAlerts = async () => {
+        await Promise.all([
+            queryClient.invalidateQueries({ queryKey: ["operations", "health", "alerts"] }),
+            queryClient.invalidateQueries({ queryKey: ["operations", "dashboard", "overview"] })
+        ]);
+    };
+
+    const confirmAlertMutation = useMutation({
+        mutationFn: service.confirmHealthAlert,
+        onSuccess: async () => {
+            await refreshAlerts();
+            messageApi.success("告警已确认");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "告警确认失败");
+        }
+    });
+
+    const recoverAlertMutation = useMutation({
+        mutationFn: service.recoverHealthAlert,
+        onSuccess: async () => {
+            await refreshAlerts();
+            messageApi.success("告警已标记恢复");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "告警恢复失败");
+        }
+    });
+
     const refreshDashboard = async () => {
         await queryClient.invalidateQueries({ queryKey: ["operations", "dashboard", "overview"] });
         await queryClient.invalidateQueries({ queryKey: ["operations", "health", "trend"] });
+        await queryClient.invalidateQueries({ queryKey: ["operations", "health", "alerts"] });
     };
 
     const overview = dashboardQuery.data;
     const healthSummaries = overview?.healthSummaries || [];
     const healthTrend = trendQuery.data || [];
+    const healthAlerts = alertQuery.data?.records || [];
+    const openHealthAlerts = healthAlerts.filter((alert) => alert.alertStatus !== "RECOVERED");
+    const latestOpenAlert = overview?.latestAlert || openHealthAlerts[0] || null;
     const unhealthyCount = normalizeNumber(overview?.unhealthyComponentCount);
     const failedTaskCount = normalizeNumber(overview?.failedTaskCount);
     const runningTaskCount = normalizeNumber(overview?.runningTaskCount);
-    const isLoading = dashboardQuery.isLoading || trendQuery.isLoading;
+    const activeAlertCount = normalizeNumber(overview?.activeAlertCount || openHealthAlerts.length);
+    const criticalAlertCount = normalizeNumber(
+        overview?.criticalAlertCount ||
+            openHealthAlerts.filter((alert) => alert.alertLevel === "CRITICAL").length
+    );
+    const selectedHealthAlerts = filterAlertsByComponent(
+        openHealthAlerts,
+        selectedHealth?.component
+    );
+    const isLoading = dashboardQuery.isLoading || trendQuery.isLoading || alertQuery.isLoading;
 
     const topContents =
         overview?.topContents?.map((item) => ({
@@ -272,6 +381,25 @@ export const OperationsDashboardPage = () => {
             ) : (
                 <div className="operations-dashboard-content">
                     {isLoading && !overview ? <Spin size="large" /> : null}
+
+                    {openHealthAlerts.length || activeAlertCount ? (
+                        <Alert
+                            action={
+                                <Button size="small" onClick={() => setAlertDrawerOpen(true)}>
+                                    查看告警
+                                </Button>
+                            }
+                            className="operations-dashboard-alert-banner"
+                            description={
+                                latestOpenAlert
+                                    ? `最新：${latestOpenAlert.message || latestOpenAlert.component || "-"}`
+                                    : undefined
+                            }
+                            message={`健康告警 ${formatNumber(activeAlertCount)} 个，严重 ${formatNumber(criticalAlertCount)} 个`}
+                            showIcon
+                            type={criticalAlertCount > 0 ? "error" : "warning"}
+                        />
+                    ) : null}
 
                     <section className="operations-dashboard-metrics" aria-label="核心指标">
                         <Card className="operations-dashboard-metric-card">
@@ -334,27 +462,40 @@ export const OperationsDashboardPage = () => {
                         >
                             {healthSummaries.length ? (
                                 <div className="operations-dashboard-health-list">
-                                    {healthSummaries.map((summary) => (
-                                        <button
-                                            className="operations-dashboard-health-item"
-                                            key={summary.checkId}
-                                            onClick={() => setSelectedHealth(summary)}
-                                            type="button"
-                                        >
-                                            <span>
-                                                <HeartOutlined />
-                                                <Text strong>
-                                                    {summary.component || "未知组件"}
+                                    {healthSummaries.map((summary) => {
+                                        const summaryAlertCount = filterAlertsByComponent(
+                                            openHealthAlerts,
+                                            summary.component
+                                        ).length;
+                                        return (
+                                            <button
+                                                className="operations-dashboard-health-item"
+                                                key={summary.checkId}
+                                                onClick={() => setSelectedHealth(summary)}
+                                                type="button"
+                                            >
+                                                <span>
+                                                    <HeartOutlined />
+                                                    <Text strong>
+                                                        {summary.component || "未知组件"}
+                                                    </Text>
+                                                </span>
+                                                {summaryAlertCount ? (
+                                                    <KuzhambuTag type="danger">
+                                                        告警 {formatNumber(summaryAlertCount)}
+                                                    </KuzhambuTag>
+                                                ) : null}
+                                                <KuzhambuTag
+                                                    type={statusTone(summary.healthStatus)}
+                                                >
+                                                    {summary.healthStatus || "UNKNOWN"}
+                                                </KuzhambuTag>
+                                                <Text type="secondary">
+                                                    {formatLatency(summary.latencyMs)}
                                                 </Text>
-                                            </span>
-                                            <KuzhambuTag type={statusTone(summary.healthStatus)}>
-                                                {summary.healthStatus || "UNKNOWN"}
-                                            </KuzhambuTag>
-                                            <Text type="secondary">
-                                                {formatLatency(summary.latencyMs)}
-                                            </Text>
-                                        </button>
-                                    ))}
+                                            </button>
+                                        );
+                                    })}
                                 </div>
                             ) : (
                                 <Empty
@@ -436,6 +577,103 @@ export const OperationsDashboardPage = () => {
                     </section>
 
                     <KuzhambuDrawer
+                        open={alertDrawerOpen}
+                        onClose={() => setAlertDrawerOpen(false)}
+                        size="small"
+                        title="健康告警"
+                    >
+                        <div className="operations-dashboard-alert-list">
+                            {openHealthAlerts.length ? (
+                                openHealthAlerts.map((alert) => (
+                                    <Card
+                                        className="operations-dashboard-alert-card"
+                                        key={alert.alertId}
+                                        size="small"
+                                    >
+                                        <div className="operations-dashboard-alert-card-header">
+                                            <div>
+                                                <Text strong>{alert.component || "未知组件"}</Text>
+                                                <Text type="secondary">
+                                                    {alert.message || "未返回告警消息"}
+                                                </Text>
+                                            </div>
+                                            <KuzhambuTag type={alertLevelTone(alert.alertLevel)}>
+                                                {alert.alertLevel || "UNKNOWN"}
+                                            </KuzhambuTag>
+                                        </div>
+                                        <div className="operations-dashboard-alert-meta">
+                                            <Text type="secondary">
+                                                状态：{formatAlertStatus(alert.alertStatus)}
+                                            </Text>
+                                            <Text type="secondary">
+                                                最近触发：{formatDateTime(alert.lastTriggeredAt)}
+                                            </Text>
+                                            <Text type="secondary">
+                                                来源：{alert.sourceRefType || "-"} #
+                                                {alert.sourceRefId || "-"}
+                                            </Text>
+                                        </div>
+                                        <Alert
+                                            description={alert.suggestion || "暂无处置建议"}
+                                            message={
+                                                alert.failureReason ||
+                                                alert.recoveryAction ||
+                                                "处置建议"
+                                            }
+                                            showIcon
+                                            type={
+                                                alert.alertLevel === "CRITICAL"
+                                                    ? "error"
+                                                    : "warning"
+                                            }
+                                        />
+                                        <div className="operations-dashboard-alert-actions">
+                                            <Button size="small">
+                                                <Link to={resolveAlertActionPath(alert)}>
+                                                    去处理
+                                                </Link>
+                                            </Button>
+                                            {canManageHealthAlert &&
+                                            alert.alertStatus === "ACTIVE" ? (
+                                                <Button
+                                                    loading={confirmAlertMutation.isPending}
+                                                    onClick={() =>
+                                                        confirmAlertMutation.mutate({
+                                                            alertId: alert.alertId
+                                                        })
+                                                    }
+                                                    size="small"
+                                                >
+                                                    确认
+                                                </Button>
+                                            ) : null}
+                                            {canManageHealthAlert ? (
+                                                <Button
+                                                    loading={recoverAlertMutation.isPending}
+                                                    onClick={() =>
+                                                        recoverAlertMutation.mutate({
+                                                            alertId: alert.alertId
+                                                        })
+                                                    }
+                                                    size="small"
+                                                    type="primary"
+                                                >
+                                                    标记恢复
+                                                </Button>
+                                            ) : null}
+                                        </div>
+                                    </Card>
+                                ))
+                            ) : (
+                                <Empty
+                                    description="暂无未恢复告警"
+                                    image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                />
+                            )}
+                        </div>
+                    </KuzhambuDrawer>
+
+                    <KuzhambuDrawer
                         open={selectedHealth !== null}
                         onClose={() => setSelectedHealth(null)}
                         size="middle"
@@ -457,6 +695,39 @@ export const OperationsDashboardPage = () => {
                             <Text>延迟：{formatLatency(selectedHealth?.latencyMs)}</Text>
                             <Text>检查时间：{formatDateTime(selectedHealth?.checkedAt)}</Text>
                             <Text>消息：{selectedHealth?.message || "-"}</Text>
+                            <div className="operations-dashboard-health-related-alerts">
+                                <div className="operations-dashboard-health-related-alerts-header">
+                                    <Text strong>关联告警</Text>
+                                    <Button
+                                        onClick={() => setAlertDrawerOpen(true)}
+                                        size="small"
+                                        type="link"
+                                    >
+                                        查看全部告警
+                                    </Button>
+                                </div>
+                                {selectedHealthAlerts.length ? (
+                                    selectedHealthAlerts.map((alert) => (
+                                        <Alert
+                                            className="operations-dashboard-health-related-alert"
+                                            description={alert.suggestion || "暂无处置建议"}
+                                            key={alert.alertId}
+                                            message={alert.message || "未返回告警消息"}
+                                            showIcon
+                                            type={
+                                                alert.alertLevel === "CRITICAL"
+                                                    ? "error"
+                                                    : "warning"
+                                            }
+                                        />
+                                    ))
+                                ) : (
+                                    <Empty
+                                        description="暂无关联告警"
+                                        image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                    />
+                                )}
+                            </div>
                         </div>
                     </KuzhambuDrawer>
                 </div>

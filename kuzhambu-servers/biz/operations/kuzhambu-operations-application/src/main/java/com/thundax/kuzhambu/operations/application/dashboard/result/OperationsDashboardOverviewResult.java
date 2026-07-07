@@ -33,6 +33,11 @@ public class OperationsDashboardOverviewResult {
     private Integer unhealthyComponentCount;
     private Integer runningTaskCount;
     private Integer failedTaskCount;
+    private Integer activeAlertCount;
+    private Integer criticalAlertCount;
+    private Integer warningAlertCount;
+    private String highestAlertLevel;
+    private AlertSummaryResult latestAlert;
     private List<BucketCountResult> contentGrowthSeries;
     private List<BucketCountResult> searchTrendSeries;
     private List<BucketCountResult> qaTrendSeries;
@@ -51,6 +56,26 @@ public class OperationsDashboardOverviewResult {
     public static class BucketCountResult {
         private String bucket;
         private Long count;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class AlertSummaryResult {
+        private Long alertId;
+        private String component;
+        private String alertType;
+        private String alertLevel;
+        private String alertStatus;
+        private String sourceRefType;
+        private Long sourceRefId;
+        private String message;
+        private String suggestion;
+        private String recoveryAction;
+        private String recoveryTarget;
+        private Date lastTriggeredAt;
+        private String failureReason;
     }
 
     @Getter

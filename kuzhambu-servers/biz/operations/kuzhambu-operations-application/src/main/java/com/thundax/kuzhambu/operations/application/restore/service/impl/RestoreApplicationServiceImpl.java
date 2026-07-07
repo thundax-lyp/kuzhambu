@@ -6,6 +6,7 @@ import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.operations.application.backup.support.OperationsBackupExecutionGuard;
 import com.thundax.kuzhambu.operations.application.backup.support.OperationsBackupScriptExecutor;
 import com.thundax.kuzhambu.operations.application.backup.support.OperationsBackupSupportModels.OperationsBackupArtifactResult;
+import com.thundax.kuzhambu.operations.application.health.support.OperationsHealthAlertStrategy;
 import com.thundax.kuzhambu.operations.application.restore.command.OperationsRestoreExecuteCommand;
 import com.thundax.kuzhambu.operations.application.restore.query.OperationsRestoreDetailQuery;
 import com.thundax.kuzhambu.operations.application.restore.query.OperationsRestorePageQuery;
@@ -31,6 +32,7 @@ import java.util.Locale;
 import java.util.TimeZone;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -44,6 +46,7 @@ public class RestoreApplicationServiceImpl implements RestoreApplicationService 
     private final OperationsBackupScriptExecutor scriptExecutor;
     private final OperationsBackupExecutionGuard executionGuard;
     private final OperationsRestoreWriteBlocker writeBlocker;
+    private final OperationsHealthAlertStrategy healthAlertStrategy;
 
     public RestoreApplicationServiceImpl(
             RestoreRepository restoreRepository,
@@ -51,11 +54,23 @@ public class RestoreApplicationServiceImpl implements RestoreApplicationService 
             OperationsBackupScriptExecutor scriptExecutor,
             OperationsBackupExecutionGuard executionGuard,
             OperationsRestoreWriteBlocker writeBlocker) {
+        this(restoreRepository, backupRepository, scriptExecutor, executionGuard, writeBlocker, null);
+    }
+
+    @Autowired
+    public RestoreApplicationServiceImpl(
+            RestoreRepository restoreRepository,
+            BackupRepository backupRepository,
+            OperationsBackupScriptExecutor scriptExecutor,
+            OperationsBackupExecutionGuard executionGuard,
+            OperationsRestoreWriteBlocker writeBlocker,
+            OperationsHealthAlertStrategy healthAlertStrategy) {
         this.restoreRepository = restoreRepository;
         this.backupRepository = backupRepository;
         this.scriptExecutor = scriptExecutor;
         this.executionGuard = executionGuard;
         this.writeBlocker = writeBlocker;
+        this.healthAlertStrategy = healthAlertStrategy;
     }
 
     @Override
@@ -155,7 +170,17 @@ public class RestoreApplicationServiceImpl implements RestoreApplicationService 
             restoreRecord.setCompletedAt(new Date());
             restoreRepository.update(restoreRecord);
         }
+        if (RestoreStatus.FAILED.value().equals(restoreRecord.getRestoreStatus())) {
+            recordRestoreFailure(restoreRecord);
+        }
         return toExecuteResult(restoreRepository.getById(restoreId));
+    }
+
+    private void recordRestoreFailure(RestoreRecord record) {
+        if (healthAlertStrategy != null && record != null && record.getId() != null) {
+            healthAlertStrategy.recordRestoreFailed(
+                    record.getId().value(), record.getBackupId(), record.getFailureReason());
+        }
     }
 
     private void executeRestoreScript(RestoreMode restoreMode, String sourceBaseName, String preRestoreTimestamp) {

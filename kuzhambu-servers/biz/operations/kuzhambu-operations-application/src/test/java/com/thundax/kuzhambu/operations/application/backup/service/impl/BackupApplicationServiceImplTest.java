@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
@@ -16,6 +18,7 @@ import com.thundax.kuzhambu.operations.application.backup.result.OperationsBacku
 import com.thundax.kuzhambu.operations.application.backup.support.OperationsBackupExecutionGuard;
 import com.thundax.kuzhambu.operations.application.backup.support.OperationsBackupScriptExecutor;
 import com.thundax.kuzhambu.operations.application.backup.support.OperationsBackupSupportModels.OperationsBackupArtifactResult;
+import com.thundax.kuzhambu.operations.application.health.support.OperationsHealthAlertStrategy;
 import com.thundax.kuzhambu.operations.domain.backup.model.entity.BackupRecord;
 import com.thundax.kuzhambu.operations.domain.backup.model.enums.BackupType;
 import com.thundax.kuzhambu.operations.domain.backup.model.valueobject.BackupId;
@@ -64,14 +67,16 @@ class BackupApplicationServiceImplTest {
     @Test
     void executeAutoBackupShouldPersistFailedRecordWhenScriptFails() {
         InMemoryBackupRepository repository = new InMemoryBackupRepository();
+        OperationsHealthAlertStrategy alertStrategy = mock(OperationsHealthAlertStrategy.class);
         BackupApplicationServiceImpl service = new BackupApplicationServiceImpl(
-                repository, new FailingBackupScriptExecutor(), new OperationsBackupExecutionGuard());
+                repository, new FailingBackupScriptExecutor(), new OperationsBackupExecutionGuard(), alertStrategy);
 
         OperationsBackupExecuteResult result = service.executeAutoBackup();
 
         assertEquals("AUTO", result.getBackupType());
         assertEquals("FAILED", result.getBackupStatus());
         assertEquals("script failed", result.getFailureReason());
+        verify(alertStrategy).recordBackupFailed(result.getBackupId().value(), "script failed");
     }
 
     @Test

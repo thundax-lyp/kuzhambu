@@ -114,6 +114,33 @@ CREATE TABLE IF NOT EXISTS `operations_health_check` (
     KEY `idx_operations_health_probe` (`probe_source`, `probe_target`, `checked_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='运维健康检查记录表';
 
+CREATE TABLE IF NOT EXISTS `operations_health_alert` (
+    `id` bigint NOT NULL AUTO_INCREMENT,
+    `alert_id` bigint NOT NULL,
+    `component` varchar(128) NOT NULL,
+    `alert_type` varchar(32) NOT NULL,
+    `alert_level` varchar(16) NOT NULL,
+    `alert_status` varchar(16) NOT NULL DEFAULT 'ACTIVE',
+    `source_ref_type` varchar(32) NOT NULL,
+    `source_ref_id` bigint DEFAULT NULL,
+    `latest_check_id` bigint DEFAULT NULL,
+    `message` varchar(1024) DEFAULT NULL,
+    `suggestion` varchar(1024) DEFAULT NULL,
+    `recovery_action` varchar(64) DEFAULT NULL,
+    `recovery_target` text DEFAULT NULL,
+    `first_triggered_at` datetime(3) NOT NULL,
+    `last_triggered_at` datetime(3) NOT NULL,
+    `acked_at` datetime(3) DEFAULT NULL,
+    `acked_by_user_id` bigint DEFAULT NULL,
+    `recovered_at` datetime(3) DEFAULT NULL,
+    `failure_reason` varchar(1024) DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_operations_health_alert_id` (`alert_id`),
+    KEY `idx_operations_health_alert_status` (`alert_status`, `alert_level`, `last_triggered_at`),
+    KEY `idx_operations_health_alert_component` (`component`, `alert_status`, `last_triggered_at`),
+    KEY `idx_operations_health_alert_source` (`source_ref_type`, `source_ref_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='运维健康告警表';
+
 CREATE TABLE IF NOT EXISTS `operations_long_task_snapshot` (
     `id` bigint NOT NULL AUTO_INCREMENT,
     `snapshot_id` bigint NOT NULL,

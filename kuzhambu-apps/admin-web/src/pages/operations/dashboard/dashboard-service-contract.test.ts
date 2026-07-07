@@ -47,4 +47,44 @@ describe("operations dashboard service contracts", () => {
             }
         });
     });
+
+    it("maps health alert page endpoint and body fields", async () => {
+        await service.getHealthAlerts({
+            component: "database",
+            alertLevel: "CRITICAL",
+            alertStatus: "ACTIVE",
+            sourceRefType: "HEALTH",
+            sourceRefId: 9001,
+            pageNo: 1,
+            pageSize: 20
+        });
+
+        expect(postJson).toHaveBeenCalledWith("/operations/health/alerts/page", {
+            body: {
+                component: "database",
+                alertLevel: "CRITICAL",
+                alertStatus: "ACTIVE",
+                sourceRefType: "HEALTH",
+                sourceRefId: 9001,
+                pageNo: 1,
+                pageSize: 20
+            }
+        });
+    });
+
+    it("maps health alert action endpoints and body fields", async () => {
+        await service.confirmHealthAlert({ alertId: 9201 });
+        expect(postJson).toHaveBeenCalledWith("/operations/health/alerts/ack", {
+            body: {
+                alertId: 9201
+            }
+        });
+
+        await service.recoverHealthAlert({ alertId: 9201 });
+        expect(postJson).toHaveBeenCalledWith("/operations/health/alerts/recover", {
+            body: {
+                alertId: 9201
+            }
+        });
+    });
 });
