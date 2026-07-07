@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `03 Operations 跨域 summary gateway`：抽取 Dashboard 与 Report 共用的四域 summary 读取入口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DASHBOARD-SUMMARY.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/report/support/DefaultOperationsReportMetricsGateway.java`；`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/report/support/OperationsReportMetricsGateway.java`；`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/dashboard/support/OperationsDashboardSummaryGateway.java`；`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/dashboard/support/DefaultOperationsDashboardSummaryGateway.java`；`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/dashboard/support/OperationsDashboardSummaryModels.java`
-    - 处理动作：新增 Operations application 内部 summary gateway，统一调用 Classics、AI、Discovery、Knowledge facade。
-    - 验收点：Dashboard 和 Report 使用同一 gateway，四域 facade 各被调用一次，任一 summary 为 `null` 时不静默转成 `0` 或空数组。
-    - 重要度：10/10
-
 - [ ] `04 Operations Dashboard overview`：用四域真实 summary 替换 dashboard 占位
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DASHBOARD-SUMMARY.md`
