@@ -1,14 +1,21 @@
 import { useQuery } from "@tanstack/react-query";
-import { Alert, Empty, Spin, Statistic, Typography } from "antd";
+import { Alert, Empty, Spin, Tabs, Typography } from "antd";
 import { useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { KuzhambuPage } from "@/components/kuzhambu-page";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import { LineageCanvas } from "./components/lineage-canvas";
 import { LineageDetailPanel } from "./components/lineage-detail-panel";
 import { LineageFilterBar } from "./components/lineage-filter-bar";
+import { LineageNodeTable } from "./components/lineage-node-table";
+import { LineageRelationTable } from "./components/lineage-relation-table";
 import * as service from "./lineage-service";
 import type { LineageCanvasQuery } from "./lineage-service";
-import type { LineageAvailableFiltersRecord } from "./lineage-types";
+import type {
+    LineageAvailableFiltersRecord,
+    LineageNodeRecord,
+    LineageRelationRecord
+} from "./lineage-types";
 import "./lineage-page.css";
 
 const { Text, Title } = Typography;
@@ -77,6 +84,20 @@ export const LineagePage = () => {
             depth: 2
         }));
     };
+    const selectNode = (node: LineageNodeRecord) => {
+        setQuery((current) => ({
+            ...current,
+            focusNodeId: node.nodeId,
+            focusRelationId: null
+        }));
+    };
+    const selectRelation = (relation: LineageRelationRecord) => {
+        setQuery((current) => ({
+            ...current,
+            focusNodeId: null,
+            focusRelationId: relation.relationId
+        }));
+    };
 
     return (
         <KuzhambuPage
@@ -106,38 +127,60 @@ export const LineagePage = () => {
                         />
                     </section>
                     <section className="knowledge-lineage-workspace" aria-label="世系图画布">
-                        <div className="knowledge-lineage-canvas-shell">
-                            {canvasStatus ? (
-                                <Spin spinning={lineageQuery.isLoading}>
-                                    <Empty
-                                        description={canvasStatus}
-                                        image={Empty.PRESENTED_IMAGE_SIMPLE}
+                        <main className="knowledge-lineage-main">
+                            <div className="knowledge-lineage-canvas-shell">
+                                {canvasStatus ? (
+                                    <Spin spinning={lineageQuery.isLoading}>
+                                        <Empty
+                                            description={canvasStatus}
+                                            image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                        />
+                                    </Spin>
+                                ) : (
+                                    <LineageCanvas
+                                        nodes={canvas?.nodes || []}
+                                        relations={canvas?.relations || []}
+                                        selectedNodeId={query.focusNodeId}
+                                        selectedRelationId={query.focusRelationId}
+                                        onSelectNode={selectNode}
+                                        onSelectRelation={selectRelation}
                                     />
-                                </Spin>
-                            ) : (
-                                <div className="knowledge-lineage-canvas-summary">
-                                    <Statistic
-                                        title="节点"
-                                        value={canvas?.summary.nodeCount ?? 0}
-                                    />
-                                    <Statistic
-                                        title="关系"
-                                        value={canvas?.summary.relationCount ?? 0}
-                                    />
-                                    <Statistic
-                                        title="已确认节点"
-                                        value={canvas?.summary.confirmedNodeCount ?? 0}
-                                    />
-                                    <Statistic
-                                        title="已确认关系"
-                                        value={canvas?.summary.confirmedRelationCount ?? 0}
-                                    />
-                                    {lineageQuery.isFetching ? (
-                                        <Alert banner message="正在刷新世系画布" type="info" />
-                                    ) : null}
-                                </div>
-                            )}
-                        </div>
+                                )}
+                            </div>
+                            <div className="knowledge-lineage-list-shell">
+                                {lineageQuery.isFetching && !lineageQuery.isLoading ? (
+                                    <Alert banner message="正在刷新世系画布" type="info" />
+                                ) : null}
+                                <Tabs
+                                    items={[
+                                        {
+                                            key: "nodes",
+                                            label: "节点列表",
+                                            children: (
+                                                <LineageNodeTable
+                                                    loading={lineageQuery.isFetching}
+                                                    nodes={canvas?.nodes || []}
+                                                    selectedNodeId={query.focusNodeId}
+                                                    onSelectNode={selectNode}
+                                                />
+                                            )
+                                        },
+                                        {
+                                            key: "relations",
+                                            label: "关系列表",
+                                            children: (
+                                                <LineageRelationTable
+                                                    loading={lineageQuery.isFetching}
+                                                    relations={canvas?.relations || []}
+                                                    selectedRelationId={query.focusRelationId}
+                                                    onSelectRelation={selectRelation}
+                                                />
+                                            )
+                                        }
+                                    ]}
+                                />
+                            </div>
+                        </main>
                         <aside
                             className="knowledge-lineage-detail-shell"
                             aria-label="节点和关系详情"

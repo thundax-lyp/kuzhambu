@@ -37,15 +37,26 @@
     min-height: 560px;
 }
 
+.knowledge-lineage-main {
+    display: grid;
+    grid-template-rows: minmax(360px, 1fr) auto;
+    gap: 16px;
+    min-width: 0;
+}
+
 .knowledge-lineage-canvas-shell,
-.knowledge-lineage-detail-shell {
+.knowledge-lineage-detail-shell,
+.knowledge-lineage-list-shell {
     display: flex;
     align-items: stretch;
     justify-content: center;
-    min-height: 560px;
     border: 1px solid var(--ant-color-border-secondary);
     border-radius: 8px;
     background: var(--ant-color-bg-container);
+}
+
+.knowledge-lineage-canvas-shell {
+    min-height: 520px;
 }
 
 .knowledge-lineage-detail-shell {
@@ -56,7 +67,15 @@
 
 .knowledge-lineage-canvas-shell {
     align-items: center;
-    padding: 24px;
+    overflow: hidden;
+    padding: 0;
+}
+
+.knowledge-lineage-list-shell {
+    display: block;
+    min-height: 260px;
+    overflow: hidden;
+    padding: 12px 16px 16px;
 }
 
 .knowledge-lineage-canvas-summary {
@@ -81,6 +100,104 @@
 .knowledge-lineage-detail-panel__source-description {
     display: grid;
     gap: 4px;
+}
+
+.knowledge-lineage-canvas {
+    position: relative;
+    width: 100%;
+    min-height: 520px;
+}
+
+.knowledge-lineage-canvas__tools {
+    position: absolute;
+    z-index: 2;
+    top: 12px;
+    right: 12px;
+    display: flex;
+    gap: 6px;
+}
+
+.knowledge-lineage-canvas__svg {
+    display: block;
+    width: 100%;
+    min-height: 520px;
+    cursor: grab;
+    background:
+        linear-gradient(var(--ant-color-fill-quaternary) 1px, transparent 1px),
+        linear-gradient(90deg, var(--ant-color-fill-quaternary) 1px, transparent 1px);
+    background-size: 32px 32px;
+}
+
+.knowledge-lineage-canvas__relation line {
+    stroke: var(--ant-color-border);
+    stroke-width: 2;
+}
+
+.knowledge-lineage-canvas__relation-hit {
+    cursor: pointer;
+    opacity: 0;
+    stroke: transparent;
+    stroke-width: 18;
+}
+
+.knowledge-lineage-canvas__relation text {
+    cursor: pointer;
+    fill: var(--ant-color-text-secondary);
+    font-size: 13px;
+    pointer-events: all;
+    text-anchor: middle;
+}
+
+.knowledge-lineage-canvas__relation.is-selected line:first-child,
+.knowledge-lineage-canvas__relation:not(.is-muted):hover line:first-child {
+    stroke: var(--ant-color-primary);
+    stroke-width: 3;
+}
+
+.knowledge-lineage-canvas__node {
+    cursor: pointer;
+    outline: none;
+}
+
+.knowledge-lineage-canvas__node rect {
+    fill: var(--ant-color-bg-container);
+    stroke: var(--ant-color-border);
+    stroke-width: 1.5;
+}
+
+.knowledge-lineage-canvas__node.is-confirmed rect {
+    stroke: var(--ant-color-success);
+}
+
+.knowledge-lineage-canvas__node.is-rejected rect {
+    stroke: var(--ant-color-error);
+}
+
+.knowledge-lineage-canvas__node.is-selected rect,
+.knowledge-lineage-canvas__node:hover rect {
+    fill: var(--ant-color-primary-bg);
+    stroke: var(--ant-color-primary);
+    stroke-width: 2.5;
+}
+
+.knowledge-lineage-canvas__node.is-muted,
+.knowledge-lineage-canvas__relation.is-muted {
+    opacity: 0.28;
+}
+
+.knowledge-lineage-canvas__node-name {
+    fill: var(--ant-color-text);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.knowledge-lineage-canvas__node-meta {
+    fill: var(--ant-color-text-secondary);
+    font-size: 12px;
+}
+
+.knowledge-lineage-table-row--selected > td {
+    background: var(--ant-color-primary-bg) !important;
 }
 
 @media (max-width: 960px) {

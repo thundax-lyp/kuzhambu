@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Admin lineage canvas`：09 实现 Admin 世系画布和列表联动
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LINEAGE-VISUALIZATION.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/lineage/components/lineage-canvas.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/lineage/components/lineage-node-table.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/lineage/components/lineage-relation-table.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/lineage/components/lineage-canvas.test.tsx`
-    - 处理动作：实现画布节点/关系点击、高亮、fit view、缩放平移、节点列表和关系列表联动。
-    - 验收点：节点和关系点击可高亮并展示详情，列表点击可联动画布选中态。
-    - 重要度：10/10
-
 - [ ] `Portal lineage service types`：10 定义 Portal 世系页面类型和服务
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LINEAGE-VISUALIZATION.md`
