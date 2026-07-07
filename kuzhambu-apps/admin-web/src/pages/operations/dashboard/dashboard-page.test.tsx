@@ -235,7 +235,11 @@ describe("OperationsDashboardPage", () => {
     }, 30000);
 
     it("renders dashboard controls and data", async () => {
-        replacePermissions(["operations:dashboard:view", "operations:task:view"]);
+        replacePermissions([
+            "operations:dashboard:view",
+            "operations:health:view",
+            "operations:task:view"
+        ]);
 
         renderPage();
 
@@ -247,9 +251,23 @@ describe("OperationsDashboardPage", () => {
         expect(screen.getByText(/分享访问\s+100/)).toBeInTheDocument();
         expect(screen.getByText("健康告警 1 个，严重 1 个")).toBeInTheDocument();
         expect(screen.getByText("任务台账")).toBeInTheDocument();
+        expect(screen.getByRole("link", { name: "查看全部" })).toHaveAttribute(
+            "href",
+            "/operations/health"
+        );
         expect(service.getDashboardOverview).toHaveBeenCalledWith({ periodType: "WEEK" });
         expect(service.getHealthTrend).toHaveBeenCalledWith({ bucketType: "DAY" });
         expect(service.getHealthAlerts).toHaveBeenCalledWith({ pageNo: 1, pageSize: 20 });
+    }, 30000);
+
+    it("navigates to operations health page from health summary card", async () => {
+        replacePermissions(["operations:dashboard:view", "operations:health:view"]);
+
+        renderPage();
+
+        await screen.findByText("健康巡检");
+        fireEvent.click(screen.getByRole("link", { name: "查看全部" }));
+        expect(screen.getByTestId("current-path")).toHaveTextContent("/operations/health");
     }, 30000);
 
     it("requests overview again when period control changes", async () => {

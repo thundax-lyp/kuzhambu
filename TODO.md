@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web operations health route entry`：接入健康页路由和 Dashboard 入口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-PROBE-LOOP.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/router/index.tsx`、`kuzhambu-apps/admin-web/src/pages/operations/dashboard/dashboard-page.tsx`、`kuzhambu-apps/admin-web/src/pages/operations/dashboard/dashboard-page.test.tsx`
-    - 处理动作：新增 `/operations/health` 路由，并在 Dashboard 健康摘要区增加 `查看全部` 跳转入口。
-    - 验收点：router 可渲染健康页，Dashboard 测试覆盖入口可见和跳转，Dashboard 不新增完整分页控件。
-    - 重要度：9/10
-
 - [ ] `operations health menu seed`：补齐健康检查菜单与权限种子
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-PROBE-LOOP.md`
