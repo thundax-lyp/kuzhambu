@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `WorkerAiClient SSE 解析`：补齐 Java AI infra 对 workers SSE 的消费能力
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-AI-STREAMING-CANDIDATES.md`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-infra/src/main/java/com/thundax/kuzhambu/ai/infra/client/WorkerAiClient.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-infra/src/main/java/com/thundax/kuzhambu/ai/infra/client/WorkerAiHttpClient.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-infra/src/main/java/com/thundax/kuzhambu/ai/infra/client/dto/WorkerAiDtos.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-infra/src/test/java/com/thundax/kuzhambu/ai/infra/client/WorkerAiHttpClientTest.java`
-    - 处理动作：解析 workers `started/delta/progress/warning/error/completed` SSE 事件为 `AiStreamEventResult`。
-    - 验收点：测试覆盖 delta 事件解析、completed 正常结束、提前 EOF 未 completed 的失败信号。
-    - 重要度：10/10
-
 - [ ] `AI application stream 编排`：区分三才视觉流式任务和同步任务
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-AI-STREAMING-CANDIDATES.md`

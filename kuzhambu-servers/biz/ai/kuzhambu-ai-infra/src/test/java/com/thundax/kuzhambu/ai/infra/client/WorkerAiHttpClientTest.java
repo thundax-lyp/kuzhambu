@@ -12,6 +12,8 @@ import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -160,6 +162,72 @@ class WorkerAiHttpClientTest {
         client.stream(command(), event -> {});
 
         assertEquals("/internal/ai/stream", captured.get().getRequestURI().getPath());
+    }
+
+    @Test
+    void streamShouldParseDeltaAndCompletedEvents() throws IOException {
+        startServer(
+                "/internal/ai/stream",
+                exchange -> respond(
+                        exchange,
+                        200,
+                        "event:delta\n"
+                                + "data: {\"eventId\":\"evt-1\",\"requestId\":\"req-1\",\"traceId\":\"trace-1\",\"stage\":\"model_stream\",\"deltaText\":\"片段一\"}\n\n"
+                                + "event:completed\n"
+                                + "data: {\"eventId\":\"evt-2\",\"requestId\":\"req-1\",\"traceId\":\"trace-1\",\"stage\":\"completed\",\"result\":{\"format\":\"MARKDOWN\",\"payload\":\"完整结果\"},\"extra\":{\"status\":\"SUCCEEDED\"}}\n\n"));
+        WorkerAiHttpClient client = new WorkerAiHttpClient(properties(), new WorkerAiSignatureSupport(), null);
+        List<AiStreamEventResult> events = new ArrayList<>();
+
+        client.stream(command(), events::add);
+
+        assertEquals(2, events.size());
+        assertEquals("delta", events.get(0).getEventType());
+        assertEquals("model_stream", events.get(0).getStage());
+        assertEquals("片段一", events.get(0).getDeltaText());
+        assertEquals("completed", events.get(1).getEventType());
+        assertEquals("MARKDOWN", events.get(1).getResultFormat());
+        assertEquals("完整结果", events.get(1).getResultPayload());
+        assertEquals("SUCCEEDED", events.get(1).getStatus());
+    }
+
+    @Test
+    void streamShouldParseErrorEvent() throws IOException {
+        startServer(
+                "/internal/ai/stream",
+                exchange -> respond(
+                        exchange,
+                        200,
+                        "event:error\n"
+                                + "data: {\"eventId\":\"evt-err\",\"requestId\":\"req-1\",\"traceId\":\"trace-1\",\"stage\":\"worker_stream\",\"error\":{\"type\":\"MODEL_TRANSPORT_FAILURE\",\"message\":\"模型服务不可用\"},\"extra\":{\"failureStage\":\"WORKER_STREAM\",\"status\":\"FAILED\"}}\n\n"));
+        WorkerAiHttpClient client = new WorkerAiHttpClient(properties(), new WorkerAiSignatureSupport(), null);
+        AtomicReference<AiStreamEventResult> capturedEvent = new AtomicReference<>();
+
+        client.stream(command(), capturedEvent::set);
+
+        assertEquals("error", capturedEvent.get().getEventType());
+        assertEquals("FAILED", capturedEvent.get().getStatus());
+        assertEquals("MODEL_TRANSPORT_FAILURE", capturedEvent.get().getErrorType());
+        assertEquals("模型服务不可用", capturedEvent.get().getErrorMessage());
+        assertEquals("WORKER_STREAM", capturedEvent.get().getFailureStage());
+    }
+
+    @Test
+    void streamShouldExposeEarlyEofToApplication() throws IOException {
+        startServer(
+                "/internal/ai/stream",
+                exchange -> respond(
+                        exchange,
+                        200,
+                        "event:delta\n"
+                                + "data: {\"eventId\":\"evt-1\",\"requestId\":\"req-1\",\"traceId\":\"trace-1\",\"stage\":\"model_stream\",\"delta\":{\"text\":\"未完成片段\"}}\n\n"));
+        WorkerAiHttpClient client = new WorkerAiHttpClient(properties(), new WorkerAiSignatureSupport(), null);
+        List<AiStreamEventResult> events = new ArrayList<>();
+
+        client.stream(command(), events::add);
+
+        assertEquals(1, events.size());
+        assertEquals("delta", events.get(0).getEventType());
+        assertEquals("未完成片段", events.get(0).getDeltaText());
     }
 
     private void startServer(String path, ExchangeHandler handler) throws IOException {
