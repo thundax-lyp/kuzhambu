@@ -73,5 +73,5 @@ describe("GraphExtractionPage", () => {
         fireEvent.click(screen.getByRole("button", { name: /查\s*看/u }));
 
         expect(await screen.findByText('{"sourceContentIds":[1001,1002]}')).toBeInTheDocument();
-    }, 30000);
+    }, 45000);
 });

@@ -11,13 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `11 Knowledge 同步 main 后回归验证`：同步主分支后重跑受影响验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge`、`kuzhambu-apps/admin-web`
-    - 处理动作：同步最新 `main` 后重跑 Knowledge 后端和 Admin Web 受影响验证。
-    - 验收点：同步 `main` 后没有回归，工作区仍只包含低质量门类重提取闭环相关改动。
-    - 重要度：10/10
 - [ ] `12 Knowledge Implementation Coverage 与 RUNBOOK 收口`：更新覆盖状态并清理临时 RUNBOOK
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LOW-QUALITY-REEXTRACT.md`
