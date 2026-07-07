@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Admin Web task failure hint`：补齐任务页失败提示
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-RECOVERY-LOOP.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/operations/tasks/tasks-page.tsx`、`kuzhambu-apps/admin-web/src/pages/operations/tasks/tasks-types.ts`、`kuzhambu-apps/admin-web/src/pages/operations/tasks/tasks-page.test.tsx`
-    - 处理动作：在任务列表和详情抽屉为 `FAILED` 状态展示失败提示和告警入口。
-    - 验收点：失败任务保留原详情字段，无失败原因时显示“未返回失败原因”。
-    - 重要度：8/10
-
 - [ ] `Admin Web backup cleanup failure hints`：补齐备份恢复和清理失败提示
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-RECOVERY-LOOP.md`
