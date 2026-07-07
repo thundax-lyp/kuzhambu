@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web/sancai-lifecycle-controls`：补齐三才条目列表生命周期操作
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-LIFECYCLE-EDIT-LOOP.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-list.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.test.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-page.test.tsx`
-    - 处理动作：在条目操作列按当前状态展示 `发布`、`归档`、`恢复发布` 单条动作，并接入 `useKuzhambuConfirm` 确认弹窗。
-    - 验收点：动作位于 `查看` 后、`删除` 前；无编辑权限禁用；确认后调用 lifecycle service；成功后刷新列表、详情和版本历史并显示对应成功提示。
-    - 重要度：10/10
-
 - [ ] `git/main-sync`：同步最新 main 分支代码
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`

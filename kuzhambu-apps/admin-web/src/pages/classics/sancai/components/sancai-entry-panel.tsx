@@ -44,6 +44,15 @@ const readImageTitle = (image: SancaiEntryImageRecord) => {
     return image.title?.trim() || image.originalFilename?.trim() || `图片 ${image.id}`;
 };
 
+interface SancaiEntryLifecycleAction {
+    confirmDescription: string;
+    confirmMessage: string;
+    confirmTitle: string;
+    okText: string;
+    successMessage: string;
+    targetStatus: "DRAFT" | "PUBLISHED" | "ARCHIVED";
+}
+
 const formatImageSize = (size?: number | null) => {
     if (!size) {
         return "-";
@@ -228,6 +237,40 @@ export const SancaiEntryPanel = ({
             queryClient.invalidateQueries({ queryKey: ["classics", "sancai", "exports", "jobs"] })
         ]);
     }, [queryClient]);
+    const refreshAfterLifecycleChange = useCallback(
+        async (entryId: number) => {
+            const refreshes = [invalidateEntries()];
+            if (isModelOpen && !isCreating && selectedEntry?.id === entryId) {
+                refreshes.push(
+                    queryClient.invalidateQueries({
+                        queryKey: ["classics", "sancai", "entries", "detail", entryId]
+                    }),
+                    queryClient.invalidateQueries({
+                        queryKey: ["classics", "sancai", "entries", "versions", entryId]
+                    }),
+                    queryClient.invalidateQueries({
+                        queryKey: [
+                            "classics",
+                            "sancai",
+                            "entries",
+                            "version",
+                            entryId,
+                            selectedVersionId
+                        ]
+                    })
+                );
+            }
+            await Promise.all(refreshes);
+        },
+        [
+            invalidateEntries,
+            isCreating,
+            isModelOpen,
+            queryClient,
+            selectedEntry?.id,
+            selectedVersionId
+        ]
+    );
     const invalidateRefinementTasks = async () => {
         await queryClient.invalidateQueries({
             queryKey: ["classics", "sancai", "refinement", "tasks", selectedEntry?.id]
@@ -326,6 +369,12 @@ export const SancaiEntryPanel = ({
         },
         onError: (error) => {
             messageApi.error(error instanceof Error ? error.message : "排序保存失败");
+        }
+    });
+    const changeLifecycleStatusMutation = useMutation({
+        mutationFn: entryService.changeLifecycleStatus,
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "生命周期变更失败");
         }
     });
     const shareEntryMutation = useMutation({
@@ -546,6 +595,25 @@ export const SancaiEntryPanel = ({
             onConfirm: () => deleteEntryMutation.mutateAsync(entry.id)
         });
     };
+    const changeLifecycleStatus = (
+        entry: SancaiEntryRecord,
+        action: SancaiEntryLifecycleAction
+    ) => {
+        confirm.danger({
+            title: action.confirmTitle,
+            message: action.confirmMessage,
+            description: action.confirmDescription,
+            okText: action.okText,
+            onConfirm: async () => {
+                await changeLifecycleStatusMutation.mutateAsync({
+                    id: entry.id,
+                    lifecycleStatus: action.targetStatus
+                });
+                await refreshAfterLifecycleChange(entry.id);
+                messageApi.success(action.successMessage);
+            }
+        });
+    };
 
     const shareEntry = (entry: SancaiEntryRecord) => {
         const title = entry.title?.trim() || `条目 ${entry.id}`;
@@ -760,6 +828,7 @@ export const SancaiEntryPanel = ({
                 entries={entries}
                 isLoading={isLoading || sortEntryMutation.isPending}
                 volumes={volumes}
+                onChangeLifecycleStatus={changeLifecycleStatus}
                 onDelete={deleteEntry}
                 onExport={exportEntry}
                 onShowcase={showcaseEntry}

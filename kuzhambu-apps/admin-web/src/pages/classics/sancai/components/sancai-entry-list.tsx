@@ -12,13 +12,18 @@ import {
     type ClassicsBatchOperationRecord
 } from "@/pages/classics/common/classics-content-types";
 import * as entryService from "../services/sancai-entry-service";
-import type { SancaiEntryRecord, SancaiVolumeRecord } from "../sancai-types";
+import type {
+    SancaiEntryLifecycleStatus,
+    SancaiEntryRecord,
+    SancaiVolumeRecord
+} from "../sancai-types";
 
 const { Text } = Typography;
 
 interface SancaiEntryListProps {
     entries: SancaiEntryRecord[];
     isLoading: boolean;
+    onChangeLifecycleStatus: (entry: SancaiEntryRecord, action: SancaiEntryLifecycleAction) => void;
     onDelete: (entry: SancaiEntryRecord) => void;
     onExport: (entry: SancaiEntryRecord) => void;
     onShowcase: (entry: SancaiEntryRecord) => void;
@@ -34,6 +39,82 @@ interface SancaiEntryListProps {
 
 const readTitle = (value: { id: number; title?: string | null }, fallback: string) => {
     return value.title?.trim() || `${fallback} ${value.id}`;
+};
+
+interface SancaiEntryLifecycleAction {
+    ariaLabel: string;
+    confirmDescription: string;
+    confirmMessage: string;
+    confirmTitle: string;
+    okText: string;
+    successMessage: string;
+    targetStatus: SancaiEntryLifecycleStatus;
+    text: string;
+}
+
+const lifecycleActionMeta: Record<
+    SancaiEntryLifecycleStatus,
+    {
+        confirmDescription: string;
+        confirmTitle: string;
+        confirmVerb: string;
+        okText: string;
+        successMessage: string;
+        targetStatus: SancaiEntryLifecycleStatus;
+        text: string;
+    } | null
+> = {
+    ARCHIVED: {
+        confirmDescription: "恢复后条目重新进入已发布治理范围。",
+        confirmTitle: "恢复发布三才图会条目",
+        confirmVerb: "恢复发布",
+        okText: "恢复发布",
+        successMessage: "三才图会条目已恢复发布",
+        targetStatus: "PUBLISHED",
+        text: "恢复发布"
+    },
+    DRAFT: {
+        confirmDescription: "发布后条目进入已发布治理范围，公开或私有仍由可见性字段决定。",
+        confirmTitle: "发布三才图会条目",
+        confirmVerb: "发布",
+        okText: "发布",
+        successMessage: "三才图会条目已发布",
+        targetStatus: "PUBLISHED",
+        text: "发布"
+    },
+    PUBLISHED: {
+        confirmDescription: "归档后条目退出默认已发布治理范围，但不会删除内容和版本历史。",
+        confirmTitle: "归档三才图会条目",
+        confirmVerb: "归档",
+        okText: "归档",
+        successMessage: "三才图会条目已归档",
+        targetStatus: "ARCHIVED",
+        text: "归档"
+    }
+};
+
+const getSancaiEntryLifecycleAction = (
+    entry: SancaiEntryRecord
+): SancaiEntryLifecycleAction | null => {
+    const status = entry.lifecycleStatus;
+    if (status !== "ARCHIVED" && status !== "DRAFT" && status !== "PUBLISHED") {
+        return null;
+    }
+    const meta = lifecycleActionMeta[status];
+    if (!meta) {
+        return null;
+    }
+    const title = readTitle(entry, "条目");
+    return {
+        ariaLabel: `${meta.text} ${title}`,
+        confirmDescription: meta.confirmDescription,
+        confirmMessage: `确认${meta.confirmVerb} ${title}？`,
+        confirmTitle: meta.confirmTitle,
+        okText: meta.okText,
+        successMessage: meta.successMessage,
+        targetStatus: meta.targetStatus,
+        text: meta.text
+    };
 };
 
 const readEntrySummary = (entry: SancaiEntryRecord) => {
@@ -63,6 +144,7 @@ const renderStatusTag = (status?: string | null) => {
 export const SancaiEntryList = ({
     entries,
     isLoading,
+    onChangeLifecycleStatus,
     onDelete,
     onExport,
     onShowcase,
@@ -255,43 +337,58 @@ export const SancaiEntryList = ({
             render: renderStatusTag
         },
         {
+            inlineLimit: 6,
             key: "actions",
-            options: (entry) => [
-                {
-                    key: "share",
-                    text: "分享",
-                    ariaLabel: `分享 ${readTitle(entry, "条目")}`,
-                    disabled: !canShareEntries,
-                    onClick: () => onShare(entry)
-                },
-                {
-                    key: "export",
-                    text: "导出",
-                    ariaLabel: `导出 ${readTitle(entry, "条目")}`,
-                    disabled: !canExportEntries,
-                    onClick: () => onExport(entry)
-                },
-                {
-                    key: "showcase",
-                    text: "生成静态展示",
-                    ariaLabel: `生成静态展示 ${readTitle(entry, "条目")}`,
-                    onClick: () => onShowcase(entry)
-                },
-                {
-                    key: "view",
-                    text: "查看",
-                    ariaLabel: `查看 ${readTitle(entry, "条目")}`,
-                    onClick: () => onView(entry)
-                },
-                { type: "divider" },
-                {
-                    danger: true,
-                    key: "delete",
-                    text: "删除",
-                    ariaLabel: `删除 ${readTitle(entry, "条目")}`,
-                    onClick: () => onDelete(entry)
-                }
-            ]
+            options: (entry) => {
+                const lifecycleAction = getSancaiEntryLifecycleAction(entry);
+                return [
+                    {
+                        key: "share",
+                        text: "分享",
+                        ariaLabel: `分享 ${readTitle(entry, "条目")}`,
+                        disabled: !canShareEntries,
+                        onClick: () => onShare(entry)
+                    },
+                    {
+                        key: "export",
+                        text: "导出",
+                        ariaLabel: `导出 ${readTitle(entry, "条目")}`,
+                        disabled: !canExportEntries,
+                        onClick: () => onExport(entry)
+                    },
+                    {
+                        key: "showcase",
+                        text: "生成静态展示",
+                        ariaLabel: `生成静态展示 ${readTitle(entry, "条目")}`,
+                        onClick: () => onShowcase(entry)
+                    },
+                    {
+                        key: "view",
+                        text: "查看",
+                        ariaLabel: `查看 ${readTitle(entry, "条目")}`,
+                        onClick: () => onView(entry)
+                    },
+                    ...(lifecycleAction
+                        ? [
+                              {
+                                  key: "lifecycle",
+                                  text: lifecycleAction.text,
+                                  ariaLabel: lifecycleAction.ariaLabel,
+                                  disabled: !canChangeEntryVisibility,
+                                  onClick: () => onChangeLifecycleStatus(entry, lifecycleAction)
+                              }
+                          ]
+                        : []),
+                    { type: "divider" as const },
+                    {
+                        type: "danger" as const,
+                        key: "delete",
+                        text: "删除",
+                        ariaLabel: `删除 ${readTitle(entry, "条目")}`,
+                        onClick: () => onDelete(entry)
+                    }
+                ];
+            }
         }
     ];
 
