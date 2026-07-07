@@ -9,6 +9,78 @@
 
 ## 当前任务项
 
+- [ ] `WorkerAiClient SSE 解析`：补齐 Java AI infra 对 workers SSE 的消费能力
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-AI-STREAMING-CANDIDATES.md`
+    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-infra/src/main/java/com/thundax/kuzhambu/ai/infra/client/WorkerAiClient.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-infra/src/main/java/com/thundax/kuzhambu/ai/infra/client/WorkerAiHttpClient.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-infra/src/main/java/com/thundax/kuzhambu/ai/infra/client/dto/WorkerAiDtos.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-infra/src/test/java/com/thundax/kuzhambu/ai/infra/client/WorkerAiHttpClientTest.java`
+    - 处理动作：解析 workers `started/delta/progress/warning/error/completed` SSE 事件为 `AiStreamEventResult`。
+    - 验收点：测试覆盖 delta 事件解析、completed 正常结束、提前 EOF 未 completed 的失败信号。
+    - 重要度：10/10
+
+- [ ] `AI application stream 编排`：区分三才视觉流式任务和同步任务
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-AI-STREAMING-CANDIDATES.md`
+    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/refinement/service/AiRefinementTaskApplicationService.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/refinement/service/impl/AiRefinementTaskApplicationServiceImpl.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/refinement/support/ClassicsAiWorkerUsecaseResolver.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/test/java/com/thundax/kuzhambu/ai/application/refinement/service/impl/AiRefinementTaskApplicationServiceImplTest.java`
+    - 处理动作：让 `SANCAI_ENTRY + image_analysis/image_gen` 通过 worker SSE 执行并写入任务终态和候选。
+    - 验收点：成功路径写入 `ai_refinement_task.status=SUCCEEDED`、`stream_enabled=1`、`candidate_id` 非空；断流未 completed 写入失败终态且不生成候选。
+    - 重要度：10/10
+
+- [ ] `AI interface stream 入口`：补齐精修任务 stream 响应入口
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-AI-STREAMING-CANDIDATES.md`
+    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/refinement/controller/AiRefinementTaskController.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/refinement/controller/response/AiRefinementResponses.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/refinement/assembler/AiRefinementInterfaceAssembler.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/test/java/com/thundax/kuzhambu/ai/interfaces/admin/refinement/controller/AiRefinementTaskControllerTest.java`
+    - 处理动作：新增 `task/stream` SSE 入口并在任务详情响应中返回 `streamEnabled`。
+    - 验收点：`task/get` 返回 `streamEnabled`，`GET /api/ai/refinement/task/stream?taskId=...` 具备 `ai:refinement:view` 权限和 `text/event-stream` 响应测试。
+    - 重要度：10/10
+
+- [ ] `Admin Web stream 服务组件`：新增 Classics 共用流式过程服务和展示组件
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-AI-STREAMING-CANDIDATES.md`
+    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/common/ai-refinement-task-types.ts`、`kuzhambu-apps/admin-web/src/pages/classics/common/ai-refinement-task-service.ts`、`kuzhambu-apps/admin-web/src/pages/classics/common/components/ai-refinement-stream-panel.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/common/ai-refinement-task-service.test.ts`、`kuzhambu-apps/admin-web/src/pages/classics/common/components/ai-refinement-stream-panel.test.tsx`
+    - 处理动作：用 `fetch + ReadableStream` 实现带 `Access-Token` 的 SSE 订阅并提供 `AI 流式过程` 组件。
+    - 验收点：service 测试断言订阅 URL 和 `Access-Token` 请求头，组件测试可定位 `三才图会 AI 流式过程` 并展示 delta、失败原因、关闭操作。
+    - 重要度：9/10
+
+- [ ] `三才视觉资产页面接入`：接通三才视觉任务流式展示、候选刷新和失败重试
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-AI-STREAMING-CANDIDATES.md`
+    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/hooks/use-sancai-entry-panel-state.ts`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.test.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-page.css`
+    - 处理动作：在三才视觉资产编辑区展示流式过程卡片并在 completed 后刷新候选区。
+    - 验收点：点击 `创建图片理解任务` 或 `创建生图任务` 后出现 `AI 流式过程`，completed 后 `AI 候选确认` 出现候选，失败后 `重试` 创建新任务且 `requestId/traceId` 变化。
+    - 重要度：10/10
+
+- [ ] `同步 main 分支`：收口前同步最新 main 代码
+    - 任务类型：执行任务
+    - 依据文档：`docs/00-governance/TODO-RULES.md`
+    - 范围对象：`feat/classics-ai-streaming-candidates` worktree 分支
+    - 处理动作：在收口前把最新 `main` 合入当前分支并处理冲突。
+    - 验收点：当前分支包含最新 `main`，且无未解决冲突。
+    - 重要度：10/10
+
+- [ ] `最终验证`：运行后端和前端相关验证命令
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-AI-STREAMING-CANDIDATES.md`、`docs/00-governance/TODO-RULES.md`
+    - 范围对象：`kuzhambu-servers/`、`kuzhambu-apps/`
+    - 处理动作：在同步 main 后运行 RUNBOOK 中列出的 Java 和 Admin Web 格式、静态检查与测试命令。
+    - 验收点：记录 `mvn spotless:check`、`mvn checkstyle:check`、相关 Maven test、`npm run format:check`、`npm run lint`、admin-web test 的结果。
+    - 重要度：10/10
+
+- [ ] `Implementation Coverage`：同步 AI 和 Classics 实现覆盖状态
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-AI-STREAMING-CANDIDATES.md`、`docs/00-governance/TODO-RULES.md`
+    - 范围对象：`docs/40-readiness/AI-IMPLEMENTATION-COVERAGE.md`、`docs/40-readiness/CLASSICS-IMPLEMENTATION-COVERAGE.md`
+    - 处理动作：记录 Classics 三才视觉流式候选闭环的实现覆盖状态和剩余风险。
+    - 验收点：coverage 文档包含 stream 展示、候选生成、失败重试、main 同步和验证结果的最新口径。
+    - 重要度：8/10
+
+- [ ] `RUNBOOK 清理`：完成闭环后删除临时 RUNBOOK
+    - 任务类型：执行任务
+    - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/00-governance/DOCUMENT-RULES.md`
+    - 范围对象：`docs/30-designs/RUNBOOK-CLASSICS-AI-STREAMING-CANDIDATES.md`
+    - 处理动作：在实现、文档同步、验证和 main 同步完成后删除临时 RUNBOOK。
+    - 验收点：PR 收口前不再保留本 RUNBOOK，且稳定文档已承载必要口径。
+    - 重要度：8/10
+
 ## 待审阅任务项
 
 ## 待讨论项
