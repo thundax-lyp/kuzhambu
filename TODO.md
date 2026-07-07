@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `AI application stream 编排`：区分三才视觉流式任务和同步任务
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-AI-STREAMING-CANDIDATES.md`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/refinement/service/AiRefinementTaskApplicationService.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/refinement/service/impl/AiRefinementTaskApplicationServiceImpl.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/refinement/support/ClassicsAiWorkerUsecaseResolver.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/test/java/com/thundax/kuzhambu/ai/application/refinement/service/impl/AiRefinementTaskApplicationServiceImplTest.java`
-    - 处理动作：让 `SANCAI_ENTRY + image_analysis/image_gen` 通过 worker SSE 执行并写入任务终态和候选。
-    - 验收点：成功路径写入 `ai_refinement_task.status=SUCCEEDED`、`stream_enabled=1`、`candidate_id` 非空；断流未 completed 写入失败终态且不生成候选。
-    - 重要度：10/10
-
 - [ ] `AI interface stream 入口`：补齐精修任务 stream 响应入口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-AI-STREAMING-CANDIDATES.md`

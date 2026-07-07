@@ -20,6 +20,9 @@ import org.springframework.transaction.annotation.Transactional;
 @BizExceptionBoundary
 public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskApplicationService {
 
+    private static final String CONTENT_TYPE_SANCAI_ENTRY = "SANCAI_ENTRY";
+    private static final String CAPABILITY_IMAGE_ANALYSIS = "image_analysis";
+    private static final String CAPABILITY_IMAGE_GEN = "image_gen";
     private static final String STATUS_PENDING = "PENDING";
     private static final String STATUS_RUNNING = "RUNNING";
     private static final String STATUS_SUCCEEDED = "SUCCEEDED";
@@ -56,6 +59,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
         task.setModelId(command.getModelId());
         task.setModelName(command.getModelName());
         task.setPromptVersionId(command.getPromptVersionId());
+        task.setStreamEnabled(isStreamEnabledTask(command));
         task.setRequestedAt(now);
         Long taskId = taskRepository.saveTask(task);
         task.setTaskId(taskId);
@@ -180,7 +184,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
             return;
         }
         task.setCallId(result == null ? null : result.getCallId());
-        task.setCandidateId(result == null ? null : result.getCandidateId());
+        task.setCandidateId(result == null || task.isStreamEnabled() ? null : result.getCandidateId());
         task.setResultFormat(result == null ? null : result.getResultFormat());
         task.setResultPreview(preview);
         task.setFailureStage(result == null ? "WORKER_RESULT" : result.getFailureStage());
@@ -233,6 +237,14 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
                 || STATUS_FAILED.equals(status)
                 || STATUS_PARTIAL.equals(status)
                 || STATUS_CANCELLED.equals(status);
+    }
+
+    private boolean isStreamEnabledTask(AiRefinementRequestCommand command) {
+        if (command == null || !CONTENT_TYPE_SANCAI_ENTRY.equals(command.getContentType())) {
+            return false;
+        }
+        return CAPABILITY_IMAGE_ANALYSIS.equals(command.getCapability())
+                || CAPABILITY_IMAGE_GEN.equals(command.getCapability());
     }
 
     private boolean isBlank(String value) {
