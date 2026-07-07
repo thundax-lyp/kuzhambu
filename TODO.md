@@ -11,13 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `09 Knowledge 低质量门类重提取冒烟`：验证质量报告页到任务台账闭环
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LOW-QUALITY-REEXTRACT.md`
-    - 范围对象：`/knowledge/quality-report`、`/knowledge/graph-extraction`
-    - 处理动作：手工或自动冒烟验证低质量门类“重提取”创建任务并进入任务台账。
-    - 验收点：低质量门类创建出的任务可在任务台账看到 `QUALITY_REPORT`、`selectionScopeJson` 和批次信息。
-    - 重要度：10/10
 - [ ] `10 Knowledge 重提取分支同步 main`：收口前同步主分支最新代码
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`
