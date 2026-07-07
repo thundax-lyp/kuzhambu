@@ -5,7 +5,7 @@ import {
     ReloadOutlined
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Button, Card, Descriptions, Select, Statistic, Typography } from "antd";
+import { Alert, App, Button, Card, Descriptions, Select, Statistic, Typography } from "antd";
 import { useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
@@ -69,6 +69,17 @@ const normalizeFilterValue = (value: string) => {
 
 const countByStatus = (records: OperationsCleanupRecord[], status: string) => {
     return records.filter((record) => record.cleanupStatus === status).length;
+};
+
+const failureReasonText = (value?: string | null) => {
+    return value || "未返回失败原因";
+};
+
+const buildAlertPath = (cleanupId?: number | null) => {
+    if (!cleanupId) {
+        return "/operations/dashboard";
+    }
+    return `/operations/dashboard?sourceRefType=CLEANUP&sourceRefId=${cleanupId}`;
 };
 
 export const CleanupPage = () => {
@@ -266,6 +277,7 @@ export const CleanupPage = () => {
                                 <th>总量</th>
                                 <th>成功</th>
                                 <th>失败</th>
+                                <th>失败提示</th>
                                 <th>开始时间</th>
                                 <th>完成时间</th>
                                 <th>操作</th>
@@ -289,6 +301,23 @@ export const CleanupPage = () => {
                                             <td>{record.totalCount ?? "-"}</td>
                                             <td>{record.successCount ?? "-"}</td>
                                             <td>{record.failedCount ?? "-"}</td>
+                                            <td>
+                                                {record.cleanupStatus === "FAILED" ? (
+                                                    <KuzhambuSpace orientation="vertical" size={4}>
+                                                        <Text type="danger">
+                                                            {failureReasonText(
+                                                                record.failureReason
+                                                            )}
+                                                        </Text>
+                                                        <Button
+                                                            href={buildAlertPath(record.cleanupId)}
+                                                            size="small"
+                                                        >
+                                                            查看告警
+                                                        </Button>
+                                                    </KuzhambuSpace>
+                                                ) : null}
+                                            </td>
                                             <td>{formatDateTime(record.startedAt)}</td>
                                             <td>{formatDateTime(record.completedAt)}</td>
                                             <td>
@@ -329,7 +358,7 @@ export const CleanupPage = () => {
                                 })
                             ) : (
                                 <tr>
-                                    <td className="operations-cleanup-empty-cell" colSpan={9}>
+                                    <td className="operations-cleanup-empty-cell" colSpan={10}>
                                         暂无清理任务
                                     </td>
                                 </tr>
@@ -417,6 +446,23 @@ export const CleanupPage = () => {
                             ]}
                         />
 
+                        {detailRecord.cleanupStatus === "FAILED" ? (
+                            <Alert
+                                action={
+                                    <Button
+                                        href={buildAlertPath(detailRecord.cleanupId)}
+                                        size="small"
+                                    >
+                                        查看告警
+                                    </Button>
+                                }
+                                description={`${failureReasonText(detailRecord.failureReason)}。请检查清理目标和失败项明细，必要时重新发起业务动作。`}
+                                message="清理任务执行失败"
+                                showIcon
+                                type="warning"
+                            />
+                        ) : null}
+
                         {showFailureItems ? (
                             <div className="operations-cleanup-failure">
                                 <Title level={5}>失败项</Title>
@@ -459,7 +505,20 @@ export const CleanupPage = () => {
                                                     </KuzhambuTag>
                                                 </td>
                                                 <td>{formatDateTime(item.processedAt)}</td>
-                                                <td>{item.failureReason || "-"}</td>
+                                                <td>
+                                                    {item.itemStatus === "FAILED" ? (
+                                                        <Alert
+                                                            description={failureReasonText(
+                                                                item.failureReason
+                                                            )}
+                                                            message="清理项失败"
+                                                            showIcon
+                                                            type="warning"
+                                                        />
+                                                    ) : (
+                                                        item.failureReason || "-"
+                                                    )}
+                                                </td>
                                             </tr>
                                         ))
                                     ) : (

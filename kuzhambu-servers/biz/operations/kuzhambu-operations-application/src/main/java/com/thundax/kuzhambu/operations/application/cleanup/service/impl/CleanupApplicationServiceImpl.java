@@ -21,6 +21,7 @@ import com.thundax.kuzhambu.operations.application.cleanup.result.OperationsClea
 import com.thundax.kuzhambu.operations.application.cleanup.result.OperationsCleanupPageResult;
 import com.thundax.kuzhambu.operations.application.cleanup.service.CleanupApplicationService;
 import com.thundax.kuzhambu.operations.application.cleanup.support.OperationsCleanupSupport;
+import com.thundax.kuzhambu.operations.application.health.support.OperationsHealthAlertStrategy;
 import com.thundax.kuzhambu.operations.domain.backup.model.valueobject.BackupId;
 import com.thundax.kuzhambu.operations.domain.backup.repository.BackupRepository;
 import com.thundax.kuzhambu.operations.domain.cleanup.model.entity.CleanupItem;
@@ -32,6 +33,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -43,14 +45,25 @@ public class CleanupApplicationServiceImpl implements CleanupApplicationService 
     private final CleanupJobRepository cleanupJobRepository;
     private final BackupRepository backupRepository;
     private final ClassicsFacade classicsFacade;
+    private final OperationsHealthAlertStrategy healthAlertStrategy;
 
     public CleanupApplicationServiceImpl(
             CleanupJobRepository cleanupJobRepository,
             BackupRepository backupRepository,
             ClassicsFacade classicsFacade) {
+        this(cleanupJobRepository, backupRepository, classicsFacade, null);
+    }
+
+    @Autowired
+    public CleanupApplicationServiceImpl(
+            CleanupJobRepository cleanupJobRepository,
+            BackupRepository backupRepository,
+            ClassicsFacade classicsFacade,
+            OperationsHealthAlertStrategy healthAlertStrategy) {
         this.cleanupJobRepository = cleanupJobRepository;
         this.backupRepository = backupRepository;
         this.classicsFacade = classicsFacade;
+        this.healthAlertStrategy = healthAlertStrategy;
     }
 
     @Override
@@ -94,13 +107,26 @@ public class CleanupApplicationServiceImpl implements CleanupApplicationService 
             cleanupJob.setCleanupStatus(failedCount > 0 ? CLEANUP_STATUS_FAILED : CLEANUP_STATUS_SUCCEEDED);
             cleanupJob.setCompletedAt(new Date());
             cleanupJobRepository.update(cleanupJob);
+            if (failedCount > 0) {
+                recordCleanupFailure(cleanupJob);
+            }
         } catch (RuntimeException exception) {
             cleanupJob.setCleanupStatus(CLEANUP_STATUS_FAILED);
             cleanupJob.setFailureReason(truncateFailureReason(exception.getMessage()));
             cleanupJob.setCompletedAt(new Date());
             cleanupJobRepository.update(cleanupJob);
+            recordCleanupFailure(cleanupJob);
         }
         return toDetailResult(cleanupJobRepository.getById(cleanupId));
+    }
+
+    private void recordCleanupFailure(CleanupJob cleanupJob) {
+        if (healthAlertStrategy == null || cleanupJob == null || cleanupJob.getId() == null) {
+            return;
+        }
+        String failureReason = StringUtils.defaultIfBlank(
+                cleanupJob.getFailureReason(), "cleanup failed items: " + cleanupJob.getFailedCount());
+        healthAlertStrategy.recordCleanupFailed(cleanupJob.getId().value(), failureReason);
     }
 
     @Override

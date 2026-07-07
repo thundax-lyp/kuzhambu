@@ -1,6 +1,6 @@
 import { DashboardOutlined, SettingOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { Button, Card, Descriptions, Input, Select, Spin, Typography } from "antd";
+import { Alert, Button, Card, Descriptions, Input, Select, Spin, Typography } from "antd";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { hasPermission } from "@/auth/permission-storage";
@@ -58,6 +58,21 @@ const formatNumber = (value?: number | null) => {
         return "-";
     }
     return String(value);
+};
+
+const isFailedTask = (task?: OperationsTaskRecord | null) => {
+    return task?.taskStatus === "FAILED";
+};
+
+const failureReasonText = (value?: string | null) => {
+    return value || "未返回失败原因";
+};
+
+const buildTaskAlertPath = (snapshotId?: number | null) => {
+    if (!snapshotId) {
+        return "/operations/dashboard";
+    }
+    return `/operations/dashboard?sourceRefType=LONG_TASK&sourceRefId=${snapshotId}`;
 };
 
 const buildTaskQuery = (query: OperationsTaskPageQuery, pageNo: number, pageSize: number) => {
@@ -223,21 +238,34 @@ export const OperationsTasksPage = () => {
                                 {tasks.length ? (
                                     tasks.map((task) => {
                                         const snapshotId = task.snapshotId;
+                                        const failedTask = isFailedTask(task);
                                         return (
                                             <tr key={snapshotId}>
                                                 <td>{snapshotId}</td>
                                                 <td>{task.sourceDomain || "-"}</td>
                                                 <td>{task.taskType || "-"}</td>
                                                 <td>
-                                                    <KuzhambuTag
-                                                        type={toStatusTone(task.taskStatus)}
-                                                    >
-                                                        {task.taskStatus || "-"}
-                                                    </KuzhambuTag>
+                                                    <KuzhambuSpace size={6} wrap>
+                                                        <KuzhambuTag
+                                                            type={toStatusTone(task.taskStatus)}
+                                                        >
+                                                            {task.taskStatus || "-"}
+                                                        </KuzhambuTag>
+                                                        {failedTask ? (
+                                                            <KuzhambuTag type="danger">
+                                                                失败
+                                                            </KuzhambuTag>
+                                                        ) : null}
+                                                    </KuzhambuSpace>
                                                 </td>
                                                 <td>
                                                     {formatNumber(task.successCount)} /{" "}
                                                     {formatNumber(task.failedCount)}
+                                                    {failedTask ? (
+                                                        <Text type="danger">
+                                                            {failureReasonText(task.failureReason)}
+                                                        </Text>
+                                                    ) : null}
                                                 </td>
                                                 <td>{formatDateTime(task.startedAt)}</td>
                                                 <td>{formatDateTime(task.completedAt)}</td>
@@ -363,6 +391,21 @@ export const OperationsTasksPage = () => {
                             </Descriptions.Item>
                         </Descriptions>
                         {taskDetailQuery.isLoading ? <Spin size="large" /> : null}
+                        {isFailedTask(detailRecord) ? (
+                            <Alert
+                                action={
+                                    <Button size="small">
+                                        <Link to={buildTaskAlertPath(detailRecord?.snapshotId)}>
+                                            查看告警
+                                        </Link>
+                                    </Button>
+                                }
+                                description={`${failureReasonText(detailRecord?.failureReason)}。请查看来源域任务状态，必要时重新发起业务动作。`}
+                                message="长任务执行失败"
+                                showIcon
+                                type="warning"
+                            />
+                        ) : null}
                     </div>
                 </KuzhambuDrawer>
             </div>

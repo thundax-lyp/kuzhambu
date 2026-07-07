@@ -11,10 +11,14 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
 public class OperationsHealthCollector {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(OperationsHealthCollector.class);
 
     public static final String HEALTH_STATUS_UP = "UP";
     public static final String HEALTH_STATUS_DEGRADED = "DEGRADED";
@@ -25,11 +29,16 @@ public class OperationsHealthCollector {
             Set.of(HEALTH_STATUS_UP, HEALTH_STATUS_DEGRADED, HEALTH_STATUS_DOWN);
 
     private final HealthCheckRepository healthCheckRepository;
+    private final OperationsHealthAlertStrategy healthAlertStrategy;
     private final List<OperationsHealthProbe> probes;
     private final SnowflakeIdGenerator idGenerator = new SnowflakeIdGenerator();
 
-    public OperationsHealthCollector(HealthCheckRepository healthCheckRepository, List<OperationsHealthProbe> probes) {
+    public OperationsHealthCollector(
+            HealthCheckRepository healthCheckRepository,
+            OperationsHealthAlertStrategy healthAlertStrategy,
+            List<OperationsHealthProbe> probes) {
         this.healthCheckRepository = healthCheckRepository;
+        this.healthAlertStrategy = healthAlertStrategy;
         this.probes = probes == null ? List.of() : List.copyOf(probes);
     }
 
@@ -38,8 +47,17 @@ public class OperationsHealthCollector {
         for (OperationsHealthProbe probe : probes) {
             HealthCheckRecord record = buildRecord(probe);
             healthCheckIds.add(healthCheckRepository.insert(record));
+            evaluateHealthAlert(record);
         }
         return healthCheckIds;
+    }
+
+    private void evaluateHealthAlert(HealthCheckRecord record) {
+        try {
+            healthAlertStrategy.evaluateAfterCollect(record);
+        } catch (RuntimeException exception) {
+            LOGGER.warn("Operations health alert evaluation failed for component {}", record.getComponent(), exception);
+        }
     }
 
     private HealthCheckRecord buildRecord(OperationsHealthProbe probe) {

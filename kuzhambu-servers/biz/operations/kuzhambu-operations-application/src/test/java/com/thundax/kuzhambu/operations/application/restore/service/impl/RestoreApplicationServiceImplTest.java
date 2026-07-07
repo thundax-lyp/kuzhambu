@@ -3,12 +3,15 @@ package com.thundax.kuzhambu.operations.application.restore.service.impl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.operations.application.backup.support.OperationsBackupExecutionGuard;
 import com.thundax.kuzhambu.operations.application.backup.support.OperationsBackupScriptExecutor;
 import com.thundax.kuzhambu.operations.application.backup.support.OperationsBackupSupportModels.OperationsBackupArtifactResult;
+import com.thundax.kuzhambu.operations.application.health.support.OperationsHealthAlertStrategy;
 import com.thundax.kuzhambu.operations.application.restore.command.OperationsRestoreExecuteCommand;
 import com.thundax.kuzhambu.operations.application.restore.query.OperationsRestoreDetailQuery;
 import com.thundax.kuzhambu.operations.application.restore.query.OperationsRestorePageQuery;
@@ -104,8 +107,14 @@ class RestoreApplicationServiceImplTest {
                         new Date(1_719_630_500_000L),
                         new Date(1_722_222_400_000L)));
         InMemoryRestoreRepository restoreRepository = new InMemoryRestoreRepository();
-        RestoreApplicationServiceImpl service =
-                service(restoreRepository, backupRepository, new FailedRestoreScriptExecutor());
+        OperationsHealthAlertStrategy alertStrategy = mock(OperationsHealthAlertStrategy.class);
+        RestoreApplicationServiceImpl service = new RestoreApplicationServiceImpl(
+                restoreRepository,
+                backupRepository,
+                new FailedRestoreScriptExecutor(),
+                new OperationsBackupExecutionGuard(),
+                new OperationsRestoreWriteBlocker(),
+                alertStrategy);
 
         OperationsRestoreExecuteResult result = service.execute(
                 new OperationsRestoreExecuteCommand(BackupId.of(9001L), RestoreMode.REAL.value(), 1001L));
@@ -116,6 +125,7 @@ class RestoreApplicationServiceImplTest {
         assertEquals(
                 "SUCCEEDED",
                 backupRepository.records.get(result.getPreRestoreBackupId()).getBackupStatus());
+        verify(alertStrategy).recordRestoreFailed(result.getRestoreId().value(), 9001L, "restore failed");
     }
 
     @Test

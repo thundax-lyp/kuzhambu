@@ -1,5 +1,6 @@
 import { QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { App } from "antd";
 import type { ReactNode } from "react";
 import { MemoryRouter } from "react-router-dom";
 import { replacePermissions } from "@/auth/permission-storage";
@@ -8,8 +9,11 @@ import { OperationsDashboardPage } from "./dashboard-page";
 import * as service from "./dashboard-service";
 
 vi.mock("./dashboard-service", () => ({
+    confirmHealthAlert: vi.fn(),
     getDashboardOverview: vi.fn(),
-    getHealthTrend: vi.fn()
+    getHealthAlerts: vi.fn(),
+    getHealthTrend: vi.fn(),
+    recoverHealthAlert: vi.fn()
 }));
 
 vi.mock("@/components/kuzhambu-drawer", () => {
@@ -96,6 +100,29 @@ describe("OperationsDashboardPage", () => {
                 avgLatencyMs: 150
             }
         ]);
+        vi.mocked(service.getHealthAlerts).mockResolvedValue({
+            pageNo: 1,
+            pageSize: 20,
+            count: 1,
+            records: [
+                {
+                    alertId: 9201,
+                    component: "admin-server",
+                    alertLevel: "CRITICAL",
+                    alertStatus: "ACTIVE",
+                    sourceRefType: "TASK",
+                    sourceRefId: 6101,
+                    message: "slow response",
+                    suggestion: "检查 admin-server",
+                    recoveryAction: "重启服务",
+                    recoveryTarget: "task",
+                    lastTriggeredAt: "2026-07-01T01:10:00+08:00",
+                    failureReason: "连续失败"
+                }
+            ]
+        });
+        vi.mocked(service.confirmHealthAlert).mockResolvedValue(undefined);
+        vi.mocked(service.recoverHealthAlert).mockResolvedValue(undefined);
     });
 
     afterEach(() => {
@@ -113,9 +140,11 @@ describe("OperationsDashboardPage", () => {
         expect(screen.getByText("admin-server")).toBeInTheDocument();
         expect(screen.getByText("TRANSLATE")).toBeInTheDocument();
         expect(screen.getByText(/分享访问\s+100/)).toBeInTheDocument();
+        expect(screen.getByText("健康告警 1 个，严重 1 个")).toBeInTheDocument();
         expect(screen.getByText("任务台账")).toBeInTheDocument();
         expect(service.getDashboardOverview).toHaveBeenCalledWith({ periodType: "WEEK" });
         expect(service.getHealthTrend).toHaveBeenCalledWith({ bucketType: "DAY" });
+        expect(service.getHealthAlerts).toHaveBeenCalledWith({ pageNo: 1, pageSize: 20 });
     }, 30000);
 
     it("requests overview again when period control changes", async () => {
@@ -149,6 +178,72 @@ describe("OperationsDashboardPage", () => {
         expect(await screen.findByText("admin-server 健康明细")).toBeInTheDocument();
         expect(screen.getByText("采集来源：LOCAL")).toBeInTheDocument();
         expect(screen.getByText("消息：slow response")).toBeInTheDocument();
+        expect(screen.getByText("告警 1")).toBeInTheDocument();
+        expect(screen.getByText("关联告警")).toBeInTheDocument();
+        expect(screen.getByText("检查 admin-server")).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "查看全部告警" })).toBeInTheDocument();
+    }, 30000);
+
+    it("renders empty related alerts for health detail without component alerts", async () => {
+        vi.mocked(service.getDashboardOverview).mockResolvedValue({
+            healthSummaries: [
+                {
+                    checkId: 2,
+                    component: "worker",
+                    healthStatus: "UP",
+                    probeSource: "LOCAL"
+                }
+            ]
+        });
+        vi.mocked(service.getHealthAlerts).mockResolvedValue({
+            records: []
+        });
+
+        renderPage();
+
+        fireEvent.click(await screen.findByText("worker"));
+
+        expect(await screen.findByText("worker 健康明细")).toBeInTheDocument();
+        expect(screen.getByText("暂无关联告警")).toBeInTheDocument();
+    }, 30000);
+
+    it("opens health alert drawer and hides management buttons without manage permission", async () => {
+        renderPage();
+
+        fireEvent.click(await screen.findByRole("button", { name: "查看告警" }));
+
+        expect(await screen.findByText("健康告警")).toBeInTheDocument();
+        expect(screen.getByText("连续失败")).toBeInTheDocument();
+        expect(screen.getByRole("link", { name: "去处理" })).toHaveAttribute(
+            "href",
+            "/operations/tasks"
+        );
+        expect(screen.queryByRole("button", { name: "确认" })).not.toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: "标记恢复" })).not.toBeInTheDocument();
+    }, 30000);
+
+    it("allows health alert confirmation and recovery with manage permission", async () => {
+        replacePermissions([
+            "operations:dashboard:view",
+            "operations:health:view",
+            "operations:health:manage"
+        ]);
+        renderPage();
+
+        fireEvent.click(await screen.findByRole("button", { name: "查看告警" }));
+        expect(await screen.findByText("连续失败")).toBeInTheDocument();
+        expect(screen.getByText("状态：未确认")).toBeInTheDocument();
+        fireEvent.click(screen.getByRole("button", { name: /确\s*认/ }));
+        fireEvent.click(screen.getByRole("button", { name: "标记恢复" }));
+
+        await waitFor(() => {
+            expect(vi.mocked(service.confirmHealthAlert).mock.calls[0]?.[0]).toEqual({
+                alertId: 9201
+            });
+            expect(vi.mocked(service.recoverHealthAlert).mock.calls[0]?.[0]).toEqual({
+                alertId: 9201
+            });
+        });
     }, 30000);
 
     it("renders real empty states when overview arrays are empty", async () => {
@@ -162,6 +257,9 @@ describe("OperationsDashboardPage", () => {
             topAiCapabilities: []
         });
         vi.mocked(service.getHealthTrend).mockResolvedValue([]);
+        vi.mocked(service.getHealthAlerts).mockResolvedValue({
+            records: []
+        });
 
         renderPage();
 
@@ -189,7 +287,9 @@ const renderPage = () => {
     return render(
         <MemoryRouter>
             <QueryClientProvider client={queryClient}>
-                <OperationsDashboardPage />
+                <App>
+                    <OperationsDashboardPage />
+                </App>
             </QueryClientProvider>
         </MemoryRouter>
     );

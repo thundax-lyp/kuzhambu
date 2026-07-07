@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.operations.application.report.support;
 
+import com.thundax.kuzhambu.operations.application.health.support.OperationsHealthAlertStrategy;
 import com.thundax.kuzhambu.operations.application.report.support.OperationsReportSupportModels.OperationsReportArtifactResult;
 import com.thundax.kuzhambu.operations.application.report.support.OperationsReportSupportModels.OperationsReportSnapshot;
 import com.thundax.kuzhambu.operations.domain.report.client.OperationsWorkerRenderClient;
@@ -16,6 +17,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.concurrent.CompletableFuture;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -27,16 +29,28 @@ public class DefaultOperationsReportTaskExecutor implements OperationsReportTask
     private final OperationsWorkerRenderClient operationsWorkerRenderClient;
     private final OperationsReportSnapshotAssembler snapshotAssembler;
     private final StorageFacade storageFacade;
+    private final OperationsHealthAlertStrategy healthAlertStrategy;
 
     public DefaultOperationsReportTaskExecutor(
             ReportRepository reportRepository,
             OperationsWorkerRenderClient operationsWorkerRenderClient,
             OperationsReportSnapshotAssembler snapshotAssembler,
             StorageFacade storageFacade) {
+        this(reportRepository, operationsWorkerRenderClient, snapshotAssembler, storageFacade, null);
+    }
+
+    @Autowired
+    public DefaultOperationsReportTaskExecutor(
+            ReportRepository reportRepository,
+            OperationsWorkerRenderClient operationsWorkerRenderClient,
+            OperationsReportSnapshotAssembler snapshotAssembler,
+            StorageFacade storageFacade,
+            OperationsHealthAlertStrategy healthAlertStrategy) {
         this.reportRepository = reportRepository;
         this.operationsWorkerRenderClient = operationsWorkerRenderClient;
         this.snapshotAssembler = snapshotAssembler;
         this.storageFacade = storageFacade;
+        this.healthAlertStrategy = healthAlertStrategy;
     }
 
     @Override
@@ -88,6 +102,9 @@ public class DefaultOperationsReportTaskExecutor implements OperationsReportTask
         record.setFailureReason(StringUtils.defaultIfBlank(failureReason, "Operations report task failed."));
         record.setCompletedAt(new Date());
         reportRepository.update(record);
+        if (healthAlertStrategy != null && record.getId() != null) {
+            healthAlertStrategy.recordReportFailed(record.getId().value(), record.getFailureReason());
+        }
     }
 
     private OperationsReportArtifactResult toArtifactResult(OperationsWorkerRenderDtos.WorkerRenderResponse response) {

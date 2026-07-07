@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `git/main-sync`：同步最新 main 分支代码
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`feat/classics-lifecycle-edit-loop` 分支、`main` 分支
-    - 处理动作：生命周期后端、前端和测试改动完成后，将最新 `main` 同步到当前功能分支并处理冲突。
-    - 验收点：功能分支包含最新 `main`，生命周期相关改动仍保留，冲突处理不引入非任务改动。
-    - 重要度：9/10
-
 - [ ] `classics/lifecycle-final-validation`：运行同步 main 后的最终验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-LIFECYCLE-EDIT-LOOP.md`

@@ -16,6 +16,7 @@ import com.thundax.kuzhambu.knowledge.facade.dto.KnowledgeTopTagFacadeDto;
 import com.thundax.kuzhambu.knowledge.facade.response.KnowledgeSummaryFacadeResponse;
 import com.thundax.kuzhambu.operations.application.dashboard.query.OperationsDashboardOverviewQuery;
 import com.thundax.kuzhambu.operations.application.dashboard.result.OperationsDashboardOverviewResult;
+import com.thundax.kuzhambu.operations.application.dashboard.result.OperationsDashboardOverviewResult.AlertSummaryResult;
 import com.thundax.kuzhambu.operations.application.dashboard.result.OperationsDashboardOverviewResult.BucketCountResult;
 import com.thundax.kuzhambu.operations.application.dashboard.result.OperationsDashboardOverviewResult.TaskStatusSummaryResult;
 import com.thundax.kuzhambu.operations.application.dashboard.result.OperationsDashboardOverviewResult.TopAiCapabilityResult;
@@ -26,7 +27,9 @@ import com.thundax.kuzhambu.operations.application.dashboard.service.OperationsD
 import com.thundax.kuzhambu.operations.application.dashboard.support.OperationsDashboardSummaryGateway;
 import com.thundax.kuzhambu.operations.application.dashboard.support.OperationsDashboardSummaryModels.OperationsCrossDomainSummary;
 import com.thundax.kuzhambu.operations.application.health.result.OperationsHealthSummaryResult;
+import com.thundax.kuzhambu.operations.domain.health.model.entity.HealthAlertRecord;
 import com.thundax.kuzhambu.operations.domain.health.model.entity.HealthCheckRecord;
+import com.thundax.kuzhambu.operations.domain.health.repository.HealthAlertRepository;
 import com.thundax.kuzhambu.operations.domain.health.repository.HealthCheckRepository;
 import com.thundax.kuzhambu.operations.domain.task.model.entity.LongTaskSnapshot;
 import com.thundax.kuzhambu.operations.domain.task.repository.LongTaskSnapshotRepository;
@@ -38,6 +41,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -48,11 +52,14 @@ public class OperationsDashboardApplicationServiceImpl implements OperationsDash
     private static final String PERIOD_TYPE_MONTH = "MONTH";
     private static final String PERIOD_TYPE_CUSTOM = "CUSTOM";
     private static final String HEALTH_STATUS_UP = "UP";
+    private static final String ALERT_LEVEL_CRITICAL = "CRITICAL";
+    private static final String ALERT_LEVEL_WARNING = "WARNING";
     private static final String TASK_STATUS_RUNNING = "RUNNING";
     private static final String TASK_STATUS_FAILED = "FAILED";
     private static final int TASK_COUNT_PAGE_SIZE = 1;
 
     private final HealthCheckRepository healthCheckRepository;
+    private final HealthAlertRepository healthAlertRepository;
     private final LongTaskSnapshotRepository longTaskSnapshotRepository;
     private final OperationsDashboardSummaryGateway summaryGateway;
 
@@ -60,7 +67,17 @@ public class OperationsDashboardApplicationServiceImpl implements OperationsDash
             HealthCheckRepository healthCheckRepository,
             LongTaskSnapshotRepository longTaskSnapshotRepository,
             OperationsDashboardSummaryGateway summaryGateway) {
+        this(healthCheckRepository, null, longTaskSnapshotRepository, summaryGateway);
+    }
+
+    @Autowired
+    public OperationsDashboardApplicationServiceImpl(
+            HealthCheckRepository healthCheckRepository,
+            HealthAlertRepository healthAlertRepository,
+            LongTaskSnapshotRepository longTaskSnapshotRepository,
+            OperationsDashboardSummaryGateway summaryGateway) {
         this.healthCheckRepository = healthCheckRepository;
+        this.healthAlertRepository = healthAlertRepository;
         this.longTaskSnapshotRepository = longTaskSnapshotRepository;
         this.summaryGateway = summaryGateway;
     }
@@ -77,6 +94,7 @@ public class OperationsDashboardApplicationServiceImpl implements OperationsDash
         List<OperationsHealthSummaryResult> healthSummaries = healthCheckRepository.listLatestByComponent().stream()
                 .map(this::toHealthSummaryResult)
                 .collect(Collectors.toList());
+        List<HealthAlertRecord> openAlerts = openAlerts();
         int runningTaskCount = countTasks(TASK_STATUS_RUNNING);
         int failedTaskCount = countTasks(TASK_STATUS_FAILED);
         return new OperationsDashboardOverviewResult(
@@ -99,6 +117,11 @@ public class OperationsDashboardApplicationServiceImpl implements OperationsDash
                 unhealthyComponentCount(healthSummaries),
                 runningTaskCount,
                 failedTaskCount,
+                openAlerts.size(),
+                alertLevelCount(openAlerts, ALERT_LEVEL_CRITICAL),
+                alertLevelCount(openAlerts, ALERT_LEVEL_WARNING),
+                highestAlertLevel(openAlerts),
+                latestAlert(openAlerts),
                 toContentGrowthSeries(classicsSummary.getContentGrowthSeries()),
                 toSearchTrendSeries(discoverySummary.getSearchTrendSeries()),
                 toQaTrendSeries(discoverySummary.getQaTrendSeries()),
@@ -111,6 +134,13 @@ public class OperationsDashboardApplicationServiceImpl implements OperationsDash
                 toTopQueries(discoverySummary.getTopQueries()),
                 toTopTags(knowledgeSummary.getTopTags()),
                 toTopAiCapabilities(aiSummary.getTopCapabilities()));
+    }
+
+    private List<HealthAlertRecord> openAlerts() {
+        if (healthAlertRepository == null) {
+            return List.of();
+        }
+        return healthAlertRepository.listOpenSummary();
     }
 
     private PeriodRange resolvePeriodRange(OperationsDashboardOverviewQuery query) {
@@ -180,6 +210,46 @@ public class OperationsDashboardApplicationServiceImpl implements OperationsDash
         return (int) healthSummaries.stream()
                 .filter(summary -> summary != null && !HEALTH_STATUS_UP.equals(summary.getHealthStatus()))
                 .count();
+    }
+
+    private static int alertLevelCount(List<HealthAlertRecord> alerts, String alertLevel) {
+        return (int) alerts.stream()
+                .filter(alert -> alert != null && alertLevel.equals(alert.getAlertLevel()))
+                .count();
+    }
+
+    private static String highestAlertLevel(List<HealthAlertRecord> alerts) {
+        if (alertLevelCount(alerts, ALERT_LEVEL_CRITICAL) > 0) {
+            return ALERT_LEVEL_CRITICAL;
+        }
+        if (alertLevelCount(alerts, ALERT_LEVEL_WARNING) > 0) {
+            return ALERT_LEVEL_WARNING;
+        }
+        return null;
+    }
+
+    private static AlertSummaryResult latestAlert(List<HealthAlertRecord> alerts) {
+        if (alerts == null || alerts.isEmpty()) {
+            return null;
+        }
+        HealthAlertRecord alert = alerts.get(0);
+        if (alert == null) {
+            return null;
+        }
+        return new AlertSummaryResult(
+                alert.getId() == null ? null : alert.getId().value(),
+                alert.getComponent(),
+                alert.getAlertType(),
+                alert.getAlertLevel(),
+                alert.getAlertStatus(),
+                alert.getSourceRefType(),
+                alert.getSourceRefId(),
+                alert.getMessage(),
+                alert.getSuggestion(),
+                alert.getRecoveryAction(),
+                alert.getRecoveryTarget(),
+                alert.getLastTriggeredAt(),
+                alert.getFailureReason());
     }
 
     private int countTasks(String taskStatus) {
