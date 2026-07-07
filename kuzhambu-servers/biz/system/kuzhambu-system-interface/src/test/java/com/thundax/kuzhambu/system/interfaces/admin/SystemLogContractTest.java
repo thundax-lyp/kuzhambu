@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.system.interfaces.admin.audit.controller.AuditController;
 import com.thundax.kuzhambu.system.interfaces.admin.audit.controller.request.AuditLogDetailRequest;
 import com.thundax.kuzhambu.system.interfaces.admin.audit.controller.request.AuditLogPageRequest;
@@ -35,6 +36,13 @@ class SystemLogContractTest {
 
         assertRequestMapping(LogController.class, "/api/sys/log");
         assertPostMapping(LogController.class, "page", "page", LogPageRequest.class);
+    }
+
+    @Test
+    void logPagePermissionShouldBeSystemLogView() throws Exception {
+        Method pageMethod = LogController.class.getDeclaredMethod("page", LogPageRequest.class);
+        HasPermission permission = pageMethod.getAnnotation(HasPermission.class);
+        assertEquals("system:log:view", permission.value(), () -> permission::toString);
     }
 
     @Test
