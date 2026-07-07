@@ -236,6 +236,12 @@ export const OperationsDashboardPage = () => {
             meta: "标签覆盖",
             value: normalizeNumber(item.contentRefCount)
         })) || [];
+    const topAiCapabilities =
+        overview?.topAiCapabilities?.map((item) => ({
+            label: item.capability || "-",
+            meta: "AI 能力",
+            value: normalizeNumber(item.invocationCount)
+        })) || [];
 
     return (
         <KuzhambuPage
@@ -276,7 +282,8 @@ export const OperationsDashboardPage = () => {
                             />
                             <Text type="secondary">
                                 译文 {formatNumber(overview?.translatedContentCount)}，图像就绪{" "}
-                                {formatNumber(overview?.imageReadyContentCount)}
+                                {formatNumber(overview?.imageReadyContentCount)}，分享访问{" "}
+                                {formatNumber(overview?.shareVisitCount)}
                             </Text>
                         </Card>
                         <Card className="operations-dashboard-metric-card">
@@ -298,7 +305,8 @@ export const OperationsDashboardPage = () => {
                             />
                             <Text type="secondary">
                                 失败 {formatNumber(overview?.aiFailedInvocationCount)}，平均延迟{" "}
-                                {formatLatency(overview?.aiAvgLatencyMs)}
+                                {formatLatency(overview?.aiAvgLatencyMs)}，成本{" "}
+                                {formatNumber(overview?.aiTotalCostAmount)}
                             </Text>
                         </Card>
                         <Card className="operations-dashboard-metric-card">
@@ -399,6 +407,11 @@ export const OperationsDashboardPage = () => {
                         />
                         <RankingList emptyText="暂无查询排行" items={topQueries} title="热门搜索" />
                         <RankingList emptyText="暂无标签排行" items={topTags} title="标签覆盖" />
+                        <RankingList
+                            emptyText="暂无 AI 能力排行"
+                            items={topAiCapabilities}
+                            title="AI 能力"
+                        />
                     </section>
 
                     <section>

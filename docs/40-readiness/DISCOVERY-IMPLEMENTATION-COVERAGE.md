@@ -36,7 +36,7 @@
 - Discovery Search 已完成 `currentVersionNo` 幂等控制、删除态写入、删除态定时物理清理和 `rebuild` 全量兜底闭环。
 - Discovery Search 已补齐 `search / click / rebuild` 共享动作白名单，并完成最小 Maven 运行时测试闭环。
 - Discovery Search 已完成高亮文本生成、组内相关性排序、Portal URL 搜索状态恢复、结果深链点击、无结果空状态、清除筛选提示和安全高亮渲染。
-- Discovery Search 已完成点击聚合、搜索分析 summary application、Admin API、Admin Web 搜索分析摘要卡片和热门搜索词展示。
+- Discovery Search 已完成点击聚合、搜索分析 summary application、Admin API、Admin Web 搜索分析摘要卡片和热门搜索词展示；`discovery_search_log.search_latency_ms` 已记录成功 / 失败搜索耗时，summary 已按非空样本计算 `avgSearchLatencyMs`。
 - Discovery Search 已完成按知识库、门类、标签、状态、可见性和更新时间范围的高级筛选，并在出参前按 System 当前主体权限裁剪非公开结果。
 - Discovery Query Understanding 已接通 Knowledge 同义词、标签和实体提示读协作，并通过 AI 域完成 query-understanding / query-rewrite 调度。
 - Discovery QA 已接通 Portal `chat/completions`、Admin 知识库运维、会话持久化、来源引用、知识同步状态和 provider trace 读取，形成问答闭环。
@@ -65,7 +65,7 @@
 | 关键词高亮                           | 已完成   | 后端生成 `highlightText`，命中词使用 `<mark>` 包裹；Portal Web 只对白名单 `<mark>` 标签做安全渲染，其余内容按普通文本处理                                                     | 无                                             | Discovery, Portal Web |
 | 按知识库、门类、标签、状态、时间筛选 | 已完成   | `SearchScope`、Portal 请求字段、Elasticsearch Gateway 和索引文档元数据已覆盖 `knowledgeBases`、`categoryCodes`、`tagNames`、`contentStatuses`、`visibilityScopes`、`dateFrom/dateTo`，搜索日志保留实际范围 JSON | 无                                             | Discovery             |
 | 权限过滤                             | 已完成   | Search 结果出参前按索引结果元数据和 System 当前主体权限裁剪：`PUBLIC` 内容可匿名访问，非公开内容需命中 `super`、`classics:content:view` 或对应三类 Classics `*:view` 权限，裁剪后重新计算分组和总数 | 无                                             | Discovery, System     |
-| 搜索日志记录                         | 已完成   | 搜索成功 / 失败都会写入 `discovery_search_log`，Admin 已可分页和查看详情；分析 summary 已统计搜索次数、失败次数、零结果次数和热门搜索词                                      | 无                                             | Discovery             |
+| 搜索日志记录                         | 已完成   | 搜索成功 / 失败都会写入 `discovery_search_log`，Admin 已可分页和查看详情；搜索日志已记录 `search_latency_ms`，分析 summary 已统计搜索次数、失败次数、零结果次数、热门搜索词和 `avgSearchLatencyMs` | 无                                             | Discovery             |
 | 点击日志记录                         | 已完成   | Portal 点击接口已真实写入 `discovery_search_click`，并校验 `searchLogId` 存在；点击数已纳入搜索分析 summary                                                                    | 无                                             | Discovery             |
 | 搜索深链与状态保留                   | 已完成   | 结果项返回稳定 `targetPath`；Portal 搜索页通过 URL `q` 参数恢复搜索条件、自动搜索，并在搜索提交、清除筛选和返回结果页时保留状态                                               | 无                                             | Discovery, Portal Web |
 | 无结果空状态提示                     | 已完成   | Portal 搜索页在零结果时展示 `没有找到匹配内容` 和 `清除筛选条件`，清除后同步重置搜索状态和 URL                                                                                 | 无                                             | Discovery, Portal Web |
@@ -108,7 +108,7 @@
 | Elasticsearch 默认适配 | 已完成   | 已在 infra 内实现 `ElasticsearchSearchIndexGateway`，并接入 starter 运行时配置                                                               |
 | 索引增量同步           | 已完成   | 已实现 `afterCommit + RocketMQ` 发送、Discovery 消费、`currentVersionNo` 幂等和删除态清理                                                    |
 | Portal 搜索入口        | 已完成   | Portal 搜索和点击接口已可运行，Portal 搜索页面已落地，支持 URL 状态恢复、结果深链、无结果空状态和安全高亮渲染                                |
-| Admin 搜索分析入口     | 已完成   | Admin 搜索日志分页、详情、索引重建、搜索分析 summary 接口、搜索次数、失败次数、零结果次数、点击次数和热门搜索词展示已落地                    |
+| Admin 搜索分析入口     | 已完成   | Admin 搜索日志分页、详情、索引重建、搜索分析 summary 接口、搜索次数、失败次数、零结果次数、点击次数、平均搜索耗时和热门搜索词展示已落地      |
 | QA 子域                | 已完成   | QA 核心运行时、Portal `chat/completions` 页面、Admin 运维页、知识同步、provider trace、王圻单文档追加问答、会话删除和 CSV 导出已落地          |
 
 ## Residual Risks

@@ -18,11 +18,15 @@
 部分完成：
 
 - `cleanup` 已完成领域模型、持久化实现、应用层、接口层、admin 列表、详情查询、详情 item 展示和当前范围真实执行；当前已能发现并执行过期备份记录、Classics 过期导出任务、过期分享链接和草稿分享链接清理。长期规则策略、调度化清理和更多目标类型仍待后续扩展。
-- `dashboard` 已完成 Operations 聚合接口、admin 页面、菜单权限和任务页迁移；当前跨域内容/AI/搜索/标签统计仍以稳定 `0` 或空数组占位，后续需要接入各业务域真实 summary 读取源。
 - 统一运维首页已完成基础入口，System 日志/审计入口仍未全部补齐。
 
 已完成：
 
+- Operations Dashboard 真实跨域 summary 已形成当前阶段可运行交付：
+  - `OperationsDashboardSummaryGateway` 已统一读取 `Classics / AI / Discovery / Knowledge` summary facade，overview 不再以稳定 `0` 或空数组作为内容、AI、搜索、标签指标占位。
+  - `OperationsDashboardApplicationService` 已按 `periodType` 生成跨域 `periodStart`、`periodEnd` 和 `bucketType`；`WEEK` 使用 `DAY` bucket，`MONTH` 使用 `WEEK` bucket，`CUSTOM` 在 31 天内使用 `DAY`、超过 31 天使用 `WEEK`。
+  - `OperationsDashboardOverview` 已映射真实 `contentCount`、`publishedContentCount`、`draftContentCount`、`shareVisitCount`、`aiInvocationCount`、`aiSuccessCount`、`aiFailureCount`、`aiAvgLatencyMs`、`aiTotalCostAmount`、`searchCount`、`qaCount`、`avgSearchLatencyMs`、`tagCoverageRate`、趋势序列和排行数据。
+  - `admin-web` `/operations/dashboard` 已展示真实内容访问、AI 调用与成本、搜索/问答、标签覆盖、内容增长趋势、AI 能力排行和空状态。
 - 健康指标闭环已形成当前阶段可运行交付：
   - `operations_health_check` 已补齐 `probe_source`、`probe_target`、`details_json` 字段与 `idx_operations_health_probe` 索引。
   - `HealthCheckRecord` / `HealthCheckDO` / persistence assembler 已同步采集来源、目标和诊断 JSON。
@@ -52,13 +56,13 @@
 
 未完成：
 
-- 跨业务域真实 Dashboard 指标接入、按权限裁剪聚合图表、健康告警策略和 System 日志/审计入口仍未形成可运行交付。
+- 按权限裁剪聚合图表、健康告警策略和 System 日志/审计入口仍未形成可运行交付。
 
 ## Requirement Coverage Matrix
 
 | 需求项 | 状态 | 已完成部分 | 未完成部分 | 责任域 |
 | --- | --- | --- | --- | --- |
-| 仪表盘与聚合展示 | 部分完成 | 已完成 `OperationsDashboardApplicationService`、`POST /api/operations/dashboard/overview`、`OperationsDashboardOverviewResponse`、`/operations/dashboard` 前端页面、周期切换、刷新、指标卡、趋势区、排行区、健康明细抽屉和运维入口；接口在未接入真实跨域统计源时返回稳定 `0` 或空数组 | 内容、访问、AI、搜索、问答、标签等跨域指标仍需接入真实 summary 源；按权限裁剪聚合图表仍未完成 | Operations, Admin Web |
+| 仪表盘与聚合展示 | 部分完成 | 已完成 `OperationsDashboardApplicationService`、`POST /api/operations/dashboard/overview`、`OperationsDashboardOverviewResponse`、`/operations/dashboard` 前端页面、周期切换、刷新、指标卡、趋势区、排行区、健康明细抽屉和运维入口；已通过 `OperationsDashboardSummaryGateway` 接入 Classics 内容/访问、AI 调用/成本/能力排行、Discovery 搜索/问答/平均搜索耗时、Knowledge 标签覆盖/增长/排行真实 summary | 按权限裁剪聚合图表仍未完成 | Operations, Admin Web |
 | 报表 | 已完成 | 已完成周报/月报任务生成、HTML/PDF worker 渲染、Storage 产物回写、报表记录分页/详情查询、状态流转、独立 response、`operations:report:view` / `operations:report:generate` 权限控制，以及跨域 summary 聚合读取 | admin 页面接入与专属下载表现不在本矩阵范围内；后续如增加调度报表可另行扩展 | Operations |
 | 备份与恢复 | 已完成 | 已完成 `BackupRecord`、`RestoreRecord`、各自 persistence、手动备份执行、启动自动备份、每日 2:00 自动备份、恢复前 `PRE_RESTORE` 快照创建、恢复期间 Web 写阻断、`REAL` / `DRILL` 恢复台账、备份/恢复 `execute/page/detail` 接口、`admin-web` 备份恢复页面与详情字段、菜单与权限种子，以及脚本执行结果回写 | 无 | Operations |
 | 清理任务 | 部分完成 | `CleanupJob` / `CleanupItem` 已完成领域模型与持久化，应用层 `execute/page/detail` 与 admin 接口已上线，前端清理台账页已接通，`operations:cleanup:view/execute` 与页面基础回归测试已存在；当前真实执行覆盖过期备份、Classics 过期导出、过期分享和草稿分享，详情页可展示每条 cleanup item 的目标、状态、失败原因和处理时间；若清理目标涉及导出产物对象，其底层生命周期已可复用 Storage 自动 orphan 清理能力 | 调度化清理、长期规则策略和更多目标类型扩展未闭环 | Operations |
@@ -72,7 +76,7 @@
 ### B1 Operations 非报表剩余应用层闭环
 
 状态：进行中  
-目标：清理任务当前范围真实执行逻辑、健康组件采集来源入库和统一运维入口基础聚合已补齐；后续继续补齐跨域真实统计源、长任务写入源接入，以及阈值/告警策略。
+目标：清理任务当前范围真实执行逻辑、健康组件采集来源入库、统一运维入口基础聚合和跨域真实 summary 已补齐；后续继续补齐长任务写入源接入，以及阈值/告警策略。
 
 ### B2 Operations 剩余接口与入口
 
@@ -92,4 +96,4 @@
 ### B5 剩余非报表任务交付验证
 
 状态：进行中
-目标：cleanup 关键链路已补齐真实执行与详情 item 回归；health/task 看板消费与接口趋势已补齐基础契约；backup/restore 已覆盖自动备份、真实恢复、恢复演练、写阻断字段和失败原因可追溯能力。后续验证聚焦跨域 Dashboard、健康告警和 System 日志/审计入口。
+目标：cleanup 关键链路已补齐真实执行与详情 item 回归；health/task 看板消费与接口趋势已补齐基础契约；backup/restore 已覆盖自动备份、真实恢复、恢复演练、写阻断字段和失败原因可追溯能力；跨域 Dashboard 已接入真实 summary 并完成后端和 admin-web 定向验证。后续验证聚焦健康告警和 System 日志/审计入口。
