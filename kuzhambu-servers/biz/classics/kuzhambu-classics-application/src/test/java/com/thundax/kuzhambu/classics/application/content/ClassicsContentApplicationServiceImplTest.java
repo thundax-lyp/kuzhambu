@@ -96,6 +96,24 @@ class ClassicsContentApplicationServiceImplTest {
     }
 
     @Test
+    void ensureVersionedShouldSnapshotSancaiLifecycleStatus() throws Exception {
+        FakeRepository repository = new FakeRepository();
+        ClassicsContentApplicationServiceImpl service =
+                new ClassicsContentApplicationServiceImpl(repository, null, null, null, null, null, null, null, null);
+        SancaiEntry entry = baseSancaiEntry(101L);
+        entry.setLifecycleStatus(SancaiEntryLifecycleStatus.PUBLISHED);
+        entry.setVisibility(SancaiEntryVisibility.PUBLIC);
+
+        ClassicsContentVersion version = service.ensureVersioned(entry, ClassicsContentChangeType.MANUAL_SAVE, "发布条目");
+
+        var snapshot = new ObjectMapper().readTree(version.getSnapshotJson());
+        assertEquals("PUBLISHED", snapshot.get("lifecycleStatus").asText());
+        assertEquals("PUBLIC", snapshot.get("visibility").asText());
+        assertEquals("SANCAI_ENTRY", version.getContentType().value());
+        assertEquals(ClassicsContentId.of(101L), version.getContentId());
+    }
+
+    @Test
     void ensureVersionedShouldNotInsertWhenContentIsAlreadyVersioned() {
         FakeRepository repository = new FakeRepository();
         ClassicsContentVersion existing = existingVersion(9L, 2, new Date(2_000L));

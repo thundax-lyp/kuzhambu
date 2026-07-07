@@ -1,6 +1,8 @@
 package com.thundax.kuzhambu.classics.application.sancai;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doAnswer;
@@ -17,7 +19,9 @@ import com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryPageQue
 import com.thundax.kuzhambu.classics.application.sancai.service.impl.SancaiApplicationServiceImpl;
 import com.thundax.kuzhambu.classics.application.searchsync.support.ClassicsSearchIndexSyncPublishSupport;
 import com.thundax.kuzhambu.classics.application.sharing.service.ClassicsSharingApplicationService;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentChangeType;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
+import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentVersionId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryImageStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryLifecycleStatus;
@@ -28,11 +32,14 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisual
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVolumeId;
 import com.thundax.kuzhambu.classics.domain.sancai.repository.SancaiRepository;
+import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 class SancaiApplicationServiceImplTest {
 
@@ -83,6 +90,41 @@ class SancaiApplicationServiceImplTest {
         service.changeEntryStatus(command);
 
         verify(publishSupport).publishUpsertAfterCommit(ClassicsContentType.SANCAI_ENTRY, "1003", 5);
+    }
+
+    @Test
+    void changeEntryStatusShouldAllowExpectedLifecycleTransitionsAndVersionEntry() {
+        assertLifecycleTransition(
+                1101L, SancaiEntryLifecycleStatus.DRAFT, SancaiEntryLifecycleStatus.PUBLISHED, "发布条目");
+        assertLifecycleTransition(
+                1102L, SancaiEntryLifecycleStatus.PUBLISHED, SancaiEntryLifecycleStatus.ARCHIVED, "归档条目");
+        assertLifecycleTransition(
+                1103L, SancaiEntryLifecycleStatus.ARCHIVED, SancaiEntryLifecycleStatus.PUBLISHED, "恢复发布条目");
+    }
+
+    @Test
+    void changeEntryStatusShouldRejectInvalidLifecycleTransitions() {
+        assertInvalidLifecycleTransition(1201L, SancaiEntryLifecycleStatus.PUBLISHED, SancaiEntryLifecycleStatus.DRAFT);
+        assertInvalidLifecycleTransition(1202L, SancaiEntryLifecycleStatus.ARCHIVED, SancaiEntryLifecycleStatus.DRAFT);
+    }
+
+    @Test
+    void changeEntryStatusShouldRejectWhenPermissionContextLacksSancaiEdit() {
+        SancaiRepository repository = mock(SancaiRepository.class);
+        ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
+        ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
+        SancaiApplicationServiceImpl service =
+                new SancaiApplicationServiceImpl(repository, contentApplicationService, publishSupport, null);
+        SancaiEntryStatusCommand command = new SancaiEntryStatusCommand(
+                1203L, SancaiEntryLifecycleStatus.PUBLISHED, Set.of("classics:sancai:view"));
+
+        assertThrows(BizException.class, () -> service.changeEntryStatus(command));
+
+        verify(repository, never()).getEntryById(any());
+        verify(repository, never()).updateEntry(any());
+        verify(contentApplicationService, never()).ensureVersioned(any(), any(), any());
+        verify(publishSupport, never()).publishUpsertAfterCommit(any(), any(), any());
+        verify(publishSupport, never()).publishDeleteAfterCommit(any(), any(), any());
     }
 
     @Test
@@ -183,11 +225,64 @@ class SancaiApplicationServiceImplTest {
             ClassicsContentApplicationService contentApplicationService, int versionNo) {
         doAnswer(invocation -> {
                     SancaiEntry entry = invocation.getArgument(0);
+                    entry.setCurrentVersionId(ClassicsContentVersionId.of((long) versionNo));
                     entry.setCurrentVersionNo(versionNo);
+                    entry.setCurrentVersionedAt(new Date(2_000L + versionNo));
                     return null;
                 })
                 .when(contentApplicationService)
                 .ensureVersioned(any(), any(), any());
+    }
+
+    private static void assertLifecycleTransition(
+            long id,
+            SancaiEntryLifecycleStatus currentStatus,
+            SancaiEntryLifecycleStatus targetStatus,
+            String expectedSummary) {
+        SancaiRepository repository = mock(SancaiRepository.class);
+        ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
+        ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
+        SancaiApplicationServiceImpl service =
+                new SancaiApplicationServiceImpl(repository, contentApplicationService, publishSupport, null);
+        SancaiEntry entry = existingEntry(id, currentStatus, SancaiEntryVisibility.PUBLIC);
+        when(repository.getEntryById(SancaiEntryId.of(id))).thenReturn(entry);
+        when(repository.updateEntry(any())).thenReturn(1);
+        versionEntryOnEnsure(contentApplicationService, 20);
+
+        service.changeEntryStatus(new SancaiEntryStatusCommand(id, targetStatus, Set.of("classics:sancai:edit")));
+
+        ArgumentCaptor<SancaiEntry> entryCaptor = ArgumentCaptor.forClass(SancaiEntry.class);
+        verify(repository).updateEntry(entryCaptor.capture());
+        SancaiEntry updatedEntry = entryCaptor.getValue();
+        assertEquals(targetStatus, updatedEntry.getLifecycleStatus());
+        assertNotNull(updatedEntry.getContentUpdatedAt());
+        assertEquals(ClassicsContentVersionId.of(20L), updatedEntry.getCurrentVersionId());
+        assertEquals(20, updatedEntry.getCurrentVersionNo());
+        assertNotNull(updatedEntry.getCurrentVersionedAt());
+        verify(contentApplicationService)
+                .ensureVersioned(updatedEntry, ClassicsContentChangeType.MANUAL_SAVE, expectedSummary);
+    }
+
+    private static void assertInvalidLifecycleTransition(
+            long id, SancaiEntryLifecycleStatus currentStatus, SancaiEntryLifecycleStatus targetStatus) {
+        SancaiRepository repository = mock(SancaiRepository.class);
+        ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
+        ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
+        SancaiApplicationServiceImpl service =
+                new SancaiApplicationServiceImpl(repository, contentApplicationService, publishSupport, null);
+        SancaiEntry entry = existingEntry(id, currentStatus, SancaiEntryVisibility.PUBLIC);
+        when(repository.getEntryById(SancaiEntryId.of(id))).thenReturn(entry);
+
+        assertThrows(
+                BizException.class,
+                () -> service.changeEntryStatus(
+                        new SancaiEntryStatusCommand(id, targetStatus, Set.of("classics:sancai:edit"))));
+
+        assertEquals(currentStatus, entry.getLifecycleStatus());
+        verify(repository, never()).updateEntry(any());
+        verify(contentApplicationService, never()).ensureVersioned(any(), any(), any());
+        verify(publishSupport, never()).publishUpsertAfterCommit(any(), any(), any());
+        verify(publishSupport, never()).publishDeleteAfterCommit(any(), any(), any());
     }
 
     private static SancaiEntry existingEntry(

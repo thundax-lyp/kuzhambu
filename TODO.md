@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics/sancai-lifecycle-application-test`：锁定生命周期应用层规则
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-LIFECYCLE-EDIT-LOOP.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/sancai/SancaiApplicationServiceImplTest.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/sancai/support/FakeSancaiRepositorySupport.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/content/ClassicsContentApplicationServiceImplTest.java`
-    - 处理动作：补充生命周期成功流转、非法流转、权限失败和版本快照一致性的应用层测试。
-    - 验收点：三条允许流转成功，`PUBLISHED -> DRAFT` 与 `ARCHIVED -> DRAFT` 失败，无编辑权限失败，成功用例断言主表状态和新增版本快照一致。
-    - 重要度：9/10
-
 - [ ] `admin-web/sancai-lifecycle-service`：新增前端生命周期 service 契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-LIFECYCLE-EDIT-LOOP.md`
