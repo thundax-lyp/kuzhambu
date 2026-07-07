@@ -11,12 +11,5 @@
 
 ## 待审阅任务项
 
-- [ ] `12 Knowledge Implementation Coverage 与 RUNBOOK 收口`：更新覆盖状态并清理临时 RUNBOOK
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LOW-QUALITY-REEXTRACT.md`
-    - 范围对象：`docs/40-readiness/KNOWLEDGE-IMPLEMENTATION-COVERAGE.md`、`docs/30-designs/RUNBOOK-KNOWLEDGE-LOW-QUALITY-REEXTRACT.md`、`TODO.md`
-    - 处理动作：将低质量门类一键触发重提取相关覆盖项改为已完成，并删除已完成 TODO 和临时 RUNBOOK。
-    - 验收点：Implementation Coverage 不再保留该未完成项或残留风险，RUNBOOK 已删除，`TODO.md` 仅保留真实未关闭任务。
-    - 重要度：10/10
 
 ## 待讨论项
