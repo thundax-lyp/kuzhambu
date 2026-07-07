@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web batch candidate drawer`：实现通用批量候选治理抽屉
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-BATCH-CANDIDATE-GOVERNANCE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/common/components/ai-candidate-batch-drawer.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/common/components/ai-candidate-batch-drawer.test.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/common/components/ai-candidate-payload-editor.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/common/ai-candidate-service.ts`、`kuzhambu-apps/admin-web/src/pages/classics/common/ai-candidate-types.ts`
-    - 处理动作：实现 `AI 候选批量治理` 抽屉、候选加载、多选、payload 校验、批量应用、批量拒绝和结果明细展示。
-    - 验收点：测试覆盖候选加载、选择、payload 校验失败、批量应用结果、批量拒绝确认和 `objectId` 提交。
-    - 重要度：10/10
-
 - [ ] `admin-web sancai batch candidate entry`：接入三才图会批量候选治理入口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-BATCH-CANDIDATE-GOVERNANCE.md`
