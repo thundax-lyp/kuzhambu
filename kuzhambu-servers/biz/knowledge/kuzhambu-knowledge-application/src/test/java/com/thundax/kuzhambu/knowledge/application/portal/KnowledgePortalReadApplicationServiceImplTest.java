@@ -8,6 +8,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.knowledge.application.lineage.service.KnowledgeLineageReadApplicationService;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult.IssueRecord;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult.ReportRecord;
@@ -71,7 +72,8 @@ class KnowledgePortalReadApplicationServiceImplTest {
                 knowledgeRelationRepository,
                 mock(TagGovernanceMetricsRepository.class),
                 mock(RefinementTaskRepository.class),
-                mock(KnowledgeQualityReportApplicationService.class));
+                mock(KnowledgeQualityReportApplicationService.class),
+                mock(KnowledgeLineageReadApplicationService.class));
 
         KnowledgePortalHomeResult result = service.getHome();
 
@@ -112,7 +114,8 @@ class KnowledgePortalReadApplicationServiceImplTest {
                 knowledgeRelationRepository,
                 mock(TagGovernanceMetricsRepository.class),
                 mock(RefinementTaskRepository.class),
-                mock(KnowledgeQualityReportApplicationService.class));
+                mock(KnowledgeQualityReportApplicationService.class),
+                mock(KnowledgeLineageReadApplicationService.class));
 
         KnowledgePortalHomeResult result = service.getHome();
 
@@ -187,7 +190,8 @@ class KnowledgePortalReadApplicationServiceImplTest {
                 knowledgeRelationRepository,
                 mock(TagGovernanceMetricsRepository.class),
                 mock(RefinementTaskRepository.class),
-                mock(KnowledgeQualityReportApplicationService.class));
+                mock(KnowledgeQualityReportApplicationService.class),
+                mock(KnowledgeLineageReadApplicationService.class));
 
         KnowledgePortalAtlasQuery query = new KnowledgePortalAtlasQuery();
         query.setLevel("detail");
@@ -312,7 +316,8 @@ class KnowledgePortalReadApplicationServiceImplTest {
                 knowledgeRelationRepository,
                 mock(TagGovernanceMetricsRepository.class),
                 mock(RefinementTaskRepository.class),
-                mock(KnowledgeQualityReportApplicationService.class));
+                mock(KnowledgeQualityReportApplicationService.class),
+                mock(KnowledgeLineageReadApplicationService.class));
 
         KnowledgePortalAtlasQuery query = new KnowledgePortalAtlasQuery();
         query.setLevel("overview");
@@ -390,7 +395,8 @@ class KnowledgePortalReadApplicationServiceImplTest {
                 knowledgeRelationRepository,
                 mock(TagGovernanceMetricsRepository.class),
                 mock(RefinementTaskRepository.class),
-                mock(KnowledgeQualityReportApplicationService.class));
+                mock(KnowledgeQualityReportApplicationService.class),
+                mock(KnowledgeLineageReadApplicationService.class));
 
         KnowledgePortalAtlasQuery query = new KnowledgePortalAtlasQuery();
         query.setLevel("category");
@@ -423,7 +429,8 @@ class KnowledgePortalReadApplicationServiceImplTest {
                 mock(KnowledgeRelationRepository.class),
                 mock(TagGovernanceMetricsRepository.class),
                 mock(RefinementTaskRepository.class),
-                mock(KnowledgeQualityReportApplicationService.class));
+                mock(KnowledgeQualityReportApplicationService.class),
+                mock(KnowledgeLineageReadApplicationService.class));
 
         KnowledgePortalAtlasQuery query = new KnowledgePortalAtlasQuery();
         query.setLevel("category");
@@ -503,7 +510,8 @@ class KnowledgePortalReadApplicationServiceImplTest {
                 mock(KnowledgeRelationRepository.class),
                 mock(TagGovernanceMetricsRepository.class),
                 mock(RefinementTaskRepository.class),
-                qualityReportService);
+                qualityReportService,
+                mock(KnowledgeLineageReadApplicationService.class));
 
         KnowledgePortalQualityResult result = service.getQuality();
 
@@ -531,7 +539,8 @@ class KnowledgePortalReadApplicationServiceImplTest {
                 mock(KnowledgeRelationRepository.class),
                 mock(TagGovernanceMetricsRepository.class),
                 mock(RefinementTaskRepository.class),
-                qualityReportService);
+                qualityReportService,
+                mock(KnowledgeLineageReadApplicationService.class));
 
         KnowledgePortalQualityResult result = service.getQuality();
 
