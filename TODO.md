@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `04 Operations Dashboard overview`：用四域真实 summary 替换 dashboard 占位
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DASHBOARD-SUMMARY.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/dashboard/service/impl/OperationsDashboardApplicationServiceImpl.java`；`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/dashboard/result/OperationsDashboardOverviewResult.java`；`kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/dashboard/assembler/OperationsDashboardInterfaceAssembler.java`；`kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/dashboard/controller/response/OperationsDashboardOverviewResponse.java`；`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/test/java/com/thundax/kuzhambu/operations/application/dashboard/service/impl/OperationsDashboardApplicationServiceImplTest.java`
-    - 处理动作：映射四域 summary 到 `OperationsDashboardOverviewResult`，并固化周/月/自定义 bucket 规则。
-    - 验收点：所有四域 dashboard 字段来自真实 summary，`WEEK -> DAY`、`MONTH -> WEEK`、自定义 `<= 31` 天为 `DAY`、自定义 `> 31` 天为 `WEEK`。
-    - 重要度：10/10
-
 - [ ] `05 Admin Web Operations Dashboard`：前端控件消费真实 overview response
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DASHBOARD-SUMMARY.md`

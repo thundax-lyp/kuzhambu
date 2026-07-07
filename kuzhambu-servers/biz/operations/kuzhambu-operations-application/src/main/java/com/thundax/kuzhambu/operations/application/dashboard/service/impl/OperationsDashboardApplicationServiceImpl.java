@@ -1,17 +1,37 @@
 package com.thundax.kuzhambu.operations.application.dashboard.service.impl;
 
+import com.thundax.kuzhambu.ai.facade.dto.AiTopCapabilityFacadeDto;
+import com.thundax.kuzhambu.ai.facade.response.AiReportSummaryFacadeResponse;
+import com.thundax.kuzhambu.classics.facade.dto.ClassicsContentGrowthPointFacadeDto;
+import com.thundax.kuzhambu.classics.facade.dto.ClassicsTopContentFacadeDto;
+import com.thundax.kuzhambu.classics.facade.response.ClassicsSummaryFacadeResponse;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.discovery.facade.dto.DiscoveryQaTrendPointFacadeDto;
+import com.thundax.kuzhambu.discovery.facade.dto.DiscoverySearchTrendPointFacadeDto;
+import com.thundax.kuzhambu.discovery.facade.dto.DiscoveryTopQueryFacadeDto;
+import com.thundax.kuzhambu.discovery.facade.response.DiscoverySummaryFacadeResponse;
+import com.thundax.kuzhambu.knowledge.facade.dto.KnowledgeMonthlyNewTagFacadeDto;
+import com.thundax.kuzhambu.knowledge.facade.dto.KnowledgeTopTagFacadeDto;
+import com.thundax.kuzhambu.knowledge.facade.response.KnowledgeSummaryFacadeResponse;
 import com.thundax.kuzhambu.operations.application.dashboard.query.OperationsDashboardOverviewQuery;
 import com.thundax.kuzhambu.operations.application.dashboard.result.OperationsDashboardOverviewResult;
+import com.thundax.kuzhambu.operations.application.dashboard.result.OperationsDashboardOverviewResult.BucketCountResult;
 import com.thundax.kuzhambu.operations.application.dashboard.result.OperationsDashboardOverviewResult.TaskStatusSummaryResult;
+import com.thundax.kuzhambu.operations.application.dashboard.result.OperationsDashboardOverviewResult.TopAiCapabilityResult;
+import com.thundax.kuzhambu.operations.application.dashboard.result.OperationsDashboardOverviewResult.TopContentResult;
+import com.thundax.kuzhambu.operations.application.dashboard.result.OperationsDashboardOverviewResult.TopQueryResult;
+import com.thundax.kuzhambu.operations.application.dashboard.result.OperationsDashboardOverviewResult.TopTagResult;
 import com.thundax.kuzhambu.operations.application.dashboard.service.OperationsDashboardApplicationService;
+import com.thundax.kuzhambu.operations.application.dashboard.support.OperationsDashboardSummaryGateway;
+import com.thundax.kuzhambu.operations.application.dashboard.support.OperationsDashboardSummaryModels.OperationsCrossDomainSummary;
 import com.thundax.kuzhambu.operations.application.health.result.OperationsHealthSummaryResult;
 import com.thundax.kuzhambu.operations.domain.health.model.entity.HealthCheckRecord;
 import com.thundax.kuzhambu.operations.domain.health.repository.HealthCheckRepository;
 import com.thundax.kuzhambu.operations.domain.task.model.entity.LongTaskSnapshot;
 import com.thundax.kuzhambu.operations.domain.task.repository.LongTaskSnapshotRepository;
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
@@ -34,16 +54,26 @@ public class OperationsDashboardApplicationServiceImpl implements OperationsDash
 
     private final HealthCheckRepository healthCheckRepository;
     private final LongTaskSnapshotRepository longTaskSnapshotRepository;
+    private final OperationsDashboardSummaryGateway summaryGateway;
 
     public OperationsDashboardApplicationServiceImpl(
-            HealthCheckRepository healthCheckRepository, LongTaskSnapshotRepository longTaskSnapshotRepository) {
+            HealthCheckRepository healthCheckRepository,
+            LongTaskSnapshotRepository longTaskSnapshotRepository,
+            OperationsDashboardSummaryGateway summaryGateway) {
         this.healthCheckRepository = healthCheckRepository;
         this.longTaskSnapshotRepository = longTaskSnapshotRepository;
+        this.summaryGateway = summaryGateway;
     }
 
     @Override
     public OperationsDashboardOverviewResult overview(OperationsDashboardOverviewQuery query) {
         PeriodRange periodRange = resolvePeriodRange(query);
+        OperationsCrossDomainSummary summary = summaryGateway.loadSummary(
+                periodRange.periodStart(), periodRange.periodEnd(), resolveBucketType(query, periodRange));
+        ClassicsSummaryFacadeResponse classicsSummary = summary.classicsSummary();
+        AiReportSummaryFacadeResponse aiSummary = summary.aiSummary();
+        DiscoverySummaryFacadeResponse discoverySummary = summary.discoverySummary();
+        KnowledgeSummaryFacadeResponse knowledgeSummary = summary.knowledgeSummary();
         List<OperationsHealthSummaryResult> healthSummaries = healthCheckRepository.listLatestByComponent().stream()
                 .map(this::toHealthSummaryResult)
                 .collect(Collectors.toList());
@@ -52,35 +82,35 @@ public class OperationsDashboardApplicationServiceImpl implements OperationsDash
         return new OperationsDashboardOverviewResult(
                 periodRange.periodStart(),
                 periodRange.periodEnd(),
-                0L,
-                0L,
-                0L,
-                0L,
-                0L,
-                0L,
-                0L,
-                0L,
-                BigDecimal.ZERO,
-                BigDecimal.ZERO,
-                0L,
-                0L,
-                BigDecimal.ZERO,
-                BigDecimal.ZERO,
+                classicsSummary.getContentCount(),
+                classicsSummary.getTranslatedContentCount(),
+                classicsSummary.getImageReadyContentCount(),
+                classicsSummary.getVisualAssetReadyContentCount(),
+                classicsSummary.getShareVisitCount(),
+                aiSummary.getInvocationCount(),
+                aiSummary.getSucceededInvocationCount(),
+                aiSummary.getFailedInvocationCount(),
+                toBigDecimal(aiSummary.getAvgLatencyMs()),
+                aiSummary.getTotalCostAmount(),
+                discoverySummary.getSearchCount(),
+                discoverySummary.getQaCount(),
+                toBigDecimal(discoverySummary.getAvgSearchLatencyMs()),
+                knowledgeSummary.getTagCoverageRate(),
                 unhealthyComponentCount(healthSummaries),
                 runningTaskCount,
                 failedTaskCount,
-                List.of(),
-                List.of(),
-                List.of(),
-                List.of(),
+                toContentGrowthSeries(classicsSummary.getContentGrowthSeries()),
+                toSearchTrendSeries(discoverySummary.getSearchTrendSeries()),
+                toQaTrendSeries(discoverySummary.getQaTrendSeries()),
+                toTagGrowthSeries(knowledgeSummary.getMonthlyNewTags()),
                 healthSummaries,
                 List.of(
                         new TaskStatusSummaryResult(TASK_STATUS_RUNNING, (long) runningTaskCount),
                         new TaskStatusSummaryResult(TASK_STATUS_FAILED, (long) failedTaskCount)),
-                List.of(),
-                List.of(),
-                List.of(),
-                List.of());
+                toTopContents(classicsSummary.getTopContents()),
+                toTopQueries(discoverySummary.getTopQueries()),
+                toTopTags(knowledgeSummary.getTopTags()),
+                toTopAiCapabilities(aiSummary.getTopCapabilities()));
     }
 
     private PeriodRange resolvePeriodRange(OperationsDashboardOverviewQuery query) {
@@ -107,6 +137,21 @@ public class OperationsDashboardApplicationServiceImpl implements OperationsDash
                                 "Unsupported operations dashboard periodType: " + periodType);
                 };
         return new PeriodRange(Date.from(periodStart), Date.from(periodEnd));
+    }
+
+    private String resolveBucketType(OperationsDashboardOverviewQuery query, PeriodRange periodRange) {
+        String periodType = normalizePeriodType(query == null ? null : query.getPeriodType());
+        if (PERIOD_TYPE_MONTH.equals(periodType)) {
+            return "WEEK";
+        }
+        if (PERIOD_TYPE_CUSTOM.equals(periodType)) {
+            long days = Duration.between(
+                            periodRange.periodStart().toInstant(),
+                            periodRange.periodEnd().toInstant())
+                    .toDays();
+            return days <= 31 ? "DAY" : "WEEK";
+        }
+        return "DAY";
     }
 
     private static String normalizePeriodType(String periodType) {
@@ -141,6 +186,64 @@ public class OperationsDashboardApplicationServiceImpl implements OperationsDash
         PageResult<LongTaskSnapshot> taskPage =
                 longTaskSnapshotRepository.page(null, null, taskStatus, 1, TASK_COUNT_PAGE_SIZE);
         return (int) taskPage.getTotalCount();
+    }
+
+    private static BigDecimal toBigDecimal(Long value) {
+        return value == null ? null : BigDecimal.valueOf(value);
+    }
+
+    private static List<BucketCountResult> toContentGrowthSeries(List<ClassicsContentGrowthPointFacadeDto> points) {
+        return safeList(points).stream()
+                .map(point -> new BucketCountResult(point.getBucket(), point.getCreatedCount()))
+                .toList();
+    }
+
+    private static List<BucketCountResult> toSearchTrendSeries(List<DiscoverySearchTrendPointFacadeDto> points) {
+        return safeList(points).stream()
+                .map(point -> new BucketCountResult(point.getBucket(), point.getSearchCount()))
+                .toList();
+    }
+
+    private static List<BucketCountResult> toQaTrendSeries(List<DiscoveryQaTrendPointFacadeDto> points) {
+        return safeList(points).stream()
+                .map(point -> new BucketCountResult(point.getBucket(), point.getQaCount()))
+                .toList();
+    }
+
+    private static List<BucketCountResult> toTagGrowthSeries(List<KnowledgeMonthlyNewTagFacadeDto> points) {
+        return safeList(points).stream()
+                .map(point -> new BucketCountResult(point.getBucket(), point.getTagCount()))
+                .toList();
+    }
+
+    private static List<TopContentResult> toTopContents(List<ClassicsTopContentFacadeDto> topContents) {
+        return safeList(topContents).stream()
+                .map(content -> new TopContentResult(
+                        content.getContentId(), content.getContentType(), content.getTitle(), content.getVisitCount()))
+                .toList();
+    }
+
+    private static List<TopQueryResult> toTopQueries(List<DiscoveryTopQueryFacadeDto> topQueries) {
+        return safeList(topQueries).stream()
+                .map(query -> new TopQueryResult(query.getQueryText(), query.getCount()))
+                .toList();
+    }
+
+    private static List<TopTagResult> toTopTags(List<KnowledgeTopTagFacadeDto> topTags) {
+        return safeList(topTags).stream()
+                .map(tag -> new TopTagResult(tag.getTagName(), tag.getContentRefCount()))
+                .toList();
+    }
+
+    private static List<TopAiCapabilityResult> toTopAiCapabilities(List<AiTopCapabilityFacadeDto> topCapabilities) {
+        return safeList(topCapabilities).stream()
+                .map(capability ->
+                        new TopAiCapabilityResult(capability.getCapability(), capability.getInvocationCount()))
+                .toList();
+    }
+
+    private static <T> List<T> safeList(List<T> values) {
+        return values == null ? List.of() : values;
     }
 
     private record PeriodRange(Date periodStart, Date periodEnd) {}
