@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Implementation Coverage`：同步 AI 和 Classics 实现覆盖状态
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-AI-STREAMING-CANDIDATES.md`、`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`docs/40-readiness/AI-IMPLEMENTATION-COVERAGE.md`、`docs/40-readiness/CLASSICS-IMPLEMENTATION-COVERAGE.md`
-    - 处理动作：记录 Classics 三才视觉流式候选闭环的实现覆盖状态和剩余风险。
-    - 验收点：coverage 文档包含 stream 展示、候选生成、失败重试、main 同步和验证结果的最新口径。
-    - 重要度：8/10
-
 - [ ] `RUNBOOK 清理`：完成闭环后删除临时 RUNBOOK
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/00-governance/DOCUMENT-RULES.md`
