@@ -11,13 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `02 Knowledge 质量报告轻编排服务`：从报告快照生成重提取任务范围
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LOW-QUALITY-REEXTRACT.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/service/KnowledgeQualityReportApplicationService.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/refinement/service/impl/KnowledgeQualityReportApplicationServiceImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/refinement/assembler/KnowledgeQualityReportInterfaceAssembler.java`
-    - 处理动作：实现 `reextractLowQualityCategory`，按 `reportId` 和 `sourceCategoryCode` 聚合低质量来源并创建 `QUALITY_REPORT` 图谱抽取任务。
-    - 验收点：服务端生成包含 `qualityReportId`、`graphVersionId`、`sourceCategoryCode`、`sourceCategoryName`、`sourceContentType`、`sourceContentIds` 的 `selectionScopeJson`，并拒绝无问题、无来源或多来源类型混合请求。
-    - 重要度：10/10
 - [ ] `03 Knowledge 质量报告重提取接口与后端测试`：开放并锁定一键重提取接口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LOW-QUALITY-REEXTRACT.md`
