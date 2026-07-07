@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Admin Web stream 服务组件`：新增 Classics 共用流式过程服务和展示组件
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-AI-STREAMING-CANDIDATES.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/common/ai-refinement-task-types.ts`、`kuzhambu-apps/admin-web/src/pages/classics/common/ai-refinement-task-service.ts`、`kuzhambu-apps/admin-web/src/pages/classics/common/components/ai-refinement-stream-panel.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/common/ai-refinement-task-service.test.ts`、`kuzhambu-apps/admin-web/src/pages/classics/common/components/ai-refinement-stream-panel.test.tsx`
-    - 处理动作：用 `fetch + ReadableStream` 实现带 `Access-Token` 的 SSE 订阅并提供 `AI 流式过程` 组件。
-    - 验收点：service 测试断言订阅 URL 和 `Access-Token` 请求头，组件测试可定位 `三才图会 AI 流式过程` 并展示 delta、失败原因、关闭操作。
-    - 重要度：9/10
-
 - [ ] `三才视觉资产页面接入`：接通三才视觉任务流式展示、候选刷新和失败重试
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-AI-STREAMING-CANDIDATES.md`
