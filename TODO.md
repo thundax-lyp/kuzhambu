@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics/lifecycle-final-validation`：运行同步 main 后的最终验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-LIFECYCLE-EDIT-LOOP.md`
-    - 范围对象：`kuzhambu-servers/.mvn/maven.config`、`kuzhambu-servers/pom.xml`、`kuzhambu-apps/package.json`、`kuzhambu-apps/admin-web/package.json`
-    - 处理动作：在同步最新 `main` 后，按 RUNBOOK 执行后端 formatter、Spotless、Checkstyle、测试和前端 format、lint、test。
-    - 验收点：后端 Maven 验证和前端 npm 验证通过；若失败，TODO 收窄为明确剩余失败项。
-    - 重要度：10/10
-
 - [ ] `classics/lifecycle-doc-closure`：更新覆盖文档并清理 RUNBOOK
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-LIFECYCLE-EDIT-LOOP.md`

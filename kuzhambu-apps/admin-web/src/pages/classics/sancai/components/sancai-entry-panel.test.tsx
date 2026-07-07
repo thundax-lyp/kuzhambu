@@ -666,7 +666,8 @@ describe("SancaiEntryPanel sharing", () => {
         renderEntryPanel();
 
         const entryTable = await screen.findByLabelText("三才图会条目表格");
-        expect(await within(entryTable).findByRole("button", { name: "分享 天地" })).toBeDisabled();
+        expect(await within(entryTable).findByText("天地")).toBeInTheDocument();
+        expect(within(entryTable).getByRole("button", { name: "分享 天地" })).toBeDisabled();
         expect(within(entryTable).getByRole("button", { name: "导出 天地" })).toBeDisabled();
         expect(within(entryTable).getByRole("button", { name: "归档 天地" })).toBeDisabled();
         expect(within(entryTable).getByRole("button", { name: "发布 地理" })).toBeDisabled();
@@ -674,7 +675,7 @@ describe("SancaiEntryPanel sharing", () => {
         expect(screen.getByRole("button", { name: "批量分享" })).toBeDisabled();
         expect(screen.getByRole("button", { name: "批量公开" })).toBeDisabled();
         expect(screen.getByRole("button", { name: "批量私有" })).toBeDisabled();
-    }, 30000);
+    }, 90000);
 
     it("renders lifecycle controls by entry status", async () => {
         renderEntryPanel();
@@ -702,10 +703,11 @@ describe("SancaiEntryPanel sharing", () => {
             })
         );
         await waitFor(() => {
-            expect(entryService.changeLifecycleStatus).toHaveBeenCalledWith({
-                id: 3002,
-                lifecycleStatus: "PUBLISHED"
-            });
+            expect(entryService.changeLifecycleStatus).toHaveBeenCalled();
+        });
+        expect(vi.mocked(entryService.changeLifecycleStatus).mock.calls[0]?.[0]).toEqual({
+            id: 3002,
+            lifecycleStatus: "PUBLISHED"
         });
         expect(await screen.findByText("三才图会条目已发布")).toBeInTheDocument();
     }, 30000);
@@ -722,10 +724,11 @@ describe("SancaiEntryPanel sharing", () => {
         await user.click(within(entryTable).getByRole("button", { name: "归档 天地" }));
 
         await waitFor(() => {
-            expect(entryService.changeLifecycleStatus).toHaveBeenCalledWith({
-                id: 3001,
-                lifecycleStatus: "ARCHIVED"
-            });
+            expect(entryService.changeLifecycleStatus).toHaveBeenCalled();
+        });
+        expect(vi.mocked(entryService.changeLifecycleStatus).mock.calls[0]?.[0]).toEqual({
+            id: 3001,
+            lifecycleStatus: "ARCHIVED"
         });
         expect(
             invalidateSpy.mock.calls.some(

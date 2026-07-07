@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.sancai;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -619,7 +620,7 @@ class SancaiAdminControllerTest {
         assertPostMapping(controllerType, methodName, expectedPath, parameterTypes);
         Method method = controllerType.getDeclaredMethod(methodName, parameterTypes);
         HasPermission permission = method.getAnnotation(HasPermission.class);
-        assertEquals(expectedPermission, permission.value());
+        assertArrayEquals(new String[] {expectedPermission}, permission.value());
     }
 
     private static void assertGetMapping(
