@@ -1,6 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as service from "./quality-report-service";
-import type { GenerateQualityReportCommand, QualityReportPageQuery } from "./quality-report-types";
+import type {
+    GenerateQualityReportCommand,
+    QualityReportPageQuery,
+    ReextractLowQualityCategoryCommand
+} from "./quality-report-types";
 
 interface CapturedCall {
     body: unknown;
@@ -108,5 +112,23 @@ describe("knowledge quality report service request contracts", () => {
 
         await service.getLatestReport({ graphVersionId: 71 });
         expectLastCall("POST", "/knowledge/quality/report/latest", { graphVersionId: 71 });
+    });
+
+    it("sends reextract low quality category request", async () => {
+        const command: ReextractLowQualityCategoryCommand = {
+            reportId: 1001,
+            sourceCategoryCode: "myth",
+            taskType: "GRAPH",
+            replaceUnconfirmedOnly: true,
+            modelId: 1,
+            modelName: "gpt-5.5",
+            promptMessagesJson: '[{"role":"system","content":"extract"}]',
+            inputPayloadJson: '{"sourceCategoryCode":"myth"}',
+            requestedBy: 9
+        };
+
+        await service.reextractLowQualityCategory(command);
+
+        expectLastCall("POST", "/knowledge/quality/report/reextract-low-quality-category", command);
     });
 });

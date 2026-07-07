@@ -11,13 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `04 Admin Web 质量报告重提取服务`：补齐前端调用类型和 API
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LOW-QUALITY-REEXTRACT.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/quality-report/quality-report-types.ts`、`kuzhambu-apps/admin-web/src/pages/knowledge/quality-report/quality-report-service.ts`、`kuzhambu-apps/admin-web/src/pages/knowledge/quality-report/quality-report-service.test.ts`
-    - 处理动作：新增 `ReextractLowQualityCategoryCommand`、`ReextractLowQualityCategoryRecord` 和 `reextractLowQualityCategory` 服务方法。
-    - 验收点：服务测试断言 `POST /knowledge/quality/report/reextract-low-quality-category` 的路径、方法和 body 字段完整。
-    - 重要度：8/10
 - [ ] `05 Admin Web 来源明细重提取控件`：在质量报告来源明细行增加重提取按钮
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LOW-QUALITY-REEXTRACT.md`

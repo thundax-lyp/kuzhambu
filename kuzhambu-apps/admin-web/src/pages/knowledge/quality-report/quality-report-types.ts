@@ -79,6 +79,32 @@ export interface GenerateQualityReportCommand {
     generatedBy?: number | null;
 }
 
+export interface ReextractLowQualityCategoryCommand {
+    reportId: number;
+    sourceCategoryCode: string;
+    taskType?: string | null;
+    replaceUnconfirmedOnly?: boolean | null;
+    modelId?: number | null;
+    modelName?: string | null;
+    promptMessagesJson?: string | null;
+    inputPayloadJson?: string | null;
+    requestedBy?: number | null;
+}
+
+export interface ReextractLowQualityCategoryRecord {
+    reportId?: number | null;
+    sourceCategoryCode?: string | null;
+    sourceCategoryName?: string | null;
+    sourceContentType?: string | null;
+    sourceContentId?: number | null;
+    taskId?: number | null;
+    batchJobId?: number | null;
+    taskType?: string | null;
+    triggerSource?: string | null;
+    selectionScopeJson?: string | null;
+    replaceUnconfirmedOnly?: boolean | null;
+}
+
 export type QualityReportPageQuery = PageQuery<{
     graphVersionId?: number | null;
     sourceContentType?: string | null;
