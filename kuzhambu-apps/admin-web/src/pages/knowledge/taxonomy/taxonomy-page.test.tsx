@@ -113,6 +113,7 @@ vi.mock("./taxonomy-service", () => ({
     createTag: vi.fn(async () => true),
     updateTag: vi.fn(async () => true),
     reviewTag: vi.fn(async () => true),
+    reviewBatchTags: vi.fn(async () => true),
     requestTagExtraction: vi.fn(async () => ({
         aiCallId: 501,
         aiCandidateId: 601,

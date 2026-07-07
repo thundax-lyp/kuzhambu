@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin review batch controls`：实现待审核标签批量通过和批量拒绝控件
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-TAG-BATCH-GOVERNANCE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/taxonomy/components/tag-review-table.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/taxonomy/components/tag-batch-review-panel.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/taxonomy/taxonomy-page.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/taxonomy/taxonomy-page.css`、`kuzhambu-apps/admin-web/src/pages/knowledge/taxonomy/taxonomy-page.test.tsx`
-    - 处理动作：在待审核标签表格接入多选、批量通过 Drawer、批量拒绝 Drawer 和页面状态刷新。
-    - 验收点：批量通过必须选择分类，批量拒绝可直接提交，成功后待审核表格选择数量归零。
-    - 重要度：10/10
-
 - [ ] `knowledge backend validation`：运行标签批量治理后端验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-TAG-BATCH-GOVERNANCE.md`

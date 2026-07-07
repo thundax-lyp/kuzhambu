@@ -1,5 +1,6 @@
-import { ReloadOutlined } from "@ant-design/icons";
+import { CheckOutlined, CloseOutlined, ReloadOutlined } from "@ant-design/icons";
 import { Button, Typography } from "antd";
+import type { Key } from "react";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
@@ -47,21 +48,29 @@ const readSourceLabel = (source?: string | null) => {
 interface TagReviewTableProps {
     loading: boolean;
     query: TagReviewPageQuery;
+    selectedRowKeys?: Key[];
     tags: TagRecord[];
     totalCount: number;
+    onBatchApprove: () => void;
+    onBatchReject: () => void;
     onChange: (values: TagReviewPageQuery) => void;
     onOpenReview: (tag: TagRecord) => void;
     onRefresh: () => void;
+    onSelectedRowKeysChange?: (keys: Key[]) => void;
 }
 
 export const TagReviewTable = ({
     loading,
     query,
+    selectedRowKeys = [],
     tags,
     totalCount,
+    onBatchApprove,
+    onBatchReject,
     onChange,
     onOpenReview,
-    onRefresh
+    onRefresh,
+    onSelectedRowKeysChange
 }: TagReviewTableProps) => {
     const currentPageNo = query.pageNo || DEFAULT_PAGE_NO;
     const currentPageSize = query.pageSize || DEFAULT_PAGE_SIZE;
@@ -150,8 +159,32 @@ export const TagReviewTable = ({
                     刷新
                 </Button>
             }
+            batchActions={
+                <>
+                    <Button
+                        icon={<CheckOutlined />}
+                        disabled={selectedRowKeys.length < 1}
+                        onClick={onBatchApprove}
+                    >
+                        批量通过
+                    </Button>
+                    <Button
+                        danger
+                        icon={<CloseOutlined />}
+                        disabled={selectedRowKeys.length < 1}
+                        onClick={onBatchReject}
+                    >
+                        批量拒绝
+                    </Button>
+                </>
+            }
+            selectedCount={selectedRowKeys.length}
             filterActive={hasSearch}
             rowKey="id"
+            rowSelection={{
+                selectedRowKeys,
+                onChange: (keys) => onSelectedRowKeysChange?.(keys)
+            }}
             columns={columns}
             dataSource={tags}
             loading={loading}

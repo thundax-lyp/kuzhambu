@@ -73,6 +73,10 @@
     width: 100%;
 }
 
+.knowledge-taxonomy-tag-batch-form {
+    width: 100%;
+}
+
 .knowledge-taxonomy-tag-batch-preview {
     display: grid;
     gap: 16px;

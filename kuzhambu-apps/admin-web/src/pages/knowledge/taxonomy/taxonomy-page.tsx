@@ -9,6 +9,7 @@ import { CategoryEdit } from "./components/category-edit";
 import { CategoryTable } from "./components/category-table";
 import { SynonymEdit } from "./components/synonym-edit";
 import { SynonymTable } from "./components/synonym-table";
+import { TagBatchReviewPanel } from "./components/tag-batch-review-panel";
 import { TagDetailDrawer } from "./components/tag-detail-drawer";
 import { TagEdit } from "./components/tag-edit";
 import { TagExtractionDrawer } from "./components/tag-extraction-drawer";
@@ -20,6 +21,7 @@ import { TagTable } from "./components/tag-table";
 import * as service from "./taxonomy-service";
 import type {
     TagBatchMergeCommand,
+    TagBatchReviewCommand,
     TagMergeCommand,
     TagAliasCreateCommand,
     TagAliasRemoveCommand,
@@ -105,6 +107,11 @@ export const TaxonomyPage = () => {
     const [selectedTagRowKeys, setSelectedTagRowKeys] = useState<Key[]>([]);
     const [tagBatchMergePreview, setTagBatchMergePreview] =
         useState<TagBatchMergePreviewRecord | null>(null);
+    const [tagBatchReviewOpen, setTagBatchReviewOpen] = useState(false);
+    const [tagBatchReviewDecision, setTagBatchReviewDecision] = useState<"APPROVE" | "REJECT">(
+        "APPROVE"
+    );
+    const [selectedReviewRowKeys, setSelectedReviewRowKeys] = useState<Key[]>([]);
     const [tagExtractionOpen, setTagExtractionOpen] = useState(false);
     const [tagExtractionResult, setTagExtractionResult] =
         useState<TagExtractionResultRecord | null>(null);
@@ -317,6 +324,25 @@ export const TaxonomyPage = () => {
             messageApi.error(error instanceof Error ? error.message : "标签审核失败");
         }
     });
+    const reviewBatchTagsMutation = useMutation({
+        mutationFn: service.reviewBatchTags,
+        onSuccess: async () => {
+            setTagBatchReviewOpen(false);
+            setSelectedReviewRowKeys([]);
+            await Promise.all([
+                queryClient.invalidateQueries({ queryKey: ["knowledge", "taxonomy", "reviews"] }),
+                queryClient.invalidateQueries({ queryKey: ["knowledge", "taxonomy", "tags"] }),
+                queryClient.invalidateQueries({ queryKey: ["knowledge", "taxonomy", "metrics"] }),
+                queryClient.invalidateQueries({
+                    queryKey: ["knowledge", "taxonomy", "tag-detail"]
+                })
+            ]);
+            messageApi.success("批量审核已完成");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "批量审核失败");
+        }
+    });
     const createAliasMutation = useMutation({
         mutationFn: service.createTagAlias,
         onSuccess: async () => {
@@ -430,6 +456,8 @@ export const TaxonomyPage = () => {
     const selectedTagIds = selectedTagRowKeys.map(String);
     const selectedTags = tags.filter((tag) => selectedTagIds.includes(tag.id));
     const candidateTargetTags = tags.filter((tag) => !selectedTagIds.includes(tag.id));
+    const selectedReviewIds = selectedReviewRowKeys.map(String);
+    const selectedReviewTags = reviewTags.filter((tag) => selectedReviewIds.includes(tag.id));
 
     const openCreateCategory = () => {
         setEditingCategory(null);
@@ -570,6 +598,22 @@ export const TaxonomyPage = () => {
         });
     };
 
+    const openTagBatchReview = (decision: "APPROVE" | "REJECT") => {
+        setTagBatchReviewDecision(decision);
+        setTagBatchReviewOpen(true);
+    };
+
+    const closeTagBatchReview = () => {
+        if (reviewBatchTagsMutation.isPending) {
+            return;
+        }
+        setTagBatchReviewOpen(false);
+    };
+
+    const reviewBatchTags = (request: TagBatchReviewCommand) => {
+        reviewBatchTagsMutation.mutate(request);
+    };
+
     return (
         <div className="taxonomy-page knowledge-taxonomy-page">
             <Tabs
@@ -661,11 +705,15 @@ export const TaxonomyPage = () => {
                                 <TagReviewTable
                                     loading={reviewPageQuery.isFetching}
                                     query={reviewQuery}
+                                    selectedRowKeys={selectedReviewRowKeys}
                                     tags={reviewTags}
                                     totalCount={readTotalCount(reviewPage)}
+                                    onBatchApprove={() => openTagBatchReview("APPROVE")}
+                                    onBatchReject={() => openTagBatchReview("REJECT")}
                                     onChange={setReviewQuery}
                                     onOpenReview={(tag) => openTagDetail(tag, true)}
                                     onRefresh={() => reviewPageQuery.refetch()}
+                                    onSelectedRowKeysChange={setSelectedReviewRowKeys}
                                 />
                             )
                         };
@@ -778,6 +826,18 @@ export const TaxonomyPage = () => {
                     onApply={applyTagBatchMerge}
                     onClose={closeTagBatchMerge}
                     onPreview={previewTagBatchMergeImpact}
+                />
+            ) : null}
+
+            {tagBatchReviewOpen ? (
+                <TagBatchReviewPanel
+                    categories={categories}
+                    decision={tagBatchReviewDecision}
+                    open={tagBatchReviewOpen}
+                    reviewing={reviewBatchTagsMutation.isPending}
+                    selectedTags={selectedReviewTags}
+                    onClose={closeTagBatchReview}
+                    onSubmit={reviewBatchTags}
                 />
             ) : null}
         </div>
