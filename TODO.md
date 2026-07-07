@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `operations cleanup validation`：执行后端与前端最小验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-CLEANUP-SCHEDULE-POLICY.md`、`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-application`、`kuzhambu-servers/biz/operations/kuzhambu-operations-interface`、`kuzhambu-servers/starter/kuzhambu-admin-starter`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application`、`kuzhambu-apps/admin-web`
-    - 处理动作：运行 RUNBOOK 指定的 Maven、Spotless、Checkstyle、npm format、lint 和 cleanup 页面测试。
-    - 验收点：相关 Java 定向测试、前端 cleanup 测试、格式检查和静态检查均通过，或记录明确阻塞原因。
-    - 重要度：10/10
-
 - [ ] `operations cleanup documentation closure`：更新覆盖矩阵并清理 RUNBOOK
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-CLEANUP-SCHEDULE-POLICY.md`、`docs/00-governance/TODO-RULES.md`
