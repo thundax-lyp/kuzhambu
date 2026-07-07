@@ -30,6 +30,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
@@ -65,6 +66,7 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
     @Override
     public SearchLogResult search(SearchQuery query) {
         validateSearchQuery(query);
+        long startNanos = System.nanoTime();
         QueryUnderstandingResult understandingResult = queryUnderstandingApplicationService.understand(query);
         var keyword = searchDomainService.normalizeKeyword(resolveSearchText(query, understandingResult));
         var scope = searchDomainService.normalizeScope(toSearchScope(query));
@@ -74,16 +76,31 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
             List<SearchGroupResult> groups = searchIndexGateway.search(keyword, scope, pageNo, pageSize);
             List<SearchGroupResult> filteredGroups = searchPermissionFilter.filter(query, groups);
             SearchLog searchLog = buildSucceededSearchLog(
-                    query, understandingResult, keyword.getNormalizedText(), scope, filteredGroups);
+                    query,
+                    understandingResult,
+                    keyword.getNormalizedText(),
+                    scope,
+                    filteredGroups,
+                    elapsedMillis(startNanos));
             searchLogRepository.save(searchLog);
             return toSearchResult(searchLog, filteredGroups);
         } catch (BizException exception) {
-            searchLogRepository.save(
-                    buildFailedSearchLog(query, understandingResult, keyword.getNormalizedText(), scope, exception));
+            searchLogRepository.save(buildFailedSearchLog(
+                    query,
+                    understandingResult,
+                    keyword.getNormalizedText(),
+                    scope,
+                    elapsedMillis(startNanos),
+                    exception));
             throw exception;
         } catch (UnsupportedOperationException exception) {
-            searchLogRepository.save(
-                    buildFailedSearchLog(query, understandingResult, keyword.getNormalizedText(), scope, exception));
+            searchLogRepository.save(buildFailedSearchLog(
+                    query,
+                    understandingResult,
+                    keyword.getNormalizedText(),
+                    scope,
+                    elapsedMillis(startNanos),
+                    exception));
             throw new BizException(
                     "DISCOVERY-20001",
                     "discovery.search.backend.not-implemented",
@@ -165,7 +182,8 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
             QueryUnderstandingResult understandingResult,
             String normalizedQueryText,
             SearchScope searchScope,
-            List<SearchGroupResult> groups) {
+            List<SearchGroupResult> groups,
+            Long searchLatencyMs) {
         int totalCount = groups == null
                 ? 0
                 : groups.stream().mapToInt(SearchGroupResult::getCount).sum();
@@ -179,6 +197,7 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
                 searchScope,
                 totalCount,
                 groups == null ? 0 : groups.size(),
+                searchLatencyMs,
                 "SUCCEEDED",
                 null,
                 null,
@@ -194,6 +213,7 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
             QueryUnderstandingResult understandingResult,
             String normalizedQueryText,
             SearchScope searchScope,
+            Long searchLatencyMs,
             RuntimeException exception) {
         String failureCode = exception instanceof BizException bizException && !isBlank(bizException.getCode())
                 ? bizException.getCode()
@@ -208,6 +228,7 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
                 searchScope,
                 0,
                 0,
+                searchLatencyMs,
                 "FAILED",
                 failureCode,
                 exception.getMessage(),
@@ -343,6 +364,10 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
 
     private String newSearchLogId() {
         return UUID.randomUUID().toString();
+    }
+
+    private Long elapsedMillis(long startNanos) {
+        return TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNanos);
     }
 
     private boolean isFailedSearch(SearchLog searchLog) {

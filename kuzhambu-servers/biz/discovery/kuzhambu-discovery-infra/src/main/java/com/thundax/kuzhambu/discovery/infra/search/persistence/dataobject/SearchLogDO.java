@@ -25,6 +25,7 @@ public class SearchLogDO {
     private String searchScopesJson;
     private Integer resultTotalCount;
     private Integer groupTotalCount;
+    private Long searchLatencyMs;
     private String searchStatus;
     private String failureCode;
     private String failureMessage;
