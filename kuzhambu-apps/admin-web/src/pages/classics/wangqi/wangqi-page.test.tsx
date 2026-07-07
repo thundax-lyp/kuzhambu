@@ -184,7 +184,7 @@ const installFetchMock = () => {
                 }
             ]);
         }
-        if (path.endsWith("/classics/content/ai-candidates/batch/reject")) {
+        if (path.endsWith("/classics/content/ai-candidates/batch/remove")) {
             return apiResponse({
                 failureCount: 0,
                 failures: [],
@@ -395,7 +395,7 @@ describe("WangqiPage", () => {
                 ]
             },
             method: "POST",
-            path: "/classics/content/ai-candidates/batch/reject"
+            path: "/classics/content/ai-candidates/batch/remove"
         });
     }, 30000);
 });

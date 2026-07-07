@@ -180,7 +180,7 @@ public class ClassicsContentAdminController {
     @ApiImplicitParams({})
     @HasPermission("classics:content:edit")
     @SysLogger(value = "AI候选批量应用")
-    @PostMapping("ai-candidates/batch/apply")
+    @PostMapping("ai-candidates/batch/change")
     public ClassicsBatchOperationResponse changeAiCandidates(
             @Valid @RequestBody ClassicsContentRequest.AiCandidateBatchApplyRequest request) {
         validateCandidateIdUnique(request == null ? null : request.getItems());
@@ -192,8 +192,8 @@ public class ClassicsContentAdminController {
     @ApiImplicitParams({})
     @HasPermission("classics:content:edit")
     @SysLogger(value = "AI候选批量拒绝")
-    @PostMapping("ai-candidates/batch/reject")
-    public ClassicsBatchOperationResponse rejectAiCandidates(
+    @PostMapping("ai-candidates/batch/remove")
+    public ClassicsBatchOperationResponse removeAiCandidates(
             @Valid @RequestBody ClassicsContentRequest.AiCandidateBatchRejectRequest request) {
         validateCandidateIdUnique(request == null ? null : request.getItems());
         return ClassicsBatchOperationResponse.from(

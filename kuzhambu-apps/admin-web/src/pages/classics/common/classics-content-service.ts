@@ -101,7 +101,7 @@ export const sortQaPairs = (request: ClassicsContentQaPairSortCommand) => {
 
 export const applyAiCandidatesBatch = (request: ClassicsAiCandidateBatchApplyCommand) => {
     return postJson<ClassicsBatchOperationRecord, ClassicsAiCandidateBatchApplyCommand>(
-        `${CLASSICS_CONTENT_PATH}/ai-candidates/batch/apply`,
+        `${CLASSICS_CONTENT_PATH}/ai-candidates/batch/change`,
         {
             body: request
         }
@@ -110,7 +110,7 @@ export const applyAiCandidatesBatch = (request: ClassicsAiCandidateBatchApplyCom
 
 export const rejectAiCandidatesBatch = (request: ClassicsAiCandidateBatchRejectCommand) => {
     return postJson<ClassicsBatchOperationRecord, ClassicsAiCandidateBatchRejectCommand>(
-        `${CLASSICS_CONTENT_PATH}/ai-candidates/batch/reject`,
+        `${CLASSICS_CONTENT_PATH}/ai-candidates/batch/remove`,
         {
             body: request
         }
