@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Operations implementation coverage`：更新 Operations 覆盖状态文档
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`docs/40-readiness/OPERATIONS-IMPLEMENTATION-COVERAGE.md`
-    - 处理动作：将健康告警策略、异常状态记录、失败恢复联动和页面提示更新为已完成或明确剩余范围。
-    - 验收点：coverage 文档与最终实现状态一致，不保留过期未完成描述。
-    - 重要度：9/10
-
 - [ ] `Operations health recovery closure`：清理 RUNBOOK 并收口 TODO
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`
