@@ -55,4 +55,37 @@ describe("AiRefinementStreamPanel", () => {
 
         expect(onClose).toHaveBeenCalledTimes(1);
     });
+
+    it("allows retry after stream error before task snapshot refreshes to failed", async () => {
+        const onClose = vi.fn();
+        const onRetry = vi.fn();
+        const user = userEvent.setup();
+
+        render(
+            <AiRefinementStreamPanel
+                events={[
+                    {
+                        eventType: "error",
+                        failureStage: "WORKER_STREAM",
+                        errorType: "WORKER_PROTOCOL_FAILURE",
+                        errorMessage: "bad stream"
+                    }
+                ]}
+                isStreaming={false}
+                task={{
+                    taskId: 7001,
+                    status: "RUNNING",
+                    capability: "image_analysis",
+                    contentType: "SANCAI_ENTRY",
+                    contentId: 3001
+                }}
+                onClose={onClose}
+                onRetry={onRetry}
+            />
+        );
+
+        await user.click(screen.getByRole("button", { name: /重\s*试/ }));
+
+        expect(onRetry).toHaveBeenCalledTimes(1);
+    });
 });

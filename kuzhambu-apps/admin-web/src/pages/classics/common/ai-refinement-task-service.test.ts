@@ -228,7 +228,8 @@ describe("AI refinement task service request contracts", () => {
         expect(events).toEqual([
             {
                 eventType: "delta",
-                deltaText: "片段"
+                deltaText: "片段",
+                eventId: null
             }
         ]);
     });

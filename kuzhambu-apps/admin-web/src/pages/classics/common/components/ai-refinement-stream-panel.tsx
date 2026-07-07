@@ -70,8 +70,12 @@ export const AiRefinementStreamPanel = ({
     const warningText = findWarningText(events);
     const errorText = findErrorText(events, task, streamErrorText);
     const canViewCandidate = task.status === "SUCCEEDED" && Boolean(task.candidateId);
+    const canRetryStreamFailure =
+        Boolean(errorText) && aiRefinementTaskService.getTaskRetryable("FAILED", task.capability);
     const canRetry =
-        aiRefinementTaskService.getTaskRetryable(task.status, task.capability) && Boolean(onRetry);
+        (aiRefinementTaskService.getTaskRetryable(task.status, task.capability) ||
+            canRetryStreamFailure) &&
+        Boolean(onRetry);
 
     return (
         <Card
