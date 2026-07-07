@@ -1,13 +1,44 @@
-import { Button, Table, Tag } from "antd";
+import { ReloadOutlined } from "@ant-design/icons";
+import { Button, Table, Tag, Tooltip } from "antd";
 import { KuzhambuSpaceCompact } from "@/components/kuzhambu-space";
 import type { ColumnsType } from "antd/es/table";
 import type { QualityReportSourceDetailRecord } from "../quality-report-types";
 
 interface QualityReportSourceTableProps {
+    canReextract?: boolean;
+    reextractingDetailId?: number | null;
+    reportNo?: string | null;
     sourceDetails: QualityReportSourceDetailRecord[];
+    onReextract?: (sourceDetail: QualityReportSourceDetailRecord) => void;
 }
 
-export const QualityReportSourceTable = ({ sourceDetails }: QualityReportSourceTableProps) => {
+const readReextractDisabledReason = (
+    sourceDetail: QualityReportSourceDetailRecord,
+    reportNo?: string | null,
+    canReextract = false
+) => {
+    if (!canReextract) {
+        return "缺少图谱编辑权限";
+    }
+    if (!reportNo) {
+        return "缺少报告编号";
+    }
+    if (!sourceDetail.sourceCategoryCode) {
+        return "缺少门类编码";
+    }
+    if (!sourceDetail.issueCount || sourceDetail.issueCount <= 0) {
+        return "该来源明细没有质量问题";
+    }
+    return "";
+};
+
+export const QualityReportSourceTable = ({
+    canReextract = false,
+    reextractingDetailId = null,
+    reportNo = null,
+    sourceDetails,
+    onReextract
+}: QualityReportSourceTableProps) => {
     const columns: ColumnsType<QualityReportSourceDetailRecord> = [
         { title: "来源类型", dataIndex: "sourceContentType", key: "sourceContentType" },
         { title: "来源 ID", dataIndex: "sourceContentId", key: "sourceContentId" },
@@ -24,13 +55,34 @@ export const QualityReportSourceTable = ({ sourceDetails }: QualityReportSourceT
         {
             title: "操作",
             key: "actions",
-            render: (_, sourceDetail) => (
-                <KuzhambuSpaceCompact>
-                    <Button disabled={!sourceDetail.href} href={sourceDetail.href || undefined}>
-                        打开
-                    </Button>
-                </KuzhambuSpaceCompact>
-            )
+            render: (_, sourceDetail) => {
+                const disabledReason = readReextractDisabledReason(
+                    sourceDetail,
+                    reportNo,
+                    canReextract
+                );
+                const reextractDisabled = Boolean(disabledReason);
+                return (
+                    <KuzhambuSpaceCompact className="knowledge-quality-report-source-actions">
+                        <Button disabled={!sourceDetail.href} href={sourceDetail.href || undefined}>
+                            打开
+                        </Button>
+                        <Tooltip title={disabledReason || "从质量报告低质量门类重提取"}>
+                            <span>
+                                <Button
+                                    aria-label={`重提取${sourceDetail.sourceCategoryName || sourceDetail.sourceCategoryCode || "来源明细"}`}
+                                    disabled={reextractDisabled}
+                                    icon={<ReloadOutlined />}
+                                    loading={reextractingDetailId === sourceDetail.detailId}
+                                    onClick={() => onReextract?.(sourceDetail)}
+                                >
+                                    重提取
+                                </Button>
+                            </span>
+                        </Tooltip>
+                    </KuzhambuSpaceCompact>
+                );
+            }
         }
     ];
 

@@ -11,13 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `05 Admin Web 来源明细重提取控件`：在质量报告来源明细行增加重提取按钮
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LOW-QUALITY-REEXTRACT.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/quality-report/components/quality-report-source-table.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/quality-report/quality-report-page.css`
-    - 处理动作：在来源明细操作列新增 `Tooltip + Button` 的“重提取”控件。
-    - 验收点：按钮按报告编号、门类编码、`issueCount` 和 `knowledge:graph:edit` 权限启停，禁用原因清晰，loading 绑定当前来源明细行。
-    - 重要度：8/10
 - [ ] `06 Admin Web 质量报告重提取编排`：接通确认弹窗、调用和成功反馈
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LOW-QUALITY-REEXTRACT.md`
