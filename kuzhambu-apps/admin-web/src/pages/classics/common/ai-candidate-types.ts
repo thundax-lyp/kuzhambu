@@ -22,3 +22,14 @@ export interface AiCandidateApplyRecord {
     versionId: number;
     versionNo: number;
 }
+
+export interface AiCandidateApplyCommand {
+    candidateId: number;
+    contentType: string;
+    contentId: number;
+    capability: string;
+    objectId?: number | null;
+    resultFormat: string;
+    resultPayload: string;
+    changeSummary?: string | null;
+}

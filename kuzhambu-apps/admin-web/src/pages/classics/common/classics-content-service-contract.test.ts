@@ -2,6 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as contentService from "@/pages/classics/common/classics-content-service";
 import type {
     ClassicsBatchVisibilityCommand,
+    ClassicsAiCandidateBatchApplyPayload,
+    ClassicsAiCandidateBatchRejectPayload,
     ClassicsContentQaPairCommand,
     ClassicsContentQaPairSortCommand,
     ClassicsContentTagCommand,
@@ -46,33 +48,92 @@ const installFetchRecorder = () => {
             path
         });
 
-        const data =
-            path === "/classics/content/visibility/change"
-                ? {
-                      failureCount: 1,
-                      failures: [
-                          {
-                              contentId: 4002,
-                              contentType: "WANGQI_DOCUMENT",
-                              failureCode: "BATCH_VISIBILITY_FAILED",
-                              failureReason: "内容不存在",
-                              resultId: null,
-                              status: null
-                          }
-                      ],
-                      successCount: 1,
-                      successes: [
-                          {
-                              contentId: 4001,
-                              contentType: "WANGQI_DOCUMENT",
-                              failureCode: null,
-                              failureReason: null,
-                              resultId: 4001,
-                              status: "PUBLIC"
-                          }
-                      ]
-                  }
-                : true;
+        const data = (() => {
+            if (path === "/classics/content/visibility/change") {
+                return {
+                    failureCount: 1,
+                    failures: [
+                        {
+                            contentId: 4002,
+                            contentType: "WANGQI_DOCUMENT",
+                            failureCode: "BATCH_VISIBILITY_FAILED",
+                            failureReason: "内容不存在",
+                            resultId: null,
+                            status: null
+                        }
+                    ],
+                    successCount: 1,
+                    successes: [
+                        {
+                            contentId: 4001,
+                            contentType: "WANGQI_DOCUMENT",
+                            failureCode: null,
+                            failureReason: null,
+                            resultId: 4001,
+                            status: "PUBLIC"
+                        }
+                    ]
+                };
+            }
+
+            if (path === "/classics/content/ai-candidates/batch/apply") {
+                return {
+                    failureCount: 1,
+                    failures: [
+                        {
+                            candidateId: 7002,
+                            contentId: 4002,
+                            contentType: "WANGQI_DOCUMENT",
+                            capability: "summary",
+                            failureCode: "INVALID_FORMAT",
+                            failureReason: "Payload 不符合结构化摘要约束"
+                        }
+                    ],
+                    successCount: 1,
+                    successes: [
+                        {
+                            candidateId: 7001,
+                            contentId: 4001,
+                            contentType: "WANGQI_DOCUMENT",
+                            capability: "summary",
+                            objectId: null,
+                            resultId: 9001,
+                            status: "APPLIED"
+                        }
+                    ]
+                };
+            }
+
+            if (path === "/classics/content/ai-candidates/batch/reject") {
+                return {
+                    failureCount: 0,
+                    failures: [],
+                    successCount: 2,
+                    successes: [
+                        {
+                            candidateId: 8001,
+                            contentId: 5001,
+                            contentType: "MING_CUSTOMS",
+                            capability: "tags",
+                            objectId: null,
+                            resultId: 8001,
+                            status: "REJECTED"
+                        },
+                        {
+                            candidateId: 8002,
+                            contentId: 5002,
+                            contentType: "MING_CUSTOMS",
+                            capability: "qa",
+                            objectId: 9002,
+                            resultId: 8002,
+                            status: "REJECTED"
+                        }
+                    ]
+                };
+            }
+
+            return true;
+        })();
 
         return new Response(
             JSON.stringify({
@@ -226,6 +287,98 @@ describe("classics content service request contracts", () => {
             failureReason: "内容不存在",
             resultId: null,
             status: null
+        });
+    });
+
+    it("sends ai candidate batch apply commands and preserves operation result fields", async () => {
+        const command: ClassicsAiCandidateBatchApplyPayload = {
+            items: [
+                {
+                    candidateId: 7001,
+                    contentType: "WANGQI_DOCUMENT",
+                    contentId: 4001,
+                    capability: "summary",
+                    objectId: null,
+                    resultFormat: "TEXT",
+                    resultPayload: "new summary"
+                },
+                {
+                    candidateId: 7002,
+                    contentType: "WANGQI_DOCUMENT",
+                    contentId: 4002,
+                    capability: "summary",
+                    resultFormat: "TEXT",
+                    resultPayload: "bad payload"
+                }
+            ]
+        };
+
+        const response = await contentService.applyAiCandidatesBatch(command);
+
+        expectLastCall("POST", "/classics/content/ai-candidates/batch/apply", command);
+        expect(response.successCount).toBe(1);
+        expect(response.successes[0]).toEqual({
+            candidateId: 7001,
+            contentId: 4001,
+            contentType: "WANGQI_DOCUMENT",
+            capability: "summary",
+            objectId: null,
+            resultId: 9001,
+            status: "APPLIED"
+        });
+        expect(response.failureCount).toBe(1);
+        expect(response.failures[0]).toEqual({
+            candidateId: 7002,
+            contentType: "WANGQI_DOCUMENT",
+            contentId: 4002,
+            capability: "summary",
+            failureCode: "INVALID_FORMAT",
+            failureReason: "Payload 不符合结构化摘要约束"
+        });
+    });
+
+    it("sends ai candidate batch reject commands and preserves operation result fields", async () => {
+        const command: ClassicsAiCandidateBatchRejectPayload = {
+            errorType: "USER_REJECTED",
+            errorMessage: "用户已批量拒绝该 AI 候选",
+            items: [
+                {
+                    candidateId: 8001,
+                    contentType: "MING_CUSTOMS",
+                    contentId: 5001,
+                    capability: "tags"
+                },
+                {
+                    candidateId: 8002,
+                    contentType: "MING_CUSTOMS",
+                    contentId: 5002,
+                    capability: "qa",
+                    objectId: 9002
+                }
+            ]
+        };
+
+        const response = await contentService.rejectAiCandidatesBatch(command);
+
+        expectLastCall("POST", "/classics/content/ai-candidates/batch/reject", command);
+        expect(response.successCount).toBe(2);
+        expect(response.successes[0]).toEqual({
+            candidateId: 8001,
+            contentId: 5001,
+            contentType: "MING_CUSTOMS",
+            capability: "tags",
+            objectId: null,
+            resultId: 8001,
+            status: "REJECTED"
+        });
+        expect(response.successes[1]).toEqual({
+            candidateId: 8002,
+            contentId: 5002,
+            contentType: "MING_CUSTOMS",
+            capability: "qa",
+            objectId: 9002,
+            resultId: 8002,
+            status: "REJECTED"
         });
     });
 });

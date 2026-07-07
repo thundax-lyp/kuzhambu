@@ -1,5 +1,9 @@
 import { postJson } from "@/api/http";
-import type { AiCandidateApplyRecord, AiCandidateRecord } from "./ai-candidate-types";
+import type {
+    AiCandidateApplyCommand,
+    AiCandidateApplyRecord,
+    AiCandidateRecord
+} from "./ai-candidate-types";
 
 export interface AiCandidateListQuery {
     contentType?: string | null;
@@ -7,17 +11,6 @@ export interface AiCandidateListQuery {
     objectId?: number | null;
     capability?: string | null;
     status?: "PENDING" | "APPLIED" | "REJECTED" | string | null;
-}
-
-export interface AiCandidateApplyCommand {
-    candidateId: number;
-    contentType: string;
-    contentId: number;
-    capability: string;
-    objectId?: number | null;
-    resultFormat: string;
-    resultPayload: string;
-    changeSummary?: string | null;
 }
 
 export interface AiCandidateRejectCommand {
