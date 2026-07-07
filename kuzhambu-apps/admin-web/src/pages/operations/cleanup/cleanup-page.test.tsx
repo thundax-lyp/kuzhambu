@@ -1,9 +1,12 @@
 import { QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { replacePermissions } from "@/auth/permission-storage";
 import { queryClient } from "@/query/query-client";
 import * as service from "./cleanup-service";
 import { CleanupPage } from "./cleanup-page";
+
+const confirmDanger = vi.hoisted(() => vi.fn());
 
 vi.mock("./cleanup-service", () => ({
     requestCleanup: vi.fn(),
@@ -12,7 +15,7 @@ vi.mock("./cleanup-service", () => ({
 }));
 
 vi.mock("@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm", () => ({
-    useKuzhambuConfirm: () => ({ danger: vi.fn() })
+    useKuzhambuConfirm: () => ({ danger: confirmDanger })
 }));
 
 vi.mock("@/components/kuzhambu-drawer", () => {
@@ -67,9 +70,17 @@ vi.mock("antd", async () => {
     };
 });
 
+const openSelectAndChoose = async (label: string, optionText: string) => {
+    const select = await screen.findByRole("combobox", { name: label });
+    fireEvent.mouseDown(select);
+    const options = await screen.findAllByText(optionText);
+    await userEvent.click(options.at(-1)!);
+};
+
 describe("CleanupPage", () => {
     beforeEach(() => {
         queryClient.clear();
+        confirmDanger.mockReset();
         replacePermissions(["operations:cleanup:view", "operations:cleanup:execute"]);
         vi.mocked(service.pageCleanups).mockResolvedValue({
             pageNo: 1,
@@ -111,6 +122,71 @@ describe("CleanupPage", () => {
 
         expect(await screen.findByRole("heading", { name: "清理任务台账" })).toBeInTheDocument();
         expect(await screen.findByText("EXPIRED_BACKUP")).toBeInTheDocument();
+    }, 30000);
+
+    it("renders automatic and manual trigger sources", async () => {
+        vi.mocked(service.pageCleanups).mockResolvedValue({
+            pageNo: 1,
+            pageSize: 20,
+            totalPage: 1,
+            count: 2,
+            totalCount: 2,
+            records: [
+                {
+                    cleanupId: 9103,
+                    cleanupType: "EXPIRED_BACKUP",
+                    cleanupStatus: "SUCCEEDED",
+                    requesterUserId: null
+                },
+                {
+                    cleanupId: 9104,
+                    cleanupType: "EXPIRED_SHARE",
+                    cleanupStatus: "SUCCEEDED",
+                    requesterUserId: 1001
+                }
+            ]
+        });
+        vi.mocked(service.getCleanupDetail).mockResolvedValue({
+            cleanupId: 9103,
+            cleanupType: "EXPIRED_BACKUP",
+            cleanupStatus: "SUCCEEDED",
+            requesterUserId: null,
+            items: []
+        });
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <CleanupPage />
+            </QueryClientProvider>
+        );
+
+        expect(await screen.findByText("系统自动")).toBeInTheDocument();
+        expect(screen.getByText("1001")).toBeInTheDocument();
+
+        const detailButtons = await screen.findAllByRole("button", { name: "详情" });
+        fireEvent.click(detailButtons[0]);
+
+        expect(await screen.findByText("触发来源")).toBeInTheDocument();
+        expect(screen.getAllByText("系统自动").length).toBeGreaterThan(1);
+    }, 30000);
+
+    it("opens manual compensation confirmation from cleanup type select", async () => {
+        render(
+            <QueryClientProvider client={queryClient}>
+                <CleanupPage />
+            </QueryClientProvider>
+        );
+
+        await openSelectAndChoose("执行清理类型", "过期导出");
+
+        expect(confirmDanger).toHaveBeenCalledWith(
+            expect.objectContaining({
+                title: "执行清理任务",
+                message: "确认人工补偿执行 EXPIRED_EXPORT 清理吗？",
+                description: "自动调度是主路径，本操作仅用于人工补偿；执行中请勿重复提交。",
+                okText: "确认执行"
+            })
+        );
     }, 30000);
 
     it("renders cleanup failure hints from task and item fields", async () => {

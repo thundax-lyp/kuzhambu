@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `admin-web operations cleanup ux`：更新清理台账页面自动/人工展示
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-CLEANUP-SCHEDULE-POLICY.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/operations/cleanup/cleanup-page.tsx`、`kuzhambu-apps/admin-web/src/pages/operations/cleanup/cleanup-types.ts`、`kuzhambu-apps/admin-web/src/pages/operations/cleanup/cleanup-service.ts`、`kuzhambu-apps/admin-web/src/pages/operations/cleanup/cleanup-page.test.tsx`、`kuzhambu-apps/admin-web/src/pages/operations/cleanup/cleanup-service-contract.test.ts`
-    - 处理动作：更新 cleanup 页面控件、表格和详情抽屉，明确自动调度与人工补偿的展示和操作。
-    - 验收点：执行清理类型 Select、确认弹窗、执行人列、详情触发来源、失败项和告警跳转均按 RUNBOOK 行为可测。
-    - 重要度：8/10
-
 - [ ] `operations cleanup runtime examples`：同步清理调度环境变量样例
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-CLEANUP-SCHEDULE-POLICY.md`
