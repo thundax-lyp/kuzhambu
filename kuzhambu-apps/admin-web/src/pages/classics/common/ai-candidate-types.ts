@@ -1,7 +1,10 @@
+export type AiCandidateCapability =
+    "translate" | "summary" | "tags" | "qa" | "image_analysis" | "visual" | "fusion" | "image_gen";
+
 export interface AiCandidateRecord {
     candidateId: number;
     callId?: number | null;
-    capability: string;
+    capability: AiCandidateCapability | string;
     contentType: string;
     contentId: number;
     objectId?: number | null;
@@ -27,9 +30,15 @@ export interface AiCandidateApplyCommand {
     candidateId: number;
     contentType: string;
     contentId: number;
-    capability: string;
+    capability: AiCandidateCapability | string;
     objectId?: number | null;
     resultFormat: string;
     resultPayload: string;
     changeSummary?: string | null;
+}
+
+export interface AiCandidateRejectCommand {
+    candidateId: number;
+    errorType: string;
+    errorMessage?: string | null;
 }

@@ -2,8 +2,11 @@ import { postJson } from "@/api/http";
 import type {
     AiCandidateApplyCommand,
     AiCandidateApplyRecord,
+    AiCandidateRejectCommand,
     AiCandidateRecord
 } from "./ai-candidate-types";
+
+export type { AiCandidateRejectCommand } from "./ai-candidate-types";
 
 export interface AiCandidateListQuery {
     contentType?: string | null;
@@ -11,12 +14,6 @@ export interface AiCandidateListQuery {
     objectId?: number | null;
     capability?: string | null;
     status?: "PENDING" | "APPLIED" | "REJECTED" | string | null;
-}
-
-export interface AiCandidateRejectCommand {
-    candidateId: number;
-    errorType: string;
-    errorMessage?: string | null;
 }
 
 const AI_INVOCATION_CANDIDATE_PATH = "/ai/invocation/candidate";

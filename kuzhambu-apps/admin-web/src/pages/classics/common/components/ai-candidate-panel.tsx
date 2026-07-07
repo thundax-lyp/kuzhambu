@@ -4,11 +4,8 @@ import { useCallback, useMemo, useState } from "react";
 import { KuzhambuList, KuzhambuListItem } from "@/components/kuzhambu-list";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import * as aiCandidateService from "../ai-candidate-service";
-import type { AiCandidateRecord } from "../ai-candidate-types";
+import type { AiCandidateCapability, AiCandidateRecord } from "../ai-candidate-types";
 import { AiCandidatePayloadEditor } from "./ai-candidate-payload-editor";
-
-type AiCandidateCapability =
-    "translate" | "summary" | "tags" | "qa" | "image_analysis" | "visual" | "fusion" | "image_gen";
 type CandidateContentType = "SANCAI_ENTRY" | "WANGQI_DOCUMENT" | "MING_CUSTOMS";
 
 interface AiCandidatePanelProps {
