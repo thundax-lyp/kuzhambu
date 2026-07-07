@@ -77,7 +77,7 @@
 | 健康检查与运行状态 | 部分完成 | `HealthCheckRecord`、`LongTaskSnapshot` 已完成 domain + persistence + application + interface；健康记录已包含 `probeSource`、`probeTarget`、`detailsJson`；已具备本地健康采集器、健康摘要、组件分页、健康趋势、长任务分页与详情查询；`operations_health_alert`、`HealthAlertRecord`、`OperationsHealthAlertStrategy`、`HealthAlertApplicationService`、`OperationsHealthAlertAdminController` 已完成健康告警策略、异常状态记录、确认和恢复接口；长任务、备份、恢复、清理失败已联动告警来源和失败原因；`admin-web` 看板已消费健康摘要/趋势/告警，任务、备份恢复和清理页面已展示失败提示与告警入口 | 更多外部探针、健康细分页、自动化恢复动作编排仍未完成 | Operations, Admin Web |
 | 运维入口 | 部分完成 | 已完成 `/operations/dashboard` 统一入口、任务台账、备份恢复、清理维护和健康告警处置跳转；菜单种子中 `运营看板` 使用 `operations:dashboard:view`、`operations:health:view`、`operations:health:manage`；未实现的报表记录菜单已隐藏且 URL 为空，避免 `/operations/reports` 可点击死链 | System 日志/审计入口、健康细分页和更多运维操作编排仍未完成 | Operations, Admin Web, System |
 | 台账记录 | 部分完成 | report、backup、restore、cleanup 已完成 domain + persistence + application + interface + admin page；cleanup 真实执行会写入 job summary 和 item 明细；health、health alert 与 long task 已完成 domain + persistence + application + interface，健康来源字段、趋势查询、告警记录和看板消费已落地 | 自动化恢复动作编排与更多运行态来源接入未完成 | Operations |
-| TODO 与治理文档清理 | 部分完成 | 本阶段已按任务提交记录完成验证与 main 同步 TODO 收口；最终 RUNBOOK 清理仍由 `Operations health recovery closure` 执行 | 当前分支仍保留收口 TODO 与临时 RUNBOOK，待闭包任务删除 | Governance |
+| TODO 与治理文档清理 | 已完成 | 本阶段已按任务提交记录完成验证、main 同步、Implementation Coverage 更新与 TODO 收口；`RUNBOOK-OPERATIONS-HEALTH-RECOVERY-LOOP.md` 临时 RUNBOOK 已删除 | 无 | Governance |
 
 ## Follow-up Backlog
 
