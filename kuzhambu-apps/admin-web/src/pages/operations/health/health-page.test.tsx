@@ -3,12 +3,17 @@ import { App } from "antd";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { replacePermissions } from "@/auth/permission-storage";
+import * as dashboardService from "@/pages/operations/dashboard/dashboard-service";
 import { queryClient } from "@/query/query-client";
 import { OperationsHealthPage } from "./health-page";
 import * as service from "./health-service";
 
 vi.mock("./health-service", () => ({
     getOperationsHealthPage: vi.fn()
+}));
+
+vi.mock("@/pages/operations/dashboard/dashboard-service", () => ({
+    getHealthAlerts: vi.fn()
 }));
 
 const renderPage = () =>
@@ -37,6 +42,7 @@ describe("OperationsHealthPage", () => {
                     message: "ok",
                     probeSource: "LOCAL",
                     probeTarget: "self",
+                    detailsJson: '{"status":"ok","latencyMs":32}',
                     checkedAt: "2026-07-01T01:00:00+08:00"
                 },
                 {
@@ -47,7 +53,26 @@ describe("OperationsHealthPage", () => {
                     message: null,
                     probeSource: "HTTP",
                     probeTarget: "http://127.0.0.1:20010/kuzhambu-admin-api/actuator/health",
+                    detailsJson: "raw details",
                     checkedAt: "bad-date"
+                }
+            ]
+        });
+        vi.mocked(dashboardService.getHealthAlerts).mockResolvedValue({
+            pageNo: 1,
+            pageSize: 10,
+            count: 1,
+            records: [
+                {
+                    alertId: 9201,
+                    component: "admin-starter",
+                    alertLevel: "CRITICAL",
+                    alertStatus: "ACTIVE",
+                    latestCheckId: 9101,
+                    message: "health down",
+                    suggestion: "check probe",
+                    recoveryAction: "OPEN_HEALTH_DETAIL",
+                    lastTriggeredAt: "2026-07-01T01:01:00+08:00"
                 }
             ]
         });
@@ -181,5 +206,88 @@ describe("OperationsHealthPage", () => {
         vi.mocked(service.getOperationsHealthPage).mockRejectedValueOnce(new Error("boom"));
         renderPage();
         await waitFor(() => expect(service.getOperationsHealthPage).toHaveBeenCalled());
+    });
+
+    it("opens detail drawer and formats details json", async () => {
+        renderPage();
+        await screen.findByText("admin-starter");
+
+        await userEvent.click(screen.getAllByRole("button", { name: "详情" })[0]);
+
+        expect(await screen.findByText("健康详情 #9101")).toBeInTheDocument();
+        expect(screen.getByText('"status": "ok"')).toBeInTheDocument();
+        expect(screen.getByText('"latencyMs": 32')).toBeInTheDocument();
+        expect(screen.getByText("self")).toBeInTheDocument();
+    });
+
+    it("keeps raw detail text and shows empty details", async () => {
+        renderPage();
+        await screen.findByText("search-worker");
+
+        await userEvent.click(screen.getAllByRole("button", { name: "详情" })[1]);
+        expect(await screen.findByText("raw details")).toBeInTheDocument();
+
+        vi.mocked(service.getOperationsHealthPage).mockResolvedValue({
+            pageNo: 1,
+            pageSize: 20,
+            count: 1,
+            records: [
+                {
+                    checkId: 9103,
+                    component: "empty-detail",
+                    healthStatus: "UP",
+                    detailsJson: null
+                }
+            ]
+        });
+        cleanup();
+        queryClient.clear();
+        renderPage();
+        await screen.findByText("empty-detail");
+        await userEvent.click(screen.getByRole("button", { name: "详情" }));
+        expect(await screen.findByText("暂无诊断详情")).toBeInTheDocument();
+    });
+
+    it("opens associated alerts by latest check id", async () => {
+        renderPage();
+        await screen.findByText("admin-starter");
+
+        await userEvent.click(screen.getAllByRole("button", { name: "查看告警" })[0]);
+
+        await waitFor(() => {
+            expect(dashboardService.getHealthAlerts).toHaveBeenCalledWith({
+                latestCheckId: 9101,
+                pageNo: 1,
+                pageSize: 10
+            });
+        });
+        expect(await screen.findByText("关联告警 #9101")).toBeInTheDocument();
+        expect(screen.getByText("health down")).toBeInTheDocument();
+        expect(screen.getByText("check probe")).toBeInTheDocument();
+        expect(screen.getByText("OPEN_HEALTH_DETAIL")).toBeInTheDocument();
+    });
+
+    it("keeps alert drawer open for empty and failed alert requests", async () => {
+        vi.mocked(dashboardService.getHealthAlerts).mockResolvedValueOnce({
+            pageNo: 1,
+            pageSize: 10,
+            count: 0,
+            records: []
+        });
+        const { unmount } = renderPage();
+        await screen.findByText("admin-starter");
+        await userEvent.click(screen.getAllByRole("button", { name: "查看告警" })[0]);
+        expect(await screen.findByText("暂无关联告警")).toBeInTheDocument();
+        expect(screen.getByText("关联告警 #9101")).toBeInTheDocument();
+        unmount();
+        cleanup();
+        queryClient.clear();
+
+        vi.mocked(dashboardService.getHealthAlerts).mockRejectedValueOnce(new Error("alert boom"));
+        renderPage();
+        await screen.findByText("admin-starter");
+        await userEvent.click(screen.getAllByRole("button", { name: "查看告警" })[0]);
+        expect(await screen.findByText("关联告警加载失败")).toBeInTheDocument();
+        expect(screen.getByText("关联告警 #9101")).toBeInTheDocument();
     });
 });

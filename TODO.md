@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web operations health detail alerts`：实现健康详情抽屉和关联告警操作
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-PROBE-LOOP.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/operations/health/health-page.tsx`、`kuzhambu-apps/admin-web/src/pages/operations/health/health-page.css`、`kuzhambu-apps/admin-web/src/pages/operations/health/health-page.test.tsx`、`kuzhambu-apps/admin-web/src/pages/operations/dashboard/dashboard-service.ts`
-    - 处理动作：实现健康详情抽屉、`detailsJson` 格式化展示和 `latestCheckId=checkId` 关联告警查询。
-    - 验收点：页面测试覆盖 JSON 格式化、非 JSON 降级、空 details、查看告警、告警空状态和告警请求失败提示。
-    - 重要度：10/10
-
 - [ ] `admin-web operations health route entry`：接入健康页路由和 Dashboard 入口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-PROBE-LOOP.md`

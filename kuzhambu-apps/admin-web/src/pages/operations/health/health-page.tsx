@@ -1,11 +1,24 @@
 import { ReloadOutlined, SearchOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { App, Button, Card, DatePicker, Input, Select, Tooltip, Typography } from "antd";
+import {
+    App,
+    Button,
+    Card,
+    DatePicker,
+    Descriptions,
+    Input,
+    Select,
+    Tooltip,
+    Typography
+} from "antd";
 import { useEffect, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
+import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import { KuzhambuPage } from "@/components/kuzhambu-page";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { KuzhambuTag } from "@/components/kuzhambu-tag";
+import * as dashboardService from "@/pages/operations/dashboard/dashboard-service";
+import type { OperationsHealthAlertRecord } from "@/pages/operations/dashboard/dashboard-types";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import * as service from "./health-service";
 import type { OperationsHealthPageQuery } from "./health-service";
@@ -14,7 +27,7 @@ import "./health-page.css";
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
-const { Text } = Typography;
+const { Paragraph, Text } = Typography;
 
 type CheckedAtRange = [DateLike | null, DateLike | null] | null;
 
@@ -70,6 +83,34 @@ const statusTone = (status?: OperationsHealthStatus | null) => {
     return "neutral";
 };
 
+const alertLevelTone = (level?: string | null) => {
+    if (level === "CRITICAL") {
+        return "danger";
+    }
+    if (level === "WARNING") {
+        return "warning";
+    }
+    return "neutral";
+};
+
+const formatDetailsJson = (value?: string | null) => {
+    if (!value) {
+        return null;
+    }
+    try {
+        return JSON.stringify(JSON.parse(value), null, 2);
+    } catch {
+        return value;
+    }
+};
+
+const alertEmptyText = (loading: boolean) => {
+    if (loading) {
+        return "加载中...";
+    }
+    return "暂无关联告警";
+};
+
 const buildQuery = (
     componentKeyword: string,
     healthStatus: string,
@@ -99,6 +140,8 @@ export const OperationsHealthPage = () => {
     const [checkedAtRange, setCheckedAtRange] = useState<CheckedAtRange>(null);
     const [pageNo, setPageNo] = useState(DEFAULT_PAGE_NO);
     const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+    const [selectedHealth, setSelectedHealth] = useState<OperationsHealthRecord | null>(null);
+    const [alertCheckId, setAlertCheckId] = useState<number | null>(null);
     const [submittedQuery, setSubmittedQuery] = useState<OperationsHealthPageQuery>(() =>
         buildQuery("", "ALL", "ALL", "", null, DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE)
     );
@@ -110,12 +153,31 @@ export const OperationsHealthPage = () => {
         retry: false
     });
 
+    const alertPageQuery = useQuery({
+        queryKey: ["operations", "health", "alerts", alertCheckId],
+        queryFn: () =>
+            dashboardService.getHealthAlerts({
+                latestCheckId: alertCheckId,
+                pageNo: 1,
+                pageSize: 10
+            }),
+        enabled: alertCheckId !== null,
+        retry: false
+    });
+
     useEffect(() => {
         if (healthPageQuery.isError) {
             const error = healthPageQuery.error;
             message.error(error instanceof Error ? error.message : "健康记录加载失败");
         }
     }, [healthPageQuery.error, healthPageQuery.isError, message]);
+
+    useEffect(() => {
+        if (alertPageQuery.isError) {
+            const error = alertPageQuery.error;
+            message.error(error instanceof Error ? error.message : "关联告警加载失败");
+        }
+    }, [alertPageQuery.error, alertPageQuery.isError, message]);
 
     const submitQuery = (nextPageNo = DEFAULT_PAGE_NO, nextPageSize = pageSize) => {
         setPageNo(nextPageNo);
@@ -165,6 +227,43 @@ export const OperationsHealthPage = () => {
     const records: OperationsHealthRecord[] = healthPage?.records || [];
     const totalCount = healthPage?.count ?? 0;
     const totalPage = Math.max(1, Math.ceil(totalCount / pageSize));
+    const detailsText = formatDetailsJson(selectedHealth?.detailsJson);
+    const alerts: OperationsHealthAlertRecord[] = alertPageQuery.data?.records || [];
+    let alertContent = <Text type="secondary">{alertEmptyText(alertPageQuery.isLoading)}</Text>;
+    if (alertPageQuery.isError) {
+        alertContent = <Text type="danger">关联告警加载失败</Text>;
+    } else if (alerts.length) {
+        alertContent = (
+            <table className="operations-health-alert-table">
+                <thead>
+                    <tr>
+                        <th>级别</th>
+                        <th>状态</th>
+                        <th>消息</th>
+                        <th>建议</th>
+                        <th>恢复动作</th>
+                        <th>最后触发</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {alerts.map((alert) => (
+                        <tr key={alert.alertId}>
+                            <td>
+                                <KuzhambuTag type={alertLevelTone(alert.alertLevel)}>
+                                    {alert.alertLevel || "-"}
+                                </KuzhambuTag>
+                            </td>
+                            <td>{alert.alertStatus || "-"}</td>
+                            <td>{alert.message || "-"}</td>
+                            <td>{alert.suggestion || "-"}</td>
+                            <td>{alert.recoveryAction || "-"}</td>
+                            <td>{formatDateTime(alert.lastTriggeredAt)}</td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        );
+    }
 
     if (!canViewHealth) {
         return (
@@ -284,10 +383,18 @@ export const OperationsHealthPage = () => {
                                     <td>{formatDateTime(record.checkedAt)}</td>
                                     <td>
                                         <KuzhambuSpace size={4} wrap>
-                                            <Button size="small" type="link">
+                                            <Button
+                                                size="small"
+                                                type="link"
+                                                onClick={() => setSelectedHealth(record)}
+                                            >
                                                 详情
                                             </Button>
-                                            <Button size="small" type="link">
+                                            <Button
+                                                size="small"
+                                                type="link"
+                                                onClick={() => setAlertCheckId(record.checkId)}
+                                            >
                                                 查看告警
                                             </Button>
                                         </KuzhambuSpace>
@@ -338,6 +445,62 @@ export const OperationsHealthPage = () => {
                     </KuzhambuSpace>
                 </div>
             </Card>
+            <KuzhambuDrawer
+                open={selectedHealth !== null}
+                size="middle"
+                title={selectedHealth ? `健康详情 #${selectedHealth.checkId}` : "健康详情"}
+                onClose={() => setSelectedHealth(null)}
+            >
+                <div className="operations-health-detail">
+                    <Descriptions size="small" column={1} bordered>
+                        <Descriptions.Item label="检查 ID">
+                            {selectedHealth?.checkId || "-"}
+                        </Descriptions.Item>
+                        <Descriptions.Item label="组件">
+                            {selectedHealth?.component || "-"}
+                        </Descriptions.Item>
+                        <Descriptions.Item label="健康状态">
+                            <KuzhambuTag type={statusTone(selectedHealth?.healthStatus)}>
+                                {selectedHealth?.healthStatus || "-"}
+                            </KuzhambuTag>
+                        </Descriptions.Item>
+                        <Descriptions.Item label="耗时">
+                            {selectedHealth?.latencyMs == null
+                                ? "-"
+                                : `${selectedHealth.latencyMs} ms`}
+                        </Descriptions.Item>
+                        <Descriptions.Item label="探针来源">
+                            {selectedHealth?.probeSource || "-"}
+                        </Descriptions.Item>
+                        <Descriptions.Item label="探针目标">
+                            {selectedHealth?.probeTarget || "-"}
+                        </Descriptions.Item>
+                        <Descriptions.Item label="检查时间">
+                            {formatDateTime(selectedHealth?.checkedAt)}
+                        </Descriptions.Item>
+                    </Descriptions>
+                    <div>
+                        <Text strong>消息</Text>
+                        <Paragraph>{selectedHealth?.message || "-"}</Paragraph>
+                    </div>
+                    <div>
+                        <Text strong>诊断 JSON</Text>
+                        {detailsText ? (
+                            <pre className="operations-health-details-json">{detailsText}</pre>
+                        ) : (
+                            <Text type="secondary">暂无诊断详情</Text>
+                        )}
+                    </div>
+                </div>
+            </KuzhambuDrawer>
+            <KuzhambuDrawer
+                open={alertCheckId !== null}
+                size="middle"
+                title={alertCheckId ? `关联告警 #${alertCheckId}` : "关联告警"}
+                onClose={() => setAlertCheckId(null)}
+            >
+                <div className="operations-health-alerts">{alertContent}</div>
+            </KuzhambuDrawer>
         </KuzhambuPage>
     );
 };

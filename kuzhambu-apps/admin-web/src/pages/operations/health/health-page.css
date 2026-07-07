@@ -63,6 +63,36 @@
     width: 86px;
 }
 
+.operations-health-detail,
+.operations-health-alerts {
+    display: grid;
+    gap: 12px;
+}
+
+.operations-health-details-json {
+    max-height: 320px;
+    overflow: auto;
+    padding: 10px;
+    border: 1px solid var(--line-color, #d9d9d9);
+    border-radius: 6px;
+    background: #fafafa;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.operations-health-alert-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.operations-health-alert-table th,
+.operations-health-alert-table td {
+    border: 1px solid var(--line-color, #d9d9d9);
+    padding: 8px 10px;
+    text-align: left;
+    vertical-align: top;
+}
+
 @media (max-width: 1100px) {
     .operations-health-toolbar .ant-input {
         width: 100%;
@@ -70,6 +100,12 @@
 
     .operations-health-table th,
     .operations-health-table td {
+        padding: 6px 8px;
+        word-break: break-word;
+    }
+
+    .operations-health-alert-table th,
+    .operations-health-alert-table td {
         padding: 6px 8px;
         word-break: break-word;
     }
