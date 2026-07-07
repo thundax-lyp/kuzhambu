@@ -8,7 +8,7 @@ import {
     SyncOutlined
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Button, Card, Descriptions, Select, Statistic, Table, Typography } from "antd";
+import { Alert, App, Button, Card, Descriptions, Select, Statistic, Table, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import type { ReactNode } from "react";
 import { useState } from "react";
@@ -143,6 +143,17 @@ const restoreModeLabel = (value?: OperationsRestoreMode | null) => {
 
 const requesterLabel = (value?: number | null) => {
     return value == null ? "系统自动" : String(value);
+};
+
+const failureReasonText = (value?: string | null) => {
+    return value || "未返回失败原因";
+};
+
+const buildAlertPath = (sourceRefType: string, sourceRefId?: number | null) => {
+    if (!sourceRefId) {
+        return "/operations/dashboard";
+    }
+    return `/operations/dashboard?sourceRefType=${sourceRefType}&sourceRefId=${sourceRefId}`;
 };
 
 const writeBlockLabel = (record: OperationsRestoreRecord) => {
@@ -297,8 +308,18 @@ export const BackupRestorePage = () => {
             dataIndex: "backupStatus",
             key: "backupStatus",
             width: 120,
-            render: (value?: string | null) => (
-                <KuzhambuTag type={backupStatusTone(value)}>{value || "UNKNOWN"}</KuzhambuTag>
+            render: (value?: string | null, record?: OperationsBackupRecord) => (
+                <KuzhambuSpace orientation="vertical" size={4}>
+                    <KuzhambuTag type={backupStatusTone(value)}>{value || "UNKNOWN"}</KuzhambuTag>
+                    {value === "FAILED" ? (
+                        <>
+                            <Text type="danger">{failureReasonText(record?.failureReason)}</Text>
+                            <Button href={buildAlertPath("BACKUP", record?.backupId)} size="small">
+                                查看告警
+                            </Button>
+                        </>
+                    ) : null}
+                </KuzhambuSpace>
             )
         },
         {
@@ -415,8 +436,21 @@ export const BackupRestorePage = () => {
             dataIndex: "restoreStatus",
             key: "restoreStatus",
             width: 120,
-            render: (value?: string | null) => (
-                <KuzhambuTag type={restoreStatusTone(value)}>{value || "UNKNOWN"}</KuzhambuTag>
+            render: (value?: string | null, record?: OperationsRestoreRecord) => (
+                <KuzhambuSpace orientation="vertical" size={4}>
+                    <KuzhambuTag type={restoreStatusTone(value)}>{value || "UNKNOWN"}</KuzhambuTag>
+                    {value === "FAILED" ? (
+                        <>
+                            <Text type="danger">{failureReasonText(record?.failureReason)}</Text>
+                            <Button
+                                href={buildAlertPath("RESTORE", record?.restoreId)}
+                                size="small"
+                            >
+                                查看告警
+                            </Button>
+                        </>
+                    ) : null}
+                </KuzhambuSpace>
             )
         },
         {
@@ -670,6 +704,25 @@ export const BackupRestorePage = () => {
             >
                 {backupDetailQuery.data ? (
                     <div className="backup-restore-page-detail">
+                        {backupDetailQuery.data.backupStatus === "FAILED" ? (
+                            <Alert
+                                action={
+                                    <Button
+                                        href={buildAlertPath(
+                                            "BACKUP",
+                                            backupDetailQuery.data.backupId
+                                        )}
+                                        size="small"
+                                    >
+                                        查看告警
+                                    </Button>
+                                }
+                                description={`${failureReasonText(backupDetailQuery.data.failureReason)}。请检查备份存储和数据库连接后重新发起业务动作。`}
+                                message="备份执行失败"
+                                showIcon
+                                type="warning"
+                            />
+                        ) : null}
                         <Descriptions
                             bordered
                             column={1}
@@ -752,6 +805,25 @@ export const BackupRestorePage = () => {
             >
                 {restoreDetailQuery.data ? (
                     <div className="backup-restore-page-detail">
+                        {restoreDetailQuery.data.restoreStatus === "FAILED" ? (
+                            <Alert
+                                action={
+                                    <Button
+                                        href={buildAlertPath(
+                                            "RESTORE",
+                                            restoreDetailQuery.data.restoreId
+                                        )}
+                                        size="small"
+                                    >
+                                        查看告警
+                                    </Button>
+                                }
+                                description={`PRE_RESTORE 备份：${restoreDetailQuery.data.preRestoreBackupId || "-"}；${failureReasonText(restoreDetailQuery.data.failureReason)}。请检查恢复来源和写阻断状态后重新发起业务动作。`}
+                                message="恢复执行失败"
+                                showIcon
+                                type="warning"
+                            />
+                        ) : null}
                         <Descriptions
                             bordered
                             column={1}

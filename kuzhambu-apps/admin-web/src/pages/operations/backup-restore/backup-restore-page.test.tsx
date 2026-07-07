@@ -298,4 +298,76 @@ describe("BackupRestorePage", () => {
         expect(await screen.findByText("写阻断开启时间")).toBeInTheDocument();
         expect(await screen.findByText("写阻断释放时间")).toBeInTheDocument();
     }, 30000);
+
+    it("renders failed backup and restore hints with alert entries", async () => {
+        vi.mocked(service.pageBackups).mockResolvedValue({
+            pageNo: 1,
+            pageSize: 20,
+            totalPage: 1,
+            count: 1,
+            records: [
+                {
+                    backupId: 9301,
+                    backupType: "MANUAL",
+                    backupStatus: "FAILED",
+                    failureReason: "storage unavailable",
+                    requesterUserId: 1001
+                }
+            ]
+        });
+        vi.mocked(service.getBackupDetail).mockResolvedValue({
+            backupId: 9301,
+            backupType: "MANUAL",
+            backupStatus: "FAILED",
+            failureReason: "storage unavailable",
+            requesterUserId: 1001
+        });
+        vi.mocked(service.pageRestores).mockResolvedValue({
+            pageNo: 1,
+            pageSize: 20,
+            totalPage: 1,
+            count: 1,
+            records: [
+                {
+                    restoreId: 9401,
+                    backupId: 9300,
+                    preRestoreBackupId: 9302,
+                    restoreMode: "REAL",
+                    restoreStatus: "FAILED",
+                    failureReason: "write block release failed"
+                }
+            ]
+        });
+        vi.mocked(service.getRestoreDetail).mockResolvedValue({
+            restoreId: 9401,
+            backupId: 9300,
+            preRestoreBackupId: 9302,
+            restoreMode: "REAL",
+            restoreStatus: "FAILED",
+            writeBlockEnabled: true,
+            failureReason: "write block release failed"
+        });
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <BackupRestorePage />
+            </QueryClientProvider>
+        );
+
+        expect(await screen.findAllByText("storage unavailable")).not.toHaveLength(0);
+        expect(await screen.findAllByText("write block release failed")).not.toHaveLength(0);
+        expect(screen.getAllByText("查看告警")).toHaveLength(2);
+
+        const detailButtons = await screen.findAllByText("查看");
+        fireEvent.click(detailButtons[0].closest("button") as HTMLButtonElement);
+        expect(await screen.findByText("备份执行失败")).toBeInTheDocument();
+
+        fireEvent.click(detailButtons[1].closest("button") as HTMLButtonElement);
+        expect(await screen.findByText("恢复执行失败")).toBeInTheDocument();
+        expect(
+            await screen.findByText(
+                "PRE_RESTORE 备份：9302；write block release failed。请检查恢复来源和写阻断状态后重新发起业务动作。"
+            )
+        ).toBeInTheDocument();
+    }, 30000);
 });

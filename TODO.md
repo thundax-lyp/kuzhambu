@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Admin Web backup cleanup failure hints`：补齐备份恢复和清理失败提示
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-RECOVERY-LOOP.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/operations/backup-restore/backup-restore-page.tsx`、`kuzhambu-apps/admin-web/src/pages/operations/backup-restore/backup-restore-types.ts`、`kuzhambu-apps/admin-web/src/pages/operations/cleanup/cleanup-page.tsx`、`kuzhambu-apps/admin-web/src/pages/operations/cleanup/cleanup-types.ts`、`kuzhambu-apps/admin-web/src/pages/operations/cleanup/cleanup-page.test.tsx`
-    - 处理动作：为失败备份、失败恢复和失败清理 item 展示 `Alert`、失败原因和处置按钮。
-    - 验收点：不新增自动重试，失败提示全部由接口字段驱动。
-    - 重要度：8/10
-
 - [ ] `Operations health alert permissions seed`：补齐健康告警管理权限种子
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-RECOVERY-LOOP.md`
