@@ -9,30 +9,6 @@
 
 ## 当前任务项
 
-- [x] `classics batch candidate result model`：补齐批量结果候选维度字段
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-BATCH-CANDIDATE-GOVERNANCE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/result/ClassicsBatchOperationItemResult.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/common/response/ClassicsBatchOperationResponse.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/test/java/com/thundax/kuzhambu/classics/interfaces/admin/content/ClassicsContentAdminControllerTest.java`
-    - 处理动作：为 Classics 批量结果模型和 interface response 增加 `candidateId`、`objectId`、`capability` 输出。
-    - 验收点：候选批量响应能输出候选维度字段，现有批量分享和批量可见性响应不被破坏。
-    - 重要度：9/10
-
-- [x] `classics batch candidate commands`：新增批量候选 command 和 service 入口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-BATCH-CANDIDATE-GOVERNANCE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/service/ClassicsContentApplicationService.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/command/AiCandidateBatchApplyContentCommand.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/command/AiCandidateBatchRejectContentCommand.java`
-    - 处理动作：新增批量应用和批量拒绝 command，并在 `ClassicsContentApplicationService` 暴露批量方法。
-    - 验收点：interface assembler 可构造批量 command，service interface 提供 `applyAiCandidates` 和 `rejectAiCandidates`。
-    - 重要度：9/10
-
-- [ ] `classics batch candidate admin api`：暴露批量候选治理接口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-BATCH-CANDIDATE-GOVERNANCE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/content/controller/ClassicsContentAdminController.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/content/controller/request/ClassicsContentRequest.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/content/assembler/ClassicsContentInterfaceAssembler.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/test/java/com/thundax/kuzhambu/classics/interfaces/admin/content/ClassicsContentAdminControllerTest.java`
-    - 处理动作：新增 `/api/classics/content/ai-candidates/batch/apply` 和 `/api/classics/content/ai-candidates/batch/reject`。
-    - 验收点：controller test 锁定路径、权限、请求字段、响应字段、空 items 和重复 candidateId 校验。
-    - 重要度：9/10
-
 - [ ] `admin-web batch candidate service`：补齐前端批量候选类型和 service
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-BATCH-CANDIDATE-GOVERNANCE.md`

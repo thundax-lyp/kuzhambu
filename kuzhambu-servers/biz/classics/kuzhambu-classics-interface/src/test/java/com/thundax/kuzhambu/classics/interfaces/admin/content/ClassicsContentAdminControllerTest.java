@@ -7,6 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.classics.application.content.command.AiCandidateApplyContentCommand;
+import com.thundax.kuzhambu.classics.application.content.command.AiCandidateBatchApplyContentCommand;
+import com.thundax.kuzhambu.classics.application.content.command.AiCandidateBatchRejectContentCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentExportCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentTagSortCommand;
 import com.thundax.kuzhambu.classics.application.content.result.AiCandidateApplyContentResult;
@@ -82,6 +84,18 @@ class ClassicsContentAdminControllerTest {
                 "ai-candidates/change",
                 "classics:content:edit",
                 ClassicsContentRequest.AiCandidateApplyRequest.class);
+        assertPostMapping(
+                ClassicsContentAdminController.class,
+                "changeAiCandidates",
+                "ai-candidates/batch/apply",
+                "classics:content:edit",
+                ClassicsContentRequest.AiCandidateBatchApplyRequest.class);
+        assertPostMapping(
+                ClassicsContentAdminController.class,
+                "rejectAiCandidates",
+                "ai-candidates/batch/reject",
+                "classics:content:edit",
+                ClassicsContentRequest.AiCandidateBatchRejectRequest.class);
         assertGetMapping(
                 ClassicsContentAdminController.class,
                 "downloadExportContent",
@@ -160,6 +174,100 @@ class ClassicsContentAdminControllerTest {
         assertEquals("SANCAI_ENTRY", response.getContentType());
         assertEquals(790L, response.getVersionId());
         assertEquals(4, response.getVersionNo());
+    }
+
+    @Test
+    void aiCandidateBatchApplyRequestShouldMapToServiceCommandAndReturnResponse() {
+        ClassicsContentRequest.AiCandidateBatchApplyRequest request =
+                new ClassicsContentRequest.AiCandidateBatchApplyRequest();
+        ClassicsContentRequest.AiCandidateApplyRequest first = new ClassicsContentRequest.AiCandidateApplyRequest();
+        first.setCandidateId(111L);
+        first.setContentType("SANCAI_ENTRY");
+        first.setContentId(4001L);
+        first.setCapability("summary");
+        first.setObjectId(901L);
+        first.setResultFormat("TEXT");
+        first.setResultPayload("first");
+        first.setChangeSummary("first");
+        ClassicsContentRequest.AiCandidateApplyRequest second = new ClassicsContentRequest.AiCandidateApplyRequest();
+        second.setCandidateId(112L);
+        second.setContentType("WANGQI_DOCUMENT");
+        second.setContentId(5001L);
+        second.setCapability("tags");
+        second.setResultFormat("TEXT");
+        second.setResultPayload("second");
+        second.setChangeSummary("second");
+        request.setItems(List.of(first, second));
+
+        ClassicsBatchOperationResponse response = controller().changeAiCandidates(request);
+
+        assertEquals(2, response.getSuccessCount());
+        assertEquals(0, response.getFailureCount());
+        JsonNode firstSuccess =
+                OBJECT_MAPPER.valueToTree(response.getSuccesses().get(0));
+        assertEquals(111L, firstSuccess.get("candidateId").asLong());
+        assertEquals("summary", firstSuccess.get("capability").asText());
+    }
+
+    @Test
+    void aiCandidateBatchRejectRequestShouldMapToServiceCommandAndReturnResponse() {
+        ClassicsContentRequest.AiCandidateBatchRejectRequest request =
+                new ClassicsContentRequest.AiCandidateBatchRejectRequest();
+        ClassicsContentRequest.AiCandidateRejectItemRequest first =
+                new ClassicsContentRequest.AiCandidateRejectItemRequest();
+        first.setCandidateId(113L);
+        first.setContentType("SANCAI_ENTRY");
+        first.setContentId(4002L);
+        first.setCapability("summary");
+        first.setObjectId(902L);
+        ClassicsContentRequest.AiCandidateRejectItemRequest second =
+                new ClassicsContentRequest.AiCandidateRejectItemRequest();
+        second.setCandidateId(114L);
+        second.setContentType("WANGQI_DOCUMENT");
+        second.setContentId(5002L);
+        second.setCapability("summary");
+        request.setItems(List.of(first, second));
+
+        ClassicsBatchOperationResponse response = controller().rejectAiCandidates(request);
+
+        assertEquals(2, response.getSuccessCount());
+        assertEquals(0, response.getFailureCount());
+        JsonNode firstFailure =
+                OBJECT_MAPPER.valueToTree(response.getSuccesses().get(0));
+        assertEquals(113L, firstFailure.get("candidateId").asLong());
+    }
+
+    @Test
+    void batchAiCandidateRequestShouldRejectDuplicateCandidateIdAndMissingItems() {
+        ClassicsContentAdminController controller = controller();
+        ClassicsContentRequest.AiCandidateBatchApplyRequest invalidRequest =
+                new ClassicsContentRequest.AiCandidateBatchApplyRequest();
+        assertThrows(RuntimeException.class, () -> controller.changeAiCandidates(invalidRequest));
+
+        ClassicsContentRequest.AiCandidateApplyRequest item = new ClassicsContentRequest.AiCandidateApplyRequest();
+        item.setCandidateId(111L);
+        item.setContentType("SANCAI_ENTRY");
+        item.setContentId(4001L);
+        item.setCapability("summary");
+        item.setResultFormat("TEXT");
+        item.setResultPayload("payload");
+        ClassicsContentRequest.AiCandidateBatchApplyRequest duplicateRequest =
+                new ClassicsContentRequest.AiCandidateBatchApplyRequest();
+        duplicateRequest.setItems(List.of(item, item));
+
+        assertThrows(RuntimeException.class, () -> controller.changeAiCandidates(duplicateRequest));
+
+        ClassicsContentRequest.AiCandidateBatchRejectRequest rejectRequest =
+                new ClassicsContentRequest.AiCandidateBatchRejectRequest();
+        ClassicsContentRequest.AiCandidateRejectItemRequest rejectItem =
+                new ClassicsContentRequest.AiCandidateRejectItemRequest();
+        rejectItem.setCandidateId(113L);
+        rejectItem.setContentType("SANCAI_ENTRY");
+        rejectItem.setContentId(4002L);
+        rejectItem.setCapability("qa");
+        rejectRequest.setItems(List.of(rejectItem, rejectItem));
+
+        assertThrows(RuntimeException.class, () -> controller.rejectAiCandidates(rejectRequest));
     }
 
     @Test
@@ -502,6 +610,45 @@ class ClassicsContentAdminControllerTest {
                         }
                         throw new UnsupportedOperationException(
                                 "unexpected apply capability: " + command.getCapability());
+                    }
+                    if ("applyAiCandidates".equals(method.getName())) {
+                        AiCandidateBatchApplyContentCommand command = (AiCandidateBatchApplyContentCommand) args[0];
+                        assertEquals(2, command.getItems().size());
+                        assertEquals(111L, command.getItems().get(0).getCandidateId());
+                        assertEquals(4001L, command.getItems().get(0).getContentId());
+                        assertEquals("summary", command.getItems().get(0).getCapability());
+                        assertEquals(112L, command.getItems().get(1).getCandidateId());
+                        assertEquals(5001L, command.getItems().get(1).getContentId());
+                        assertEquals("tags", command.getItems().get(1).getCapability());
+                        return ClassicsBatchOperationResult.of(
+                                List.of(
+                                        ClassicsBatchOperationItemResult.successForCandidate(
+                                                "SANCAI_ENTRY", 4001L, 1L, "APPLIED", 111L, 901L, "summary"),
+                                        ClassicsBatchOperationItemResult.successForCandidate(
+                                                "WANGQI_DOCUMENT", 5001L, 2L, "APPLIED", 112L, null, "tags")),
+                                List.of());
+                    }
+                    if ("rejectAiCandidates".equals(method.getName())) {
+                        AiCandidateBatchRejectContentCommand command = (AiCandidateBatchRejectContentCommand) args[0];
+                        assertEquals(null, command.getErrorType());
+                        assertEquals(null, command.getErrorMessage());
+                        assertEquals(2, command.getItems().size());
+                        assertEquals(113L, command.getItems().get(0).getCandidateId());
+                        assertEquals(
+                                "SANCAI_ENTRY",
+                                command.getItems().get(0).getContentType().value());
+                        assertEquals("summary", command.getItems().get(0).getCapability());
+                        assertEquals(114L, command.getItems().get(1).getCandidateId());
+                        assertEquals(
+                                "WANGQI_DOCUMENT",
+                                command.getItems().get(1).getContentType().value());
+                        return ClassicsBatchOperationResult.of(
+                                List.of(
+                                        ClassicsBatchOperationItemResult.successForCandidate(
+                                                "SANCAI_ENTRY", 4002L, 113L, "REJECTED", 113L, 902L, "summary"),
+                                        ClassicsBatchOperationItemResult.successForCandidate(
+                                                "WANGQI_DOCUMENT", 5002L, 114L, "REJECTED", 114L, null, "summary")),
+                                List.of());
                     }
                     if ("addTag".equals(method.getName())) {
                         var command =
