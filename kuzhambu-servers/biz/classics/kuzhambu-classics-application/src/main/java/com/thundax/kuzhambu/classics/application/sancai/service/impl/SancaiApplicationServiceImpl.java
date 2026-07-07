@@ -461,9 +461,12 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
         if (entry == null) {
             return;
         }
-        entry.setLifecycleStatus(command.getLifecycleStatus());
+        SancaiEntryLifecycleStatus targetStatus = command.getLifecycleStatus();
+        SancaiEntryLifecycleStatus currentStatus = entry.getLifecycleStatus();
+        validateLifecycleChange(currentStatus, targetStatus);
+        entry.setLifecycleStatus(targetStatus);
         entry.setContentUpdatedAt(new Date());
-        markManualSaveVersion(entry);
+        markManualSaveVersion(entry, lifecycleChangeSummary(currentStatus, targetStatus));
         publishSearchSyncAfterCommit(entry);
     }
 
@@ -672,7 +675,11 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
     }
 
     private void markManualSaveVersion(SancaiEntry entry) {
-        contentApplicationService.ensureVersioned(entry, ClassicsContentChangeType.MANUAL_SAVE, "手动保存");
+        markManualSaveVersion(entry, "手动保存");
+    }
+
+    private void markManualSaveVersion(SancaiEntry entry, String changeSummary) {
+        contentApplicationService.ensureVersioned(entry, ClassicsContentChangeType.MANUAL_SAVE, changeSummary);
         repository.updateEntry(entry);
     }
 
@@ -705,5 +712,30 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
                 && entry.getCurrentVersionNo() != null
                 && entry.getLifecycleStatus() == SancaiEntryLifecycleStatus.PUBLISHED
                 && entry.getVisibility() == SancaiEntryVisibility.PUBLIC;
+    }
+
+    private static void validateLifecycleChange(
+            SancaiEntryLifecycleStatus currentStatus, SancaiEntryLifecycleStatus targetStatus) {
+        if (currentStatus == null) {
+            throw new BizException("三才图会条目当前生命周期状态不能为空");
+        }
+        if (targetStatus == null) {
+            throw new BizException("三才图会条目目标生命周期状态不能为空");
+        }
+        if (!currentStatus.canChangeTo(targetStatus)) {
+            throw new BizException("三才图会条目生命周期不能从 " + currentStatus.value() + " 变更为 " + targetStatus.value());
+        }
+    }
+
+    private static String lifecycleChangeSummary(
+            SancaiEntryLifecycleStatus currentStatus, SancaiEntryLifecycleStatus targetStatus) {
+        if (currentStatus == SancaiEntryLifecycleStatus.ARCHIVED
+                && targetStatus == SancaiEntryLifecycleStatus.PUBLISHED) {
+            return "恢复发布条目";
+        }
+        if (targetStatus == SancaiEntryLifecycleStatus.ARCHIVED) {
+            return "归档条目";
+        }
+        return "发布条目";
     }
 }

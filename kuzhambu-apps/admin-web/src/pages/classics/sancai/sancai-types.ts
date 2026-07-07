@@ -13,6 +13,8 @@ export interface SancaiVolumeRecord {
     priority?: number | null;
 }
 
+export type SancaiEntryLifecycleStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
+
 export interface SancaiEntryRecord {
     id: number;
     volumeId?: number | null;
@@ -20,7 +22,7 @@ export interface SancaiEntryRecord {
     originalText?: string | null;
     translationText?: string | null;
     summary?: string | null;
-    lifecycleStatus?: string | null;
+    lifecycleStatus?: SancaiEntryLifecycleStatus | string | null;
     visibility?: string | null;
     translationStatus?: string | null;
     imageStatus?: string | null;

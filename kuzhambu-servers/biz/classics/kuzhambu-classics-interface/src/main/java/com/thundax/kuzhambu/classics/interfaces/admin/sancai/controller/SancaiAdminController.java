@@ -240,6 +240,17 @@ public class SancaiAdminController {
         return SancaiEntryResponse.builder().id(id == null ? null : id.value()).build();
     }
 
+    @Operation(summary = "变更三才图会条目生命周期", description = "classics:sancai:edit")
+    @ApiImplicitParams({})
+    @HasPermission("classics:sancai:edit")
+    @SysLogger(value = "生命周期变更")
+    @PostMapping("entries/lifecycle/change")
+    public Boolean changeEntryLifecycle(@Valid @RequestBody SancaiEntryRequest request) {
+        service.changeEntryStatus(
+                SancaiInterfaceAssembler.toStatusCommand(request, KuzhambuContextHolder.currentAuthorities()));
+        return true;
+    }
+
     @Operation(summary = "查询三才图会条目版本", description = "classics:sancai:view")
     @ApiImplicitParams({})
     @HasPermission("classics:sancai:view")

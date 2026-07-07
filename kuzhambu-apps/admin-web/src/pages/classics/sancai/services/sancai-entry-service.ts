@@ -4,6 +4,7 @@ import type {
     SancaiContentVersionRecord,
     SancaiEntryImageContentMode,
     SancaiEntryImageRecord,
+    SancaiEntryLifecycleStatus,
     SancaiEntryRecord,
     SancaiRefinementBatchRecord,
     SancaiShowcaseRecord,
@@ -41,6 +42,11 @@ export interface SancaiEntryCommand {
     imageStatus?: string | null;
     visualAssetStatus?: string | null;
     refinementStatus?: string | null;
+}
+
+export interface SancaiEntryLifecycleCommand {
+    id: number;
+    lifecycleStatus: SancaiEntryLifecycleStatus;
 }
 
 export interface SancaiEntrySortCommand {
@@ -159,6 +165,12 @@ export const add = (request: SancaiEntryCommand) => {
 
 export const update = (request: SancaiEntryCommand) => {
     return postJson<SancaiEntryRecord, SancaiEntryCommand>(`${ENTRIES_PATH}/update`, {
+        body: request
+    });
+};
+
+export const changeLifecycleStatus = (request: SancaiEntryLifecycleCommand) => {
+    return postJson<boolean, SancaiEntryLifecycleCommand>(`${ENTRIES_PATH}/lifecycle/change`, {
         body: request
     });
 };

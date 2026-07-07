@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.sancai;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -9,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiCategoryCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryCommand;
+import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryStatusCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVolumeCommand;
 import com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryPageQuery;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiApplicationService;
@@ -43,6 +45,7 @@ import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response.SancaiVolumeResponse;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.web.response.DictResponse;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -78,6 +81,12 @@ class SancaiAdminControllerTest {
         assertGetMapping(SancaiAdminController.class, "getEntry", "entries/{id}", Long.class);
         assertPostMapping(SancaiAdminController.class, "addEntry", "entries/add", SancaiEntryRequest.class);
         assertPostMapping(SancaiAdminController.class, "updateEntry", "entries/update", SancaiEntryRequest.class);
+        assertPostMapping(
+                SancaiAdminController.class,
+                "changeEntryLifecycle",
+                "entries/lifecycle/change",
+                "classics:sancai:edit",
+                SancaiEntryRequest.class);
         assertPostMapping(
                 SancaiAdminController.class,
                 "listEntryVersions",
@@ -193,6 +202,19 @@ class SancaiAdminControllerTest {
                 "imageStatus",
                 "visualAssetStatus",
                 "refinementStatus");
+
+        SancaiEntryRequest lifecycleRequest = OBJECT_MAPPER.readValue(
+                """
+                {
+                  "id": 3001,
+                  "lifecycleStatus": "ARCHIVED"
+                }
+                """,
+                SancaiEntryRequest.class);
+        assertEquals(3001L, lifecycleRequest.getId());
+        assertEquals("ARCHIVED", lifecycleRequest.getLifecycleStatus());
+        assertJsonFields(lifecycleRequest, "id", "lifecycleStatus");
+
         SancaiEntryVersionRequest versionRequest = OBJECT_MAPPER.readValue(
                 """
                 {
@@ -357,6 +379,12 @@ class SancaiAdminControllerTest {
         entryRequest.setVisibility("PUBLIC");
         assertEquals(3001L, controller.addEntry(entryRequest).getId());
         assertEquals(3001L, controller.updateEntry(entryRequest).getId());
+
+        SancaiEntryRequest lifecycleRequest = new SancaiEntryRequest();
+        lifecycleRequest.setId(3001L);
+        lifecycleRequest.setLifecycleStatus("ARCHIVED");
+        assertEquals(true, controller.changeEntryLifecycle(lifecycleRequest));
+
         controller.deleteEntry(entryRequest);
     }
 
@@ -501,6 +529,13 @@ class SancaiAdminControllerTest {
                         assertEquals(SancaiEntryVisibility.PUBLIC, command.getVisibility());
                         return SancaiEntryId.of(3001L);
                     }
+                    if ("changeEntryStatus".equals(method.getName())) {
+                        SancaiEntryStatusCommand command = (SancaiEntryStatusCommand) args[0];
+                        assertEquals(3001L, command.getId());
+                        assertEquals(SancaiEntryLifecycleStatus.ARCHIVED, command.getLifecycleStatus());
+                        assertEquals(true, command.getOperatorPermissions() != null);
+                        return null;
+                    }
                     if ("deleteEntry".equals(method.getName())) {
                         assertEquals(SancaiEntryId.of(3001L), args[0]);
                         return null;
@@ -573,6 +608,19 @@ class SancaiAdminControllerTest {
         Method method = controllerType.getDeclaredMethod(methodName, parameterTypes);
         PostMapping mapping = method.getAnnotation(PostMapping.class);
         assertEquals(expectedPath, mapping.value()[0]);
+    }
+
+    private static void assertPostMapping(
+            Class<?> controllerType,
+            String methodName,
+            String expectedPath,
+            String expectedPermission,
+            Class<?>... parameterTypes)
+            throws Exception {
+        assertPostMapping(controllerType, methodName, expectedPath, parameterTypes);
+        Method method = controllerType.getDeclaredMethod(methodName, parameterTypes);
+        HasPermission permission = method.getAnnotation(HasPermission.class);
+        assertArrayEquals(new String[] {expectedPermission}, permission.value());
     }
 
     private static void assertGetMapping(

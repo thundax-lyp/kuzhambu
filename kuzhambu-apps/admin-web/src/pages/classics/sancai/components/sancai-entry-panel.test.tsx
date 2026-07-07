@@ -311,6 +311,44 @@ vi.mock("../services/sancai-entry-service", () => ({
             currentVersionedAt: "2026-06-20T01:00:00.000+08:00",
             contentUpdatedAt: "2026-06-20T01:00:00.000+08:00",
             versionDirty: false
+        },
+        {
+            id: 3002,
+            volumeId: 101,
+            title: "地理",
+            originalText: "山川",
+            translationText: "译文",
+            summary: "地理摘要",
+            lifecycleStatus: "DRAFT",
+            visibility: "PRIVATE",
+            translationStatus: "PENDING",
+            imageStatus: "PENDING",
+            visualAssetStatus: "PENDING",
+            refinementStatus: "PENDING",
+            currentVersionId: null,
+            currentVersionNo: null,
+            currentVersionedAt: null,
+            contentUpdatedAt: "2026-06-20T01:00:00.000+08:00",
+            versionDirty: false
+        },
+        {
+            id: 3003,
+            volumeId: 101,
+            title: "人物",
+            originalText: "人物",
+            translationText: "译文",
+            summary: "人物摘要",
+            lifecycleStatus: "ARCHIVED",
+            visibility: "PUBLIC",
+            translationStatus: "READY",
+            imageStatus: "READY",
+            visualAssetStatus: "READY",
+            refinementStatus: "COMPLETE",
+            currentVersionId: 9003,
+            currentVersionNo: 1,
+            currentVersionedAt: "2026-06-20T01:00:00.000+08:00",
+            contentUpdatedAt: "2026-06-20T01:00:00.000+08:00",
+            versionDirty: false
         }
     ]),
     listImages: vi.fn(async () => [
@@ -338,6 +376,7 @@ vi.mock("../services/sancai-entry-service", () => ({
         }
     ]),
     deleteImage: vi.fn(async () => true),
+    changeLifecycleStatus: vi.fn(async () => true),
     changeCurrentImage: vi.fn(async () => true),
     sortImages: vi.fn(async () => true),
     listVisualAssets: vi.fn(async () => [
@@ -627,11 +666,89 @@ describe("SancaiEntryPanel sharing", () => {
         renderEntryPanel();
 
         const entryTable = await screen.findByLabelText("三才图会条目表格");
-        expect(await within(entryTable).findByRole("button", { name: "分享 天地" })).toBeDisabled();
+        expect(await within(entryTable).findByText("天地")).toBeInTheDocument();
+        expect(within(entryTable).getByRole("button", { name: "分享 天地" })).toBeDisabled();
         expect(within(entryTable).getByRole("button", { name: "导出 天地" })).toBeDisabled();
+        expect(within(entryTable).getByRole("button", { name: "归档 天地" })).toBeDisabled();
+        expect(within(entryTable).getByRole("button", { name: "发布 地理" })).toBeDisabled();
+        expect(within(entryTable).getByRole("button", { name: "恢复发布 人物" })).toBeDisabled();
         expect(screen.getByRole("button", { name: "批量分享" })).toBeDisabled();
         expect(screen.getByRole("button", { name: "批量公开" })).toBeDisabled();
         expect(screen.getByRole("button", { name: "批量私有" })).toBeDisabled();
+    }, 90000);
+
+    it("renders lifecycle controls by entry status", async () => {
+        renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        expect(await within(entryTable).findByRole("button", { name: "发布 地理" })).toBeEnabled();
+        expect(within(entryTable).getByRole("button", { name: "归档 天地" })).toBeEnabled();
+        expect(within(entryTable).getByRole("button", { name: "恢复发布 人物" })).toBeEnabled();
+    }, 30000);
+
+    it("publishes a draft entry after confirmation", async () => {
+        const user = userEvent.setup();
+
+        renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        await user.click(await within(entryTable).findByRole("button", { name: "发布 地理" }));
+
+        expect(confirmDangerMock).toHaveBeenCalledWith(
+            expect.objectContaining({
+                title: "发布三才图会条目",
+                message: "确认发布 地理？",
+                description: "发布后条目进入已发布治理范围，公开或私有仍由可见性字段决定。",
+                okText: "发布"
+            })
+        );
+        await waitFor(() => {
+            expect(entryService.changeLifecycleStatus).toHaveBeenCalled();
+        });
+        expect(vi.mocked(entryService.changeLifecycleStatus).mock.calls[0]?.[0]).toEqual({
+            id: 3002,
+            lifecycleStatus: "PUBLISHED"
+        });
+        expect(await screen.findByText("三才图会条目已发布")).toBeInTheDocument();
+    }, 30000);
+
+    it("refreshes the open entry drawer after lifecycle changes", async () => {
+        const user = userEvent.setup();
+        const client = renderEntryPanel();
+        const invalidateSpy = vi.spyOn(client, "invalidateQueries");
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        await user.click(await within(entryTable).findByRole("button", { name: "查看 天地" }));
+        expect(await screen.findByLabelText("三才图会版本历史面板")).toBeInTheDocument();
+
+        await user.click(within(entryTable).getByRole("button", { name: "归档 天地" }));
+
+        await waitFor(() => {
+            expect(entryService.changeLifecycleStatus).toHaveBeenCalled();
+        });
+        expect(vi.mocked(entryService.changeLifecycleStatus).mock.calls[0]?.[0]).toEqual({
+            id: 3001,
+            lifecycleStatus: "ARCHIVED"
+        });
+        expect(
+            invalidateSpy.mock.calls.some(
+                (call) =>
+                    JSON.stringify(call[0]) ===
+                    JSON.stringify({
+                        queryKey: ["classics", "sancai", "entries", "detail", 3001]
+                    })
+            )
+        ).toBeTruthy();
+        expect(
+            invalidateSpy.mock.calls.some(
+                (call) =>
+                    JSON.stringify(call[0]) ===
+                    JSON.stringify({
+                        queryKey: ["classics", "sancai", "entries", "versions", 3001]
+                    })
+            )
+        ).toBeTruthy();
+        expect(await screen.findByText("三才图会条目已归档")).toBeInTheDocument();
     }, 30000);
 
     it("creates image analysis task from selected visual asset and carries visual asset objectId", async () => {
