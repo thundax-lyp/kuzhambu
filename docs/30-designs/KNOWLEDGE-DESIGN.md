@@ -73,9 +73,10 @@ Knowledge 也是知识质量治理的唯一写入方。后台人工精修、质�
 - `SynonymApplicationService`
 - `KnowledgeGraphExtractionApplicationService`
 - `KnowledgeGraphRefinementApplicationService`
+- `KnowledgeLineageReadApplicationService`
 - `KnowledgeQualityReportApplicationService`
 
-Application 层负责标签治理、同义词扩展、知识抽取任务编排、AI 候选状态回填、候选结果应用、图谱版本关联、精修草稿确认、正式事实回写、人工质量标注、质量报告快照生成和正式结果读取。
+Application 层负责标签治理、同义词扩展、知识抽取任务编排、AI 候选状态回填、候选结果应用、图谱版本关联、精修草稿确认、正式事实回写、人工质量标注、质量报告快照生成、正式结果读取和世系画布聚合读取。
 
 质量报告生成规则：
 
@@ -100,12 +101,14 @@ Admin 入口：
 - 知识抽取任务创建、分页、详情和候选应用。
 - 知识图谱精修工作台，支持实体、关系、世系节点和世系关系的人工确认、编辑、删除、新增与质量标注。
 - 正式结果读取，包括图谱版本列表/详情，以及从版本下钻的正式实体、正式关系和正式世系结果。
+- `/knowledge/lineage` 世系图浏览，支持版本切换、关键词筛选、节点类型筛选、关系类型筛选、确认状态筛选、深度选择、刷新、重置、画布节点/关系点击、节点表格定位、关系表格定位和详情面板联动。
 - 质量报告页 `/knowledge/quality-report`，支持输入图谱版本、手工生成报告、查看历史报告、问题清单、来源明细和人工标注明细。
 
 Portal 入口：
 
 - `/knowledge` 门户首页。
 - `/knowledge/atlas` 图谱分层浏览，支持 overview、category 和 detail 三层。
+- `/knowledge/lineage` 世系图只读浏览，支持默认最新已应用版本、URL query 恢复、关键词筛选、节点类型筛选、关系类型筛选、确认状态筛选、筛选清除、画布节点/关系点击和只读详情面板。
 - `/knowledge/quality` 质量页，从最新 `PUBLISHED` 质量报告快照读取指标、问题和来源明细；无报告时展示明确空态。
 
 ## Infrastructure Layer
@@ -114,6 +117,7 @@ Portal 入口：
 - AI 提取通过 `KnowledgeAiExtractionDomainService` 协作语义触发。
 - `KnowledgeGraphCandidateApplySupport` 负责把候选 payload 应用到 `knowledge_entity`、`knowledge_relation`、`knowledge_graph_version`、`knowledge_lineage_node` 和 `knowledge_lineage_relation`。
 - 精修仓储持久化 `knowledge_refinement_*` 草稿表和人工质量标注表。
+- 世系画布读取只消费正式 `knowledge_lineage_node`、`knowledge_lineage_relation` 和 `knowledge_graph_version`，不写入知识事实表，不触发 AI 或 workers。
 - 质量报告仓储一次性保存 `knowledge_quality_report`、`knowledge_quality_report_issue` 和 `knowledge_quality_report_source_detail`，报告详情按快照读取。
 
 ## Data Ownership
@@ -133,5 +137,6 @@ Knowledge 是 `knowledge_*` 表的唯一写入方。Classics 删除或归档内�
 ## Acceptance
 
 - 标签、同义词、知识抽取任务、正式知识事实和正式结果读取在一个业务域内闭合。
+- 独立世系图浏览在 Admin 和 Portal 入口内闭合，画布、节点/关系列表、节点/关系详情均读取同一份正式世系事实。
 - 人工精修、人工质量标注、质量报告生成、后台报告展示和 Portal 质量展示在 Knowledge 域内闭合。
 - 搜索和问答可消费 Knowledge 增强能力，但当前不依赖图谱浏览或质量报告作为前置。

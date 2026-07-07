@@ -43,14 +43,17 @@
 - Classics 三类内容编辑页已接入 Knowledge 治理协作入口：标签治理、问答对治理和 AI 候选确认面板已作为页面内联能力落地，并通过 Knowledge/AI 协作回写统一标签与正式内容。
 - Admin Web 已接入 `/knowledge/graph-extraction` 页面，支持三类抽取任务创建、批量范围输入、质量触发模式、任务分页、任务详情抽屉、重生成、批任务取消和候选应用动作。
 - Admin Web 已接入 `/knowledge/graph-results` 页面，支持图谱版本列表、版本详情，以及从版本下钻查看正式实体、正式关系和正式世系结果。
+- Knowledge 已新增世系画布聚合读取服务，Admin `POST /api/knowledge/lineage/canvas` 与 Portal `GET /api/portal/knowledge/lineage` 均读取正式 `knowledge_lineage_node`、`knowledge_lineage_relation` 和 `knowledge_graph_version`，支持版本、关键词、节点类型、关系类型、确认状态、焦点节点、焦点关系和深度过滤。
+- Admin Web 已接入独立 `/knowledge/lineage` 页面与 `知识治理 / 世系图浏览` 菜单，支持版本切换、筛选、重置、刷新、画布节点/关系点击、节点表格定位、关系表格定位和详情面板联动。
 - Admin Web 已在 `/knowledge/refinement` 工作台接入人工质量标注，实体、关系、世系节点和世系关系均可打开标注 Drawer，保存、查看和删除质量标注。
 - Admin Web 已接入 `/knowledge/quality-report` 页面，支持输入图谱版本生成报告、查看最新报告、历史报告、问题清单、来源明细和人工标注明细。
 - Admin Web `/knowledge/quality-report` 已支持从质量报告来源明细按低质量门类一键触发重提取；后端会从报告快照生成 `selectionScopeJson` 并复用 `/knowledge/graph-extraction` 任务台账、批次、候选应用和正式结果落库链路。
 - Knowledge 已新增质量报告快照模型和 `knowledge_quality_report`、`knowledge_quality_report_issue`、`knowledge_quality_report_source_detail` 三张表，报告生成即发布为 `PUBLISHED`。
 - Portal Web `/knowledge/quality` 已改为读取最新 `PUBLISHED` 质量报告快照；无报告时返回并展示明确空态，不再展示临时计算质量指标。
-- Portal Web 已接入 Knowledge 只读门户：首页 `/knowledge`、质量页 `/knowledge/quality` 和图谱分层浏览页 `/knowledge/atlas` 已形成入口闭环。
+- Portal Web 已接入 Knowledge 只读门户：首页 `/knowledge`、质量页 `/knowledge/quality`、图谱分层浏览页 `/knowledge/atlas` 和世系图只读浏览页 `/knowledge/lineage` 已形成入口闭环。
 - Portal Web 图谱浏览已支持 `overview -> category -> detail` 三层 URL 状态、门类下钻、实体下钻和 breadcrumb 返回导航。
 - Portal Web 图谱浏览已接入只读可视化画布，支持鸟瞰层固定 14 门类节点、门类层实体关系节点、详情层单实体关系节点、缩放/平移/minimap 控件，以及节点点击下钻。
+- Portal Web 世系图只读浏览已支持默认最新已应用版本、URL query 恢复、筛选、筛选清除、画布节点/关系点击和只读详情面板。
 
 部分完成：
 
@@ -114,13 +117,13 @@
 | 质量报告与指标展示                         | 已完成 | 已提供质量报告快照生成服务、后台 `/knowledge/quality-report` 页面、历史报告列表、问题清单、来源明细、人工标注明细，以及 Portal `/knowledge/quality` 同源快照读取 | 无                                   | Knowledge, Admin Web, Portal Web |
 | 质量报告按门类分组并支持低质量门类触发提取 | 已完成 | 质量报告来源明细已保留 `sourceCategoryCode`、`sourceCategoryName`、标注数、问题数和跳转链接；低质量门类可在质量报告页一键创建 `QUALITY_REPORT` 图谱抽取任务，并在任务台账查看 `selectionScopeJson` 与批次信息 | 无 | Knowledge, AI                     |
 | 最近提取版本和提取时间展示                 | 已完成 | 已在 `knowledge_graph_version` 建立版本台账，应用正式结果时会生成或续增版本号，并在 Admin Web 正式结果页提供版本列表、版本详情和应用时间展示                  | 无                                   | Knowledge, Admin Web              |
-| 世系图专用提取和展示                       | 已完成 | 已支持 `LINEAGE` 抽取任务、workers 世系候选输出、正式 `knowledge_lineage_node` / `knowledge_lineage_relation` 落库，以及 Admin Web 正式世系结果列表和详情读取 | 无                                   | Knowledge, AI, Workers, Admin Web |
+| 世系图专用提取和展示                       | 已完成 | 已支持 `LINEAGE` 抽取任务、workers 世系候选输出、正式 `knowledge_lineage_node` / `knowledge_lineage_relation` 落库、Admin Web `/knowledge/lineage` 独立画布、节点/关系列表和详情联动，以及 Portal Web `/knowledge/lineage` 只读画布入口 | 无                                   | Knowledge, AI, Workers, Admin Web, Portal Web |
 
 ### 运行时验证
 
 | 需求项             | 状态     | 已完成部分                                                                                                                                                                   | 未完成部分                           | 责任域                            |
 | ------------------ | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ | --------------------------------- |
-| 当前阶段运行时验证 | 部分完成 | 已完成 taxonomy、图谱抽取、精修和质量报告后端专项测试，workers Knowledge usecase 契约测试，Admin Web `format:check` / `lint` / `test` / `build`，Knowledge Maven `spotless:check` / `checkstyle:check` / `test`，以及 `node scripts/generate-system-data-sql.ts --check` | 缺少 Playwright 与跨服务联调冒烟记录 | Knowledge, AI, Workers, Admin Web |
+| 当前阶段运行时验证 | 部分完成 | 已完成 taxonomy、图谱抽取、精修、质量报告和世系画布后端专项测试，workers Knowledge usecase 契约测试，Admin Web `format:check` / `lint` / `test` / `build`，Portal Web `format:check` / `lint` / `test` / `build`，Knowledge Maven `spotless:check` / `checkstyle:check` / `test`，以及 `node scripts/generate-system-data-sql.ts --check` | 缺少 Playwright 与跨服务联调冒烟记录 | Knowledge, AI, Workers, Admin Web, Portal Web |
 
 ## Unfinished Focus
 
@@ -128,8 +131,8 @@
 | ----------------------------------- | ------ | ------------------------------------------------------------------------------------------------------ |
 | 数据精修                            | 已完成 | 实体、关系和世系精修工作台已落地，正式事实回写、质量汇总和人工质量标注入口均已接通                  |
 | 图谱浏览与质量报告                  | 已完成 | 当前已交付 Portal 图谱分层浏览页、Portal 图谱可视化画布、固定 14 门类空位、Portal 质量报告页、后台质量报告页、抽取任务、批量生成、重生成、候选应用、正式结果落库、后台读取页，以及从质量报告低质量门类一键触发重提取 |
-| 世系图浏览                          | 部分完成 | 当前已交付世系抽取、正式结果落库和后台读取，并可在正式结果页查看世系节点/关系详情；Portal 图谱画布已覆盖实体关系浏览，但尚未提供独立世系可视化画布 |
-| Portal 页面                         | 已完成 | Portal 侧已形成 `/knowledge`、`/knowledge/quality`、`/knowledge/atlas` 三个可执行只读入口              |
+| 世系图浏览                          | 已完成 | 当前已交付 Admin `/knowledge/lineage` 独立世系画布、节点/关系列表、节点/关系详情联动、菜单入口、Portal `/knowledge/lineage` 只读入口，以及正式世系事实聚合读取 API |
+| Portal 页面                         | 已完成 | Portal 侧已形成 `/knowledge`、`/knowledge/quality`、`/knowledge/atlas`、`/knowledge/lineage` 四个可执行只读入口 |
 | 数据精修与图谱联动                  | 部分完成 | 精修应用已回写正式事实并被正式结果读取链路消费，图谱抽取也已具备批量重生成能力                             |
 | Discovery 搜索或问答接入            | 已完成 | taxonomy 治理、同义词扩展、标签提示和实体提示已被 Discovery 搜索 / 问答消费，形成最小闭环             |
 | Classics 内容编辑页内联知识治理入口 | 部分完成 | Wangqi、Sancai、MingCustoms 编辑页已内联标签治理、问答对治理和 AI 候选确认入口                           | 标签分类、同义词、审核与合并等完整 taxonomy 治理仍只在独立页面提供 |
@@ -139,4 +142,4 @@
 - 菜单种子重生成后 `system_menu` 的树编号和自增值已随节点数收缩变化，后续若依赖固定菜单 ID，需要以当前生成结果为准重新校对。
 - taxonomy 页面、精修工作台和正式结果页目前以页面级查询和抽屉交互为主；后续再改权限、字段或接口返回时，建议补前端契约测试和 Playwright 冒烟。
 - 同义词、标签和实体提示已接通 Discovery 搜索 / 问答主链路，后续主要关注命中质量与提示规则调优。
-- 当前已补齐 Portal 只读入口、图谱分层浏览、图谱可视化画布、固定 14 门类空位、图谱抽取批量闭环、人工质量报告闭环和低质量门类一键触发重提取；后续扩展到更多触发来源或世系专用重提取前，仍需先明确触发边界与回放策略。
+- 当前已补齐 Portal 只读入口、图谱分层浏览、图谱可视化画布、固定 14 门类空位、独立世系图只读画布、图谱抽取批量闭环、人工质量报告闭环和低质量门类一键触发重提取；后续扩展到更多触发来源或世系专用重提取前，仍需先明确触发边界与回放策略。
