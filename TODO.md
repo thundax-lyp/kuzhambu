@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Operations final validation after main sync`：同步 main 后执行最终验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`kuzhambu-servers/`、`kuzhambu-apps/`
-    - 处理动作：在同步 `main` 并解决冲突后重新运行受影响的后端和前端验证。
-    - 验收点：最终验证通过，失败时 TODO 收窄为剩余未完成范围。
-    - 重要度：10/10
-
 - [ ] `Operations implementation coverage`：更新 Operations 覆盖状态文档
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`
