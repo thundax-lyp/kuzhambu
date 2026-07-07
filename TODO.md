@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `main branch sync`：收口前同步 main 分支代码
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`main`、`feat/operations-cleanup-schedule-policy`
-    - 处理动作：在最终验证和文档收口前从 main 同步最新代码并处理冲突。
-    - 验收点：功能分支基于最新 main，无未解决冲突，最终 diff 只包含本任务相关改动。
-    - 重要度：10/10
-
 - [ ] `operations cleanup validation`：执行后端与前端最小验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-CLEANUP-SCHEDULE-POLICY.md`、`docs/00-governance/TODO-RULES.md`
