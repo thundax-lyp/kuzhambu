@@ -25,14 +25,6 @@
     - 验收点：interface assembler 可构造批量 command，service interface 提供 `applyAiCandidates` 和 `rejectAiCandidates`。
     - 重要度：9/10
 
-- [ ] `classics batch candidate application`：实现批量候选应用和拒绝
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-BATCH-CANDIDATE-GOVERNANCE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/service/impl/ClassicsContentApplicationServiceImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/content/ClassicsContentApplicationServiceAiCandidateTest.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-domain/src/main/java/com/thundax/kuzhambu/ai/domain/invocation/service/AiCandidateDomainService.java`
-    - 处理动作：逐条复用单候选应用和 AI 候选拒绝语义，形成允许部分成功的批量处理。
-    - 验收点：测试覆盖成功、权限失败、目标不匹配、非 `PENDING` 拒绝和 Sancai `objectId` 校验。
-    - 重要度：10/10
-
 - [ ] `classics batch candidate admin api`：暴露批量候选治理接口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-BATCH-CANDIDATE-GOVERNANCE.md`

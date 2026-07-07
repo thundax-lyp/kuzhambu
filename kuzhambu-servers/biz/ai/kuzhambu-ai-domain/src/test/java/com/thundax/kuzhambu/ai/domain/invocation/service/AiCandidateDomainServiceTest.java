@@ -31,6 +31,40 @@ class AiCandidateDomainServiceTest {
     }
 
     @Test
+    void requirePendingForApplyWithObjectIdShouldMatch() {
+        AiCandidate candidate = candidate(1L, "SANCAI_ENTRY", 2L, "image_analysis", "PENDING", 111L);
+        FakeRepository repository = new FakeRepository(candidate);
+        AiCandidateDomainService service = new AiCandidateDomainService(repository);
+        AiCandidateApplyCheck check = new AiCandidateApplyCheck();
+        check.setCandidateId(1L);
+        check.setContentType("SANCAI_ENTRY");
+        check.setContentId(2L);
+        check.setCapability("image_analysis");
+
+        AiCandidate actual = service.requirePendingForApply(check, 111L);
+
+        assertSame(candidate, actual);
+    }
+
+    @Test
+    void requirePendingForApplyWithObjectIdShouldFailWhenNotMatch() {
+        AiCandidate candidate = candidate(1L, "SANCAI_ENTRY", 2L, "image_analysis", "PENDING", 111L);
+        FakeRepository repository = new FakeRepository(candidate);
+        AiCandidateDomainService service = new AiCandidateDomainService(repository);
+        AiCandidateApplyCheck check = new AiCandidateApplyCheck();
+        check.setCandidateId(1L);
+        check.setContentType("SANCAI_ENTRY");
+        check.setContentId(2L);
+        check.setCapability("image_analysis");
+
+        DomainException exception =
+                assertThrows(DomainException.class, () -> service.requirePendingForApply(check, 112L));
+
+        assertEquals("AI-INVOCATION-409", exception.getCode());
+        assertEquals("ai.candidate.target-mismatch", exception.getMessageKey());
+    }
+
+    @Test
     void requirePendingForApplyShouldFailWhenNotPending() {
         AiCandidate candidate = candidate(1L, "SANCAI_ENTRY", 2L, "summary", "REJECTED");
         FakeRepository repository = new FakeRepository(candidate);
@@ -89,6 +123,13 @@ class AiCandidateDomainServiceTest {
         candidate.setContentId(contentId);
         candidate.setCapability(capability);
         candidate.setStatus(status);
+        return candidate;
+    }
+
+    private AiCandidate candidate(
+            Long id, String contentType, Long contentId, String capability, String status, Long objectId) {
+        AiCandidate candidate = candidate(id, contentType, contentId, capability, status);
+        candidate.setObjectId(objectId);
         return candidate;
     }
 

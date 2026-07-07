@@ -4,6 +4,7 @@ import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
 import com.thundax.kuzhambu.common.core.exception.DomainException;
 import java.time.Instant;
+import java.util.Objects;
 
 public class AiCandidateDomainService {
 
@@ -28,6 +29,15 @@ public class AiCandidateDomainService {
         if (!check.getContentType().equals(candidate.getContentType())
                 || !check.getContentId().equals(candidate.getContentId())
                 || !check.getCapability().equals(candidate.getCapability())) {
+            throw new DomainException(
+                    "AI-INVOCATION-409", "ai.candidate.target-mismatch", "AI candidate target mismatch");
+        }
+        return candidate;
+    }
+
+    public AiCandidate requirePendingForApply(AiCandidateApplyCheck check, Long objectId) {
+        AiCandidate candidate = requirePendingForApply(check);
+        if (!Objects.equals(objectId, candidate.getObjectId())) {
             throw new DomainException(
                     "AI-INVOCATION-409", "ai.candidate.target-mismatch", "AI candidate target mismatch");
         }

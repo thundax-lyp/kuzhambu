@@ -5,6 +5,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
+import com.thundax.kuzhambu.ai.domain.invocation.service.AiCandidateApplyCheck;
+import com.thundax.kuzhambu.ai.domain.invocation.service.AiCandidateDomainService;
 import com.thundax.kuzhambu.ai.facade.AiFacade;
 import com.thundax.kuzhambu.ai.facade.request.MarkAiCandidateAppliedFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.RequirePendingAiCandidateFacadeRequest;
@@ -25,6 +28,7 @@ import com.thundax.kuzhambu.classics.application.content.support.ClassicsContent
 import com.thundax.kuzhambu.classics.application.content.support.ClassicsContentSnapshotAssembler;
 import com.thundax.kuzhambu.classics.application.content.support.ClassicsTagBindingSupport;
 import com.thundax.kuzhambu.classics.application.content.support.SancaiEntryVersionSnapshot;
+import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationItemResult;
 import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationResult;
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiAssetApplicationService;
@@ -62,10 +66,12 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntry
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
+import com.thundax.kuzhambu.common.core.exception.DomainException;
 import com.thundax.kuzhambu.common.core.exception.ErrorCode;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
+import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
 import com.thundax.kuzhambu.storage.facade.StorageFacade;
 import com.thundax.kuzhambu.storage.facade.dto.StorageObjectFacadeDto;
 import com.thundax.kuzhambu.storage.facade.request.BindStorageOwnerFacadeRequest;
@@ -113,9 +119,22 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     private final ClassicsContentVersioningService versioningService = new ClassicsContentVersioningService();
     private final ClassicsContentSnapshotAssembler snapshotAssembler = new ClassicsContentSnapshotAssembler();
     private final AiFacade aiFacade;
+    private final AiCandidateDomainService aiCandidateDomainService;
     private final ClassicsAiCandidatePayloadParser aiCandidatePayloadParser;
     private final ClassicsTagBindingSupport tagBindingSupport;
     private final ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport;
+    private static final String DEFAULT_REJECT_ERROR_TYPE = "USER_REJECTED";
+    private static final String DEFAULT_REJECT_ERROR_MESSAGE = "用户已批量拒绝该 AI 候选";
+    private static final String FAILURE_PERMISSION_DENIED = "PERMISSION_DENIED";
+    private static final String FAILURE_CANDIDATE_NOT_PENDING = "CANDIDATE_NOT_PENDING";
+    private static final String FAILURE_CANDIDATE_TARGET_MISMATCH = "CANDIDATE_TARGET_MISMATCH";
+    private static final String FAILURE_UNSUPPORTED_CAPABILITY = "UNSUPPORTED_CAPABILITY";
+    private static final String FAILURE_CONTENT_NOT_FOUND = "CONTENT_NOT_FOUND";
+    private static final String FAILURE_VALIDATION_FAILED = "VALIDATION_FAILED";
+    private static final String FAILURE_UNKNOWN = "UNKNOWN_FAILURE";
+
+    private static final String APPLIED_STATUS = "APPLIED";
+    private static final String REJECTED_STATUS = "REJECTED";
 
     @Autowired
     public ClassicsContentApplicationServiceImpl(
@@ -128,6 +147,31 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             AiFacade aiFacade,
             ClassicsTagBindingSupport tagBindingSupport,
             ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport) {
+        this(
+                repository,
+                wangqiDocumentVersionRestorer,
+                sancaiEntryVersionRestorer,
+                sancaiAssetApplicationService,
+                workerRenderClient,
+                storageFacade,
+                aiFacade,
+                null,
+                tagBindingSupport,
+                searchIndexSyncPublishSupport);
+    }
+
+    @Autowired
+    public ClassicsContentApplicationServiceImpl(
+            ClassicsContentRepository repository,
+            WangqiDocumentVersionRestorer wangqiDocumentVersionRestorer,
+            SancaiEntryVersionRestorer sancaiEntryVersionRestorer,
+            SancaiAssetApplicationService sancaiAssetApplicationService,
+            WorkerRenderClient workerRenderClient,
+            StorageFacade storageFacade,
+            AiFacade aiFacade,
+            AiCandidateDomainService aiCandidateDomainService,
+            ClassicsTagBindingSupport tagBindingSupport,
+            ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport) {
         this.repository = repository;
         this.wangqiDocumentVersionRestorer = wangqiDocumentVersionRestorer;
         this.sancaiEntryVersionRestorer = sancaiEntryVersionRestorer;
@@ -135,6 +179,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         this.workerRenderClient = workerRenderClient;
         this.storageFacade = storageFacade;
         this.aiFacade = aiFacade;
+        this.aiCandidateDomainService = aiCandidateDomainService;
         this.tagBindingSupport = tagBindingSupport;
         this.searchIndexSyncPublishSupport = searchIndexSyncPublishSupport;
         this.objectMapper = new ObjectMapper().findAndRegisterModules();
@@ -566,13 +611,231 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public ClassicsBatchOperationResult applyAiCandidates(AiCandidateBatchApplyContentCommand command) {
-        throw new UnsupportedOperationException("批量应用AI候选尚未实现");
+        if (command == null || command.getItems() == null || command.getItems().isEmpty()) {
+            throw new BizException("批量应用AI候选参数为空");
+        }
+
+        List<ClassicsBatchOperationItemResult> successes = new ArrayList<>();
+        List<ClassicsBatchOperationItemResult> failures = new ArrayList<>();
+
+        for (AiCandidateApplyContentCommand item : command.getItems()) {
+            ClassicsContentType contentType = item == null ? null : item.getContentType();
+            Long contentId = item == null ? null : item.getContentId();
+            Long candidateId = item == null ? null : item.getCandidateId();
+            Long objectId = item == null ? null : item.getObjectId();
+            String capability = item == null ? null : item.getCapability();
+
+            if (!hasEditPermission(contentType)) {
+                failures.add(ClassicsBatchOperationItemResult.failureForCandidate(
+                        typeValue(contentType),
+                        contentId,
+                        FAILURE_PERMISSION_DENIED,
+                        "当前用户无权编辑该内容",
+                        candidateId,
+                        objectId,
+                        capability));
+                continue;
+            }
+
+            try {
+                if (item != null && aiCandidateDomainService != null) {
+                    aiCandidateDomainService.requirePendingForApply(toApplyCheck(item), item.getObjectId());
+                }
+
+                AiCandidateApplyContentResult result = applyAiCandidate(item);
+                successes.add(ClassicsBatchOperationItemResult.successForCandidate(
+                        typeValue(contentType),
+                        contentId,
+                        result == null ? null : result.getVersionId(),
+                        APPLIED_STATUS,
+                        candidateId,
+                        objectId,
+                        capability));
+            } catch (RuntimeException ex) {
+                failures.add(ClassicsBatchOperationItemResult.failureForCandidate(
+                        typeValue(contentType),
+                        contentId,
+                        resolveApplyFailureCode(ex),
+                        ex.getMessage(),
+                        candidateId,
+                        objectId,
+                        capability));
+            }
+        }
+
+        return ClassicsBatchOperationResult.of(successes, failures);
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public ClassicsBatchOperationResult rejectAiCandidates(AiCandidateBatchRejectContentCommand command) {
-        throw new UnsupportedOperationException("批量拒绝AI候选尚未实现");
+        if (command == null || command.getItems() == null || command.getItems().isEmpty()) {
+            throw new BizException("批量拒绝AI候选参数为空");
+        }
+
+        List<ClassicsBatchOperationItemResult> successes = new ArrayList<>();
+        List<ClassicsBatchOperationItemResult> failures = new ArrayList<>();
+        String errorType = resolveRejectErrorType(command.getErrorType());
+        String errorMessage = resolveRejectErrorMessage(command.getErrorMessage());
+
+        for (AiCandidateBatchRejectContentCommand.Item item : command.getItems()) {
+            ClassicsContentType contentType = item == null ? null : item.getContentType();
+            Long contentId = item == null ? null : item.getContentId();
+            Long candidateId = item == null ? null : item.getCandidateId();
+            Long objectId = item == null ? null : item.getObjectId();
+            String capability = item == null ? null : item.getCapability();
+
+            if (!hasEditPermission(contentType)) {
+                failures.add(ClassicsBatchOperationItemResult.failureForCandidate(
+                        typeValue(contentType),
+                        contentId,
+                        FAILURE_PERMISSION_DENIED,
+                        "当前用户无权编辑该内容",
+                        candidateId,
+                        objectId,
+                        capability));
+                continue;
+            }
+
+            if (aiCandidateDomainService == null) {
+                failures.add(ClassicsBatchOperationItemResult.failureForCandidate(
+                        typeValue(contentType),
+                        contentId,
+                        FAILURE_UNKNOWN,
+                        "AI候选服务未就绪",
+                        candidateId,
+                        objectId,
+                        capability));
+                continue;
+            }
+
+            try {
+                AiCandidate candidate =
+                        aiCandidateDomainService.requirePendingForApply(toRejectCheck(item), item.getObjectId());
+                aiCandidateDomainService.reject(candidate.getCandidateId(), errorType, errorMessage);
+                successes.add(ClassicsBatchOperationItemResult.successForCandidate(
+                        typeValue(contentType),
+                        contentId,
+                        candidate.getCandidateId(),
+                        REJECTED_STATUS,
+                        candidateId,
+                        objectId,
+                        capability));
+            } catch (RuntimeException ex) {
+                failures.add(ClassicsBatchOperationItemResult.failureForCandidate(
+                        typeValue(contentType),
+                        contentId,
+                        resolveRejectFailureCode(ex),
+                        ex.getMessage(),
+                        candidateId,
+                        objectId,
+                        capability));
+            }
+        }
+
+        return ClassicsBatchOperationResult.of(successes, failures);
+    }
+
+    private boolean hasEditPermission(ClassicsContentType contentType) {
+        if (contentType == null) {
+            return false;
+        }
+        return ClassicsContentPermissionSupport.canEdit(contentType, KuzhambuContextHolder.currentAuthorities());
+    }
+
+    private AiCandidateApplyCheck toApplyCheck(AiCandidateApplyContentCommand command) {
+        AiCandidateApplyCheck check = new AiCandidateApplyCheck();
+        check.setCandidateId(command.getCandidateId());
+        check.setContentType(command.getContentType().value());
+        check.setContentId(command.getContentId());
+        check.setCapability(command.getCapability());
+        return check;
+    }
+
+    private AiCandidateApplyCheck toRejectCheck(AiCandidateBatchRejectContentCommand.Item item) {
+        AiCandidateApplyCheck check = new AiCandidateApplyCheck();
+        check.setCandidateId(item.getCandidateId());
+        check.setContentType(
+                item.getContentType() == null ? null : item.getContentType().value());
+        check.setContentId(item.getContentId());
+        check.setCapability(item.getCapability());
+        return check;
+    }
+
+    private String typeValue(ClassicsContentType contentType) {
+        return contentType == null ? null : contentType.value();
+    }
+
+    private String resolveApplyFailureCode(RuntimeException ex) {
+        if (ex instanceof DomainException) {
+            return resolveFailureCodeFromDomainException((DomainException) ex);
+        }
+        if (ex instanceof BizException) {
+            BizException bizException = (BizException) ex;
+            if (FAILURE_PERMISSION_DENIED.equals(bizException.getCode())) {
+                return FAILURE_PERMISSION_DENIED;
+            }
+            return resolveFailureCodeFromMessage(bizException.getMessage());
+        }
+        return FAILURE_UNKNOWN;
+    }
+
+    private String resolveRejectFailureCode(RuntimeException ex) {
+        if (ex instanceof DomainException) {
+            return resolveFailureCodeFromDomainException((DomainException) ex);
+        }
+        if (ex instanceof BizException) {
+            BizException bizException = (BizException) ex;
+            if (FAILURE_PERMISSION_DENIED.equals(bizException.getCode())) {
+                return FAILURE_PERMISSION_DENIED;
+            }
+            return resolveFailureCodeFromMessage(bizException.getMessage());
+        }
+        return FAILURE_UNKNOWN;
+    }
+
+    private String resolveFailureCodeFromDomainException(DomainException ex) {
+        String messageKey = ex.getMessageKey();
+        return switch (messageKey) {
+            case "ai.candidate.not-pending" -> FAILURE_CANDIDATE_NOT_PENDING;
+            case "ai.candidate.target-mismatch" -> FAILURE_CANDIDATE_TARGET_MISMATCH;
+            case "ai.candidate.not-found" -> FAILURE_CONTENT_NOT_FOUND;
+            default -> FAILURE_UNKNOWN;
+        };
+    }
+
+    private String resolveFailureCodeFromMessage(String message) {
+        if (StringUtils.isBlank(message)) {
+            return FAILURE_UNKNOWN;
+        }
+        if (message.contains("不支持的 AI 候选能力")) {
+            return FAILURE_UNSUPPORTED_CAPABILITY;
+        }
+        if (message.contains("不存在") && message.contains("内容") && !message.contains("候选")) {
+            return FAILURE_CONTENT_NOT_FOUND;
+        }
+        if (message.contains("参数")
+                || message.contains("不能为空")
+                || message.contains("不完整")
+                || message.contains("解析")
+                || message.contains("无效")
+                || message.contains("缺少")) {
+            return FAILURE_VALIDATION_FAILED;
+        }
+        if (message.contains("三才视觉资产") && (message.contains("不存在") || message.contains("标识不存在"))) {
+            return FAILURE_CANDIDATE_TARGET_MISMATCH;
+        }
+        return FAILURE_UNKNOWN;
+    }
+
+    private String resolveRejectErrorType(String errorType) {
+        return StringUtils.isBlank(errorType) ? DEFAULT_REJECT_ERROR_TYPE : errorType;
+    }
+
+    private String resolveRejectErrorMessage(String errorMessage) {
+        return StringUtils.isBlank(errorMessage) ? DEFAULT_REJECT_ERROR_MESSAGE : errorMessage;
     }
 
     private SancaiVisualAsset findVisualAsset(ClassicsContentId contentId, Long objectId) {
