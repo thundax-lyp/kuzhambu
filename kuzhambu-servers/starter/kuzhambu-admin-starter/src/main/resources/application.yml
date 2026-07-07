@@ -115,3 +115,26 @@ kuzhambu:
         enabled: ${KUZHAMBU_OPERATIONS_BACKUP_SCHEDULE_ENABLED:true}
         startup-enabled: ${KUZHAMBU_OPERATIONS_BACKUP_STARTUP_ENABLED:true}
         daily-cron: ${KUZHAMBU_OPERATIONS_BACKUP_DAILY_CRON:0 0 2 * * ?}
+    cleanup:
+      schedule:
+        enabled: ${KUZHAMBU_OPERATIONS_CLEANUP_SCHEDULE_ENABLED:true}
+        startup-enabled: ${KUZHAMBU_OPERATIONS_CLEANUP_STARTUP_ENABLED:false}
+        daily-cron: ${KUZHAMBU_OPERATIONS_CLEANUP_DAILY_CRON:0 30 3 * * ?}
+        default-limit: ${KUZHAMBU_OPERATIONS_CLEANUP_DEFAULT_LIMIT:200}
+        policies:
+          expired-backup:
+            enabled: ${KUZHAMBU_OPERATIONS_CLEANUP_EXPIRED_BACKUP_ENABLED:true}
+            retention-days: ${KUZHAMBU_OPERATIONS_CLEANUP_EXPIRED_BACKUP_RETENTION_DAYS:30}
+            limit: ${KUZHAMBU_OPERATIONS_CLEANUP_EXPIRED_BACKUP_LIMIT:200}
+          expired-export:
+            enabled: ${KUZHAMBU_OPERATIONS_CLEANUP_EXPIRED_EXPORT_ENABLED:true}
+            retention-days: ${KUZHAMBU_OPERATIONS_CLEANUP_EXPIRED_EXPORT_RETENTION_DAYS:7}
+            limit: ${KUZHAMBU_OPERATIONS_CLEANUP_EXPIRED_EXPORT_LIMIT:200}
+          expired-share:
+            enabled: ${KUZHAMBU_OPERATIONS_CLEANUP_EXPIRED_SHARE_ENABLED:true}
+            retention-days: ${KUZHAMBU_OPERATIONS_CLEANUP_EXPIRED_SHARE_RETENTION_DAYS:90}
+            limit: ${KUZHAMBU_OPERATIONS_CLEANUP_EXPIRED_SHARE_LIMIT:200}
+          expired-draft:
+            enabled: ${KUZHAMBU_OPERATIONS_CLEANUP_EXPIRED_DRAFT_ENABLED:true}
+            retention-days: ${KUZHAMBU_OPERATIONS_CLEANUP_EXPIRED_DRAFT_RETENTION_DAYS:30}
+            limit: ${KUZHAMBU_OPERATIONS_CLEANUP_EXPIRED_DRAFT_LIMIT:200}

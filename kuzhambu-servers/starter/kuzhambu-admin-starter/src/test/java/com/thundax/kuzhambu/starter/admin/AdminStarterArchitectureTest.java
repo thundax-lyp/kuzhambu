@@ -68,6 +68,20 @@ class AdminStarterArchitectureTest extends AbstractArchitectureTest {
                 .contains("daily-cron: ${KUZHAMBU_OPERATIONS_BACKUP_DAILY_CRON:0 0 2 * * ?}");
     }
 
+    @Test
+    void adminStarterShouldExposeOperationsCleanupScheduleConfiguration() throws IOException {
+        String applicationYaml = loadApplicationYaml();
+
+        Assertions.assertThat(applicationYaml)
+                .contains("enabled: ${KUZHAMBU_OPERATIONS_CLEANUP_SCHEDULE_ENABLED:true}")
+                .contains("startup-enabled: ${KUZHAMBU_OPERATIONS_CLEANUP_STARTUP_ENABLED:false}")
+                .contains("daily-cron: ${KUZHAMBU_OPERATIONS_CLEANUP_DAILY_CRON:0 30 3 * * ?}")
+                .contains("default-limit: ${KUZHAMBU_OPERATIONS_CLEANUP_DEFAULT_LIMIT:200}")
+                .contains("enabled: ${KUZHAMBU_OPERATIONS_CLEANUP_EXPIRED_BACKUP_ENABLED:true}")
+                .contains("retention-days: ${KUZHAMBU_OPERATIONS_CLEANUP_EXPIRED_BACKUP_RETENTION_DAYS:30}")
+                .contains("limit: ${KUZHAMBU_OPERATIONS_CLEANUP_EXPIRED_BACKUP_LIMIT:200}");
+    }
+
     private String loadApplicationYaml() throws IOException {
         try (InputStream inputStream = KuzhambuAdminApplication.class.getResourceAsStream("/application.yml")) {
             Assertions.assertThat(inputStream).isNotNull();

@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `operations cleanup scheduler`：新增自动清理调度器并装配 starter 配置
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-CLEANUP-SCHEDULE-POLICY.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/cleanup/support/OperationsCleanupScheduler.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/test/java/com/thundax/kuzhambu/operations/application/cleanup/support/OperationsCleanupSchedulerTest.java`、`kuzhambu-servers/starter/kuzhambu-admin-starter/src/main/resources/application.yml`、`kuzhambu-servers/starter/kuzhambu-admin-starter/src/test/java/com/thundax/kuzhambu/starter/admin/AdminStarterArchitectureTest.java`
-    - 处理动作：新增 OperationsCleanupScheduler 并在 admin starter 暴露 `kuzhambu.operations.cleanup.schedule` 配置块。
-    - 验收点：总开关、启动开关、单 policy disabled 和单类型异常继续后续类型均有测试覆盖。
-    - 重要度：10/10
-
 - [ ] `classics cleanup retention contract`：补齐 Classics 清理策略参数传递
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-CLEANUP-SCHEDULE-POLICY.md`
