@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Admin Web dashboard alert service`：新增前端告警类型与服务
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-RECOVERY-LOOP.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/operations/dashboard/dashboard-types.ts`、`kuzhambu-apps/admin-web/src/pages/operations/dashboard/dashboard-service.ts`、`kuzhambu-apps/admin-web/src/pages/operations/dashboard/dashboard-service-contract.test.ts`
-    - 处理动作：新增健康告警类型、overview 告警字段和 alerts/page、ack、recover 服务调用。
-    - 验收点：service contract 测试断言 API path、请求体和 response 字段类型。
-    - 重要度：9/10
-
 - [ ] `Admin Web dashboard alert drawer`：实现看板告警横幅和告警抽屉
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-RECOVERY-LOOP.md`
