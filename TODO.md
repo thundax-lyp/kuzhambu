@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `operations health backend targeted validation`：执行后端定向验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-PROBE-LOOP.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/`、`kuzhambu-servers/starter/kuzhambu-admin-starter/`
-    - 处理动作：运行 RUNBOOK 指定的 Operations application、infra、interface 和 admin starter 定向测试。
-    - 验收点：HTTP 探针、健康分页筛选、告警 `latestCheckId`、健康接口契约和菜单配置相关定向测试通过。
-    - 重要度：10/10
-
 - [ ] `admin-web operations health targeted validation`：执行前端定向验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-PROBE-LOOP.md`
