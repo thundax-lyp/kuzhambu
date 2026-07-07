@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web sancai batch candidate entry`：接入三才图会批量候选治理入口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-BATCH-CANDIDATE-GOVERNANCE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.test.tsx`
-    - 处理动作：在条目列表批量操作区新增 `批量候选治理` 按钮并接入 `AiCandidateBatchDrawer`。
-    - 验收点：未选条目或无 `classics:sancai:edit` 时按钮禁用，选择条目后可打开抽屉并处理候选。
-    - 重要度：8/10
-
 - [ ] `admin-web wangqi batch candidate entry`：接入王圻文档批量候选治理入口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-BATCH-CANDIDATE-GOVERNANCE.md`
