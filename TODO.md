@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Backend lineage tests`：13 补齐后端世系接口和用例测试
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-KNOWLEDGE-LINEAGE-VISUALIZATION.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/lineage/KnowledgeLineageReadApplicationServiceImplTest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/test/java/com/thundax/kuzhambu/knowledge/interfaces/admin/lineage/controller/KnowledgeLineageControllerTest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/test/java/com/thundax/kuzhambu/knowledge/interfaces/portal/lineage/controller/KnowledgePortalLineageControllerTest.java`
-    - 处理动作：补齐后端世系画布读取和接口测试。
-    - 验收点：测试覆盖字段映射、空态、权限、默认最新版本和只读边界。
-    - 重要度：9/10
-
 - [ ] `Frontend lineage tests`：14 补齐前端世系页面测试
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-KNOWLEDGE-LINEAGE-VISUALIZATION.md`
