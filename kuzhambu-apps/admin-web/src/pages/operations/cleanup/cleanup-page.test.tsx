@@ -160,7 +160,7 @@ describe("CleanupPage", () => {
         );
 
         expect(await screen.findByText("object delete denied")).toBeInTheDocument();
-        expect(screen.getByText("查看告警")).toHaveAttribute(
+        expect(screen.getByRole("link", { name: "查看告警" })).toHaveAttribute(
             "href",
             "/operations/dashboard?sourceRefType=CLEANUP&sourceRefId=9102"
         );

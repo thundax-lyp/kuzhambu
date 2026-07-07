@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Operations validation`：运行 Operations 后端与 Admin Web 定向验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-RECOVERY-LOOP.md`
-    - 范围对象：`kuzhambu-servers/`、`kuzhambu-apps/`
-    - 处理动作：运行 RUNBOOK 指定的 Maven 与 npm 格式、静态检查和定向测试。
-    - 验收点：后端 Operations 测试和 Admin Web operations 测试通过，若失败需收窄到剩余 TODO。
-    - 重要度：10/10
-
 - [ ] `Branch sync main`：同步 main 分支最新代码
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`

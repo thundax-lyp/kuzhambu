@@ -223,16 +223,26 @@ describe("OperationsDashboardPage", () => {
     }, 30000);
 
     it("allows health alert confirmation and recovery with manage permission", async () => {
-        replacePermissions(["operations:dashboard:view", "operations:health:manage"]);
+        replacePermissions([
+            "operations:dashboard:view",
+            "operations:health:view",
+            "operations:health:manage"
+        ]);
         renderPage();
 
         fireEvent.click(await screen.findByRole("button", { name: "查看告警" }));
-        fireEvent.click(await screen.findByRole("button", { name: "确认" }));
-        fireEvent.click(await screen.findByRole("button", { name: "标记恢复" }));
+        expect(await screen.findByText("连续失败")).toBeInTheDocument();
+        expect(screen.getByText("状态：未确认")).toBeInTheDocument();
+        fireEvent.click(screen.getByRole("button", { name: /确\s*认/ }));
+        fireEvent.click(screen.getByRole("button", { name: "标记恢复" }));
 
         await waitFor(() => {
-            expect(service.confirmHealthAlert).toHaveBeenCalledWith({ alertId: 9201 });
-            expect(service.recoverHealthAlert).toHaveBeenCalledWith({ alertId: 9201 });
+            expect(vi.mocked(service.confirmHealthAlert).mock.calls[0]?.[0]).toEqual({
+                alertId: 9201
+            });
+            expect(vi.mocked(service.recoverHealthAlert).mock.calls[0]?.[0]).toEqual({
+                alertId: 9201
+            });
         });
     }, 30000);
 
