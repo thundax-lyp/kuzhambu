@@ -8,7 +8,9 @@ import type {
     QualityReportDetailRecord,
     QualityReportLatestQuery,
     QualityReportPageQuery,
-    QualityReportRecord
+    QualityReportRecord,
+    ReextractLowQualityCategoryCommand,
+    ReextractLowQualityCategoryRecord
 } from "./quality-report-types";
 
 const API_PREFIX = "/knowledge/quality/report";
@@ -36,4 +38,11 @@ export const getLatestReport = (request: QualityReportLatestQuery = {}) => {
     return postJson<QualityReportDetailRecord, QualityReportLatestQuery>(`${API_PREFIX}/latest`, {
         body: request
     });
+};
+
+export const reextractLowQualityCategory = (request: ReextractLowQualityCategoryCommand) => {
+    return postJson<ReextractLowQualityCategoryRecord, ReextractLowQualityCategoryCommand>(
+        `${API_PREFIX}/reextract-low-quality-category`,
+        { body: request }
+    );
 };

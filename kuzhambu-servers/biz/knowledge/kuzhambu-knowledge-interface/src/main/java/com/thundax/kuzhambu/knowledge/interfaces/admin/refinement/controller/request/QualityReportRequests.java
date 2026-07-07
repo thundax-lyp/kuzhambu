@@ -58,4 +58,37 @@ public final class QualityReportRequests {
         @JsonProperty("graphVersionId")
         private Long graphVersionId;
     }
+
+    @Getter
+    @Setter
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class ReextractRequest {
+        @JsonProperty("reportId")
+        private Long reportId;
+
+        @JsonProperty("sourceCategoryCode")
+        private String sourceCategoryCode;
+
+        @JsonProperty("taskType")
+        private String taskType;
+
+        @JsonProperty("replaceUnconfirmedOnly")
+        private Boolean replaceUnconfirmedOnly;
+
+        @JsonProperty("modelId")
+        private Long modelId;
+
+        @JsonProperty("modelName")
+        private String modelName;
+
+        @JsonProperty("promptMessagesJson")
+        private String promptMessagesJson;
+
+        @JsonProperty("inputPayloadJson")
+        private String inputPayloadJson;
+
+        @JsonProperty("requestedBy")
+        private Long requestedBy;
+    }
 }

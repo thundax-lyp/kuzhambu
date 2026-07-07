@@ -1,12 +1,14 @@
 package com.thundax.kuzhambu.knowledge.interfaces.admin.refinement.assembler;
 
 import com.thundax.kuzhambu.knowledge.application.refinement.command.GenerateQualityReportCommand;
+import com.thundax.kuzhambu.knowledge.application.refinement.command.ReextractLowQualityCategoryCommand;
 import com.thundax.kuzhambu.knowledge.application.refinement.query.QualityReportPageQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityAnnotationResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult.IssueRecord;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult.ReportRecord;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult.SourceDetailRecord;
+import com.thundax.kuzhambu.knowledge.application.refinement.result.ReextractLowQualityCategoryResult;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.refinement.controller.request.QualityReportRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.refinement.controller.response.QualityReportResponses;
 import java.util.List;
@@ -19,6 +21,19 @@ public final class KnowledgeQualityReportInterfaceAssembler {
         return new GenerateQualityReportCommand(
                 request == null ? null : request.getGraphVersionId(),
                 request == null ? null : request.getGeneratedBy());
+    }
+
+    public static ReextractLowQualityCategoryCommand toCommand(QualityReportRequests.ReextractRequest request) {
+        return new ReextractLowQualityCategoryCommand(
+                request == null ? null : request.getReportId(),
+                request == null ? null : request.getSourceCategoryCode(),
+                request == null ? null : request.getTaskType(),
+                request == null ? null : request.getReplaceUnconfirmedOnly(),
+                request == null ? null : request.getModelId(),
+                request == null ? null : request.getModelName(),
+                request == null ? null : request.getPromptMessagesJson(),
+                request == null ? null : request.getInputPayloadJson(),
+                request == null ? null : request.getRequestedBy());
     }
 
     public static QualityReportPageQuery toPageQuery(QualityReportRequests.PageRequestBody request) {
@@ -67,6 +82,24 @@ public final class KnowledgeQualityReportInterfaceAssembler {
                         .generatedBy(result.getGeneratedBy())
                         .generatedAt(result.getGeneratedAt())
                         .publishedAt(result.getPublishedAt())
+                        .build();
+    }
+
+    public static QualityReportResponses.ReextractResponse toResponse(ReextractLowQualityCategoryResult result) {
+        return result == null
+                ? null
+                : QualityReportResponses.ReextractResponse.builder()
+                        .reportId(result.getReportId())
+                        .sourceCategoryCode(result.getSourceCategoryCode())
+                        .sourceCategoryName(result.getSourceCategoryName())
+                        .sourceContentType(result.getSourceContentType())
+                        .sourceContentId(result.getSourceContentId())
+                        .taskId(result.getTaskId())
+                        .batchJobId(result.getBatchJobId())
+                        .taskType(result.getTaskType())
+                        .triggerSource(result.getTriggerSource())
+                        .selectionScopeJson(result.getSelectionScopeJson())
+                        .replaceUnconfirmedOnly(result.getReplaceUnconfirmedOnly())
                         .build();
     }
 
