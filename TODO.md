@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `02 Discovery 平均搜索耗时 summary`：改为从真实搜索日志计算平均耗时
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DASHBOARD-SUMMARY.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/report/service/impl/DiscoveryReportApplicationServiceImpl.java`；`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/test/java/com/thundax/kuzhambu/discovery/application/report/service/impl/DiscoveryReportApplicationServiceImplTest.java`
-    - 处理动作：用非空 `SearchLog.searchLatencyMs` 计算 `avgSearchLatencyMs`，删除固定 `0L` 占位。
-    - 验收点：`[100, 200, null]` 返回 `150L`，全空样本返回真实无样本 `0L`，搜索次数、热门查询和趋势统计不变。
-    - 重要度：10/10
-
 - [ ] `03 Operations 跨域 summary gateway`：抽取 Dashboard 与 Report 共用的四域 summary 读取入口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DASHBOARD-SUMMARY.md`
