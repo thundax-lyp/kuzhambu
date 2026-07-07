@@ -12,7 +12,7 @@
 - 批量应用允许部分成功，复用现有 Classics 批量结果模型。
 - 批量范围固定为“当前页面已选择内容对应的候选 ID 集合”，不做跨页长事务、不做后台全量扫描。
 - 批量拒绝复用 AI 候选拒绝语义，不直接修改 AI 持久化表。
-- 批量应用必须逐条校验 `PENDING`、`contentType`、`contentId`、`objectId`、`capability` 和当前用户 edit 权限。
+- 批量应用必须逐条校验 `PENDING`、`contentType`、`contentId`、`objectId` 和 `capability`，并校验当前用户 edit 权限。
 - Sancai 视觉资产候选必须保留 `objectId`，禁止把视觉资产候选应用到错误资产。
 - 三类页面共用一个前端批量候选治理组件。
 - 只有实现、测试和页面验证完成后，才能把 `docs/40-readiness/CLASSICS-IMPLEMENTATION-COVERAGE.md` 中该项改为已完成。
@@ -206,7 +206,7 @@ export interface ClassicsAiCandidateBatchRejectPayload {
 | `contentTitleById` | `Record<number, string>` | 否 | 列表中展示内容标题；缺失时显示内容 ID |
 | `canEdit` | `boolean` | 是 | 当前用户是否有对应内容 edit 权限 |
 | `onClose` | `() => void` | 是 | 关闭抽屉 |
-| `onChanged` | `() => void \| Promise<void>` | 是 | 批量应用或拒绝成功后刷新父级数据 |
+| `onChanged` | `() => void | Promise<void>` | 是 | 批量应用或拒绝成功后刷新父级数据 |
 
 组件内部只查询 `status=PENDING` 候选；只展示 `contentIds` 内内容、`capabilities` 内能力的候选。
 
@@ -371,8 +371,8 @@ export interface ClassicsAiCandidateBatchRejectPayload {
   - 前端再按 `capabilities` 过滤；Sancai 视觉资产候选保留响应内 `objectId`。
 - payload 编辑复用 `AiCandidatePayloadEditor`；只有校验通过的候选可以进入批量应用请求。
 - `批量应用` 点击后：
-  - 未选择候选时提示 `请选择要应用的候选`。
-  - 存在 payload 校验失败时提示 `请先修正候选内容`。
+  - 未选择候选时提示 `请选择要应用的候选`
+  - 存在 payload 校验失败时提示 `请先修正候选内容`
   - 组装 `items` 调用 `applyAiCandidatesBatch`。
   - 成功后展示 `批量候选应用结果：成功 X，失败 Y`。
   - 展示失败明细，至少显示 `candidateId`、`capability`、`failureReason`。
