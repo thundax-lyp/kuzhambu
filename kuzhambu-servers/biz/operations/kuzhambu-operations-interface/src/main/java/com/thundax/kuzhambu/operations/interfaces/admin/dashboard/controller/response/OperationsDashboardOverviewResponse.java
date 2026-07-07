@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.operations.interfaces.admin.dashboard.controller.response;
 
+import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.response.OperationsHealthAlertSummaryResponse;
 import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.response.OperationsHealthSummaryResponse;
 import java.math.BigDecimal;
 import java.util.Date;
@@ -35,6 +36,11 @@ public class OperationsDashboardOverviewResponse {
     private Integer unhealthyComponentCount;
     private Integer runningTaskCount;
     private Integer failedTaskCount;
+    private Integer activeAlertCount;
+    private Integer criticalAlertCount;
+    private Integer warningAlertCount;
+    private String highestAlertLevel;
+    private OperationsHealthAlertSummaryResponse latestAlert;
     private List<BucketCountResponse> contentGrowthSeries;
     private List<BucketCountResponse> searchTrendSeries;
     private List<BucketCountResponse> qaTrendSeries;
