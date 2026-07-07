@@ -18,6 +18,9 @@ import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagRepository;
 import com.thundax.kuzhambu.knowledge.infra.taxonomy.persistence.assembler.TaxonomyPersistenceAssembler;
 import com.thundax.kuzhambu.knowledge.infra.taxonomy.persistence.dataobject.TagDO;
 import com.thundax.kuzhambu.knowledge.infra.taxonomy.persistence.mapper.TagMapper;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Repository;
 
@@ -45,6 +48,22 @@ public class TagRepositoryImpl implements TagRepository {
     @Override
     public Tag getByName(String name) {
         return TaxonomyPersistenceAssembler.toDomain(mapper.selectOne(buildQueryWrapper(name, null, null, null, null)));
+    }
+
+    @Override
+    public List<Tag> listByTagIds(List<TagId> tagIds) {
+        List<Long> values = tagIds == null
+                ? List.of()
+                : tagIds.stream()
+                        .filter(Objects::nonNull)
+                        .map(TagIdCodec::toValue)
+                        .collect(Collectors.toList());
+        if (values.isEmpty()) {
+            return List.of();
+        }
+        QueryWrapper<TagDO> wrapper = new QueryWrapper<>();
+        wrapper.in("tag_id", values).orderByDesc("created_at").orderByAsc("id");
+        return TaxonomyPersistenceAssembler.toTagDomainList(mapper.selectList(wrapper));
     }
 
     @Override
@@ -130,6 +149,7 @@ public class TagRepositoryImpl implements TagRepository {
                 buildIdUpdateWrapper(dataObject)
                         .set(TagDO::getReviewStatus, dataObject.getReviewStatus())
                         .set(TagDO::getReviewedAt, dataObject.getReviewedAt())
+                        .set(TagDO::getCategoryId, dataObject.getCategoryId())
                         .set(TagDO::getReviewNote, dataObject.getReviewNote()));
     }
 

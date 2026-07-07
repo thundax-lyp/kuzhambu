@@ -1,21 +1,27 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Button, Tabs } from "antd";
+import type { Key } from "react";
 import { useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
+import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { CategoryEdit } from "./components/category-edit";
 import { CategoryTable } from "./components/category-table";
 import { SynonymEdit } from "./components/synonym-edit";
 import { SynonymTable } from "./components/synonym-table";
+import { TagBatchReviewPanel } from "./components/tag-batch-review-panel";
 import { TagDetailDrawer } from "./components/tag-detail-drawer";
 import { TagEdit } from "./components/tag-edit";
 import { TagExtractionDrawer } from "./components/tag-extraction-drawer";
+import { TagBatchMergePanel } from "./components/tag-batch-merge-panel";
 import { TagGovernanceMetricsPanel } from "./components/tag-governance-metrics-panel";
 import { TagMergePanel } from "./components/tag-merge-panel";
 import { TagReviewTable } from "./components/tag-review-table";
 import { TagTable } from "./components/tag-table";
 import * as service from "./taxonomy-service";
 import type {
+    TagBatchMergeCommand,
+    TagBatchReviewCommand,
     TagMergeCommand,
     TagAliasCreateCommand,
     TagAliasRemoveCommand,
@@ -37,6 +43,7 @@ import type {
     TagCategoryRecord,
     TagExtractionResultRecord,
     TagGovernanceMetricsRecord,
+    TagBatchMergePreviewRecord,
     TagMergePreviewRecord,
     TagPageQuery,
     TagRecord,
@@ -64,6 +71,7 @@ const DEFAULT_GOVERNANCE_METRICS_QUERY: TagGovernanceMetricsQuery = {
 
 export const TaxonomyPage = () => {
     const { message: messageApi } = App.useApp();
+    const confirm = useKuzhambuConfirm();
     const queryClient = useQueryClient();
     const canViewTaxonomy = hasPermission("knowledge:taxonomy:view");
     const canEditTaxonomy = hasPermission("knowledge:taxonomy:edit");
@@ -95,6 +103,15 @@ export const TaxonomyPage = () => {
     const [tagDetailReviewMode, setTagDetailReviewMode] = useState(false);
     const [removingAliasId, setRemovingAliasId] = useState<string | null>(null);
     const [tagMergePreview, setTagMergePreview] = useState<TagMergePreviewRecord | null>(null);
+    const [tagBatchMergeOpen, setTagBatchMergeOpen] = useState(false);
+    const [selectedTagRowKeys, setSelectedTagRowKeys] = useState<Key[]>([]);
+    const [tagBatchMergePreview, setTagBatchMergePreview] =
+        useState<TagBatchMergePreviewRecord | null>(null);
+    const [tagBatchReviewOpen, setTagBatchReviewOpen] = useState(false);
+    const [tagBatchReviewDecision, setTagBatchReviewDecision] = useState<"APPROVE" | "REJECT">(
+        "APPROVE"
+    );
+    const [selectedReviewRowKeys, setSelectedReviewRowKeys] = useState<Key[]>([]);
     const [tagExtractionOpen, setTagExtractionOpen] = useState(false);
     const [tagExtractionResult, setTagExtractionResult] =
         useState<TagExtractionResultRecord | null>(null);
@@ -220,6 +237,36 @@ export const TaxonomyPage = () => {
             messageApi.error(error instanceof Error ? error.message : "标签合并失败");
         }
     });
+    const previewTagBatchMergeMutation = useMutation({
+        mutationFn: service.previewTagBatchMergeImpact,
+        onSuccess: (preview) => {
+            setTagBatchMergePreview(preview);
+            messageApi.success("批量合并影响已生成");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "批量合并预览失败");
+        }
+    });
+    const applyTagBatchMergeMutation = useMutation({
+        mutationFn: service.applyTagBatchMerge,
+        onSuccess: async () => {
+            setTagBatchMergeOpen(false);
+            setTagBatchMergePreview(null);
+            setSelectedTagRowKeys([]);
+            await Promise.all([
+                queryClient.invalidateQueries({ queryKey: ["knowledge", "taxonomy", "tags"] }),
+                queryClient.invalidateQueries({ queryKey: ["knowledge", "taxonomy", "reviews"] }),
+                queryClient.invalidateQueries({ queryKey: ["knowledge", "taxonomy", "metrics"] }),
+                queryClient.invalidateQueries({
+                    queryKey: ["knowledge", "taxonomy", "tag-detail"]
+                })
+            ]);
+            messageApi.success("批量合并已完成");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "批量合并失败");
+        }
+    });
     const deprecateTagMutation = useMutation({
         mutationFn: service.deprecateTag,
         onSuccess: async () => {
@@ -240,6 +287,24 @@ export const TaxonomyPage = () => {
             messageApi.error(error instanceof Error ? error.message : "标签废弃失败");
         }
     });
+    const deprecateBatchTagsMutation = useMutation({
+        mutationFn: service.deprecateBatchTags,
+        onSuccess: async () => {
+            setSelectedTagRowKeys([]);
+            await Promise.all([
+                queryClient.invalidateQueries({ queryKey: ["knowledge", "taxonomy", "tags"] }),
+                queryClient.invalidateQueries({ queryKey: ["knowledge", "taxonomy", "reviews"] }),
+                queryClient.invalidateQueries({ queryKey: ["knowledge", "taxonomy", "metrics"] }),
+                queryClient.invalidateQueries({
+                    queryKey: ["knowledge", "taxonomy", "tag-detail"]
+                })
+            ]);
+            messageApi.success("批量废弃已完成");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "批量废弃失败");
+        }
+    });
     const reviewTagMutation = useMutation({
         mutationFn: service.reviewTag,
         onSuccess: async () => {
@@ -257,6 +322,25 @@ export const TaxonomyPage = () => {
         },
         onError: (error) => {
             messageApi.error(error instanceof Error ? error.message : "标签审核失败");
+        }
+    });
+    const reviewBatchTagsMutation = useMutation({
+        mutationFn: service.reviewBatchTags,
+        onSuccess: async () => {
+            setTagBatchReviewOpen(false);
+            setSelectedReviewRowKeys([]);
+            await Promise.all([
+                queryClient.invalidateQueries({ queryKey: ["knowledge", "taxonomy", "reviews"] }),
+                queryClient.invalidateQueries({ queryKey: ["knowledge", "taxonomy", "tags"] }),
+                queryClient.invalidateQueries({ queryKey: ["knowledge", "taxonomy", "metrics"] }),
+                queryClient.invalidateQueries({
+                    queryKey: ["knowledge", "taxonomy", "tag-detail"]
+                })
+            ]);
+            messageApi.success("批量审核已完成");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "批量审核失败");
         }
     });
     const createAliasMutation = useMutation({
@@ -369,6 +453,11 @@ export const TaxonomyPage = () => {
     const tags = tagPage?.records || [];
     const reviewTags = reviewPage?.records || [];
     const synonyms = synonymPage?.records || [];
+    const selectedTagIds = selectedTagRowKeys.map(String);
+    const selectedTags = tags.filter((tag) => selectedTagIds.includes(tag.id));
+    const candidateTargetTags = tags.filter((tag) => !selectedTagIds.includes(tag.id));
+    const selectedReviewIds = selectedReviewRowKeys.map(String);
+    const selectedReviewTags = reviewTags.filter((tag) => selectedReviewIds.includes(tag.id));
 
     const openCreateCategory = () => {
         setEditingCategory(null);
@@ -469,8 +558,60 @@ export const TaxonomyPage = () => {
         applyTagMergeMutation.mutate(request);
     };
 
+    const openTagBatchMerge = () => {
+        setTagBatchMergePreview(null);
+        setTagBatchMergeOpen(true);
+    };
+
+    const closeTagBatchMerge = () => {
+        if (previewTagBatchMergeMutation.isPending || applyTagBatchMergeMutation.isPending) {
+            return;
+        }
+        setTagBatchMergeOpen(false);
+        setTagBatchMergePreview(null);
+    };
+
+    const previewTagBatchMergeImpact = (request: TagBatchMergeCommand) => {
+        previewTagBatchMergeMutation.mutate(request);
+    };
+
+    const applyTagBatchMerge = (request: TagBatchMergeCommand) => {
+        applyTagBatchMergeMutation.mutate(request);
+    };
+
     const deprecateTag = (request: TagDeprecateCommand) => {
         deprecateTagMutation.mutate(request);
+    };
+
+    const confirmDeprecateBatchTags = () => {
+        const tagIds = selectedTagIds;
+        if (tagIds.length === 0) {
+            return;
+        }
+        confirm.danger({
+            title: "批量废弃标签",
+            message: `确认废弃已选择的 ${tagIds.length} 个标签？`,
+            okText: "批量废弃",
+            onConfirm: () => {
+                deprecateBatchTagsMutation.mutate({ tagIds });
+            }
+        });
+    };
+
+    const openTagBatchReview = (decision: "APPROVE" | "REJECT") => {
+        setTagBatchReviewDecision(decision);
+        setTagBatchReviewOpen(true);
+    };
+
+    const closeTagBatchReview = () => {
+        if (reviewBatchTagsMutation.isPending) {
+            return;
+        }
+        setTagBatchReviewOpen(false);
+    };
+
+    const reviewBatchTags = (request: TagBatchReviewCommand) => {
+        reviewBatchTagsMutation.mutate(request);
     };
 
     return (
@@ -529,13 +670,17 @@ export const TaxonomyPage = () => {
                                         canEditTag={canEditTaxonomy}
                                         loading={tagPageQuery.isFetching}
                                         query={tagQuery}
+                                        selectedRowKeys={selectedTagRowKeys}
                                         tags={tags}
                                         totalCount={readTotalCount(tagPage)}
                                         onAdd={openCreateTag}
+                                        onBatchDeprecate={confirmDeprecateBatchTags}
+                                        onBatchMerge={openTagBatchMerge}
                                         onChange={setTagQuery}
                                         onEdit={openEditTag}
                                         onOpenDetail={(tag) => openTagDetail(tag)}
                                         onRefresh={() => tagPageQuery.refetch()}
+                                        onSelectedRowKeysChange={setSelectedTagRowKeys}
                                         pageActions={
                                             canEditTaxonomy ? (
                                                 <Button type="primary" onClick={openTagExtraction}>
@@ -560,11 +705,15 @@ export const TaxonomyPage = () => {
                                 <TagReviewTable
                                     loading={reviewPageQuery.isFetching}
                                     query={reviewQuery}
+                                    selectedRowKeys={selectedReviewRowKeys}
                                     tags={reviewTags}
                                     totalCount={readTotalCount(reviewPage)}
+                                    onBatchApprove={() => openTagBatchReview("APPROVE")}
+                                    onBatchReject={() => openTagBatchReview("REJECT")}
                                     onChange={setReviewQuery}
                                     onOpenReview={(tag) => openTagDetail(tag, true)}
                                     onRefresh={() => reviewPageQuery.refetch()}
+                                    onSelectedRowKeysChange={setSelectedReviewRowKeys}
                                 />
                             )
                         };
@@ -662,6 +811,33 @@ export const TaxonomyPage = () => {
                     onExtract={(request) => requestTagExtractionMutation.mutate(request)}
                     onApply={(request) => applyExtractedTagsMutation.mutate(request)}
                     onResetResult={() => setTagExtractionResult(null)}
+                />
+            ) : null}
+
+            {tagBatchMergeOpen ? (
+                <TagBatchMergePanel
+                    applying={applyTagBatchMergeMutation.isPending}
+                    candidateTargetTags={candidateTargetTags}
+                    open={tagBatchMergeOpen}
+                    preview={tagBatchMergePreview}
+                    previewing={previewTagBatchMergeMutation.isPending}
+                    selectedSourceTagIds={selectedTagIds}
+                    selectedSourceTags={selectedTags}
+                    onApply={applyTagBatchMerge}
+                    onClose={closeTagBatchMerge}
+                    onPreview={previewTagBatchMergeImpact}
+                />
+            ) : null}
+
+            {tagBatchReviewOpen ? (
+                <TagBatchReviewPanel
+                    categories={categories}
+                    decision={tagBatchReviewDecision}
+                    open={tagBatchReviewOpen}
+                    reviewing={reviewBatchTagsMutation.isPending}
+                    selectedTags={selectedReviewTags}
+                    onClose={closeTagBatchReview}
+                    onSubmit={reviewBatchTags}
                 />
             ) : null}
         </div>

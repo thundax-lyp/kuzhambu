@@ -24,13 +24,13 @@
 已完成：
 
 - Knowledge 已按 `domain -> application -> infra -> interface` 分层落地 taxonomy 子域，标签分类、标签、标签别名、标签内容引用、同义词均已建立独立模型、Repository、Application Service 和 Admin Interface。
-- 后端 `/api/knowledge/taxonomy` 已提供标签分类分页/创建/更新/状态变更、标签分页/详情/创建/更新/状态变更、待审核标签分页/审核、标签别名列表/新增/删除、同义词分页/创建/更新/状态变更/删除接口，并补齐 `knowledge:taxonomy:view|edit|review` 权限点。
+- 后端 `/api/knowledge/taxonomy` 已提供标签分类分页/创建/更新/状态变更、标签分页/详情/创建/更新/状态变更、待审核标签分页/审核、标签批量合并预览/执行、标签批量废弃、标签批量审核、标签别名列表/新增/删除、同义词分页/创建/更新/状态变更/删除接口，并补齐 `knowledge:taxonomy:view|edit|review` 权限点。
 - Admin Web 已接入 `/knowledge/taxonomy` 页面，支持标签分类分页、创建、编辑、启用、禁用。
 - Admin Web 已接入统一标签分页、详情、创建、编辑、启用、禁用，并在详情中展示内容引用数量和内容引用明细。
-- Admin Web 已接入待审核标签列表、标签审核抽屉、通过和拒绝动作。
+- Admin Web 已接入待审核标签列表、标签审核抽屉、逐条通过/拒绝和批量通过/拒绝动作。
 - Admin Web 已接入标签别名列表、新增和删除能力，并复用标签详情抽屉作为治理入口。
 - Admin Web 已接入同义词分页、创建、编辑、启用、禁用和删除能力。
-- Admin Web 已接入 taxonomy 治理补完，支持标签合并影响预览、标签合并动作、标签废弃动作，以及标签使用排行、知识库分布、来源占比和月度新增趋势统计。
+- Admin Web 已接入 taxonomy 治理补完，支持单条/批量标签合并影响预览、合并动作、标签废弃动作、待审核标签批量审核，以及标签使用排行、知识库分布、来源占比和月度新增趋势统计。
 - Knowledge 已补充 `KnowledgeTagBindingDomainService`，为 Classics 通用标签提供统一标签解析、手工/AI 标签自动创建、内容引用同步和内容引用删除能力。
 - Knowledge taxonomy 已补充与 Classics 协作的兼容口径：接受 `MING_CUSTOMS` 内容类型输入和 `AI` 标签来源输入，并在仓储写入时归一化为内部口径。
 - Knowledge 已补齐后端自动化测试，覆盖标签绑定协作语义和 taxonomy 兼容口径。
@@ -77,6 +77,7 @@
 | 标签合并                                         | 已完成   | 已支持标签合并影响预览、源标签并入目标标签、历史内容引用复制和合并后别名/名称解析到目标标签                                    | 无                                              | Knowledge, Admin Web   |
 | 标签废弃                                         | 已完成   | 已支持标签废弃动作，并让废弃标签退出新的可用集合同时保留治理记录                                                               | 无                                              | Knowledge, Admin Web   |
 | 标签合并前展示影响                               | 已完成   | 已支持预览源标签、目标标签、别名、内容引用和治理影响                                                                           | 无                                              | Knowledge, Admin Web   |
+| 标签批量操作                                     | 已完成   | 已支持统一标签多选批量合并影响预览与执行、批量废弃确认，以及待审核标签批量通过和批量拒绝；批量通过可统一指定正式分类            | 无                                              | Knowledge, Admin Web   |
 | 标签使用排行、知识库分布、来源占比、月度新增趋势 | 已完成   | 已提供完整治理统计读取和 Admin Web 展示入口                                                                                    | 无                                              | Knowledge, Admin Web   |
 | 同义词新增、编辑、删除、查看和搜索               | 已完成   | 后端和 Admin Web 已支持分页、创建、更新、状态变更、删除                                                                        | 无                                              | Knowledge, Admin Web   |
 | 同义词正向和反向查询                             | 部分完成 | 域模型和管理入口已支持词条治理；标签解析链路可消费治理结果                                                                     | 面向搜索和问答的独立正向/反向查询入口未对外提供 | Knowledge, Discovery   |
@@ -132,7 +133,6 @@
 | Portal 页面                         | 已完成 | Portal 侧已形成 `/knowledge`、`/knowledge/quality`、`/knowledge/atlas` 三个可执行只读入口              |
 | 数据精修与图谱联动                  | 部分完成 | 精修应用已回写正式事实并被正式结果读取链路消费，图谱抽取也已具备批量重生成能力                             |
 | Discovery 搜索或问答接入            | 已完成 | taxonomy 治理、同义词扩展、标签提示和实体提示已被 Discovery 搜索 / 问答消费，形成最小闭环             |
-| 标签批量操作                        | 未完成 | 当前只交付单条治理动作，未支持批量合并、批量废弃或批量审核                                             |
 | Classics 内容编辑页内联知识治理入口 | 部分完成 | Wangqi、Sancai、MingCustoms 编辑页已内联标签治理、问答对治理和 AI 候选确认入口                           | 标签分类、同义词、审核与合并等完整 taxonomy 治理仍只在独立页面提供 |
 
 ## Residual Risks
