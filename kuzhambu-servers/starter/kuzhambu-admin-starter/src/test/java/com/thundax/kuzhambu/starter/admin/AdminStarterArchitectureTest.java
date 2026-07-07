@@ -82,6 +82,21 @@ class AdminStarterArchitectureTest extends AbstractArchitectureTest {
                 .contains("limit: ${KUZHAMBU_OPERATIONS_CLEANUP_EXPIRED_BACKUP_LIMIT:200}");
     }
 
+    @Test
+    void adminStarterShouldExposeOperationsExternalHealthProbeConfiguration() throws IOException {
+        String applicationYaml = loadApplicationYaml();
+
+        Assertions.assertThat(applicationYaml)
+                .contains("enabled: ${KUZHAMBU_OPERATIONS_HEALTH_PROBES_ENABLED:false}")
+                .contains("timeout-ms: ${KUZHAMBU_OPERATIONS_HEALTH_PROBES_TIMEOUT_MS:3000}")
+                .contains("enabled: ${KUZHAMBU_OPERATIONS_HEALTH_PROBES_TARGETS_0_ENABLED:true}")
+                .contains("component: ${KUZHAMBU_OPERATIONS_HEALTH_PROBES_TARGETS_0_COMPONENT:admin-starter}")
+                .contains("url: ${KUZHAMBU_OPERATIONS_HEALTH_PROBES_TARGETS_0_URL:")
+                .contains("expected-status: ${KUZHAMBU_OPERATIONS_HEALTH_PROBES_TARGETS_0_EXPECTED_STATUS:200}")
+                .contains(
+                        "degraded-latency-ms: ${KUZHAMBU_OPERATIONS_HEALTH_PROBES_TARGETS_0_DEGRADED_LATENCY_MS:1000}");
+    }
+
     private String loadApplicationYaml() throws IOException {
         try (InputStream inputStream = KuzhambuAdminApplication.class.getResourceAsStream("/application.yml")) {
             Assertions.assertThat(inputStream).isNotNull();

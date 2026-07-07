@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `operations external probe runtime config`：补齐外部探针运行配置样例
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-PROBE-LOOP.md`
-    - 范围对象：`kuzhambu-servers/starter/kuzhambu-admin-starter/src/main/resources/application.yml`、`.env.example`、`deploy/.env.example`、`kuzhambu-servers/starter/kuzhambu-admin-starter/src/test/java/com/thundax/kuzhambu/starter/admin/AdminStarterArchitectureTest.java`
-    - 处理动作：在 starter 和 env example 中补齐 `kuzhambu.operations.health.probes` 配置样例并保持默认关闭。
-    - 验收点：默认部署不会发起外部 HTTP 探测，architecture 测试证明 starter 暴露外部探针配置前缀。
-    - 重要度：9/10
-
 - [ ] `operations alert latest check interface fields`：贯通告警 latestCheckId 接口字段
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-PROBE-LOOP.md`
