@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Admin lineage service types`：07 定义 Admin 世系页面类型和服务
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LINEAGE-VISUALIZATION.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/lineage/lineage-types.ts`、`kuzhambu-apps/admin-web/src/pages/knowledge/lineage/lineage-service.ts`、`kuzhambu-apps/admin-web/src/pages/knowledge/lineage/lineage-service.test.ts`
-    - 处理动作：新增 Admin 世系画布 TypeScript 类型和 service。
-    - 验收点：service 调用 `/knowledge/lineage/canvas`，类型字段与 RUNBOOK 契约一致。
-    - 重要度：9/10
-
 - [ ] `Admin lineage controls`：08 实现 Admin 世系筛选控件和详情面板
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LINEAGE-VISUALIZATION.md`
