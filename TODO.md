@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `operations health page interface fields`：贯通健康分页筛选字段
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-PROBE-LOOP.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/health/query/OperationsHealthPageQuery.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/health/controller/request/OperationsHealthPageRequest.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/health/assembler/OperationsHealthInterfaceAssembler.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/test/java/com/thundax/kuzhambu/operations/interfaces/admin/health/controller/OperationsHealthAdminControllerTest.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/test/java/com/thundax/kuzhambu/operations/interfaces/admin/health/controller/OperationsHealthContractTest.java`
-    - 处理动作：为健康分页 request/query/assembler 增加 `probeSource`、`probeTarget`、`checkedAtStart`、`checkedAtEnd` 字段贯通。
-    - 验收点：controller 测试证明四个新增字段能传入 application query，contract 测试保持健康分页响应字段稳定。
-    - 重要度：10/10
-
 - [ ] `operations health page repository filters`：补齐健康分页持久化筛选
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-PROBE-LOOP.md`

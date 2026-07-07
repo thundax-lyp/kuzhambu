@@ -19,7 +19,13 @@ public final class OperationsHealthInterfaceAssembler {
         if (request == null) {
             return null;
         }
-        return new OperationsHealthPageQuery(request.getComponent(), request.getHealthStatus());
+        return new OperationsHealthPageQuery(
+                request.getComponent(),
+                request.getHealthStatus(),
+                request.getProbeSource(),
+                request.getProbeTarget(),
+                request.getCheckedAtStart(),
+                request.getCheckedAtEnd());
     }
 
     public static OperationsHealthTrendQuery toQuery(OperationsHealthTrendRequest request) {
