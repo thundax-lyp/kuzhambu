@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Knowledge lineage application service`：02 实现后端世系画布读取用例
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LINEAGE-VISUALIZATION.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/lineage/service/KnowledgeLineageReadApplicationService.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/lineage/service/impl/KnowledgeLineageReadApplicationServiceImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/graph/repository/KnowledgeLineageNodeRepository.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-domain/src/main/java/com/thundax/kuzhambu/knowledge/domain/graph/repository/KnowledgeLineageRelationRepository.java`
-    - 处理动作：新增只读世系画布读取服务。
-    - 验收点：读取正式世系节点和关系，不调用 AI，不写入 `knowledge_*` 表。
-    - 重要度：10/10
-
 - [ ] `Knowledge lineage admin api`：03 接入后端 Admin 世系画布接口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LINEAGE-VISUALIZATION.md`
