@@ -343,9 +343,10 @@ class ClassicsFacadeImplTest {
     }
 
     @Test
-    void cleanupTargetsShouldExposeOnlyCleanupTypeAndTargetIds() {
+    void cleanupTargetsShouldForwardPolicyParametersAndExposeTargetIds() {
         ClassicsCleanupApplicationService cleanupApplicationService = mock(ClassicsCleanupApplicationService.class);
-        when(cleanupApplicationService.listTargets("EXPIRED_SHARE", null, null, null))
+        Date requestedAt = new Date(1_735_689_600_000L);
+        when(cleanupApplicationService.listTargets("EXPIRED_SHARE", requestedAt, 90, 25))
                 .thenReturn(List.of(
                         ClassicsCleanupApplicationService.CleanupTarget.builder()
                                 .targetType("share")
@@ -362,6 +363,9 @@ class ClassicsFacadeImplTest {
 
         var response = facade.listCleanupTargets(ClassicsCleanupTargetsFacadeRequest.builder()
                 .cleanupType("expired_share")
+                .requestedAt(requestedAt)
+                .retentionDays(90)
+                .limit(25)
                 .build());
 
         assertEquals("EXPIRED_SHARE", response.getCleanupType());

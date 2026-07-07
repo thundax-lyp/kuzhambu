@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `classics cleanup retention contract`：补齐 Classics 清理策略参数传递
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-CLEANUP-SCHEDULE-POLICY.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-facade/src/main/java/com/thundax/kuzhambu/classics/facade/request/ClassicsCleanupTargetsFacadeRequest.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/facade/impl/ClassicsFacadeImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/cleanup/service/ClassicsCleanupApplicationService.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/cleanup/service/impl/ClassicsCleanupApplicationServiceImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/cleanup/ClassicsCleanupApplicationServiceImplTest.java`
-    - 处理动作：让 Classics cleanup facade 和 application 明确接收并消费 retentionDays 与 limit。
-    - 验收点：Operations 传入的 retentionDays 和 limit 能到达 Classics listTargets，且不新增跨域 infra 依赖。
-    - 重要度：9/10
-
 - [ ] `admin-web operations cleanup ux`：更新清理台账页面自动/人工展示
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-CLEANUP-SCHEDULE-POLICY.md`
