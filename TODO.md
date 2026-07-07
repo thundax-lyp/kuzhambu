@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `knowledge taxonomy controller tests`：接入批量治理接口并锁定后端测试
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-TAG-BATCH-GOVERNANCE.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/taxonomy/controller/KnowledgeTaxonomyController.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/taxonomy/service/impl/TaxonomyApplicationServiceImplTest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/test/java/com/thundax/kuzhambu/knowledge/interfaces/admin/taxonomy/controller/KnowledgeTaxonomyControllerTest.java`
-    - 处理动作：新增 4 个批量 HTTP 入口并补 application 与 controller 测试。
-    - 验收点：权限、审计文案、请求映射、成功路径和整体失败路径均有测试覆盖。
-    - 重要度：10/10
-
 - [ ] `admin taxonomy service`：新增 Admin Web 批量治理 service 契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-TAG-BATCH-GOVERNANCE.md`

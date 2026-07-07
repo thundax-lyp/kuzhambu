@@ -18,6 +18,9 @@ import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.reque
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.SynonymUpdateRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagAliasCreateRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagAliasRemoveRequest;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagBatchDeprecateRequest;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagBatchMergeRequest;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagBatchReviewRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagCandidateApplyRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagCategoryCreateRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagCategoryPageRequest;
@@ -36,6 +39,7 @@ import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.reque
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagUpdateRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.response.SynonymResponse;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.response.TagAliasResponse;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.response.TagBatchMergePreviewResponse;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.response.TagCategoryResponse;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.response.TagDetailResponse;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.response.TagExtractionResponse;
@@ -249,6 +253,22 @@ public class KnowledgeTaxonomyController {
         return true;
     }
 
+    @Operation(summary = "批量审核标签", description = "knowledge:taxonomy:review")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
+    @HasPermission("knowledge:taxonomy:review")
+    @SysLogger(value = "批量审核标签")
+    @PostMapping("tag/review/batch")
+    public Boolean batchReviewTags(@Valid @RequestBody TagBatchReviewRequest request) {
+        taxonomyService.batchReviewTags(KnowledgeTaxonomyInterfaceAssembler.toBatchReviewCommand(request));
+        return true;
+    }
+
     @Operation(summary = "AI 抽取标签", description = "knowledge:taxonomy:edit")
     @ApiImplicitParams({
         @ApiImplicitParam(
@@ -297,6 +317,22 @@ public class KnowledgeTaxonomyController {
                 KnowledgeTaxonomyInterfaceAssembler.toMergePreviewQuery(request)));
     }
 
+    @Operation(summary = "批量预览标签合并影响", description = "knowledge:taxonomy:view")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
+    @HasPermission("knowledge:taxonomy:view")
+    @SysLogger(value = "批量预览标签合并")
+    @PostMapping("tag/merge/batch-preview")
+    public TagBatchMergePreviewResponse previewTagBatchMergeImpact(@Valid @RequestBody TagBatchMergeRequest request) {
+        return KnowledgeTaxonomyInterfaceAssembler.toResponse(taxonomyService.previewTagBatchMergeImpact(
+                KnowledgeTaxonomyInterfaceAssembler.toBatchMergePreviewQuery(request)));
+    }
+
     @Operation(summary = "执行标签合并", description = "knowledge:taxonomy:edit")
     @ApiImplicitParams({
         @ApiImplicitParam(
@@ -313,6 +349,22 @@ public class KnowledgeTaxonomyController {
         return true;
     }
 
+    @Operation(summary = "批量执行标签合并", description = "knowledge:taxonomy:edit")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
+    @HasPermission("knowledge:taxonomy:edit")
+    @SysLogger(value = "批量执行标签合并")
+    @PostMapping("tag/merge/batch-apply")
+    public Boolean applyTagBatchMerge(@Valid @RequestBody TagBatchMergeRequest request) {
+        taxonomyService.applyTagBatchMerge(KnowledgeTaxonomyInterfaceAssembler.toBatchMergeCommand(request));
+        return true;
+    }
+
     @Operation(summary = "废弃标签", description = "knowledge:taxonomy:edit")
     @ApiImplicitParams({
         @ApiImplicitParam(
@@ -326,6 +378,22 @@ public class KnowledgeTaxonomyController {
     @PostMapping("tag/deprecate")
     public Boolean deprecateTag(@Valid @RequestBody TagDeprecateRequest request) {
         taxonomyService.deprecateTag(KnowledgeTaxonomyInterfaceAssembler.toDeprecateCommand(request));
+        return true;
+    }
+
+    @Operation(summary = "批量废弃标签", description = "knowledge:taxonomy:edit")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
+    @HasPermission("knowledge:taxonomy:edit")
+    @SysLogger(value = "批量废弃标签")
+    @PostMapping("tag/deprecate/batch")
+    public Boolean batchDeprecateTags(@Valid @RequestBody TagBatchDeprecateRequest request) {
+        taxonomyService.batchDeprecateTags(KnowledgeTaxonomyInterfaceAssembler.toBatchDeprecateCommand(request));
         return true;
     }
 

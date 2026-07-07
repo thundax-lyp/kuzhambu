@@ -7,9 +7,16 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.thundax.kuzhambu.common.security.annotation.HasPermission;
+import com.thundax.kuzhambu.common.web.annotation.SysLogger;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagBatchDeprecateCommand;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagBatchMergeCommand;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagBatchReviewCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCandidateApplyCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagExtractionCommand;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagBatchMergePreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagAliasResult;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagBatchMergePreviewResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagContentRefResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagExtractionResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagGovernanceMetricsResult;
@@ -17,16 +24,21 @@ import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagMergePrevie
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.service.TaxonomyApplicationService;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.TagSource;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagBatchDeprecateRequest;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagBatchMergeRequest;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagBatchReviewRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagCandidateApplyRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagCandidateApplyRequest.TagCandidateApplyItemRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagDeprecateRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagExtractionRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagGovernanceMetricsRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagMergeRequest;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.web.bind.annotation.PostMapping;
 
 class KnowledgeTaxonomyControllerTest {
 
@@ -156,6 +168,131 @@ class KnowledgeTaxonomyControllerTest {
     }
 
     @Test
+    void previewTagBatchMergeImpactShouldMapApplicationResult() {
+        TaxonomyApplicationService taxonomyService = mock(TaxonomyApplicationService.class);
+        KnowledgeTaxonomyController controller = new KnowledgeTaxonomyController(taxonomyService);
+        TagBatchMergeRequest request = new TagBatchMergeRequest();
+        request.setSourceTagIds(List.of("1001", "1003"));
+        request.setTargetTagId("1002");
+        when(taxonomyService.previewTagBatchMergeImpact(any()))
+                .thenReturn(new TagBatchMergePreviewResult(
+                        List.of(
+                                new TagResult(
+                                        "1001", "礼制", "11", "礼学", null, "ENABLED", "MANUAL", "APPROVED", 2, 1L, 2L),
+                                new TagResult(
+                                        "1003",
+                                        "礼典",
+                                        "11",
+                                        "礼学",
+                                        null,
+                                        "ENABLED",
+                                        "AI_EXTRACTED",
+                                        "PENDING",
+                                        1,
+                                        3L,
+                                        4L)),
+                        new TagResult("1002", "祭祀", "11", "礼学", null, "ENABLED", "MANUAL", "APPROVED", 3, 5L, 6L),
+                        List.of(new TagAliasResult("2001", "礼法", "MANUAL")),
+                        List.of(new TagContentRefResult("3001", "CLASSICS", "4001", "周礼", "MANUAL")),
+                        1,
+                        3));
+
+        var response = controller.previewTagBatchMergeImpact(request);
+
+        ArgumentCaptor<TagBatchMergePreviewQuery> captor = ArgumentCaptor.forClass(TagBatchMergePreviewQuery.class);
+        verify(taxonomyService).previewTagBatchMergeImpact(captor.capture());
+        assertEquals(2, captor.getValue().getSourceTagIds().size());
+        assertEquals(1001L, captor.getValue().getSourceTagIds().get(0).value());
+        assertEquals(1002L, captor.getValue().getTargetTagId().value());
+        assertEquals(2, response.getSourceTags().size());
+        assertEquals("祭祀", response.getTargetTag().getName());
+        assertEquals("礼法", response.getAliasesToMerge().get(0).getName());
+        assertEquals("周礼", response.getImpactedContentRefs().get(0).getContentTitle());
+        assertEquals(1, response.getPendingReviewCount());
+        assertEquals(3, response.getGovernedRecordCount());
+    }
+
+    @Test
+    void applyTagBatchMergeShouldDelegateBusinessAction() {
+        TaxonomyApplicationService taxonomyService = mock(TaxonomyApplicationService.class);
+        KnowledgeTaxonomyController controller = new KnowledgeTaxonomyController(taxonomyService);
+        TagBatchMergeRequest request = new TagBatchMergeRequest();
+        request.setSourceTagIds(List.of("1001", "1003"));
+        request.setTargetTagId("1002");
+
+        assertTrue(controller.applyTagBatchMerge(request));
+
+        ArgumentCaptor<TagBatchMergeCommand> captor = ArgumentCaptor.forClass(TagBatchMergeCommand.class);
+        verify(taxonomyService).applyTagBatchMerge(captor.capture());
+        assertEquals(2, captor.getValue().getSourceTagIds().size());
+        assertEquals(1003L, captor.getValue().getSourceTagIds().get(1).value());
+        assertEquals(1002L, captor.getValue().getTargetTagId().value());
+    }
+
+    @Test
+    void batchDeprecateTagsShouldDelegateBusinessAction() {
+        TaxonomyApplicationService taxonomyService = mock(TaxonomyApplicationService.class);
+        KnowledgeTaxonomyController controller = new KnowledgeTaxonomyController(taxonomyService);
+        TagBatchDeprecateRequest request = new TagBatchDeprecateRequest();
+        request.setTagIds(List.of("1001", "1003"));
+
+        assertTrue(controller.batchDeprecateTags(request));
+
+        ArgumentCaptor<TagBatchDeprecateCommand> captor = ArgumentCaptor.forClass(TagBatchDeprecateCommand.class);
+        verify(taxonomyService).batchDeprecateTags(captor.capture());
+        assertEquals(2, captor.getValue().getTagIds().size());
+        assertEquals(1001L, captor.getValue().getTagIds().get(0).value());
+    }
+
+    @Test
+    void batchReviewTagsShouldDelegateBusinessAction() {
+        TaxonomyApplicationService taxonomyService = mock(TaxonomyApplicationService.class);
+        KnowledgeTaxonomyController controller = new KnowledgeTaxonomyController(taxonomyService);
+        TagBatchReviewRequest request = new TagBatchReviewRequest();
+        request.setTagIds(List.of("1001", "1003"));
+        request.setDecision("APPROVE");
+        request.setCategoryId("11");
+        request.setReviewNote("批量通过");
+
+        assertTrue(controller.batchReviewTags(request));
+
+        ArgumentCaptor<TagBatchReviewCommand> captor = ArgumentCaptor.forClass(TagBatchReviewCommand.class);
+        verify(taxonomyService).batchReviewTags(captor.capture());
+        assertEquals(2, captor.getValue().getTagIds().size());
+        assertEquals("APPROVE", captor.getValue().getDecision());
+        assertEquals(11L, captor.getValue().getCategoryId().value());
+        assertEquals("批量通过", captor.getValue().getReviewNote());
+    }
+
+    @Test
+    void batchEndpointsShouldKeepExpectedRoutesPermissionsAndAuditText() throws Exception {
+        assertEndpoint(
+                "previewTagBatchMergeImpact",
+                "tag/merge/batch-preview",
+                "knowledge:taxonomy:view",
+                "批量预览标签合并",
+                TagBatchMergeRequest.class);
+        assertEndpoint(
+                "applyTagBatchMerge",
+                "tag/merge/batch-apply",
+                "knowledge:taxonomy:edit",
+                "批量执行标签合并",
+                TagBatchMergeRequest.class);
+        assertEndpoint(
+                "batchDeprecateTags",
+                "tag/deprecate/batch",
+                "knowledge:taxonomy:edit",
+                "批量废弃标签",
+                TagBatchDeprecateRequest.class);
+        assertEndpoint(
+                "batchReviewTags",
+                "tag/review/batch",
+                "knowledge:taxonomy:review",
+                "批量审核标签",
+                TagBatchReviewRequest.class);
+    }
+
+    @Test
     void getTagGovernanceMetricsShouldMapAggregatedResult() {
         TaxonomyApplicationService taxonomyService = mock(TaxonomyApplicationService.class);
         KnowledgeTaxonomyController controller = new KnowledgeTaxonomyController(taxonomyService);
@@ -176,5 +313,14 @@ class KnowledgeTaxonomyControllerTest {
         assertEquals("礼学", response.getCategoryDistributions().get(0).getCategoryName());
         assertEquals("MANUAL", response.getSourceRatios().get(0).getSource());
         assertEquals("2025-01", response.getMonthlyNewTags().get(0).getMonth());
+    }
+
+    private static void assertEndpoint(
+            String methodName, String path, String permission, String auditText, Class<?> requestType)
+            throws Exception {
+        Method method = KnowledgeTaxonomyController.class.getDeclaredMethod(methodName, requestType);
+        assertEquals(path, method.getAnnotation(PostMapping.class).value()[0]);
+        assertEquals(permission, method.getAnnotation(HasPermission.class).value());
+        assertEquals(auditText, method.getAnnotation(SysLogger.class).value());
     }
 }
