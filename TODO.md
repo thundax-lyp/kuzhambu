@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Operations health alert strategy`：实现健康采样告警策略
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-RECOVERY-LOOP.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/health/support/OperationsHealthAlertPolicyProperties.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/health/support/OperationsHealthAlertStrategy.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/health/support/OperationsHealthRecoveryLinkFactory.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/health/support/OperationsHealthCollector.java`
-    - 处理动作：实现 DOWN、连续 DEGRADED、连续 UP 恢复和采集过期的健康告警策略。
-    - 验收点：策略幂等，失败不回滚原始健康记录，默认阈值为 3/2/10 分钟/30 分钟。
-    - 重要度：10/10
-
 - [ ] `Operations health alert strategy tests`：补齐健康告警策略测试
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-RECOVERY-LOOP.md`

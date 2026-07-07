@@ -9,25 +9,34 @@ import com.thundax.kuzhambu.operations.application.health.result.OperationsHealt
 import com.thundax.kuzhambu.operations.application.health.result.OperationsHealthSummaryResult;
 import com.thundax.kuzhambu.operations.application.health.result.OperationsHealthTrendResult;
 import com.thundax.kuzhambu.operations.application.health.service.HealthCheckApplicationService;
+import com.thundax.kuzhambu.operations.application.health.support.OperationsHealthAlertStrategy;
 import com.thundax.kuzhambu.operations.domain.health.model.entity.HealthCheckRecord;
 import com.thundax.kuzhambu.operations.domain.health.model.valueobject.HealthTrendBucket;
 import com.thundax.kuzhambu.operations.domain.health.repository.HealthCheckRepository;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 @BizExceptionBoundary
 public class HealthCheckApplicationServiceImpl implements HealthCheckApplicationService {
 
-    private final HealthCheckRepository healthCheckRepository;
+    private static final Logger LOGGER = LoggerFactory.getLogger(HealthCheckApplicationServiceImpl.class);
 
-    public HealthCheckApplicationServiceImpl(HealthCheckRepository healthCheckRepository) {
+    private final HealthCheckRepository healthCheckRepository;
+    private final OperationsHealthAlertStrategy healthAlertStrategy;
+
+    public HealthCheckApplicationServiceImpl(
+            HealthCheckRepository healthCheckRepository, OperationsHealthAlertStrategy healthAlertStrategy) {
         this.healthCheckRepository = healthCheckRepository;
+        this.healthAlertStrategy = healthAlertStrategy;
     }
 
     @Override
     public List<OperationsHealthSummaryResult> summary() {
+        evaluateStaleAlerts();
         return healthCheckRepository.listLatestByComponent().stream()
                 .map(this::toSummaryResult)
                 .collect(Collectors.toList());
@@ -103,5 +112,13 @@ public class HealthCheckApplicationServiceImpl implements HealthCheckApplication
                 bucket.getDegradedCount(),
                 bucket.getDownCount(),
                 bucket.getAvgLatencyMs());
+    }
+
+    private void evaluateStaleAlerts() {
+        try {
+            healthAlertStrategy.evaluateStaleAlerts();
+        } catch (RuntimeException exception) {
+            LOGGER.warn("Operations stale health alert evaluation failed", exception);
+        }
     }
 }
