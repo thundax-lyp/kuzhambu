@@ -1,0 +1,76 @@
+.health-page > section {
+    display: grid;
+    gap: 20px;
+}
+
+.operations-health-section-card {
+    border-radius: 8px;
+}
+
+.operations-health-toolbar {
+    margin-bottom: 12px;
+}
+
+.operations-health-toolbar .ant-input {
+    width: 180px;
+}
+
+.operations-health-select {
+    width: 132px;
+}
+
+.operations-health-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.operations-health-table th,
+.operations-health-table td {
+    border: 1px solid var(--line-color, #d9d9d9);
+    padding: 8px 10px;
+    text-align: left;
+    vertical-align: top;
+}
+
+.operations-health-url-cell,
+.operations-health-message-cell {
+    max-width: 260px;
+}
+
+.operations-health-url-cell span,
+.operations-health-message-cell span {
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: bottom;
+}
+
+.operations-health-empty-cell {
+    text-align: center;
+}
+
+.operations-health-pagination {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+}
+
+.operations-health-page-size {
+    width: 86px;
+}
+
+@media (max-width: 1100px) {
+    .operations-health-toolbar .ant-input {
+        width: 100%;
+    }
+
+    .operations-health-table th,
+    .operations-health-table td {
+        padding: 6px 8px;
+        word-break: break-word;
+    }
+}

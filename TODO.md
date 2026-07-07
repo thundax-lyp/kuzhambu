@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web operations health page controls`：实现健康细分页控件和表格
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-PROBE-LOOP.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/operations/health/health-page.tsx`、`kuzhambu-apps/admin-web/src/pages/operations/health/health-page.css`、`kuzhambu-apps/admin-web/src/pages/operations/health/health-page.test.tsx`
-    - 处理动作：实现组件、状态、来源、目标、时间范围、查询、重置、刷新、分页和健康记录表格。
-    - 验收点：页面测试覆盖首次加载、查询、重置、刷新、分页切换、HTTP 来源筛选、目标筛选、状态 tag、空值和错误提示。
-    - 重要度：10/10
-
 - [ ] `admin-web operations health detail alerts`：实现健康详情抽屉和关联告警操作
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-PROBE-LOOP.md`
