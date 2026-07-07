@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Operations health alert API models`：新增健康告警接口请求和响应模型
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-RECOVERY-LOOP.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/health/controller/request/OperationsHealthAlertPageRequest.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/health/controller/request/OperationsHealthAlertAckRequest.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/health/controller/request/OperationsHealthAlertRecoverRequest.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/health/controller/response/OperationsHealthAlertPageResponse.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/health/controller/response/OperationsHealthAlertSummaryResponse.java`
-    - 处理动作：新增健康告警分页、确认、手动恢复请求模型和页面/摘要响应模型。
-    - 验收点：请求与响应字段覆盖 RUNBOOK 定义的告警状态、级别、来源、恢复动作和恢复目标。
-    - 重要度：9/10
-
 - [ ] `Operations health alert API tests`：补齐健康告警接口契约测试
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-RECOVERY-LOOP.md`

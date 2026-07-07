@@ -16,10 +16,10 @@ import lombok.Setter;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(name = "OperationsHealthAlertPageResponse", description = "Operations 健康告警分页响应")
+@Schema(name = "OperationsHealthAlertSummaryResponse", description = "Operations 健康告警摘要响应")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class OperationsHealthAlertPageResponse {
+public class OperationsHealthAlertSummaryResponse {
 
     @Schema(name = "alertId", description = "告警业务 ID")
     @JsonProperty(value = "alertId")
@@ -49,10 +49,6 @@ public class OperationsHealthAlertPageResponse {
     @JsonProperty(value = "sourceRefId")
     private Long sourceRefId;
 
-    @Schema(name = "latestCheckId", description = "最近关联健康检查 ID")
-    @JsonProperty(value = "latestCheckId")
-    private Long latestCheckId;
-
     @Schema(name = "message", description = "告警消息")
     @JsonProperty(value = "message")
     private String message;
@@ -69,25 +65,9 @@ public class OperationsHealthAlertPageResponse {
     @JsonProperty(value = "recoveryTarget")
     private String recoveryTarget;
 
-    @Schema(name = "firstTriggeredAt", description = "首次触发时间")
-    @JsonProperty(value = "firstTriggeredAt")
-    private Date firstTriggeredAt;
-
     @Schema(name = "lastTriggeredAt", description = "最近触发时间")
     @JsonProperty(value = "lastTriggeredAt")
     private Date lastTriggeredAt;
-
-    @Schema(name = "ackedAt", description = "确认时间")
-    @JsonProperty(value = "ackedAt")
-    private Date ackedAt;
-
-    @Schema(name = "ackedByUserId", description = "确认管理员 ID")
-    @JsonProperty(value = "ackedByUserId")
-    private Long ackedByUserId;
-
-    @Schema(name = "recoveredAt", description = "恢复时间")
-    @JsonProperty(value = "recoveredAt")
-    private Date recoveredAt;
 
     @Schema(name = "failureReason", description = "失败原因")
     @JsonProperty(value = "failureReason")
