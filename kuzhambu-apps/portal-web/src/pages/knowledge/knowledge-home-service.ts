@@ -30,6 +30,13 @@ export const KNOWLEDGE_HOME_FALLBACK: KnowledgeHomeResponse = {
             type: "atlas"
         },
         {
+            description: "进入人物谱系与亲缘关系画布。",
+            href: "/knowledge/lineage",
+            key: "lineage",
+            label: "世系图浏览",
+            type: "lineage"
+        },
+        {
             description: "查看确认率、来源构成与当前待处理事项。",
             href: "/knowledge/quality",
             key: "quality",

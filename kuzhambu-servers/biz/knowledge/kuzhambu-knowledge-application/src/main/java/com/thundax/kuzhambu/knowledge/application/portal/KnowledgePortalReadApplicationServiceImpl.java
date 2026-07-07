@@ -111,7 +111,7 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
                 List.of(
                         quickLink("atlas", "图谱浏览", "进入知识关系画布与实体详情", "/knowledge/atlas", "atlas"),
                         quickLink("quality", "质量总览", "查看覆盖率、置信度与待关注项", "/knowledge/quality", "quality"),
-                        quickLink("lineage", "来源追溯", "从版本、实体与关系回看来源脉络", "/knowledge/atlas", "lineage")),
+                        quickLink("lineage", "世系图浏览", "进入人物谱系与亲缘关系画布", "/knowledge/lineage", "lineage")),
                 buildRecentUpdates(),
                 List.of(
                         featureCollection("latest-atlas", "最新图谱版本", "快速进入最近一次已应用的知识快照。", "/knowledge/atlas", "版本视图"),

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, Binary, ChartSpline, ScrollText, Sparkles } from "lucide-react";
+import { ArrowRight, Binary, ChartSpline, GitBranch, ScrollText, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -64,7 +64,13 @@ export const KnowledgeHomePage = () => {
 
             <section className="knowledge-guide-grid" aria-label="知识导览入口">
                 {content.quickLinks.map((guide) => {
-                    const Icon = guide.type === "quality" ? ChartSpline : Binary;
+                    let Icon = Binary;
+                    if (guide.type === "quality") {
+                        Icon = ChartSpline;
+                    }
+                    if (guide.type === "lineage") {
+                        Icon = GitBranch;
+                    }
 
                     return (
                         <Link key={guide.key} className="knowledge-guide-link" to={guide.href}>

@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Portal knowledge home`：12 接入 Portal 首页世系入口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-LINEAGE-VISUALIZATION.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/portal/KnowledgePortalReadApplicationServiceImpl.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/test/java/com/thundax/kuzhambu/knowledge/interfaces/portal/home/controller/KnowledgePortalHomeControllerTest.java`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-home-page.tsx`、`kuzhambu-apps/portal-web/src/pages/knowledge/knowledge-home-page.test.tsx`
-    - 处理动作：把 Knowledge 首页世系入口指向 `/knowledge/lineage`。
-    - 验收点：首页可见「世系图浏览」入口，点击进入独立世系页面而不是 `/knowledge/atlas`。
-    - 重要度：8/10
-
 - [ ] `Backend lineage tests`：13 补齐后端世系接口和用例测试
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-KNOWLEDGE-LINEAGE-VISUALIZATION.md`
