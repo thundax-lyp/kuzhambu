@@ -118,6 +118,38 @@ class OperationsHealthAlertStrategyTest {
         assertTrue(alert.getMessage().contains("10 分钟"));
     }
 
+    @Test
+    void recordFailureAlertShouldUseStableFieldsAndUpdateOpenAlert() {
+        InMemoryHealthCheckRepository healthCheckRepository = new InMemoryHealthCheckRepository();
+        InMemoryHealthAlertRepository healthAlertRepository = new InMemoryHealthAlertRepository();
+        OperationsHealthAlertStrategy strategy = strategy(healthCheckRepository, healthAlertRepository);
+
+        strategy.recordBackupFailed(9001L, "script failed");
+        strategy.recordBackupFailed(9001L, "script failed again");
+
+        assertEquals(1, healthAlertRepository.alerts.size());
+        HealthAlertRecord backupAlert = healthAlertRepository.alerts.get(0);
+        assertEquals(OperationsHealthAlertStrategy.ALERT_TYPE_BACKUP_FAILED, backupAlert.getAlertType());
+        assertEquals(OperationsHealthAlertStrategy.ALERT_LEVEL_CRITICAL, backupAlert.getAlertLevel());
+        assertEquals(OperationsHealthRecoveryLinkFactory.ACTION_RUN_MANUAL_BACKUP, backupAlert.getRecoveryAction());
+        assertEquals("script failed again", backupAlert.getFailureReason());
+        assertTrue(backupAlert.getRecoveryTarget().contains("manualBackup"));
+
+        strategy.recordCleanupFailed(7001L, "TARGET_NOT_FOUND");
+        strategy.recordReportFailed(8001L, "worker boom");
+        strategy.recordLongTaskFailed(6001L, "task failed");
+
+        assertEquals(4, healthAlertRepository.alerts.size());
+        HealthAlertRecord cleanupAlert = healthAlertRepository.getOpenBySource("CLEANUP", 7001L, "CLEANUP_FAILED");
+        HealthAlertRecord reportAlert = healthAlertRepository.getOpenBySource("REPORT", 8001L, "REPORT_FAILED");
+        HealthAlertRecord taskAlert = healthAlertRepository.getOpenBySource("LONG_TASK", 6001L, "LONG_TASK_FAILED");
+        assertEquals(OperationsHealthAlertStrategy.ALERT_LEVEL_WARNING, cleanupAlert.getAlertLevel());
+        assertEquals(OperationsHealthRecoveryLinkFactory.ACTION_OPEN_CLEANUP_DETAIL, cleanupAlert.getRecoveryAction());
+        assertEquals(OperationsHealthRecoveryLinkFactory.ACTION_NONE, reportAlert.getRecoveryAction());
+        assertNull(reportAlert.getRecoveryTarget());
+        assertEquals(OperationsHealthRecoveryLinkFactory.ACTION_OPEN_TASK_DETAIL, taskAlert.getRecoveryAction());
+    }
+
     private static OperationsHealthAlertStrategy strategy(
             HealthCheckRepository healthCheckRepository, HealthAlertRepository healthAlertRepository) {
         OperationsHealthAlertPolicyProperties properties = new OperationsHealthAlertPolicyProperties();

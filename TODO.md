@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Operations failure alert tests`：补齐失败来源告警测试
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-RECOVERY-LOOP.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/test/java/com/thundax/kuzhambu/operations/application/backup/service/impl/BackupApplicationServiceImplTest.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/test/java/com/thundax/kuzhambu/operations/application/restore/service/impl/RestoreApplicationServiceImplTest.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/test/java/com/thundax/kuzhambu/operations/application/cleanup/service/impl/CleanupApplicationServiceImplTest.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/test/java/com/thundax/kuzhambu/operations/application/report/support/DefaultOperationsReportTaskExecutorTest.java`
-    - 处理动作：为备份、恢复、清理和报表失败告警联动补齐定向测试。
-    - 验收点：测试锁定 `alertType`、`alertLevel`、`recoveryAction` 和幂等更新行为。
-    - 重要度：9/10
-
 - [ ] `Operations health alert API`：新增健康告警 admin API
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-RECOVERY-LOOP.md`

@@ -3,7 +3,10 @@ package com.thundax.kuzhambu.operations.application.report.support;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
+import com.thundax.kuzhambu.operations.application.health.support.OperationsHealthAlertStrategy;
 import com.thundax.kuzhambu.operations.application.report.support.OperationsReportSupportModels.OperationsReportArtifactResult;
 import com.thundax.kuzhambu.operations.application.report.support.OperationsReportSupportModels.OperationsReportSnapshot;
 import com.thundax.kuzhambu.operations.domain.report.client.OperationsWorkerRenderClient;
@@ -75,8 +78,9 @@ class DefaultOperationsReportTaskExecutorTest {
         StubRenderClient renderClient = new StubRenderClient(failedResponse());
         StubSnapshotAssembler snapshotAssembler = new StubSnapshotAssembler();
         RecordingArtifactStorage storage = new RecordingArtifactStorage();
-        DefaultOperationsReportTaskExecutor executor =
-                new DefaultOperationsReportTaskExecutor(repository, renderClient, snapshotAssembler, storage);
+        OperationsHealthAlertStrategy alertStrategy = mock(OperationsHealthAlertStrategy.class);
+        DefaultOperationsReportTaskExecutor executor = new DefaultOperationsReportTaskExecutor(
+                repository, renderClient, snapshotAssembler, storage, alertStrategy);
 
         OperationsReportArtifactResult result = executor.execute(ReportId.of(9001L));
 
@@ -89,6 +93,7 @@ class DefaultOperationsReportTaskExecutorTest {
                 repository.updatedRecords.get(1).getFailureReason());
         assertNotNull(repository.updatedRecords.get(1).getCompletedAt());
         assertNull(storage.lastCommand);
+        verify(alertStrategy).recordReportFailed(9001L, "WORKER_RENDER_FAILED: worker boom");
     }
 
     private static ReportRecord record() {
