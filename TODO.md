@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Operations health alert API tests`：补齐健康告警接口契约测试
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-RECOVERY-LOOP.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/test/java/com/thundax/kuzhambu/operations/interfaces/admin/health/controller/OperationsHealthAlertAdminControllerTest.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/test/java/com/thundax/kuzhambu/operations/interfaces/admin/health/controller/OperationsHealthContractTest.java`
-    - 处理动作：为健康告警接口路径、权限、请求字段和响应字段补齐 contract 测试。
-    - 验收点：`alerts/page`、`alerts/ack`、`alerts/recover` 的路径、权限和模型字段都被测试锁定。
-    - 重要度：9/10
-
 - [ ] `Operations dashboard alert response`：扩展 dashboard 告警摘要响应
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-RECOVERY-LOOP.md`
