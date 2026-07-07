@@ -88,6 +88,7 @@ class OperationsHealthContractTest {
                   "alertStatus":"ACTIVE",
                   "sourceRefType":"HEALTH",
                   "sourceRefId":9001,
+                  "latestCheckId":9101,
                   "pageNo":1,
                   "pageSize":20
                 }
@@ -98,6 +99,7 @@ class OperationsHealthContractTest {
         assertEquals("ACTIVE", pageRequest.getAlertStatus());
         assertEquals("HEALTH", pageRequest.getSourceRefType());
         assertEquals(9001L, pageRequest.getSourceRefId());
+        assertEquals(9101L, pageRequest.getLatestCheckId());
         assertJsonFields(
                 pageRequest,
                 "component",
@@ -105,6 +107,7 @@ class OperationsHealthContractTest {
                 "alertStatus",
                 "sourceRefType",
                 "sourceRefId",
+                "latestCheckId",
                 "pageNo",
                 "pageSize");
 
