@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `06 main 分支同步`：在最终验证前同步 main 分支代码
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`feat/operations-dashboard-summary`；`main`
-    - 处理动作：将最新 `main` 合入当前 worktree 分支并解决冲突。
-    - 验收点：当前分支包含最新 `main`，无未解决冲突，后续验证任务基于同步后的代码运行。
-    - 重要度：8/10
-
 - [ ] `07 Operations Dashboard 验证`：在同步 main 后运行后端和前端验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DASHBOARD-SUMMARY.md`
