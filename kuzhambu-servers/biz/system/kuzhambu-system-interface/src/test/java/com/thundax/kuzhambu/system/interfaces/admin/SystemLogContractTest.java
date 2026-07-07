@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.system.interfaces.admin;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -42,7 +43,7 @@ class SystemLogContractTest {
     void logPagePermissionShouldBeSystemLogView() throws Exception {
         Method pageMethod = LogController.class.getDeclaredMethod("page", LogPageRequest.class);
         HasPermission permission = pageMethod.getAnnotation(HasPermission.class);
-        assertEquals("system:log:view", permission.value(), () -> permission::toString);
+        assertArrayEquals(new String[] {"system:log:view"}, permission.value(), permission::toString);
     }
 
     @Test
