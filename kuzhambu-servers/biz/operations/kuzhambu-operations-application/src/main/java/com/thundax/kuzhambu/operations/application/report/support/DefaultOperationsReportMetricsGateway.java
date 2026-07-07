@@ -1,13 +1,7 @@
 package com.thundax.kuzhambu.operations.application.report.support;
 
-import com.thundax.kuzhambu.ai.facade.AiFacade;
-import com.thundax.kuzhambu.ai.facade.request.AiReportSummaryFacadeRequest;
-import com.thundax.kuzhambu.classics.facade.ClassicsFacade;
-import com.thundax.kuzhambu.classics.facade.request.ClassicsSummaryFacadeRequest;
-import com.thundax.kuzhambu.discovery.facade.DiscoveryFacade;
-import com.thundax.kuzhambu.discovery.facade.request.DiscoverySummaryFacadeRequest;
-import com.thundax.kuzhambu.knowledge.facade.KnowledgeFacade;
-import com.thundax.kuzhambu.knowledge.facade.request.KnowledgeSummaryFacadeRequest;
+import com.thundax.kuzhambu.operations.application.dashboard.support.OperationsDashboardSummaryGateway;
+import com.thundax.kuzhambu.operations.application.dashboard.support.OperationsDashboardSummaryModels.OperationsCrossDomainSummary;
 import com.thundax.kuzhambu.operations.application.report.support.OperationsReportSupportModels.OperationsReportSection;
 import com.thundax.kuzhambu.operations.domain.report.model.entity.ReportRecord;
 import java.util.ArrayList;
@@ -20,20 +14,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class DefaultOperationsReportMetricsGateway implements OperationsReportMetricsGateway {
 
-    private final ClassicsFacade classicsFacade;
-    private final AiFacade aiFacade;
-    private final DiscoveryFacade discoveryFacade;
-    private final KnowledgeFacade knowledgeFacade;
+    private final OperationsDashboardSummaryGateway summaryGateway;
 
-    public DefaultOperationsReportMetricsGateway(
-            ClassicsFacade classicsFacade,
-            AiFacade aiFacade,
-            DiscoveryFacade discoveryFacade,
-            KnowledgeFacade knowledgeFacade) {
-        this.classicsFacade = classicsFacade;
-        this.aiFacade = aiFacade;
-        this.discoveryFacade = discoveryFacade;
-        this.knowledgeFacade = knowledgeFacade;
+    public DefaultOperationsReportMetricsGateway(OperationsDashboardSummaryGateway summaryGateway) {
+        this.summaryGateway = summaryGateway;
     }
 
     @Override
@@ -42,39 +26,13 @@ public class DefaultOperationsReportMetricsGateway implements OperationsReportMe
             return List.of();
         }
         String bucketType = resolveBucketType(record.getReportType());
+        OperationsCrossDomainSummary summary =
+                summaryGateway.loadSummary(record.getPeriodStart(), record.getPeriodEnd(), bucketType);
         List<OperationsReportSection> sections = new ArrayList<>();
-        sections.add(section(
-                "classicsSummary",
-                "Classics 统计摘要",
-                classicsFacade.summary(ClassicsSummaryFacadeRequest.builder()
-                        .periodStart(record.getPeriodStart())
-                        .periodEnd(record.getPeriodEnd())
-                        .bucketType(bucketType)
-                        .build())));
-        sections.add(section(
-                "aiSummary",
-                "AI 调用摘要",
-                aiFacade.summary(AiReportSummaryFacadeRequest.builder()
-                        .periodStart(record.getPeriodStart())
-                        .periodEnd(record.getPeriodEnd())
-                        .bucketType(bucketType)
-                        .build())));
-        sections.add(section(
-                "discoverySummary",
-                "Discovery 统计摘要",
-                discoveryFacade.summary(DiscoverySummaryFacadeRequest.builder()
-                        .periodStart(record.getPeriodStart())
-                        .periodEnd(record.getPeriodEnd())
-                        .bucketType(bucketType)
-                        .build())));
-        sections.add(section(
-                "knowledgeSummary",
-                "Knowledge 统计摘要",
-                knowledgeFacade.summary(KnowledgeSummaryFacadeRequest.builder()
-                        .periodStart(record.getPeriodStart())
-                        .periodEnd(record.getPeriodEnd())
-                        .bucketType(bucketType)
-                        .build())));
+        sections.add(section("classicsSummary", "Classics 统计摘要", summary.classicsSummary()));
+        sections.add(section("aiSummary", "AI 调用摘要", summary.aiSummary()));
+        sections.add(section("discoverySummary", "Discovery 统计摘要", summary.discoverySummary()));
+        sections.add(section("knowledgeSummary", "Knowledge 统计摘要", summary.knowledgeSummary()));
         return sections;
     }
 

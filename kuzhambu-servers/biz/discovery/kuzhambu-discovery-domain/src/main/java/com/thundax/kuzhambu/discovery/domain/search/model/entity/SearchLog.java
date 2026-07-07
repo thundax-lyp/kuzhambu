@@ -22,6 +22,7 @@ public class SearchLog {
     private SearchScope searchScope;
     private Integer resultTotalCount;
     private Integer groupTotalCount;
+    private Long searchLatencyMs;
     private String searchStatus;
     private String failureCode;
     private String failureMessage;

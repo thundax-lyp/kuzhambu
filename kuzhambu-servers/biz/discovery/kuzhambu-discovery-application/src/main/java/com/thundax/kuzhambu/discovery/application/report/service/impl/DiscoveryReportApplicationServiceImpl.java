@@ -45,10 +45,19 @@ public class DiscoveryReportApplicationServiceImpl implements DiscoveryReportApp
                 periodEnd,
                 (long) searchLogs.size(),
                 (long) qaSessions.size(),
-                0L,
+                averageSearchLatencyMs(searchLogs),
                 buildTopQueries(searchLogs),
                 buildSearchTrendSeries(periodStart, periodEnd, bucketType, searchLogs),
                 buildQaTrendSeries(periodStart, periodEnd, bucketType, qaSessions));
+    }
+
+    private Long averageSearchLatencyMs(List<SearchLog> searchLogs) {
+        return Math.round(searchLogs.stream()
+                .map(SearchLog::getSearchLatencyMs)
+                .filter(latencyMs -> latencyMs != null)
+                .mapToLong(Long::longValue)
+                .average()
+                .orElse(0D));
     }
 
     private List<TopQueryResult> buildTopQueries(List<SearchLog> searchLogs) {

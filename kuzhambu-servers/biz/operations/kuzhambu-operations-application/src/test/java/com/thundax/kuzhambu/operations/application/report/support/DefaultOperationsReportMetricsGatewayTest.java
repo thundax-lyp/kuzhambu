@@ -2,21 +2,16 @@ package com.thundax.kuzhambu.operations.application.report.support;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.thundax.kuzhambu.ai.facade.AiFacade;
-import com.thundax.kuzhambu.ai.facade.request.AiReportSummaryFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.response.AiReportSummaryFacadeResponse;
-import com.thundax.kuzhambu.classics.facade.ClassicsFacade;
-import com.thundax.kuzhambu.classics.facade.request.ClassicsSummaryFacadeRequest;
 import com.thundax.kuzhambu.classics.facade.response.ClassicsSummaryFacadeResponse;
-import com.thundax.kuzhambu.discovery.facade.DiscoveryFacade;
-import com.thundax.kuzhambu.discovery.facade.request.DiscoverySummaryFacadeRequest;
 import com.thundax.kuzhambu.discovery.facade.response.DiscoverySummaryFacadeResponse;
-import com.thundax.kuzhambu.knowledge.facade.KnowledgeFacade;
+import com.thundax.kuzhambu.knowledge.facade.response.KnowledgeSummaryFacadeResponse;
+import com.thundax.kuzhambu.operations.application.dashboard.support.OperationsDashboardSummaryGateway;
+import com.thundax.kuzhambu.operations.application.dashboard.support.OperationsDashboardSummaryModels.OperationsCrossDomainSummary;
 import com.thundax.kuzhambu.operations.application.report.support.OperationsReportSupportModels.OperationsReportSection;
 import com.thundax.kuzhambu.operations.domain.report.model.entity.ReportRecord;
 import com.thundax.kuzhambu.operations.domain.report.model.enums.ReportStatus;
@@ -26,20 +21,19 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 
 class DefaultOperationsReportMetricsGatewayTest {
 
     @Test
-    void loadSectionsShouldReadAiSummaryThroughFacadeAndResolveWeekBucketForMonthlyReport() {
-        ClassicsFacade classicsFacade = mock(ClassicsFacade.class);
-        DiscoveryFacade discoveryFacade = mock(DiscoveryFacade.class);
-        KnowledgeFacade knowledgeFacade = mock(KnowledgeFacade.class);
-        AiFacade aiFacade = mock(AiFacade.class);
+    void loadSectionsShouldWrapSharedSummaryAndResolveWeekBucketForMonthlyReport() {
+        OperationsDashboardSummaryGateway summaryGateway = mock(OperationsDashboardSummaryGateway.class);
         ClassicsSummaryFacadeResponse classicsSummary =
                 ClassicsSummaryFacadeResponse.builder().contentCount(12L).build();
         DiscoverySummaryFacadeResponse discoverySummary =
                 DiscoverySummaryFacadeResponse.builder().searchCount(6L).build();
+        KnowledgeSummaryFacadeResponse knowledgeSummary = KnowledgeSummaryFacadeResponse.builder()
+                .tagCoverageRate(new BigDecimal("0.75"))
+                .build();
         AiReportSummaryFacadeResponse aiSummary = AiReportSummaryFacadeResponse.builder()
                 .periodStart(Date.from(Instant.parse("2026-06-01T00:00:00Z")))
                 .periodEnd(Date.from(Instant.parse("2026-06-30T23:59:59Z")))
@@ -49,11 +43,11 @@ class DefaultOperationsReportMetricsGatewayTest {
                 .avgLatencyMs(230L)
                 .totalCostAmount(new BigDecimal("8.88"))
                 .build();
-        when(classicsFacade.summary(any())).thenReturn(classicsSummary);
-        when(discoveryFacade.summary(any())).thenReturn(discoverySummary);
-        when(aiFacade.summary(any())).thenReturn(aiSummary);
-        DefaultOperationsReportMetricsGateway gateway =
-                new DefaultOperationsReportMetricsGateway(classicsFacade, aiFacade, discoveryFacade, knowledgeFacade);
+        when(summaryGateway.loadSummary(
+                        monthlyRecord().getPeriodStart(), monthlyRecord().getPeriodEnd(), "WEEK"))
+                .thenReturn(new OperationsCrossDomainSummary(
+                        classicsSummary, aiSummary, discoverySummary, knowledgeSummary));
+        DefaultOperationsReportMetricsGateway gateway = new DefaultOperationsReportMetricsGateway(summaryGateway);
 
         List<OperationsReportSection> sections = gateway.loadSections(monthlyRecord());
 
@@ -65,58 +59,27 @@ class DefaultOperationsReportMetricsGatewayTest {
         assertEquals("discoverySummary", sections.get(2).getSectionKey());
         assertSame(discoverySummary, sections.get(2).getPayload().get("summary"));
         assertEquals("knowledgeSummary", sections.get(3).getSectionKey());
-
-        ArgumentCaptor<ClassicsSummaryFacadeRequest> classicsCaptor =
-                ArgumentCaptor.forClass(ClassicsSummaryFacadeRequest.class);
-        ArgumentCaptor<DiscoverySummaryFacadeRequest> discoveryCaptor =
-                ArgumentCaptor.forClass(DiscoverySummaryFacadeRequest.class);
-        ArgumentCaptor<AiReportSummaryFacadeRequest> captor =
-                ArgumentCaptor.forClass(AiReportSummaryFacadeRequest.class);
-        verify(classicsFacade).summary(classicsCaptor.capture());
-        verify(discoveryFacade).summary(discoveryCaptor.capture());
-        verify(aiFacade).summary(captor.capture());
-        ClassicsSummaryFacadeRequest classicsRequest = classicsCaptor.getValue();
-        DiscoverySummaryFacadeRequest discoveryRequest = discoveryCaptor.getValue();
-        AiReportSummaryFacadeRequest request = captor.getValue();
-        assertEquals(monthlyRecord().getPeriodStart(), classicsRequest.getPeriodStart());
-        assertEquals(monthlyRecord().getPeriodEnd(), classicsRequest.getPeriodEnd());
-        assertEquals("WEEK", classicsRequest.getBucketType());
-        assertEquals(monthlyRecord().getPeriodStart(), discoveryRequest.getPeriodStart());
-        assertEquals(monthlyRecord().getPeriodEnd(), discoveryRequest.getPeriodEnd());
-        assertEquals("WEEK", discoveryRequest.getBucketType());
-        assertEquals(monthlyRecord().getPeriodStart(), request.getPeriodStart());
-        assertEquals(monthlyRecord().getPeriodEnd(), request.getPeriodEnd());
-        assertEquals("WEEK", request.getBucketType());
+        assertSame(knowledgeSummary, sections.get(3).getPayload().get("summary"));
+        verify(summaryGateway)
+                .loadSummary(monthlyRecord().getPeriodStart(), monthlyRecord().getPeriodEnd(), "WEEK");
     }
 
     @Test
     void loadSectionsShouldResolveDayBucketForNonMonthlyReport() {
-        ClassicsFacade classicsFacade = mock(ClassicsFacade.class);
-        when(classicsFacade.summary(any()))
-                .thenReturn(ClassicsSummaryFacadeResponse.builder().build());
-        DiscoveryFacade discoveryFacade = mock(DiscoveryFacade.class);
-        when(discoveryFacade.summary(any()))
-                .thenReturn(DiscoverySummaryFacadeResponse.builder().build());
-        AiFacade aiFacade = mock(AiFacade.class);
-        when(aiFacade.summary(any()))
-                .thenReturn(AiReportSummaryFacadeResponse.builder().build());
-        DefaultOperationsReportMetricsGateway gateway = new DefaultOperationsReportMetricsGateway(
-                classicsFacade, aiFacade, discoveryFacade, mock(KnowledgeFacade.class));
+        OperationsDashboardSummaryGateway summaryGateway = mock(OperationsDashboardSummaryGateway.class);
+        when(summaryGateway.loadSummary(
+                        weeklyRecord().getPeriodStart(), weeklyRecord().getPeriodEnd(), "DAY"))
+                .thenReturn(new OperationsCrossDomainSummary(
+                        ClassicsSummaryFacadeResponse.builder().build(),
+                        AiReportSummaryFacadeResponse.builder().build(),
+                        DiscoverySummaryFacadeResponse.builder().build(),
+                        KnowledgeSummaryFacadeResponse.builder().build()));
+        DefaultOperationsReportMetricsGateway gateway = new DefaultOperationsReportMetricsGateway(summaryGateway);
 
         gateway.loadSections(weeklyRecord());
 
-        ArgumentCaptor<ClassicsSummaryFacadeRequest> classicsCaptor =
-                ArgumentCaptor.forClass(ClassicsSummaryFacadeRequest.class);
-        ArgumentCaptor<DiscoverySummaryFacadeRequest> discoveryCaptor =
-                ArgumentCaptor.forClass(DiscoverySummaryFacadeRequest.class);
-        ArgumentCaptor<AiReportSummaryFacadeRequest> captor =
-                ArgumentCaptor.forClass(AiReportSummaryFacadeRequest.class);
-        verify(classicsFacade).summary(classicsCaptor.capture());
-        verify(discoveryFacade).summary(discoveryCaptor.capture());
-        verify(aiFacade).summary(captor.capture());
-        assertEquals("DAY", classicsCaptor.getValue().getBucketType());
-        assertEquals("DAY", discoveryCaptor.getValue().getBucketType());
-        assertEquals("DAY", captor.getValue().getBucketType());
+        verify(summaryGateway)
+                .loadSummary(weeklyRecord().getPeriodStart(), weeklyRecord().getPeriodEnd(), "DAY");
     }
 
     private static ReportRecord monthlyRecord() {
