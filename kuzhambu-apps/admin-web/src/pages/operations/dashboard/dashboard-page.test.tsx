@@ -2,7 +2,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { App } from "antd";
 import type { ReactNode } from "react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
 import { replacePermissions } from "@/auth/permission-storage";
 import { queryClient } from "@/query/query-client";
 import { OperationsDashboardPage } from "./dashboard-page";
@@ -130,6 +130,109 @@ describe("OperationsDashboardPage", () => {
         queryClient.clear();
         vi.clearAllMocks();
     });
+
+    it("renders system and audit entries when permissions are granted", async () => {
+        replacePermissions([
+            "operations:dashboard:view",
+            "operations:task:view",
+            "operations:backup:view",
+            "operations:cleanup:view",
+            "system:log:view",
+            "audit:view"
+        ]);
+
+        renderPage();
+
+        expect(await screen.findByText("任务台账")).toBeInTheDocument();
+        expect(screen.getByText("备份恢复")).toBeInTheDocument();
+        expect(screen.getByText("清理维护")).toBeInTheDocument();
+        expect(screen.getByText("系统日志")).toBeInTheDocument();
+        expect(screen.getByText("审计日志")).toBeInTheDocument();
+        expect(screen.getByRole("link", { name: "系统日志" })).toHaveAttribute(
+            "href",
+            "/system/logs"
+        );
+        expect(screen.getByRole("link", { name: "审计日志" })).toHaveAttribute(
+            "href",
+            "/audit/logs"
+        );
+    }, 30000);
+
+    it("hides system log entry without permission", () => {
+        replacePermissions([
+            "operations:dashboard:view",
+            "operations:task:view",
+            "operations:backup:view",
+            "operations:cleanup:view",
+            "audit:view"
+        ]);
+
+        renderPage();
+
+        expect(screen.getByText("任务台账")).toBeInTheDocument();
+        expect(screen.getByText("备份恢复")).toBeInTheDocument();
+        expect(screen.getByText("清理维护")).toBeInTheDocument();
+        expect(screen.queryByText("系统日志")).not.toBeInTheDocument();
+        expect(screen.getByText("审计日志")).toBeInTheDocument();
+    });
+
+    it("hides audit log entry without permission", () => {
+        replacePermissions([
+            "operations:dashboard:view",
+            "operations:task:view",
+            "operations:backup:view",
+            "operations:cleanup:view",
+            "system:log:view"
+        ]);
+
+        renderPage();
+
+        expect(screen.getByText("任务台账")).toBeInTheDocument();
+        expect(screen.getByText("备份恢复")).toBeInTheDocument();
+        expect(screen.getByText("清理维护")).toBeInTheDocument();
+        expect(screen.getByText("系统日志")).toBeInTheDocument();
+        expect(screen.queryByText("审计日志")).not.toBeInTheDocument();
+    });
+
+    it("renders empty operation entries state when no entry permissions are granted", () => {
+        replacePermissions(["operations:dashboard:view"]);
+
+        renderPage();
+
+        expect(screen.getByText("暂无可访问的运维入口")).toBeInTheDocument();
+    }, 30000);
+
+    it("navigates to system logs page when system log entry is clicked", async () => {
+        replacePermissions([
+            "operations:dashboard:view",
+            "system:log:view",
+            "operations:task:view",
+            "operations:backup:view",
+            "operations:cleanup:view"
+        ]);
+
+        renderPage();
+
+        await screen.findByText("系统日志");
+        fireEvent.click(screen.getByTestId("operations-entry-system-log"));
+        expect(screen.getByTestId("current-path")).toHaveTextContent("/system/logs");
+    }, 30000);
+
+    it("navigates to audit logs page when audit log entry is clicked", async () => {
+        replacePermissions([
+            "operations:dashboard:view",
+            "audit:view",
+            "operations:task:view",
+            "operations:backup:view",
+            "operations:cleanup:view"
+        ]);
+
+        renderPage();
+
+        await screen.findByText("审计日志");
+        fireEvent.click(screen.getByTestId("operations-entry-audit-log"));
+        expect(screen.getByTestId("current-path")).toHaveTextContent("/audit/logs");
+    }, 30000);
 
     it("renders dashboard controls and data", async () => {
         renderPage();
@@ -284,11 +387,26 @@ describe("OperationsDashboardPage", () => {
 });
 
 const renderPage = () => {
+    const CurrentLocation = () => {
+        const location = useLocation();
+        return <div data-testid="current-path">{location.pathname}</div>;
+    };
+
     return render(
         <MemoryRouter>
             <QueryClientProvider client={queryClient}>
                 <App>
-                    <OperationsDashboardPage />
+                    <Routes>
+                        <Route
+                            element={
+                                <>
+                                    <CurrentLocation />
+                                    <OperationsDashboardPage />
+                                </>
+                            }
+                            path="*"
+                        />
+                    </Routes>
                 </App>
             </QueryClientProvider>
         </MemoryRouter>
