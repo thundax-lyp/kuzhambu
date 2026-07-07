@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin taxonomy service`：新增 Admin Web 批量治理 service 契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-TAG-BATCH-GOVERNANCE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/taxonomy/taxonomy-service.ts`、`kuzhambu-apps/admin-web/src/pages/knowledge/taxonomy/taxonomy-types.ts`、`kuzhambu-apps/admin-web/src/pages/knowledge/taxonomy/taxonomy-service.test.ts`
-    - 处理动作：新增批量合并、批量废弃、批量审核前端 service 方法与类型。
-    - 验收点：4 个 service 方法 URL 和 payload 字段与 RUNBOOK HTTP API 一致。
-    - 重要度：9/10
-
 - [ ] `admin tag batch controls`：实现统一标签批量合并和批量废弃控件
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-TAG-BATCH-GOVERNANCE.md`
