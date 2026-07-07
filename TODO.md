@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `07 Operations Dashboard 验证`：在同步 main 后运行后端和前端验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DASHBOARD-SUMMARY.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery`；`kuzhambu-servers/biz/operations`；`kuzhambu-apps/admin-web/src/pages/operations/dashboard`
-    - 处理动作：按 RUNBOOK 在同步 main 后运行 Discovery、Operations 和 admin-web dashboard 的格式化、静态检查和测试。
-    - 验收点：相关 Maven `spotless:check`、`checkstyle:check`、`test` 通过，admin-web dashboard 测试、`format:check`、`lint`、`build` 通过。
-    - 重要度：9/10
-
 - [ ] `08 Implementation Coverage 同步`：更新实现覆盖状态
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`
