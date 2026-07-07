@@ -51,9 +51,9 @@ const formatDateTime = (value?: string | null) => {
 const cleanupTypeOptions = [
     { label: "全部类型", value: "ALL" },
     { label: "过期备份", value: "EXPIRED_BACKUP" },
+    { label: "过期导出", value: "EXPIRED_EXPORT" },
     { label: "过期分享", value: "EXPIRED_SHARE" },
-    { label: "过期草稿", value: "EXPIRED_DRAFT" },
-    { label: "过期导出产物", value: "EXPIRED_EXPORT" }
+    { label: "过期草稿", value: "EXPIRED_DRAFT" }
 ];
 
 const cleanupStatusOptions = [
@@ -73,6 +73,14 @@ const countByStatus = (records: OperationsCleanupRecord[], status: string) => {
 
 const failureReasonText = (value?: string | null) => {
     return value || "未返回失败原因";
+};
+
+const executorText = (requesterUserId?: number | null) => {
+    return requesterUserId == null ? "系统自动" : requesterUserId;
+};
+
+const triggerSourceText = (requesterUserId?: number | null) => {
+    return requesterUserId == null ? "系统自动" : `人工执行：${requesterUserId}`;
 };
 
 const buildAlertPath = (cleanupId?: number | null) => {
@@ -159,9 +167,9 @@ export const CleanupPage = () => {
     const executeCleanup = (cleanupType: string) => {
         confirm.danger({
             title: "执行清理任务",
-            message: `确认执行 ${cleanupType} 清理吗？`,
-            description: "清理任务会遍历目标数据并标记清理结果，执行中请勿重复提交。",
-            okText: "立即执行",
+            message: `确认人工补偿执行 ${cleanupType} 清理吗？`,
+            description: "自动调度是主路径，本操作仅用于人工补偿；执行中请勿重复提交。",
+            okText: "确认执行",
             onConfirm: () => executeMutation.mutateAsync({ cleanupType })
         });
     };
@@ -261,7 +269,7 @@ export const CleanupPage = () => {
                                     options={cleanupTypeOptions.filter(
                                         (option) => option.value !== "ALL"
                                     )}
-                                    placeholder="选择清理类型并执行"
+                                    placeholder="选择清理类型并立即执行一次"
                                     allowClear
                                 />
                             ) : null}
@@ -278,6 +286,7 @@ export const CleanupPage = () => {
                                 <th>成功</th>
                                 <th>失败</th>
                                 <th>失败提示</th>
+                                <th>执行人</th>
                                 <th>开始时间</th>
                                 <th>完成时间</th>
                                 <th>操作</th>
@@ -318,6 +327,7 @@ export const CleanupPage = () => {
                                                     </KuzhambuSpace>
                                                 ) : null}
                                             </td>
+                                            <td>{executorText(record.requesterUserId)}</td>
                                             <td>{formatDateTime(record.startedAt)}</td>
                                             <td>{formatDateTime(record.completedAt)}</td>
                                             <td>
@@ -358,7 +368,7 @@ export const CleanupPage = () => {
                                 })
                             ) : (
                                 <tr>
-                                    <td className="operations-cleanup-empty-cell" colSpan={10}>
+                                    <td className="operations-cleanup-empty-cell" colSpan={11}>
                                         暂无清理任务
                                     </td>
                                 </tr>
@@ -417,6 +427,11 @@ export const CleanupPage = () => {
                                             {detailRecord.cleanupStatus || "UNKNOWN"}
                                         </KuzhambuTag>
                                     )
+                                },
+                                {
+                                    key: "triggerSource",
+                                    label: "触发来源",
+                                    children: triggerSourceText(detailRecord.requesterUserId)
                                 },
                                 {
                                     key: "totalCount",
