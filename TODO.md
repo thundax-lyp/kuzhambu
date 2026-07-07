@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Admin Web dashboard alert drawer`：实现看板告警横幅和告警抽屉
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-RECOVERY-LOOP.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/operations/dashboard/dashboard-page.tsx`、`kuzhambu-apps/admin-web/src/pages/operations/dashboard/dashboard-page.css`、`kuzhambu-apps/admin-web/src/pages/operations/dashboard/dashboard-page.test.tsx`
-    - 处理动作：在 `/operations/dashboard` 增加顶部 `Alert`、告警列表 `KuzhambuDrawer`、确认、标记恢复和去处理按钮。
-    - 验收点：无未恢复告警不展示横幅，无 manage 权限不展示确认或恢复按钮，抽屉 375px 宽度按钮不重叠。
-    - 重要度：10/10
-
 - [ ] `Admin Web dashboard health detail alerts`：实现健康明细关联告警控件
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-RECOVERY-LOOP.md`
