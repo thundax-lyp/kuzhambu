@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `operations cleanup runtime examples`：同步清理调度环境变量样例
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-CLEANUP-SCHEDULE-POLICY.md`
-    - 范围对象：`.env.example`、`deploy/.env.example`
-    - 处理动作：补齐所有 `KUZHAMBU_OPERATIONS_CLEANUP_*` 环境变量样例。
-    - 验收点：本地和部署样例都包含总开关、启动开关、cron、default limit 和四类 policy 的 enabled、retention days、limit。
-    - 重要度：7/10
-
 - [ ] `main branch sync`：收口前同步 main 分支代码
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`
