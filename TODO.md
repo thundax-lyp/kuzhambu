@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Task closeout`：18 清理 RUNBOOK 和 TODO
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-KNOWLEDGE-LINEAGE-VISUALIZATION.md`
-    - 范围对象：`docs/30-designs/RUNBOOK-KNOWLEDGE-LINEAGE-VISUALIZATION.md`、`TODO.md`
-    - 处理动作：删除已完成 RUNBOOK 并按完成情况删除或收窄 TODO。
-    - 验收点：PR 收口前不保留已完成 RUNBOOK，`TODO.md` 不记录已完成任务历史。
-    - 重要度：10/10
-
 ## 待审阅任务项
 
 ## 待讨论项
