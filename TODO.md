@@ -11,12 +11,4 @@
 
 ## 待审阅任务项
 
-- [ ] `09 RUNBOOK 清理`：任务关闭前删除临时 RUNBOOK
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`docs/30-designs/RUNBOOK-OPERATIONS-DASHBOARD-SUMMARY.md`
-    - 处理动作：在功能、验证、main 同步和 Coverage 更新完成后删除本 RUNBOOK。
-    - 验收点：RUNBOOK 文件已删除，`TODO.md` 对应任务随完成提交删除或收窄，不保留已完成历史。
-    - 重要度：8/10
-
 ## 待讨论项
