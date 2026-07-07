@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `01 Discovery 搜索日志耗时字段`：补齐搜索耗时落库字段
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DASHBOARD-SUMMARY.md`
-    - 范围对象：`db/schema/discovery.sql`；`kuzhambu-servers/biz/discovery/kuzhambu-discovery-domain/src/main/java/com/thundax/kuzhambu/discovery/domain/search/model/entity/SearchLog.java`；`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/search/persistence/dataobject/SearchLogDO.java`；`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/search/persistence/assembler/SearchLogPersistenceAssembler.java`；`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/search/service/impl/SearchApplicationServiceImpl.java`
-    - 处理动作：新增 `searchLatencyMs` / `search_latency_ms` 并在搜索成功和失败路径写入真实毫秒耗时。
-    - 验收点：成功和失败搜索日志都写入 `searchLatencyMs >= 0`，assembler 往返不丢字段，schema 声明 `discovery_search_log.search_latency_ms`。
-    - 重要度：10/10
-
 - [ ] `02 Discovery 平均搜索耗时 summary`：改为从真实搜索日志计算平均耗时
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DASHBOARD-SUMMARY.md`

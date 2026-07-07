@@ -29,6 +29,7 @@ public final class SearchLogPersistenceAssembler {
         dataObject.setSearchScopesJson(writeScope(entity.getSearchScope()));
         dataObject.setResultTotalCount(entity.getResultTotalCount());
         dataObject.setGroupTotalCount(entity.getGroupTotalCount());
+        dataObject.setSearchLatencyMs(entity.getSearchLatencyMs());
         dataObject.setSearchStatus(entity.getSearchStatus());
         dataObject.setFailureCode(entity.getFailureCode());
         dataObject.setFailureMessage(entity.getFailureMessage());
@@ -54,6 +55,7 @@ public final class SearchLogPersistenceAssembler {
         entity.setSearchScope(readScope(dataObject.getSearchScopesJson()));
         entity.setResultTotalCount(dataObject.getResultTotalCount());
         entity.setGroupTotalCount(dataObject.getGroupTotalCount());
+        entity.setSearchLatencyMs(dataObject.getSearchLatencyMs());
         entity.setSearchStatus(dataObject.getSearchStatus());
         entity.setFailureCode(dataObject.getFailureCode());
         entity.setFailureMessage(dataObject.getFailureMessage());

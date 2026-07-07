@@ -85,6 +85,7 @@ class SearchApplicationServiceImplTest {
         verify(searchLogRepository).save(searchLogCaptor.capture());
         assertEquals("FAILED", searchLogCaptor.getValue().getSearchStatus());
         assertEquals("DISCOVERY-20001", searchLogCaptor.getValue().getFailureCode());
+        assertTrue(searchLogCaptor.getValue().getSearchLatencyMs() >= 0);
     }
 
     @Test
@@ -147,6 +148,7 @@ class SearchApplicationServiceImplTest {
         assertEquals("NATURAL_LANGUAGE_SEARCH", result.getIntentType());
         assertEquals("SUCCEEDED", searchLogCaptor.getValue().getSearchStatus());
         assertEquals("黄帝 传说", searchLogCaptor.getValue().getDisplayQueryText());
+        assertTrue(searchLogCaptor.getValue().getSearchLatencyMs() >= 0);
         assertEquals(searchLogCaptor.getValue().getSearchLogId(), result.getSearchLogId());
         assertTrue(result.getSearchScopesJson().contains("SANCAI_ENTRY"));
         assertTrue(result.getSearchScopesJson().contains("\"categoryCodes\":[\"11\"]"));
@@ -323,6 +325,7 @@ class SearchApplicationServiceImplTest {
                         null,
                         1,
                         1,
+                        10L,
                         "SUCCEEDED",
                         null,
                         null,
@@ -416,6 +419,7 @@ class SearchApplicationServiceImplTest {
                                 null,
                                 1,
                                 1,
+                                10L,
                                 "SUCCEEDED",
                                 null,
                                 null,
@@ -547,6 +551,7 @@ class SearchApplicationServiceImplTest {
         assertEquals("FAILED", searchLogCaptor.getValue().getSearchStatus());
         assertEquals("DISCOVERY-29999", searchLogCaptor.getValue().getFailureCode());
         assertEquals("boom", searchLogCaptor.getValue().getFailureMessage());
+        assertTrue(searchLogCaptor.getValue().getSearchLatencyMs() >= 0);
     }
 
     private SearchLog searchLog(String queryText, String searchStatus, Integer resultTotalCount) {
@@ -560,6 +565,7 @@ class SearchApplicationServiceImplTest {
                 null,
                 resultTotalCount,
                 resultTotalCount == null ? 0 : Math.min(resultTotalCount, 1),
+                10L,
                 searchStatus,
                 null,
                 null,
