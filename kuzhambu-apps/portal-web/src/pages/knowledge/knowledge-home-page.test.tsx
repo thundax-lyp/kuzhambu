@@ -20,6 +20,13 @@ vi.mock("./knowledge-home-service", () => ({
                 type: "atlas"
             },
             {
+                description: "进入人物谱系与亲缘关系画布。",
+                href: "/knowledge/lineage",
+                key: "lineage",
+                label: "世系图浏览",
+                type: "lineage"
+            },
+            {
                 description: "查看确认率、来源构成与当前待处理事项。",
                 href: "/knowledge/quality",
                 key: "quality",
@@ -43,6 +50,13 @@ vi.mock("./knowledge-home-service", () => ({
                 key: "atlas",
                 label: "图谱浏览",
                 type: "atlas"
+            },
+            {
+                description: "进入人物谱系与亲缘关系画布。",
+                href: "/knowledge/lineage",
+                key: "lineage",
+                label: "世系图浏览",
+                type: "lineage"
             },
             {
                 description: "查看确认率、来源构成与当前待处理事项。",
@@ -94,6 +108,7 @@ describe("KnowledgeHomePage", () => {
 
         expect(container.textContent).toContain("古籍知识图谱馆");
         expect(container.textContent).toContain("图谱浏览");
+        expect(container.textContent).toContain("世系图浏览");
         expect(container.textContent).toContain("质量总览");
 
         const links = Array.from(container.querySelectorAll("a")).map((link) => ({
@@ -108,6 +123,10 @@ describe("KnowledgeHomePage", () => {
                 expect.objectContaining({
                     href: "/knowledge/atlas",
                     text: "图谱浏览进入关系画布，沿实体、关系与时间线展开阅读。"
+                }),
+                expect.objectContaining({
+                    href: "/knowledge/lineage",
+                    text: "世系图浏览进入人物谱系与亲缘关系画布。"
                 }),
                 expect.objectContaining({
                     href: "/knowledge/quality",

@@ -4,6 +4,7 @@ import { DiscoverySearchPage } from "@/pages/discovery/search-page";
 import { HomePage } from "@/pages/home/home-page";
 import { KnowledgeAtlasPage } from "@/pages/knowledge/knowledge-atlas-page";
 import { KnowledgeHomePage } from "@/pages/knowledge/knowledge-home-page";
+import { KnowledgeLineagePage } from "@/pages/knowledge/knowledge-lineage-page";
 import { KnowledgeQualityPage } from "@/pages/knowledge/knowledge-quality-page";
 import { ShareForm } from "@/pages/share/share-form";
 import { SharePage } from "@/pages/share/share-page";
@@ -22,6 +23,7 @@ export const App = () => {
                 <Route path="/" element={<HomePage />} />
                 <Route path="/knowledge" element={<KnowledgeHomePage />} />
                 <Route path="/knowledge/atlas" element={<KnowledgeAtlasPage />} />
+                <Route path="/knowledge/lineage" element={<KnowledgeLineagePage />} />
                 <Route path="/knowledge/quality" element={<KnowledgeQualityPage />} />
                 <Route path="/discovery/search" element={<DiscoverySearchPage />} />
                 <Route path="/discovery/qa" element={<DiscoveryQaPage />} />

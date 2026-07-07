@@ -68,8 +68,11 @@ class KnowledgePortalHomeControllerTest {
                         "搜索人物、器物、礼制",
                         List.of(new KnowledgePortalHomeResult.PortalStatItem(
                                 "tag-count", "主题标签", "12", "治理基线", "steady", "seal")),
-                        List.of(new KnowledgePortalHomeResult.PortalQuickLinkItem(
-                                "atlas", "图谱浏览", "进入图谱关系画布", "/knowledge/atlas", "atlas")),
+                        List.of(
+                                new KnowledgePortalHomeResult.PortalQuickLinkItem(
+                                        "atlas", "图谱浏览", "进入图谱关系画布", "/knowledge/atlas", "atlas"),
+                                new KnowledgePortalHomeResult.PortalQuickLinkItem(
+                                        "lineage", "世系图浏览", "进入人物谱系画布", "/knowledge/lineage", "lineage")),
                         List.of(new KnowledgePortalHomeResult.PortalRecentUpdateItem(
                                 "SANCAI_ENTRY · 版本 2",
                                 "任务 GRAPH / 来源 SANCAI_ENTRY",
@@ -86,6 +89,7 @@ class KnowledgePortalHomeControllerTest {
         assertEquals("古籍知识图谱门户", response.getHeroTitle());
         assertEquals("12", response.getStats().get(0).getValue());
         assertEquals("/knowledge/atlas", response.getQuickLinks().get(0).getHref());
+        assertEquals("/knowledge/lineage", response.getQuickLinks().get(1).getHref());
         assertEquals(
                 "/knowledge/atlas?focusType=SANCAI_ENTRY&focusId=1001",
                 response.getRecentUpdates().get(0).getHref());

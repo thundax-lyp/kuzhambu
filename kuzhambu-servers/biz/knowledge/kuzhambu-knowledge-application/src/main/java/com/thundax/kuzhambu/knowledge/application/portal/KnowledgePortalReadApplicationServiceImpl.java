@@ -1,6 +1,9 @@
 package com.thundax.kuzhambu.knowledge.application.portal;
 
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.knowledge.application.lineage.query.LineageCanvasQuery;
+import com.thundax.kuzhambu.knowledge.application.lineage.result.LineageCanvasResult;
+import com.thundax.kuzhambu.knowledge.application.lineage.service.KnowledgeLineageReadApplicationService;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult.IssueRecord;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityReportDetailResult.ReportRecord;
@@ -61,6 +64,7 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
     private final TagGovernanceMetricsRepository tagGovernanceMetricsRepository;
     private final RefinementTaskRepository refinementTaskRepository;
     private final KnowledgeQualityReportApplicationService qualityReportApplicationService;
+    private final KnowledgeLineageReadApplicationService lineageReadApplicationService;
 
     public KnowledgePortalReadApplicationServiceImpl(
             TagRepository tagRepository,
@@ -69,7 +73,8 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
             KnowledgeRelationRepository knowledgeRelationRepository,
             TagGovernanceMetricsRepository tagGovernanceMetricsRepository,
             RefinementTaskRepository refinementTaskRepository,
-            KnowledgeQualityReportApplicationService qualityReportApplicationService) {
+            KnowledgeQualityReportApplicationService qualityReportApplicationService,
+            KnowledgeLineageReadApplicationService lineageReadApplicationService) {
         this.tagRepository = tagRepository;
         this.graphVersionRepository = graphVersionRepository;
         this.knowledgeEntityRepository = knowledgeEntityRepository;
@@ -77,6 +82,7 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
         this.tagGovernanceMetricsRepository = tagGovernanceMetricsRepository;
         this.refinementTaskRepository = refinementTaskRepository;
         this.qualityReportApplicationService = qualityReportApplicationService;
+        this.lineageReadApplicationService = lineageReadApplicationService;
     }
 
     @Override
@@ -105,7 +111,7 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
                 List.of(
                         quickLink("atlas", "图谱浏览", "进入知识关系画布与实体详情", "/knowledge/atlas", "atlas"),
                         quickLink("quality", "质量总览", "查看覆盖率、置信度与待关注项", "/knowledge/quality", "quality"),
-                        quickLink("lineage", "来源追溯", "从版本、实体与关系回看来源脉络", "/knowledge/atlas", "lineage")),
+                        quickLink("lineage", "世系图浏览", "进入人物谱系与亲缘关系画布", "/knowledge/lineage", "lineage")),
                 buildRecentUpdates(),
                 List.of(
                         featureCollection("latest-atlas", "最新图谱版本", "快速进入最近一次已应用的知识快照。", "/knowledge/atlas", "版本视图"),
@@ -126,6 +132,11 @@ public class KnowledgePortalReadApplicationServiceImpl implements KnowledgePorta
             return buildDetailAtlas(effectiveQuery.getEntityId());
         }
         return buildOverviewAtlas();
+    }
+
+    @Override
+    public LineageCanvasResult getLineage(LineageCanvasQuery query) {
+        return lineageReadApplicationService.getLatestAppliedCanvas(query);
     }
 
     private KnowledgePortalAtlasResult buildOverviewAtlas() {
