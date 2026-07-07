@@ -10,6 +10,7 @@ import com.thundax.kuzhambu.ai.facade.request.GetAiCallRecordFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.GetAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.KnowledgeAiExtractionFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.MarkAiCandidateAppliedFacadeRequest;
+import com.thundax.kuzhambu.ai.facade.request.RejectAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.RequirePendingAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.response.AiBatchJobActionFacadeResponse;
 import com.thundax.kuzhambu.ai.facade.response.AiBatchJobFacadeResponse;
@@ -52,4 +53,6 @@ public interface AiFacade {
     AiCandidateFacadeDto requirePendingCandidate(RequirePendingAiCandidateFacadeRequest request);
 
     AiCandidateFacadeDto markCandidateApplied(MarkAiCandidateAppliedFacadeRequest request);
+
+    AiCandidateFacadeDto rejectCandidate(RejectAiCandidateFacadeRequest request);
 }

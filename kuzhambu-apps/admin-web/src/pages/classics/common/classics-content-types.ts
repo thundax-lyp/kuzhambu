@@ -1,4 +1,4 @@
-import type { AiCandidateApplyCommand } from "./ai-candidate-types";
+import type { AiCandidateApplyPayload } from "./ai-candidate-types";
 
 export type ClassicsContentType = "SANCAI_ENTRY" | "WANGQI_DOCUMENT" | "MING_CUSTOMS" | string;
 export type ClassicsContentVisibility = "PRIVATE" | "PUBLIC";
@@ -122,7 +122,7 @@ export interface ClassicsBatchOperationRecord {
 }
 
 export interface ClassicsAiCandidateBatchApplyPayload {
-    items: AiCandidateApplyCommand[];
+    items: AiCandidateApplyPayload[];
 }
 
 export interface ClassicsAiCandidateBatchRejectItemPayload {

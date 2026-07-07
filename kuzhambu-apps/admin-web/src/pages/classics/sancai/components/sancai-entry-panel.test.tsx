@@ -17,6 +17,8 @@ const confirmDangerMock = vi.hoisted(() =>
 );
 
 vi.mock("@/pages/classics/common/classics-content-service", () => ({
+    applyAiCandidatesBatch: vi.fn(),
+    rejectAiCandidatesBatch: vi.fn(),
     addQaPair: vi.fn(),
     addTag: vi.fn(),
     changeVisibilityBatch: vi.fn(async () => ({
@@ -150,13 +152,13 @@ vi.mock("@/pages/classics/common/ai-refinement-task-service", () => ({
 }));
 vi.mock("@/pages/classics/common/ai-candidate-service", () => ({
     list: vi.fn(async () => []),
-    updateCandidateApplied: vi.fn(async () => ({
+    apply: vi.fn(async () => ({
         contentType: "SANCAI_ENTRY",
         contentId: 3001,
         versionId: 5002,
         versionNo: 2
     })),
-    updateCandidateRejected: vi.fn(async () => ({}))
+    reject: vi.fn(async () => ({}))
 }));
 
 const entryState = vi.hoisted(() => ({
@@ -675,7 +677,22 @@ describe("SancaiEntryPanel sharing", () => {
         expect(screen.getByRole("button", { name: "批量分享" })).toBeDisabled();
         expect(screen.getByRole("button", { name: "批量公开" })).toBeDisabled();
         expect(screen.getByRole("button", { name: "批量私有" })).toBeDisabled();
+        expect(screen.getByRole("button", { name: "批量候选治理" })).toBeDisabled();
     }, 90000);
+
+    it("opens batch candidate governance drawer from selected entries", async () => {
+        const user = userEvent.setup();
+
+        renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        const rowCheckbox = within(entryTable).getAllByRole("checkbox")[1];
+        await user.click(rowCheckbox);
+        await user.click(screen.getByRole("button", { name: "批量候选治理" }));
+
+        expect(await screen.findByText("AI 候选批量治理")).toBeInTheDocument();
+        expect(await screen.findByText("暂无待处理候选")).toBeInTheDocument();
+    }, 30000);
 
     it("renders lifecycle controls by entry status", async () => {
         renderEntryPanel();
@@ -1004,11 +1021,9 @@ describe("SancaiEntryPanel sharing", () => {
         await user.click(applyButton);
 
         await waitFor(() => {
-            expect(vi.mocked(aiCandidateService.updateCandidateApplied)).toHaveBeenCalledTimes(1);
+            expect(vi.mocked(aiCandidateService.apply)).toHaveBeenCalledTimes(1);
         });
-        expect(
-            vi.mocked(aiCandidateService.updateCandidateApplied).mock.calls[0]?.[0]
-        ).toMatchObject({
+        expect(vi.mocked(aiCandidateService.apply).mock.calls[0]?.[0]).toMatchObject({
             candidateId: 8003,
             contentType: "SANCAI_ENTRY",
             contentId: 3001,
@@ -1080,11 +1095,9 @@ describe("SancaiEntryPanel sharing", () => {
         await user.click(rejectButton);
 
         await waitFor(() => {
-            expect(vi.mocked(aiCandidateService.updateCandidateRejected)).toHaveBeenCalledTimes(1);
+            expect(vi.mocked(aiCandidateService.reject)).toHaveBeenCalledTimes(1);
         });
-        expect(
-            vi.mocked(aiCandidateService.updateCandidateRejected).mock.calls[0]?.[0]
-        ).toMatchObject({
+        expect(vi.mocked(aiCandidateService.reject).mock.calls[0]?.[0]).toMatchObject({
             candidateId: 8004,
             errorType: "USER_REJECTED",
             errorMessage: "用户已拒绝该 AI 候选"

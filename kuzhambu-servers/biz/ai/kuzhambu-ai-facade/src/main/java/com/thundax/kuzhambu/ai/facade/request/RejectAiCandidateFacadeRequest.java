@@ -8,11 +8,9 @@ import lombok.Getter;
 @Getter
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class RequirePendingAiCandidateFacadeRequest {
+public class RejectAiCandidateFacadeRequest {
 
     private final Long candidateId;
-    private final String contentType;
-    private final Long contentId;
-    private final Long objectId;
-    private final String capability;
+    private final String errorType;
+    private final String errorMessage;
 }

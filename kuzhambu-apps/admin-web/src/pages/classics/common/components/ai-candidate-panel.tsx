@@ -112,7 +112,7 @@ export const AiCandidatePanel = ({
     };
 
     const applyMutation = useMutation({
-        mutationFn: aiCandidateService.updateCandidateApplied,
+        mutationFn: aiCandidateService.apply,
         onMutate: (command) => {
             setApplyingCandidateId(command.candidateId);
         },
@@ -132,7 +132,7 @@ export const AiCandidatePanel = ({
     });
 
     const rejectMutation = useMutation({
-        mutationFn: aiCandidateService.updateCandidateRejected,
+        mutationFn: aiCandidateService.reject,
         onMutate: (command) => {
             setRejectingCandidateId(command.candidateId);
         },

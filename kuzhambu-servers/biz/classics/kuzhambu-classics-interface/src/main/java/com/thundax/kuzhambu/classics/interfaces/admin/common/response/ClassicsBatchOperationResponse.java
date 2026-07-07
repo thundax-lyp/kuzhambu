@@ -74,6 +74,7 @@ public class ClassicsBatchOperationResponse implements Serializable {
         private Long candidateId;
 
         @JsonProperty("objectId")
+        @JsonInclude(JsonInclude.Include.ALWAYS)
         private Long objectId;
 
         @JsonProperty("capability")

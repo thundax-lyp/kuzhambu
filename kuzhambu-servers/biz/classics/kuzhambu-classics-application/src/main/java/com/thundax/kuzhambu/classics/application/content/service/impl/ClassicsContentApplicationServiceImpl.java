@@ -5,11 +5,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
-import com.thundax.kuzhambu.ai.domain.invocation.service.AiCandidateApplyCheck;
-import com.thundax.kuzhambu.ai.domain.invocation.service.AiCandidateDomainService;
 import com.thundax.kuzhambu.ai.facade.AiFacade;
+import com.thundax.kuzhambu.ai.facade.dto.AiCandidateFacadeDto;
 import com.thundax.kuzhambu.ai.facade.request.MarkAiCandidateAppliedFacadeRequest;
+import com.thundax.kuzhambu.ai.facade.request.RejectAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.RequirePendingAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.classics.application.content.command.AiCandidateApplyContentCommand;
 import com.thundax.kuzhambu.classics.application.content.command.AiCandidateBatchApplyContentCommand;
@@ -119,7 +118,6 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     private final ClassicsContentVersioningService versioningService = new ClassicsContentVersioningService();
     private final ClassicsContentSnapshotAssembler snapshotAssembler = new ClassicsContentSnapshotAssembler();
     private final AiFacade aiFacade;
-    private final AiCandidateDomainService aiCandidateDomainService;
     private final ClassicsAiCandidatePayloadParser aiCandidatePayloadParser;
     private final ClassicsTagBindingSupport tagBindingSupport;
     private final ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport;
@@ -147,31 +145,6 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             AiFacade aiFacade,
             ClassicsTagBindingSupport tagBindingSupport,
             ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport) {
-        this(
-                repository,
-                wangqiDocumentVersionRestorer,
-                sancaiEntryVersionRestorer,
-                sancaiAssetApplicationService,
-                workerRenderClient,
-                storageFacade,
-                aiFacade,
-                null,
-                tagBindingSupport,
-                searchIndexSyncPublishSupport);
-    }
-
-    @Autowired
-    public ClassicsContentApplicationServiceImpl(
-            ClassicsContentRepository repository,
-            WangqiDocumentVersionRestorer wangqiDocumentVersionRestorer,
-            SancaiEntryVersionRestorer sancaiEntryVersionRestorer,
-            SancaiAssetApplicationService sancaiAssetApplicationService,
-            WorkerRenderClient workerRenderClient,
-            StorageFacade storageFacade,
-            AiFacade aiFacade,
-            AiCandidateDomainService aiCandidateDomainService,
-            ClassicsTagBindingSupport tagBindingSupport,
-            ClassicsSearchIndexSyncPublishSupport searchIndexSyncPublishSupport) {
         this.repository = repository;
         this.wangqiDocumentVersionRestorer = wangqiDocumentVersionRestorer;
         this.sancaiEntryVersionRestorer = sancaiEntryVersionRestorer;
@@ -179,7 +152,6 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         this.workerRenderClient = workerRenderClient;
         this.storageFacade = storageFacade;
         this.aiFacade = aiFacade;
-        this.aiCandidateDomainService = aiCandidateDomainService;
         this.tagBindingSupport = tagBindingSupport;
         this.searchIndexSyncPublishSupport = searchIndexSyncPublishSupport;
         this.objectMapper = new ObjectMapper().findAndRegisterModules();
@@ -497,6 +469,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                 .candidateId(command.getCandidateId())
                 .contentType(command.getContentType().value())
                 .contentId(command.getContentId())
+                .objectId(command.getObjectId())
                 .capability(command.getCapability())
                 .build());
 
@@ -639,9 +612,21 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                 continue;
             }
 
+            if (aiFacade == null) {
+                failures.add(ClassicsBatchOperationItemResult.failureForCandidate(
+                        typeValue(contentType),
+                        contentId,
+                        FAILURE_UNKNOWN,
+                        "AI候选服务未就绪",
+                        candidateId,
+                        objectId,
+                        capability));
+                continue;
+            }
+
             try {
-                if (item != null && aiCandidateDomainService != null) {
-                    aiCandidateDomainService.requirePendingForApply(toApplyCheck(item), item.getObjectId());
+                if (item != null) {
+                    requirePendingAiCandidate(item);
                 }
 
                 AiCandidateApplyContentResult result = applyAiCandidate(item);
@@ -699,7 +684,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                 continue;
             }
 
-            if (aiCandidateDomainService == null) {
+            if (aiFacade == null) {
                 failures.add(ClassicsBatchOperationItemResult.failureForCandidate(
                         typeValue(contentType),
                         contentId,
@@ -712,9 +697,12 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             }
 
             try {
-                AiCandidate candidate =
-                        aiCandidateDomainService.requirePendingForApply(toRejectCheck(item), item.getObjectId());
-                aiCandidateDomainService.reject(candidate.getCandidateId(), errorType, errorMessage);
+                AiCandidateFacadeDto candidate = requirePendingAiCandidate(item);
+                aiFacade.rejectCandidate(RejectAiCandidateFacadeRequest.builder()
+                        .candidateId(candidate.getCandidateId())
+                        .errorType(errorType)
+                        .errorMessage(errorMessage)
+                        .build());
                 successes.add(ClassicsBatchOperationItemResult.successForCandidate(
                         typeValue(contentType),
                         contentId,
@@ -745,23 +733,30 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         return ClassicsContentPermissionSupport.canEdit(contentType, KuzhambuContextHolder.currentAuthorities());
     }
 
-    private AiCandidateApplyCheck toApplyCheck(AiCandidateApplyContentCommand command) {
-        AiCandidateApplyCheck check = new AiCandidateApplyCheck();
-        check.setCandidateId(command.getCandidateId());
-        check.setContentType(command.getContentType().value());
-        check.setContentId(command.getContentId());
-        check.setCapability(command.getCapability());
-        return check;
+    private AiCandidateFacadeDto requirePendingAiCandidate(AiCandidateApplyContentCommand command) {
+        return aiFacade.requirePendingCandidate(RequirePendingAiCandidateFacadeRequest.builder()
+                .candidateId(command.getCandidateId())
+                .contentType(
+                        command.getContentType() == null
+                                ? null
+                                : command.getContentType().value())
+                .contentId(command.getContentId())
+                .objectId(command.getObjectId())
+                .capability(command.getCapability())
+                .build());
     }
 
-    private AiCandidateApplyCheck toRejectCheck(AiCandidateBatchRejectContentCommand.Item item) {
-        AiCandidateApplyCheck check = new AiCandidateApplyCheck();
-        check.setCandidateId(item.getCandidateId());
-        check.setContentType(
-                item.getContentType() == null ? null : item.getContentType().value());
-        check.setContentId(item.getContentId());
-        check.setCapability(item.getCapability());
-        return check;
+    private AiCandidateFacadeDto requirePendingAiCandidate(AiCandidateBatchRejectContentCommand.Item item) {
+        return aiFacade.requirePendingCandidate(RequirePendingAiCandidateFacadeRequest.builder()
+                .candidateId(item.getCandidateId())
+                .contentType(
+                        item.getContentType() == null
+                                ? null
+                                : item.getContentType().value())
+                .contentId(item.getContentId())
+                .objectId(item.getObjectId())
+                .capability(item.getCapability())
+                .build());
     }
 
     private String typeValue(ClassicsContentType contentType) {

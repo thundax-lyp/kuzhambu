@@ -9,12 +9,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
-import com.thundax.kuzhambu.ai.domain.invocation.service.AiCandidateApplyCheck;
-import com.thundax.kuzhambu.ai.domain.invocation.service.AiCandidateDomainService;
 import com.thundax.kuzhambu.ai.facade.AiFacade;
 import com.thundax.kuzhambu.ai.facade.dto.AiCandidateFacadeDto;
 import com.thundax.kuzhambu.ai.facade.request.MarkAiCandidateAppliedFacadeRequest;
+import com.thundax.kuzhambu.ai.facade.request.RejectAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.RequirePendingAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.classics.application.content.command.AiCandidateApplyContentCommand;
 import com.thundax.kuzhambu.classics.application.content.command.AiCandidateBatchApplyContentCommand;
@@ -704,25 +702,20 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                             || request.getCandidateId().equals(33L)) {
                         assertEquals("SANCAI_ENTRY", request.getContentType());
                         assertEquals("summary", request.getCapability());
+                        if (request.getCandidateId().equals(33L)) {
+                            throw new DomainException(
+                                    "AI-INVOCATION-409",
+                                    "ai.candidate.target-mismatch",
+                                    "AI candidate target mismatch");
+                        }
                         return pendingCandidateWithId(request.getCandidateId());
                     }
                     throw new IllegalStateException("unexpected candidate: " + request.getCandidateId());
                 },
                 request -> candidateApplied());
 
-        AiCandidateDomainService candidateDomainService = org.mockito.Mockito.mock(AiCandidateDomainService.class);
-        when(candidateDomainService.requirePendingForApply(any(AiCandidateApplyCheck.class), any()))
-                .thenAnswer(invocation -> {
-                    AiCandidateApplyCheck check = invocation.getArgument(0);
-                    if (check.getCandidateId().equals(11L)) {
-                        return newCandidate(11L, "SANCAI_ENTRY", 11L, "summary", "PENDING", null);
-                    }
-                    throw new DomainException(
-                            "AI-INVOCATION-409", "ai.candidate.target-mismatch", "AI candidate target mismatch");
-                });
-
         ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
-                repository, null, null, null, null, null, aiFacade, candidateDomainService, null, null);
+                repository, null, null, null, null, null, aiFacade, null, null);
 
         setPermissions(Set.of("classics:sancai:edit"));
         try {
@@ -750,19 +743,28 @@ class ClassicsContentApplicationServiceAiCandidateTest {
 
     @Test
     void rejectAiCandidatesShouldRejectAndReportNonPendingFailure() {
-        AiCandidateDomainService candidateDomainService = org.mockito.Mockito.mock(AiCandidateDomainService.class);
-        when(candidateDomainService.requirePendingForApply(any(AiCandidateApplyCheck.class), any()))
+        AiFacade aiFacade = org.mockito.Mockito.mock(AiFacade.class);
+        when(aiFacade.requirePendingCandidate(any(RequirePendingAiCandidateFacadeRequest.class)))
                 .thenAnswer(invocation -> {
-                    AiCandidateApplyCheck check = invocation.getArgument(0);
-                    if (check.getCandidateId().equals(11L)) {
-                        return newCandidate(11L, "SANCAI_ENTRY", 11L, "summary", "PENDING", null);
+                    RequirePendingAiCandidateFacadeRequest request = invocation.getArgument(0);
+                    if (request.getCandidateId().equals(11L)) {
+                        return pendingCandidateWithId(11L);
                     }
                     throw new DomainException(
                             "AI-INVOCATION-409", "ai.candidate.not-pending", "AI candidate is not pending");
                 });
+        when(aiFacade.rejectCandidate(any(RejectAiCandidateFacadeRequest.class)))
+                .thenAnswer(invocation -> {
+                    RejectAiCandidateFacadeRequest request = invocation.getArgument(0);
+                    return AiCandidateFacadeDto.builder()
+                            .candidateId(request.getCandidateId())
+                            .status("REJECTED")
+                            .rejectedAt(Instant.now())
+                            .build();
+                });
 
         ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
-                new FakeRepository(), null, null, null, null, null, null, candidateDomainService, null, null);
+                new FakeRepository(), null, null, null, null, null, aiFacade, null, null);
 
         setPermissions(Set.of("classics:sancai:edit"));
         try {
@@ -778,8 +780,8 @@ class ClassicsContentApplicationServiceAiCandidateTest {
             assertEquals("REJECTED", result.getSuccesses().get(0).getStatus());
             assertEquals("CANDIDATE_NOT_PENDING", result.getFailures().get(0).getFailureCode());
 
-            verify(candidateDomainService).reject(11L, "USER_REJECTED", "用户已批量拒绝该 AI 候选");
-            verify(candidateDomainService, never()).reject(12L, "USER_REJECTED", "用户已批量拒绝该 AI 候选");
+            verify(aiFacade).rejectCandidate(any(RejectAiCandidateFacadeRequest.class));
+            verify(aiFacade, times(2)).requirePendingCandidate(any(RequirePendingAiCandidateFacadeRequest.class));
         } finally {
             clearPermissions();
         }
@@ -796,16 +798,18 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         SancaiAssetApplicationService assetService = org.mockito.Mockito.mock(SancaiAssetApplicationService.class);
         when(assetService.listVisualAssets(SancaiEntryId.of(11L))).thenReturn(List.of(visualAsset(111L)));
 
-        AiFacade aiFacade = mockAiFacade(request -> pendingCandidate(), request -> {
-            throw new IllegalStateException("markApplied should not be called");
-        });
-
-        AiCandidateDomainService candidateDomainService = org.mockito.Mockito.mock(AiCandidateDomainService.class);
-        when(candidateDomainService.requirePendingForApply(any(AiCandidateApplyCheck.class), any()))
-                .thenReturn(newCandidate(11L, "SANCAI_ENTRY", 11L, "image_analysis", "PENDING", 111L));
+        AiFacade aiFacade = mockAiFacade(
+                request -> {
+                    if (Long.valueOf(999L).equals(request.getObjectId())) {
+                        throw new DomainException(
+                                "AI-INVOCATION-409", "ai.candidate.target-mismatch", "AI candidate target mismatch");
+                    }
+                    return pendingCandidateWithObjectId(request.getCandidateId(), request.getObjectId());
+                },
+                request -> candidateApplied());
 
         ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
-                repository, null, null, assetService, null, null, aiFacade, candidateDomainService, null, null);
+                repository, null, null, assetService, null, null, aiFacade, null, null);
 
         setPermissions(Set.of("classics:sancai:edit"));
         try {
@@ -851,18 +855,6 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         return visualAsset;
     }
 
-    private static AiCandidate newCandidate(
-            Long candidateId, String contentType, Long contentId, String capability, String status, Long objectId) {
-        AiCandidate candidate = new AiCandidate();
-        candidate.setCandidateId(candidateId);
-        candidate.setContentType(contentType);
-        candidate.setContentId(contentId);
-        candidate.setCapability(capability);
-        candidate.setStatus(status);
-        candidate.setObjectId(objectId);
-        return candidate;
-    }
-
     private static AiCandidateFacadeDto pendingCandidateWithId(Long candidateId) {
         return AiCandidateFacadeDto.builder()
                 .candidateId(candidateId)
@@ -873,9 +865,20 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 .build();
     }
 
+    private static AiCandidateFacadeDto pendingCandidateWithObjectId(Long candidateId, Long objectId) {
+        return AiCandidateFacadeDto.builder()
+                .candidateId(candidateId)
+                .contentType("SANCAI_ENTRY")
+                .contentId(11L)
+                .objectId(objectId)
+                .capability("image_analysis")
+                .status("PENDING")
+                .build();
+    }
+
     private static void setPermissions(Set<String> permissions) {
         KuzhambuContextHolder.setSubject(
-                new KuzhambuSubject("operator", KuzhambuSubjectType.USER, "operator", null, permissions));
+                new KuzhambuSubject("operator", KuzhambuSubjectType.ADMIN_USER, "operator", null, permissions));
     }
 
     private static void clearPermissions() {

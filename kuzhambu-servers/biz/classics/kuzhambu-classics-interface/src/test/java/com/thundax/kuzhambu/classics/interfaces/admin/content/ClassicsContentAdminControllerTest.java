@@ -87,13 +87,13 @@ class ClassicsContentAdminControllerTest {
         assertPostMapping(
                 ClassicsContentAdminController.class,
                 "changeAiCandidates",
-                "ai-candidates/batch/apply",
+                "ai-candidates/batch/change",
                 "classics:content:edit",
                 ClassicsContentRequest.AiCandidateBatchApplyRequest.class);
         assertPostMapping(
                 ClassicsContentAdminController.class,
-                "rejectAiCandidates",
-                "ai-candidates/batch/reject",
+                "removeAiCandidates",
+                "ai-candidates/batch/remove",
                 "classics:content:edit",
                 ClassicsContentRequest.AiCandidateBatchRejectRequest.class);
         assertGetMapping(
@@ -228,7 +228,7 @@ class ClassicsContentAdminControllerTest {
         second.setCapability("summary");
         request.setItems(List.of(first, second));
 
-        ClassicsBatchOperationResponse response = controller().rejectAiCandidates(request);
+        ClassicsBatchOperationResponse response = controller().removeAiCandidates(request);
 
         assertEquals(2, response.getSuccessCount());
         assertEquals(0, response.getFailureCount());
@@ -267,7 +267,7 @@ class ClassicsContentAdminControllerTest {
         rejectItem.setCapability("qa");
         rejectRequest.setItems(List.of(rejectItem, rejectItem));
 
-        assertThrows(RuntimeException.class, () -> controller.rejectAiCandidates(rejectRequest));
+        assertThrows(RuntimeException.class, () -> controller.removeAiCandidates(rejectRequest));
     }
 
     @Test
