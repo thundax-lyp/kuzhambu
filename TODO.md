@@ -9,52 +9,132 @@
 
 ## 当前任务项
 
-- [ ] `admin-web sancai batch candidate entry`：接入三才图会批量候选治理入口
+- [ ] `operations health page interface fields`：贯通健康分页筛选字段
     - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-BATCH-CANDIDATE-GOVERNANCE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.test.tsx`
-    - 处理动作：在条目列表批量操作区新增 `批量候选治理` 按钮并接入 `AiCandidateBatchDrawer`。
-    - 验收点：未选条目或无 `classics:sancai:edit` 时按钮禁用，选择条目后可打开抽屉并处理候选。
-    - 重要度：8/10
+    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-PROBE-LOOP.md`
+    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/health/query/OperationsHealthPageQuery.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/health/controller/request/OperationsHealthPageRequest.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/health/assembler/OperationsHealthInterfaceAssembler.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/test/java/com/thundax/kuzhambu/operations/interfaces/admin/health/controller/OperationsHealthAdminControllerTest.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/test/java/com/thundax/kuzhambu/operations/interfaces/admin/health/controller/OperationsHealthContractTest.java`
+    - 处理动作：为健康分页 request/query/assembler 增加 `probeSource`、`probeTarget`、`checkedAtStart`、`checkedAtEnd` 字段贯通。
+    - 验收点：controller 测试证明四个新增字段能传入 application query，contract 测试保持健康分页响应字段稳定。
+    - 重要度：10/10
 
-- [ ] `admin-web wangqi batch candidate entry`：接入王圻文档批量候选治理入口
+- [ ] `operations health page repository filters`：补齐健康分页持久化筛选
     - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-BATCH-CANDIDATE-GOVERNANCE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/wangqi/wangqi-page.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/wangqi/wangqi-page.test.tsx`
-    - 处理动作：在文档列表批量操作区新增 `批量候选治理` 按钮并接入 `AiCandidateBatchDrawer`。
-    - 验收点：未选文档或无 `classics:wangqi:edit` 时按钮禁用，批量拒绝完成后展示成功数和失败数。
-    - 重要度：8/10
+    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-PROBE-LOOP.md`
+    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-domain/src/main/java/com/thundax/kuzhambu/operations/domain/health/repository/HealthCheckRepository.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/health/service/impl/HealthCheckApplicationServiceImpl.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-infra/src/main/java/com/thundax/kuzhambu/operations/infra/health/repository/impl/HealthCheckRepositoryImpl.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-infra/src/main/java/com/thundax/kuzhambu/operations/infra/health/persistence/mapper/HealthCheckMapper.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-infra/src/test/java/com/thundax/kuzhambu/operations/infra/health/repository/impl/HealthCheckRepositoryImplTest.java`
+    - 处理动作：为健康记录分页 repository 增加来源、目标和检查时间范围筛选。
+    - 验收点：repository 测试覆盖 `probeSource`、`probeTarget`、`checkedAtStart`、`checkedAtEnd` 筛选和 `checked_at desc, check_id desc` 排序。
+    - 重要度：10/10
 
-- [ ] `admin-web ming customs batch candidate entry`：接入明代习俗批量候选治理入口
+- [ ] `operations external http health probe`：实现外部 HTTP 健康探针
     - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-BATCH-CANDIDATE-GOVERNANCE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/ming-customs/ming-customs-page.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/ming-customs/ming-customs-page.test.tsx`
-    - 处理动作：在习俗列表批量操作区新增 `批量候选治理` 按钮并接入 `AiCandidateBatchDrawer`。
-    - 验收点：未选习俗或无 `classics:mingcustoms:edit` 时按钮禁用，批量应用完成后展示成功数和失败数。
-    - 重要度：8/10
+    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-PROBE-LOOP.md`
+    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/health/support/OperationsExternalHealthProbeProperties.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/health/support/OperationsExternalHealthProbeConfiguration.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/health/support/HttpOperationsHealthProbe.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/test/java/com/thundax/kuzhambu/operations/application/health/support/HttpOperationsHealthProbeTest.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/test/java/com/thundax/kuzhambu/operations/application/health/support/OperationsExternalHealthProbeConfigurationTest.java`
+    - 处理动作：新增配置驱动的 HTTP `OperationsHealthProbe` 并按 RUNBOOK 规则输出 `UP`、`DEGRADED`、`DOWN` 和 `detailsJson`。
+    - 验收点：测试覆盖禁用不注册、只注册有效 target、200 低耗时为 `UP`、200 高耗时为 `DEGRADED`、非期望状态/超时/异常为 `DOWN`。
+    - 重要度：10/10
 
-- [ ] `main sync before validation`：最终验证前同步 main 分支代码
+- [ ] `operations external probe runtime config`：补齐外部探针运行配置样例
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-PROBE-LOOP.md`
+    - 范围对象：`kuzhambu-servers/starter/kuzhambu-admin-starter/src/main/resources/application.yml`、`.env.example`、`deploy/.env.example`、`kuzhambu-servers/starter/kuzhambu-admin-starter/src/test/java/com/thundax/kuzhambu/starter/admin/AdminStarterArchitectureTest.java`
+    - 处理动作：在 starter 和 env example 中补齐 `kuzhambu.operations.health.probes` 配置样例并保持默认关闭。
+    - 验收点：默认部署不会发起外部 HTTP 探测，architecture 测试证明 starter 暴露外部探针配置前缀。
+    - 重要度：9/10
+
+- [ ] `operations alert latest check interface fields`：贯通告警 latestCheckId 接口字段
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-PROBE-LOOP.md`
+    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/health/query/OperationsHealthAlertPageQuery.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/health/controller/request/OperationsHealthAlertPageRequest.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/health/assembler/OperationsHealthAlertInterfaceAssembler.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/test/java/com/thundax/kuzhambu/operations/interfaces/admin/health/controller/OperationsHealthAlertAdminControllerTest.java`
+    - 处理动作：为健康告警分页 request/query/assembler 增加 `latestCheckId` 字段贯通。
+    - 验收点：controller 测试证明 `latestCheckId` 能从 request 传入 application query，现有告警筛选语义不变。
+    - 重要度：9/10
+
+- [ ] `operations alert latest check repository filter`：补齐告警 latestCheckId 持久化筛选
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-PROBE-LOOP.md`
+    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-domain/src/main/java/com/thundax/kuzhambu/operations/domain/health/repository/HealthAlertRepository.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/health/service/impl/HealthAlertApplicationServiceImpl.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-infra/src/main/java/com/thundax/kuzhambu/operations/infra/health/repository/impl/HealthAlertRepositoryImpl.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-infra/src/main/java/com/thundax/kuzhambu/operations/infra/health/persistence/mapper/HealthAlertMapper.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-infra/src/test/java/com/thundax/kuzhambu/operations/infra/health/repository/impl/HealthAlertRepositoryImplTest.java`
+    - 处理动作：为健康告警分页 repository 增加 `latestCheckId` 精确筛选。
+    - 验收点：repository 测试覆盖 `latest_check_id = latestCheckId` 查询，健康记录行可精确查询关联告警。
+    - 重要度：9/10
+
+- [ ] `admin-web operations health service`：新增健康分页前端服务契约
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-PROBE-LOOP.md`
+    - 范围对象：`kuzhambu-apps/admin-web/src/pages/operations/health/health-types.ts`、`kuzhambu-apps/admin-web/src/pages/operations/health/health-service.ts`、`kuzhambu-apps/admin-web/src/pages/operations/health/health-service-contract.test.ts`
+    - 处理动作：新增健康分页类型和 `getOperationsHealthPage` 服务，并锁定请求体字段。
+    - 验收点：service contract 测试证明 `/operations/health/page` 请求包含组件、状态、来源、目标、时间范围和分页字段。
+    - 重要度：9/10
+
+- [ ] `admin-web operations health page controls`：实现健康细分页控件和表格
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-PROBE-LOOP.md`
+    - 范围对象：`kuzhambu-apps/admin-web/src/pages/operations/health/health-page.tsx`、`kuzhambu-apps/admin-web/src/pages/operations/health/health-page.css`、`kuzhambu-apps/admin-web/src/pages/operations/health/health-page.test.tsx`
+    - 处理动作：实现组件、状态、来源、目标、时间范围、查询、重置、刷新、分页和健康记录表格。
+    - 验收点：页面测试覆盖首次加载、查询、重置、刷新、分页切换、HTTP 来源筛选、目标筛选、状态 tag、空值和错误提示。
+    - 重要度：10/10
+
+- [ ] `admin-web operations health detail alerts`：实现健康详情抽屉和关联告警操作
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-PROBE-LOOP.md`
+    - 范围对象：`kuzhambu-apps/admin-web/src/pages/operations/health/health-page.tsx`、`kuzhambu-apps/admin-web/src/pages/operations/health/health-page.css`、`kuzhambu-apps/admin-web/src/pages/operations/health/health-page.test.tsx`、`kuzhambu-apps/admin-web/src/pages/operations/dashboard/dashboard-service.ts`
+    - 处理动作：实现健康详情抽屉、`detailsJson` 格式化展示和 `latestCheckId=checkId` 关联告警查询。
+    - 验收点：页面测试覆盖 JSON 格式化、非 JSON 降级、空 details、查看告警、告警空状态和告警请求失败提示。
+    - 重要度：10/10
+
+- [ ] `admin-web operations health route entry`：接入健康页路由和 Dashboard 入口
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-PROBE-LOOP.md`
+    - 范围对象：`kuzhambu-apps/admin-web/src/router/index.tsx`、`kuzhambu-apps/admin-web/src/pages/operations/dashboard/dashboard-page.tsx`、`kuzhambu-apps/admin-web/src/pages/operations/dashboard/dashboard-page.test.tsx`
+    - 处理动作：新增 `/operations/health` 路由，并在 Dashboard 健康摘要区增加 `查看全部` 跳转入口。
+    - 验收点：router 可渲染健康页，Dashboard 测试覆盖入口可见和跳转，Dashboard 不新增完整分页控件。
+    - 重要度：9/10
+
+- [ ] `operations health menu seed`：补齐健康检查菜单与权限种子
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-PROBE-LOOP.md`
+    - 范围对象：`kuzhambu-servers/starter/kuzhambu-admin-starter/src/main/resources/db/data-source/system.json`、`kuzhambu-servers/starter/kuzhambu-admin-starter/src/main/resources/db/data/system.sql`、`kuzhambu-servers/starter/kuzhambu-admin-starter/src/test/java/com/thundax/kuzhambu/starter/admin/AdminStarterArchitectureTest.java`
+    - 处理动作：在 Operations 菜单下新增“健康检查”页面菜单并沿用 `operations:health:view` 权限。
+    - 验收点：JSON 和 SQL 种子菜单名称、路由 `/operations/health`、权限码一致，architecture 测试覆盖该入口。
+    - 重要度：9/10
+
+- [ ] `operations health backend targeted validation`：执行后端定向验证
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-PROBE-LOOP.md`
+    - 范围对象：`kuzhambu-servers/biz/operations/`、`kuzhambu-servers/starter/kuzhambu-admin-starter/`
+    - 处理动作：运行 RUNBOOK 指定的 Operations application、infra、interface 和 admin starter 定向测试。
+    - 验收点：HTTP 探针、健康分页筛选、告警 `latestCheckId`、健康接口契约和菜单配置相关定向测试通过。
+    - 重要度：10/10
+
+- [ ] `admin-web operations health targeted validation`：执行前端定向验证
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-PROBE-LOOP.md`
+    - 范围对象：`kuzhambu-apps/admin-web/src/pages/operations/health/`、`kuzhambu-apps/admin-web/src/pages/operations/dashboard/`
+    - 处理动作：运行 admin-web 健康页和 Dashboard 入口相关 format 与定向测试。
+    - 验收点：健康分页 service、页面控件、详情抽屉、关联告警、Dashboard 跳转入口相关前端测试通过。
+    - 重要度：10/10
+
+- [ ] `operations health main sync before validation`：最终验证前同步 main 分支代码
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`feat/classics-batch-candidate-governance` 分支
+    - 范围对象：`feat/operations-health-probe-loop` 分支
     - 处理动作：在最终验证前同步最新 `origin/main` 到当前特性分支并解决冲突。
     - 验收点：当前分支包含最新 `origin/main`，同步冲突已解决且未混入无关修改。
     - 重要度：10/10
 
-- [ ] `classics batch candidate final validation`：执行同步 main 后的最终验证
+- [ ] `operations health final validation`：执行同步 main 后的最终验证
     - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-BATCH-CANDIDATE-GOVERNANCE.md`
+    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-PROBE-LOOP.md`
     - 范围对象：`kuzhambu-servers/`、`kuzhambu-apps/admin-web/`
     - 处理动作：在同步最新 `origin/main` 后运行 RUNBOOK 指定的后端 formatter、静态检查、测试和前端 format、lint、test、build。
     - 验收点：后端 Maven 检查和测试通过，前端 format/lint/test/build 通过，失败时收窄到具体未完成任务。
     - 重要度：10/10
 
-- [ ] `classics implementation coverage closeout`：更新 Classics 完成状态并清理 RUNBOOK
+- [ ] `operations implementation coverage closeout`：更新 Operations 完成状态并清理 RUNBOOK
     - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-BATCH-CANDIDATE-GOVERNANCE.md`
-    - 范围对象：`docs/40-readiness/CLASSICS-IMPLEMENTATION-COVERAGE.md`、`docs/30-designs/RUNBOOK-CLASSICS-BATCH-CANDIDATE-GOVERNANCE.md`、`TODO.md`
+    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-PROBE-LOOP.md`
+    - 范围对象：`docs/40-readiness/OPERATIONS-IMPLEMENTATION-COVERAGE.md`、`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-PROBE-LOOP.md`、`TODO.md`
     - 处理动作：在能力完成且验证通过后更新 Implementation Coverage 为已完成，并删除已无继续价值的 RUNBOOK。
-    - 验收点：覆盖清单中“跨内容批量候选治理”改为已完成，B2 改为已完成，RUNBOOK 被清理，相关 TODO 删除或收窄。
+    - 验收点：覆盖矩阵中“健康检查与运行状态”改为已完成，本次三项目标不再列为未完成，RUNBOOK 被清理，相关 TODO 删除或收窄。
     - 重要度：10/10
 
 ## 待审阅任务项
