@@ -3,6 +3,7 @@ import type { Page } from "@/types/page";
 import type {
     SynonymRecord,
     TagAliasRecord,
+    TagBatchMergePreviewRecord,
     TagCategoryPageQuery,
     TagCategoryRecord,
     TagDetailRecord,
@@ -65,8 +66,17 @@ export interface TagMergeCommand {
     targetTagId: string;
 }
 
+export interface TagBatchMergeCommand {
+    sourceTagIds: string[];
+    targetTagId: string;
+}
+
 export interface TagDeprecateCommand {
     id: string;
+}
+
+export interface TagBatchDeprecateCommand {
+    tagIds: string[];
 }
 
 export interface TagIdCommand {
@@ -81,6 +91,13 @@ export interface TagGovernanceMetricsQuery {
 export interface TagReviewCommand {
     id: string;
     decision: "APPROVE" | "REJECT";
+    reviewNote?: string | null;
+}
+
+export interface TagBatchReviewCommand {
+    tagIds: string[];
+    decision: "APPROVE" | "REJECT";
+    categoryId?: string | null;
     reviewNote?: string | null;
 }
 
@@ -206,8 +223,29 @@ export const applyTagMerge = (request: TagMergeCommand) => {
     });
 };
 
+export const previewTagBatchMergeImpact = (request: TagBatchMergeCommand) => {
+    return postJson<TagBatchMergePreviewRecord, TagBatchMergeCommand>(
+        `${API_PREFIX}/tag/merge/batch-preview`,
+        {
+            body: request
+        }
+    );
+};
+
+export const applyTagBatchMerge = (request: TagBatchMergeCommand) => {
+    return postJson<boolean, TagBatchMergeCommand>(`${API_PREFIX}/tag/merge/batch-apply`, {
+        body: request
+    });
+};
+
 export const deprecateTag = (request: TagDeprecateCommand) => {
     return postJson<boolean, TagDeprecateCommand>(`${API_PREFIX}/tag/deprecate`, {
+        body: request
+    });
+};
+
+export const deprecateBatchTags = (request: TagBatchDeprecateCommand) => {
+    return postJson<boolean, TagBatchDeprecateCommand>(`${API_PREFIX}/tag/deprecate/batch`, {
         body: request
     });
 };
@@ -220,6 +258,12 @@ export const pagePendingTags = (request: TagReviewPageQuery = {}) => {
 
 export const reviewTag = (request: TagReviewCommand) => {
     return postJson<boolean, TagReviewCommand>(`${API_PREFIX}/tag/review`, {
+        body: request
+    });
+};
+
+export const reviewBatchTags = (request: TagBatchReviewCommand) => {
+    return postJson<boolean, TagBatchReviewCommand>(`${API_PREFIX}/tag/review/batch`, {
         body: request
     });
 };

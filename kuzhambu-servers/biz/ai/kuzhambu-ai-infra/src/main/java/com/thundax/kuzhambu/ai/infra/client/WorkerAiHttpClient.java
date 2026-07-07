@@ -354,7 +354,8 @@ public class WorkerAiHttpClient implements WorkerAiClient {
         event.setTraceId(defaultString(text(node, "traceId"), command.getTraceId()));
         event.setStage(text(node, "stage"));
         event.setTimestamp(toInstant(text(node, "timestamp")));
-        event.setDeltaText(payloadToString(node.path("delta").path("text")));
+        event.setDeltaText(defaultString(
+                text(node, "deltaText"), payloadToString(node.path("delta").path("text"))));
         event.setStatus(defaultString(text(node, "status"), text(node.path("extra"), "status")));
         event.setFailureStage(text(node.path("extra"), "failureStage"));
         event.setFallbackUsed(Boolean.parseBoolean(text(node.path("extra"), "fallbackUsed")));

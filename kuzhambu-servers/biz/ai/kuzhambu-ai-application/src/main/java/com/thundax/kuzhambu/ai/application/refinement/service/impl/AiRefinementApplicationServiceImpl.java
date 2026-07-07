@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.ai.application.refinement.service.impl;
 
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
+import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService;
 import com.thundax.kuzhambu.ai.application.invocation.support.AiWorkerModelConfigResolver;
 import com.thundax.kuzhambu.ai.application.refinement.command.AiRefinementRequestCommand;
@@ -10,6 +11,7 @@ import com.thundax.kuzhambu.ai.application.refinement.service.AiRefinementApplic
 import com.thundax.kuzhambu.ai.application.refinement.support.ClassicsAiWorkerUsecaseResolver;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
+import java.util.function.Consumer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -63,7 +65,13 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
 
     @Override
     public AiCandidateResult analyzeImage(AiRefinementRequestCommand command) {
-        return invokeCandidate(command, CAPABILITY_IMAGE_ANALYSIS);
+        return analyzeImage(command, event -> {});
+    }
+
+    @Override
+    public AiCandidateResult analyzeImage(
+            AiRefinementRequestCommand command, Consumer<AiStreamEventResult> eventConsumer) {
+        return invokeCandidate(command, CAPABILITY_IMAGE_ANALYSIS, eventConsumer);
     }
 
     @Override
@@ -73,7 +81,13 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
 
     @Override
     public AiCandidateResult generateImage(AiRefinementRequestCommand command) {
-        return invokeCandidate(command, CAPABILITY_IMAGE_GEN);
+        return generateImage(command, event -> {});
+    }
+
+    @Override
+    public AiCandidateResult generateImage(
+            AiRefinementRequestCommand command, Consumer<AiStreamEventResult> eventConsumer) {
+        return invokeCandidate(command, CAPABILITY_IMAGE_GEN, eventConsumer);
     }
 
     @Override
@@ -87,6 +101,11 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
     }
 
     private AiCandidateResult invokeCandidate(AiRefinementRequestCommand command, String capability) {
+        return invokeCandidate(command, capability, event -> {});
+    }
+
+    private AiCandidateResult invokeCandidate(
+            AiRefinementRequestCommand command, String capability, Consumer<AiStreamEventResult> eventConsumer) {
         validateCommand(command);
         var spec = classicsAiWorkerUsecaseResolver.resolve(command.getContentType(), capability);
         AiInvokeCommand invokeCommand = command.toInvokeCommand(capability);
@@ -97,7 +116,8 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
             invokeCommand.setStream(true);
         }
         AiInvokeResult result = CAPABILITY_IMAGE_ANALYSIS.equals(capability) || CAPABILITY_IMAGE_GEN.equals(capability)
-                ? invocationApplicationService.stream(invokeCommand, event -> {})
+                ? invocationApplicationService.stream(
+                        invokeCommand, eventConsumer == null ? event -> {} : eventConsumer)
                 : invocationApplicationService.invoke(invokeCommand);
         return AiCandidateResult.from(result);
     }

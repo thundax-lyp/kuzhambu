@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Branch sync main`：同步 main 分支最新代码
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`feat/operations-health-recovery-loop` 分支、`main` 分支
-    - 处理动作：在功能验证通过后同步 `main` 最新代码并解决本分支冲突。
-    - 验收点：同步后重新运行受影响的最小验证，工作区不混入无关修改。
-    - 重要度：10/10
-
 - [ ] `Operations final validation after main sync`：同步 main 后执行最终验证
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`

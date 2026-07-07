@@ -7,6 +7,7 @@ import type {
 
 interface CapturedCall {
     body: unknown;
+    headers?: HeadersInit;
     method: string | undefined;
     path: string;
 }
@@ -38,9 +39,32 @@ const installFetchRecorder = () => {
         const url = readFetchUrl(input);
         capturedCalls.push({
             body: readFetchBody(init?.body),
+            headers: init?.headers,
             method: init?.method,
             path: url.replace(API_PREFIX, "").replace(DEV_PROXY_PREFIX, "")
         });
+
+        if (url.includes("/ai/refinement/task/stream")) {
+            const encoder = new TextEncoder();
+            return new Response(
+                new ReadableStream({
+                    start(controller) {
+                        controller.enqueue(
+                            encoder.encode(
+                                'event:delta\ndata: {"eventType":"delta","deltaText":"片段"}\n\n'
+                            )
+                        );
+                        controller.close();
+                    }
+                }),
+                {
+                    headers: {
+                        "Content-Type": "text/event-stream"
+                    },
+                    status: 200
+                }
+            );
+        }
 
         return new Response(
             JSON.stringify({
@@ -111,6 +135,10 @@ describe("AI refinement task service request contracts", () => {
 
         expect(capturedCalls.at(-1)).toEqual({
             body: command,
+            headers: {
+                "Access-Token": "test-token",
+                "Content-Type": "application/json"
+            },
             method: "POST",
             path: "/ai/refinement/task/add"
         });
@@ -122,6 +150,10 @@ describe("AI refinement task service request contracts", () => {
         expect(capturedCalls.at(-1)).toEqual({
             body: {
                 taskId: 7001
+            },
+            headers: {
+                "Access-Token": "test-token",
+                "Content-Type": "application/json"
             },
             method: "POST",
             path: "/ai/refinement/task/get"
@@ -149,6 +181,10 @@ describe("AI refinement task service request contracts", () => {
                 pageNo: 1,
                 pageSize: 20
             },
+            headers: {
+                "Access-Token": "test-token",
+                "Content-Type": "application/json"
+            },
             method: "POST",
             path: "/ai/refinement/task/page"
         });
@@ -164,8 +200,37 @@ describe("AI refinement task service request contracts", () => {
 
         expect(capturedCalls.at(-1)).toEqual({
             body: command,
+            headers: {
+                "Access-Token": "test-token",
+                "Content-Type": "application/json"
+            },
             method: "POST",
             path: "/ai/refinement/task/cancel"
         });
+    });
+
+    it("subscribes task stream with access token header", async () => {
+        const events: unknown[] = [];
+
+        await aiRefinementTaskService.requestTaskStream({
+            taskId: 7001,
+            onEvent: (event) => events.push(event)
+        });
+
+        expect(capturedCalls.at(-1)).toEqual({
+            body: undefined,
+            headers: {
+                "Access-Token": "test-token"
+            },
+            method: "GET",
+            path: "/ai/refinement/task/stream?taskId=7001"
+        });
+        expect(events).toEqual([
+            {
+                eventType: "delta",
+                deltaText: "片段",
+                eventId: null
+            }
+        ]);
     });
 });

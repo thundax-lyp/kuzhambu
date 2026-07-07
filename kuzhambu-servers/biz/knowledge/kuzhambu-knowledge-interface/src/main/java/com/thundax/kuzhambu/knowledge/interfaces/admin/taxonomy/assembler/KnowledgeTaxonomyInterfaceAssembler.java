@@ -7,6 +7,9 @@ import com.thundax.kuzhambu.knowledge.application.taxonomy.command.SynonymStatus
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.SynonymUpdateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagAliasCreateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagAliasRemoveCommand;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagBatchDeprecateCommand;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagBatchMergeCommand;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagBatchReviewCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCandidateApplyCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCandidateApplyCommand.TagCandidateApplyItemCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCategoryCreateCommand;
@@ -20,6 +23,7 @@ import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagReviewComm
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagStatusCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagUpdateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.SynonymPageQuery;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagBatchMergePreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagCategoryPageQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagGovernanceMetricsQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagMergePreviewQuery;
@@ -27,6 +31,7 @@ import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagPageQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagReviewPageQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.SynonymResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagAliasResult;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagBatchMergePreviewResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagCategoryResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagContentRefResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagDetailResult;
@@ -50,6 +55,9 @@ import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.reque
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.SynonymUpdateRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagAliasCreateRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagAliasRemoveRequest;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagBatchDeprecateRequest;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagBatchMergeRequest;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagBatchReviewRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagCandidateApplyRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagCandidateApplyRequest.TagCandidateApplyItemRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagCategoryCreateRequest;
@@ -69,6 +77,7 @@ import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.reque
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.request.TagUpdateRequest;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.response.SynonymResponse;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.response.TagAliasResponse;
+import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.response.TagBatchMergePreviewResponse;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.response.TagCategoryResponse;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.response.TagContentRefResponse;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.taxonomy.controller.response.TagDetailResponse;
@@ -169,8 +178,24 @@ public final class KnowledgeTaxonomyInterfaceAssembler {
                 TagIdCodec.toDomain(request.getSourceTagId()), TagIdCodec.toDomain(request.getTargetTagId()));
     }
 
+    public static TagBatchMergePreviewQuery toBatchMergePreviewQuery(TagBatchMergeRequest request) {
+        return new TagBatchMergePreviewQuery(
+                toTagIds(request == null ? null : request.getSourceTagIds()),
+                TagIdCodec.toDomain(request == null ? null : request.getTargetTagId()));
+    }
+
+    public static TagBatchMergeCommand toBatchMergeCommand(TagBatchMergeRequest request) {
+        return new TagBatchMergeCommand(
+                toTagIds(request == null ? null : request.getSourceTagIds()),
+                TagIdCodec.toDomain(request == null ? null : request.getTargetTagId()));
+    }
+
     public static TagDeprecateCommand toDeprecateCommand(TagDeprecateRequest request) {
         return new TagDeprecateCommand(TagIdCodec.toDomain(request.getId()));
+    }
+
+    public static TagBatchDeprecateCommand toBatchDeprecateCommand(TagBatchDeprecateRequest request) {
+        return new TagBatchDeprecateCommand(toTagIds(request == null ? null : request.getTagIds()));
     }
 
     public static TagGovernanceMetricsQuery toMetricsQuery(TagGovernanceMetricsRequest request) {
@@ -196,6 +221,14 @@ public final class KnowledgeTaxonomyInterfaceAssembler {
     public static TagReviewCommand toReviewCommand(TagReviewRequest request) {
         return new TagReviewCommand(
                 TagIdCodec.toDomain(request.getId()), request.getDecision(), request.getReviewNote());
+    }
+
+    public static TagBatchReviewCommand toBatchReviewCommand(TagBatchReviewRequest request) {
+        return new TagBatchReviewCommand(
+                toTagIds(request == null ? null : request.getTagIds()),
+                request == null ? null : request.getDecision(),
+                TagCategoryIdCodec.toDomain(request == null ? null : request.getCategoryId()),
+                request == null ? null : request.getReviewNote());
     }
 
     public static TagExtractionCommand toExtractionCommand(TagExtractionRequest request) {
@@ -363,6 +396,32 @@ public final class KnowledgeTaxonomyInterfaceAssembler {
         return response;
     }
 
+    public static TagBatchMergePreviewResponse toResponse(TagBatchMergePreviewResult result) {
+        TagBatchMergePreviewResponse response = new TagBatchMergePreviewResponse();
+        response.setSourceTags(
+                result == null || result.getSourceTags() == null
+                        ? null
+                        : result.getSourceTags().stream()
+                                .map(KnowledgeTaxonomyInterfaceAssembler::toResponse)
+                                .toList());
+        response.setTargetTag(result == null ? null : toResponse(result.getTargetTag()));
+        response.setAliasesToMerge(
+                result == null || result.getAliasesToMerge() == null
+                        ? null
+                        : result.getAliasesToMerge().stream()
+                                .map(KnowledgeTaxonomyInterfaceAssembler::toResponse)
+                                .toList());
+        response.setImpactedContentRefs(
+                result == null || result.getImpactedContentRefs() == null
+                        ? null
+                        : result.getImpactedContentRefs().stream()
+                                .map(KnowledgeTaxonomyInterfaceAssembler::toResponse)
+                                .toList());
+        response.setPendingReviewCount(result == null ? null : result.getPendingReviewCount());
+        response.setGovernedRecordCount(result == null ? null : result.getGovernedRecordCount());
+        return response;
+    }
+
     public static TagGovernanceMetricsResponse toResponse(TagGovernanceMetricsResult result) {
         TagGovernanceMetricsResponse response = new TagGovernanceMetricsResponse();
         response.setTopTags(
@@ -456,6 +515,11 @@ public final class KnowledgeTaxonomyInterfaceAssembler {
                 : list.stream()
                         .map(KnowledgeTaxonomyInterfaceAssembler::toResponse)
                         .toList();
+    }
+
+    private static List<com.thundax.kuzhambu.knowledge.domain.taxonomy.model.valueobject.TagId> toTagIds(
+            List<String> tagIds) {
+        return tagIds == null ? null : tagIds.stream().map(TagIdCodec::toDomain).toList();
     }
 
     private static SortDirection resolveSortDirection(String sortDirection) {

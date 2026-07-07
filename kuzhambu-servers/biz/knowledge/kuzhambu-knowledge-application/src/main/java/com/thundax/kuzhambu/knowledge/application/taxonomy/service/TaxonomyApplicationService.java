@@ -8,6 +8,9 @@ import com.thundax.kuzhambu.knowledge.application.taxonomy.command.SynonymStatus
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.SynonymUpdateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagAliasCreateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagAliasRemoveCommand;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagBatchDeprecateCommand;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagBatchMergeCommand;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagBatchReviewCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCandidateApplyCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCategoryCreateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagCategoryStatusCommand;
@@ -20,6 +23,7 @@ import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagReviewComm
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagStatusCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.command.TagUpdateCommand;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.SynonymPageQuery;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagBatchMergePreviewQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagCategoryPageQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagGovernanceMetricsQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagMergePreviewQuery;
@@ -27,6 +31,7 @@ import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagPageQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.query.TagReviewPageQuery;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.SynonymResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagAliasResult;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagBatchMergePreviewResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagCategoryResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagDetailResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagExtractionResult;
@@ -55,7 +60,11 @@ public interface TaxonomyApplicationService {
 
     TagMergePreviewResult previewTagMergeImpact(TagMergePreviewQuery query);
 
+    TagBatchMergePreviewResult previewTagBatchMergeImpact(TagBatchMergePreviewQuery query);
+
     void applyTagMerge(TagMergeCommand command);
+
+    void applyTagBatchMerge(TagBatchMergeCommand command);
 
     TagId createTag(TagCreateCommand command);
 
@@ -65,11 +74,15 @@ public interface TaxonomyApplicationService {
 
     void deprecateTag(TagDeprecateCommand command);
 
+    void batchDeprecateTags(TagBatchDeprecateCommand command);
+
     TagGovernanceMetricsResult getTagGovernanceMetrics(TagGovernanceMetricsQuery query);
 
     PageResult<TagResult> pagePendingTags(TagReviewPageQuery query, PageQuery page);
 
     void reviewTag(TagReviewCommand command);
+
+    void batchReviewTags(TagBatchReviewCommand command);
 
     TagExtractionResult extractTags(TagExtractionCommand command);
 

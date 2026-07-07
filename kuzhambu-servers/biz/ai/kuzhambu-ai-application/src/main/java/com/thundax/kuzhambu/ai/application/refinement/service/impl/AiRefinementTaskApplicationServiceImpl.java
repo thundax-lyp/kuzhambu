@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.ai.application.refinement.service.impl;
 
+import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
 import com.thundax.kuzhambu.ai.application.refinement.command.AiRefinementRequestCommand;
 import com.thundax.kuzhambu.ai.application.refinement.result.AiCandidateResult;
 import com.thundax.kuzhambu.ai.application.refinement.service.AiRefinementApplicationService;
@@ -10,8 +11,15 @@ import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +28,9 @@ import org.springframework.transaction.annotation.Transactional;
 @BizExceptionBoundary
 public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskApplicationService {
 
+    private static final String CONTENT_TYPE_SANCAI_ENTRY = "SANCAI_ENTRY";
+    private static final String CAPABILITY_IMAGE_ANALYSIS = "image_analysis";
+    private static final String CAPABILITY_IMAGE_GEN = "image_gen";
     private static final String STATUS_PENDING = "PENDING";
     private static final String STATUS_RUNNING = "RUNNING";
     private static final String STATUS_SUCCEEDED = "SUCCEEDED";
@@ -27,9 +38,11 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
     private static final String STATUS_PARTIAL = "PARTIAL";
     private static final String STATUS_CANCELLED = "CANCELLED";
     private static final int RESULT_PREVIEW_MAX_LENGTH = 500;
+    private static final Duration STREAM_SUBSCRIBE_TIMEOUT = Duration.ofMinutes(10L);
 
     private final AiRefinementTaskRepository taskRepository;
     private final AiRefinementApplicationService refinementApplicationService;
+    private final ConcurrentHashMap<Long, TaskStreamHub> streamHubs = new ConcurrentHashMap<>();
 
     public AiRefinementTaskApplicationServiceImpl(
             AiRefinementTaskRepository taskRepository, AiRefinementApplicationService refinementApplicationService) {
@@ -56,6 +69,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
         task.setModelId(command.getModelId());
         task.setModelName(command.getModelName());
         task.setPromptVersionId(command.getPromptVersionId());
+        task.setStreamEnabled(isStreamEnabledTask(command));
         task.setRequestedAt(now);
         Long taskId = taskRepository.saveTask(task);
         task.setTaskId(taskId);
@@ -94,6 +108,17 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
     }
 
     @Override
+    public void streamTaskEvents(Long taskId, Consumer<AiStreamEventResult> eventConsumer) {
+        AiRefinementTask task = getRequiredTask(taskId);
+        if (!task.isStreamEnabled()) {
+            throw new BizException("AI refinement task stream is not enabled: " + taskId);
+        }
+        TaskStreamHub hub = streamHubs.computeIfAbsent(taskId, ignored -> new TaskStreamHub());
+        publishSnapshotIfTerminal(hub, task);
+        hub.subscribe(eventConsumer, STREAM_SUBSCRIBE_TIMEOUT);
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public AiRefinementTask cancelTask(Long taskId, Long requestedBy) {
         AiRefinementTask task = getRequiredTask(taskId);
@@ -120,7 +145,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
 
         AiCandidateResult result;
         try {
-            result = invoke(command);
+            result = invoke(taskId, command, task.isStreamEnabled());
         } catch (RuntimeException exception) {
             result = new AiCandidateResult(
                     null,
@@ -132,6 +157,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
                     null,
                     "INTERNAL_FAILURE",
                     exception.getMessage());
+            publishFailureEvent(taskId, command, result);
         }
 
         AiRefinementTask latestTask = taskRepository.getTask(taskId);
@@ -140,9 +166,10 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
         }
         applyResult(latestTask, result);
         taskRepository.updateTask(latestTask);
+        publishTerminalEvent(taskId, latestTask, result);
     }
 
-    private AiCandidateResult invoke(AiRefinementRequestCommand command) {
+    private AiCandidateResult invoke(Long taskId, AiRefinementRequestCommand command, boolean streamEnabled) {
         String capability = command.getCapability();
         if ("translate".equals(capability)) {
             return refinementApplicationService.translate(command);
@@ -157,13 +184,17 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
             return refinementApplicationService.generateQa(command);
         }
         if ("image_analysis".equals(capability)) {
-            return refinementApplicationService.analyzeImage(command);
+            return streamEnabled
+                    ? refinementApplicationService.analyzeImage(command, event -> publishStreamEvent(taskId, event))
+                    : refinementApplicationService.analyzeImage(command);
         }
         if ("visual".equals(capability)) {
             return refinementApplicationService.describeVisual(command);
         }
         if ("image_gen".equals(capability)) {
-            return refinementApplicationService.generateImage(command);
+            return streamEnabled
+                    ? refinementApplicationService.generateImage(command, event -> publishStreamEvent(taskId, event))
+                    : refinementApplicationService.generateImage(command);
         }
         if ("split".equals(capability)) {
             return refinementApplicationService.splitEntry(command);
@@ -180,7 +211,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
             return;
         }
         task.setCallId(result == null ? null : result.getCallId());
-        task.setCandidateId(result == null ? null : result.getCandidateId());
+        task.setCandidateId(result == null || task.isStreamEnabled() ? null : result.getCandidateId());
         task.setResultFormat(result == null ? null : result.getResultFormat());
         task.setResultPreview(preview);
         task.setFailureStage(result == null ? "WORKER_RESULT" : result.getFailureStage());
@@ -235,6 +266,93 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
                 || STATUS_CANCELLED.equals(status);
     }
 
+    private boolean isStreamEnabledTask(AiRefinementRequestCommand command) {
+        if (command == null || !CONTENT_TYPE_SANCAI_ENTRY.equals(command.getContentType())) {
+            return false;
+        }
+        return CAPABILITY_IMAGE_ANALYSIS.equals(command.getCapability())
+                || CAPABILITY_IMAGE_GEN.equals(command.getCapability());
+    }
+
+    private void publishStreamEvent(Long taskId, AiStreamEventResult event) {
+        if (taskId == null || event == null) {
+            return;
+        }
+        streamHubs.computeIfAbsent(taskId, ignored -> new TaskStreamHub()).publish(event);
+    }
+
+    private void publishTerminalEvent(Long taskId, AiRefinementTask task, AiCandidateResult result) {
+        if (taskId == null || task == null || !task.isStreamEnabled()) {
+            return;
+        }
+        TaskStreamHub hub = streamHubs.computeIfAbsent(taskId, ignored -> new TaskStreamHub());
+        if (hub.hasTerminalEvent()) {
+            return;
+        }
+        if (STATUS_SUCCEEDED.equals(task.getStatus())) {
+            hub.publish(toCompletedEvent(task, result));
+            return;
+        }
+        if (isTerminal(task.getStatus())) {
+            hub.publish(toErrorEvent(task));
+        }
+    }
+
+    private void publishFailureEvent(Long taskId, AiRefinementRequestCommand command, AiCandidateResult result) {
+        if (taskId == null || command == null || !isStreamEnabledTask(command)) {
+            return;
+        }
+        AiRefinementTask task = new AiRefinementTask();
+        task.setRequestId(command.getRequestId());
+        task.setTraceId(command.getTraceId());
+        task.setStatus(STATUS_FAILED);
+        task.setFailureStage(result == null ? "WORKER_REQUEST" : result.getFailureStage());
+        task.setErrorType(result == null ? "INTERNAL_FAILURE" : result.getErrorType());
+        task.setErrorMessage(result == null ? "Worker request failed" : result.getErrorMessage());
+        streamHubs.computeIfAbsent(taskId, ignored -> new TaskStreamHub()).publish(toErrorEvent(task));
+    }
+
+    private void publishSnapshotIfTerminal(TaskStreamHub hub, AiRefinementTask task) {
+        if (hub.hasTerminalEvent() || task == null || !isTerminal(task.getStatus())) {
+            return;
+        }
+        if (STATUS_SUCCEEDED.equals(task.getStatus())) {
+            hub.publish(toCompletedEvent(task, null));
+            return;
+        }
+        hub.publish(toErrorEvent(task));
+    }
+
+    private AiStreamEventResult toCompletedEvent(AiRefinementTask task, AiCandidateResult result) {
+        AiStreamEventResult event = baseEvent(task);
+        event.setEventType("completed");
+        event.setStage("completed");
+        event.setStatus(STATUS_SUCCEEDED);
+        event.setResultFormat(result == null ? task.getResultFormat() : result.getResultFormat());
+        event.setResultPayload(result == null ? task.getResultPreview() : result.getResultPayload());
+        return event;
+    }
+
+    private AiStreamEventResult toErrorEvent(AiRefinementTask task) {
+        AiStreamEventResult event = baseEvent(task);
+        event.setEventType("error");
+        event.setStage(task.getFailureStage());
+        event.setStatus(task.getStatus());
+        event.setFailureStage(task.getFailureStage());
+        event.setErrorType(task.getErrorType());
+        event.setErrorMessage(task.getErrorMessage());
+        return event;
+    }
+
+    private AiStreamEventResult baseEvent(AiRefinementTask task) {
+        AiStreamEventResult event = new AiStreamEventResult();
+        event.setEventId("task-" + task.getTaskId() + "-" + System.currentTimeMillis());
+        event.setRequestId(task.getRequestId());
+        event.setTraceId(task.getTraceId());
+        event.setTimestamp(Instant.now());
+        return event;
+    }
+
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
     }
@@ -244,5 +362,61 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
             return value;
         }
         return value.substring(0, RESULT_PREVIEW_MAX_LENGTH);
+    }
+
+    private static final class TaskStreamHub {
+
+        private final List<AiStreamEventResult> events = new ArrayList<>();
+        private final List<Consumer<AiStreamEventResult>> consumers = new ArrayList<>();
+        private final CountDownLatch terminalLatch = new CountDownLatch(1);
+        private boolean terminalEvent;
+
+        void publish(AiStreamEventResult event) {
+            List<Consumer<AiStreamEventResult>> currentConsumers;
+            synchronized (this) {
+                events.add(event);
+                if (event.isCompleted() || event.isError()) {
+                    terminalEvent = true;
+                    terminalLatch.countDown();
+                }
+                currentConsumers = List.copyOf(consumers);
+            }
+            currentConsumers.forEach(consumer -> notifyConsumer(consumer, event));
+        }
+
+        void subscribe(Consumer<AiStreamEventResult> consumer, Duration timeout) {
+            if (consumer == null) {
+                return;
+            }
+            List<AiStreamEventResult> snapshot;
+            synchronized (this) {
+                consumers.add(consumer);
+                snapshot = List.copyOf(events);
+            }
+            snapshot.forEach(event -> notifyConsumer(consumer, event));
+            try {
+                terminalLatch.await(timeout.toMillis(), TimeUnit.MILLISECONDS);
+            } catch (InterruptedException exception) {
+                Thread.currentThread().interrupt();
+            } finally {
+                synchronized (this) {
+                    consumers.remove(consumer);
+                }
+            }
+        }
+
+        synchronized boolean hasTerminalEvent() {
+            return terminalEvent;
+        }
+
+        private void notifyConsumer(Consumer<AiStreamEventResult> consumer, AiStreamEventResult event) {
+            try {
+                consumer.accept(event);
+            } catch (RuntimeException exception) {
+                synchronized (this) {
+                    consumers.remove(consumer);
+                }
+            }
+        }
     }
 }

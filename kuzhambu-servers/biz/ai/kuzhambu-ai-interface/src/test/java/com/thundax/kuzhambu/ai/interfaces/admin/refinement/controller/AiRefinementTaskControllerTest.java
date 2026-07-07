@@ -1,10 +1,12 @@
 package com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.thundax.kuzhambu.ai.application.batch.command.AiBatchJobCreateCommand;
 import com.thundax.kuzhambu.ai.application.batch.result.AiBatchJobResult;
 import com.thundax.kuzhambu.ai.application.batch.service.AiBatchJobApplicationService;
+import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
 import com.thundax.kuzhambu.ai.application.refinement.command.AiRefinementRequestCommand;
 import com.thundax.kuzhambu.ai.application.refinement.service.AiRefinementTaskApplicationService;
 import com.thundax.kuzhambu.ai.domain.refinement.model.entity.AiRefinementTask;
@@ -16,7 +18,10 @@ import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import java.lang.reflect.Method;
 import java.time.Instant;
 import java.util.List;
+import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -37,6 +42,7 @@ class AiRefinementTaskControllerTest {
                 "get",
                 "ai:refinement:view",
                 AiRefinementRequests.TaskIdRequest.class);
+        assertGetMapping(AiRefinementTaskController.class, "streamTask", "stream", "ai:refinement:view", Long.class);
         assertPostMapping(
                 AiRefinementTaskController.class,
                 "pageTasks",
@@ -107,9 +113,12 @@ class AiRefinementTaskControllerTest {
 
         assertEquals(7001L, accepted.getTaskId());
         assertEquals("PENDING", accepted.getStatus());
+        assertNotNull(controller.streamTask(7001L));
         assertEquals(9001L, detail.getCallId());
         assertEquals(9002L, detail.getCandidateId());
+        assertEquals(true, detail.getStreamEnabled());
         assertEquals(1, page.getItems().size());
+        assertEquals(true, page.getItems().get(0).getStreamEnabled());
         assertEquals(1L, page.getTotal());
         assertEquals("CANCELLED", cancelled.getStatus());
     }
@@ -129,6 +138,21 @@ class AiRefinementTaskControllerTest {
         Method method = controllerType.getDeclaredMethod(methodName, parameterType);
         PostMapping mapping = method.getAnnotation(PostMapping.class);
         assertEquals(expectedPath, mapping.value()[0]);
+        HasPermission permission = method.getAnnotation(HasPermission.class);
+        assertEquals(permissionValue, permission.value()[0]);
+    }
+
+    private static void assertGetMapping(
+            Class<?> controllerType,
+            String methodName,
+            String expectedPath,
+            String permissionValue,
+            Class<?> parameterType)
+            throws Exception {
+        Method method = controllerType.getDeclaredMethod(methodName, parameterType);
+        GetMapping mapping = method.getAnnotation(GetMapping.class);
+        assertEquals(expectedPath, mapping.value()[0]);
+        assertEquals(MediaType.TEXT_EVENT_STREAM_VALUE, mapping.produces()[0]);
         HasPermission permission = method.getAnnotation(HasPermission.class);
         assertEquals(permissionValue, permission.value()[0]);
     }
@@ -202,6 +226,17 @@ class AiRefinementTaskControllerTest {
         }
 
         @Override
+        public void streamTaskEvents(Long taskId, Consumer<AiStreamEventResult> eventConsumer) {
+            AiStreamEventResult event = new AiStreamEventResult();
+            event.setEventType("completed");
+            event.setEventId("evt-1");
+            event.setRequestId("req-1");
+            event.setTraceId("trace-1");
+            event.setStatus("SUCCEEDED");
+            eventConsumer.accept(event);
+        }
+
+        @Override
         public AiRefinementTask cancelTask(Long taskId, Long requestedBy) {
             AiRefinementTask task = baseTask();
             task.setTaskId(taskId);
@@ -225,6 +260,7 @@ class AiRefinementTaskControllerTest {
             task.setModelId(201L);
             task.setModelName("gpt-test");
             task.setPromptVersionId(301L);
+            task.setStreamEnabled(true);
             return task;
         }
     }

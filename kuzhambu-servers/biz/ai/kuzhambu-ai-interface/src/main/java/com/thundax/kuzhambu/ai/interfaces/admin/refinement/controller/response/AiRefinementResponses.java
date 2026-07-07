@@ -148,6 +148,10 @@ public final class AiRefinementResponses {
         @JsonProperty(value = "errorMessage")
         private String errorMessage;
 
+        @Schema(description = "是否允许前端订阅流式过程")
+        @JsonProperty(value = "streamEnabled")
+        private Boolean streamEnabled;
+
         @Schema(description = "结果预览格式；仅表示当前任务结果预览类型，不代表正式写回字段")
         @JsonProperty(value = "resultFormat")
         private String resultFormat;

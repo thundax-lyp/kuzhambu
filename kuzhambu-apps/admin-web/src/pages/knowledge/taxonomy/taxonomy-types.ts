@@ -37,6 +37,15 @@ export interface TagMergePreviewRecord {
     governedRecordCount?: number | null;
 }
 
+export interface TagBatchMergePreviewRecord {
+    sourceTags?: TagRecord[] | null;
+    targetTag?: TagRecord | null;
+    aliasesToMerge?: TagAliasRecord[] | null;
+    impactedContentRefs?: TagContentRefRecord[] | null;
+    pendingReviewCount?: number | null;
+    governedRecordCount?: number | null;
+}
+
 export interface TagGovernanceMetricsRecord {
     topTags?: TagUsageMetricRecord[] | null;
     categoryDistributions?: CategoryDistributionMetricRecord[] | null;

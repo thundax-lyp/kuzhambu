@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Alert, App, Button, Card, Empty, Input, Switch, Tag, Typography, Upload } from "antd";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import type { KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
@@ -11,6 +11,7 @@ import * as currentUserService from "@/service/current-user-service";
 import { ClassicsExportJobSection } from "@/pages/classics/common/components/classics-export-job-section";
 import { ClassicsShowcaseJobSection } from "@/pages/classics/common/components/classics-showcase-job-section";
 import { AiCandidatePanel } from "@/pages/classics/common/components/ai-candidate-panel";
+import { AiRefinementStreamPanel } from "@/pages/classics/common/components/ai-refinement-stream-panel";
 import { ClassicsContentQaPanel } from "@/pages/classics/common/components/classics-content-qa-panel";
 import { ClassicsContentTagPanel } from "@/pages/classics/common/components/classics-content-tag-panel";
 import { SancaiEntryImagePreview } from "./sancai-entry-image-preview";
@@ -88,6 +89,7 @@ export const SancaiEntryPanel = ({
     const [imageUploadTitle, setImageUploadTitle] = useState("");
     const [imageUploadType, setImageUploadType] = useState("ORIGINAL");
     const [imageUploadCurrentUsed, setImageUploadCurrentUsed] = useState(true);
+    const candidatePanelRef = useRef<HTMLDivElement | null>(null);
     const currentUserQuery = useQuery({
         queryKey: ["sys", "current-user", "info"],
         queryFn: currentUserService.getCurrentUserInfo,
@@ -234,13 +236,19 @@ export const SancaiEntryPanel = ({
     const {
         setSelectedVisualAsset,
         selectedVisualAssetId,
+        streamingRefinementTask,
+        streamEvents,
+        isStreamingRefinementTask,
+        streamErrorText,
         entryTagNames,
         creatingRefinementCapability,
         retryingRefinementTaskId,
         invalidateSancaiContentGovernance,
+        invalidateSancaiContentCandidates,
         refreshSancaiEntryDetail,
         createRefinementTask,
         retryRefinementTask,
+        closeStreamingRefinementTask,
         refreshAfterVisualAssetCandidateHandled,
         resetHandledSucceededTaskIds
     } = useSancaiEntryPanelState({
@@ -479,6 +487,7 @@ export const SancaiEntryPanel = ({
     };
 
     const closeModel = () => {
+        closeStreamingRefinementTask();
         setIsCreating(false);
         setSelectedVisualAsset(null);
         setEditingEntry(null);
@@ -1037,24 +1046,51 @@ export const SancaiEntryPanel = ({
                                         })}
                                 </div>
                             </Card>
-                            {selectedVisualAssetId ? (
-                                <AiCandidatePanel
-                                    capabilities={[
-                                        "image_analysis",
-                                        "visual",
-                                        "fusion",
-                                        "image_gen"
-                                    ]}
-                                    contentId={selectedEntry.id}
-                                    contentType="SANCAI_ENTRY"
-                                    objectId={selectedVisualAssetId}
-                                    onApplied={async () => {
-                                        await refreshAfterVisualAssetCandidateHandled();
-                                    }}
-                                    onRejected={async () => {
-                                        await refreshAfterVisualAssetCandidateHandled();
+                            {streamingRefinementTask ? (
+                                <AiRefinementStreamPanel
+                                    events={streamEvents}
+                                    isStreaming={isStreamingRefinementTask}
+                                    streamErrorText={streamErrorText}
+                                    task={streamingRefinementTask}
+                                    onClose={closeStreamingRefinementTask}
+                                    onRetry={() => retryRefinementTask(streamingRefinementTask)}
+                                    onViewCandidate={() => {
+                                        void invalidateSancaiContentCandidates(
+                                            streamingRefinementTask.objectId ??
+                                                selectedVisualAssetId
+                                        );
+                                        candidatePanelRef.current?.scrollIntoView({
+                                            block: "start",
+                                            behavior: "smooth"
+                                        });
+                                        candidatePanelRef.current?.focus();
                                     }}
                                 />
+                            ) : null}
+                            {selectedVisualAssetId ? (
+                                <div
+                                    ref={candidatePanelRef}
+                                    className="sancai-candidate-panel-anchor"
+                                    tabIndex={-1}
+                                >
+                                    <AiCandidatePanel
+                                        capabilities={[
+                                            "image_analysis",
+                                            "visual",
+                                            "fusion",
+                                            "image_gen"
+                                        ]}
+                                        contentId={selectedEntry.id}
+                                        contentType="SANCAI_ENTRY"
+                                        objectId={selectedVisualAssetId}
+                                        onApplied={async () => {
+                                            await refreshAfterVisualAssetCandidateHandled();
+                                        }}
+                                        onRejected={async () => {
+                                            await refreshAfterVisualAssetCandidateHandled();
+                                        }}
+                                    />
+                                </div>
                             ) : null}
                             <ClassicsContentTagPanel
                                 contentId={selectedEntry.id}
