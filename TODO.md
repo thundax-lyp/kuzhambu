@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Operations health alert strategy tests`：补齐健康告警策略测试
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-RECOVERY-LOOP.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/test/java/com/thundax/kuzhambu/operations/application/health/support/OperationsHealthAlertStrategyTest.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/test/java/com/thundax/kuzhambu/operations/application/health/support/OperationsHealthCollectorTest.java`
-    - 处理动作：为 DOWN、连续 DEGRADED、连续 UP 恢复和采集过期补齐 application 测试。
-    - 验收点：测试锁定告警级别、状态、恢复动作和阈值行为。
-    - 重要度：9/10
-
 - [ ] `Operations failure alert linkage`：接入失败来源到健康告警
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-HEALTH-RECOVERY-LOOP.md`
