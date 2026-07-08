@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Portal share 页面`：实现多目标只读内容卡片和删除占位
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARING-GOVERNANCE.md`
-    - 范围对象：`kuzhambu-apps/portal-web/src/pages/share/share-form.tsx`、`kuzhambu-apps/portal-web/src/pages/share/share-form.test.tsx`
-    - 处理动作：按 targets 渲染多个内容卡片并保持私有登录引导、删除占位和资源按钮语义一致。
-    - 验收点：一个链接可展示多个内容卡片，已删除目标只显示占位，私有分享未登录引导登录且登录后展示内容。
-    - 重要度：9/10
-
 - [ ] `classics sharing 接口文档`：同步 Portal 分享访问统计契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARING-GOVERNANCE.md`
