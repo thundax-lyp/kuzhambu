@@ -8,6 +8,7 @@ import type {
     DeleteRefinementRelationCommand,
     QualityAnnotationPageQuery,
     QualityAnnotationRecord,
+    RefinementApplyRecord,
     QualitySummaryRecord,
     RefinementDetailRecord,
     RefinementEntityRecord,
@@ -100,10 +101,9 @@ export const deleteRelation = (request: DeleteRefinementRelationCommand) => {
 };
 
 export const applyTask = (request: RefinementTaskApplyCommand) => {
-    return postJson<RefinementDetailRecord, RefinementTaskApplyCommand>(
-        `${API_PREFIX}/task/apply`,
-        { body: request }
-    );
+    return postJson<RefinementApplyRecord, RefinementTaskApplyCommand>(`${API_PREFIX}/task/apply`, {
+        body: request
+    });
 };
 
 export const getQualitySummary = (request: RefinementTaskIdCommand) => {

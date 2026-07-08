@@ -21,6 +21,7 @@ import * as service from "./refinement-service";
 import type {
     QualityAnnotationRecord,
     QualityAnnotationTarget,
+    RefinementApplyRecord,
     RefinementDetailRecord,
     RefinementEntityRecord,
     RefinementLineageNodeRecord,
@@ -35,6 +36,25 @@ const { Text, Title } = Typography;
 const readDetailTaskId = (detail: RefinementDetailRecord | null) => detail?.refinementTaskId ?? 0;
 const readStatusColor = (status?: string | null) =>
     status === "MANUAL_CONFIRMED" ? "green" : "blue";
+const buildGraphResultsHref = (applyResult: RefinementApplyRecord) =>
+    `/knowledge/graph-results?graphVersionId=${encodeURIComponent(String(applyResult.graphVersionId || ""))}`;
+const buildGraphRegenerateHref = (applyResult: RefinementApplyRecord) => {
+    const params = new URLSearchParams({
+        regenerate: "1",
+        taskType: applyResult.taskType || "",
+        sourceTaskId: String(applyResult.sourceTaskId || ""),
+        triggerSource: applyResult.triggerSource || "REFINEMENT_APPLIED",
+        replaceUnconfirmedOnly: String(applyResult.replaceUnconfirmedOnly ?? true)
+    });
+    if (applyResult.selectionScopeJson) {
+        params.set("selectionScopeJson", applyResult.selectionScopeJson);
+    }
+    return `/knowledge/graph-extraction?${params.toString()}`;
+};
+const buildQualityReportHref = (applyResult: RefinementApplyRecord) =>
+    `/knowledge/quality-report?graphVersionId=${encodeURIComponent(
+        String(applyResult.graphVersionId || "")
+    )}&regenerate=1`;
 
 export const RefinementPage = () => {
     const { message: messageApi } = App.useApp();
@@ -53,6 +73,7 @@ export const RefinementPage = () => {
     const [editingRelation, setEditingRelation] = useState<RefinementRelationRecord | null>(null);
     const [deletingRelation, setDeletingRelation] = useState<RefinementRelationRecord | null>(null);
     const [annotationTarget, setAnnotationTarget] = useState<QualityAnnotationTarget | null>(null);
+    const [applyFollowUp, setApplyFollowUp] = useState<RefinementApplyRecord | null>(null);
 
     const taskPageQuery = useQuery({
         queryKey: ["knowledge", "refinement", "tasks", taskQuery],
@@ -101,6 +122,7 @@ export const RefinementPage = () => {
         mutationFn: service.getTaskDraft,
         onSuccess: async (nextDetail) => {
             setDetail(nextDetail);
+            setApplyFollowUp(null);
             await queryClient.invalidateQueries({
                 queryKey: ["knowledge", "refinement", "tasks"]
             });
@@ -112,8 +134,17 @@ export const RefinementPage = () => {
 
     const applyTaskMutation = useMutation({
         mutationFn: service.applyTask,
-        onSuccess: async (nextDetail) => {
-            setDetail(nextDetail);
+        onSuccess: async (applyResult) => {
+            setApplyFollowUp(applyResult);
+            setDetail((current) =>
+                current && current.refinementTaskId === applyResult.refinementTaskId
+                    ? {
+                          ...current,
+                          status: applyResult.status,
+                          graphVersionId: applyResult.graphVersionId ?? current.graphVersionId
+                      }
+                    : current
+            );
             await queryClient.invalidateQueries({
                 queryKey: ["knowledge", "refinement", "tasks"]
             });
@@ -446,6 +477,35 @@ export const RefinementPage = () => {
                     </div>
                     {detailReady ? (
                         <KuzhambuSpace orientation="vertical" size={16} style={{ width: "100%" }}>
+                            {applyFollowUp ? (
+                                <Alert
+                                    action={
+                                        <KuzhambuSpace size={8}>
+                                            <Button
+                                                href={buildGraphResultsHref(applyFollowUp)}
+                                                size="small"
+                                            >
+                                                查看图谱结果
+                                            </Button>
+                                            <Button
+                                                href={buildGraphRegenerateHref(applyFollowUp)}
+                                                size="small"
+                                            >
+                                                重生成图谱
+                                            </Button>
+                                            <Button
+                                                href={buildQualityReportHref(applyFollowUp)}
+                                                size="small"
+                                            >
+                                                重新生成质量报告
+                                            </Button>
+                                        </KuzhambuSpace>
+                                    }
+                                    message="精修已应用，图谱与质量报告需要继续联动处理"
+                                    showIcon
+                                    type="success"
+                                />
+                            ) : null}
                             <RefinementProgressSummaryPanel summary={progressSummary} />
                             <Row gutter={[16, 16]}>
                                 <Col xs={24} lg={16}>

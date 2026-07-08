@@ -1,5 +1,5 @@
 import { QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { App as AntdApp } from "antd";
 import { replacePermissions } from "@/auth/permission-storage";
 import { queryClient } from "@/query/query-client";
@@ -13,13 +13,21 @@ const componentMocks = vi.hoisted(() => ({
     mockRefinementFilterForm: () => <div>筛选器</div>,
     mockRefinementProgressSummaryPanel: () => <div>进度摘要</div>,
     mockRefinementWorkbenchTable: ({
-        items
+        items,
+        onOpenTask
     }: {
         items: Array<{ refinementTaskId: number; sourceContentType: string }>;
+        onOpenTask: (item: { refinementTaskId: number; graphVersionId: number }) => void;
     }) => (
         <div aria-label="知识图谱精修任务表格">
             {items.map((item) => (
-                <div key={item.refinementTaskId}>{item.sourceContentType}</div>
+                <button
+                    key={item.refinementTaskId}
+                    type="button"
+                    onClick={() => onOpenTask({ ...item, graphVersionId: 71 })}
+                >
+                    {item.sourceContentType}
+                </button>
             ))}
         </div>
     ),
@@ -87,16 +95,55 @@ vi.mock("./refinement-service", () => ({
         completenessRate: 0.77
     })),
     getTaskDetail: vi.fn(async () => null),
-    getTaskDraft: vi.fn(async () => null),
+    getTaskDraft: vi.fn(async () => ({
+        refinementTaskId: 31,
+        graphVersionId: 71,
+        taskType: "GRAPH",
+        sourceContentType: "SANCAI_ENTRY",
+        sourceContentId: 1001,
+        sourceCategoryCode: "myth",
+        sourceCategoryName: "神话",
+        status: "DRAFT",
+        progressSummary: {
+            entityPendingCount: 1,
+            entityConfirmedCount: 0,
+            relationPendingCount: 1,
+            relationConfirmedCount: 0
+        },
+        entities: [],
+        relations: [],
+        lineageNodes: [],
+        lineageRelations: [],
+        entityOptions: []
+    })),
     addEntity: vi.fn(async () => ({})),
     addRelation: vi.fn(async () => ({})),
-    applyTask: vi.fn(async () => ({})),
+    applyTask: vi.fn(async () => ({
+        refinementTaskId: 31,
+        graphVersionId: 71,
+        taskType: "GRAPH",
+        sourceTaskId: 88,
+        selectionScopeJson: '{"sourceContentIds":[1001]}',
+        replaceUnconfirmedOnly: true,
+        triggerSource: "REFINEMENT_APPLIED",
+        nextAction: "OPEN_GRAPH_VERSION",
+        qualityReportRefreshRequired: true,
+        status: "APPLIED"
+    })),
     confirmEntity: vi.fn(async () => ({})),
     confirmRelation: vi.fn(async () => ({})),
     deleteEntity: vi.fn(async () => undefined),
     deleteRelation: vi.fn(async () => undefined),
     updateEntity: vi.fn(async () => ({})),
-    updateRelation: vi.fn(async () => ({}))
+    updateRelation: vi.fn(async () => ({})),
+    pageAnnotations: vi.fn(async () => ({
+        pageNo: 1,
+        pageSize: 200,
+        totalCount: 0,
+        totalPage: 0,
+        count: 0,
+        records: []
+    }))
 }));
 
 describe("RefinementPage", () => {
@@ -125,5 +172,33 @@ describe("RefinementPage", () => {
         ).toBeInTheDocument();
         expect(await screen.findByLabelText("知识图谱精修任务表格")).toBeInTheDocument();
         expect(screen.getByText("SANCAI_ENTRY")).toBeInTheDocument();
+    }, 30000);
+
+    it("shows graph follow-up actions after applying refinement", async () => {
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <RefinementPage />
+                </AntdApp>
+            </QueryClientProvider>
+        );
+
+        fireEvent.click(await screen.findByRole("button", { name: "SANCAI_ENTRY" }));
+        fireEvent.click(await screen.findByText("应用任务"));
+
+        await waitFor(() => {
+            expect(screen.getByRole("link", { name: "查看图谱结果" })).toHaveAttribute(
+                "href",
+                "/knowledge/graph-results?graphVersionId=71"
+            );
+        });
+        expect(screen.getByRole("link", { name: "重生成图谱" })).toHaveAttribute(
+            "href",
+            "/knowledge/graph-extraction?regenerate=1&taskType=GRAPH&sourceTaskId=88&triggerSource=REFINEMENT_APPLIED&replaceUnconfirmedOnly=true&selectionScopeJson=%7B%22sourceContentIds%22%3A%5B1001%5D%7D"
+        );
+        expect(screen.getByRole("link", { name: "重新生成质量报告" })).toHaveAttribute(
+            "href",
+            "/knowledge/quality-report?graphVersionId=71&regenerate=1"
+        );
     }, 30000);
 });

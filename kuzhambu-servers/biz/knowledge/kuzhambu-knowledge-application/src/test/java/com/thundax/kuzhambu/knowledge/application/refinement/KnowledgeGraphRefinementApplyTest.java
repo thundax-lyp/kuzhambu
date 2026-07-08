@@ -9,12 +9,14 @@ import com.thundax.kuzhambu.knowledge.application.refinement.support.KnowledgeRe
 import com.thundax.kuzhambu.knowledge.application.refinement.support.QualitySummaryAggregationSupport;
 import com.thundax.kuzhambu.knowledge.application.refinement.support.RefinementApplySupport;
 import com.thundax.kuzhambu.knowledge.application.refinement.support.RefinementDraftBootstrapSupport;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphVersion;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeEntity;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageNode;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeLineageRelation;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeRelation;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
+import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphExtractionTaskRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphVersionRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeEntityRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeLineageNodeRepository;
@@ -84,7 +86,8 @@ class KnowledgeGraphRefinementApplyTest {
         FakeKnowledgeLineageNodeRepository lineageNodeRepository = new FakeKnowledgeLineageNodeRepository();
         FakeKnowledgeLineageRelationRepository lineageRelationRepository = new FakeKnowledgeLineageRelationRepository();
         KnowledgeGraphRefinementApplicationServiceImpl service = new KnowledgeGraphRefinementApplicationServiceImpl(
-                new NoopGraphVersionRepository(),
+                new FakeGraphVersionRepository(),
+                new FakeGraphExtractionTaskRepository(),
                 taskRepository,
                 entityDraftRepository,
                 relationDraftRepository,
@@ -105,6 +108,8 @@ class KnowledgeGraphRefinementApplyTest {
         assertEquals(71L, result.getGraphVersionId());
         assertEquals(true, result.getGraphRefreshRequired());
         assertEquals(true, result.getRegenerateSupported());
+        assertEquals(88L, result.getSourceTaskId());
+        assertEquals("{\"sourceContentIds\":[1001]}", result.getSelectionScopeJson());
         assertEquals("REFINEMENT_APPLIED", result.getTriggerSource());
         assertEquals(true, result.getReplaceUnconfirmedOnly());
         assertEquals("OPEN_GRAPH_VERSION", result.getNextAction());
@@ -188,7 +193,7 @@ class KnowledgeGraphRefinementApplyTest {
         return draft;
     }
 
-    private static final class NoopGraphVersionRepository implements GraphVersionRepository {
+    private static final class FakeGraphVersionRepository implements GraphVersionRepository {
         @Override
         public GraphVersion findLatest(String taskType, String sourceContentType, Long sourceContentId) {
             return null;
@@ -196,7 +201,21 @@ class KnowledgeGraphRefinementApplyTest {
 
         @Override
         public GraphVersion getByVersionId(Long versionId) {
-            return null;
+            return new GraphVersion(
+                    7L,
+                    versionId,
+                    GraphExtractionTaskId.of(88L),
+                    12L,
+                    "GRAPH",
+                    "CONTENT",
+                    "{}",
+                    "SANCAI_ENTRY",
+                    1001L,
+                    "myth",
+                    "神话",
+                    3,
+                    "APPLIED",
+                    new Date());
         }
 
         @Override
@@ -218,6 +237,44 @@ class KnowledgeGraphRefinementApplyTest {
         @Override
         public Long save(GraphVersion entity) {
             return 0L;
+        }
+    }
+
+    private static final class FakeGraphExtractionTaskRepository implements GraphExtractionTaskRepository {
+        @Override
+        public GraphExtractionTask getByTaskId(GraphExtractionTaskId taskId) {
+            GraphExtractionTask task = new GraphExtractionTask();
+            task.setTaskId(taskId);
+            task.setSelectionScopeJson("{\"sourceContentIds\":[1001]}");
+            return task;
+        }
+
+        @Override
+        public GraphExtractionTaskId save(GraphExtractionTask entity) {
+            return entity == null ? null : entity.getTaskId();
+        }
+
+        @Override
+        public int update(GraphExtractionTask entity) {
+            return 1;
+        }
+
+        @Override
+        public List<GraphExtractionTask> listByBatchJobId(Long batchJobId) {
+            return List.of();
+        }
+
+        @Override
+        public PageResult<GraphExtractionTask> page(
+                String taskType,
+                Long batchJobId,
+                String triggerSource,
+                String status,
+                String sourceContentType,
+                Long sourceContentId,
+                int pageNo,
+                int pageSize) {
+            return PageResult.of(pageNo, pageSize, 0, List.of());
         }
     }
 

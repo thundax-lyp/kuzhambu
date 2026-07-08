@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Admin refinement follow-up actions`：精修页展示图谱联动操作
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-GRAPH-LOOP.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/refinement-page.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/refinement-service.ts`、`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/refinement-types.ts`、`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/refinement-page.test.tsx`
-    - 处理动作：在精修应用成功后展示查看图谱结果、重生成图谱和重新生成质量报告三个操作。
-    - 验收点：应用成功后用户可通过按钮进入指定图谱版本、预填重生成表单或指定版本质量报告页。
-    - 重要度：10/10
-
 - [ ] `Admin graph extraction regenerate handoff`：图谱抽取页承接精修重生成参数
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-GRAPH-LOOP.md`
