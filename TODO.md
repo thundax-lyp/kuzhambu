@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `02 Operations health recovery application`：编排健康告警自动恢复动作
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-RESTORE-ORCHESTRATION.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/health/service/impl/HealthAlertApplicationServiceImpl.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/health/support/OperationsHealthRecoveryLinkFactory.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/test/java/com/thundax/kuzhambu/operations/application/health/service/impl/HealthAlertApplicationServiceImplTest.java`
-    - 处理动作：在健康告警恢复流程中支持 `RUN_MANUAL_BACKUP`、`RUN_RESTORE` 和非自动动作分支。
-    - 验收点：测试覆盖手动备份、恢复、非自动动作、动作成功后告警恢复和动作失败不改告警状态。
-    - 重要度：10/10
-
 - [ ] `03 Operations restore task snapshot`：恢复执行结果写入任务台账
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-RESTORE-ORCHESTRATION.md`
