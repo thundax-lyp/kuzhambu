@@ -13,6 +13,7 @@ import com.thundax.kuzhambu.classics.application.sancai.command.SancaiImageComma
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiShowcaseCommand;
 import com.thundax.kuzhambu.classics.application.sancai.result.SancaiEntryImageContent;
 import com.thundax.kuzhambu.classics.application.sancai.result.SancaiEntryImageResource;
+import com.thundax.kuzhambu.classics.application.sancai.result.SancaiShowcaseJobResult;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiAssetApplicationService;
 import com.thundax.kuzhambu.classics.domain.common.client.WorkerRenderClient;
 import com.thundax.kuzhambu.classics.domain.common.client.dto.WorkerRenderDtos;
@@ -24,6 +25,8 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryDraft
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryImage;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiShowcase;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVisualAsset;
+import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiShowcaseStatus;
+import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisibilityRiskStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisualAssetStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryDraftId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
@@ -47,12 +50,16 @@ import com.thundax.kuzhambu.storage.facade.request.UploadStorageFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.response.OpenStorageFacadeResponse;
 import com.thundax.kuzhambu.storage.facade.response.UploadStorageFacadeResponse;
 import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
@@ -74,6 +81,13 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     private static final String SHOWCASE_RENDER_OUTPUT_FILENAME = "showcase.html";
     private static final String SHOWCASE_RENDER_CONTENT_TYPE = "SANCAI_SHOWCASE_SNAPSHOT";
     private static final String SHOWCASE_RENDER_LOCALE = "zh-CN";
+    private static final String SHOWCASE_ARTIFACT_CONTENT_TYPE = "text/html";
+    private static final String SHOWCASE_FAILURE_WORKER_UNAVAILABLE = "WORKER_UNAVAILABLE";
+    private static final String SHOWCASE_FAILURE_RENDER_FAILED = "RENDER_OUTPUT_FAILURE";
+    private static final String SHOWCASE_FAILURE_STORAGE_FAILED = "STORAGE_WRITE_FAILURE";
+    private static final String SHOWCASE_FAILURE_INTERNAL = "INTERNAL_FAILURE";
+    private static final String SHOWCASE_FAILURE_PRIVATE_UNCONFIRMED = "VISIBILITY_RISK_UNCONFIRMED";
+    private static final int SHOWCASE_FAILURE_MESSAGE_MAX_LENGTH = 512;
     private static final String SANCAI_IMAGE_CONTENT_PATH_PREFIX = "/api/classics/sancai/assets/images/";
     private static final String SANCAI_IMAGE_CONTENT_PATH_SEPARATOR = "/";
     private static final String SANCAI_IMAGE_CONTENT_PATH_SUFFIX = "/content";
@@ -369,41 +383,73 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     @Override
     @Transactional(rollbackFor = Exception.class)
     public SancaiShowcaseId requestShowcase(SancaiShowcaseCommand command) {
+        SancaiShowcaseJobResult result = requestShowcaseJob(command);
+        return result == null ? null : result.getShowcaseId();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public SancaiShowcaseJobResult requestShowcaseJob(SancaiShowcaseCommand command) {
+        validateShowcaseCommand(command);
         SancaiShowcase showcase = command == null ? new SancaiShowcase() : command.toEntity();
+        showcase.setStatus(SancaiShowcaseStatus.REQUESTED);
+        showcase.setStorageObjectId(null);
         SancaiShowcaseId showcaseId = repository.insertShowcase(showcase);
         if (showcaseId == null) {
             return null;
         }
+        showcase.setId(showcaseId);
         try {
+            showcase.setStatus(SancaiShowcaseStatus.PROCESSING);
+            repository.updateShowcase(showcase);
             if (workerRenderClient == null) {
-                repository.markShowcaseFailed(showcaseId);
-                return showcaseId;
+                markShowcaseFailed(showcaseId, SHOWCASE_FAILURE_WORKER_UNAVAILABLE, "三才静态展示 worker 不可用");
+                return failedShowcaseJob(showcaseId, SHOWCASE_FAILURE_WORKER_UNAVAILABLE, "三才静态展示 worker 不可用");
             }
             WorkerRenderDtos.WorkerRenderRequest renderRequest = renderRequest(showcaseId, showcase);
             WorkerRenderDtos.WorkerRenderResponse response = workerRenderClient.renderSancaiShowcase(renderRequest);
             if (!isSuccess(response)) {
-                repository.markShowcaseFailed(showcaseId);
-                return showcaseId;
+                String failureType = workerFailureType(response);
+                String failureMessage = workerFailureMessage(response);
+                markShowcaseFailed(showcaseId, failureType, failureMessage);
+                return failedShowcaseJob(showcaseId, failureType, failureMessage);
             }
-            UploadStorageFacadeResponse uploadResponse = saveShowcaseArtifact(showcaseId, response);
+            WorkerRenderDtos.Artifact artifact = response.getArtifact();
+            byte[] content = artifactContent(artifact);
+            validateShowcaseArtifact(artifact, content);
+            UploadStorageFacadeResponse uploadResponse = saveShowcaseArtifact(showcaseId, artifact, content);
             if (uploadResponse == null) {
-                repository.markShowcaseFailed(showcaseId);
-                return showcaseId;
+                markShowcaseFailed(showcaseId, SHOWCASE_FAILURE_STORAGE_FAILED, "三才静态展示产物保存失败");
+                return failedShowcaseJob(showcaseId, SHOWCASE_FAILURE_STORAGE_FAILED, "三才静态展示产物保存失败");
             }
             StorageObjectId storageObjectId = toStorageObjectId(uploadResponse);
             if (storageObjectId == null) {
-                repository.markShowcaseFailed(showcaseId);
-                return showcaseId;
+                markShowcaseFailed(showcaseId, SHOWCASE_FAILURE_STORAGE_FAILED, "三才静态展示产物保存失败");
+                return failedShowcaseJob(showcaseId, SHOWCASE_FAILURE_STORAGE_FAILED, "三才静态展示产物保存失败");
             }
             int entryCount =
                     response.getSummary() == null || response.getSummary().getItemCount() == null
                             ? 0
                             : response.getSummary().getItemCount();
-            repository.markShowcaseCompleted(showcaseId, storageObjectId, entryCount);
-            return showcaseId;
+            int assetCount = assetCountFromPayload(showcase.getScopeJson());
+            String filename = filenameHint(showcaseId, artifact);
+            String contentType = artifact.getContentType();
+            Long sizeBytes = artifact.getSizeBytes() == null ? (long) content.length : artifact.getSizeBytes();
+            String sha256 = normalizedSha256(artifact.getSha256());
+            repository.markShowcaseCompleted(
+                    showcaseId, storageObjectId, entryCount, assetCount, filename, contentType, sizeBytes, sha256);
+            return new SancaiShowcaseJobResult(
+                    showcaseId,
+                    SancaiShowcaseStatus.COMPLETED,
+                    storageObjectId,
+                    filename,
+                    sizeBytes,
+                    sha256,
+                    null,
+                    null);
         } catch (Exception ex) {
-            repository.markShowcaseFailed(showcaseId);
-            return showcaseId;
+            markShowcaseFailed(showcaseId, SHOWCASE_FAILURE_INTERNAL, "三才静态展示生成失败");
+            return failedShowcaseJob(showcaseId, SHOWCASE_FAILURE_INTERNAL, "三才静态展示生成失败");
         }
     }
 
@@ -424,6 +470,24 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     @Override
     public PageResult<SancaiShowcase> pageShowcases(String status, PageQuery page) {
         return repository.pageShowcases(status, page.getPageNo(), page.getPageSize());
+    }
+
+    @Override
+    public PageResult<SancaiShowcase> pageShowcases(
+            String keyword,
+            String status,
+            String visibilityRiskStatus,
+            Date requestedAtStart,
+            Date requestedAtEnd,
+            PageQuery page) {
+        return repository.pageShowcases(
+                keyword,
+                status,
+                visibilityRiskStatus,
+                requestedAtStart,
+                requestedAtEnd,
+                page.getPageNo(),
+                page.getPageSize());
     }
 
     private WorkerRenderDtos.WorkerRenderRequest renderRequest(SancaiShowcaseId showcaseId, SancaiShowcase showcase) {
@@ -609,13 +673,24 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
         }
     }
 
+    private void validateShowcaseCommand(SancaiShowcaseCommand command) {
+        if (command == null) {
+            return;
+        }
+        if (command.getVisibilityRiskStatus() == SancaiVisibilityRiskStatus.CONTAINS_PRIVATE
+                && !command.isPrivateConfirmed()) {
+            throw new BizException(
+                    SHOWCASE_FAILURE_PRIVATE_UNCONFIRMED,
+                    "classics.sancai.showcase.private.unconfirmed",
+                    "包含私有内容的静态展示生成必须先确认风险");
+        }
+    }
+
     private UploadStorageFacadeResponse saveShowcaseArtifact(
-            SancaiShowcaseId showcaseId, WorkerRenderDtos.WorkerRenderResponse response) {
+            SancaiShowcaseId showcaseId, WorkerRenderDtos.Artifact artifact, byte[] content) {
         if (storageFacade == null) {
             return null;
         }
-        WorkerRenderDtos.Artifact artifact = response == null ? null : response.getArtifact();
-        byte[] content = artifactContent(artifact);
         return storageFacade.upload(UploadStorageFacadeRequest.builder()
                 .inputStream(new ByteArrayInputStream(content))
                 .originalFilename(filenameHint(showcaseId, artifact))
@@ -642,12 +717,29 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
             return new byte[0];
         }
         if ("TEXT".equalsIgnoreCase(artifact.getEncoding())) {
-            return artifact.getContent().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+            return artifact.getContent().getBytes(StandardCharsets.UTF_8);
         }
         if ("BASE64".equalsIgnoreCase(artifact.getEncoding())) {
             return Base64.getDecoder().decode(artifact.getContent());
         }
-        return artifact.getContent().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        return artifact.getContent().getBytes(StandardCharsets.UTF_8);
+    }
+
+    private void validateShowcaseArtifact(WorkerRenderDtos.Artifact artifact, byte[] content) {
+        if (artifact == null || content == null || content.length == 0) {
+            throw new BizException("三才静态展示产物为空");
+        }
+        if (StringUtils.isBlank(artifact.getContentType())
+                || !StringUtils.startsWithIgnoreCase(artifact.getContentType(), SHOWCASE_ARTIFACT_CONTENT_TYPE)) {
+            throw new BizException("三才静态展示产物类型不正确");
+        }
+        if (artifact.getSizeBytes() != null && artifact.getSizeBytes() != content.length) {
+            throw new BizException("三才静态展示产物大小校验失败");
+        }
+        String expectedSha256 = normalizedSha256(artifact.getSha256());
+        if (StringUtils.isNotBlank(expectedSha256) && !expectedSha256.equals(sha256(content))) {
+            throw new BizException("三才静态展示产物摘要校验失败");
+        }
     }
 
     private StorageObjectId toStorageObjectId(UploadStorageFacadeResponse uploadResponse) {
@@ -658,6 +750,61 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
 
     private static boolean isSuccess(WorkerRenderDtos.WorkerRenderResponse response) {
         return response != null && "SUCCEEDED".equalsIgnoreCase(response.getStatus()) && response.getArtifact() != null;
+    }
+
+    private void markShowcaseFailed(SancaiShowcaseId showcaseId, String failureType, String failureMessage) {
+        repository.markShowcaseFailed(showcaseId, failureType, abbreviateFailureMessage(failureMessage));
+    }
+
+    private SancaiShowcaseJobResult failedShowcaseJob(
+            SancaiShowcaseId showcaseId, String failureType, String failureMessage) {
+        return new SancaiShowcaseJobResult(
+                showcaseId,
+                SancaiShowcaseStatus.FAILED,
+                null,
+                null,
+                null,
+                null,
+                failureType,
+                abbreviateFailureMessage(failureMessage));
+    }
+
+    private static String workerFailureType(WorkerRenderDtos.WorkerRenderResponse response) {
+        WorkerRenderDtos.WorkerRenderError error = response == null ? null : response.getError();
+        return error == null || StringUtils.isBlank(error.getType()) ? SHOWCASE_FAILURE_RENDER_FAILED : error.getType();
+    }
+
+    private static String workerFailureMessage(WorkerRenderDtos.WorkerRenderResponse response) {
+        WorkerRenderDtos.WorkerRenderError error = response == null ? null : response.getError();
+        return error == null || StringUtils.isBlank(error.getMessage()) ? "三才静态展示渲染失败" : error.getMessage();
+    }
+
+    private static String abbreviateFailureMessage(String failureMessage) {
+        return StringUtils.abbreviate(
+                StringUtils.defaultIfBlank(failureMessage, "三才静态展示生成失败"), SHOWCASE_FAILURE_MESSAGE_MAX_LENGTH);
+    }
+
+    private int assetCountFromPayload(String scopeJson) {
+        JsonNode payload = parsePayload(scopeJson);
+        JsonNode assets = payload == null ? null : payload.get("assets");
+        return assets == null || !assets.isArray() ? 0 : assets.size();
+    }
+
+    private static String normalizedSha256(String sha256) {
+        if (StringUtils.isBlank(sha256)) {
+            return null;
+        }
+        String trimmed = sha256.trim();
+        return StringUtils.startsWithIgnoreCase(trimmed, "sha256:") ? trimmed.toLowerCase() : "sha256:" + trimmed;
+    }
+
+    private static String sha256(byte[] content) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            return "sha256:" + HexFormat.of().formatHex(digest.digest(content));
+        } catch (NoSuchAlgorithmException ex) {
+            throw new BizException("三才静态展示产物摘要校验失败");
+        }
     }
 
     private void updatePriorityOrThrow(SancaiEntryImageId id, int priority) {
