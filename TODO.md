@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `ClassicsImplementationCoverage`：同步三才标签闭环覆盖状态
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-SANCAI-ENTRY-TAGS.md`
-    - 范围对象：`docs/40-readiness/CLASSICS-IMPLEMENTATION-COVERAGE.md`
-    - 处理动作：更新三才条目详情标签聚合展示、编辑入口、删除闭环和入参治理对应的覆盖描述。
-    - 验收点：覆盖矩阵中三才“编辑标题、门类、卷、原文、译文和标签”和“展示原文、译文、标签、配图和状态”的完成状态与代码实现一致。
-    - 重要度：8/10
-
 - [ ] `RUNBOOK-SANCAI-ENTRY-TAGS`：清理临时 RUNBOOK 和已完成 TODO
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-SANCAI-ENTRY-TAGS.md`
