@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `sancai-entry-service.ts` 等 4 文件：补齐静态展示删除服务与列表控件
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-EXPORT-SHOWCASE-GOVERNANCE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/services/sancai-entry-service.ts`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-service-contract.test.ts`、`kuzhambu-apps/admin-web/src/pages/classics/common/components/classics-showcase-job-section.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/common/components/classics-showcase-job-section.css`
-    - 处理动作：新增静态展示删除 service 契约，并在静态展示任务列表增加搜索、筛选、选择、单删和批删控件。
-    - 验收点：`deleteShowcase(id)` 请求 `POST /classics/sancai/assets/showcases/delete` 且 body 为 `{ id }`；列表包含关键词搜索输入框、状态下拉、单行选择框、全选当前可见复选框、单条删除按钮、批量删除按钮；内容查看和下载继续使用 showcase 记录 id。
-    - 重要度：9/10
-
 - [ ] `wangqi-page.tsx` 等 4 文件：接入三类 Admin 页面删除操作
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-EXPORT-SHOWCASE-GOVERNANCE.md`

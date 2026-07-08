@@ -415,6 +415,11 @@ describe("sancai service request contracts", () => {
             status: "COMPLETED"
         });
 
+        await entryService.deleteShowcase(30001);
+        expectLastCall("POST", "/classics/sancai/assets/showcases/delete", {
+            id: 30001
+        });
+
         await entryService.createRefinementBatch({
             scope: "classics",
             capability: "image_analysis",

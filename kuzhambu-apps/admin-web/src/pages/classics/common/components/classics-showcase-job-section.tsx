@@ -1,4 +1,5 @@
-import { Button, Empty, Tag, Typography } from "antd";
+import { Button, Checkbox, Empty, Input, Select, Tag, Typography } from "antd";
+import { useMemo, useState } from "react";
 import { KuzhambuList, KuzhambuListItem, KuzhambuListMeta } from "@/components/kuzhambu-list";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import type { ClassicsShowcaseJobRecord } from "../classics-export-types";
@@ -56,10 +57,22 @@ const isDownloadableShowcase = (job: ClassicsShowcaseJobRecord) => {
     return job.status === "COMPLETED" && Boolean(job.downloadUrl);
 };
 
+const matchesKeyword = (job: ClassicsShowcaseJobRecord, keyword: string) => {
+    const normalized = keyword.trim().toLowerCase();
+    if (!normalized) {
+        return true;
+    }
+    return [job.id == null ? "" : String(job.id), job.status, job.visibilityRiskStatus]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(normalized));
+};
+
 export interface ClassicsShowcaseJobSectionProps {
     items: ClassicsShowcaseJobRecord[];
     loading?: boolean;
     onDownload: (job: ClassicsShowcaseJobRecord) => void;
+    onDelete?: (job: ClassicsShowcaseJobRecord) => void;
+    onBatchDelete?: (jobs: ClassicsShowcaseJobRecord[]) => void;
     onRefresh?: () => void;
     sectionTitle?: string;
     sectionDescription?: string;
@@ -69,10 +82,36 @@ export const ClassicsShowcaseJobSection = ({
     items,
     loading = false,
     onDownload,
+    onDelete,
+    onBatchDelete,
     onRefresh,
     sectionTitle = "静态展示任务",
     sectionDescription = "暂无静态展示任务"
 }: ClassicsShowcaseJobSectionProps) => {
+    const [keyword, setKeyword] = useState("");
+    const [status, setStatus] = useState<string>("ALL");
+    const [selectedIds, setSelectedIds] = useState<number[]>([]);
+    const visibleItems = useMemo(
+        () =>
+            items.filter((job) => {
+                if (!matchesKeyword(job, keyword)) {
+                    return false;
+                }
+                if (status !== "ALL" && job.status !== status) {
+                    return false;
+                }
+                return true;
+            }),
+        [items, keyword, status]
+    );
+    const selectedJobs = visibleItems.filter(
+        (job) => job.id != null && selectedIds.includes(job.id)
+    );
+    const selectableIds = visibleItems
+        .map((job) => job.id)
+        .filter((id): id is number => id != null);
+    const allSelected = selectableIds.length > 0 && selectedJobs.length === selectableIds.length;
+
     return (
         <section className="classics-showcase-job-section">
             <KuzhambuSpace
@@ -94,9 +133,44 @@ export const ClassicsShowcaseJobSection = ({
                     </Button>
                 ) : null}
             </KuzhambuSpace>
+            <KuzhambuSpace className="classics-showcase-job-section-filters" size={8} wrap>
+                <Input.Search
+                    allowClear
+                    aria-label="搜索静态展示任务"
+                    placeholder="搜索任务编号或风险状态"
+                    value={keyword}
+                    onChange={(event) => setKeyword(event.target.value)}
+                    onSearch={setKeyword}
+                    style={{ width: 240 }}
+                />
+                <Select
+                    aria-label="筛选静态展示任务状态"
+                    value={status}
+                    options={[
+                        { label: "全部状态", value: "ALL" },
+                        { label: "已完成", value: "COMPLETED" },
+                        { label: "排队中", value: "REQUESTED" },
+                        { label: "进行中", value: "PROCESSING" },
+                        { label: "失败", value: "FAILED" },
+                        { label: "已过期", value: "EXPIRED" }
+                    ]}
+                    onChange={setStatus}
+                    style={{ width: 136 }}
+                />
+                {onBatchDelete ? (
+                    <Button
+                        danger
+                        disabled={!selectedJobs.length}
+                        size="small"
+                        onClick={() => onBatchDelete(selectedJobs)}
+                    >
+                        删除选中
+                    </Button>
+                ) : null}
+            </KuzhambuSpace>
             <KuzhambuList
                 size="small"
-                dataSource={items}
+                dataSource={visibleItems}
                 loading={loading}
                 empty={
                     <Empty description={sectionDescription} image={Empty.PRESENTED_IMAGE_SIMPLE} />
@@ -109,6 +183,24 @@ export const ClassicsShowcaseJobSection = ({
                             key={job.id ?? `showcase-job-${job.requestedAt}`}
                             extra={
                                 <KuzhambuSpace size={8} wrap>
+                                    {onBatchDelete && job.id != null ? (
+                                        <Checkbox
+                                            aria-label={`选择静态展示任务 ${job.id}`}
+                                            checked={selectedIds.includes(job.id)}
+                                            onChange={(event) => {
+                                                setSelectedIds((current) =>
+                                                    event.target.checked
+                                                        ? Array.from(
+                                                              new Set([
+                                                                  ...current,
+                                                                  job.id as number
+                                                              ])
+                                                          )
+                                                        : current.filter((id) => id !== job.id)
+                                                );
+                                            }}
+                                        />
+                                    ) : null}
                                     <Tag color={statusTagType(job.status)}>
                                         {renderStatusText(job.status)}
                                     </Tag>
@@ -125,6 +217,11 @@ export const ClassicsShowcaseJobSection = ({
                                             下载
                                         </Button>
                                     )}
+                                    {onDelete ? (
+                                        <Button danger size="small" onClick={() => onDelete(job)}>
+                                            删除
+                                        </Button>
+                                    ) : null}
                                 </KuzhambuSpace>
                             }
                         >
@@ -136,6 +233,20 @@ export const ClassicsShowcaseJobSection = ({
                     );
                 }}
             />
+            {onBatchDelete && selectableIds.length ? (
+                <div className="classics-showcase-job-section-select-all">
+                    <Checkbox
+                        aria-label="选择全部可见静态展示任务"
+                        checked={allSelected}
+                        indeterminate={selectedJobs.length > 0 && !allSelected}
+                        onChange={(event) => {
+                            setSelectedIds(event.target.checked ? selectableIds : []);
+                        }}
+                    >
+                        已选 {selectedJobs.length} / {selectableIds.length}
+                    </Checkbox>
+                </div>
+            ) : null}
         </section>
     );
 };
