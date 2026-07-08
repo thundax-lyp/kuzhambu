@@ -54,7 +54,7 @@ PR 合并前固定执行 `.github/workflows/pr-verify.yml`。workflow 必须显�
 - Apps 目录发生变更时，PR 验证必须使用 Node 20，并显式执行锁文件安装、`pnpm run format:check`、`pnpm run lint` 和 `pnpm test`；GitHub Actions 中使用 `pnpm install --frozen-lockfile` 和 pnpm 缓存。
 - Apps 子 workspace 目录发生变更时，PR 验证按 workspace 裁剪执行对应 `format:check`、`lint` 和 `test`；`kuzhambu-apps/` 根级文件或 PR workflow 发生变更时必须验证全部 frontend workspace。
 - Python workers 目录发生变更时，PR 验证必须使用 Python 3.10，并显式执行 `ruff format --check .`、`ruff check .` 和 `python -m pytest -p no:capture`。
-- PR workflow 或 PR 模板发生变更时，PR 验证必须触发 servers、workers、apps 和 db 的显式检查，以验证验证规则本身。
+- PR workflow、PR 规则文档或 PR 模板发生变更时，PR 验证必须触发 servers、workers、apps 和 db 的显式检查，以验证验证规则本身。
 - PR 合并默认使用普通 merge commit，保留分支中的小步 commit 历史；不得默认 squash。
 - Storage 文件读取、预览、下载或分享资源访问发生变更时，PR 验证记录必须说明资源归属校验、下载权限边界、后端契约测试、前端资源 URL 拼接验证，以及未自动化人工冒烟项。
 

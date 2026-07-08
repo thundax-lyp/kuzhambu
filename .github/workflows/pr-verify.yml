@@ -47,7 +47,7 @@ jobs:
 
                   echo "$changed_files"
 
-                  if echo "$changed_files" | grep -Eq '^(\.github/workflows/pr-verify.yml|\.github/pull_request_template.md)$'; then
+                  if echo "$changed_files" | grep -Eq '^(\.github/workflows/pr-verify.yml|\.github/pull_request_template.md|docs/00-governance/PR-RULES.md)$'; then
                     verify_workflow_changed=true
                   else
                     verify_workflow_changed=false
@@ -108,6 +108,7 @@ jobs:
                   echo "servers_changed=$servers_changed" >> "$GITHUB_OUTPUT"
                   echo "backend_full_changed=$backend_full_changed" >> "$GITHUB_OUTPUT"
                   echo "backend_projects=$backend_projects" >> "$GITHUB_OUTPUT"
+                  echo "verify_workflow_changed=$verify_workflow_changed" >> "$GITHUB_OUTPUT"
 
                   if [ "$verify_workflow_changed" = "true" ] || echo "$changed_files" | grep -Eq '^kuzhambu-workers/'; then
                     echo "workers_changed=true" >> "$GITHUB_OUTPUT"
