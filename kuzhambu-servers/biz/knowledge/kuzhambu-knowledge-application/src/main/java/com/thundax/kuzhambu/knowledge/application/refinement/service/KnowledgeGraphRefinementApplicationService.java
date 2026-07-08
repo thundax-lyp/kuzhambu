@@ -20,6 +20,7 @@ import com.thundax.kuzhambu.knowledge.application.refinement.query.RefinementDet
 import com.thundax.kuzhambu.knowledge.application.refinement.query.RefinementWorkbenchPageQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityAnnotationResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualitySummaryResult;
+import com.thundax.kuzhambu.knowledge.application.refinement.result.RefinementApplyResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.RefinementDetailResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.RefinementEntityResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.RefinementLineageNodeResult;
@@ -65,7 +66,7 @@ public interface KnowledgeGraphRefinementApplicationService {
 
     void deleteAnnotation(DeleteQualityAnnotationCommand command);
 
-    RefinementDetailResult applyTask(Long refinementTaskId, Long appliedBy);
+    RefinementApplyResult applyTask(Long refinementTaskId, Long appliedBy);
 
     QualitySummaryResult qualitySummary(Long refinementTaskId);
 }

@@ -1,5 +1,7 @@
 package com.thundax.kuzhambu.knowledge.application.refinement.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.page.PageRules;
@@ -22,6 +24,7 @@ import com.thundax.kuzhambu.knowledge.application.refinement.query.RefinementDet
 import com.thundax.kuzhambu.knowledge.application.refinement.query.RefinementWorkbenchPageQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityAnnotationResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualitySummaryResult;
+import com.thundax.kuzhambu.knowledge.application.refinement.result.RefinementApplyResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.RefinementDetailResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.RefinementEntityOptionResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.RefinementEntityResult;
@@ -35,7 +38,9 @@ import com.thundax.kuzhambu.knowledge.application.refinement.support.KnowledgeRe
 import com.thundax.kuzhambu.knowledge.application.refinement.support.QualitySummaryAggregationSupport;
 import com.thundax.kuzhambu.knowledge.application.refinement.support.RefinementApplySupport;
 import com.thundax.kuzhambu.knowledge.application.refinement.support.RefinementDraftBootstrapSupport;
+import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphVersion;
+import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphExtractionTaskRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphVersionRepository;
 import com.thundax.kuzhambu.knowledge.domain.refinement.model.entity.QualityAnnotation;
 import com.thundax.kuzhambu.knowledge.domain.refinement.model.entity.RefinementEntityDraft;
@@ -52,7 +57,9 @@ import com.thundax.kuzhambu.knowledge.domain.refinement.repository.RefinementRel
 import com.thundax.kuzhambu.knowledge.domain.refinement.repository.RefinementTaskRepository;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -61,7 +68,12 @@ import org.springframework.transaction.annotation.Transactional;
 @BizExceptionBoundary
 public class KnowledgeGraphRefinementApplicationServiceImpl implements KnowledgeGraphRefinementApplicationService {
 
+    private static final String STATUS_APPLIED = "APPLIED";
+    private static final String TRIGGER_SOURCE_REFINEMENT_APPLIED = "REFINEMENT_APPLIED";
+    private static final String NEXT_ACTION_OPEN_GRAPH_VERSION = "OPEN_GRAPH_VERSION";
+
     private final GraphVersionRepository graphVersionRepository;
+    private final GraphExtractionTaskRepository graphExtractionTaskRepository;
     private final RefinementTaskRepository refinementTaskRepository;
     private final RefinementEntityDraftRepository entityDraftRepository;
     private final RefinementRelationDraftRepository relationDraftRepository;
@@ -72,9 +84,11 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
     private final RefinementApplySupport applySupport;
     private final QualitySummaryAggregationSupport qualitySummaryAggregationSupport;
     private final KnowledgeRefinementManualKeySupport manualKeySupport;
+    private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 
     public KnowledgeGraphRefinementApplicationServiceImpl(
             GraphVersionRepository graphVersionRepository,
+            GraphExtractionTaskRepository graphExtractionTaskRepository,
             RefinementTaskRepository refinementTaskRepository,
             RefinementEntityDraftRepository entityDraftRepository,
             RefinementRelationDraftRepository relationDraftRepository,
@@ -86,6 +100,7 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
             QualitySummaryAggregationSupport qualitySummaryAggregationSupport,
             KnowledgeRefinementManualKeySupport manualKeySupport) {
         this.graphVersionRepository = graphVersionRepository;
+        this.graphExtractionTaskRepository = graphExtractionTaskRepository;
         this.refinementTaskRepository = refinementTaskRepository;
         this.entityDraftRepository = entityDraftRepository;
         this.relationDraftRepository = relationDraftRepository;
@@ -407,7 +422,7 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
     }
 
     @Override
-    public RefinementDetailResult applyTask(Long refinementTaskId, Long appliedBy) {
+    public RefinementApplyResult applyTask(Long refinementTaskId, Long appliedBy) {
         RefinementTask task = refinementTaskRepository.getByTaskId(RefinementTaskId.ofNullable(refinementTaskId));
         applySupport.applyEntities(task.getGraphVersionId(), entityDraftRepository.listByTaskId(refinementTaskId));
         applySupport.applyRelations(task.getGraphVersionId(), relationDraftRepository.listByTaskId(refinementTaskId));
@@ -415,11 +430,11 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
                 task.getGraphVersionId(), lineageNodeDraftRepository.listByTaskId(refinementTaskId));
         applySupport.applyLineageRelations(
                 task.getGraphVersionId(), lineageRelationDraftRepository.listByTaskId(refinementTaskId));
-        task.setStatus("APPLIED");
+        task.setStatus(STATUS_APPLIED);
         task.setAppliedBy(appliedBy);
         task.setAppliedAt(new Date());
         refinementTaskRepository.update(task);
-        return detail(task);
+        return toApplyResult(task);
     }
 
     @Override
@@ -594,6 +609,73 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
                         confirmedEntities(entities),
                         pendingRelations(relations),
                         confirmedRelations(relations)));
+    }
+
+    private RefinementApplyResult toApplyResult(RefinementTask task) {
+        GraphVersion version = graphVersionRepository.getByVersionId(task.getGraphVersionId());
+        GraphExtractionTask sourceTask = sourceTask(version);
+        Long sourceTaskId = version == null || version.getTaskId() == null
+                ? null
+                : version.getTaskId().value();
+        String sourceContentType =
+                defaultIfBlank(version == null ? null : version.getSourceContentType(), task.getSourceContentType());
+        Long sourceContentId = version == null || version.getSourceContentId() == null
+                ? task.getSourceContentId()
+                : version.getSourceContentId();
+        String sourceCategoryCode =
+                defaultIfBlank(version == null ? null : version.getSourceCategoryCode(), task.getSourceCategoryCode());
+        String sourceCategoryName =
+                defaultIfBlank(version == null ? null : version.getSourceCategoryName(), task.getSourceCategoryName());
+        return new RefinementApplyResult(
+                task.getRefinementTaskId() == null
+                        ? null
+                        : task.getRefinementTaskId().value(),
+                task.getGraphVersionId(),
+                defaultIfBlank(version == null ? null : version.getTaskType(), task.getTaskType()),
+                sourceContentType,
+                sourceContentId,
+                sourceCategoryCode,
+                sourceCategoryName,
+                task.getStatus(),
+                task.getAppliedAt() == null ? null : task.getAppliedAt().getTime(),
+                true,
+                sourceTaskId != null,
+                sourceTaskId,
+                selectionScopeJson(task, version, sourceTask, sourceContentType, sourceContentId, sourceCategoryCode),
+                true,
+                TRIGGER_SOURCE_REFINEMENT_APPLIED,
+                NEXT_ACTION_OPEN_GRAPH_VERSION,
+                true);
+    }
+
+    private GraphExtractionTask sourceTask(GraphVersion version) {
+        return version == null || version.getTaskId() == null
+                ? null
+                : graphExtractionTaskRepository.getByTaskId(version.getTaskId());
+    }
+
+    private String selectionScopeJson(
+            RefinementTask task,
+            GraphVersion version,
+            GraphExtractionTask sourceTask,
+            String sourceContentType,
+            Long sourceContentId,
+            String sourceCategoryCode) {
+        if (sourceTask != null && sourceTask.getSelectionScopeJson() != null) {
+            return sourceTask.getSelectionScopeJson();
+        }
+        Map<String, Object> scope = new LinkedHashMap<>();
+        scope.put("graphVersionId", task.getGraphVersionId());
+        scope.put("sourceContentType", sourceContentType);
+        scope.put("sourceContentId", sourceContentId);
+        scope.put("sourceCategoryCode", sourceCategoryCode);
+        scope.put(
+                "sourceCategoryName", version == null ? task.getSourceCategoryName() : version.getSourceCategoryName());
+        try {
+            return objectMapper.writeValueAsString(scope);
+        } catch (JsonProcessingException ex) {
+            throw new IllegalStateException("Knowledge refinement apply scope is invalid", ex);
+        }
     }
 
     private int pendingEntities(List<RefinementEntityDraft> drafts) {
