@@ -18,6 +18,7 @@ import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatResult;
 import com.thundax.kuzhambu.discovery.application.qa.command.ChatCompletionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.support.QaSourceAssembler;
 import com.thundax.kuzhambu.discovery.application.qa.support.QaTraceAssembler;
+import com.thundax.kuzhambu.discovery.application.search.support.DiscoveryKnowledgeEnhancementProvider;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaMessage;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaRetrievalTrace;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSession;
@@ -37,6 +38,7 @@ class KnowledgeQaApplicationServiceImplTest {
     void chatCompletionShouldRejectRemovedSession() {
         KnowledgeBaseClient knowledgeBaseClient = mock(KnowledgeBaseClient.class);
         QaSessionRepository sessionRepository = mock(QaSessionRepository.class);
+        DiscoveryKnowledgeEnhancementProvider enhancementProvider = mock(DiscoveryKnowledgeEnhancementProvider.class);
         KnowledgeQaApplicationServiceImpl service = new KnowledgeQaApplicationServiceImpl(
                 knowledgeBaseClient,
                 sessionRepository,
@@ -44,7 +46,8 @@ class KnowledgeQaApplicationServiceImplTest {
                 mock(QaSourceRepository.class),
                 mock(QaRetrievalTraceRepository.class),
                 new QaSourceAssembler(),
-                new QaTraceAssembler());
+                new QaTraceAssembler(),
+                enhancementProvider);
         QaSession session = openSession();
         session.markRemoved(new Date());
         when(sessionRepository.getBySessionId(5001L)).thenReturn(session);
@@ -61,6 +64,7 @@ class KnowledgeQaApplicationServiceImplTest {
         QaSessionRepository sessionRepository = mock(QaSessionRepository.class);
         QaMessageRepository messageRepository = mock(QaMessageRepository.class);
         QaRetrievalTraceRepository traceRepository = mock(QaRetrievalTraceRepository.class);
+        DiscoveryKnowledgeEnhancementProvider enhancementProvider = mock(DiscoveryKnowledgeEnhancementProvider.class);
         KnowledgeQaApplicationServiceImpl service = new KnowledgeQaApplicationServiceImpl(
                 knowledgeBaseClient,
                 sessionRepository,
@@ -68,7 +72,8 @@ class KnowledgeQaApplicationServiceImplTest {
                 mock(QaSourceRepository.class),
                 traceRepository,
                 new QaSourceAssembler(),
-                new QaTraceAssembler());
+                new QaTraceAssembler(),
+                enhancementProvider);
         when(sessionRepository.getBySessionId(5001L)).thenReturn(wangqiSingleDocumentSession());
         when(messageRepository.save(any(QaMessage.class))).thenReturn(6001L, 6002L);
         when(knowledgeBaseClient.chat(any(KnowledgeChatRequest.class)))
@@ -82,6 +87,9 @@ class KnowledgeQaApplicationServiceImplTest {
                         List.of(),
                         Map.of("id", "chat-1")));
         when(traceRepository.save(any(QaRetrievalTrace.class))).thenReturn(6201L);
+        when(enhancementProvider.enhance("这份文档说了什么？"))
+                .thenReturn(new DiscoveryKnowledgeEnhancementProvider.KnowledgeEnhancementResult(
+                        List.of("礼学", "典礼"), null, List.of()));
 
         service.chatCompletion(wangqiCommand(3001L));
 
@@ -91,6 +99,9 @@ class KnowledgeQaApplicationServiceImplTest {
         assertEquals("SINGLE_DOCUMENT", options.get("contextMode"));
         assertEquals("WANGQI_DOCUMENT", options.get("contextContentType"));
         assertEquals(3001L, options.get("contextContentId"));
+        Map<String, Object> metadata = requestCaptor.getValue().metadata();
+        assertEquals("这份文档说了什么？", metadata.get("synonymQueryTerm"));
+        assertEquals(List.of("礼学", "典礼"), metadata.get("expandedSynonyms"));
 
         ArgumentCaptor<QaRetrievalTrace> traceCaptor = ArgumentCaptor.forClass(QaRetrievalTrace.class);
         verify(traceRepository).save(traceCaptor.capture());
@@ -107,6 +118,7 @@ class KnowledgeQaApplicationServiceImplTest {
         KnowledgeBaseClient knowledgeBaseClient = mock(KnowledgeBaseClient.class);
         QaSessionRepository sessionRepository = mock(QaSessionRepository.class);
         QaMessageRepository messageRepository = mock(QaMessageRepository.class);
+        DiscoveryKnowledgeEnhancementProvider enhancementProvider = mock(DiscoveryKnowledgeEnhancementProvider.class);
         KnowledgeQaApplicationServiceImpl service = new KnowledgeQaApplicationServiceImpl(
                 knowledgeBaseClient,
                 sessionRepository,
@@ -114,7 +126,8 @@ class KnowledgeQaApplicationServiceImplTest {
                 mock(QaSourceRepository.class),
                 mock(QaRetrievalTraceRepository.class),
                 new QaSourceAssembler(),
-                new QaTraceAssembler());
+                new QaTraceAssembler(),
+                enhancementProvider);
         when(sessionRepository.getBySessionId(5001L)).thenReturn(wangqiSingleDocumentSession());
 
         BizException exception = assertThrows(BizException.class, () -> service.chatCompletion(wangqiCommand(3002L)));
