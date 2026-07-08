@@ -143,6 +143,30 @@ class DefaultOperationsDashboardSummaryGatewayTest {
     }
 
     @Test
+    void loadSummaryShouldSkipCrossDomainFacadesWhenNoChartPermission() {
+        ClassicsFacade classicsFacade = mock(ClassicsFacade.class);
+        AiFacade aiFacade = mock(AiFacade.class);
+        DiscoveryFacade discoveryFacade = mock(DiscoveryFacade.class);
+        KnowledgeFacade knowledgeFacade = mock(KnowledgeFacade.class);
+        DefaultOperationsDashboardSummaryGateway gateway = new DefaultOperationsDashboardSummaryGateway(
+                classicsFacade, aiFacade, discoveryFacade, knowledgeFacade);
+        OperationsDashboardPermissionSnapshot permissions =
+                new OperationsDashboardPermissionSnapshot(false, false, false, false, false, false, false, true);
+
+        OperationsCrossDomainSummary result = gateway.loadSummary(
+                Date.from(Instant.parse("2026-06-01T00:00:00Z")),
+                Date.from(Instant.parse("2026-06-30T23:59:59Z")),
+                "DAY",
+                permissions);
+
+        assertSame(null, result.classicsSummary());
+        assertSame(null, result.aiSummary());
+        assertSame(null, result.discoverySummary());
+        assertSame(null, result.knowledgeSummary());
+        verifyNoInteractions(classicsFacade, aiFacade, discoveryFacade, knowledgeFacade);
+    }
+
+    @Test
     void loadSummaryShouldRejectMissingEnabledDomainSummary() {
         ClassicsFacade classicsFacade = mock(ClassicsFacade.class);
         when(classicsFacade.summary(any())).thenReturn(null);
