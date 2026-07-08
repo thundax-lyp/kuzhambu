@@ -11,6 +11,7 @@ public class OperationsHealthRecoveryLinkFactory {
     public static final String ACTION_OPEN_CLEANUP_DETAIL = "OPEN_CLEANUP_DETAIL";
     public static final String ACTION_OPEN_TASK_DETAIL = "OPEN_TASK_DETAIL";
     public static final String ACTION_RUN_MANUAL_BACKUP = "RUN_MANUAL_BACKUP";
+    public static final String ACTION_RUN_RESTORE = "RUN_RESTORE";
     public static final String ACTION_NONE = "NONE";
 
     public String healthDetailTarget(String component) {
