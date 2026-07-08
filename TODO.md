@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `admin-web operations dashboard charts`：按权限裁剪指标卡、趋势图和排行
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DASHBOARD-PERMISSION-CHARTS.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/operations/dashboard/dashboard-page.tsx`、`kuzhambu-apps/admin-web/src/pages/operations/dashboard/dashboard-page.css`、`kuzhambu-apps/admin-web/src/pages/operations/dashboard/dashboard-page.test.tsx`
-    - 处理动作：按 RUNBOOK 权限矩阵裁剪 `Card`、`TrendPanel`、`RankingList`、告警横幅、健康抽屉和无图表空态。
-    - 验收点：无图表权限时不渲染任何图表标题，单项搜索、问答、标签、健康和任务权限只展示对应控件。
-    - 重要度：10/10
-
 - [ ] `feat/operations-dashboard-permission-charts`：同步 main 分支代码
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`
