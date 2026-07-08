@@ -234,14 +234,17 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
                             .contentId(String.valueOf(command.getContentId()))
                             .build());
             if (sourceResponse == null || sourceResponse.getKnowledge() == null) {
-                throw new BizException(
-                        "DISCOVERY-30011", "discovery.qa.sync.source-missing", "QA knowledge source is not available");
+                return disableContentIfNeeded(command, existingItem, sourceId, now);
             }
 
             KnowledgeDocument document = knowledgeDocumentAssembler.toKnowledgeDocument(sourceResponse);
             if (document == null) {
                 throw new BizException(
                         "DISCOVERY-30012", "discovery.qa.sync.document-missing", "QA knowledge document is missing");
+            }
+
+            if (shouldDisableContentFromKnowledge(document)) {
+                return disableContentIfNeeded(command, existingItem, sourceId, now);
             }
 
             String title =
@@ -319,6 +322,20 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
             }
             return toResult(failedItem);
         }
+    }
+
+    private KnowledgeSyncItemResult disableContentIfNeeded(
+            SyncKnowledgeContentCommand command, QaKnowledgeSyncItem existingItem, String sourceId, Date now) {
+        if (!isWangqiOrMingCustoms(command.getContentType())) {
+            throw new BizException(
+                    "DISCOVERY-30011", "discovery.qa.sync.source-missing", "QA knowledge source is not available");
+        }
+
+        if (existingItem == null) {
+            return syncDeletedContent(command, sourceId, now, "Sync item does not exist", null);
+        }
+
+        return deleteSyncItem(existingItem, sourceId, now, command.getRequestId(), command.getTraceId());
     }
 
     private List<QaKnowledgeSyncItem> listItemsForPageQuery(KnowledgeSyncItemPageQuery query) {
@@ -452,6 +469,92 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
                 && ("SUCCEEDED".equalsIgnoreCase(syncResult.status())
                         || "DONE".equalsIgnoreCase(syncResult.status())
                         || SYNC_STATUS_DELETED.equalsIgnoreCase(syncResult.status()));
+    }
+
+    private boolean shouldDisableContentFromKnowledge(KnowledgeDocument document) {
+        if (document == null || document.metadata() == null) {
+            return false;
+        }
+        String contentType = document.metadata().contentType();
+        String visibility = document.metadata().visibility();
+        return isWangqiOrMingCustoms(contentType) && !"PUBLIC".equalsIgnoreCase(visibility);
+    }
+
+    private boolean isWangqiOrMingCustoms(String contentType) {
+        return "WANGQI_DOCUMENT".equals(contentType) || "MING_CUSTOMS".equals(contentType);
+    }
+
+    private KnowledgeSyncItemResult syncDeletedContent(
+            SyncKnowledgeContentCommand command,
+            String sourceId,
+            Date now,
+            String failureReasonIfMissing,
+            QaKnowledgeSyncItem existingItem) {
+        QaKnowledgeSyncItem failedItem = existingItem == null ? new QaKnowledgeSyncItem() : existingItem;
+        failedItem.setSourceId(sourceId);
+        failedItem.setContentType(command.getContentType());
+        failedItem.setContentId(command.getContentId());
+        failedItem.setKnowledgeBaseName(KNOWLEDGE_BASE_NAME);
+        failedItem.setCurrentVersionNo(command.getCurrentVersionNo());
+        failedItem.setKnowledgeRevision(null);
+        failedItem.setProvider(resolveProvider());
+        failedItem.setExternalKnowledgeBaseId(null);
+        failedItem.setExternalKnowledgeItemId(null);
+        failedItem.setSyncStatus(SYNC_STATUS_FAILED);
+        failedItem.setFailureReason(failureReasonIfMissing);
+        failedItem.setSyncedAt(null);
+        failedItem.setCreatedAt(failedItem.getCreatedAt() == null ? now : failedItem.getCreatedAt());
+        failedItem.setUpdatedAt(now);
+        if (failedItem.getId() == null) {
+            failedItem.setId(qaKnowledgeSyncItemRepository.save(failedItem));
+        } else {
+            qaKnowledgeSyncItemRepository.update(failedItem);
+        }
+        return toResult(failedItem);
+    }
+
+    private KnowledgeSyncItemResult deleteSyncItem(
+            QaKnowledgeSyncItem existingItem,
+            String sourceId,
+            Date now,
+            String requestId,
+            String traceId) {
+        if (StringUtils.isBlank(existingItem.getExternalKnowledgeItemId())) {
+            return syncDeletedContent(
+                    new SyncKnowledgeContentCommand(
+                            existingItem.getContentType(),
+                            existingItem.getContentId(),
+                            existingItem.getCurrentVersionNo(),
+                            requestId,
+                            traceId),
+                    sourceId,
+                    now,
+                    "Sync item does not have external knowledge item id",
+                    existingItem);
+        }
+
+        try {
+            KnowledgeSyncResult deleteResult = knowledgeBaseClient.deleteKnowledgeItem(new KnowledgeItemDeleteRequest(
+                    knowledgeItemBase(existingItem),
+                    existingItem.getExternalKnowledgeItemId(),
+                    sourceId,
+                    Map.of("operation", "deleteContent")));
+            existingItem.setSyncStatus(isSuccessStatus(deleteResult) ? SYNC_STATUS_DELETED : SYNC_STATUS_FAILED);
+            existingItem.setFailureReason(syncResultFailureReason(deleteResult, "deleteKnowledgeItem failed"));
+            if (SYNC_STATUS_DELETED.equals(existingItem.getSyncStatus())) {
+                existingItem.setSyncedAt(now);
+            }
+            existingItem.setUpdatedAt(now);
+            qaKnowledgeSyncItemRepository.update(existingItem);
+            return toResult(existingItem);
+        } catch (Exception ex) {
+            existingItem.setSyncStatus(SYNC_STATUS_FAILED);
+            existingItem.setFailureReason(errorMessage(ex));
+            existingItem.setSyncedAt(null);
+            existingItem.setUpdatedAt(now);
+            qaKnowledgeSyncItemRepository.update(existingItem);
+            return toResult(existingItem);
+        }
     }
 
     private String syncResultFailureReason(KnowledgeSyncResult syncResult, String fallback) {

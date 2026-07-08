@@ -537,14 +537,13 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                 entry.setTranslationStatus(SancaiEntryTranslationStatus.READY);
                 touchContentUpdatedAt(ClassicsContentType.SANCAI_ENTRY, entry);
                 ensureUpdate(repository.updateSancaiEntryAiFields(entry), "更新三才内容失败");
-            } else if ("summary".equals(capability)) {
-                entry.setSummary(aiCandidatePayloadParser.parseText(command.getResultPayload()));
-                touchContentUpdatedAt(ClassicsContentType.SANCAI_ENTRY, entry);
-                ensureUpdate(repository.updateSancaiEntryAiFields(entry), "更新三才内容失败");
-            } else if ("tags".equals(capability)) {
-                applyTags(contentType, entry, aiCandidatePayloadParser.parseTags(command.getResultPayload()));
-            } else if ("qa".equals(capability)) {
-                applyQaPairs(contentType, entry, aiCandidatePayloadParser.parseQaPairs(command.getResultPayload()));
+            } else if ("summary".equals(capability) || "tags".equals(capability) || "qa".equals(capability)) {
+                applySummaryTagsAndQaFromAiCandidate(
+                        contentType,
+                        entry,
+                        capability,
+                        command.getResultPayload(),
+                        "更新三才内容失败");
             } else {
                 throw new BizException("不支持的 AI 候选能力: " + capability);
             }
@@ -559,14 +558,13 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             if (document == null) {
                 throw new BizException("王圻文档不存在: " + contentId.value());
             }
-            if ("summary".equals(capability)) {
-                document.setSummary(aiCandidatePayloadParser.parseText(command.getResultPayload()));
-                touchContentUpdatedAt(ClassicsContentType.WANGQI_DOCUMENT, document);
-                ensureUpdate(repository.updateWangqiDocumentAiFields(document), "更新王圻文档失败");
-            } else if ("tags".equals(capability)) {
-                applyTags(contentType, document, aiCandidatePayloadParser.parseTags(command.getResultPayload()));
-            } else if ("qa".equals(capability)) {
-                applyQaPairs(contentType, document, aiCandidatePayloadParser.parseQaPairs(command.getResultPayload()));
+            if ("summary".equals(capability) || "tags".equals(capability) || "qa".equals(capability)) {
+                applySummaryTagsAndQaFromAiCandidate(
+                        contentType,
+                        document,
+                        capability,
+                        command.getResultPayload(),
+                        "更新王圻文档失败");
             } else {
                 throw new BizException("不支持的 AI 候选能力: " + capability);
             }
@@ -576,14 +574,13 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             if (entry == null) {
                 throw new BizException("明代习俗不存在: " + contentId.value());
             }
-            if ("summary".equals(capability)) {
-                entry.setSummary(aiCandidatePayloadParser.parseText(command.getResultPayload()));
-                touchContentUpdatedAt(ClassicsContentType.MING_CUSTOMS, entry);
-                ensureUpdate(repository.updateMingCustomsEntryAiFields(entry), "更新明代习俗失败");
-            } else if ("tags".equals(capability)) {
-                applyTags(contentType, entry, aiCandidatePayloadParser.parseTags(command.getResultPayload()));
-            } else if ("qa".equals(capability)) {
-                applyQaPairs(contentType, entry, aiCandidatePayloadParser.parseQaPairs(command.getResultPayload()));
+            if ("summary".equals(capability) || "tags".equals(capability) || "qa".equals(capability)) {
+                applySummaryTagsAndQaFromAiCandidate(
+                        contentType,
+                        entry,
+                        capability,
+                        command.getResultPayload(),
+                        "更新明代习俗失败");
             } else {
                 throw new BizException("不支持的 AI 候选能力: " + capability);
             }
@@ -937,6 +934,73 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             return aiCandidatePayloadParser.parseStorageObjectId(command.getResultPayload());
         } catch (BizException ex) {
             throw new BizException("AI候选生图结果不可用: " + ex.getMessage());
+        }
+    }
+
+    private void applySummaryTagsAndQaFromAiCandidate(
+            ClassicsContentType contentType,
+            Versionable content,
+            String capability,
+            String resultPayload,
+            String updateFailureMessage) {
+        String summary = resolveSummaryIfPresent(resultPayload);
+        List<String> tags = aiCandidatePayloadParser.parseTagsIfPresent(resultPayload);
+        List<AiCandidateQaPairPayload> qaPairs = aiCandidatePayloadParser.parseQaPairsIfPresent(resultPayload);
+
+        if (summary == null && tags.isEmpty() && qaPairs.isEmpty()) {
+            throw new BizException("AI候选内容为空");
+        }
+
+        if (summary != null) {
+            if (content instanceof SancaiEntry entry) {
+                entry.setSummary(summary);
+            } else if (content instanceof WangqiDocument document) {
+                document.setSummary(summary);
+            } else if (content instanceof MingCustomsEntry entry) {
+                entry.setSummary(summary);
+            }
+        }
+
+        if ("tags".equals(capability)) {
+            if (tags == null || tags.isEmpty()) {
+                throw new BizException("AI候选标签为空");
+            }
+            applyTags(contentType, content, tags);
+        } else if ("qa".equals(capability)) {
+            if (qaPairs == null || qaPairs.isEmpty()) {
+                throw new BizException("AI候选问答为空");
+            }
+            applyQaPairs(contentType, content, qaPairs);
+        } else {
+            if (!tags.isEmpty()) {
+                applyTags(contentType, content, tags);
+            }
+            if (!qaPairs.isEmpty()) {
+                applyQaPairs(contentType, content, qaPairs);
+            }
+        }
+
+        touchContentUpdatedAt(contentType, content);
+        if (content instanceof SancaiEntry entry) {
+            ensureUpdate(repository.updateSancaiEntryAiFields(entry), updateFailureMessage);
+        } else if (content instanceof WangqiDocument document) {
+            ensureUpdate(repository.updateWangqiDocumentAiFields(document), updateFailureMessage);
+        } else if (content instanceof MingCustomsEntry entry) {
+            ensureUpdate(repository.updateMingCustomsEntryAiFields(entry), updateFailureMessage);
+        }
+    }
+
+    private String resolveSummaryIfPresent(String resultPayload) {
+        try {
+            return aiCandidatePayloadParser.parseSummary(resultPayload);
+        } catch (BizException ex) {
+            if ("AI候选内容为空".equals(ex.getMessage())) {
+                return null;
+            }
+            if ("AI候选摘要格式错误".equals(ex.getMessage())) {
+                throw ex;
+            }
+            return null;
         }
     }
 
