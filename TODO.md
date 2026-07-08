@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `SancaiAssetApplicationService.java` 等 5 文件：实现静态展示回源与删除边界
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-EXPORT-SHOWCASE-GOVERNANCE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sancai/service/SancaiAssetApplicationService.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sancai/service/impl/SancaiAssetApplicationServiceImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-domain/src/main/java/com/thundax/kuzhambu/classics/domain/sancai/repository/SancaiAssetRepository.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/java/com/thundax/kuzhambu/classics/infra/sancai/repository/impl/SancaiAssetRepositoryImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/sancai/controller/SancaiAssetAdminController.java`
-    - 处理动作：按 showcase 记录 id 回源内容，并按记录级 owner 实现静态展示记录删除。
-    - 验收点：`GET /api/classics/sancai/assets/showcases/{id}/content` 的 `{id}` 为 `classics_sancai_showcase.id`；`POST /api/classics/sancai/assets/showcases/delete` 入参为 `id`，权限为 `classics:sancai:edit`；Storage 引用字段为 `reference_owner_type=CLASSICS_SANCAI_SHOWCASE`、`reference_owner_id=showcase:{classics_sancai_showcase.id}`、`business_params=usage=SANCAI_SHOWCASE;showcaseId={classics_sancai_showcase.id}`。
-    - 重要度：10/10
-
 - [ ] `SancaiAssetInterfaceAssembler.java`、`SancaiAssetApplicationServiceImplTest.java`：改为记录 id 展示 URL 并锁定测试
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-EXPORT-SHOWCASE-GOVERNANCE.md`
