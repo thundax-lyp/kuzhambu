@@ -19,6 +19,7 @@ import com.thundax.kuzhambu.knowledge.facade.dto.KnowledgeTopTagFacadeDto;
 import com.thundax.kuzhambu.knowledge.facade.response.KnowledgeSummaryFacadeResponse;
 import com.thundax.kuzhambu.operations.application.dashboard.query.OperationsDashboardOverviewQuery;
 import com.thundax.kuzhambu.operations.application.dashboard.result.OperationsDashboardOverviewResult;
+import com.thundax.kuzhambu.operations.application.dashboard.support.OperationsDashboardPermissionSnapshot;
 import com.thundax.kuzhambu.operations.application.dashboard.support.OperationsDashboardSummaryGateway;
 import com.thundax.kuzhambu.operations.application.dashboard.support.OperationsDashboardSummaryModels.OperationsCrossDomainSummary;
 import com.thundax.kuzhambu.operations.domain.health.model.entity.HealthCheckRecord;
@@ -288,7 +289,11 @@ class OperationsDashboardApplicationServiceImplTest {
         }
 
         @Override
-        public OperationsCrossDomainSummary loadSummary(Date periodStart, Date periodEnd, String bucketType) {
+        public OperationsCrossDomainSummary loadSummary(
+                Date periodStart,
+                Date periodEnd,
+                String bucketType,
+                OperationsDashboardPermissionSnapshot permissions) {
             this.bucketType = bucketType;
             return summary;
         }

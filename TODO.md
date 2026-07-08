@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `operations dashboard application support`：新增看板权限快照与解析器
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DASHBOARD-PERMISSION-CHARTS.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/dashboard/support/OperationsDashboardPermissionSnapshot.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/dashboard/support/OperationsDashboardPermissionResolver.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/test/java/com/thundax/kuzhambu/operations/application/dashboard/support/OperationsDashboardPermissionResolverTest.java`
-    - 处理动作：新增 dashboard 权限快照、权限解析器和权限解析测试覆盖。
-    - 验收点：精确权限、父级权限和 `super` 均能解析出 RUNBOOK 定义的权限快照。
-    - 重要度：10/10
-
 - [ ] `operations dashboard summary gateway`：按权限跳过跨域 summary facade
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DASHBOARD-PERMISSION-CHARTS.md`

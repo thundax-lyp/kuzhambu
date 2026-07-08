@@ -24,6 +24,7 @@ import com.thundax.kuzhambu.operations.application.dashboard.result.OperationsDa
 import com.thundax.kuzhambu.operations.application.dashboard.result.OperationsDashboardOverviewResult.TopQueryResult;
 import com.thundax.kuzhambu.operations.application.dashboard.result.OperationsDashboardOverviewResult.TopTagResult;
 import com.thundax.kuzhambu.operations.application.dashboard.service.OperationsDashboardApplicationService;
+import com.thundax.kuzhambu.operations.application.dashboard.support.OperationsDashboardPermissionSnapshot;
 import com.thundax.kuzhambu.operations.application.dashboard.support.OperationsDashboardSummaryGateway;
 import com.thundax.kuzhambu.operations.application.dashboard.support.OperationsDashboardSummaryModels.OperationsCrossDomainSummary;
 import com.thundax.kuzhambu.operations.application.health.result.OperationsHealthSummaryResult;
@@ -86,7 +87,10 @@ public class OperationsDashboardApplicationServiceImpl implements OperationsDash
     public OperationsDashboardOverviewResult overview(OperationsDashboardOverviewQuery query) {
         PeriodRange periodRange = resolvePeriodRange(query);
         OperationsCrossDomainSummary summary = summaryGateway.loadSummary(
-                periodRange.periodStart(), periodRange.periodEnd(), resolveBucketType(query, periodRange));
+                periodRange.periodStart(),
+                periodRange.periodEnd(),
+                resolveBucketType(query, periodRange),
+                new OperationsDashboardPermissionSnapshot(true, true, true, true, true, true, true, true));
         ClassicsSummaryFacadeResponse classicsSummary = summary.classicsSummary();
         AiReportSummaryFacadeResponse aiSummary = summary.aiSummary();
         DiscoverySummaryFacadeResponse discoverySummary = summary.discoverySummary();

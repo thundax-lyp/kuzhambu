@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.operations.application.report.support;
 
+import com.thundax.kuzhambu.operations.application.dashboard.support.OperationsDashboardPermissionSnapshot;
 import com.thundax.kuzhambu.operations.application.dashboard.support.OperationsDashboardSummaryGateway;
 import com.thundax.kuzhambu.operations.application.dashboard.support.OperationsDashboardSummaryModels.OperationsCrossDomainSummary;
 import com.thundax.kuzhambu.operations.application.report.support.OperationsReportSupportModels.OperationsReportSection;
@@ -26,8 +27,11 @@ public class DefaultOperationsReportMetricsGateway implements OperationsReportMe
             return List.of();
         }
         String bucketType = resolveBucketType(record.getReportType());
-        OperationsCrossDomainSummary summary =
-                summaryGateway.loadSummary(record.getPeriodStart(), record.getPeriodEnd(), bucketType);
+        OperationsCrossDomainSummary summary = summaryGateway.loadSummary(
+                record.getPeriodStart(),
+                record.getPeriodEnd(),
+                bucketType,
+                new OperationsDashboardPermissionSnapshot(true, true, true, true, true, true, true, true));
         List<OperationsReportSection> sections = new ArrayList<>();
         sections.add(section("classicsSummary", "Classics 统计摘要", summary.classicsSummary()));
         sections.add(section("aiSummary", "AI 调用摘要", summary.aiSummary()));
