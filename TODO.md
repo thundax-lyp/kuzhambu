@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Classics Wangqi/Ming version snapshot`：扩展版本快照与历史恢复
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-QA-VERSION-GOVERNANCE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/support/WangqiDocumentVersionSnapshot.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/support/MingCustomsVersionSnapshot.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/support/ClassicsContentSnapshotAssembler.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/wangqi/support/WangqiDocumentVersionRestorer.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/service/impl/ClassicsContentApplicationServiceImpl.java`
-    - 处理动作：把 `tags` 和 `qaPairs` 纳入 Wangqi/Ming `snapshot_json` 并在历史恢复时还原。
-    - 验收点：历史恢复可恢复主内容、标签快照和已确认问答对，并生成新的 `HISTORY_RESTORED` 版本。
-    - 重要度：10/10
-
 - [ ] `Classics AI apply and Discovery sync`：收口 AI 应用与 Discovery 只读同步
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-QA-VERSION-GOVERNANCE.md`

@@ -1208,6 +1208,8 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         entry.setOriginalExcerpts(snapshot.originalExcerpts());
         entry.setVisibility(resolveMingCustomsVisibility(snapshot.visibility()));
         touchContentUpdatedAt(ClassicsContentType.MING_CUSTOMS, entry);
+        restoreMingCustomsTags(entry, snapshot);
+        restoreMingCustomsQaPairs(entry, snapshot);
         return entry;
     }
 
@@ -1226,6 +1228,120 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
 
     private MingCustomsVisibility resolveMingCustomsVisibility(String value) {
         return StringUtils.isBlank(value) ? null : MingCustomsVisibility.from(value);
+    }
+
+    private void restoreMingCustomsTags(MingCustomsEntry entry, MingCustomsVersionSnapshot snapshot) {
+        if (entry == null || snapshot == null || entry.contentId() == null) {
+            return;
+        }
+        repository
+                .listTags(ClassicsContentType.MING_CUSTOMS.value(), entry.contentId(), SortDirection.ASC)
+                .forEach(tag -> {
+                    removeTagRefIfExists(tag);
+                    repository.deleteTagById(ClassicsContentType.MING_CUSTOMS.value(), entry.contentId(), tag.getId());
+                });
+
+        if (snapshot.tags() == null) {
+            return;
+        }
+
+        for (int i = 0; i < snapshot.tags().size(); i++) {
+            insertMingTagFromSnapshot(snapshot.tags().get(i), entry, i + 1);
+        }
+    }
+
+    private void restoreMingCustomsQaPairs(MingCustomsEntry entry, MingCustomsVersionSnapshot snapshot) {
+        if (entry == null || entry.contentId() == null) {
+            return;
+        }
+        repository
+                .listQaPairs(ClassicsContentType.MING_CUSTOMS.value(), entry.contentId(), SortDirection.ASC)
+                .forEach(pair -> repository.deleteQaPairById(pair.getId()));
+
+        if (snapshot == null || snapshot.qaPairs() == null) {
+            return;
+        }
+        for (int i = 0; i < snapshot.qaPairs().size(); i++) {
+            insertMingQaPairFromSnapshot(snapshot.qaPairs().get(i), entry, i + 1);
+        }
+    }
+
+    private void insertMingTagFromSnapshot(
+            MingCustomsVersionSnapshot.MingCustomsTagSnapshot snapshot, MingCustomsEntry entry, int fallbackPriority) {
+        if (snapshot == null || entry == null || entry.contentId() == null) {
+            return;
+        }
+        int priority = snapshot.priority() == null ? fallbackPriority : snapshot.priority();
+        if (tagBindingSupport == null) {
+            ContentTagCommand command = new ContentTagCommand(
+                    null,
+                    ClassicsContentType.MING_CUSTOMS,
+                    entry.contentId().value(),
+                    snapshot.tagId(),
+                    snapshot.tagNameSnapshot(),
+                    parseSource(snapshot.source()),
+                    parseTagStatus(snapshot.status()));
+            ClassicsContentTag tag = command.toEntity();
+            tag.setPriority(priority);
+            tag.setId(null);
+            repository.insertTag(tag);
+            return;
+        }
+        if (snapshot.tagId() == null && StringUtils.isBlank(snapshot.tagNameSnapshot())) {
+            return;
+        }
+        ClassicsContentTag tag = commandForRestoredTag(snapshot, entry, priority);
+        if (tag == null) {
+            return;
+        }
+        repository.insertTag(tag);
+        tagBindingSupport.syncTagRef(tag);
+    }
+
+    private ClassicsContentTag commandForRestoredTag(
+            MingCustomsVersionSnapshot.MingCustomsTagSnapshot snapshot, MingCustomsEntry entry, int priority) {
+        ClassicsContentSource source = parseSource(snapshot.source());
+        ClassicsContentTagStatus status = parseTagStatus(snapshot.status());
+        ContentTagCommand command = new ContentTagCommand(
+                null,
+                ClassicsContentType.MING_CUSTOMS,
+                entry.contentId().value(),
+                snapshot.tagId(),
+                snapshot.tagNameSnapshot(),
+                source,
+                status);
+        if (snapshot.tagId() == null) {
+            return source == ClassicsContentSource.AI
+                    ? tagBindingSupport.bindAiTag(command, priority)
+                    : tagBindingSupport.bindManualTag(command, priority);
+        }
+        ClassicsContentTag tag = command.toEntity();
+        tag.setId(null);
+        tag.setPriority(priority);
+        return tag;
+    }
+
+    private void insertMingQaPairFromSnapshot(
+            MingCustomsVersionSnapshot.MingCustomsQaPairSnapshot snapshot,
+            MingCustomsEntry entry,
+            int fallbackPriority) {
+        if (snapshot == null || entry == null || entry.contentId() == null) {
+            return;
+        }
+        if (StringUtils.isBlank(snapshot.question()) && StringUtils.isBlank(snapshot.answer())) {
+            return;
+        }
+        ContentQaPairCommand command = new ContentQaPairCommand(
+                null,
+                ClassicsContentType.MING_CUSTOMS,
+                entry.contentId().value(),
+                snapshot.question(),
+                snapshot.answer(),
+                parseSource(snapshot.source()));
+        ClassicsContentQaPair qaPair = command.toEntity();
+        qaPair.setId(null);
+        qaPair.setPriority(snapshot.priority() == null ? fallbackPriority : snapshot.priority());
+        repository.insertQaPair(qaPair);
     }
 
     @Override
@@ -1376,6 +1492,20 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     }
 
     private String snapshotJson(Versionable content) {
+        if (content instanceof WangqiDocument) {
+            List<ClassicsContentTag> tags = repository.listTags(
+                    ClassicsContentType.WANGQI_DOCUMENT.value(), content.contentId(), SortDirection.ASC);
+            List<ClassicsContentQaPair> qaPairs = repository.listQaPairs(
+                    ClassicsContentType.WANGQI_DOCUMENT.value(), content.contentId(), SortDirection.ASC);
+            return snapshotAssembler.toSnapshotJson(content, tags, qaPairs);
+        }
+        if (content instanceof MingCustomsEntry) {
+            List<ClassicsContentTag> tags = repository.listTags(
+                    ClassicsContentType.MING_CUSTOMS.value(), content.contentId(), SortDirection.ASC);
+            List<ClassicsContentQaPair> qaPairs = repository.listQaPairs(
+                    ClassicsContentType.MING_CUSTOMS.value(), content.contentId(), SortDirection.ASC);
+            return snapshotAssembler.toSnapshotJson(content, tags, qaPairs);
+        }
         if (content instanceof SancaiEntry entry && sancaiAssetApplicationService != null) {
             List<SancaiEntryImage> images = sancaiAssetApplicationService.listImages(entry.getId());
             if (storageFacade == null) {
@@ -1385,6 +1515,21 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                     entry, images.stream().map(this::toImageResource).toList());
         }
         return snapshotAssembler.toSnapshotJson(content);
+    }
+
+    private void removeTagRefIfExists(ClassicsContentTag tag) {
+        if (tagBindingSupport == null || tag == null) {
+            return;
+        }
+        tagBindingSupport.removeTagRef(tag);
+    }
+
+    private static ClassicsContentSource parseSource(String value) {
+        return StringUtils.isBlank(value) ? ClassicsContentSource.MANUAL : ClassicsContentSource.valueOf(value);
+    }
+
+    private static ClassicsContentTagStatus parseTagStatus(String value) {
+        return StringUtils.isBlank(value) ? ClassicsContentTagStatus.ACTIVE : ClassicsContentTagStatus.valueOf(value);
     }
 
     private WorkerRenderDtos.WorkerRenderRequest renderRequest(
