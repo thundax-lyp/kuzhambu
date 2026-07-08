@@ -9,6 +9,70 @@
 
 ## 当前任务项
 
+- [ ] `SancaiEntryResponse`：聚合返回三才条目详情标签
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-ENTRY-TAGS.md`
+    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/sancai/controller/SancaiAdminController.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/sancai/assembler/SancaiInterfaceAssembler.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/sancai/controller/response/SancaiEntryResponse.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/test/java/com/thundax/kuzhambu/classics/interfaces/admin/sancai/SancaiAdminControllerTest.java`
+    - 处理动作：让 `GET /api/classics/sancai/entries/{id}` 返回 `tags: List<ClassicsContentResponse>` 并保持列表响应不受影响。
+    - 验收点：详情响应有 `tags` 数组，空标签返回空数组，测试断言 `tags[0].tagNameSnapshot`。
+    - 重要度：9/10
+
+- [ ] `ClassicsContentTag`：治理通用内容标签接口入参和删除语义
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-ENTRY-TAGS.md`
+    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/content/controller/ClassicsContentAdminController.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/content/assembler/ClassicsContentInterfaceAssembler.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/content/controller/response/ClassicsContentResponse.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/service/impl/ClassicsContentApplicationServiceImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/test/java/com/thundax/kuzhambu/classics/interfaces/admin/content/ClassicsContentAdminControllerTest.java`
+    - 处理动作：补齐标签响应 `tagId/source/priority`，校验 `contentType/contentId/tagNameSnapshot/id/orderedIds`，新增 `POST /api/classics/content/tags/delete` 并清理 Knowledge 引用投影。
+    - 验收点：缺参请求返回参数错误，更新不能迁移绑定归属，删除标签会移除 Classics 绑定和 Knowledge 内容引用。
+    - 重要度：10/10
+
+- [ ] `ClassicsContentTagPanel`：接通前端通用标签删除闭环
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-ENTRY-TAGS.md`
+    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/common/classics-content-service.ts`、`kuzhambu-apps/admin-web/src/pages/classics/common/classics-content-types.ts`、`kuzhambu-apps/admin-web/src/pages/classics/common/components/classics-content-tag-panel.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/common/classics-content-service-contract.test.ts`
+    - 处理动作：新增 `deleteTag({ id })` 服务和删除入参类型，让标签行“移除”按钮调用 `/classics/content/tags/delete`。
+    - 验收点：“移除”按钮保留 `danger`、`DeleteOutlined`、`aria-label="移除标签 {id}"` 和 pending loading，删除成功后刷新标签 query 并触发 `onChanged`。
+    - 重要度：9/10
+
+- [ ] `SancaiEntryPanel`：补齐详情抽屉标签展示和编辑入口
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-ENTRY-TAGS.md`
+    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-types.ts`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-model.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/hooks/use-sancai-entry-panel-state.ts`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.test.tsx`
+    - 处理动作：在“条目上下文”展示 Ant Design `Tag` 标签行，并新增 `EditOutlined` 的“编辑标签”按钮定位到同抽屉标签治理面板。
+    - 验收点：有标签展示 `tagNameSnapshot`，无标签展示 `未标注标签`，点击 `aria-label="编辑三才图会条目标签"` 的按钮会滚动并 focus 标签治理面板，标签变更后刷新详情和列表 query。
+    - 重要度：9/10
+
+- [ ] `SancaiEntryTags`：运行本轮最小验证
+    - 任务类型：执行任务
+    - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-ENTRY-TAGS.md`
+    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-interface`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application`、`kuzhambu-apps/admin-web`
+    - 处理动作：运行 RUNBOOK 中列出的后端 Maven 格式化/测试、Admin Web 格式化、定向 Vitest 和 lint。
+    - 验收点：后端相关测试通过，`classics-content-service-contract.test.ts` 和 `sancai-entry-panel.test.tsx` 通过，Admin Web lint 通过。
+    - 重要度：8/10
+
+- [ ] `feat/sancai-entry-tags`：同步 main 最新代码
+    - 任务类型：执行任务
+    - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-SANCAI-ENTRY-TAGS.md`
+    - 范围对象：`main`、`feat/sancai-entry-tags`
+    - 处理动作：收口前同步 `main` 最新代码到 `feat/sancai-entry-tags`，处理可能出现的冲突。
+    - 验收点：当前分支包含最新 `main`，同步后重新运行本轮最小验证并通过。
+    - 重要度：9/10
+
+- [ ] `ClassicsImplementationCoverage`：同步三才标签闭环覆盖状态
+    - 任务类型：执行任务
+    - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-SANCAI-ENTRY-TAGS.md`
+    - 范围对象：`docs/40-readiness/CLASSICS-IMPLEMENTATION-COVERAGE.md`
+    - 处理动作：更新三才条目详情标签聚合展示、编辑入口、删除闭环和入参治理对应的覆盖描述。
+    - 验收点：覆盖矩阵中三才“编辑标题、门类、卷、原文、译文和标签”和“展示原文、译文、标签、配图和状态”的完成状态与代码实现一致。
+    - 重要度：8/10
+
+- [ ] `RUNBOOK-SANCAI-ENTRY-TAGS`：清理临时 RUNBOOK 和已完成 TODO
+    - 任务类型：执行任务
+    - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-SANCAI-ENTRY-TAGS.md`
+    - 范围对象：`docs/30-designs/RUNBOOK-SANCAI-ENTRY-TAGS.md`、`TODO.md`
+    - 处理动作：在功能、验证、main 同步和 Implementation Coverage 均完成后，删除临时 RUNBOOK 并随完成 commit 删除或收窄对应 TODO。
+    - 验收点：临时 RUNBOOK 不再保留，`TODO.md` 不记录已完成任务。
+    - 重要度：9/10
+
 ## 待审阅任务项
 
 ## 待讨论项
