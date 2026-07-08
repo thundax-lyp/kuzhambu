@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Admin graph results version focus`：图谱结果页按版本定位正式结果
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-GRAPH-LOOP.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/graph-results/graph-results-page.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/graph-results/components/graph-version-table.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/graph-results/components/graph-version-detail.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/graph-results/graph-results-types.ts`、`kuzhambu-apps/admin-web/src/pages/knowledge/graph-results/graph-results-page.test.tsx`
-    - 处理动作：让图谱结果页读取 `graphVersionId` 并联动版本详情和四类结果表。
-    - 验收点：从精修页点击查看图谱结果后直接定位对应版本，切换版本时四类结果表同步刷新。
-    - 重要度：8/10
-
 - [ ] `Admin quality report regenerate prompt`：质量报告页提示精修后重算
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-GRAPH-LOOP.md`

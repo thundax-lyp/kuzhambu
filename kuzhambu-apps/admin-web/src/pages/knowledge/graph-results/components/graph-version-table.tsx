@@ -5,8 +5,10 @@ import type { GraphVersionRecord } from "../graph-results-types";
 
 interface GraphVersionTableProps {
     loading?: boolean;
+    selectedVersionId?: number | null;
     versions: GraphVersionRecord[];
     onOpenDetail: (version: GraphVersionRecord) => void;
+    onOpenResults: (version: GraphVersionRecord) => void;
 }
 
 const readStatusColor = (status?: string | null) => {
@@ -24,8 +26,10 @@ const readStatusColor = (status?: string | null) => {
 
 export const GraphVersionTable = ({
     loading = false,
+    selectedVersionId = null,
     versions,
-    onOpenDetail
+    onOpenDetail,
+    onOpenResults
 }: GraphVersionTableProps) => {
     const columns: ColumnsType<GraphVersionRecord> = [
         {
@@ -62,10 +66,23 @@ export const GraphVersionTable = ({
             title: "版本序号"
         },
         {
+            dataIndex: "refinementApplied",
+            key: "refinementApplied",
+            render: (refinementApplied?: boolean | null) =>
+                refinementApplied ? <Tag color="gold">已精修</Tag> : <Tag>未精修</Tag>,
+            title: "精修状态"
+        },
+        {
             key: "actions",
             render: (_, version) => (
                 <KuzhambuSpaceCompact>
                     <Button onClick={() => onOpenDetail(version)}>查看详情</Button>
+                    <Button
+                        type={selectedVersionId === version.versionId ? "primary" : "default"}
+                        onClick={() => onOpenResults(version)}
+                    >
+                        查看正式结果
+                    </Button>
                 </KuzhambuSpaceCompact>
             ),
             title: "操作"

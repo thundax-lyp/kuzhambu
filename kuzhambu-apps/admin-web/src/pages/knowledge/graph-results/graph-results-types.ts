@@ -10,6 +10,9 @@ export interface GraphVersionRecord {
     versionNo?: number | null;
     status?: string | null;
     appliedAt?: number | null;
+    refinementApplied?: boolean | null;
+    lastRefinementTaskId?: number | null;
+    lastRefinementAppliedAt?: number | null;
 }
 
 export interface GraphVersionPageQuery {
