@@ -12,17 +12,16 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thundax.kuzhambu.ai.facade.AiFacade;
 import com.thundax.kuzhambu.ai.facade.request.DiscoveryAiFacadeRequest;
+import com.thundax.kuzhambu.ai.facade.response.DiscoveryAiFacadeResponse;
 import com.thundax.kuzhambu.classics.facade.ClassicsFacade;
 import com.thundax.kuzhambu.classics.facade.dto.ClassicsQaKnowledgeFacadeDto;
 import com.thundax.kuzhambu.classics.facade.request.ClassicsQaKnowledgeFacadeRequest;
 import com.thundax.kuzhambu.classics.facade.response.ClassicsQaKnowledgeFacadeResponse;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.knowledge.client.KnowledgeBaseClient;
-import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatChoice;
-import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatMessage;
 import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatRequest;
-import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatResult;
 import com.thundax.kuzhambu.discovery.application.qa.command.ChatCompletionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.support.QaSourceAssembler;
 import com.thundax.kuzhambu.discovery.application.qa.support.QaTraceAssembler;
@@ -30,6 +29,7 @@ import com.thundax.kuzhambu.discovery.application.search.support.DiscoveryKnowle
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaMessage;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaRetrievalTrace;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSession;
+import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSource;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaMessageRepository;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaRetrievalTraceRepository;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaSessionRepository;
@@ -48,11 +48,13 @@ class KnowledgeQaApplicationServiceImplTest {
     void chatCompletionShouldRejectRemovedSession() {
         KnowledgeBaseClient knowledgeBaseClient = mock(KnowledgeBaseClient.class);
         ClassicsFacade classicsFacade = mock(ClassicsFacade.class);
+        AiFacade aiFacade = mock(AiFacade.class);
         QaSessionRepository sessionRepository = mock(QaSessionRepository.class);
         DiscoveryKnowledgeEnhancementProvider enhancementProvider = mock(DiscoveryKnowledgeEnhancementProvider.class);
         KnowledgeQaApplicationServiceImpl service = new KnowledgeQaApplicationServiceImpl(
                 knowledgeBaseClient,
                 classicsFacade,
+                aiFacade,
                 sessionRepository,
                 mock(QaMessageRepository.class),
                 mock(QaSourceRepository.class),
@@ -71,35 +73,37 @@ class KnowledgeQaApplicationServiceImplTest {
     }
 
     @Test
-    void chatCompletionShouldPassSingleDocumentContextToProviderOptionsAndTrace() {
+    void chatCompletionShouldInvokeAiFacadeAndPersistAnswerSourceAndTrace() throws Exception {
         KnowledgeBaseClient knowledgeBaseClient = mock(KnowledgeBaseClient.class);
         ClassicsFacade classicsFacade = mock(ClassicsFacade.class);
+        AiFacade aiFacade = mock(AiFacade.class);
         QaSessionRepository sessionRepository = mock(QaSessionRepository.class);
         QaMessageRepository messageRepository = mock(QaMessageRepository.class);
+        QaSourceRepository sourceRepository = mock(QaSourceRepository.class);
         QaRetrievalTraceRepository traceRepository = mock(QaRetrievalTraceRepository.class);
         DiscoveryKnowledgeEnhancementProvider enhancementProvider = mock(DiscoveryKnowledgeEnhancementProvider.class);
         KnowledgeQaApplicationServiceImpl service = new KnowledgeQaApplicationServiceImpl(
                 knowledgeBaseClient,
                 classicsFacade,
+                aiFacade,
                 sessionRepository,
                 messageRepository,
-                mock(QaSourceRepository.class),
+                sourceRepository,
                 traceRepository,
                 new QaSourceAssembler(),
                 new QaTraceAssembler(),
                 enhancementProvider);
         when(sessionRepository.getBySessionId(5001L)).thenReturn(wangqiSingleDocumentSession());
         when(messageRepository.save(any(QaMessage.class))).thenReturn(6001L, 6002L);
-        when(knowledgeBaseClient.chat(any(KnowledgeChatRequest.class)))
-                .thenReturn(new KnowledgeChatResult(
-                        "chat-1",
-                        "chat.completion",
-                        1_718_000_000L,
-                        "kuzhambu-qa",
-                        List.of(new KnowledgeChatChoice(0, new KnowledgeChatMessage("assistant", "王圻文档答案"), "stop")),
-                        null,
-                        List.of(),
-                        Map.of("id", "chat-1")));
+        when(aiFacade.generateDiscoveryAnswer(any(DiscoveryAiFacadeRequest.class)))
+                .thenReturn(DiscoveryAiFacadeResponse.builder()
+                        .callId(9101L)
+                        .status("SUCCEEDED")
+                        .capability("answer_generation")
+                        .resultFormat("JSON")
+                        .resultPayload("{\"answer\":\"王圻文档答案\",\"sources\":[],\"finishReason\":\"stop\"}")
+                        .build());
+        when(sourceRepository.save(any(QaSource.class))).thenReturn(6101L);
         when(traceRepository.save(any(QaRetrievalTrace.class))).thenReturn(6201L);
         when(enhancementProvider.enhance("这份文档说了什么？"))
                 .thenReturn(new DiscoveryKnowledgeEnhancementProvider.KnowledgeEnhancementResult(
@@ -109,36 +113,46 @@ class KnowledgeQaApplicationServiceImplTest {
 
         service.chatCompletion(wangqiCommand(3001L));
 
-        ArgumentCaptor<KnowledgeChatRequest> requestCaptor = ArgumentCaptor.forClass(KnowledgeChatRequest.class);
-        verify(knowledgeBaseClient).chat(requestCaptor.capture());
-        Map<String, Object> options = requestCaptor.getValue().options();
-        assertEquals("SINGLE_DOCUMENT", options.get("contextMode"));
-        assertEquals("WANGQI_DOCUMENT", options.get("contextContentType"));
-        assertEquals(3001L, options.get("contextContentId"));
-        Map<String, Object> metadata = requestCaptor.getValue().metadata();
-        assertEquals("这份文档说了什么？", metadata.get("synonymQueryTerm"));
-        assertEquals(List.of("礼学", "典礼"), metadata.get("expandedSynonyms"));
+        verify(knowledgeBaseClient, never()).chat(any(KnowledgeChatRequest.class));
+        ArgumentCaptor<DiscoveryAiFacadeRequest> aiRequestCaptor =
+                ArgumentCaptor.forClass(DiscoveryAiFacadeRequest.class);
+        verify(aiFacade).generateDiscoveryAnswer(aiRequestCaptor.capture());
+        JsonNode inputPayload =
+                OBJECT_MAPPER.readTree(aiRequestCaptor.getValue().getInputPayloadJson());
+        assertEquals("这份文档说了什么？", inputPayload.get("question").asText());
+        assertEquals(
+                "WANGQI_DOCUMENT:3001", inputPayload.at("/sources/0/sourceId").asText());
+
+        ArgumentCaptor<QaMessage> messageCaptor = ArgumentCaptor.forClass(QaMessage.class);
+        verify(messageRepository, org.mockito.Mockito.times(2)).save(messageCaptor.capture());
+        assertEquals("user", messageCaptor.getAllValues().get(0).getRole());
+        assertEquals("assistant", messageCaptor.getAllValues().get(1).getRole());
+        assertEquals("王圻文档答案", messageCaptor.getAllValues().get(1).getContent());
+        ArgumentCaptor<QaSource> sourceCaptor = ArgumentCaptor.forClass(QaSource.class);
+        verify(sourceRepository).save(sourceCaptor.capture());
+        assertEquals("WANGQI_DOCUMENT:3001", sourceCaptor.getValue().getSourceBusinessId());
 
         ArgumentCaptor<QaRetrievalTrace> traceCaptor = ArgumentCaptor.forClass(QaRetrievalTrace.class);
         verify(traceRepository).save(traceCaptor.capture());
-        String raw = traceCaptor.getValue().getRaw();
-        assertTrue(raw.contains("\"providerRequest\""));
-        assertTrue(raw.contains("\"contextMode\":\"SINGLE_DOCUMENT\""));
-        assertTrue(raw.contains("\"contextContentType\":\"WANGQI_DOCUMENT\""));
-        assertTrue(raw.contains("\"contextContentId\":3001"));
-        assertTrue(raw.contains("\"providerResponse\""));
+        QaRetrievalTrace trace = traceCaptor.getValue();
+        assertEquals(9101L, trace.getAiCallId());
+        assertEquals("SUCCEEDED", trace.getAiStatus());
+        assertTrue(trace.getRaw().contains("\"aiRequest\""));
+        assertTrue(trace.getRaw().contains("\"aiResponse\""));
     }
 
     @Test
     void chatCompletionShouldRejectMismatchedSingleDocumentMetadata() {
         KnowledgeBaseClient knowledgeBaseClient = mock(KnowledgeBaseClient.class);
         ClassicsFacade classicsFacade = mock(ClassicsFacade.class);
+        AiFacade aiFacade = mock(AiFacade.class);
         QaSessionRepository sessionRepository = mock(QaSessionRepository.class);
         QaMessageRepository messageRepository = mock(QaMessageRepository.class);
         DiscoveryKnowledgeEnhancementProvider enhancementProvider = mock(DiscoveryKnowledgeEnhancementProvider.class);
         KnowledgeQaApplicationServiceImpl service = new KnowledgeQaApplicationServiceImpl(
                 knowledgeBaseClient,
                 classicsFacade,
+                aiFacade,
                 sessionRepository,
                 messageRepository,
                 mock(QaSourceRepository.class),
@@ -156,12 +170,63 @@ class KnowledgeQaApplicationServiceImplTest {
     }
 
     @Test
-    void buildSingleDocumentAiRequestShouldIncludeKnowledgeRecentMessagesAndSources() throws Exception {
+    void chatCompletionShouldPersistFailedAiAnswerAndTrace() {
         KnowledgeBaseClient knowledgeBaseClient = mock(KnowledgeBaseClient.class);
         ClassicsFacade classicsFacade = mock(ClassicsFacade.class);
+        AiFacade aiFacade = mock(AiFacade.class);
+        QaSessionRepository sessionRepository = mock(QaSessionRepository.class);
+        QaMessageRepository messageRepository = mock(QaMessageRepository.class);
+        QaRetrievalTraceRepository traceRepository = mock(QaRetrievalTraceRepository.class);
+        DiscoveryKnowledgeEnhancementProvider enhancementProvider = mock(DiscoveryKnowledgeEnhancementProvider.class);
         KnowledgeQaApplicationServiceImpl service = new KnowledgeQaApplicationServiceImpl(
                 knowledgeBaseClient,
                 classicsFacade,
+                aiFacade,
+                sessionRepository,
+                messageRepository,
+                mock(QaSourceRepository.class),
+                traceRepository,
+                new QaSourceAssembler(),
+                new QaTraceAssembler(),
+                enhancementProvider);
+        when(sessionRepository.getBySessionId(5001L)).thenReturn(wangqiSingleDocumentSession());
+        when(messageRepository.save(any(QaMessage.class))).thenReturn(6001L, 6002L);
+        when(classicsFacade.getQaKnowledge(any(ClassicsQaKnowledgeFacadeRequest.class)))
+                .thenReturn(qaKnowledge());
+        when(aiFacade.generateDiscoveryAnswer(any(DiscoveryAiFacadeRequest.class)))
+                .thenReturn(DiscoveryAiFacadeResponse.builder()
+                        .callId(9102L)
+                        .status("FAILED")
+                        .errorType("WORKER_STREAM")
+                        .errorMessage("stream interrupted")
+                        .build());
+        when(traceRepository.save(any(QaRetrievalTrace.class))).thenReturn(6202L);
+
+        service.chatCompletion(wangqiCommand(3001L));
+
+        ArgumentCaptor<QaMessage> messageCaptor = ArgumentCaptor.forClass(QaMessage.class);
+        verify(messageRepository, org.mockito.Mockito.times(2)).save(messageCaptor.capture());
+        assertEquals("user", messageCaptor.getAllValues().get(0).getRole());
+        assertEquals("assistant", messageCaptor.getAllValues().get(1).getRole());
+        assertEquals("FAILED", messageCaptor.getAllValues().get(1).getAnswerStatus());
+        assertEquals("stream interrupted", messageCaptor.getAllValues().get(1).getFailureReason());
+        ArgumentCaptor<QaRetrievalTrace> traceCaptor = ArgumentCaptor.forClass(QaRetrievalTrace.class);
+        verify(traceRepository).save(traceCaptor.capture());
+        assertEquals(9102L, traceCaptor.getValue().getAiCallId());
+        assertEquals("FAILED", traceCaptor.getValue().getAiStatus());
+        assertEquals("WORKER_STREAM", traceCaptor.getValue().getAiErrorType());
+        assertEquals("stream interrupted", traceCaptor.getValue().getAiErrorMessage());
+    }
+
+    @Test
+    void buildSingleDocumentAiRequestShouldIncludeKnowledgeRecentMessagesAndSources() throws Exception {
+        KnowledgeBaseClient knowledgeBaseClient = mock(KnowledgeBaseClient.class);
+        ClassicsFacade classicsFacade = mock(ClassicsFacade.class);
+        AiFacade aiFacade = mock(AiFacade.class);
+        KnowledgeQaApplicationServiceImpl service = new KnowledgeQaApplicationServiceImpl(
+                knowledgeBaseClient,
+                classicsFacade,
+                aiFacade,
                 mock(QaSessionRepository.class),
                 mock(QaMessageRepository.class),
                 mock(QaSourceRepository.class),

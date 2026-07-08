@@ -1,8 +1,11 @@
 package com.thundax.kuzhambu.discovery.application.qa.service.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thundax.kuzhambu.ai.facade.AiFacade;
 import com.thundax.kuzhambu.ai.facade.request.DiscoveryAiFacadeRequest;
+import com.thundax.kuzhambu.ai.facade.response.DiscoveryAiFacadeResponse;
 import com.thundax.kuzhambu.classics.facade.ClassicsFacade;
 import com.thundax.kuzhambu.classics.facade.dto.ClassicsQaKnowledgeFacadeDto;
 import com.thundax.kuzhambu.classics.facade.request.ClassicsQaKnowledgeFacadeRequest;
@@ -58,11 +61,13 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
     private static final String ANSWER_STATUS_SUCCEEDED = "SUCCEEDED";
     private static final String ANSWER_STATUS_FAILED = "FAILED";
     private static final String DEFAULT_FAILURE_REASON = "Knowledge base chat request failed";
+    private static final String DEFAULT_AI_FAILURE_REASON = "Discovery AI answer generation failed";
     private static final String SINGLE_DOCUMENT_CONTEXT_MODE = "SINGLE_DOCUMENT";
     private static final String WANGQI_DOCUMENT_CONTEXT_TYPE = "WANGQI_DOCUMENT";
 
     private final KnowledgeBaseClient knowledgeBaseClient;
     private final ClassicsFacade classicsFacade;
+    private final AiFacade aiFacade;
     private final QaSessionRepository qaSessionRepository;
     private final QaMessageRepository qaMessageRepository;
     private final QaSourceRepository qaSourceRepository;
@@ -74,6 +79,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
     public KnowledgeQaApplicationServiceImpl(
             KnowledgeBaseClient knowledgeBaseClient,
             ClassicsFacade classicsFacade,
+            AiFacade aiFacade,
             QaSessionRepository qaSessionRepository,
             QaMessageRepository qaMessageRepository,
             QaSourceRepository qaSourceRepository,
@@ -83,6 +89,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
             DiscoveryKnowledgeEnhancementProvider discoveryKnowledgeEnhancementProvider) {
         this.knowledgeBaseClient = knowledgeBaseClient;
         this.classicsFacade = classicsFacade;
+        this.aiFacade = aiFacade;
         this.qaSessionRepository = qaSessionRepository;
         this.qaMessageRepository = qaMessageRepository;
         this.qaSourceRepository = qaSourceRepository;
@@ -112,10 +119,11 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
         String question = extractLatestQuestion(command.getMessages());
         DiscoveryKnowledgeEnhancementProvider.KnowledgeEnhancementResult enhancement =
                 discoveryKnowledgeEnhancementProvider.enhance(question);
-        DiscoveryAiFacadeRequest aiRequest = isWangqiSingleDocumentSession(session)
-                ? buildSingleDocumentAiRequest(command, session, model, question)
-                : null;
-        validateAiRequest(aiRequest);
+        ClassicsQaKnowledgeFacadeDto singleDocumentKnowledge =
+                isWangqiSingleDocumentSession(session) ? requireSingleDocumentKnowledge(session) : null;
+        DiscoveryAiFacadeRequest aiRequest = singleDocumentKnowledge == null
+                ? null
+                : buildSingleDocumentAiRequest(command, session, model, question, singleDocumentKnowledge);
         Date now = new Date();
         int contextTurnCount = contextTurnCount(command);
 
@@ -136,6 +144,18 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
         Long questionMessagePk = qaMessageRepository.save(questionMessage);
         questionMessage.setId(questionMessagePk);
         questionMessage.setMessageId(questionMessagePk);
+        if (aiRequest != null) {
+            return completeSingleDocumentWithAi(
+                    command,
+                    session,
+                    model,
+                    question,
+                    contextTurnCount,
+                    questionMessagePk,
+                    aiRequest,
+                    singleDocumentKnowledge,
+                    now);
+        }
         KnowledgeChatRequest providerRequest = toKnowledgeChatRequest(command, session, model, question, enhancement);
 
         KnowledgeChatResult chatResult = null;
@@ -207,10 +227,19 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
     DiscoveryAiFacadeRequest buildSingleDocumentAiRequest(
             ChatCompletionCommand command, QaSession session, String model, String question) {
         ClassicsQaKnowledgeFacadeDto knowledge = requireSingleDocumentKnowledge(session);
+        return buildSingleDocumentAiRequest(command, session, model, question, knowledge);
+    }
+
+    private DiscoveryAiFacadeRequest buildSingleDocumentAiRequest(
+            ChatCompletionCommand command,
+            QaSession session,
+            String model,
+            String question,
+            ClassicsQaKnowledgeFacadeDto knowledge) {
         List<Map<String, Object>> recentMessages = recentMessages(command.getMessages());
         List<Map<String, Object>> sources = List.of(sourcePayload(knowledge));
         Map<String, Object> context = contextPayload(session);
-        return DiscoveryAiFacadeRequest.builder()
+        DiscoveryAiFacadeRequest request = DiscoveryAiFacadeRequest.builder()
                 .serviceId(DEFAULT_AI_SERVICE_ID)
                 .serviceRole(DEFAULT_AI_SERVICE_ROLE)
                 .modelId(DEFAULT_AI_MODEL_ID)
@@ -228,6 +257,103 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
                 .forceJson(true)
                 .locale(DEFAULT_LOCALE)
                 .build();
+        validateAiRequest(request);
+        return request;
+    }
+
+    private ChatCompletionResult completeSingleDocumentWithAi(
+            ChatCompletionCommand command,
+            QaSession session,
+            String model,
+            String question,
+            int contextTurnCount,
+            Long questionMessagePk,
+            DiscoveryAiFacadeRequest aiRequest,
+            ClassicsQaKnowledgeFacadeDto knowledge,
+            Date startedAt) {
+        DiscoveryAiFacadeResponse aiResponse = null;
+        String failureReason = null;
+        try {
+            aiResponse = aiFacade.generateDiscoveryAnswer(aiRequest);
+            if (!isAiSucceeded(aiResponse)) {
+                failureReason = aiFailureReason(aiResponse);
+            }
+        } catch (Exception ex) {
+            failureReason = StringUtils.defaultIfBlank(ex.getMessage(), DEFAULT_AI_FAILURE_REASON);
+        } finally {
+            session.setLastMessageAt(new Date());
+            qaSessionRepository.update(session);
+        }
+
+        if (StringUtils.isNotBlank(failureReason)) {
+            QaMessage failedMessage =
+                    createFailureMessage(command.getSessionId(), model, contextTurnCount, failureReason, startedAt);
+            Long failedMessagePk = qaMessageRepository.save(failedMessage);
+            failedMessage.setId(failedMessagePk);
+            failedMessage.setMessageId(failedMessagePk);
+            saveAiTrace(
+                    command,
+                    session,
+                    failedMessage,
+                    question,
+                    aiRequest,
+                    aiResponse,
+                    List.of(),
+                    startedAt,
+                    new Date(),
+                    failureReason);
+            return new ChatCompletionResult(
+                    command.getSessionId(),
+                    questionMessagePk,
+                    failedMessagePk,
+                    question,
+                    ANSWER_STATUS_FAILED,
+                    failureReason,
+                    List.of(),
+                    List.of(),
+                    null,
+                    aiRaw(aiResponse));
+        }
+
+        AiAnswerPayload answerPayload = parseAiAnswerPayload(aiResponse);
+        QaMessage answerMessage = createAiAnswerMessage(command, model, contextTurnCount, startedAt, answerPayload);
+        Long answerMessagePk = qaMessageRepository.save(answerMessage);
+        answerMessage.setId(answerMessagePk);
+        answerMessage.setMessageId(answerMessagePk);
+        answerMessage.setAnsweredAt(new Date());
+
+        QaSource sourceEntity = qaSourceAssembler.toDomain(knowledge, answerMessagePk, 1);
+        Long sourcePk = qaSourceRepository.save(sourceEntity);
+        sourceEntity.setId(sourcePk);
+        if (sourceEntity.getSourceId() == null) {
+            sourceEntity.setSourceId(sourcePk);
+        }
+        List<QaSource> sourceEntities = List.of(sourceEntity);
+        saveAiTrace(
+                command,
+                session,
+                answerMessage,
+                question,
+                aiRequest,
+                aiResponse,
+                sourceEntities,
+                startedAt,
+                new Date(),
+                null);
+        return new ChatCompletionResult(
+                command.getSessionId(),
+                questionMessagePk,
+                answerMessagePk,
+                question,
+                ANSWER_STATUS_SUCCEEDED,
+                null,
+                List.of(new ChatCompletionResult.ChatCompletionChoice(
+                        0,
+                        new ChatCompletionResult.ChatCompletionMessage(MESSAGE_ROLE_ASSISTANT, answerPayload.answer()),
+                        answerPayload.finishReason())),
+                sourcesToResult(sourceEntities),
+                null,
+                aiRaw(aiResponse));
     }
 
     private List<ChatCompletionResult.ChatCompletionSource> sourcesToResult(List<QaSource> sources) {
@@ -460,6 +586,81 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
         trace.setTraceId(tracePk);
     }
 
+    private void saveAiTrace(
+            ChatCompletionCommand command,
+            QaSession session,
+            QaMessage answerMessage,
+            String question,
+            DiscoveryAiFacadeRequest aiRequest,
+            DiscoveryAiFacadeResponse aiResponse,
+            List<QaSource> sources,
+            Date startedAt,
+            Date endAt,
+            String failureReason) {
+        QaRetrievalTrace trace = qaTraceAssembler.toAiDomain(
+                command,
+                session,
+                answerMessage.getMessageId(),
+                question,
+                aiRequest,
+                aiResponse,
+                sources,
+                Math.max(0L, endAt.getTime() - startedAt.getTime()),
+                failureReason);
+        Long tracePk = qaRetrievalTraceRepository.save(trace);
+        trace.setId(tracePk);
+        trace.setTraceId(tracePk);
+    }
+
+    private boolean isAiSucceeded(DiscoveryAiFacadeResponse aiResponse) {
+        return aiResponse != null && ANSWER_STATUS_SUCCEEDED.equals(aiResponse.getStatus());
+    }
+
+    private String aiFailureReason(DiscoveryAiFacadeResponse aiResponse) {
+        if (aiResponse == null) {
+            return DEFAULT_AI_FAILURE_REASON;
+        }
+        return StringUtils.defaultIfBlank(
+                aiResponse.getErrorMessage(),
+                StringUtils.defaultIfBlank(aiResponse.getErrorType(), DEFAULT_AI_FAILURE_REASON));
+    }
+
+    private Map<String, Object> aiRaw(DiscoveryAiFacadeResponse aiResponse) {
+        if (aiResponse == null) {
+            return Map.of();
+        }
+        Map<String, Object> raw = new LinkedHashMap<>();
+        raw.put("aiCallId", aiResponse.getCallId());
+        raw.put("status", aiResponse.getStatus());
+        raw.put("errorType", aiResponse.getErrorType());
+        raw.put("errorMessage", aiResponse.getErrorMessage());
+        return raw;
+    }
+
+    private AiAnswerPayload parseAiAnswerPayload(DiscoveryAiFacadeResponse aiResponse) {
+        if (aiResponse == null || StringUtils.isBlank(aiResponse.getResultPayload())) {
+            return new AiAnswerPayload(null, null);
+        }
+        try {
+            JsonNode root = OBJECT_MAPPER.readTree(aiResponse.getResultPayload());
+            if (root.isObject()) {
+                return new AiAnswerPayload(
+                        textOrNull(root.get("answer")),
+                        StringUtils.defaultIfBlank(textOrNull(root.get("finishReason")), "stop"));
+            }
+        } catch (JsonProcessingException exception) {
+            return new AiAnswerPayload(aiResponse.getResultPayload(), "stop");
+        }
+        return new AiAnswerPayload(aiResponse.getResultPayload(), "stop");
+    }
+
+    private String textOrNull(JsonNode node) {
+        if (node == null || node.isNull()) {
+            return null;
+        }
+        return node.asText();
+    }
+
     private String resolveAnswer(List<KnowledgeChatChoice> choices) {
         if (choices == null || choices.isEmpty()) {
             return null;
@@ -581,6 +782,28 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
                 null);
     }
 
+    private QaMessage createAiAnswerMessage(
+            ChatCompletionCommand command,
+            String model,
+            int contextTurnCount,
+            Date sentAt,
+            AiAnswerPayload answerPayload) {
+        return new QaMessage(
+                null,
+                null,
+                command.getSessionId(),
+                MESSAGE_ROLE_ASSISTANT,
+                answerPayload.answer(),
+                ANSWER_STATUS_SUCCEEDED,
+                model,
+                contextTurnCount,
+                null,
+                null,
+                answerPayload.finishReason(),
+                sentAt,
+                null);
+    }
+
     private QaMessage createFailureMessage(
             Long sessionId, String model, int contextTurnCount, String failureReason, Date sentAt) {
         return new QaMessage(
@@ -660,4 +883,6 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
             return null;
         }
     }
+
+    private record AiAnswerPayload(String answer, String finishReason) {}
 }

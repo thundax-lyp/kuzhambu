@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Discovery QA AI invocation`：通过 AI facade 生成回答并落 Discovery 结果
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-WANGQI-SINGLE-DOCUMENT-QA.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/qa/service/impl/KnowledgeQaApplicationServiceImpl.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/qa/support/QaTraceAssembler.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/test/java/com/thundax/kuzhambu/discovery/application/qa/service/impl/KnowledgeQaApplicationServiceImplTest.java`
-    - 处理动作：把正式回答生成从 `KnowledgeBaseClient` 切换为 `AiFacade.generateDiscoveryAnswer`，并写入 user 消息、assistant 消息、source 和 trace。
-    - 验收点：成功场景落回答、来源和 `aiCallId` trace，失败场景保留 user 消息并落失败 assistant 消息和 AI 错误字段。
-    - 重要度：10/10
-
 - [ ] `Admin Web QA trace panel`：展示并复制 AI 调用追踪字段
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-WANGQI-SINGLE-DOCUMENT-QA.md`
