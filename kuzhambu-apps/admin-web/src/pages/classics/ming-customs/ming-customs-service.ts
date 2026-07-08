@@ -1,7 +1,11 @@
 import { getJson, postJson } from "@/api/http";
 import type { DictItem } from "@/types/dict";
 import type { Page, PageQuery } from "@/types/page";
-import type { MingCustomsKeywordCloudItem, MingCustomsRecord } from "./ming-customs-types";
+import type {
+    MingCustomsContentVersionRecord,
+    MingCustomsKeywordCloudItem,
+    MingCustomsRecord
+} from "./ming-customs-types";
 
 const CATEGORY_DICT_TYPE = "CLASSICS_MING_CUSTOMS_CATEGORY";
 
@@ -24,6 +28,11 @@ export interface MingCustomsCommand {
     content?: string | null;
     originalExcerpts?: string | null;
     visibility?: string | null;
+}
+
+interface MingCustomsVersionCommand {
+    id: number;
+    versionId?: number | null;
 }
 
 export const page = (request: MingCustomsQuery = {}) => {
@@ -64,6 +73,39 @@ export const listKeywordCloud = (visibility?: string | null) => {
         ? `/classics/ming-customs/keyword-cloud?${queryString}`
         : "/classics/ming-customs/keyword-cloud";
     return getJson<MingCustomsKeywordCloudItem[]>(path);
+};
+
+export const listVersions = (entryId: number) => {
+    return postJson<MingCustomsContentVersionRecord[], MingCustomsVersionCommand>(
+        "/classics/ming-customs/versions/list",
+        {
+            body: { id: entryId }
+        }
+    );
+};
+
+export const getVersion = (entryId: number, versionId: number) => {
+    return postJson<MingCustomsContentVersionRecord, MingCustomsVersionCommand>(
+        "/classics/ming-customs/versions/get",
+        {
+            body: {
+                id: entryId,
+                versionId
+            }
+        }
+    );
+};
+
+export const resetVersion = (entryId: number, versionId: number) => {
+    return postJson<MingCustomsContentVersionRecord, MingCustomsVersionCommand>(
+        "/classics/ming-customs/versions/reset",
+        {
+            body: {
+                id: entryId,
+                versionId
+            }
+        }
+    );
 };
 
 export const listCategoryOptions = async () => {

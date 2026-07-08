@@ -165,4 +165,23 @@ describe("ming customs service request contracts", () => {
             }
         ]);
     });
+
+    it("sends ming customs version requests", async () => {
+        await service.listVersions(600000000001);
+        expectLastCall("POST", "/classics/ming-customs/versions/list", {
+            id: 600000000001
+        });
+
+        await service.getVersion(600000000001, 9001);
+        expectLastCall("POST", "/classics/ming-customs/versions/get", {
+            id: 600000000001,
+            versionId: 9001
+        });
+
+        await service.resetVersion(600000000001, 9001);
+        expectLastCall("POST", "/classics/ming-customs/versions/reset", {
+            id: 600000000001,
+            versionId: 9001
+        });
+    });
 });
