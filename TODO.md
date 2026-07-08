@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `admin-web operations dashboard requests`：裁剪 dashboard 前端权限能力与请求触发
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DASHBOARD-PERMISSION-CHARTS.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/operations/dashboard/dashboard-service.ts`、`kuzhambu-apps/admin-web/src/pages/operations/dashboard/dashboard-service-contract.test.ts`、`kuzhambu-apps/admin-web/src/pages/operations/dashboard/dashboard-page.tsx`、`kuzhambu-apps/admin-web/src/pages/operations/dashboard/dashboard-page.test.tsx`
-    - 处理动作：新增页面权限能力结构并按健康权限控制健康趋势、告警分页和刷新请求。
-    - 验收点：无 `operations:health:view` 时不调用 `getHealthTrend` 和 `getHealthAlerts`，overview 请求体不包含权限字段。
-    - 重要度：10/10
-
 - [ ] `admin-web operations dashboard entries`：按多权限规则裁剪运维入口卡
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DASHBOARD-PERMISSION-CHARTS.md`
