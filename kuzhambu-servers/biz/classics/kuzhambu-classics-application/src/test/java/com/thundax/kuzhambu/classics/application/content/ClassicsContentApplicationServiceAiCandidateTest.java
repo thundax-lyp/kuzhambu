@@ -1194,6 +1194,11 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         }
 
         @Override
+        public int deleteExportJobById(ClassicsContentExportJobId id) {
+            return 1;
+        }
+
+        @Override
         public PageResult<ClassicsContentExportJob> pageExportJobs(
                 String contentType, String exportKind, String status, int pageNo, int pageSize) {
             return new PageResult<>();

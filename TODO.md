@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `ClassicsContentApplicationServiceImpl.java` 等 5 文件：实现导出记录主动删除闭环
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-EXPORT-SHOWCASE-GOVERNANCE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/service/impl/ClassicsContentApplicationServiceImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/java/com/thundax/kuzhambu/classics/infra/content/repository/impl/ClassicsContentRepositoryImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/content/controller/ClassicsContentAdminController.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/content/ClassicsContentApplicationServiceImplTest.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/content/ClassicsContentApplicationServiceAiCandidateTest.java`
-    - 处理动作：按“读取导出记录、解绑 owner、删除业务记录、尝试删除无引用 Storage object”的顺序实现导出记录删除。
-    - 验收点：`POST /api/classics/content/exports/delete` 入参为 `id`，权限为 `classics:content:export`；Storage 引用字段为 `reference_owner_type=CLASSICS_CONTENT_EXPORT_JOB`、`reference_owner_id=export-job:{classics_content_export_job.id}`、`business_params=usage=CLASSICS_EXPORT_JOB;jobId={classics_content_export_job.id}`；Storage 仍被引用时不回滚业务记录删除。
-    - 重要度：10/10
-
 - [ ] `SancaiAssetApplicationService.java` 等 5 文件：实现静态展示回源与删除边界
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-EXPORT-SHOWCASE-GOVERNANCE.md`

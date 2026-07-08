@@ -971,6 +971,11 @@ class ClassicsContentApplicationServiceImplTest {
         }
 
         @Override
+        public int deleteExportJobById(ClassicsContentExportJobId id) {
+            return 0;
+        }
+
+        @Override
         public SancaiEntry getSancaiEntryForAiApply(ClassicsContentId contentId) {
             return sancaiEntryForAiApply;
         }
