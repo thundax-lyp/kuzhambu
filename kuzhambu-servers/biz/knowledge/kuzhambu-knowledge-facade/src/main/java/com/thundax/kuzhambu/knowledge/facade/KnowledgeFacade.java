@@ -5,8 +5,10 @@ import com.thundax.kuzhambu.knowledge.facade.request.KnowledgeDiscoveryTermFacad
 import com.thundax.kuzhambu.knowledge.facade.request.KnowledgeRemoveContentTagRefFacadeRequest;
 import com.thundax.kuzhambu.knowledge.facade.request.KnowledgeResolveTagFacadeRequest;
 import com.thundax.kuzhambu.knowledge.facade.request.KnowledgeSummaryFacadeRequest;
+import com.thundax.kuzhambu.knowledge.facade.request.KnowledgeSynonymQueryFacadeRequest;
 import com.thundax.kuzhambu.knowledge.facade.response.KnowledgeEntityHintsFacadeResponse;
 import com.thundax.kuzhambu.knowledge.facade.response.KnowledgeSummaryFacadeResponse;
+import com.thundax.kuzhambu.knowledge.facade.response.KnowledgeSynonymQueryFacadeResponse;
 import com.thundax.kuzhambu.knowledge.facade.response.KnowledgeSynonymExpandFacadeResponse;
 import com.thundax.kuzhambu.knowledge.facade.response.KnowledgeTagFacadeResponse;
 import com.thundax.kuzhambu.knowledge.facade.response.KnowledgeTagHintFacadeResponse;
@@ -16,6 +18,8 @@ public interface KnowledgeFacade {
     KnowledgeSummaryFacadeResponse summary(KnowledgeSummaryFacadeRequest request);
 
     KnowledgeSynonymExpandFacadeResponse expandSynonyms(KnowledgeDiscoveryTermFacadeRequest request);
+
+    KnowledgeSynonymQueryFacadeResponse querySynonyms(KnowledgeSynonymQueryFacadeRequest request);
 
     KnowledgeTagHintFacadeResponse getTagHint(KnowledgeDiscoveryTermFacadeRequest request);
 
