@@ -26,9 +26,12 @@ import com.thundax.kuzhambu.operations.application.dashboard.support.OperationsD
 import com.thundax.kuzhambu.operations.application.dashboard.support.OperationsDashboardPermissionSnapshot;
 import com.thundax.kuzhambu.operations.application.dashboard.support.OperationsDashboardSummaryGateway;
 import com.thundax.kuzhambu.operations.application.dashboard.support.OperationsDashboardSummaryModels.OperationsCrossDomainSummary;
+import com.thundax.kuzhambu.operations.domain.health.model.entity.HealthAlertRecord;
 import com.thundax.kuzhambu.operations.domain.health.model.entity.HealthCheckRecord;
+import com.thundax.kuzhambu.operations.domain.health.model.valueobject.HealthAlertId;
 import com.thundax.kuzhambu.operations.domain.health.model.valueobject.HealthCheckId;
 import com.thundax.kuzhambu.operations.domain.health.model.valueobject.HealthTrendBucket;
+import com.thundax.kuzhambu.operations.domain.health.repository.HealthAlertRepository;
 import com.thundax.kuzhambu.operations.domain.health.repository.HealthCheckRepository;
 import com.thundax.kuzhambu.operations.domain.task.model.entity.LongTaskSnapshot;
 import com.thundax.kuzhambu.operations.domain.task.model.valueobject.LongTaskSnapshotId;
@@ -210,6 +213,58 @@ class OperationsDashboardApplicationServiceImplTest {
     }
 
     @Test
+    void overviewShouldOnlyShowHealthFields() {
+        InMemoryHealthCheckRepository healthRepository = new InMemoryHealthCheckRepository();
+        healthRepository.latestRecords = List.of(healthRecord(9001L, "admin-server", "DEGRADED"));
+        InMemoryHealthAlertRepository alertRepository = new InMemoryHealthAlertRepository();
+        alertRepository.alertsByAll = List.of(new HealthAlertRecord(
+                HealthAlertId.of(1201L),
+                "admin-server",
+                "HEALTH",
+                "CRITICAL",
+                "ACTIVE",
+                "TASK",
+                5601L,
+                HealthCheckId.of(9001L),
+                "组件健康异常",
+                "建议重试",
+                "已重启",
+                "task",
+                null,
+                new Date(1_719_630_410_000L),
+                null,
+                null,
+                null,
+                "连续失败"));
+        InMemoryLongTaskSnapshotRepository taskRepository = new InMemoryLongTaskSnapshotRepository();
+        OperationsDashboardApplicationServiceImpl service = new OperationsDashboardApplicationServiceImpl(
+                healthRepository,
+                alertRepository,
+                taskRepository,
+                new InMemorySummaryGateway(summary()),
+                new TestPermissionResolver(permissionSnapshotWithHealthOnly()));
+
+        OperationsDashboardOverviewResult result = service.overview(null);
+
+        assertNotNull(result.getHealthSummaries());
+        assertEquals(1, result.getHealthSummaries().size());
+        assertEquals(1, result.getActiveAlertCount());
+        assertEquals(1, result.getCriticalAlertCount());
+        assertEquals("CRITICAL", result.getHighestAlertLevel());
+        assertEquals(1201L, result.getLatestAlert().getAlertId());
+        assertNull(result.getContentCount());
+        assertNull(result.getSearchCount());
+        assertNull(result.getSearchTrendSeries());
+        assertNull(result.getQaTrendSeries());
+        assertNull(result.getAiInvocationCount());
+        assertNull(result.getTagCoverageRate());
+        assertNull(result.getRunningTaskCount());
+        assertNull(result.getFailedTaskCount());
+        assertEquals(0, taskRepository.pageCallCount);
+        assertEquals(1, alertRepository.listOpenSummaryCallCount);
+    }
+
+    @Test
     void overviewShouldSupportCustomPeriodAndCountUnhealthyComponents() {
         InMemoryHealthCheckRepository healthRepository = new InMemoryHealthCheckRepository();
         healthRepository.latestRecords =
@@ -348,6 +403,59 @@ class OperationsDashboardApplicationServiceImplTest {
 
     private static OperationsDashboardPermissionSnapshot permissionSnapshotWithTaskOnly() {
         return new OperationsDashboardPermissionSnapshot(false, false, false, false, false, false, false, true);
+    }
+
+    private static OperationsDashboardPermissionSnapshot permissionSnapshotWithHealthOnly() {
+        return new OperationsDashboardPermissionSnapshot(false, false, false, false, false, false, true, false);
+    }
+
+    private static final class InMemoryHealthAlertRepository implements HealthAlertRepository {
+        private List<HealthAlertRecord> alertsByAll = List.of();
+        private int listOpenSummaryCallCount;
+
+        @Override
+        public HealthAlertRecord getById(HealthAlertId id) {
+            return null;
+        }
+
+        @Override
+        public HealthAlertRecord getOpenBySource(String sourceRefType, Long sourceRefId, String alertType) {
+            return null;
+        }
+
+        @Override
+        public PageResult<HealthAlertRecord> page(
+                String component,
+                String alertLevel,
+                String alertStatus,
+                String sourceRefType,
+                Long sourceRefId,
+                Long latestCheckId,
+                int pageNo,
+                int pageSize) {
+            return PageResult.of(pageNo, pageSize, 0, List.of());
+        }
+
+        @Override
+        public List<HealthAlertRecord> listOpenByComponent(String component) {
+            return alertsByAll;
+        }
+
+        @Override
+        public List<HealthAlertRecord> listOpenSummary() {
+            listOpenSummaryCallCount++;
+            return alertsByAll;
+        }
+
+        @Override
+        public HealthAlertId insert(HealthAlertRecord record) {
+            return record.getId();
+        }
+
+        @Override
+        public int update(HealthAlertRecord record) {
+            return 0;
+        }
     }
 
     private static final class TestPermissionResolver extends OperationsDashboardPermissionResolver {
