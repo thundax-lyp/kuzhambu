@@ -11,7 +11,6 @@ import static org.mockito.Mockito.when;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.operations.application.dashboard.query.OperationsDashboardOverviewQuery;
 import com.thundax.kuzhambu.operations.application.dashboard.result.OperationsDashboardOverviewResult;
-import com.thundax.kuzhambu.operations.application.dashboard.result.OperationsDashboardOverviewResult.AlertSummaryResult;
 import com.thundax.kuzhambu.operations.application.dashboard.result.OperationsDashboardOverviewResult.TaskStatusSummaryResult;
 import com.thundax.kuzhambu.operations.application.dashboard.service.OperationsDashboardApplicationService;
 import com.thundax.kuzhambu.operations.application.health.result.OperationsHealthSummaryResult;
@@ -141,20 +140,7 @@ class OperationsDashboardAdminControllerTest {
                         null,
                         null,
                         "CRITICAL",
-                        new AlertSummaryResult(
-                                9001L,
-                                "admin-server",
-                                "CHECK_FAIL",
-                                "CRITICAL",
-                                "OPEN",
-                                "DOMAIN",
-                                9101L,
-                                "check failed",
-                                "recheck",
-                                "restart",
-                                "all",
-                                periodEnd,
-                                "unknown"),
+                        null,
                         null,
                         null,
                         null,
@@ -173,7 +159,7 @@ class OperationsDashboardAdminControllerTest {
         assertEquals(periodStart, response.getPeriodStart());
         assertEquals(periodEnd, response.getPeriodEnd());
         assertEquals("CRITICAL", response.getHighestAlertLevel());
-        assertNotNull(response.getLatestAlert());
+        assertNull(response.getLatestAlert());
         assertNull(response.getContentGrowthSeries());
         assertNull(response.getSearchTrendSeries());
         assertNull(response.getHealthSummaries());
