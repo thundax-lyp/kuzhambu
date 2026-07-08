@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `RUNBOOK cleanup`：清理 Knowledge 精修图谱联动 RUNBOOK
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-GRAPH-LOOP.md`、`TODO.md`
-    - 处理动作：阶段完成并同步 coverage 后删除临时 RUNBOOK 并从 TODO 中删除已完成任务。
-    - 验收点：PR 收口前无已完成 RUNBOOK 残留，`TODO.md` 只保留真实未完成事项或为空。
-    - 重要度：10/10
-
 ## 待审阅任务项
 
 ## 待讨论项
