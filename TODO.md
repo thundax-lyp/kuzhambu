@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `feat/operations-dashboard-permission-charts`：同步 main 分支代码
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`feat/operations-dashboard-permission-charts`、`main`
-    - 处理动作：在收口前同步最新 `main` 代码并处理与本任务相关的冲突。
-    - 验收点：当前分支包含最新 `main`，同步后相关验证仍通过或记录明确阻塞原因。
-    - 重要度：9/10
-
 - [ ] `operations dashboard backend validation`：运行 Operations 后端验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DASHBOARD-PERMISSION-CHARTS.md`
