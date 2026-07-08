@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Admin classics/sharing 页面`：实现恢复按钮、多目标详情和访问类型展示
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARING-GOVERNANCE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sharing/sharing-page.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sharing/sharing-page.test.tsx`
-    - 处理动作：在 sharing 页面实现恢复按钮、恢复确认、多 target 展示和访问记录类型展示。
-    - 验收点：未过期撤销分享可点恢复且 payload 为 `status: "ACTIVE"`，已过期分享不可恢复，访问记录表能展示详情浏览和资源读取。
-    - 重要度：9/10
-
 - [ ] `Portal share 服务契约`：补齐多目标和私有分享读取类型
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARING-GOVERNANCE.md`
