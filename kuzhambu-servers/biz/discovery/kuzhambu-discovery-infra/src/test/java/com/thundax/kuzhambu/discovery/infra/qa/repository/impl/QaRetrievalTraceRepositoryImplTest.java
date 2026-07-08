@@ -32,6 +32,10 @@ class QaRetrievalTraceRepositoryImplTest {
                 120L,
                 null,
                 "{\"answer\":\"黄帝 传说人物\"}",
+                9001L,
+                "SUCCEEDED",
+                null,
+                null,
                 new Date());
 
         Long savedId = repository.save(entity);
@@ -57,6 +61,10 @@ class QaRetrievalTraceRepositoryImplTest {
                 120L,
                 null,
                 "{\"answer\":\"黄帝 传说人物\"}",
+                9001L,
+                "SUCCEEDED",
+                null,
+                null,
                 new Date());
         when(mapper.selectOne(any())).thenReturn(dataObject);
 
@@ -64,5 +72,7 @@ class QaRetrievalTraceRepositoryImplTest {
 
         assertEquals(5001L, result.getTraceId());
         assertEquals("fastgpt", result.getProvider());
+        assertEquals(9001L, result.getAiCallId());
+        assertEquals("SUCCEEDED", result.getAiStatus());
     }
 }

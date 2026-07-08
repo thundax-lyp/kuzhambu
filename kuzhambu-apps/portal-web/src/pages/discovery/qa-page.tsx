@@ -381,14 +381,14 @@ export const DiscoveryQaPage = () => {
                 ],
                 metadata: {
                     contextContentId:
-                        parseNumber(form.contextContentId) ??
-                        parseNumber(String(selectedContext?.contextContentId ?? "")),
+                        parseNumber(String(selectedContext?.contextContentId ?? "")) ??
+                        parseNumber(form.contextContentId),
                     contextContentType:
-                        parseString(form.contextContentType) ??
-                        parseString(selectedContext?.contextContentType ?? ""),
+                        parseString(selectedContext?.contextContentType ?? "") ??
+                        parseString(form.contextContentType),
                     contextMode:
-                        parseString(form.contextMode) ??
-                        parseString(selectedContext?.contextMode ?? ""),
+                        parseString(selectedContext?.contextMode ?? "") ??
+                        parseString(form.contextMode),
                     sessionId
                 },
                 model: FIXED_MODEL,
@@ -457,6 +457,15 @@ export const DiscoveryQaPage = () => {
     const handleSelectSession = (sessionId: number) => {
         setOperationMessage(null);
         setSelectedSessionId(sessionId);
+    };
+
+    const handleRefreshSelectedSession = async () => {
+        if (selectedSessionId === null) {
+            return;
+        }
+
+        await selectedSessionQuery.refetch();
+        setOperationMessage(`会话 ${selectedSessionId} 详情已刷新`);
     };
 
     const handleDeleteSession = async () => {
@@ -583,6 +592,15 @@ export const DiscoveryQaPage = () => {
                             <Download aria-hidden="true" size={16} />
                             {exportSessionMutation.isPending ? "导出中..." : "导出 CSV"}
                         </Button>
+                        <Button
+                            disabled={selectedSessionId === null || selectedSessionQuery.isFetching}
+                            type="button"
+                            variant="outline"
+                            onClick={handleRefreshSelectedSession}
+                        >
+                            <RefreshCw aria-hidden="true" size={16} />
+                            {selectedSessionQuery.isFetching ? "刷新中..." : "刷新详情"}
+                        </Button>
                     </div>
 
                     {operationMessage ? <p className="portal-empty">{operationMessage}</p> : null}
@@ -638,6 +656,7 @@ export const DiscoveryQaPage = () => {
                         <Label className="portal-filter-field">
                             <span>上下文模式</span>
                             <Input
+                                disabled={hasWangqiSingleDocumentContext}
                                 name="contextMode"
                                 value={form.contextMode}
                                 onChange={(event) => updateField("contextMode", event.target.value)}
@@ -646,6 +665,7 @@ export const DiscoveryQaPage = () => {
                         <Label className="portal-filter-field">
                             <span>上下文类型</span>
                             <Input
+                                disabled={hasWangqiSingleDocumentContext}
                                 name="contextContentType"
                                 value={form.contextContentType}
                                 onChange={(event) =>
@@ -656,6 +676,7 @@ export const DiscoveryQaPage = () => {
                         <Label className="portal-filter-field">
                             <span>上下文 ID</span>
                             <Input
+                                disabled={hasWangqiSingleDocumentContext}
                                 name="contextContentId"
                                 type="number"
                                 value={form.contextContentId}

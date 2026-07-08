@@ -29,6 +29,10 @@ export interface KnowledgeSyncItemRecord {
 export type KnowledgeSyncItemPageRecord = Page<KnowledgeSyncItemRecord>;
 
 export interface ProviderTraceRecord {
+    aiCallId?: number | null;
+    aiErrorMessage?: string | null;
+    aiErrorType?: string | null;
+    aiStatus?: string | null;
     externalChatId?: string | null;
     externalKnowledgeBaseId?: string | null;
     externalKnowledgeItemIds?: string | null;

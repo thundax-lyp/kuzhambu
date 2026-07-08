@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.thundax.kuzhambu.classics.facade.ClassicsFacade;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaMessageResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionDetailResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaTraceResult;
@@ -40,6 +41,7 @@ class QaApplicationServiceImplAdminReadTest {
                 sourceRepository,
                 traceRepository,
                 mock(QaSessionExportRepository.class),
+                mock(ClassicsFacade.class),
                 mock(StorageFacade.class),
                 new QaSessionCsvExporter(),
                 new QaSourceAssembler(),

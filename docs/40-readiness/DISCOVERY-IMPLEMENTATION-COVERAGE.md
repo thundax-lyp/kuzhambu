@@ -40,10 +40,11 @@
 - Discovery Search 已完成按知识库、门类、标签、状态、可见性和更新时间范围的高级筛选，并在出参前按 System 当前主体权限裁剪非公开结果。
 - Discovery Query Understanding 已接通 Knowledge 同义词、标签和实体提示读协作，并通过 AI 域完成 query-understanding / query-rewrite 调度。
 - Discovery QA 已接通 Portal `chat/completions`、Admin 知识库运维、会话持久化、来源引用、知识同步状态和 provider trace 读取，形成问答闭环。
-- Discovery QA 已完成王圻单文档 URL 入口、Portal 请求上下文透传、后端单文档会话上下文校验、provider 请求上下文透传和 Workers Discovery usecase 契约边界锁定。
+- Discovery QA 已完成王圻单文档 URL 入口、Portal 请求上下文透传、后端单文档会话上下文校验、Discovery 经 AI facade 调用 `DISCOVERY_ANSWER_GENERATION`、消息/来源/trace 落库、AI `callId/status/errorType/errorMessage` trace 展示和 Workers Discovery usecase 契约边界锁定。
 - Discovery QA 已完成会话软删除、Portal owner 删除保护、Portal 删除后不可见/不可详情/不可追问/不可导出、Admin 删除和已删除会话审计读取。
 - Discovery QA 已完成会话 CSV 导出，导出记录写入 `discovery_qa_session_export`，文件上传 Storage 并返回 `exportId`、`storageObjectId`、`filename` 和 `contentType`。
 - Portal Web 已完成 QA 会话删除确认、删除后清空当前会话、CSV 导出成功/失败提示；Admin Web 已完成 QA 会话删除、`REMOVED` 状态展示和已删除会话 CSV 导出入口。
+- Portal Web 已完成 Wangqi 单文档 QA 上下文条、上下文字段锁定、首问和追问上下文透传、详情刷新和失败重试；Admin Web QA trace 面板已展示并支持复制 AI 调用 ID。
 
 部分完成：
 
@@ -87,11 +88,11 @@
 | 需求项               | 状态     | 已完成部分                                                                                                                   | 未完成部分                       | 责任域                  |
 | -------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------- | -------------------------------- | ----------------------- |
 | 多库自然语言问答     | 已完成   | Portal QA 页面已改为 `chat/completions`，`QaApplicationService`、知识库回答生成、会话持久化和来源回显已落地                  | 无                               | Discovery               |
-| 王圻单文档追加式问答 | 已完成   | Portal QA 支持 `/discovery/qa?contextContentType=WANGQI_DOCUMENT&contextContentId=<id>&contextMode=SINGLE_DOCUMENT&title=<title>` 入口，打开会话时校验单文档上下文并向 provider 请求透传；Workers 契约仅保留 answer-generation 技术 usecase，不承载正式 QA 会话 runtime | 无                               | Discovery, Classics, AI, Workers |
+| 王圻单文档追加式问答 | 已完成   | Portal QA 支持 `/discovery/qa?contextContentType=WANGQI_DOCUMENT&contextContentId=<id>&contextMode=SINGLE_DOCUMENT&title=<title>` 入口，页面锁定上下文字段，首问和追问都透传同一上下文；打开会话时校验 Wangqi 单文档上下文；回答生成经 AI facade 调用 `DISCOVERY_ANSWER_GENERATION`，Discovery 保存消息、来源、trace 和 AI `callId/status/errorType/errorMessage`；Workers 契约仅保留 answer-generation 技术 usecase，不承载正式 QA 会话 runtime | 无 | Discovery, Classics, AI, Workers |
 | 多轮会话             | 已完成   | `QaSession`、`QaMessage`、`openSession`、`chat/completions`、会话分页和会话详情读取已落地                                    | 无                               | Discovery               |
 | 来源引用             | 已完成   | `QaSource`、`discovery_qa_message_source`、来源写入、可见性重检与按消息查询接口已落地                                        | 无                               | Discovery               |
 | 会话删除和导出       | 已完成   | Portal/Admin 会话删除接口、软删除状态机、Portal 已删除会话访问拦截、Admin 已删除会话审计导出、CSV 生成、Storage 上传和前端入口均已落地 | 无                               | Discovery               |
-| 管理员调试信息       | 已完成   | Admin QA 运维页已覆盖知识库健康、重建、同步分页、来源列表和 provider trace                                                   | 无                               | Discovery               |
+| 管理员调试信息       | 已完成   | Admin QA 运维页已覆盖知识库健康、重建、同步分页、来源列表和 provider trace；trace 面板展示 `aiCallId`、`aiStatus`、`aiErrorType`、`aiErrorMessage` 并支持复制 AI 调用 ID | 无                               | Discovery, Admin Web    |
 | 知识库同步状态       | 已完成   | Admin QA 已提供 `knowledge/health`、`knowledge/rebuild`、`knowledge/sync` 和 `knowledge/sync/page`，可查看同步状态和失败原因 | 无                               | Discovery               |
 
 ### 运行时验证

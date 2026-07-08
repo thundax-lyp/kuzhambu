@@ -1,5 +1,9 @@
 package com.thundax.kuzhambu.discovery.application.qa.service.impl;
 
+import com.thundax.kuzhambu.classics.facade.ClassicsFacade;
+import com.thundax.kuzhambu.classics.facade.dto.ClassicsQaKnowledgeFacadeDto;
+import com.thundax.kuzhambu.classics.facade.request.ClassicsQaKnowledgeFacadeRequest;
+import com.thundax.kuzhambu.classics.facade.response.ClassicsQaKnowledgeFacadeResponse;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.discovery.application.qa.command.DeleteQaSessionCommand;
@@ -56,11 +60,17 @@ public class QaApplicationServiceImpl implements QaApplicationService {
     private static final String EXPORT_OWNER_TYPE = "DISCOVERY_QA_SESSION_EXPORT";
     private static final String SINGLE_DOCUMENT_CONTEXT_MODE = "SINGLE_DOCUMENT";
     private static final String WANGQI_DOCUMENT_CONTEXT_TYPE = "WANGQI_DOCUMENT";
+    private static final String PRIVATE_VISIBILITY = "PRIVATE";
+    private static final String ARCHIVED_STATUS = "ARCHIVED";
+    private static final String DELETED_STATUS = "DELETED";
+    private static final String REMOVED_STATUS = "REMOVED";
+    private static final String INACTIVE_STATUS = "INACTIVE";
     private final QaSessionRepository qaSessionRepository;
     private final QaMessageRepository qaMessageRepository;
     private final QaSourceRepository qaSourceRepository;
     private final QaRetrievalTraceRepository qaRetrievalTraceRepository;
     private final QaSessionExportRepository qaSessionExportRepository;
+    private final ClassicsFacade classicsFacade;
     private final StorageFacade storageFacade;
     private final QaSessionCsvExporter qaSessionCsvExporter;
     private final QaSourceAssembler qaSourceAssembler;
@@ -72,6 +82,7 @@ public class QaApplicationServiceImpl implements QaApplicationService {
             QaSourceRepository qaSourceRepository,
             QaRetrievalTraceRepository qaRetrievalTraceRepository,
             QaSessionExportRepository qaSessionExportRepository,
+            ClassicsFacade classicsFacade,
             StorageFacade storageFacade,
             QaSessionCsvExporter qaSessionCsvExporter,
             QaSourceAssembler qaSourceAssembler,
@@ -81,6 +92,7 @@ public class QaApplicationServiceImpl implements QaApplicationService {
         this.qaSourceRepository = qaSourceRepository;
         this.qaRetrievalTraceRepository = qaRetrievalTraceRepository;
         this.qaSessionExportRepository = qaSessionExportRepository;
+        this.classicsFacade = classicsFacade;
         this.storageFacade = storageFacade;
         this.qaSessionCsvExporter = qaSessionCsvExporter;
         this.qaSourceAssembler = qaSourceAssembler;
@@ -313,6 +325,39 @@ public class QaApplicationServiceImpl implements QaApplicationService {
                     "discovery.qa.single-document-context.unsupported",
                     "Single document context only supports WANGQI_DOCUMENT");
         }
+        ClassicsQaKnowledgeFacadeDto knowledge = getSingleDocumentKnowledge(command);
+        if (isUnavailableStatus(knowledge.getStatus())) {
+            throw new BizException(
+                    "DISCOVERY-30014",
+                    "discovery.qa.single-document-context.unavailable",
+                    "Single document context content is unavailable");
+        }
+        if (PRIVATE_VISIBILITY.equalsIgnoreCase(knowledge.getVisibility())) {
+            throw new BizException(
+                    "DISCOVERY-30015",
+                    "discovery.qa.single-document-context.forbidden",
+                    "Single document context content is not visible");
+        }
+    }
+
+    private ClassicsQaKnowledgeFacadeDto getSingleDocumentKnowledge(OpenQaSessionCommand command) {
+        ClassicsQaKnowledgeFacadeResponse response =
+                classicsFacade.getQaKnowledge(ClassicsQaKnowledgeFacadeRequest.builder()
+                        .contentType(command.getContextContentType())
+                        .contentId(String.valueOf(command.getContextContentId()))
+                        .build());
+        if (response == null || response.getKnowledge() == null) {
+            throw new BizException(
+                    "DISCOVERY-30013",
+                    "discovery.qa.single-document-context.not-found",
+                    "Single document context content does not exist");
+        }
+        return response.getKnowledge();
+    }
+
+    private boolean isUnavailableStatus(String status) {
+        return StringUtils.equalsAnyIgnoreCase(
+                status, ARCHIVED_STATUS, DELETED_STATUS, REMOVED_STATUS, INACTIVE_STATUS);
     }
 
     private void validateExportCommand(ExportQaSessionCommand command) {

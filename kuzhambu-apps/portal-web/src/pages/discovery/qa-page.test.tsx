@@ -212,6 +212,9 @@ describe("DiscoveryQaPage", () => {
         expect(contextModeInput?.value).toBe("SINGLE_DOCUMENT");
         expect(contextTypeInput?.value).toBe("WANGQI_DOCUMENT");
         expect(contextIdInput?.value).toBe("3001");
+        expect(contextModeInput?.disabled).toBe(true);
+        expect(contextTypeInput?.disabled).toBe(true);
+        expect(contextIdInput?.disabled).toBe(true);
 
         act(() => {
             root.unmount();
@@ -414,6 +417,9 @@ describe("DiscoveryQaPage", () => {
             ]
         });
         mocks.getQaSession.mockResolvedValue({
+            contextContentId: 2002,
+            contextContentType: "SANCAI_ENTRY",
+            contextMode: "GENERAL",
             sessionId: 5001,
             status: "OPEN",
             title: "古籍问答"
@@ -466,7 +472,12 @@ describe("DiscoveryQaPage", () => {
         expect(mocks.openQaSession).not.toHaveBeenCalled();
         expect(mocks.createQaChatCompletion).toHaveBeenCalledTimes(1);
         expect(mocks.createQaChatCompletion.mock.calls[0]?.[0]).toMatchObject({
-            metadata: { sessionId: 5001 }
+            metadata: {
+                contextContentId: 2002,
+                contextContentType: "SANCAI_ENTRY",
+                contextMode: "GENERAL",
+                sessionId: 5001
+            }
         });
 
         setTextareaValue(container, "question", "礼器复问");
@@ -477,7 +488,12 @@ describe("DiscoveryQaPage", () => {
 
         expect(mocks.createQaChatCompletion).toHaveBeenCalledTimes(2);
         expect(mocks.createQaChatCompletion.mock.calls[1]![0]).toMatchObject({
-            metadata: { sessionId: 5001 }
+            metadata: {
+                contextContentId: 2002,
+                contextContentType: "SANCAI_ENTRY",
+                contextMode: "GENERAL",
+                sessionId: 5001
+            }
         });
 
         act(() => {
@@ -552,6 +568,56 @@ describe("DiscoveryQaPage", () => {
         const sourceText = container.textContent ?? "";
         expect(sourceText).toContain("礼器条目");
         expect(container.querySelector(".portal-qa-source-list a")).toBeNull();
+
+        act(() => {
+            root.unmount();
+        });
+    });
+
+    it("refreshes selected session detail", async () => {
+        mocks.pageQaSessions.mockResolvedValue({
+            items: [
+                {
+                    scope: "PORTAL",
+                    sessionId: 6001,
+                    status: "OPEN",
+                    title: "可刷新会话"
+                }
+            ]
+        });
+        mocks.getQaSession
+            .mockResolvedValueOnce({
+                lastMessageAt: 1700000000000,
+                sessionId: 6001,
+                status: "OPEN",
+                title: "可刷新会话"
+            })
+            .mockResolvedValueOnce({
+                lastMessageAt: 1700000100000,
+                sessionId: 6001,
+                status: "OPEN",
+                title: "可刷新会话"
+            });
+
+        const { container, root } = renderPage();
+        await flushAsyncWork();
+        await flushAsyncWork();
+
+        const sessionButton = findButtonByText(container, "可刷新会话");
+        await act(async () => {
+            sessionButton.click();
+            await new Promise((resolve) => setTimeout(resolve, 0));
+        });
+        await flushAsyncWork();
+
+        const refreshButton = findButtonByText(container, "刷新详情");
+        await act(async () => {
+            refreshButton.click();
+            await new Promise((resolve) => setTimeout(resolve, 0));
+        });
+
+        expect(mocks.getQaSession).toHaveBeenCalledTimes(2);
+        expect(container.textContent).toContain("会话 6001 详情已刷新");
 
         act(() => {
             root.unmount();

@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.discovery.application.qa.support;
 
 import com.thundax.kuzhambu.classics.facade.dto.ClassicsPublicContentFacadeDto;
+import com.thundax.kuzhambu.classics.facade.dto.ClassicsQaKnowledgeFacadeDto;
 import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatSource;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSourceResult;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSource;
@@ -83,6 +84,29 @@ public class QaSourceAssembler {
                 sourceRank,
                 null,
                 STATUS_AVAILABLE,
+                new Date());
+    }
+
+    public QaSource toDomain(ClassicsQaKnowledgeFacadeDto knowledge, Long messageId, Integer sourceRank) {
+        if (knowledge == null) {
+            return null;
+        }
+        String sourceId = sourceId(knowledge.getSourceId(), knowledge.getContentType(), knowledge.getContentId());
+        return new QaSource(
+                null,
+                null,
+                sourceId,
+                messageId,
+                knowledge.getContentType(),
+                parseLong(knowledge.getContentId()),
+                knowledge.getKnowledgeBase(),
+                knowledge.getTitle(),
+                knowledge.getCategoryPath(),
+                StringUtils.defaultIfBlank(knowledge.getSummary(), knowledge.getBody()),
+                knowledge.getSourcePath(),
+                sourceRank,
+                null,
+                sourceStatus(sourceId, knowledge.getContentType(), knowledge.getContentId()),
                 new Date());
     }
 

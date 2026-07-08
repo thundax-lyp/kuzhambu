@@ -212,6 +212,10 @@ class DiscoveryQaAdminControllerTest {
         var traceResponse = controller.getTrace(traceRequest);
         assertNotNull(traceResponse);
         assertEquals(8001L, traceResponse.getTraceId());
+        assertEquals(9001L, traceResponse.getAiCallId());
+        assertEquals("SUCCEEDED", traceResponse.getAiStatus());
+        assertEquals("WORKER_PROTOCOL_FAILURE", traceResponse.getAiErrorType());
+        assertEquals("worker returned invalid response", traceResponse.getAiErrorMessage());
 
         var healthResponse = controller.getKnowledgeHealth();
         assertEquals("AVAILABLE", healthResponse.getStatus());
@@ -324,6 +328,10 @@ class DiscoveryQaAdminControllerTest {
         trace.setLatencyMs(120L);
         trace.setFailureReason("none");
         trace.setRaw("{\"foo\":\"bar\"}");
+        trace.setAiCallId(9001L);
+        trace.setAiStatus("SUCCEEDED");
+        trace.setAiErrorType("WORKER_PROTOCOL_FAILURE");
+        trace.setAiErrorMessage("worker returned invalid response");
         trace.setRetrievedAt(new Date(1_718_000_070_000L));
         return trace;
     }
