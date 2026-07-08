@@ -82,7 +82,7 @@
 | 标签批量操作                                     | 已完成   | 已支持统一标签多选批量合并影响预览与执行、批量废弃确认，以及待审核标签批量通过和批量拒绝；批量通过可统一指定正式分类            | 无                                              | Knowledge, Admin Web   |
 | 标签使用排行、知识库分布、来源占比、月度新增趋势 | 已完成   | 已提供完整治理统计读取和 Admin Web 展示入口                                                                                    | 无                                              | Knowledge, Admin Web   |
 | 同义词新增、编辑、删除、查看和搜索               | 已完成   | 后端和 Admin Web 已支持分页、创建、更新、状态变更、删除                                                                        | 无                                              | Knowledge, Admin Web   |
-| 同义词正向和反向查询                             | 部分完成 | 域模型和管理入口已支持词条治理；标签解析链路可消费治理结果                                                                     | 面向搜索和问答的独立正向/反向查询入口未对外提供 | Knowledge, Discovery   |
+| 同义词正向和反向查询                             | 已完成   | 已新增 `KnowledgeFacade.querySynonyms` 的方向查询入口，支持 FORWARD/REVERSE/BIDIRECTIONAL，保留 `expandSynonyms` 兼容。 | 无                                             | Knowledge, Discovery   |
 | 搜索和问答使用同义词扩展                         | 已完成   | Knowledge 已通过 `expandSynonyms`、`getTagHint` 和 `listEntityHints` 读协作向 Discovery 搜索/问答提供增强数据；Discovery Search/QA 已消费该链路 | 无                                              | Knowledge, Discovery   |
 | 标签审核、合并和废弃操作审计                     | 已完成   | 审核、合并和废弃操作继续由 System 审计承载；审计注解、快照模型和运行时 SPI 已下沉到 `common-audit`，Knowledge / System 已切换到统一审计契约 | 无                                              | Knowledge, System      |
 | Classics 内容标签协作与兼容口径                  | 已完成   | 已提供统一标签绑定协作语义、内容引用同步/删除能力，并兼容 Classics 的 `MING_CUSTOMS` 与 `AI` 协作输入                          | 无                                              | Knowledge, Classics    |
@@ -123,7 +123,7 @@
 
 | 需求项             | 状态     | 已完成部分                                                                                                                                                                   | 未完成部分                           | 责任域                            |
 | ------------------ | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ | --------------------------------- |
-| 当前阶段运行时验证 | 部分完成 | 已完成 taxonomy、图谱抽取、精修、质量报告和世系画布后端专项测试，workers Knowledge usecase 契约测试，Admin Web `format:check` / `lint` / `test` / `build`，Portal Web `format:check` / `lint` / `test` / `build`，Knowledge Maven `spotless:check` / `checkstyle:check` / `test`，以及 `node scripts/generate-system-data-sql.ts --check` | 缺少 Playwright 与跨服务联调冒烟记录 | Knowledge, AI, Workers, Admin Web, Portal Web |
+| 当前阶段运行时验证 | 已完成 | 已补齐 Knowledge 同义词方向查询单测、Knowledge/Discovery 服务单元验证、Portal Search + QA Playwright 冒烟及 Admin 同义词治理 Playwright，配合静态检查与编译通道形成端到端收口。 | 无                                           | Knowledge, AI, Workers, Admin Web, Portal Web |
 
 ## Unfinished Focus
 
