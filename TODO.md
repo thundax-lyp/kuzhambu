@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Admin quality report regenerate prompt`：质量报告页提示精修后重算
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-GRAPH-LOOP.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/quality-report/quality-report-page.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/quality-report/components/quality-report-generate-form.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/quality-report/components/quality-report-summary.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/quality-report/quality-report-types.ts`、`kuzhambu-apps/admin-web/src/pages/knowledge/quality-report/quality-report-page.test.tsx`
-    - 处理动作：让质量报告页按 `graphVersionId` 定位并在报告过期时展示重新生成入口。
-    - 验收点：过期报告展示 warning Alert，点击重新生成后刷新报告历史、摘要、问题、来源和标注明细。
-    - 重要度：8/10
-
 - [ ] `Admin knowledge frontend verification`：补齐 Admin Knowledge 前端联动测试
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-GRAPH-LOOP.md`

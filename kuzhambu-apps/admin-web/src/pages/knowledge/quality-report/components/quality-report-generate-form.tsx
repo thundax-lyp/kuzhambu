@@ -5,6 +5,7 @@ interface QualityReportGenerateFormProps {
     disabled?: boolean;
     graphVersionId?: number | null;
     loading?: boolean;
+    submitLabel?: string;
     onChange: (graphVersionId: number | null) => void;
     onGenerate: () => void;
 }
@@ -13,6 +14,7 @@ export const QualityReportGenerateForm = ({
     disabled = false,
     graphVersionId = null,
     loading = false,
+    submitLabel = "生成报告",
     onChange,
     onGenerate
 }: QualityReportGenerateFormProps) => {
@@ -31,7 +33,7 @@ export const QualityReportGenerateForm = ({
                 type="primary"
                 onClick={onGenerate}
             >
-                生成报告
+                {submitLabel}
             </Button>
         </KuzhambuSpace>
     );
