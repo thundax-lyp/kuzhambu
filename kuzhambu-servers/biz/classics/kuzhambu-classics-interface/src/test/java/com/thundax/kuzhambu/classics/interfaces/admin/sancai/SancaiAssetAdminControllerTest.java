@@ -248,10 +248,10 @@ class SancaiAssetAdminControllerTest {
         assertEquals(3, page.getRecords().get(0).getEntryCount());
         assertEquals("PUBLIC_ONLY", page.getRecords().get(0).getVisibilityRiskStatus());
         assertEquals(
-                "/api/classics/sancai/assets/showcases/7001/content",
+                "/api/classics/sancai/assets/showcases/1/content",
                 page.getRecords().get(0).getContentUrl());
         assertEquals(
-                "/api/classics/sancai/assets/showcases/7001/content?download=true",
+                "/api/classics/sancai/assets/showcases/1/content?download=true",
                 page.getRecords().get(0).getDownloadUrl());
     }
 
@@ -313,7 +313,7 @@ class SancaiAssetAdminControllerTest {
         SancaiAssetAdminController controller = controller();
         MockHttpServletResponse inlineResponse = new MockHttpServletResponse();
 
-        controller.downloadShowcaseContent(7001L, false, inlineResponse);
+        controller.downloadShowcaseContent(1L, false, inlineResponse);
 
         assertEquals("application/json", inlineResponse.getContentType());
         assertEquals(8, inlineResponse.getContentLength());
@@ -321,7 +321,7 @@ class SancaiAssetAdminControllerTest {
         assertEquals("demo-json", inlineResponse.getContentAsString());
 
         MockHttpServletResponse attachmentResponse = new MockHttpServletResponse();
-        controller.downloadShowcaseContent(7001L, true, attachmentResponse);
+        controller.downloadShowcaseContent(1L, true, attachmentResponse);
 
         String disposition = attachmentResponse.getHeader("Content-Disposition");
         assertTrue(disposition.startsWith("attachment;"));
@@ -440,7 +440,7 @@ class SancaiAssetAdminControllerTest {
                         return PageResult.of(1, 10, 1, List.of(showcase()));
                     }
                     if ("getShowcaseContent".equals(method.getName())) {
-                        assertEquals(StorageObjectId.of(7001L), args[0]);
+                        assertEquals(SancaiShowcaseId.of(1L), args[0]);
                         return showcaseContent();
                     }
                     throw new UnsupportedOperationException(method.getName());
