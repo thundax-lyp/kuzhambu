@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Knowledge final validation`：同步 main 后运行最终验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`kuzhambu-servers/`、`kuzhambu-apps/`
-    - 处理动作：同步 main 后运行 RUNBOOK 指定的后端格式、静态检查、测试和前端格式、lint、测试。
-    - 验收点：后端 `spotless:check`、`checkstyle:check`、Knowledge 测试和前端 `format:check`、`lint`、admin-web 测试通过或记录明确阻塞。
-    - 重要度：10/10
-
 - [ ] `Knowledge Implementation Coverage`：更新 Knowledge 实现覆盖状态
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`
