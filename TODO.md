@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `04 Admin Web operations health service`：补齐健康告警服务契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-RESTORE-ORCHESTRATION.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/operations/health/health-service.ts`、`kuzhambu-apps/admin-web/src/pages/operations/health/health-types.ts`、`kuzhambu-apps/admin-web/src/pages/operations/health/health-service-contract.test.ts`
-    - 处理动作：新增健康告警分页、确认和恢复 service 方法及告警记录类型。
-    - 验收点：service contract 测试断言 `/operations/health/alerts/page`、`/operations/health/alerts/ack`、`/operations/health/alerts/recover` 的 endpoint 和 body。
-    - 重要度：8/10
-
 - [ ] `05 Admin Web operations health page`：补齐关联告警确认与恢复控件
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-RESTORE-ORCHESTRATION.md`
