@@ -47,22 +47,22 @@ mvn checkstyle:check
 
 After applying formatting, inspect `git diff` and keep only task-related file changes. If `spotless:check` still fails, treat it as an unexpected issue and inspect the formatter scope, configuration, or affected files before continuing.
 
-Frontend apps use npm workspaces under `kuzhambu-apps/`:
+Frontend apps use pnpm workspaces under `kuzhambu-apps/`:
 
 ```sh
 cd kuzhambu-apps
-npm run format:check
-npm run lint
-npm run build
-npm run test
+pnpm run format:check
+pnpm run lint
+pnpm run build
+pnpm run test
 ```
 
 Before any frontend build or package step, first run the narrowest relevant formatter on the files touched by the task, then run Prettier formatting checks and lint:
 
 ```sh
-npm --workspace ... run format
-npm run format:check
-npm run lint
+pnpm --filter ... run format
+pnpm run format:check
+pnpm run lint
 ```
 
 After applying formatting, inspect `git diff` and keep only task-related file changes. If `format:check` still fails, treat it as an unexpected issue and inspect the formatter scope, configuration, or affected files before continuing.
@@ -108,7 +108,7 @@ Run the narrowest relevant validation available. If no validation exists, docume
 
 Use the project convention `Type(scope): 中文说明`, for example `Docs(governance): 初始化文档治理入口`. Keep each commit focused on one concrete engineering judgment.
 
-Pull requests are stage delivery boundaries. Use `.github/pull_request_template.md`, rely on the explicit `.github/workflows/pr-verify.yml` checks, and complete documentation, TODO, and RUNBOOK cleanup before merge. Changes must go through `branch -> PR -> review -> merge`; do not push or merge work directly to `main`. Merge PRs with normal merge commits by default to preserve the small-step commit history; do not squash unless explicitly requested. Detailed rules live in `docs/00-governance/TODO-RULES.md` and `docs/40-readiness/PR-WORKFLOW.md`.
+Pull requests are stage delivery boundaries. Use `.github/pull_request_template.md`, rely on the explicit `.github/workflows/pr-verify.yml` checks, and complete documentation, TODO, and RUNBOOK cleanup before merge. Changes must go through `branch -> PR -> review -> merge`; do not push or merge work directly to `main`. Merge PRs with normal merge commits by default to preserve the small-step commit history; do not squash unless explicitly requested. Detailed rules live in `docs/00-governance/TODO-RULES.md` and `docs/00-governance/PR-RULES.md`.
 
 ## Agent-Specific Instructions
 

@@ -1,18 +1,15 @@
 {
-  "name": "kuzhambu-apps",
-  "version": "0.0.1-dev",
-  "private": true,
-  "workspaces": [
-    "admin-web",
-    "portal-web"
-  ],
-  "scripts": {
-    "dev:admin": "npm --workspace admin-web run dev",
-    "dev:portal": "npm --workspace portal-web run dev",
-    "build": "npm --workspaces run build",
-    "test": "npm --workspaces run test",
-    "lint": "npm --workspaces run lint",
-    "format:check": "npm --workspaces run format:check",
-    "format": "npm --workspaces run format"
-  }
+    "name": "kuzhambu-apps",
+    "version": "0.0.1-dev",
+    "private": true,
+    "packageManager": "pnpm@10.7.0",
+    "scripts": {
+        "dev:admin": "pnpm --filter ./admin-web run dev",
+        "dev:portal": "pnpm --filter ./portal-web run dev",
+        "build": "pnpm --recursive run build",
+        "test": "pnpm --recursive run test",
+        "lint": "pnpm --recursive run lint",
+        "format:check": "pnpm --recursive run format:check",
+        "format": "pnpm --recursive run format"
+    }
 }

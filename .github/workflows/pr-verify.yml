@@ -47,7 +47,7 @@ jobs:
 
                   echo "$changed_files"
 
-                  if echo "$changed_files" | grep -Eq '^(\.github/workflows/pr-verify.yml|\.github/pull_request_template.md)$'; then
+                  if echo "$changed_files" | grep -Eq '^(\.github/workflows/pr-verify.yml|\.github/pull_request_template.md|docs/00-governance/PR-RULES.md)$'; then
                     verify_workflow_changed=true
                   else
                     verify_workflow_changed=false
@@ -108,6 +108,7 @@ jobs:
                   echo "servers_changed=$servers_changed" >> "$GITHUB_OUTPUT"
                   echo "backend_full_changed=$backend_full_changed" >> "$GITHUB_OUTPUT"
                   echo "backend_projects=$backend_projects" >> "$GITHUB_OUTPUT"
+                  echo "verify_workflow_changed=$verify_workflow_changed" >> "$GITHUB_OUTPUT"
 
                   if [ "$verify_workflow_changed" = "true" ] || echo "$changed_files" | grep -Eq '^kuzhambu-workers/'; then
                     echo "workers_changed=true" >> "$GITHUB_OUTPUT"
@@ -176,7 +177,7 @@ jobs:
                   test -f docs/00-governance/SERVERS-ARCHITECTURE.md
                   test -f docs/00-governance/SERVERS-ARCHITECTURE-RULES.md
                   test -f docs/00-governance/TODO-RULES.md
-                  test -f docs/40-readiness/PR-WORKFLOW.md
+                  test -f docs/00-governance/PR-RULES.md
                   test -f .github/pull_request_template.md
                   test -f .github/workflows/pr-verify.yml
                   if find docs -name '*.md' -print | grep -q ' '; then
@@ -209,12 +210,33 @@ jobs:
                   test -d kuzhambu-servers/common
                   test -d kuzhambu-servers/biz
                   test -d kuzhambu-servers/starter
-                  test -d kuzhambu-servers/biz/system/kuzhambu-system-interface
-                  test -d kuzhambu-servers/biz/system/kuzhambu-system-application
-                  test -d kuzhambu-servers/biz/system/kuzhambu-system-domain
-                  test -d kuzhambu-servers/biz/system/kuzhambu-system-infra
                   test -d kuzhambu-servers/starter/kuzhambu-admin-starter
                   test -d kuzhambu-servers/starter/kuzhambu-portal-starter
+
+                  for domain_dir in kuzhambu-servers/biz/*; do
+                    if [ ! -d "$domain_dir" ] || [ "$(basename "$domain_dir")" = "target" ]; then
+                      continue
+                    fi
+
+                    domain="$(basename "$domain_dir")"
+                    test -d "$domain_dir/kuzhambu-$domain-interface"
+                    test -d "$domain_dir/kuzhambu-$domain-application"
+                    test -d "$domain_dir/kuzhambu-$domain-domain"
+                    test -d "$domain_dir/kuzhambu-$domain-infra"
+
+                    for module_dir in "$domain_dir"/*; do
+                      if [ ! -d "$module_dir" ] || [ "$(basename "$module_dir")" = "target" ]; then
+                        continue
+                      fi
+
+                      module="$(basename "$module_dir")"
+                      if ! echo "$module" | grep -Eq "^kuzhambu-$domain-(interface|application|domain|infra|facade)$"; then
+                        echo "Unexpected backend domain module: $module_dir" >&2
+                        exit 1
+                      fi
+                    done
+                  done
+
                   if test -d kuzhambu-servers/interfaces; then
                     echo "Legacy kuzhambu-servers/interfaces must be migrated to starter/domain interface modules" >&2
                     exit 1
@@ -228,7 +250,7 @@ jobs:
             - name: Verify affected backend formatting
               if: needs.detect-changes.outputs.backend_full_changed != 'true'
               working-directory: kuzhambu-servers
-              run: mvn -q -pl "$BACKEND_PROJECTS" -am spotless:check
+              run: mvn -q -pl "$BACKEND_PROJECTS" -am -amd spotless:check
               env:
                   BACKEND_PROJECTS: ${{ needs.detect-changes.outputs.backend_projects }}
 
@@ -240,7 +262,7 @@ jobs:
             - name: Verify affected backend style
               if: needs.detect-changes.outputs.backend_full_changed != 'true'
               working-directory: kuzhambu-servers
-              run: mvn -q -pl "$BACKEND_PROJECTS" -am checkstyle:check
+              run: mvn -q -pl "$BACKEND_PROJECTS" -am -amd checkstyle:check
               env:
                   BACKEND_PROJECTS: ${{ needs.detect-changes.outputs.backend_projects }}
 
@@ -252,7 +274,7 @@ jobs:
             - name: Verify affected backend tests
               if: needs.detect-changes.outputs.backend_full_changed != 'true'
               working-directory: kuzhambu-servers
-              run: mvn -q -pl "$BACKEND_PROJECTS" -am test
+              run: mvn -q -pl "$BACKEND_PROJECTS" -am -amd test
               env:
                   BACKEND_PROJECTS: ${{ needs.detect-changes.outputs.backend_projects }}
 
@@ -273,8 +295,22 @@ jobs:
               uses: actions/setup-node@v4
               with:
                   node-version: "20"
-                  cache: npm
-                  cache-dependency-path: kuzhambu-apps/package-lock.json
+
+            - name: Enable Corepack
+              run: corepack enable
+
+            - name: Resolve pnpm store path
+              id: pnpm-store
+              working-directory: kuzhambu-apps
+              run: echo "path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+
+            - name: Cache pnpm store
+              uses: actions/cache@v4
+              with:
+                  path: ${{ steps.pnpm-store.outputs.path }}
+                  key: ${{ runner.os }}-pnpm-store-${{ hashFiles('kuzhambu-apps/pnpm-lock.yaml') }}
+                  restore-keys: |
+                      ${{ runner.os }}-pnpm-store-
 
             - name: Verify frontend package manifests
               run: |
@@ -284,37 +320,37 @@ jobs:
 
             - name: Install frontend dependencies
               working-directory: kuzhambu-apps
-              run: npm ci
+              run: pnpm install --frozen-lockfile
 
             - name: Verify admin frontend formatting
               if: needs.detect-changes.outputs.apps_admin_changed == 'true'
               working-directory: kuzhambu-apps
-              run: npm --workspace admin-web run format:check
+              run: pnpm --filter ./admin-web run format:check
 
             - name: Verify admin frontend lint
               if: needs.detect-changes.outputs.apps_admin_changed == 'true'
               working-directory: kuzhambu-apps
-              run: npm --workspace admin-web run lint
+              run: pnpm --filter ./admin-web run lint
 
             - name: Verify admin frontend tests
               if: needs.detect-changes.outputs.apps_admin_changed == 'true'
               working-directory: kuzhambu-apps
-              run: npm --workspace admin-web run test
+              run: pnpm --filter ./admin-web run test
 
             - name: Verify portal frontend formatting
               if: needs.detect-changes.outputs.apps_portal_changed == 'true'
               working-directory: kuzhambu-apps
-              run: npm --workspace portal-web run format:check
+              run: pnpm --filter ./portal-web run format:check
 
             - name: Verify portal frontend lint
               if: needs.detect-changes.outputs.apps_portal_changed == 'true'
               working-directory: kuzhambu-apps
-              run: npm --workspace portal-web run lint
+              run: pnpm --filter ./portal-web run lint
 
             - name: Verify portal frontend tests
               if: needs.detect-changes.outputs.apps_portal_changed == 'true'
               working-directory: kuzhambu-apps
-              run: npm --workspace portal-web run test
+              run: pnpm --filter ./portal-web run test
 
     verify-workers:
         name: Verify Python Workers

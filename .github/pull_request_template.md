@@ -17,10 +17,10 @@
 - [ ] PR workflow: workers changed -> `ruff check .`
 - [ ] PR workflow: workers changed -> `pytest`
 - [ ] PR workflow: apps changed -> frontend package manifests
-- [ ] PR workflow: apps changed -> `npm install`
-- [ ] PR workflow: apps changed -> `npm run format:check`
-- [ ] PR workflow: apps changed -> `npm run lint`
-- [ ] PR workflow: apps changed -> `npm test`
+- [ ] PR workflow: apps changed -> `pnpm install --frozen-lockfile`
+- [ ] PR workflow: apps changed -> `pnpm run format:check`
+- [ ] PR workflow: apps changed -> `pnpm run lint`
+- [ ] PR workflow: apps changed -> `pnpm test`
 - [ ] PR workflow: db changed -> SQL seed checks
 
 ## Documentation And TODO

@@ -19,7 +19,7 @@ This file extends the repository root `AGENTS.md` for work under `kuzhambu-apps/
 
 ## Architecture Gates
 
-- `npm run lint` is the first admin-web architecture gate.
+- `pnpm run lint` is the first admin-web architecture gate.
 - `eslint-plugin-boundaries` enforces import direction and layer dependency rules that can be expressed as ESLint configuration.
 - ESLint core rules enforce simple syntactic gates, including deep relative import bans and direct `fetch` bans outside `src/api/http.ts`.
 - Local ESLint rules may enforce narrow project-specific naming checks when an existing package cannot express the rule cleanly.
@@ -46,16 +46,16 @@ This file extends the repository root `AGENTS.md` for work under `kuzhambu-apps/
 
 ## Testing And Verification
 
-- Admin web tests are Vitest tests. Do not use Jest-only CLI flags or APIs such as `--runInBand`; use `npm test` or Vitest-supported arguments only.
+- Admin web tests are Vitest tests. Do not use Jest-only CLI flags or APIs such as `--runInBand`; use `pnpm test` or Vitest-supported arguments only.
 - For auth, permission, routing, request hook, or layout behavior changes, update `src/app.test.tsx` or add a focused test.
 - Before committing frontend changes, run the smallest relevant checks:
-    - `npm run format:check`
-    - `npm run lint`
-    - `npm test`
-    - `npm run build` when TypeScript, routing, bundle entry, or shared auth/API code changed
+    - `pnpm run format:check`
+    - `pnpm run lint`
+    - `pnpm test`
+    - `pnpm run build` when TypeScript, routing, bundle entry, or shared auth/API code changed
 - Vite chunk-size warnings are acceptable unless the change intentionally touches bundling or lazy loading.
 
 ## Dev Server
 
-- Use `npm run dev -- --port <port>` when a specific port is needed.
+- Use `pnpm run dev -- --port <port>` when a specific port is needed.
 - If a dev server is already running for collaboration, leave it running unless the user asks to stop it.
