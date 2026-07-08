@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Frontend validation`：执行 Admin Web 和 Portal Web 相关验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-WANGQI-SINGLE-DOCUMENT-QA.md`
-    - 范围对象：`kuzhambu-apps/admin-web`、`kuzhambu-apps/portal-web`
-    - 处理动作：在同步 `main` 后运行前端 format、lint、相关单测和 Portal QA e2e。
-    - 验收点：前端格式、lint、单测和 `e2e/discovery/qa.spec.ts` 通过。
-    - 重要度：10/10
-
 - [ ] `Workers validation`：执行 Discovery AI usecase worker 验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-WANGQI-SINGLE-DOCUMENT-QA.md`

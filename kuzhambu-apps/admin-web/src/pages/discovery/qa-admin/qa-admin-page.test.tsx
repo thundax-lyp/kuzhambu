@@ -202,8 +202,9 @@ describe("QaAdminPage", () => {
     it("loads session sources and provider trace with formatted raw json", async () => {
         const user = userEvent.setup();
         const writeText = vi.fn().mockResolvedValue(undefined);
-        Object.assign(navigator, {
-            clipboard: { writeText }
+        Object.defineProperty(navigator, "clipboard", {
+            configurable: true,
+            value: { writeText }
         });
         renderPage();
 
@@ -220,7 +221,7 @@ describe("QaAdminPage", () => {
         expect(screen.getByText("SUCCEEDED")).toBeInTheDocument();
         expect(screen.getByText(/"answer": "礼器答案"/u)).toBeInTheDocument();
 
-        await user.click(screen.getByRole("button", { name: "复制" }));
+        await user.click(screen.getByRole("button", { name: /复\s*制/u }));
 
         expect(writeText).toHaveBeenCalledWith("9101");
     }, 30000);
@@ -239,7 +240,7 @@ describe("QaAdminPage", () => {
         await waitFor(() => {
             expect(mocks.getQaTrace).toHaveBeenCalled();
         });
-        expect(screen.getByRole("button", { name: "复制" })).toBeDisabled();
+        expect(screen.getByRole("button", { name: /复\s*制/u })).toBeDisabled();
     }, 30000);
 
     it("deletes session, shows removed status, and exports deleted session", async () => {
