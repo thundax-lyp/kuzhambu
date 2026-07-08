@@ -18,16 +18,33 @@ public class SancaiShowcaseCommand {
     private Date requestedAt;
     private SancaiShowcaseStatus status;
     private String scopeJson;
+    private String scopeTitle;
     private StorageObjectId storageObjectId;
     private int entryCount;
     private SancaiVisibilityRiskStatus visibilityRiskStatus;
+    private boolean privateConfirmed;
+
+    public SancaiShowcaseCommand(
+            Date requestedAt,
+            SancaiShowcaseStatus status,
+            String scopeJson,
+            StorageObjectId storageObjectId,
+            int entryCount,
+            SancaiVisibilityRiskStatus visibilityRiskStatus) {
+        this.requestedAt = requestedAt;
+        this.status = status;
+        this.scopeJson = scopeJson;
+        this.storageObjectId = storageObjectId;
+        this.entryCount = entryCount;
+        this.visibilityRiskStatus = visibilityRiskStatus;
+    }
 
     public SancaiShowcase toEntity() {
         SancaiShowcase showcase = new SancaiShowcase();
         showcase.setRequestedAt(requestedAt == null ? new Date() : requestedAt);
         showcase.setStatus(status == null ? SancaiShowcaseStatus.REQUESTED : status);
         showcase.setScopeJson(scopeJson);
-        showcase.setStorageObjectId(storageObjectId);
+        showcase.setScopeTitle(scopeTitle);
         showcase.setEntryCount(entryCount);
         showcase.setVisibilityRiskStatus(visibilityRiskStatus);
         return showcase;

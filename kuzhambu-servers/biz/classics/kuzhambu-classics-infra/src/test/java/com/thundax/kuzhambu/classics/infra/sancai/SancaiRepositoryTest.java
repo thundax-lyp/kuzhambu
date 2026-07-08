@@ -7,6 +7,8 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryImageS
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryRefinementStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryTranslationStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisualAssetStatus;
+import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiShowcaseStatus;
+import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisibilityRiskStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVolumeType;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -35,6 +37,13 @@ class SancaiRepositoryTest {
         SancaiEntryVisualAssetStatus.from("READY");
         SancaiEntryRefinementStatus.from("RAW");
         SancaiEntryRefinementStatus.from("COMPLETE");
+        SancaiShowcaseStatus.from("REQUESTED");
+        SancaiShowcaseStatus.from("PROCESSING");
+        SancaiShowcaseStatus.from("COMPLETED");
+        SancaiShowcaseStatus.from("FAILED");
+        SancaiShowcaseStatus.from("EXPIRED");
+        SancaiVisibilityRiskStatus.from("PUBLIC_ONLY");
+        SancaiVisibilityRiskStatus.from("CONTAINS_PRIVATE");
     }
 
     @Test
@@ -52,6 +61,30 @@ class SancaiRepositoryTest {
         assertTrue(
                 repositorySource.contains(".eq(SancaiEntryImageDO::getId, SancaiEntryImageIdCodec.toValue(imageId))"));
         assertTrue(repositorySource.contains(".set(SancaiEntryImageDO::getCurrentUsed, true)"));
+    }
+
+    @Test
+    void assetRepositoryShouldKeepShowcaseJobMetadataAndFilters() {
+        String repositorySource = readFromKnownRoots(
+                "biz/classics/kuzhambu-classics-infra/src/main/java/com/thundax/kuzhambu/classics/infra/sancai/repository/impl/SancaiAssetRepositoryImpl.java");
+
+        assertTrue(repositorySource.contains(".set(SancaiShowcaseDO::getCompletedAt, new Date())"));
+        assertTrue(repositorySource.contains(".set(SancaiShowcaseDO::getStorageObjectId"));
+        assertTrue(repositorySource.contains(".set(SancaiShowcaseDO::getAssetCount, assetCount)"));
+        assertTrue(repositorySource.contains(".set(SancaiShowcaseDO::getFilename, filename)"));
+        assertTrue(repositorySource.contains(".set(SancaiShowcaseDO::getContentType, contentType)"));
+        assertTrue(repositorySource.contains(".set(SancaiShowcaseDO::getSizeBytes, sizeBytes)"));
+        assertTrue(repositorySource.contains(".set(SancaiShowcaseDO::getSha256, sha256)"));
+        assertTrue(repositorySource.contains(".set(SancaiShowcaseDO::getFailureType, failureType)"));
+        assertTrue(repositorySource.contains(".set(SancaiShowcaseDO::getFailureMessage, failureMessage)"));
+        assertTrue(repositorySource.contains("appendKeyword(wrapper, keyword)"));
+        assertTrue(repositorySource.contains(".like(SancaiShowcaseDO::getScopeTitle, normalizedKeyword)"));
+        assertTrue(repositorySource.contains(".like(SancaiShowcaseDO::getFilename, normalizedKeyword)"));
+        assertTrue(repositorySource.contains(
+                ".ge(requestedAtStart != null, SancaiShowcaseDO::getRequestedAt, requestedAtStart)"));
+        assertTrue(repositorySource.contains(
+                ".le(requestedAtEnd != null, SancaiShowcaseDO::getRequestedAt, requestedAtEnd)"));
+        assertTrue(repositorySource.contains(".orderByDesc(SancaiShowcaseDO::getRequestedAt)"));
     }
 
     private static boolean existsInKnownRoots(String path) {

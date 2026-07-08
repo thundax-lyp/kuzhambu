@@ -1361,7 +1361,7 @@ describe("SancaiEntryPanel sharing", () => {
         });
         const request = vi.mocked(entryService.requestShowcase).mock.calls.at(-1)?.at(0) || {};
         expect(request).toMatchObject({
-            entryCount: 1,
+            scopeTitle: "天地 静态展示",
             visibilityRiskStatus: "PUBLIC_ONLY"
         });
         const scopeJson = JSON.parse(request.scopeJson as string);

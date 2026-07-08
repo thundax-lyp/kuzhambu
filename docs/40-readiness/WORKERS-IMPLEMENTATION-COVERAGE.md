@@ -24,6 +24,11 @@
 - Workers 设计文档要求的 graph registry、按 usecase 路由分发、统一最终态协议和临时 artifact 下载入口，当前都能在 `ai_routes.py`、`graph_registry.py`、`usecase_registry.py` 与对应测试中找到实现落点。
 - 三才图会视觉资产相关 workers 能力已补齐稳定测试：`fusion` 路由契约、`image_gen` stream final-state、三类视觉 usecase 注册元信息，以及 `artifact` 持久化 `request_id / chunk_count / sha256` 元信息均已覆盖。
 - Classics export render worker 已补齐 Wangqi / Ming Customs 快照 payload 回归：CSV、JSON、HTML、ZIP 均稳定保留 `items[].id`、`items[].title`、`items[].text`，route contract 继续返回可下载 inline artifact。
+- Sancai showcase render worker 已收口为固定 payload：`templateVersion`、`scope`、`items[]`、`catalogs[]`、`generatedAt`、`visibilityRiskStatus`；同步与 stream 路由只输出 `text/html` artifact，HTML 内联多图资源元数据，`completed.artifact` 保留 `summary.totalItems`、`summary.catalogCount` 和 `summary.visibilityRiskStatus`。
+
+## Recent Validation
+
+- 2026-07-08：`cd kuzhambu-workers && .venv/bin/python -m ruff format . && .venv/bin/python -m ruff format --check . && .venv/bin/python -m ruff check . && .venv/bin/python -m pytest -p no:capture` 通过，201 tests 全绿，覆盖 `sancai-showcase` payload、非 HTML 拒绝、summary 元数据、图片资源占位和 stream `completed.artifact`。
 
 ## Requirement Coverage Matrix
 
@@ -39,6 +44,8 @@
 | classics | SANCAI_ENTRY | visual | CLASSICS_SANCAI_VISUAL_DESCRIPTION | /internal/ai/classics/sancai/visual-description | false | kuzhambu_workers.ai.graph_registry:GraphRegistry.invoke | 已完成 | 路由与 graph 注册器协同提供 usecase 调用 |
 | classics | SANCAI_ENTRY | image_gen | CLASSICS_SANCAI_IMAGE_GEN | /internal/ai/classics/sancai/image-gen | true | kuzhambu_workers.ai.graph_registry:GraphRegistry.invoke | 已完成 | 路由与 graph 注册器协同提供 usecase 调用 |
 | classics | SANCAI_ENTRY | split | CLASSICS_SANCAI_SPLIT | /internal/ai/classics/sancai/split | false | kuzhambu_workers.ai.graph_registry:GraphRegistry.invoke | 已完成 | 路由与 graph 注册器协同提供 usecase 调用 |
+| classics | SANCAI_ENTRY | showcase_render | CLASSICS_SANCAI_SHOWCASE_RENDER | /internal/render/sancai-showcase | false | kuzhambu_workers.render.routes:render_sancai_showcase | 已完成 | 固定 `templateVersion/scope/items/catalogs/generatedAt/visibilityRiskStatus` payload，返回 `text/html` artifact |
+| classics | SANCAI_ENTRY | showcase_render | CLASSICS_SANCAI_SHOWCASE_RENDER_STREAM | /internal/render/sancai-showcase/stream | true | kuzhambu_workers.render.routes:stream_sancai_showcase | 已完成 | stream `completed.artifact` 携带 HTML artifact 与 summary 元数据 |
 | classics | WANGQI_DOCUMENT | summary | CLASSICS_WANGQI_SUMMARY | /internal/ai/classics/wangqi/summary | false | kuzhambu_workers.ai.graph_registry:GraphRegistry.invoke | 已完成 | 路由与 graph 注册器协同提供 usecase 调用 |
 | classics | WANGQI_DOCUMENT | tags | CLASSICS_WANGQI_TAGS | /internal/ai/classics/wangqi/tags | false | kuzhambu_workers.ai.graph_registry:GraphRegistry.invoke | 已完成 | 路由与 graph 注册器协同提供 usecase 调用 |
 | classics | WANGQI_DOCUMENT | qa | CLASSICS_WANGQI_QA | /internal/ai/classics/wangqi/qa | false | kuzhambu_workers.ai.graph_registry:GraphRegistry.invoke | 已完成 | 路由与 graph 注册器协同提供 usecase 调用 |

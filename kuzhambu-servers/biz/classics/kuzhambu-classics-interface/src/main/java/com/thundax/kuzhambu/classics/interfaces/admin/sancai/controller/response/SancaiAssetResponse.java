@@ -61,11 +61,35 @@ public class SancaiAssetResponse implements Serializable {
     @JsonProperty("requestedAt")
     private Date requestedAt;
 
+    @JsonProperty("completedAt")
+    private Date completedAt;
+
+    @JsonProperty("scopeTitle")
+    private String scopeTitle;
+
     @JsonProperty("entryCount")
     private Integer entryCount;
 
+    @JsonProperty("assetCount")
+    private Integer assetCount;
+
     @JsonProperty("visibilityRiskStatus")
     private String visibilityRiskStatus;
+
+    @JsonProperty("filename")
+    private String filename;
+
+    @JsonProperty("sizeBytes")
+    private Long sizeBytes;
+
+    @JsonProperty("sha256")
+    private String sha256;
+
+    @JsonProperty("failureType")
+    private String failureType;
+
+    @JsonProperty("failureMessage")
+    private String failureMessage;
 
     @JsonProperty("contentUrl")
     private String contentUrl;

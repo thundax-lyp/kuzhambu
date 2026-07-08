@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.thundax.kuzhambu.common.web.request.PageRequest;
+import java.util.Date;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -36,6 +37,12 @@ public class SancaiAssetRequest extends PageRequest {
     @JsonProperty("scopeJson")
     private String scopeJson;
 
+    @JsonProperty("scopeTitle")
+    private String scopeTitle;
+
+    @JsonProperty("keyword")
+    private String keyword;
+
     @JsonProperty("status")
     private String status;
 
@@ -44,6 +51,15 @@ public class SancaiAssetRequest extends PageRequest {
 
     @JsonProperty("visibilityRiskStatus")
     private String visibilityRiskStatus;
+
+    @JsonProperty("requestedAtStart")
+    private Date requestedAtStart;
+
+    @JsonProperty("requestedAtEnd")
+    private Date requestedAtEnd;
+
+    @JsonProperty("privateConfirmed")
+    private Boolean privateConfirmed;
 
     @JsonProperty("visualAssetId")
     private Long visualAssetId;

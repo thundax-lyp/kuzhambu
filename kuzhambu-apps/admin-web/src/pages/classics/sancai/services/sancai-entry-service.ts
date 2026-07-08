@@ -134,17 +134,20 @@ export type SancaiShowcaseStatus =
     | "EXPIRED";
 
 export interface SancaiShowcaseCreateCommand {
-    status?: string | null;
     scopeJson?: string | null;
-    storageObjectId?: number | null;
-    entryCount?: number | null;
+    scopeTitle?: string | null;
     visibilityRiskStatus?: string | null;
+    privateConfirmed?: boolean | null;
 }
 
 export interface SancaiShowcasePageQuery {
+    keyword?: string | null;
     pageNo?: number | null;
     pageSize?: number | null;
+    requestedAtEnd?: string | null;
+    requestedAtStart?: string | null;
     status?: SancaiShowcaseStatus | null;
+    visibilityRiskStatus?: string | null;
 }
 
 export const list = (request: SancaiEntryQuery = {}) => {

@@ -145,11 +145,20 @@ public final class SancaiAssetPersistenceAssembler {
                 : new SancaiShowcaseDO(
                         SancaiShowcaseIdCodec.toValue(entity.getId()),
                         entity.getRequestedAt(),
+                        entity.getCompletedAt(),
                         value(entity.getStatus()),
                         entity.getScopeJson(),
+                        entity.getScopeTitle(),
                         StorageObjectIdCodec.toValue(entity.getStorageObjectId()),
                         entity.getEntryCount(),
-                        value(entity.getVisibilityRiskStatus()));
+                        entity.getAssetCount(),
+                        value(entity.getVisibilityRiskStatus()),
+                        entity.getFilename(),
+                        entity.getContentType(),
+                        entity.getSizeBytes(),
+                        entity.getSha256(),
+                        entity.getFailureType(),
+                        entity.getFailureMessage());
     }
 
     public static SancaiShowcase toShowcaseDomain(SancaiShowcaseDO dataObject) {
@@ -159,13 +168,22 @@ public final class SancaiAssetPersistenceAssembler {
         return new SancaiShowcase(
                 SancaiShowcaseIdCodec.toDomain(dataObject.getId()),
                 dataObject.getRequestedAt(),
+                dataObject.getCompletedAt(),
                 dataObject.getStatus() == null ? null : SancaiShowcaseStatus.from(dataObject.getStatus()),
                 dataObject.getScopeJson(),
+                dataObject.getScopeTitle(),
                 StorageObjectIdCodec.toDomain(dataObject.getStorageObjectId()),
                 priority(dataObject.getEntryCount()),
+                priority(dataObject.getAssetCount()),
                 dataObject.getVisibilityRiskStatus() == null
                         ? null
-                        : SancaiVisibilityRiskStatus.from(dataObject.getVisibilityRiskStatus()));
+                        : SancaiVisibilityRiskStatus.from(dataObject.getVisibilityRiskStatus()),
+                dataObject.getFilename(),
+                dataObject.getContentType(),
+                dataObject.getSizeBytes(),
+                dataObject.getSha256(),
+                dataObject.getFailureType(),
+                dataObject.getFailureMessage());
     }
 
     public static List<SancaiShowcase> toShowcaseDomainList(List<SancaiShowcaseDO> dataObjects) {
