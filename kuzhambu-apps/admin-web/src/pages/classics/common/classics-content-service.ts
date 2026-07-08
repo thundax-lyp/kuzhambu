@@ -8,6 +8,7 @@ import type {
     ClassicsContentQaPairRecord,
     ClassicsContentQaPairSortPayload,
     ClassicsAiCandidateBatchRejectItemPayload,
+    ClassicsContentTagDeletePayload,
     ClassicsContentTagPayload,
     ClassicsContentTagRecord,
     ClassicsContentTagSortPayload
@@ -17,6 +18,7 @@ const CLASSICS_CONTENT_PATH = "/classics/content";
 
 export type ClassicsContentListQuery = ClassicsContentListPayload;
 export type ClassicsContentTagCommand = ClassicsContentTagPayload;
+export type ClassicsContentTagDeleteCommand = ClassicsContentTagDeletePayload;
 export type ClassicsContentTagSortCommand = ClassicsContentTagSortPayload;
 export type ClassicsContentQaPairCommand = ClassicsContentQaPairPayload;
 export type ClassicsContentQaPairSortCommand = ClassicsContentQaPairSortPayload;
@@ -56,6 +58,15 @@ export const addTag = (request: ClassicsContentTagCommand) => {
 export const updateTag = (request: ClassicsContentTagCommand) => {
     return postJson<ClassicsContentTagRecord, ClassicsContentTagCommand>(
         `${CLASSICS_CONTENT_PATH}/tags/update`,
+        {
+            body: request
+        }
+    );
+};
+
+export const deleteTag = (request: ClassicsContentTagDeleteCommand) => {
+    return postJson<boolean, ClassicsContentTagDeleteCommand>(
+        `${CLASSICS_CONTENT_PATH}/tags/delete`,
         {
             body: request
         }

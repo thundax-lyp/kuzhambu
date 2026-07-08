@@ -3,8 +3,10 @@ package com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.respons
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.thundax.kuzhambu.classics.interfaces.admin.content.controller.response.ClassicsContentResponse;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -66,4 +68,7 @@ public class SancaiEntryResponse implements Serializable {
 
     @JsonProperty("versionDirty")
     private Boolean versionDirty;
+
+    @JsonProperty("tags")
+    private List<ClassicsContentResponse> tags;
 }

@@ -25,6 +25,12 @@ public class ClassicsContentResponse implements Serializable {
     @JsonProperty("tagNameSnapshot")
     private String tagNameSnapshot;
 
+    @JsonProperty("tagId")
+    private Long tagId;
+
+    @JsonProperty("source")
+    private String source;
+
     @JsonProperty("question")
     private String question;
 
@@ -33,6 +39,9 @@ public class ClassicsContentResponse implements Serializable {
 
     @JsonProperty("status")
     private String status;
+
+    @JsonProperty("priority")
+    private Integer priority;
 
     @JsonProperty("exportKind")
     private String exportKind;

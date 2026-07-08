@@ -107,6 +107,7 @@ export const SancaiEntryPanel = ({
     const [imageUploadType, setImageUploadType] = useState("ORIGINAL");
     const [imageUploadCurrentUsed, setImageUploadCurrentUsed] = useState(true);
     const candidatePanelRef = useRef<HTMLDivElement | null>(null);
+    const tagPanelRef = useRef<HTMLDivElement | null>(null);
     const currentUserQuery = useQuery({
         queryKey: ["sys", "current-user", "info"],
         queryFn: currentUserService.getCurrentUserInfo,
@@ -685,6 +686,13 @@ export const SancaiEntryPanel = ({
         }
         showcaseEntryMutation.mutate(entry);
     };
+    const editEntryTags = () => {
+        tagPanelRef.current?.scrollIntoView({
+            block: "start",
+            behavior: "smooth"
+        });
+        tagPanelRef.current?.focus();
+    };
 
     const resetVersion = (version: SancaiContentVersionRecord) => {
         if (!selectedEntry?.id) {
@@ -906,13 +914,16 @@ export const SancaiEntryPanel = ({
             <SancaiEntryModel
                 key={modelKey}
                 entry={selectedEntry}
-                entryTags={entryTagNames}
+                entryTags={
+                    selectedEntry?.tags?.map((tag) => tag.tagNameSnapshot || "") ?? entryTagNames
+                }
                 isSubmitting={addEntryMutation.isPending || updateEntryMutation.isPending}
                 isSwitchingVisualAsset={changeCurrentVisualAssetMutation.isPending}
                 isUpdatingVisualAsset={updateVisualAssetMutation.isPending}
                 mode={isCreating ? "create" : "edit"}
                 open={isModelOpen && !isLoading}
                 onCancel={closeModel}
+                onEditTags={editEntryTags}
                 onSubmit={submitEntry}
                 onUseVisualAsset={switchVisualAsset}
                 onUpdateVisualAsset={updateVisualAsset}
@@ -1228,12 +1239,18 @@ export const SancaiEntryPanel = ({
                                     />
                                 </div>
                             ) : null}
-                            <ClassicsContentTagPanel
-                                contentId={selectedEntry.id}
-                                contentType="SANCAI_ENTRY"
-                                panelTitle="三才图会标签治理"
-                                onChanged={invalidateSancaiContentGovernance}
-                            />
+                            <div
+                                ref={tagPanelRef}
+                                className="sancai-candidate-panel-anchor"
+                                tabIndex={-1}
+                            >
+                                <ClassicsContentTagPanel
+                                    contentId={selectedEntry.id}
+                                    contentType="SANCAI_ENTRY"
+                                    panelTitle="三才图会标签治理"
+                                    onChanged={invalidateSancaiContentGovernance}
+                                />
+                            </div>
                             <ClassicsContentQaPanel
                                 contentId={selectedEntry.id}
                                 contentType="SANCAI_ENTRY"
