@@ -285,6 +285,12 @@ export const useSancaiEntryPanelState = ({
                 queryKey: ["classics", "content", "tags", "SANCAI_ENTRY", selectedEntryId]
             }),
             queryClient.invalidateQueries({
+                queryKey: ["classics", "sancai", "entries", "detail", selectedEntryId]
+            }),
+            queryClient.invalidateQueries({
+                queryKey: ["classics", "sancai", "entries"]
+            }),
+            queryClient.invalidateQueries({
                 queryKey: ["classics", "content", "qa-pairs", "SANCAI_ENTRY"]
             })
         ]);

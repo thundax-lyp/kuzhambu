@@ -1,4 +1,10 @@
-import { DownloadOutlined, EyeOutlined, PictureOutlined, UploadOutlined } from "@ant-design/icons";
+import {
+    DownloadOutlined,
+    EditOutlined,
+    EyeOutlined,
+    PictureOutlined,
+    UploadOutlined
+} from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Button, Empty, Image, Input, Switch, Tag, Typography, Upload } from "antd";
 import { useEffect, useMemo, useState } from "react";
@@ -84,6 +90,7 @@ interface SancaiEntryModelProps {
     open: boolean;
     onCancel: () => void;
     onSubmit: (values: SancaiEntryFormValues) => void;
+    onEditTags?: () => void;
     onUseVisualAsset?: (asset: SancaiVisualAssetRecord) => void;
     onUpdateVisualAsset?: (asset: SancaiVisualAssetRecord) => void;
     onCreateVisualAssetTask?: (
@@ -105,6 +112,7 @@ export const SancaiEntryModel = ({
     open,
     onCancel,
     onSubmit,
+    onEditTags,
     onUseVisualAsset,
     onUpdateVisualAsset,
     onCreateVisualAssetTask,
@@ -467,16 +475,28 @@ export const SancaiEntryModel = ({
                         <Text type="secondary">原文：{entry?.originalText || "未填写"}</Text>
                         <Text type="secondary">译文：{entry?.translationText || "未生成"}</Text>
                         <div>
-                            <Text type="secondary">标签：</Text>
-                            {activeTags.length ? (
-                                <KuzhambuSpace wrap>
-                                    {activeTags.map((tag) => (
-                                        <Tag key={tag}>{tag}</Tag>
-                                    ))}
-                                </KuzhambuSpace>
-                            ) : (
-                                <Text type="secondary">未标注标签</Text>
-                            )}
+                            <KuzhambuSpace wrap>
+                                <Text type="secondary">标签：</Text>
+                                {activeTags.length ? (
+                                    <>
+                                        {activeTags.map((tag) => (
+                                            <Tag key={tag}>{tag}</Tag>
+                                        ))}
+                                    </>
+                                ) : (
+                                    <Text type="secondary">未标注标签</Text>
+                                )}
+                                {onEditTags ? (
+                                    <Button
+                                        aria-label="编辑三才图会条目标签"
+                                        icon={<EditOutlined />}
+                                        size="small"
+                                        onClick={onEditTags}
+                                    >
+                                        编辑标签
+                                    </Button>
+                                ) : null}
+                            </KuzhambuSpace>
                         </div>
                     </section>
                 ) : null}

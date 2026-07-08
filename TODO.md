@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `SancaiEntryPanel`：补齐详情抽屉标签展示和编辑入口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-ENTRY-TAGS.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-types.ts`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-model.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/hooks/use-sancai-entry-panel-state.ts`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.test.tsx`
-    - 处理动作：在“条目上下文”展示 Ant Design `Tag` 标签行，并新增 `EditOutlined` 的“编辑标签”按钮定位到同抽屉标签治理面板。
-    - 验收点：有标签展示 `tagNameSnapshot`，无标签展示 `未标注标签`，点击 `aria-label="编辑三才图会条目标签"` 的按钮会滚动并 focus 标签治理面板，标签变更后刷新详情和列表 query。
-    - 重要度：9/10
-
 - [ ] `SancaiEntryTags`：运行本轮最小验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-ENTRY-TAGS.md`
