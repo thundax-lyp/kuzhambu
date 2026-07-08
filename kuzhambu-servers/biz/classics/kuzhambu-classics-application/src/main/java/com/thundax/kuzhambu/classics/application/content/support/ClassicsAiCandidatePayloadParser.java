@@ -26,8 +26,45 @@ public class ClassicsAiCandidatePayloadParser {
         return resultPayload.trim();
     }
 
+    public String parseSummary(String resultPayload) {
+        if (resultPayload == null || resultPayload.trim().isEmpty()) {
+            throw new BizException("AI候选内容为空");
+        }
+
+        JsonNode root = parseJson(resultPayload, false);
+        if (root == null || root.isTextual()) {
+            return parseText(resultPayload);
+        }
+
+        if (root.isObject()) {
+            JsonNode summaryNode = ((ObjectNode) root).get("summary");
+            if (summaryNode != null && summaryNode.isTextual()) {
+                String summary = summaryNode.asText().trim();
+                if (!summary.isEmpty()) {
+                    return summary;
+                }
+            }
+            if (summaryNode != null && !summaryNode.isMissingNode() && !summaryNode.isNull()) {
+                throw new BizException("AI候选摘要格式错误");
+            }
+        }
+
+        throw new BizException("AI候选内容为空");
+    }
+
     public List<String> parseTags(String resultPayload) {
-        JsonNode root = parseJson(resultPayload);
+        return parseTags(resultPayload, true);
+    }
+
+    public List<String> parseTagsIfPresent(String resultPayload) {
+        return parseTags(resultPayload, false);
+    }
+
+    private List<String> parseTags(String resultPayload, boolean required) {
+        JsonNode root = parseJson(resultPayload, required);
+        if (root == null) {
+            return List.of();
+        }
         List<String> tags = new ArrayList<>();
         if (root.isObject()) {
             JsonNode tagsNode = ((ObjectNode) root).get("tags");
@@ -43,14 +80,25 @@ public class ClassicsAiCandidatePayloadParser {
         }
 
         List<String> distinctTags = dedupe(tags);
-        if (distinctTags.isEmpty()) {
+        if (required && distinctTags.isEmpty()) {
             throw new BizException("AI候选标签为空");
         }
         return distinctTags;
     }
 
     public List<AiCandidateQaPairPayload> parseQaPairs(String resultPayload) {
-        JsonNode root = parseJson(resultPayload);
+        return parseQaPairs(resultPayload, true);
+    }
+
+    public List<AiCandidateQaPairPayload> parseQaPairsIfPresent(String resultPayload) {
+        return parseQaPairs(resultPayload, false);
+    }
+
+    private List<AiCandidateQaPairPayload> parseQaPairs(String resultPayload, boolean required) {
+        JsonNode root = parseJson(resultPayload, required);
+        if (root == null) {
+            return List.of();
+        }
         List<AiCandidateQaPairPayload> pairs = new ArrayList<>();
         if (root.isObject()) {
             JsonNode pairsNode = ((ObjectNode) root).get("qaPairs");
@@ -61,14 +109,14 @@ public class ClassicsAiCandidatePayloadParser {
             collectQaPairs(root, pairs);
         }
         List<AiCandidateQaPairPayload> deduped = dedupeQaPairs(pairs);
-        if (deduped.isEmpty()) {
+        if (required && deduped.isEmpty()) {
             throw new BizException("AI候选问答为空");
         }
         return deduped;
     }
 
     public Long parseStorageObjectId(String resultPayload) {
-        JsonNode root = parseJson(resultPayload);
+        JsonNode root = parseJson(resultPayload, true);
         JsonNode storageObjectIdNode = root.path("storageObjectId");
         if (!storageObjectIdNode.canConvertToLong()) {
             throw new BizException("AI候选生图结果缺少 storageObjectId");
@@ -80,10 +128,13 @@ public class ClassicsAiCandidatePayloadParser {
         return storageObjectId;
     }
 
-    private JsonNode parseJson(String resultPayload) {
+    private JsonNode parseJson(String resultPayload, boolean required) {
         try {
             return objectMapper.readTree(resultPayload);
         } catch (Exception ex) {
+            if (!required) {
+                return null;
+            }
             throw new BizException("AI候选内容不是合法JSON");
         }
     }

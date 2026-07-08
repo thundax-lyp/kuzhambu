@@ -2,16 +2,26 @@ package com.thundax.kuzhambu.classics.application.wangqi.support;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairCommand;
+import com.thundax.kuzhambu.classics.application.content.command.ContentTagCommand;
+import com.thundax.kuzhambu.classics.application.content.support.ClassicsTagBindingSupport;
+import com.thundax.kuzhambu.classics.application.content.support.WangqiDocumentVersionSnapshot;
 import com.thundax.kuzhambu.classics.domain.common.codec.StorageObjectIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentQaPair;
+import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentSource;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentTagStatus;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
+import com.thundax.kuzhambu.classics.domain.content.repository.ClassicsContentRepository;
 import com.thundax.kuzhambu.classics.domain.wangqi.codec.WangqiDocumentIdCodec;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiContentFormat;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
 import com.thundax.kuzhambu.classics.domain.wangqi.repository.WangqiDocumentRepository;
 import com.thundax.kuzhambu.common.core.exception.BizException;
+import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Date;
@@ -22,11 +32,19 @@ import org.springframework.stereotype.Service;
 public class WangqiDocumentVersionRestorer {
 
     private final WangqiDocumentRepository repository;
+    private final ClassicsContentRepository contentRepository;
     private final ObjectMapper objectMapper;
+    private final ClassicsTagBindingSupport tagBindingSupport;
 
-    public WangqiDocumentVersionRestorer(WangqiDocumentRepository repository, ObjectMapper objectMapper) {
+    public WangqiDocumentVersionRestorer(
+            WangqiDocumentRepository repository,
+            ClassicsContentRepository contentRepository,
+            ObjectMapper objectMapper,
+            ClassicsTagBindingSupport tagBindingSupport) {
         this.repository = repository;
+        this.contentRepository = contentRepository;
         this.objectMapper = objectMapper;
+        this.tagBindingSupport = tagBindingSupport;
     }
 
     public WangqiDocument restoreSnapshot(ClassicsContentVersion version) {
@@ -40,9 +58,12 @@ public class WangqiDocumentVersionRestorer {
             throw new BizException("王圻文档不存在，无法恢复历史版本");
         }
 
-        WangqiDocument restored = toDocument(snapshot);
+        WangqiDocumentVersionSnapshot parsedSnapshot = WangqiDocumentVersionSnapshot.from(snapshot);
+        WangqiDocument restored = toDocument(parsedSnapshot);
         restored.setId(current.getId());
         restored.setContentUpdatedAt(new Date());
+        restoreTags(restored, parsedSnapshot);
+        restoreQaPairs(restored, parsedSnapshot);
         repository.updateRestoredVersion(restored);
         return restored;
     }
@@ -73,20 +94,159 @@ public class WangqiDocumentVersionRestorer {
         }
     }
 
-    private static WangqiDocument toDocument(JsonNode snapshot) {
+    private static WangqiDocument toDocument(WangqiDocumentVersionSnapshot snapshot) {
         WangqiDocument document = new WangqiDocument();
-        document.setTitle(text(snapshot, "title"));
-        document.setSummary(text(snapshot, "summary"));
-        document.setContentFormat(enumValue(WangqiContentFormat.class, text(snapshot, "contentFormat")));
-        document.setContent(text(snapshot, "content"));
-        document.setDocumentTime(date(snapshot, "documentTime"));
-        document.setStorageObjectId(StorageObjectIdCodec.toDomain(longValue(snapshot, "storageObjectId")));
-        document.setVisibility(enumValue(WangqiDocumentVisibility.class, text(snapshot, "visibility")));
+        document.setTitle(snapshot == null ? null : snapshot.title());
+        document.setSummary(snapshot == null ? null : snapshot.summary());
+        document.setContentFormat(
+                snapshot == null || snapshot.contentFormat() == null
+                        ? null
+                        : enumValue(WangqiContentFormat.class, snapshot.contentFormat()));
+        document.setContent(snapshot == null ? null : snapshot.content());
+        document.setDocumentTime(date(snapshot == null ? null : snapshot.documentTime()));
+        document.setStorageObjectId(
+                StorageObjectIdCodec.toDomain(snapshot == null ? null : snapshot.storageObjectId()));
+        document.setVisibility(
+                snapshot == null || snapshot.visibility() == null
+                        ? null
+                        : enumValue(WangqiDocumentVisibility.class, snapshot.visibility()));
         return document;
     }
 
-    private static Date date(JsonNode snapshot, String fieldName) {
-        String value = text(snapshot, fieldName);
+    private void restoreTags(WangqiDocument document, WangqiDocumentVersionSnapshot snapshot) {
+        if (document == null || snapshot == null || document.contentId() == null) {
+            return;
+        }
+        contentRepository
+                .listTags(ClassicsContentType.WANGQI_DOCUMENT.value(), document.contentId(), SortDirection.ASC)
+                .forEach(existingTag -> {
+                    removeTagRefIfExists(existingTag);
+                    contentRepository.deleteTagById(
+                            ClassicsContentType.WANGQI_DOCUMENT.value(), document.contentId(), existingTag.getId());
+                });
+
+        if (snapshot.tags() == null) {
+            return;
+        }
+        for (int i = 0; i < snapshot.tags().size(); i++) {
+            insertTagFromSnapshot(snapshot.tags().get(i), document, i + 1);
+        }
+    }
+
+    private void restoreQaPairs(WangqiDocument document, WangqiDocumentVersionSnapshot snapshot) {
+        if (document == null || document.contentId() == null) {
+            return;
+        }
+        contentRepository
+                .listQaPairs(ClassicsContentType.WANGQI_DOCUMENT.value(), document.contentId(), SortDirection.ASC)
+                .forEach(pair -> contentRepository.deleteQaPairById(pair.getId()));
+
+        if (snapshot == null || snapshot.qaPairs() == null) {
+            return;
+        }
+        for (int i = 0; i < snapshot.qaPairs().size(); i++) {
+            insertQaPairFromSnapshot(snapshot.qaPairs().get(i), document, i + 1);
+        }
+    }
+
+    private void insertTagFromSnapshot(
+            WangqiDocumentVersionSnapshot.WangqiTagSnapshot snapshot, WangqiDocument document, int fallbackPriority) {
+        if (snapshot == null || document == null || document.contentId() == null) {
+            return;
+        }
+        int priority = snapshot.priority() == null ? fallbackPriority : snapshot.priority();
+        if (tagBindingSupport == null) {
+            ContentTagCommand command = new ContentTagCommand(
+                    null,
+                    ClassicsContentType.WANGQI_DOCUMENT,
+                    document.contentId().value(),
+                    snapshot.tagId(),
+                    snapshot.tagNameSnapshot(),
+                    parseSource(snapshot.source()),
+                    parseTagStatus(snapshot.status()));
+            ClassicsContentTag tag = command.toEntity();
+            tag.setPriority(priority);
+            tag.setId(null);
+            contentRepository.insertTag(tag);
+            return;
+        }
+
+        if (snapshot.tagId() == null && StringUtils.isBlank(snapshot.tagNameSnapshot())) {
+            return;
+        }
+
+        ClassicsContentTag tag = commandForRestoredTag(document, snapshot, priority);
+        if (tag == null) {
+            return;
+        }
+        contentRepository.insertTag(tag);
+        tagBindingSupport.syncTagRef(tag);
+    }
+
+    private ClassicsContentTag commandForRestoredTag(
+            WangqiDocument document, WangqiDocumentVersionSnapshot.WangqiTagSnapshot snapshot, int priority) {
+        ClassicsContentSource source = parseSource(snapshot.source());
+        ClassicsContentTagStatus status = parseTagStatus(snapshot.status());
+        ContentTagCommand command = new ContentTagCommand(
+                null,
+                ClassicsContentType.WANGQI_DOCUMENT,
+                document.contentId().value(),
+                snapshot.tagId(),
+                snapshot.tagNameSnapshot(),
+                source,
+                status);
+        if (snapshot.tagId() == null) {
+            return source == ClassicsContentSource.AI
+                    ? tagBindingSupport.bindAiTag(command, priority)
+                    : tagBindingSupport.bindManualTag(command, priority);
+        }
+
+        ClassicsContentTag tag = command.toEntity();
+        tag.setId(null);
+        tag.setPriority(priority);
+        return tag;
+    }
+
+    private void insertQaPairFromSnapshot(
+            WangqiDocumentVersionSnapshot.WangqiQaPairSnapshot snapshot,
+            WangqiDocument document,
+            int fallbackPriority) {
+        if (snapshot == null || document == null || document.contentId() == null) {
+            return;
+        }
+        if (StringUtils.isBlank(snapshot.question()) && StringUtils.isBlank(snapshot.answer())) {
+            return;
+        }
+
+        ContentQaPairCommand command = new ContentQaPairCommand(
+                null,
+                ClassicsContentType.WANGQI_DOCUMENT,
+                document.contentId().value(),
+                snapshot.question(),
+                snapshot.answer(),
+                parseSource(snapshot.source()));
+        ClassicsContentQaPair qaPair = command.toEntity();
+        qaPair.setId(null);
+        qaPair.setPriority(snapshot.priority() == null ? fallbackPriority : snapshot.priority());
+        contentRepository.insertQaPair(qaPair);
+    }
+
+    private void removeTagRefIfExists(ClassicsContentTag tag) {
+        if (tagBindingSupport == null) {
+            return;
+        }
+        tagBindingSupport.removeTagRef(tag);
+    }
+
+    private static ClassicsContentSource parseSource(String value) {
+        return StringUtils.isBlank(value) ? ClassicsContentSource.MANUAL : ClassicsContentSource.valueOf(value);
+    }
+
+    private static ClassicsContentTagStatus parseTagStatus(String value) {
+        return StringUtils.isBlank(value) ? ClassicsContentTagStatus.ACTIVE : ClassicsContentTagStatus.valueOf(value);
+    }
+
+    private static Date date(String value) {
         return StringUtils.isBlank(value) ? null : Date.from(Instant.parse(value));
     }
 

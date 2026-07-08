@@ -1,6 +1,8 @@
 package com.thundax.kuzhambu.classics.application.content.support;
 
 import com.thundax.kuzhambu.classics.domain.content.model.Versionable;
+import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentQaPair;
+import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
@@ -13,7 +15,12 @@ public class ClassicsContentSnapshotAssembler {
     private static final char[] HEX_DIGITS = "0123456789abcdef".toCharArray();
 
     public String toSnapshotJson(Versionable content) {
-        return toJson(toSnapshot(content));
+        return toJson(toSnapshot(content, List.of(), List.of()));
+    }
+
+    public String toSnapshotJson(
+            Versionable content, List<ClassicsContentTag> tags, List<ClassicsContentQaPair> qaPairs) {
+        return toJson(toSnapshot(content, tags, qaPairs));
     }
 
     public String toSnapshotJson(SancaiEntry entry, List<SancaiEntryImage> images) {
@@ -26,15 +33,18 @@ public class ClassicsContentSnapshotAssembler {
                 SancaiEntryVersionSnapshot.fromImageResources(entry, images).toMap());
     }
 
-    private Map<String, Object> toSnapshot(Versionable content) {
+    private Map<String, Object> toSnapshot(
+            Versionable content, List<ClassicsContentTag> tags, List<ClassicsContentQaPair> qaPairs) {
         if (content.contentType() == ClassicsContentType.SANCAI_ENTRY) {
             return SancaiEntryVersionSnapshot.from((SancaiEntry) content).toMap();
         }
         if (content.contentType() == ClassicsContentType.WANGQI_DOCUMENT) {
-            return WangqiDocumentVersionSnapshot.from((WangqiDocument) content).toMap();
+            return WangqiDocumentVersionSnapshot.from((WangqiDocument) content, tags, qaPairs)
+                    .toMap();
         }
         if (content.contentType() == ClassicsContentType.MING_CUSTOMS) {
-            return MingCustomsVersionSnapshot.from((MingCustomsEntry) content).toMap();
+            return MingCustomsVersionSnapshot.from((MingCustomsEntry) content, tags, qaPairs)
+                    .toMap();
         }
         throw new IllegalArgumentException("Unsupported classics content type: " + content.contentType());
     }

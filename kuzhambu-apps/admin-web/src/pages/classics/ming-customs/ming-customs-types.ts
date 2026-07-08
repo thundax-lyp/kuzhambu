@@ -27,6 +27,18 @@ export interface MingCustomsContentVersionRecord {
     changeSummary?: string | null;
 }
 
+export interface MingCustomsTagSnapshotRecord {
+    id?: number | null;
+    tagId?: number | null;
+    tagNameSnapshot?: string | null;
+}
+
+export interface MingCustomsQaPairSnapshotRecord {
+    id?: number | null;
+    question?: string | null;
+    answer?: string | null;
+}
+
 export interface MingCustomsVersionSnapshot {
     contentType?: string | null;
     contentId?: number | null;
@@ -40,4 +52,6 @@ export interface MingCustomsVersionSnapshot {
     content?: string | null;
     originalExcerpts?: string | null;
     visibility?: string | null;
+    tags?: MingCustomsTagSnapshotRecord[];
+    qaPairs?: MingCustomsQaPairSnapshotRecord[];
 }

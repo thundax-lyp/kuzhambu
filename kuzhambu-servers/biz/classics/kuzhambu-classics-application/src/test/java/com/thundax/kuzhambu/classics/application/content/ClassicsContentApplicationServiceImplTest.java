@@ -18,6 +18,7 @@ import com.thundax.kuzhambu.ai.facade.request.MarkAiCandidateAppliedFacadeReques
 import com.thundax.kuzhambu.ai.facade.request.RequirePendingAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.classics.application.content.command.AiCandidateApplyContentCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentExportCommand;
+import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentTagCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentTagSortCommand;
 import com.thundax.kuzhambu.classics.application.content.result.ClassicsExportJobResult;
@@ -653,7 +654,52 @@ class ClassicsContentApplicationServiceImplTest {
         service.deleteQaPair(ClassicsContentQaPairId.of(9010L));
 
         assertEquals(1, repository.sancaiEntryVersionMarker.getCurrentVersionNo());
+        assertEquals(
+                ClassicsContentChangeType.QA_CHANGED,
+                repository.insertedVersions.get(0).getChangeType());
+        assertEquals("删除问答对", repository.insertedVersions.get(0).getChangeSummary());
         verify(publishSupport).publishDeleteAfterCommit(ClassicsContentType.SANCAI_ENTRY, "101", 1);
+    }
+
+    @Test
+    void addQaPairShouldCreateQaChangedVersionAndPublishUpsert() {
+        FakeRepository repository = new FakeRepository();
+        repository.sancaiEntryForAiApply = publicSancaiEntry(102L);
+        repository.insertedQaPairId = ClassicsContentQaPairId.of(9020L);
+        ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
+        ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
+                repository, null, null, null, null, null, null, null, publishSupport);
+
+        ClassicsContentQaPairId id = service.addQaPair(new ContentQaPairCommand(
+                null, ClassicsContentType.SANCAI_ENTRY, 102L, "问题", "答案", ClassicsContentSource.MANUAL));
+
+        assertEquals(ClassicsContentQaPairId.of(9020L), id);
+        assertEquals(1, repository.sancaiEntryVersionMarker.getCurrentVersionNo());
+        assertEquals(
+                ClassicsContentChangeType.QA_CHANGED,
+                repository.insertedVersions.get(0).getChangeType());
+        assertEquals("新增问答对", repository.insertedVersions.get(0).getChangeSummary());
+        verify(publishSupport).publishUpsertAfterCommit(ClassicsContentType.SANCAI_ENTRY, "102", 1);
+    }
+
+    @Test
+    void updateQaPairShouldCreateQaChangedVersionAndPublishUpsert() {
+        FakeRepository repository = new FakeRepository();
+        repository.sancaiEntryForAiApply = publicSancaiEntry(103L);
+        ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
+        ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
+                repository, null, null, null, null, null, null, null, publishSupport);
+
+        ClassicsContentQaPairId id = service.updateQaPair(new ContentQaPairCommand(
+                9030L, ClassicsContentType.SANCAI_ENTRY, 103L, "问题", "答案", ClassicsContentSource.MANUAL));
+
+        assertEquals(ClassicsContentQaPairId.of(9030L), id);
+        assertEquals(1, repository.sancaiEntryVersionMarker.getCurrentVersionNo());
+        assertEquals(
+                ClassicsContentChangeType.QA_CHANGED,
+                repository.insertedVersions.get(0).getChangeType());
+        assertEquals("更新问答对", repository.insertedVersions.get(0).getChangeSummary());
+        verify(publishSupport).publishUpsertAfterCommit(ClassicsContentType.SANCAI_ENTRY, "103", 1);
     }
 
     @Test
@@ -832,6 +878,7 @@ class ClassicsContentApplicationServiceImplTest {
         private MingCustomsEntry mingCustomsEntryForAiApply;
         private MingCustomsEntry mingCustomsEntryVersionMarker;
         private ClassicsContentTagId insertedTagId;
+        private ClassicsContentQaPairId insertedQaPairId;
         private int nextTagPriority;
         private ClassicsContentQaPair qaPairById;
 
@@ -902,7 +949,7 @@ class ClassicsContentApplicationServiceImplTest {
 
         @Override
         public ClassicsContentQaPairId insertQaPair(ClassicsContentQaPair qaPair) {
-            return null;
+            return insertedQaPairId;
         }
 
         @Override

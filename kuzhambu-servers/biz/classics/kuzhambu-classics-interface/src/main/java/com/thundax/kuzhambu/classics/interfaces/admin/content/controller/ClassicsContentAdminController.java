@@ -246,6 +246,17 @@ public class ClassicsContentAdminController {
                 .build();
     }
 
+    @Operation(summary = "删除古籍内容问答", description = "classics:content:edit")
+    @ApiImplicitParams({})
+    @HasPermission("classics:content:edit")
+    @SysLogger(value = "删除问答")
+    @PostMapping("qa-pairs/delete")
+    public Boolean deleteQaPair(@Valid @RequestBody ClassicsContentRequest request) {
+        service.deleteQaPair(ClassicsContentQaPairIdCodec.toDomain(
+                requireParameter(request == null ? null : request.getId(), "id")));
+        return true;
+    }
+
     @Operation(summary = "排序古籍内容问答", description = "classics:content:edit")
     @ApiImplicitParams({})
     @HasPermission("classics:content:edit")

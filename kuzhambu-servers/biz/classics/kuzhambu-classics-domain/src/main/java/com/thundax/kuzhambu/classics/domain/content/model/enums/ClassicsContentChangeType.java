@@ -6,6 +6,7 @@ import java.util.Arrays;
 public enum ClassicsContentChangeType {
     MANUAL_SAVE,
     SHARE_CREATED,
+    QA_CHANGED,
     AI_APPLIED,
     HISTORY_RESTORED;
 

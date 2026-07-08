@@ -5,6 +5,7 @@ import type {
     ClassicsAiCandidateBatchRejectCommand,
     ClassicsBatchVisibilityCommand,
     ClassicsContentQaPairCommand,
+    ClassicsContentQaPairDeleteCommand,
     ClassicsContentQaPairSortCommand,
     ClassicsContentTagCommand,
     ClassicsContentTagDeleteCommand,
@@ -266,6 +267,15 @@ describe("classics content service request contracts", () => {
 
         await contentService.sortQaPairs(sortQaCommand);
         expectLastCall("POST", "/classics/content/qa-pairs/sort", sortQaCommand);
+    });
+
+    it("sends qa pair delete commands", async () => {
+        const deleteQaCommand: ClassicsContentQaPairDeleteCommand = {
+            id: 8001
+        };
+
+        await contentService.deleteQaPair(deleteQaCommand);
+        expectLastCall("POST", "/classics/content/qa-pairs/delete", deleteQaCommand);
     });
 
     it("sends batch visibility commands and preserves operation result fields", async () => {

@@ -5,6 +5,7 @@ import type {
     ClassicsBatchVisibilityPayload,
     ClassicsContentListPayload,
     ClassicsContentQaPairPayload,
+    ClassicsContentQaPairDeletePayload,
     ClassicsContentQaPairRecord,
     ClassicsContentQaPairSortPayload,
     ClassicsAiCandidateBatchRejectItemPayload,
@@ -22,6 +23,7 @@ export type ClassicsContentTagDeleteCommand = ClassicsContentTagDeletePayload;
 export type ClassicsContentTagSortCommand = ClassicsContentTagSortPayload;
 export type ClassicsContentQaPairCommand = ClassicsContentQaPairPayload;
 export type ClassicsContentQaPairSortCommand = ClassicsContentQaPairSortPayload;
+export type ClassicsContentQaPairDeleteCommand = ClassicsContentQaPairDeletePayload;
 export type ClassicsBatchVisibilityCommand = ClassicsBatchVisibilityPayload;
 export type ClassicsAiCandidateBatchApplyCommand = {
     items: AiCandidateApplyPayload[];
@@ -95,6 +97,15 @@ export const addQaPair = (request: ClassicsContentQaPairCommand) => {
 export const updateQaPair = (request: ClassicsContentQaPairCommand) => {
     return postJson<ClassicsContentQaPairRecord, ClassicsContentQaPairCommand>(
         `${CLASSICS_CONTENT_PATH}/qa-pairs/update`,
+        {
+            body: request
+        }
+    );
+};
+
+export const deleteQaPair = (request: ClassicsContentQaPairDeleteCommand) => {
+    return postJson<boolean, ClassicsContentQaPairDeleteCommand>(
+        `${CLASSICS_CONTENT_PATH}/qa-pairs/delete`,
         {
             body: request
         }
