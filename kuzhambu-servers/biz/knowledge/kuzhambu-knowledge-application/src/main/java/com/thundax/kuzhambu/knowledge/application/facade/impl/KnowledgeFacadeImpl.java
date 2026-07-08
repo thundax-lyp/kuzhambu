@@ -3,7 +3,6 @@ package com.thundax.kuzhambu.knowledge.application.facade.impl;
 import com.thundax.kuzhambu.knowledge.application.facade.assembler.KnowledgeFacadeAssembler;
 import com.thundax.kuzhambu.knowledge.application.report.service.KnowledgeReportApplicationService;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.service.KnowledgeTaxonomyReadApplicationService;
-import com.thundax.kuzhambu.knowledge.application.taxonomy.result.DiscoverySynonymQueryResult;
 import com.thundax.kuzhambu.knowledge.domain.service.KnowledgeTagBindingDomainService;
 import com.thundax.kuzhambu.knowledge.facade.KnowledgeFacade;
 import com.thundax.kuzhambu.knowledge.facade.request.KnowledgeContentTagRefFacadeRequest;
@@ -15,15 +14,11 @@ import com.thundax.kuzhambu.knowledge.facade.request.KnowledgeSynonymQueryFacade
 import com.thundax.kuzhambu.knowledge.facade.response.KnowledgeEntityHintsFacadeResponse;
 import com.thundax.kuzhambu.knowledge.facade.response.KnowledgeSummaryFacadeResponse;
 import com.thundax.kuzhambu.knowledge.facade.response.KnowledgeSynonymExpandFacadeResponse;
-import com.thundax.kuzhambu.knowledge.facade.response.KnowledgeSynonymQueryFacadeResponse;
 import com.thundax.kuzhambu.knowledge.facade.response.KnowledgeTagFacadeResponse;
 import com.thundax.kuzhambu.knowledge.facade.response.KnowledgeTagHintFacadeResponse;
-import com.thundax.kuzhambu.knowledge.facade.dto.KnowledgeSynonymMatchFacadeDto;
-import java.util.Collections;
-import java.util.List;
+import com.thundax.kuzhambu.knowledge.facade.response.KnowledgeSynonymQueryFacadeResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 
 @Service
 public class KnowledgeFacadeImpl implements KnowledgeFacade {
@@ -70,34 +65,8 @@ public class KnowledgeFacadeImpl implements KnowledgeFacade {
         if (request == null) {
             return null;
         }
-        DiscoverySynonymQueryResult result =
-                knowledgeTaxonomyReadApplicationService.querySynonyms(request.getTerm(), request.getDirection(), request.getLimit());
-        if (result == null) {
-            return null;
-        }
-        List<String> expandedTerms = CollectionUtils.isEmpty(result.getMatches())
-                ? List.of()
-                : result.getMatches().stream()
-                        .map(match -> match.getExpandedTerm())
-                        .toList();
-        return KnowledgeSynonymQueryFacadeResponse.builder()
-                .term(result.getTerm())
-                .normalizedTerm(result.getNormalizedTerm())
-                .direction(result.getDirection())
-                .limit(result.getLimit())
-                .matches(result.getMatches() == null
-                        ? Collections.emptyList()
-                        : result.getMatches().stream()
-                                .map(match -> KnowledgeSynonymMatchFacadeDto.builder()
-                                        .sourceTerm(match.getSourceTerm())
-                                        .targetTerm(match.getTargetTerm())
-                                        .matchedTerm(match.getMatchedTerm())
-                                        .expandedTerm(match.getExpandedTerm())
-                                        .direction(match.getDirection())
-                                        .build())
-                                .toList())
-                .expandedTerms(expandedTerms)
-                .build();
+        return knowledgeFacadeAssembler.toSynonymQueryResponse(knowledgeTaxonomyReadApplicationService.querySynonyms(
+                request.getTerm(), request.getDirection(), request.getLimit()));
     }
 
     @Override
