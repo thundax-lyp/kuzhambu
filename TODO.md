@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Admin Web version snapshot display`：展示版本快照中的标签与问答对
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-QA-VERSION-GOVERNANCE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/wangqi/wangqi-types.ts`、`kuzhambu-apps/admin-web/src/pages/classics/wangqi/components/wangqi-version-history-panel.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/ming-customs/ming-customs-types.ts`、`kuzhambu-apps/admin-web/src/pages/classics/ming-customs/components/ming-customs-version-history-panel.tsx`
-    - 处理动作：让 Wangqi/Ming 版本历史面板展示 `tags` 和 `qaPairs` 快照摘要。
-    - 验收点：选中版本后可看到 `确认标签` 和 `确认问答`，原有查看、恢复按钮可访问名称不变。
-    - 重要度：8/10
-
 - [ ] `Classics QA backend validation`：补齐后端与 Discovery 验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-QA-VERSION-GOVERNANCE.md`、`docs/00-governance/TODO-RULES.md`

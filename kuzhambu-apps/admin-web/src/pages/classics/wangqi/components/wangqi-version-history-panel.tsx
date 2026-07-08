@@ -60,6 +60,35 @@ const formatValue = (value: unknown) => {
     return String(value);
 };
 
+const readTagNames = (snapshot: WangqiVersionSnapshot | null) => {
+    if (!snapshot?.tags?.length) {
+        return ["-"];
+    }
+    return snapshot.tags
+        .map((tag) => tag.tagNameSnapshot || "-")
+        .filter((tagName) => Boolean(tagName));
+};
+
+const readQaPairs = (snapshot: WangqiVersionSnapshot | null) => {
+    if (!snapshot?.qaPairs?.length) {
+        return [];
+    }
+    return snapshot.qaPairs
+        .map((qaPair) => {
+            const question = qaPair.question?.trim();
+            const answer = qaPair.answer?.trim();
+            if (!question && !answer) {
+                return null;
+            }
+
+            return {
+                answer: answer || "-",
+                question: question || "-"
+            };
+        })
+        .filter((qaPair): qaPair is { question: string; answer: string } => qaPair !== null);
+};
+
 export interface WangqiVersionHistoryPanelProps {
     currentDocument?: WangqiDocumentRecord | null;
     detailLoading?: boolean;
@@ -148,36 +177,65 @@ export const WangqiVersionHistoryPanel = ({
                                 </Descriptions.Item>
                             </Descriptions>
                             {snapshot ? (
-                                <Descriptions
-                                    className="wangqi-version-compare"
-                                    size="small"
-                                    column={1}
-                                    bordered
-                                >
-                                    {compareFields.map((field) => {
-                                        const currentValue = readCurrentValue(
-                                            currentDocument,
-                                            field.key
-                                        );
-                                        const historyValue = snapshot[field.key];
-                                        const changed =
-                                            formatValue(currentValue) !== formatValue(historyValue);
-                                        return (
-                                            <Descriptions.Item
-                                                key={field.key}
-                                                label={field.label}
-                                                className={changed ? "is-changed" : undefined}
-                                            >
+                                <>
+                                    <Descriptions
+                                        className="wangqi-version-compare"
+                                        size="small"
+                                        column={1}
+                                        bordered
+                                    >
+                                        {compareFields.map((field) => {
+                                            const currentValue = readCurrentValue(
+                                                currentDocument,
+                                                field.key
+                                            );
+                                            const historyValue = snapshot[field.key];
+                                            const changed =
+                                                formatValue(currentValue) !==
+                                                formatValue(historyValue);
+                                            return (
+                                                <Descriptions.Item
+                                                    key={field.key}
+                                                    label={field.label}
+                                                    className={changed ? "is-changed" : undefined}
+                                                >
+                                                    <KuzhambuSpace orientation="vertical" size={2}>
+                                                        <Text>
+                                                            当前：{formatValue(currentValue)}
+                                                        </Text>
+                                                        <Text
+                                                            type={changed ? "warning" : "secondary"}
+                                                        >
+                                                            历史：{formatValue(historyValue)}
+                                                        </Text>
+                                                    </KuzhambuSpace>
+                                                </Descriptions.Item>
+                                            );
+                                        })}
+                                    </Descriptions>
+                                    <Descriptions size="small" column={1} bordered>
+                                        <Descriptions.Item label="确认标签">
+                                            <KuzhambuSpace wrap size="small">
+                                                {readTagNames(snapshot).map((tagName, index) => (
+                                                    <Tag key={`${tagName}-${index}`}>{tagName}</Tag>
+                                                ))}
+                                            </KuzhambuSpace>
+                                        </Descriptions.Item>
+                                        <Descriptions.Item label="确认问答">
+                                            {readQaPairs(snapshot).length ? (
                                                 <KuzhambuSpace orientation="vertical" size={2}>
-                                                    <Text>当前：{formatValue(currentValue)}</Text>
-                                                    <Text type={changed ? "warning" : "secondary"}>
-                                                        历史：{formatValue(historyValue)}
-                                                    </Text>
+                                                    {readQaPairs(snapshot).map((qaPair, index) => (
+                                                        <Text key={`${qaPair.question}-${index}`}>
+                                                            Q: {qaPair.question}；A: {qaPair.answer}
+                                                        </Text>
+                                                    ))}
                                                 </KuzhambuSpace>
-                                            </Descriptions.Item>
-                                        );
-                                    })}
-                                </Descriptions>
+                                            ) : (
+                                                "-"
+                                            )}
+                                        </Descriptions.Item>
+                                    </Descriptions>
+                                </>
                             ) : (
                                 <Alert type="warning" showIcon title="版本快照为空或无法解析" />
                             )}
