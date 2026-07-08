@@ -43,7 +43,7 @@
 - 三类内容页面已接入需求文档要求的“内容上下文内联 AI 精修”中的任务型入口，但当前能力并不对称：Sancai 页面可创建 `translate` 与 `summary` 任务，Wangqi 与 Ming Customs 页面只接入 `summary` 任务；三页都已接入任务轮询，并在 `SUCCEEDED/PARTIAL` 后刷新详情或治理面板。
 - 分享后台管理闭环已完成：分享分页列表、详情、状态更新与访问记录查询接口在 admin 侧完成闭环；Wangqi/MingCustoms/Sancai 可通过页面完成单条分享入口、批量分享入口与管理入口联动；Portal 复用现有 `shareToken` 读取语义，`ACTIVE` 可读，`EXPIRED/REVOKED` 维持统一不可访问错误态；未过期 `REVOKED` 分享可由 Admin 恢复为 `ACTIVE`。
 - Classics 批量操作结果模型已落地到 Java application/interface 和 Admin Web service contract，当前已覆盖批量分享与批量公开/私有状态修改的成功数、失败数和每条失败原因展示；统一入口 `POST /api/classics/content/visibility/change` 已分发到三类内容应用服务，三类 Admin Web 页面已提供当前页多选批量公开/私有入口。
-- 导出和静态展示任务治理闭环收口：三类内容页面分别完成导出任务列表/创建闭环、状态可见性、搜索、状态筛选、当前可见多选、单条删除和批量删除；Sancai 的静态展示列表已完成搜索、状态筛选、当前可见多选、下载、单条删除和批量删除。
+- 导出和静态展示任务治理闭环收口：三类内容页面分别完成导出任务列表/创建闭环、状态可见性、搜索、状态筛选、当前可见多选、单条删除和批量删除；Sancai 的静态展示任务区已完成生成、刷新、搜索、状态筛选、风险筛选、生成时间筛选、预览、下载、当前可见多选、单条删除和批量删除。
 - 三才图会视觉资产 AI 闭环已补齐：页面内已接入 `image_analysis / fusion / visual / image_gen` 单条任务入口、任务状态轮询、失败提示与重试入口；候选区已接通按 `objectId` 限定的候选读取、编辑、应用、拒绝和刷新联动；`image_gen` 候选应用后的 `artifact -> Storage -> 新 version -> 页面预览/下载` 链路已稳定。
 - 三才图会视觉资产 AI 流式候选展示闭环已补齐：`image_analysis / image_gen` 创建后展示 `AI 流式过程` 卡片，过程卡片展示增量文本、阶段、warning 和失败原因；completed/error 后刷新任务与候选区，成功候选进入 `AI 候选确认`，失败可在流错误出现后直接重试并生成新的 `requestId/traceId`。
 - 三才图会视觉资产批量闭环已补齐：页面支持批量发起图片理解与视觉资产处理任务，后端已提供批量创建、分页查询、取消、失败聚合和已完成结果保留语义；前后端与 workers 已补齐对应回归测试。
@@ -72,6 +72,8 @@
 - 2026-07-08：`cd kuzhambu-servers && mvn -pl biz/classics/kuzhambu-classics-domain,biz/classics/kuzhambu-classics-application,biz/classics/kuzhambu-classics-infra,biz/classics/kuzhambu-classics-interface,biz/storage/kuzhambu-storage-domain -am spotless:check checkstyle:check test` 通过，覆盖 Classics 导出记录删除、静态展示记录删除、展示记录 id 回源与 Storage owner 绑定。
 - 2026-07-08：`cd kuzhambu-apps && pnpm --filter ./admin-web run format:check && pnpm --filter ./admin-web run lint && pnpm --filter ./admin-web run test` 通过，Admin Web 55 个 test files / 224 tests 全绿。
 - 2026-07-08：`cd kuzhambu-apps && pnpm --filter ./admin-web run test -- src/pages/classics/wangqi/wangqi-page.test.tsx src/pages/discovery/qa-admin/qa-admin-page.test.tsx` 通过，Admin Web 55 个 test files / 228 tests 全绿，覆盖 Wangqi 单文档问答入口和 QA trace AI 字段展示。
+- 2026-07-08：`cd kuzhambu-servers && mvn -pl biz/classics/kuzhambu-classics-domain,biz/classics/kuzhambu-classics-application,biz/classics/kuzhambu-classics-interface,biz/classics/kuzhambu-classics-infra -am spotless:apply && mvn spotless:check && mvn checkstyle:check && mvn -pl biz/classics/kuzhambu-classics-domain,biz/classics/kuzhambu-classics-application,biz/classics/kuzhambu-classics-interface,biz/classics/kuzhambu-classics-infra -am test` 通过，覆盖 Sancai showcase 记录字段、搜索/状态/风险/生成时间筛选、worker artifact 回源、失败落库、下载门禁和 content disposition。
+- 2026-07-08：`cd kuzhambu-apps && pnpm --filter kuzhambu-admin-web run format && pnpm run format:check && pnpm run lint && pnpm run test` 通过，Admin Web 55 个 test files / 231 tests 全绿，覆盖 Sancai 静态展示任务区的搜索、状态筛选、风险筛选、时间筛选、重置、刷新、生成确认、预览、下载和失败提示。
 - 2026-07-08：Classics QA 版本治理收口后，已补齐 Admin Web 问答对控件、版本快照展示和服务契约测试；最终验证命令与结果见本轮任务收口记录。
 
 ## Requirement Coverage Matrix
@@ -101,8 +103,8 @@
 | CSV、JSON、HTML 设定集导出 | 已完成 | 导出任务表、异步接入决策、通用创建能力、worker 渲染产物落库与下载闭环已打通，前端可查看任务状态与下载成功产物；Sancai JSON/ZIP 保留 `items[].images[]`，HTML 输出图片元数据，CSV 仍按内容条目一行输出；底层产物对象生命周期已复用 Storage 自动 orphan 清理 | 无 | Classics, Worker, Storage |
 | HTML 视觉资产设定集导出 | 已完成 | 视觉资产字段与导出任务结构已覆盖，worker 渲染产物已写入 Storage，任务状态与下载入口已闭环；底层产物对象生命周期已复用 Storage 自动 orphan 清理 | 无 | Classics, Worker, Storage |
 | 导出记录查看、下载、删除和过期 | 已完成 | 导出任务列表、下载链接、状态与过期时间透传，后端支持过期任务 404、前端展示“已过期”并禁用下载；导出产物使用 `CLASSICS_CONTENT_EXPORT_JOB + export-job:{classics_content_export_job.id}` 绑定 Storage 引用；后端提供 `POST /api/classics/content/exports/delete` 主动删除记录、解绑 owner 并尝试推进无引用 Storage 对象删除；三类 Admin Web 导出任务区已支持搜索、状态筛选、仅过期筛选、当前可见多选、单条删除和批量删除；过期导出任务仍可被 Operations cleanup 发现并标记为过期 | 无 | Classics, System, Storage, Admin Web |
-| 静态展示内容生成 | 已完成 | 展示任务记录、策略与 worker 产物落库、状态回写和下载能力已完成；静态展示产物使用 `CLASSICS_SANCAI_SHOWCASE + showcase:{classics_sancai_showcase.id}` 绑定 Storage 引用；`GET /api/classics/sancai/assets/showcases/{id}/content` 的 `{id}` 固定为 `classics_sancai_showcase.id`，由 Classics 记录回源读取 `storage_object_id`；后端提供 `POST /api/classics/sancai/assets/showcases/delete` 主动删除记录、解绑 owner 并尝试推进无引用 Storage 对象删除；Admin Web 静态展示任务区已支持搜索、状态筛选、当前可见多选、下载、单条删除和批量删除 | 无 | Classics, Worker, Storage, Admin Web |
-| 静态展示包含私有内容确认 | 已完成 | 风险状态字段与展示任务模型已具备，静态展示所需的风险信息可直接传递 | 无 | Classics |
+| 静态展示内容生成 | 已完成 | 展示任务记录、策略与 worker 产物落库、状态回写和下载能力已完成；静态展示产物使用 `CLASSICS_SANCAI_SHOWCASE + showcase:{classics_sancai_showcase.id}` 绑定 Storage 引用；`GET /api/classics/sancai/assets/showcases/{id}/content` 的 `{id}` 固定为 `classics_sancai_showcase.id`，由 Classics 记录回源读取 `storage_object_id`；非 `COMPLETED` 或无 `storage_object_id` 的记录禁止预览/下载；后端提供 `POST /api/classics/sancai/assets/showcases/delete` 主动删除记录、解绑 owner 并尝试推进无引用 Storage 对象删除；Admin Web 静态展示任务区已支持生成、刷新、搜索、状态筛选、风险筛选、生成时间筛选、重置、预览、下载、当前可见多选、单条删除和批量删除 | 无 | Classics, Worker, Storage, Admin Web |
+| 静态展示包含私有内容确认 | 已完成 | `classics_sancai_showcase.visibility_risk_status` 与请求字段 `privateConfirmed` 已接入创建链路；包含私有内容时前端必须勾选确认后才能提交，列表可按风险状态筛选，后端响应保留 `scopeTitle`、`visibilityRiskStatus`、`requestedBy`、`requestedAt`、`completedAt`、`expiresAt`、`filename`、`sizeBytes`、`sha256`、`failureType`、`failureMessage`、`contentUrl` 和 `downloadUrl` | 无 | Classics, Admin Web |
 
 ### 王圻文档知识库
 

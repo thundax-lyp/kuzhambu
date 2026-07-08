@@ -8,6 +8,7 @@ import com.thundax.kuzhambu.classics.application.sancai.command.SancaiImageComma
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiShowcaseCommand;
 import com.thundax.kuzhambu.classics.application.sancai.result.SancaiEntryImageContent;
 import com.thundax.kuzhambu.classics.application.sancai.result.SancaiEntryImageResource;
+import com.thundax.kuzhambu.classics.application.sancai.result.SancaiShowcaseJobResult;
 import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryDraft;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryImage;
@@ -20,6 +21,7 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiShowc
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVisualAssetId;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import java.util.Date;
 import java.util.List;
 
 public interface SancaiAssetApplicationService {
@@ -79,6 +81,8 @@ public interface SancaiAssetApplicationService {
 
     SancaiShowcaseId requestShowcase(SancaiShowcaseCommand command);
 
+    SancaiShowcaseJobResult requestShowcaseJob(SancaiShowcaseCommand command);
+
     ClassicsStoredContentResult getShowcaseContent(StorageObjectId storageObjectId);
 
     ClassicsStoredContentResult getShowcaseContent(SancaiShowcaseId showcaseId);
@@ -86,4 +90,12 @@ public interface SancaiAssetApplicationService {
     void deleteShowcase(SancaiShowcaseId showcaseId);
 
     PageResult<SancaiShowcase> pageShowcases(String status, PageQuery page);
+
+    PageResult<SancaiShowcase> pageShowcases(
+            String keyword,
+            String status,
+            String visibilityRiskStatus,
+            Date requestedAtStart,
+            Date requestedAtEnd,
+            PageQuery page);
 }

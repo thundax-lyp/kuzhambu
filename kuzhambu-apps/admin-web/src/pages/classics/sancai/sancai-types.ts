@@ -109,11 +109,20 @@ export type SancaiShowcaseStatus = "REQUESTED" | "PROCESSING" | "COMPLETED" | "F
 export interface SancaiShowcaseRecord {
     id?: number | null;
     requestedAt?: string | null;
+    completedAt?: string | null;
     status?: SancaiShowcaseStatus | null;
     scopeJson?: string | null;
+    scopeTitle?: string | null;
     storageObjectId?: number | null;
     entryCount?: number | null;
+    assetCount?: number | null;
     visibilityRiskStatus?: string | null;
+    filename?: string | null;
+    contentType?: string | null;
+    sizeBytes?: number | null;
+    sha256?: string | null;
+    failureType?: string | null;
+    failureMessage?: string | null;
     contentUrl?: string | null;
     downloadUrl?: string | null;
 }

@@ -9,7 +9,9 @@ import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryImageIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiVisualAssetIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryImage;
+import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiShowcase;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryImageType;
+import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiShowcaseStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryDraftId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryImageId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiShowcaseId;
@@ -19,6 +21,7 @@ import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response.SancaiAssetResponse;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
@@ -215,8 +218,8 @@ public class SancaiAssetAdminController {
     @SysLogger(value = "创建展示任务")
     @PostMapping("showcases/request")
     public SancaiAssetResponse requestShowcase(@Valid @RequestBody SancaiAssetRequest request) {
-        SancaiShowcaseId id = service.requestShowcase(SancaiAssetInterfaceAssembler.toShowcaseCommand(request));
-        return SancaiAssetResponse.builder().id(id == null ? null : id.value()).build();
+        return SancaiAssetInterfaceAssembler.toShowcaseJobResponse(
+                service.requestShowcaseJob(SancaiAssetInterfaceAssembler.toShowcaseCommand(request)));
     }
 
     @Operation(summary = "分页查询三才图会静态展示任务", description = "classics:sancai:view")
@@ -227,7 +230,13 @@ public class SancaiAssetAdminController {
     public PageResponse<SancaiAssetResponse> pageShowcases(@Valid @RequestBody SancaiAssetRequest request) {
         PageQuery pageQuery = PageInterfaceAssembler.toPageQuery(request);
         return PageResponseHelper.fromPageResult(
-                service.pageShowcases(request.getStatus(), pageQuery),
+                service.pageShowcases(
+                        request.getKeyword(),
+                        request.getStatus(),
+                        request.getVisibilityRiskStatus(),
+                        request.getRequestedAtStart(),
+                        request.getRequestedAtEnd(),
+                        pageQuery),
                 SancaiAssetInterfaceAssembler::toShowcaseResponse);
     }
 
@@ -252,6 +261,11 @@ public class SancaiAssetAdminController {
             HttpServletResponse response)
             throws IOException {
         if (id == null) {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+        SancaiShowcase showcase = findCompletedShowcase(id);
+        if (showcase == null || showcase.getStorageObjectId() == null) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
@@ -363,6 +377,22 @@ public class SancaiAssetAdminController {
         String normalized = path.replace('\\', '/');
         int index = normalized.lastIndexOf('/');
         return index >= 0 ? normalized.substring(index + 1) : normalized;
+    }
+
+    private SancaiShowcase findCompletedShowcase(Long id) {
+        PageResult<SancaiShowcase> page =
+                service.pageShowcases(String.valueOf(id), null, null, null, null, new PageQuery(1, 20));
+        if (page == null || page.getRecords() == null) {
+            return null;
+        }
+        return page.getRecords().stream()
+                .filter(showcase -> showcase != null
+                        && showcase.getId() != null
+                        && id.equals(showcase.getId().value())
+                        && showcase.getStatus() == SancaiShowcaseStatus.COMPLETED
+                        && showcase.getStorageObjectId() != null)
+                .findFirst()
+                .orElse(null);
     }
 
     private void downloadVisualAssetContent(

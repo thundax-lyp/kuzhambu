@@ -15,4 +15,9 @@ public class SancaiShowcaseJobResult {
     private SancaiShowcaseId showcaseId;
     private SancaiShowcaseStatus status;
     private StorageObjectId storageObjectId;
+    private String filename;
+    private Long sizeBytes;
+    private String sha256;
+    private String failureType;
+    private String failureMessage;
 }
