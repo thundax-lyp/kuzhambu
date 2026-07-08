@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Knowledge backend verification`：补齐 Knowledge 后端联动测试
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-GRAPH-LOOP.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/refinement/service/impl/KnowledgeGraphRefinementApplicationServiceImplTest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/test/java/com/thundax/kuzhambu/knowledge/interfaces/admin/refinement/controller/KnowledgeGraphRefinementControllerTest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/graph/service/impl/KnowledgeGraphExtractionApplicationServiceImplTest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/refinement/service/impl/KnowledgeQualityReportApplicationServiceImplTest.java`
-    - 处理动作：为精修应用响应、精修来源重生成、当前版本事实读取和质量报告过期判断补齐后端测试。
-    - 验收点：Knowledge 后端测试覆盖 `RefinementApplyResult`、`REFINEMENT_APPLIED`、`replaceUnconfirmedOnly=true` 和 `stale=true`。
-    - 重要度：9/10
-
 - [ ] `Admin refinement follow-up actions`：精修页展示图谱联动操作
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-GRAPH-LOOP.md`

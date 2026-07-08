@@ -60,6 +60,7 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -86,6 +87,34 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
     private final KnowledgeRefinementManualKeySupport manualKeySupport;
     private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 
+    public KnowledgeGraphRefinementApplicationServiceImpl(
+            GraphVersionRepository graphVersionRepository,
+            RefinementTaskRepository refinementTaskRepository,
+            RefinementEntityDraftRepository entityDraftRepository,
+            RefinementRelationDraftRepository relationDraftRepository,
+            RefinementLineageNodeDraftRepository lineageNodeDraftRepository,
+            RefinementLineageRelationDraftRepository lineageRelationDraftRepository,
+            QualityAnnotationRepository qualityAnnotationRepository,
+            RefinementDraftBootstrapSupport draftBootstrapSupport,
+            RefinementApplySupport applySupport,
+            QualitySummaryAggregationSupport qualitySummaryAggregationSupport,
+            KnowledgeRefinementManualKeySupport manualKeySupport) {
+        this(
+                graphVersionRepository,
+                null,
+                refinementTaskRepository,
+                entityDraftRepository,
+                relationDraftRepository,
+                lineageNodeDraftRepository,
+                lineageRelationDraftRepository,
+                qualityAnnotationRepository,
+                draftBootstrapSupport,
+                applySupport,
+                qualitySummaryAggregationSupport,
+                manualKeySupport);
+    }
+
+    @Autowired
     public KnowledgeGraphRefinementApplicationServiceImpl(
             GraphVersionRepository graphVersionRepository,
             GraphExtractionTaskRepository graphExtractionTaskRepository,

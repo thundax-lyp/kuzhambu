@@ -25,6 +25,7 @@ import com.thundax.kuzhambu.ai.facade.response.KnowledgeAiExtractionFacadeRespon
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.knowledge.application.graph.command.RegenerateGraphExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionBatchCancelResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
@@ -48,6 +49,8 @@ import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeEntityRep
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeLineageNodeRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeLineageRelationRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeRelationRepository;
+import com.thundax.kuzhambu.knowledge.domain.refinement.model.entity.RefinementTask;
+import com.thundax.kuzhambu.knowledge.domain.refinement.model.valueobject.RefinementTaskId;
 import com.thundax.kuzhambu.knowledge.domain.refinement.repository.RefinementTaskRepository;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -326,6 +329,55 @@ class KnowledgeGraphExtractionApplicationServiceTest {
     }
 
     @Test
+    void regenerateTaskShouldKeepRefinementAppliedSourceAndDefaultReplaceUnconfirmedOnly() {
+        FakeRepository repository = new FakeRepository();
+        GraphExtractionTask sourceTask = new GraphExtractionTask();
+        sourceTask.setTaskId(GraphExtractionTaskId.of(88L));
+        sourceTask.setTaskType("GRAPH");
+        sourceTask.setScopeType("CLASSICS_ENTRY");
+        sourceTask.setScopeJson("{\"entryId\":88}");
+        sourceTask.setSelectionScopeJson("{\"sourceContentIds\":[88,89]}");
+        sourceTask.setSourceContentType("SANCAI_ENTRY");
+        sourceTask.setSourceContentId(88L);
+        sourceTask.setRequestedBy(7L);
+        sourceTask.setModelId(5001L);
+        sourceTask.setModelName("gpt-5.5");
+        sourceTask.setRequestId("req-source");
+        sourceTask.setTraceId("trace-source");
+        sourceTask.setPromptMessagesJson("[{\"role\":\"system\",\"content\":\"extract\"}]");
+        sourceTask.setInputPayloadJson("{\"content\":\"天地玄黄\"}");
+        sourceTask.setForceJson(Boolean.TRUE);
+        sourceTask.setLocale("zh-CN");
+        repository.tasks.add(sourceTask);
+        KnowledgeGraphExtractionApplicationServiceImpl service = service(
+                repository,
+                new FakeGraphVersionRepository(),
+                new FakeKnowledgeEntityRepository(),
+                new FakeKnowledgeRelationRepository(),
+                new FakeKnowledgeLineageNodeRepository(),
+                new FakeKnowledgeLineageRelationRepository(),
+                new FakeAiInvocationRepository(),
+                new FakeAiBatchJobApplicationService(),
+                new FakeKnowledgeAiExtractionDomainService(),
+                new AiCandidateDomainService(new FakeAiInvocationRepository()),
+                null);
+
+        GraphExtractionTaskResult result = service.regenerateTask(new RegenerateGraphExtractionCommand(
+                "GRAPH",
+                GraphExtractionTaskId.of(88L),
+                "REFINEMENT_APPLIED",
+                "{\"sourceContentIds\":[88]}",
+                null,
+                99L));
+
+        assertEquals("REFINEMENT_APPLIED", result.getTriggerSource());
+        GraphExtractionTask parentTask = repository.tasks.get(1);
+        assertEquals("REFINEMENT_APPLIED", parentTask.getTriggerSource());
+        assertEquals(Boolean.TRUE, parentTask.getReplaceUnconfirmedOnly());
+        assertEquals("{\"sourceContentIds\":[88]}", parentTask.getSelectionScopeJson());
+    }
+
+    @Test
     void pageTasksShouldMapPersistedTasks() {
         FakeRepository repository = new FakeRepository();
         GraphExtractionTask task = new GraphExtractionTask();
@@ -462,6 +514,61 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         assertEquals("41", detail.getTaskId());
         assertEquals(902L, detail.getCandidateId());
         assertEquals("LINEAGE", detail.getTaskType());
+    }
+
+    @Test
+    void pageVersionsShouldExposeLatestAppliedRefinement() {
+        FakeGraphVersionRepository graphVersionRepository = new FakeGraphVersionRepository();
+        GraphVersion version = new GraphVersion();
+        version.setVersionId(71L);
+        version.setTaskId(GraphExtractionTaskId.of(41L));
+        version.setCandidateId(902L);
+        version.setTaskType("GRAPH");
+        version.setSourceContentType("SANCAI_ENTRY");
+        version.setSourceContentId(1002L);
+        version.setVersionNo(3);
+        version.setStatus("APPLIED");
+        version.setAppliedAt(new Date(1_719_187_200_000L));
+        graphVersionRepository.versions.add(version);
+        FakeRefinementTaskRepository refinementTaskRepository = new FakeRefinementTaskRepository();
+        refinementTaskRepository.latestApplied = new RefinementTask(
+                null,
+                RefinementTaskId.of(31L),
+                "GRAPH",
+                "SANCAI_ENTRY",
+                1002L,
+                "myth",
+                "神话",
+                71L,
+                "APPLIED",
+                9L,
+                new Date(),
+                null,
+                null,
+                19L,
+                new Date(1_719_187_260_000L),
+                null,
+                null);
+        KnowledgeGraphExtractionApplicationServiceImpl service = service(
+                new FakeRepository(),
+                graphVersionRepository,
+                new FakeKnowledgeEntityRepository(),
+                new FakeKnowledgeRelationRepository(),
+                new FakeKnowledgeLineageNodeRepository(),
+                new FakeKnowledgeLineageRelationRepository(),
+                refinementTaskRepository,
+                new FakeAiInvocationRepository(),
+                null,
+                new FakeKnowledgeAiExtractionDomainService(),
+                new AiCandidateDomainService(new FakeAiInvocationRepository()),
+                null);
+
+        PageResult<GraphVersionResult> page = service.pageVersions("GRAPH", "APPLIED", "SANCAI_ENTRY", 1002L, null);
+
+        GraphVersionResult result = page.getRecords().get(0);
+        assertEquals(true, result.getRefinementApplied());
+        assertEquals(31L, result.getLastRefinementTaskId());
+        assertEquals(1_719_187_260_000L, result.getLastRefinementAppliedAt());
     }
 
     @Test
@@ -1547,6 +1654,50 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         public Long save(GraphVersion entity) {
             versions.add(entity);
             return entity.getVersionId();
+        }
+    }
+
+    private static final class FakeRefinementTaskRepository implements RefinementTaskRepository {
+        private RefinementTask latestApplied;
+
+        @Override
+        public RefinementTask getByTaskId(RefinementTaskId taskId) {
+            return null;
+        }
+
+        @Override
+        public RefinementTask findLatestDraft(
+                String taskType, String sourceContentType, Long sourceContentId, Long graphVersionId) {
+            return null;
+        }
+
+        @Override
+        public RefinementTask findLatestAppliedByGraphVersionId(Long graphVersionId) {
+            return latestApplied != null && graphVersionId.equals(latestApplied.getGraphVersionId())
+                    ? latestApplied
+                    : null;
+        }
+
+        @Override
+        public PageResult<RefinementTask> page(
+                String taskType,
+                String sourceContentType,
+                Long sourceContentId,
+                String sourceCategoryCode,
+                String status,
+                int pageNo,
+                int pageSize) {
+            return PageResult.of(pageNo, pageSize, 0, List.of());
+        }
+
+        @Override
+        public Long save(RefinementTask entity) {
+            return 0L;
+        }
+
+        @Override
+        public int update(RefinementTask entity) {
+            return 0;
         }
     }
 

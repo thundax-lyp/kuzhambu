@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualitySummaryResult;
+import com.thundax.kuzhambu.knowledge.application.refinement.result.RefinementApplyResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.RefinementDetailResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.RefinementEntityResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.RefinementProgressSummaryResult;
@@ -153,5 +154,42 @@ class KnowledgeGraphRefinementControllerTest {
 
         verify(service).qualitySummary(31L);
         assertEquals(0.9D, response.getEntityCoverageRate());
+    }
+
+    @Test
+    void applyTaskShouldMapGraphFollowUpResponse() {
+        KnowledgeGraphRefinementApplicationService service = mock(KnowledgeGraphRefinementApplicationService.class);
+        KnowledgeGraphRefinementController controller = new KnowledgeGraphRefinementController(service);
+        RefinementRequests.TaskApplyRequest request = new RefinementRequests.TaskApplyRequest();
+        request.setRefinementTaskId(31L);
+        request.setAppliedBy(9L);
+        when(service.applyTask(31L, 9L))
+                .thenReturn(new RefinementApplyResult(
+                        31L,
+                        71L,
+                        "GRAPH",
+                        "SANCAI_ENTRY",
+                        1001L,
+                        "myth",
+                        "神话",
+                        "APPLIED",
+                        1_719_100_800_000L,
+                        true,
+                        true,
+                        88L,
+                        "{\"sourceContentIds\":[1001]}",
+                        true,
+                        "REFINEMENT_APPLIED",
+                        "OPEN_GRAPH_VERSION",
+                        true));
+
+        var response = controller.applyTask(request);
+
+        verify(service).applyTask(31L, 9L);
+        assertEquals(71L, response.getGraphVersionId());
+        assertEquals("REFINEMENT_APPLIED", response.getTriggerSource());
+        assertEquals(true, response.getReplaceUnconfirmedOnly());
+        assertEquals("OPEN_GRAPH_VERSION", response.getNextAction());
+        assertEquals(true, response.getQualityReportRefreshRequired());
     }
 }

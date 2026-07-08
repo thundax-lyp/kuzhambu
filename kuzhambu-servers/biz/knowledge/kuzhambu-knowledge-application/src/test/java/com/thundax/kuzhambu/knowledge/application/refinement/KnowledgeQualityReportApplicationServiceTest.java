@@ -30,6 +30,8 @@ import com.thundax.kuzhambu.knowledge.domain.refinement.model.entity.QualityAnno
 import com.thundax.kuzhambu.knowledge.domain.refinement.model.entity.QualityReport;
 import com.thundax.kuzhambu.knowledge.domain.refinement.model.entity.QualityReportIssue;
 import com.thundax.kuzhambu.knowledge.domain.refinement.model.entity.QualityReportSourceDetail;
+import com.thundax.kuzhambu.knowledge.domain.refinement.model.entity.RefinementTask;
+import com.thundax.kuzhambu.knowledge.domain.refinement.model.valueobject.RefinementTaskId;
 import com.thundax.kuzhambu.knowledge.domain.refinement.repository.QualityAnnotationRepository;
 import com.thundax.kuzhambu.knowledge.domain.refinement.repository.QualityReportRepository;
 import com.thundax.kuzhambu.knowledge.domain.refinement.repository.RefinementEntityDraftRepository;
@@ -245,6 +247,59 @@ class KnowledgeQualityReportApplicationServiceTest {
                 assertThrows(BizException.class, () -> fixture.service.reextractLowQualityCategory(reextractCommand()));
 
         assertEquals("低质量门类包含多个来源类型，请按来源类型拆分重提取", exception.getMessage());
+    }
+
+    @Test
+    void latestShouldMarkStaleWhenRefinementAppliedAfterReport() {
+        RefinementTaskRepository refinementTaskRepository = mock(RefinementTaskRepository.class);
+        QualityReportRepository reportRepository = mock(QualityReportRepository.class);
+        QualityAnnotationRepository annotationRepository = mock(QualityAnnotationRepository.class);
+        KnowledgeQualityReportApplicationServiceImpl service = new KnowledgeQualityReportApplicationServiceImpl(
+                mock(GraphVersionRepository.class),
+                mock(KnowledgeGraphExtractionApplicationService.class),
+                mock(KnowledgeEntityRepository.class),
+                mock(KnowledgeRelationRepository.class),
+                mock(KnowledgeLineageNodeRepository.class),
+                mock(KnowledgeLineageRelationRepository.class),
+                refinementTaskRepository,
+                mock(RefinementEntityDraftRepository.class),
+                mock(RefinementRelationDraftRepository.class),
+                mock(RefinementLineageNodeDraftRepository.class),
+                mock(RefinementLineageRelationDraftRepository.class),
+                annotationRepository,
+                reportRepository);
+        QualityReport report = report();
+        report.setGeneratedAt(new Date(1_719_187_200_000L));
+        when(reportRepository.getLatestPublished(71L)).thenReturn(report);
+        when(reportRepository.getByReportId(1001L)).thenReturn(report);
+        when(reportRepository.listIssuesByReportId(1001L)).thenReturn(List.of());
+        when(reportRepository.listSourceDetailsByReportId(1001L)).thenReturn(List.of());
+        when(annotationRepository.listByGraphVersionId(71L)).thenReturn(List.of());
+        when(refinementTaskRepository.findLatestAppliedByGraphVersionId(71L))
+                .thenReturn(new RefinementTask(
+                        null,
+                        RefinementTaskId.of(31L),
+                        "GRAPH",
+                        "SANCAI_ENTRY",
+                        2001L,
+                        "myth",
+                        "神话",
+                        71L,
+                        "APPLIED",
+                        9L,
+                        new Date(),
+                        null,
+                        null,
+                        19L,
+                        new Date(1_719_187_260_000L),
+                        null,
+                        null));
+
+        QualityReportDetailResult result = service.latest(71L);
+
+        assertEquals(true, result.getStale());
+        assertEquals("REFINEMENT_APPLIED_AFTER_REPORT", result.getStaleReason());
+        assertEquals(1_719_187_260_000L, result.getLastRefinementAppliedAt());
     }
 
     private static ServiceFixture reextractFixture(List<QualityReportSourceDetail> sourceDetails) {

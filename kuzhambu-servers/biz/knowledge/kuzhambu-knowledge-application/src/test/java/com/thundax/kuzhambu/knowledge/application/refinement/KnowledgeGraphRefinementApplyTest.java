@@ -3,7 +3,7 @@ package com.thundax.kuzhambu.knowledge.application.refinement;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.thundax.kuzhambu.common.core.page.PageResult;
-import com.thundax.kuzhambu.knowledge.application.refinement.result.RefinementDetailResult;
+import com.thundax.kuzhambu.knowledge.application.refinement.result.RefinementApplyResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.service.impl.KnowledgeGraphRefinementApplicationServiceImpl;
 import com.thundax.kuzhambu.knowledge.application.refinement.support.KnowledgeRefinementManualKeySupport;
 import com.thundax.kuzhambu.knowledge.application.refinement.support.QualitySummaryAggregationSupport;
@@ -98,9 +98,17 @@ class KnowledgeGraphRefinementApplyTest {
                 new QualitySummaryAggregationSupport(),
                 new KnowledgeRefinementManualKeySupport());
 
-        RefinementDetailResult result = service.applyTask(31L, 19L);
+        RefinementApplyResult result = service.applyTask(31L, 19L);
 
         assertEquals("APPLIED", result.getStatus());
+        assertEquals(31L, result.getRefinementTaskId());
+        assertEquals(71L, result.getGraphVersionId());
+        assertEquals(true, result.getGraphRefreshRequired());
+        assertEquals(true, result.getRegenerateSupported());
+        assertEquals("REFINEMENT_APPLIED", result.getTriggerSource());
+        assertEquals(true, result.getReplaceUnconfirmedOnly());
+        assertEquals("OPEN_GRAPH_VERSION", result.getNextAction());
+        assertEquals(true, result.getQualityReportRefreshRequired());
         assertEquals("APPLIED", taskRepository.task.getStatus());
         assertEquals(19L, taskRepository.task.getAppliedBy());
         assertEquals(1, entityRepository.saved.size());
