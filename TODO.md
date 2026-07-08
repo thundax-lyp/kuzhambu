@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `RUNBOOK cleanup`：任务完成后清理临时 RUNBOOK
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`docs/30-designs/RUNBOOK-WANGQI-SINGLE-DOCUMENT-QA.md`
-    - 处理动作：在功能、验证和 coverage 收口后删除本 RUNBOOK。
-    - 验收点：RUNBOOK 文件已删除且无残留引用。
-    - 重要度：8/10
-
 ## 待审阅任务项
 
 ## 待讨论项
