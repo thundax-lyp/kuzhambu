@@ -247,7 +247,7 @@ Java servers 写入 `classics_sancai_showcase` 的文件元数据必须来自 wo
 
 - `kuzhambu-servers/biz/classics/kuzhambu-classics-domain/src/main/java/com/thundax/kuzhambu/classics/domain/sancai/model/entity/SancaiShowcase.java`
 - `kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/java/com/thundax/kuzhambu/classics/infra/sancai/persistence/dataobject/SancaiShowcaseDO.java`
-- `kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/java/com/thundax/kuzhambu/classics/infra/sancai/persistence/assembler/SancaiPersistenceAssembler.java`
+- `kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/java/com/thundax/kuzhambu/classics/infra/sancai/persistence/assembler/SancaiAssetPersistenceAssembler.java`
 - `kuzhambu-servers/biz/classics/kuzhambu-classics-domain/src/main/java/com/thundax/kuzhambu/classics/domain/sancai/repository/SancaiAssetRepository.java`
 - `kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/java/com/thundax/kuzhambu/classics/infra/sancai/repository/impl/SancaiAssetRepositoryImpl.java`
 
@@ -255,7 +255,7 @@ Java servers 写入 `classics_sancai_showcase` 的文件元数据必须来自 wo
 
 - `SancaiShowcase` 增加 `completedAt`、`scopeTitle`、`assetCount`、`filename`、`contentType`、`sizeBytes`、`sha256`、`failureType`、`failureMessage`。
 - `SancaiShowcaseDO` 字段与 `classics_sancai_showcase` 表一一对应，不新增表外计算字段。
-- `SancaiPersistenceAssembler` 必须双向映射新增字段，空值保持空值，不用默认字符串占位。
+- `SancaiAssetPersistenceAssembler` 必须双向映射新增字段，空值保持空值，不用默认字符串占位。
 - `markCompleted(...)` 同时写入 `completedAt`、Storage object id、文件元数据、`entryCount`、`assetCount`。
 - `markFailed(...)` 同时写入 `completedAt`、`failureType`、`failureMessage`。
 - `pageShowcases(...)` 支持 `keyword`、`status`、`visibilityRiskStatus`、`requestedAtStart`、`requestedAtEnd`，默认 `requested_at desc`。

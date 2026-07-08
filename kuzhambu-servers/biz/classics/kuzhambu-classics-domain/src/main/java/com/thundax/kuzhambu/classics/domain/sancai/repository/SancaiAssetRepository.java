@@ -89,7 +89,30 @@ public interface SancaiAssetRepository {
 
     int markShowcaseCompleted(SancaiShowcaseId id, StorageObjectId storageObjectId, int entryCount);
 
+    int markShowcaseCompleted(
+            SancaiShowcaseId id,
+            StorageObjectId storageObjectId,
+            int entryCount,
+            int assetCount,
+            String filename,
+            String contentType,
+            Long sizeBytes,
+            String sha256);
+
     int markShowcaseFailed(SancaiShowcaseId id);
 
+    int markShowcaseFailed(SancaiShowcaseId id, String failureType, String failureMessage);
+
+    int markShowcaseExpired(SancaiShowcaseId id);
+
     PageResult<SancaiShowcase> pageShowcases(String status, int pageNo, int pageSize);
+
+    PageResult<SancaiShowcase> pageShowcases(
+            String keyword,
+            String status,
+            String visibilityRiskStatus,
+            Date requestedAtStart,
+            Date requestedAtEnd,
+            int pageNo,
+            int pageSize);
 }

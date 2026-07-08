@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `01-classics_sancai_showcase`：补齐静态展示任务记录字段和查询条件
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHOWCASE-LOOP.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-domain/src/main/java/com/thundax/kuzhambu/classics/domain/sancai/model/entity/SancaiShowcase.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/java/com/thundax/kuzhambu/classics/infra/sancai/persistence/dataobject/SancaiShowcaseDO.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/java/com/thundax/kuzhambu/classics/infra/sancai/persistence/assembler/SancaiPersistenceAssembler.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-domain/src/main/java/com/thundax/kuzhambu/classics/domain/sancai/repository/SancaiAssetRepository.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/java/com/thundax/kuzhambu/classics/infra/sancai/repository/impl/SancaiAssetRepositoryImpl.java`
-    - 处理动作：为 showcase 记录补齐完成时间、范围标题、资产数、文件元数据、失败信息和列表筛选查询。
-    - 验收点：Repository 能按 keyword/status/visibilityRiskStatus/requestedAt 区间倒序分页返回完整 `SancaiShowcase` 记录，并能按单条任务更新成功、失败和过期状态。
-    - 重要度：9/10
-
 - [ ] `02-SancaiAssetApplicationService`：收口 showcase worker 调用和 Storage 回源闭环
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHOWCASE-LOOP.md`
