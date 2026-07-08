@@ -1,8 +1,8 @@
-# PR Workflow
+# PR Rules
 
 ## 1. Purpose
 
-本文档定义 kuzhambu 的 Pull Request 合并前验证流程。
+本文档定义 kuzhambu 的 Pull Request 合并前验证规则。
 
 目标是保证 PR 合并前固定执行明确、可读的 workflow 步骤，并让新增模块验证接入同一 workflow。
 

@@ -158,7 +158,7 @@ Commit 可以是中间态，但必须有明确判断含义，不得是随机保�
 - 治理规则或固定做法变化：检查 `docs/00-governance/*.md`。
 - 接口、协议或契约变化：检查 `docs/20-interfaces/`。
 - AI 默认读取入口或任务路由变化：检查 `docs/AGENTS.md`。
-- PR 验证入口变化：检查 `docs/40-readiness/PR-WORKFLOW.md`。
+- PR 验证入口变化：检查 `docs/00-governance/PR-RULES.md`。
 
 改动影响文档定义的固定口径时，必须同步文档。仅代码实现补齐、但不改变既有文档口径时，不顺手改无关文档。
 
@@ -215,7 +215,7 @@ PR 必须满足：
 
 PR 合并默认使用普通 merge commit，保留分支中的小步 commit 历史。不得默认 squash；只有明确要求压缩历史时才允许 squash merge。
 
-PR 的验证入口固定由 [`../40-readiness/PR-WORKFLOW.md`](../40-readiness/PR-WORKFLOW.md) 和 `.github/workflows/pr-verify.yml` 承载。PR workflow 必须显式列出必过验证步骤，不得只调用一个 shell 脚本隐藏检查内容。
+PR 的验证入口固定由 [`PR-RULES.md`](./PR-RULES.md) 和 `.github/workflows/pr-verify.yml` 承载。PR workflow 必须显式列出必过验证步骤，不得只调用一个 shell 脚本隐藏检查内容。
 
 ## 12. Verify Protocol
 

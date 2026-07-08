@@ -176,7 +176,7 @@ jobs:
                   test -f docs/00-governance/SERVERS-ARCHITECTURE.md
                   test -f docs/00-governance/SERVERS-ARCHITECTURE-RULES.md
                   test -f docs/00-governance/TODO-RULES.md
-                  test -f docs/40-readiness/PR-WORKFLOW.md
+                  test -f docs/00-governance/PR-RULES.md
                   test -f .github/pull_request_template.md
                   test -f .github/workflows/pr-verify.yml
                   if find docs -name '*.md' -print | grep -q ' '; then
