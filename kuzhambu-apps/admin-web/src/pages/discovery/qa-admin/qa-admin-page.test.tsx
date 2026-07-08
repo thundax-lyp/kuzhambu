@@ -76,6 +76,10 @@ describe("QaAdminPage", () => {
             ]
         });
         mocks.getQaTrace.mockResolvedValue({
+            aiCallId: 9101,
+            aiErrorMessage: null,
+            aiErrorType: null,
+            aiStatus: "SUCCEEDED",
             traceId: 9001,
             provider: "FASTGPT",
             externalKnowledgeBaseId: "kb-1",
@@ -197,6 +201,11 @@ describe("QaAdminPage", () => {
 
     it("loads session sources and provider trace with formatted raw json", async () => {
         const user = userEvent.setup();
+        const writeText = vi.fn().mockResolvedValue(undefined);
+        Object.defineProperty(navigator, "clipboard", {
+            configurable: true,
+            value: { writeText }
+        });
         renderPage();
 
         await user.click(screen.getByRole("button", { name: "加载会话" }));
@@ -208,7 +217,30 @@ describe("QaAdminPage", () => {
 
         await user.click(screen.getByRole("button", { name: "加载轨迹" }));
         expect(await screen.findByText("kb-1")).toBeInTheDocument();
+        expect(screen.getByText("9101")).toBeInTheDocument();
+        expect(screen.getByText("SUCCEEDED")).toBeInTheDocument();
         expect(screen.getByText(/"answer": "礼器答案"/u)).toBeInTheDocument();
+
+        await user.click(screen.getByRole("button", { name: /复\s*制/u }));
+
+        expect(writeText).toHaveBeenCalledWith("9101");
+    }, 30000);
+
+    it("disables AI call id copy when trace has no AI call id", async () => {
+        const user = userEvent.setup();
+        mocks.getQaTrace.mockResolvedValueOnce({
+            traceId: 9002,
+            provider: "FASTGPT",
+            raw: null
+        });
+        renderPage();
+
+        await user.click(screen.getByRole("button", { name: "加载轨迹" }));
+
+        await waitFor(() => {
+            expect(mocks.getQaTrace).toHaveBeenCalled();
+        });
+        expect(screen.getByRole("button", { name: /复\s*制/u })).toBeDisabled();
     }, 30000);
 
     it("deletes session, shows removed status, and exports deleted session", async () => {

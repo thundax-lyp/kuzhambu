@@ -35,29 +35,29 @@ const createQaMockHandlers = async (page: Page) => {
     await page.route("**/kuzhambu-api/api/portal/discovery/qa/session/open", async (route) => {
         openSessionPayload = readRequestBody(route.request().postData());
         await fulfillSuccess(route, {
-            contextContentId: null,
-            contextContentType: null,
-            contextMode: "GENERAL",
+            contextContentId: openSessionPayload.contextContentId ?? null,
+            contextContentType: openSessionPayload.contextContentType ?? null,
+            contextMode: openSessionPayload.contextMode ?? "GENERAL",
             lastMessageAt: 1700001000000,
             openedAt: 1700000000000,
             scope: "PORTAL",
             sessionId: 7001,
             status: "OPEN",
-            title: "知识中心问答"
+            title: openSessionPayload.title ?? "知识中心问答"
         });
     });
 
     await page.route("**/kuzhambu-api/api/portal/discovery/qa/session/get", async (route) => {
         await fulfillSuccess(route, {
-            contextContentId: null,
-            contextContentType: null,
-            contextMode: "GENERAL",
+            contextContentId: openSessionPayload?.contextContentId ?? null,
+            contextContentType: openSessionPayload?.contextContentType ?? null,
+            contextMode: openSessionPayload?.contextMode ?? "GENERAL",
             lastMessageAt: 1700001000000,
             openedAt: 1700000000000,
             scope: "PORTAL",
             sessionId: 7001,
             status: "OPEN",
-            title: "知识中心问答"
+            title: openSessionPayload?.title ?? "知识中心问答"
         });
     });
 
@@ -177,5 +177,41 @@ test.describe("portal discovery qa smoke", () => {
         });
 
         await expect(page.getByText("会话 7001 已删除")).toBeVisible();
+    });
+
+    test("opens Wangqi single document context from url", async ({ page }) => {
+        const mocks = await createQaMockHandlers(page);
+
+        await page.goto(
+            "/discovery/qa?contextContentType=WANGQI_DOCUMENT&contextContentId=3001&contextMode=SINGLE_DOCUMENT&title=%E7%8E%8B%E5%9C%BB%E5%AE%98%E5%88%B6"
+        );
+
+        await expect(page.getByText("当前围绕王圻文档追问")).toBeVisible();
+        await expect(page.getByText("WANGQI_DOCUMENT #3001").first()).toBeVisible();
+        await expect(page.getByLabel("上下文模式")).toBeDisabled();
+        await expect(page.getByLabel("上下文类型")).toBeDisabled();
+        await expect(page.getByLabel("上下文 ID")).toBeDisabled();
+
+        await page.getByRole("textbox", { name: "问题" }).fill("这份文档说了什么？");
+        await page.getByRole("button", { name: "发送问题" }).click();
+
+        await expect
+            .poll(() => mocks.getOpenSessionPayload())
+            .toMatchObject({
+                contextContentId: 3001,
+                contextContentType: "WANGQI_DOCUMENT",
+                contextMode: "SINGLE_DOCUMENT",
+                title: "王圻官制"
+            });
+        await expect
+            .poll(() => mocks.getChatPayload())
+            .toMatchObject({
+                metadata: {
+                    contextContentId: 3001,
+                    contextContentType: "WANGQI_DOCUMENT",
+                    contextMode: "SINGLE_DOCUMENT",
+                    sessionId: 7001
+                }
+            });
     });
 });

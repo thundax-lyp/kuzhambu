@@ -23,5 +23,9 @@ public class QaRetrievalTrace {
     private Long latencyMs;
     private String failureReason;
     private String raw;
+    private Long aiCallId;
+    private String aiStatus;
+    private String aiErrorType;
+    private String aiErrorMessage;
     private Date retrievedAt;
 }

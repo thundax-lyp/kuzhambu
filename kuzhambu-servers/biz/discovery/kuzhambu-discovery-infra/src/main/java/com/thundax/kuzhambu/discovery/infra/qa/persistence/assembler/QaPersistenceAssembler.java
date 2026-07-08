@@ -202,6 +202,10 @@ public final class QaPersistenceAssembler {
         dataObject.setLatencyMs(entity.getLatencyMs());
         dataObject.setFailureReason(entity.getFailureReason());
         dataObject.setRaw(entity.getRaw());
+        dataObject.setAiCallId(entity.getAiCallId());
+        dataObject.setAiStatus(entity.getAiStatus());
+        dataObject.setAiErrorType(entity.getAiErrorType());
+        dataObject.setAiErrorMessage(entity.getAiErrorMessage());
         dataObject.setRetrievedAt(entity.getRetrievedAt());
         return dataObject;
     }
@@ -223,6 +227,10 @@ public final class QaPersistenceAssembler {
         entity.setLatencyMs(dataObject.getLatencyMs());
         entity.setFailureReason(dataObject.getFailureReason());
         entity.setRaw(dataObject.getRaw());
+        entity.setAiCallId(dataObject.getAiCallId());
+        entity.setAiStatus(dataObject.getAiStatus());
+        entity.setAiErrorType(dataObject.getAiErrorType());
+        entity.setAiErrorMessage(dataObject.getAiErrorMessage());
         entity.setRetrievedAt(dataObject.getRetrievedAt());
         return entity;
     }

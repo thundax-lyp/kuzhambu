@@ -2,6 +2,8 @@ package com.thundax.kuzhambu.discovery.application.qa.support;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thundax.kuzhambu.ai.facade.request.DiscoveryAiFacadeRequest;
+import com.thundax.kuzhambu.ai.facade.response.DiscoveryAiFacadeResponse;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatRequest;
 import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatResult;
@@ -10,6 +12,7 @@ import com.thundax.kuzhambu.discovery.application.qa.command.ChatCompletionComma
 import com.thundax.kuzhambu.discovery.application.qa.result.QaTraceResult;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaRetrievalTrace;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSession;
+import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSource;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -47,6 +50,40 @@ public class QaTraceAssembler {
                 latencyMs,
                 failureReason,
                 writeJson(traceRaw(providerRequest, chatResult)),
+                null,
+                null,
+                null,
+                null,
+                new Date());
+    }
+
+    public QaRetrievalTrace toAiDomain(
+            ChatCompletionCommand command,
+            QaSession session,
+            Long messageId,
+            String question,
+            DiscoveryAiFacadeRequest aiRequest,
+            DiscoveryAiFacadeResponse aiResponse,
+            List<QaSource> sources,
+            Long latencyMs,
+            String failureReason) {
+        return new QaRetrievalTrace(
+                null,
+                null,
+                messageId,
+                question,
+                "ai-discovery",
+                aiRequest == null ? null : aiRequest.getModelName(),
+                extractSourceBusinessIds(sources),
+                aiResponse == null || aiResponse.getCallId() == null ? null : String.valueOf(aiResponse.getCallId()),
+                resolveAiProviderRequestId(command, aiRequest),
+                latencyMs,
+                failureReason,
+                writeJson(aiTraceRaw(aiRequest, aiResponse)),
+                aiResponse == null ? null : aiResponse.getCallId(),
+                aiResponse == null ? null : aiResponse.getStatus(),
+                aiResponse == null ? null : aiResponse.getErrorType(),
+                aiResponse == null ? null : aiResponse.getErrorMessage(),
                 new Date());
     }
 
@@ -66,6 +103,10 @@ public class QaTraceAssembler {
                 trace.getLatencyMs(),
                 trace.getFailureReason(),
                 trace.getRaw(),
+                trace.getAiCallId(),
+                trace.getAiStatus(),
+                trace.getAiErrorType(),
+                trace.getAiErrorMessage(),
                 trace.getRetrievedAt());
     }
 
@@ -122,6 +163,17 @@ public class QaTraceAssembler {
         return raw.isEmpty() ? null : raw;
     }
 
+    private Map<String, Object> aiTraceRaw(DiscoveryAiFacadeRequest aiRequest, DiscoveryAiFacadeResponse aiResponse) {
+        Map<String, Object> raw = new LinkedHashMap<>();
+        if (aiRequest != null) {
+            raw.put("aiRequest", aiRequest);
+        }
+        if (aiResponse != null) {
+            raw.put("aiResponse", aiResponse);
+        }
+        return raw.isEmpty() ? null : raw;
+    }
+
     private String extractExternalKnowledgeItemIds(List<KnowledgeChatSource> sources) {
         if (sources == null || sources.isEmpty()) {
             return null;
@@ -130,5 +182,25 @@ public class QaTraceAssembler {
                 .filter(source -> StringUtils.isNotBlank(source.sourceId()))
                 .map(KnowledgeChatSource::sourceId)
                 .toList());
+    }
+
+    private String extractSourceBusinessIds(List<QaSource> sources) {
+        if (sources == null || sources.isEmpty()) {
+            return null;
+        }
+        return writeJson(sources.stream()
+                .filter(source -> StringUtils.isNotBlank(source.getSourceBusinessId()))
+                .map(QaSource::getSourceBusinessId)
+                .toList());
+    }
+
+    private String resolveAiProviderRequestId(ChatCompletionCommand command, DiscoveryAiFacadeRequest aiRequest) {
+        if (aiRequest != null && StringUtils.isNotBlank(aiRequest.getRequestId())) {
+            return aiRequest.getRequestId();
+        }
+        if (command != null && StringUtils.isNotBlank(command.getTraceId())) {
+            return command.getTraceId();
+        }
+        return null;
     }
 }

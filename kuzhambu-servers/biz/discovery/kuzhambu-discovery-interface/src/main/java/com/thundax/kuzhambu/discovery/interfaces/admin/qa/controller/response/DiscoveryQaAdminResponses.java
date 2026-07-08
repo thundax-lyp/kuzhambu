@@ -357,6 +357,22 @@ public final class DiscoveryQaAdminResponses {
         @JsonProperty(value = "raw")
         private String raw;
 
+        @Schema(name = "aiCallId", description = "AI 调用号")
+        @JsonProperty(value = "aiCallId")
+        private Long aiCallId;
+
+        @Schema(name = "aiStatus", description = "AI 调用状态")
+        @JsonProperty(value = "aiStatus")
+        private String aiStatus;
+
+        @Schema(name = "aiErrorType", description = "AI 错误类型")
+        @JsonProperty(value = "aiErrorType")
+        private String aiErrorType;
+
+        @Schema(name = "aiErrorMessage", description = "AI 错误信息")
+        @JsonProperty(value = "aiErrorMessage")
+        private String aiErrorMessage;
+
         @Schema(name = "retrievedAt", description = "检索时间")
         @JsonProperty(value = "retrievedAt")
         private Date retrievedAt;

@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -11,6 +12,10 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.thundax.kuzhambu.classics.facade.ClassicsFacade;
+import com.thundax.kuzhambu.classics.facade.dto.ClassicsQaKnowledgeFacadeDto;
+import com.thundax.kuzhambu.classics.facade.request.ClassicsQaKnowledgeFacadeRequest;
+import com.thundax.kuzhambu.classics.facade.response.ClassicsQaKnowledgeFacadeResponse;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.discovery.application.qa.command.DeleteQaSessionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.command.ExportQaSessionCommand;
@@ -45,6 +50,7 @@ class QaApplicationServiceImplTest {
 
     private QaSessionExportRepository exportRepository;
     private StorageFacade storageFacade;
+    private ClassicsFacade classicsFacade;
 
     @Test
     void openSessionShouldPersistAndReturnSessionResult() {
@@ -58,6 +64,7 @@ class QaApplicationServiceImplTest {
                 sourceRepository,
                 traceRepository,
                 mock(QaSessionExportRepository.class),
+                mock(ClassicsFacade.class),
                 mock(StorageFacade.class),
                 new QaSessionCsvExporter(),
                 new QaSourceAssembler(),
@@ -77,6 +84,8 @@ class QaApplicationServiceImplTest {
     void openSessionShouldAcceptWangqiSingleDocumentContext() {
         QaSessionRepository sessionRepository = mock(QaSessionRepository.class);
         QaApplicationServiceImpl service = service(sessionRepository);
+        when(classicsFacade.getQaKnowledge(any(ClassicsQaKnowledgeFacadeRequest.class)))
+                .thenReturn(qaKnowledge("PUBLIC", "ACTIVE"));
         when(sessionRepository.save(any(QaSession.class))).thenReturn(9002L);
 
         QaSessionResult result = service.openSession(new OpenQaSessionCommand(
@@ -85,6 +94,10 @@ class QaApplicationServiceImplTest {
         assertEquals("SINGLE_DOCUMENT", result.getContextMode());
         assertEquals("WANGQI_DOCUMENT", result.getContextContentType());
         assertEquals(3001L, result.getContextContentId());
+        verify(classicsFacade)
+                .getQaKnowledge(argThat(request -> request != null
+                        && "WANGQI_DOCUMENT".equals(request.getContentType())
+                        && "3001".equals(request.getContentId())));
         verify(sessionRepository).save(any(QaSession.class));
     }
 
@@ -113,6 +126,50 @@ class QaApplicationServiceImplTest {
     }
 
     @Test
+    void openSessionShouldRejectMissingSingleDocumentKnowledge() {
+        QaApplicationServiceImpl service = service(mock(QaSessionRepository.class));
+        when(classicsFacade.getQaKnowledge(any(ClassicsQaKnowledgeFacadeRequest.class)))
+                .thenReturn(ClassicsQaKnowledgeFacadeResponse.builder()
+                        .knowledge(null)
+                        .build());
+
+        BizException exception = assertThrows(
+                BizException.class,
+                () -> service.openSession(new OpenQaSessionCommand(
+                        1001L, "王圻文档问答", "PORTAL", "SINGLE_DOCUMENT", "WANGQI_DOCUMENT", 3001L, null, null)));
+
+        assertEquals("DISCOVERY-30013", exception.getCode());
+    }
+
+    @Test
+    void openSessionShouldRejectUnavailableSingleDocumentKnowledge() {
+        QaApplicationServiceImpl service = service(mock(QaSessionRepository.class));
+        when(classicsFacade.getQaKnowledge(any(ClassicsQaKnowledgeFacadeRequest.class)))
+                .thenReturn(qaKnowledge("PUBLIC", "ARCHIVED"));
+
+        BizException exception = assertThrows(
+                BizException.class,
+                () -> service.openSession(new OpenQaSessionCommand(
+                        1001L, "王圻文档问答", "PORTAL", "SINGLE_DOCUMENT", "WANGQI_DOCUMENT", 3001L, null, null)));
+
+        assertEquals("DISCOVERY-30014", exception.getCode());
+    }
+
+    @Test
+    void openSessionShouldRejectPrivateSingleDocumentKnowledge() {
+        QaApplicationServiceImpl service = service(mock(QaSessionRepository.class));
+        when(classicsFacade.getQaKnowledge(any(ClassicsQaKnowledgeFacadeRequest.class)))
+                .thenReturn(qaKnowledge("PRIVATE", "ACTIVE"));
+
+        BizException exception = assertThrows(
+                BizException.class,
+                () -> service.openSession(new OpenQaSessionCommand(
+                        1001L, "王圻文档问答", "PORTAL", "SINGLE_DOCUMENT", "WANGQI_DOCUMENT", 3001L, null, null)));
+
+        assertEquals("DISCOVERY-30015", exception.getCode());
+    }
+
+    @Test
     void getSessionDetailShouldAssembleMessages() {
         QaSessionRepository sessionRepository = mock(QaSessionRepository.class);
         QaMessageRepository messageRepository = mock(QaMessageRepository.class);
@@ -124,6 +181,7 @@ class QaApplicationServiceImplTest {
                 sourceRepository,
                 traceRepository,
                 mock(QaSessionExportRepository.class),
+                mock(ClassicsFacade.class),
                 mock(StorageFacade.class),
                 new QaSessionCsvExporter(),
                 new QaSourceAssembler(),
@@ -376,6 +434,7 @@ class QaApplicationServiceImplTest {
     void setUp() {
         exportRepository = mock(QaSessionExportRepository.class);
         storageFacade = mock(StorageFacade.class);
+        classicsFacade = mock(ClassicsFacade.class);
     }
 
     private QaApplicationServiceImpl service(QaSessionRepository sessionRepository) {
@@ -385,6 +444,7 @@ class QaApplicationServiceImplTest {
                 mock(QaSourceRepository.class),
                 mock(QaRetrievalTraceRepository.class),
                 exportRepository,
+                classicsFacade,
                 storageFacade,
                 new QaSessionCsvExporter(),
                 new QaSourceAssembler(),
@@ -402,10 +462,24 @@ class QaApplicationServiceImplTest {
                 sourceRepository,
                 traceRepository,
                 exportRepository,
+                classicsFacade,
                 storageFacade,
                 new QaSessionCsvExporter(),
                 new QaSourceAssembler(),
                 new QaTraceAssembler());
+    }
+
+    private static ClassicsQaKnowledgeFacadeResponse qaKnowledge(String visibility, String status) {
+        return ClassicsQaKnowledgeFacadeResponse.builder()
+                .knowledge(ClassicsQaKnowledgeFacadeDto.builder()
+                        .contentType("WANGQI_DOCUMENT")
+                        .contentId("3001")
+                        .visibility(visibility)
+                        .status(status)
+                        .title("王圻文档")
+                        .body("王圻文档内容")
+                        .build())
+                .build();
     }
 
     private static QaSession openSession() {
@@ -476,6 +550,10 @@ class QaApplicationServiceImplTest {
                 100L,
                 null,
                 "{}",
+                null,
+                null,
+                null,
+                null,
                 new Date(4000L));
     }
 }

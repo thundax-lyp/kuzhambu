@@ -20,7 +20,7 @@
 - Knowledge 图谱抽取已对接三类候选能力（`relation_extraction/knowledge_graph/lineage_extraction`）的 Knowledge → AI → Worker 调用链路，并补齐批量任务、取消和重生成所需的 AI 协作台账。
 - AI 域当前已具备候选结果台账读取、拒绝和“标记已应用”协作入口，可支持 Classics / Knowledge 在业务确认后回写 AI 候选状态。
 - AI 域已形成统一最终态协议：调用结果、调用记录、候选结果和 Worker stream `completed/error` 统一使用 `failureStage / fallbackUsed / artifactReference` 口径；文件类结果由 Java 下载 Workers 临时产物并转存 `Storage`。
-- Discovery 的 query understanding、answer generation 与 stream answer 已统一消费 AI 最终态，并把最终 AI `callId` 稳定挂到 QA trace。
+- Discovery 的 query understanding、answer generation 与 stream answer 已统一消费 AI 最终态；Wangqi 单文档 QA 正式回答链路已通过 `DiscoveryAiApplicationService#generateAnswer` 消费 `DISCOVERY_ANSWER_GENERATION`，并把最终 AI `callId`、状态和失败字段稳定挂到 QA trace。
 - AI 域当前已形成“治理入口 -> Workers 执行 -> 候选结果/任务台账 -> Classics 页面消费”的闭环；三才图会视觉资产已接通 `image_analysis / fusion / visual / image_gen` 的单条任务、批量任务、候选治理、失败重试和正式版本写回。
 - Classics 三才图会视觉资产 `image_analysis / image_gen` 已接通 `task/stream` 展示闭环：Java 后端通过 `/api/ai/refinement/task/stream?taskId=...` 代理 worker SSE，Admin Web 展示增量过程、最终任务结果刷新候选区，stream error 可在任务快照刷新前直接重试。
 - Knowledge 标签候选抽取已通过 `TaxonomyApplicationService#extractTags` 接入 `KNOWLEDGE_TAG_EXTRACTION`，并在标签治理入口形成人工审核应用闭环。
@@ -36,6 +36,8 @@
 - 2026-07-07：`cd kuzhambu-servers && mvn -pl biz/ai/kuzhambu-ai-interface,biz/ai/kuzhambu-ai-application,biz/ai/kuzhambu-ai-infra -am spotless:apply && mvn spotless:check && mvn checkstyle:check && mvn -pl biz/ai/kuzhambu-ai-interface,biz/ai/kuzhambu-ai-application,biz/ai/kuzhambu-ai-infra,biz/classics/kuzhambu-classics-application -am test` 通过。
 - 2026-07-07：`cd kuzhambu-apps && npm run format:check && npm run lint && npm --workspace kuzhambu-admin-web run build` 通过。
 - 2026-07-07：`npm --workspace kuzhambu-admin-web run test -- --maxWorkers=1` 通过，45 个 test files / 153 tests 全绿；原始 `npm --workspace kuzhambu-admin-web run test` 在全量并发下出现非本任务用例 30 秒超时波动，失败用例单独复跑通过。
+- 2026-07-08：`cd kuzhambu-servers && mvn -pl biz/discovery/kuzhambu-discovery-interface,biz/discovery/kuzhambu-discovery-infra,biz/ai/kuzhambu-ai-interface,biz/ai/kuzhambu-ai-infra,biz/classics/kuzhambu-classics-facade -am -Dsurefire.failIfNoSpecifiedTests=false test` 通过，覆盖 Discovery QA、AI facade/application/infra 和 Classics facade 相关测试。
+- 2026-07-08：`cd kuzhambu-workers && .venv/bin/python -m ruff format --check . && .venv/bin/python -m ruff check . && .venv/bin/python -m pytest -p no:capture tests/test_worker_e2e_ai_usecase_discovery.py` 通过，覆盖 Discovery answer-generation worker usecase 契约。
 
 ## 已完成
 
@@ -61,7 +63,7 @@
 | classics | SANCAI_ENTRY | batch_visual_processing | AiRefinementTaskController#createBatch/get/page/cancelBatch | AI_REFINEMENT_TASK_BATCH_MANAGEMENT | - | 已完成 | 三才图会已接通批量图片理解与视觉资产处理任务的创建、分页、取消和失败聚合 |
 | discovery | - | query_understanding | DiscoveryAiApplicationService#understandQuery | DISCOVERY_QUERY_UNDERSTANDING | /internal/ai/discovery/query-understanding | 已完成 | 已统一消费 AI 最终态字段；失败时按最终错误口径落库 |
 | discovery | - | query_understanding | DiscoveryAiApplicationService#rewriteQuery | DISCOVERY_QUERY_REWRITE | /internal/ai/discovery/query-rewrite | 已完成 | 已统一消费 AI 最终态字段；失败时按最终错误口径落库 |
-| discovery | - | answer_generation | DiscoveryAiApplicationService#generateAnswer | DISCOVERY_ANSWER_GENERATION | /internal/ai/discovery/answer-generation | 已完成 | 最终回答消费 AI 最终态字段，并把 `callId` 挂到 QA trace |
+| discovery | WANGQI_DOCUMENT | answer_generation | DiscoveryAiApplicationService#generateAnswer | DISCOVERY_ANSWER_GENERATION | /internal/ai/discovery/answer-generation | 已完成 | Wangqi 单文档 QA 正式回答消费 AI 最终态字段，并把 `callId/status/errorType/errorMessage` 挂到 QA trace |
 | discovery | - | answer_generation | DiscoveryAiApplicationService#streamAnswer | DISCOVERY_ANSWER_GENERATION_STREAM | /internal/ai/discovery/answer-generation/stream | 已完成 | stream 最终态消费已收口，并把最终 `callId` 挂到 QA trace |
 | knowledge | SANCAI_ENTRY | relation_extraction | KnowledgeGraphExtractionApplicationService#requestRelationExtraction | KNOWLEDGE_RELATION_EXTRACTION | /internal/ai/knowledge/relation-extraction | 已完成 | 已形成任务台账、AI 调用、候选应用、批量与重生成闭环 |
 | knowledge | SANCAI_ENTRY | knowledge_graph | KnowledgeGraphExtractionApplicationService#requestGraphExtraction | KNOWLEDGE_GRAPH_EXTRACTION | /internal/ai/knowledge/graph-extraction | 已完成 | 已形成任务台账、AI 调用、候选应用、批量与重生成闭环 |
