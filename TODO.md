@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `10 Operations Implementation Coverage`：更新实现覆盖说明
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-OPERATIONS-RESTORE-ORCHESTRATION.md`
-    - 范围对象：`docs/40-readiness/OPERATIONS-IMPLEMENTATION-COVERAGE.md`
-    - 处理动作：同步 Operations health/alert/restore/task 自动恢复闭环的实现覆盖状态。
-    - 验收点：Implementation Coverage 准确反映本次 health/alert/restore/task 闭环能力和剩余缺口。
-    - 重要度：8/10
-
 - [ ] `11 RUNBOOK cleanup`：清理临时 RUNBOOK
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`
