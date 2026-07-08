@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `05 Admin Web operations health page`：补齐关联告警确认与恢复控件
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-RESTORE-ORCHESTRATION.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/operations/health/health-page.tsx`、`kuzhambu-apps/admin-web/src/pages/operations/health/health-page.test.tsx`
-    - 处理动作：在健康记录关联告警抽屉中增加 `确认`、`恢复`、权限禁用态、二次确认和成功刷新。
-    - 验收点：页面测试覆盖 `查看告警` 打开抽屉、`确认` 调用、`恢复` 二次确认调用、无权限禁用、空态和失败态。
-    - 重要度：9/10
-
 - [ ] `06 Operations application validation`：验证后端 application 行为
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-RESTORE-ORCHESTRATION.md`

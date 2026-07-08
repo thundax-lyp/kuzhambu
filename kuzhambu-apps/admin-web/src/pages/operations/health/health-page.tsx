@@ -1,5 +1,5 @@
 import { ReloadOutlined, SearchOutlined } from "@ant-design/icons";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
     App,
     Button,
@@ -13,16 +13,19 @@ import {
 } from "antd";
 import { useEffect, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
+import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import { KuzhambuPage } from "@/components/kuzhambu-page";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { KuzhambuTag } from "@/components/kuzhambu-tag";
-import * as dashboardService from "@/pages/operations/dashboard/dashboard-service";
-import type { OperationsHealthAlertRecord } from "@/pages/operations/dashboard/dashboard-types";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import * as service from "./health-service";
 import type { OperationsHealthPageQuery } from "./health-service";
-import type { OperationsHealthRecord, OperationsHealthStatus } from "./health-types";
+import type {
+    OperationsHealthAlertRecord,
+    OperationsHealthRecord,
+    OperationsHealthStatus
+} from "./health-types";
 import "./health-page.css";
 
 const { RangePicker } = DatePicker;
@@ -132,7 +135,10 @@ const buildQuery = (
 
 export const OperationsHealthPage = () => {
     const { message } = App.useApp();
+    const confirm = useKuzhambuConfirm();
+    const queryClient = useQueryClient();
     const canViewHealth = hasPermission("operations:health:view");
+    const canManageHealth = hasPermission("operations:health:manage");
     const [componentKeyword, setComponentKeyword] = useState("");
     const [healthStatus, setHealthStatus] = useState("ALL");
     const [probeSource, setProbeSource] = useState("ALL");
@@ -156,13 +162,43 @@ export const OperationsHealthPage = () => {
     const alertPageQuery = useQuery({
         queryKey: ["operations", "health", "alerts", alertCheckId],
         queryFn: () =>
-            dashboardService.getHealthAlerts({
+            service.getOperationsHealthAlerts({
                 latestCheckId: alertCheckId,
                 pageNo: 1,
                 pageSize: 10
             }),
         enabled: alertCheckId !== null,
         retry: false
+    });
+
+    const refreshAlerts = async () => {
+        await queryClient.invalidateQueries({ queryKey: ["operations", "health", "alerts"] });
+    };
+
+    const ackAlertMutation = useMutation({
+        mutationFn: service.confirmOperationsHealthAlert,
+        onSuccess: async () => {
+            await refreshAlerts();
+            message.success("告警已确认");
+        },
+        onError: (error) => {
+            message.error(error instanceof Error ? error.message : "告警确认失败");
+        }
+    });
+
+    const recoverAlertMutation = useMutation({
+        mutationFn: service.recoverOperationsHealthAlert,
+        onSuccess: async () => {
+            await Promise.all([
+                refreshAlerts(),
+                queryClient.invalidateQueries({ queryKey: ["operations", "task", "page"] }),
+                queryClient.invalidateQueries({ queryKey: ["operations", "restore", "page"] })
+            ]);
+            message.success("恢复动作已完成");
+        },
+        onError: (error) => {
+            message.error(error instanceof Error ? error.message : "恢复动作失败");
+        }
     });
 
     useEffect(() => {
@@ -243,6 +279,7 @@ export const OperationsHealthPage = () => {
                         <th>建议</th>
                         <th>恢复动作</th>
                         <th>最后触发</th>
+                        <th>操作</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -258,6 +295,48 @@ export const OperationsHealthPage = () => {
                             <td>{alert.suggestion || "-"}</td>
                             <td>{alert.recoveryAction || "-"}</td>
                             <td>{formatDateTime(alert.lastTriggeredAt)}</td>
+                            <td>
+                                <KuzhambuSpace size={4} wrap>
+                                    <Button
+                                        disabled={
+                                            !canManageHealth || alert.alertStatus !== "ACTIVE"
+                                        }
+                                        loading={ackAlertMutation.isPending}
+                                        size="small"
+                                        onClick={() =>
+                                            ackAlertMutation.mutate({ alertId: alert.alertId })
+                                        }
+                                    >
+                                        确认
+                                    </Button>
+                                    <Button
+                                        disabled={
+                                            !canManageHealth || alert.alertStatus === "RECOVERED"
+                                        }
+                                        loading={recoverAlertMutation.isPending}
+                                        size="small"
+                                        type="primary"
+                                        onClick={() =>
+                                            confirm.danger({
+                                                title: "执行告警恢复",
+                                                message: `确认处理告警 #${alert.alertId} 吗？`,
+                                                description: alert.recoveryAction?.startsWith(
+                                                    "RUN_"
+                                                )
+                                                    ? "该操作会触发自动化恢复动作，并回写告警与任务台账。"
+                                                    : "该操作会将告警标记为已恢复。",
+                                                okText: "执行恢复",
+                                                onConfirm: () =>
+                                                    recoverAlertMutation.mutateAsync({
+                                                        alertId: alert.alertId
+                                                    })
+                                            })
+                                        }
+                                    >
+                                        恢复
+                                    </Button>
+                                </KuzhambuSpace>
+                            </td>
                         </tr>
                     ))}
                 </tbody>

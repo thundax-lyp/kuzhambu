@@ -3,17 +3,23 @@ import { App } from "antd";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { replacePermissions } from "@/auth/permission-storage";
-import * as dashboardService from "@/pages/operations/dashboard/dashboard-service";
 import { queryClient } from "@/query/query-client";
 import { OperationsHealthPage } from "./health-page";
 import * as service from "./health-service";
 
+const confirmDanger = vi.fn((options: { onConfirm: () => Promise<unknown> | unknown }) =>
+    options.onConfirm()
+);
+
 vi.mock("./health-service", () => ({
-    getOperationsHealthPage: vi.fn()
+    confirmOperationsHealthAlert: vi.fn(),
+    getOperationsHealthAlerts: vi.fn(),
+    getOperationsHealthPage: vi.fn(),
+    recoverOperationsHealthAlert: vi.fn()
 }));
 
-vi.mock("@/pages/operations/dashboard/dashboard-service", () => ({
-    getHealthAlerts: vi.fn()
+vi.mock("@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm", () => ({
+    useKuzhambuConfirm: () => ({ danger: confirmDanger })
 }));
 
 const renderPage = () =>
@@ -28,7 +34,7 @@ const renderPage = () =>
 describe("OperationsHealthPage", () => {
     beforeEach(() => {
         queryClient.clear();
-        replacePermissions(["operations:health:view"]);
+        replacePermissions(["operations:health:view", "operations:health:manage"]);
         vi.mocked(service.getOperationsHealthPage).mockResolvedValue({
             pageNo: 1,
             pageSize: 20,
@@ -58,7 +64,7 @@ describe("OperationsHealthPage", () => {
                 }
             ]
         });
-        vi.mocked(dashboardService.getHealthAlerts).mockResolvedValue({
+        vi.mocked(service.getOperationsHealthAlerts).mockResolvedValue({
             pageNo: 1,
             pageSize: 10,
             count: 1,
@@ -76,6 +82,8 @@ describe("OperationsHealthPage", () => {
                 }
             ]
         });
+        vi.mocked(service.confirmOperationsHealthAlert).mockResolvedValue(undefined);
+        vi.mocked(service.recoverOperationsHealthAlert).mockResolvedValue(undefined);
     });
 
     afterEach(() => {
@@ -257,7 +265,7 @@ describe("OperationsHealthPage", () => {
         await userEvent.click(screen.getAllByRole("button", { name: "查看告警" })[0]);
 
         await waitFor(() => {
-            expect(dashboardService.getHealthAlerts).toHaveBeenCalledWith({
+            expect(service.getOperationsHealthAlerts).toHaveBeenCalledWith({
                 latestCheckId: 9101,
                 pageNo: 1,
                 pageSize: 10
@@ -269,8 +277,30 @@ describe("OperationsHealthPage", () => {
         expect(screen.getByText("OPEN_HEALTH_DETAIL")).toBeInTheDocument();
     });
 
+    it("confirms and recovers associated alerts", async () => {
+        renderPage();
+        await screen.findByText("admin-starter");
+
+        await userEvent.click(screen.getAllByRole("button", { name: "查看告警" })[0]);
+        await screen.findByText("health down");
+        await userEvent.click(screen.getByRole("button", { name: /确\s*认/ }));
+        await userEvent.click(screen.getByRole("button", { name: /恢\s*复/ }));
+
+        await waitFor(() => {
+            expect(service.confirmOperationsHealthAlert).toHaveBeenCalledWith(
+                { alertId: 9201 },
+                expect.anything()
+            );
+            expect(service.recoverOperationsHealthAlert).toHaveBeenCalledWith(
+                { alertId: 9201 },
+                expect.anything()
+            );
+        });
+        expect(confirmDanger).toHaveBeenCalled();
+    });
+
     it("keeps alert drawer open for empty and failed alert requests", async () => {
-        vi.mocked(dashboardService.getHealthAlerts).mockResolvedValueOnce({
+        vi.mocked(service.getOperationsHealthAlerts).mockResolvedValueOnce({
             pageNo: 1,
             pageSize: 10,
             count: 0,
@@ -285,7 +315,7 @@ describe("OperationsHealthPage", () => {
         cleanup();
         queryClient.clear();
 
-        vi.mocked(dashboardService.getHealthAlerts).mockRejectedValueOnce(new Error("alert boom"));
+        vi.mocked(service.getOperationsHealthAlerts).mockRejectedValueOnce(new Error("alert boom"));
         renderPage();
         await screen.findByText("admin-starter");
         await userEvent.click(screen.getAllByRole("button", { name: "查看告警" })[0]);
