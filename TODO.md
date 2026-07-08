@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics sharing 交付状态`：更新 Classics Implementation Coverage
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARING-GOVERNANCE.md`
-    - 范围对象：`docs/40-readiness/CLASSICS-IMPLEMENTATION-COVERAGE.md`、`docs/30-designs/RUNBOOK-CLASSICS-SHARING-GOVERNANCE.md`
-    - 处理动作：将单链接多个内容、分享恢复策略和访问统计更新为已完成状态。
-    - 验收点：Implementation Coverage 不再保留本轮三项的未完成或部分完成描述。
-    - 重要度：10/10
-
 - [ ] `classics sharing 最终收口`：同步 main 分支代码并清理 RUNBOOK
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-CLASSICS-SHARING-GOVERNANCE.md`
