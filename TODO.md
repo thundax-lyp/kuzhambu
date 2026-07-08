@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics sharing 接口文档`：同步 Portal 分享访问统计契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARING-GOVERNANCE.md`
-    - 范围对象：`docs/20-interfaces/CLASSICS-SHARE-PORTAL-INTERFACE.md`、`docs/30-designs/RUNBOOK-CLASSICS-SHARING-GOVERNANCE.md`
-    - 处理动作：补充 Portal 分享详情浏览成功会进入访问统计的接口契约。
-    - 验收点：Portal 接口文档与详情浏览、私有详情浏览、资源读取三类成功访问统计语义一致。
-    - 重要度：8/10
-
 - [ ] `classics sharing 交付状态`：更新 Classics Implementation Coverage
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARING-GOVERNANCE.md`
