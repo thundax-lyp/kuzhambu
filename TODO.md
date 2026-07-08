@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Admin Web QA trace panel`：展示并复制 AI 调用追踪字段
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-WANGQI-SINGLE-DOCUMENT-QA.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/discovery/qa-admin/qa-admin-types.ts`、`kuzhambu-apps/admin-web/src/pages/discovery/qa-admin/qa-admin-service.ts`、`kuzhambu-apps/admin-web/src/pages/discovery/qa-admin/qa-admin-page.tsx`、`kuzhambu-apps/admin-web/src/pages/discovery/qa-admin/qa-admin-page.test.tsx`
-    - 处理动作：在 QA Admin trace 面板展示 `AI 调用 ID`、`AI 状态`、`AI 错误类型`、`AI 错误信息` 并支持复制 `aiCallId`。
-    - 验收点：页面测试覆盖字段展示、空值展示和复制按钮操作。
-    - 重要度：8/10
-
 - [ ] `Admin Web Wangqi QA entry`：新增 Wangqi 详情单文档问答入口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-WANGQI-SINGLE-DOCUMENT-QA.md`
