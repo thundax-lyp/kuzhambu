@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics-export-service.ts` 等 4 文件：补齐导出记录删除服务与列表控件
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-EXPORT-SHOWCASE-GOVERNANCE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/common/classics-export-service.ts`、`kuzhambu-apps/admin-web/src/pages/classics/common/classics-export-service-contract.test.ts`、`kuzhambu-apps/admin-web/src/pages/classics/common/components/classics-export-job-section.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/common/components/classics-export-job-section.css`
-    - 处理动作：新增导出删除 service 契约，并在导出任务列表增加搜索、筛选、选择、单删和批删控件。
-    - 验收点：`deleteById(jobId)` 请求 `POST /classics/content/exports/delete` 且 body 为 `{ id: jobId }`；列表包含关键词搜索输入框、状态下拉、仅过期复选框、单行选择框、全选当前可见复选框、单条删除按钮、批量删除按钮；下载按钮仅在 `COMPLETED`、未过期且存在 `downloadUrl` 时启用。
-    - 重要度：9/10
-
 - [ ] `sancai-entry-service.ts` 等 4 文件：补齐静态展示删除服务与列表控件
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-EXPORT-SHOWCASE-GOVERNANCE.md`
