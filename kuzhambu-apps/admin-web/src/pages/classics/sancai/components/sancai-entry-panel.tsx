@@ -233,7 +233,6 @@ export const SancaiEntryPanel = ({
             }),
         retry: false
     });
-    const showcaseJobs = showcasesQuery.data?.records || [];
     let modelKey = "empty";
     if (isCreating) {
         modelKey = "create";
@@ -480,6 +479,7 @@ export const SancaiEntryPanel = ({
         mutationFn: (entry: SancaiEntryRecord) => {
             const title = `${readEntryTitle(entry)} 静态展示`;
             return entryService.requestShowcase({
+                scopeTitle: title,
                 scopeJson: JSON.stringify({
                     title,
                     entries: [
@@ -490,7 +490,6 @@ export const SancaiEntryPanel = ({
                         }
                     ]
                 }),
-                entryCount: 1,
                 visibilityRiskStatus: "PUBLIC_ONLY"
             });
         },
@@ -868,8 +867,14 @@ export const SancaiEntryPanel = ({
                 }}
             />
             <ClassicsShowcaseJobSection
-                items={showcaseJobs}
+                filtersVisible={false}
                 loading={showcasesQuery.isLoading || showcaseEntryMutation.isPending}
+                page={showcasesQuery.data}
+                onPreview={(job) => {
+                    if (job.contentUrl) {
+                        window.open(job.contentUrl, "_blank", "noopener,noreferrer");
+                    }
+                }}
                 onDownload={(job) => {
                     if (job.downloadUrl) {
                         window.open(job.downloadUrl, "_blank", "noopener,noreferrer");
