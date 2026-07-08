@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Classics AI apply and Discovery sync`：收口 AI 应用与 Discovery 只读同步
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-QA-VERSION-GOVERNANCE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/service/impl/ClassicsContentApplicationServiceImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/support/ClassicsAiCandidatePayloadParser.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-facade/src/main/java/com/thundax/kuzhambu/classics/facade/dto/ClassicsQaKnowledgeFacadeDto.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/facade/assembler/ClassicsFacadeAssembler.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/qa/support/KnowledgeRevisionCalculator.java`
-    - 处理动作：让一次 AI 候选确认应用只生成一个 `AI_APPLIED` 版本，并让 Discovery revision 只消费当前已确认内容。
-    - 验收点：AI 应用摘要、标签和问答对时只生成一个版本，候选拒绝不生成版本，私有 Wangqi/Ming 不 upsert 到 QA Knowledge Base。
-    - 重要度：9/10
-
 - [ ] `Admin Web QA controls`：补齐 Wangqi/Ming 问答对控件操作
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-QA-VERSION-GOVERNANCE.md`
