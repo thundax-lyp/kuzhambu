@@ -2,10 +2,13 @@ package com.thundax.kuzhambu.operations.infra.task.repository.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.operations.domain.task.model.entity.LongTaskSnapshot;
@@ -15,6 +18,7 @@ import com.thundax.kuzhambu.operations.infra.task.persistence.mapper.LongTaskSna
 import java.util.Date;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 class LongTaskSnapshotRepositoryImplTest {
 
@@ -50,6 +54,24 @@ class LongTaskSnapshotRepositoryImplTest {
         assertEquals(9002L, result.getRecords().get(0).getId().value());
         assertEquals("catalog", result.getRecords().get(0).getSourceDomain());
         assertEquals("cleanup", result.getRecords().get(0).getTaskType());
+    }
+
+    @Test
+    void listExpiredSnapshotIdsShouldQueryNonRunningSnapshotsBeforeThreshold() {
+        LongTaskSnapshotMapper mapper = mock(LongTaskSnapshotMapper.class);
+        LongTaskSnapshotRepositoryImpl repository = new LongTaskSnapshotRepositoryImpl(mapper);
+        when(mapper.selectObjs(any())).thenReturn(List.of(9001L, 9002L));
+
+        List<LongTaskSnapshotId> result = repository.listExpiredSnapshotIds(new Date(1_718_086_500_000L), 2);
+
+        assertEquals(2, result.size());
+        assertEquals(9001L, result.get(0).value());
+        ArgumentCaptor<QueryWrapper<LongTaskSnapshotDO>> captor = ArgumentCaptor.forClass(QueryWrapper.class);
+        verify(mapper).selectObjs(captor.capture());
+        String sqlSegment = captor.getValue().getCustomSqlSegment();
+        assertTrue(sqlSegment.contains("snapshot_at"));
+        assertTrue(sqlSegment.contains("task_status"));
+        assertTrue(sqlSegment.contains("LIMIT 2"));
     }
 
     private static LongTaskSnapshotDO dataObject(

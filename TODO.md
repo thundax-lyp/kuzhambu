@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Operations cleanup infra tests`：补运行态目标查询测试
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-CLEANUP-TARGET-TYPES.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-infra/src/test/java/com/thundax/kuzhambu/operations/infra/report/repository/impl/ReportRepositoryImplTest.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-infra/src/test/java/com/thundax/kuzhambu/operations/infra/health/repository/impl/HealthCheckRepositoryImplTest.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-infra/src/test/java/com/thundax/kuzhambu/operations/infra/task/repository/impl/LongTaskSnapshotRepositoryImplTest.java`
-    - 处理动作：为三类运行态过期目标 ID 查询补充 repository 测试。
-    - 验收点：测试覆盖阈值字段、状态过滤和 `LIMIT` 条件，防止误清理运行中记录。
-    - 重要度：8/10
-
 - [ ] `Admin cleanup page`：补全部 cleanup type 的页面展示与人工操作
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-CLEANUP-TARGET-TYPES.md`

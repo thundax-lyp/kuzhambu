@@ -2,10 +2,13 @@ package com.thundax.kuzhambu.operations.infra.report.repository.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.operations.domain.report.model.entity.ReportRecord;
@@ -16,6 +19,7 @@ import com.thundax.kuzhambu.operations.infra.report.persistence.mapper.ReportMap
 import java.util.Date;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 class ReportRepositoryImplTest {
 
@@ -55,6 +59,24 @@ class ReportRepositoryImplTest {
         assertEquals(1, result.getRecords().size());
         assertEquals(9001L, result.getRecords().get(0).getId().value());
         assertEquals("weekly-report.pdf", result.getRecords().get(0).getArtifactFilename());
+    }
+
+    @Test
+    void listExpiredReportIdsShouldQueryCompletedReportsBeforeThreshold() {
+        ReportMapper mapper = mock(ReportMapper.class);
+        ReportRepositoryImpl repository = new ReportRepositoryImpl(mapper);
+        when(mapper.selectObjs(any())).thenReturn(List.of(9001L, 9002L));
+
+        List<ReportId> result = repository.listExpiredReportIds(new Date(1_718_086_500_000L), 2);
+
+        assertEquals(2, result.size());
+        assertEquals(9001L, result.get(0).value());
+        ArgumentCaptor<QueryWrapper<ReportDO>> captor = ArgumentCaptor.forClass(QueryWrapper.class);
+        verify(mapper).selectObjs(captor.capture());
+        String sqlSegment = captor.getValue().getCustomSqlSegment();
+        assertTrue(sqlSegment.contains("requested_at"));
+        assertTrue(sqlSegment.contains("report_status"));
+        assertTrue(sqlSegment.contains("LIMIT 2"));
     }
 
     private static ReportDO dataObject(long reportId) {
