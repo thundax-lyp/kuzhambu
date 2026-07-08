@@ -1,16 +1,24 @@
 package com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller;
 
+import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsKeywordSortCommand;
 import com.thundax.kuzhambu.classics.application.mingcustoms.query.MingCustomsPageQuery;
 import com.thundax.kuzhambu.classics.application.mingcustoms.service.MingCustomsApplicationService;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentVersionIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsKeywordIdCodec;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsEntryId;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.assembler.MingCustomsInterfaceAssembler;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.request.MingCustomsKeywordSortRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.request.MingCustomsRequest;
+import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.request.MingCustomsVersionRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.response.MingCustomsKeywordCloudItemResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.response.MingCustomsResponse;
+import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.response.MingCustomsVersionResponse;
+import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
@@ -38,9 +46,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 @WrappedApiController
 public class MingCustomsAdminController {
     private final MingCustomsApplicationService service;
+    private final ClassicsContentApplicationService contentService;
 
     public MingCustomsAdminController(MingCustomsApplicationService service) {
+        this(service, null);
+    }
+
+    public MingCustomsAdminController(
+            MingCustomsApplicationService service, ClassicsContentApplicationService contentService) {
         this.service = service;
+        this.contentService = contentService;
     }
 
     @Operation(summary = "分页查询明代习俗", description = "classics:mingcustoms:view")
@@ -133,5 +148,51 @@ public class MingCustomsAdminController {
     @PostMapping("delete")
     public void delete(@Valid @RequestBody MingCustomsRequest request) {
         service.delete(MingCustomsEntryIdCodec.toDomain(request.getId()));
+    }
+
+    @Operation(summary = "查询明代习俗版本", description = "classics:mingcustoms:view")
+    @ApiImplicitParams({})
+    @HasPermission("classics:mingcustoms:view")
+    @SysLogger(value = "版本列表")
+    @PostMapping("versions/list")
+    public List<MingCustomsVersionResponse> listVersions(@Valid @RequestBody MingCustomsVersionRequest request) {
+        return contentService
+                .listVersions(
+                        ClassicsContentType.MING_CUSTOMS.value(), ClassicsContentIdCodec.toDomain(request.getId()))
+                .stream()
+                .map(MingCustomsInterfaceAssembler::toVersionResponse)
+                .toList();
+    }
+
+    @Operation(summary = "查看明代习俗版本", description = "classics:mingcustoms:view")
+    @ApiImplicitParams({})
+    @HasPermission("classics:mingcustoms:view")
+    @SysLogger(value = "版本详情")
+    @PostMapping("versions/get")
+    public MingCustomsVersionResponse getVersion(@Valid @RequestBody MingCustomsVersionRequest request) {
+        return MingCustomsInterfaceAssembler.toVersionResponse(ownedVersion(request.getId(), request.getVersionId()));
+    }
+
+    @Operation(summary = "恢复明代习俗版本", description = "classics:mingcustoms:edit")
+    @ApiImplicitParams({})
+    @HasPermission("classics:mingcustoms:edit")
+    @SysLogger(value = "版本恢复")
+    @PostMapping("versions/reset")
+    public MingCustomsVersionResponse resetVersion(@Valid @RequestBody MingCustomsVersionRequest request) {
+        ownedVersion(request.getId(), request.getVersionId());
+        return MingCustomsInterfaceAssembler.toVersionResponse(
+                contentService.restoreHistoryVersion(ClassicsContentVersionIdCodec.toDomain(request.getVersionId())));
+    }
+
+    private ClassicsContentVersion ownedVersion(Long entryId, Long versionId) {
+        ClassicsContentVersion version = contentService.getVersion(ClassicsContentVersionIdCodec.toDomain(versionId));
+        if (version == null) {
+            throw new BizException("明代习俗历史版本不存在");
+        }
+        if (version.getContentType() != ClassicsContentType.MING_CUSTOMS
+                || !ClassicsContentIdCodec.toDomain(entryId).equals(version.getContentId())) {
+            throw new BizException("历史版本不属于当前明代习俗条目");
+        }
+        return version;
     }
 }

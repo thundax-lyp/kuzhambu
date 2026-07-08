@@ -5,7 +5,19 @@ import { App as AntdApp } from "antd";
 import { clearPermissions, replacePermissions } from "@/auth/permission-storage";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import * as currentUserService from "@/service/current-user-service";
+import { MingCustomsVersionHistoryPanel } from "./components/ming-customs-version-history-panel";
 import { MingCustomsPage } from "./ming-customs-page";
+import type { MingCustomsContentVersionRecord } from "./ming-customs-types";
+
+const confirmDangerMock = vi.hoisted(() =>
+    vi.fn((options: { onConfirm?: () => void }) => options.onConfirm?.())
+);
+
+vi.mock("@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm", () => ({
+    useKuzhambuConfirm: () => ({
+        danger: confirmDangerMock
+    })
+}));
 
 vi.mock("@/service/current-user-service", () => ({
     getCurrentUserInfo: vi.fn(() => Promise.resolve({ id: 99, loginName: "admin", name: "Admin" }))
@@ -158,6 +170,75 @@ const installFetchMock = () => {
                 visibility: "PUBLIC"
             });
         }
+        if (path.endsWith("/classics/ming-customs/versions/list")) {
+            return apiResponse([
+                {
+                    id: 9001,
+                    contentType: "MING_CUSTOMS",
+                    contentId: 500000000001,
+                    versionNo: 1,
+                    versionedAt: "2026-01-01T00:00:00.000+00:00",
+                    snapshotJson: JSON.stringify({
+                        title: "旧标题",
+                        category: "RITUAL",
+                        chapter: "岁时礼仪",
+                        section: "正旦",
+                        summary: "旧版摘要",
+                        contentFormat: "MARKDOWN",
+                        content: "## 旧版",
+                        originalExcerpts: "旧版摘录",
+                        visibility: "PUBLIC"
+                    }),
+                    changeType: "HISTORY_RESTORED",
+                    changeSummary: "恢复历史版本 v1"
+                }
+            ]);
+        }
+        if (path.endsWith("/classics/ming-customs/versions/get")) {
+            return apiResponse({
+                id: 9001,
+                contentType: "MING_CUSTOMS",
+                contentId: 500000000001,
+                versionNo: 1,
+                versionedAt: "2026-01-01T00:00:00.000+00:00",
+                snapshotJson: JSON.stringify({
+                    title: "旧标题",
+                    category: "RITUAL",
+                    chapter: "岁时礼仪",
+                    section: "正旦",
+                    summary: "旧版摘要",
+                    contentFormat: "MARKDOWN",
+                    content: "## 旧版",
+                    originalExcerpts: "旧版摘录",
+                    visibility: "PUBLIC"
+                }),
+                changeType: "HISTORY_RESTORED",
+                changeSummary: "恢复历史版本 v1"
+            });
+        }
+        if (path.endsWith("/classics/ming-customs/versions/reset")) {
+            const body = readFetchBody(init?.body) as { id: number };
+            return apiResponse({
+                id: 9002,
+                contentType: "MING_CUSTOMS",
+                contentId: body.id,
+                versionNo: 2,
+                versionedAt: "2026-01-02T00:00:00.000+00:00",
+                snapshotJson: JSON.stringify({
+                    title: "新标题",
+                    category: "RITUAL",
+                    chapter: "岁时礼仪",
+                    section: "正旦",
+                    summary: "恢复后的摘要",
+                    contentFormat: "MARKDOWN",
+                    content: "## 恢复正文",
+                    originalExcerpts: "恢复后摘录",
+                    visibility: "PUBLIC"
+                }),
+                changeType: "HISTORY_RESTORED",
+                changeSummary: "恢复历史版本 v1"
+            });
+        }
         if (path.endsWith("/classics/shares/batch/create")) {
             return apiResponse({
                 failureCount: 1,
@@ -257,6 +338,10 @@ describe("MingCustomsPage", () => {
     beforeEach(() => {
         queryClient = createTestQueryClient();
         capturedCalls.length = 0;
+        confirmDangerMock.mockClear();
+        confirmDangerMock.mockImplementation((options: { onConfirm?: () => void }) =>
+            options.onConfirm?.()
+        );
         localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
         replacePermissions([
             "classics:mingcustoms:view",
@@ -449,4 +534,148 @@ describe("MingCustomsPage", () => {
             path: "/classics/content/ai-candidates/batch/apply"
         });
     }, 30000);
+
+    it("renders ming customs version history panel with snapshot compare", () => {
+        const version: MingCustomsContentVersionRecord = {
+            id: 500000000003,
+            versionNo: 12,
+            changeType: "HISTORY_RESTORED",
+            changeSummary: "恢复历史版本 v12",
+            versionedAt: "2026-06-01T00:00:00.000+00:00",
+            snapshotJson: JSON.stringify({
+                title: "旧标题",
+                category: "RITUAL",
+                chapter: "先秦",
+                section: "开端",
+                summary: "旧版摘要",
+                contentFormat: "MARKDOWN",
+                content: "旧版正文",
+                originalExcerpts: "旧版摘录",
+                visibility: "PUBLIC"
+            })
+        };
+
+        render(
+            <MingCustomsVersionHistoryPanel
+                currentEntry={{
+                    id: 500000000001,
+                    title: "新标题",
+                    category: "RITUAL",
+                    chapter: "先秦",
+                    section: "开端",
+                    summary: "新版摘要",
+                    contentFormat: "MARKDOWN",
+                    content: "新版正文",
+                    originalExcerpts: "新版摘录",
+                    visibility: "PRIVATE"
+                }}
+                detailLoading={false}
+                listLoading={false}
+                selectedVersion={version}
+                versions={[version]}
+                onResetVersion={vi.fn()}
+                onSelectVersion={vi.fn()}
+            />
+        );
+
+        expect(screen.getByLabelText("明代习俗版本历史面板")).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "查看明代习俗版本 12" })).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "恢复明代习俗版本 12" })).toBeInTheDocument();
+        expect(screen.getByText(/历史：旧版摘要/)).toBeInTheDocument();
+        expect(screen.getByText(/当前：新版摘要/)).toBeInTheDocument();
+    });
+
+    it("disables reset when ming customs version snapshot invalid", () => {
+        const version: MingCustomsContentVersionRecord = {
+            id: 500000000004,
+            versionNo: 13,
+            changeType: "HISTORY_RESTORED",
+            changeSummary: "恢复历史版本 v13",
+            versionedAt: "2026-06-01T00:00:00.000+00:00",
+            snapshotJson: "{bad-json"
+        };
+
+        render(
+            <MingCustomsVersionHistoryPanel
+                currentEntry={null}
+                selectedVersion={version}
+                versions={[version]}
+                onResetVersion={vi.fn()}
+                onSelectVersion={vi.fn()}
+            />
+        );
+
+        expect(screen.getByText("版本快照为空或无法解析")).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "恢复明代习俗版本 13" })).toBeDisabled();
+    });
+
+    it("shows empty state when version history is empty", () => {
+        render(
+            <MingCustomsVersionHistoryPanel
+                currentEntry={{
+                    id: 500000000001,
+                    title: "版本空白测试条目"
+                }}
+                selectedVersion={null}
+                versions={[]}
+                onResetVersion={vi.fn()}
+                onSelectVersion={vi.fn()}
+            />
+        );
+
+        expect(screen.getByText("暂无版本历史")).toBeInTheDocument();
+    });
+
+    it("shows version history in edit mode and displays compare details", async () => {
+        const user = userEvent.setup();
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <MingCustomsPage />
+                </AntdApp>
+            </QueryClientProvider>
+        );
+
+        await user.click(
+            await screen.findByRole("button", { name: "编辑明代习俗 岁时礼仪：元旦朝贺" })
+        );
+        expect(await screen.findByLabelText("明代习俗版本历史面板")).toBeInTheDocument();
+        await user.click(await screen.findByRole("button", { name: "查看明代习俗版本 1" }));
+
+        expect(await screen.findByText("当前：岁时礼仪：元旦朝贺")).toBeInTheDocument();
+        expect(screen.getByText("历史：旧标题")).toBeInTheDocument();
+    });
+
+    it("shows reset confirm and calls versions/reset for selected history version", async () => {
+        const user = userEvent.setup();
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <MingCustomsPage />
+                </AntdApp>
+            </QueryClientProvider>
+        );
+
+        await user.click(
+            await screen.findByRole("button", { name: "编辑明代习俗 岁时礼仪：元旦朝贺" })
+        );
+        await user.click(await screen.findByRole("button", { name: "查看明代习俗版本 1" }));
+        await user.click(await screen.findByRole("button", { name: "恢复明代习俗版本 1" }));
+
+        await waitFor(() => {
+            expect(confirmDangerMock).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    message: "恢复后会生成新的正式版本，当前内容将被历史版本覆盖。",
+                    title: "确认恢复明代习俗历史版本"
+                })
+            );
+            expect(capturedCalls).toContainEqual({
+                body: { id: 500000000001, versionId: 9001 },
+                method: "POST",
+                path: "/classics/ming-customs/versions/reset"
+            });
+        });
+    });
 });

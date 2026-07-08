@@ -1,0 +1,43 @@
+package com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.response;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import java.io.Serializable;
+import java.util.Date;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Getter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class MingCustomsVersionResponse implements Serializable {
+    @JsonProperty("id")
+    private Long id;
+
+    @JsonProperty("contentType")
+    private String contentType;
+
+    @JsonProperty("contentId")
+    private Long contentId;
+
+    @JsonProperty("versionNo")
+    private Integer versionNo;
+
+    @JsonProperty("versionedAt")
+    private Date versionedAt;
+
+    @JsonProperty("snapshotJson")
+    private String snapshotJson;
+
+    @JsonProperty("changeType")
+    private String changeType;
+
+    @JsonProperty("changeSummary")
+    private String changeSummary;
+}

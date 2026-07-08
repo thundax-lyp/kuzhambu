@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.application.content.support;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.common.core.id.Identifier;
@@ -54,6 +55,22 @@ public record MingCustomsVersionSnapshot(
         return snapshot;
     }
 
+    public static MingCustomsVersionSnapshot from(JsonNode snapshot) {
+        return new MingCustomsVersionSnapshot(
+                text(snapshot, "contentType"),
+                longValue(snapshot, "contentId"),
+                text(snapshot, "contentUpdatedAt"),
+                text(snapshot, "title"),
+                text(snapshot, "category"),
+                text(snapshot, "chapter"),
+                text(snapshot, "section"),
+                text(snapshot, "summary"),
+                text(snapshot, "contentFormat"),
+                text(snapshot, "content"),
+                text(snapshot, "originalExcerpts"),
+                text(snapshot, "visibility"));
+    }
+
     private static Long id(Identifier<Long> id) {
         return id == null ? null : id.value();
     }
@@ -64,5 +81,15 @@ public record MingCustomsVersionSnapshot(
 
     private static String value(Enum<?> value) {
         return value == null ? null : value.name();
+    }
+
+    private static String text(JsonNode snapshot, String fieldName) {
+        JsonNode value = snapshot == null ? null : snapshot.get(fieldName);
+        return value == null || value.isNull() ? null : value.asText();
+    }
+
+    private static Long longValue(JsonNode snapshot, String fieldName) {
+        JsonNode value = snapshot == null ? null : snapshot.get(fieldName);
+        return value == null || value.isNull() ? null : value.asLong();
     }
 }
