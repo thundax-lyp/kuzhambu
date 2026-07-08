@@ -389,7 +389,11 @@ class OperationsDashboardApplicationServiceImplTest {
                 new Date(1_719_630_400_000L));
     }
 
-    private static OperationsDashboardPermissionSnapshot permissionResolverWithAllPrivileges() {
+    private static OperationsDashboardPermissionResolver permissionResolverWithAllPrivileges() {
+        return new TestPermissionResolver(permissionSnapshotWithAllPrivileges());
+    }
+
+    private static OperationsDashboardPermissionSnapshot permissionSnapshotWithAllPrivileges() {
         return new OperationsDashboardPermissionSnapshot(true, true, true, true, true, true, true, true);
     }
 
