@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `07 Operations interface validation`：验证后端 interface 契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-RESTORE-ORCHESTRATION.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-interface`、`OperationsHealthAlertInterfaceAssembler.java`、`OperationsHealthAlertRecoverCommand.java`
-    - 处理动作：运行 Operations interface 相关测试验证 recover 请求装配。
-    - 验收点：interface 模块测试通过，recover command 的操作者来源保持为当前 subject。
-    - 重要度：9/10
-
 - [ ] `08 Admin Web health validation`：验证前端健康告警页面
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-RESTORE-ORCHESTRATION.md`
