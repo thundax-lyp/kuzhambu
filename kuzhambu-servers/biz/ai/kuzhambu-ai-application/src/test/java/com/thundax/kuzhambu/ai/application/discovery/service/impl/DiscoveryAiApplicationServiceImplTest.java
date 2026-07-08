@@ -60,6 +60,27 @@ class DiscoveryAiApplicationServiceImplTest {
     }
 
     @Test
+    void generateAnswerShouldUseAnswerGenerationWorkerAndReturnCallId() {
+        CapturingInvocationService invocationService = new CapturingInvocationService();
+        DiscoveryAiApplicationServiceImpl service =
+                new DiscoveryAiApplicationServiceImpl(invocationService, resolver, null);
+
+        DiscoveryAiResult result = service.generateAnswer(request(false));
+        AiInvokeCommand capturedCommand = invocationService.capturedCommand();
+
+        assertNotNull(result);
+        assertEquals("DISCOVERY_ANSWER_GENERATION", capturedCommand.getOperation());
+        assertEquals("/internal/ai/discovery/answer-generation", capturedCommand.getWorkerPath());
+        assertEquals("answer_generation", capturedCommand.getCapability());
+        assertFalse(capturedCommand.isStream());
+        assertFalse(capturedCommand.isCreateCandidate());
+        assertEquals(101L, result.getCallId());
+        assertEquals(102L, result.getCandidateId());
+        assertEquals("SUCCEEDED", result.getStatus());
+        assertEquals("answer_generation", result.getCapability());
+    }
+
+    @Test
     void generateAnswerShouldExposeFinalFailureStateFromInvocationResult() {
         CapturingInvocationService invocationService = new CapturingInvocationService();
         invocationService.failed = true;
@@ -69,6 +90,7 @@ class DiscoveryAiApplicationServiceImplTest {
         DiscoveryAiResult result = service.generateAnswer(request(false));
 
         assertNotNull(result);
+        assertEquals(101L, result.getCallId());
         assertEquals("FAILED", result.getStatus());
         assertEquals("WORKER_STREAM", result.getErrorType());
         assertEquals("stream interrupted", result.getErrorMessage());

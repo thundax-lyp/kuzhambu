@@ -184,6 +184,65 @@ class AiFacadeImplTest {
     }
 
     @Test
+    void generateDiscoveryAnswerShouldMapCallIdAndFailureFields() {
+        DiscoveryAiApplicationService discoveryAiApplicationService = mock(DiscoveryAiApplicationService.class);
+        when(discoveryAiApplicationService.generateAnswer(any())).thenAnswer(invocation -> {
+            DiscoveryAiRequest request = invocation.getArgument(0);
+            assertEquals(21L, request.getServiceId());
+            assertEquals("DISCOVERY", request.getServiceRole());
+            assertEquals(31L, request.getModelId());
+            assertEquals("gpt-5", request.getModelName());
+            assertEquals(41L, request.getPromptVersionId());
+            assertEquals("req-answer", request.getRequestId());
+            assertEquals("trace-answer", request.getTraceId());
+            assertEquals("[\"answer-prompt\"]", request.getPromptMessagesJson());
+            assertEquals("{\"lang\":\"zh\"}", request.getPromptVariablesJson());
+            assertEquals("answer-hash", request.getPromptHash());
+            assertEquals("{\"question\":\"王圻是谁\"}", request.getInputPayloadJson());
+            assertEquals("{\"type\":\"object\"}", request.getOutputSchemaJson());
+            assertFalse(request.isStream());
+            assertTrue(request.isForceJson());
+            assertEquals("zh-CN", request.getLocale());
+            return new DiscoveryAiResult(
+                    701L, null, "FAILED", "answer_generation", "JSON", null, "WORKER_STREAM", "stream interrupted");
+        });
+        AiFacadeImpl facade = newFacade(
+                mock(AiReportApplicationService.class),
+                mock(AiBatchJobApplicationService.class),
+                discoveryAiApplicationService,
+                mock(KnowledgeAiExtractionApplicationServiceImpl.class),
+                mock(AiInvocationRepository.class),
+                mock(AiCandidateDomainService.class));
+
+        var response = facade.generateDiscoveryAnswer(DiscoveryAiFacadeRequest.builder()
+                .serviceId(21L)
+                .serviceRole("DISCOVERY")
+                .modelId(31L)
+                .modelName("gpt-5")
+                .promptVersionId(41L)
+                .requestId("req-answer")
+                .traceId("trace-answer")
+                .promptMessagesJson("[\"answer-prompt\"]")
+                .promptVariablesJson("{\"lang\":\"zh\"}")
+                .promptHash("answer-hash")
+                .inputPayloadJson("{\"question\":\"王圻是谁\"}")
+                .outputSchemaJson("{\"type\":\"object\"}")
+                .stream(false)
+                .forceJson(true)
+                .locale("zh-CN")
+                .build());
+
+        assertEquals(701L, response.getCallId());
+        assertNull(response.getCandidateId());
+        assertEquals("FAILED", response.getStatus());
+        assertEquals("answer_generation", response.getCapability());
+        assertEquals("JSON", response.getResultFormat());
+        assertNull(response.getResultPayload());
+        assertEquals("WORKER_STREAM", response.getErrorType());
+        assertEquals("stream interrupted", response.getErrorMessage());
+    }
+
+    @Test
     void extractKnowledgeGraphShouldMapRequestAndResponse() {
         KnowledgeAiExtractionApplicationServiceImpl knowledgeAiExtractionApplicationService =
                 mock(KnowledgeAiExtractionApplicationServiceImpl.class);

@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `AI discovery answer-generation facade`：确保 Discovery answer-generation 返回可追踪 callId
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-WANGQI-SINGLE-DOCUMENT-QA.md`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-facade/src/main/java/com/thundax/kuzhambu/ai/facade/request/DiscoveryAiFacadeRequest.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-facade/src/main/java/com/thundax/kuzhambu/ai/facade/response/DiscoveryAiFacadeResponse.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/discovery/service/impl/DiscoveryAiApplicationServiceImpl.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/test/java/com/thundax/kuzhambu/ai/application/discovery/service/impl/DiscoveryAiApplicationServiceImplTest.java`
-    - 处理动作：锁定 `/internal/ai/discovery/answer-generation` 调用、`createCandidate=false` 和 `DiscoveryAiFacadeResponse.callId` 透传。
-    - 验收点：AI application 测试断言 worker path、候选关闭、`callId` 返回和失败字段透传。
-    - 重要度：9/10
-
 - [ ] `Discovery QA AI request assembly`：组装 Wangqi 单文档回答生成请求
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-WANGQI-SINGLE-DOCUMENT-QA.md`
