@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `CLASSICS-IMPLEMENTATION-COVERAGE.md`：更新 Classics 实现覆盖表
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-CLASSICS-EXPORT-SHOWCASE-GOVERNANCE.md`
-    - 范围对象：`docs/40-readiness/CLASSICS-IMPLEMENTATION-COVERAGE.md`
-    - 处理动作：同步记录导出记录主动删除、批量管理策略、静态展示搜索/筛选与回源边界的实现覆盖状态。
-    - 验收点：Implementation Coverage 中相关 Classics export/showcase 条目与实际代码、接口和前端控件一致。
-    - 重要度：10/10
-
 - [ ] `RUNBOOK-CLASSICS-EXPORT-SHOWCASE-GOVERNANCE.md`、`TODO.md`：清理临时执行文档
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/00-governance/PR-RULES.md`
