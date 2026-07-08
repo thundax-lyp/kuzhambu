@@ -150,6 +150,26 @@ export interface RefinementDetailRecord {
     entityOptions?: RefinementEntityOption[] | null;
 }
 
+export interface RefinementApplyRecord {
+    refinementTaskId: number;
+    graphVersionId?: number | null;
+    taskType?: RefinementTaskType | null;
+    sourceContentType?: string | null;
+    sourceContentId?: number | null;
+    sourceCategoryCode?: string | null;
+    sourceCategoryName?: string | null;
+    status?: RefinementTaskStatus | null;
+    appliedAt?: number | null;
+    graphRefreshRequired?: boolean | null;
+    regenerateSupported?: boolean | null;
+    sourceTaskId?: number | null;
+    selectionScopeJson?: string | null;
+    replaceUnconfirmedOnly?: boolean | null;
+    triggerSource?: string | null;
+    nextAction?: string | null;
+    qualityReportRefreshRequired?: boolean | null;
+}
+
 export type RefinementTaskPageQuery = PageQuery<{
     taskType?: RefinementTaskType | null;
     sourceContentType?: string | null;

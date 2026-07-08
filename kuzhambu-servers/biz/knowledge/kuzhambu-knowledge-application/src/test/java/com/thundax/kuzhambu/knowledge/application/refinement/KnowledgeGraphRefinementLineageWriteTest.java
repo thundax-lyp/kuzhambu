@@ -172,6 +172,7 @@ class KnowledgeGraphRefinementLineageWriteTest {
         NoopKnowledgeLineageRelationRepository lineageRelationRepository = new NoopKnowledgeLineageRelationRepository();
         return new KnowledgeGraphRefinementApplicationServiceImpl(
                 graphVersionRepository,
+                new NoopGraphExtractionTaskRepository(),
                 new FakeRefinementTaskRepository(),
                 new FakeRefinementEntityDraftRepository(),
                 new FakeRefinementRelationDraftRepository(),

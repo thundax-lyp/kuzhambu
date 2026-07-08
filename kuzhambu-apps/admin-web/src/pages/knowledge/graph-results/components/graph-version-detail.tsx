@@ -59,6 +59,15 @@ export const GraphVersionDetail = ({
                 </Descriptions.Item>
                 <Descriptions.Item label="版本序号">{version?.versionNo || "-"}</Descriptions.Item>
                 <Descriptions.Item label="状态">{version?.status || "-"}</Descriptions.Item>
+                <Descriptions.Item label="精修状态">
+                    {version?.refinementApplied ? "已精修" : "未精修"}
+                </Descriptions.Item>
+                <Descriptions.Item label="最新精修任务">
+                    {version?.lastRefinementTaskId || "-"}
+                </Descriptions.Item>
+                <Descriptions.Item label="最新精修时间">
+                    {formatTimestamp(version?.lastRefinementAppliedAt)}
+                </Descriptions.Item>
                 <Descriptions.Item label="应用时间">
                     {formatTimestamp(version?.appliedAt)}
                 </Descriptions.Item>

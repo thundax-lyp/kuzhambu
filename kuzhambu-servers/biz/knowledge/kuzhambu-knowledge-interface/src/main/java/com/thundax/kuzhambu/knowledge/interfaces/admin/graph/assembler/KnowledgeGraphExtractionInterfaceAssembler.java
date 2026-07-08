@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.knowledge.interfaces.admin.graph.assembler;
 
+import com.thundax.kuzhambu.knowledge.application.graph.command.RegenerateGraphExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestGraphExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestLineageExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationExtractionCommand;
@@ -107,6 +108,17 @@ public final class KnowledgeGraphExtractionInterfaceAssembler {
         return request == null ? null : GraphExtractionTaskId.ofNullable(request.getSourceTaskId());
     }
 
+    public static RegenerateGraphExtractionCommand toRegenerateCommand(
+            GraphExtractionRequests.RegenerateRequest request) {
+        return new RegenerateGraphExtractionCommand(
+                request == null ? null : request.getTaskType(),
+                toSourceTaskId(request),
+                request == null ? null : request.getTriggerSource(),
+                request == null ? null : request.getSelectionScopeJson(),
+                request == null ? null : request.getReplaceUnconfirmedOnly(),
+                request == null ? null : request.getRequestedBy());
+    }
+
     public static GraphExtractionResponses.TaskResponse toResponse(GraphExtractionTaskResult result) {
         return GraphExtractionResponses.TaskResponse.builder()
                 .taskId(result == null ? null : result.getTaskId())
@@ -153,6 +165,9 @@ public final class KnowledgeGraphExtractionInterfaceAssembler {
                 .versionNo(result == null ? null : result.getVersionNo())
                 .status(result == null ? null : result.getStatus())
                 .appliedAt(result == null ? null : result.getAppliedAt())
+                .refinementApplied(result == null ? null : result.getRefinementApplied())
+                .lastRefinementTaskId(result == null ? null : result.getLastRefinementTaskId())
+                .lastRefinementAppliedAt(result == null ? null : result.getLastRefinementAppliedAt())
                 .build();
     }
 

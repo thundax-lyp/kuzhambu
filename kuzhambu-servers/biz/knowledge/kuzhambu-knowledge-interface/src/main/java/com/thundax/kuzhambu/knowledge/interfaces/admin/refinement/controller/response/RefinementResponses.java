@@ -132,6 +132,28 @@ public final class RefinementResponses {
 
     @Getter
     @Builder
+    public static class ApplyResponse {
+        private Long refinementTaskId;
+        private Long graphVersionId;
+        private String taskType;
+        private String sourceContentType;
+        private Long sourceContentId;
+        private String sourceCategoryCode;
+        private String sourceCategoryName;
+        private String status;
+        private Long appliedAt;
+        private Boolean graphRefreshRequired;
+        private Boolean regenerateSupported;
+        private Long sourceTaskId;
+        private String selectionScopeJson;
+        private Boolean replaceUnconfirmedOnly;
+        private String triggerSource;
+        private String nextAction;
+        private Boolean qualityReportRefreshRequired;
+    }
+
+    @Getter
+    @Builder
     public static class DetailResponse {
         private Long refinementTaskId;
         private Long graphVersionId;

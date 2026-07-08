@@ -11,6 +11,10 @@ public interface RefinementTaskRepository {
     RefinementTask findLatestDraft(
             String taskType, String sourceContentType, Long sourceContentId, Long graphVersionId);
 
+    default RefinementTask findLatestAppliedByGraphVersionId(Long graphVersionId) {
+        return null;
+    }
+
     PageResult<RefinementTask> page(
             String taskType,
             String sourceContentType,

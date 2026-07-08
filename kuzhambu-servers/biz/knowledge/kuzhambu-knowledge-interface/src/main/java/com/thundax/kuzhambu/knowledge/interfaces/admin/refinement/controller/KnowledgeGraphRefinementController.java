@@ -158,11 +158,11 @@ public class KnowledgeGraphRefinementController {
         refinementService.deleteRelation(KnowledgeGraphRefinementInterfaceAssembler.toDeleteRelationCommand(request));
     }
 
-    @Operation(summary = "应用精修任务", description = "knowledge:refinement:edit")
+    @Operation(summary = "应用精修任务并返回图谱联动动作", description = "knowledge:refinement:edit")
     @HasPermission("knowledge:refinement:edit")
     @SysLogger("应用精修任务")
     @PostMapping("task/apply")
-    public RefinementResponses.DetailResponse applyTask(
+    public RefinementResponses.ApplyResponse applyTask(
             @Valid @RequestBody RefinementRequests.TaskApplyRequest request) {
         return KnowledgeGraphRefinementInterfaceAssembler.toResponse(refinementService.applyTask(
                 request == null ? null : request.getRefinementTaskId(),

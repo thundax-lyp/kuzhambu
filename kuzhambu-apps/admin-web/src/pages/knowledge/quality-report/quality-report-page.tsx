@@ -29,6 +29,31 @@ const QUALITY_REEXTRACT_PROMPT_MESSAGES_JSON =
     '[{"role":"system","content":"extract knowledge graph from quality report low quality category"}]';
 const QUALITY_REEXTRACT_INPUT_PAYLOAD_JSON = '{"triggerSource":"QUALITY_REPORT"}';
 
+const readGraphVersionIdFromSearch = () => {
+    if (typeof window === "undefined") {
+        return null;
+    }
+    const graphVersionId = Number(
+        new URLSearchParams(window.location.search).get("graphVersionId")
+    );
+    return Number.isFinite(graphVersionId) && graphVersionId > 0 ? graphVersionId : null;
+};
+
+const readRegenerateModeFromSearch = () => {
+    if (typeof window === "undefined") {
+        return false;
+    }
+    return new URLSearchParams(window.location.search).get("regenerate") === "1";
+};
+
+const formatTimestamp = (value?: number | null) => {
+    if (!value) {
+        return "-";
+    }
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? "-" : date.toLocaleString("zh-CN", { hour12: false });
+};
+
 export const QualityReportPage = () => {
     const { message: messageApi } = App.useApp();
     const confirm = useKuzhambuConfirm();
@@ -36,23 +61,27 @@ export const QualityReportPage = () => {
     const canView = hasPermission("knowledge:quality-report:view");
     const canGenerate = hasPermission("knowledge:quality-report:generate");
     const canReextract = hasPermission("knowledge:graph:edit");
-    const [graphVersionId, setGraphVersionId] = useState<number | null>(null);
+    const [regenerateMode] = useState(() => readRegenerateModeFromSearch());
+    const [graphVersionId, setGraphVersionId] = useState<number | null>(() =>
+        readGraphVersionIdFromSearch()
+    );
     const [selectedDetail, setSelectedDetail] = useState<QualityReportDetailRecord | null>(null);
     const [latestReextractTask, setLatestReextractTask] =
         useState<ReextractLowQualityCategoryRecord | null>(null);
 
     const latestReportQuery = useQuery({
-        queryKey: ["knowledge", "quality-report", "latest"],
-        queryFn: () => service.getLatestReport({}),
+        queryKey: ["knowledge", "quality-report", "latest", graphVersionId],
+        queryFn: () => service.getLatestReport({ graphVersionId }),
         enabled: canView,
         retry: false
     });
     const reportPageQuery = useQuery({
-        queryKey: ["knowledge", "quality-report", "page"],
+        queryKey: ["knowledge", "quality-report", "page", graphVersionId],
         queryFn: () =>
             service.pageReports({
                 pageNo: DEFAULT_PAGE_NO,
-                pageSize: DEFAULT_PAGE_SIZE
+                pageSize: DEFAULT_PAGE_SIZE,
+                graphVersionId
             }),
         enabled: canView,
         retry: false
@@ -66,9 +95,9 @@ export const QualityReportPage = () => {
         }
     });
     const generateMutation = useMutation({
-        mutationFn: () =>
+        mutationFn: (targetGraphVersionId: number) =>
             service.generateReport({
-                graphVersionId: graphVersionId || 0,
+                graphVersionId: targetGraphVersionId,
                 generatedBy: 1
             }),
         onSuccess: async (detail) => {
@@ -90,6 +119,7 @@ export const QualityReportPage = () => {
 
     const currentDetail = selectedDetail || latestReportQuery.data || null;
     const currentReport = currentDetail?.report || null;
+    const staleGraphVersionId = currentReport?.graphVersionId || graphVersionId || null;
     const reportItems = reportPageQuery.data?.records || [];
 
     const reextractMutation = useMutation({
@@ -156,13 +186,37 @@ export const QualityReportPage = () => {
                         disabled={!canGenerate}
                         graphVersionId={graphVersionId}
                         loading={generateMutation.isPending}
+                        submitLabel={regenerateMode ? "重新生成报告" : "生成报告"}
                         onChange={setGraphVersionId}
-                        onGenerate={() => generateMutation.mutate()}
+                        onGenerate={() => generateMutation.mutate(graphVersionId || 0)}
                     />
                 </Card>
 
                 {currentReport ? (
                     <KuzhambuSpace orientation="vertical" size={16} style={{ width: "100%" }}>
+                        {currentDetail?.stale ? (
+                            <Alert
+                                action={
+                                    <Button
+                                        disabled={!canGenerate || !staleGraphVersionId}
+                                        loading={generateMutation.isPending}
+                                        size="small"
+                                        onClick={() => {
+                                            if (staleGraphVersionId) {
+                                                setGraphVersionId(staleGraphVersionId);
+                                                generateMutation.mutate(staleGraphVersionId);
+                                            }
+                                        }}
+                                    >
+                                        重新生成报告
+                                    </Button>
+                                }
+                                description={`最新精修时间：${formatTimestamp(currentDetail.lastRefinementAppliedAt)}`}
+                                showIcon
+                                title="该版本质量报告早于最新精修应用"
+                                type="warning"
+                            />
+                        ) : null}
                         <section aria-labelledby="knowledge-quality-report-summary">
                             <div className="knowledge-quality-report-section-header">
                                 <Title id="knowledge-quality-report-summary" level={4}>

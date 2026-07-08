@@ -1,12 +1,12 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { App as AntdApp } from "antd";
 import type { ComponentType } from "react";
 import { replacePermissions } from "@/auth/permission-storage";
 import { GraphResultsPage } from "./graph-results-page";
 import type { GraphVersionRecord } from "./graph-results-types";
 
-vi.mock("./graph-results-service", () => ({
+const serviceMocks = vi.hoisted(() => ({
     pageVersions: vi.fn(async () => ({
         pageNo: 1,
         pageSize: 20,
@@ -21,7 +21,10 @@ vi.mock("./graph-results-service", () => ({
                 status: "APPLIED",
                 sourceContentType: "SANCAI_ENTRY",
                 sourceContentId: 1001,
-                versionNo: 2
+                versionNo: 2,
+                refinementApplied: true,
+                lastRefinementTaskId: 31,
+                lastRefinementAppliedAt: 1760000000000
             }
         ]
     })),
@@ -64,14 +67,33 @@ vi.mock("./graph-results-service", () => ({
     getLineageRelationDetail: vi.fn(async () => null)
 }));
 
+vi.mock("./graph-results-service", () => ({
+    ...serviceMocks
+}));
+
 vi.mock("./components/graph-version-table", () => ({
-    GraphVersionTable: (({ versions }: { versions: GraphVersionRecord[] }) => (
+    GraphVersionTable: (({
+        versions,
+        onOpenResults
+    }: {
+        versions: GraphVersionRecord[];
+        onOpenResults: (version: GraphVersionRecord) => void;
+    }) => (
         <div aria-label="知识图谱版本表格">
             {versions.map((version) => (
-                <div key={version.versionId}>{version.versionId}</div>
+                <button
+                    key={version.versionId}
+                    type="button"
+                    onClick={() => onOpenResults(version)}
+                >
+                    {version.versionId}
+                </button>
             ))}
         </div>
-    )) as ComponentType<{ versions: GraphVersionRecord[] }>
+    )) as ComponentType<{
+        versions: GraphVersionRecord[];
+        onOpenResults: (version: GraphVersionRecord) => void;
+    }>
 }));
 
 vi.mock("./components/graph-version-detail", () => ({
@@ -104,11 +126,14 @@ vi.mock("./components/graph-lineage-relation-detail", () => ({
 
 describe("GraphResultsPage", () => {
     beforeEach(() => {
+        vi.clearAllMocks();
+        window.history.pushState({}, "", "/");
         replacePermissions(["knowledge:graph:view"]);
     });
 
     afterEach(() => {
         vi.restoreAllMocks();
+        window.history.pushState({}, "", "/");
         cleanup();
     });
 
@@ -130,5 +155,45 @@ describe("GraphResultsPage", () => {
         expect(screen.getByRole("heading", { name: "正式结果读取" })).toBeInTheDocument();
         expect(await screen.findByLabelText("知识图谱版本表格")).toBeInTheDocument();
         expect(screen.getByText("71")).toBeInTheDocument();
+    }, 30000);
+
+    it("focuses graph version from search params and refreshes result tabs", async () => {
+        window.history.pushState({}, "", "/knowledge/graph-results?graphVersionId=71");
+        const queryClient = new QueryClient({
+            defaultOptions: {
+                queries: { gcTime: Infinity, refetchOnWindowFocus: false, retry: false }
+            }
+        });
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <GraphResultsPage />
+                </AntdApp>
+            </QueryClientProvider>
+        );
+
+        await waitFor(() => {
+            expect(serviceMocks.pageEntities).toHaveBeenCalledWith(
+                expect.objectContaining({ versionId: 71 })
+            );
+        });
+
+        fireEvent.click(screen.getByRole("tab", { name: "正式关系" }));
+        await waitFor(() => {
+            expect(serviceMocks.pageRelations).toHaveBeenCalledWith(
+                expect.objectContaining({ versionId: 71 })
+            );
+        });
+
+        fireEvent.click(screen.getByRole("tab", { name: "正式世系" }));
+        await waitFor(() => {
+            expect(serviceMocks.pageLineageNodes).toHaveBeenCalledWith(
+                expect.objectContaining({ versionId: 71 })
+            );
+            expect(serviceMocks.pageLineageRelations).toHaveBeenCalledWith(
+                expect.objectContaining({ versionId: 71 })
+            );
+        });
     }, 30000);
 });

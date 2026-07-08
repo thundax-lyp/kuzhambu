@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Alert, Card, Empty, Tabs, Typography } from "antd";
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
@@ -29,9 +29,20 @@ import "./graph-results-page.css";
 const { Paragraph, Text, Title } = Typography;
 type GraphResultsTabKey = "versions" | "entities" | "relations" | "lineage";
 
+const readGraphVersionIdFromSearch = () => {
+    if (typeof window === "undefined") {
+        return null;
+    }
+    const versionId = Number(new URLSearchParams(window.location.search).get("graphVersionId"));
+    return Number.isFinite(versionId) && versionId > 0 ? versionId : null;
+};
+
 export const GraphResultsPage = () => {
     const canViewGraph = hasPermission("knowledge:graph:view");
-    const [activeTab, setActiveTab] = useState<GraphResultsTabKey>("versions");
+    const [focusVersionId] = useState<number | null>(() => readGraphVersionIdFromSearch());
+    const [activeTab, setActiveTab] = useState<GraphResultsTabKey>(
+        focusVersionId ? "entities" : "versions"
+    );
     const [versionQuery] = useState<GraphVersionPageQuery>({
         pageNo: DEFAULT_PAGE_NO,
         pageSize: DEFAULT_PAGE_SIZE
@@ -72,6 +83,40 @@ export const GraphResultsPage = () => {
         enabled: canViewGraph,
         retry: false
     });
+    const versions = versionPageQuery.data?.records || [];
+    const focusedVersion = focusVersionId
+        ? versions.find((version) => version.versionId === focusVersionId) || null
+        : null;
+    const activeVersion = selectedVersion || focusedVersion;
+    const activeVersionId = activeVersion?.versionId || focusVersionId || null;
+    const effectiveEntityQuery = useMemo(
+        () => ({
+            ...entityQuery,
+            versionId: activeVersionId ?? entityQuery.versionId ?? null
+        }),
+        [activeVersionId, entityQuery]
+    );
+    const effectiveRelationQuery = useMemo(
+        () => ({
+            ...relationQuery,
+            versionId: activeVersionId ?? relationQuery.versionId ?? null
+        }),
+        [activeVersionId, relationQuery]
+    );
+    const effectiveLineageNodeQuery = useMemo(
+        () => ({
+            ...lineageNodeQuery,
+            versionId: activeVersionId ?? lineageNodeQuery.versionId ?? null
+        }),
+        [activeVersionId, lineageNodeQuery]
+    );
+    const effectiveLineageRelationQuery = useMemo(
+        () => ({
+            ...lineageRelationQuery,
+            versionId: activeVersionId ?? lineageRelationQuery.versionId ?? null
+        }),
+        [activeVersionId, lineageRelationQuery]
+    );
     const versionDetailQuery = useQuery({
         queryKey: ["knowledge", "graph-results", "version-detail", detailVersionId],
         queryFn: () => service.getVersionDetail({ versionId: detailVersionId || 0 }),
@@ -79,27 +124,32 @@ export const GraphResultsPage = () => {
         retry: false
     });
     const entityPageQuery = useQuery({
-        queryKey: ["knowledge", "graph-results", "entities", entityQuery],
-        queryFn: () => service.pageEntities(entityQuery),
-        enabled: canViewGraph && activeTab === "entities" && entityQuery.versionId != null,
+        queryKey: ["knowledge", "graph-results", "entities", effectiveEntityQuery],
+        queryFn: () => service.pageEntities(effectiveEntityQuery),
+        enabled: canViewGraph && activeTab === "entities" && activeVersionId != null,
         retry: false
     });
     const relationPageQuery = useQuery({
-        queryKey: ["knowledge", "graph-results", "relations", relationQuery],
-        queryFn: () => service.pageRelations(relationQuery),
-        enabled: canViewGraph && activeTab === "relations" && relationQuery.versionId != null,
+        queryKey: ["knowledge", "graph-results", "relations", effectiveRelationQuery],
+        queryFn: () => service.pageRelations(effectiveRelationQuery),
+        enabled: canViewGraph && activeTab === "relations" && activeVersionId != null,
         retry: false
     });
     const lineageNodePageQuery = useQuery({
-        queryKey: ["knowledge", "graph-results", "lineage-nodes", lineageNodeQuery],
-        queryFn: () => service.pageLineageNodes(lineageNodeQuery),
-        enabled: canViewGraph && activeTab === "lineage" && lineageNodeQuery.versionId != null,
+        queryKey: ["knowledge", "graph-results", "lineage-nodes", effectiveLineageNodeQuery],
+        queryFn: () => service.pageLineageNodes(effectiveLineageNodeQuery),
+        enabled: canViewGraph && activeTab === "lineage" && activeVersionId != null,
         retry: false
     });
     const lineageRelationPageQuery = useQuery({
-        queryKey: ["knowledge", "graph-results", "lineage-relations", lineageRelationQuery],
-        queryFn: () => service.pageLineageRelations(lineageRelationQuery),
-        enabled: canViewGraph && activeTab === "lineage" && lineageRelationQuery.versionId != null,
+        queryKey: [
+            "knowledge",
+            "graph-results",
+            "lineage-relations",
+            effectiveLineageRelationQuery
+        ],
+        queryFn: () => service.pageLineageRelations(effectiveLineageRelationQuery),
+        enabled: canViewGraph && activeTab === "lineage" && activeVersionId != null,
         retry: false
     });
     const entityDetailQuery = useQuery({
@@ -133,7 +183,6 @@ export const GraphResultsPage = () => {
         retry: false
     });
 
-    const versions = versionPageQuery.data?.records || [];
     const entities = entityPageQuery.data?.records || [];
     const relations = relationPageQuery.data?.records || [];
     const lineageNodes = lineageNodePageQuery.data?.records || [];
@@ -144,15 +193,31 @@ export const GraphResultsPage = () => {
         setDetailOpen(true);
     };
 
-    const selectVersionResults = (version: GraphVersionRecord) => {
+    const selectVersionResults = useCallback((version: GraphVersionRecord) => {
         setSelectedVersion(version);
-        setEntityQuery((current) => ({ ...current, versionId: version.versionId }));
-        setRelationQuery((current) => ({ ...current, versionId: version.versionId }));
-        setLineageNodeQuery((current) => ({ ...current, versionId: version.versionId }));
-        setLineageRelationQuery((current) => ({ ...current, versionId: version.versionId }));
+        setEntityQuery((current) => ({
+            ...current,
+            pageNo: DEFAULT_PAGE_NO,
+            versionId: version.versionId
+        }));
+        setRelationQuery((current) => ({
+            ...current,
+            pageNo: DEFAULT_PAGE_NO,
+            versionId: version.versionId
+        }));
+        setLineageNodeQuery((current) => ({
+            ...current,
+            pageNo: DEFAULT_PAGE_NO,
+            versionId: version.versionId
+        }));
+        setLineageRelationQuery((current) => ({
+            ...current,
+            pageNo: DEFAULT_PAGE_NO,
+            versionId: version.versionId
+        }));
         setDetailOpen(false);
         setActiveTab("entities");
-    };
+    }, []);
 
     const renderVersionSelectionHint = (description: string) => {
         if (!canViewGraph) {
@@ -163,7 +228,7 @@ export const GraphResultsPage = () => {
                 />
             );
         }
-        if (!selectedVersion) {
+        if (!activeVersion) {
             return <Empty description={description} image={Empty.PRESENTED_IMAGE_SIMPLE} />;
         }
         return null;
@@ -215,8 +280,10 @@ export const GraphResultsPage = () => {
                                         {canViewGraph && versions.length > 0 ? (
                                             <GraphVersionTable
                                                 loading={versionPageQuery.isLoading}
+                                                selectedVersionId={activeVersionId}
                                                 versions={versions}
                                                 onOpenDetail={openVersionDetail}
+                                                onOpenResults={selectVersionResults}
                                             />
                                         ) : (
                                             <Empty
@@ -253,13 +320,13 @@ export const GraphResultsPage = () => {
                                             showIcon
                                             type="info"
                                             title={
-                                                selectedVersion
-                                                    ? `当前查看版本 #${selectedVersion.versionId} 的正式实体`
+                                                activeVersion
+                                                    ? `当前查看版本 #${activeVersion.versionId} 的正式实体`
                                                     : "请先从图谱版本详情中选择一个版本"
                                             }
                                             description={
-                                                selectedVersion
-                                                    ? `任务 ${selectedVersion.taskId || "-"} / 状态 ${selectedVersion.status || "-"}`
+                                                activeVersion
+                                                    ? `任务 ${activeVersion.taskId || "-"} / 状态 ${activeVersion.status || "-"}`
                                                     : "点击图谱版本列表中的“查看详情”，再使用“查看此版本正式结果”进入下钻视图。"
                                             }
                                         />
@@ -299,13 +366,13 @@ export const GraphResultsPage = () => {
                                             showIcon
                                             type="info"
                                             title={
-                                                selectedVersion
-                                                    ? `当前查看版本 #${selectedVersion.versionId} 的正式关系`
+                                                activeVersion
+                                                    ? `当前查看版本 #${activeVersion.versionId} 的正式关系`
                                                     : "请先从图谱版本详情中选择一个版本"
                                             }
                                             description={
-                                                selectedVersion
-                                                    ? `任务类型 ${selectedVersion.taskType || "-"} / 来源 ${selectedVersion.sourceContentType || "-"}`
+                                                activeVersion
+                                                    ? `任务类型 ${activeVersion.taskType || "-"} / 来源 ${activeVersion.sourceContentType || "-"}`
                                                     : "点击图谱版本列表中的“查看详情”，再使用“查看此版本正式结果”进入下钻视图。"
                                             }
                                         />
@@ -345,12 +412,12 @@ export const GraphResultsPage = () => {
                                             showIcon
                                             type="info"
                                             title={
-                                                selectedVersion
-                                                    ? `当前查看版本 #${selectedVersion.versionId} 的正式世系`
+                                                activeVersion
+                                                    ? `当前查看版本 #${activeVersion.versionId} 的正式世系`
                                                     : "请先从图谱版本详情中选择一个版本"
                                             }
                                             description={
-                                                selectedVersion
+                                                activeVersion
                                                     ? "世系节点与关系拆成独立读视图，强调版本来源和确认状态。"
                                                     : "点击图谱版本列表中的“查看详情”，再使用“查看此版本正式结果”进入下钻视图。"
                                             }

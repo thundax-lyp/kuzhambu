@@ -72,6 +72,9 @@ export interface QualityReportDetailRecord {
     issues?: QualityReportIssueRecord[] | null;
     sourceDetails?: QualityReportSourceDetailRecord[] | null;
     annotations?: QualityReportAnnotationRecord[] | null;
+    stale?: boolean | null;
+    staleReason?: string | null;
+    lastRefinementAppliedAt?: number | null;
 }
 
 export interface GenerateQualityReportCommand {

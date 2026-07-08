@@ -11,6 +11,7 @@ import { GraphExtractionTaskTable } from "./components/graph-extraction-task-tab
 import * as service from "./graph-extraction-service";
 import type {
     GraphExtractionCreateCommand,
+    GraphExtractionRegenerateCommand,
     GraphExtractionTriggerSource,
     GraphExtractionTaskPageQuery,
     GraphExtractionTaskRecord
@@ -21,6 +22,36 @@ const { Paragraph, Text, Title } = Typography;
 
 const QUALITY_TRIGGER_SOURCE: GraphExtractionTriggerSource = "QUALITY_REPORT";
 const MANUAL_TRIGGER_SOURCE: GraphExtractionTriggerSource = "MANUAL";
+const REGENERATE_TRIGGER_SOURCE: GraphExtractionTriggerSource = "REGENERATE";
+const REFINEMENT_APPLIED_TRIGGER_SOURCE: GraphExtractionTriggerSource = "REFINEMENT_APPLIED";
+
+const readBooleanSearchParam = (value: string | null, fallback: boolean) => {
+    if (value === null) {
+        return fallback;
+    }
+    return value === "true" || value === "1";
+};
+
+const readRegenerateCommandFromSearch = (): GraphExtractionRegenerateCommand | null => {
+    if (typeof window === "undefined") {
+        return null;
+    }
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("regenerate") !== "1") {
+        return null;
+    }
+    const sourceTaskId = Number(params.get("sourceTaskId"));
+    if (!Number.isFinite(sourceTaskId) || sourceTaskId <= 0) {
+        return null;
+    }
+    return {
+        taskType: params.get("taskType") || "GRAPH",
+        sourceTaskId,
+        triggerSource: params.get("triggerSource") || REFINEMENT_APPLIED_TRIGGER_SOURCE,
+        selectionScopeJson: params.get("selectionScopeJson"),
+        replaceUnconfirmedOnly: readBooleanSearchParam(params.get("replaceUnconfirmedOnly"), true)
+    };
+};
 
 export const GraphExtractionPage = () => {
     const { message: messageApi } = App.useApp();
@@ -33,6 +64,9 @@ export const GraphExtractionPage = () => {
     );
     const [createTriggerSource, setCreateTriggerSource] =
         useState<GraphExtractionTriggerSource>(MANUAL_TRIGGER_SOURCE);
+    const [handoffRegenerateCommand] = useState<GraphExtractionRegenerateCommand | null>(() =>
+        readRegenerateCommandFromSearch()
+    );
     const [taskQuery] = useState<GraphExtractionTaskPageQuery>({
         pageNo: DEFAULT_PAGE_NO,
         pageSize: DEFAULT_PAGE_SIZE
@@ -88,14 +122,7 @@ export const GraphExtractionPage = () => {
         }
     });
     const regenerateTaskMutation = useMutation({
-        mutationFn: (task: GraphExtractionTaskRecord) =>
-            service.regenerateTask({
-                taskType: task.taskType || "GRAPH",
-                sourceTaskId: Number(task.taskId),
-                selectionScopeJson: task.selectionScopeJson,
-                replaceUnconfirmedOnly: task.replaceUnconfirmedOnly ?? true,
-                requestedBy: task.requestedBy
-            }),
+        mutationFn: service.regenerateTask,
         onSuccess: async (task) => {
             setLatestCreatedTask(task);
             await queryClient.invalidateQueries({
@@ -153,7 +180,18 @@ export const GraphExtractionPage = () => {
         if (Number.isNaN(taskId)) {
             return;
         }
-        regenerateTaskMutation.mutate(task);
+        regenerateTaskMutation.mutate({
+            taskType: task.taskType || "GRAPH",
+            sourceTaskId: taskId,
+            triggerSource: REGENERATE_TRIGGER_SOURCE,
+            selectionScopeJson: task.selectionScopeJson,
+            replaceUnconfirmedOnly: task.replaceUnconfirmedOnly ?? true,
+            requestedBy: task.requestedBy
+        });
+    };
+
+    const regenerateFromHandoff = (request: GraphExtractionRegenerateCommand) => {
+        regenerateTaskMutation.mutate(request);
     };
 
     const cancelBatchTask = (task: GraphExtractionTaskRecord) => {
@@ -217,6 +255,9 @@ export const GraphExtractionPage = () => {
                         creatingTaskType={createTaskMutation.variables?.taskType || null}
                         latestCreatedTask={latestCreatedTask}
                         onCreate={createTaskMutation.mutate}
+                        onRegenerate={regenerateFromHandoff}
+                        regenerateCommand={handoffRegenerateCommand}
+                        regenerating={regenerateTaskMutation.isPending}
                     />
                 </section>
 
@@ -240,7 +281,8 @@ export const GraphExtractionPage = () => {
                                 }
                                 loading={taskPageQuery.isLoading}
                                 regeneratingTaskId={
-                                    regenerateTaskMutation.variables?.taskId || null
+                                    regenerateTaskMutation.variables?.sourceTaskId?.toString() ||
+                                    null
                                 }
                                 tasks={tasks}
                                 onApply={applyTask}

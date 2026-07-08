@@ -19,4 +19,32 @@ public class GraphVersionResult {
     private Integer versionNo;
     private String status;
     private Long appliedAt;
+    private Boolean refinementApplied;
+    private Long lastRefinementTaskId;
+    private Long lastRefinementAppliedAt;
+
+    public GraphVersionResult(
+            Long versionId,
+            String taskId,
+            Long candidateId,
+            String taskType,
+            String sourceContentType,
+            Long sourceContentId,
+            Integer versionNo,
+            String status,
+            Long appliedAt) {
+        this(
+                versionId,
+                taskId,
+                candidateId,
+                taskType,
+                sourceContentType,
+                sourceContentId,
+                versionNo,
+                status,
+                appliedAt,
+                Boolean.FALSE,
+                null,
+                null);
+    }
 }

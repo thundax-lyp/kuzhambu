@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.knowledge.application.graph.service;
 
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.knowledge.application.graph.command.RegenerateGraphExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestGraphExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestLineageExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationExtractionCommand;
@@ -28,6 +29,8 @@ public interface KnowledgeGraphExtractionApplicationService {
             String selectionScopeJson,
             Boolean replaceUnconfirmedOnly,
             Long requestedBy);
+
+    GraphExtractionTaskResult regenerateTask(RegenerateGraphExtractionCommand command);
 
     PageResult<GraphExtractionTaskResult> pageTasks(
             String taskType,

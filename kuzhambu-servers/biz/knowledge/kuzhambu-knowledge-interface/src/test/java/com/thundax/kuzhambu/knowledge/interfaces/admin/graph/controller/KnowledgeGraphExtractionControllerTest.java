@@ -2,12 +2,14 @@ package com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.knowledge.application.graph.command.RegenerateGraphExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionBatchCancelResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphVersionResult;
@@ -46,18 +48,18 @@ class KnowledgeGraphExtractionControllerTest {
         GraphExtractionRequests.RegenerateRequest request = new GraphExtractionRequests.RegenerateRequest();
         request.setTaskType("GRAPH");
         request.setSourceTaskId(88L);
+        request.setTriggerSource("REFINEMENT_APPLIED");
         request.setSelectionScopeJson("{\"sourceContentIds\":[88,89]}");
         request.setReplaceUnconfirmedOnly(Boolean.TRUE);
         request.setRequestedBy(99L);
-        when(service.regenerateTask(
-                        eq("GRAPH"), any(), eq("{\"sourceContentIds\":[88,89]}"), eq(Boolean.TRUE), eq(99L)))
+        when(service.regenerateTask(any(RegenerateGraphExtractionCommand.class)))
                 .thenReturn(new GraphExtractionTaskResult(
                         "9001",
                         1001L,
                         "GRAPH",
                         "CLASSICS_ENTRY",
                         "{\"entryId\":88}",
-                        "REGENERATE",
+                        "REFINEMENT_APPLIED",
                         "{\"sourceContentIds\":[88,89]}",
                         Boolean.TRUE,
                         88L,
@@ -76,10 +78,15 @@ class KnowledgeGraphExtractionControllerTest {
         var response = controller.regenerateTask(request);
 
         verify(service)
-                .regenerateTask(eq("GRAPH"), any(), eq("{\"sourceContentIds\":[88,89]}"), eq(Boolean.TRUE), eq(99L));
+                .regenerateTask(argThat(command -> "GRAPH".equals(command.getTaskType())
+                        && command.getSourceTaskId().value() == 88L
+                        && "REFINEMENT_APPLIED".equals(command.getTriggerSource())
+                        && "{\"sourceContentIds\":[88,89]}".equals(command.getSelectionScopeJson())
+                        && Boolean.TRUE.equals(command.getReplaceUnconfirmedOnly())
+                        && command.getRequestedBy() == 99L));
         assertEquals("9001", response.getTaskId());
         assertEquals(1001L, response.getBatchJobId());
-        assertEquals("REGENERATE", response.getTriggerSource());
+        assertEquals("REFINEMENT_APPLIED", response.getTriggerSource());
     }
 
     @Test

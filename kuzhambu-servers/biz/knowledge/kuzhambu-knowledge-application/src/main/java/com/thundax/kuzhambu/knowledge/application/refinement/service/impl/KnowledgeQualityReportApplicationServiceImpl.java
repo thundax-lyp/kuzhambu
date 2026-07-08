@@ -70,6 +70,7 @@ public class KnowledgeQualityReportApplicationServiceImpl implements KnowledgeQu
     private static final String TASK_TYPE_GRAPH = "GRAPH";
     private static final String TASK_TYPE_LINEAGE = "LINEAGE";
     private static final String TRIGGER_SOURCE_QUALITY_REPORT = "QUALITY_REPORT";
+    private static final String STALE_REASON_REFINEMENT_APPLIED_AFTER_REPORT = "REFINEMENT_APPLIED_AFTER_REPORT";
     private static final String DEFAULT_LOCALE = "zh-CN";
 
     private final GraphVersionRepository graphVersionRepository;
@@ -446,6 +447,7 @@ public class KnowledgeQualityReportApplicationServiceImpl implements KnowledgeQu
             List<QualityReportIssue> issues,
             List<QualityReportSourceDetail> sourceDetails,
             List<QualityAnnotation> annotations) {
+        ReportStaleInfo staleInfo = resolveReportStaleInfo(report);
         return new QualityReportDetailResult(
                 toReportRecord(report),
                 issues == null
@@ -456,11 +458,30 @@ public class KnowledgeQualityReportApplicationServiceImpl implements KnowledgeQu
                         : sourceDetails.stream().map(this::toSourceDetailRecord).toList(),
                 annotations == null
                         ? List.of()
-                        : annotations.stream().map(this::toAnnotationResult).toList());
+                        : annotations.stream().map(this::toAnnotationResult).toList(),
+                staleInfo.stale(),
+                staleInfo.staleReason(),
+                staleInfo.lastRefinementAppliedAt());
     }
 
     private QualityReportDetailResult emptyDetail() {
-        return new QualityReportDetailResult(null, List.of(), List.of(), List.of());
+        return new QualityReportDetailResult(null, List.of(), List.of(), List.of(), Boolean.FALSE, null, null);
+    }
+
+    private ReportStaleInfo resolveReportStaleInfo(QualityReport report) {
+        if (report == null || report.getGraphVersionId() == null) {
+            return new ReportStaleInfo(Boolean.FALSE, null, null);
+        }
+        RefinementTask lastAppliedRefinement =
+                refinementTaskRepository.findLatestAppliedByGraphVersionId(report.getGraphVersionId());
+        if (lastAppliedRefinement == null || lastAppliedRefinement.getAppliedAt() == null) {
+            return new ReportStaleInfo(Boolean.FALSE, null, null);
+        }
+        Long lastRefinementAppliedAt = lastAppliedRefinement.getAppliedAt().getTime();
+        boolean stale =
+                report.getGeneratedAt() != null && report.getGeneratedAt().before(lastAppliedRefinement.getAppliedAt());
+        return new ReportStaleInfo(
+                stale, stale ? STALE_REASON_REFINEMENT_APPLIED_AFTER_REPORT : null, lastRefinementAppliedAt);
     }
 
     private ReportRecord toReportRecord(QualityReport report) {
@@ -750,4 +771,6 @@ public class KnowledgeQualityReportApplicationServiceImpl implements KnowledgeQu
     }
 
     private record RefinementCounts(long entityConfirmed, long relationConfirmed, long lineageConfirmed) {}
+
+    private record ReportStaleInfo(Boolean stale, String staleReason, Long lastRefinementAppliedAt) {}
 }

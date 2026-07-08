@@ -46,7 +46,12 @@
 - Knowledge 已新增世系画布聚合读取服务，Admin `POST /api/knowledge/lineage/canvas` 与 Portal `GET /api/portal/knowledge/lineage` 均读取正式 `knowledge_lineage_node`、`knowledge_lineage_relation` 和 `knowledge_graph_version`，支持版本、关键词、节点类型、关系类型、确认状态、焦点节点、焦点关系和深度过滤。
 - Admin Web 已接入独立 `/knowledge/lineage` 页面与 `知识治理 / 世系图浏览` 菜单，支持版本切换、筛选、重置、刷新、画布节点/关系点击、节点表格定位、关系表格定位和详情面板联动。
 - Admin Web 已在 `/knowledge/refinement` 工作台接入人工质量标注，实体、关系、世系节点和世系关系均可打开标注 Drawer，保存、查看和删除质量标注。
+- Admin Web `/knowledge/refinement` 应用精修后已展示后续操作提示，支持通过按钮打开当前图谱版本、进入图谱重生成并携带精修来源参数，以及进入质量报告重算入口。
+- Knowledge 精修应用接口已返回 `RefinementApplyResult` / `ApplyResponse`，包含 `graphVersionId`、来源内容、`sourceTaskId`、`selectionScopeJson`、`replaceUnconfirmedOnly=true`、`triggerSource=REFINEMENT_APPLIED`、`graphRefreshRequired=true` 和 `qualityReportRefreshRequired=true`，用于前端承接图谱联动。
+- Knowledge 图谱重生成已支持 `REFINEMENT_APPLIED` 触发来源，Admin Web `/knowledge/graph-extraction` 可从精修应用结果预填任务类型、源任务、选择范围、仅替换未确认结果和触发来源，并提交重生成请求。
+- Knowledge 图谱版本响应已暴露精修应用状态，Admin Web `/knowledge/graph-results` 支持按 `graphVersionId` 定位当前正式结果，并在版本表格和详情中展示是否已精修、最近精修任务和应用时间。
 - Admin Web 已接入 `/knowledge/quality-report` 页面，支持输入图谱版本生成报告、查看最新报告、历史报告、问题清单、来源明细和人工标注明细。
+- Knowledge 质量报告详情已标记精修后过期状态，Admin Web `/knowledge/quality-report` 支持从精修应用跳转到指定 `graphVersionId`，展示报告需重算提示，并通过生成控件重新生成该版本质量报告。
 - Admin Web `/knowledge/quality-report` 已支持从质量报告来源明细按低质量门类一键触发重提取；后端会从报告快照生成 `selectionScopeJson` 并复用 `/knowledge/graph-extraction` 任务台账、批次、候选应用和正式结果落库链路。
 - Knowledge 已新增质量报告快照模型和 `knowledge_quality_report`、`knowledge_quality_report_issue`、`knowledge_quality_report_source_detail` 三张表，报告生成即发布为 `PUBLISHED`。
 - Portal Web `/knowledge/quality` 已改为读取最新 `PUBLISHED` 质量报告快照；无报告时返回并展示明确空态，不再展示临时计算质量指标。
@@ -57,7 +62,7 @@
 
 部分完成：
 
-- 当前已完成 Knowledge / AI 后端专项测试、workers 契约测试、Admin Web `format:check` / `lint` / `test` / `build` 和菜单 SQL 生成校验，但尚未补充 Playwright 闭环与跨服务联调冒烟记录。
+- 当前已完成 Knowledge / AI 后端专项测试、workers 契约测试、Admin Web `format:check` / `lint` / `build`、Knowledge 页面定向测试和菜单 SQL 生成校验；Admin Web 全量 `test` 当前存在超时阻塞，尚未补充本阶段 Playwright 闭环与跨服务联调冒烟记录。
 
 未完成：无。
 
@@ -113,8 +118,8 @@
 | 鸟瞰、门类和详情面包屑导航                 | 已完成 | Portal `/knowledge/atlas` 已使用后端 breadcrumb 驱动 overview/category/detail 返回导航                                                                      | 无                                   | Knowledge, Portal Web            |
 | 批量生成和重生成                           | 已完成 | 已支持按 `selectionScopeJson` 批量创建同类型图谱抽取任务、复用 AI 域 `batchId` 聚合子任务，并支持基于源任务重生成且区分 `replaceUnconfirmedOnly` 语义           | 无                                   | Knowledge, AI                     |
 | 从质量报告或筛选结果批量触发提取           | 已完成 | Admin Web 图谱抽取页已支持 `QUALITY_REPORT` 触发模式并可携带批量范围快照创建任务；质量报告来源明细已支持低质量门类一键触发，后端生成 `selectionScopeJson` 并保留 `triggerSource`、批次和请求快照 | 无 | Knowledge, AI                     |
-| 读取数据精修修正结果                       | 已完成 | 精修工作台应用动作会将实体、关系和世系草稿写回正式事实表；正式结果页继续从正式事实和图谱版本读取，因此已消费精修结果                                | 无                                   | Knowledge                         |
-| 质量报告与指标展示                         | 已完成 | 已提供质量报告快照生成服务、后台 `/knowledge/quality-report` 页面、历史报告列表、问题清单、来源明细、人工标注明细，以及 Portal `/knowledge/quality` 同源快照读取 | 无                                   | Knowledge, Admin Web, Portal Web |
+| 读取数据精修修正结果                       | 已完成 | 精修工作台应用动作会将实体、关系和世系草稿写回当前 `graphVersionId` 的正式事实表；应用接口返回图谱联动结果，正式结果页可按版本定位并展示最近精修状态 | 无                                   | Knowledge, Admin Web              |
+| 质量报告与指标展示                         | 已完成 | 已提供质量报告快照生成服务、后台 `/knowledge/quality-report` 页面、历史报告列表、问题清单、来源明细、人工标注明细、精修后过期提示和指定版本重算入口，以及 Portal `/knowledge/quality` 同源快照读取 | 无                                   | Knowledge, Admin Web, Portal Web |
 | 质量报告按门类分组并支持低质量门类触发提取 | 已完成 | 质量报告来源明细已保留 `sourceCategoryCode`、`sourceCategoryName`、标注数、问题数和跳转链接；低质量门类可在质量报告页一键创建 `QUALITY_REPORT` 图谱抽取任务，并在任务台账查看 `selectionScopeJson` 与批次信息 | 无 | Knowledge, AI                     |
 | 最近提取版本和提取时间展示                 | 已完成 | 已在 `knowledge_graph_version` 建立版本台账，应用正式结果时会生成或续增版本号，并在 Admin Web 正式结果页提供版本列表、版本详情和应用时间展示                  | 无                                   | Knowledge, Admin Web              |
 | 世系图专用提取和展示                       | 已完成 | 已支持 `LINEAGE` 抽取任务、workers 世系候选输出、正式 `knowledge_lineage_node` / `knowledge_lineage_relation` 落库、Admin Web `/knowledge/lineage` 独立画布、节点/关系列表和详情联动，以及 Portal Web `/knowledge/lineage` 只读画布入口 | 无                                   | Knowledge, AI, Workers, Admin Web, Portal Web |
@@ -123,7 +128,7 @@
 
 | 需求项             | 状态     | 已完成部分                                                                                                                                                                   | 未完成部分                           | 责任域                            |
 | ------------------ | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ | --------------------------------- |
-| 当前阶段运行时验证 | 已完成 | 已补齐 Knowledge 同义词方向查询单测、Knowledge/Discovery 服务单元验证、Portal Search + QA Playwright 冒烟及 Admin 同义词治理 Playwright，配合静态检查与编译通道形成端到端收口。 | 无                                           | Knowledge, AI, Workers, Admin Web, Portal Web |
+| 当前阶段运行时验证 | 部分完成 | 本阶段已通过 `mvn -pl biz/knowledge/kuzhambu-knowledge-application,biz/knowledge/kuzhambu-knowledge-interface -am spotless:check checkstyle:check test`、`pnpm --filter ./admin-web run format:check`、`pnpm --filter ./admin-web run lint`、`pnpm --filter ./admin-web run build` 和 Knowledge 四页定向 `vitest run`。 | `pnpm --filter ./admin-web run test` 在当前环境有 4 个超时失败：`src/app.test.tsx` 两个 app 级用例、`src/pages/knowledge/graph-extraction/graph-extraction-page.test.tsx` 的 page shell 用例、`src/pages/classics/sancai/components/sancai-entry-panel.test.tsx` 的权限用例；需独立治理全量前端测试稳定性。 | Knowledge, Admin Web |
 
 ## Unfinished Focus
 
@@ -133,7 +138,7 @@
 | 图谱浏览与质量报告                  | 已完成 | 当前已交付 Portal 图谱分层浏览页、Portal 图谱可视化画布、固定 14 门类空位、Portal 质量报告页、后台质量报告页、抽取任务、批量生成、重生成、候选应用、正式结果落库、后台读取页，以及从质量报告低质量门类一键触发重提取 |
 | 世系图浏览                          | 已完成 | 当前已交付 Admin `/knowledge/lineage` 独立世系画布、节点/关系列表、节点/关系详情联动、菜单入口、Portal `/knowledge/lineage` 只读入口，以及正式世系事实聚合读取 API |
 | Portal 页面                         | 已完成 | Portal 侧已形成 `/knowledge`、`/knowledge/quality`、`/knowledge/atlas`、`/knowledge/lineage` 四个可执行只读入口 |
-| 数据精修与图谱联动                  | 部分完成 | 精修应用已回写正式事实并被正式结果读取链路消费，图谱抽取也已具备批量重生成能力                             |
+| 数据精修与图谱联动                  | 已完成 | 精修应用后已返回图谱联动结果，Admin Web 已引导打开当前版本、携带精修参数发起图谱重生成，并提示指定版本质量报告重算；图谱版本和质量报告响应已暴露精修状态与过期状态 |
 | Discovery 搜索或问答接入            | 已完成 | taxonomy 治理、同义词扩展、标签提示和实体提示已被 Discovery 搜索 / 问答消费，形成最小闭环             |
 | Classics 内容编辑页内联知识治理入口 | 部分完成 | Wangqi、Sancai、MingCustoms 编辑页已内联标签治理、问答对治理和 AI 候选确认入口                           | 标签分类、同义词、审核与合并等完整 taxonomy 治理仍只在独立页面提供 |
 
@@ -143,3 +148,4 @@
 - taxonomy 页面、精修工作台和正式结果页目前以页面级查询和抽屉交互为主；后续再改权限、字段或接口返回时，建议补前端契约测试和 Playwright 冒烟。
 - 同义词、标签和实体提示已接通 Discovery 搜索 / 问答主链路，后续主要关注命中质量与提示规则调优。
 - 当前已补齐 Portal 只读入口、图谱分层浏览、图谱可视化画布、固定 14 门类空位、独立世系图只读画布、图谱抽取批量闭环、人工质量报告闭环和低质量门类一键触发重提取；后续扩展到更多触发来源或世系专用重提取前，仍需先明确触发边界与回放策略。
+- Admin Web 全量 Vitest 当前存在超时阻塞；本阶段 Knowledge 相关四页定向测试已通过，后续需单独治理全量套件中的 app 级慢用例、graph-extraction page shell 超时和 Sancai 权限用例超时。

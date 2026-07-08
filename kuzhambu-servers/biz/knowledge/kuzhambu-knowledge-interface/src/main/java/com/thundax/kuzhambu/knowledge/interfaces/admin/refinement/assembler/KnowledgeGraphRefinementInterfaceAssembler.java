@@ -19,6 +19,7 @@ import com.thundax.kuzhambu.knowledge.application.refinement.query.RefinementDet
 import com.thundax.kuzhambu.knowledge.application.refinement.query.RefinementWorkbenchPageQuery;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualityAnnotationResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.QualitySummaryResult;
+import com.thundax.kuzhambu.knowledge.application.refinement.result.RefinementApplyResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.RefinementDetailResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.RefinementEntityOptionResult;
 import com.thundax.kuzhambu.knowledge.application.refinement.result.RefinementEntityResult;
@@ -258,6 +259,28 @@ public final class KnowledgeGraphRefinementInterfaceAssembler {
                                 : result.getEntityOptions().stream()
                                         .map(KnowledgeGraphRefinementInterfaceAssembler::toResponse)
                                         .toList())
+                .build();
+    }
+
+    public static RefinementResponses.ApplyResponse toResponse(RefinementApplyResult result) {
+        return RefinementResponses.ApplyResponse.builder()
+                .refinementTaskId(result == null ? null : result.getRefinementTaskId())
+                .graphVersionId(result == null ? null : result.getGraphVersionId())
+                .taskType(result == null ? null : result.getTaskType())
+                .sourceContentType(result == null ? null : result.getSourceContentType())
+                .sourceContentId(result == null ? null : result.getSourceContentId())
+                .sourceCategoryCode(result == null ? null : result.getSourceCategoryCode())
+                .sourceCategoryName(result == null ? null : result.getSourceCategoryName())
+                .status(result == null ? null : result.getStatus())
+                .appliedAt(result == null ? null : result.getAppliedAt())
+                .graphRefreshRequired(result == null ? null : result.getGraphRefreshRequired())
+                .regenerateSupported(result == null ? null : result.getRegenerateSupported())
+                .sourceTaskId(result == null ? null : result.getSourceTaskId())
+                .selectionScopeJson(result == null ? null : result.getSelectionScopeJson())
+                .replaceUnconfirmedOnly(result == null ? null : result.getReplaceUnconfirmedOnly())
+                .triggerSource(result == null ? null : result.getTriggerSource())
+                .nextAction(result == null ? null : result.getNextAction())
+                .qualityReportRefreshRequired(result == null ? null : result.getQualityReportRefreshRequired())
                 .build();
     }
 

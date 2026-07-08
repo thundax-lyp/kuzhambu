@@ -17,6 +17,17 @@ public class QualityReportDetailResult {
     private List<IssueRecord> issues;
     private List<SourceDetailRecord> sourceDetails;
     private List<QualityAnnotationResult> annotations;
+    private Boolean stale;
+    private String staleReason;
+    private Long lastRefinementAppliedAt;
+
+    public QualityReportDetailResult(
+            ReportRecord report,
+            List<IssueRecord> issues,
+            List<SourceDetailRecord> sourceDetails,
+            List<QualityAnnotationResult> annotations) {
+        this(report, issues, sourceDetails, annotations, Boolean.FALSE, null, null);
+    }
 
     @Getter
     @Setter

@@ -129,6 +129,15 @@ public final class GraphExtractionResponses {
 
         @JsonProperty("appliedAt")
         private Long appliedAt;
+
+        @JsonProperty("refinementApplied")
+        private Boolean refinementApplied;
+
+        @JsonProperty("lastRefinementTaskId")
+        private Long lastRefinementTaskId;
+
+        @JsonProperty("lastRefinementAppliedAt")
+        private Long lastRefinementAppliedAt;
     }
 
     @Getter
