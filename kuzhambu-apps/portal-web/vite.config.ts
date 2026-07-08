@@ -18,7 +18,7 @@ export default defineConfig(({ mode }) => {
         test: {
             environment: "jsdom",
             globals: true,
-            exclude: ["node_modules/**", "dist/**"],
+            exclude: ["e2e/**", "node_modules/**", "dist/**"],
             fileParallelism: true,
             maxWorkers: "75%"
         },

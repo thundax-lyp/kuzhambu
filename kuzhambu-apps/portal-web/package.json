@@ -6,6 +6,7 @@
     "scripts": {
         "dev": "vite --host 0.0.0.0",
         "build": "tsc --noEmit && vite build",
+        "e2e": "playwright test",
         "preview": "vite preview --host 0.0.0.0",
         "test": "vitest run",
         "lint": "eslint .",
@@ -36,6 +37,7 @@
         "@testing-library/user-event": "14.6.1",
         "@types/react": "18.3.31",
         "@types/react-dom": "18.3.7",
+        "@playwright/test": "1.61.1",
         "@vitejs/plugin-react": "6.0.3",
         "eslint": "10.6.0",
         "eslint-config-prettier": "10.1.8",

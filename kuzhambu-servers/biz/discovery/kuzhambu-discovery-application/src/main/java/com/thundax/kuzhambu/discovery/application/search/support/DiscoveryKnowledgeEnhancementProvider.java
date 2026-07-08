@@ -4,6 +4,8 @@ import com.thundax.kuzhambu.discovery.application.search.result.QueryUnderstandi
 import com.thundax.kuzhambu.knowledge.facade.KnowledgeFacade;
 import com.thundax.kuzhambu.knowledge.facade.dto.KnowledgeEntityHintFacadeDto;
 import com.thundax.kuzhambu.knowledge.facade.request.KnowledgeDiscoveryTermFacadeRequest;
+import com.thundax.kuzhambu.knowledge.facade.request.KnowledgeSynonymQueryFacadeRequest;
+import com.thundax.kuzhambu.knowledge.facade.response.KnowledgeSynonymQueryFacadeResponse;
 import com.thundax.kuzhambu.knowledge.facade.response.KnowledgeTagHintFacadeResponse;
 import java.util.Collections;
 import java.util.List;
@@ -21,14 +23,19 @@ public class DiscoveryKnowledgeEnhancementProvider {
     public KnowledgeEnhancementResult enhance(String term) {
         KnowledgeDiscoveryTermFacadeRequest request =
                 KnowledgeDiscoveryTermFacadeRequest.builder().term(term).build();
-        var synonymExpandResult = knowledgeFacade.expandSynonyms(request);
+        KnowledgeSynonymQueryFacadeRequest synonymQueryRequest = KnowledgeSynonymQueryFacadeRequest.builder()
+                .term(term)
+                .direction("BIDIRECTIONAL")
+                .limit(50)
+                .build();
+        KnowledgeSynonymQueryFacadeResponse synonymQueryResult = knowledgeFacade.querySynonyms(synonymQueryRequest);
         KnowledgeTagHintFacadeResponse tagHintResult = knowledgeFacade.getTagHint(request);
         var entityHintsResponse = knowledgeFacade.listEntityHints(request);
         List<QueryUnderstandingResult.RecognizedEntityResult> recognizedEntities =
                 mapRecognizedEntities(entityHintsResponse == null ? null : entityHintsResponse.getEntityHints());
-        List<String> expandedSynonyms = synonymExpandResult == null || synonymExpandResult.getExpandedTerms() == null
+        List<String> expandedSynonyms = synonymQueryResult == null || synonymQueryResult.getExpandedTerms() == null
                 ? Collections.emptyList()
-                : synonymExpandResult.getExpandedTerms();
+                : synonymQueryResult.getExpandedTerms();
         return new KnowledgeEnhancementResult(expandedSynonyms, tagHintResult, recognizedEntities);
     }
 
