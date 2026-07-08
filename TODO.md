@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Admin graph extraction regenerate handoff`：图谱抽取页承接精修重生成参数
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-GRAPH-LOOP.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/graph-extraction-page.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/components/graph-extraction-create.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/graph-extraction-service.ts`、`kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/graph-extraction-types.ts`、`kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/graph-extraction-page.test.tsx`
-    - 处理动作：从跳转参数预填重生成表单并提交 `REFINEMENT_APPLIED` 来源。
-    - 验收点：从精修页点击重生成图谱后表单自动打开，`replaceUnconfirmedOnly` 默认开启且提交 payload 保留精修来源。
-    - 重要度：9/10
-
 - [ ] `Admin graph results version focus`：图谱结果页按版本定位正式结果
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-GRAPH-LOOP.md`

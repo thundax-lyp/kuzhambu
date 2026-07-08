@@ -1,7 +1,9 @@
-import { Button, Card, Checkbox, Form, Input, InputNumber } from "antd";
+import { Alert, Button, Card, Checkbox, Form, Input, InputNumber } from "antd";
+import { useEffect } from "react";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import type {
     GraphExtractionCreateCommand,
+    GraphExtractionRegenerateCommand,
     GraphExtractionTaskRecord,
     GraphExtractionTaskType
 } from "../graph-extraction-types";
@@ -13,6 +15,9 @@ interface GraphExtractionCreateProps {
     creatingTaskType?: GraphExtractionTaskType | null;
     latestCreatedTask?: GraphExtractionTaskRecord | null;
     onCreate: (request: GraphExtractionCreateCommand) => void;
+    onRegenerate?: (request: GraphExtractionRegenerateCommand) => void;
+    regenerateCommand?: GraphExtractionRegenerateCommand | null;
+    regenerating?: boolean;
 }
 
 interface GraphExtractionCreateFormValues {
@@ -71,17 +76,69 @@ export const GraphExtractionCreate = ({
     canEdit = false,
     creatingTaskType,
     latestCreatedTask,
-    onCreate
+    onCreate,
+    onRegenerate,
+    regenerateCommand = null,
+    regenerating = false
 }: GraphExtractionCreateProps) => {
     const [form] = Form.useForm<GraphExtractionCreateFormValues>();
+    const regenerateReady = Boolean(regenerateCommand?.sourceTaskId && onRegenerate);
+
+    useEffect(() => {
+        if (!regenerateCommand) {
+            return;
+        }
+        form.setFieldsValue({
+            selectionScopeJson: regenerateCommand.selectionScopeJson || undefined,
+            replaceUnconfirmedOnly: regenerateCommand.replaceUnconfirmedOnly ?? true
+        });
+    }, [form, regenerateCommand]);
 
     const submitTask = async (taskType: GraphExtractionTaskType) => {
         const values = await form.validateFields();
         onCreate(toCreateRequest(taskType, values));
     };
+    const submitRegenerate = () => {
+        if (!regenerateCommand || !onRegenerate) {
+            return;
+        }
+        const values = form.getFieldsValue(["selectionScopeJson", "replaceUnconfirmedOnly"]);
+        onRegenerate({
+            ...regenerateCommand,
+            selectionScopeJson:
+                normalizeValue(values.selectionScopeJson) || regenerateCommand.selectionScopeJson,
+            replaceUnconfirmedOnly: values.replaceUnconfirmedOnly ?? true
+        });
+    };
 
     return (
         <KuzhambuSpace orientation="vertical" size={16} className="graph-extraction-create">
+            {regenerateCommand ? (
+                <Card className="graph-extraction-create-card" variant="borderless">
+                    <KuzhambuSpace orientation="vertical" size={12} style={{ width: "100%" }}>
+                        <Alert showIcon type="warning" message="精修应用后的图谱重生成参数已载入" />
+                        <div className="graph-extraction-create-grid">
+                            <Form.Item label="源任务 ID">
+                                <Input value={regenerateCommand.sourceTaskId || ""} disabled />
+                            </Form.Item>
+                            <Form.Item label="任务类型">
+                                <Input value={regenerateCommand.taskType || ""} disabled />
+                            </Form.Item>
+                            <Form.Item label="触发来源">
+                                <Input value={regenerateCommand.triggerSource || ""} disabled />
+                            </Form.Item>
+                        </div>
+                        <Button
+                            type="primary"
+                            disabled={!canEdit || !regenerateReady}
+                            loading={regenerating}
+                            onClick={submitRegenerate}
+                        >
+                            提交精修重生成
+                        </Button>
+                    </KuzhambuSpace>
+                </Card>
+            ) : null}
             <Card className="graph-extraction-create-card" variant="borderless">
                 <Form<GraphExtractionCreateFormValues>
                     form={form}
