@@ -237,6 +237,7 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public SharePortalResult getPortalShare(String shareToken) {
         ClassicsShareLink link = repository.getLinkByTokenHash(shareTokenHasher.hash(shareToken));
         if (isPrivatePortalShareRequiringAuth(link)) {
@@ -245,17 +246,22 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
         if (!isPortalVisible(link)) {
             throw shareContentNotFound();
         }
-        return toPortalResult(link);
+        SharePortalResult result = toPortalResult(link);
+        recordAllowedDetailAccess(link.getId(), false);
+        return result;
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public SharePortalResult getPrivatePortalShare(
             String shareToken, Long currentUserId, Set<String> currentPermissions) {
         ClassicsShareLink link = repository.getLinkByTokenHash(shareTokenHasher.hash(shareToken));
         if (!isPrivatePortalVisible(link, currentUserId, currentPermissions)) {
             throw shareContentNotFound();
         }
-        return toPortalResult(link);
+        SharePortalResult result = toPortalResult(link);
+        recordAllowedDetailAccess(link.getId(), true);
+        return result;
     }
 
     @Override
@@ -308,7 +314,7 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
         if (content == null) {
             throw shareContentNotFound();
         }
-        recordAllowedResourceAccess(link.getId(), matchedTarget.getId(), storageObjectId);
+        recordAllowedResourceAccess(link.getId(), matchedTarget.getId(), storageObjectId, download, privateAccess);
         return content;
     }
 
@@ -620,12 +626,25 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
     }
 
     private void recordAllowedResourceAccess(
-            ClassicsShareLinkId shareLinkId, ClassicsShareTargetId shareTargetId, Long storageObjectId) {
+            ClassicsShareLinkId shareLinkId,
+            ClassicsShareTargetId shareTargetId,
+            Long storageObjectId,
+            boolean download,
+            boolean privateAccess) {
         ClassicsShareAccessRecord record = new ClassicsShareAccessRecord();
         record.setShareLinkId(shareLinkId);
         record.setShareTargetId(shareTargetId);
         record.setAccessResult(ClassicsShareAccessResult.ALLOWED);
-        record.setClientSnapshot("resourceStorageObjectId=" + storageObjectId);
+        record.setClientSnapshot(resourceAccessSnapshot(storageObjectId, download, privateAccess));
+        recordAccess(record);
+    }
+
+    private void recordAllowedDetailAccess(ClassicsShareLinkId shareLinkId, boolean privateAccess) {
+        ClassicsShareAccessRecord record = new ClassicsShareAccessRecord();
+        record.setShareLinkId(shareLinkId);
+        record.setShareTargetId(null);
+        record.setAccessResult(ClassicsShareAccessResult.ALLOWED);
+        record.setClientSnapshot(detailAccessSnapshot(privateAccess));
         recordAccess(record);
     }
 
@@ -845,6 +864,26 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
 
     private static Long longValue(JsonNode node) {
         return node == null || !node.canConvertToLong() ? null : node.asLong();
+    }
+
+    private static String detailAccessSnapshot(boolean privateAccess) {
+        ObjectNode snapshot = OBJECT_MAPPER.createObjectNode();
+        snapshot.put("accessType", "DETAIL_VIEW");
+        snapshot.put("privateAccess", privateAccess);
+        return snapshot.toString();
+    }
+
+    private static String resourceAccessSnapshot(Long storageObjectId, boolean download, boolean privateAccess) {
+        ObjectNode snapshot = OBJECT_MAPPER.createObjectNode();
+        snapshot.put("accessType", "RESOURCE_READ");
+        snapshot.put("privateAccess", privateAccess);
+        if (storageObjectId == null) {
+            snapshot.putNull("storageObjectId");
+        } else {
+            snapshot.put("storageObjectId", storageObjectId);
+        }
+        snapshot.put("download", download);
+        return snapshot.toString();
     }
 
     private static boolean isExpired(ClassicsShareLink link) {

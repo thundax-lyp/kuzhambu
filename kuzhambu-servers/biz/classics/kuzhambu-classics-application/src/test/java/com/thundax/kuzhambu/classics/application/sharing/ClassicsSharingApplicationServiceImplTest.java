@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.classics.application.sharing;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -586,6 +587,16 @@ class ClassicsSharingApplicationServiceImplTest {
         assertEquals("公开分享", result.getTitle());
         assertEquals(1, result.getTargets().size());
         assertEquals("正式标题", result.getTargets().get(0).getTitleSnapshot());
+        ArgumentCaptor<ClassicsShareAccessRecord> accessCaptor =
+                ArgumentCaptor.forClass(ClassicsShareAccessRecord.class);
+        verify(sharingRepository).insertAccessRecord(accessCaptor.capture());
+        assertEquals(ClassicsShareLinkId.of(10L), accessCaptor.getValue().getShareLinkId());
+        assertNull(accessCaptor.getValue().getShareTargetId());
+        assertEquals(ClassicsShareAccessResult.ALLOWED, accessCaptor.getValue().getAccessResult());
+        assertEquals(
+                "{\"accessType\":\"DETAIL_VIEW\",\"privateAccess\":false}",
+                accessCaptor.getValue().getClientSnapshot());
+        verify(sharingRepository).increaseAccessCount(ClassicsShareLinkId.of(10L));
     }
 
     @Test
@@ -627,6 +638,16 @@ class ClassicsSharingApplicationServiceImplTest {
         assertEquals("私有标题", managerResult.getTargets().get(0).getTitleSnapshot());
         assertThrows(BizException.class, () -> service.getPrivatePortalShare("share-token", 2002L, Set.of()));
         assertThrows(BizException.class, () -> service.getPrivatePortalShare("share-token", null, Set.of()));
+        ArgumentCaptor<ClassicsShareAccessRecord> accessCaptor =
+                ArgumentCaptor.forClass(ClassicsShareAccessRecord.class);
+        verify(sharingRepository, times(2)).insertAccessRecord(accessCaptor.capture());
+        assertEquals(
+                "{\"accessType\":\"DETAIL_VIEW\",\"privateAccess\":true}",
+                accessCaptor.getAllValues().get(0).getClientSnapshot());
+        assertEquals(
+                "{\"accessType\":\"DETAIL_VIEW\",\"privateAccess\":true}",
+                accessCaptor.getAllValues().get(1).getClientSnapshot());
+        verify(sharingRepository, times(2)).increaseAccessCount(ClassicsShareLinkId.of(10L));
     }
 
     @Test
@@ -703,6 +724,9 @@ class ClassicsSharingApplicationServiceImplTest {
         assertEquals(ClassicsShareLinkId.of(10L), accessCaptor.getValue().getShareLinkId());
         assertEquals(ClassicsShareTargetId.of(20L), accessCaptor.getValue().getShareTargetId());
         assertEquals(ClassicsShareAccessResult.ALLOWED, accessCaptor.getValue().getAccessResult());
+        assertEquals(
+                "{\"accessType\":\"RESOURCE_READ\",\"privateAccess\":false,\"storageObjectId\":7002,\"download\":true}",
+                accessCaptor.getValue().getClientSnapshot());
         verify(sharingRepository).increaseAccessCount(ClassicsShareLinkId.of(10L));
     }
 

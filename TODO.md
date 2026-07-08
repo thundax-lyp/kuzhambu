@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics sharing 后端访问统计`：实现详情浏览和资源读取访问计数
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARING-GOVERNANCE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sharing/service/impl/ClassicsSharingApplicationServiceImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-domain/src/main/java/com/thundax/kuzhambu/classics/domain/sharing/model/entity/ClassicsShareAccessRecord.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/java/com/thundax/kuzhambu/classics/infra/sharing/repository/impl/ClassicsSharingRepositoryImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/sharing/service/impl/ClassicsSharingApplicationServiceImplTest.java`
-    - 处理动作：让公开详情、私有详情和资源读取成功路径写访问记录并累加 `access_count`。
-    - 验收点：成功访问按 `DETAIL_VIEW` 或 `RESOURCE_READ` 记录，失败访问不增加 `access_count`，后端测试覆盖成功和失败统计。
-    - 重要度：10/10
-
 - [ ] `Admin classics/sharing 服务契约`：补齐分享状态和访问记录前端类型
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARING-GOVERNANCE.md`
