@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Operations cleanup domain repository`：补运行态目标 repository 边界
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-CLEANUP-TARGET-TYPES.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-domain/src/main/java/com/thundax/kuzhambu/operations/domain/report/repository/ReportRepository.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-domain/src/main/java/com/thundax/kuzhambu/operations/domain/health/repository/HealthCheckRepository.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-domain/src/main/java/com/thundax/kuzhambu/operations/domain/task/repository/LongTaskSnapshotRepository.java`
-    - 处理动作：为 report、health check 和 long task repository 增加过期目标 ID 查询边界。
-    - 验收点：domain repository 可编译，新增方法分别表达 `requestedBefore`、`checkedBefore`、`snapshotBefore` 与 `limit`。
-    - 重要度：8/10
-
 - [ ] `Operations cleanup infra repository`：实现运行态过期目标查询
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-CLEANUP-TARGET-TYPES.md`
