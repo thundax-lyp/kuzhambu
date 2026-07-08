@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `operations dashboard summary gateway`：按权限跳过跨域 summary facade
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DASHBOARD-PERMISSION-CHARTS.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/dashboard/support/OperationsDashboardSummaryGateway.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/dashboard/support/DefaultOperationsDashboardSummaryGateway.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/test/java/com/thundax/kuzhambu/operations/application/dashboard/support/DefaultOperationsDashboardSummaryGatewayTest.java`
-    - 处理动作：给 summary gateway 增加权限快照入参，并按域级加载权限决定是否调用跨域 facade。
-    - 验收点：无对应域图表权限时该域 facade 没有调用记录，返回 summary 为 `null`。
-    - 重要度：10/10
-
 - [ ] `admin-web operations dashboard requests`：裁剪 dashboard 前端权限能力与请求触发
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DASHBOARD-PERMISSION-CHARTS.md`
