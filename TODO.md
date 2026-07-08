@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `feat/sancai-entry-tags`：同步 main 最新代码
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-SANCAI-ENTRY-TAGS.md`
-    - 范围对象：`main`、`feat/sancai-entry-tags`
-    - 处理动作：收口前同步 `main` 最新代码到 `feat/sancai-entry-tags`，处理可能出现的冲突。
-    - 验收点：当前分支包含最新 `main`，同步后重新运行本轮最小验证并通过。
-    - 重要度：9/10
-
 - [ ] `ClassicsImplementationCoverage`：同步三才标签闭环覆盖状态
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-SANCAI-ENTRY-TAGS.md`
