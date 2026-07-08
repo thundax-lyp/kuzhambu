@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Discovery QA single-document session`：校验 Wangqi 单文档会话上下文
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-WANGQI-SINGLE-DOCUMENT-QA.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/qa/service/impl/QaApplicationServiceImpl.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/qa/command/OpenQaSessionCommand.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-interface/src/main/java/com/thundax/kuzhambu/discovery/interfaces/portal/qa/assembler/DiscoveryQaPortalInterfaceAssembler.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/test/java/com/thundax/kuzhambu/discovery/application/qa/service/impl/QaApplicationServiceImplTest.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-interface/src/test/java/com/thundax/kuzhambu/discovery/interfaces/portal/qa/controller/DiscoveryQaPortalControllerTest.java`
-    - 处理动作：在打开 `SINGLE_DOCUMENT` 会话时校验 `WANGQI_DOCUMENT`、`contextContentId`、内容存在性、生命周期和可访问性。
-    - 验收点：缺 ID、类型不匹配、内容不存在、不可访问、已归档或已删除均返回明确业务错误。
-    - 重要度：10/10
-
 - [ ] `AI discovery answer-generation facade`：确保 Discovery answer-generation 返回可追踪 callId
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-WANGQI-SINGLE-DOCUMENT-QA.md`
