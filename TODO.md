@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Classics QA backend validation`：补齐后端与 Discovery 验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-QA-VERSION-GOVERNANCE.md`、`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/content/ClassicsContentApplicationServiceImplTest.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/content/ClassicsContentApplicationServiceAiCandidateTest.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/wangqi/WangqiDocumentApplicationServiceImplTest.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/mingcustoms/MingCustomsApplicationServiceImplTest.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/test/java/com/thundax/kuzhambu/discovery/application/qa/support/KnowledgeRevisionCalculatorTest.java`
-    - 处理动作：补齐 QA 版本、AI 应用、历史恢复和 Discovery revision 的后端测试。
-    - 验收点：后端测试覆盖 QA 新增/编辑/删除、AI 单版本应用、候选拒绝、历史恢复和 revision 变化规则。
-    - 重要度：9/10
-
 - [ ] `Classics QA frontend validation and coverage`：补齐前端验证并更新 Implementation Coverage
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-QA-VERSION-GOVERNANCE.md`、`docs/00-governance/TODO-RULES.md`
