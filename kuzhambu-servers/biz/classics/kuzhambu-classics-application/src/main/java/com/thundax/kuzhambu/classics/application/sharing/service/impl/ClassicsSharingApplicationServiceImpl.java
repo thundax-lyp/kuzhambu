@@ -143,6 +143,7 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
     }
 
     private ShareLinkCreateResult createLink(ShareLinkCreateCommand command, boolean allowPrivateContent) {
+        ensureUniqueTargets(command == null ? null : command.getTargets());
         requireSharePermission(
                 command.getTargets(), command.getOperatorPermissions(), command.getVisibility(), allowPrivateContent);
         String shareToken = shareTokenGenerator.generate();
@@ -431,7 +432,15 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void changeStatus(ShareLinkStatusCommand command) {
-        repository.updateLinkStatus(command.getId(), command.getStatus().value());
+        if (command == null || command.getId() == null || command.getStatus() == null) {
+            throw shareContentNotFound();
+        }
+        if (command.getStatus() == ClassicsShareLinkStatus.ACTIVE) {
+            ensureRestorable(command.getId());
+        }
+        if (repository.updateLinkStatus(command.getId(), command.getStatus().value()) != 1) {
+            throw shareContentNotFound();
+        }
     }
 
     @Override
@@ -670,6 +679,26 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
         }
     }
 
+    private static void ensureUniqueTargets(List<ShareTargetCreateCommand> targets) {
+        if (targets == null || targets.isEmpty()) {
+            return;
+        }
+        Set<String> targetKeys = new HashSet<>();
+        for (ShareTargetCreateCommand target : targets) {
+            String key = targetKey(target);
+            if (key != null && !targetKeys.add(key)) {
+                throw duplicateShareTarget();
+            }
+        }
+    }
+
+    private void ensureRestorable(ClassicsShareLinkId id) {
+        ClassicsShareLink link = repository.getLinkById(id);
+        if (link == null || link.getStatus() != ClassicsShareLinkStatus.REVOKED || isExpired(link)) {
+            throw shareLinkCannotRestore();
+        }
+    }
+
     private void requireSharePermission(
             List<ShareTargetCreateCommand> targets,
             Set<String> operatorPermissions,
@@ -818,8 +847,22 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
         return node == null || !node.canConvertToLong() ? null : node.asLong();
     }
 
+    private static boolean isExpired(ClassicsShareLink link) {
+        return link != null
+                && link.getExpiresAt() != null
+                && !link.getExpiresAt().after(new Date());
+    }
+
     private static BizException shareContentNotFound() {
         return new BizException("分享内容不存在或不支持版本标定");
+    }
+
+    private static BizException duplicateShareTarget() {
+        return new BizException("重复分享目标");
+    }
+
+    private static BizException shareLinkCannotRestore() {
+        return new BizException("分享链接不可恢复");
     }
 
     private static BizException privateShareAuthRequired() {

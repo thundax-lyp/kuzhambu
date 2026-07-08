@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics sharing 后端创建与恢复`：实现单链接多目标去重和分享恢复规则
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARING-GOVERNANCE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sharing/service/impl/ClassicsSharingApplicationServiceImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/sharing/service/impl/ClassicsSharingApplicationServiceImplTest.java`
-    - 处理动作：在应用服务中落地单链接内 `contentType + contentId` 去重和未过期 `REVOKED -> ACTIVE` 恢复规则。
-    - 验收点：重复 target 返回明确错误，未过期撤销分享可恢复，过期分享和已过期撤销分享不可恢复，后端测试覆盖这些状态流转。
-    - 重要度：10/10
-
 - [ ] `classics sharing 后端访问统计`：实现详情浏览和资源读取访问计数
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARING-GOVERNANCE.md`

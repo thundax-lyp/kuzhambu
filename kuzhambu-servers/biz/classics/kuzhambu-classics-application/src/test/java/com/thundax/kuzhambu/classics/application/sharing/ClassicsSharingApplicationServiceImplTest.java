@@ -16,6 +16,7 @@ import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationRe
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
 import com.thundax.kuzhambu.classics.application.sharing.command.BatchShareCreateCommand;
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkCreateCommand;
+import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkStatusCommand;
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareTargetCreateCommand;
 import com.thundax.kuzhambu.classics.application.sharing.result.ShareLinkCreateResult;
 import com.thundax.kuzhambu.classics.application.sharing.result.SharePortalResult;
@@ -219,6 +220,43 @@ class ClassicsSharingApplicationServiceImplTest {
         assertEquals("三才", savedTargets.get(0).getTitleSnapshot());
         assertEquals("王圻", savedTargets.get(1).getTitleSnapshot());
         assertEquals("明俗", savedTargets.get(2).getTitleSnapshot());
+    }
+
+    @Test
+    void createLinkShouldRejectDuplicateTargetsBeforeWriting() {
+        ClassicsSharingRepository sharingRepository = mock(ClassicsSharingRepository.class);
+        ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
+        SancaiRepository sancaiRepository = mock(SancaiRepository.class);
+        ClassicsShareTokenGenerator shareTokenGenerator = mock(ClassicsShareTokenGenerator.class);
+        ClassicsShareTokenHasher shareTokenHasher = mock(ClassicsShareTokenHasher.class);
+        ClassicsSharingApplicationServiceImpl service = new ClassicsSharingApplicationServiceImpl(
+                sharingRepository,
+                contentApplicationService,
+                sancaiRepository,
+                null,
+                null,
+                shareTokenGenerator,
+                shareTokenHasher,
+                null);
+        ShareTargetCreateCommand target =
+                new ShareTargetCreateCommand(ClassicsContentType.SANCAI_ENTRY, ClassicsContentId.of(100L));
+
+        BizException exception = assertThrows(
+                BizException.class,
+                () -> service.createLink(new ShareLinkCreateCommand(
+                        "分享",
+                        ClassicsShareVisibility.PUBLIC,
+                        ClassicsShareLinkStatus.ACTIVE,
+                        null,
+                        null,
+                        null,
+                        List.of(target, target))));
+
+        assertEquals("重复分享目标", exception.getMessage());
+        verify(sharingRepository, never()).insertLink(any());
+        verify(sharingRepository, never()).insertTarget(any());
+        verify(shareTokenGenerator, never()).generate();
+        verify(contentApplicationService, never()).ensureVersioned(any(), any(), any());
     }
 
     @Test
@@ -596,6 +634,41 @@ class ClassicsSharingApplicationServiceImplTest {
         assertPortalShareHidden(null);
         assertPortalShareHidden(link(ClassicsShareVisibility.PUBLIC, ClassicsShareLinkStatus.REVOKED, futureDate()));
         assertPortalShareHidden(link(ClassicsShareVisibility.PUBLIC, ClassicsShareLinkStatus.ACTIVE, pastDate()));
+    }
+
+    @Test
+    void changeStatusShouldRestoreOnlyUnexpiredRevokedShare() {
+        ClassicsSharingRepository sharingRepository = mock(ClassicsSharingRepository.class);
+        ClassicsShareTokenHasher shareTokenHasher = mock(ClassicsShareTokenHasher.class);
+        ClassicsSharingApplicationServiceImpl service = portalService(sharingRepository, shareTokenHasher);
+        ClassicsShareLinkId shareLinkId = ClassicsShareLinkId.of(10L);
+        ClassicsShareLink revoked = link(ClassicsShareVisibility.PUBLIC, ClassicsShareLinkStatus.REVOKED, futureDate());
+        when(sharingRepository.getLinkById(shareLinkId)).thenReturn(revoked);
+        when(sharingRepository.updateLinkStatus(shareLinkId, ClassicsShareLinkStatus.ACTIVE.value()))
+                .thenReturn(1);
+
+        service.changeStatus(new ShareLinkStatusCommand(shareLinkId, ClassicsShareLinkStatus.ACTIVE));
+
+        verify(sharingRepository).updateLinkStatus(shareLinkId, ClassicsShareLinkStatus.ACTIVE.value());
+    }
+
+    @Test
+    void changeStatusShouldRejectExpiredOrNonRevokedRestore() {
+        ClassicsSharingRepository sharingRepository = mock(ClassicsSharingRepository.class);
+        ClassicsShareTokenHasher shareTokenHasher = mock(ClassicsShareTokenHasher.class);
+        ClassicsSharingApplicationServiceImpl service = portalService(sharingRepository, shareTokenHasher);
+        ClassicsShareLinkId shareLinkId = ClassicsShareLinkId.of(10L);
+        ShareLinkStatusCommand restoreCommand = new ShareLinkStatusCommand(shareLinkId, ClassicsShareLinkStatus.ACTIVE);
+
+        when(sharingRepository.getLinkById(shareLinkId))
+                .thenReturn(link(ClassicsShareVisibility.PUBLIC, ClassicsShareLinkStatus.EXPIRED, futureDate()));
+        assertThrows(BizException.class, () -> service.changeStatus(restoreCommand));
+
+        when(sharingRepository.getLinkById(shareLinkId))
+                .thenReturn(link(ClassicsShareVisibility.PUBLIC, ClassicsShareLinkStatus.REVOKED, pastDate()));
+        assertThrows(BizException.class, () -> service.changeStatus(restoreCommand));
+        verify(sharingRepository, never())
+                .updateLinkStatus(eq(shareLinkId), eq(ClassicsShareLinkStatus.ACTIVE.value()));
     }
 
     @Test
