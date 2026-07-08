@@ -148,7 +148,7 @@ class ClassicsContentSnapshotAssemblerTest {
                         + "\"contentUpdatedAt\":\"1970-01-01T00:00:01Z\",\"title\":\"王圻\","
                         + "\"summary\":\"摘要\",\"contentFormat\":\"MARKDOWN\",\"content\":\"正文\","
                         + "\"documentTime\":\"1970-01-01T00:00:02Z\",\"storageObjectId\":8,"
-                        + "\"visibility\":\"PUBLIC\"}",
+                        + "\"visibility\":\"PUBLIC\",\"tags\":[],\"qaPairs\":[]}",
                 snapshotJson);
     }
 
@@ -174,7 +174,7 @@ class ClassicsContentSnapshotAssemblerTest {
                         + "\"contentUpdatedAt\":\"1970-01-01T00:00:01Z\",\"title\":\"明俗\","
                         + "\"category\":\"岁时\",\"chapter\":\"卷一\",\"section\":\"元日\","
                         + "\"summary\":\"摘要\",\"contentFormat\":\"TEXT\",\"content\":\"正文\","
-                        + "\"originalExcerpts\":\"摘录\",\"visibility\":\"PUBLIC\"}",
+                        + "\"originalExcerpts\":\"摘录\",\"visibility\":\"PUBLIC\",\"tags\":[],\"qaPairs\":[]}",
                 snapshotJson);
     }
 

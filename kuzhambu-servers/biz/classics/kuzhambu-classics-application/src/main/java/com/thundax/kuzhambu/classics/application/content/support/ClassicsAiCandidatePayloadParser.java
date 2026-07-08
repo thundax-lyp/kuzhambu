@@ -31,8 +31,8 @@ public class ClassicsAiCandidatePayloadParser {
             throw new BizException("AI候选内容为空");
         }
 
-        JsonNode root = parseJson(resultPayload);
-        if (root.isTextual()) {
+        JsonNode root = parseJson(resultPayload, false);
+        if (root == null || root.isTextual()) {
             return parseText(resultPayload);
         }
 
@@ -61,7 +61,10 @@ public class ClassicsAiCandidatePayloadParser {
     }
 
     private List<String> parseTags(String resultPayload, boolean required) {
-        JsonNode root = parseJson(resultPayload);
+        JsonNode root = parseJson(resultPayload, required);
+        if (root == null) {
+            return List.of();
+        }
         List<String> tags = new ArrayList<>();
         if (root.isObject()) {
             JsonNode tagsNode = ((ObjectNode) root).get("tags");
@@ -92,7 +95,10 @@ public class ClassicsAiCandidatePayloadParser {
     }
 
     private List<AiCandidateQaPairPayload> parseQaPairs(String resultPayload, boolean required) {
-        JsonNode root = parseJson(resultPayload);
+        JsonNode root = parseJson(resultPayload, required);
+        if (root == null) {
+            return List.of();
+        }
         List<AiCandidateQaPairPayload> pairs = new ArrayList<>();
         if (root.isObject()) {
             JsonNode pairsNode = ((ObjectNode) root).get("qaPairs");
@@ -110,7 +116,7 @@ public class ClassicsAiCandidatePayloadParser {
     }
 
     public Long parseStorageObjectId(String resultPayload) {
-        JsonNode root = parseJson(resultPayload);
+        JsonNode root = parseJson(resultPayload, true);
         JsonNode storageObjectIdNode = root.path("storageObjectId");
         if (!storageObjectIdNode.canConvertToLong()) {
             throw new BizException("AI候选生图结果缺少 storageObjectId");
@@ -122,10 +128,13 @@ public class ClassicsAiCandidatePayloadParser {
         return storageObjectId;
     }
 
-    private JsonNode parseJson(String resultPayload) {
+    private JsonNode parseJson(String resultPayload, boolean required) {
         try {
             return objectMapper.readTree(resultPayload);
         } catch (Exception ex) {
+            if (!required) {
+                return null;
+            }
             throw new BizException("AI候选内容不是合法JSON");
         }
     }

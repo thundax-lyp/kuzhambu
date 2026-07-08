@@ -539,11 +539,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                 ensureUpdate(repository.updateSancaiEntryAiFields(entry), "更新三才内容失败");
             } else if ("summary".equals(capability) || "tags".equals(capability) || "qa".equals(capability)) {
                 applySummaryTagsAndQaFromAiCandidate(
-                        contentType,
-                        entry,
-                        capability,
-                        command.getResultPayload(),
-                        "更新三才内容失败");
+                        contentType, entry, capability, command.getResultPayload(), "更新三才内容失败");
             } else {
                 throw new BizException("不支持的 AI 候选能力: " + capability);
             }
@@ -560,11 +556,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             }
             if ("summary".equals(capability) || "tags".equals(capability) || "qa".equals(capability)) {
                 applySummaryTagsAndQaFromAiCandidate(
-                        contentType,
-                        document,
-                        capability,
-                        command.getResultPayload(),
-                        "更新王圻文档失败");
+                        contentType, document, capability, command.getResultPayload(), "更新王圻文档失败");
             } else {
                 throw new BizException("不支持的 AI 候选能力: " + capability);
             }
@@ -576,11 +568,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             }
             if ("summary".equals(capability) || "tags".equals(capability) || "qa".equals(capability)) {
                 applySummaryTagsAndQaFromAiCandidate(
-                        contentType,
-                        entry,
-                        capability,
-                        command.getResultPayload(),
-                        "更新明代习俗失败");
+                        contentType, entry, capability, command.getResultPayload(), "更新明代习俗失败");
             } else {
                 throw new BizException("不支持的 AI 候选能力: " + capability);
             }

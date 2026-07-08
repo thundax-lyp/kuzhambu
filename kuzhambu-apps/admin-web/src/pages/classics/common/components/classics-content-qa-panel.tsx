@@ -165,7 +165,8 @@ export const ClassicsContentQaPanel = ({
     const submitQaPair = async () => {
         const formValues = await form.validateFields();
         const command: ClassicsContentQaPairCommand = {
-            ...formValues,
+            contentId,
+            contentType,
             id: editingQaPair?.id,
             question: formValues.question.trim(),
             answer: formValues.answer.trim(),

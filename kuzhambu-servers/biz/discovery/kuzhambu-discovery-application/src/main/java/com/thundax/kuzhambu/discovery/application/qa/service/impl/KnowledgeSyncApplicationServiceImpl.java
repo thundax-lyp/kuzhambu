@@ -514,11 +514,7 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
     }
 
     private KnowledgeSyncItemResult deleteSyncItem(
-            QaKnowledgeSyncItem existingItem,
-            String sourceId,
-            Date now,
-            String requestId,
-            String traceId) {
+            QaKnowledgeSyncItem existingItem, String sourceId, Date now, String requestId, String traceId) {
         if (StringUtils.isBlank(existingItem.getExternalKnowledgeItemId())) {
             return syncDeletedContent(
                     new SyncKnowledgeContentCommand(

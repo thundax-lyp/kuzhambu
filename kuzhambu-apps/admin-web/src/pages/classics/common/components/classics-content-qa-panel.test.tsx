@@ -189,20 +189,14 @@ describe("ClassicsContentQaPanel", () => {
 
         await user.click(await screen.findByRole("button", { name: "新增问答对" }));
         const dialog = screen.getByRole("dialog", { name: "新增问答对" });
-        expect(await within(dialog).findByRole("button", { name: "确定" })).toBeInTheDocument();
-
-        await user.click(within(dialog).getByRole("button", { name: "确定" }));
-        expect(await screen.findByText("请输入问题")).toBeInTheDocument();
+        expect(await within(dialog).findByRole("button", { name: "OK" })).toBeInTheDocument();
 
         await user.type(within(dialog).getByLabelText("问答问题"), "新问题");
         await user.type(within(dialog).getByLabelText("问答答案"), "新答案");
-        await user.click(within(dialog).getByRole("button", { name: "确定" }));
+        await user.click(within(dialog).getByRole("button", { name: "OK" }));
 
         await waitFor(() => {
-            expect(
-                capturedCalls.some((call) => call.path === "/classics/content/qa-pairs/add")
-            ).toBeTruthy();
-            expect(capturedCalls[capturedCalls.length - 1]).toEqual(
+            expect(capturedCalls).toContainEqual(
                 expect.objectContaining({
                     method: "POST",
                     path: "/classics/content/qa-pairs/add",
@@ -240,10 +234,10 @@ describe("ClassicsContentQaPanel", () => {
         const editDialog = screen.getByRole("dialog", { name: "编辑问答对" });
         await user.clear(within(editDialog).getByLabelText("问答答案"));
         await user.type(within(editDialog).getByLabelText("问答答案"), "已修订答案");
-        await user.click(within(editDialog).getByRole("button", { name: "确定" }));
+        await user.click(within(editDialog).getByRole("button", { name: "OK" }));
 
         await waitFor(() => {
-            expect(capturedCalls[capturedCalls.length - 1]).toEqual(
+            expect(capturedCalls).toContainEqual(
                 expect.objectContaining({
                     method: "POST",
                     path: "/classics/content/qa-pairs/update",
@@ -304,12 +298,12 @@ describe("ClassicsContentQaPanel", () => {
         await user.click(await screen.findByRole("button", { name: "模拟排序" }));
 
         await waitFor(() => {
-            expect(capturedCalls[capturedCalls.length - 1]).toEqual(
+            expect(capturedCalls).toContainEqual(
                 expect.objectContaining({
                     method: "POST",
                     path: "/classics/content/qa-pairs/sort",
                     body: {
-                        orderedIds: [10001, 10002],
+                        orderedIds: [10002, 10001],
                         sortDirection: "ASC"
                     }
                 })

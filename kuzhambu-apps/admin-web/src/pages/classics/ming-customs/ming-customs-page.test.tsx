@@ -558,6 +558,7 @@ describe("MingCustomsPage", () => {
 
     it("refreshes detail and tags/qa/versions after ai candidate apply", async () => {
         const user = userEvent.setup();
+        const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
 
         render(
             <QueryClientProvider client={queryClient}>
@@ -575,24 +576,30 @@ describe("MingCustomsPage", () => {
 
         await waitFor(() => {
             expect(
-                capturedCalls.some(
-                    (call) =>
-                        call.path.includes("/classics/ming-customs/500000000001") &&
-                        call.path.startsWith("/classics/ming-customs")
+                invalidateSpy.mock.calls.some(
+                    ([arg]) =>
+                        JSON.stringify(arg?.queryKey) === JSON.stringify(["ming-customs", "detail"])
                 )
             ).toBeTruthy();
             expect(
-                capturedCalls.some(
-                    (call) =>
-                        call.path.includes("/classics/content/tags") &&
-                        call.path.includes("contentType=MING_CUSTOMS")
+                invalidateSpy.mock.calls.some(
+                    ([arg]) =>
+                        JSON.stringify(arg?.queryKey) ===
+                        JSON.stringify(["classics", "content", "tags", "MING_CUSTOMS"])
                 )
             ).toBeTruthy();
             expect(
-                capturedCalls.some(
-                    (call) =>
-                        call.path.includes("/classics/content/qa-pairs") &&
-                        call.path.includes("contentType=MING_CUSTOMS")
+                invalidateSpy.mock.calls.some(
+                    ([arg]) =>
+                        JSON.stringify(arg?.queryKey) ===
+                        JSON.stringify(["classics", "content", "qa-pairs", "MING_CUSTOMS"])
+                )
+            ).toBeTruthy();
+            expect(
+                invalidateSpy.mock.calls.some(
+                    ([arg]) =>
+                        JSON.stringify(arg?.queryKey) ===
+                        JSON.stringify(["ming-customs", "versions"])
                 )
             ).toBeTruthy();
         });
@@ -600,6 +607,7 @@ describe("MingCustomsPage", () => {
 
     it("only refreshes candidate list after ai candidate reject", async () => {
         const user = userEvent.setup();
+        const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
 
         render(
             <QueryClientProvider client={queryClient}>
@@ -617,12 +625,20 @@ describe("MingCustomsPage", () => {
 
         await waitFor(() => {
             expect(
-                capturedCalls.some((call) => call.path.includes("/ai/invocation/candidate/list"))
+                invalidateSpy.mock.calls.some(
+                    ([arg]) =>
+                        JSON.stringify(arg?.queryKey) ===
+                        JSON.stringify(["ai", "candidates", "MING_CUSTOMS", 500000000001])
+                )
             ).toBeTruthy();
         });
 
         expect(
-            capturedCalls.every((call) => call.path.includes("/ai/invocation/candidate/list"))
+            invalidateSpy.mock.calls.every(
+                ([arg]) =>
+                    JSON.stringify(arg?.queryKey) ===
+                    JSON.stringify(["ai", "candidates", "MING_CUSTOMS", 500000000001])
+            )
         ).toBeTruthy();
     }, 30000);
 

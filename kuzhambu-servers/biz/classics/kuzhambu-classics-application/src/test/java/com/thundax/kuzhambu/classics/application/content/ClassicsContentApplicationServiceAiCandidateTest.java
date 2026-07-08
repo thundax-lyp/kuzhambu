@@ -639,13 +639,12 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 });
 
         ClassicsContentApplicationServiceImpl service = serviceWithAiFacade(repository, aiFacade);
-        AiCandidateApplyContentCommand command =
-                applyCommand(
-                        22L,
-                        ClassicsContentType.WANGQI_DOCUMENT,
-                        22L,
-                        "summary",
-                        "{\"summary\":\"ok-summary\",\"tags\":[\"t1\",\"t2\"],\"qaPairs\":[{\"question\":\"q1\",\"answer\":\"a1\"}]}");
+        AiCandidateApplyContentCommand command = applyCommand(
+                22L,
+                ClassicsContentType.WANGQI_DOCUMENT,
+                22L,
+                "summary",
+                "{\"summary\":\"ok-summary\",\"tags\":[\"t1\",\"t2\"],\"qaPairs\":[{\"question\":\"q1\",\"answer\":\"a1\"}]}");
 
         AiCandidateApplyContentResult result = service.applyAiCandidate(command);
 
@@ -846,9 +845,9 @@ class ClassicsContentApplicationServiceAiCandidateTest {
     void rejectAiCandidatesShouldNotCreateVersion() {
         FakeRepository repository = new FakeRepository();
         AiFacade aiFacade = org.mockito.Mockito.mock(AiFacade.class);
-        when(aiFacade.requirePendingCandidate(any(RequirePendingAiCandidateFacadeRequest.class))
+        when(aiFacade.requirePendingCandidate(any(RequirePendingAiCandidateFacadeRequest.class)))
                 .thenReturn(pendingCandidate());
-        when(aiFacade.rejectCandidate(any(RejectAiCandidateFacadeRequest.class))
+        when(aiFacade.rejectCandidate(any(RejectAiCandidateFacadeRequest.class)))
                 .thenReturn(candidateRejected());
 
         ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
@@ -857,9 +856,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         setPermissions(Set.of("classics:sancai:edit"));
         try {
             service.rejectAiCandidates(new AiCandidateBatchRejectContentCommand(
-                    List.of(rejectItem(11L, ClassicsContentType.SANCAI_ENTRY, 11L, "summary")),
-                    null,
-                    null));
+                    List.of(rejectItem(11L, ClassicsContentType.SANCAI_ENTRY, 11L, "summary")), null, null));
             assertEquals(0, repository.insertVersionCount);
             assertEquals(0, repository.updateSancaiEntryAiCount);
         } finally {
@@ -1001,7 +998,11 @@ class ClassicsContentApplicationServiceAiCandidateTest {
     }
 
     private static AiCandidateFacadeDto candidateRejected() {
-        return AiCandidateFacadeDto.builder().candidateId(11L).status("REJECTED").rejectedAt(Instant.now()).build();
+        return AiCandidateFacadeDto.builder()
+                .candidateId(11L)
+                .status("REJECTED")
+                .rejectedAt(Instant.now())
+                .build();
     }
 
     private static AiFacade mockAiFacade(

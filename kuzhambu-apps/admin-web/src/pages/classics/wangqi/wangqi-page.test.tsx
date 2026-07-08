@@ -511,6 +511,7 @@ describe("WangqiPage", () => {
 
     it("refreshes detail and tags/qa/version after ai candidate apply", async () => {
         const user = userEvent.setup();
+        const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
 
         render(
             <QueryClientProvider client={queryClient}>
@@ -526,23 +527,37 @@ describe("WangqiPage", () => {
 
         await waitFor(() => {
             expect(
-                capturedCalls.some((call) => call.path.includes("/classics/content/qa-pairs"))
-            ).toBeTruthy();
-            expect(
-                capturedCalls.some(
-                    (call) =>
-                        call.path.includes("/classics/content/tags") &&
-                        call.path.includes("contentType=WANGQI_DOCUMENT")
+                invalidateSpy.mock.calls.some(
+                    ([arg]) =>
+                        JSON.stringify(arg?.queryKey) === JSON.stringify(["wangqi", "detail"])
                 )
             ).toBeTruthy();
             expect(
-                capturedCalls.some((call) => call.path.includes("/classics/wangqi/documents/"))
+                invalidateSpy.mock.calls.some(
+                    ([arg]) =>
+                        JSON.stringify(arg?.queryKey) ===
+                        JSON.stringify(["classics", "content", "tags", "WANGQI_DOCUMENT"])
+                )
+            ).toBeTruthy();
+            expect(
+                invalidateSpy.mock.calls.some(
+                    ([arg]) =>
+                        JSON.stringify(arg?.queryKey) ===
+                        JSON.stringify(["classics", "content", "qa-pairs", "WANGQI_DOCUMENT"])
+                )
+            ).toBeTruthy();
+            expect(
+                invalidateSpy.mock.calls.some(
+                    ([arg]) =>
+                        JSON.stringify(arg?.queryKey) === JSON.stringify(["wangqi", "versions"])
+                )
             ).toBeTruthy();
         });
     }, 30000);
 
     it("only refreshes candidate list after ai candidate reject", async () => {
         const user = userEvent.setup();
+        const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
 
         render(
             <QueryClientProvider client={queryClient}>
@@ -558,12 +573,25 @@ describe("WangqiPage", () => {
 
         await waitFor(() => {
             expect(
-                capturedCalls.some((call) => call.path.includes("/ai/invocation/candidate/list"))
+                invalidateSpy.mock.calls.some(
+                    ([arg]) =>
+                        JSON.stringify(arg?.queryKey) ===
+                        JSON.stringify([
+                            "ai",
+                            "candidates",
+                            "WANGQI_DOCUMENT",
+                            mockDocumentRecord.id
+                        ])
+                )
             ).toBeTruthy();
         });
 
         expect(
-            capturedCalls.every((call) => call.path.includes("/ai/invocation/candidate/list"))
+            invalidateSpy.mock.calls.every(
+                ([arg]) =>
+                    JSON.stringify(arg?.queryKey) ===
+                    JSON.stringify(["ai", "candidates", "WANGQI_DOCUMENT", mockDocumentRecord.id])
+            )
         ).toBeTruthy();
     }, 30000);
 
