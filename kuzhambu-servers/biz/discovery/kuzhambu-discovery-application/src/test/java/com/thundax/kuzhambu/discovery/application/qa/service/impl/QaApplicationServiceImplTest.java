@@ -476,6 +476,10 @@ class QaApplicationServiceImplTest {
                 100L,
                 null,
                 "{}",
+                null,
+                null,
+                null,
+                null,
                 new Date(4000L));
     }
 }

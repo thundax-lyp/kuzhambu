@@ -47,6 +47,10 @@ public class QaTraceAssembler {
                 latencyMs,
                 failureReason,
                 writeJson(traceRaw(providerRequest, chatResult)),
+                null,
+                null,
+                null,
+                null,
                 new Date());
     }
 

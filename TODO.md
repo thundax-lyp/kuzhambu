@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Discovery QA trace persistence`：补齐 QA trace 的 AI 调用追踪字段落库
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-WANGQI-SINGLE-DOCUMENT-QA.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-domain/src/main/java/com/thundax/kuzhambu/discovery/domain/qa/model/entity/QaRetrievalTrace.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/qa/persistence/dataobject/QaRetrievalTraceDO.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/qa/persistence/mapper/QaRetrievalTraceMapper.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/qa/repository/impl/QaRetrievalTraceRepositoryImpl.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/test/java/com/thundax/kuzhambu/discovery/infra/qa/repository/impl/QaRetrievalTraceRepositoryImplTest.java`
-    - 处理动作：为 `discovery_qa_retrieval_trace` 增加 `ai_call_id`、`ai_status`、`ai_error_type`、`ai_error_message` 的 domain、DO、mapper、repository 和仓储测试覆盖。
-    - 验收点：QA trace 可保存并读取 AI 调用追踪字段，仓储测试覆盖新增字段。
-    - 重要度：10/10
-
 - [ ] `Discovery QA trace admin API`：返回 QA trace 的 AI 调用追踪字段
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-WANGQI-SINGLE-DOCUMENT-QA.md`
