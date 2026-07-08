@@ -26,6 +26,7 @@ import com.thundax.kuzhambu.classics.application.content.support.ClassicsAiCandi
 import com.thundax.kuzhambu.classics.application.content.support.ClassicsContentPermissionSupport;
 import com.thundax.kuzhambu.classics.application.content.support.ClassicsContentSnapshotAssembler;
 import com.thundax.kuzhambu.classics.application.content.support.ClassicsTagBindingSupport;
+import com.thundax.kuzhambu.classics.application.content.support.MingCustomsVersionSnapshot;
 import com.thundax.kuzhambu.classics.application.content.support.SancaiEntryVersionSnapshot;
 import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationItemResult;
 import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationResult;
@@ -38,6 +39,7 @@ import com.thundax.kuzhambu.classics.domain.common.client.WorkerRenderClient;
 import com.thundax.kuzhambu.classics.domain.common.client.dto.WorkerRenderDtos;
 import com.thundax.kuzhambu.classics.domain.common.codec.StorageObjectIdCodec;
 import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.Versionable;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentExportJob;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentQaPair;
@@ -56,6 +58,8 @@ import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsCo
 import com.thundax.kuzhambu.classics.domain.content.repository.ClassicsContentRepository;
 import com.thundax.kuzhambu.classics.domain.content.service.ClassicsContentVersioningService;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsContentFormat;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsVisibility;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryImage;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVisualAsset;
@@ -88,6 +92,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -1130,6 +1135,13 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             wangqiDocumentVersionRestorer.markVersioned((WangqiDocument) restored);
             return restoredVersion;
         }
+        if (version.getContentType() == ClassicsContentType.MING_CUSTOMS) {
+            Versionable restored = restoreMingCustomsFromSnapshot(version);
+            ClassicsContentVersion restoredVersion = createRestoredVersion(restored, version);
+            persistVersionMarkers(restored);
+            publishSearchSyncAfterCommit(restored);
+            return restoredVersion;
+        }
         if (version.getContentType() == ClassicsContentType.SANCAI_ENTRY) {
             Versionable restored = sancaiEntryVersionRestorer.restoreSnapshot(version);
             ClassicsContentVersion restoredVersion = createRestoredVersion(restored, version);
@@ -1137,6 +1149,48 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             return restoredVersion;
         }
         throw new BizException("暂不支持恢复该类型历史版本: " + version.getContentType());
+    }
+
+    private Versionable restoreMingCustomsFromSnapshot(ClassicsContentVersion version) {
+        MingCustomsEntry entry = repository.getMingCustomsEntryForAiApply(version.getContentId());
+        if (entry == null) {
+            throw new BizException("明代习俗不存在");
+        }
+
+        MingCustomsVersionSnapshot snapshot = parseMingCustomsVersionSnapshot(version);
+        if (!ClassicsContentType.MING_CUSTOMS.value().equals(snapshot.contentType())
+                || !Objects.equals(version.getContentId(), ClassicsContentIdCodec.toDomain(snapshot.contentId()))) {
+            throw new BizException("历史版本快照不属于当前明代习俗条目");
+        }
+
+        entry.setTitle(snapshot.title());
+        entry.setCategory(snapshot.category());
+        entry.setChapter(snapshot.chapter());
+        entry.setSection(snapshot.section());
+        entry.setSummary(snapshot.summary());
+        entry.setContentFormat(resolveMingCustomsContentFormat(snapshot.contentFormat()));
+        entry.setContent(snapshot.content());
+        entry.setOriginalExcerpts(snapshot.originalExcerpts());
+        entry.setVisibility(resolveMingCustomsVisibility(snapshot.visibility()));
+        touchContentUpdatedAt(ClassicsContentType.MING_CUSTOMS, entry);
+        return entry;
+    }
+
+    private MingCustomsVersionSnapshot parseMingCustomsVersionSnapshot(ClassicsContentVersion version) {
+        try {
+            return MingCustomsVersionSnapshot.from(objectMapper.readTree(version.getSnapshotJson()));
+        } catch (JsonProcessingException exception) {
+            throw new BizException(
+                    "CLASSICS-13005", "classics.content.version.snapshot-invalid", "历史版本快照不可解析", exception);
+        }
+    }
+
+    private MingCustomsContentFormat resolveMingCustomsContentFormat(String value) {
+        return StringUtils.isBlank(value) ? null : MingCustomsContentFormat.from(value);
+    }
+
+    private MingCustomsVisibility resolveMingCustomsVisibility(String value) {
+        return StringUtils.isBlank(value) ? null : MingCustomsVisibility.from(value);
     }
 
     @Override

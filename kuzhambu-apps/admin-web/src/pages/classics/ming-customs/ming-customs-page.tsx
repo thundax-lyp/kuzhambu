@@ -23,9 +23,10 @@ import type { ClassicsExportScopePayload } from "@/pages/classics/common/classic
 import { MingCustomsKeywordCloud } from "./components/ming-customs-keyword-cloud";
 import { MingCustomsList } from "./components/ming-customs-list";
 import { MingCustomsModel } from "./components/ming-customs-model";
+import { MingCustomsVersionHistoryPanel } from "./components/ming-customs-version-history-panel";
 import * as service from "./ming-customs-service";
 import type { MingCustomsCommand, MingCustomsQuery } from "./ming-customs-service";
-import type { MingCustomsRecord } from "./ming-customs-types";
+import type { MingCustomsContentVersionRecord, MingCustomsRecord } from "./ming-customs-types";
 import "./ming-customs-page.css";
 
 type MingCustomsVisibilityFilter = "ALL" | "PUBLIC" | "PRIVATE";
@@ -147,6 +148,7 @@ export const MingCustomsPage = () => {
     const [creatingRefinementCapability, setCreatingRefinementCapability] = useState<
         "summary" | null
     >(null);
+    const [selectedVersionId, setSelectedVersionId] = useState<number | null>(null);
     const handledSucceededTaskIdsRef = useRef<Set<number>>(new Set());
     const hasActiveFilters = Boolean(
         filters.category ||
@@ -168,6 +170,22 @@ export const MingCustomsPage = () => {
         queryKey: ["ming-customs", "detail", editingEntry?.id],
         queryFn: () => service.get(editingEntry?.id ?? 0),
         enabled: editorOpen && editorMode === "edit" && Boolean(editingEntry?.id),
+        retry: false
+    });
+    const versionsQuery = useQuery({
+        queryKey: ["ming-customs", "versions", editingEntry?.id],
+        queryFn: () => service.listVersions(editingEntry?.id ?? 0),
+        enabled: editorOpen && editorMode === "edit" && Boolean(editingEntry?.id),
+        retry: false
+    });
+    const selectedVersionQuery = useQuery({
+        queryKey: ["ming-customs", "versions", "detail", editingEntry?.id, selectedVersionId],
+        queryFn: () => service.getVersion(editingEntry?.id ?? 0, selectedVersionId ?? 0),
+        enabled:
+            editorOpen &&
+            Boolean(editingEntry?.id) &&
+            typeof selectedVersionId === "number" &&
+            Number.isInteger(selectedVersionId),
         retry: false
     });
     const currentUserQuery = useQuery({
@@ -235,6 +253,8 @@ export const MingCustomsPage = () => {
         () => refinementTasksQuery.data?.items || [],
         [refinementTasksQuery.data?.items]
     );
+    const versionHistory = useMemo(() => versionsQuery.data || [], [versionsQuery.data]);
+    const selectedVersion = selectedVersionQuery.data || null;
 
     const invalidateMingCustoms = useCallback(async () => {
         await Promise.all([
@@ -247,6 +267,7 @@ export const MingCustomsPage = () => {
             queryClient.invalidateQueries({
                 queryKey: ["classics", "content", "qa-pairs", "MING_CUSTOMS"]
             }),
+            queryClient.invalidateQueries({ queryKey: ["ming-customs", "versions"] }),
             queryClient.invalidateQueries({
                 queryKey: ["ai", "candidates", "MING_CUSTOMS", editorEntry?.id]
             })
@@ -355,6 +376,18 @@ export const MingCustomsPage = () => {
             setCreatingRefinementCapability(null);
         }
     });
+    const resetVersionMutation = useMutation({
+        mutationFn: ({ entryId, versionId }: { entryId: number; versionId: number }) =>
+            service.resetVersion(entryId, versionId),
+        onSuccess: async () => {
+            setSelectedVersionId(null);
+            await invalidateMingCustoms();
+            messageApi.success("明代习俗版本已恢复");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "恢复失败");
+        }
+    });
 
     useEffect(() => {
         const completedTaskIds = refinementTasks
@@ -415,12 +448,14 @@ export const MingCustomsPage = () => {
         setEditorMode("create");
         setEditingEntry(null);
         setEditorOpen(true);
+        setSelectedVersionId(null);
     };
 
     const openEditEditor = (entry: MingCustomsRecord) => {
         setEditorMode("edit");
         setEditingEntry(entry);
         setEditorOpen(true);
+        setSelectedVersionId(null);
     };
 
     const closeEditor = () => {
@@ -429,7 +464,28 @@ export const MingCustomsPage = () => {
         }
         setEditorOpen(false);
         setEditingEntry(null);
+        setSelectedVersionId(null);
         handledSucceededTaskIdsRef.current.clear();
+    };
+
+    const selectVersion = (version: MingCustomsContentVersionRecord) => {
+        setSelectedVersionId(version.id);
+    };
+
+    const confirmResetVersion = (version: MingCustomsContentVersionRecord) => {
+        if (!editorEntry?.id) {
+            return;
+        }
+
+        confirm.danger({
+            title: "确认恢复明代习俗历史版本",
+            message: "恢复后会生成新的正式版本，当前内容将被历史版本覆盖。",
+            onConfirm: () =>
+                resetVersionMutation.mutate({
+                    entryId: editorEntry.id,
+                    versionId: version.id
+                })
+        });
     };
 
     const deleteEntry = (entry: MingCustomsRecord) => {
@@ -820,6 +876,16 @@ export const MingCustomsPage = () => {
                                 contentId={editorEntry.id}
                                 contentType="MING_CUSTOMS"
                                 onChanged={invalidateMingCustoms}
+                            />
+                            <MingCustomsVersionHistoryPanel
+                                currentEntry={editorEntry}
+                                detailLoading={selectedVersionQuery.isLoading}
+                                listLoading={versionsQuery.isLoading}
+                                resetting={resetVersionMutation.isPending}
+                                selectedVersion={selectedVersion}
+                                versions={versionHistory}
+                                onSelectVersion={selectVersion}
+                                onResetVersion={confirmResetVersion}
                             />
                         </>
                     ) : null

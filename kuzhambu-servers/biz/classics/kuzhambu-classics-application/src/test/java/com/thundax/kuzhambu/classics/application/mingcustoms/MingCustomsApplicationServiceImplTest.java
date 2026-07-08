@@ -46,6 +46,20 @@ class MingCustomsApplicationServiceImplTest {
     }
 
     @Test
+    void updateShouldPublishUpsertAfterCommitUsingLatestVersionNo() {
+        MingCustomsRepository repository = mock(MingCustomsRepository.class);
+        ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
+        ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
+        MingCustomsApplicationServiceImpl service =
+                new MingCustomsApplicationServiceImpl(repository, contentApplicationService, publishSupport, null);
+        versionEntryOnEnsure(contentApplicationService, 8);
+
+        service.update(publicCommand(MingCustomsEntryId.of(3009L)));
+
+        verify(publishSupport).publishUpsertAfterCommit(ClassicsContentType.MING_CUSTOMS, "3009", 8);
+    }
+
+    @Test
     void changeVisibilityShouldPublishDeleteAfterCommitWhenBecomingPrivate() {
         MingCustomsRepository repository = mock(MingCustomsRepository.class);
         ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
