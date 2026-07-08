@@ -47,6 +47,17 @@ public class RefinementTaskRepositoryImpl implements RefinementTaskRepository {
     }
 
     @Override
+    public RefinementTask findLatestAppliedByGraphVersionId(Long graphVersionId) {
+        QueryWrapper<RefinementTaskDO> wrapper = new QueryWrapper<>();
+        wrapper.eq("graph_version_id", graphVersionId)
+                .eq("status", "APPLIED")
+                .orderByDesc("applied_at")
+                .orderByDesc("id")
+                .last("limit 1");
+        return RefinementTaskPersistenceAssembler.toDomain(mapper.selectOne(wrapper));
+    }
+
+    @Override
     public PageResult<RefinementTask> page(
             String taskType,
             String sourceContentType,

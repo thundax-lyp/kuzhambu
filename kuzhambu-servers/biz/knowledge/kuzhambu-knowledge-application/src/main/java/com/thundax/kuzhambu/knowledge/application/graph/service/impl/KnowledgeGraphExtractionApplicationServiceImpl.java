@@ -45,6 +45,8 @@ import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeEntityRep
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeLineageNodeRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeLineageRelationRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeRelationRepository;
+import com.thundax.kuzhambu.knowledge.domain.refinement.model.entity.RefinementTask;
+import com.thundax.kuzhambu.knowledge.domain.refinement.repository.RefinementTaskRepository;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
@@ -77,6 +79,7 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
     private final KnowledgeRelationRepository knowledgeRelationRepository;
     private final KnowledgeLineageNodeRepository knowledgeLineageNodeRepository;
     private final KnowledgeLineageRelationRepository knowledgeLineageRelationRepository;
+    private final RefinementTaskRepository refinementTaskRepository;
     private final AiFacade aiFacade;
     private final KnowledgeGraphCandidateApplySupport candidateApplySupport;
     private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
@@ -89,6 +92,7 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
             KnowledgeRelationRepository knowledgeRelationRepository,
             KnowledgeLineageNodeRepository knowledgeLineageNodeRepository,
             KnowledgeLineageRelationRepository knowledgeLineageRelationRepository,
+            RefinementTaskRepository refinementTaskRepository,
             AiFacade aiFacade,
             KnowledgeGraphCandidateApplySupport candidateApplySupport) {
         this.repository = repository;
@@ -97,6 +101,7 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
         this.knowledgeRelationRepository = knowledgeRelationRepository;
         this.knowledgeLineageNodeRepository = knowledgeLineageNodeRepository;
         this.knowledgeLineageRelationRepository = knowledgeLineageRelationRepository;
+        this.refinementTaskRepository = refinementTaskRepository;
         this.aiFacade = aiFacade;
         this.candidateApplySupport = candidateApplySupport;
     }
@@ -1035,6 +1040,9 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
         if (version == null) {
             return null;
         }
+        RefinementTask lastAppliedRefinement = refinementTaskRepository == null
+                ? null
+                : refinementTaskRepository.findLatestAppliedByGraphVersionId(version.getVersionId());
         return new GraphVersionResult(
                 version.getVersionId(),
                 version.getTaskId() == null
@@ -1046,7 +1054,14 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
                 version.getSourceContentId(),
                 version.getVersionNo(),
                 version.getStatus(),
-                version.getAppliedAt() == null ? null : version.getAppliedAt().getTime());
+                version.getAppliedAt() == null ? null : version.getAppliedAt().getTime(),
+                lastAppliedRefinement != null,
+                lastAppliedRefinement == null || lastAppliedRefinement.getRefinementTaskId() == null
+                        ? null
+                        : lastAppliedRefinement.getRefinementTaskId().value(),
+                lastAppliedRefinement == null || lastAppliedRefinement.getAppliedAt() == null
+                        ? null
+                        : lastAppliedRefinement.getAppliedAt().getTime());
     }
 
     private KnowledgeEntityResult toKnowledgeEntityResult(KnowledgeEntity entity) {

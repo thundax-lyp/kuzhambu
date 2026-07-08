@@ -165,6 +165,9 @@ public final class KnowledgeGraphExtractionInterfaceAssembler {
                 .versionNo(result == null ? null : result.getVersionNo())
                 .status(result == null ? null : result.getStatus())
                 .appliedAt(result == null ? null : result.getAppliedAt())
+                .refinementApplied(result == null ? null : result.getRefinementApplied())
+                .lastRefinementTaskId(result == null ? null : result.getLastRefinementTaskId())
+                .lastRefinementAppliedAt(result == null ? null : result.getLastRefinementAppliedAt())
                 .build();
     }
 

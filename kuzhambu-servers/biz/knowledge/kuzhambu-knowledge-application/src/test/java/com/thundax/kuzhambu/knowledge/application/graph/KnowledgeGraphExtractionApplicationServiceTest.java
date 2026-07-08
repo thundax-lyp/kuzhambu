@@ -48,6 +48,7 @@ import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeEntityRep
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeLineageNodeRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeLineageRelationRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeRelationRepository;
+import com.thundax.kuzhambu.knowledge.domain.refinement.repository.RefinementTaskRepository;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -73,6 +74,34 @@ class KnowledgeGraphExtractionApplicationServiceTest {
             KnowledgeAiExtractionDomainService knowledgeAiExtractionDomainService,
             AiCandidateDomainService aiCandidateDomainService,
             KnowledgeGraphCandidateApplySupport candidateApplySupport) {
+        return service(
+                repository,
+                graphVersionRepository,
+                knowledgeEntityRepository,
+                knowledgeRelationRepository,
+                knowledgeLineageNodeRepository,
+                knowledgeLineageRelationRepository,
+                null,
+                aiInvocationRepository,
+                aiBatchJobApplicationService,
+                knowledgeAiExtractionDomainService,
+                aiCandidateDomainService,
+                candidateApplySupport);
+    }
+
+    private static KnowledgeGraphExtractionApplicationServiceImpl service(
+            GraphExtractionTaskRepository repository,
+            GraphVersionRepository graphVersionRepository,
+            KnowledgeEntityRepository knowledgeEntityRepository,
+            KnowledgeRelationRepository knowledgeRelationRepository,
+            KnowledgeLineageNodeRepository knowledgeLineageNodeRepository,
+            KnowledgeLineageRelationRepository knowledgeLineageRelationRepository,
+            RefinementTaskRepository refinementTaskRepository,
+            AiInvocationRepository aiInvocationRepository,
+            AiBatchJobApplicationService aiBatchJobApplicationService,
+            KnowledgeAiExtractionDomainService knowledgeAiExtractionDomainService,
+            AiCandidateDomainService aiCandidateDomainService,
+            KnowledgeGraphCandidateApplySupport candidateApplySupport) {
         return new KnowledgeGraphExtractionApplicationServiceImpl(
                 repository,
                 graphVersionRepository,
@@ -80,6 +109,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 knowledgeRelationRepository,
                 knowledgeLineageNodeRepository,
                 knowledgeLineageRelationRepository,
+                refinementTaskRepository,
                 new FakeAiFacade(
                         aiInvocationRepository,
                         aiBatchJobApplicationService,
