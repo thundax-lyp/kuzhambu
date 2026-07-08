@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Operations cleanup type registry/config`：登记运行态 cleanup type 与调度配置
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-CLEANUP-TARGET-TYPES.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/cleanup/support/OperationsCleanupSupport.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/cleanup/support/OperationsCleanupScheduleProperties.java`、`kuzhambu-servers/starter/kuzhambu-admin-starter/src/main/resources/application.yml`、`.env.example`、`deploy/.env.example`
-    - 处理动作：登记 `EXPIRED_REPORT`、`EXPIRED_HEALTH_CHECK`、`EXPIRED_LONG_TASK` 及其调度 policy 配置。
-    - 验收点：cleanup type 固定顺序包含 7 类，三类新增 policy 的 `enabled`、`retention-days`、`limit` 默认值在三处配置文件中一致。
-    - 重要度：9/10
-
 - [ ] `Operations cleanup domain repository`：补运行态目标 repository 边界
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-CLEANUP-TARGET-TYPES.md`

@@ -59,6 +59,33 @@ public class OperationsCleanupScheduleProperties {
     @Value("${kuzhambu.operations.cleanup.schedule.policies.expired-draft.limit:200}")
     private Integer expiredDraftLimit;
 
+    @Value("${kuzhambu.operations.cleanup.schedule.policies.expired-report.enabled:true}")
+    private boolean expiredReportEnabled;
+
+    @Value("${kuzhambu.operations.cleanup.schedule.policies.expired-report.retention-days:90}")
+    private int expiredReportRetentionDays;
+
+    @Value("${kuzhambu.operations.cleanup.schedule.policies.expired-report.limit:200}")
+    private Integer expiredReportLimit;
+
+    @Value("${kuzhambu.operations.cleanup.schedule.policies.expired-health-check.enabled:true}")
+    private boolean expiredHealthCheckEnabled;
+
+    @Value("${kuzhambu.operations.cleanup.schedule.policies.expired-health-check.retention-days:30}")
+    private int expiredHealthCheckRetentionDays;
+
+    @Value("${kuzhambu.operations.cleanup.schedule.policies.expired-health-check.limit:500}")
+    private Integer expiredHealthCheckLimit;
+
+    @Value("${kuzhambu.operations.cleanup.schedule.policies.expired-long-task.enabled:true}")
+    private boolean expiredLongTaskEnabled;
+
+    @Value("${kuzhambu.operations.cleanup.schedule.policies.expired-long-task.retention-days:90}")
+    private int expiredLongTaskRetentionDays;
+
+    @Value("${kuzhambu.operations.cleanup.schedule.policies.expired-long-task.limit:200}")
+    private Integer expiredLongTaskLimit;
+
     public List<CleanupPolicy> orderedPolicies() {
         return OperationsCleanupSupport.orderedCleanupTypes().stream()
                 .map(this::policyFor)
@@ -92,6 +119,24 @@ public class OperationsCleanupScheduleProperties {
                         expiredDraftEnabled,
                         expiredDraftRetentionDays,
                         effectiveLimit(expiredDraftLimit));
+            case OperationsCleanupSupport.CLEANUP_TYPE_EXPIRED_REPORT ->
+                new CleanupPolicy(
+                        normalizedType,
+                        expiredReportEnabled,
+                        expiredReportRetentionDays,
+                        effectiveLimit(expiredReportLimit));
+            case OperationsCleanupSupport.CLEANUP_TYPE_EXPIRED_HEALTH_CHECK ->
+                new CleanupPolicy(
+                        normalizedType,
+                        expiredHealthCheckEnabled,
+                        expiredHealthCheckRetentionDays,
+                        effectiveLimit(expiredHealthCheckLimit));
+            case OperationsCleanupSupport.CLEANUP_TYPE_EXPIRED_LONG_TASK ->
+                new CleanupPolicy(
+                        normalizedType,
+                        expiredLongTaskEnabled,
+                        expiredLongTaskRetentionDays,
+                        effectiveLimit(expiredLongTaskLimit));
             default -> throw new IllegalArgumentException("Unsupported operations cleanup type: " + cleanupType);
         };
     }
