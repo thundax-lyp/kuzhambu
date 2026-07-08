@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `wangqi-page.tsx` 等 4 文件：接入三类 Admin 页面删除操作
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-EXPORT-SHOWCASE-GOVERNANCE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/wangqi/wangqi-page.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/ming-customs/ming-customs-page.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.test.tsx`
-    - 处理动作：将导出/静态展示的单条删除、批量删除、危险确认和删除后刷新接入 Wangqi、Ming Customs、Sancai 页面。
-    - 验收点：Wangqi 与 Ming Customs 可删除导出记录；Sancai 可删除导出记录和静态展示记录；删除确认使用 `useKuzhambuConfirm().danger`；成功后刷新对应 export/showcase 查询。
-    - 重要度：9/10
-
 - [ ] `kuzhambu-classics-*`、`admin-web`：完成窄范围验证
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-CLASSICS-EXPORT-SHOWCASE-GOVERNANCE.md`
