@@ -102,6 +102,12 @@ class ClassicsContentAdminControllerTest {
                 "tags/delete",
                 "classics:content:edit",
                 ClassicsContentRequest.class);
+        assertPostMapping(
+                ClassicsContentAdminController.class,
+                "deleteQaPair",
+                "qa-pairs/delete",
+                "classics:content:edit",
+                ClassicsContentRequest.class);
         assertGetMapping(
                 ClassicsContentAdminController.class,
                 "downloadExportContent",
@@ -409,6 +415,31 @@ class ClassicsContentAdminControllerTest {
         deleteRequest.setId(3001L);
         assertTrue(controller.deleteTag(deleteRequest));
 
+        ClassicsContentRequest addQaRequest = new ClassicsContentRequest();
+        addQaRequest.setContentType("SANCAI_ENTRY");
+        addQaRequest.setContentId(457L);
+        addQaRequest.setQuestion("是什么");
+        addQaRequest.setAnswer("这是一个测试");
+        addQaRequest.setSource("MANUAL");
+
+        ClassicsContentResponse addQaResponse = controller.addQaPair(addQaRequest);
+        assertEquals(4001L, addQaResponse.getId());
+
+        ClassicsContentRequest updateQaRequest = new ClassicsContentRequest();
+        updateQaRequest.setId(4001L);
+        updateQaRequest.setContentType("SANCAI_ENTRY");
+        updateQaRequest.setContentId(457L);
+        updateQaRequest.setQuestion("为何");
+        updateQaRequest.setAnswer("为了测试");
+        updateQaRequest.setSource("MANUAL");
+
+        ClassicsContentResponse updateQaResponse = controller.updateQaPair(updateQaRequest);
+        assertEquals(4001L, updateQaResponse.getId());
+
+        ClassicsContentRequest deleteQaRequest = new ClassicsContentRequest();
+        deleteQaRequest.setId(4001L);
+        assertTrue(controller.deleteQaPair(deleteQaRequest));
+
         JsonNode listed = OBJECT_MAPPER.valueToTree(
                 controller.listTags("SANCAI_ENTRY", 456L).get(0));
         assertEquals(3001L, listed.get("id").asLong());
@@ -692,6 +723,37 @@ class ClassicsContentAdminControllerTest {
                         assertEquals(
                                 3001L,
                                 ((com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentTagId)
+                                                args[0])
+                                        .value());
+                        return null;
+                    }
+                    if ("addQaPair".equals(method.getName())) {
+                        var command = (com.thundax.kuzhambu.classics.application.content.command.ContentQaPairCommand)
+                                args[0];
+                        assertEquals(ClassicsContentType.SANCAI_ENTRY, command.getContentType());
+                        assertEquals(457L, command.getContentId());
+                        assertEquals("是什么", command.getQuestion());
+                        assertEquals("这是一个测试", command.getAnswer());
+                        return com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentQaPairId
+                                .of(4001L);
+                    }
+                    if ("updateQaPair".equals(method.getName())) {
+                        var command = (com.thundax.kuzhambu.classics.application.content.command.ContentQaPairCommand)
+                                args[0];
+                        assertEquals(4001L, command.getId());
+                        assertEquals(ClassicsContentType.SANCAI_ENTRY, command.getContentType());
+                        assertEquals(457L, command.getContentId());
+                        assertEquals("为何", command.getQuestion());
+                        assertEquals("为了测试", command.getAnswer());
+                        assertEquals("MANUAL", command.getSource().value());
+                        return com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentQaPairId
+                                .of(4001L);
+                    }
+                    if ("deleteQaPair".equals(method.getName())) {
+                        assertEquals(
+                                4001L,
+                                ((com.thundax.kuzhambu.classics.domain.content.model.valueobject
+                                                        .ClassicsContentQaPairId)
                                                 args[0])
                                         .value());
                         return null;

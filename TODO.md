@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Classics common QA versioning`：补齐问答对手工变更版本治理
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-QA-VERSION-GOVERNANCE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-domain/src/main/java/com/thundax/kuzhambu/classics/domain/content/model/enums/ClassicsContentChangeType.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/service/ClassicsContentApplicationService.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/service/impl/ClassicsContentApplicationServiceImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/content/controller/ClassicsContentAdminController.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/content/controller/request/ClassicsContentRequest.java`
-    - 处理动作：新增 `QA_CHANGED` 并让问答对新增、编辑、删除生成正式版本和当前版本标定。
-    - 验收点：Wangqi/Ming 手工问答对新增、编辑、删除后生成 `classics_content_version.change_type = QA_CHANGED`，排序不生成版本。
-    - 重要度：10/10
-
 - [ ] `Classics Wangqi/Ming version snapshot`：扩展版本快照与历史恢复
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-QA-VERSION-GOVERNANCE.md`

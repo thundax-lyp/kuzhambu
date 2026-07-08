@@ -326,7 +326,8 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         qaPair.setId(null);
         qaPair.setPriority(repository.maxQaPairPriority() + 1);
         ClassicsContentQaPairId createdId = repository.insertQaPair(qaPair);
-        versionAndPublishContentSync(qaPair.getContentType(), qaPair.getContentId(), "手动更新问答对");
+        versionAndPublishContentSync(
+                qaPair.getContentType(), qaPair.getContentId(), ClassicsContentChangeType.QA_CHANGED, "新增问答对");
         return createdId;
     }
 
@@ -335,7 +336,8 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     public ClassicsContentQaPairId updateQaPair(ContentQaPairCommand command) {
         ClassicsContentQaPair qaPair = command.toEntity();
         repository.updateQaPair(qaPair);
-        versionAndPublishContentSync(qaPair.getContentType(), qaPair.getContentId(), "手动更新问答对");
+        versionAndPublishContentSync(
+                qaPair.getContentType(), qaPair.getContentId(), ClassicsContentChangeType.QA_CHANGED, "更新问答对");
         return qaPair.getId();
     }
 
@@ -409,6 +411,15 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             indexById.put(targetId.value(), i);
             indexById.put(currentId.value(), targetIndex);
         }
+
+        if (!currentQaPairs.isEmpty() && currentQaPairs.get(0) != null) {
+            ClassicsContentType contentType = currentQaPairs.get(0).getContentType();
+            ClassicsContentId contentId = currentQaPairs.get(0).getContentId();
+            Versionable content = loadContentForGovernance(contentType, contentId);
+            if (content != null) {
+                publishSearchSyncAfterCommit(content);
+            }
+        }
     }
 
     @Override
@@ -417,7 +428,8 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         ClassicsContentQaPair existing = repository.getQaPairById(id);
         repository.deleteQaPairById(id);
         if (existing != null && existing.getContentType() != null && existing.getContentId() != null) {
-            versionAndPublishContentSync(existing.getContentType(), existing.getContentId(), "手动删除问答对");
+            versionAndPublishContentSync(
+                    existing.getContentType(), existing.getContentId(), ClassicsContentChangeType.QA_CHANGED, "删除问答对");
         }
     }
 
@@ -1059,12 +1071,20 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
 
     private void versionAndPublishContentSync(
             ClassicsContentType contentType, ClassicsContentId contentId, String changeSummary) {
+        versionAndPublishContentSync(contentType, contentId, ClassicsContentChangeType.MANUAL_SAVE, changeSummary);
+    }
+
+    private void versionAndPublishContentSync(
+            ClassicsContentType contentType,
+            ClassicsContentId contentId,
+            ClassicsContentChangeType changeType,
+            String changeSummary) {
         Versionable content = loadContentForGovernance(contentType, contentId);
         if (content == null) {
             return;
         }
         touchContentUpdatedAt(contentType, content);
-        ensureVersioned(content, ClassicsContentChangeType.MANUAL_SAVE, changeSummary);
+        ensureVersioned(content, changeType, changeSummary);
         persistVersionMarkers(content);
         publishSearchSyncAfterCommit(content);
     }
