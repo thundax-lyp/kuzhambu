@@ -101,7 +101,10 @@ describe("GraphExtractionPage", () => {
         fireEvent.click(screen.getByRole("button", { name: "提交精修重生成" }));
 
         await waitFor(() => {
-            expect(serviceMocks.regenerateTask).toHaveBeenCalledWith({
+            const regenerateCalls = serviceMocks.regenerateTask.mock.calls as unknown as Array<
+                [unknown]
+            >;
+            expect(regenerateCalls[0]?.[0]).toEqual({
                 taskType: "GRAPH",
                 sourceTaskId: 88,
                 triggerSource: "REFINEMENT_APPLIED",

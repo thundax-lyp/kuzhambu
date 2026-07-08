@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Admin knowledge frontend verification`：补齐 Admin Knowledge 前端联动测试
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-REFINEMENT-GRAPH-LOOP.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/refinement-page.test.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/graph-extraction-page.test.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/graph-results/graph-results-page.test.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/quality-report/quality-report-page.test.tsx`
-    - 处理动作：为精修成功动作区、重生成预填、版本定位和质量报告重算提示补齐前端测试。
-    - 验收点：前端测试能验证三个精修后续按钮、重生成 payload、版本定位和 stale Alert。
-    - 重要度：9/10
-
 - [ ] `branch sync main`：收口前同步 main 分支代码
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`
