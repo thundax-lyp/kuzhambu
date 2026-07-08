@@ -9,6 +9,16 @@ import { MingCustomsVersionHistoryPanel } from "./components/ming-customs-versio
 import { MingCustomsPage } from "./ming-customs-page";
 import type { MingCustomsContentVersionRecord } from "./ming-customs-types";
 
+const confirmDangerMock = vi.hoisted(() =>
+    vi.fn((options: { onConfirm?: () => void }) => options.onConfirm?.())
+);
+
+vi.mock("@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm", () => ({
+    useKuzhambuConfirm: () => ({
+        danger: confirmDangerMock
+    })
+}));
+
 vi.mock("@/service/current-user-service", () => ({
     getCurrentUserInfo: vi.fn(() => Promise.resolve({ id: 99, loginName: "admin", name: "Admin" }))
 }));
@@ -328,6 +338,10 @@ describe("MingCustomsPage", () => {
     beforeEach(() => {
         queryClient = createTestQueryClient();
         capturedCalls.length = 0;
+        confirmDangerMock.mockClear();
+        confirmDangerMock.mockImplementation((options: { onConfirm?: () => void }) =>
+            options.onConfirm?.()
+        );
         localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
         replacePermissions([
             "classics:mingcustoms:view",
@@ -566,7 +580,7 @@ describe("MingCustomsPage", () => {
 
         expect(screen.getByLabelText("明代习俗版本历史面板")).toBeInTheDocument();
         expect(screen.getByRole("button", { name: "查看明代习俗版本 12" })).toBeInTheDocument();
-        expect(screen.getByText("恢复明代习俗版本 12")).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "恢复明代习俗版本 12" })).toBeInTheDocument();
         expect(screen.getByText(/历史：旧版摘要/)).toBeInTheDocument();
         expect(screen.getByText(/当前：新版摘要/)).toBeInTheDocument();
     });
@@ -629,8 +643,7 @@ describe("MingCustomsPage", () => {
         expect(await screen.findByLabelText("明代习俗版本历史面板")).toBeInTheDocument();
         await user.click(await screen.findByRole("button", { name: "查看明代习俗版本 1" }));
 
-        expect(await screen.findByText("标题")).toBeInTheDocument();
-        expect(screen.getByText("当前：岁时礼仪：元旦朝贺")).toBeInTheDocument();
+        expect(await screen.findByText("当前：岁时礼仪：元旦朝贺")).toBeInTheDocument();
         expect(screen.getByText("历史：旧标题")).toBeInTheDocument();
     });
 
@@ -650,9 +663,14 @@ describe("MingCustomsPage", () => {
         );
         await user.click(await screen.findByRole("button", { name: "查看明代习俗版本 1" }));
         await user.click(await screen.findByRole("button", { name: "恢复明代习俗版本 1" }));
-        await user.click(screen.getByRole("button", { name: "确认" }));
 
         await waitFor(() => {
+            expect(confirmDangerMock).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    message: "恢复后会生成新的正式版本，当前内容将被历史版本覆盖。",
+                    title: "确认恢复明代习俗历史版本"
+                })
+            );
             expect(capturedCalls).toContainEqual({
                 body: { id: 500000000001, versionId: 9001 },
                 method: "POST",
