@@ -165,6 +165,24 @@ class HealthCheckRepositoryImplTest {
         assertEquals(8L, result.get(0).getAvgLatencyMs());
     }
 
+    @Test
+    void listExpiredCheckIdsShouldQueryChecksBeforeThreshold() {
+        HealthCheckMapper mapper = mock(HealthCheckMapper.class);
+        HealthCheckRepositoryImpl repository = new HealthCheckRepositoryImpl(mapper);
+        when(mapper.selectObjs(any())).thenReturn(List.of(9001L, 9002L));
+
+        List<com.thundax.kuzhambu.operations.domain.health.model.valueobject.HealthCheckId> result =
+                repository.listExpiredCheckIds(new Date(1_718_086_500_000L), 2);
+
+        assertEquals(2, result.size());
+        assertEquals(9001L, result.get(0).value());
+        ArgumentCaptor<QueryWrapper<HealthCheckDO>> captor = ArgumentCaptor.forClass(QueryWrapper.class);
+        verify(mapper).selectObjs(captor.capture());
+        String sqlSegment = captor.getValue().getCustomSqlSegment();
+        assertTrue(sqlSegment.contains("checked_at"));
+        assertTrue(sqlSegment.contains("LIMIT 2"));
+    }
+
     private static HealthCheckDO dataObject(long checkId, String component, String status) {
         return new HealthCheckDO(
                 null,

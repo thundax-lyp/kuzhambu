@@ -31,4 +31,8 @@ public interface HealthCheckRepository {
     int update(HealthCheckRecord record);
 
     int deleteById(HealthCheckId id);
+
+    default List<HealthCheckId> listExpiredCheckIds(Date checkedBefore, int limit) {
+        return List.of();
+    }
 }

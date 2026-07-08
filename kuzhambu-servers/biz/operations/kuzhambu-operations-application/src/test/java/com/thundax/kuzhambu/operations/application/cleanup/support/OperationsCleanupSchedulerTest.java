@@ -47,7 +47,7 @@ class OperationsCleanupSchedulerTest {
 
         scheduler.executeDailyCleanup();
 
-        assertEquals(3, cleanupApplicationService.commands.size());
+        assertEquals(6, cleanupApplicationService.commands.size());
         assertEquals(
                 OperationsCleanupSupport.CLEANUP_TYPE_EXPIRED_BACKUP,
                 cleanupApplicationService.commands.get(0).getCleanupType());
@@ -57,6 +57,15 @@ class OperationsCleanupSchedulerTest {
         assertEquals(
                 OperationsCleanupSupport.CLEANUP_TYPE_EXPIRED_DRAFT,
                 cleanupApplicationService.commands.get(2).getCleanupType());
+        assertEquals(
+                OperationsCleanupSupport.CLEANUP_TYPE_EXPIRED_REPORT,
+                cleanupApplicationService.commands.get(3).getCleanupType());
+        assertEquals(
+                OperationsCleanupSupport.CLEANUP_TYPE_EXPIRED_HEALTH_CHECK,
+                cleanupApplicationService.commands.get(4).getCleanupType());
+        assertEquals(
+                OperationsCleanupSupport.CLEANUP_TYPE_EXPIRED_LONG_TASK,
+                cleanupApplicationService.commands.get(5).getCleanupType());
     }
 
     @Test
@@ -68,7 +77,7 @@ class OperationsCleanupSchedulerTest {
 
         scheduler.executeDailyCleanup();
 
-        assertEquals(4, cleanupApplicationService.commands.size());
+        assertEquals(7, cleanupApplicationService.commands.size());
     }
 
     private OperationsCleanupScheduleProperties properties(boolean enabled, boolean startupEnabled) {
@@ -89,6 +98,15 @@ class OperationsCleanupSchedulerTest {
         properties.setExpiredDraftEnabled(true);
         properties.setExpiredDraftRetentionDays(30);
         properties.setExpiredDraftLimit(200);
+        properties.setExpiredReportEnabled(true);
+        properties.setExpiredReportRetentionDays(90);
+        properties.setExpiredReportLimit(200);
+        properties.setExpiredHealthCheckEnabled(true);
+        properties.setExpiredHealthCheckRetentionDays(30);
+        properties.setExpiredHealthCheckLimit(500);
+        properties.setExpiredLongTaskEnabled(true);
+        properties.setExpiredLongTaskRetentionDays(90);
+        properties.setExpiredLongTaskLimit(200);
         return properties;
     }
 

@@ -123,6 +123,21 @@ public class HealthCheckRepositoryImpl implements HealthCheckRepository {
                 new LambdaQueryWrapper<HealthCheckDO>().eq(HealthCheckDO::getCheckId, HealthCheckIdCodec.toValue(id)));
     }
 
+    @Override
+    public List<HealthCheckId> listExpiredCheckIds(Date checkedBefore, int limit) {
+        return mapper
+                .selectObjs(new QueryWrapper<HealthCheckDO>()
+                        .select("check_id")
+                        .le(checkedBefore != null, "checked_at", checkedBefore)
+                        .orderByAsc("checked_at")
+                        .orderByAsc("check_id")
+                        .last("LIMIT " + limit))
+                .stream()
+                .map(HealthCheckRepositoryImpl::longValue)
+                .map(HealthCheckId::of)
+                .toList();
+    }
+
     private QueryWrapper<HealthCheckDO> buildPageWrapper(
             String component,
             String healthStatus,

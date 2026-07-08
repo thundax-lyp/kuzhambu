@@ -14,6 +14,7 @@ import com.thundax.kuzhambu.operations.infra.report.persistence.assembler.Report
 import com.thundax.kuzhambu.operations.infra.report.persistence.dataobject.ReportDO;
 import com.thundax.kuzhambu.operations.infra.report.persistence.mapper.ReportMapper;
 import java.util.Date;
+import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Repository;
 
@@ -87,6 +88,22 @@ public class ReportRepositoryImpl implements ReportRepository {
         return mapper.delete(new LambdaQueryWrapper<ReportDO>().eq(ReportDO::getReportId, ReportIdCodec.toValue(id)));
     }
 
+    @Override
+    public List<ReportId> listExpiredReportIds(Date requestedBefore, int limit) {
+        return mapper
+                .selectObjs(new QueryWrapper<ReportDO>()
+                        .select("report_id")
+                        .le(requestedBefore != null, "requested_at", requestedBefore)
+                        .in("report_status", List.of("SUCCEEDED", "FAILED"))
+                        .orderByAsc("requested_at")
+                        .orderByAsc("report_id")
+                        .last("LIMIT " + limit))
+                .stream()
+                .map(ReportRepositoryImpl::longValue)
+                .map(ReportId::of)
+                .toList();
+    }
+
     private QueryWrapper<ReportDO> buildPageWrapper(
             String reportType,
             String format,
@@ -115,5 +132,12 @@ public class ReportRepositoryImpl implements ReportRepository {
         }
         wrapper.orderByDesc("requested_at");
         return wrapper;
+    }
+
+    private static Long longValue(Object value) {
+        if (value instanceof Number number) {
+            return number.longValue();
+        }
+        return Long.valueOf(String.valueOf(value));
     }
 }
