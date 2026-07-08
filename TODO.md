@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Implementation Coverage sync`：更新实现覆盖率文档
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-WANGQI-SINGLE-DOCUMENT-QA.md`
-    - 范围对象：`docs/40-readiness/CLASSICS-IMPLEMENTATION-COVERAGE.md`、`docs/40-readiness/DISCOVERY-IMPLEMENTATION-COVERAGE.md`、`docs/40-readiness/AI-IMPLEMENTATION-COVERAGE.md`
-    - 处理动作：把 Wangqi 单文档问答入口、Discovery AI facade 调用和 AI answer-generation 消费状态同步到 Implementation Coverage。
-    - 验收点：三份 coverage 文档反映已实现闭环且无中间状态表述。
-    - 重要度：9/10
-
 - [ ] `RUNBOOK cleanup`：任务完成后清理临时 RUNBOOK
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`

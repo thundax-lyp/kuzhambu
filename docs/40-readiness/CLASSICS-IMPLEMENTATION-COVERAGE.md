@@ -52,7 +52,8 @@
 - Classics 清理入口已对接 Operations cleanup：应用层可发现并清理过期导出任务、过期分享链接和草稿分享链接；导出清理会将任务标记为过期，分享/草稿清理会将分享记录标记为过期，底层产物对象生命周期继续复用 Storage 自动 orphan 清理。
 - Classics 删除内容与分享安全闭环已完成：三类内容删除后会将关联分享目标同步为 `CONTENT_DELETED`，按剩余可用目标重算 `classics_share_link.visibility_risk_status`，并且不再把已删除目标计入资源读取、公开列表和风险态。
 - Classics 分享治理闭环已完成：单链接多目标创建会按 `contentType + contentId` 拦截重复目标，Admin 和 Portal 均按后端 target 顺序展示多内容；访问统计已覆盖公开详情浏览、私有详情浏览和资源读取三类成功访问，失败访问不累加。
-- 结合需求文档、设计文档和代码现状，Classics 当前已实现“内容维护 + 候选确认 + 任务型 AI 入口 + 三才视觉资产流式候选展示 + 批量视觉资产治理 + 导出/批量分享治理 + 删除分享安全闭环 + 单链接多内容分享 + 批量公开/私有分享访问 + 分享恢复治理 + 分享访问统计 + 批量公开/私有状态修改 + 细粒度权限过滤 + 清理协作 + 跨内容批量候选治理”的主干闭环。
+- Wangqi 单文档问答入口已完成：Admin Web Wangqi 详情抽屉提供 `单文档问答` 按钮，按文档 ID 与 Discovery QA 权限控制可用态，跳转 Portal QA 时固定透传 `SINGLE_DOCUMENT + WANGQI_DOCUMENT + contextContentId + title` 上下文。
+- 结合需求文档、设计文档和代码现状，Classics 当前已实现“内容维护 + 候选确认 + 任务型 AI 入口 + Wangqi 单文档问答入口 + 三才视觉资产流式候选展示 + 批量视觉资产治理 + 导出/批量分享治理 + 删除分享安全闭环 + 单链接多内容分享 + 批量公开/私有分享访问 + 分享恢复治理 + 分享访问统计 + 批量公开/私有状态修改 + 细粒度权限过滤 + 清理协作 + 跨内容批量候选治理”的主干闭环。
 
 未完成：
 
@@ -67,6 +68,7 @@
 - 2026-07-08：`cd kuzhambu-servers && mvn -pl biz/classics/kuzhambu-classics-application -am test` 通过，覆盖 sharing 应用服务恢复规则、多目标去重、详情访问统计和资源访问统计。
 - 2026-07-08：`cd kuzhambu-apps && pnpm --filter kuzhambu-admin-web run test -- src/pages/classics/sharing/sharing-page.test.tsx src/pages/classics/common/classics-share-service-contract.test.ts` 通过，Admin Web 55 个 test files / 222 tests 全绿。
 - 2026-07-08：`cd kuzhambu-apps && pnpm --filter @kuzhambu/portal-web run test -- src/pages/share/share-form.test.tsx src/pages/share/share-service.test.ts src/pages/share/share-page.test.tsx` 通过，Portal Web 13 个 test files / 49 tests 全绿。
+- 2026-07-08：`cd kuzhambu-apps && pnpm --filter ./admin-web run test -- src/pages/classics/wangqi/wangqi-page.test.tsx src/pages/discovery/qa-admin/qa-admin-page.test.tsx` 通过，Admin Web 55 个 test files / 228 tests 全绿，覆盖 Wangqi 单文档问答入口和 QA trace AI 字段展示。
 
 ## Requirement Coverage Matrix
 
@@ -110,7 +112,7 @@
 | 文档搜索和时间线浏览 | 已完成 | 文档搜索与时间线接口已实现；时间线支持关键词、可见性和排序入参；Admin Web 已提供列表搜索、筛选和时间线查询闭环 | 无 | Classics, Admin Web |
 | 列表标题、标签预览、摘要预览和时间信息 | 已完成 | 详情字段和查询可返回标题、摘要、时间、可见性、版本状态等信息；Admin Web 已展示列表摘要和时间信息 | 无 | Classics, Admin Web |
 | 批量修改公开或私有状态 | 已完成 | 可见性变更能力已存在；应用层已补齐批量结果和失败原因模型；统一后端入口已分发到 Wangqi 应用服务，Admin Web 已支持当前页选中文档批量公开/私有并展示失败明细；后端权限过滤与前端控件禁用已按 `classics:wangqi:edit` 对齐 | 无 | Classics, Admin Web, System |
-| 单文档问答入口 | 部分完成 | 问答入口需求已记录 | Discovery/AI 回答调用点及结果落库未实现 | Classics, Discovery, AI |
+| 单文档问答入口 | 已完成 | Admin Web Wangqi 详情抽屉已提供 `单文档问答` 按钮，按文档 ID 与 Discovery QA 权限控制可点击态；跳转 URL 固定携带 `contextMode=SINGLE_DOCUMENT`、`contextContentType=WANGQI_DOCUMENT`、`contextContentId` 和 `title`；Portal QA 进入后锁定上下文并复用同一会话追问 | 无 | Classics, Discovery, AI, Portal Web |
 | 版本历史、版本对比和历史恢复 | 已完成 | Wangqi 后端已暴露版本列表、版本详情和历史恢复端点，并校验版本归属；恢复采用追加式版本语义；Admin Web 已提供版本历史列表、当前/历史字段对比和恢复动作 | 无 | Classics, Admin Web |
 | 筛选结果或选中文档导出 | 已完成 | 通用导出任务创建能力已实现，字段模型完整；Wangqi 导出快照 payload 已接入 Render Worker，CSV/JSON/HTML/ZIP 产物可写入 Storage 并下载 | 无 | Classics, Worker, Storage |
 
@@ -154,7 +156,7 @@
 | AI 生成候选预览、修改、确认和放弃 | 已完成 | Classics 已接入 AI 候选列表读取、payload 编辑、应用和拒绝闭环；候选应用支持 `translate / summary / tags / qa / image_analysis` 写回正式内容，并追加版本和回写 AI 候选状态；三才视觉资产支持按 `objectId` 的候选限定与刷新联动，且已补齐 `fusion / visual / image_gen` 候选应用规则、流式过程展示、失败提示和重试入口；跨内容批量候选治理已补齐（含批量应用、批量拒绝、失败明细） | 无 | Classics, AI |
 | Knowledge 标签治理 | 外部依赖 | Classics 已保存标签主事实、标签名快照，并通过 Knowledge 协作语义解析统一标签、自动创建标签和同步内容引用投影 | 标签合并、同义词治理、分类运营规则仍不属于 Classics | Knowledge |
 | Storage 对象管理 | 外部依赖 | Classics 只保存 `storage_object_id`，但业务域已负责 Wangqi 原始文件和 Sancai 图片的上传入口、归属校验、读取 URL 和 Portal 分享资源访问控制 | 底层对象生命周期、物理删除、清理策略和通用对象管理仍由 Storage 实现 | Classics, Storage |
-| Discovery 搜索和问答 | 外部依赖 | Classics 可提供内容上下文和入口 | 索引、召回、问答生成由 Discovery/AI 实现 | Discovery, AI |
+| Discovery 搜索和问答 | 外部依赖 | Classics 已提供 Wangqi 单文档问答入口和稳定 URL 上下文；Discovery/AI 负责打开会话、生成回答、保存来源和 trace | 搜索、召回、问答生成继续由 Discovery/AI 演进 | Discovery, AI |
 | System 审计 | 外部依赖 | 业务表不保存审计字段 | 操作者和关键操作日志由 System 审计系统实现 | System |
 | Worker 异步任务执行 | 外部依赖 | Classics 记录导出和静态展示任务 | 产物生成、失败重试和任务调度由 Worker 实现 | Worker, Storage |
 
