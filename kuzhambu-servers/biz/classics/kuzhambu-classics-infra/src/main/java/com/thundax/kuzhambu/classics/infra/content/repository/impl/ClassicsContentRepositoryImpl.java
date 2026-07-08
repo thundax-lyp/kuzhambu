@@ -396,6 +396,11 @@ public class ClassicsContentRepositoryImpl implements ClassicsContentRepository 
     }
 
     @Override
+    public int deleteExportJobById(ClassicsContentExportJobId id) {
+        return exportMapper.deleteById(ClassicsContentExportJobIdCodec.toValue(id));
+    }
+
+    @Override
     public List<ClassicsContentExportJobId> listExpiredExportJobIds(Date now, int limit) {
         return exportMapper
                 .selectList(new LambdaQueryWrapper<ClassicsContentExportJobDO>()

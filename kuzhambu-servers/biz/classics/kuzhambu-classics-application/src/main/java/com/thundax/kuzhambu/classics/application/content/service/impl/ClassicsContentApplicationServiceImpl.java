@@ -79,6 +79,8 @@ import com.thundax.kuzhambu.storage.facade.StorageFacade;
 import com.thundax.kuzhambu.storage.facade.dto.StorageObjectFacadeDto;
 import com.thundax.kuzhambu.storage.facade.request.BindStorageOwnerFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.OpenStorageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.RemoveStorageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.UnbindStorageOwnerFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.UploadStorageFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.response.OpenStorageFacadeResponse;
 import com.thundax.kuzhambu.storage.facade.response.UploadStorageFacadeResponse;
@@ -109,9 +111,8 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     private static final String DEFAULT_RENDER_OPERATION = "CLASSICS_EXPORT";
     private static final String DEFAULT_RENDER_TYPE = "CLASSICS_EXPORT";
     private static final String DEFAULT_TITLE = "classics-export";
-    private static final String SYSTEM_OWNER_ID = "system";
-    private static final String USER_OWNER_TYPE = "USER";
-    private static final String EXPORT_REFERENCE_USAGE = "CLASSICS_EXPORT_JOB";
+    private static final String EXPORT_OWNER_TYPE = "CLASSICS_CONTENT_EXPORT_JOB";
+    private static final String EXPORT_OWNER_ID_PREFIX = "export-job:";
 
     private final ClassicsContentRepository repository;
     private final WangqiDocumentVersionRestorer wangqiDocumentVersionRestorer;
@@ -1477,6 +1478,21 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                 response.getInputStream());
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteExportJob(ClassicsContentExportJobId id) {
+        if (id == null) {
+            return;
+        }
+        ClassicsContentExportJob job = repository.getExportJobById(id);
+        if (job == null) {
+            return;
+        }
+        unbindExportArtifactOwner(id);
+        repository.deleteExportJobById(id);
+        removeStorageObjectIfUnreferenced(job.getStorageObjectId());
+    }
+
     private static void validateTagCommand(ContentTagCommand command, boolean requireId) {
         if (command == null) {
             throw new BizException("古籍内容标签参数不能为空");
@@ -1791,8 +1807,8 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                         .originalFilename(filenameHint(artifact.getFilename(), response))
                         .contentType(artifact.getContentType())
                         .sizeBytes((long) content.length)
-                        .ownerType(USER_OWNER_TYPE)
-                        .ownerId(SYSTEM_OWNER_ID)
+                        .ownerType(EXPORT_OWNER_TYPE)
+                        .ownerId(exportOwnerId(jobId))
                         .build());
     }
 
@@ -1811,10 +1827,37 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         }
         storageFacade.bindOwner(BindStorageOwnerFacadeRequest.builder()
                 .storageObjectIds(List.of(storageObjectId))
-                .ownerId(SYSTEM_OWNER_ID)
-                .ownerType(USER_OWNER_TYPE)
-                .ownerParams("usage=" + EXPORT_REFERENCE_USAGE + ";jobId=" + jobId.value())
+                .ownerId(exportOwnerId(jobId))
+                .ownerType(EXPORT_OWNER_TYPE)
+                .ownerParams("usage=CLASSICS_EXPORT_JOB;jobId=" + jobId.value())
                 .build());
+    }
+
+    private void unbindExportArtifactOwner(ClassicsContentExportJobId jobId) {
+        if (storageFacade == null || jobId == null) {
+            return;
+        }
+        storageFacade.unbindOwner(UnbindStorageOwnerFacadeRequest.builder()
+                .ownerType(EXPORT_OWNER_TYPE)
+                .ownerId(exportOwnerId(jobId))
+                .build());
+    }
+
+    private void removeStorageObjectIfUnreferenced(StorageObjectId storageObjectId) {
+        if (storageFacade == null || storageObjectId == null || storageObjectId.value() == null) {
+            return;
+        }
+        try {
+            storageFacade.remove(RemoveStorageFacadeRequest.builder()
+                    .storageObjectId(storageObjectId.value())
+                    .build());
+        } catch (BizException ignored) {
+            // Other business references keep the object alive; deleting the Classics record still succeeds.
+        }
+    }
+
+    private static String exportOwnerId(ClassicsContentExportJobId jobId) {
+        return EXPORT_OWNER_ID_PREFIX + (jobId == null ? "unknown" : jobId.value());
     }
 
     private StorageObjectId toStorageObjectId(UploadStorageFacadeResponse uploadResponse) {

@@ -308,6 +308,17 @@ public class ClassicsContentAdminController {
                 ClassicsContentInterfaceAssembler::toExportResponse);
     }
 
+    @Operation(summary = "删除古籍内容导出任务", description = "classics:content:export")
+    @ApiImplicitParams({})
+    @HasPermission("classics:content:export")
+    @SysLogger(value = "删除导出任务")
+    @PostMapping("exports/delete")
+    public Boolean deleteExport(@Valid @RequestBody ClassicsContentRequest request) {
+        service.deleteExportJob(ClassicsContentExportJobIdCodec.toDomain(
+                requireParameter(request == null ? null : request.getId(), "id")));
+        return true;
+    }
+
     @Operation(summary = "下载古籍内容导出文件", description = "classics:content:view")
     @ApiImplicitParams({})
     @HasPermission("classics:content:view")

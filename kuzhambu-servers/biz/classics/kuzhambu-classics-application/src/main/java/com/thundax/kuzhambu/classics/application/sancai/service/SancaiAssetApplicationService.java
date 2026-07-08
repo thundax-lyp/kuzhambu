@@ -81,5 +81,9 @@ public interface SancaiAssetApplicationService {
 
     ClassicsStoredContentResult getShowcaseContent(StorageObjectId storageObjectId);
 
+    ClassicsStoredContentResult getShowcaseContent(SancaiShowcaseId showcaseId);
+
+    void deleteShowcase(SancaiShowcaseId showcaseId);
+
     PageResult<SancaiShowcase> pageShowcases(String status, PageQuery page);
 }
