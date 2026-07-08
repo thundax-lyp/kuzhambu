@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `admin-web operations dashboard validation`：运行 dashboard 前端验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DASHBOARD-PERMISSION-CHARTS.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/operations/dashboard/dashboard-page.tsx`、`kuzhambu-apps/admin-web/src/pages/operations/dashboard/dashboard-page.css`、`kuzhambu-apps/admin-web/src/pages/operations/dashboard/dashboard-page.test.tsx`、`kuzhambu-apps/admin-web/src/pages/operations/dashboard/dashboard-service-contract.test.ts`
-    - 处理动作：运行 RUNBOOK 列出的 admin-web dashboard 前端窄验证与收口验证。
-    - 验收点：dashboard Vitest、`format:check`、`lint` 和 `test` 通过或记录明确阻塞原因。
-    - 重要度：10/10
-
 - [ ] `operations dashboard readiness docs`：更新覆盖矩阵并清理临时 RUNBOOK
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-OPERATIONS-DASHBOARD-PERMISSION-CHARTS.md`
