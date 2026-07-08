@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Admin Web Wangqi QA entry`：新增 Wangqi 详情单文档问答入口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-WANGQI-SINGLE-DOCUMENT-QA.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/wangqi/wangqi-page.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/wangqi/wangqi-page.test.tsx`
-    - 处理动作：在 Wangqi 详情操作区新增 `单文档问答` 按钮，处理可点击态、禁用态、提示和跳转 URL。
-    - 验收点：Admin 单测覆盖按钮渲染、无 ID 禁用、无权限禁用和 `SINGLE_DOCUMENT + WANGQI_DOCUMENT + contextContentId + title` URL 参数。
-    - 重要度：9/10
-
 - [ ] `Portal Web Wangqi QA context`：锁定 Portal 单文档问答上下文
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-WANGQI-SINGLE-DOCUMENT-QA.md`
