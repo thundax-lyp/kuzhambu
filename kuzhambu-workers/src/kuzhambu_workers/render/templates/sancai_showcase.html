@@ -2,24 +2,53 @@
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{ title }}</title>
   <style>
-    body { font-family: system-ui, sans-serif; margin: 32px; color: #1f2328; }
-    header { margin-bottom: 24px; }
-    h1 { font-size: 28px; margin: 0 0 12px; }
-    section { margin: 24px 0; }
-    ul { padding-left: 20px; }
-    .metadata li { display: flex; gap: 12px; margin: 4px 0; }
-    .metadata span { min-width: 96px; color: #5f6368; }
-    article { break-inside: avoid; border-top: 1px solid #d5d8dc; padding: 18px 0; }
-    h2 { font-size: 20px; margin: 0 0 8px; }
-    p { white-space: pre-wrap; line-height: 1.7; }
+    :root { color-scheme: light; --ink: #1f2328; --muted: #667085; --line: #d0d7de; --panel: #f6f8fa; --accent: #1f4b73; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: var(--ink); background: #fff; }
+    header { padding: 28px clamp(18px, 4vw, 48px) 18px; border-bottom: 1px solid var(--line); }
+    h1 { margin: 0 0 12px; font-size: clamp(24px, 4vw, 38px); letter-spacing: 0; }
+    h2 { margin: 0 0 12px; font-size: 20px; letter-spacing: 0; }
+    h3 { margin: 0 0 8px; font-size: 16px; letter-spacing: 0; }
+    button, input, select { font: inherit; }
+    button { border: 1px solid var(--line); background: #fff; color: var(--ink); padding: 8px 10px; cursor: pointer; border-radius: 6px; }
+    button[aria-pressed="true"] { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .metadata { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px 16px; padding: 0; margin: 0; list-style: none; }
+    .metadata li { display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px dashed #d8dee4; padding-bottom: 4px; }
+    .metadata span, small { color: var(--muted); }
+    .toolbar { position: sticky; top: 0; z-index: 2; display: grid; grid-template-columns: minmax(180px, 1fr) 160px 160px auto; gap: 10px; padding: 14px clamp(18px, 4vw, 48px); background: rgba(255,255,255,.96); border-bottom: 1px solid var(--line); }
+    .toolbar input, .toolbar select { width: 100%; border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; background: #fff; }
+    .layout { display: grid; grid-template-columns: minmax(190px, 260px) minmax(0, 1fr); gap: 24px; padding: 24px clamp(18px, 4vw, 48px); }
+    aside { position: sticky; top: 74px; align-self: start; max-height: calc(100vh - 96px); overflow: auto; }
+    nav ul, .assets ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+    nav li, .assets li { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    nav button { width: 100%; text-align: left; }
+    main[data-mode="compact"] article .entry-translation, main[data-mode="compact"] article .entry-visual, main[data-mode="compact"] article figure { display: none; }
+    article { break-inside: avoid; padding: 22px 0; border-top: 1px solid var(--line); }
+    article[hidden] { display: none; }
+    .entry-original, .entry-translation, .entry-visual { white-space: pre-wrap; line-height: 1.72; margin: 8px 0; }
+    .entry-translation { color: #344054; }
+    .entry-tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+    .entry-tags span { border: 1px solid var(--line); background: var(--panel); padding: 3px 7px; border-radius: 999px; color: var(--muted); font-size: 12px; }
     figure { margin: 16px 0 0; }
-    .entry-image[data-current="true"] { border-left: 4px solid #1f4b73; padding-left: 12px; }
-    .entry-image-missing { color: #6a737d; }
-    img { max-width: 100%; height: auto; border: 1px solid #d5d8dc; }
-    .image-placeholder { display: grid; place-items: center; min-height: 120px; border: 1px dashed #b8c0cc; background: #f6f8fa; color: #6a737d; }
-    figcaption { color: #5f6368; font-size: 13px; margin-top: 6px; }
+    .entry-image[data-current="true"] { border-left: 4px solid var(--accent); padding-left: 12px; }
+    .entry-image-missing { color: var(--muted); }
+    img { max-width: 100%; height: auto; border: 1px solid var(--line); background: var(--panel); }
+    .image-placeholder { display: grid; place-items: center; min-height: 120px; border: 1px dashed #b8c0cc; background: var(--panel); color: var(--muted); }
+    figcaption { color: var(--muted); font-size: 13px; margin-top: 6px; }
+    .assets { margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--line); }
+    @media (max-width: 760px) {
+      .toolbar { grid-template-columns: 1fr; }
+      .layout { grid-template-columns: 1fr; }
+      aside { position: static; max-height: none; }
+    }
+    @media print {
+      .toolbar, aside { display: none; }
+      .layout { display: block; padding: 0; }
+      article { page-break-inside: avoid; }
+    }
   </style>
 </head>
 <body>
@@ -27,22 +56,89 @@
     <h1>{{ title }}</h1>
     <ul class="metadata">
 {{ metadata }}
+      <li><span>visibilityRiskStatus</span><strong>{{ visibility_risk }}</strong></li>
     </ul>
   </header>
-  <section>
-    <h2>Catalog</h2>
-    <ul>
+  <section class="toolbar" aria-label="展示筛选">
+    <input id="searchInput" type="search" placeholder="搜索条目标题、正文或译文" aria-label="搜索条目">
+    <select id="categoryFilter" aria-label="门类筛选">
+      <option value="">全部门类</option>
+{{ catalog_options }}
+    </select>
+    <select id="volumeFilter" aria-label="卷筛选">
+      <option value="">全部卷</option>
+{{ volume_options }}
+    </select>
+    <button id="modeButton" type="button" aria-pressed="false">紧凑浏览</button>
+  </section>
+  <div class="layout">
+    <aside>
+      <nav aria-label="门类导航">
+        <h2>门类</h2>
+        <ul>
 {{ catalog }}
-    </ul>
-  </section>
-  <main>
-{{ entries }}
-  </main>
-  <section>
-    <h2>Assets</h2>
-    <ul>
+        </ul>
+      </nav>
+      <nav aria-label="卷导航">
+        <h2>卷</h2>
+        <ul>
+{{ volumes }}
+        </ul>
+      </nav>
+      <section class="assets">
+        <h2>资源</h2>
+        <ul>
 {{ assets }}
-    </ul>
-  </section>
+        </ul>
+      </section>
+    </aside>
+    <main id="entryList" data-mode="full">
+{{ entries }}
+    </main>
+  </div>
+  <script>
+    const entryList = document.querySelector("#entryList");
+    const searchInput = document.querySelector("#searchInput");
+    const categoryFilter = document.querySelector("#categoryFilter");
+    const volumeFilter = document.querySelector("#volumeFilter");
+    const modeButton = document.querySelector("#modeButton");
+    const entries = [...document.querySelectorAll("article")];
+
+    document.querySelectorAll("[data-catalog]").forEach((button) => {
+      button.addEventListener("click", () => {
+        categoryFilter.value = button.dataset.catalog || "";
+        applyFilters();
+      });
+    });
+
+    document.querySelectorAll("[data-volume]").forEach((button) => {
+      button.addEventListener("click", () => {
+        volumeFilter.value = button.dataset.volume || "";
+        applyFilters();
+      });
+    });
+
+    function applyFilters() {
+      const keyword = searchInput.value.trim().toLowerCase();
+      const category = categoryFilter.value;
+      const volume = volumeFilter.value;
+      entries.forEach((entry) => {
+        const matchesKeyword = !keyword || `${entry.dataset.title} ${entry.dataset.body}`.toLowerCase().includes(keyword);
+        const matchesCategory = !category || entry.dataset.category === category;
+        const matchesVolume = !volume || entry.dataset.volume === volume;
+        entry.hidden = !(matchesKeyword && matchesCategory && matchesVolume);
+      });
+    }
+
+    searchInput.addEventListener("input", applyFilters);
+    categoryFilter.addEventListener("change", applyFilters);
+    volumeFilter.addEventListener("change", applyFilters);
+    modeButton.addEventListener("click", () => {
+      const compact = entryList.dataset.mode !== "compact";
+      entryList.dataset.mode = compact ? "compact" : "full";
+      modeButton.setAttribute("aria-pressed", String(compact));
+      modeButton.textContent = compact ? "完整浏览" : "紧凑浏览";
+    });
+  </script>
 </body>
 </html>
