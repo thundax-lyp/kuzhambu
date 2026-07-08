@@ -6,6 +6,9 @@ import static com.thundax.kuzhambu.operations.application.cleanup.support.Operat
 import static com.thundax.kuzhambu.operations.application.cleanup.support.OperationsCleanupSupport.CLEANUP_STATUS_RUNNING;
 import static com.thundax.kuzhambu.operations.application.cleanup.support.OperationsCleanupSupport.CLEANUP_STATUS_SUCCEEDED;
 import static com.thundax.kuzhambu.operations.application.cleanup.support.OperationsCleanupSupport.CLEANUP_TYPE_EXPIRED_BACKUP;
+import static com.thundax.kuzhambu.operations.application.cleanup.support.OperationsCleanupSupport.CLEANUP_TYPE_EXPIRED_HEALTH_CHECK;
+import static com.thundax.kuzhambu.operations.application.cleanup.support.OperationsCleanupSupport.CLEANUP_TYPE_EXPIRED_LONG_TASK;
+import static com.thundax.kuzhambu.operations.application.cleanup.support.OperationsCleanupSupport.CLEANUP_TYPE_EXPIRED_REPORT;
 
 import com.thundax.kuzhambu.classics.facade.ClassicsFacade;
 import com.thundax.kuzhambu.classics.facade.request.ClassicsCleanupTargetsFacadeRequest;
@@ -28,6 +31,12 @@ import com.thundax.kuzhambu.operations.domain.cleanup.model.entity.CleanupItem;
 import com.thundax.kuzhambu.operations.domain.cleanup.model.entity.CleanupJob;
 import com.thundax.kuzhambu.operations.domain.cleanup.model.valueobject.CleanupJobId;
 import com.thundax.kuzhambu.operations.domain.cleanup.repository.CleanupJobRepository;
+import com.thundax.kuzhambu.operations.domain.health.model.valueobject.HealthCheckId;
+import com.thundax.kuzhambu.operations.domain.health.repository.HealthCheckRepository;
+import com.thundax.kuzhambu.operations.domain.report.model.valueobject.ReportId;
+import com.thundax.kuzhambu.operations.domain.report.repository.ReportRepository;
+import com.thundax.kuzhambu.operations.domain.task.model.valueobject.LongTaskSnapshotId;
+import com.thundax.kuzhambu.operations.domain.task.repository.LongTaskSnapshotRepository;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Date;
@@ -45,6 +54,9 @@ public class CleanupApplicationServiceImpl implements CleanupApplicationService 
 
     private final CleanupJobRepository cleanupJobRepository;
     private final BackupRepository backupRepository;
+    private final ReportRepository reportRepository;
+    private final HealthCheckRepository healthCheckRepository;
+    private final LongTaskSnapshotRepository longTaskSnapshotRepository;
     private final ClassicsFacade classicsFacade;
     private final OperationsHealthAlertStrategy healthAlertStrategy;
 
@@ -52,17 +64,31 @@ public class CleanupApplicationServiceImpl implements CleanupApplicationService 
             CleanupJobRepository cleanupJobRepository,
             BackupRepository backupRepository,
             ClassicsFacade classicsFacade) {
-        this(cleanupJobRepository, backupRepository, classicsFacade, null);
+        this(cleanupJobRepository, backupRepository, null, null, null, classicsFacade, null);
+    }
+
+    public CleanupApplicationServiceImpl(
+            CleanupJobRepository cleanupJobRepository,
+            BackupRepository backupRepository,
+            ClassicsFacade classicsFacade,
+            OperationsHealthAlertStrategy healthAlertStrategy) {
+        this(cleanupJobRepository, backupRepository, null, null, null, classicsFacade, healthAlertStrategy);
     }
 
     @Autowired
     public CleanupApplicationServiceImpl(
             CleanupJobRepository cleanupJobRepository,
             BackupRepository backupRepository,
+            ReportRepository reportRepository,
+            HealthCheckRepository healthCheckRepository,
+            LongTaskSnapshotRepository longTaskSnapshotRepository,
             ClassicsFacade classicsFacade,
             OperationsHealthAlertStrategy healthAlertStrategy) {
         this.cleanupJobRepository = cleanupJobRepository;
         this.backupRepository = backupRepository;
+        this.reportRepository = reportRepository;
+        this.healthCheckRepository = healthCheckRepository;
+        this.longTaskSnapshotRepository = longTaskSnapshotRepository;
         this.classicsFacade = classicsFacade;
         this.healthAlertStrategy = healthAlertStrategy;
     }
@@ -208,6 +234,31 @@ public class CleanupApplicationServiceImpl implements CleanupApplicationService 
                             OperationsCleanupSupport.resolveItemType(cleanupType), targetId))
                     .toList();
         }
+        if (CLEANUP_TYPE_EXPIRED_REPORT.equals(cleanupType)) {
+            return reportRepository.listExpiredReportIds(cleanupThreshold(requestedAt, retentionDays), limit).stream()
+                    .map(ReportId::value)
+                    .map(targetId -> new DiscoveredCleanupTarget(
+                            OperationsCleanupSupport.resolveItemType(cleanupType), targetId))
+                    .toList();
+        }
+        if (CLEANUP_TYPE_EXPIRED_HEALTH_CHECK.equals(cleanupType)) {
+            return healthCheckRepository
+                    .listExpiredCheckIds(cleanupThreshold(requestedAt, retentionDays), limit)
+                    .stream()
+                    .map(HealthCheckId::value)
+                    .map(targetId -> new DiscoveredCleanupTarget(
+                            OperationsCleanupSupport.resolveItemType(cleanupType), targetId))
+                    .toList();
+        }
+        if (CLEANUP_TYPE_EXPIRED_LONG_TASK.equals(cleanupType)) {
+            return longTaskSnapshotRepository
+                    .listExpiredSnapshotIds(cleanupThreshold(requestedAt, retentionDays), limit)
+                    .stream()
+                    .map(LongTaskSnapshotId::value)
+                    .map(targetId -> new DiscoveredCleanupTarget(
+                            OperationsCleanupSupport.resolveItemType(cleanupType), targetId))
+                    .toList();
+        }
         ClassicsCleanupTargetsFacadeResponse response =
                 classicsFacade.listCleanupTargets(ClassicsCleanupTargetsFacadeRequest.builder()
                         .cleanupType(cleanupType)
@@ -226,6 +277,18 @@ public class CleanupApplicationServiceImpl implements CleanupApplicationService 
     private CleanupExecutionResult executeCleanupTarget(CleanupItem item) {
         if (OperationsCleanupSupport.CLEANUP_ITEM_TYPE_BACKUP.equals(item.getTargetType())) {
             int affectedRows = backupRepository.deleteById(BackupId.ofNullable(item.getTargetId()));
+            return new CleanupExecutionResult(affectedRows > 0, affectedRows > 0 ? null : "TARGET_NOT_FOUND");
+        }
+        if (OperationsCleanupSupport.CLEANUP_ITEM_TYPE_REPORT.equals(item.getTargetType())) {
+            int affectedRows = reportRepository.deleteById(ReportId.ofNullable(item.getTargetId()));
+            return new CleanupExecutionResult(affectedRows > 0, affectedRows > 0 ? null : "TARGET_NOT_FOUND");
+        }
+        if (OperationsCleanupSupport.CLEANUP_ITEM_TYPE_HEALTH_CHECK.equals(item.getTargetType())) {
+            int affectedRows = healthCheckRepository.deleteById(HealthCheckId.ofNullable(item.getTargetId()));
+            return new CleanupExecutionResult(affectedRows > 0, affectedRows > 0 ? null : "TARGET_NOT_FOUND");
+        }
+        if (OperationsCleanupSupport.CLEANUP_ITEM_TYPE_LONG_TASK.equals(item.getTargetType())) {
+            int affectedRows = longTaskSnapshotRepository.deleteById(LongTaskSnapshotId.ofNullable(item.getTargetId()));
             return new CleanupExecutionResult(affectedRows > 0, affectedRows > 0 ? null : "TARGET_NOT_FOUND");
         }
         ClassicsCleanupExecutionFacadeResponse response =
@@ -257,6 +320,10 @@ public class CleanupApplicationServiceImpl implements CleanupApplicationService 
     }
 
     private Date backupCleanupThreshold(Date requestedAt, Integer retentionDays) {
+        return cleanupThreshold(requestedAt, retentionDays);
+    }
+
+    private Date cleanupThreshold(Date requestedAt, Integer retentionDays) {
         if (retentionDays == null || retentionDays <= 0) {
             return requestedAt;
         }

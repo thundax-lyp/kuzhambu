@@ -24,6 +24,15 @@ class OperationsCleanupSchedulePropertiesTest {
         properties.setExpiredDraftEnabled(false);
         properties.setExpiredDraftRetentionDays(30);
         properties.setExpiredDraftLimit(50);
+        properties.setExpiredReportEnabled(true);
+        properties.setExpiredReportRetentionDays(90);
+        properties.setExpiredReportLimit(null);
+        properties.setExpiredHealthCheckEnabled(true);
+        properties.setExpiredHealthCheckRetentionDays(30);
+        properties.setExpiredHealthCheckLimit(500);
+        properties.setExpiredLongTaskEnabled(true);
+        properties.setExpiredLongTaskRetentionDays(90);
+        properties.setExpiredLongTaskLimit(0);
 
         List<OperationsCleanupScheduleProperties.CleanupPolicy> policies = properties.orderedPolicies();
 
@@ -43,5 +52,17 @@ class OperationsCleanupSchedulePropertiesTest {
                 OperationsCleanupSupport.CLEANUP_TYPE_EXPIRED_DRAFT,
                 policies.get(3).cleanupType());
         assertFalse(policies.get(3).enabled());
+        assertEquals(
+                OperationsCleanupSupport.CLEANUP_TYPE_EXPIRED_REPORT,
+                policies.get(4).cleanupType());
+        assertEquals(200, policies.get(4).limit());
+        assertEquals(
+                OperationsCleanupSupport.CLEANUP_TYPE_EXPIRED_HEALTH_CHECK,
+                policies.get(5).cleanupType());
+        assertEquals(500, policies.get(5).limit());
+        assertEquals(
+                OperationsCleanupSupport.CLEANUP_TYPE_EXPIRED_LONG_TASK,
+                policies.get(6).cleanupType());
+        assertEquals(200, policies.get(6).limit());
     }
 }

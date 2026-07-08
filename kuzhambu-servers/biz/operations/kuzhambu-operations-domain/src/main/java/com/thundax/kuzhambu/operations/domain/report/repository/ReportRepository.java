@@ -4,6 +4,7 @@ import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.operations.domain.report.model.entity.ReportRecord;
 import com.thundax.kuzhambu.operations.domain.report.model.valueobject.ReportId;
 import java.util.Date;
+import java.util.List;
 
 public interface ReportRepository {
 
@@ -24,4 +25,8 @@ public interface ReportRepository {
     int update(ReportRecord record);
 
     int deleteById(ReportId id);
+
+    default List<ReportId> listExpiredReportIds(Date requestedBefore, int limit) {
+        return List.of();
+    }
 }
