@@ -209,12 +209,33 @@ jobs:
                   test -d kuzhambu-servers/common
                   test -d kuzhambu-servers/biz
                   test -d kuzhambu-servers/starter
-                  test -d kuzhambu-servers/biz/system/kuzhambu-system-interface
-                  test -d kuzhambu-servers/biz/system/kuzhambu-system-application
-                  test -d kuzhambu-servers/biz/system/kuzhambu-system-domain
-                  test -d kuzhambu-servers/biz/system/kuzhambu-system-infra
                   test -d kuzhambu-servers/starter/kuzhambu-admin-starter
                   test -d kuzhambu-servers/starter/kuzhambu-portal-starter
+
+                  for domain_dir in kuzhambu-servers/biz/*; do
+                    if [ ! -d "$domain_dir" ] || [ "$(basename "$domain_dir")" = "target" ]; then
+                      continue
+                    fi
+
+                    domain="$(basename "$domain_dir")"
+                    test -d "$domain_dir/kuzhambu-$domain-interface"
+                    test -d "$domain_dir/kuzhambu-$domain-application"
+                    test -d "$domain_dir/kuzhambu-$domain-domain"
+                    test -d "$domain_dir/kuzhambu-$domain-infra"
+
+                    for module_dir in "$domain_dir"/*; do
+                      if [ ! -d "$module_dir" ] || [ "$(basename "$module_dir")" = "target" ]; then
+                        continue
+                      fi
+
+                      module="$(basename "$module_dir")"
+                      if ! echo "$module" | grep -Eq "^kuzhambu-$domain-(interface|application|domain|infra|facade)$"; then
+                        echo "Unexpected backend domain module: $module_dir" >&2
+                        exit 1
+                      fi
+                    done
+                  done
+
                   if test -d kuzhambu-servers/interfaces; then
                     echo "Legacy kuzhambu-servers/interfaces must be migrated to starter/domain interface modules" >&2
                     exit 1
