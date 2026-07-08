@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `SancaiEntryResponse`：聚合返回三才条目详情标签
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-ENTRY-TAGS.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/sancai/controller/SancaiAdminController.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/sancai/assembler/SancaiInterfaceAssembler.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/sancai/controller/response/SancaiEntryResponse.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/test/java/com/thundax/kuzhambu/classics/interfaces/admin/sancai/SancaiAdminControllerTest.java`
-    - 处理动作：让 `GET /api/classics/sancai/entries/{id}` 返回 `tags: List<ClassicsContentResponse>` 并保持列表响应不受影响。
-    - 验收点：详情响应有 `tags` 数组，空标签返回空数组，测试断言 `tags[0].tagNameSnapshot`。
-    - 重要度：9/10
-
 - [ ] `ClassicsContentTag`：治理通用内容标签接口入参和删除语义
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-ENTRY-TAGS.md`

@@ -7,6 +7,7 @@ import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVolumeComm
 import com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryPageQuery;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentVersionIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiCategory;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
@@ -19,6 +20,8 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryTransl
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisibility;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisualAssetStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVolumeType;
+import com.thundax.kuzhambu.classics.interfaces.admin.content.assembler.ClassicsContentInterfaceAssembler;
+import com.thundax.kuzhambu.classics.interfaces.admin.content.controller.response.ClassicsContentResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiCategoryRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiEntryPageRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiEntryRequest;
@@ -109,9 +112,18 @@ public final class SancaiInterfaceAssembler {
     }
 
     public static SancaiEntryResponse toResponse(SancaiEntry entity) {
+        return toResponse(entity, List.of());
+    }
+
+    public static SancaiEntryResponse toResponse(SancaiEntry entity, List<ClassicsContentTag> tags) {
         if (entity == null) {
             return SancaiEntryResponse.builder().build();
         }
+        List<ClassicsContentResponse> tagResponses = tags == null
+                ? List.of()
+                : tags.stream()
+                        .map(ClassicsContentInterfaceAssembler::toTagResponse)
+                        .toList();
         return SancaiEntryResponse.builder()
                 .id(entity.getId() == null ? null : entity.getId().value())
                 .volumeId(
@@ -134,6 +146,7 @@ public final class SancaiInterfaceAssembler {
                 .currentVersionedAt(entity.getCurrentVersionedAt())
                 .contentUpdatedAt(entity.getContentUpdatedAt())
                 .versionDirty(versionDirty(entity))
+                .tags(tagResponses)
                 .build();
     }
 
